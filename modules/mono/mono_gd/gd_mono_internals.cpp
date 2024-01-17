@@ -140,7 +140,7 @@ void gd_unhandled_exception_event(MonoException *p_exc) {
 	mono_runtime_invoke(unhandled_exception_method, nullptr, (void **)args, nullptr);
 }
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 static String _get_var_type(const Variant *p_var) {
 	String basestr;
 
