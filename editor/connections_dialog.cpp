@@ -1202,7 +1202,22 @@ void ConnectionsDock::_slot_menu_about_to_popup() {
 	slot_menu->set_item_disabled(slot_menu->get_item_index(SLOT_MENU_DISCONNECT), connection_is_inherited);
 }
 
-void ConnectionsDock::_rmb_pressed(const Ref<InputEvent> &p_event) {
+void ConnectionsDock::_tree_gui_input(const Ref<InputEvent> &p_event) {
+	// Handle Delete press.
+	if (ED_IS_SHORTCUT("connections_editor/disconnect", p_event)) {
+		TreeItem *item = tree->get_selected();
+		if (item && _get_item_type(*item) == TREE_ITEM_TYPE_CONNECTION) {
+			Connection connection = item->get_metadata(0);
+			_disconnect(connection);
+			update_tree();
+
+			// Stop the Delete input from propagating elsewhere.
+			accept_event();
+			return;
+		}
+	}
+
+	// Handle RMB press.
 	const Ref<InputEventMouseButton> &mb_event = p_event;
 	if (mb_event.is_null() || !mb_event->is_pressed() || mb_event->get_button_index() != MouseButton::RIGHT) {
 		return;
@@ -1536,13 +1551,13 @@ ConnectionsDock::ConnectionsDock() {
 	slot_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_slot_menu_about_to_popup));
 	slot_menu->add_item(TTR("Edit..."), SLOT_MENU_EDIT);
 	slot_menu->add_item(TTR("Go to Method"), SLOT_MENU_GO_TO_METHOD);
-	slot_menu->add_item(TTR("Disconnect"), SLOT_MENU_DISCONNECT);
+	slot_menu->add_shortcut(ED_SHORTCUT("connections_editor/disconnect", TTR("Disconnect"), Key::KEY_DELETE), SLOT_MENU_DISCONNECT);
 	add_child(slot_menu);
 
 	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));
 	tree->connect("item_selected", callable_mp(this, &ConnectionsDock::_tree_item_selected));
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
-	tree->connect("gui_input", callable_mp(this, &ConnectionsDock::_rmb_pressed));
+	tree->connect("gui_input", callable_mp(this, &ConnectionsDock::_tree_gui_input));
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
 }
