@@ -3365,8 +3365,6 @@ Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, 
 	LocalVector<RDG::ResourceUsage> resource_usages;
 	bool uses_color = false;
 	bool uses_depth = false;
-	clear_values.resize(p_framebuffer->texture_ids.size());
-	int clear_values_count = 0;
 	{
 		int color_index = 0;
 		for (int i = 0; i < p_framebuffer->texture_ids.size(); i++) {
@@ -3396,7 +3394,8 @@ Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, 
 				uses_depth = true;
 			}
 
-			clear_values[clear_values_count++] = clear_value;
+			if (p_initial_color_action == INITIAL_ACTION_CLEAR || p_initial_depth_action == INITIAL_ACTION_CLEAR)
+				clear_values.push_back(clear_value);
 		}
 	}
 

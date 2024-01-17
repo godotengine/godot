@@ -203,7 +203,7 @@ private:
 	};
 
 	struct ComputeInstructionList : InstructionList {
-		// No extra contents.
+		bool has_dispatches = false;
 	};
 
 	struct DrawInstructionList : InstructionList {
@@ -211,6 +211,7 @@ private:
 		RDD::FramebufferID framebuffer;
 		Rect2i region;
 		LocalVector<RDD::RenderPassClearValue> clear_values;
+		bool has_draws = false;
 	};
 
 	struct RecordedCommandSort {
