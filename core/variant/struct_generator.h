@@ -39,7 +39,7 @@ class TypedArray;
 template <typename T>
 class Struct;
 
-#define STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_variant_type, m_member_name, m_member_name_alias, m_default)                           \
+#define STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_member_name, m_member_name_alias, m_default)                                           \
 	_FORCE_INLINE_ static const StringName get_name() { return SNAME(m_member_name_alias); }                                                        \
 	_FORCE_INLINE_ static Variant get_variant(const m_struct_name &p_struct) { return to_variant(p_struct.m_member_name); }                         \
 	_FORCE_INLINE_ static const Variant get_default_value_variant() { return to_variant(m_default); }                                               \
@@ -49,10 +49,10 @@ class Struct;
 	_FORCE_INLINE_ static void set(m_struct_name &p_struct, const m_type &p_value) { p_struct.m_member_name = p_value; }                            \
 	using Type = m_type
 
-#define STRUCT_MEMBER_TYPEDEF(m_struct_name, m_type, m_variant_type, m_member_name, m_default) \
-	STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_variant_type, m_member_name, #m_member_name, m_default)
+#define STRUCT_MEMBER_TYPEDEF(m_struct_name, m_type, m_member_name, m_default) \
+	STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_member_name, #m_member_name, m_default)
 
-#define STRUCT_MEMBER_TYPEDEF_POINTER(m_struct_name, m_type, m_variant_type, m_member_name, m_default)                                              \
+#define STRUCT_MEMBER_TYPEDEF_POINTER(m_struct_name, m_type, m_member_name, m_default)                                                              \
 	_FORCE_INLINE_ static const StringName get_name() { return SNAME(#m_member_name); }                                                             \
 	_FORCE_INLINE_ static Variant get_variant(const m_struct_name &p_struct) { return to_variant(p_struct.m_member_name); }                         \
 	_FORCE_INLINE_ static const Variant get_default_value_variant() { return to_variant(m_default); }                                               \
@@ -62,51 +62,51 @@ class Struct;
 	_FORCE_INLINE_ static void set(m_struct_name &p_struct, m_type *p_value) { p_struct.m_member_name = p_value; }                                  \
 	using Type = m_type *
 
-#define STRUCT_MEMBER_PRIMITIVE_ALIAS(m_struct_name, m_type, m_variant_type, m_member_name, m_member_name_alias, m_default) \
-	m_type m_member_name = m_default;                                                                                       \
-	struct m_member_name {                                                                                                  \
-		_FORCE_INLINE_ static m_type from_variant(const Variant &p_variant) { return p_variant; }                           \
-		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }                                 \
-		STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_variant_type, m_member_name, m_member_name_alias, m_default);  \
-		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return m_variant_type; }                             \
-		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                                    \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                                               \
+#define STRUCT_MEMBER_PRIMITIVE_ALIAS(m_struct_name, m_type, m_member_name, m_member_name_alias, m_default)       \
+	m_type m_member_name = m_default;                                                                             \
+	struct m_member_name {                                                                                        \
+		_FORCE_INLINE_ static m_type from_variant(const Variant &p_variant) { return p_variant; }                 \
+		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }                       \
+		STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_member_name, m_member_name_alias, m_default);        \
+		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return to_variant(m_default).get_type(); } \
+		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                          \
+		static const StructInfo *get_struct_member_info() { return nullptr; }                                     \
 	}
 
-#define STRUCT_MEMBER_PRIMITIVE_FROM(m_struct_name, m_type, m_variant_type, m_member_name, m_default) \
-	m_type m_member_name = m_default;                                                                 \
-	struct m_member_name {                                                                            \
-		static m_type from_variant(const Variant &p_variant);                                         \
-		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }           \
-		STRUCT_MEMBER_TYPEDEF(m_struct_name, m_type, m_variant_type, m_member_name, m_default);       \
-		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return m_variant_type; }       \
-		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }              \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                         \
+#define STRUCT_MEMBER_PRIMITIVE_FROM(m_struct_name, m_type, m_member_name, m_default)                             \
+	m_type m_member_name = m_default;                                                                             \
+	struct m_member_name {                                                                                        \
+		static m_type from_variant(const Variant &p_variant);                                                     \
+		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }                       \
+		STRUCT_MEMBER_TYPEDEF(m_struct_name, m_type, m_member_name, m_default);                                   \
+		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return to_variant(m_default).get_type(); } \
+		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                          \
+		static const StructInfo *get_struct_member_info() { return nullptr; }                                     \
 	}
 
-#define STRUCT_MEMBER_PRIMITIVE(m_struct_name, m_type, m_variant_type, m_member_name, m_default) \
-	STRUCT_MEMBER_PRIMITIVE_ALIAS(m_struct_name, m_type, m_variant_type, m_member_name, #m_member_name, m_default)
+#define STRUCT_MEMBER_PRIMITIVE(m_struct_name, m_type, m_member_name, m_default) \
+	STRUCT_MEMBER_PRIMITIVE_ALIAS(m_struct_name, m_type, m_member_name, #m_member_name, m_default)
 
-#define STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(m_struct_name, m_type, m_variant_type, m_member_name, m_member_name_alias, m_default) \
-	m_type m_member_name = m_default;                                                                                               \
-	struct m_member_name {                                                                                                          \
-		static m_type from_variant(const Variant &p_variant);                                                                       \
-		static Variant to_variant(const m_type &p_value);                                                                           \
-		STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_variant_type, m_member_name, m_member_name_alias, m_default);          \
-		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return m_variant_type; }                                     \
-		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                                            \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                                                       \
+#define STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(m_struct_name, m_type, m_member_name, m_member_name_alias, m_default) \
+	m_type m_member_name = m_default;                                                                               \
+	struct m_member_name {                                                                                          \
+		static m_type from_variant(const Variant &p_variant);                                                       \
+		static Variant to_variant(const m_type &p_value);                                                           \
+		STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_member_name, m_member_name_alias, m_default);          \
+		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return to_variant(m_default).get_type(); }   \
+		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                            \
+		static const StructInfo *get_struct_member_info() { return nullptr; }                                       \
 	}
 
-#define STRUCT_MEMBER_PRIMITIVE_FROM_TO(m_struct_name, m_type, m_variant_type, m_member_name, m_default) \
-	STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(m_struct_name, m_type, m_variant_type, m_member_name, #m_member_name, m_default)
+#define STRUCT_MEMBER_PRIMITIVE_FROM_TO(m_struct_name, m_type, m_member_name, m_default) \
+	STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(m_struct_name, m_type, m_member_name, #m_member_name, m_default)
 
 #define STRUCT_MEMBER_CLASS_POINTER(m_struct_name, m_type, m_class_name, m_member_name, m_default)                        \
 	m_type *m_member_name = m_default;                                                                                    \
 	struct m_member_name {                                                                                                \
 		_FORCE_INLINE_ static m_type *from_variant(const Variant &p_variant) { return Object::cast_to<Node>(p_variant); } \
 		_FORCE_INLINE_ static Variant to_variant(m_type *p_value) { return p_value; }                                     \
-		STRUCT_MEMBER_TYPEDEF_POINTER(m_struct_name, m_type, m_variant_type, m_member_name, m_default);                   \
+		STRUCT_MEMBER_TYPEDEF_POINTER(m_struct_name, m_type, m_member_name, m_default);                                   \
 		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return Variant::OBJECT; }                          \
 		_FORCE_INLINE_ static const StringName get_class_name() { return SNAME(#m_class_name); }                          \
 		static const StructInfo *get_struct_member_info() { return nullptr; }                                             \
@@ -117,7 +117,7 @@ class Struct;
 	struct m_member_name {                                                                        \
 		_FORCE_INLINE_ static m_type from_variant(const Variant &p_variant) { return p_variant; } \
 		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }       \
-		STRUCT_MEMBER_TYPEDEF(m_struct_name, m_type, m_variant_type, m_member_name, m_default);   \
+		STRUCT_MEMBER_TYPEDEF(m_struct_name, m_type, m_member_name, m_default);                   \
 		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return Variant::OBJECT; }  \
 		_FORCE_INLINE_ static const StringName get_class_name() { return SNAME(#m_class_name); }  \
 		static const StructInfo *get_struct_member_info() { return nullptr; }                     \
@@ -128,23 +128,23 @@ class Struct;
 	struct m_member_name {                                                                                              \
 		_FORCE_INLINE_ static m_type from_variant(const Variant &p_variant) { return Struct<m_type>(p_variant); }       \
 		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return Struct<m_type>(p_value); }             \
-		STRUCT_MEMBER_TYPEDEF(m_struct_name, m_type, m_variant_type, m_member_name, m_default);                         \
+		STRUCT_MEMBER_TYPEDEF(m_struct_name, m_type, m_member_name, m_default);                                         \
 		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return Variant::ARRAY; }                         \
 		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                                \
 		_FORCE_INLINE_ static const StructInfo *get_struct_member_info() { return &m_type::Layout::get_struct_info(); } \
 	}
 
-#define STRUCT_MEMBER_STRUCT_FROM_TO_ALIAS(m_struct_name, m_type, m_member_name, m_member_name_alias, m_default)           \
-	m_type m_member_name = m_default;                                                                                      \
-	struct m_member_name {                                                                                                 \
-		static m_type from_variant(const Variant &p_variant);                                                              \
-		static Variant to_variant(const m_type &p_value);                                                                  \
-		STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_variant_type, m_member_name, m_member_name_alias, m_default); \
-		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return Variant::ARRAY; }                            \
-		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                                   \
-		_FORCE_INLINE_ static const StructInfo *get_struct_member_info() {                                                 \
-			return &m_type::Layout::get_struct_info();                                                                     \
-		}                                                                                                                  \
+#define STRUCT_MEMBER_STRUCT_FROM_TO_ALIAS(m_struct_name, m_type, m_member_name, m_member_name_alias, m_default) \
+	m_type m_member_name = m_default;                                                                            \
+	struct m_member_name {                                                                                       \
+		static m_type from_variant(const Variant &p_variant);                                                    \
+		static Variant to_variant(const m_type &p_value);                                                        \
+		STRUCT_MEMBER_TYPEDEF_ALIAS(m_struct_name, m_type, m_member_name, m_member_name_alias, m_default);       \
+		_FORCE_INLINE_ static const Variant::Type get_variant_type() { return Variant::ARRAY; }                  \
+		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                         \
+		_FORCE_INLINE_ static const StructInfo *get_struct_member_info() {                                       \
+			return &m_type::Layout::get_struct_info();                                                           \
+		}                                                                                                        \
 	}
 
 #define STRUCT_MEMBER_STRUCT_FROM_TO(m_struct_name, m_type, m_member_name, m_default) \

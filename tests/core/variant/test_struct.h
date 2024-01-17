@@ -230,8 +230,8 @@ TEST_CASE("[Struct] PropertyInfo") {
 
 TEST_CASE("[Struct] Validation") {
 	struct NamedInt {
-		STRUCT_MEMBER_PRIMITIVE(NamedInt, String, Variant::STRING, name, String());
-		STRUCT_MEMBER_PRIMITIVE(NamedInt, int, Variant::INT, value, 0);
+		STRUCT_MEMBER_PRIMITIVE(NamedInt, String, name, String());
+		STRUCT_MEMBER_PRIMITIVE(NamedInt, int, value, 0);
 		STRUCT_LAYOUT(NamedInt, struct name, struct value);
 	};
 
@@ -289,14 +289,14 @@ TEST_CASE("[Struct] Validation") {
 
 TEST_CASE("[Struct] Nesting") {
 	struct BasicStruct {
-		STRUCT_MEMBER_PRIMITIVE(BasicStruct, int, Variant::INT, int_val, 4);
-		STRUCT_MEMBER_PRIMITIVE(BasicStruct, float, Variant::FLOAT, float_val, 5.5f);
+		STRUCT_MEMBER_PRIMITIVE(BasicStruct, int, int_val, 4);
+		STRUCT_MEMBER_PRIMITIVE(BasicStruct, float, float_val, 5.5f);
 		STRUCT_LAYOUT(BasicStruct, struct int_val, struct float_val);
 		BasicStruct(){};
 	};
 	struct BasicStructLookalike {
-		STRUCT_MEMBER_PRIMITIVE(BasicStructLookalike, int, Variant::INT, int_val, 4);
-		STRUCT_MEMBER_PRIMITIVE(BasicStructLookalike, float, Variant::FLOAT, float_val, 5.5f);
+		STRUCT_MEMBER_PRIMITIVE(BasicStructLookalike, int, int_val, 4);
+		STRUCT_MEMBER_PRIMITIVE(BasicStructLookalike, float, float_val, 5.5f);
 		STRUCT_LAYOUT(BasicStructLookalike, struct int_val, struct float_val);
 	};
 	struct NestedStruct {

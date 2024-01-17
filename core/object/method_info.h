@@ -46,15 +46,15 @@ enum MethodFlags {
 };
 
 struct MethodInfo {
-	STRUCT_MEMBER_PRIMITIVE(MethodInfo, String, Variant::STRING, name, String());
-	STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(MethodInfo, List<PropertyInfo>, Variant::ARRAY, arguments, "args", List<PropertyInfo>());
-	STRUCT_MEMBER_PRIMITIVE_ALIAS(MethodInfo, Vector<Variant>, Variant::ARRAY, default_arguments, "default_args", Vector<Variant>());
-	STRUCT_MEMBER_PRIMITIVE(MethodInfo, uint32_t, Variant::INT, flags, METHOD_FLAGS_DEFAULT);
-	STRUCT_MEMBER_PRIMITIVE(MethodInfo, int, Variant::INT, id, 0);
+	STRUCT_MEMBER_PRIMITIVE(MethodInfo, String, name, String());
+	STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(MethodInfo, List<PropertyInfo>, arguments, "args", List<PropertyInfo>());
+	STRUCT_MEMBER_PRIMITIVE_ALIAS(MethodInfo, Vector<Variant>, default_arguments, "default_args", Vector<Variant>());
+	STRUCT_MEMBER_PRIMITIVE(MethodInfo, uint32_t, flags, METHOD_FLAGS_DEFAULT);
+	STRUCT_MEMBER_PRIMITIVE(MethodInfo, int, id, 0);
 	STRUCT_MEMBER_STRUCT_FROM_TO_ALIAS(MethodInfo, PropertyInfo, return_val, "return", PropertyInfo());
 
-	STRUCT_MEMBER_PRIMITIVE(MethodInfo, int, Variant::INT, return_val_metadata, 0);
-	STRUCT_MEMBER_PRIMITIVE(MethodInfo, Vector<int>, Variant::PACKED_INT32_ARRAY, arguments_metadata, Vector<int>());
+	STRUCT_MEMBER_PRIMITIVE(MethodInfo, int, return_val_metadata, 0);
+	STRUCT_MEMBER_PRIMITIVE(MethodInfo, Vector<int>, arguments_metadata, Vector<int>());
 	STRUCT_LAYOUT_OWNER(Object, MethodInfo, struct name, struct arguments, struct default_arguments, struct flags, struct id, struct return_val, struct return_val_metadata, struct arguments_metadata);
 
 	int get_argument_meta(int p_arg) const {

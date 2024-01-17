@@ -34,6 +34,7 @@
 #include "core/object/method_info.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/struct_generator.h"
+#include "core/variant/type_info.h"
 #include "core/variant/variant.h"
 
 enum ConnectFlags {
@@ -45,9 +46,9 @@ enum ConnectFlags {
 };
 
 struct Connection {
-	STRUCT_MEMBER_PRIMITIVE(Connection, ::Signal, Variant::SIGNAL, signal, ::Signal());
-	STRUCT_MEMBER_PRIMITIVE(Connection, Callable, Variant::CALLABLE, callable, Callable());
-	STRUCT_MEMBER_PRIMITIVE(Connection, uint32_t, Variant::INT, flags, 0);
+	STRUCT_MEMBER_PRIMITIVE(Connection, ::Signal, signal, ::Signal());
+	STRUCT_MEMBER_PRIMITIVE(Connection, Callable, callable, Callable());
+	STRUCT_MEMBER_PRIMITIVE(Connection, uint32_t, flags, 0);
 	STRUCT_LAYOUT_OWNER(Object, Connection, struct signal, struct callable, struct flags);
 
 	bool operator<(const Connection &p_conn) const;

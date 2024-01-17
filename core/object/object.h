@@ -32,6 +32,7 @@
 #define OBJECT_H
 
 #include "core/extension/gdextension_interface.h"
+#include "core/object/connection.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
 #include "core/os/rw_lock.h"
@@ -42,10 +43,7 @@
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/callable_bind.h"
-//#include "core/variant/struct_generator.h"
 #include "core/variant/variant.h"
-//#include "core/object/method_info.h"
-#include "core/object/connection.h"
 
 template <typename T>
 class TypedArray;
@@ -72,8 +70,6 @@ class Struct;
 // Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
 // PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
-
-
 
 // API used to extend in GDExtension and other C compatible compiled languages.
 class MethodBind;
