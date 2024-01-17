@@ -712,7 +712,7 @@ void OS_UWP::set_icon(const Ref<Image> &p_icon) {
 String OS_UWP::get_unique_id() const {
 	// Get the hardware token and read it into an array of bytes.
 	HardwareToken ^ token = HardwareIdentification::GetPackageSpecificToken(nullptr);
-	IBuffer hwId = token->Id;
+	IBuffer ^ hwId = token->Id;
 	DataReader ^ dr = DataReader::FromBuffer(hwId);
 	uint8_t *data = new uint8_t[hwId->Length];
 	dr->ReadBytes(Platform::ArrayReference<uint8_t>(data, hwId->Length));
