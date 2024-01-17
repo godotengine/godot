@@ -20,6 +20,7 @@
 			<return type="float" />
 			<description>
 				Returns the position in the [AudioStream] in seconds.
+				[b]Note:[/b] This method does not account for the small delay between mixing and hearing audio (see [method AudioServer.get_output_latency]).
 			</description>
 		</method>
 		<method name="get_stream_playback">
