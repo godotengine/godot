@@ -399,12 +399,10 @@ Error AudioDriverWASAPI::finish_capture_device() {
 Error AudioDriverWASAPI::init() {
 	mix_rate = GLOBAL_GET("audio/mix_rate");
 
-	Error err = init_render_device();
-	if (err != OK) {
-		ERR_PRINT("WASAPI: init_render_device error");
-	}
-
 	exit_thread.clear();
+
+	Error err = init_render_device();
+	ERR_FAIL_COND_V_MSG(err != OK, err, "WASAPI: init_render_device error.");
 
 	thread.start(thread_func, this);
 
