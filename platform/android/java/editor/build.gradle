@@ -2,14 +2,14 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'base'
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.androidxFragment
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation project(":lib")
 
-    implementation "androidx.window:window:1.0.0"
+    implementation "androidx.window:window:1.2.0"
 }
 
 ext {
@@ -81,6 +81,8 @@ android {
     buildToolsVersion versions.buildTools
     ndkVersion versions.ndkVersion
 
+    namespace = "org.godotengine.editor"
+
     defaultConfig {
         // The 'applicationId' suffix allows to install Godot 3.x(v3) and 4.x(v4) on the same device
         applicationId "org.godotengine.editor.v4"
@@ -90,7 +92,10 @@ android {
         targetSdkVersion versions.targetSdk
 
         missingDimensionStrategy 'products', 'editor'
-        setProperty("archivesBaseName", "android_editor")
+    }
+
+    base {
+        archivesName = "android_editor"
     }
 
     compileOptions {
@@ -109,6 +114,10 @@ android {
             keyAlias getGodotKeyAlias()
             keyPassword getGodotSigningPassword()
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
