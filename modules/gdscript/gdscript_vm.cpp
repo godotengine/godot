@@ -826,13 +826,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName native_type = _global_names_ptr[native_type_idx];
 
-				bool was_freed = false;
-				Object *object = value->get_validated_object_with_check(was_freed);
-				if (was_freed) {
-					err_text = "Left operand of 'is' is a previously freed instance.";
-					OPCODE_BREAK;
-				}
-
+				Object *object = value->get_validated_object();
 				*dst = object && ClassDB::is_parent_class(object->get_class_name(), native_type);
 				ip += 4;
 			}
@@ -848,12 +842,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Script *script_type = Object::cast_to<Script>(type->operator Object *());
 				GD_ERR_BREAK(!script_type);
 
-				bool was_freed = false;
-				Object *object = value->get_validated_object_with_check(was_freed);
-				if (was_freed) {
-					err_text = "Left operand of 'is' is a previously freed instance.";
-					OPCODE_BREAK;
-				}
+				Object *object = value->get_validated_object();
 
 				bool result = false;
 				if (object && object->get_script_instance()) {
