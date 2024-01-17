@@ -68,6 +68,8 @@ BASE_STRINGS = [
     "This value is an integer composed as a bitmask of the following flags.",
     "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this enum. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
@@ -1102,6 +1104,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if value.text is not None and value.text.strip() != "":
                     f.write(f"{format_text_block(value.text.strip(), value, state)}")
+                else:
+                    f.write(".. container:: contribute\n\n\t")
+                    f.write(
+                        translate(
+                            "There is currently no description for this enum. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                        )
+                        + "\n\n"
+                    )
 
                 f.write("\n\n")
 
@@ -1125,6 +1135,14 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             if constant.text is not None and constant.text.strip() != "":
                 f.write(f"{format_text_block(constant.text.strip(), constant, state)}")
+            else:
+                f.write(".. container:: contribute\n\n\t")
+                f.write(
+                    translate(
+                        "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+                    )
+                    + "\n\n"
+                )
 
             f.write("\n\n")
 
