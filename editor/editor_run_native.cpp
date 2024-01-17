@@ -67,10 +67,10 @@ void EditorRunNative::_notification(int p_what) {
 				}
 				if (popup->get_item_count() == 0) {
 					remote_debug->set_disabled(true);
-					remote_debug->set_tooltip_text(TTR("No Remote Debug export presets configured."));
+					remote_debug->set_tooltip_text(TTR("No one-click deploy export presets configured."));
 				} else {
 					remote_debug->set_disabled(false);
-					remote_debug->set_tooltip_text(TTR("Remote Debug"));
+					remote_debug->set_tooltip_text(TTR("One-click Deploy"));
 				}
 
 				first = false;
@@ -158,7 +158,7 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 EditorRunNative::EditorRunNative() {
 	remote_debug = memnew(MenuButton);
 	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::start_run_native));
-	remote_debug->set_tooltip_text(TTR("Remote Debug"));
+	remote_debug->set_tooltip_text(TTR("One-click Deploy"));
 	remote_debug->set_disabled(true);
 
 	add_child(remote_debug);
