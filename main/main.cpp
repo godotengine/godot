@@ -475,7 +475,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --profiling                       Enable profiling in the script debugger.\n");
 	OS::get_singleton()->print("  --gpu-profile                     Show a GPU profile of the tasks that took the most time during frame rendering.\n");
 	OS::get_singleton()->print("  --gpu-validation                  Enable graphics API validation layers for debugging.\n");
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	OS::get_singleton()->print("  --gpu-abort                       Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n");
 #endif
 	OS::get_singleton()->print("  --generate-spirv-debug-info       Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.\n");

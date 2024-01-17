@@ -39,7 +39,7 @@
 
 #include "core/templates/vector.h"
 
-// always include this as late as possible
+// Always include this as late as possible.
 #include "../openxr_platform_inc.h"
 
 class OpenXROpenGLExtension : public OpenXRGraphicsExtensionWrapper {
@@ -65,9 +65,9 @@ private:
 
 #ifdef WIN32
 	static XrGraphicsBindingOpenGLWin32KHR graphics_binding_gl;
-#elif ANDROID_ENABLED
+#elif defined(ANDROID_ENABLED)
 	static XrGraphicsBindingOpenGLESAndroidKHR graphics_binding_gl;
-#else
+#else // Linux/X11
 	static XrGraphicsBindingOpenGLXlibKHR graphics_binding_gl;
 #endif
 

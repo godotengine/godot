@@ -1091,7 +1091,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				}
 				// The script instance could not be instantiated or wasn't in the list of placeholders to replace.
 				obj->set_script(scr);
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 				// If we reached here, the instantiated script must be a placeholder.
 				CRASH_COND(!obj->get_script_instance()->is_placeholder());
 #endif
@@ -2327,7 +2327,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 
 	p_script->_update_exports();
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	// If the EditorFileSystem singleton is available, update the file;
 	// otherwise, the file will be updated when the singleton becomes available.
 	EditorFileSystem *efs = EditorFileSystem::get_singleton();
@@ -2683,7 +2683,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 		_update_exports();
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 		// If the EditorFileSystem singleton is available, update the file;
 		// otherwise, the file will be updated when the singleton becomes available.
 		EditorFileSystem *efs = EditorFileSystem::get_singleton();
