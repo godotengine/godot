@@ -3579,7 +3579,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		case GDScriptParser::COMPLETION_ASSIGN:
 		case GDScriptParser::COMPLETION_CALL_ARGUMENTS:
 		case GDScriptParser::COMPLETION_IDENTIFIER:
-		case GDScriptParser::COMPLETION_PROPERTY_METHOD: {
+		case GDScriptParser::COMPLETION_PROPERTY_METHOD:
+		case GDScriptParser::COMPLETION_SUBSCRIPT: {
 			GDScriptParser::DataType base_type;
 			if (context.current_class) {
 				if (context.type != GDScriptParser::COMPLETION_SUPER_METHOD) {
