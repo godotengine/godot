@@ -37,7 +37,7 @@
 
 #include "core/templates/vector.h"
 
-// always include this as late as possible
+// Always include this as late as possible.
 #include "../openxr_platform_inc.h"
 
 class OpenXRVulkanExtension : public OpenXRGraphicsExtensionWrapper, VulkanHooks {

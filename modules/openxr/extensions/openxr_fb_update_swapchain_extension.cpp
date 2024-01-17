@@ -30,7 +30,7 @@
 
 #include "openxr_fb_update_swapchain_extension.h"
 
-// always include this as late as possible
+// Always include this as late as possible.
 #include "../openxr_platform_inc.h"
 
 OpenXRFBUpdateSwapchainExtension *OpenXRFBUpdateSwapchainExtension::singleton = nullptr;
