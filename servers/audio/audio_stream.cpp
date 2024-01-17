@@ -80,6 +80,16 @@ void AudioStreamPlayback::tag_used_streams() {
 	GDVIRTUAL_CALL(_tag_used_streams);
 }
 
+void AudioStreamPlayback::set_parameter(const StringName &p_name, const Variant &p_value) {
+	GDVIRTUAL_CALL(_set_parameter, p_name, p_value);
+}
+
+Variant AudioStreamPlayback::get_parameter(const StringName &p_name) const {
+	Variant ret;
+	GDVIRTUAL_CALL(_get_parameter, p_name, ret);
+	return ret;
+}
+
 void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_start, "from_pos")
 	GDVIRTUAL_BIND(_stop)
@@ -89,6 +99,8 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_seek, "position")
 	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
 	GDVIRTUAL_BIND(_tag_used_streams);
+	GDVIRTUAL_BIND(_set_parameter, "name", "value");
+	GDVIRTUAL_BIND(_get_parameter, "name");
 }
 //////////////////////////////
 
@@ -249,6 +261,16 @@ float AudioStream::get_tagged_frame_offset(int p_index) const {
 	return tagged_offsets[p_index];
 }
 
+void AudioStream::get_parameter_list(List<Parameter> *r_parameters) {
+	TypedArray<Dictionary> ret;
+	GDVIRTUAL_CALL(_get_parameter_list, ret);
+	for (int i = 0; i < ret.size(); i++) {
+		Dictionary d = ret[i];
+		ERR_CONTINUE(!d.has("default_value"));
+		r_parameters->push_back(Parameter(PropertyInfo::from_dict(d), d["default_value"]));
+	}
+}
+
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
@@ -259,6 +281,9 @@ void AudioStream::_bind_methods() {
 	GDVIRTUAL_BIND(_is_monophonic);
 	GDVIRTUAL_BIND(_get_bpm)
 	GDVIRTUAL_BIND(_get_beat_count)
+	GDVIRTUAL_BIND(_get_parameter_list)
+
+	ADD_SIGNAL(MethodInfo("parameter_list_changed"));
 }
 
 ////////////////////////////////

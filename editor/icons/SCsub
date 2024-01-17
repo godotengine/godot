@@ -3,7 +3,6 @@
 Import("env")
 
 import os
-
 import editor_icons_builders
 
 
@@ -23,4 +22,4 @@ for path in env.module_icons_paths:
     else:
         icon_sources += Glob(path + "/*.svg")  # Custom.
 
-env.Alias("editor_icons", [env.MakeEditorIconsBuilder("#editor/editor_icons.gen.h", icon_sources)])
+env.Alias("editor_icons", [env.MakeEditorIconsBuilder("#editor/themes/editor_icons.gen.h", icon_sources)])

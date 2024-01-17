@@ -261,6 +261,7 @@ public:
     ImageFormat getImageTypeFormat(Id typeId) const
         { return (ImageFormat)module.getInstruction(typeId)->getImmediateOperand(6); }
     Id getResultingAccessChainType() const;
+    Id getIdOperand(Id resultId, int idx) { return module.getInstruction(resultId)->getIdOperand(idx); }
 
     bool isPointer(Id resultId)      const { return isPointerType(getTypeId(resultId)); }
     bool isScalar(Id resultId)       const { return isScalarType(getTypeId(resultId)); }
@@ -392,6 +393,7 @@ public:
     void addDecoration(Id, Decoration, const char*);
     void addDecoration(Id, Decoration, const std::vector<unsigned>& literals);
     void addDecoration(Id, Decoration, const std::vector<const char*>& strings);
+    void addLinkageDecoration(Id id, const char* name, spv::LinkageType linkType);
     void addDecorationId(Id id, Decoration, Id idDecoration);
     void addDecorationId(Id id, Decoration, const std::vector<Id>& operandIds);
     void addMemberDecoration(Id, unsigned int member, Decoration, int num = -1);
@@ -416,7 +418,8 @@ public:
     // Return the function, pass back the entry.
     // The returned pointer is only valid for the lifetime of this builder.
     Function* makeFunctionEntry(Decoration precision, Id returnType, const char* name,
-        const std::vector<Id>& paramTypes, const std::vector<char const*>& paramNames,
+        LinkageType linkType, const std::vector<Id>& paramTypes,
+        const std::vector<char const*>& paramNames,
         const std::vector<std::vector<Decoration>>& precisions, Block **entry = nullptr);
 
     // Create a return. An 'implicit' return is one not appearing in the source
@@ -827,7 +830,7 @@ public:
 
     // Add capabilities, extensions, remove unneeded decorations, etc.,
     // based on the resulting SPIR-V.
-    void postProcess();
+    void postProcess(bool compileOnly);
 
     // Prune unreachable blocks in the CFG and remove unneeded decorations.
     void postProcessCFG();

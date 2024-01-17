@@ -141,6 +141,9 @@ class State:
         self.classes: OrderedDict[str, ClassDef] = OrderedDict()
         self.current_class: str = ""
 
+        # Additional content and structure checks and validators.
+        self.script_language_parity_check: ScriptLanguageParityCheck = ScriptLanguageParityCheck()
+
     def parse_class(self, class_root: ET.Element, filepath: str) -> None:
         class_name = class_root.attrib["name"]
         self.current_class = class_name
@@ -543,6 +546,9 @@ class ClassDef(DefinitionBase):
     def __init__(self, name: str) -> None:
         super().__init__("class", name)
 
+        self.class_group = "variant"
+        self.editor_class = self._is_editor_class()
+
         self.constants: OrderedDict[str, ConstantDef] = OrderedDict()
         self.enums: OrderedDict[str, EnumDef] = OrderedDict()
         self.properties: OrderedDict[str, PropertyDef] = OrderedDict()
@@ -559,6 +565,65 @@ class ClassDef(DefinitionBase):
 
         # Used to match the class with XML source for output filtering purposes.
         self.filepath: str = ""
+
+    def _is_editor_class(self) -> bool:
+        if self.name.startswith("Editor"):
+            return True
+        if self.name in EDITOR_CLASSES:
+            return True
+
+        return False
+
+    def update_class_group(self, state: State) -> None:
+        group_name = "variant"
+
+        if self.name.startswith("@"):
+            group_name = "global"
+        elif self.inherits:
+            inherits = self.inherits.strip()
+
+            while inherits in state.classes:
+                if inherits == "Node":
+                    group_name = "node"
+                    break
+                if inherits == "Resource":
+                    group_name = "resource"
+                    break
+                if inherits == "Object":
+                    group_name = "object"
+                    break
+
+                inode = state.classes[inherits].inherits
+                if inode:
+                    inherits = inode.strip()
+                else:
+                    break
+
+        self.class_group = group_name
+
+
+# Checks if code samples have both GDScript and C# variations.
+# For simplicity we assume that a GDScript example is always present, and ignore contexts
+# which don't necessarily need C# examples.
+class ScriptLanguageParityCheck:
+    def __init__(self) -> None:
+        self.hit_map: OrderedDict[str, List[Tuple[DefinitionBase, str]]] = OrderedDict()
+        self.hit_count = 0
+
+    def add_hit(self, class_name: str, context: DefinitionBase, error: str, state: State) -> None:
+        if class_name in ["@GDScript", "@GlobalScope"]:
+            return  # We don't expect these contexts to have parity.
+
+        class_def = state.classes[class_name]
+        if class_def.class_group == "variant" and class_def.name != "Object":
+            return  # Variant types are replaced with native types in C#, we don't expect parity.
+
+        self.hit_count += 1
+
+        if class_name not in self.hit_map:
+            self.hit_map[class_name] = []
+
+        self.hit_map[class_name].append((context, error))
 
 
 # Entry point for the RST generator.
@@ -589,6 +654,11 @@ def main() -> None:
         "--dry-run",
         action="store_true",
         help="If passed, no output will be generated and XML files are only checked for errors.",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="If passed, enables verbose printing.",
     )
     args = parser.parse_args()
 
@@ -684,15 +754,15 @@ def main() -> None:
         if args.filter and not pattern.search(class_def.filepath):
             continue
         state.current_class = class_name
+
+        class_def.update_class_group(state)
         make_rst_class(class_def, state, args.dry_run, args.output)
 
-        group_name = get_class_group(class_def, state)
+        if class_def.class_group not in grouped_classes:
+            grouped_classes[class_def.class_group] = []
+        grouped_classes[class_def.class_group].append(class_name)
 
-        if group_name not in grouped_classes:
-            grouped_classes[group_name] = []
-        grouped_classes[group_name].append(class_name)
-
-        if is_editor_class(class_def):
+        if class_def.editor_class:
             if "editor" not in grouped_classes:
                 grouped_classes["editor"] = []
             grouped_classes["editor"].append(class_name)
@@ -703,6 +773,26 @@ def main() -> None:
     make_rst_index(grouped_classes, args.dry_run, args.output)
 
     print("")
+
+    # Print out checks.
+
+    if state.script_language_parity_check.hit_count > 0:
+        if not args.verbose:
+            print(
+                f'{STYLES["yellow"]}{state.script_language_parity_check.hit_count} code samples failed parity check. Use --verbose to get more information.{STYLES["reset"]}'
+            )
+        else:
+            print(
+                f'{STYLES["yellow"]}{state.script_language_parity_check.hit_count} code samples failed parity check:{STYLES["reset"]}'
+            )
+
+            for class_name in state.script_language_parity_check.hit_map.keys():
+                class_hits = state.script_language_parity_check.hit_map[class_name]
+                print(f'{STYLES["yellow"]}- {len(class_hits)} hits in class "{class_name}"{STYLES["reset"]}')
+
+                for context, error in class_hits:
+                    print(f"  - {error} in {format_context_name(context)}")
+        print("")
 
     # Print out warnings and errors, or lack thereof, and exit with an appropriate code.
 
@@ -758,46 +848,6 @@ def get_git_branch() -> str:
         return version.docs
 
     return "master"
-
-
-def get_class_group(class_def: ClassDef, state: State) -> str:
-    group_name = "variant"
-    class_name = class_def.name
-
-    if class_name.startswith("@"):
-        group_name = "global"
-    elif class_def.inherits:
-        inherits = class_def.inherits.strip()
-
-        while inherits in state.classes:
-            if inherits == "Node":
-                group_name = "node"
-                break
-            if inherits == "Resource":
-                group_name = "resource"
-                break
-            if inherits == "Object":
-                group_name = "object"
-                break
-
-            inode = state.classes[inherits].inherits
-            if inode:
-                inherits = inode.strip()
-            else:
-                break
-
-    return group_name
-
-
-def is_editor_class(class_def: ClassDef) -> bool:
-    class_name = class_def.name
-
-    if class_name.startswith("Editor"):
-        return True
-    if class_name in EDITOR_CLASSES:
-        return True
-
-    return False
 
 
 # Generator methods.
@@ -1642,7 +1692,7 @@ def parse_link_target(link_target: str, state: State, context_name: str) -> List
 
 def format_text_block(
     text: str,
-    context: Union[DefinitionBase, None],
+    context: DefinitionBase,
     state: State,
 ) -> str:
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
@@ -1691,6 +1741,10 @@ def format_text_block(
     inside_code_tag = ""
     inside_code_tabs = False
     ignore_code_warnings = False
+    code_warning_if_intended_string = "If this is intended, use [code skip-lint]...[/code]."
+
+    has_codeblocks_gdscript = False
+    has_codeblocks_csharp = False
 
     pos = 0
     tag_depth = 0
@@ -1749,7 +1803,7 @@ def format_text_block(
                 else:
                     if not ignore_code_warnings and tag_state.closing:
                         print_warning(
-                            f'{state.current_class}.xml: Found a code string that looks like a closing tag "[{tag_state.raw}]" in {context_name}.',
+                            f'{state.current_class}.xml: Found a code string that looks like a closing tag "[{tag_state.raw}]" in {context_name}. {code_warning_if_intended_string}',
                             state,
                         )
 
@@ -1759,6 +1813,17 @@ def format_text_block(
 
             elif tag_state.name == "codeblocks":
                 if tag_state.closing:
+                    if not has_codeblocks_gdscript or not has_codeblocks_csharp:
+                        state.script_language_parity_check.add_hit(
+                            state.current_class,
+                            context,
+                            "Only one script language sample found in [codeblocks]",
+                            state,
+                        )
+
+                    has_codeblocks_gdscript = False
+                    has_codeblocks_csharp = False
+
                     tag_depth -= 1
                     tag_text = ""
                     inside_code_tabs = False
@@ -1776,6 +1841,8 @@ def format_text_block(
                             f"{state.current_class}.xml: GDScript code block is used outside of [codeblocks] in {context_name}.",
                             state,
                         )
+                    else:
+                        has_codeblocks_gdscript = True
                     tag_text = "\n .. code-tab:: gdscript\n"
                 elif tag_state.name == "csharp":
                     if not inside_code_tabs:
@@ -1783,8 +1850,17 @@ def format_text_block(
                             f"{state.current_class}.xml: C# code block is used outside of [codeblocks] in {context_name}.",
                             state,
                         )
+                    else:
+                        has_codeblocks_csharp = True
                     tag_text = "\n .. code-tab:: csharp\n"
                 else:
+                    state.script_language_parity_check.add_hit(
+                        state.current_class,
+                        context,
+                        "Code sample is formatted with [codeblock] where [codeblocks] should be used",
+                        state,
+                    )
+
                     tag_text = "\n::\n"
 
                 inside_code = True
@@ -1816,7 +1892,7 @@ def format_text_block(
 
                     if inside_code_text in state.classes:
                         print_warning(
-                            f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the known classes in {context_name}.',
+                            f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the known classes in {context_name}. {code_warning_if_intended_string}',
                             state,
                         )
 
@@ -1826,49 +1902,49 @@ def format_text_block(
 
                         if target_name in class_def.methods:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} method in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} method in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.constructors:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constructor in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constructor in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.operators:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} operator in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} operator in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.properties:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} member in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} member in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.signals:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} signal in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} signal in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.annotations:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} annotation in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} annotation in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.theme_items:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} theme item in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} theme item in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
                         elif target_name in class_def.constants:
                             print_warning(
-                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constant in {context_name}.',
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} constant in {context_name}. {code_warning_if_intended_string}',
                                 state,
                             )
 
@@ -1876,7 +1952,7 @@ def format_text_block(
                             for enum in class_def.enums.values():
                                 if target_name in enum.values:
                                     print_warning(
-                                        f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} enum value in {context_name}.',
+                                        f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} enum value in {context_name}. {code_warning_if_intended_string}',
                                         state,
                                     )
                                     break
@@ -1887,7 +1963,7 @@ def format_text_block(
                         for param_def in context_params:
                             if param_def.name == inside_code_text:
                                 print_warning(
-                                    f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the parameters in {context_name}.',
+                                    f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the parameters in {context_name}. {code_warning_if_intended_string}',
                                     state,
                                 )
                                 break

@@ -344,15 +344,29 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 	}
 }
 
-void ShaderGlobalsEditor::_variable_added() {
-	String var = variable_name->get_text().strip_edges();
-	if (var.is_empty() || !var.is_valid_identifier()) {
-		EditorNode::get_singleton()->show_warning(TTR("Please specify a valid shader uniform identifier name."));
-		return;
+String ShaderGlobalsEditor::_check_new_variable_name(const String &p_variable_name) {
+	if (p_variable_name.is_empty()) {
+		return TTR("Name cannot be empty.");
 	}
 
+	if (!p_variable_name.is_valid_identifier()) {
+		return TTR("Name must be a valid identifier.");
+	}
+
+	return "";
+}
+
+void ShaderGlobalsEditor::_variable_name_text_changed(const String &p_variable_name) {
+	const String &warning = _check_new_variable_name(p_variable_name.strip_edges());
+	variable_add->set_tooltip_text(warning);
+	variable_add->set_disabled(!warning.is_empty());
+}
+
+void ShaderGlobalsEditor::_variable_added() {
+	String var = variable_name->get_text().strip_edges();
+
 	if (RenderingServer::get_singleton()->global_shader_parameter_get(var).get_type() != Variant::NIL) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Global shader parameter '%s' already exists'"), var));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Global shader parameter '%s' already exists."), var));
 		return;
 	}
 
@@ -416,6 +430,10 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			variable_add->set_icon(get_editor_theme_icon(SNAME("Add")));
+		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			inspector->edit(nullptr);
 		} break;
@@ -431,6 +449,9 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	add_menu_hb->add_child(memnew(Label(TTR("Name:"))));
 	variable_name = memnew(LineEdit);
 	variable_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	variable_name->set_clear_button_enabled(true);
+	variable_name->connect("text_changed", callable_mp(this, &ShaderGlobalsEditor::_variable_name_text_changed));
+
 	add_menu_hb->add_child(variable_name);
 
 	add_menu_hb->add_child(memnew(Label(TTR("Type:"))));
@@ -443,6 +464,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	}
 
 	variable_add = memnew(Button(TTR("Add")));
+	variable_add->set_disabled(true);
 	add_menu_hb->add_child(variable_add);
 	variable_add->connect("pressed", callable_mp(this, &ShaderGlobalsEditor::_variable_added));
 

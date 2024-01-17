@@ -120,6 +120,7 @@ namespace glslang {
         EatNonWritable,
         EatNonReadable,
         EatSubgroupUniformControlFlow,
+        EatExport,
     };
 
     class TIntermAggregate;

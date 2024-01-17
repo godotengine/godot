@@ -394,19 +394,22 @@ public:
 	void select_file(const String &p_file);
 
 	void set_display_mode(DisplayMode p_display_mode);
-	DisplayMode get_display_mode() { return display_mode; }
+	DisplayMode get_display_mode() const { return display_mode; }
 
 	void set_file_sort(FileSortOption p_file_sort);
-	FileSortOption get_file_sort() { return file_sort; }
+	FileSortOption get_file_sort() const { return file_sort; }
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
-	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
+	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; };
 
 	Tree *get_tree_control() { return tree; }
 
 	void add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	Control *create_tooltip_for_path(const String &p_path) const;
+
+	void save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
+	void load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 
 	FileSystemDock();
 	~FileSystemDock();

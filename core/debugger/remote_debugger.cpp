@@ -435,9 +435,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		messages.insert(Thread::get_caller_id(), List<Message>());
 	}
 
-	mutex.lock();
 	while (is_peer_connected()) {
-		mutex.unlock();
 		flush_output();
 
 		_poll_messages();

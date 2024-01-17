@@ -134,6 +134,9 @@ NOTE: HLSL row_major and column_major decorations are reversed
       SPIRV-Reflect reads the data as is and does not make any
       attempt to correct it to match what's in the source.
 
+      The Patch, PerVertex, and PerTask are used for Interface
+      variables that can have array
+
 */
 typedef enum SpvReflectDecorationFlagBits {
   SPV_REFLECT_DECORATION_NONE                   = 0x00000000,
@@ -147,6 +150,9 @@ typedef enum SpvReflectDecorationFlagBits {
   SPV_REFLECT_DECORATION_NON_WRITABLE           = 0x00000080,
   SPV_REFLECT_DECORATION_RELAXED_PRECISION      = 0x00000100,
   SPV_REFLECT_DECORATION_NON_READABLE           = 0x00000200,
+  SPV_REFLECT_DECORATION_PATCH                  = 0x00000400,
+  SPV_REFLECT_DECORATION_PER_VERTEX             = 0x00000800,
+  SPV_REFLECT_DECORATION_PER_TASK               = 0x00001000,
 } SpvReflectDecorationFlagBits;
 
 typedef uint32_t SpvReflectDecorationFlags;
@@ -477,6 +483,10 @@ typedef struct SpvReflectDescriptorSet {
   uint32_t                          binding_count;
   SpvReflectDescriptorBinding**     bindings;
 } SpvReflectDescriptorSet;
+
+typedef enum SpvReflectExecutionModeValue {
+  SPV_REFLECT_EXECUTION_MODE_SPEC_CONSTANT = 0xFFFFFFFF // specialization constant
+} SpvReflectExecutionModeValue;
 
 /*! @struct SpvReflectEntryPoint
 

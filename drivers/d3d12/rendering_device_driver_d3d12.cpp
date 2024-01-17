@@ -78,6 +78,17 @@ extern "C" {
 #undef UNUSED
 #endif
 
+#ifdef PIX_ENABLED
+#if defined(__GNUC__)
+#define _MSC_VER 1800
+#endif
+#define USE_PIX
+#include "WinPixEventRuntime/pix3.h"
+#if defined(__GNUC__)
+#undef _MSC_VER
+#endif
+#endif
+
 static const D3D12_RANGE VOID_RANGE = {};
 
 static const uint32_t ROOT_CONSTANT_SPACE = RDD::MAX_UNIFORM_SETS + 1;
