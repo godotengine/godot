@@ -3088,6 +3088,10 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
 	}
+	if (p_node->is_unique_name_in_owner() && p_node->get_owner() == p_base) {
+		String n = "%" + p_node->get_name();
+		r_options->push_back(n.quote());
+	}
 	String n = p_base->get_path_to(p_node);
 	r_options->push_back(n.quote());
 	for (int i = 0; i < p_node->get_child_count(); i++) {

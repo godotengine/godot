@@ -3197,6 +3197,11 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				List<String> opts;
 				p_owner->get_argument_options("get_node", 0, &opts);
 
+				bool for_unique_name = false;
+				if (completion_context.node != nullptr && completion_context.node->type == GDScriptParser::Node::GET_NODE && !static_cast<GDScriptParser::GetNodeNode *>(completion_context.node)->use_dollar) {
+					for_unique_name = true;
+				}
+
 				for (const String &E : opts) {
 					r_forced = true;
 					String opt = E.strip_edges();
@@ -3205,6 +3210,14 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						// or handle NodePaths which are valid identifiers and don't need quotes.
 						opt = opt.unquote();
 					}
+
+					if (for_unique_name) {
+						if (!opt.begins_with("%")) {
+							continue;
+						}
+						opt = opt.substr(1);
+					}
+
 					// The path needs quotes if it's not a valid identifier (with an exception
 					// for "/" as path separator, which also doesn't require quotes).
 					if (!opt.replace("/", "_").is_valid_identifier()) {
@@ -3216,11 +3229,13 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					options.insert(option.display, option);
 				}
 
-				// Get autoloads.
-				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
-					String path = "/root/" + E.key;
-					ScriptLanguage::CodeCompletionOption option(path.quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH);
-					options.insert(option.display, option);
+				if (!for_unique_name) {
+					// Get autoloads.
+					for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
+						String path = "/root/" + E.key;
+						ScriptLanguage::CodeCompletionOption option(path.quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH);
+						options.insert(option.display, option);
+					}
 				}
 			}
 		} break;
