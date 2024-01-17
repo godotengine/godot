@@ -3394,8 +3394,10 @@ Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, 
 				uses_depth = true;
 			}
 
-			if (p_initial_color_action == INITIAL_ACTION_CLEAR || p_initial_depth_action == INITIAL_ACTION_CLEAR)
+			if (p_initial_color_action == INITIAL_ACTION_CLEAR || p_initial_color_action == INITIAL_ACTION_CLEAR_REGION || p_initial_color_action == INITIAL_ACTION_CLEAR_REGION_CONTINUE ||
+					p_initial_depth_action == INITIAL_ACTION_CLEAR || p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION || p_initial_depth_action == INITIAL_ACTION_CLEAR_REGION_CONTINUE) {
 				clear_values.push_back(clear_value);
+			}
 		}
 	}
 

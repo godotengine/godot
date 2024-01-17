@@ -1381,14 +1381,16 @@ void RenderForwardMobile::_render_shadow_process() {
 void RenderForwardMobile::_render_shadow_end() {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
 
+	// Render all cascades in the same pass since they render on different regions
 	RID framebuffer = scene_state.shadow_passes[0].framebuffer;
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 	Size2 fb_size = RD::get_singleton()->framebuffer_get_size(framebuffer);
-
-	// Render all cascades in the same pass since they render on different regions
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, Rect2(0, 0, fb_size.x, fb_size.y));
-	{
-		for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
+
+	// 4 = number of shadowmap cascades
+	for (uint32_t i = 0; i<scene_state.shadow_passes.size() / 4; i++) {
+		for (uint32_t j = i * 4; j < i * 4 + 4; j++) {
+			SceneState::ShadowPass shadow_pass = scene_state.shadow_passes[j];
 			// Change viewport and scissors for the next cascade
 			RD::get_singleton()->draw_list_set_viewport(draw_list, shadow_pass.rect);
 			RD::get_singleton()->draw_list_enable_scissor(draw_list, Rect2(0, 0, shadow_pass.rect.size.x, shadow_pass.rect.size.y));
@@ -1398,6 +1400,7 @@ void RenderForwardMobile::_render_shadow_end() {
 			_render_list(draw_list, fb_format, &render_list_parameters, 0, render_list_parameters.element_count);
 		}
 	}
+
 	RD::get_singleton()->draw_list_end();
 
 	RD::get_singleton()->draw_command_end_label();
