@@ -720,10 +720,21 @@ void CSharpLanguage::reload_all_scripts() {
 #endif
 }
 
-void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
-	(void)p_script; // UNUSED
-
+void CSharpLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
 	CRASH_COND(!Engine::get_singleton()->is_editor_hint());
+
+	bool has_csharp_script = false;
+	for (int i = 0; i < p_scripts.size(); ++i) {
+		Ref<CSharpScript> cs_script = p_scripts[i];
+		if (cs_script.is_valid()) {
+			has_csharp_script = true;
+			break;
+		}
+	}
+
+	if (!has_csharp_script) {
+		return;
+	}
 
 #ifdef TOOLS_ENABLED
 	get_godotsharp_editor()->get_node(NodePath("HotReloadAssemblyWatcher"))->call("RestartTimer");
@@ -734,6 +745,12 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 		reload_assemblies(p_soft_reload);
 	}
 #endif
+}
+
+void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
+	Array scripts;
+	scripts.push_back(p_script);
+	reload_scripts(scripts, p_soft_reload);
 }
 
 #ifdef GD_MONO_HOT_RELOAD
@@ -1074,7 +1091,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				}
 				// The script instance could not be instantiated or wasn't in the list of placeholders to replace.
 				obj->set_script(scr);
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 				// If we reached here, the instantiated script must be a placeholder.
 				CRASH_COND(!obj->get_script_instance()->is_placeholder());
 #endif
@@ -2310,7 +2327,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 
 	p_script->_update_exports();
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	// If the EditorFileSystem singleton is available, update the file;
 	// otherwise, the file will be updated when the singleton becomes available.
 	EditorFileSystem *efs = EditorFileSystem::get_singleton();
@@ -2666,7 +2683,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 		_update_exports();
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 		// If the EditorFileSystem singleton is available, update the file;
 		// otherwise, the file will be updated when the singleton becomes available.
 		EditorFileSystem *efs = EditorFileSystem::get_singleton();

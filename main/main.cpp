@@ -477,7 +477,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --profiling                       Enable profiling in the script debugger.\n");
 	OS::get_singleton()->print("  --gpu-profile                     Show a GPU profile of the tasks that took the most time during frame rendering.\n");
 	OS::get_singleton()->print("  --gpu-validation                  Enable graphics API validation layers for debugging.\n");
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	OS::get_singleton()->print("  --gpu-abort                       Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n");
 #endif
 	OS::get_singleton()->print("  --generate-spirv-debug-info       Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.\n");
@@ -1617,12 +1617,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	// Initialize WorkerThreadPool.
-	if (editor || project_manager) {
-		WorkerThreadPool::get_singleton()->init(-1, 0.75);
-	} else {
-		int worker_threads = GLOBAL_GET("threading/worker_pool/max_threads");
-		float low_priority_ratio = GLOBAL_GET("threading/worker_pool/low_priority_thread_ratio");
-		WorkerThreadPool::get_singleton()->init(worker_threads, low_priority_ratio);
+	{
+#ifdef THREADS_ENABLED
+		if (editor || project_manager) {
+			WorkerThreadPool::get_singleton()->init(-1, 0.75);
+		} else {
+			int worker_threads = GLOBAL_GET("threading/worker_pool/max_threads");
+			float low_priority_ratio = GLOBAL_GET("threading/worker_pool/low_priority_thread_ratio");
+			WorkerThreadPool::get_singleton()->init(worker_threads, low_priority_ratio);
+		}
+#else
+		WorkerThreadPool::get_singleton()->init(0, 0);
+#endif
 	}
 
 #ifdef TOOLS_ENABLED

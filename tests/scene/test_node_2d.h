@@ -32,6 +32,7 @@
 #define TEST_NODE_2D_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/main/window.h"
 
 #include "tests/test_macros.h"
 
@@ -55,6 +56,33 @@ TEST_CASE("[SceneTree][Node2D]") {
 
 		memdelete(test_child);
 		memdelete(test_node);
+	}
+
+	SUBCASE("[Node2D][Global Transform] Global Transform should be correct after inserting node from detached tree into SceneTree.") { // GH-86841
+		Node2D *main = memnew(Node2D);
+		Node2D *outer = memnew(Node2D);
+		Node2D *inner = memnew(Node2D);
+		SceneTree::get_singleton()->get_root()->add_child(main);
+
+		main->set_position(Point2(100, 100));
+		outer->set_position(Point2(10, 0));
+		inner->set_position(Point2(0, 10));
+
+		outer->add_child(inner);
+		// `inner` is still detached.
+		CHECK_EQ(inner->get_global_position(), Point2(10, 10));
+
+		main->add_child(outer);
+		// `inner` is in scene tree.
+		CHECK_EQ(inner->get_global_position(), Point2(110, 110));
+
+		main->remove_child(outer);
+		// `inner` is detached again.
+		CHECK_EQ(inner->get_global_position(), Point2(10, 10));
+
+		memdelete(inner);
+		memdelete(outer);
+		memdelete(main);
 	}
 }
 

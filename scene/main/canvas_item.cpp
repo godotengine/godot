@@ -314,6 +314,7 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
+			_set_global_invalid(true);
 			_enter_canvas();
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.

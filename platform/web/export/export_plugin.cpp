@@ -169,6 +169,13 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	replaces["$GODOT_PROJECT_NAME"] = GLOBAL_GET("application/config/name");
 	replaces["$GODOT_HEAD_INCLUDE"] = head_include + custom_head_include;
 	replaces["$GODOT_CONFIG"] = str_config;
+
+	if (p_preset->get("variant/thread_support")) {
+		replaces["$GODOT_THREADS_ENABLED"] = "true";
+	} else {
+		replaces["$GODOT_THREADS_ENABLED"] = "false";
+	}
+
 	_replace_strings(replaces, p_html);
 }
 
@@ -216,9 +223,9 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	const String name = p_path.get_file().get_basename();
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
 	HashMap<String, String> replaces;
-	replaces["@GODOT_VERSION@"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
-	replaces["@GODOT_NAME@"] = proj_name.substr(0, 16);
-	replaces["@GODOT_OFFLINE_PAGE@"] = name + ".offline.html";
+	replaces["___GODOT_VERSION___"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
+	replaces["___GODOT_NAME___"] = proj_name.substr(0, 16);
+	replaces["___GODOT_OFFLINE_PAGE___"] = name + ".offline.html";
 
 	// Files cached during worker install.
 	Array cache_files;
@@ -231,7 +238,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	}
 	cache_files.push_back(name + ".worker.js");
 	cache_files.push_back(name + ".audio.worklet.js");
-	replaces["@GODOT_CACHE@"] = Variant(cache_files).to_json_string();
+	replaces["___GODOT_CACHE___"] = Variant(cache_files).to_json_string();
 
 	// Heavy files that are cached on demand.
 	Array opt_cache_files;
@@ -243,7 +250,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 			opt_cache_files.push_back(p_shared_objects[i].path.get_file());
 		}
 	}
-	replaces["@GODOT_OPT_CACHE@"] = Variant(opt_cache_files).to_json_string();
+	replaces["___GODOT_OPT_CACHE___"] = Variant(opt_cache_files).to_json_string();
 
 	const String sw_path = dir.path_join(name + ".service.worker.js");
 	Vector<uint8_t> sw;
@@ -335,6 +342,7 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/extensions_support"), false)); // Export type.
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/thread_support"), true)); // Thread support (i.e. run with or without COEP/COOP headers).
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 
@@ -377,10 +385,11 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 	String err;
 	bool valid = false;
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
+	bool thread_support = (bool)p_preset->get("variant/thread_support");
 
 	// Look for export templates (first official, and if defined custom templates).
-	bool dvalid = exists_export_template(_get_template_name(extensions, true), &err);
-	bool rvalid = exists_export_template(_get_template_name(extensions, false), &err);
+	bool dvalid = exists_export_template(_get_template_name(extensions, thread_support, true), &err);
+	bool rvalid = exists_export_template(_get_template_name(extensions, thread_support, false), &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -454,7 +463,8 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	template_path = template_path.strip_edges();
 	if (template_path.is_empty()) {
 		bool extensions = (bool)p_preset->get("variant/extensions_support");
-		template_path = find_export_template(_get_template_name(extensions, p_debug));
+		bool thread_support = (bool)p_preset->get("variant/thread_support");
+		template_path = find_export_template(_get_template_name(extensions, thread_support, p_debug));
 	}
 
 	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {

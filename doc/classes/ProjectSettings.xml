@@ -2551,6 +2551,7 @@
 			[b]Note:[/b] This setting is only effective when using the Compatibility rendering method, not Forward+ and Mobile.
 		</member>
 		<member name="rendering/limits/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
+			The minimum number of instances that must be present in a scene to enable culling computations on multiple threads. If a scene has fewer instances than this number, culling is done on a single thread.
 		</member>
 		<member name="rendering/limits/spatial_indexer/update_iterations_per_frame" type="int" setter="" getter="" default="10">
 		</member>

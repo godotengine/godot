@@ -40,7 +40,7 @@
 EtcpakType _determine_etc_type(Image::UsedChannels p_channels) {
 	switch (p_channels) {
 		case Image::USED_CHANNELS_L:
-			return EtcpakType::ETCPAK_TYPE_ETC1;
+			return EtcpakType::ETCPAK_TYPE_ETC2;
 		case Image::USED_CHANNELS_LA:
 			return EtcpakType::ETCPAK_TYPE_ETC2_ALPHA;
 		case Image::USED_CHANNELS_R:

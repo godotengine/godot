@@ -2320,14 +2320,13 @@ struct GDScriptDepSort {
 void GDScriptLanguage::reload_all_scripts() {
 #ifdef DEBUG_ENABLED
 	print_verbose("GDScript: Reloading all scripts");
-	List<Ref<GDScript>> scripts;
+	Array scripts;
 	{
 		MutexLock lock(this->mutex);
 
 		SelfList<GDScript> *elem = script_list.first();
 		while (elem) {
-			// Scripts will reload all subclasses, so only reload root scripts.
-			if (elem->self()->is_root_script() && elem->self()->get_path().is_resource_file()) {
+			if (elem->self()->get_path().is_resource_file()) {
 				print_verbose("GDScript: Found: " + elem->self()->get_path());
 				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
 			}
@@ -2348,19 +2347,11 @@ void GDScriptLanguage::reload_all_scripts() {
 #endif
 	}
 
-	//as scripts are going to be reloaded, must proceed without locking here
-
-	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
-
-	for (Ref<GDScript> &scr : scripts) {
-		print_verbose("GDScript: Reloading: " + scr->get_path());
-		scr->load_source_code(scr->get_path());
-		scr->reload(true);
-	}
+	reload_scripts(scripts, true);
 #endif
 }
 
-void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
+void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
 #ifdef DEBUG_ENABLED
 
 	List<Ref<GDScript>> scripts;
@@ -2386,7 +2377,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
 
 	for (Ref<GDScript> &scr : scripts) {
-		bool reload = scr == p_script || to_reload.has(scr->get_base());
+		bool reload = p_scripts.has(scr) || to_reload.has(scr->get_base());
 
 		if (!reload) {
 			continue;
@@ -2409,7 +2400,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 				}
 			}
 
-//same thing for placeholders
+			//same thing for placeholders
 #ifdef TOOLS_ENABLED
 
 			while (scr->placeholders.size()) {
@@ -2437,6 +2428,8 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 	for (KeyValue<Ref<GDScript>, HashMap<ObjectID, List<Pair<StringName, Variant>>>> &E : to_reload) {
 		Ref<GDScript> scr = E.key;
+		print_verbose("GDScript: Reloading: " + scr->get_path());
+		scr->load_source_code(scr->get_path());
 		scr->reload(p_soft_reload);
 
 		//restore state if saved
@@ -2482,6 +2475,12 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 	}
 
 #endif
+}
+
+void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
+	Array scripts;
+	scripts.push_back(p_script);
+	reload_scripts(scripts, p_soft_reload);
 }
 
 void GDScriptLanguage::frame() {

@@ -3,14 +3,14 @@
 // that they need an Internet connection to run the project if desired.
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
-const CACHE_VERSION = "@GODOT_VERSION@";
-const CACHE_PREFIX = "@GODOT_NAME@-sw-cache-";
+const CACHE_VERSION = "___GODOT_VERSION___";
+const CACHE_PREFIX = "___GODOT_NAME___-sw-cache-";
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
-const OFFLINE_URL = "@GODOT_OFFLINE_PAGE@";
+const OFFLINE_URL = "___GODOT_OFFLINE_PAGE___";
 // Files that will be cached on load.
-const CACHED_FILES = @GODOT_CACHE@;
+const CACHED_FILES = ___GODOT_CACHE___;
 // Files that we might not want the user to preload, and will only be cached on first load.
-const CACHABLE_FILES = @GODOT_OPT_CACHE@;
+const CACHABLE_FILES = ___GODOT_OPT_CACHE___;
 const FULL_CACHE = CACHED_FILES.concat(CACHABLE_FILES);
 
 self.addEventListener("install", (event) => {
@@ -22,7 +22,7 @@ self.addEventListener("activate", (event) => {
 		function (keys) {
 			// Remove old caches.
 			return Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key != CACHE_NAME).map(key => caches.delete(key)));
-		}).then(function() {
+		}).then(function () {
 			// Enable navigation preload if available.
 			return ("navigationPreload" in self.registration) ? self.registration.navigationPreload.enable() : Promise.resolve();
 		})

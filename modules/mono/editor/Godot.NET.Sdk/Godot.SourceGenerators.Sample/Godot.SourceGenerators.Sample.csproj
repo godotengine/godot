@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>11</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>

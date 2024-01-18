@@ -865,18 +865,7 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 
 struct FileSystemDock::FileInfoTypeComparator {
 	bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
-		// Uses the extension, then the icon name to distinguish file types.
-		String icon_path_a = "";
-		String icon_path_b = "";
-		Ref<Texture2D> icon_a = EditorNode::get_singleton()->get_class_icon(p_a.type);
-		if (icon_a.is_valid()) {
-			icon_path_a = icon_a->get_name();
-		}
-		Ref<Texture2D> icon_b = EditorNode::get_singleton()->get_class_icon(p_b.type);
-		if (icon_b.is_valid()) {
-			icon_path_b = icon_b->get_name();
-		}
-		return NaturalNoCaseComparator()(p_a.name.get_extension() + icon_path_a + p_a.name.get_basename(), p_b.name.get_extension() + icon_path_b + p_b.name.get_basename());
+		return NaturalNoCaseComparator()(p_a.name.get_extension() + p_a.type + p_a.name.get_basename(), p_b.name.get_extension() + p_b.type + p_b.name.get_basename());
 	}
 };
 

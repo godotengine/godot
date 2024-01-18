@@ -824,7 +824,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 			scr->set_last_modified_time(rel_scr->get_last_modified_time());
 			scr->update_exports();
 
-			trigger_live_script_reload();
+			trigger_live_script_reload(scr->get_path());
 		}
 	}
 }

@@ -593,9 +593,15 @@ void EditorDebuggerNode::set_breakpoints(const String &p_path, Array p_lines) {
 	}
 }
 
-void EditorDebuggerNode::reload_scripts() {
+void EditorDebuggerNode::reload_all_scripts() {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		dbg->reload_scripts();
+		dbg->reload_all_scripts();
+	});
+}
+
+void EditorDebuggerNode::reload_scripts(const Vector<String> &p_script_paths) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->reload_scripts(p_script_paths);
 	});
 }
 

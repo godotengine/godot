@@ -49,10 +49,14 @@ void OpenXRHand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skeleton_rig", "skeleton_rig"), &OpenXRHand::set_skeleton_rig);
 	ClassDB::bind_method(D_METHOD("get_skeleton_rig"), &OpenXRHand::get_skeleton_rig);
 
+	ClassDB::bind_method(D_METHOD("set_bone_update", "bone_update"), &OpenXRHand::set_bone_update);
+	ClassDB::bind_method(D_METHOD("get_bone_update"), &OpenXRHand::get_bone_update);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand", PROPERTY_HINT_ENUM, "Left,Right"), "set_hand", "get_hand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_range", PROPERTY_HINT_ENUM, "Unobstructed,Conform to controller"), "set_motion_range", "get_motion_range");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "hand_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_hand_skeleton", "get_hand_skeleton");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton_rig", PROPERTY_HINT_ENUM, "OpenXR,Humanoid"), "set_skeleton_rig", "get_skeleton_rig");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -65,6 +69,10 @@ void OpenXRHand::_bind_methods() {
 	BIND_ENUM_CONSTANT(SKELETON_RIG_OPENXR);
 	BIND_ENUM_CONSTANT(SKELETON_RIG_HUMANOID);
 	BIND_ENUM_CONSTANT(SKELETON_RIG_MAX);
+
+	BIND_ENUM_CONSTANT(BONE_UPDATE_FULL);
+	BIND_ENUM_CONSTANT(BONE_UPDATE_ROTATION_ONLY);
+	BIND_ENUM_CONSTANT(BONE_UPDATE_MAX);
 }
 
 OpenXRHand::OpenXRHand() {
@@ -132,6 +140,16 @@ void OpenXRHand::set_skeleton_rig(SkeletonRig p_skeleton_rig) {
 
 OpenXRHand::SkeletonRig OpenXRHand::get_skeleton_rig() const {
 	return skeleton_rig;
+}
+
+void OpenXRHand::set_bone_update(BoneUpdate p_bone_update) {
+	ERR_FAIL_INDEX(p_bone_update, BONE_UPDATE_MAX);
+
+	bone_update = p_bone_update;
+}
+
+OpenXRHand::BoneUpdate OpenXRHand::get_bone_update() const {
+	return bone_update;
 }
 
 Skeleton3D *OpenXRHand::get_skeleton() {
@@ -346,8 +364,12 @@ void OpenXRHand::_update_skeleton() {
 				const Quaternion q = inv_quaternions[parent_joint] * quaternions[joint];
 				const Vector3 p = inv_quaternions[parent_joint].xform(positions[joint] - positions[parent_joint]);
 
-				// and set our pose
-				skeleton->set_bone_pose_position(joints[joint].bone, p);
+				// Update the bone position if enabled by update mode.
+				if (bone_update == BONE_UPDATE_FULL) {
+					skeleton->set_bone_pose_position(joints[joint].bone, p);
+				}
+
+				// Always update the bone rotation.
 				skeleton->set_bone_pose_rotation(joints[joint].bone, q);
 			}
 

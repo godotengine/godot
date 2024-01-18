@@ -94,6 +94,7 @@ void GLTFBufferView::set_indices(bool p_indices) {
 }
 
 Vector<uint8_t> GLTFBufferView::load_buffer_view_data(const Ref<GLTFState> p_state) const {
+	ERR_FAIL_COND_V(p_state.is_null(), Vector<uint8_t>());
 	ERR_FAIL_COND_V_MSG(byte_stride > 0, Vector<uint8_t>(), "Buffer views with byte stride are not yet supported by this method.");
 	const TypedArray<Vector<uint8_t>> &buffers = p_state->get_buffers();
 	ERR_FAIL_INDEX_V(buffer, buffers.size(), Vector<uint8_t>());

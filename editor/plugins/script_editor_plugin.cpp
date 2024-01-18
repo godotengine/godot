@@ -1001,7 +1001,10 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 	}
 
 	_update_script_names();
-	trigger_live_script_reload();
+	Ref<Script> scr = p_res;
+	if (scr.is_valid()) {
+		trigger_live_script_reload(scr->get_path());
+	}
 }
 
 void ScriptEditor::_scene_saved_callback(const String &p_path) {
@@ -1029,16 +1032,33 @@ void ScriptEditor::_scene_saved_callback(const String &p_path) {
 	}
 }
 
-void ScriptEditor::trigger_live_script_reload() {
+void ScriptEditor::trigger_live_script_reload(const String &p_script_path) {
+	if (!script_paths_to_reload.has(p_script_path)) {
+		script_paths_to_reload.append(p_script_path);
+	}
 	if (!pending_auto_reload && auto_reload_running_scripts) {
 		callable_mp(this, &ScriptEditor::_live_auto_reload_running_scripts).call_deferred();
 		pending_auto_reload = true;
 	}
 }
 
+void ScriptEditor::trigger_live_script_reload_all() {
+	if (!pending_auto_reload && auto_reload_running_scripts) {
+		call_deferred(SNAME("_live_auto_reload_running_scripts"));
+		pending_auto_reload = true;
+		reload_all_scripts = true;
+	}
+}
+
 void ScriptEditor::_live_auto_reload_running_scripts() {
 	pending_auto_reload = false;
-	EditorDebuggerNode::get_singleton()->reload_scripts();
+	if (reload_all_scripts) {
+		EditorDebuggerNode::get_singleton()->reload_all_scripts();
+	} else {
+		EditorDebuggerNode::get_singleton()->reload_scripts(script_paths_to_reload);
+	}
+	reload_all_scripts = false;
+	script_paths_to_reload.clear();
 }
 
 bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {

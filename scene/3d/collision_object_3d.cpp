@@ -624,6 +624,7 @@ void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3
 	total_subshapes++;
 
 	_update_shape_data(p_owner);
+	update_gizmos();
 }
 
 int CollisionObject3D::shape_owner_get_shape_count(uint32_t p_owner) const {
@@ -687,6 +688,8 @@ void CollisionObject3D::shape_owner_clear_shapes(uint32_t p_owner) {
 	while (shape_owner_get_shape_count(p_owner) > 0) {
 		shape_owner_remove_shape(p_owner, 0);
 	}
+
+	update_gizmos();
 }
 
 uint32_t CollisionObject3D::shape_find_owner(int p_shape_index) const {

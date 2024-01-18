@@ -3998,6 +3998,7 @@ void SceneTreeDock::_list_all_subresources(PopupMenu *p_menu) {
 			}
 
 			p_menu->add_item(display_text);
+			p_menu->set_item_tooltip(-1, pair.first->get_path());
 			p_menu->set_item_metadata(-1, pair.first->get_instance_id());
 		}
 	}

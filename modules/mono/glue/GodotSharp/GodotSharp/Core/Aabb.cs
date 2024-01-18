@@ -98,11 +98,11 @@ namespace Godot
             Vector3 dstMax = with._position + with._size;
 
             return srcMin.X <= dstMin.X &&
-                   srcMax.X > dstMax.X &&
+                   srcMax.X >= dstMax.X &&
                    srcMin.Y <= dstMin.Y &&
-                   srcMax.Y > dstMax.Y &&
+                   srcMax.Y >= dstMax.Y &&
                    srcMin.Z <= dstMin.Z &&
-                   srcMax.Z > dstMax.Z;
+                   srcMax.Z >= dstMax.Z;
         }
 
         /// <summary>
