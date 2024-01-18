@@ -31,15 +31,16 @@
 #ifndef AUDIO_STREAM_PLAYER_3D_H
 #define AUDIO_STREAM_PLAYER_3D_H
 
-#include "core/os/mutex.h"
-#include "scene/3d/area_3d.h"
 #include "scene/3d/node_3d.h"
-#include "scene/3d/velocity_tracker_3d.h"
-#include "servers/audio/audio_filter_sw.h"
-#include "servers/audio/audio_stream.h"
-#include "servers/audio_server.h"
 
+class Area3D;
+struct AudioFrame;
+class AudioStream;
+class AudioStreamPlayback;
+class AudioStreamPlayerInternal;
 class Camera3D;
+class VelocityTracker3D;
+
 class AudioStreamPlayer3D : public Node3D {
 	GDCLASS(AudioStreamPlayer3D, Node3D);
 
@@ -64,23 +65,16 @@ private:
 
 	};
 
-	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
-	Ref<AudioStream> stream;
+	AudioStreamPlayerInternal *internal = nullptr;
 
-	SafeFlag active{ false };
 	SafeNumeric<float> setplay{ -1.0 };
 	Ref<AudioStreamPlayback> setplayback;
 
 	AttenuationModel attenuation_model = ATTENUATION_INVERSE_DISTANCE;
-	float volume_db = 0.0;
 	float unit_size = 10.0;
 	float max_db = 3.0;
-	float pitch_scale = 1.0;
 	// Internally used to take doppler tracking into account.
 	float actual_pitch_scale = 1.0;
-	bool autoplay = false;
-	StringName bus = SNAME("Master");
-	int max_polyphony = 1;
 
 	uint64_t last_mix_count = -1;
 	bool force_update_panning = false;
@@ -96,9 +90,6 @@ private:
 	StringName _get_actual_bus();
 	Area3D *_get_overriding_area();
 	Vector<AudioFrame> _update_panning();
-
-	void _on_bus_layout_changed();
-	void _on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name);
 
 	uint32_t area_mask = 1;
 
@@ -120,14 +111,6 @@ private:
 
 	float panning_strength = 1.0f;
 	float cached_global_panning_strength = 0.5f;
-
-	struct ParameterData {
-		StringName path;
-		Variant value;
-	};
-
-	HashMap<StringName, ParameterData> playback_parameters;
-	void _update_stream_parameters();
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
