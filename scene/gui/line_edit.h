@@ -208,6 +208,7 @@ public:
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
 	void set_text(String p_text);
+	void set_text_with_selection(const String &p_text); // Set text, while preserving selection.
 	String get_text() const;
 	void set_placeholder(String p_text);
 	String get_placeholder() const;
