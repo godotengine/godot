@@ -472,6 +472,9 @@ private:
 	String release_file_64;
 	String debug_file_32;
 	String debug_file_64;
+	// For Linux only.
+	Map<String, String> release_files;
+	Map<String, String> debug_files;
 
 	Set<String> extra_features;
 
@@ -507,6 +510,11 @@ public:
 	void set_release_32(const String &p_file);
 	void set_debug_64(const String &p_file);
 	void set_debug_32(const String &p_file);
+
+	// For Linux only.
+	void set_release_files(const String &p_arch, const String &p_file);
+	void set_debug_files(const String &p_arch, const String &p_file);
+	String get_preset_arch(const Ref<EditorExportPreset> &p_preset) const;
 
 	void add_platform_feature(const String &p_feature);
 	virtual void get_platform_features(List<String> *r_features);

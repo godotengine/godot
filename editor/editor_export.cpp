@@ -69,6 +69,17 @@ bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) 
 		}
 		return true;
 	}
+#ifndef DISABLE_DEPRECATED
+	// Compatibility with new `binary_format/architecture` for Linux in 3.6+.
+	else if (p_name == "binary_format/64_bits" && values.has("binary_format/architecture")) {
+		values["binary_format/architecture"] = (bool)p_value ? "x86_64" : "x86_32";
+		EditorExport::singleton->save_presets();
+		if (update_visibility["binary_format/architecture"]) {
+			property_list_changed_notify();
+		}
+		return true;
+	}
+#endif
 
 	return false;
 }
@@ -1629,10 +1640,20 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 		r_features->push_back("etc2");
 	}
 
-	if (p_preset->get("binary_format/64_bits")) {
-		r_features->push_back("64");
+	if (get_os_name() == "X11") {
+		const String &arch = get_preset_arch(p_preset);
+		r_features->push_back(arch);
+		if (arch == "x86_64" || arch == "arm64") {
+			r_features->push_back("64");
+		} else {
+			r_features->push_back("32");
+		}
 	} else {
-		r_features->push_back("32");
+		if (p_preset->get("binary_format/64_bits")) {
+			r_features->push_back("64");
+		} else {
+			r_features->push_back("32");
+		}
 	}
 }
 
@@ -1641,7 +1662,15 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, ext_filter), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, ext_filter), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/64_bits"), true));
+	// Linux support to export to ARM architectures was added in 3.6.
+	// Given how late this arrived, we didn't refactor the whole export preset
+	// interface to support more per-platform flexibility, like done in 4.0,
+	// so instead we hack the few needed changes here with `get_os_name()` checks.
+	if (get_os_name() == "X11") {
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64,arm32"), "x86_64"));
+	} else {
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/64_bits"), true));
+	}
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/bptc"), false));
@@ -1665,12 +1694,20 @@ Ref<Texture> EditorExportPlatformPC::get_logo() const {
 bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 	String err;
 	bool valid = false;
+	bool dvalid = false;
+	bool rvalid = false;
 
 	// Look for export templates (first official, and if defined custom templates).
 
-	bool use64 = p_preset->get("binary_format/64_bits");
-	bool dvalid = exists_export_template(use64 ? debug_file_64 : debug_file_32, &err);
-	bool rvalid = exists_export_template(use64 ? release_file_64 : release_file_32, &err);
+	if (get_os_name() == "X11") {
+		const String &arch = get_preset_arch(p_preset);
+		dvalid = exists_export_template(debug_files[arch], &err);
+		rvalid = exists_export_template(release_files[arch], &err);
+	} else {
+		bool use64 = p_preset->get("binary_format/64_bits");
+		dvalid = exists_export_template(use64 ? debug_file_64 : debug_file_32, &err);
+		rvalid = exists_export_template(use64 ? release_file_64 : release_file_32, &err);
+	}
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -1722,9 +1759,16 @@ bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, S
 List<String> EditorExportPlatformPC::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
 	for (Map<String, String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (p_preset->get(E->key())) {
-			list.push_back(extensions[E->key()]);
-			return list;
+		if (get_os_name() == "X11") {
+			if (get_preset_arch(p_preset) == E->key()) {
+				list.push_back(extensions[E->key()]);
+				return list;
+			}
+		} else {
+			if (p_preset->get(E->key())) {
+				list.push_back(extensions[E->key()]);
+				return list;
+			}
 		}
 	}
 
@@ -1764,17 +1808,25 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	template_path = template_path.strip_edges();
 
 	if (template_path == String()) {
-		if (p_preset->get("binary_format/64_bits")) {
+		if (get_os_name() == "X11") {
 			if (p_debug) {
-				template_path = find_export_template(debug_file_64);
+				template_path = find_export_template(debug_files[get_preset_arch(p_preset)]);
 			} else {
-				template_path = find_export_template(release_file_64);
+				template_path = find_export_template(release_files[get_preset_arch(p_preset)]);
 			}
 		} else {
-			if (p_debug) {
-				template_path = find_export_template(debug_file_32);
+			if (p_preset->get("binary_format/64_bits")) {
+				if (p_debug) {
+					template_path = find_export_template(debug_file_64);
+				} else {
+					template_path = find_export_template(release_file_64);
+				}
 			} else {
-				template_path = find_export_template(release_file_32);
+				if (p_debug) {
+					template_path = find_export_template(debug_file_32);
+				} else {
+					template_path = find_export_template(release_file_32);
+				}
 			}
 		}
 	}
@@ -1808,9 +1860,18 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 	int64_t embedded_size;
 	Error err = save_pack(p_preset, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
-		if (embedded_size >= 0x100000000 && !p_preset->get("binary_format/64_bits")) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
-			return ERR_INVALID_PARAMETER;
+		if (embedded_size >= 0x100000000) {
+			bool use64;
+			if (get_os_name() == "X11") {
+				const String &arch = get_preset_arch(p_preset);
+				use64 = (arch == "x86_64" || arch == "arm64");
+			} else {
+				use64 = p_preset->get("binary_format/64_bits");
+			}
+			if (!use64) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
+				return ERR_INVALID_PARAMETER;
+			}
 		}
 
 		err = fixup_embedded_pck(p_path, embedded_pos, embedded_size);
@@ -1857,11 +1918,32 @@ void EditorExportPlatformPC::set_release_64(const String &p_file) {
 void EditorExportPlatformPC::set_release_32(const String &p_file) {
 	release_file_32 = p_file;
 }
+
 void EditorExportPlatformPC::set_debug_64(const String &p_file) {
 	debug_file_64 = p_file;
 }
+
 void EditorExportPlatformPC::set_debug_32(const String &p_file) {
 	debug_file_32 = p_file;
+}
+
+// For Linux only.
+void EditorExportPlatformPC::set_release_files(const String &p_arch, const String &p_file) {
+	release_files[p_arch] = p_file;
+}
+
+void EditorExportPlatformPC::set_debug_files(const String &p_arch, const String &p_file) {
+	debug_files[p_arch] = p_file;
+}
+
+String EditorExportPlatformPC::get_preset_arch(const Ref<EditorExportPreset> &p_preset) const {
+	String arch = p_preset->get("binary_format/architecture");
+	if (arch != "x86_64" && arch != "x86_32" && arch != "arm64" && arch != "arm32") {
+		ERR_PRINT(vformat("Invalid value \"%s\" for \"binary_format/architecture\" in export preset \"%s\". Defaulting to \"x86_64\".",
+				arch, p_preset->get_name()));
+		arch = "x86_64";
+	}
+	return arch;
 }
 
 void EditorExportPlatformPC::add_platform_feature(const String &p_feature) {
