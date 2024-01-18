@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
+#include "editor/themes/editor_theme_manager.h"
 
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
@@ -790,7 +791,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const String text_edit_color_theme = EDITOR_GET("text_editor/theme/color_theme");
 	const bool godot_2_theme = text_edit_color_theme == "Godot 2";
 
-	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {
+	if (godot_2_theme || EditorThemeManager::is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
 		global_function_color = Color(0.64, 0.64, 0.96);
 		node_path_color = Color(0.72, 0.77, 0.49);

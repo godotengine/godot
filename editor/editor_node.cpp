@@ -808,7 +808,7 @@ void EditorNode::_update_update_spinner() {
 		// as this feature should only be enabled for troubleshooting purposes.
 		// Make the icon modulate color overbright because icons are not completely white on a dark theme.
 		// On a light theme, icons are dark, so we need to modulate them with an even brighter color.
-		const bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
+		const bool dark_theme = EditorThemeManager::is_dark_theme();
 		update_spinner->set_self_modulate(theme->get_color(SNAME("error_color"), EditorStringName(Editor)) * (dark_theme ? Color(1.1, 1.1, 1.1) : Color(4.25, 4.25, 4.25)));
 	} else {
 		update_spinner->set_tooltip_text(TTR("Spins when the editor window redraws."));

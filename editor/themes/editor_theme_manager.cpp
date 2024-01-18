@@ -45,7 +45,81 @@
 #include "scene/resources/style_box_texture.h"
 #include "scene/resources/texture.h"
 
-// Helper methods.
+// Theme configuration.
+
+uint32_t EditorThemeManager::ThemeConfiguration::hash() {
+	uint32_t hash = hash_murmur3_one_float(EDSCALE);
+
+	// Basic properties.
+
+	hash = hash_murmur3_one_32(preset.hash(), hash);
+	hash = hash_murmur3_one_32(spacing_preset.hash(), hash);
+
+	hash = hash_murmur3_one_32(base_color.to_rgba32(), hash);
+	hash = hash_murmur3_one_32(accent_color.to_rgba32(), hash);
+	hash = hash_murmur3_one_float(contrast, hash);
+	hash = hash_murmur3_one_float(icon_saturation, hash);
+
+	// Extra properties.
+
+	hash = hash_murmur3_one_32(base_spacing, hash);
+	hash = hash_murmur3_one_32(extra_spacing, hash);
+	hash = hash_murmur3_one_32(border_width, hash);
+	hash = hash_murmur3_one_32(corner_radius, hash);
+
+	hash = hash_murmur3_one_32((int)draw_extra_borders, hash);
+	hash = hash_murmur3_one_float(relationship_line_opacity, hash);
+	hash = hash_murmur3_one_32(thumb_size, hash);
+	hash = hash_murmur3_one_32(class_icon_size, hash);
+	hash = hash_murmur3_one_32((int)increase_scrollbar_touch_area, hash);
+	hash = hash_murmur3_one_float(gizmo_handle_scale, hash);
+	hash = hash_murmur3_one_32(color_picker_button_height, hash);
+	hash = hash_murmur3_one_float(subresource_hue_tint, hash);
+
+	hash = hash_murmur3_one_float(default_contrast, hash);
+
+	// Generated properties.
+
+	hash = hash_murmur3_one_32((int)dark_theme, hash);
+
+	return hash;
+}
+
+uint32_t EditorThemeManager::ThemeConfiguration::hash_fonts() {
+	uint32_t hash = hash_murmur3_one_float(EDSCALE);
+
+	// TODO: Implement the hash based on what editor_register_fonts() uses.
+
+	return hash;
+}
+
+uint32_t EditorThemeManager::ThemeConfiguration::hash_icons() {
+	uint32_t hash = hash_murmur3_one_float(EDSCALE);
+
+	hash = hash_murmur3_one_32(accent_color.to_rgba32(), hash);
+	hash = hash_murmur3_one_float(icon_saturation, hash);
+
+	hash = hash_murmur3_one_32(thumb_size, hash);
+	hash = hash_murmur3_one_float(gizmo_handle_scale, hash);
+
+	hash = hash_murmur3_one_32((int)dark_theme, hash);
+
+	return hash;
+}
+
+// Benchmarks.
+
+int EditorThemeManager::benchmark_run = 0;
+
+String EditorThemeManager::get_benchmark_key() {
+	if (benchmark_run == 0) {
+		return "EditorTheme (Startup)";
+	}
+
+	return vformat("EditorTheme (Run %d)", benchmark_run);
+}
+
+// Generation helper methods.
 
 Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
@@ -86,73 +160,71 @@ Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, float p
 
 // Theme generation and population routines.
 
-Ref<Theme> EditorThemeManager::_create_base_theme(const Ref<Theme> &p_old_theme) {
-	OS::get_singleton()->benchmark_begin_measure("EditorTheme", "Create Base Theme");
+Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &p_old_theme) {
+	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Create Base Theme");
 
 	Ref<EditorTheme> theme = memnew(EditorTheme);
 	ThemeConfiguration config = _create_theme_config(theme);
+	theme->set_generated_hash(config.hash());
+	theme->set_generated_fonts_hash(config.hash_fonts());
+	theme->set_generated_icons_hash(config.hash_icons());
+
+	print_verbose(vformat("EditorTheme: Generating new theme for the config '%d'.", theme->get_generated_hash()));
+
 	_create_shared_styles(theme, config);
 
-	// FIXME: Make the comparison more robust and fix imprecision issues by hashing affecting values.
-	// TODO: Refactor the icons check into their respective file, and add a similar check for fonts.
+	// Register icons.
+	{
+		OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Register Icons");
 
-	// Register editor icons.
-	// If settings are comparable to the old theme, then just copy existing icons over.
-	// Otherwise, regenerate them. Also check if we need to regenerate "thumb" icons.
-	bool keep_old_icons = false;
-	bool regenerate_thumb_icons = true;
-	if (p_old_theme != nullptr) {
-		// We check editor scale, theme dark/light mode, icon saturation, and accent color.
+		// External functions, see editor_icons.cpp.
+		editor_configure_icons(config.dark_theme);
 
-		// That doesn't really work as expected, since theme constants are integers, and scales are floats.
-		// So this check will never work when changing between 100-199% values.
-		const float prev_scale = (float)p_old_theme->get_constant(SNAME("scale"), EditorStringName(Editor));
-		const bool prev_dark_theme = (bool)p_old_theme->get_constant(SNAME("dark_theme"), EditorStringName(Editor));
-		const Color prev_accent_color = p_old_theme->get_color(SNAME("accent_color"), EditorStringName(Editor));
-		const float prev_icon_saturation = p_old_theme->get_color(SNAME("icon_saturation"), EditorStringName(Editor)).r;
-		const float prev_gizmo_handle_scale = (float)p_old_theme->get_constant(SNAME("gizmo_handle_scale"), EditorStringName(Editor));
+		// If settings are comparable to the old theme, then just copy existing icons over.
+		// Otherwise, regenerate them.
+		bool keep_old_icons = (p_old_theme != nullptr && theme->get_generated_icons_hash() == p_old_theme->get_generated_icons_hash());
+		if (keep_old_icons) {
+			print_verbose("EditorTheme: Can keep old icons, copying.");
+			editor_copy_icons(theme, p_old_theme);
+		} else {
+			print_verbose("EditorTheme: Generating new icons.");
+			editor_register_icons(theme, config.dark_theme, config.icon_saturation, config.thumb_size, config.gizmo_handle_scale);
+		}
 
-		keep_old_icons = (Math::is_equal_approx(prev_scale, EDSCALE) &&
-				Math::is_equal_approx(prev_gizmo_handle_scale, config.gizmo_handle_scale) &&
-				prev_dark_theme == config.dark_theme &&
-				prev_accent_color == config.accent_color &&
-				prev_icon_saturation == config.icon_saturation);
-
-		const double prev_thumb_size = (double)p_old_theme->get_constant(SNAME("thumb_size"), EditorStringName(Editor));
-
-		regenerate_thumb_icons = !Math::is_equal_approx(prev_thumb_size, config.thumb_size);
+		OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Register Icons");
 	}
 
-	// External functions, see editor_icons.cpp.
-	editor_configure_icons(config.dark_theme);
-	if (keep_old_icons) {
-		editor_copy_icons(theme, p_old_theme);
-	} else {
-		editor_register_icons(theme, config.dark_theme, config.icon_saturation, config.thumb_size, false);
-	}
-	if (regenerate_thumb_icons) {
-		editor_register_icons(theme, config.dark_theme, config.icon_saturation, config.thumb_size, true);
+	// Register fonts.
+	{
+		OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Register Fonts");
+
+		// TODO: Check if existing font definitions from the old theme are usable and copy them.
+
+		// External function, see editor_fonts.cpp.
+		print_verbose("EditorTheme: Generating new fonts.");
+		editor_register_fonts(theme);
+
+		OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Register Fonts");
 	}
 
-	// External function, see editor_fonts.cpp.
-	editor_register_fonts(theme);
+	// TODO: Check if existing style definitions from the old theme are usable and copy them.
 
+	print_verbose("EditorTheme: Generating new styles.");
 	_populate_standard_styles(theme, config);
 	_populate_editor_styles(theme, config);
 	_populate_text_editor_styles(theme, config);
 
-	OS::get_singleton()->benchmark_end_measure("EditorTheme", "Create Base Theme");
+	OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Create Base Theme");
 	return theme;
 }
 
-EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(const Ref<Theme> &p_theme) {
+EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(const Ref<EditorTheme> &p_theme) {
 	ThemeConfiguration config;
 
 	// Basic properties.
 
 	config.preset = EDITOR_GET("interface/theme/preset");
 	config.spacing_preset = EDITOR_GET("interface/theme/spacing_preset");
-	config.dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 
 	config.base_color = EDITOR_GET("interface/theme/base_color");
 	config.accent_color = EDITOR_GET("interface/theme/accent_color");
@@ -174,6 +246,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	config.increase_scrollbar_touch_area = EDITOR_GET("interface/touchscreen/increase_scrollbar_touch_area");
 	config.gizmo_handle_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 	config.color_picker_button_height = 28 * EDSCALE;
+	config.subresource_hue_tint = EDITOR_GET("docks/property_editor/subresource_hue_tint");
 
 	config.default_contrast = 0.3; // Make sure to keep this in sync with the editor settings definition.
 
@@ -275,6 +348,8 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 	// Generated properties.
 
+	config.dark_theme = is_dark_theme();
+
 	config.base_margin = config.base_spacing;
 	config.increased_margin = config.base_spacing + config.extra_spacing;
 	config.separation_margin = (config.base_spacing + config.extra_spacing / 2) * EDSCALE;
@@ -292,7 +367,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	return config;
 }
 
-void EditorThemeManager::_create_shared_styles(const Ref<Theme> &p_theme, ThemeConfiguration &p_config) {
+void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
 	// Colors.
 	{
 		// Base colors.
@@ -556,7 +631,7 @@ void EditorThemeManager::_create_shared_styles(const Ref<Theme> &p_theme, ThemeC
 	}
 }
 
-void EditorThemeManager::_populate_standard_styles(const Ref<Theme> &p_theme, ThemeConfiguration &p_config) {
+void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
 	// Panels.
 	{
 		// Panel.
@@ -1508,7 +1583,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<Theme> &p_theme, Th
 	}
 }
 
-void EditorThemeManager::_populate_editor_styles(const Ref<Theme> &p_theme, ThemeConfiguration &p_config) {
+void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
 	// Project manager.
 	{
 		p_theme->set_stylebox("search_panel", "ProjectManager", p_config.tree_panel_style);
@@ -1789,7 +1864,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<Theme> &p_theme, Them
 
 			float hue_rotate = (i * 2 % 16) / 16.0;
 			si_base_color.set_hsv(Math::fmod(float(si_base_color.get_h() + hue_rotate), float(1.0)), si_base_color.get_s(), si_base_color.get_v());
-			si_base_color = p_config.accent_color.lerp(si_base_color, float(EDITOR_GET("docks/property_editor/subresource_hue_tint")));
+			si_base_color = p_config.accent_color.lerp(si_base_color, p_config.subresource_hue_tint);
 
 			// Sub-inspector background.
 			Ref<StyleBoxFlat> sub_inspector_bg = p_config.base_style->duplicate();
@@ -1823,7 +1898,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<Theme> &p_theme, Them
 		style_property_child_bg->set_bg_color(p_config.dark_color_2);
 		style_property_child_bg->set_border_width_all(0);
 
-		p_theme->set_stylebox("bg", "EditorProperty", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+		p_theme->set_stylebox("bg", "EditorProperty", memnew(StyleBoxEmpty));
 		p_theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
 		p_theme->set_stylebox("child_bg", "EditorProperty", style_property_child_bg);
 		p_theme->set_constant("font_offset", "EditorProperty", 8 * EDSCALE);
@@ -2126,7 +2201,7 @@ void EditorThemeManager::_generate_text_editor_defaults(ThemeConfiguration &p_co
 	/* clang-format on */
 }
 
-void EditorThemeManager::_populate_text_editor_styles(const Ref<Theme> &p_theme, ThemeConfiguration &p_config) {
+void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
 	String text_editor_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
 	if (text_editor_color_theme == "Default") {
 		_generate_text_editor_defaults(p_config);
@@ -2155,7 +2230,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<Theme> &p_theme,
 	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(background_color, p_config.widget_margin.x, p_config.widget_margin.y, p_config.widget_margin.x, p_config.widget_margin.y, p_config.corner_radius);
 	p_theme->set_stylebox("normal", "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
-	p_theme->set_stylebox("focus", "CodeEdit", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+	p_theme->set_stylebox("focus", "CodeEdit", memnew(StyleBoxEmpty));
 
 	p_theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0)); // Unset any color, we use a stylebox.
 
@@ -2186,10 +2261,12 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<Theme> &p_theme,
 
 // Public interface for theme generation.
 
-Ref<Theme> EditorThemeManager::generate_theme(const Ref<Theme> &p_old_theme) {
-	OS::get_singleton()->benchmark_begin_measure("EditorTheme", "Generate Theme");
+Ref<EditorTheme> EditorThemeManager::generate_theme(const Ref<EditorTheme> &p_old_theme) {
+	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Generate Theme");
 
-	Ref<Theme> theme = _create_base_theme(p_old_theme);
+	Ref<EditorTheme> theme = _create_base_theme(p_old_theme);
+
+	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Merge Custom Theme");
 
 	const String custom_theme_path = EDITOR_GET("interface/theme/custom_theme");
 	if (!custom_theme_path.is_empty()) {
@@ -2199,7 +2276,11 @@ Ref<Theme> EditorThemeManager::generate_theme(const Ref<Theme> &p_old_theme) {
 		}
 	}
 
-	OS::get_singleton()->benchmark_end_measure("EditorTheme", "Generate Theme");
+	OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Merge Custom Theme");
+
+	OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Generate Theme");
+	benchmark_run++;
+
 	return theme;
 }
 
@@ -2213,12 +2294,25 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/font") ||
 			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/main_font") ||
 			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/code_font") ||
+			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/increase_scrollbar_touch_area") ||
+			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/scale_gizmo_handles") ||
 			EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
 			EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||
+			EditorSettings::get_singleton()->check_changed_settings_in_group("docks/property_editor/subresource_hue_tint") ||
 			EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog/thumbnail_size") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/increase_scrollbar_touch_area") ||
-			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/scale_gizmo_handles");
+			EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size");
+}
+
+bool EditorThemeManager::is_dark_theme() {
+	// Light color mode for icons and fonts means it's a dark theme, and vice versa.
+	int icon_font_color_setting = EDITOR_GET("interface/theme/icon_and_font_color");
+
+	if (icon_font_color_setting == ColorMode::AUTO_COLOR) {
+		Color base_color = EDITOR_GET("interface/theme/base_color");
+		return base_color.get_luminance() < 0.5;
+	}
+
+	return icon_font_color_setting == ColorMode::LIGHT_COLOR;
 }
 
 void EditorThemeManager::initialize() {
