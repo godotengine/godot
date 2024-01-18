@@ -12,6 +12,7 @@ apply from: "../scripts/publish-module.gradle"
 dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.androidxFragment
+    implementation fileTree(dir: '../../../../thirdparty/memory_advice', includes: ['games-memory-advice-2.0.0-beta04.aar'])
 }
 
 def pathToRootDir = "../../../../"
