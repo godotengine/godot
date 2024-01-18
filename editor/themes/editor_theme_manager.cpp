@@ -152,7 +152,6 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 	config.preset = EDITOR_GET("interface/theme/preset");
 	config.spacing_preset = EDITOR_GET("interface/theme/spacing_preset");
-	config.dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 
 	config.base_color = EDITOR_GET("interface/theme/base_color");
 	config.accent_color = EDITOR_GET("interface/theme/accent_color");
@@ -275,6 +274,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 	// Generated properties.
 
+	config.dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 	config.base_margin = config.base_spacing;
 	config.increased_margin = config.base_spacing + config.extra_spacing;
 	config.separation_margin = (config.base_spacing + config.extra_spacing / 2) * EDSCALE;
