@@ -39,6 +39,7 @@ class GraphEdit;
 class GraphEditArranger;
 class HScrollBar;
 class Label;
+class Line2D;
 class PanelContainer;
 class SpinBox;
 class ViewPanner;
@@ -112,12 +113,25 @@ class GraphEdit : public Control {
 	GDCLASS(GraphEdit, Control);
 
 public:
-	struct Connection {
+	struct Connection : RefCounted {
 		StringName from_node;
 		StringName to_node;
 		int from_port = 0;
 		int to_port = 0;
 		float activity = 0.0;
+
+	private:
+		struct Cache {
+			bool dirty = true;
+			Vector2 from_pos; // In graph space.
+			Vector2 to_pos; // In graph space.
+			Color from_color;
+			Color to_color;
+			Rect2 aabb; // In local screen space.
+			Line2D *line = nullptr; // In local screen space.
+		} _cache;
+
+		friend class GraphEdit;
 	};
 
 	// Should be in sync with ControlScheme in ViewPanner.
@@ -184,15 +198,15 @@ private:
 	GridPattern grid_pattern = GRID_PATTERN_LINES;
 
 	bool connecting = false;
-	String connecting_from;
-	bool connecting_out = false;
-	int connecting_index = 0;
+	StringName connecting_from_node;
+	bool connecting_from_output = false;
 	int connecting_type = 0;
 	Color connecting_color;
-	bool connecting_target = false;
-	Vector2 connecting_to;
-	StringName connecting_target_to;
-	int connecting_target_index = 0;
+	Vector2 connecting_to_point; // In local screen space.
+	bool connecting_target_valid = false;
+	StringName connecting_target_node;
+	int connecting_from_port_index = 0;
+	int connecting_target_port_index = 0;
 
 	bool just_disconnected = false;
 	bool connecting_valid = false;
@@ -222,17 +236,27 @@ private:
 	bool right_disconnects = false;
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
-	List<Connection> connections;
 
-	float lines_thickness = 2.0f;
+	List<Ref<Connection>> connections;
+	HashMap<StringName, List<Ref<Connection>>> connection_map;
+	Ref<Connection> hovered_connection;
+
+	float lines_thickness = 4.0f;
 	float lines_curvature = 0.5f;
 	bool lines_antialiased = true;
 
 	PanelContainer *menu_panel = nullptr;
 	HBoxContainer *menu_hbox = nullptr;
 	Control *connections_layer = nullptr;
-	GraphEditFilter *top_layer = nullptr;
+
+	GraphEditFilter *top_connection_layer = nullptr; // Draws a dragged connection. Necessary since the connection line shader can't be applied to the whole top layer.
+	Line2D *dragged_connection_line = nullptr;
+	Control *top_layer = nullptr; // Used for drawing the box selection rect. Contains the minimap, menu panel and the scrollbars.
+
 	GraphEditMinimap *minimap = nullptr;
+
+	static Ref<Shader> default_connections_shader;
+	Ref<Shader> connections_shader;
 
 	Ref<GraphEditArranger> arranger;
 
@@ -248,6 +272,10 @@ private:
 		Color grid_minor;
 
 		Color activity_color;
+		Color connection_hover_tint_color;
+		Color connection_valid_target_tint_color;
+		Color connection_rim_color;
+
 		Color selection_fill;
 		Color selection_stroke;
 
@@ -274,30 +302,35 @@ private:
 	void _zoom_plus();
 	void _update_zoom_label();
 
-	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom);
-
 	void _graph_element_selected(Node *p_node);
 	void _graph_element_deselected(Node *p_node);
 	void _graph_element_moved_to_front(Node *p_node);
 	void _graph_element_resized(Vector2 p_new_minsize, Node *p_node);
 	void _graph_element_moved(Node *p_node);
 	void _graph_node_slot_updated(int p_index, Node *p_node);
+	void _graph_node_rect_changed(GraphNode *p_node);
 
 	void _update_scroll();
 	void _update_scroll_offset();
 	void _scroll_moved(double);
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
-	void _top_layer_input(const Ref<InputEvent> &p_ev);
+	void _top_connection_layer_input(const Ref<InputEvent> &p_ev);
+
+	float _get_shader_line_width();
+	void _draw_minimap_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color);
+	void _invalidate_connection_line_cache();
+	void _update_top_connection_layer();
+	void _update_connections();
+
+	void _top_layer_draw();
+	void _minimap_draw();
+	void _draw_grid();
 
 	bool is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
 
-	void _top_layer_draw();
-	void _connections_layer_draw();
-	void _minimap_draw();
-
-	void _draw_grid();
-
 	TypedArray<Dictionary> _get_connection_list() const;
+	Dictionary _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
+	TypedArray<Dictionary> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
 
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);
@@ -313,6 +346,7 @@ private:
 #ifndef DISABLE_DEPRECATED
 	bool _is_arrange_nodes_button_hidden_bind_compat_81582() const;
 	void _set_arrange_nodes_button_hidden_bind_compat_81582(bool p_enable);
+	PackedVector2Array _get_connection_line_bind_compat_86158(const Vector2 &p_from, const Vector2 &p_to);
 #endif
 
 protected:
@@ -336,6 +370,9 @@ protected:
 	GDVIRTUAL4R(bool, _is_node_hover_valid, StringName, int, StringName, int);
 
 public:
+	static void init_shaders();
+	static void finish_shaders();
+
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
 	PackedStringArray get_configuration_warnings() const override;
@@ -344,12 +381,17 @@ public:
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
-	void force_connection_drag_end();
 
-	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
+	void force_connection_drag_end();
+	const List<Ref<Connection>> &get_connection_list() const;
+	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const;
+	Ref<Connection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
+	List<Ref<Connection>> get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+
 	virtual bool is_node_hover_valid(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 
 	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
+	void reset_all_connection_activity();
 
 	void add_valid_connection_type(int p_type, int p_with_type);
 	void remove_valid_connection_type(int p_type, int p_with_type);
@@ -392,10 +434,10 @@ public:
 	void set_show_arrange_button(bool p_hidden);
 	bool is_showing_arrange_button() const;
 
-	GraphEditFilter *get_top_layer() const { return top_layer; }
+	Control *get_top_layer() const { return top_layer; }
 	GraphEditMinimap *get_minimap() const { return minimap; }
 
-	void get_connection_list(List<Connection> *r_connections) const;
+	void override_connections_shader(const Ref<Shader> &p_shader);
 
 	void set_right_disconnects(bool p_enable);
 	bool is_right_disconnects_enabled() const;
