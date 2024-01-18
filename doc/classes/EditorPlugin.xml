@@ -518,6 +518,7 @@
 		<signal name="resource_saved">
 			<argument index="0" name="resource" type="Resource" />
 			<description>
+				Emitted when the given [code]resource[/code] was saved on disc. See also [signal scene_saved], which is used for edited scenes instead of this signal. The [PackedScene] does not count as a saved resource.
 			</description>
 		</signal>
 		<signal name="scene_changed">
@@ -529,7 +530,13 @@
 		<signal name="scene_closed">
 			<argument index="0" name="filepath" type="String" />
 			<description>
-				Emitted when user closes a scene. The argument is file path to a closed scene.
+				Emitted when user closes a scene. The argument is a file path to the closed scene.
+			</description>
+		</signal>
+		<signal name="scene_saved">
+			<argument index="0" name="filepath" type="String" />
+			<description>
+				Emitted when a scene was saved on disc. The argument is a file path to the saved scene. See also [signal resource_saved], used for other resources.
 			</description>
 		</signal>
 	</signals>

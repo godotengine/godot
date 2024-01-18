@@ -1577,6 +1577,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	// This needs to be emitted before saving external resources.
 	emit_signal("scene_saved", p_file);
+	editor_data.notify_scene_saved(p_file);
 
 	_save_external_resources();
 	editor_data.save_editor_external_data();
