@@ -4908,8 +4908,19 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	}
 	result.builtin_type = p_property.type;
 	if (p_property.type == Variant::OBJECT) {
-		result.kind = GDScriptParser::DataType::NATIVE;
-		result.native_type = p_property.class_name == StringName() ? SNAME("Object") : p_property.class_name;
+		if (ScriptServer::is_global_class(p_property.class_name)) {
+			result.kind = GDScriptParser::DataType::SCRIPT;
+			result.script_path = ScriptServer::get_global_class_path(p_property.class_name);
+			result.native_type = ScriptServer::get_global_class_native_base(p_property.class_name);
+
+			Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(p_property.class_name));
+			if (scr.is_valid()) {
+				result.script_type = scr;
+			}
+		} else {
+			result.kind = GDScriptParser::DataType::NATIVE;
+			result.native_type = p_property.class_name == StringName() ? "Object" : p_property.class_name;
+		}
 	} else {
 		result.kind = GDScriptParser::DataType::BUILTIN;
 		result.builtin_type = p_property.type;
