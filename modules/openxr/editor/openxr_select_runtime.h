@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_editor_plugin.cpp                                              */
+/*  openxr_select_runtime.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "openxr_editor_plugin.h"
+#ifndef OPENXR_SELECT_RUNTIME_H
+#define OPENXR_SELECT_RUNTIME_H
 
-#include "../action_map/openxr_action_map.h"
+#include "scene/gui/option_button.h"
 
-#include "editor/editor_node.h"
+class OpenXRSelectRuntime : public OptionButton {
+	GDCLASS(OpenXRSelectRuntime, OptionButton);
 
-void OpenXREditorPlugin::edit(Object *p_node) {
-	if (Object::cast_to<OpenXRActionMap>(p_node)) {
-		String path = Object::cast_to<OpenXRActionMap>(p_node)->get_path();
-		if (path.is_resource_file()) {
-			action_map_editor->open_action_map(path);
-		}
-	}
-}
+public:
+	OpenXRSelectRuntime();
 
-bool OpenXREditorPlugin::handles(Object *p_node) const {
-	return (Object::cast_to<OpenXRActionMap>(p_node) != nullptr);
-}
+protected:
+	static void _bind_methods();
+	void _notification(int p_notification);
 
-void OpenXREditorPlugin::make_visible(bool p_visible) {
-}
+private:
+	void _update_items();
+	void _item_selected(int p_which);
+};
 
-OpenXREditorPlugin::OpenXREditorPlugin() {
-	action_map_editor = memnew(OpenXRActionMapEditor);
-	EditorNode::get_singleton()->add_bottom_panel_item(TTR("OpenXR Action Map"), action_map_editor);
-
-#ifndef ANDROID_ENABLED
-	select_runtime = memnew(OpenXRSelectRuntime);
-	add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
-#endif
-}
-
-OpenXREditorPlugin::~OpenXREditorPlugin() {
-}
+#endif // OPENXR_SELECT_RUNTIME_H

@@ -1765,6 +1765,13 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			p_theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
 		}
 
+		// Top bar selectors.
+		{
+			p_theme->set_type_variation("TopBarOptionButton", "OptionButton");
+			p_theme->set_font("font", "TopBarOptionButton", p_theme->get_font(SNAME("bold"), EditorStringName(EditorFonts)));
+			p_theme->set_font_size("font_size", "TopBarOptionButton", p_theme->get_font_size(SNAME("bold_size"), EditorStringName(EditorFonts)));
+		}
+
 		// Complex editor windows.
 		{
 			Ref<StyleBoxFlat> style_complex_window = p_config.window_style->duplicate();
