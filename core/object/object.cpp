@@ -728,7 +728,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 			r_error.expected = 0;
 			return Variant();
 		}
-		if (Object::cast_to<RefCounted>(this)) {
+		if (is_ref_counted()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
 		}
