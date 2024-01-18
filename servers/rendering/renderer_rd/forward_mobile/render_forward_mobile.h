@@ -318,10 +318,13 @@ private:
 			}
 		};
 
-		void sort_by_depth() { //used for shadows
+		void sort_by_depth(uint32_t p_from = 0, uint32_t p_size = 0) { //used for shadows
 
 			SortArray<GeometryInstanceSurfaceDataCache *, SortByDepth> sorter;
-			sorter.sort(elements.ptr(), elements.size());
+			if (p_from == 0 && p_size == 0)
+				sorter.sort(elements.ptr(), elements.size());
+			else
+				sorter.sort(elements.ptr() + p_from, p_size);
 		}
 
 		struct SortByReverseDepthAndPriority {
@@ -334,6 +337,35 @@ private:
 
 			SortArray<GeometryInstanceSurfaceDataCache *, SortByReverseDepthAndPriority> sorter;
 			sorter.sort(elements.ptr(), elements.size());
+		}
+
+		struct SortForRendering {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
+				return (A->sort.shader_id == B->sort.shader_id) ? (A->owner->depth < B->owner->depth) : (A->sort.shader_id < B->sort.shader_id);
+			}
+		};
+
+		void sort_for_rendering(uint32_t p_from = 0, uint32_t p_size = 0) {
+
+			SortArray<GeometryInstanceSurfaceDataCache *, SortForRendering> sorter;
+			if (p_from == 0 && p_size == 0)
+				sorter.sort(elements.ptr(), elements.size());
+			else
+				sorter.sort(elements.ptr() + p_from, p_size);
+		}
+
+		struct SortForShadows {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
+				return (A->sort.shader_id == B->sort.shader_id) ? (A->owner->depth < B->owner->depth) : (A->sort.shader_id < B->sort.shader_id);
+			}
+		};
+
+		void sort_for_shadows(uint32_t p_from = 0, uint32_t p_size = 0) {
+			SortArray<GeometryInstanceSurfaceDataCache *, SortForShadows> sorter;
+			if (p_from == 0 && p_size == 0)
+				sorter.sort(elements.ptr(), elements.size());
+			else
+				sorter.sort(elements.ptr() + p_from, p_size);
 		}
 
 		_FORCE_INLINE_ void add_element(GeometryInstanceSurfaceDataCache *p_element) {
@@ -425,6 +457,7 @@ protected:
 
 				uint64_t material_id_hi : 16;
 				uint64_t shader_id : 32;
+				uint64_t vertex_format;
 				uint64_t uses_lightmap : 4; // sort by lightmap id here, not whether its yes/no (is 4 bits enough?)
 				uint64_t depth_layer : 4;
 				uint64_t priority : 8;
