@@ -109,6 +109,12 @@
 				Returns the ID of the object emitting this signal (see [method Object.get_instance_id]).
 			</description>
 		</method>
+		<method name="has_connections" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if any [Callable] is connected to this signal.
+			</description>
+		</method>
 		<method name="is_connected" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="callable" type="Callable" />
