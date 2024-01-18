@@ -341,7 +341,9 @@ private:
 
 		struct SortForRendering {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
-				return (A->sort.shader_id == B->sort.shader_id) ? (A->owner->depth < B->owner->depth) : (A->sort.shader_id < B->sort.shader_id);
+				if (A->sort.shader_id == B->sort.shader_id)
+					return (A->sort.spec_consts == B->sort.spec_consts) ? (A->owner->depth < B->owner->depth) : (A->sort.spec_consts < B->sort.spec_consts);
+				return (A->sort.shader_id < B->sort.shader_id);
 			}
 		};
 
@@ -457,7 +459,7 @@ protected:
 
 				uint64_t material_id_hi : 16;
 				uint64_t shader_id : 32;
-				uint64_t vertex_format;
+				uint64_t spec_consts : 32;
 				uint64_t uses_lightmap : 4; // sort by lightmap id here, not whether its yes/no (is 4 bits enough?)
 				uint64_t depth_layer : 4;
 				uint64_t priority : 8;

@@ -2091,26 +2091,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			mesh_surface = surf->surface_shadow;
 
 		} else {
-			if (inst->use_projector) {
-				base_spec_constants |= 1 << SPEC_CONSTANT_USING_PROJECTOR;
-			}
-			if (inst->use_soft_shadow) {
-				base_spec_constants |= 1 << SPEC_CONSTANT_USING_SOFT_SHADOWS;
-			}
-
-			if (inst->omni_light_count == 0) {
-				base_spec_constants |= 1 << SPEC_CONSTANT_DISABLE_OMNI_LIGHTS;
-			}
-			if (inst->spot_light_count == 0) {
-				base_spec_constants |= 1 << SPEC_CONSTANT_DISABLE_SPOT_LIGHTS;
-			}
-			if (inst->reflection_probe_count == 0) {
-				base_spec_constants |= 1 << SPEC_CONSTANT_DISABLE_REFLECTION_PROBES;
-			}
-			if (inst->decals_count == 0) {
-				base_spec_constants |= 1 << SPEC_CONSTANT_DISABLE_DECALS;
-			}
-
+			base_spec_constants |= surf->sort.spec_consts;
+			
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
 				material_uniform_set = scene_shader.default_material_uniform_set;
@@ -2476,7 +2458,13 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.material_id_hi = p_material_id >> 16;
 	sdcache->sort.shader_id = p_shader_id;
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
-	sdcache->sort.vertex_format = format;
+	sdcache->sort.spec_consts = 0;
+	sdcache->sort.spec_consts |= (1 && sdcache->owner->use_projector) << SPEC_CONSTANT_USING_PROJECTOR;
+	sdcache->sort.spec_consts |= (1 && sdcache->owner->use_soft_shadow) << SPEC_CONSTANT_USING_SOFT_SHADOWS;
+	sdcache->sort.spec_consts |= (1 && sdcache->owner->omni_light_count == 0) << SPEC_CONSTANT_DISABLE_OMNI_LIGHTS;
+	sdcache->sort.spec_consts |= (1 && sdcache->owner->spot_light_count == 0) << SPEC_CONSTANT_DISABLE_SPOT_LIGHTS;
+	sdcache->sort.spec_consts |= (1 && sdcache->owner->reflection_probe_count == 0) << SPEC_CONSTANT_DISABLE_REFLECTION_PROBES;
+	sdcache->sort.spec_consts |= (1 && sdcache->owner->decals_count == 0) << SPEC_CONSTANT_DISABLE_DECALS;
 	// sdcache->sort.uses_forward_gi = ginstance->can_sdfgi;
 	sdcache->sort.priority = p_material->priority;
 	
