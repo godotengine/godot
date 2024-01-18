@@ -267,6 +267,7 @@ private:
 	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
 	void _favorite_pressed(Node *p_hb);
 	void _show_project(const String &p_path);
+	void _focus_entered(Node *p_hb);
 
 	void _migrate_config();
 	void _scan_folder_recursive(const String &p_path, List<String> *r_projects);
