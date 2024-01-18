@@ -23,7 +23,7 @@
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="favicon.png">
 		<link rel="apple-touch-icon" type="image/png" href="favicon.png">
 		<link rel="manifest" href="manifest.json">
-		<title>Godot Engine Web Editor (@GODOT_VERSION@)</title>
+		<title>Godot Engine Web Editor (___GODOT_VERSION___)</title>
 		<style>
 *:focus {
 	/* More visible outline for better keyboard navigation. */
@@ -294,7 +294,7 @@ a:active {
 					<br >
 					<img src="logo.svg" alt="Godot Engine logo" width="1024" height="414" style="width: auto; height: auto; max-width: min(85%, 50vh); max-height: 250px">
 					<br >
-					@GODOT_VERSION@
+					___GODOT_VERSION___
 					<br >
 					<a href="releases/">Need an old version?</a>
 					<br >
@@ -384,7 +384,9 @@ window.addEventListener('load', () => {
 		});
 	}
 
-	const missing = Engine.getMissingFeatures();
+	const missing = Engine.getMissingFeatures({
+		threads: ___GODOT_THREADS_ENABLED___,
+	});
 	if (missing.length) {
 		// Display error dialog as threading support is required for the editor.
 		document.getElementById('startButton').disabled = 'disabled';
