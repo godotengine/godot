@@ -125,6 +125,9 @@ public:
 	void set_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon() const;
 
+	int get_icon_height_with_aspect_ratio(const int &width);
+	int get_icon_width_with_aspect_ratio(const int &height);
+
 	void set_expand_icon(bool p_enabled);
 	bool is_expand_icon() const;
 

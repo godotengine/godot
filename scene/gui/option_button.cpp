@@ -501,6 +501,13 @@ void OptionButton::show_popup() {
 
 	Rect2 rect = get_screen_rect();
 	rect.position.y += rect.size.height;
+	if (get_icon().is_valid()) {
+		Size2 _size = get_size() - theme_cache.normal->get_offset() * 2;
+		float icon_width = get_icon_width_with_aspect_ratio(_size.height);
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			popup->set_item_icon_max_width(i, icon_width);
+		}
+	}
 	rect.size.height = 0;
 	popup->set_position(rect.position);
 	popup->set_size(rect.size);

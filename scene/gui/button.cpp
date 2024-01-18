@@ -35,10 +35,7 @@
 #include "servers/rendering_server.h"
 
 Size2 Button::get_minimum_size() const {
-	Ref<Texture2D> _icon = icon;
-	if (_icon.is_null() && has_theme_icon(SNAME("icon"))) {
-		_icon = theme_cache.icon;
-	}
+	Ref<Texture2D> _icon = get_icon();
 
 	return get_minimum_size_for_text_and_icon("", _icon);
 }
@@ -190,12 +187,7 @@ void Button::_notification(int p_what) {
 				style2->draw(ci, Rect2(Point2(), size));
 			}
 
-			Ref<Texture2D> _icon;
-			if (icon.is_null() && has_theme_icon(SNAME("icon"))) {
-				_icon = theme_cache.icon;
-			} else {
-				_icon = icon;
-			}
+			Ref<Texture2D> _icon = get_icon();
 
 			Rect2 icon_region;
 			HorizontalAlignment icon_align_rtl_checked = horizontal_icon_alignment;
@@ -251,12 +243,12 @@ void Button::_notification(int p_what) {
 					if (vertical_icon_alignment != VERTICAL_ALIGNMENT_CENTER) {
 						_size.height -= text_buf->get_size().height;
 					}
-					float icon_width = _icon->get_width() * _size.height / _icon->get_height();
 					float icon_height = _size.height;
+					float icon_width = get_icon_width_with_aspect_ratio(icon_height);
 
 					if (icon_width > _size.width) {
 						icon_width = _size.width;
-						icon_height = _icon->get_height() * icon_width / _icon->get_width();
+						icon_height = get_icon_height_with_aspect_ratio(icon_width);
 					}
 
 					icon_size = Size2(icon_width, icon_height);
@@ -520,7 +512,21 @@ void Button::_texture_changed() {
 }
 
 Ref<Texture2D> Button::get_icon() const {
-	return icon;
+	if (icon.is_null() && has_theme_icon(SNAME("icon"))) {
+		return theme_cache.icon;
+	} else {
+		return icon;
+	}
+}
+
+int Button::get_icon_width_with_aspect_ratio(const int &height) {
+	Ref<Texture2D> _icon = get_icon();
+	return _icon->get_width() * height / _icon->get_height();
+}
+
+int Button::get_icon_height_with_aspect_ratio(const int &width) {
+	Ref<Texture2D> _icon = get_icon();
+	return _icon->get_height() * width / _icon->get_width();
 }
 
 void Button::set_expand_icon(bool p_enabled) {
