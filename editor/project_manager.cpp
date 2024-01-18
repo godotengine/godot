@@ -2777,7 +2777,6 @@ void ProjectManager::_on_search_term_submitted(const String &p_text) {
 }
 
 void ProjectManager::_open_asset_library() {
-	asset_library->disable_community_support();
 	tabs->set_current_tab(1);
 }
 
@@ -3191,7 +3190,7 @@ ProjectManager::ProjectManager() {
 
 		if (asset_library) {
 			open_templates = memnew(ConfirmationDialog);
-			open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
+			open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore example projects in the Asset Library?"));
 			open_templates->set_ok_button_text(TTR("Open Asset Library"));
 			open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
 			add_child(open_templates);

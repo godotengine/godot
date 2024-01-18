@@ -1432,10 +1432,6 @@ void EditorAssetLibrary::_update_asset_items_columns() {
 	asset_items_column_width = (get_size().x / new_columns) - (100 * EDSCALE);
 }
 
-void EditorAssetLibrary::disable_community_support() {
-	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, false);
-}
-
 void EditorAssetLibrary::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
