@@ -33,12 +33,14 @@
 
 #include "core/object/class_db.h"
 #include "modules/game_help/Terrain3D/src/register_types.h"
+#include "modules/game_help/foliage_manager/register_types.h"
 
 void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
 	initialize_terrain_3d(p_level);
+	initialize_filiage_manager(p_level);
 
 }
 
