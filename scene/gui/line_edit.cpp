@@ -1400,6 +1400,26 @@ void LineEdit::set_text(String p_text) {
 	scroll_offset = 0;
 }
 
+void LineEdit::set_text_with_selection(const String &p_text) {
+	Selection selection_copy = selection;
+
+	clear_internal();
+	append_at_cursor(p_text);
+	_create_undo_state();
+
+	if (expand_to_text_length) {
+		minimum_size_changed();
+	}
+
+	int tlen = text.length();
+	selection = selection_copy;
+	selection.begin = MIN(selection.begin, tlen);
+	selection.end = MIN(selection.end, tlen);
+	selection.cursor_start = MIN(selection.cursor_start, tlen);
+
+	update();
+}
+
 void LineEdit::clear() {
 	clear_internal();
 	_text_changed();
