@@ -6936,10 +6936,9 @@ EditorNode::EditorNode() {
 	renderer = memnew(OptionButton);
 	renderer->set_visible(true);
 	renderer->set_flat(true);
+	renderer->set_theme_type_variation("TopBarOptionButton");
 	renderer->set_fit_to_longest_item(false);
 	renderer->set_focus_mode(Control::FOCUS_NONE);
-	renderer->add_theme_font_override("font", theme->get_font(SNAME("bold"), EditorStringName(EditorFonts)));
-	renderer->add_theme_font_size_override("font_size", theme->get_font_size(SNAME("bold_size"), EditorStringName(EditorFonts)));
 	renderer->set_tooltip_text(TTR("Choose a rendering method.\n\nNotes:\n- On mobile platforms, the Mobile rendering method is used if Forward+ is selected here.\n- On the web platform, the Compatibility rendering method is always used."));
 
 	right_menu_hb->add_child(renderer);
