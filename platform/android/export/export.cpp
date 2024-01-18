@@ -42,6 +42,8 @@ void register_android_exporter_types() {
 
 void register_android_exporter() {
 #ifndef ANDROID_ENABLED
+	EDITOR_DEF("export/android/java_sdk_path", OS::get_singleton()->get_environment("JAVA_HOME"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/java_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 	EDITOR_DEF("export/android/android_sdk_path", OS::get_singleton()->get_environment("ANDROID_HOME"));
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 	EDITOR_DEF("export/android/debug_keystore", "");
