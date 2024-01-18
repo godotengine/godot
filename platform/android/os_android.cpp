@@ -180,7 +180,7 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 
 		bool internal_so_file_exists = FileAccess::exists(internal_path);
 		if (!internal_so_file_exists) {
-			Ref<DirAccess> da_ref = DirAccess::create_for_path(p_path);
+			Ref<DirAccess> da_ref = DirAccess::open(p_path);
 			if (da_ref.is_valid()) {
 				Error create_dir_result = da_ref->make_dir_recursive(dynamic_library_path);
 				if (create_dir_result == OK || create_dir_result == ERR_ALREADY_EXISTS) {
@@ -645,7 +645,7 @@ String OS_Android::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 }
 
 Error OS_Android::move_to_trash(const String &p_path) {
-	Ref<DirAccess> da_ref = DirAccess::create_for_path(p_path);
+	Ref<DirAccess> da_ref = DirAccess::open(p_path);
 	if (da_ref.is_null()) {
 		return FAILED;
 	}

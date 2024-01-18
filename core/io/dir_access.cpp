@@ -31,7 +31,7 @@
 #include "dir_access.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/file_access.h"
+#include "core/io/file_access_pack.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
@@ -238,7 +238,20 @@ Ref<DirAccess> DirAccess::create_for_path(const String &p_path) {
 }
 
 Ref<DirAccess> DirAccess::open(const String &p_path, Error *r_error) {
-	Ref<DirAccess> da = create_for_path(p_path);
+	//try packed data first
+
+	Ref<DirAccess> da;
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
+		da = PackedData::get_singleton()->try_open_directory(p_path);
+		if (da.is_valid()) {
+			if (r_error) {
+				*r_error = OK;
+			}
+			return da;
+		}
+	}
+
+	da = create_for_path(p_path);
 	ERR_FAIL_COND_V_MSG(da.is_null(), nullptr, "Cannot create DirAccess for path '" + p_path + "'.");
 	Error err = da->change_dir(p_path);
 	if (r_error) {
@@ -282,6 +295,10 @@ Error DirAccess::make_dir_recursive_absolute(const String &p_dir) {
 }
 
 bool DirAccess::dir_exists_absolute(const String &p_dir) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_directory(p_dir)) {
+		return true;
+	}
+
 	Ref<DirAccess> d = DirAccess::create_for_path(p_dir);
 	return d->dir_exists(p_dir);
 }
@@ -482,7 +499,16 @@ Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags, bool p_
 }
 
 bool DirAccess::exists(String p_dir) {
-	Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
+	Ref<DirAccess> da;
+
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
+		da = PackedData::get_singleton()->try_open_directory(p_dir);
+		if (da.is_valid()) {
+			return da->change_dir(p_dir) == OK;
+		}
+	}
+
+	da = DirAccess::create_for_path(p_dir);
 	return da->change_dir(p_dir) == OK;
 }
 

@@ -913,7 +913,7 @@ void EditorExportPlatformIOS::_check_xcframework_content(const String &p_path, i
 Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, const String &p_destination, const String &p_id) const {
 	print_line("Converting to .framework", p_source, " -> ", p_destination);
 
-	Ref<DirAccess> da = DirAccess::create_for_path(p_source);
+	Ref<DirAccess> da = DirAccess::open(p_source);
 	if (da.is_null()) {
 		return ERR_CANT_OPEN;
 	}
@@ -1140,7 +1140,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const String &p_out_dir, co
 Error EditorExportPlatformIOS::_copy_asset(const Ref<EditorExportPreset> &p_preset, const String &p_out_dir, const String &p_asset, const String *p_custom_file_name, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets) {
 	String binary_name = p_out_dir.get_file().get_basename();
 
-	Ref<DirAccess> da = DirAccess::create_for_path(p_asset);
+	Ref<DirAccess> da = DirAccess::open(p_asset);
 	if (da.is_null()) {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't open directory: " + p_asset + ".");
 	}
@@ -1689,7 +1689,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 
 	Vector<IOSExportAsset> assets;
 
-	Ref<DirAccess> tmp_app_path = DirAccess::create_for_path(dest_dir);
+	Ref<DirAccess> tmp_app_path = DirAccess::open(dest_dir);
 	if (tmp_app_path.is_null()) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), dest_dir));
 		return ERR_CANT_CREATE;

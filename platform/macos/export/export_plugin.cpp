@@ -1357,7 +1357,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	Error err = OK;
 
-	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_base_path_name);
+	Ref<DirAccess> tmp_app_dir = DirAccess::open(tmp_base_path_name);
 	if (tmp_app_dir.is_null()) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory: \"%s\"."), tmp_base_path_name));
 		err = ERR_CANT_CREATE;

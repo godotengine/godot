@@ -223,7 +223,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	// Setup temp folder.
 	String path = p_path;
 	String tmp_dir_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name);
-	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_dir_path);
+	Ref<DirAccess> tmp_app_dir = DirAccess::open(tmp_dir_path);
 	if (export_as_zip) {
 		if (tmp_app_dir.is_null()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), tmp_dir_path));
@@ -259,7 +259,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	}
 
 	if (embedded) {
-		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
+		Ref<DirAccess> tmp_dir = DirAccess::open(p_path.get_base_dir());
 		err = tmp_dir->rename(pck_path, p_path);
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to rename temporary file \"%s\"."), pck_path));
@@ -694,7 +694,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	}
 
 #ifndef WINDOWS_ENABLED
-	Ref<DirAccess> tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
+	Ref<DirAccess> tmp_dir = DirAccess::open(p_path.get_base_dir());
 
 	err = tmp_dir->remove(p_path);
 	if (err != OK) {

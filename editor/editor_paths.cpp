@@ -117,7 +117,7 @@ EditorPaths::EditorPaths() {
 
 	// Self-contained mode if a `._sc_` or `_sc_` file is present in executable dir.
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
-	Ref<DirAccess> d = DirAccess::create_for_path(exe_path);
+	Ref<DirAccess> d = DirAccess::open(exe_path);
 	if (d->file_exists(exe_path + "/._sc_")) {
 		self_contained = true;
 		self_contained_file = exe_path + "/._sc_";
@@ -130,7 +130,7 @@ EditorPaths::EditorPaths() {
 	// Note: This will not work if Gatekeeper path randomization is active.
 	if (OS::get_singleton()->has_feature("macos") && exe_path.ends_with("MacOS") && exe_path.path_join("..").simplify_path().ends_with("Contents")) {
 		exe_path = exe_path.path_join("../../..").simplify_path();
-		d = DirAccess::create_for_path(exe_path);
+		d = DirAccess::open(exe_path);
 		if (d->file_exists(exe_path + "/._sc_")) {
 			self_contained = true;
 			self_contained_file = exe_path + "/._sc_";

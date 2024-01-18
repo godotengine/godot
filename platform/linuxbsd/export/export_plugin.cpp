@@ -76,7 +76,7 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	String path = p_path;
 	String tmp_dir_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name);
 
-	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_dir_path);
+	Ref<DirAccess> tmp_app_dir = DirAccess::open(tmp_dir_path);
 	if (export_as_zip) {
 		if (tmp_app_dir.is_null()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), tmp_dir_path));
