@@ -9,10 +9,7 @@
 #endif
 
 #include "core/io/dir_access.h"
-#include "luaError.h"
 
-#include <luaState.h>
-#include <lua/lua.hpp>
 
 #ifdef LAPI_GDEXTENSION
 using namespace godot;
@@ -20,16 +17,19 @@ using namespace godot;
 
 class LuaCoroutine;
 class LuaObjectMetatable;
-
-class LuaAPI : public RefCounted {
-	GDCLASS(LuaAPI, RefCounted);
+class LuaError;
+class LuaAPI : public Object {
+	GDCLASS(LuaAPI, Object);
 
 protected:
 	static void _bind_methods();
 
+	static LuaAPI* singleton;
 public:
 	LuaAPI();
 	~LuaAPI();
+
+	static LuaAPI* get_singleton();
 
 	void setHook(Callable hook, int mask, int count);
 	List<Ref<DirAccess>> getSearchPaths()
@@ -67,26 +67,26 @@ public:
 	Ref<LuaCoroutine> newCoroutine();
 	Ref<LuaCoroutine> getRunningCoroutine();
 
-	lua_State *newThreadState();
-	lua_State *getState();
+	struct lua_State *newThreadState();
+	struct lua_State *getState();
 
-	enum HookMask {
-		HOOK_MASK_CALL = LUA_MASKCALL,
-		HOOK_MASK_RETURN = LUA_MASKRET,
-		HOOK_MASK_LINE = LUA_MASKLINE,
-		HOOK_MASK_COUNT = LUA_MASKCOUNT,
-	};
+	// enum HookMask {
+	// 	HOOK_MASK_CALL = LUA_MASKCALL,
+	// 	HOOK_MASK_RETURN = LUA_MASKRET,
+	// 	HOOK_MASK_LINE = LUA_MASKLINE,
+	// 	HOOK_MASK_COUNT = LUA_MASKCOUNT,
+	// };
 
-	enum GCOption {
-		GC_STOP = LUA_GCSTOP,
-		GC_RESTART = LUA_GCRESTART,
-		GC_COLLECT = LUA_GCCOLLECT,
-		GC_COUNT = LUA_GCCOUNT,
-		GC_COUNTB = LUA_GCCOUNTB,
-		GC_STEP = LUA_GCSTEP,
-		GC_SETPAUSE = LUA_GCSETPAUSE,
-		GC_SETSTEPMUL = LUA_GCSETSTEPMUL,
-	};
+	// enum GCOption {
+	// 	GC_STOP = LUA_GCSTOP,
+	// 	GC_RESTART = LUA_GCRESTART,
+	// 	GC_COLLECT = LUA_GCCOLLECT,
+	// 	GC_COUNT = LUA_GCCOUNT,
+	// 	GC_COUNTB = LUA_GCCOUNTB,
+	// 	GC_STEP = LUA_GCSTEP,
+	// 	GC_SETPAUSE = LUA_GCSETPAUSE,
+	// 	GC_SETSTEPMUL = LUA_GCSETSTEPMUL,
+	// };
 	void chack_load()
 	{
 		if(lState == nullptr)
@@ -102,23 +102,23 @@ public:
 	{
 		return version;
 	}
-
-private:
-	void create_lua_state();
-	void close_lua_state();
 	void reload_lua_state()
 	{
 		close_lua_state();
 		create_lua_state();
 	}
+	void close_lua_state();
+
+private:
+	void create_lua_state();
 private:
 	bool useCallables = true;
 	List<Ref<DirAccess>> searchPath;
 
 	bool is_jit = false;
 	String lua_start_string = "";
-	LuaState state;
-	lua_State *lState = nullptr;
+	class LuaState* state;
+	struct lua_State *lState = nullptr;
 	int version = 0;
 
 	Ref<LuaObjectMetatable> objectMetatable;
@@ -138,13 +138,7 @@ private:
 // 获取类的映射表
 class LuaClassTable : public ScriptInstance {
 public:
-	void init(LuaAPI *lua,StringName name,Object* _self)
-	{
-		this->objectID = lua->get_instance_id();
-		this->self.set_obj(_self);
-		_self->set_master_script_instance(this);
-		lua->getTableFuncMap(name, funcMap,propertyMap);
-	}
+	void init(LuaAPI *lua,StringName name,Object* _self);
 	bool has(const StringName &p_name) const
 	{
 		Object* self_ptr = self.get_ref();
@@ -154,37 +148,7 @@ public:
 		}
 		return funcMap.has(p_name);
 	}
-	bool is_valid()const
-	{
-		Object* lua_ptr = ObjectDB::get_instance(objectID);
-		if(lua_ptr == nullptr)
-		{
-			return false;
-		}
-		LuaAPI *lua = Object::cast_to<LuaAPI>(lua_ptr);
-		Object* self_ptr = self.get_ref();
-		if(self_ptr == nullptr)
-		{
-			return false;
-		}
-		if(lua->is_load())
-		{
-			lua->chack_load();
-			funcMap.clear();
-			propertyMap.clear();
-			lua->getTableFuncMap(table_name, funcMap,propertyMap);
-			is_init = true;
-		}
-		else if(!is_init || version != lua->get_version())
-		{
-			is_init = true;
-			LuaClassTable* _this = (LuaClassTable*)this;
-			funcMap.clear();
-			propertyMap.clear();
-			lua->getTableFuncMap(table_name, funcMap,propertyMap);
-		}
-		return is_init;
-	}
+	bool is_valid()const;
 	virtual bool set(const StringName &p_name, const Variant &p_property) 
 	{
 		Object* self_ptr = self.get_ref();
@@ -246,52 +210,8 @@ public:
 		return funcMap.has(p_method);
 	}
 
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override
-	{
-		Object* self_ptr = self.get_ref();
-		if(!is_valid() || self_ptr == nullptr)
-		{
-			return Variant();
-		}
-		const Variant** args = (const Variant**)alloca(p_argcount * sizeof(void *));
-		Variant obj = self_ptr;
-		args[0] = &obj;
-		for(int i = 0;i < p_argcount;i++)
-		{
-			args[i + 1] = (Variant*)p_args[i];
-		}
-		if(funcMap.has(p_method))
-		{
-			Callable cb = funcMap[p_method];
-			Variant rs;
-			 cb.callp(args, p_argcount + 1, rs,r_error);
-			 return rs;
-		}
-		return Variant();
-	}
-	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override
-	{
-		Object* self_ptr = self.get_ref();
-		if(!is_valid() || self_ptr == nullptr)
-		{
-			return Variant();
-		}
-		const Variant** args = (const Variant**)alloca(p_argcount * sizeof(void *));
-		Variant obj = self_ptr;
-		args[0] = &obj;
-		for(int i = 0;i < p_argcount;i++)
-		{
-			args[i + 1] = p_args[i];
-		}
-		if(funcMap.has(p_method))
-		{
-			Callable cb = funcMap[p_method];
-			Variant rs;
-			 cb.callp(args, p_argcount + 1, rs,r_error);
-			 return rs;
-		}
-		return Variant();
-	}
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 	virtual Ref<Script> get_script() const 
 	{
 		return Ref<Script>();
@@ -316,8 +236,8 @@ private:
 };
 
 
-VARIANT_ENUM_CAST(LuaAPI::HookMask)
-VARIANT_ENUM_CAST(LuaAPI::GCOption)
+// VARIANT_ENUM_CAST(LuaAPI::HookMask)
+// VARIANT_ENUM_CAST(LuaAPI::GCOption)
 
 
 #endif

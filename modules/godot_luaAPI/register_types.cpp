@@ -10,7 +10,9 @@
 #ifdef LAPI_GDEXTENSION
 using namespace godot;
 #endif
-
+static void lua_create_object_master_script_instance (Object * obj,StringName name){
+	LuaAPI::get_singleton()->getLuaClassTable(name,obj);
+}
 void initialize_godot_luaAPI_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
@@ -24,6 +26,10 @@ void initialize_godot_luaAPI_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<LuaObjectMetatable>();
 	ClassDB::register_class<LuaDefaultObjectMetatable>();
 	ClassDB::register_class<LuaTuple>();
+
+	Engine::get_singleton()->add_singleton(Engine::Singleton("LuaAPI", LuaAPI::get_singleton()));
+
+	ObjectDB::s_create_master_func = &lua_create_object_master_script_instance;
 }
 
 void uninitialize_godot_luaAPI_module(ModuleInitializationLevel p_level) {

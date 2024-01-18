@@ -81,7 +81,7 @@ int LuaCallableExtra::call(lua_State *state) {
 	Array args;
 
 	if (func->wantsRef) {
-		args.append(Ref<LuaAPI>(LuaState::getAPI(state)));
+		args.append(LuaState::getAPI(state));
 	}
 
 	int index = 2; // we start at 2 because the LuaCallableExtra is arg 1

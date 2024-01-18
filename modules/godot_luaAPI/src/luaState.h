@@ -61,6 +61,24 @@ public:
 	static void luaHook(lua_State *state, lua_Debug *ar);
 public:
 
+	enum HookMask {
+		HOOK_MASK_CALL = LUA_MASKCALL,
+		HOOK_MASK_RETURN = LUA_MASKRET,
+		HOOK_MASK_LINE = LUA_MASKLINE,
+		HOOK_MASK_COUNT = LUA_MASKCOUNT,
+	};
+
+	enum GCOption {
+		GC_STOP = LUA_GCSTOP,
+		GC_RESTART = LUA_GCRESTART,
+		GC_COLLECT = LUA_GCCOLLECT,
+		GC_COUNT = LUA_GCCOUNT,
+		GC_COUNTB = LUA_GCCOUNTB,
+		GC_STEP = LUA_GCSTEP,
+		GC_SETPAUSE = LUA_GCSETPAUSE,
+		GC_SETSTEPMUL = LUA_GCSETSTEPMUL,
+	};
+
 	// Helper functions for recursive indexing
 	static void indexForReading(lua_State *L,String name); // Puts the object on the stack
 	static String indexForWriting(lua_State *L,String name); // Puts the table on the stack and gives the last name. (Please make sure the table is not nil.)
@@ -92,5 +110,7 @@ private:
 };
 
 
+VARIANT_ENUM_CAST(LuaState::HookMask)
+VARIANT_ENUM_CAST(LuaState::GCOption)
 
 #endif

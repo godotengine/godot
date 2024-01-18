@@ -654,7 +654,7 @@ namespace Foliage
 		// 等待加载完成
 		void wait_load_finish();
 		bool is_load_finish();
-		void update_load(class FoliageManager * manager);
+		void update_load();
 		void unload()
 		{
 			wait_load_finish();

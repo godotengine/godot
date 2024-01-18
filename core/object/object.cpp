@@ -267,8 +267,15 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 			return;
 		}
 	}
+	if(p_name == CoreStringNames::get_singleton()->_master_script) {
+		set_master_script(p_value);
+		if (r_valid) {
+			*r_valid = true;
+		}
+		return;
+	}
 
-	if (p_name == CoreStringNames::get_singleton()->_script) {
+	else if (p_name == CoreStringNames::get_singleton()->_script) {
 		set_script(p_value);
 		if (r_valid) {
 			*r_valid = true;
@@ -366,6 +373,13 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 			}
 			return ret;
 		}
+	}
+	if (p_name == CoreStringNames::get_singleton()->_master_script) {
+		ret = get_master_script();
+		if (r_valid) {
+			*r_valid = true;
+		}
+		return ret;
 	}
 
 	if (p_name == CoreStringNames::get_singleton()->_script) {
@@ -971,6 +985,16 @@ void Object::set_script(const Variant &p_script) {
 
 	notify_property_list_changed(); //scripts may add variables, so refresh is desired
 	emit_signal(CoreStringNames::get_singleton()->script_changed);
+}
+
+
+void Object::set_master_script(StringName name)
+{
+	master_script_name = name;
+	if(ObjectDB::s_create_master_func != nullptr)
+	{
+		(*ObjectDB::s_create_master_func)(this,name);
+	}
 }
 
 void Object::set_script_instance(ScriptInstance *p_instance) {
@@ -1715,6 +1739,9 @@ void Object::_bind_methods() {
 
 	ClassDB::add_virtual_method("Object", MethodInfo("free"), false);
 
+	ClassDB::bind_method(D_METHOD("set_master_script", "script"), &Object::set_master_script);
+	ClassDB::bind_method(D_METHOD("get_master_script"), &Object::get_master_script);
+
 	ADD_SIGNAL(MethodInfo("script_changed"));
 	ADD_SIGNAL(MethodInfo("property_list_changed"));
 
@@ -2178,7 +2205,7 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 		}
 	}
 }
-
+ObjectDB::CreateMasterFunc ObjectDB::s_create_master_func = nullptr;
 SpinLock ObjectDB::spin_lock;
 uint32_t ObjectDB::slot_count = 0;
 uint32_t ObjectDB::slot_max = 0;

@@ -1,5 +1,6 @@
 #include "luaCallable.h"
 #include "luaAPI.h"
+#include "../luaState.h"
 
 #ifndef LAPI_GDEXTENSION
 #include "core/templates/hashfuncs.h"
@@ -9,7 +10,7 @@
 #endif
 
 // I used "GDScriptLambdaCallable" as a template for this
-LuaCallable::LuaCallable(Ref<LuaAPI> obj, int ref, lua_State *p_state) {
+LuaCallable::LuaCallable(LuaAPI* obj, int ref, lua_State *p_state) {
 	objectID = obj->get_instance_id();
 	funcRef = ref;
 	state = p_state;

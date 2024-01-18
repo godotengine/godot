@@ -30,21 +30,21 @@ void LuaCoroutine::_bind_methods() {
 }
 
 // binds the thread to a lua object
-void LuaCoroutine::bind(Ref<LuaAPI> lua) {
+void LuaCoroutine::bind(LuaAPI*lua) {
 	parent = lua;
 	tState = lua->newThreadState();
-	state.setState(tState, lua.ptr(), false);
+	state.setState(tState, lua, false);
 
 	// register the yield method
 	lua_register(tState, "yield", luaYield);
 }
 
 // binds the thread to a lua object
-void LuaCoroutine::bindExisting(Ref<LuaAPI> lua, lua_State *L) {
+void LuaCoroutine::bindExisting(LuaAPI*lua, lua_State *L) {
 	done = false;
 	parent = lua;
 	this->tState = L;
-	state.setState(tState, lua.ptr(), false);
+	state.setState(tState, lua, false);
 
 	// register the yield method
 	lua_register(tState, "yield", luaYield);

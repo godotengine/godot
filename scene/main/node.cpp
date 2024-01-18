@@ -2631,6 +2631,10 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 			if (is_valid) {
 				current_node->set(script_property_name, scr);
 			}
+			N->get()->get(CoreStringNames::get_singleton()->master_script_name,, &is_valid);
+			if (is_valid) {
+				current_node->set(CoreStringNames::get_singleton()->master_script_name, scr);
+			}
 		}
 
 		List<PropertyInfo> plist;
@@ -2642,6 +2646,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 			}
 			String name = E.name;
 			if (name == script_property_name) {
+				continue;
+			}
+			if (name == CoreStringNames::get_singleton()->master_script_name) {
 				continue;
 			}
 

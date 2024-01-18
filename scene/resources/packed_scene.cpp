@@ -303,6 +303,13 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					}
 
 					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
+					if(snames[nprops[j].name] == CoreStringNames::get_singleton()->master_script_name)
+					{
+						node->set(snames[nprops[j].name], props[nprops[j].value], &valid);
+
+					}else
+
+
 
 					if (snames[nprops[j].name] == CoreStringNames::get_singleton()->_script) {
 						//work around to avoid old script variables from disappearing, should be the proper fix to:

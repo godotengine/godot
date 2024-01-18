@@ -11,7 +11,6 @@
 
 #include <classes/luaAPI.h>
 
-#include <lua/lua.hpp>
 
 #ifdef LAPI_GDEXTENSION
 using namespace godot;
@@ -22,7 +21,7 @@ using namespace godot;
 
 class LuaCallable : public CallableCustom {
 public:
-	LuaCallable(Ref<LuaAPI> obj, int ref, lua_State *p_state);
+	LuaCallable(LuaAPI* obj, int ref, lua_State *p_state);
 	virtual ~LuaCallable() override;
 
 	virtual uint32_t hash() const override;

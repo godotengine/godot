@@ -36,6 +36,7 @@ CoreStringNames::CoreStringNames() :
 		_free(StaticCString::create("free")),
 		changed(StaticCString::create("changed")),
 		_script(StaticCString::create("script")),
+		_master_script(StaticCString::create("master_script")),
 		script_changed(StaticCString::create("script_changed")),
 		___pdcdata(StaticCString::create("___pdcdata")),
 		__getvar(StaticCString::create("__getvar")),

@@ -120,6 +120,10 @@
 #endif // TOOLS_ENABLED && !GDSCRIPT_NO_LSP
 #endif // MODULE_GDSCRIPT_ENABLED
 
+
+
+#include "modules/godot_luaAPI/src/classes/luaAPI.h"
+
 /* Static members */
 
 // Singletons
@@ -153,6 +157,11 @@ static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
 static ThemeDB *theme_db = nullptr;
+
+
+
+static LuaAPI* lua_api = nullptr;
+
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -375,6 +384,21 @@ void finalize_theme_db() {
 	theme_db = nullptr;
 }
 
+
+
+
+
+void initialize_lua_api() {
+	lua_api = memnew(LuaAPI);
+}
+
+void finalize_lua_api() {
+	memdelete(lua_api);
+	lua_api = nullptr;
+}
+
+
+
 //#define DEBUG_INIT
 #ifdef DEBUG_INIT
 #define MAIN_PRINT(m_txt) print_line(m_txt)
@@ -595,6 +619,10 @@ Error Main::test_setup() {
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
 
+
+	initialize_lua_api();
+
+
 	register_scene_types();
 	register_driver_types();
 
@@ -676,6 +704,9 @@ void Main::test_cleanup() {
 	unregister_scene_types();
 
 	finalize_theme_db();
+
+
+	finalize_lua_api();
 
 	finalize_navigation_server();
 
@@ -2810,6 +2841,10 @@ Error Main::setup2() {
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
 
+
+	initialize_lua_api();
+
+
 	register_scene_types();
 	register_driver_types();
 
@@ -3968,6 +4003,9 @@ void Main::cleanup(bool p_force) {
 	unregister_scene_types();
 
 	finalize_theme_db();
+
+
+	finalize_lua_api();
 
 	// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
 	finalize_navigation_server();

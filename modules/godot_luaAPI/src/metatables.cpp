@@ -420,7 +420,7 @@ void LuaState::createObjectMetatable() {
 	luaL_newmetatable(L, "mt_Object");
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__index", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -436,7 +436,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__newindex", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -454,7 +454,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__call", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -477,10 +477,10 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__gc", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		// Sometimes the api ref is cleaned up first, so we need to check for that
-		if (!mt.is_valid() && api.is_valid()) {
+		if (!mt.is_valid() && api != nullptr) {
 			mt = api->getObjectMetatable();
 		}
 
@@ -500,7 +500,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__tostring", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -515,7 +515,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__len", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -530,7 +530,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__unm", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -545,7 +545,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__add", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -560,7 +560,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__sub", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -575,7 +575,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__mul", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -590,7 +590,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__div", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -605,7 +605,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__idiv", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -620,7 +620,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__mod", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -635,7 +635,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__pow", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -650,7 +650,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__concat", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -665,7 +665,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__band", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -680,7 +680,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__bor", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -695,7 +695,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__bxor", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -710,7 +710,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__bnot", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -725,7 +725,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__shl", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 		if (!mt.is_valid()) {
 			mt = api->getObjectMetatable();
@@ -740,7 +740,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__shr", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 
 		if (!mt.is_valid()) {
@@ -756,7 +756,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__eq", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 
 		if (!mt.is_valid()) {
@@ -772,7 +772,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__lt", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 
 		if (!mt.is_valid()) {
@@ -788,7 +788,7 @@ void LuaState::createObjectMetatable() {
 	});
 
 	LUA_METAMETHOD_TEMPLATE(L, -1, "__le", {
-		Ref<LuaAPI> api = getAPI(inner_state);
+		LuaAPI* api =LuaAPI::get_singleton();
 		Ref<LuaObjectMetatable> mt = arg1.get("lua_metatable");
 
 		if (!mt.is_valid()) {

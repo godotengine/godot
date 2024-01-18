@@ -658,7 +658,7 @@ Variant LuaState::getVariant(lua_State *state, int index,Variant ** var_ptr) {
 			break;
 		}
 		case LUA_TFUNCTION: {
-			Ref<LuaAPI> api = getAPI(state);
+			LuaAPI* api = getAPI(state);
 			// Put function on the top of the stack and get a ref to it. This will create a copy of the function.
 			lua_pushvalue(state, index);
 			if (api->getUseCallables()) {
@@ -1044,7 +1044,7 @@ void LuaState::luaHook(lua_State *state, lua_Debug *ar) {
 	}
 
 	Array args;
-	args.append(Ref<LuaAPI>(getAPI(state)));
+	args.append(getAPI(state));
 	args.append(ar->event);
 	args.append(ar->currentline);
 

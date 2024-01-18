@@ -26,8 +26,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void bind(Ref<LuaAPI> lua);
-	void bindExisting(Ref<LuaAPI> lua, lua_State *L);
+	void bind(LuaAPI*lua);
+	void bindExisting(LuaAPI*lua, lua_State *L);
 	void setHook(Callable hook, int mask, int count);
 
 	Signal yieldAwait(Array args);
@@ -56,7 +56,7 @@ public:
 
 private:
 	LuaState state;
-	Ref<LuaAPI> parent;
+	LuaAPI*parent;
 	lua_State *tState;
 	bool done;
 };

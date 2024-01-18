@@ -53,6 +53,7 @@ public:
 	StringName _free;
 	StringName changed;
 	StringName _script;
+	StringName _master_script;
 	StringName script_changed;
 	StringName ___pdcdata;
 	StringName __getvar;

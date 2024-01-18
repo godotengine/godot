@@ -143,7 +143,7 @@ namespace Foliage
 			Ref<FoliagePrototypeAsset>	dest;
 			Ref<FileAccess> file;
 		};
-        void unload(class FoliageManager * manager)
+        void unload()
         {
             
         }

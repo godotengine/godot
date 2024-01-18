@@ -34,145 +34,145 @@ void LuaObjectMetatable::_bind_methods() {
 	GDVIRTUAL_BIND(__le, "obj", "lua", "other");
 }
 
-Variant LuaObjectMetatable::__index(Object *obj, Ref<LuaAPI> api, Variant index) {
+Variant LuaObjectMetatable::__index(Object *obj, LuaAPI* api, Variant index) {
 	Variant ret;
 	VIRTUAL_CALL(__index, ret, obj, api, index);
 	return ret;
 }
 
-Ref<LuaError> LuaObjectMetatable::__newindex(Object *obj, Ref<LuaAPI> api, Variant index, Variant value) {
+Ref<LuaError> LuaObjectMetatable::__newindex(Object *obj,LuaAPI* api, Variant index, Variant value) {
 	Ref<LuaError> ret;
 	VIRTUAL_CALL(__newindex, ret, obj, api, index, value);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__call(Object *obj, Ref<LuaAPI> api, Ref<LuaTuple> args) {
+Variant LuaObjectMetatable::__call(Object *obj, LuaAPI* api, Ref<LuaTuple> args) {
 	Variant ret;
 	VIRTUAL_CALL(__call, ret, obj, api, args);
 	return ret;
 }
 
-Ref<LuaError> LuaObjectMetatable::__gc(Object *obj, Ref<LuaAPI> api) {
+Ref<LuaError> LuaObjectMetatable::__gc(Object *obj, LuaAPI* api) {
 	Ref<LuaError> ret;
 	VIRTUAL_CALL(__gc, ret, obj, api);
 	return ret;
 }
 
-String LuaObjectMetatable::__tostring(Object *obj, Ref<LuaAPI> api) {
+String LuaObjectMetatable::__tostring(Object *obj, LuaAPI*api) {
 	String ret;
 	VIRTUAL_CALL(__tostring, ret, obj, api);
 	return ret;
 }
 
-int LuaObjectMetatable::__len(Object *obj, Ref<LuaAPI> api) {
+int LuaObjectMetatable::__len(Object *obj, LuaAPI*api) {
 	int ret = 0;
 	VIRTUAL_CALL(__len, ret, obj, api);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__unm(Object *obj, Ref<LuaAPI> api) {
+Variant LuaObjectMetatable::__unm(Object *obj, LuaAPI*api) {
 	Variant ret;
 	VIRTUAL_CALL(__unm, ret, obj, api);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__add(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__add(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__add, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__sub(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__sub(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__sub, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__mul(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__mul(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__mul, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__div(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__div(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__div, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__idiv(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__idiv(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__idiv, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__mod(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__mod(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__mod, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__pow(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__pow(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__pow, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__band(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__band(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__band, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__bor(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__bor(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__bor, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__bxor(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__bxor(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__bxor, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__bnot(Object *obj, Ref<LuaAPI> api) {
+Variant LuaObjectMetatable::__bnot(Object *obj, LuaAPI*api) {
 	Variant ret;
 	VIRTUAL_CALL(__bnot, ret, obj, api);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__shl(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__shl(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__shl, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__shr(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__shr(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__shr, ret, obj, api, other);
 	return ret;
 }
 
-Variant LuaObjectMetatable::__concat(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaObjectMetatable::__concat(Object *obj, LuaAPI*api, Variant other) {
 	Variant ret;
 	VIRTUAL_CALL(__concat, ret, obj, api, other);
 	return ret;
 }
 
-bool LuaObjectMetatable::__eq(Object *obj, Ref<LuaAPI> api, Variant other) {
+bool LuaObjectMetatable::__eq(Object *obj, LuaAPI*api, Variant other) {
 	bool ret = false;
 	VIRTUAL_CALL(__eq, ret, obj, api, other);
 	return ret;
 }
 
-bool LuaObjectMetatable::__lt(Object *obj, Ref<LuaAPI> api, Variant other) {
+bool LuaObjectMetatable::__lt(Object *obj, LuaAPI*api, Variant other) {
 	bool ret = false;
 	VIRTUAL_CALL(__lt, ret, obj, api, other);
 	return ret;
 }
 
-bool LuaObjectMetatable::__le(Object *obj, Ref<LuaAPI> api, Variant other) {
+bool LuaObjectMetatable::__le(Object *obj, LuaAPI*api, Variant other) {
 	bool ret = false;
 	VIRTUAL_CALL(__le, ret, obj, api, other);
 	return ret;
@@ -194,7 +194,7 @@ bool LuaDefaultObjectMetatable::getPermissive() const {
 	return permissive;
 }
 
-Variant LuaDefaultObjectMetatable::__index(Object *obj, Ref<LuaAPI> api, Variant index) {
+Variant LuaDefaultObjectMetatable::__index(Object *obj, LuaAPI*api, Variant index) {
 	if (obj->has_method("__index")) {
 		return obj->call("__index", api, index);
 	}
@@ -211,7 +211,7 @@ Variant LuaDefaultObjectMetatable::__index(Object *obj, Ref<LuaAPI> api, Variant
 	return Variant();
 }
 
-Ref<LuaError> LuaDefaultObjectMetatable::__newindex(Object *obj, Ref<LuaAPI> api, Variant index, Variant value) {
+Ref<LuaError> LuaDefaultObjectMetatable::__newindex(Object *obj, LuaAPI*api, Variant index, Variant value) {
 	if (obj->has_method("__newindex")) {
 		Variant ret = obj->call("__newindex", api, index, value);
 		if (ret.get_type() == Variant::OBJECT) {
@@ -236,7 +236,7 @@ Ref<LuaError> LuaDefaultObjectMetatable::__newindex(Object *obj, Ref<LuaAPI> api
 	return LuaError::newError(vformat("Attempt to set field '%s' on object of type '%s' which is not a valid field.", index, obj->get_class()), LuaError::ERR_RUNTIME);
 }
 
-Variant LuaDefaultObjectMetatable::__call(Object *obj, Ref<LuaAPI> api, Ref<LuaTuple> args) {
+Variant LuaDefaultObjectMetatable::__call(Object *obj, LuaAPI*api, Ref<LuaTuple> args) {
 	if (obj->has_method("__call")) {
 		return obj->call("__call", api, args);
 	}
@@ -244,7 +244,7 @@ Variant LuaDefaultObjectMetatable::__call(Object *obj, Ref<LuaAPI> api, Ref<LuaT
 	return Variant();
 }
 
-Ref<LuaError> LuaDefaultObjectMetatable::__gc(Object *obj, Ref<LuaAPI> api) {
+Ref<LuaError> LuaDefaultObjectMetatable::__gc(Object *obj, LuaAPI*api) {
 	if (obj->has_method("__gc")) {
 		Variant ret = obj->call("__gc", api);
 		if (ret.get_type() == Variant::OBJECT) {
@@ -259,7 +259,7 @@ Ref<LuaError> LuaDefaultObjectMetatable::__gc(Object *obj, Ref<LuaAPI> api) {
 	return nullptr;
 }
 
-String LuaDefaultObjectMetatable::__tostring(Object *obj, Ref<LuaAPI> api) {
+String LuaDefaultObjectMetatable::__tostring(Object *obj, LuaAPI*api) {
 	if (obj->has_method("__tostring")) {
 		return obj->call("__tostring", api);
 	}
@@ -267,7 +267,7 @@ String LuaDefaultObjectMetatable::__tostring(Object *obj, Ref<LuaAPI> api) {
 	return String();
 }
 
-Variant LuaDefaultObjectMetatable::__unm(Object *obj, Ref<LuaAPI> api) {
+Variant LuaDefaultObjectMetatable::__unm(Object *obj, LuaAPI*api) {
 	if (obj->has_method("__unm")) {
 		return obj->call("__unm", api);
 	}
@@ -275,7 +275,7 @@ Variant LuaDefaultObjectMetatable::__unm(Object *obj, Ref<LuaAPI> api) {
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__add(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__add(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__add")) {
 		return obj->call("__add", api, other);
 	}
@@ -283,7 +283,7 @@ Variant LuaDefaultObjectMetatable::__add(Object *obj, Ref<LuaAPI> api, Variant o
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__sub(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__sub(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__sub")) {
 		return obj->call("__sub", api, other);
 	}
@@ -291,7 +291,7 @@ Variant LuaDefaultObjectMetatable::__sub(Object *obj, Ref<LuaAPI> api, Variant o
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__mul(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__mul(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__mul")) {
 		return obj->call("__mul", api, other);
 	}
@@ -299,7 +299,7 @@ Variant LuaDefaultObjectMetatable::__mul(Object *obj, Ref<LuaAPI> api, Variant o
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__div(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__div(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__div")) {
 		return obj->call("__div", api, other);
 	}
@@ -307,7 +307,7 @@ Variant LuaDefaultObjectMetatable::__div(Object *obj, Ref<LuaAPI> api, Variant o
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__idiv(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__idiv(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__idiv")) {
 		return obj->call("__idiv", api, other);
 	}
@@ -315,7 +315,7 @@ Variant LuaDefaultObjectMetatable::__idiv(Object *obj, Ref<LuaAPI> api, Variant 
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__mod(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__mod(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__mod")) {
 		return obj->call("__mod", api, other);
 	}
@@ -323,7 +323,7 @@ Variant LuaDefaultObjectMetatable::__mod(Object *obj, Ref<LuaAPI> api, Variant o
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__pow(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__pow(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__pow")) {
 		return obj->call("__pow", api, other);
 	}
@@ -331,7 +331,7 @@ Variant LuaDefaultObjectMetatable::__pow(Object *obj, Ref<LuaAPI> api, Variant o
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__band(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__band(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__band")) {
 		return obj->call("__band", api, other);
 	}
@@ -339,7 +339,7 @@ Variant LuaDefaultObjectMetatable::__band(Object *obj, Ref<LuaAPI> api, Variant 
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__bor(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__bor(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__bor")) {
 		return obj->call("__bor", api, other);
 	}
@@ -347,7 +347,7 @@ Variant LuaDefaultObjectMetatable::__bor(Object *obj, Ref<LuaAPI> api, Variant o
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__bxor(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__bxor(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__bxor")) {
 		return obj->call("__bxor", api, other);
 	}
@@ -355,7 +355,7 @@ Variant LuaDefaultObjectMetatable::__bxor(Object *obj, Ref<LuaAPI> api, Variant 
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__bnot(Object *obj, Ref<LuaAPI> api) {
+Variant LuaDefaultObjectMetatable::__bnot(Object *obj, LuaAPI*api) {
 	if (obj->has_method("__bnot")) {
 		return obj->call("__bnot", api);
 	}
@@ -363,7 +363,7 @@ Variant LuaDefaultObjectMetatable::__bnot(Object *obj, Ref<LuaAPI> api) {
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__shl(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__shl(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__shl")) {
 		return obj->call("__shl", api, other);
 	}
@@ -371,7 +371,7 @@ Variant LuaDefaultObjectMetatable::__shl(Object *obj, Ref<LuaAPI> api, Variant o
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__shr(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__shr(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__shr")) {
 		return obj->call("__shr", api, other);
 	}
@@ -379,7 +379,7 @@ Variant LuaDefaultObjectMetatable::__shr(Object *obj, Ref<LuaAPI> api, Variant o
 	return Variant();
 }
 
-Variant LuaDefaultObjectMetatable::__concat(Object *obj, Ref<LuaAPI> api, Variant other) {
+Variant LuaDefaultObjectMetatable::__concat(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__concat")) {
 		return obj->call("__concat", api, other);
 	}
@@ -387,7 +387,7 @@ Variant LuaDefaultObjectMetatable::__concat(Object *obj, Ref<LuaAPI> api, Varian
 	return Variant();
 }
 
-int LuaDefaultObjectMetatable::__len(Object *obj, Ref<LuaAPI> api) {
+int LuaDefaultObjectMetatable::__len(Object *obj, LuaAPI*api) {
 	if (obj->has_method("__len")) {
 		return obj->call("__len", api);
 	}
@@ -395,7 +395,7 @@ int LuaDefaultObjectMetatable::__len(Object *obj, Ref<LuaAPI> api) {
 	return Variant();
 }
 
-bool LuaDefaultObjectMetatable::__eq(Object *obj, Ref<LuaAPI> api, Variant other) {
+bool LuaDefaultObjectMetatable::__eq(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__eq")) {
 		return obj->call("__eq", api, other);
 	}
@@ -403,7 +403,7 @@ bool LuaDefaultObjectMetatable::__eq(Object *obj, Ref<LuaAPI> api, Variant other
 	return Variant();
 }
 
-bool LuaDefaultObjectMetatable::__lt(Object *obj, Ref<LuaAPI> api, Variant other) {
+bool LuaDefaultObjectMetatable::__lt(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__lt")) {
 		return obj->call("__lt", api, other);
 	}
@@ -411,7 +411,7 @@ bool LuaDefaultObjectMetatable::__lt(Object *obj, Ref<LuaAPI> api, Variant other
 	return Variant();
 }
 
-bool LuaDefaultObjectMetatable::__le(Object *obj, Ref<LuaAPI> api, Variant other) {
+bool LuaDefaultObjectMetatable::__le(Object *obj, LuaAPI*api, Variant other) {
 	if (obj->has_method("__le")) {
 		return obj->call("__le", api, other);
 	}

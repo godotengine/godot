@@ -1,5 +1,5 @@
 #include "foliage_cell_asset.h"
-#include "foliage_manager.h"
+#include "foliage_engine.h"
 
 namespace Foliage
 {
@@ -58,7 +58,7 @@ namespace Foliage
         return true;
 
     }
-    void FoliageCellAsset::update_load(class FoliageManager * manager)
+    void FoliageCellAsset::update_load()
     {
         if(is_attach_to_manager)
         {
@@ -68,7 +68,7 @@ namespace Foliage
         {
             for(int i = 0;i < datas.size();i++)
             {
-                manager->on_cell_load(region_offset,&datas[i]);
+                FoliageEngine::get_singleton().on_cell_load(region_offset,&datas[i]);
             }
             is_attach_to_manager = true;
             handle_load.unref();
