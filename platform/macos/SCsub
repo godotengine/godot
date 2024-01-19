@@ -113,6 +113,7 @@ files = [
     "godot_menu_delegate.mm",
     "godot_menu_item.mm",
     "godot_open_save_delegate.mm",
+    "native_menu_macos.mm",
     "dir_access_macos.mm",
     "tts_macos.mm",
     "joypad_macos.mm",

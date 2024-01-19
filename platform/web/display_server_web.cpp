@@ -1030,6 +1030,7 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	r_error = OK; // Always succeeds for now.
 
 	tts = GLOBAL_GET("audio/general/text_to_speech");
+	native_menu = memnew(NativeMenu); // Dummy native menu.
 
 	// Ensure the canvas ID.
 	godot_js_config_canvas_id_get(canvas_id, 256);
@@ -1098,6 +1099,10 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 }
 
 DisplayServerWeb::~DisplayServerWeb() {
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
 #ifdef GLES3_ENABLED
 	if (webgl_ctx) {
 		emscripten_webgl_commit_frame();
@@ -1108,7 +1113,11 @@ DisplayServerWeb::~DisplayServerWeb() {
 
 bool DisplayServerWeb::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		//case FEATURE_GLOBAL_MENU:
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		//case FEATURE_HIDPI:
 		case FEATURE_ICON:
 		case FEATURE_CLIPBOARD:

@@ -114,22 +114,29 @@ class MenuBar : public Control {
 	void _open_popup(int p_index, bool p_focus_item = false);
 	void _popup_visibility_changed(bool p_visible);
 
-	String global_menu_name;
+	String global_menu_tag;
 
 	int _find_global_start_index() {
-		if (global_menu_name.is_empty()) {
+		if (global_menu_tag.is_empty()) {
 			return -1;
 		}
 
-		DisplayServer *ds = DisplayServer::get_singleton();
-		int count = ds->global_menu_get_item_count("_main");
+		NativeMenu *nmenu = NativeMenu::get_singleton();
+		if (!nmenu) {
+			return -1;
+		}
+		RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
+		int count = nmenu->get_item_count(main_menu);
 		for (int i = 0; i < count; i++) {
-			if (ds->global_menu_get_item_tag("_main", i).operator String().begins_with(global_menu_name)) {
+			if (nmenu->get_item_tag(main_menu, i).operator String().begins_with(global_menu_tag)) {
 				return i;
 			}
 		}
 		return -1;
 	}
+
+	void bind_global_menu();
+	void unbind_global_menu();
 
 protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -142,9 +149,6 @@ protected:
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-
-	String bind_global_menu();
-	void unbind_global_menu();
 
 	void set_switch_on_hover(bool p_enabled);
 	bool is_switch_on_hover();

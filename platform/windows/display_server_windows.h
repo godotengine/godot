@@ -356,6 +356,7 @@ class DisplayServerWindows : public DisplayServer {
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
+	NativeMenu *native_menu = nullptr;
 
 	struct WindowData {
 		HWND hWnd;

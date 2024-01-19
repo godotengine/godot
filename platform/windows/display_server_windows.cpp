@@ -96,6 +96,11 @@ static void track_mouse_leave_event(HWND hWnd) {
 
 bool DisplayServerWindows::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_SUBWINDOWS:
 		case FEATURE_TOUCHSCREEN:
 		case FEATURE_MOUSE:
@@ -5173,6 +5178,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	if (tts_enabled) {
 		tts = memnew(TTS_Windows);
 	}
+	native_menu = memnew(NativeMenu);
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -5531,6 +5537,11 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	// Close power request handle.
 	screen_set_keep_on(false);
+
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
 
 #ifdef GLES3_ENABLED
 	// destroy windows .. NYI?

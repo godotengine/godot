@@ -31,6 +31,7 @@
 #include "godot_application_delegate.h"
 
 #include "display_server_macos.h"
+#include "native_menu_macos.h"
 #include "os_macos.h"
 
 @implementation GodotApplicationDelegate
@@ -211,9 +212,9 @@
 }
 
 - (NSMenu *)applicationDockMenu:(NSApplication *)sender {
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (ds) {
-		return ds->get_dock_menu();
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		return nmenu->_get_dock_menu();
 	} else {
 		return nullptr;
 	}
