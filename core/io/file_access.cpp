@@ -38,7 +38,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 
-FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = { nullptr, nullptr };
+FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
 
 FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
 
