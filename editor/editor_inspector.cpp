@@ -1199,6 +1199,7 @@ void EditorInspectorCategory::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+
 	menu->set_item_disabled(menu->get_item_index(MENU_OPEN_DOCS), !EditorHelp::get_doc_data()->class_list.has(doc_class_name));
 
 	menu->set_position(get_screen_position() + mb_event->get_position());
@@ -3196,8 +3197,10 @@ void EditorInspector::update_tree() {
 				}
 			}
 
+			DocTools* dd = EditorHelp::get_doc_data();
+
+			if(dd != nullptr)
 			if (!found) {
-				DocTools *dd = EditorHelp::get_doc_data();
 				// Do not cache the doc path information of scripts.
 				bool is_native_class = ClassDB::class_exists(classname);
 

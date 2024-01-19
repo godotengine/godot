@@ -113,11 +113,12 @@ private:
 	void create_lua_state();
 private:
 	bool useCallables = true;
+	String startLuaFile = "res://init.lua";
 	List<Ref<DirAccess>> searchPath;
 
 	bool is_jit = false;
 	String lua_start_string = "";
-	class LuaState* state;
+	class LuaState* state = nullptr;
 	struct lua_State *lState = nullptr;
 	int version = 0;
 

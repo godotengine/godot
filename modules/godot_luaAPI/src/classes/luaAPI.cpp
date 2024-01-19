@@ -30,7 +30,10 @@ LuaAPI::LuaAPI() {
 LuaAPI::~LuaAPI() {
 	close_lua_state();
 	singleton = nullptr;
-	memdelete(state);
+	if(state != nullptr)
+	{
+		memdelete(state);
+	}
 	
 }
 
@@ -40,6 +43,10 @@ LuaAPI* LuaAPI::get_singleton()
 }
 void LuaAPI::create_lua_state()
 {
+	if(state == nullptr)
+	{
+		state = memnew(LuaState);
+	}
 	if(lState == nullptr)
 	{
 		lState = lua_newstate(&LuaAPI::luaAlloc, (void *)&luaAllocData);
@@ -57,7 +64,10 @@ void LuaAPI::create_lua_state()
 		objectMetatable = mt;
 		// Creating lua state instance
 		state->setState(lState, this, true);
-		doString(lua_start_string);
+		if(FileAccess::exists(startLuaFile))
+		{
+			doFile(startLuaFile);
+		}
 		++version;
 	}
 
@@ -184,16 +194,19 @@ Variant LuaAPI::pullVariant(String name) {
 
 // Calls LuaState::callFunction()
 Variant LuaAPI::callFunction(String functionName, Array args) {
+	chack_load();
 	return state->callFunction(functionName, args);
 }
 // 获取全局表中的函数
 Ref<LuaError> LuaAPI::getTableFuncMap(String name, HashMap<StringName, Callable>& func_map,HashMap<StringName, Variant> & member_map)
 {
+	chack_load();
 	return state->getTableFuncMap(name, func_map,member_map);
 }
 
 void LuaAPI::getLuaClassTable(String table_name,Object* _this)
-{
+{	
+	chack_load();
 	LuaClassTable* ct = memnew(LuaClassTable);
 	ct->init(this,table_name,_this);
 }

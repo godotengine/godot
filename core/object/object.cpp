@@ -542,6 +542,9 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
+		
+		// lua 配置
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, "master_script", PROPERTY_HINT_RESOURCE_TYPE, "Lua Table Name", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
 	}
 
 	if (script_instance && !p_reversed) {
@@ -755,6 +758,12 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 	r_error.error = Callable::CallError::CALL_OK;
 
 	if (p_method == CoreStringNames::get_singleton()->_free) {
+		// 执行一下退出函数
+		if(master_script_instance) {
+			OBJ_DEBUG_LOCK
+			master_script_instance->callp(p_method, p_args, p_argcount, r_error);
+		}
+		
 //free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
 		if (p_argcount != 0) {
@@ -993,6 +1002,10 @@ void Object::set_master_script(StringName name)
 	master_script_name = name;
 	if(ObjectDB::s_create_master_func != nullptr)
 	{
+		set_master_script_instance(nullptr);
+		if(name == StringName()) {
+			return;
+		}
 		(*ObjectDB::s_create_master_func)(this,name);
 	}
 }
