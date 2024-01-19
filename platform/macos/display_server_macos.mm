@@ -2037,7 +2037,17 @@ bool DisplayServerMacOS::is_dark_mode() const {
 
 Color DisplayServerMacOS::get_accent_color() const {
 	if (@available(macOS 10.14, *)) {
-		NSColor *color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+		__block NSColor *color = nullptr;
+		if (@available(macOS 11.0, *)) {
+			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+				color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			}];
+		} else {
+			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
+			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
+			color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			[NSAppearance setCurrentAppearance:saved_appearance];
+		}
 		if (color) {
 			CGFloat components[4];
 			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
@@ -2047,6 +2057,41 @@ Color DisplayServerMacOS::get_accent_color() const {
 		}
 	} else {
 		return Color(0, 0, 0, 0);
+	}
+}
+
+Color DisplayServerMacOS::get_base_color() const {
+	if (@available(macOS 10.14, *)) {
+		__block NSColor *color = nullptr;
+		if (@available(macOS 11.0, *)) {
+			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+				color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			}];
+		} else {
+			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
+			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
+			color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			[NSAppearance setCurrentAppearance:saved_appearance];
+		}
+		if (color) {
+			CGFloat components[4];
+			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
+			return Color(components[0], components[1], components[2], components[3]);
+		} else {
+			return Color(0, 0, 0, 0);
+		}
+	} else {
+		return Color(0, 0, 0, 0);
+	}
+}
+
+void DisplayServerMacOS::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
+}
+
+void DisplayServerMacOS::emit_system_theme_changed() {
+	if (system_theme_changed.is_valid()) {
+		system_theme_changed.call();
 	}
 }
 

@@ -149,6 +149,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	private var useApkExpansion = false
 	private var useImmersive = false
 	private var useDebugOpengl = false
+	private var darkMode = false;
 
 	private var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
@@ -183,6 +184,8 @@ class Godot(private val context: Context) : SensorEventListener {
 			Log.d(TAG, "OnCreate already invoked")
 			return
 		}
+
+		darkMode = context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
 		beginBenchmarkMeasure("Startup", "Godot::onCreate")
 		try {
@@ -560,6 +563,17 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	/**
+	 * Configuration change callback
+	*/
+	fun onConfigurationChanged(newConfig: Configuration) {
+		var newDarkMode = newConfig.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		if (darkMode != newDarkMode) {
+			darkMode = newDarkMode
+			GodotLib.onNightModeChanged()
+		}
+	}
+
+	/**
 	 * Activity result callback
 	 */
 	fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -731,7 +745,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	@Keep
 	private fun isDarkModeSupported(): Boolean {
-		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+		return context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_UNDEFINED
 	}
 
 	/**
@@ -739,10 +753,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	@Keep
 	private fun isDarkMode(): Boolean {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			return context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-		}
-		return false
+		return darkMode
 	}
 
 	fun hasClipboard(): Boolean {

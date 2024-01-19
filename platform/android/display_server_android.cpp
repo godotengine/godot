@@ -127,6 +127,16 @@ bool DisplayServerAndroid::is_dark_mode() const {
 	return godot_java->is_dark_mode();
 }
 
+void DisplayServerAndroid::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
+}
+
+void DisplayServerAndroid::emit_system_theme_changed() {
+	if (system_theme_changed.is_valid()) {
+		system_theme_changed.call_deferred();
+	}
+}
+
 void DisplayServerAndroid::clipboard_set(const String &p_text) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL(godot_java);

@@ -364,6 +364,10 @@ bool DisplayServerX11::is_dark_mode() const {
 	}
 }
 
+void DisplayServerX11::set_system_theme_change_callback(const Callable &p_callable) {
+	portal_desktop->set_system_theme_change_callback(p_callable);
+}
+
 Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	WindowID window_id = last_focused_window;
 

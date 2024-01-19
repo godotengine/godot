@@ -3494,12 +3494,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_PAINT: {
 			Main::force_redraw();
 		} break;
-		case WM_SETTINGCHANGE: {
+		case WM_SETTINGCHANGE:
+		case WM_SYSCOLORCHANGE: {
 			if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, true) == CSTR_EQUAL) {
 				if (is_dark_mode_supported() && dark_title_available) {
 					BOOL value = is_dark_mode();
 					::DwmSetWindowAttribute(windows[window_id].hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 				}
+			}
+			if (system_theme_changed.is_valid()) {
+				system_theme_changed.call();
 			}
 		} break;
 		case WM_THEMECHANGED: {
@@ -5056,6 +5060,19 @@ Color DisplayServerWindows::get_accent_color() const {
 
 	int argb = GetImmersiveColorFromColorSetEx((UINT)GetImmersiveUserColorSetPreference(false, false), GetImmersiveColorTypeFromName(L"ImmersiveSystemAccent"), false, 0);
 	return Color((argb & 0xFF) / 255.f, ((argb & 0xFF00) >> 8) / 255.f, ((argb & 0xFF0000) >> 16) / 255.f, ((argb & 0xFF000000) >> 24) / 255.f);
+}
+
+Color DisplayServerWindows::get_base_color() const {
+	if (!ux_theme_available) {
+		return Color(0, 0, 0, 0);
+	}
+
+	int argb = GetImmersiveColorFromColorSetEx((UINT)GetImmersiveUserColorSetPreference(false, false), GetImmersiveColorTypeFromName(ShouldAppsUseDarkMode() ? L"ImmersiveDarkChromeMediumLow" : L"ImmersiveLightChromeMediumLow"), false, 0);
+	return Color((argb & 0xFF) / 255.f, ((argb & 0xFF00) >> 8) / 255.f, ((argb & 0xFF0000) >> 16) / 255.f, ((argb & 0xFF000000) >> 24) / 255.f);
+}
+
+void DisplayServerWindows::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
 }
 
 int DisplayServerWindows::tablet_get_driver_count() const {
