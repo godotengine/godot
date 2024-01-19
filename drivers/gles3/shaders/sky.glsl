@@ -12,6 +12,7 @@ mode_cubemap_quarter_res = #define USE_CUBEMAP_PASS \n#define USE_QUARTER_RES_PA
 
 USE_MULTIVIEW = false
 USE_INVERTED_Y = true
+APPLY_TONEMAPPING = true
 
 #[vertex]
 
@@ -103,6 +104,7 @@ uniform mat4 orientation;
 uniform vec4 projection;
 uniform vec3 position;
 uniform float time;
+uniform float sky_energy_multiplier;
 uniform float luminance_multiplier;
 
 uniform float fog_aerial_perspective;
@@ -195,12 +197,14 @@ void main() {
 
 	}
 
-	color *= luminance_multiplier;
+	color *= sky_energy_multiplier;
 
 	// Convert to Linear for tonemapping so color matches scene shader better
 	color = srgb_to_linear(color);
 	color *= exposure;
+#ifdef APPLY_TONEMAPPING
 	color = apply_tonemapping(color, white);
+#endif
 	color = linear_to_srgb(color);
 
 #ifdef USE_BCS
@@ -211,10 +215,10 @@ void main() {
 	color = apply_color_correction(color, color_correction);
 #endif
 
-	frag_color.rgb = color;
+	frag_color.rgb = color * luminance_multiplier;
 	frag_color.a = alpha;
 
 #ifdef USE_DEBANDING
-	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy) * luminance_multiplier;
+	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy) * sky_energy_multiplier * luminance_multiplier;
 #endif
 }

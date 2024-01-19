@@ -6,6 +6,7 @@ mode_copy_section = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY
 mode_copy_section_source = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define MODE_COPY_FROM
 mode_copy_section_3d = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define USE_TEXTURE_3D
 mode_copy_section_2d_array = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define USE_TEXTURE_2D_ARRAY
+mode_screen = #define MODE_SIMPLE_COPY \n#define MODE_MULTIPLY
 mode_gaussian_blur = #define MODE_GAUSSIAN_BLUR
 mode_mipmap = #define MODE_MIPMAP
 mode_simple_color = #define MODE_SIMPLE_COLOR \n#define USE_COPY_SECTION
@@ -53,6 +54,10 @@ uniform float lod;
 
 #ifdef MODE_SIMPLE_COLOR
 uniform vec4 color_in;
+#endif
+
+#ifdef MODE_MULTIPLY
+uniform float multiply;
 #endif
 
 #ifdef MODE_GAUSSIAN_BLUR
@@ -105,10 +110,14 @@ void main() {
 	vec4 color = textureLod(source_2d_array, vec3(uv_interp, layer), lod);
 #else
 	vec4 color = texture(source, uv_interp);
-#endif
+#endif // USE_TEXTURE_3D
+
+#ifdef MODE_MULTIPLY
+	color *= multiply;
+#endif // MODE_MULTIPLY
 
 	frag_color = color;
-#endif
+#endif // MODE_SIMPLE_COPY
 
 #ifdef MODE_SIMPLE_COLOR
 	frag_color = color_in;

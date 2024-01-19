@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  copy_effects.h                                                        */
+/*  glow.h                                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COPY_EFFECTS_GLES3_H
-#define COPY_EFFECTS_GLES3_H
+#ifndef GLOW_GLES3_H
+#define GLOW_GLES3_H
 
 #ifdef GLES3_ENABLED
 
-#include "drivers/gles3/shaders/effects/copy.glsl.gen.h"
+#include "drivers/gles3/shaders/effects/glow.glsl.gen.h"
 
 namespace GLES3 {
 
-class CopyEffects {
+class Glow {
 private:
-	struct Copy {
-		CopyShaderGLES3 shader;
-		RID shader_version;
-	} copy;
+	static Glow *singleton;
 
-	static CopyEffects *singleton;
+	struct GLOW {
+		GlowShaderGLES3 shader;
+		RID shader_version;
+	} glow;
+
+	float luminance_multiplier = 1.0;
+
+	float glow_intensity = 1.0;
+	float glow_bloom = 0.0;
+	float glow_hdr_bleed_threshold = 1.0;
+	float glow_hdr_bleed_scale = 2.0;
+	float glow_hdr_luminance_cap = 12.0;
 
 	// Use for full-screen effects. Slightly more efficient than screen_quad as this eliminates pixel overdraw along the diagonal.
 	GLuint screen_triangle = 0;
 	GLuint screen_triangle_array = 0;
 
-	// Use for rect-based effects.
-	GLuint quad = 0;
-	GLuint quad_array = 0;
+	void _draw_screen_triangle();
 
 public:
-	static CopyEffects *get_singleton();
+	struct GLOWLEVEL {
+		Size2i size;
+		GLuint color = 0;
+		GLuint fbo = 0;
+	};
 
-	CopyEffects();
-	~CopyEffects();
+	static Glow *get_singleton();
 
-	// These functions assume that a framebuffer and texture are bound already. They only manage the shader, uniforms, and vertex array.
-	void copy_to_rect(const Rect2 &p_rect);
-	void copy_to_rect_3d(const Rect2 &p_rect, float p_layer, int p_type, float p_lod = 0.0f);
-	void copy_to_and_from_rect(const Rect2 &p_rect);
-	void copy_screen(float p_multiply = 1.0);
-	void copy_cube_to_rect(const Rect2 &p_rect);
-	void copy_cube_to_panorama(float p_mip_level);
-	void bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region);
-	void gaussian_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region, const Size2i &p_size);
-	void set_color(const Color &p_color, const Rect2i &p_region);
-	void draw_screen_triangle();
-	void draw_screen_quad();
+	Glow();
+	~Glow();
+
+	void set_intensity(float p_value) { glow_intensity = p_value; }
+	void set_luminance_multiplier(float p_luminance_multiplier) { luminance_multiplier = p_luminance_multiplier; }
+	void set_glow_bloom(float p_bloom) { glow_bloom = p_bloom; }
+	void set_glow_hdr_bleed_threshold(float p_threshold) { glow_hdr_bleed_threshold = p_threshold; }
+	void set_glow_hdr_bleed_scale(float p_scale) { glow_hdr_bleed_scale = p_scale; }
+	void set_glow_hdr_luminance_cap(float p_cap) { glow_hdr_luminance_cap = p_cap; }
+
+	void process_glow(GLuint p_source_color, Size2i p_size, const GLOWLEVEL *p_glow_buffers, uint32_t p_view = 0, bool p_use_multiview = false);
 };
 
 } //namespace GLES3
 
 #endif // GLES3_ENABLED
 
-#endif // COPY_EFFECTS_GLES3_H
+#endif // GLOW_GLES3_H
