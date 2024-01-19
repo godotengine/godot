@@ -99,7 +99,10 @@ namespace Foliage
         void update(const Vector3& camera_pos);
     private:
         void update_foliage_asset_load(const Vector3& camera_pos);
-        void upload_map(const FoliageCellPos& _pos);
+        void upload_map(const FoliageCellPos& _pos)
+        {
+            
+        }
         String map_name = "foliage_map";
         // 設置主相機
         Camera3D* mainCamera;

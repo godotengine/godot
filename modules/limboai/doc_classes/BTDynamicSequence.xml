@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BTDynamicSequence" inherits="BTComposite" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		BT composite that executes tasks from scratch every tick as long as they return [code]SUCCESS[/code].
+	</brief_description>
+	<description>
+		BTDynamicSequence executes its child tasks sequentially, from first to last, for as long as they return [code]SUCCESS[/code]. Unlike [BTSequence], it will execute tasks from the beginning every tick, reevaluating their statuses. It is quite useful when you want to recheck conditions preceding a long-running action during each tick and abort the [code]RUNNING[/code] action when any condition results in [code]FAILURE[/code].
+		Returns [code]RUNNING[/code] if a child task results in [code]RUNNING[/code]. BTDynamicSequence will remember the last [code]RUNNING[/code] child, but, unlike [BTSequence], on the next execution tick, it will reexecute preceding tasks and reevaluate their return statuses. If any of the preceding tasks doesn't result in [code]SUCCESS[/code], it will abort the remembered [code]RUNNING[/code] task.
+		Returns [code]FAILURE[/code] if a child task results in [code]FAILURE[/code].
+		Returns [code]SUCCESS[/code] if all child tasks result in [code]SUCCESS[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BTStopAnimation" inherits="BTAction" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		BT action that stops the playback of an animation on the specified [AnimationPlayer] node.
+	</brief_description>
+	<description>
+		BTStopAnimation action stops the playback of an animation on the specified [AnimationPlayer] node and returns [code]SUCCESS[/code]. If [member animation_name] is set, it will only stop the playback if the specified animation is currently playing.
+		Returns [code]FAILURE[/code] if the action fails to get the [AnimationPlayer] node.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="animation_name" type="StringName" setter="set_animation_name" getter="get_animation_name" default="&amp;&quot;&quot;">
+			Animation's key within the [AnimationPlayer] node. If not empty, BTStopAnimation will only stop the playback if the specified animation is currently playing.
+		</member>
+		<member name="animation_player" type="BBNode" setter="set_animation_player" getter="get_animation_player">
+			Parameter that specifies the [AnimationPlayer] node.
+		</member>
+		<member name="keep_state" type="bool" setter="set_keep_state" getter="get_keep_state" default="false">
+			If [code]true[/code], the animation state is not updated visually.
+		</member>
+	</members>
+</class>

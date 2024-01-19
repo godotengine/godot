@@ -1,0 +1,27 @@
+[gd_resource type="BehaviorTree" load_steps=8 format=3 uid="uid://cen725hsk8lyl"]
+
+[sub_resource type="BTComment" id="BTComment_84hry"]
+custom_name = "This is a test of ProbabilitySelector choosing action to execute"
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_3d5qm"]
+text = "Rare action"
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_s6p66"]
+text = "Uncommon action"
+metadata/_weight_ = 4.0
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_2f8re"]
+text = "Common action"
+metadata/_weight_ = 12.0
+
+[sub_resource type="BTProbabilitySelector" id="BTProbabilitySelector_hy6es"]
+children = [SubResource("BTConsolePrint_3d5qm"), SubResource("BTConsolePrint_s6p66"), SubResource("BTConsolePrint_2f8re")]
+
+[sub_resource type="BTDelay" id="BTDelay_mxnxy"]
+children = [SubResource("BTProbabilitySelector_hy6es")]
+
+[sub_resource type="BTSequence" id="BTSequence_auek2"]
+children = [SubResource("BTComment_84hry"), SubResource("BTDelay_mxnxy")]
+
+[resource]
+root_task = SubResource("BTSequence_auek2")

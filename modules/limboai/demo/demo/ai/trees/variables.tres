@@ -1,0 +1,53 @@
+[gd_resource type="BehaviorTree" load_steps=13 format=3 uid="uid://cvm3gqes75f53"]
+
+[sub_resource type="BBVariant" id="BBVariant_t70f2"]
+resource_name = "false"
+saved_value = false
+type = 1
+
+[sub_resource type="BTSetVar" id="BTSetVar_nxwdg"]
+variable = "triggered"
+value = SubResource("BBVariant_t70f2")
+
+[sub_resource type="BTRunLimit" id="BTRunLimit_mlytb"]
+children = [SubResource("BTSetVar_nxwdg")]
+
+[sub_resource type="BBVariant" id="BBVariant_8bpg1"]
+resource_name = "false"
+saved_value = false
+type = 1
+
+[sub_resource type="BTCheckVar" id="BTCheckVar_g5b0s"]
+variable = "triggered"
+value = SubResource("BBVariant_8bpg1")
+
+[sub_resource type="BBVariant" id="BBVariant_loenl"]
+resource_name = "true"
+saved_value = true
+type = 1
+
+[sub_resource type="BTSetVar" id="BTSetVar_u051c"]
+variable = "triggered"
+value = SubResource("BBVariant_loenl")
+
+[sub_resource type="BBVariant" id="BBVariant_cu1uc"]
+resource_name = "Hello, World!"
+saved_value = "Hello, World!"
+type = 4
+
+[sub_resource type="BTSetVar" id="BTSetVar_2e0uw"]
+variable = "message"
+value = SubResource("BBVariant_cu1uc")
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_533ui"]
+text = "Message is: %s"
+bb_format_parameters = PackedStringArray("message")
+
+[sub_resource type="BTSequence" id="BTSequence_bhar3"]
+children = [SubResource("BTCheckVar_g5b0s"), SubResource("BTSetVar_u051c"), SubResource("BTSetVar_2e0uw"), SubResource("BTConsolePrint_533ui")]
+
+[sub_resource type="BTSelector" id="BTSelector_ndrjh"]
+children = [SubResource("BTRunLimit_mlytb"), SubResource("BTSequence_bhar3")]
+
+[resource]
+root_task = SubResource("BTSelector_ndrjh")

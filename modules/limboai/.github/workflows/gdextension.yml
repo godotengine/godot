@@ -1,0 +1,210 @@
+name: 🔌 GDExtension
+on:
+  workflow_call:
+    inputs:
+      godot-cpp-treeish:
+        description: A tag, branch or commit hash in the godot-cpp repository.
+        type: string
+        default: 4.2
+      limboai-treeish:
+        description: A tag, branch or commit hash in the LimboAI repository.
+        type: string
+        default: master
+      test-build:
+        description: Should we perform only a limited number of test builds?
+        type: boolean
+        default: false
+
+  workflow_dispatch:
+    inputs:
+      godot-cpp-treeish:
+        description: A tag, branch or commit hash in the godot-cpp repository.
+        type: string
+        default: 4.2
+      limboai-treeish:
+        description: A tag, branch or commit hash in the LimboAI repository.
+        type: string
+        default: master
+      test-build:
+        description: Should we perform only a limited number of test builds?
+        type: boolean
+        default: false
+
+# Global Settings
+env:
+  SCONS_CACHE_LIMIT: 4096
+  SCONSFLAGS: dev_build=no debug_symbols=no
+
+jobs:
+  gdextension:
+    runs-on: ${{ matrix.opts.runner }}
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: 🐧 Linux (x86_64, release)
+            runner: ubuntu-20.04
+            platform: linux
+            target: template_release
+            arch: x86_64
+            should-build: true
+
+          - name: 🐧 Linux (x86_64, debug)
+            runner: ubuntu-20.04
+            platform: linux
+            target: editor
+            arch: x86_64
+            should-build: true
+
+          - name: 🪟 Windows (x86_64, release)
+            runner: windows-latest
+            platform: windows
+            target: template_release
+            arch: x86_64
+            should-build: true
+
+          - name: 🪟 Windows (x86_64, debug)
+            runner: windows-latest
+            platform: windows
+            target: editor
+            arch: x86_64
+            should-build: true
+
+          - name: 🍎 macOS (universal, release)
+            runner: macos-latest
+            platform: macos
+            target: template_release
+            arch: universal
+            should-build: true
+
+          - name: 🍎 macOS (universal, debug)
+            runner: macos-latest
+            platform: macos
+            target: editor
+            arch: universal
+            should-build: true
+
+        exclude:
+          - { opts: {should-build: false }}
+
+    env:
+      BIN: liblimboai.${{matrix.opts.platform}}.${{matrix.opts.target}}.${{matrix.opts.arch}}
+
+    steps:
+      - name: Clone godot-cpp
+        uses: actions/checkout@v4
+        with:
+          repository: godotengine/godot-cpp
+          fetch-tags: true
+          path: godot-cpp
+          ref: ${{ inputs.godot-cpp-treeish }}
+
+      - name: Clone LimboAI module
+        uses: actions/checkout@v4
+        with:
+          path: limboai
+          fetch-tags: true
+          ref: ${{ inputs.limboai-treeish }}
+
+      # Inits GDEXTENSION_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
+      - uses: ./limboai/.github/actions/init-version-gdext
+
+      - name: Set up Linux buildroot x86_64
+        if: matrix.opts.platform == 'linux' && matrix.opts.arch == 'x86_64'
+        run: |
+          wget https://download.tuxfamily.org/godotengine/toolchains/linux/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar -xjf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv x86_64-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          ./relocate-sdk.sh
+          cd ..
+
+      - name: Set up Linux buildroot x86_32
+        if: matrix.opts.platform == 'linux' && matrix.opts.arch == 'x86_32'
+        run: |
+          wget https://download.tuxfamily.org/godotengine/toolchains/linux/i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar -xjf i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv i686-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          ./relocate-sdk.sh
+          cd ..
+
+      - name: Set up Python 3.x
+        if: matrix.opts.platform == 'windows' || matrix.opts.platform == 'macos'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          architecture: 'x64'
+
+      - name: Set up scons
+        if: matrix.opts.platform == 'windows' || matrix.opts.platform == 'macos'
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons==4.4.0
+          python --version
+          scons --version
+
+      - name: Set up MSVC problem matcher on Windows
+        if: matrix.opts.platform == 'windows'
+        uses: ammaraskar/msvc-problem-matcher@master
+
+      - name: Set up scons cache
+        uses: actions/cache@v3
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{env.BIN}}-${{inputs.godot-cpp-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+          restore-keys: |
+            ${{env.BIN}}-${{inputs.godot-cpp-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+            ${{env.BIN}}-${{inputs.godot-cpp-treeish}}-${{inputs.limboai-treeish}}
+            ${{env.BIN}}-${{inputs.godot-cpp-treeish}}
+
+      - name: Setup project structure for GDExtension
+        shell: bash
+        run: |
+          bash ./limboai/gdextension/setup_gdextension.sh --copy-all
+          echo "---"
+          ls -l
+          echo "---"
+          ls -l -R ./demo/
+
+
+      - name: Compilation
+        shell: bash
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+        run: |
+          PATH=${GITHUB_WORKSPACE}/buildroot/bin:$PATH
+          scons platform=${{matrix.opts.platform}} target=${{matrix.opts.target}} arch=${{matrix.opts.arch}} ${{env.SCONSFLAGS}}
+
+      - name: Prepare artifact
+        shell: bash
+        run: |
+          mkdir out
+          mv demo/addons/ out/
+          cp limboai/{README,LICENSE,LOGO_LICENSE}.md out/addons/limboai/
+          cp -R limboai/demo/demo out/demo
+          rm -f out/addons/limboai/bin/*.{exp,lib,pdb}
+          echo "---"
+          ls -R out/
+
+      - name: Strip lib
+        if: matrix.opts.platform != 'windows'
+        run: |
+          ls -l -R out/addons/limboai/bin/
+          echo "---"
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            strip -u out/addons/limboai/bin/liblimboai*/liblimboai*
+          else
+            strip out/addons/limboai/bin/liblimboai*
+          fi
+          echo "---"
+          ls -l -R out/addons/limboai/bin/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        env:
+          NAME: ${{env.NAME_PREFIX}}
+        with:
+          name: ${{ env.NAME }}
+          path: out/*

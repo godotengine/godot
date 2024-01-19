@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://c3d3ed6545cly"]
+
+[ext_resource type="Script" path="res://demo/tests/agent_properties/agent_properties.gd" id="1_jh88u"]
+[ext_resource type="BehaviorTree" uid="uid://ddhxf0haxgw" path="res://demo/tests/agent_properties/bt_agent_properties.tres" id="2_txe8k"]
+
+[node name="AgentProperties" type="Node2D"]
+script = ExtResource("1_jh88u")
+
+[node name="BTPlayer" type="BTPlayer" parent="."]
+behavior_tree = ExtResource("2_txe8k")

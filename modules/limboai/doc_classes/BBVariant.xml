@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BBVariant" inherits="BBParam" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Variant-type parameter for [BehaviorTree] tasks. See [BBParam].
+	</brief_description>
+	<description>
+		Variant-type parameter intended for use with [BehaviorTree] tasks. See [BBParam].
+		The data type is specified by [member type].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" enum="Variant.Type" default="0">
+			Specified [enum Variant.Type] for the parameter value.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BTPauseAnimation" inherits="BTAction" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		BT action that pauses the playback of an animation on the specified [AnimationPlayer] node.
+	</brief_description>
+	<description>
+		BTPauseAnimation action pauses the playback of an animation on the specified [AnimationPlayer] node and returns [code]SUCCESS[/code].
+		Returns [code]FAILURE[/code] if the action fails to get the [AnimationPlayer] node.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="animation_player" type="BBNode" setter="set_animation_player" getter="get_animation_player">
+			Parameter that specifies the [AnimationPlayer] node.
+		</member>
+	</members>
+</class>

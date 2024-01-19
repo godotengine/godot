@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://d4bjeyescflm8"]
+
+[ext_resource type="BehaviorTree" uid="uid://cvm3gqes75f53" path="res://demo/ai/trees/variables.tres" id="1_cm2sf"]
+
+[node name="Variables Example" type="Node2D"]
+
+[node name="BTPlayer" type="BTPlayer" parent="."]
+behavior_tree = ExtResource("1_cm2sf")

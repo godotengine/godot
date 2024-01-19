@@ -32,6 +32,10 @@ namespace Foliage
 
         }
     }
+    void FoliageEngine::update(const Vector3& camera_pos)
+    {
+        
+    }
     void FoliageEngine::update_foliage_asset_load(const Vector3& camera_pos)
     {
         int map_index_x = camera_pos.x / (FoliageGlobals::CELL_SIZE * FoliageGlobals::PAGE_SIZE * map_page_count);

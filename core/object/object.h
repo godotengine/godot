@@ -906,7 +906,7 @@ public:
 	uint32_t get_edited_version() const;
 #endif
 	void set_master_script(StringName name);
-	StringName get_master_script(){return master_script_name;}
+	StringName get_master_script()const{return master_script_name;}
 
 	void set_script_instance(ScriptInstance *p_instance);
 	_FORCE_INLINE_ ScriptInstance *get_script_instance() const { return script_instance; }

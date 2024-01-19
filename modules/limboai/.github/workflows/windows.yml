@@ -1,0 +1,217 @@
+name: 🪟 Windows builds
+on:
+  workflow_call:
+    inputs:
+      godot-treeish:
+        description: A tag, branch or commit hash in the Godot repository.
+        type: string
+        default: master
+      limboai-treeish:
+        description: A tag, branch or commit hash in the LimboAI repository.
+        type: string
+        default: master
+      test-build:
+        description: Should we perform only a limited number of test builds?
+        type: boolean
+        default: false
+
+  workflow_dispatch:
+    inputs:
+      godot-treeish:
+        description: A tag, branch or commit hash in the Godot repository.
+        type: string
+        default: master
+      limboai-treeish:
+        description: A tag, branch or commit hash in the LimboAI repository.
+        type: string
+        default: master
+      test-build:
+        description: Should we perform only a limited number of test builds?
+        type: boolean
+        default: false
+
+# Global Settings
+env:
+  SCONS_CACHE_MSVC_CONFIG: true
+  SCONS_CACHE_LIMIT: 4096
+  SCONSFLAGS: production=yes tests=no verbose=yes warnings=extra werror=yes
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  windows-builds:
+    runs-on: "windows-latest"
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: Editor (x86_64, release)
+            target: editor
+            arch: x86_64
+            build-mono: false
+            should-build: true
+
+          - name: Template (x86_64, release)
+            target: template_release
+            arch: x86_64
+            build-mono: false
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template (x86_64, debug)
+            target: template_debug
+            arch: x86_64
+            build-mono: false
+            should-build: ${{ !inputs.test-build }}
+
+          # - name: Editor (x86_32, release)
+          #   target: editor
+          #   arch: x86_32
+          #   build-mono: false
+          # should-build: ${{ !inputs.test-build }}
+
+          - name: Template (x86_32, release)
+            target: template_release
+            arch: x86_32
+            build-mono: false
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template (x86_32, debug)
+            target: template_debug
+            arch: x86_32
+            build-mono: false
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Editor .NET (x86_64, release)
+            target: editor
+            arch: x86_64
+            build-mono: true
+            should-build: true
+
+          - name: Template .NET (x86_64, release)
+            target: template_release
+            arch: x86_64
+            build-mono: true
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template .NET (x86_64, debug)
+            target: template_debug
+            arch: x86_64
+            build-mono: true
+            should-build: ${{ !inputs.test-build }}
+
+          # - name: Editor .NET (x86_32, release)
+          #   target: editor
+          #   arch: x86_32
+          #   build-mono: true
+          # should-build: ${{ !inputs.test-build }}
+
+          - name: Template .NET (x86_32, release)
+            target: template_release
+            arch: x86_32
+            build-mono: true
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template .NET (x86_32, debug)
+            target: template_debug
+            arch: x86_32
+            build-mono: true
+            should-build: ${{ !inputs.test-build }}
+
+        exclude:
+          - { opts: {should-build: false }}
+
+    env:
+      BIN: godot.windows.${{matrix.opts.target}}.${{matrix.opts.arch}}${{  matrix.opts.build-mono == true && '.mono' || ''  }}
+
+    steps:
+      - name: Clone Godot
+        uses: actions/checkout@v4
+        with:
+          repository: godotengine/godot
+          ref: ${{ inputs.godot-treeish }}
+
+      - name: Clone LimboAI module
+        uses: actions/checkout@v4
+        with:
+          path: modules/limboai
+          ref: ${{ inputs.limboai-treeish }}
+
+      # Inits GODOT_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
+      - uses: ./modules/limboai/.github/actions/init-version
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          architecture: 'x64'
+
+      - name: Set up scons
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons==4.4.0
+          python --version
+          scons --version
+
+      - name: Set up MSVC problem matcher
+        uses: ammaraskar/msvc-problem-matcher@master
+
+      - name: Set up scons cache
+        uses: actions/cache@v3
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+          restore-keys: |
+            ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+            ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}
+            ${{env.BIN}}-${{inputs.godot-treeish}}
+
+      - name: Compilation
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+        run: |
+          scons -j2 platform=windows target=${{matrix.opts.target}} arch=${{matrix.opts.arch}} module_mono_enabled=${{matrix.opts.build-mono}} ${{env.SCONSFLAGS}}
+
+      - name: Generate C# glue
+        if: matrix.opts.build-mono && matrix.opts.target == 'editor'
+        env:
+          GODOT_VERSION_STATUS: limboai
+        run: |
+          ./bin/${{ env.BIN }} --headless --generate-mono-glue ./modules/mono/glue || true
+
+      - name: Build .NET solutions
+        if: matrix.opts.build-mono && matrix.opts.target == 'editor'
+        env:
+          GODOT_VERSION_STATUS: limboai
+        run: |
+          python ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=windows
+
+      - name: Prepare artifact
+        shell: bash
+        env:
+          OUTDIR: ${{ startsWith(matrix.opts.target, 'template') && 'out/templates' || 'out/' }}
+        run: |
+          rm -f bin/*.{exp,lib,pdb}
+          mkdir -p ${{env.OUTDIR}}
+          mv bin/* ${{env.OUTDIR}}
+          ls -R out/
+
+      - name: Rename templates
+        if: startsWith(matrix.opts.target, 'template')
+        shell: bash
+        env:
+          BUILD_TYPE: ${{ endsWith(matrix.opts.target, 'release') && 'release' || 'debug' }}
+        run: |
+          mv out/templates/${BIN}.exe out/templates/windows_${BUILD_TYPE}_${{matrix.opts.arch}}.exe
+          mv out/templates/${BIN}.console.exe out/templates/windows_${BUILD_TYPE}_${{matrix.opts.arch}}_console.exe
+          echo "${GODOT_VERSION}.limboai+${LIMBOAI_VERSION}" > out/templates/version.txt
+          ls -R out/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        env:
+          NAME_EDITOR: ${{env.NAME_PREFIX}}.${{matrix.opts.target}}.windows.${{matrix.opts.arch}}${{  matrix.opts.build-mono == true && '.mono' || ''  }}
+          NAME_TEMPLATES: ${{env.NAME_PREFIX}}.export-templates${{  matrix.opts.build-mono == true && '.mono' || ''  }}
+        with:
+          name: ${{ startsWith(matrix.opts.target, 'template') && env.NAME_TEMPLATES || env.NAME_EDITOR  }}
+          path: out/*

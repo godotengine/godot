@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BT" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Base of [BTTask].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<constants>
+		<constant name="FRESH" value="0" enum="Status">
+			Task wasn't executed yet or it was aborted and reset.
+		</constant>
+		<constant name="RUNNING" value="1" enum="Status">
+			Task is being performed and hasn't finished yet.
+		</constant>
+		<constant name="FAILURE" value="2" enum="Status">
+			Task has finished with failure.
+		</constant>
+		<constant name="SUCCESS" value="3" enum="Status">
+			Task has finished with success.
+		</constant>
+	</constants>
+</class>

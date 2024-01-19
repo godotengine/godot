@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BTRepeat" inherits="BTDecorator" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		BT decorator that repeats its child a specified number of [member times].
+	</brief_description>
+	<description>
+		BTRepeat iterates its child task a specified number of times, as defined by [member times]. If [member forever] is [code]true[/code], the child's execution will be repeated indefinitely.
+		Returns [code]RUNNING[/code] if the child task results in [code]RUNNING[/code]. If [member forever] is [code]true[/code], BTRepeat will always return [code]RUNNING[/code].
+		Returns [code]SUCCESS[/code] if the specified number of successful executions is reached. If [member abort_on_failure] is [code]false[/code], a [code]FAILURE[/code] status returned by the child is also considered a successful execution.
+		Returns [code]FAILURE[/code] if the child task results in [code]FAILURE[/code] when [member abort_on_failure] is [code]true[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="abort_on_failure" type="bool" setter="set_abort_on_failure" getter="get_abort_on_failure" default="false">
+			If [code]false[/code], [code]FAILURE[/code] status returned by the child task is also considered as a successful execution.
+		</member>
+		<member name="forever" type="bool" setter="set_forever" getter="get_forever" default="false">
+			If [code]true[/code], the child's execution will be repeated indefinitely, always returning [code]RUNNING[/code].
+		</member>
+		<member name="times" type="int" setter="set_times" getter="get_times" default="1">
+			The number of times to repeat execution of the child task.
+		</member>
+	</members>
+</class>

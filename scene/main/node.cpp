@@ -2631,9 +2631,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 			if (is_valid) {
 				current_node->set(script_property_name, scr);
 			}
-			N->get()->get(CoreStringNames::get_singleton()->master_script_name,, &is_valid);
+			N->get()->get(CoreStringNames::get_singleton()->_master_script, &is_valid);
 			if (is_valid) {
-				current_node->set(CoreStringNames::get_singleton()->master_script_name, scr);
+				current_node->set(CoreStringNames::get_singleton()->_master_script, scr);
 			}
 		}
 
@@ -2648,7 +2648,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 			if (name == script_property_name) {
 				continue;
 			}
-			if (name == CoreStringNames::get_singleton()->master_script_name) {
+			if (name == CoreStringNames::get_singleton()->_master_script) {
 				continue;
 			}
 

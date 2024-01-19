@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BTWaitTicks" inherits="BTAction" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		BT action that waits for a specified number of ticks to elapse and then returns [code]SUCCESS[/code].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="num_ticks" type="int" setter="set_num_ticks" getter="get_num_ticks" default="1">
+			The number of ticks to wait before returning [code]SUCCESS[/code].
+		</member>
+	</members>
+</class>

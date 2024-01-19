@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dgeb7tg8xb3j4"]
+
+[ext_resource type="BehaviorTree" uid="uid://cen725hsk8lyl" path="res://demo/tests/probability_selector/bt_test_probability_selector.tres" id="1_lr7l2"]
+
+[node name="test_probability_selector" type="Node2D"]
+
+[node name="BTPlayer" type="BTPlayer" parent="."]
+behavior_tree = ExtResource("1_lr7l2")

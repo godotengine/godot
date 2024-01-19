@@ -1,0 +1,233 @@
+name: 🐧 Linux builds
+on:
+  workflow_call:
+    inputs:
+      godot-treeish:
+        description: A tag, branch or commit hash in the Godot repository.
+        type: string
+        default: master
+      limboai-treeish:
+        description: A tag, branch or commit hash in the LimboAI repository.
+        type: string
+        default: master
+      test-build:
+        description: Should we perform only a limited number of test builds?
+        type: boolean
+        default: false
+
+  workflow_dispatch:
+    inputs:
+      godot-treeish:
+        description: A tag, branch or commit hash in the Godot repository.
+        type: string
+        default: master
+      limboai-treeish:
+        description: A tag, branch or commit hash in the LimboAI repository.
+        type: string
+        default: master
+      test-build:
+        description: Should we perform only a limited number of test builds?
+        type: boolean
+        default: false
+
+# Global Settings
+env:
+  SCONS_CACHE_LIMIT: 4096
+  SCONSFLAGS: production=yes tests=no verbose=yes warnings=extra werror=yes
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  linux-builds:
+    runs-on: "ubuntu-20.04"
+    name: ${{ matrix.opts.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - name: Editor (x86_64, release)
+            target: editor
+            arch: x86_64
+            build-mono: false
+            should-build: true
+
+          - name: Template (x86_64, release)
+            target: template_release
+            arch: x86_64
+            build-mono: false
+            should-build: true
+
+          - name: Template (x86_64, debug)
+            target: template_debug
+            arch: x86_64
+            build-mono: false
+            should-build: ${{ !inputs.test-build }}
+
+          # - name: Editor (x86_32, release)
+          #   target: editor
+          #   arch: x86_32
+          #   build-mono: false
+          #   should-build: ${{ !inputs.test-build }}
+
+          - name: Template (x86_32, release)
+            target: template_release
+            arch: x86_32
+            build-mono: false
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template (x86_32, debug)
+            target: template_debug
+            arch: x86_32
+            build-mono: false
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Editor .NET (x86_64, release)
+            target: editor
+            arch: x86_64
+            build-mono: true
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template .NET (x86_64, release)
+            target: template_release
+            arch: x86_64
+            build-mono: true
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template .NET (x86_64, debug)
+            target: template_debug
+            arch: x86_64
+            build-mono: true
+            should-build: ${{ !inputs.test-build }}
+
+          # - name: Editor .NET (x86_32, release)
+          #   target: editor
+          #   arch: x86_32
+          #   build-mono: true
+          #   should-build: ${{ !inputs.test-build }}
+
+          - name: Template .NET (x86_32, release)
+            target: template_release
+            arch: x86_32
+            build-mono: true
+            should-build: ${{ !inputs.test-build }}
+
+          - name: Template .NET (x86_32, debug)
+            target: template_debug
+            arch: x86_32
+            build-mono: true
+            should-build: ${{ !inputs.test-build }}
+
+        exclude:
+          - { opts: {should-build: false }}
+
+    env:
+      BIN: godot.linuxbsd.${{matrix.opts.target}}.${{matrix.opts.arch}}${{  matrix.opts.build-mono == true && '.mono' || ''  }}
+
+    steps:
+      - name: Clone Godot
+        uses: actions/checkout@v4
+        with:
+          repository: godotengine/godot
+          ref: ${{ inputs.godot-treeish }}
+
+      - name: Clone LimboAI module
+        uses: actions/checkout@v4
+        with:
+          path: modules/limboai
+          ref: ${{ inputs.limboai-treeish }}
+
+      # Inits GODOT_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
+      - uses: ./modules/limboai/.github/actions/init-version
+
+      # About sed see: https://github.com/godotengine/buildroot/issues/6
+      - name: Set up buildroot x86_64
+        if: matrix.opts.arch == 'x86_64'
+        run: |
+          wget https://download.tuxfamily.org/godotengine/toolchains/linux/x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar -xjf x86_64-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv x86_64-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          sed -i x86_64-godot-linux-gnu/sysroot/usr/lib/pkgconfig/dbus-1.pc -e "s@/lib@/lib64@g"
+          ./relocate-sdk.sh
+          cd ..
+
+      - name: Set up buildroot x86_32
+        if: matrix.opts.arch == 'x86_32'
+        run: |
+          wget https://download.tuxfamily.org/godotengine/toolchains/linux/i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          tar -xjf i686-godot-linux-gnu_sdk-buildroot.tar.bz2
+          mv i686-godot-linux-gnu_sdk-buildroot buildroot
+          cd buildroot
+          ./relocate-sdk.sh
+          cd ..
+
+      - name: Set up scons cache
+        uses: actions/cache@v3
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+          restore-keys: |
+            ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+            ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}
+            ${{env.BIN}}-${{inputs.godot-treeish}}
+
+      - name: Compilation
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+        run: |
+          PATH=${GITHUB_WORKSPACE}/buildroot/bin:$PATH
+          scons platform=linuxbsd target=${{matrix.opts.target}} arch=${{matrix.opts.arch}} module_mono_enabled=${{matrix.opts.build-mono}} ${{env.SCONSFLAGS}}
+
+      - name: Generate C# glue
+        if: matrix.opts.build-mono && matrix.opts.target == 'editor'
+        env:
+          GODOT_VERSION_STATUS: limboai
+        run: |
+          ./bin/$BIN --headless --generate-mono-glue ./modules/mono/glue || true
+
+      - name: Build .NET solutions
+        if: matrix.opts.build-mono && matrix.opts.target == 'editor'
+        env:
+          GODOT_VERSION_STATUS: limboai
+        run: |
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd
+
+      - name: Prepare artifact
+        env:
+          OUTDIR: ${{ startsWith(matrix.opts.target, 'template') && 'out/templates' || 'out/' }}
+        run: |
+          strip ./bin/godot.*
+          chmod +x ./bin/godot.*
+          mkdir -p ${{env.OUTDIR}}
+          mv bin/* ${{env.OUTDIR}}
+          ls -R out/
+
+      # Zipping the editor artifact to retain executable bit;
+      # workaround for: https://github.com/actions/upload-artifact/issues/38
+      - name: Zip the editor artifact
+        if: matrix.opts.target == 'editor'
+        shell: bash
+        run: |
+          pushd out/
+          zip -r godot-limboai.editor.linux.zip *
+          rm godot.*
+          echo -e "## Why another ZIP inside?\n\nWorkaround for: https://github.com/actions/upload-artifact/issues/38\n" > README.md
+          popd
+
+      - name: Rename templates
+        if: startsWith(matrix.opts.target, 'template')
+        env:
+          BUILD_TYPE: ${{ endsWith(matrix.opts.target, 'release') && 'release' || 'debug' }}
+        run: |
+          mv out/templates/${BIN} out/templates/linux_${BUILD_TYPE}.${{matrix.opts.arch}}
+          echo "${GODOT_VERSION}.limboai+${LIMBOAI_VERSION}" > out/templates/version.txt
+          ls -R out/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        env:
+          NAME_EDITOR: ${{env.NAME_PREFIX}}.${{matrix.opts.target}}.linux.${{matrix.opts.arch}}${{  matrix.opts.build-mono == true && '.mono' || ''  }}
+          NAME_TEMPLATES: ${{env.NAME_PREFIX}}.export-templates${{  matrix.opts.build-mono == true && '.mono' || ''  }}
+        with:
+          name: ${{ startsWith(matrix.opts.target, 'template') && env.NAME_TEMPLATES || env.NAME_EDITOR  }}
+          path: out/*

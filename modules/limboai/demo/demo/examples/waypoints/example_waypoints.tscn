@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3 uid="uid://p5i7fdku3hqs"]
+
+[ext_resource type="Script" path="res://demo/examples/waypoints/example_waypoints.gd" id="1_d4sso"]
+[ext_resource type="Script" path="res://demo/examples/waypoints/waypoint_marker.gd" id="2_l26sl"]
+[ext_resource type="PackedScene" uid="uid://c26b8c8dndtop" path="res://demo/examples/waypoints/patrolling_agent.tscn" id="3_t4qgi"]
+
+[node name="ExampleWaypoints" type="Node2D"]
+script = ExtResource("1_d4sso")
+
+[node name="Waypoints" type="Node2D" parent="."]
+
+[node name="WP1" type="Marker2D" parent="Waypoints"]
+position = Vector2(258, 126)
+script = ExtResource("2_l26sl")
+
+[node name="WP2" type="Marker2D" parent="Waypoints"]
+position = Vector2(830, 131)
+script = ExtResource("2_l26sl")
+
+[node name="WP3" type="Marker2D" parent="Waypoints"]
+position = Vector2(534, 492)
+script = ExtResource("2_l26sl")
+
+[node name="Agent" parent="." instance=ExtResource("3_t4qgi")]
+y_sort_enabled = true
+position = Vector2(57, 59)
+
+[node name="Agent2" parent="." instance=ExtResource("3_t4qgi")]
+y_sort_enabled = true
+position = Vector2(316, 590)

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BTWait" inherits="BTAction" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		BT action that waits for a specified [member duration] to elapse and then returns [code]SUCCESS[/code].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="duration" type="float" setter="set_duration" getter="get_duration" default="1.0">
+		</member>
+	</members>
+</class>

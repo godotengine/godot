@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BTInvert" inherits="BTDecorator" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		BT decorator that transforms [code]FAILURE[/code] into [code]SUCCESS[/code] and [code]SUCCESS[/code] into [code]FAILURE[/code].
+	</brief_description>
+	<description>
+		BTInvert transforms [code]FAILURE[/code] into [code]SUCCESS[/code] and [code]SUCCESS[/code] into [code]FAILURE[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

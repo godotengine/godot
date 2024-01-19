@@ -1,0 +1,109 @@
+[gd_resource type="BehaviorTree" load_steps=29 format=3 uid="uid://ddhxf0haxgw"]
+
+[sub_resource type="BBVariant" id="BBVariant_5o8fh"]
+resource_name = "200"
+saved_value = 200.0
+type = 3
+
+[sub_resource type="BTCheckAgentProperty" id="BTCheckAgentProperty_0nprx"]
+property = &"speed"
+value = SubResource("BBVariant_5o8fh")
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_dlmwi"]
+text = "Test 1: Passed"
+
+[sub_resource type="BTSequence" id="BTSequence_fou4d"]
+children = [SubResource("BTCheckAgentProperty_0nprx"), SubResource("BTConsolePrint_dlmwi")]
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_ggvml"]
+text = "Test 1: Failed"
+
+[sub_resource type="BTSelector" id="BTSelector_hw3on"]
+custom_name = "Test 1"
+children = [SubResource("BTSequence_fou4d"), SubResource("BTConsolePrint_ggvml")]
+
+[sub_resource type="BBVariant" id="BBVariant_r2elk"]
+resource_name = "300"
+saved_value = 300.0
+type = 3
+
+[sub_resource type="BTSetAgentProperty" id="BTSetAgentProperty_lh1xy"]
+property = &"speed"
+value = SubResource("BBVariant_r2elk")
+
+[sub_resource type="BBVariant" id="BBVariant_jhcxn"]
+resource_name = "200"
+saved_value = 200.0
+type = 3
+
+[sub_resource type="BTCheckAgentProperty" id="BTCheckAgentProperty_p20lt"]
+property = &"speed"
+check_type = 3
+value = SubResource("BBVariant_jhcxn")
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_nb21y"]
+text = "Test 2: Passed"
+
+[sub_resource type="BTSequence" id="BTSequence_rp57i"]
+children = [SubResource("BTCheckAgentProperty_p20lt"), SubResource("BTConsolePrint_nb21y")]
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_o5xxa"]
+text = "Test 2: Failed"
+
+[sub_resource type="BTSelector" id="BTSelector_cr664"]
+custom_name = "Test 2"
+children = [SubResource("BTSequence_rp57i"), SubResource("BTConsolePrint_o5xxa")]
+
+[sub_resource type="BBVariant" id="BBVariant_2aotu"]
+resource_name = "400"
+saved_value = 400.0
+type = 3
+
+[sub_resource type="BTCheckAgentProperty" id="BTCheckAgentProperty_avnfr"]
+property = &"speed"
+check_type = 1
+value = SubResource("BBVariant_2aotu")
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_wgw5j"]
+text = "Test 3: Passed"
+
+[sub_resource type="BTSequence" id="BTSequence_ykp38"]
+children = [SubResource("BTCheckAgentProperty_avnfr"), SubResource("BTConsolePrint_wgw5j")]
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_0eshq"]
+text = "Test 3: Failed"
+
+[sub_resource type="BTSelector" id="BTSelector_nxupw"]
+custom_name = "Test 3"
+children = [SubResource("BTSequence_ykp38"), SubResource("BTConsolePrint_0eshq")]
+
+[sub_resource type="BBVariant" id="BBVariant_28e2y"]
+resource_name = "300"
+saved_value = 300.0
+type = 3
+
+[sub_resource type="BTCheckAgentProperty" id="BTCheckAgentProperty_sayma"]
+property = &"speed"
+value = SubResource("BBVariant_28e2y")
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_xugph"]
+text = "Test 4: Passed"
+
+[sub_resource type="BTSequence" id="BTSequence_3wj0i"]
+children = [SubResource("BTCheckAgentProperty_sayma"), SubResource("BTConsolePrint_xugph")]
+
+[sub_resource type="BTConsolePrint" id="BTConsolePrint_16vkj"]
+text = "Test 4: Failed"
+
+[sub_resource type="BTSelector" id="BTSelector_qhmh3"]
+custom_name = "Test 4"
+children = [SubResource("BTSequence_3wj0i"), SubResource("BTConsolePrint_16vkj")]
+
+[sub_resource type="BTSequence" id="BTSequence_7bmj1"]
+children = [SubResource("BTSelector_hw3on"), SubResource("BTSetAgentProperty_lh1xy"), SubResource("BTSelector_cr664"), SubResource("BTSelector_nxupw"), SubResource("BTSelector_qhmh3")]
+
+[sub_resource type="BTRunLimit" id="BTRunLimit_034mk"]
+children = [SubResource("BTSequence_7bmj1")]
+
+[resource]
+root_task = SubResource("BTRunLimit_034mk")

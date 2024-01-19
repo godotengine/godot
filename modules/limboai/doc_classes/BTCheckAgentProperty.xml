@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BTCheckAgentProperty" inherits="BTCondition" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		BT condition that checks agent's property value.
+	</brief_description>
+	<description>
+		BTCheckAgentProperty examines the agent's property value and compares it to [member value].
+		Returns [code]SUCCESS[/code] or [code]FAILURE[/code] based on the [member check_type].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="check_type" type="int" setter="set_check_type" getter="get_check_type" enum="LimboUtility.CheckType" default="0">
+			The type of check to be performed.
+		</member>
+		<member name="property" type="StringName" setter="set_property" getter="get_property" default="&amp;&quot;&quot;">
+			Parameter that specifies the agent's property to be compared.
+		</member>
+		<member name="value" type="BBVariant" setter="set_value" getter="get_value">
+			Parameter that specifies the value against which an agent's property will be compared.
+		</member>
+	</members>
+</class>

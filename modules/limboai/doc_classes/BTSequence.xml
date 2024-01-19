@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BTSequence" inherits="BTComposite" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		BT composite that sequentially executes tasks as long as they return [code]SUCCESS[/code].
+	</brief_description>
+	<description>
+		BTSequence executes its child tasks sequentially, from first to last, as long as they return [code]SUCCESS[/code]. If a child task results in [code]SUCCESS[/code], BTSequence will immediately execute the next child task until one of them returns [code]FAILURE[/code] or all of them result in [code]SUCCESS[/code]. BTSequence and [BTSelector] are two of the most common building blocks of behavior trees. Essentially, while [BTSelector] is similar to a boolean OR operation, BTSequence is similar to a boolean AND operation. Sequences enable the behavior tree to compose complex behaviors from a chain of simpler tasks.
+		Returns [code]RUNNING[/code] if any child task results in [code]RUNNING[/code]. BTSequence will remember the last child task that returned [code]RUNNING[/code], ensuring it resumes from that point in the next execution tick.
+		Returns [code]SUCCESS[/code] if all child tasks result in [code]SUCCESS[/code].
+		Returns [code]FAILURE[/code] if a child task results in [code]FAILURE[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
