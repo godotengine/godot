@@ -2737,25 +2737,9 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 				}
 
 			} else {
-				// If property points to a node which is owned by a node we are duplicating, update its path.
-				if (value.get_type() == Variant::OBJECT) {
-					Node *property_node = Object::cast_to<Node>(value);
-					if (property_node && is_ancestor_of(property_node)) {
-						value = current_node->get_node_or_null(get_path_to(property_node));
-					}
-				} else if (value.get_type() == Variant::ARRAY) {
-					Array arr = value;
-					if (arr.get_typed_builtin() == Variant::OBJECT) {
-						for (int i = 0; i < arr.size(); i++) {
-							Node *property_node = Object::cast_to<Node>(arr[i]);
-							if (property_node && is_ancestor_of(property_node)) {
-								arr[i] = current_node->get_node_or_null(get_path_to(property_node));
-							}
-						}
-						value = arr;
-					}
+				if (value.get_type() != Variant::OBJECT && (value.get_type() != Variant::ARRAY || static_cast<Array>(value).get_typed_builtin() != Variant::OBJECT)) {
+					current_node->set(name, value);
 				}
-				current_node->set(name, value);
 			}
 		}
 	}
@@ -2770,6 +2754,8 @@ Node *Node::duplicate(int p_flags) const {
 	if (dupe && (p_flags & DUPLICATE_SIGNALS)) {
 		_duplicate_signals(this, dupe);
 	}
+
+	_duplicate_properties_node(this, this, dupe);
 
 	return dupe;
 }
@@ -2791,6 +2777,8 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, con
 	// because re-targeting of connections from some descendant to another is not possible
 	// if the emitter node comes later in tree order than the receiver
 	_duplicate_signals(this, dupe);
+
+	_duplicate_properties_node(this, this, dupe);
 
 	return dupe;
 }
@@ -2843,6 +2831,44 @@ void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Re
 	}
 }
 #endif
+
+// Duplicates properties that store a Node.
+// This has to be called after nodes have been duplicated since
+// only then do we get a full picture of how the duplicated node tree looks like.
+void Node::_duplicate_properties_node(const Node *p_root, const Node *p_original, Node *p_copy) const {
+	List<PropertyInfo> props;
+	p_copy->get_property_list(&props);
+	for (const PropertyInfo &E : props) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+		String name = E.name;
+		Variant value = p_original->get(name).duplicate(true);
+		if (value.get_type() == Variant::OBJECT) {
+			Node *property_node = Object::cast_to<Node>(value);
+			if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
+				value = p_copy->get_node_or_null(p_original->get_path_to(property_node));
+				p_copy->set(name, value);
+			}
+		} else if (value.get_type() == Variant::ARRAY) {
+			Array arr = value;
+			if (arr.get_typed_builtin() == Variant::OBJECT) {
+				for (int i = 0; i < arr.size(); i++) {
+					Node *property_node = Object::cast_to<Node>(arr[i]);
+					if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
+						arr[i] = p_copy->get_node_or_null(p_original->get_path_to(property_node));
+					}
+				}
+				value = arr;
+				p_copy->set(name, value);
+			}
+		}
+	}
+
+	for (int i = 0; i < p_copy->get_child_count(); i++) {
+		_duplicate_properties_node(p_root, p_original->get_child(i), p_copy->get_child(i));
+	}
+}
 
 // Duplication of signals must happen after all the node descendants have been copied,
 // because re-targeting of connections from some descendant to another is not possible
