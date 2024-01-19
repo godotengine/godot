@@ -650,6 +650,10 @@ comments and a patch is provided in the `patches` folder.
 
 Collection of single-file libraries used in Godot components.
 
+- `bcdec.h`
+  * Upstream: https://github.com/iOrange/bcdec
+  * Version: git (026acf98ea271045cb10713daa96ba98528badb7, 2022)
+  * License: MIT
 - `clipper.{cpp,hpp}`
   * Upstream: https://sourceforge.net/projects/polyclipping
   * Version: 6.4.2 (2017) + Godot changes (added optional exceptions handling)
@@ -871,23 +875,6 @@ Some downstream changes have been made and are identified by
 `// -- GODOT begin --` and `// -- GODOT end --` comments.
 They can be reapplied using the patches included in the `patches`
 folder, in order.
-
-
-## squish
-
-- Upstream: https://sourceforge.net/projects/libsquish
-- Version: 1.15 (r104, 2017)
-- License: MIT
-
-Files extracted from upstream source:
-
-- `LICENSE.txt`
-- All `.cpp`, `.h` and `.inl` files
-
-Some downstream changes have been made and are identified by
-`// -- GODOT begin --` and `// -- GODOT end --` comments.
-They can be reapplied using the patches included in the `patches`
-folder.
 
 
 ## tinyexr
