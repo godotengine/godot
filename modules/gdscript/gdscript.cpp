@@ -55,6 +55,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_paths.h"
+#include "editor/editor_settings.h"
 #endif
 
 #include <stdint.h>
@@ -1074,6 +1075,36 @@ StringName GDScript::debug_get_static_var_by_index(int p_idx) const {
 
 Ref<GDScript> GDScript::get_base() const {
 	return base;
+}
+
+String GDScript::get_raw_source_code(const String &p_path, bool *r_error) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		if (r_error) {
+			*r_error = true;
+		}
+		return String();
+	}
+	return f->get_as_utf8_string();
+}
+
+Vector2i GDScript::get_uid_lines(const String &p_source) {
+	GDScriptParser parser;
+	parser.parse(p_source, "", false);
+	const GDScriptParser::ClassNode *c = parser.get_tree();
+	if (!c) {
+		return Vector2i(-1, -1);
+	}
+	return c->uid_lines;
+}
+
+String GDScript::create_uid_line(const String &p_uid_str) {
+#ifdef TOOLS_ENABLED
+	if (EDITOR_GET("text_editor/completion/use_single_quotes")) {
+		return vformat(R"(@uid('%s') # %s)", p_uid_str, RTR("Generated automatically, do not modify."));
+	}
+#endif
+	return vformat(R"(@uid("%s") # %s)", p_uid_str, RTR("Generated automatically, do not modify."));
 }
 
 bool GDScript::inherits_script(const Ref<Script> &p_script) const {
@@ -2593,17 +2624,8 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 }
 
 String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
-	Error err;
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (err) {
-		return String();
-	}
-
-	String source = f->get_as_utf8_string();
-
 	GDScriptParser parser;
-	err = parser.parse(source, p_path, false);
-
+	parser.parse(GDScript::get_raw_source_code(p_path), p_path, false);
 	const GDScriptParser::ClassNode *c = parser.get_tree();
 	if (!c) {
 		return String(); // No class parsed.
@@ -2817,6 +2839,22 @@ String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) con
 	return "";
 }
 
+ResourceUID::ID ResourceFormatLoaderGDScript::get_resource_uid(const String &p_path) const {
+	String ext = p_path.get_extension().to_lower();
+
+	if (ext != "gd") {
+		return ResourceUID::INVALID_ID;
+	}
+
+	GDScriptParser parser;
+	parser.parse(GDScript::get_raw_source_code(p_path), p_path, false);
+	const GDScriptParser::ClassNode *c = parser.get_tree();
+	if (!c) {
+		return ResourceUID::INVALID_ID;
+	}
+	return ResourceUID::get_singleton()->text_to_id(c->uid_string);
+}
+
 void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_MSG(file.is_null(), "Cannot open file '" + p_path + "'.");
@@ -2841,16 +2879,48 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 
 	String source = sqscr->get_source_code();
+	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, !p_resource->is_built_in());
 
 	{
+		bool source_changed = false;
 		Error err;
 		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 		ERR_FAIL_COND_V_MSG(err, err, "Cannot save GDScript file '" + p_path + "'.");
 
-		file->store_string(source);
+		if (uid != ResourceUID::INVALID_ID) {
+			GDScriptParser parser;
+			parser.parse(source, "", false);
+			const GDScriptParser::ClassNode *c = parser.get_tree();
+			if (c && ResourceUID::get_singleton()->text_to_id(c->uid_string) != uid) {
+				const Vector2i &uid_idx = c->uid_lines;
+				PackedStringArray lines = source.split("\n");
+
+				if (uid_idx.x > -1) {
+					for (int i = uid_idx.x + 1; i <= uid_idx.y; i++) {
+						// If UID is written across multiple lines, erase extra lines.
+						lines.remove_at(uid_idx.x + 1);
+					}
+					lines.write[uid_idx.x] = GDScript::create_uid_line(ResourceUID::get_singleton()->id_to_text(uid));
+				} else {
+					lines.insert(0, GDScript::create_uid_line(ResourceUID::get_singleton()->id_to_text(uid)));
+				}
+				source = String("\n").join(lines);
+				source_changed = true;
+				file->store_string(String("\n").join(lines));
+			} else {
+				file->store_string(source);
+			}
+		}
+
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 			return ERR_CANT_CREATE;
+		}
+
+		if (source_changed) {
+			sqscr->set_source_code(source);
+			sqscr->reload();
+			sqscr->emit_changed();
 		}
 	}
 
@@ -2869,4 +2939,34 @@ void ResourceFormatSaverGDScript::get_recognized_extensions(const Ref<Resource> 
 
 bool ResourceFormatSaverGDScript::recognize(const Ref<Resource> &p_resource) const {
 	return Object::cast_to<GDScript>(*p_resource) != nullptr;
+}
+
+Error ResourceFormatSaverGDScript::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	ERR_FAIL_COND_V(p_path.get_extension() != "gd", ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_uid == ResourceUID::INVALID_ID, ERR_INVALID_PARAMETER);
+
+	bool error = false;
+	const String &source_code = GDScript::get_raw_source_code(p_path, &error);
+	if (error) {
+		return ERR_CANT_OPEN;
+	}
+
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_OPEN);
+
+	const Vector2i &uid_idx = GDScript::get_uid_lines(source_code);
+	PackedStringArray lines = source_code.split("\n");
+
+	if (uid_idx.x > -1) {
+		for (int i = uid_idx.x + 1; i <= uid_idx.y; i++) {
+			// If UID is written across multiple lines, erase extra lines.
+			lines.remove_at(uid_idx.x + 1);
+		}
+		lines.write[uid_idx.x] = GDScript::create_uid_line(ResourceUID::get_singleton()->id_to_text(p_uid));
+	} else {
+		f->store_line(GDScript::create_uid_line(ResourceUID::get_singleton()->id_to_text(p_uid)));
+	}
+	f->store_string(String("\n").join(lines));
+
+	return OK;
 }

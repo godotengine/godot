@@ -1278,14 +1278,6 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 	}
 }
 
-bool EditorSettings::is_dark_theme() {
-	int AUTO_COLOR = 0;
-	int LIGHT_COLOR = 2;
-	Color base_color = get("interface/theme/base_color");
-	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
-	return (icon_font_color_setting == AUTO_COLOR && base_color.get_luminance() < 0.5) || icon_font_color_setting == LIGHT_COLOR;
-}
-
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Default,Godot 2,Custom";
 

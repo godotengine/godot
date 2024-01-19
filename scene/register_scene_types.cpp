@@ -1184,7 +1184,9 @@ void register_scene_types() {
 	}
 
 	if (RenderingServer::get_singleton()) {
-		ColorPicker::init_shaders(); // RenderingServer needs to exist for this to succeed.
+		// RenderingServer needs to exist for this to succeed.
+		ColorPicker::init_shaders();
+		GraphEdit::init_shaders();
 	}
 
 	SceneDebugger::initialize();
@@ -1236,6 +1238,7 @@ void unregister_scene_types() {
 	ParticleProcessMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
 	ColorPicker::finish_shaders();
+	GraphEdit::finish_shaders();
 	SceneStringNames::free();
 
 	OS::get_singleton()->benchmark_end_measure("Scene", "Unregister Types");
