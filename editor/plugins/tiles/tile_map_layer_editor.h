@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tile_map_editor.h                                                     */
+/*  tile_map_layer_editor.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_MAP_EDITOR_H
-#define TILE_MAP_EDITOR_H
+#ifndef TILE_MAP_LAYER_EDITOR_H
+#define TILE_MAP_LAYER_EDITOR_H
 
 #include "tile_atlas_view.h"
 
@@ -48,9 +48,13 @@
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tree.h"
 
-class TileMapEditor;
+class TileMapLayerEditor;
 
-class TileMapSubEditorPlugin : public Object {
+class TileMapLayerSubEditorPlugin : public Object {
+protected:
+	ObjectID edited_tile_map_layer_id;
+	TileMapLayer *_get_edited_layer() const;
+
 public:
 	struct TabData {
 		Control *toolbar = nullptr;
@@ -64,11 +68,11 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return false; };
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay){};
 	virtual void tile_set_changed(){};
-	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer){};
+	virtual void edit(ObjectID p_tile_map_layer_id){};
 };
 
-class TileMapEditorTilesPlugin : public TileMapSubEditorPlugin {
-	GDCLASS(TileMapEditorTilesPlugin, TileMapSubEditorPlugin);
+class TileMapLayerEditorTilesPlugin : public TileMapLayerSubEditorPlugin {
+	GDCLASS(TileMapLayerEditorTilesPlugin, TileMapLayerSubEditorPlugin);
 
 public:
 	enum {
@@ -79,10 +83,6 @@ public:
 	};
 
 private:
-	ObjectID tile_map_id;
-	int tile_map_layer = -1;
-	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
-
 	///// Toolbar /////
 	HBoxContainer *toolbar = nullptr;
 
@@ -237,18 +237,16 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
-	TileMapEditorTilesPlugin();
-	~TileMapEditorTilesPlugin();
+	virtual void edit(ObjectID p_tile_map_layer_id) override;
+
+	TileMapLayerEditorTilesPlugin();
+	~TileMapLayerEditorTilesPlugin();
 };
 
-class TileMapEditorTerrainsPlugin : public TileMapSubEditorPlugin {
-	GDCLASS(TileMapEditorTerrainsPlugin, TileMapSubEditorPlugin);
+class TileMapLayerEditorTerrainsPlugin : public TileMapLayerSubEditorPlugin {
+	GDCLASS(TileMapLayerEditorTerrainsPlugin, TileMapLayerSubEditorPlugin);
 
 private:
-	ObjectID tile_map_id;
-	int tile_map_layer = -1;
-	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer) override;
-
 	// Toolbar.
 	HBoxContainer *toolbar = nullptr;
 
@@ -331,27 +329,32 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
-	TileMapEditorTerrainsPlugin();
-	~TileMapEditorTerrainsPlugin();
+	virtual void edit(ObjectID p_tile_map_layer_id) override;
+
+	TileMapLayerEditorTerrainsPlugin();
+	~TileMapLayerEditorTerrainsPlugin();
 };
 
-class TileMapEditor : public VBoxContainer {
-	GDCLASS(TileMapEditor, VBoxContainer);
+class TileMapLayerEditor : public VBoxContainer {
+	GDCLASS(TileMapLayerEditor, VBoxContainer);
 
 private:
 	bool tileset_changed_needs_update = false;
-	ObjectID tile_map_id;
-	int tile_map_layer = -1;
+
+	ObjectID edited_tile_map_layer_id;
+	TileMapLayer *_get_edited_layer() const;
 
 	// Vector to keep plugins.
-	Vector<TileMapSubEditorPlugin *> tile_map_editor_plugins;
+	Vector<TileMapLayerSubEditorPlugin *> tile_map_editor_plugins;
 
 	// Toolbar.
 	HFlowContainer *tile_map_toolbar = nullptr;
 
 	OptionButton *layers_selection_button = nullptr;
-	Button *toggle_highlight_selected_layer_button = nullptr;
 	void _layers_selection_item_selected(int p_index);
+
+	Button *toggle_highlight_selected_layer_button = nullptr;
+	void _highlight_selected_layer_button_toggled(bool p_pressed);
 
 	Button *toggle_grid_button = nullptr;
 	void _on_grid_toggled(bool p_pressed);
@@ -362,8 +365,8 @@ private:
 	// Bottom panel.
 	Label *missing_tileset_label = nullptr;
 	TabBar *tabs_bar = nullptr;
-	LocalVector<TileMapSubEditorPlugin::TabData> tabs_data;
-	LocalVector<TileMapSubEditorPlugin *> tabs_plugins;
+	LocalVector<TileMapLayerSubEditorPlugin::TabData> tabs_data;
+	LocalVector<TileMapLayerSubEditorPlugin *> tabs_plugins;
 	void _update_bottom_panel();
 
 	// TileMap.
@@ -371,31 +374,33 @@ private:
 	Ref<Texture2D> warning_pattern_texture;
 
 	// CallBack.
-	void _tile_map_changed();
+	void _tile_map_layer_changed();
 	void _tab_changed(int p_tab_changed);
 
 	// Updates.
 	void _layers_select_next_or_previous(bool p_next);
-	void _update_layers_selection();
+	void _update_highlighting_toggle();
 
 	// Inspector undo/redo callback.
 	void _move_tile_map_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos);
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 	void _draw_shape(Control *p_control, Rect2 p_region, TileSet::TileShape p_shape, TileSet::TileOffsetAxis p_offset_axis, Color p_color);
 
 public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
-	void edit(TileMap *p_tile_map);
+	void edit(TileMapLayer *p_tile_map_layer);
+	void update_layers_selector();
 
-	TileMapEditor();
-	~TileMapEditor();
+	TileMapLayerEditor();
+	~TileMapLayerEditor();
 
 	// Static functions.
-	static Vector<Vector2i> get_line(TileMap *p_tile_map, Vector2i p_from_cell, Vector2i p_to_cell);
+	static Vector<Vector2i> get_line(const TileMapLayer *p_tile_map_layer, Vector2i p_from_cell, Vector2i p_to_cell);
 };
 
-#endif // TILE_MAP_EDITOR_H
+#endif // TILE_MAP_LAYER_EDITOR_H
