@@ -713,7 +713,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		Vector<unsigned char> tri_areas;
 		tri_areas.resize(ntris);
 
-		ERR_FAIL_COND(tri_areas.size() == 0);
+		ERR_FAIL_COND(tri_areas.is_empty());
 
 		memset(tri_areas.ptrw(), 0, ntris * sizeof(unsigned char));
 		rcMarkWalkableTriangles(&ctx, cfg.walkableSlopeAngle, verts, nverts, tris, ntris, tri_areas.ptrw());

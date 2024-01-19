@@ -178,7 +178,7 @@ Transform3D Collada::Node::get_global_transform() const {
 }
 
 Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) const {
-	ERR_FAIL_COND_V(keys.size() == 0, Vector<float>());
+	ERR_FAIL_COND_V(keys.is_empty(), Vector<float>());
 	int i = 0;
 
 	for (i = 0; i < keys.size(); i++) {

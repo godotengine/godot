@@ -969,7 +969,7 @@ void EditorNode3DGizmoPlugin::add_material(const String &p_name, Ref<StandardMat
 
 Ref<StandardMaterial3D> EditorNode3DGizmoPlugin::get_material(const String &p_name, const Ref<EditorNode3DGizmo> &p_gizmo) {
 	ERR_FAIL_COND_V(!materials.has(p_name), Ref<StandardMaterial3D>());
-	ERR_FAIL_COND_V(materials[p_name].size() == 0, Ref<StandardMaterial3D>());
+	ERR_FAIL_COND_V(materials[p_name].is_empty(), Ref<StandardMaterial3D>());
 
 	if (p_gizmo.is_null() || materials[p_name].size() == 1) {
 		return materials[p_name][0];

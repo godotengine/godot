@@ -2857,7 +2857,7 @@ bool OpenXRAPI::sync_action_sets(const Vector<RID> p_active_sets) {
 		}
 	}
 
-	ERR_FAIL_COND_V(active_sets.size() == 0, false);
+	ERR_FAIL_COND_V(active_sets.is_empty(), false);
 
 	XrActionsSyncInfo sync_info = {
 		XR_TYPE_ACTIONS_SYNC_INFO, // type
