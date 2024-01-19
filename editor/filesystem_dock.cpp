@@ -53,6 +53,7 @@
 #include "editor/scene_tree_dock.h"
 #include "editor/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -625,7 +626,7 @@ void FileSystemDock::_notification(int p_what) {
 			// Update editor dark theme & always show folders states from editor settings, redraw if needed.
 			bool do_redraw = false;
 
-			bool new_editor_is_dark_theme = EditorSettings::get_singleton()->is_dark_theme();
+			bool new_editor_is_dark_theme = EditorThemeManager::is_dark_theme();
 			if (new_editor_is_dark_theme != editor_is_dark_theme) {
 				editor_is_dark_theme = new_editor_is_dark_theme;
 				do_redraw = true;
@@ -3752,7 +3753,7 @@ FileSystemDock::FileSystemDock() {
 
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
 
-	editor_is_dark_theme = EditorSettings::get_singleton()->is_dark_theme();
+	editor_is_dark_theme = EditorThemeManager::is_dark_theme();
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	add_child(top_vbc);

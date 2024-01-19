@@ -55,6 +55,8 @@ private:
 	VerticalAlignment vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER;
 	float _internal_margin[4] = {};
 
+	bool h_separation_is_valid_when_no_text = false;
+
 	struct ThemeCache {
 		Ref<StyleBox> normal;
 		Ref<StyleBox> normal_mirrored;
@@ -102,6 +104,8 @@ protected:
 	void _set_internal_margin(Side p_side, float p_value);
 	virtual void _queue_update_size_cache();
 
+	void _set_h_separation_is_valid_when_no_text(bool p_h_separation_is_valid_when_no_text);
+	Ref<StyleBox> _get_current_stylebox() const;
 	void _notification(int p_what);
 	static void _bind_methods();
 

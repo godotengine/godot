@@ -1219,6 +1219,7 @@ void RenderingDeviceGraph::begin() {
 	command_data_offsets.clear();
 	command_normalization_barriers.clear();
 	command_transition_barriers.clear();
+	command_buffer_barriers.clear();
 	command_label_chars.clear();
 	command_label_colors.clear();
 	command_label_offsets.clear();

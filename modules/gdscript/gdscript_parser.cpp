@@ -93,6 +93,7 @@ bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	if (unlikely(valid_annotations.is_empty())) {
+		register_annotation(MethodInfo("@uid", PropertyInfo(Variant::STRING, "uid")), AnnotationInfo::SCRIPT, &GDScriptParser::uid_annotation);
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
@@ -519,6 +520,8 @@ void GDScriptParser::parse_program() {
 				if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
 					// `@icon` needs to be applied in the parser. See GH-72444.
 					if (annotation->name == SNAME("@icon")) {
+						annotation->apply(this, head, nullptr);
+					} else if (annotation->name == SNAME("@uid")) {
 						annotation->apply(this, head, nullptr);
 					} else {
 						head->annotations.push_back(annotation);
@@ -3834,18 +3837,18 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 	}
 
 	// `@icon`'s argument needs to be resolved in the parser. See GH-72444.
-	if (p_annotation->name == SNAME("@icon")) {
+	if (p_annotation->name == SNAME("@icon") || p_annotation->name == SNAME("@uid")) {
 		ExpressionNode *argument = p_annotation->arguments[0];
 
 		if (argument->type != Node::LITERAL) {
-			push_error(R"(Argument 1 of annotation "@icon" must be a string literal.)", argument);
+			push_error(vformat(R"(Argument 1 of annotation "%s" must be a string literal.)", p_annotation->name), argument);
 			return false;
 		}
 
 		Variant value = static_cast<LiteralNode *>(argument)->value;
 
 		if (value.get_type() != Variant::STRING) {
-			push_error(R"(Argument 1 of annotation "@icon" must be a string literal.)", argument);
+			push_error(vformat(R"(Argument 1 of annotation "%s" must be a string literal.)", p_annotation->name), argument);
 			return false;
 		}
 
@@ -3854,6 +3857,35 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 
 	// For other annotations, see `GDScriptAnalyzer::resolve_annotation()`.
 
+	return true;
+}
+
+bool GDScriptParser::uid_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, R"("@uid" annotation can only be applied to classes.)");
+	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
+
+#ifdef DEBUG_ENABLED
+	if (this->_has_uid) {
+		push_error(R"("@uid" annotation can only be used once.)", p_annotation);
+		return false;
+	}
+#endif // DEBUG_ENABLED
+
+	// Assign line range early to allow replacing invalid UIDs.
+	ClassNode *class_node = static_cast<ClassNode *>(p_target);
+	class_node->uid_lines = Vector2i(p_annotation->start_line - 1, p_annotation->end_line - 1); // Lines start from 1, so need to subtract.
+
+	const String &uid_string = p_annotation->resolved_arguments[0];
+#ifdef DEBUG_ENABLED
+	if (ResourceUID::get_singleton()->text_to_id(uid_string) == ResourceUID::INVALID_ID) {
+		push_error(R"(The annotated UID is invalid.)", p_annotation);
+		return false;
+	}
+#endif // DEBUG_ENABLED
+
+	class_node->uid_string = uid_string;
+
+	this->_has_uid = true;
 	return true;
 }
 

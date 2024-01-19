@@ -1022,6 +1022,11 @@ def get_compiler_version(env):
         "metadata1": None,
         "metadata2": None,
         "date": None,
+        "apple_major": -1,
+        "apple_minor": -1,
+        "apple_patch1": -1,
+        "apple_patch2": -1,
+        "apple_patch3": -1,
     }
 
     if not env.msvc:
@@ -1049,8 +1054,32 @@ def get_compiler_version(env):
         for key, value in match.groupdict().items():
             if value is not None:
                 ret[key] = value
+
+    match_apple = re.search(
+        r"(?:(?<=clang-)|(?<=\) )|(?<=^))"
+        r"(?P<apple_major>\d+)"
+        r"(?:\.(?P<apple_minor>\d*))?"
+        r"(?:\.(?P<apple_patch1>\d*))?"
+        r"(?:\.(?P<apple_patch2>\d*))?"
+        r"(?:\.(?P<apple_patch3>\d*))?",
+        version,
+    )
+    if match_apple is not None:
+        for key, value in match_apple.groupdict().items():
+            if value is not None:
+                ret[key] = value
+
     # Transform semantic versioning to integers
-    for key in ["major", "minor", "patch"]:
+    for key in [
+        "major",
+        "minor",
+        "patch",
+        "apple_major",
+        "apple_minor",
+        "apple_patch1",
+        "apple_patch2",
+        "apple_patch3",
+    ]:
         ret[key] = int(ret[key] or -1)
     return ret
 

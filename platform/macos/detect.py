@@ -130,12 +130,12 @@ def configure(env: "Environment"):
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     cc_version = get_compiler_version(env)
-    cc_version_major = cc_version["major"]
-    cc_version_minor = cc_version["minor"]
+    cc_version_major = cc_version["apple_major"]
+    cc_version_minor = cc_version["apple_minor"]
     vanilla = is_vanilla_clang(env)
 
     # Workaround for Xcode 15 linker bug.
-    if not vanilla and cc_version_major == 15 and cc_version_minor == 0:
+    if not vanilla and cc_version_major == 1500 and cc_version_minor == 0:
         env.Prepend(LINKFLAGS=["-ld_classic"])
 
     env.Append(CCFLAGS=["-fobjc-arc"])

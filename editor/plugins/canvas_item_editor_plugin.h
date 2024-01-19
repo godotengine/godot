@@ -56,7 +56,6 @@ class CanvasItemEditorSelectedItem : public Object {
 
 public:
 	Transform2D prev_xform;
-	real_t prev_rot = 0;
 	Rect2 prev_rect;
 	Vector2 prev_pivot;
 	real_t prev_anchors[4] = { (real_t)0.0 };

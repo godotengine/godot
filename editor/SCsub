@@ -113,6 +113,7 @@ if env.editor_build:
     SConscript("icons/SCsub")
     SConscript("import/SCsub")
     SConscript("plugins/SCsub")
+    SConscript("project_manager/SCsub")
     SConscript("themes/SCsub")
 
     lib = env.add_library("editor", env.editor_sources)
