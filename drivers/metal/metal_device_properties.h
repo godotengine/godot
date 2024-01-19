@@ -125,6 +125,7 @@ struct MetalLimits {
 	uint32_t maxVertexInputBindingStride;
 	uint32_t maxDrawIndexedIndexValue;
 	uint32_t maxShaderVaryings;
+	uint32_t maxThreadGroupMemoryAllocation;
 
 	double temporalScalerInputContentMinScale;
 	double temporalScalerInputContentMaxScale;
