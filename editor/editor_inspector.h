@@ -172,7 +172,10 @@ public:
 
 	Object *get_edited_object();
 	StringName get_edited_property() const;
-	inline Variant get_edited_property_value() const { return object->get(property); }
+	inline Variant get_edited_property_value() const {
+		ERR_FAIL_NULL_V(object, Variant());
+		return object->get(property);
+	}
 	EditorInspector *get_parent_inspector() const;
 
 	void set_doc_path(const String &p_doc_path);
