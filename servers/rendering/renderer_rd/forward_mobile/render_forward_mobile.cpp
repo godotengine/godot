@@ -2195,8 +2195,6 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		RID pipeline_rd = pipeline->get_render_pipeline(vertex_format, framebuffer_format, p_params->force_wireframe, p_params->subpass, base_spec_constants);
 
 		if (pipeline_rd != prev_pipeline_rd) {
-			// checking with prev shader does not make so much sense, as
-			// the pipeline may still be different.
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline_rd);
 			prev_pipeline_rd = pipeline_rd;
 		}

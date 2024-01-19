@@ -1615,7 +1615,7 @@ void ParticlesStorage::update_particles() {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->trail_bind_pose_uniform_set, 2);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
 
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, total_amount, 1, 1);
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, (uint32_t)ceil((float)total_amount / 64.0), 1, 1);
 
 			RD::get_singleton()->compute_list_end();
 		}
