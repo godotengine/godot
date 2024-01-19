@@ -433,16 +433,18 @@
 			If canvas item redraw debugging is active, this will be the time the flash will last each time they redraw.
 		</member>
 		<member name="debug/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], logs all output to files.
+			If [code]true[/code], logs all output and error messages to files. See also [member debug/file_logging/log_path], [member debug/file_logging/max_log_files], and [member application/run/flush_stdout_on_print].
 		</member>
 		<member name="debug/file_logging/enable_file_logging.pc" type="bool" setter="" getter="" default="true">
 			Desktop override for [member debug/file_logging/enable_file_logging], as log files are not readily accessible on mobile/Web platforms.
 		</member>
 		<member name="debug/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
 			Path at which to store log files for the project. Using a path under [code]user://[/code] is recommended.
+			This can be specified manually on the command line using the [code]--log-file &lt;file&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. If this command line argument is specified, log rotation is automatically disabled (see [member debug/file_logging/max_log_files]).
 		</member>
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
-			Specifies the maximum number of log files allowed (used for rotation).
+			Specifies the maximum number of log files allowed (used for rotation). Set to [code]1[/code] to disable log file rotation.
+			If the [code]--log-file &lt;file&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used, log rotation is always disabled.
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to false.

@@ -172,6 +172,7 @@ static bool editor = false;
 static bool project_manager = false;
 static bool cmdline_tool = false;
 static String locale;
+static String log_file;
 static bool show_help = false;
 static uint64_t quit_after = 0;
 static OS::ProcessID editor_pid = 0;
@@ -450,7 +451,9 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --text-driver <driver>            Text driver (Fonts, BiDi, shaping).\n");
 	OS::get_singleton()->print("  --tablet-driver <driver>          Pen tablet input driver.\n");
 	OS::get_singleton()->print("  --headless                        Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
-	OS::get_singleton()->print("  --write-movie <file>              Writes a video to the specified path (usually with .avi or .png extension).\n");
+	OS::get_singleton()->print("  --log-file <file>                 Write output/error log to the specified path instead of the default location defined by the project.\n");
+	OS::get_singleton()->print("                                    <file> path should be absolute or relative to the project directory.\n");
+	OS::get_singleton()->print("  --write-movie <file>              Write a video to the specified path (usually with .avi or .png extension).\n");
 	OS::get_singleton()->print("                                    --fixed-fps is forced when enabled, but it can be used to change movie FPS.\n");
 	OS::get_singleton()->print("                                    --disable-vsync can speed up movie writing but makes interaction more difficult.\n");
 	OS::get_singleton()->print("                                    --quit-after can be used to specify the number of frames to write.\n");
@@ -1165,6 +1168,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
 
+		} else if (I->get() == "--log-file") { // write to log file
+
+			if (I->next()) {
+				log_file = I->next()->get();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing log file path argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--profiling") { // enable profiling
 
 			use_debug_profiler = true;
@@ -1689,12 +1701,24 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("debug/file_logging/log_path", "user://logs/godot.log");
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/file_logging/max_log_files", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), 5);
 
-	if (!project_manager && !editor && FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) &&
-			GLOBAL_GET("debug/file_logging/enable_file_logging")) {
+	// If `--log-file` is used to override the log path, allow creating logs for the project manager or editor
+	// and even if file logging is disabled in the Project Settings.
+	// `--log-file` can be used with any path (including absolute paths outside the project folder),
+	// so check for filesystem access if it's used.
+	if (FileAccess::get_create_func(!log_file.is_empty() ? FileAccess::ACCESS_FILESYSTEM : FileAccess::ACCESS_USERDATA) &&
+			(!log_file.is_empty() || (!project_manager && !editor && GLOBAL_GET("debug/file_logging/enable_file_logging")))) {
 		// Don't create logs for the project manager as they would be written to
 		// the current working directory, which is inconvenient.
-		String base_path = GLOBAL_GET("debug/file_logging/log_path");
-		int max_files = GLOBAL_GET("debug/file_logging/max_log_files");
+		String base_path;
+		int max_files;
+		if (!log_file.is_empty()) {
+			base_path = log_file;
+			// Ensure log file name respects the specified override by disabling log rotation.
+			max_files = 1;
+		} else {
+			base_path = GLOBAL_GET("debug/file_logging/log_path");
+			max_files = GLOBAL_GET("debug/file_logging/max_log_files");
+		}
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
