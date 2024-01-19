@@ -543,6 +543,38 @@ void RasterizerSceneGLES3::_invalidate_sky(Sky *p_sky) {
 	}
 }
 
+GLuint _init_radiance_texture(int p_size, int p_mipmaps, String p_name) {
+	GLuint radiance_id = 0;
+
+	glGenTextures(1, &radiance_id);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, radiance_id);
+#ifdef GL_API_ENABLED
+	if (RasterizerGLES3::is_gles_over_gl()) {
+		//TODO, on low-end compare this to allocating each face of each mip individually
+		// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
+		for (int i = 0; i < 6; i++) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB10_A2, p_size, p_size, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, nullptr);
+		}
+
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	}
+#endif // GL_API_ENABLED
+#ifdef GLES_API_ENABLED
+	if (!RasterizerGLES3::is_gles_over_gl()) {
+		glTexStorage2D(GL_TEXTURE_CUBE_MAP, p_mipmaps, GL_RGB10_A2, p_size, p_size);
+	}
+#endif // GLES_API_ENABLED
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, p_mipmaps - 1);
+
+	GLES3::Utilities::get_singleton()->texture_allocated_data(radiance_id, Image::get_image_data_size(p_size, p_size, Image::FORMAT_RGBA8, true), p_name);
+	return radiance_id;
+}
+
 void RasterizerSceneGLES3::_update_dirty_skys() {
 	Sky *sky = dirty_sky_list;
 
@@ -551,69 +583,8 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			sky->mipmap_count = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8) - 1;
 			// Left uninitialized, will attach a texture at render time
 			glGenFramebuffers(1, &sky->radiance_framebuffer);
-
-			GLenum internal_format = GL_RGB10_A2;
-
-			glGenTextures(1, &sky->radiance);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, sky->radiance);
-
-#ifdef GL_API_ENABLED
-			if (RasterizerGLES3::is_gles_over_gl()) {
-				GLenum format = GL_RGBA;
-				GLenum type = GL_UNSIGNED_INT_2_10_10_10_REV;
-				//TODO, on low-end compare this to allocating each face of each mip individually
-				// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
-				for (int i = 0; i < 6; i++) {
-					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
-				}
-
-				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-			}
-#endif // GL_API_ENABLED
-#ifdef GLES_API_ENABLED
-			if (!RasterizerGLES3::is_gles_over_gl()) {
-				glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
-			}
-#endif // GLES_API_ENABLED
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count - 1);
-
-			GLES3::Utilities::get_singleton()->texture_allocated_data(sky->radiance, Image::get_image_data_size(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8, true), "Sky radiance map");
-
-			glGenTextures(1, &sky->raw_radiance);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, sky->raw_radiance);
-
-#ifdef GL_API_ENABLED
-			if (RasterizerGLES3::is_gles_over_gl()) {
-				GLenum format = GL_RGBA;
-				GLenum type = GL_UNSIGNED_INT_2_10_10_10_REV;
-				//TODO, on low-end compare this to allocating each face of each mip individually
-				// see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexStorage2D.xhtml
-				for (int i = 0; i < 6; i++) {
-					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, sky->radiance_size, sky->radiance_size, 0, format, type, nullptr);
-				}
-
-				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-			}
-#endif // GL_API_ENABLED
-#ifdef GLES_API_ENABLED
-			if (!RasterizerGLES3::is_gles_over_gl()) {
-				glTexStorage2D(GL_TEXTURE_CUBE_MAP, sky->mipmap_count, internal_format, sky->radiance_size, sky->radiance_size);
-			}
-#endif // GLES_API_ENABLED
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count - 1);
-
-			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-			GLES3::Utilities::get_singleton()->texture_allocated_data(sky->raw_radiance, Image::get_image_data_size(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8, true), "Sky raw radiance map");
+			sky->radiance = _init_radiance_texture(sky->radiance_size, sky->mipmap_count, "Sky radiance texture");
+			sky->raw_radiance = _init_radiance_texture(sky->radiance_size, sky->mipmap_count, "Sky raw radiance texture");
 		}
 
 		sky->reflection_dirty = true;
@@ -1142,7 +1113,80 @@ void RasterizerSceneGLES3::_filter_sky_radiance(Sky *p_sky, int p_base_layer) {
 }
 
 Ref<Image> RasterizerSceneGLES3::sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) {
-	return Ref<Image>();
+	Sky *sky = sky_owner.get_or_null(p_sky);
+	ERR_FAIL_NULL_V(sky, Ref<Image>());
+
+	_update_dirty_skys();
+
+	if (sky->radiance == 0) {
+		return Ref<Image>();
+	}
+
+	GLES3::CopyEffects *copy_effects = GLES3::CopyEffects::get_singleton();
+	GLES3::Config *config = GLES3::Config::get_singleton();
+
+	GLuint rad_tex = 0;
+	glGenTextures(1, &rad_tex);
+	glBindTexture(GL_TEXTURE_2D, rad_tex);
+	if (config->float_texture_supported) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, p_size.width, p_size.height, 0, GL_RGBA, GL_FLOAT, nullptr);
+		GLES3::Utilities::get_singleton()->texture_allocated_data(rad_tex, p_size.width * p_size.height * 16, "Temp sky panorama");
+	} else {
+		// Fallback to RGBA8 on devices that don't support rendering to floating point textures. This will look bad, but we have no choice.
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, p_size.width, p_size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		GLES3::Utilities::get_singleton()->texture_allocated_data(rad_tex, p_size.width * p_size.height * 4, "Temp sky panorama");
+	}
+
+	GLuint rad_fbo = 0;
+	glGenFramebuffers(1, &rad_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, rad_fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rad_tex, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, sky->radiance);
+	glViewport(0, 0, p_size.width, p_size.height);
+
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	copy_effects->copy_cube_to_panorama(p_bake_irradiance ? float(sky->mipmap_count) : 0.0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &rad_fbo);
+	// Create a dummy texture so we can use texture_2d_get.
+	RID tex_rid = GLES3::TextureStorage::get_singleton()->texture_allocate();
+	GLES3::Texture texture;
+	texture.width = p_size.width;
+	texture.height = p_size.height;
+	texture.alloc_width = p_size.width;
+	texture.alloc_height = p_size.height;
+	texture.format = Image::FORMAT_RGBAF;
+	texture.real_format = Image::FORMAT_RGBAF;
+	texture.gl_format_cache = GL_RGBA;
+	texture.gl_type_cache = GL_FLOAT;
+	texture.type = GLES3::Texture::TYPE_2D;
+	texture.target = GL_TEXTURE_2D;
+	texture.active = true;
+	texture.tex_id = rad_tex;
+	texture.is_render_target = true;
+
+	GLES3::TextureStorage::get_singleton()->texture_2d_initialize_from_texture(tex_rid, texture);
+	Ref<Image> img = GLES3::TextureStorage::get_singleton()->texture_2d_get(tex_rid);
+	GLES3::Utilities::get_singleton()->texture_free_data(rad_tex);
+
+	texture.is_render_target = false;
+	texture.tex_id = 0;
+	GLES3::TextureStorage::get_singleton()->texture_free(tex_rid);
+
+	for (int i = 0; i < p_size.width; i++) {
+		for (int j = 0; j < p_size.height; j++) {
+			Color c = img->get_pixel(i, j);
+			c.r *= p_energy;
+			c.g *= p_energy;
+			c.b *= p_energy;
+			img->set_pixel(i, j, c);
+		}
+	}
+	return img;
 }
 
 /* ENVIRONMENT API */
@@ -1176,7 +1220,65 @@ void RasterizerSceneGLES3::environment_set_volumetric_fog_filter_active(bool p_e
 }
 
 Ref<Image> RasterizerSceneGLES3::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
-	return Ref<Image>();
+	ERR_FAIL_COND_V(p_env.is_null(), Ref<Image>());
+
+	RS::EnvironmentBG environment_background = environment_get_background(p_env);
+
+	if (environment_background == RS::ENV_BG_CAMERA_FEED || environment_background == RS::ENV_BG_CANVAS || environment_background == RS::ENV_BG_KEEP) {
+		return Ref<Image>(); // Nothing to bake.
+	}
+
+	RS::EnvironmentAmbientSource ambient_source = environment_get_ambient_source(p_env);
+
+	bool use_ambient_light = false;
+	bool use_cube_map = false;
+	if (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && (environment_background == RS::ENV_BG_CLEAR_COLOR || environment_background == RS::ENV_BG_COLOR)) {
+		use_ambient_light = true;
+	} else {
+		use_cube_map = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && environment_background == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
+		use_ambient_light = use_cube_map || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
+	}
+
+	use_cube_map = use_cube_map || (environment_background == RS::ENV_BG_SKY && environment_get_sky(p_env).is_valid());
+
+	Color ambient_color;
+	float ambient_color_sky_mix = 0.0;
+	if (use_ambient_light) {
+		ambient_color_sky_mix = environment_get_ambient_sky_contribution(p_env);
+		const float ambient_energy = environment_get_ambient_light_energy(p_env);
+		ambient_color = environment_get_ambient_light(p_env);
+		ambient_color = ambient_color.srgb_to_linear();
+		ambient_color.r *= ambient_energy;
+		ambient_color.g *= ambient_energy;
+		ambient_color.b *= ambient_energy;
+	}
+
+	if (use_cube_map) {
+		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy_multiplier(p_env), p_bake_irradiance, p_size);
+		if (use_ambient_light) {
+			for (int x = 0; x < p_size.width; x++) {
+				for (int y = 0; y < p_size.height; y++) {
+					panorama->set_pixel(x, y, ambient_color.lerp(panorama->get_pixel(x, y), ambient_color_sky_mix));
+				}
+			}
+		}
+		return panorama;
+	} else {
+		const float bg_energy_multiplier = environment_get_bg_energy_multiplier(p_env);
+		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? RSG::texture_storage->get_default_clear_color() : environment_get_bg_color(p_env));
+		panorama_color = panorama_color.srgb_to_linear();
+		panorama_color.r *= bg_energy_multiplier;
+		panorama_color.g *= bg_energy_multiplier;
+		panorama_color.b *= bg_energy_multiplier;
+
+		if (use_ambient_light) {
+			panorama_color = ambient_color.lerp(panorama_color, ambient_color_sky_mix);
+		}
+
+		Ref<Image> panorama = Image::create_empty(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
+		panorama->fill(panorama_color);
+		return panorama;
+	}
 }
 
 void RasterizerSceneGLES3::positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) {
@@ -2173,6 +2275,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 	glColorMask(0, 0, 0, 0);
+	glDrawBuffers(0, nullptr);
 	RasterizerGLES3::clear_depth(1.0);
 	if (needs_clear) {
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -2431,8 +2534,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 		glColorMask(0, 0, 0, 0);
 		RasterizerGLES3::clear_depth(1.0);
-
 		glClear(GL_DEPTH_BUFFER_BIT);
+		glDrawBuffers(0, nullptr);
+
 		uint64_t spec_constant = SceneShaderGLES3::DISABLE_FOG | SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL |
 				SceneShaderGLES3::DISABLE_LIGHTMAP | SceneShaderGLES3::DISABLE_LIGHT_OMNI |
 				SceneShaderGLES3::DISABLE_LIGHT_SPOT;
@@ -2464,6 +2568,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	glDepthMask(GL_TRUE);
 	scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
 	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_ALWAYS;
+
+	{
+		GLuint db = GL_COLOR_ATTACHMENT0;
+		glDrawBuffers(1, &db);
+	}
 
 	if (!fb_cleared) {
 		RasterizerGLES3::clear_depth(1.0);
@@ -2883,7 +2992,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			// Find cull variant.
 			GLES3::SceneShaderData::Cull cull_mode = shader->cull_mode;
 
-			if ((surf->flags & GeometryInstanceSurface::FLAG_USES_DOUBLE_SIDED_SHADOWS)) {
+			if (p_pass_mode == PASS_MODE_MATERIAL || (surf->flags & GeometryInstanceSurface::FLAG_USES_DOUBLE_SIDED_SHADOWS)) {
 				cull_mode = GLES3::SceneShaderData::CULL_DISABLED;
 			} else {
 				bool mirror = inst->mirror;
@@ -2920,7 +3029,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			GLuint vertex_array_gl = 0;
 			GLuint index_array_gl = 0;
 			uint64_t vertex_input_mask = shader->vertex_input_mask;
-			if (inst->lightmap_instance.is_valid()) {
+			if (inst->lightmap_instance.is_valid() || p_pass_mode == PASS_MODE_MATERIAL) {
 				vertex_input_mask |= 1 << RS::ARRAY_TEX_UV2;
 			}
 
@@ -3194,6 +3303,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::MODEL_FLAGS, inst->flags_cache, shader->version, instance_variant, spec_constants);
 
+			if (p_pass_mode == PASS_MODE_MATERIAL) {
+				material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::UV_OFFSET, p_params->uv_offset, shader->version, instance_variant, spec_constants);
+			}
+
 			// Can be index count or vertex count
 			uint32_t count = 0;
 			if (surf->lod_index > 0) {
@@ -3364,6 +3477,8 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 	glEnable(GL_CULL_FACE);
 	scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
+	glDrawBuffers(0, nullptr);
+
 	glColorMask(0, 0, 0, 0);
 	RasterizerGLES3::clear_depth(1.0);
 
@@ -3375,6 +3490,93 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 
 	glColorMask(1, 1, 1, 1);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, GLuint p_framebuffer, const Rect2i &p_region) {
+	RENDER_TIMESTAMP("Setup Rendering UV2");
+
+	RenderDataGLES3 render_data;
+	render_data.instances = &p_instances;
+
+	scene_state.ubo.emissive_exposure_normalization = -1.0; // Use default exposure normalization.
+
+	_setup_environment(&render_data, true, Vector2(1, 1), true, Color(), false);
+
+	PassMode pass_mode = PASS_MODE_MATERIAL;
+
+	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
+	render_list[RENDER_LIST_SECONDARY].sort_by_key();
+
+	RENDER_TIMESTAMP("Render 3D Material");
+
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, p_framebuffer);
+		glViewport(p_region.position.x, p_region.position.y, p_region.size.x, p_region.size.y);
+
+		GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
+
+		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_GLOBALS_UNIFORM_LOCATION, global_buffer);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		glDisable(GL_BLEND);
+		glDepthMask(GL_TRUE);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glDisable(GL_SCISSOR_TEST);
+		glCullFace(GL_BACK);
+		glEnable(GL_CULL_FACE);
+		scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
+
+		TightLocalVector<GLenum> draw_buffers;
+		draw_buffers.push_back(GL_COLOR_ATTACHMENT0);
+		draw_buffers.push_back(GL_COLOR_ATTACHMENT1);
+		draw_buffers.push_back(GL_COLOR_ATTACHMENT2);
+		draw_buffers.push_back(GL_COLOR_ATTACHMENT3);
+		glDrawBuffers(draw_buffers.size(), draw_buffers.ptr());
+
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		RasterizerGLES3::clear_depth(1.0);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+		uint64_t base_spec_constant = 0;
+		base_spec_constant |= SceneShaderGLES3::RENDER_MATERIAL;
+		base_spec_constant |= SceneShaderGLES3::DISABLE_FOG;
+		base_spec_constant |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
+		base_spec_constant |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
+		base_spec_constant |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
+		base_spec_constant |= SceneShaderGLES3::DISABLE_LIGHTMAP;
+
+		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, base_spec_constant, true, Vector2(0, 0));
+
+		const int uv_offset_count = 9;
+		static const Vector2 uv_offsets[uv_offset_count] = {
+			Vector2(-1, 1),
+			Vector2(1, 1),
+			Vector2(1, -1),
+			Vector2(-1, -1),
+			Vector2(-1, 0),
+			Vector2(1, 0),
+			Vector2(0, -1),
+			Vector2(0, 1),
+			Vector2(0, 0),
+		};
+
+		for (int i = 0; i < uv_offset_count; i++) {
+			Vector2 ofs = uv_offsets[i];
+			ofs.x /= p_region.size.width;
+			ofs.y /= p_region.size.height;
+			render_list_params.uv_offset = ofs;
+			_render_list_template<PASS_MODE_MATERIAL>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_SECONDARY].elements.size());
+		}
+
+		render_list_params.uv_offset = Vector2(0, 0);
+		render_list_params.force_wireframe = false;
+		_render_list_template<PASS_MODE_MATERIAL>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_SECONDARY].elements.size());
+
+		GLuint db = GL_COLOR_ATTACHMENT0;
+		glDrawBuffers(1, &db);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 }
 
 void RasterizerSceneGLES3::set_time(double p_time, double p_step) {
@@ -3524,7 +3726,155 @@ void RasterizerSceneGLES3::sub_surface_scattering_set_scale(float p_scale, float
 }
 
 TypedArray<Image> RasterizerSceneGLES3::bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) {
-	return TypedArray<Image>();
+	GLES3::Config *config = GLES3::Config::get_singleton();
+	ERR_FAIL_COND_V_MSG(p_image_size.width <= 0, TypedArray<Image>(), "Image width must be greater than 0.");
+	ERR_FAIL_COND_V_MSG(p_image_size.height <= 0, TypedArray<Image>(), "Image height must be greater than 0.");
+
+	GLuint albedo_alpha_tex = 0;
+	GLuint normal_tex = 0;
+	GLuint orm_tex = 0;
+	GLuint emission_tex = 0;
+	GLuint depth_tex = 0;
+	glGenTextures(1, &albedo_alpha_tex);
+	glGenTextures(1, &normal_tex);
+	glGenTextures(1, &orm_tex);
+	glGenTextures(1, &emission_tex);
+	glGenTextures(1, &depth_tex);
+
+	glBindTexture(GL_TEXTURE_2D, albedo_alpha_tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, p_image_size.width, p_image_size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(albedo_alpha_tex, p_image_size.width * p_image_size.height * 4, "Lightmap albedo texture");
+
+	glBindTexture(GL_TEXTURE_2D, normal_tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, p_image_size.width, p_image_size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(normal_tex, p_image_size.width * p_image_size.height * 4, "Lightmap normal texture");
+
+	glBindTexture(GL_TEXTURE_2D, orm_tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, p_image_size.width, p_image_size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(orm_tex, p_image_size.width * p_image_size.height * 4, "Lightmap ORM texture");
+
+	// Consider rendering to RGBA8 encoded as RGBE, then manually convert to RGBAH on CPU.
+	glBindTexture(GL_TEXTURE_2D, emission_tex);
+	if (config->float_texture_supported) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, p_image_size.width, p_image_size.height, 0, GL_RGBA, GL_FLOAT, nullptr);
+		GLES3::Utilities::get_singleton()->texture_allocated_data(emission_tex, p_image_size.width * p_image_size.height * 16, "Lightmap emission texture");
+	} else {
+		// Fallback to RGBA8 on devices that don't support rendering to floating point textures. This will look bad, but we have no choice.
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, p_image_size.width, p_image_size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		GLES3::Utilities::get_singleton()->texture_allocated_data(emission_tex, p_image_size.width * p_image_size.height * 4, "Lightmap emission texture");
+	}
+
+	glBindTexture(GL_TEXTURE_2D, depth_tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, p_image_size.width, p_image_size.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(depth_tex, p_image_size.width * p_image_size.height * 3, "Lightmap depth texture");
+
+	GLuint fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, albedo_alpha_tex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal_tex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, orm_tex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, emission_tex, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_tex, 0);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		glDeleteFramebuffers(1, &fbo);
+		GLES3::Utilities::get_singleton()->texture_free_data(albedo_alpha_tex);
+		GLES3::Utilities::get_singleton()->texture_free_data(normal_tex);
+		GLES3::Utilities::get_singleton()->texture_free_data(orm_tex);
+		GLES3::Utilities::get_singleton()->texture_free_data(emission_tex);
+		GLES3::Utilities::get_singleton()->texture_free_data(depth_tex);
+
+		WARN_PRINT("Could not create render target, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+		return TypedArray<Image>();
+	}
+
+	RenderGeometryInstance *gi_inst = geometry_instance_create(p_base);
+	ERR_FAIL_NULL_V(gi_inst, TypedArray<Image>());
+
+	uint32_t sc = RSG::mesh_storage->mesh_get_surface_count(p_base);
+	Vector<RID> materials;
+	materials.resize(sc);
+
+	for (uint32_t i = 0; i < sc; i++) {
+		if (i < (uint32_t)p_material_overrides.size()) {
+			materials.write[i] = p_material_overrides[i];
+		}
+	}
+
+	gi_inst->set_surface_materials(materials);
+
+	if (cull_argument.size() == 0) {
+		cull_argument.push_back(nullptr);
+	}
+	cull_argument[0] = gi_inst;
+	_render_uv2(cull_argument, fbo, Rect2i(0, 0, p_image_size.width, p_image_size.height));
+
+	geometry_instance_free(gi_inst);
+
+	TypedArray<Image> ret;
+
+	// Create a dummy texture so we can use texture_2d_get.
+	RID tex_rid = GLES3::TextureStorage::get_singleton()->texture_allocate();
+	GLES3::Texture texture;
+	texture.width = p_image_size.width;
+	texture.height = p_image_size.height;
+	texture.alloc_width = p_image_size.width;
+	texture.alloc_height = p_image_size.height;
+	texture.format = Image::FORMAT_RGBA8;
+	texture.real_format = Image::FORMAT_RGBA8;
+	texture.gl_format_cache = GL_RGBA;
+	texture.gl_type_cache = GL_UNSIGNED_BYTE;
+	texture.type = GLES3::Texture::TYPE_2D;
+	texture.target = GL_TEXTURE_2D;
+	texture.active = true;
+	texture.is_render_target = true; // Enable this so the texture isn't cached in the editor.
+
+	GLES3::TextureStorage::get_singleton()->texture_2d_initialize_from_texture(tex_rid, texture);
+	GLES3::Texture *tex = GLES3::TextureStorage::get_singleton()->get_texture(tex_rid);
+
+	{
+		tex->tex_id = albedo_alpha_tex;
+		Ref<Image> img = GLES3::TextureStorage::get_singleton()->texture_2d_get(tex_rid);
+		GLES3::Utilities::get_singleton()->texture_free_data(albedo_alpha_tex);
+		ret.push_back(img);
+	}
+
+	{
+		tex->tex_id = normal_tex;
+		Ref<Image> img = GLES3::TextureStorage::get_singleton()->texture_2d_get(tex_rid);
+		GLES3::Utilities::get_singleton()->texture_free_data(normal_tex);
+		ret.push_back(img);
+	}
+
+	{
+		tex->tex_id = orm_tex;
+		Ref<Image> img = GLES3::TextureStorage::get_singleton()->texture_2d_get(tex_rid);
+		GLES3::Utilities::get_singleton()->texture_free_data(orm_tex);
+		ret.push_back(img);
+	}
+
+	{
+		tex->tex_id = emission_tex;
+		if (config->float_texture_supported) {
+			tex->format = Image::FORMAT_RGBAF;
+			tex->real_format = Image::FORMAT_RGBAH;
+			tex->gl_type_cache = GL_FLOAT;
+		}
+		Ref<Image> img = GLES3::TextureStorage::get_singleton()->texture_2d_get(tex_rid);
+		GLES3::Utilities::get_singleton()->texture_free_data(emission_tex);
+		ret.push_back(img);
+	}
+
+	tex->is_render_target = false;
+	tex->tex_id = 0;
+	GLES3::TextureStorage::get_singleton()->texture_free(tex_rid);
+
+	GLES3::Utilities::get_singleton()->texture_free_data(depth_tex);
+	glDeleteFramebuffers(1, &fbo);
+	return ret;
 }
 
 bool RasterizerSceneGLES3::free(RID p_rid) {
@@ -3564,6 +3914,8 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
+
+	cull_argument.set_page_pool(&cull_argument_pool);
 
 	// Quality settings.
 	use_physical_light_units = GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units");
