@@ -3738,9 +3738,12 @@ bool Main::iteration() {
         case MEMORYADVICE_STATE_OK:
             // all good, we can allocate
             break;
-        case MEMORYADVICE_STATE_APPROACHING_LIMIT:
+        case MEMORYADVICE_STATE_APPROACHING_LIMIT:{
+            float fPercentAvailable = MemoryAdvice_getPercentageAvailableMemory();
+            OS::get_singleton()->print( "memory percent available : %f",fPercentAvailable);
             OS::get_singleton()->print( "%s",memory_warning_msg);
             OS::get_singleton()->alert(memory_error_msg);
+        }
             break;
         case MEMORYADVICE_STATE_CRITICAL:
             OS::get_singleton()->print( "%s",memory_error_msg);
