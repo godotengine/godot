@@ -3901,16 +3901,16 @@ uint64_t RenderingDeviceDriverMetal::get_lazily_memory_used() {
 uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 	MetalDeviceProperties const &props = (*device_properties);
 	MetalLimits const &limits = props.limits;
-
+	uint64_t safe_unbounded = ((uint64_t)1 << 30);
 #if defined(DEV_ENABLED)
 #define UNKNOWN(NAME)                                                            \
 	case NAME:                                                                   \
 		WARN_PRINT_ONCE("Returning maximum value for unknown limit " #NAME "."); \
-		return (uint64_t)1 << 30;
+		return safe_unbounded;
 #else
 #define UNKNOWN(NAME) \
 	case NAME:        \
-		return (uint64_t)1 << 30
+		return safe_unbounded
 #endif
 
 	// clang-format off
@@ -3983,6 +3983,8 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 			return limits.maxThreadsPerThreadGroup.height;
 		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
 			return limits.maxThreadsPerThreadGroup.depth;
+		case LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE:
+			return limits.maxThreadGroupMemoryAllocation;
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_X:
 			return limits.maxViewportDimensionX;
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_Y:
@@ -4008,8 +4010,12 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 		UNKNOWN(LIMIT_VRS_TEXEL_HEIGHT);
 		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_WIDTH);
 		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_HEIGHT);
-		default:
-			ERR_FAIL_V(0);
+		default: {
+#ifdef DEV_ENABLED
+			WARN_PRINT("Returning maximum value for unknown limit " + itos(p_limit) + ".");
+#endif
+			return safe_unbounded;
+		}
 	}
 	// clang-format on
 	return 0;

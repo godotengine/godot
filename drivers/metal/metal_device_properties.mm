@@ -305,6 +305,14 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 	limits.maxVertexInputBindingStride = (2 * KIBI);
 	limits.maxShaderVaryings = 31; // Accurate on Apple4 and above. See: https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 
+	if ([p_device supportsFamily:MTLGPUFamilyApple4]) {
+		limits.maxThreadGroupMemoryAllocation = 32768;
+	} else if ([p_device supportsFamily:MTLGPUFamilyApple3]) {
+		limits.maxThreadGroupMemoryAllocation = 16384;
+	} else {
+		limits.maxThreadGroupMemoryAllocation = 16352;
+	}
+
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 	limits.minUniformBufferOffsetAlignment = 64;
 #endif
