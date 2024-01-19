@@ -55,6 +55,7 @@ _complete_godot_options() {
 --tablet-driver
 --headless
 --write-movie
+--write-movie-subframes
 --fullscreen
 --maximized
 --windowed

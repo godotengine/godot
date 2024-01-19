@@ -52,6 +52,7 @@ _arguments \
   '--tablet-driver[set the pen tablet input driver]:tablet driver name' \
   '--headless[enable headless mode (--display-driver headless --audio-driver Dummy), useful for servers and with --script]' \
   '--write-movie[writes a video to the specified path (usually with .avi or .png extension)]:path to output video file' \
+  '--write-movie-subframes[number of subframes to render for each frame recorded (requires --write-movie)]:number of subframes per frame' \
   '(-f --fullscreen)'{-f,--fullscreen}'[request fullscreen mode]' \
   '(-m --maximized)'{-m,--maximized}'[request a maximized window]' \
   '(-w --windowed)'{-w,--windowed}'[request windowed mode]' \

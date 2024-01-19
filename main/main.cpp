@@ -454,6 +454,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("                                    --fixed-fps is forced when enabled, but it can be used to change movie FPS.\n");
 	OS::get_singleton()->print("                                    --disable-vsync can speed up movie writing but makes interaction more difficult.\n");
 	OS::get_singleton()->print("                                    --quit-after can be used to specify the number of frames to write.\n");
+	OS::get_singleton()->print("  --write-movie-subframes <N>       Number of subframes to render for each frame recorded (requires --write-movie).\n");
 
 	OS::get_singleton()->print("\n");
 
@@ -1507,6 +1508,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing write-movie argument, aborting.\n");
 				goto error;
 			}
+		} else if (I->get() == "--write-movie-subframes") {
+			if (I->next()) {
+				Engine::get_singleton()->set_write_movie_subframes(I->next()->get().to_int());
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing movie-subframes argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--disable-vsync") {
 			disable_vsync = true;
 		} else if (I->get() == "--print-fps") {
@@ -1570,6 +1579,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 
 		I = N;
+	}
+
+	if (OS::get_singleton()->_writing_movie) {
+		// Automatically adjust fixed FPS to take subframes into account, so that the *output* video FPS is the same.
+		fixed_fps *= 1 + Engine::get_singleton()->get_write_movie_subframes();
 	}
 
 #ifdef TOOLS_ENABLED
@@ -3643,7 +3657,7 @@ bool Main::start() {
 	}
 
 	if (movie_writer) {
-		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
+		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps / (1 + Engine::get_singleton()->get_write_movie_subframes()), Engine::get_singleton()->get_write_movie_path());
 	}
 
 	if (minimum_time_msec) {
@@ -3859,7 +3873,9 @@ bool Main::iteration() {
 	}
 
 	if (movie_writer) {
-		movie_writer->add_frame();
+		if (Engine::get_singleton()->_process_frames % (1 + Engine::get_singleton()->get_write_movie_subframes()) == 0) {
+			movie_writer->add_frame();
+		}
 	}
 
 	if ((quit_after > 0) && (Engine::get_singleton()->_process_frames >= quit_after)) {
