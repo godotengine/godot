@@ -3576,6 +3576,10 @@ String VisualShaderNodeParameterRef::get_output_port_name(int p_port) const {
 	return "";
 }
 
+bool VisualShaderNodeParameterRef::is_shader_valid() const {
+	return shader_rid.is_valid();
+}
+
 void VisualShaderNodeParameterRef::set_shader_rid(const RID &p_shader_rid) {
 	shader_rid = p_shader_rid;
 }

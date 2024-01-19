@@ -639,6 +639,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
+	bool is_shader_valid() const;
 	void set_shader_rid(const RID &p_shader);
 
 	void set_parameter_name(const String &p_name);
