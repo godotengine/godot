@@ -32,10 +32,19 @@ public:
 	static LuaAPI* get_singleton();
 
 	void setHook(Callable hook, int mask, int count);
-	List<Ref<DirAccess>> getSearchPaths()
+	void add_search_path(Ref<DirAccess> path);
+	{
+		searchPath.push_back(path);
+	}
+	TypedArray<Ref<DirAccess>> get_search_paths()
 	{
 		return searchPath;
 	}
+	void set_jit(bool is_jit)
+	{
+		this->is_jit = is_jit;
+	}
+
 	void setUseCallables(bool value);
 	bool getUseCallables() const;
 
@@ -114,7 +123,7 @@ private:
 private:
 	bool useCallables = true;
 	String startLuaFile = "res://init.lua";
-	List<Ref<DirAccess>> searchPath;
+	TypedArray<Ref<DirAccess>> searchPath;
 
 	bool is_jit = false;
 	String lua_start_string = "";

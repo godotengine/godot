@@ -28,7 +28,8 @@ static int gd_lua_searchpath(lua_State *state) {
 	String path = lua_tostring(state, 1);
 	String name = lua_tostring(state, 2);
 	String type = lua_tostring(state, 3);
-	name = name.replace(".", "/");
+	name = name.replace(".", "/") + ".lua";
+	
 
 
 	LuaAPI *api = LuaState::getAPI(state);
