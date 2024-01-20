@@ -190,13 +190,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 	// this is a way to make it pass down the tree. Without this
 	// the next node, which will often set use_blend to true, will
 	// override our request for use_blend false.
-	if (p_use_blend) {
-		// use self
-		p_node->use_blend = this->use_blend;
-	} else {
-		// use parameter
-		p_node->use_blend = p_use_blend;
-	}
+	p_node->use_blend = p_use_blend && use_blend;
 
 	float *blendw = p_node->blends.ptrw();
 	const float *blendr = blends.ptr();
