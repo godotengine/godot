@@ -99,8 +99,7 @@ private:
 		Variant meta;
 		String tooltip;
 
-		ObjectID custom_draw_obj;
-		StringName custom_draw_callback;
+		Callable custom_draw_callback;
 
 		struct Button {
 			int id = 0;
@@ -285,7 +284,11 @@ public:
 	void set_metadata(int p_column, const Variant &p_meta);
 	Variant get_metadata(int p_column) const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_custom_draw(int p_column, Object *p_object, const StringName &p_callback);
+#endif // DISABLE_DEPRECATED
+	void set_custom_draw_callback(int p_column, const Callable &p_callback);
+	Callable get_custom_draw_callback(int p_column) const;
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed();
