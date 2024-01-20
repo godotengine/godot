@@ -279,7 +279,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 	if (r_max) {
 		*r_max = 0;
 		for (int i = 0; i < blend_count; i++) {
-			*r_max = MAX(*r_max, Math::absf(blendw[i])); // to account for negative blend weights as used by Sub2 nodes
+			*r_max = MAX(*r_max, Math::absf(blendw[i])); // To account for negative blend weights as used by Sub2 nodes.
 		}
 	}
 
