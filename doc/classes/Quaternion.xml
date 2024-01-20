@@ -94,7 +94,7 @@
 			<return type="float" />
 			<description>
 				Returns the angle of the rotation represented by this quaternion.
-				[b]Note:[/b] The quaternion must be normalized. Returns [code]0[/code] if the quaternion has a length and is not normalized. Returns [code]PI[code] if the quaternion has no length and is not normalized.
+				[b]Note:[/b] The quaternion must be normalized. Returns [code]0[/code] if the quaternion has a length and is not normalized. Returns [code]PI[/code] if the quaternion has no length and is not normalized.
 			</description>
 		</method>
 		<method name="get_axis" qualifiers="const">
