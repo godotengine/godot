@@ -949,7 +949,7 @@ void AnimationTree::_process_graph(float p_delta) {
 									t->rot_blend_accum = rot_total;
 								}
 							} else {
-								// Direct addition / subtraction
+								// Direct addition / subtraction.
 								t->loc += loc * blend;
 								Quat q = Quat();
 								q = q.slerp(rot.normalized(), blend).normalized();
