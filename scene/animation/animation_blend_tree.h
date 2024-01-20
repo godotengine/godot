@@ -78,6 +78,7 @@ private:
 	float autorestart_delay;
 	float autorestart_random_delay;
 	MixMode mix;
+
 	bool sync;
 
 	/*	bool active;
