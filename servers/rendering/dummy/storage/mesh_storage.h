@@ -51,9 +51,7 @@ private:
 	mutable RID_Owner<DummyMesh> mesh_owner;
 
 public:
-	static MeshStorage *get_singleton() {
-		return singleton;
-	};
+	static MeshStorage *get_singleton() { return singleton; }
 
 	MeshStorage();
 	~MeshStorage();
