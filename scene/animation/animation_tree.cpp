@@ -1032,6 +1032,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							t->value = bezier;
 							t->process_pass = process_pass;
 						}
+
 						t->value = Math::lerp(t->value, bezier, blend);
 
 					} break;
