@@ -489,6 +489,9 @@
 			- [b]Thumbnails[/b] takes more space, but displays dynamic resource thumbnails, making resources easier to preview without having to open them.
 			- [b]List[/b] is more compact but doesn't display dynamic resource thumbnails. Instead, it displays static icons based on the file extension.
 		</member>
+		<member name="filesystem/file_dialog/quick_open_exclude_addons" type="bool" setter="" getter="">
+			If [code]true[/code], files in the [code]res://addons[/code] folder will not be listed in Quick Open dialogs.
+		</member>
 		<member name="filesystem/file_dialog/show_hidden_files" type="bool" setter="" getter="">
 			If [code]true[/code], display hidden files in the editor's file dialogs. Files that have names starting with [code].[/code] are considered hidden (e.g. [code].hidden_file[/code]).
 		</member>

@@ -32,7 +32,10 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+
+static const String addons_directory = "addons";
 
 Rect2i EditorQuickOpen::prev_rect = Rect2i();
 bool EditorQuickOpen::was_showed = false;
@@ -65,6 +68,8 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		_build_search_cache(p_efsd->get_subdir(i));
 	}
 
+	const bool skip_addons = (bool)EDITOR_GET("filesystem/file_dialog/quick_open_exclude_addons");
+
 	Vector<String> base_types = base_type.split(",");
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file = p_efsd->get_file_path(i);
@@ -75,7 +80,9 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		// Iterate all possible base types.
 		for (String &parent_type : base_types) {
 			if (ClassDB::is_parent_class(engine_type, parent_type) || EditorNode::get_editor_data().script_class_is_parent(script_type, parent_type)) {
-				files.push_back(file.substr(6, file.length()));
+				if (!skip_addons || !file.substr(6).begins_with(addons_directory + "/")) {
+					files.push_back(file.substr(6));
+				}
 
 				// Store refs to used icons.
 				String ext = file.get_extension();
