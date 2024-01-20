@@ -933,7 +933,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->scale = scale;
 							}
 
-							if (err != OK) { // error happens when I animated an object transform manually?? fix
+							if (err != OK) { // Error happens when I animated an object transform manually?? fix.
 								continue;
 							}
 
