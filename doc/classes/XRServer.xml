@@ -113,7 +113,7 @@
 			[b]Note:[/b] This property is managed by the current [XROrigin3D] node. It is exposed for access from GDExtensions.
 		</member>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" default="1.0">
-			Allows you to adjust the scale to your game's units. Most AR/VR platforms assume a scale of 1 game world unit = 1 real world meter.
+			The scale of the game world compared to the real world. By default, most AR/VR platforms assume that 1 game unit corresponds to 1 real world meter.
 		</member>
 	</members>
 	<signals>
