@@ -32,7 +32,7 @@ public:
 	static LuaAPI* get_singleton();
 
 	void setHook(Callable hook, int mask, int count);
-	void add_search_path(Ref<DirAccess> path);
+	void add_search_path(Ref<DirAccess> path)
 	{
 		searchPath.push_back(path);
 	}
@@ -40,9 +40,9 @@ public:
 	{
 		return searchPath;
 	}
-	void set_jit(bool is_jit)
+	void set_jit(bool _is_jit)
 	{
-		this->is_jit = is_jit;
+		this->is_jit = _is_jit;
 	}
 
 	void setUseCallables(bool value);

@@ -49,7 +49,7 @@ void Terrain3DTexture::clear() {
 	_data._uv_rotation = 0.0f;
 }
 
-void Terrain3DTexture::set_name(String p_name) {
+void Terrain3DTexture::set_tex_name(String p_name) {
 	_data._name = p_name;
 	emit_signal("setting_changed");
 }
@@ -99,8 +99,8 @@ void Terrain3DTexture::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("setting_changed"));
 
 	ClassDB::bind_method(D_METHOD("clear"), &Terrain3DTexture::clear);
-	ClassDB::bind_method(D_METHOD("set_name", "name"), &Terrain3DTexture::set_name);
-	ClassDB::bind_method(D_METHOD("get_name"), &Terrain3DTexture::get_name);
+	ClassDB::bind_method(D_METHOD("set_tex_name", "name"), &Terrain3DTexture::set_tex_name);
+	ClassDB::bind_method(D_METHOD("get_tex_name"), &Terrain3DTexture::get_tex_name);
 	ClassDB::bind_method(D_METHOD("set_texture_id", "id"), &Terrain3DTexture::set_texture_id);
 	ClassDB::bind_method(D_METHOD("get_texture_id"), &Terrain3DTexture::get_texture_id);
 	ClassDB::bind_method(D_METHOD("set_albedo_color", "color"), &Terrain3DTexture::set_albedo_color);
@@ -114,7 +114,7 @@ void Terrain3DTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uv_rotation", "scale"), &Terrain3DTexture::set_uv_rotation);
 	ClassDB::bind_method(D_METHOD("get_uv_rotation"), &Terrain3DTexture::get_uv_rotation);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tex_name", PROPERTY_HINT_NONE), "set_tex_name", "get_tex_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_id", PROPERTY_HINT_NONE), "set_texture_id", "get_texture_id");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "albedo_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_albedo_color", "get_albedo_color");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "albedo_texture", PROPERTY_HINT_RESOURCE_TYPE, "ImageTexture,CompressedTexture2D"), "set_albedo_texture", "get_albedo_texture");

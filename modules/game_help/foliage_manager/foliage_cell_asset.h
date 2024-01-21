@@ -10,6 +10,8 @@
 #include "core/io/file_access.h"
 #include "core/object/worker_thread_pool.h"
 
+#include "foliage_resource.h"
+
 #include "memory_pool.h"
 
 
@@ -235,9 +237,9 @@ namespace Foliage
 	/// 该类用于存储1..n块的植被数据
 	/// </summary>
 	//[PreferBinarySerialization]//不要使用，有概率会导致文件损坏，Unity无法失败
-	class FoliageCellAsset : public RefCounted
+	class FoliageCellAsset : public FoliageResource
 	{
-        GDCLASS(FoliageCellAsset, RefCounted)
+        GDCLASS(FoliageCellAsset, FoliageResource)
 
         static void _bind_methods();
 		/// <summary>
@@ -623,53 +625,28 @@ namespace Foliage
 
 		};
 	private:
-		String configFile;
-        // 是否是大端模式
-        int8_t big_endian;
-        //  版本，不能太大和负数
-        uint32_t version;
 		/// <summary>
 		/// 坐标
 		/// </summary>
 		int x, z;
 		Vector2i region_offset;
-		Ref<TaskJobHandle> handle_load;
 		/// <summary>
 		/// 1..n块的植被数据
 		/// </summary>
 		Vector<CellData> datas;
 		bool is_attach_to_manager = false;
     public:
-		struct FileLoadData
+		void set_region_offset(int _x, int _z)
 		{
-			Ref<FoliageCellAsset>	dest;
-			Ref<FileAccess> file;
-		};
-		void set_file_name(String name)
-		{
-			configFile = name;
-		}
-		// 加載文件
-		void load_file(String _file);
-		// 等待加载完成
-		void wait_load_finish();
-		bool is_load_finish();
-		void update_load();
-		void unload()
-		{
-			wait_load_finish();
-			datas.clear();
+			region_offset = Vector2i(_x, _z);
 		}
 	protected:
-		FileLoadData load_data;
-
-    	static void job_load_func(void* data,uint32_t index);
-        void load(Ref<FileAccess> & file);
-	public:
+        void load_imp(Ref<FileAccess> & file,uint32_t version,bool is_big_endian) override;
 		/// <summary>
 		/// 清除数据
 		/// </summary>
-		void clear();
+		void unload_imp() override;
+	public:
     };
 }
 #endif

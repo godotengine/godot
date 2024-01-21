@@ -38,8 +38,8 @@ public:
 	Settings *get_data() { return &_data; }
 	void clear();
 
-	void set_name(String p_name);
-	String get_name() const { return _data._name; }
+	void set_tex_name(String p_name);
+	String get_tex_name() const { return _data._name; }
 
 	void set_texture_id(int p_new_id);
 	int get_texture_id() const { return _data._texture_id; }

@@ -90,7 +90,7 @@ void LuaAPI::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_search_path", "Path"), &LuaAPI::add_search_path);
 	ClassDB::bind_method(D_METHOD("get_search_paths"), &LuaAPI::get_search_paths);
-	ClassDB::bind_method(D_METHOD("set_jit", "value"), &LuaAPI::setJit);
+	ClassDB::bind_method(D_METHOD("set_jit", "value"), &LuaAPI::set_jit);
 
 	ClassDB::bind_method(D_METHOD("bind_libraries", "Array"), &LuaAPI::bindLibraries);
 	ClassDB::bind_method(D_METHOD("set_hook", "Hook", "HookMask", "Count"), &LuaAPI::setHook);

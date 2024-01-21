@@ -6,6 +6,9 @@
 #include "core/io/file_access.h"
 #include "core/object/worker_thread_pool.h"
 
+#include "foliage_resource.h"
+#include "foliage_cell_asset.h"
+
 namespace Foliage
 {
     class FoliagePrototype
@@ -118,11 +121,15 @@ namespace Foliage
 		{
 			return _isUse;
 		}
+		void load(Ref<FileAccess> & file, bool big_endian)
+		{
+			
+		}
     };
     // 原型资源
-    class FoliagePrototypeAsset : public RefCounted
+    class FoliagePrototypeAsset : public FoliageResource
     {
-        GDCLASS(FoliagePrototypeAsset, RefCounted)
+        GDCLASS(FoliagePrototypeAsset, FoliageResource)
 
         static void _bind_methods()
         {
@@ -133,24 +140,13 @@ namespace Foliage
         {
 
         }
-		void set_file_name(String name)
-		{
-			file_name = name;
-		}
-        
-		struct FileLoadData
-		{
-			Ref<FoliagePrototypeAsset>	dest;
-			Ref<FileAccess> file;
-		};
-        void unload()
-        {
-            
-        }
+        void load_imp(Ref<FileAccess> & file,uint32_t version,bool is_big_endian) override;
+        void unload_imp() override;
 
     private:
 		String file_name = "foliage_prototype";
         Vector<FoliagePrototype> prototypes;
+		HashMap<int,Ref<FoliageCellAsset>> cellAssetConfig;
     };
 }
 #endif

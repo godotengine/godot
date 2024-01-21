@@ -13,22 +13,7 @@ namespace Foliage
     class FoliageMapChunkConfig : public Resource
     {
         GDCLASS(FoliageMapChunkConfig, Resource);
-        static void _bind_methods()
-        {
-            ClassDB ::bind_method(D_METHOD("set_chunk_asset_name", "map_name"), &FoliageMapChunkConfig::set_chunk_asset_name);
-            ClassDB ::bind_method(D_METHOD("get_chunk_asset_name"), &FoliageMapChunkConfig::get_chunk_asset_name);
-            ClassDB ::bind_method(D_METHOD("set_page_offset", "offset"), &FoliageMapChunkConfig::set_page_offset);
-            ClassDB ::bind_method(D_METHOD("get_page_offset"), &FoliageMapChunkConfig::get_page_offset);
-            ClassDB ::bind_method(D_METHOD("set_page_index", "index"), &FoliageMapChunkConfig::set_page_index);
-            ClassDB ::bind_method(D_METHOD("get_page_index"), &FoliageMapChunkConfig::get_page_index);
-            ClassDB ::bind_method(D_METHOD("set_page_files", "files"), &FoliageMapChunkConfig::set_page_files);
-            ClassDB ::bind_method(D_METHOD("get_page_files"), &FoliageMapChunkConfig::get_page_files);
-
-            ADD_PROPERTY(PropertyInfo(Variant::STRING, "chunk_asset_name", PROPERTY_HINT_NONE), "set_chunk_asset_name", "get_chunk_asset_name");
-            ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "page_offset"), "set_page_offset", "get_page_offset");
-            ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "page_index"), "set_page_index", "get_page_index");
-            ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "page_files"), "set_page_files", "get_page_files");
-        }
+        static void _bind_methods();
     public:
         void set_chunk_asset_name(String _map_name)
         {
@@ -46,27 +31,25 @@ namespace Foliage
         {
             return page_offset;
         }
-        void set_page_index(Vector<Vector2> _index)
-        {
-            pages_index = _index;
-        }
-        Vector<Vector2> get_page_index()
-        {
-            return pages_index;
-        }
-        void set_page_files(Vector<String> _files)
-        {
-            pages_files = _files;
-        }
-        Vector<String> get_page_files()
-        {
-            return pages_files;
-        }
         String foliage_asset_file_name;
         Vector2 page_offset;
-        Vector<Vector2> pages_index;
-        Vector<String> pages_files;
 
+    };
+    class FoliageMapConfig : public Resource
+    {
+        public:
+        GDCLASS(FoliageMapConfig, Resource);
+        static void _bind_methods();
+        void set_config(TypedArray<FoliageMapChunkConfig> _config)
+        {
+            map_config = _config;
+        }
+        TypedArray<FoliageMapChunkConfig> get_config()
+        {
+            return map_config;
+        }
+
+        TypedArray<FoliageMapChunkConfig> map_config;
     };
    
 
@@ -101,7 +84,7 @@ namespace Foliage
         void update_foliage_asset_load(const Vector3& camera_pos);
         void upload_map(const FoliageCellPos& _pos)
         {
-            
+
         }
         String map_name = "foliage_map";
         // 設置主相機

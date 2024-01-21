@@ -33,13 +33,23 @@ static int gd_lua_searchpath(lua_State *state) {
 
 
 	LuaAPI *api = LuaState::getAPI(state);
-	List<Ref<DirAccess>> paths = api->getSearchPaths();
-	for(List<Ref<DirAccess>>::Element *E = paths.front(); E; E = E->next()) {
-		Ref<DirAccess> da = E->get();
-		if(da->file_exists(name)) {
-			String full_path = da->get_current_dir() + "/" + name;
+	auto paths = api->get_search_paths();
+	for(int i = 0; i < paths.size(); i++) {
+		Ref<DirAccess> da = paths[i];
+		String curr_path = name + ".sbd";
+		if(da->file_exists(curr_path)) {
+			String full_path = da->get_current_dir() + "/" + curr_path;
 			lua_pushstring(state, full_path.utf8().get_data());
 			return 1;
+		}
+		else
+		{
+			curr_path = name + ".lua";
+			if(da->file_exists(curr_path)) {
+				String full_path = da->get_current_dir() + "/" + curr_path;
+				lua_pushstring(state, full_path.utf8().get_data());
+				return 1;
+			}
 		}
 	}
 	String err_str = "lua: Search File not found: path [" + path + "] name [" + name + "] type [" + type + "]" + name;

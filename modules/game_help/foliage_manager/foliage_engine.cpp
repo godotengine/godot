@@ -3,6 +3,36 @@
 
 namespace Foliage
 {
+
+
+    void FoliageMapChunkConfig::_bind_methods()
+    {
+        ClassDB ::bind_method(D_METHOD("set_chunk_asset_name", "map_name"), &FoliageMapChunkConfig::set_chunk_asset_name);
+        ClassDB ::bind_method(D_METHOD("get_chunk_asset_name"), &FoliageMapChunkConfig::get_chunk_asset_name);
+        ClassDB ::bind_method(D_METHOD("set_page_offset", "offset"), &FoliageMapChunkConfig::set_page_offset);
+        ClassDB ::bind_method(D_METHOD("get_page_offset"), &FoliageMapChunkConfig::get_page_offset);
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "chunk_asset_name", PROPERTY_HINT_NONE), "set_chunk_asset_name", "get_chunk_asset_name");
+        ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "page_offset"), "set_page_offset", "get_page_offset");
+    }
+
+
+
+
+
+
+    void FoliageMapConfig::_bind_methods()
+    {
+        ClassDB ::bind_method(D_METHOD("set_config", "_config"), &FoliageMapConfig::set_config);
+        ClassDB ::bind_method(D_METHOD("get_config"), &FoliageMapConfig::get_config);
+
+        
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "config", PROPERTY_HINT_RESOURCE_TYPE,MAKE_RESOURCE_TYPE_HINT("FoliageMapConfig")), "set_config", "get_config");
+
+    }
+
+
+
     void FoliageEngine::init(TypedArray<FoliageMapChunkConfig> map_config)
     {
         clear();
@@ -11,23 +41,11 @@ namespace Foliage
             Ref<FoliageMapChunkConfig> config = map_config[i];
             // 加載每个地块
             FoliagePrototypeAsset* proto_type = memnew(FoliagePrototypeAsset);
-            proto_type->set_file_name(config->foliage_asset_file_name);
+            proto_type->load_file(config->foliage_asset_file_name);
             FoliageCellPos map_pos;
             map_pos.x = config->page_offset.x / FoliageGlobals::PAGE_SIZE;
             map_pos.z = config->page_offset.y / FoliageGlobals::PAGE_SIZE;
             prototypes.insert(map_pos.DecodeInt(),proto_type);
-            FoliageCellPos page_pos;
-            // 下面添加所有的页面
-            for(int i = 0; i < config->pages_index.size(); ++i)
-            {
-                page_pos.x = config->pages_index[i].x;
-                page_pos.z = config->pages_index[i].y;
-                page_pos.Offset(Vector2i(config->page_offset.x,config->page_offset.y));
-                // 初始化頁面信息
-                FoliageCellAsset* cell = memnew(FoliageCellAsset);
-                cell->set_file_name(config->pages_files[i]);
-                cells.insert(page_pos.DecodeInt(),cell);
-            }
 
 
         }
@@ -63,15 +81,9 @@ namespace Foliage
         FoliageRenderManager::get_instance()->clear();
         for(auto& it : prototypes)
         {
-            it.value->unload();
-        }
-        prototypes.clear();
-
-        for(auto & it : cells)
-        {
             it.value->clear();
         }
-        cells.clear();
+        prototypes.clear();
         load_cell_datas.clear();
         total_cell_datas.clear();
         load_map_index.clear();
