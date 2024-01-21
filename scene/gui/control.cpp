@@ -1419,13 +1419,15 @@ void Control::_set_global_position(const Point2 &p_point) {
 
 void Control::set_global_position(const Point2 &p_point, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
-	Transform2D inv;
 
-	if (data.parent_canvas_item) {
-		inv = data.parent_canvas_item->get_global_transform().affine_inverse();
+	Transform2D global_transform_cache = get_global_transform();
+	if (p_point == global_transform_cache.get_origin()) {
+		return; // Edge case, but avoids calculation.
 	}
 
-	set_position(inv.xform(p_point), p_keep_offsets);
+	Point2 internal_position = global_transform_cache.affine_inverse().xform(p_point);
+
+	set_position(internal_position + data.pos_cache, p_keep_offsets);
 }
 
 Point2 Control::get_global_position() const {
