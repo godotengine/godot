@@ -30,6 +30,8 @@
 
 #include "project_settings.h"
 
+#include "project_settings.compat.inc"
+
 #include "core/core_bind.h" // For Compression enum.
 #include "core/input/input_map.h"
 #include "core/io/config_file.h"
@@ -39,6 +41,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
 #include "core/object/script_language.h"
+#include "core/script_encryption_key.gen.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
@@ -472,11 +475,11 @@ void ProjectSettings::_emit_changed() {
 	emit_signal("settings_changed");
 }
 
-bool ProjectSettings::load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
-	return ProjectSettings::_load_resource_pack(p_pack, p_replace_files, p_offset, false);
+bool ProjectSettings::load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, const Ref<CryptoKey> &p_key) {
+	return ProjectSettings::_load_resource_pack(p_pack, p_replace_files, p_offset, false, p_key);
 }
 
-bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, bool p_main_pack) {
+bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, bool p_main_pack, const Ref<CryptoKey> &p_key) {
 	if (PackedData::get_singleton()->is_disabled()) {
 		return false;
 	}
@@ -490,12 +493,12 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		// Add the project's resource file system to PackedData so directory access keeps working when
 		// the game is running without a main pack, like in the editor or on Android.
 		PackedData::get_singleton()->add_pack_source(memnew(PackedSourceDirectory));
-		PackedData::get_singleton()->add_pack("res://", false, 0);
+		PackedData::get_singleton()->add_pack("res://", false, 0, p_key);
 		DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
 		using_datapack = true;
 	}
 
-	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
+	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset, p_key) == OK;
 	if (!ok) {
 		return false;
 	}
@@ -572,8 +575,21 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	// Attempt with a user-defined main pack first
 
+	Ref<CryptoKey> key;
+
+	// Load embedded public key.
+#if defined(PCK_SIGNING_ENABLED)
+	key = CryptoKey::create();
+	if (key.is_valid()) {
+		String str_key = "-----BEGIN PUBLIC KEY-----\n" + CryptoCore::b64_encode_str((const uint8_t *)&pck_sign_pub_key[0], pck_sign_pub_key_len) + "\n-----END PUBLIC KEY-----";
+		ERR_FAIL_COND_V_MSG(key->load_from_string(str_key, true) != OK, ERR_CANT_OPEN, vformat("Cannot open resource pack '%s'.", p_main_pack));
+	} else {
+		ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Cannot open resource pack '%s'.", p_main_pack));
+	}
+#endif
+
 	if (!p_main_pack.is_empty()) {
-		bool ok = _load_resource_pack(p_main_pack, false, 0, true);
+		bool ok = _load_resource_pack(p_main_pack, false, 0, true, key);
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, vformat("Cannot open resource pack '%s'.", p_main_pack));
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
@@ -592,7 +608,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// and if so, we attempt loading it at the end.
 
 		// Attempt with PCK bundled into executable.
-		bool found = _load_resource_pack(exec_path, false, 0, true);
+		bool found = _load_resource_pack(exec_path, false, 0, true, key);
 
 		// Attempt with exec_name.pck.
 		// (This is the usual case when distributing a Godot game.)
@@ -608,20 +624,20 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #ifdef MACOS_ENABLED
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
-			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true);
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true, key) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true, key);
 		}
 #endif
 
 		if (!found) {
 			// Try to load data pack at the location of the executable.
 			// As mentioned above, we have two potential names to attempt.
-			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"), false, 0, true);
+			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck"), false, 0, true, key) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"), false, 0, true, key);
 		}
 
 		if (!found) {
 			// If we couldn't find them next to the executable, we attempt
 			// the current working directory. Same story, two tests.
-			found = _load_resource_pack(exec_basename + ".pck", false, 0, true) || _load_resource_pack(exec_filename + ".pck", false, 0, true);
+			found = _load_resource_pack(exec_basename + ".pck", false, 0, true, key) || _load_resource_pack(exec_filename + ".pck", false, 0, true, key);
 		}
 
 		// If we opened our package, try and load our project.
@@ -1419,7 +1435,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("localize_path", "path"), &ProjectSettings::localize_path);
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
-	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::load_resource_pack, DEFVAL(true), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset", "key"), &ProjectSettings::load_resource_pack, DEFVAL(true), DEFVAL(0), DEFVAL(Ref<CryptoKey>()));
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
