@@ -74,7 +74,7 @@
 		<method name="get_collision_point" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the collision point at which the ray intersects the closest object.
+				Returns the collision point at which the ray intersects the closest object. If [member hit_from_inside] is [code]true[/code] and the ray starts inside of a collision shape, this function will return the origin point of the ray.
 				[b]Note:[/b] This point is in the [b]global[/b] coordinate system.
 			</description>
 		</method>
