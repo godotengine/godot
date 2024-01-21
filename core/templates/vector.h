@@ -191,9 +191,6 @@ public:
 		if (s != p_arr.size()) {
 			return false;
 		}
-		if(ptr() == p_arr.ptr())
-			return true;
-		for (int i = 0; i < s; i++) {
 		for (Size i = 0; i < s; i++) {
 			if (operator[](i) != p_arr[i]) {
 				return false;
@@ -220,10 +217,8 @@ public:
 		Size s = size();
 		if (s != p_arr.size()) {
 			return true;
-		}		
-		if(ptr() == p_arr.ptr())
-			return false;
-		for (int i = 0; i < s; i++) {
+		}
+		for (Size i = 0; i < s; i++) {
 			if (operator[](i) != p_arr[i]) {
 				return true;
 			}
@@ -326,6 +321,7 @@ void Vector<T>::append_array(Vector<T> p_other) {
 	}
 	const Size bs = size();
 	resize(bs + ds);
+	for (Size i = 0; i < ds; ++i) {
 		ptrw()[bs + i] = p_other[i];
 	}
 }
