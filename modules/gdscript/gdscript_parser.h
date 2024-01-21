@@ -106,11 +106,12 @@ public:
 		Vector<DataType> container_element_types;
 
 		enum Kind {
-			BUILTIN,
-			NATIVE,
-			SCRIPT,
+			BUILTIN, // All variants except Object.
+			NATIVE, // Engine classes.
+			SCRIPT, // User classes.
 			CLASS, // GDScript.
 			ENUM, // Enumeration.
+			STRUCT, // Struct.
 			VARIANT, // Can be any type.
 			RESOLVING, // Currently resolving.
 			UNRESOLVED,
@@ -190,7 +191,6 @@ public:
 
 		GDScriptParser::DataType get_typed_container_type() const;
 
-		_FORCE_INLINE_ bool is_struct() const { return kind == BUILTIN && builtin_type == Variant::ARRAY && native_type != StringName(); }
 		const StructInfo *get_struct_info() const;
 
 		bool operator==(const DataType &p_other) const {
@@ -212,6 +212,7 @@ public:
 				case BUILTIN:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
+				case STRUCT:
 				case ENUM: // Enums use native_type to identify the enum and its base class.
 					return native_type == p_other.native_type;
 				case SCRIPT:

@@ -303,7 +303,11 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			}
 		} break;
 		case Variant::ARRAY: {
-			const Variant *v = VariantGetInternalPtr<Array>::get_ptr(this)->getptr(p_member);
+			const Array *array = VariantGetInternalPtr<Array>::get_ptr(this);
+			if (!array->get_struct_info()) {
+				break;
+			}
+			const Variant *v = array->getptr(p_member);
 			if (v) {
 				r_valid = true;
 				return *v;

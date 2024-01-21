@@ -4090,6 +4090,11 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				variable->export_info.hint = PROPERTY_HINT_NONE;
 				variable->export_info.hint_string = Variant::get_type_name(export_type.builtin_type);
 				break;
+			case GDScriptParser::DataType::STRUCT:
+				variable->export_info.type = export_type.builtin_type;
+				variable->export_info.hint = PROPERTY_HINT_ARRAY_TYPE;
+				variable->export_info.hint_string = export_type.native_type;
+				break;
 			case GDScriptParser::DataType::NATIVE:
 				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
 					variable->export_info.type = Variant::OBJECT;
@@ -4228,24 +4233,27 @@ bool GDScriptParser::export_group_annotations(const AnnotationNode *p_annotation
 	switch (t_usage) {
 		case PROPERTY_USAGE_CATEGORY: {
 			annotation->export_info.usage = t_usage;
-		} break;
+			return true;
+		}
 
 		case PROPERTY_USAGE_GROUP: {
 			annotation->export_info.usage = t_usage;
 			if (annotation->resolved_arguments.size() == 2) {
 				annotation->export_info.hint_string = annotation->resolved_arguments[1];
 			}
-		} break;
+			return true;
+		}
 
 		case PROPERTY_USAGE_SUBGROUP: {
 			annotation->export_info.usage = t_usage;
 			if (annotation->resolved_arguments.size() == 2) {
 				annotation->export_info.hint_string = annotation->resolved_arguments[1];
 			}
-		} break;
+			return true;
+		}
+		default:
+			return true;
 	}
-
-	return true;
 }
 
 bool GDScriptParser::warning_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
@@ -4389,6 +4397,7 @@ String GDScriptParser::DataType::to_string() const {
 				return vformat("Array[%s]", container_element_types[0].to_string());
 			}
 			return Variant::get_type_name(builtin_type);
+		case STRUCT:
 		case NATIVE:
 			if (is_meta_type) {
 				return GDScriptNativeClass::get_class_static();
@@ -4437,6 +4446,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 	}
 
 	switch (kind) {
+		case STRUCT:
 		case BUILTIN:
 			result.type = builtin_type;
 			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
@@ -4446,6 +4456,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 						result.hint = PROPERTY_HINT_ARRAY_TYPE;
 						result.hint_string = Variant::get_type_name(elem_type.builtin_type);
 						break;
+					case STRUCT:
 					case NATIVE:
 						result.hint = PROPERTY_HINT_ARRAY_TYPE;
 						result.hint_string = elem_type.native_type;

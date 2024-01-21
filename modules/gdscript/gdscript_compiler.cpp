@@ -180,6 +180,11 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 				result.native_type = p_datatype.native_type;
 			}
 		} break;
+		case GDScriptParser::DataType::STRUCT: {
+			result.kind = GDScriptDataType::BUILTIN;
+			result.builtin_type = Variant::ARRAY;
+			result.native_type = p_datatype.native_type;
+		} break;
 		case GDScriptParser::DataType::ENUM:
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::BUILTIN;
@@ -2997,7 +3002,8 @@ void GDScriptCompiler::convert_to_initializer_type(Variant &p_variant, const GDS
 	GDScriptParser::DataType member_t = p_node->datatype;
 	GDScriptParser::DataType init_t = p_node->initializer->datatype;
 	if (member_t.is_hard_type() && init_t.is_hard_type() &&
-			member_t.kind == GDScriptParser::DataType::BUILTIN && init_t.kind == GDScriptParser::DataType::BUILTIN) {
+			(member_t.kind == GDScriptParser::DataType::BUILTIN || member_t.kind == GDScriptParser::DataType::STRUCT) &&
+			(init_t.kind == GDScriptParser::DataType::BUILTIN || init_t.kind == GDScriptParser::DataType::STRUCT)) {
 		if (Variant::can_convert_strict(init_t.builtin_type, member_t.builtin_type)) {
 			Variant *v = &p_node->initializer->reduced_value;
 			Callable::CallError ce;

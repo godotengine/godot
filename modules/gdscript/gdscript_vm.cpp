@@ -111,28 +111,34 @@ void GDScriptFunction::_profile_native_call(uint64_t p_t_taken, const String &p_
 #endif // DEBUG_ENABLED
 
 Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataType &p_data_type) {
-	if (p_data_type.kind == GDScriptDataType::BUILTIN) {
-		if (p_data_type.builtin_type == Variant::ARRAY) {
-			Array array;
-			// Typed array.
-			if (p_data_type.has_container_element_type(0)) {
-				const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
-				array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+	switch (p_data_type.kind) {
+		case GDScriptDataType::BUILTIN: {
+			switch (p_data_type.builtin_type) {
+				case Variant::ARRAY: {
+					if (p_data_type.get_struct_info()) {
+						return Array(*p_data_type.get_struct_info());
+					}
+					Array array;
+					// Typed array.
+					if (p_data_type.has_container_element_type(0)) {
+						const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
+						array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+					}
+					return array;
+				}
+				default:
+					Callable::CallError ce;
+					Variant variant;
+					Variant::construct(p_data_type.builtin_type, variant, nullptr, 0, ce);
+
+					ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, Variant());
+
+					return variant;
 			}
-
-			return array;
-		} else {
-			Callable::CallError ce;
-			Variant variant;
-			Variant::construct(p_data_type.builtin_type, variant, nullptr, 0, ce);
-
-			ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, Variant());
-
-			return variant;
 		}
+		default:
+			return Variant();
 	}
-
-	return Variant();
 }
 
 String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const {

@@ -736,6 +736,19 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				return bad_type;
 			}
 			result = make_global_enum_type(first, StringName());
+		} else if (ClassDB::has_struct(parser->current_class->base_type.native_type, first)) {
+			result.kind = GDScriptParser::DataType::STRUCT;
+			result.builtin_type = Variant::ARRAY;
+			// The following code could probably be reworked as the has_struct function already goes through the inheritance chain.
+			// Find out which base class declared the struct, so the name is always the same even when coming from other contexts.
+			StringName native_base = parser->current_class->base_type.native_type;
+			while (native_base != StringName()) {
+				if (ClassDB::has_struct(native_base, first, true)) {
+					break;
+				}
+				native_base = ClassDB::get_parent_class_nocheck(native_base);
+			}
+			result.native_type = String(native_base) + STRUCT_SEPARATOR + first;
 		} else {
 			// Classes in current scope.
 			List<GDScriptParser::ClassNode *> script_classes;
@@ -2559,7 +2572,7 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 	if (p_expression->get_datatype() == p_type) {
 		return;
 	}
-	if (p_type.kind != GDScriptParser::DataType::BUILTIN && p_type.kind != GDScriptParser::DataType::ENUM) {
+	if (p_type.kind != GDScriptParser::DataType::BUILTIN && p_type.kind != GDScriptParser::DataType::ENUM && p_type.kind != GDScriptParser::DataType::STRUCT) {
 		return;
 	}
 
@@ -2664,7 +2677,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		while (sub) {
 			const GDScriptParser::DataType &base_type = sub->base->datatype;
 			if (base_type.is_hard_type() && base_type.is_read_only) {
-				if (base_type.kind == GDScriptParser::DataType::BUILTIN && !Variant::is_type_shared(base_type.builtin_type)) {
+				if ((base_type.kind == GDScriptParser::DataType::BUILTIN || base_type.kind == GDScriptParser::DataType::STRUCT) && !Variant::is_type_shared(base_type.builtin_type)) {
 					push_error("Cannot assign a new value to a read-only property.", p_assignment->assignee);
 					return;
 				}
@@ -3404,14 +3417,14 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 						push_error(vformat(R"*(Name "%s" called as a function but is a "%s".)*", p_call->function_name, callee_datatype.to_string()), p_call->callee);
 					}
 #ifdef DEBUG_ENABLED
-				} else if (!is_self && !(base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::BUILTIN)) {
+				} else if (!is_self && !(base_type.is_hard_type() && (base_type.kind == GDScriptParser::DataType::BUILTIN || base_type.kind == GDScriptParser::DataType::STRUCT))) {
 					parser->push_warning(p_call, GDScriptWarning::UNSAFE_METHOD_ACCESS, p_call->function_name, base_type.to_string());
 					mark_node_unsafe(p_call);
 #endif
 				}
 			}
 		}
-		if (!found && (is_self || (base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::BUILTIN))) {
+		if (!found && (is_self || (base_type.is_hard_type() && (base_type.kind == GDScriptParser::DataType::BUILTIN || base_type.kind == GDScriptParser::DataType::STRUCT)))) {
 			String base_name = is_self && !p_call->is_super ? "self" : base_type.to_string();
 #ifdef SUGGEST_GODOT4_RENAMES
 			String rename_hint;
@@ -3471,6 +3484,7 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 #endif
 		} else {
 			bool valid = false;
+			// TODO: should I mark Struct <-> Array as unsafe?
 			if (op_type.builtin_type == Variant::INT && cast_type.kind == GDScriptParser::DataType::ENUM) {
 				mark_node_unsafe(p_cast);
 				valid = true;
@@ -3614,7 +3628,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		}
 	}
 
-	if (base.kind == GDScriptParser::DataType::BUILTIN) {
+	if (base.kind == GDScriptParser::DataType::BUILTIN || base.kind == GDScriptParser::DataType::STRUCT) {
 		if (base.is_meta_type) {
 			bool valid = true;
 			Variant result = Variant::get_constant_value(base.builtin_type, name, &valid);
@@ -4442,7 +4456,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				result_type.kind = GDScriptParser::DataType::BUILTIN;
 				result_type.type_source = base_type.is_hard_type() ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
 
-				if (base_type.kind != GDScriptParser::DataType::BUILTIN) {
+				if (base_type.kind != GDScriptParser::DataType::BUILTIN && base_type.kind != GDScriptParser::DataType::STRUCT) {
 					base_type.builtin_type = Variant::OBJECT;
 				}
 				switch (base_type.builtin_type) {
@@ -4800,8 +4814,10 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 	} else {
 		GDScriptParser::DataType datatype = p_variable->get_datatype();
 		if (datatype.is_hard_type()) {
-			if (datatype.kind == GDScriptParser::DataType::BUILTIN && datatype.builtin_type != Variant::OBJECT) {
-				if (datatype.builtin_type == Variant::ARRAY && datatype.has_container_element_type(0)) {
+			if ((datatype.kind == GDScriptParser::DataType::BUILTIN || datatype.kind == GDScriptParser::DataType::STRUCT) && datatype.builtin_type != Variant::OBJECT) {
+				if (datatype.get_struct_info()) {
+					result = Array(*datatype.get_struct_info());
+				} else if (datatype.builtin_type == Variant::ARRAY && datatype.has_container_element_type(0)) {
 					result = make_array_from_element_datatype(datatype.get_container_element_type(0));
 				} else {
 					VariantInternal::initialize(&result, datatype.builtin_type);
@@ -4826,79 +4842,88 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 	result.builtin_type = p_value.get_type();
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT; // Constant has explicit type.
 
-	if (p_value.get_type() == Variant::ARRAY) {
-		const Array &array = p_value;
-		if (array.get_typed_script()) {
-			result.set_container_element_type(0, type_from_metatype(make_script_meta_type(array.get_typed_script())));
-		} else if (array.get_typed_class_name()) {
-			result.set_container_element_type(0, type_from_metatype(make_native_meta_type(array.get_typed_class_name())));
-		} else if (array.get_typed_builtin() != Variant::NIL) {
-			result.set_container_element_type(0, type_from_metatype(make_builtin_meta_type((Variant::Type)array.get_typed_builtin())));
-		}
-	} else if (p_value.get_type() == Variant::OBJECT) {
-		// Object is treated as a native type, not a builtin type.
-		result.kind = GDScriptParser::DataType::NATIVE;
-
-		Object *obj = p_value;
-		if (!obj) {
-			return GDScriptParser::DataType();
-		}
-		result.native_type = obj->get_class_name();
-
-		Ref<Script> scr = p_value; // Check if value is a script itself.
-		if (scr.is_valid()) {
-			result.is_meta_type = true;
-		} else {
-			result.is_meta_type = false;
-			scr = obj->get_script();
-		}
-		if (scr.is_valid()) {
-			Ref<GDScript> gds = scr;
-			if (gds.is_valid()) {
-				// This might be an inner class, so we want to get the parser for the root.
-				// But still get the inner class from that tree.
-				String script_path = gds->get_script_path();
-				Ref<GDScriptParserRef> ref = get_parser_for(script_path);
-				if (ref.is_null()) {
-					push_error(vformat(R"(Could not find script "%s".)", script_path), p_source);
-					GDScriptParser::DataType error_type;
-					error_type.kind = GDScriptParser::DataType::VARIANT;
-					return error_type;
-				}
-				Error err = ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
-				GDScriptParser::ClassNode *found = nullptr;
-				if (err == OK) {
-					found = ref->get_parser()->find_class(gds->fully_qualified_name);
-					if (found != nullptr) {
-						err = resolve_class_inheritance(found, p_source);
-					}
-				}
-				if (err || found == nullptr) {
-					push_error(vformat(R"(Could not resolve script "%s".)", script_path), p_source);
-					GDScriptParser::DataType error_type;
-					error_type.kind = GDScriptParser::DataType::VARIANT;
-					return error_type;
-				}
-
-				result.kind = GDScriptParser::DataType::CLASS;
-				result.native_type = found->get_datatype().native_type;
-				result.class_type = found;
-				result.script_path = ref->get_parser()->script_path;
-			} else {
-				result.kind = GDScriptParser::DataType::SCRIPT;
-				result.native_type = scr->get_instance_base_type();
-				result.script_path = scr->get_path();
+	switch (p_value.get_type()) {
+		case Variant::ARRAY: {
+			const Array &array = p_value;
+			if (array.get_struct_info()) {
+				result.kind = GDScriptParser::DataType::STRUCT;
+				result.native_type = array.get_struct_info()->name;
 			}
-			result.script_type = scr;
-		} else {
+			if (array.get_typed_script()) {
+				result.set_container_element_type(0, type_from_metatype(make_script_meta_type(array.get_typed_script())));
+			} else if (array.get_typed_class_name()) {
+				result.set_container_element_type(0, type_from_metatype(make_native_meta_type(array.get_typed_class_name())));
+			} else if (array.get_typed_builtin() != Variant::NIL) {
+				result.set_container_element_type(0, type_from_metatype(make_builtin_meta_type((Variant::Type)array.get_typed_builtin())));
+			}
+			return result;
+		}
+		case Variant::OBJECT: {
+			// Object is treated as a native type, not a builtin type.
 			result.kind = GDScriptParser::DataType::NATIVE;
-			if (result.native_type == GDScriptNativeClass::get_class_static()) {
-				result.is_meta_type = true;
-			}
-		}
-	}
 
-	return result;
+			Object *obj = p_value;
+			if (!obj) {
+				return GDScriptParser::DataType();
+			}
+			result.native_type = obj->get_class_name();
+
+			Ref<Script> scr = p_value; // Check if value is a script itself.
+			if (scr.is_valid()) {
+				result.is_meta_type = true;
+			} else {
+				result.is_meta_type = false;
+				scr = obj->get_script();
+			}
+			if (scr.is_valid()) {
+				Ref<GDScript> gds = scr;
+				if (gds.is_valid()) {
+					// This might be an inner class, so we want to get the parser for the root.
+					// But still get the inner class from that tree.
+					String script_path = gds->get_script_path();
+					Ref<GDScriptParserRef> ref = get_parser_for(script_path);
+					if (ref.is_null()) {
+						push_error(vformat(R"(Could not find script "%s".)", script_path), p_source);
+						GDScriptParser::DataType error_type;
+						error_type.kind = GDScriptParser::DataType::VARIANT;
+						return error_type;
+					}
+					Error err = ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+					GDScriptParser::ClassNode *found = nullptr;
+					if (err == OK) {
+						found = ref->get_parser()->find_class(gds->fully_qualified_name);
+						if (found != nullptr) {
+							err = resolve_class_inheritance(found, p_source);
+						}
+					}
+					if (err || found == nullptr) {
+						push_error(vformat(R"(Could not resolve script "%s".)", script_path), p_source);
+						GDScriptParser::DataType error_type;
+						error_type.kind = GDScriptParser::DataType::VARIANT;
+						return error_type;
+					}
+
+					result.kind = GDScriptParser::DataType::CLASS;
+					result.native_type = found->get_datatype().native_type;
+					result.class_type = found;
+					result.script_path = ref->get_parser()->script_path;
+				} else {
+					result.kind = GDScriptParser::DataType::SCRIPT;
+					result.native_type = scr->get_instance_base_type();
+					result.script_path = scr->get_path();
+				}
+				result.script_type = scr;
+			} else {
+				result.kind = GDScriptParser::DataType::NATIVE;
+				if (result.native_type == GDScriptNativeClass::get_class_static()) {
+					result.is_meta_type = true;
+				}
+			}
+			return result;
+		}
+		default:
+			return result;
+	}
 }
 
 GDScriptParser::DataType GDScriptAnalyzer::type_from_metatype(const GDScriptParser::DataType &p_meta_type) {
@@ -4952,7 +4977,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 				elem_type.kind = GDScriptParser::DataType::BUILTIN;
 				elem_type.builtin_type = elem_builtin_type;
 			} else if (struct_exists(elem_type_name)) {
-				elem_type.kind = GDScriptParser::DataType::BUILTIN;
+				elem_type.kind = GDScriptParser::DataType::STRUCT;
 				elem_type.builtin_type = Variant::ARRAY;
 				elem_type.native_type = elem_type_name;
 			} else if (class_exists(elem_type_name)) {
@@ -5012,7 +5037,7 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		}
 	}
 
-	if (p_base_type.kind == GDScriptParser::DataType::BUILTIN) {
+	if (p_base_type.kind == GDScriptParser::DataType::BUILTIN || p_base_type.kind == GDScriptParser::DataType::STRUCT) {
 		// Construct a base type to get methods.
 		Callable::CallError err;
 		Variant dummy;
@@ -5389,8 +5414,6 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			if (p_target.has_container_element_type(0) && p_source.has_container_element_type(0)) {
 				valid = p_target.get_container_element_type(0) == p_source.get_container_element_type(0);
 			}
-			// Check whether they are compatible structs.
-			valid = valid & (p_target.native_type == p_source.native_type);
 		}
 		return valid;
 	}
@@ -5405,6 +5428,10 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 			}
 		}
 		return false;
+	}
+
+	if (p_target.kind == GDScriptParser::DataType::STRUCT) {
+		return p_source.kind == GDScriptParser::DataType::STRUCT && (p_target.native_type == p_source.native_type);
 	}
 
 	// From here on the target type is an object, so we have to test polymorphism.
@@ -5458,6 +5485,7 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		case GDScriptParser::DataType::VARIANT:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
+		case GDScriptParser::DataType::STRUCT:
 		case GDScriptParser::DataType::RESOLVING:
 		case GDScriptParser::DataType::UNRESOLVED:
 			break; // Already solved before.
@@ -5495,6 +5523,7 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 		case GDScriptParser::DataType::VARIANT:
 		case GDScriptParser::DataType::BUILTIN:
 		case GDScriptParser::DataType::ENUM:
+		case GDScriptParser::DataType::STRUCT:
 		case GDScriptParser::DataType::RESOLVING:
 		case GDScriptParser::DataType::UNRESOLVED:
 			break; // Already solved before.
@@ -5621,7 +5650,7 @@ bool GDScriptAnalyzer::class_exists(const StringName &p_class) const {
 bool GDScriptAnalyzer::struct_exists(const StringName &p_struct) const {
 	Vector<String> names = String(p_struct).split(STRUCT_SEPARATOR);
 	if (names.size() == 2) {
-		return ClassDB::has_struct(names[0], names[1], true); // TODO: allow inheritance here?
+		return ClassDB::has_struct(names[0], names[1], true);
 	}
 	return false;
 }

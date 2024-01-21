@@ -1114,7 +1114,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 	GDScriptParser::DataType base_type = p_base.type;
 
-	if (base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::BUILTIN && base_type.kind != GDScriptParser::DataType::ENUM) {
+	if (base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::BUILTIN && base_type.kind != GDScriptParser::DataType::ENUM && base_type.kind != GDScriptParser::DataType::STRUCT) {
 		ScriptLanguage::CodeCompletionOption option("new", ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, ScriptLanguage::LOCATION_LOCAL);
 		option.insert_text += "(";
 		r_result.insert(option.display, option);
@@ -1254,12 +1254,18 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				return;
 			} break;
 			case GDScriptParser::DataType::ENUM:
+			case GDScriptParser::DataType::STRUCT:
 			case GDScriptParser::DataType::BUILTIN: {
 				Callable::CallError err;
 				Variant tmp;
-				Variant::construct(base_type.builtin_type, tmp, nullptr, 0, err);
-				if (err.error != Callable::CallError::CALL_OK) {
-					return;
+				if (base_type.get_struct_info()) {
+					tmp = Array(*base_type.get_struct_info());
+					// TODO: modify Variant::construct so it can be used for Structs?
+				} else {
+					Variant::construct(base_type.builtin_type, tmp, nullptr, 0, err);
+					if (err.error != Callable::CallError::CALL_OK) {
+						return;
+					}
 				}
 
 				int location = ScriptLanguage::LOCATION_OTHER;
@@ -1560,7 +1566,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 		// Already has a value, so just use that.
 		r_type = _type_from_variant(p_expression->reduced_value, p_context);
 		switch (p_expression->get_datatype().kind) {
-			case GDScriptParser::DataType::ENUM:
+			case GDScriptParser::DataType::ENUM: // TODO: Structs?
 			case GDScriptParser::DataType::CLASS:
 				r_type.type = p_expression->get_datatype();
 				break;
@@ -1882,11 +1888,14 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 						break;
 					}
 
-					if (base.value.in(index.value)) {
-						Variant value = base.value.get(index.value);
-						r_type = _type_from_variant(value, p_context);
-						found = true;
-						break;
+					{
+						bool valid = false;
+						Variant value = base.value.get(index.value, &valid);
+						if (valid) {
+							r_type = _type_from_variant(value, p_context);
+							found = true;
+							break;
+						}
 					}
 
 					// Look if it is a dictionary node.
@@ -2419,13 +2428,18 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 				}
 				return false;
 			} break;
+			case GDScriptParser::DataType::STRUCT: // TODO: probably a more efficient way to handle Structs
 			case GDScriptParser::DataType::BUILTIN: {
 				Callable::CallError err;
 				Variant tmp;
-				Variant::construct(base_type.builtin_type, tmp, nullptr, 0, err);
+				if (base_type.get_struct_info()) {
+					tmp = Array(*base_type.get_struct_info());
+				} else {
+					Variant::construct(base_type.builtin_type, tmp, nullptr, 0, err);
 
-				if (err.error != Callable::CallError::CALL_OK) {
-					return false;
+					if (err.error != Callable::CallError::CALL_OK) {
+						return false;
+					}
 				}
 				bool valid = false;
 				Variant res = tmp.get(p_identifier, &valid);
@@ -2576,12 +2590,17 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 				}
 				return false;
 			} break;
+			case GDScriptParser::DataType::STRUCT: // TODO: more efficient way to handle Structs?
 			case GDScriptParser::DataType::BUILTIN: {
 				Callable::CallError err;
 				Variant tmp;
-				Variant::construct(base_type.builtin_type, tmp, nullptr, 0, err);
-				if (err.error != Callable::CallError::CALL_OK) {
-					return false;
+				if (base_type.get_struct_info()) {
+					tmp = Array(*base_type.get_struct_info());
+				} else {
+					Variant::construct(base_type.builtin_type, tmp, nullptr, 0, err);
+					if (err.error != Callable::CallError::CALL_OK) {
+						return false;
+					}
 				}
 
 				List<MethodInfo> methods;
@@ -2791,6 +2810,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 				base_type.kind = GDScriptParser::DataType::UNRESOLVED;
 			} break;
+			case GDScriptParser::DataType::STRUCT:
 			case GDScriptParser::DataType::BUILTIN: {
 				if (base.get_type() == Variant::NIL) {
 					Callable::CallError err;
@@ -3533,6 +3553,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					base_type.kind = GDScriptParser::DataType::UNRESOLVED;
 				}
 			} break;
+			case GDScriptParser::DataType::STRUCT: // TODO: not sure about this one
 			case GDScriptParser::DataType::BUILTIN: {
 				base_type.kind = GDScriptParser::DataType::UNRESOLVED;
 
@@ -3548,6 +3569,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				if (base_type.builtin_type == Variant::OBJECT) {
 					v_ref.instantiate();
 					v = v_ref;
+				} else if (base_type.get_struct_info()) {
+					v = Array(*base_type.get_struct_info());
 				} else {
 					Callable::CallError err;
 					Variant::construct(base_type.builtin_type, v, nullptr, 0, err);
