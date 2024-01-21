@@ -2111,6 +2111,8 @@ void TileMapLayer::notify_tile_map_change(DirtyFlags p_what) {
 }
 
 void TileMapLayer::internal_update() {
+	MutexLock lock(dirty.mutex);
+
 	// Find TileData that need a runtime modification.
 	// This may add cells to the dirty list is a runtime modification has been notified.
 	_build_runtime_update_tile_data();
@@ -2187,6 +2189,7 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 	c.alternative_tile = alternative_tile;
 
 	// Make the given cell dirty.
+	MutexLock lock(dirty.mutex);
 	if (!E->value.dirty_list_element.in_list()) {
 		dirty.cell_list.add(&(E->value.dirty_list_element));
 	}

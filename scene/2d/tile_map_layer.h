@@ -262,6 +262,7 @@ private:
 
 	// Dirty flag. Allows knowing what was modified since the last update.
 	struct {
+		Mutex mutex;
 		bool flags[DIRTY_FLAGS_MAX] = { false };
 		SelfList<CellData>::List cell_list;
 	} dirty;
