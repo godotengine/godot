@@ -31,6 +31,7 @@
 #include "struct_generator.h"
 #include "core/variant/struct.h"
 
+// Needs to be in .cpp so struct.h can be included
 template <typename StructType, typename... StructMembers>
 void StructLayout<StructType, StructMembers...>::fill_struct_array(Struct<StructType> &p_array, const StructType &p_struct) {
 	int dummy[] = { 0, (p_array.template set_member_value<StructMembers>(StructMembers::get_variant(p_struct)), 0)... };

@@ -1501,7 +1501,7 @@ TypedArray<Dictionary> ClassDB::class_get_struct_list(const StringName &p_class,
 	::ClassDB::get_struct_list(p_class, &structs, p_no_inheritance);
 	for (const StructInfo &struct_info : structs) {
 		Dictionary struct_dict;
-		for (uint32_t i = 0; i < struct_info.count; i++) {
+		for (int i = 0; i < struct_info.count; i++) {
 			Dictionary member_dict;
 			member_dict[SNAME("name")] = struct_info.names[i];
 			member_dict[SNAME("type")] = struct_info.types[i];
@@ -1520,7 +1520,7 @@ TypedArray<Dictionary> ClassDB::class_get_struct_members(const StringName &p_cla
 	if (!struct_info) {
 		return ret; // TODO: should this be an error?
 	}
-	for (uint32_t i = 0; i < struct_info->count; i++) {
+	for (int i = 0; i < struct_info->count; i++) {
 		Dictionary dict;
 		dict[SNAME("name")] = struct_info->names[i];
 		dict[SNAME("type")] = struct_info->types[i];

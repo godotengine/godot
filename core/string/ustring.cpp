@@ -3522,8 +3522,7 @@ String String::format(const Variant &values, const String &placeholder) const {
 		Array values_arr = values;
 		const StructInfo *struct_info = values_arr.get_struct_info();
 		if (struct_info) {
-			for (uint32_t i = 0; i < struct_info->count; i++) {
-				// TODO: what if count >= INT_MAX?
+			for (int32_t i = 0; i < struct_info->count; i++) {
 				new_string = new_string.replace(placeholder.replace("_", struct_info->names[i]), values_arr[(int)i]);
 			}
 		}

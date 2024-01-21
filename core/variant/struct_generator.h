@@ -170,7 +170,7 @@ class Struct;
 
 struct StructInfo {
 	StringName name = StringName();
-	uint32_t count = 0;
+	int32_t count = 0;
 
 	const StringName *names = nullptr;
 	const Variant::Type *types = nullptr;
@@ -179,7 +179,7 @@ struct StructInfo {
 	const Variant *default_values = nullptr;
 
 	StructInfo(){};
-	StructInfo(const StringName &p_name, const uint32_t p_count, const StringName *p_names, const Variant::Type *p_types, const StringName *p_class_names, const StructInfo *const *p_struct_member_infos, const Variant *p_default_values) {
+	StructInfo(const StringName &p_name, const int32_t p_count, const StringName *p_names, const Variant::Type *p_types, const StringName *p_class_names, const StructInfo *const *p_struct_member_infos, const Variant *p_default_values) {
 		name = p_name;
 		count = p_count;
 		names = p_names;
@@ -208,7 +208,7 @@ struct StructInfo {
 
 template <typename StructType, typename... StructMembers>
 struct StructLayout {
-	static constexpr uint32_t struct_member_count = sizeof...(StructMembers);
+	static constexpr int32_t struct_member_count = sizeof...(StructMembers);
 	_FORCE_INLINE_ static const StringName get_struct_name() {
 		return StructType::get_struct_name();
 	}
@@ -230,12 +230,12 @@ struct StructLayout {
 	static void fill_array(Array &p_array, const StructType &p_struct) {
 		p_array.resize(struct_member_count);
 		Variant vals[struct_member_count] = { StructMembers::get_variant(p_struct)... };
-		for (uint32_t i = 0; i < struct_member_count; i++) {
+		for (int32_t i = 0; i < struct_member_count; i++) {
 			p_array.set(i, vals[i]);
 		}
 	}
 	static void fill_struct(const Array &p_array, StructType &p_struct) {
-		uint32_t i = 0;
+		int32_t i = 0;
 		int temp[] = { 0, (StructMembers::set_variant(p_struct, p_array.get(i)), i++, 0)... };
 		(void)temp; // Suppress unused variable warning
 	}

@@ -50,7 +50,7 @@ public:
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
 
-	uint32_t member_count = 0;
+	int32_t member_count = 0;
 
 	_FORCE_INLINE_ bool is_struct() const {
 		return typed.is_struct();
@@ -63,9 +63,20 @@ public:
 	_FORCE_INLINE_ int32_t find_member_index(const StringName &p_member) const {
 		// TODO: is there a better way to do this than linear search?
 		ERR_FAIL_NULL_V_MSG(typed.struct_info, -1, "Can only find member on a Struct");
-		for (uint32_t i = 0; i < typed.struct_info->count; i++) {
+		for (int32_t i = 0; i < typed.struct_info->count; i++) {
 			if (p_member == typed.struct_info->names[i]) {
-				return (int32_t)i;
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	_FORCE_INLINE_ int32_t rfind_member_index(const StringName &p_member) const {
+		// TODO: is there a better way to do this than linear search?
+		ERR_FAIL_NULL_V_MSG(typed.struct_info, -1, "Can only find member on a Struct");
+		for (int32_t i = typed.struct_info->count - 1; i >= 0; i--) {
+			if (p_member == typed.struct_info->names[i]) {
+				return i;
 			}
 		}
 		return -1;
@@ -381,6 +392,12 @@ int Array::find(const Variant &p_value, int p_from) const {
 	if (_p->array.size() == 0) {
 		return -1;
 	}
+	if (is_struct()) {
+		ERR_FAIL_COND_V_MSG(!p_value.is_string(), -1, "Can only find a String or StringName in a Struct.");
+		StringName member = p_value;
+		return find_member(member);
+	}
+
 	ValidatedVariant validated = _p->typed.validate(p_value, "find");
 
 	ERR_FAIL_COND_V(!validated.valid, -1);
@@ -405,6 +422,12 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	if (_p->array.size() == 0) {
 		return -1;
 	}
+	if (is_struct()) {
+		ERR_FAIL_COND_V_MSG(!p_value.is_string(), -1, "Can only find a String or StringName in a Struct.");
+		StringName member = p_value;
+		return rfind_member(member);
+	}
+
 	ValidatedVariant validated = _p->typed.validate(p_value, "rfind");
 	ERR_FAIL_COND_V(!validated.valid, -1);
 
@@ -496,6 +519,10 @@ const StringName Array::get_member_name(int p_idx) const {
 
 const int Array::find_member(const StringName &p_member) const {
 	return _p->find_member_index(p_member);
+}
+
+const int Array::rfind_member(const StringName &p_member) const {
+	return _p->rfind_member_index(p_member);
 }
 
 const Variant *Array::getptr(const StringName &p_member) const {
@@ -884,7 +911,7 @@ void Array::set_struct(const StructInfo &p_struct_info) {
 	if (validate_set_type() != OK) {
 		return;
 	}
-	const uint32_t size = p_struct_info.count;
+	const int32_t size = p_struct_info.count;
 	_p->array.resize(size);
 	_p->member_count = size;
 	_p->typed = ContainerTypeValidate(p_struct_info);
@@ -947,7 +974,7 @@ Array::Array(const Dictionary &p_from, const StructInfo &p_struct_info) {
 
 	set_struct(p_struct_info);
 	Variant *pw = _p->array.ptrw();
-	for (uint32_t i = 0; i < p_struct_info.count; i++) {
+	for (int32_t i = 0; i < p_struct_info.count; i++) {
 		pw[i] = p_from.has(p_struct_info.names[i]) ? p_from[p_struct_info.names[i]] : p_struct_info.default_values[i];
 	}
 }
@@ -958,7 +985,7 @@ Array::Array(const StructInfo &p_struct_info) {
 
 	set_struct(p_struct_info);
 	Variant *pw = _p->array.ptrw();
-	for (uint32_t i = 0; i < p_struct_info.count; i++) {
+	for (int32_t i = 0; i < p_struct_info.count; i++) {
 		pw[i] = p_struct_info.default_values[i];
 	}
 }

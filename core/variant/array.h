@@ -65,6 +65,7 @@ public:
 	const Variant &get_named(const StringName &p_member) const; // TODO: should be & return?
 	const StringName get_member_name(int p_idx) const;
 	const int find_member(const StringName &p_member) const;
+	const int rfind_member(const StringName &p_member) const;
 	const Variant *getptr(const StringName &p_member) const;
 
 	int size() const;

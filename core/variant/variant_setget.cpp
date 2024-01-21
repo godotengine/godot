@@ -1316,7 +1316,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			// if not struct, continue on to default case, otherwise...
 			if (array->is_struct()) {
 				const StructInfo *struct_info = array->get_struct_info();
-				for (uint32_t i = 0; i < struct_info->count; i++) {
+				for (int32_t i = 0; i < struct_info->count; i++) {
 					p_list->push_back(PropertyInfo(struct_info->types[i], struct_info->names[i], PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, struct_info->class_names[i]));
 				}
 				break;

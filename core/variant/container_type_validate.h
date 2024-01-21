@@ -178,8 +178,7 @@ struct ContainerTypeValidate {
 	_FORCE_INLINE_ ValidatedVariant validate(const Variant &p_variant, const char *p_operation = "use", const int p_struct_index = -1) const {
 		// Coerces String and StringName into each other and int into float when needed.
 		if (struct_info) {
-			// TODO: what if count > INT_MAX?
-			CRASH_BAD_INDEX_MSG(p_struct_index, (int)struct_info->count, "Struct tried validation for a non-existent member");
+			CRASH_BAD_INDEX_MSG(p_struct_index, struct_info->count, "Struct tried validation for a non-existent member");
 		}
 		const Variant::Type variant_type = struct_info ? struct_info->types[p_struct_index] : type;
 		ValidatedVariant ret = ContainerTypeValidate::validate_variant_type(variant_type, p_variant, where, p_operation);
