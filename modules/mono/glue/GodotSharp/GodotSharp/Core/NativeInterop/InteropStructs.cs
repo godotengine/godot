@@ -474,7 +474,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != IntPtr.Zero ? *((int*)_ptr - 1) : 0;
+            get => _ptr != IntPtr.Zero ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
@@ -725,7 +725,7 @@ namespace Godot.NativeInterop
             public readonly unsafe int Size
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => _ptr != null ? *((int*)_ptr - 1) : 0;
+                get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
             }
         }
 
@@ -875,7 +875,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
@@ -939,7 +939,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
@@ -971,7 +971,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
@@ -1003,7 +1003,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
@@ -1035,7 +1035,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
@@ -1067,7 +1067,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
@@ -1099,7 +1099,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
@@ -1131,7 +1131,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
