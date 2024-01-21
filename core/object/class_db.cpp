@@ -1615,6 +1615,28 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 #endif
 }
 
+void ClassDB::add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info) {
+	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
+
+#ifdef DEBUG_METHODS_ENABLED
+	PackedStringArray arg_names;
+
+	MethodInfo mi;
+	mi.name = *reinterpret_cast<StringName *>(p_method_info->name);
+	mi.return_val = PropertyInfo(p_method_info->return_value);
+	mi.return_val_metadata = p_method_info->return_value_metadata;
+	mi.flags = p_method_info->method_flags;
+	for (int i = 0; i < (int)p_method_info->argument_count; i++) {
+		PropertyInfo arg(p_method_info->arguments[i]);
+		mi.arguments.push_back(arg);
+		mi.arguments_metadata.push_back(p_method_info->arguments_metadata[i]);
+		arg_names.push_back(arg.name);
+	}
+
+	add_virtual_method(p_class, mi, true, arg_names);
+#endif
+}
+
 void ClassDB::set_class_enabled(const StringName &p_class, bool p_enable) {
 	OBJTYPE_WLOCK;
 
