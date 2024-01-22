@@ -53,13 +53,6 @@
 #include <dlfcn.h>
 #endif
 
-// TODO mobile
-#if 0
-#ifdef IOS_ENABLED
-#include "support/ios_support.h"
-#endif
-#endif
-
 GDMono *GDMono::singleton = nullptr;
 
 namespace {
