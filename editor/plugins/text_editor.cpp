@@ -531,7 +531,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					}
 				}
 				if (!tx->has_selection()) {
-					tx->set_caret_line(row, true, false);
+					tx->set_caret_line(row, true, false, -1);
 					tx->set_caret_column(col);
 				}
 			}

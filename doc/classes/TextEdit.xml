@@ -58,7 +58,7 @@
 		<method name="add_caret">
 			<return type="int" />
 			<param index="0" name="line" type="int" />
-			<param index="1" name="col" type="int" />
+			<param index="1" name="column" type="int" />
 			<description>
 				Adds a new caret at the given location. Returns the index of the new caret, or [code]-1[/code] if the location is invalid.
 			</description>
@@ -363,6 +363,15 @@
 				[b]Note:[/b] The return value is influenced by [theme_item line_spacing] and [theme_item font_size]. And it will not be less than [code]1[/code].
 			</description>
 		</method>
+		<method name="get_line_ranges_from_carets" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="p_only_selections" type="bool" default="false" />
+			<param index="1" name="p_merge_adjacent" type="bool" default="true" />
+			<description>
+				Returns an [Array] of line ranges where [code]x[/code] is the first line and [code]y[/code] is the last line. All lines within these ranges will have a caret on them or be part of a selection. Each line will only be part of one line range, even if it has multiple carets on it.
+				If a selection's end column ([method get_selection_to_column]) is at column [code]0[/code], that line will not be included. If a selection begins on the line after another selection ends and [param p_merge_adjacent] is [code]true[/code], or they begin and end on the same line, one line range will include both selections.
+			</description>
+		</method>
 		<method name="get_line_width" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="line" type="int" />
@@ -514,7 +523,17 @@
 				Returns the text inside the selection of a caret, or all the carets if [param caret_index] is its default value [code]-1[/code].
 			</description>
 		</method>
-		<method name="get_selection_column" qualifiers="const">
+		<method name="get_selection_at_line_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<param index="2" name="include_edges" type="bool" default="true" />
+			<description>
+				Returns the caret index of the selection at the given [param line] and [param column], or [code]-1[/code] if there is none.
+				If [param include_edges] is [code]false[/code], the position must be inside the selection and not at either end.
+			</description>
+		</method>
+		<method name="get_selection_column" qualifiers="const" is_deprecated="true">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
@@ -809,7 +828,7 @@
 			<param index="0" name="text" type="String" />
 			<param index="1" name="flags" type="int" />
 			<param index="2" name="from_line" type="int" />
-			<param index="3" name="from_colum" type="int" />
+			<param index="3" name="from_column" type="int" />
 			<description>
 				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
 				In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line. If no results are found, both are equal to [code]-1[/code].
@@ -1049,9 +1068,6 @@
 		<method name="set_selection_mode">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="TextEdit.SelectionMode" />
-			<param index="1" name="line" type="int" default="-1" />
-			<param index="2" name="column" type="int" default="-1" />
-			<param index="3" name="caret_index" type="int" default="0" />
 			<description>
 				Sets the current selection mode.
 			</description>

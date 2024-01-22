@@ -173,10 +173,8 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 	if (pos.x != -1) {
 		if (!preserve_cursor && !is_selection_only()) {
 			text_editor->unfold_line(pos.y);
-			text_editor->set_caret_line(pos.y, false);
-			text_editor->set_caret_column(pos.x + text.length(), false);
-			text_editor->center_viewport_to_caret(0);
 			text_editor->select(pos.y, pos.x, pos.y, pos.x + text.length());
+			text_editor->center_viewport_to_caret(0);
 
 			line_col_changed_for_result = true;
 		}
@@ -216,7 +214,7 @@ void FindReplaceBar::_replace() {
 	text_editor->begin_complex_operation();
 	if (selection_enabled && is_selection_only()) {
 		// Restrict search_current() to selected region.
-		text_editor->set_caret_line(selection_begin.width, false, true, 0, 0);
+		text_editor->set_caret_line(selection_begin.width, false, true, -1, 0);
 		text_editor->set_caret_column(selection_begin.height, true, 0);
 	}
 
@@ -285,10 +283,10 @@ void FindReplaceBar::_replace_all() {
 	text_editor->begin_complex_operation();
 
 	if (selection_enabled && is_selection_only()) {
-		text_editor->set_caret_line(selection_begin.width, false, true, 0, 0);
+		text_editor->set_caret_line(selection_begin.width, false, true, -1, 0);
 		text_editor->set_caret_column(selection_begin.height, true, 0);
 	} else {
-		text_editor->set_caret_line(0, false, true, 0, 0);
+		text_editor->set_caret_line(0, false, true, -1, 0);
 		text_editor->set_caret_column(0, true, 0);
 	}
 
