@@ -37,8 +37,9 @@
 
 class ImporterMesh;
 
-// GLTFPhysicsShape is an intermediary between OMI_collider and Godot's collision shape nodes.
-// https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_collider
+// GLTFPhysicsShape is an intermediary between Godot's collision shape nodes
+// and the OMI_physics_shape extension.
+// https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_shape
 
 class GLTFPhysicsShape : public Resource {
 	GDCLASS(GLTFPhysicsShape, Resource)
