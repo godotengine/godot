@@ -99,6 +99,7 @@ public:
 	static void remove_script(const String &p_path);
 	static Ref<GDScriptParserRef> get_parser(const String &p_path, GDScriptParserRef::Status status, Error &r_error, const String &p_owner = String());
 	static String get_source_code(const String &p_path);
+	static Vector<uint8_t> get_binary_tokens(const String &p_path);
 	static Ref<GDScript> get_shallow_script(const String &p_path, Error &r_error, const String &p_owner = String());
 	static Ref<GDScript> get_full_script(const String &p_path, Error &r_error, const String &p_owner = String(), bool p_update_from_disk = false);
 	static Ref<GDScript> get_cached_script(const String &p_path);
