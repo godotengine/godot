@@ -2381,9 +2381,38 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 	bbcode = bbcode.replace("\n[/codeblock]", "[/codeblock]");
 	bbcode = bbcode.replace("[/codeblock]\n", "[/codeblock]");
 
+	// First pass, iterate through all lines.
+	// Find a list and its elements, replace with a BBcode list (ul).
+	int newline_pos = -1;
+	int inside_list = false;
+	while (true) {
+		newline_pos = bbcode.find_char('\n', newline_pos + 1);
+		if (newline_pos == -1) {
+			break;
+		}
+
+		if (!inside_list && bbcode[newline_pos + 1] == '-') {
+			bbcode = bbcode.left(newline_pos) + "[ul]" + bbcode.right(-newline_pos - 2);
+			newline_pos += 3;
+			inside_list = true;
+			continue;
+		}
+
+		if (inside_list) {
+			if (bbcode[newline_pos + 1] == '-') {
+				bbcode.remove_at(newline_pos + 1); // Remove "-".
+			} else {
+				bbcode = bbcode.insert(newline_pos, "[/ul]");
+				newline_pos += 4;
+				inside_list = false;
+			}
+		}
+	}
+
 	List<String> tag_stack;
 	bool code_tag = false;
 	bool codeblock_tag = false;
+	bool list_tag = false;
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
@@ -2395,8 +2424,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 		if (brk_pos > pos) {
 			String text = bbcode.substr(pos, brk_pos - pos);
-			if (!code_tag && !codeblock_tag) {
+			if (!code_tag && !codeblock_tag && !list_tag) {
 				text = text.replace("\n", "\n\n");
+				// text = text.replace("\n\n- ", "\n- "); // Exception for unordered lists.
 			}
 			p_rt->add_text(text);
 		}
@@ -2409,7 +2439,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 		if (brk_end == -1) {
 			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
-			if (!code_tag && !codeblock_tag) {
+			if (!code_tag && !codeblock_tag && !list_tag) {
 				text = text.replace("\n", "\n\n");
 			}
 			p_rt->add_text(text);
@@ -2431,13 +2461,15 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			tag_stack.pop_front();
 			pos = brk_end + 1;
 			if (tag != "/img") {
-				p_rt->pop();
 				if (code_tag) {
+					p_rt->pop();
 					p_rt->pop(); // font size
 					// Pop both color and background color.
 					p_rt->pop();
 					p_rt->pop();
+					code_tag = false;
 				} else if (codeblock_tag) {
+					p_rt->pop();
 					p_rt->pop(); // font size
 					// Pop color, cell and table.
 					p_rt->pop();
@@ -2446,11 +2478,14 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 					if (pos < bbcode.length()) {
 						p_rt->add_newline();
 					}
+					codeblock_tag = false;
+				} else if (list_tag && tag == "/ul") {
+					p_rt->pop(); // list
+					list_tag = false;
+				} else {
+					p_rt->pop(); // Bold, italics, etc.
 				}
 			}
-			code_tag = false;
-			codeblock_tag = false;
-
 		} else if (code_tag || codeblock_tag) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
@@ -2599,6 +2634,11 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 		} else if (tag == "rb") {
 			p_rt->add_text("]");
 			pos = brk_end + 1;
+		} else if (tag == "ul") {
+			p_rt->push_list(2, RichTextLabel::LIST_DOTS, false);
+			list_tag = true;
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
 		} else if (tag == "url") {
 			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
