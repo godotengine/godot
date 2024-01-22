@@ -422,24 +422,6 @@ def configure(env):
     if env["execinfo"]:
         env.Append(LIBS=["execinfo"])
 
-    if not env["tools"]:
-        import subprocess
-        import re
-
-        linker_version_str = subprocess.check_output(
-            [env.subst(env["LINK"]), "-Wl,--version"] + env.subst(env["LINKFLAGS"])
-        ).decode("utf-8")
-        gnu_ld_version = re.search(r"^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
-        if not gnu_ld_version:
-            print(
-                "Warning: Creating export template binaries enabled for PCK embedding is currently only supported with GNU ld, not gold, LLD or mold."
-            )
-        else:
-            if float(gnu_ld_version.group(1)) >= 2.30:
-                env.Append(LINKFLAGS=["-T", "platform/x11/pck_embed.ld"])
-            else:
-                env.Append(LINKFLAGS=["-T", "platform/x11/pck_embed.legacy.ld"])
-
     # Link those statically for portability
     if env["use_static_cpp"]:
         env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
