@@ -2008,45 +2008,32 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		tx->apply_ime();
 
 		Point2i pos = tx->get_line_column_at_pos(local_pos);
-		int row = pos.y;
-		int col = pos.x;
+		int mouse_line = pos.y;
+		int mouse_column = pos.x;
 
 		tx->set_move_caret_on_right_click_enabled(EDITOR_GET("text_editor/behavior/navigation/move_caret_on_right_click"));
-		int caret_clicked = -1;
+		int selection_clicked = -1;
 		if (tx->is_move_caret_on_right_click_enabled()) {
-			if (tx->has_selection()) {
-				for (int i = 0; i < tx->get_caret_count(); i++) {
-					int from_line = tx->get_selection_from_line(i);
-					int to_line = tx->get_selection_to_line(i);
-					int from_column = tx->get_selection_from_column(i);
-					int to_column = tx->get_selection_to_column(i);
-
-					if (row >= from_line && row <= to_line && (row != from_line || col >= from_column) && (row != to_line || col <= to_column)) {
-						// Right click in one of the selected text
-						caret_clicked = i;
-						break;
-					}
-				}
-			}
-			if (caret_clicked < 0) {
+			selection_clicked = tx->get_selection_at_line_column(mouse_line, mouse_column, true);
+			if (selection_clicked < 0) {
 				tx->deselect();
 				tx->remove_secondary_carets();
-				caret_clicked = 0;
-				tx->set_caret_line(row, false, false);
-				tx->set_caret_column(col);
+				selection_clicked = 0;
+				tx->set_caret_line(mouse_line, false, false, -1);
+				tx->set_caret_column(mouse_column);
 			}
 		}
 
 		String word_at_pos = tx->get_word_at_pos(local_pos);
 		if (word_at_pos.is_empty()) {
-			word_at_pos = tx->get_word_under_caret(caret_clicked);
+			word_at_pos = tx->get_word_under_caret(selection_clicked);
 		}
 		if (word_at_pos.is_empty()) {
-			word_at_pos = tx->get_selected_text(caret_clicked);
+			word_at_pos = tx->get_selected_text(selection_clicked);
 		}
 
 		bool has_color = (word_at_pos == "Color");
-		bool foldable = tx->can_fold_line(row) || tx->is_line_folded(row);
+		bool foldable = tx->can_fold_line(mouse_line) || tx->is_line_folded(mouse_line);
 		bool open_docs = false;
 		bool goto_definition = false;
 
@@ -2064,9 +2051,9 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		}
 
 		if (has_color) {
-			String line = tx->get_line(row);
-			color_position.x = row;
-			color_position.y = col;
+			String line = tx->get_line(mouse_line);
+			color_position.x = mouse_line;
+			color_position.y = mouse_column;
 
 			int begin = -1;
 			int end = -1;
@@ -2076,7 +2063,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				COLOR_NAME, // Color.COLOR_NAME
 			} expression_pattern = NOT_PARSED;
 
-			for (int i = col; i < line.length(); i++) {
+			for (int i = mouse_column; i < line.length(); i++) {
 				if (line[i] == '(') {
 					if (expression_pattern == NOT_PARSED) {
 						begin = i;
@@ -2155,7 +2142,6 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 	code_editor->get_text_editor()->begin_complex_operation();
 	code_editor->get_text_editor()->set_line(color_position.x, line_with_replaced_args);
 	code_editor->get_text_editor()->end_complex_operation();
-	code_editor->get_text_editor()->queue_redraw();
 }
 
 void ScriptTextEditor::_prepare_edit_menu() {

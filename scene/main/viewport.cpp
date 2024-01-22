@@ -3578,6 +3578,13 @@ bool Viewport::gui_is_drag_successful() const {
 	return gui.drag_successful;
 }
 
+void Viewport::gui_cancel_drag() {
+	ERR_MAIN_THREAD_GUARD;
+	if (gui_is_dragging()) {
+		_perform_drop();
+	}
+}
+
 void Viewport::set_input_as_handled() {
 	ERR_MAIN_THREAD_GUARD;
 	if (!handle_input_locally) {

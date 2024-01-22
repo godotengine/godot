@@ -309,6 +309,8 @@ protected:
 	static void _bind_compatibility_methods();
 #endif
 
+	virtual void _unhide_carets() override;
+
 	/* Text manipulation */
 
 	// Overridable actions
