@@ -362,6 +362,7 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	wd.is_visible = ([wd.window_object occlusionState] & NSWindowOcclusionStateVisible) && [wd.window_object isVisible];
 	if ([wd.window_object isKeyWindow]) {
 		wd.focused = true;
 		ds->set_last_focused_window(window_id);
