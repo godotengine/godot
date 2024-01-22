@@ -112,8 +112,9 @@ public:
 		int32_t buffer_barrier_count = 0;
 #endif
 		int32_t label_index = -1;
-		BitField<RDD::PipelineStageBits> src_stages;
-		BitField<RDD::PipelineStageBits> dst_stages;
+		BitField<RDD::PipelineStageBits> previous_stages;
+		BitField<RDD::PipelineStageBits> next_stages;
+		BitField<RDD::PipelineStageBits> self_stages;
 	};
 
 	struct RecordedBufferCopy {
@@ -150,7 +151,8 @@ public:
 	struct ResourceTracker {
 		uint32_t reference_count = 0;
 		int64_t command_frame = -1;
-		int32_t read_command_list_index = -1;
+		int32_t read_full_command_list_index = -1;
+		int32_t read_slice_command_list_index = -1;
 		int32_t write_command_or_list_index = -1;
 		int32_t draw_list_index = -1;
 		int32_t compute_list_index = -1;
@@ -171,7 +173,8 @@ public:
 			if (new_command_frame != command_frame) {
 				usage_access.clear();
 				command_frame = new_command_frame;
-				read_command_list_index = -1;
+				read_full_command_list_index = -1;
+				read_slice_command_list_index = -1;
 				write_command_or_list_index = -1;
 				draw_list_index = -1;
 				compute_list_index = -1;
@@ -237,7 +240,7 @@ private:
 		int32_t next_list_index = -1;
 	};
 
-	struct RecordedWriteListNode {
+	struct RecordedSliceListNode {
 		int32_t command_index = -1;
 		int32_t next_list_index = -1;
 		Rect2i subresources;
@@ -572,7 +575,8 @@ private:
 	uint32_t command_count = 0;
 	uint32_t command_label_count = 0;
 	LocalVector<RecordedCommandListNode> command_list_nodes;
-	LocalVector<RecordedWriteListNode> write_list_nodes;
+	LocalVector<RecordedSliceListNode> read_slice_list_nodes;
+	LocalVector<RecordedSliceListNode> write_slice_list_nodes;
 	int32_t command_timestamp_index = -1;
 	int32_t command_synchronization_index = -1;
 	bool command_synchronization_pending = false;
@@ -590,7 +594,8 @@ private:
 	static RDD::BarrierAccessBits _usage_to_access_bits(ResourceUsage p_usage);
 	int32_t _add_to_command_list(int32_t p_command_index, int32_t p_list_index);
 	void _add_adjacent_command(int32_t p_previous_command_index, int32_t p_command_index, RecordedCommand *r_command);
-	int32_t _add_to_write_list(int32_t p_command_index, Rect2i suberesources, int32_t p_list_index);
+	int32_t _add_to_slice_read_list(int32_t p_command_index, Rect2i p_subresources, int32_t p_list_index);
+	int32_t _add_to_write_list(int32_t p_command_index, Rect2i p_subresources, int32_t p_list_index);
 	RecordedCommand *_allocate_command(uint32_t p_command_size, int32_t &r_command_index);
 	DrawListInstruction *_allocate_draw_list_instruction(uint32_t p_instruction_size);
 	ComputeListInstruction *_allocate_compute_list_instruction(uint32_t p_instruction_size);

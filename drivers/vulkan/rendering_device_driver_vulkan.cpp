@@ -35,6 +35,8 @@
 #include "thirdparty/misc/smolv.h"
 #include "vulkan_context.h"
 
+#define PRINT_NATIVE_COMMANDS 0
+
 /*****************/
 /**** GENERIC ****/
 /*****************/
@@ -622,6 +624,10 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	tex_info->allocation.handle = allocation;
 	vmaGetAllocationInfo(allocator, tex_info->allocation.handle, &tex_info->allocation.info);
 
+#if PRINT_NATIVE_COMMANDS
+	print_line(vformat("vkCreateImageView: 0x%uX for 0x%uX", uint64_t(vk_image_view), uint64_t(vk_image)));
+#endif
+
 	return TextureID(tex_info);
 }
 
@@ -710,6 +716,10 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 	tex_info->vk_view_create_info = image_view_create_info;
 	tex_info->allocation = {};
 
+#if PRINT_NATIVE_COMMANDS
+	print_line(vformat("vkCreateImageView: 0x%uX for 0x%uX", uint64_t(new_vk_image_view), uint64_t(owner_tex_info->vk_view_create_info.image)));
+#endif
+
 	return TextureID(tex_info);
 }
 
@@ -758,6 +768,10 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 	tex_info->vk_view = new_vk_image_view;
 	tex_info->vk_view_create_info = image_view_create_info;
 	tex_info->allocation = {};
+
+#if PRINT_NATIVE_COMMANDS
+	print_line(vformat("vkCreateImageView: 0x%uX for 0x%uX (%d %d %d %d)", uint64_t(new_vk_image_view), uint64_t(owner_tex_info->vk_view_create_info.image), p_mipmap, p_mipmaps, p_layer, p_layers));
+#endif
 
 	return TextureID(tex_info);
 }
@@ -1071,6 +1085,23 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		vk_image_barriers[i].subresourceRange.layerCount = p_texture_barriers[i].subresources.layer_count;
 	}
 
+#if PRINT_NATIVE_COMMANDS
+	print_line(vformat("vkCmdPipelineBarrier MEMORY %d BUFFER %d TEXTURE %d", p_memory_barriers.size(), p_buffer_barriers.size(), p_texture_barriers.size()));
+	for (uint32_t i = 0; i < p_memory_barriers.size(); i++) {
+		print_line(vformat("  VkMemoryBarrier #%d src 0x%uX dst 0x%uX", i, vk_memory_barriers[i].srcAccessMask, vk_memory_barriers[i].dstAccessMask));
+	}
+
+	for (uint32_t i = 0; i < p_buffer_barriers.size(); i++) {
+		print_line(vformat("  VkBufferMemoryBarrier #%d src 0x%uX dst 0x%uX buffer 0x%ux", i, vk_buffer_barriers[i].srcAccessMask, vk_buffer_barriers[i].dstAccessMask, uint64_t(vk_buffer_barriers[i].buffer)));
+	}
+
+	for (uint32_t i = 0; i < p_texture_barriers.size(); i++) {
+		print_line(vformat("  VkImageMemoryBarrier #%d src 0x%uX dst 0x%uX image 0x%ux old %d new %d (%d %d %d %d)", i, vk_image_barriers[i].srcAccessMask, vk_image_barriers[i].dstAccessMask,
+				uint64_t(vk_image_barriers[i].image), vk_image_barriers[i].oldLayout, vk_image_barriers[i].newLayout, vk_image_barriers[i].subresourceRange.baseMipLevel, vk_image_barriers[i].subresourceRange.levelCount,
+				vk_image_barriers[i].subresourceRange.baseArrayLayer, vk_image_barriers[i].subresourceRange.layerCount));
+	}
+#endif
+
 	vkCmdPipelineBarrier(
 			(VkCommandBuffer)p_cmd_buffer.id,
 			(VkPipelineStageFlags)p_src_stages,
@@ -1224,6 +1255,14 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 	VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
 	VkResult err = vkCreateFramebuffer(vk_device, &framebuffer_create_info, nullptr, &vk_framebuffer);
 	ERR_FAIL_COND_V_MSG(err, FramebufferID(), "vkCreateFramebuffer failed with error " + itos(err) + ".");
+
+#if PRINT_NATIVE_COMMANDS
+	print_line(vformat("vkCreateFramebuffer 0x%uX with %d attachments", uint64_t(vk_framebuffer), p_attachments.size()));
+	for (uint32_t i = 0; i < p_attachments.size(); i++) {
+		const TextureInfo *attachment_info = (const TextureInfo *)p_attachments[i].id;
+		print_line(vformat("  Attachment #%d: IMAGE 0x%uX VIEW 0x%uX", i, uint64_t(attachment_info->vk_view_create_info.image), uint64_t(attachment_info->vk_view)));
+	}
+#endif
 
 	return FramebufferID(vk_framebuffer);
 }
@@ -2467,10 +2506,18 @@ void RenderingDeviceDriverVulkan::command_begin_render_pass(CommandBufferID p_cm
 
 	VkSubpassContents vk_subpass_contents = p_cmd_buffer_type == COMMAND_BUFFER_TYPE_PRIMARY ? VK_SUBPASS_CONTENTS_INLINE : VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS;
 	vkCmdBeginRenderPass((VkCommandBuffer)p_cmd_buffer.id, &render_pass_begin, vk_subpass_contents);
+
+#if PRINT_NATIVE_COMMANDS
+	print_line(vformat("vkCmdBeginRenderPass Pass 0x%uX Framebuffer 0x%uX", p_render_pass.id, p_framebuffer.id));
+#endif
 }
 
 void RenderingDeviceDriverVulkan::command_end_render_pass(CommandBufferID p_cmd_buffer) {
 	vkCmdEndRenderPass((VkCommandBuffer)p_cmd_buffer.id);
+
+#if PRINT_NATIVE_COMMANDS
+	print_line("vkCmdEndRenderPass");
+#endif
 }
 
 void RenderingDeviceDriverVulkan::command_next_render_subpass(CommandBufferID p_cmd_buffer, CommandBufferType p_cmd_buffer_type) {
