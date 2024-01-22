@@ -14,7 +14,7 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" />
 			<description>
-				Override this method to define how the selected entry should be inserted. If [param replace] is true, any existing text should be replaced.
+				Override this method to define how the selected entry should be inserted. If [param replace] is [code]true[/code], any existing text should be replaced.
 			</description>
 		</method>
 		<method name="_filter_code_completion_candidates" qualifiers="virtual const">
@@ -29,7 +29,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" />
 			<description>
-				Override this method to define what happens when the user requests code completion. If [param force] is true, any checks should be bypassed.
+				Override this method to define what happens when the user requests code completion. If [param force] is [code]true[/code], any checks should be bypassed.
 			</description>
 		</method>
 		<method name="add_auto_brace_completion_pair">
@@ -123,7 +123,7 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" default="false" />
 			<description>
-				Inserts the selected entry into the text. If [param replace] is true, any existing text is replaced rather than merged.
+				Inserts the selected entry into the text. If [param replace] is [code]true[/code], any existing text is replaced rather than merged.
 			</description>
 		</method>
 		<method name="convert_indent">
@@ -144,6 +144,12 @@
 				Code regions are delimited using start and end tags (respectively [code]region[/code] and [code]endregion[/code] by default) preceded by one line comment delimiter. (eg. [code]#region[/code] and [code]#endregion[/code])
 			</description>
 		</method>
+		<method name="delete_lines">
+			<return type="void" />
+			<description>
+				Deletes all lines that are selected or have a caret on them.
+			</description>
+		</method>
 		<method name="do_indent">
 			<return type="void" />
 			<description>
@@ -154,6 +160,12 @@
 			<return type="void" />
 			<description>
 				Duplicates all lines currently selected with any caret. Duplicates the entire line beneath the current one no matter where the caret is within the line.
+			</description>
+		</method>
+		<method name="duplicate_selection">
+			<return type="void" />
+			<description>
+				Duplicates all selected text and duplicates all lines with a caret on them.
 			</description>
 		</method>
 		<method name="fold_all_lines">
@@ -379,6 +391,18 @@
 				Returns whether the line at the specified index is folded or not.
 			</description>
 		</method>
+		<method name="move_lines_down">
+			<return type="void" />
+			<description>
+				Moves all lines down that are selected or have a caret on them.
+			</description>
+		</method>
+		<method name="move_lines_up">
+			<return type="void" />
+			<description>
+				Moves all lines up that are selected or have a caret on them.
+			</description>
+		</method>
 		<method name="remove_comment_delimiter">
 			<return type="void" />
 			<param index="0" name="start_key" type="String" />
@@ -397,7 +421,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" default="false" />
 			<description>
-				Emits [signal code_completion_requested], if [param force] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
+				Emits [signal code_completion_requested], if [param force] is [code]true[/code] will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path, or signal.
 			</description>
 		</method>
 		<method name="set_code_completion_selected_index">
@@ -465,6 +489,12 @@
 			<param index="0" name="line" type="int" />
 			<description>
 				Toggle the folding of the code block at the given line.
+			</description>
+		</method>
+		<method name="toggle_foldable_lines_at_carets">
+			<return type="void" />
+			<description>
+				Toggle the folding of the code block on all lines with a caret on them.
 			</description>
 		</method>
 		<method name="unfold_all_lines">

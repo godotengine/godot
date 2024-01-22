@@ -284,8 +284,7 @@ void ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 		if (prev_line.contains("@warning_ignore")) {
 			const int closing_bracket_idx = prev_line.find(")");
 			const String text_to_insert = ", " + code.quote(quote_style);
-			prev_line = prev_line.insert(closing_bracket_idx, text_to_insert);
-			text_editor->set_line(line - 1, prev_line);
+			text_editor->insert_text(text_to_insert, line - 1, closing_bracket_idx);
 		} else {
 			const int indent = text_editor->get_indent_level(line) / text_editor->get_indent_size();
 			String annotation_indent;
@@ -352,22 +351,26 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 	if (!language->can_make_function()) {
 		return;
 	}
-
+	code_editor->get_text_editor()->begin_complex_operation();
+	code_editor->get_text_editor()->remove_secondary_carets();
+	code_editor->get_text_editor()->deselect();
 	String code = code_editor->get_text_editor()->get_text();
 	int pos = language->find_function(p_function, code);
-	code_editor->get_text_editor()->remove_secondary_carets();
 	if (pos == -1) {
-		//does not exist
-		code_editor->get_text_editor()->deselect();
-		pos = code_editor->get_text_editor()->get_line_count() + 2;
+		// Function does not exist, create it at the end of the file.
+		int last_line = code_editor->get_text_editor()->get_line_count() - 1;
 		String func = language->make_function("", p_function, p_args);
-		//code=code+func;
-		code_editor->get_text_editor()->set_caret_line(pos + 1);
-		code_editor->get_text_editor()->set_caret_column(1000000); //none shall be that big
-		code_editor->get_text_editor()->insert_text_at_caret("\n\n" + func);
+		code_editor->get_text_editor()->insert_text("\n\n" + func, last_line, code_editor->get_text_editor()->get_line(last_line).length());
+		pos = last_line + 3;
 	}
-	code_editor->get_text_editor()->set_caret_line(pos);
-	code_editor->get_text_editor()->set_caret_column(1);
+	// Put caret on the line after the function, after the indent.
+	int indent_column = 1;
+	if (EDITOR_GET("text_editor/behavior/indent/type")) {
+		indent_column = EDITOR_GET("text_editor/behavior/indent/size");
+	}
+	code_editor->get_text_editor()->set_caret_line(pos, true, true, -1);
+	code_editor->get_text_editor()->set_caret_column(indent_column);
+	code_editor->get_text_editor()->end_complex_operation();
 }
 
 bool ScriptTextEditor::show_members_overview() {
@@ -1335,10 +1338,10 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_MOVE_LINE_UP: {
-			code_editor->move_lines_up();
+			code_editor->get_text_editor()->move_lines_up();
 		} break;
 		case EDIT_MOVE_LINE_DOWN: {
-			code_editor->move_lines_down();
+			code_editor->get_text_editor()->move_lines_down();
 		} break;
 		case EDIT_INDENT: {
 			Ref<Script> scr = script;
@@ -1355,24 +1358,16 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			tx->unindent_lines();
 		} break;
 		case EDIT_DELETE_LINE: {
-			code_editor->delete_lines();
+			code_editor->get_text_editor()->delete_lines();
 		} break;
 		case EDIT_DUPLICATE_SELECTION: {
-			code_editor->duplicate_selection();
+			code_editor->get_text_editor()->duplicate_selection();
 		} break;
 		case EDIT_DUPLICATE_LINES: {
 			code_editor->get_text_editor()->duplicate_lines();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			int prev_line = -1;
-			for (int caret_idx : tx->get_caret_index_edit_order()) {
-				int line_idx = tx->get_caret_line(caret_idx);
-				if (line_idx != prev_line) {
-					tx->toggle_foldable_line(line_idx);
-					prev_line = line_idx;
-				}
-			}
-			tx->queue_redraw();
+			tx->toggle_foldable_lines_at_carets();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
 			tx->fold_all_lines();
@@ -1399,24 +1394,34 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			}
 
 			tx->begin_complex_operation();
-			int begin, end;
+			tx->begin_multicaret_edit();
+			int begin = tx->get_line_count() - 1, end = 0;
 			if (tx->has_selection()) {
-				begin = tx->get_selection_from_line();
-				end = tx->get_selection_to_line();
-				// ignore if the cursor is not past the first column
-				if (tx->get_selection_to_column() == 0) {
-					end--;
+				// Auto indent all lines that have a caret or selection on it.
+				Vector<Point2i> line_ranges = tx->get_line_ranges_from_carets();
+				for (Point2i line_range : line_ranges) {
+					scr->get_language()->auto_indent_code(text, line_range.x, line_range.y);
+					if (line_range.x < begin) {
+						begin = line_range.x;
+					}
+					if (line_range.y > end) {
+						end = line_range.y;
+					}
 				}
 			} else {
+				// Auto indent entire text.
 				begin = 0;
 				end = tx->get_line_count() - 1;
+				scr->get_language()->auto_indent_code(text, begin, end);
 			}
-			scr->get_language()->auto_indent_code(text, begin, end);
+
+			// Apply auto indented code.
 			Vector<String> lines = text.split("\n");
 			for (int i = begin; i <= end; ++i) {
 				tx->set_line(i, lines[i]);
 			}
 
+			tx->end_multicaret_edit();
 			tx->end_complex_operation();
 		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
@@ -1515,13 +1520,12 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->remove_all_bookmarks();
 		} break;
 		case DEBUG_TOGGLE_BREAKPOINT: {
-			Vector<int> caret_edit_order = tx->get_caret_index_edit_order();
-			caret_edit_order.reverse();
+			Vector<int> sorted_carets = tx->get_sorted_carets();
 			int last_line = -1;
-			for (const int &c : caret_edit_order) {
-				int from = tx->has_selection(c) ? tx->get_selection_from_line(c) : tx->get_caret_line(c);
+			for (const int &c : sorted_carets) {
+				int from = tx->get_selection_from_line(c);
 				from += from == last_line ? 1 : 0;
-				int to = tx->has_selection(c) ? tx->get_selection_to_line(c) : tx->get_caret_line(c);
+				int to = tx->get_selection_to_line(c);
 				if (to < from) {
 					continue;
 				}
