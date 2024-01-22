@@ -3191,6 +3191,15 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 
 	bool created_expression_port = false;
 
+	// A node is inserted in an already present connection.
+	if (from_node != -1 && from_slot != -1 && to_node != -1 && to_slot != -1) {
+		undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from_node, from_slot, to_node, to_slot);
+		undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, from_node, from_slot, to_node, to_slot);
+		undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, from_node, from_slot, to_node, to_slot);
+		undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, from_node, from_slot, to_node, to_slot);
+	}
+
+	// Create a connection from the new node to an input port of an existing one.
 	if (to_node != -1 && to_slot != -1) {
 		VisualShaderNode::PortType input_port_type = visual_shader->get_node(type, to_node)->get_input_port_type(to_slot);
 
@@ -3260,7 +3269,10 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 				}
 			}
 		}
-	} else if (from_node != -1 && from_slot != -1) {
+	}
+
+	// Create a connection from the output port of an existing node to the new one.
+	if (from_node != -1 && from_slot != -1) {
 		VisualShaderNode::PortType output_port_type = visual_shader->get_node(type, from_node)->get_output_port_type(from_slot);
 
 		if (expr && expr->is_editable()) {
@@ -3483,8 +3495,11 @@ void VisualShaderEditor::_nodes_dragged() {
 		undo_redo->add_undo_method(graph_plugin.ptr(), "set_node_position", E.type, E.node, E.from);
 	}
 
-	drag_buffer.clear();
 	undo_redo->commit_action();
+
+	_handle_node_drop_on_connection();
+
+	drag_buffer.clear();
 }
 
 void VisualShaderEditor::_connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index) {
@@ -3562,6 +3577,132 @@ void VisualShaderEditor::_connection_from_empty(const String &p_to, int p_to_slo
 		input_port_type = node->get_input_port_type(to_slot);
 	}
 	_show_members_dialog(true, input_port_type, output_port_type);
+}
+
+bool VisualShaderEditor::_check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphEdit::Connection> *r_closest_connection, int *r_from_port, int *r_to_port) {
+	VisualShader::Type shader_type = get_current_shader_type();
+
+	// Get selected graph node.
+	Ref<VisualShaderNode> selected_vsnode;
+	int selected_node_id = -1;
+	int selected_node_count = 0;
+	Rect2 selected_node_rect;
+
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphNode *graph_node = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (graph_node && graph_node->is_selected()) {
+			selected_node_id = String(graph_node->get_name()).to_int();
+			Ref<VisualShaderNode> vsnode = visual_shader->get_node(shader_type, selected_node_id);
+			if (!vsnode->is_closable()) {
+				continue;
+			}
+
+			selected_node_count += 1;
+
+			Ref<VisualShaderNode> node = visual_shader->get_node(shader_type, selected_node_id);
+			selected_vsnode = node;
+			selected_node_rect = graph_node->get_rect();
+		}
+	}
+
+	// Only a single node - which has both input and output ports but is not connected yet - can be inserted.
+	if (selected_node_count != 1 || !selected_vsnode.is_valid()) {
+		return false;
+	}
+
+	// Check whether the dragged node was dropped over a connection.
+	List<Ref<GraphEdit::Connection>> intersecting_connections = graph->get_connections_intersecting_with_rect(selected_node_rect);
+
+	if (intersecting_connections.is_empty()) {
+		return false;
+	}
+
+	Ref<GraphEdit::Connection> intersecting_connection = intersecting_connections.front()->get();
+
+	if (selected_vsnode->is_any_port_connected() || selected_vsnode->get_input_port_count() == 0 || selected_vsnode->get_output_port_count() == 0) {
+		return false;
+	}
+
+	VisualShaderNode::PortType original_port_type_from = visual_shader->get_node(shader_type, String(intersecting_connection->from_node).to_int())->get_output_port_type(intersecting_connection->from_port);
+	VisualShaderNode::PortType original_port_type_to = visual_shader->get_node(shader_type, String(intersecting_connection->to_node).to_int())->get_input_port_type(intersecting_connection->to_port);
+
+	// Searching for the default port or the first compatible input port of the node to insert.
+	int _to_port = -1;
+	for (int i = 0; i < selected_vsnode->get_input_port_count(); i++) {
+		if (visual_shader->is_port_types_compatible(original_port_type_from, selected_vsnode->get_input_port_type(i))) {
+			if (i == selected_vsnode->get_default_input_port(original_port_type_from)) {
+				_to_port = i;
+				break;
+			} else if (_to_port == -1) {
+				_to_port = i;
+			}
+		}
+	}
+
+	// Searching for the first compatible output port of the node to insert.
+	int _from_port = -1;
+	for (int i = 0; i < selected_vsnode->get_output_port_count(); i++) {
+		if (visual_shader->is_port_types_compatible(selected_vsnode->get_output_port_type(i), original_port_type_to)) {
+			_from_port = i;
+			break;
+		}
+	}
+
+	if (_to_port == -1 || _from_port == -1) {
+		return false;
+	}
+
+	if (r_closest_connection != nullptr) {
+		*r_closest_connection = intersecting_connection;
+	}
+	if (r_from_port != nullptr) {
+		*r_from_port = _from_port;
+	}
+	if (r_to_port != nullptr) {
+		*r_to_port = _to_port;
+	}
+
+	return true;
+}
+
+void VisualShaderEditor::_handle_node_drop_on_connection() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Insert node"));
+
+	// Check whether the dragged node was dropped over a connection.
+	Ref<GraphEdit::Connection> closest_connection;
+	int _from_port = -1;
+	int _to_port = -1;
+
+	if (!_check_node_drop_on_connection(graph->get_local_mouse_position(), &closest_connection, &_from_port, &_to_port)) {
+		return;
+	}
+
+	int selected_node_id = drag_buffer[0].node;
+	VisualShader::Type shader_type = get_current_shader_type();
+	Ref<VisualShaderNode> selected_vsnode = visual_shader->get_node(shader_type, selected_node_id);
+
+	// Delete the old connection.
+	undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", shader_type, String(closest_connection->from_node).to_int(), closest_connection->from_port, String(closest_connection->to_node).to_int(), closest_connection->to_port);
+	undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", shader_type, String(closest_connection->from_node).to_int(), closest_connection->from_port, String(closest_connection->to_node).to_int(), closest_connection->to_port);
+	undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", shader_type, String(closest_connection->from_node).to_int(), closest_connection->from_port, String(closest_connection->to_node).to_int(), closest_connection->to_port);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", shader_type, String(closest_connection->from_node).to_int(), closest_connection->from_port, String(closest_connection->to_node).to_int(), closest_connection->to_port);
+
+	// Add the connection to the dropped node.
+	undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", shader_type, String(closest_connection->from_node).to_int(), closest_connection->from_port, selected_node_id, _to_port);
+	undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", shader_type, String(closest_connection->from_node).to_int(), closest_connection->from_port, selected_node_id, _to_port);
+	undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", shader_type, String(closest_connection->from_node).to_int(), closest_connection->from_port, selected_node_id, _to_port);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", shader_type, String(closest_connection->from_node).to_int(), closest_connection->from_port, selected_node_id, _to_port);
+
+	// Add the connection from the dropped node.
+	undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", shader_type, selected_node_id, _from_port, String(closest_connection->to_node).to_int(), closest_connection->to_port);
+	undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", shader_type, selected_node_id, _from_port, String(closest_connection->to_node).to_int(), closest_connection->to_port);
+	undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", shader_type, selected_node_id, _from_port, String(closest_connection->to_node).to_int(), closest_connection->to_port);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", shader_type, selected_node_id, _from_port, String(closest_connection->to_node).to_int(), closest_connection->to_port);
+
+	undo_redo->commit_action();
+
+	call_deferred(SNAME("_update_graph"));
 }
 
 void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
@@ -3923,8 +4064,18 @@ void VisualShaderEditor::_node_selected(Object *p_node) {
 }
 
 void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseMotion> mm = p_event;
 	Ref<InputEventMouseButton> mb = p_event;
 	VisualShader::Type type = get_current_shader_type();
+
+	// Highlight valid connection on which a node can be dropped.
+	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
+		Ref<GraphEdit::Connection> closest_connection;
+		graph->reset_all_connection_activity();
+		if (_check_node_drop_on_connection(graph->get_local_mouse_position(), &closest_connection)) {
+			graph->set_connection_activity(closest_connection->from_node, closest_connection->from_port, closest_connection->to_node, closest_connection->to_port, 1.0);
+		}
+	}
 
 	Ref<VisualShaderNode> selected_vsnode;
 	// Right click actions.
@@ -3981,7 +4132,16 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (selected_closable_graph_elements.is_empty() && copy_buffer_empty) {
+		menu_point = graph->get_local_mouse_position();
+		Point2 gpos = get_screen_position() + get_local_mouse_position();
+
+		Ref<GraphEdit::Connection> closest_connection = graph->get_closest_connection_at_point(menu_point);
+		if (closest_connection.is_valid()) {
+			clicked_connection = closest_connection;
+			connection_popup_menu->set_position(gpos);
+			connection_popup_menu->reset_size();
+			connection_popup_menu->popup();
+		} else if (selected_closable_graph_elements.is_empty() && copy_buffer_empty) {
 			_show_members_dialog(true);
 		} else {
 			popup_menu->set_item_disabled(NodeMenuOptions::CUT, selected_closable_graph_elements.is_empty());
@@ -4053,8 +4213,6 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				popup_menu->add_item(TTR("Set Comment Description"), NodeMenuOptions::SET_COMMENT_DESCRIPTION);
 			}
 
-			menu_point = graph->get_local_mouse_position();
-			Point2 gpos = get_screen_position() + get_local_mouse_position();
 			popup_menu->set_position(gpos);
 			popup_menu->reset_size();
 			popup_menu->popup();
@@ -4757,6 +4915,27 @@ void VisualShaderEditor::_member_create() {
 	TreeItem *item = members->get_selected();
 	if (item != nullptr && item->has_meta("id")) {
 		int idx = members->get_selected()->get_meta("id");
+		if (connection_node_insert_requested) {
+			from_node = String(clicked_connection->from_node).to_int();
+			from_slot = clicked_connection->from_port;
+			to_node = String(clicked_connection->to_node).to_int();
+			to_slot = clicked_connection->to_port;
+
+			connection_node_insert_requested = false;
+
+			saved_node_pos_dirty = true;
+
+			// Find both graph nodes and get their positions.
+			GraphNode *from_graph_element = Object::cast_to<GraphNode>(graph->get_node(itos(from_node)));
+			GraphNode *to_graph_element = Object::cast_to<GraphNode>(graph->get_node(itos(to_node)));
+
+			ERR_FAIL_NULL(from_graph_element);
+			ERR_FAIL_NULL(to_graph_element);
+
+			// Since the size of the node to add is not known yet, it's not possible to center it exactly.
+			float zoom = graph->get_zoom();
+			saved_node_pos = 0.5 * (from_graph_element->get_position() + zoom * from_graph_element->get_output_port_position(from_slot) + to_graph_element->get_position() + zoom * to_graph_element->get_input_port_position(to_slot));
+		}
 		_add_node(idx, add_options[idx].ops);
 		members_dialog->hide();
 	}
@@ -4767,6 +4946,7 @@ void VisualShaderEditor::_member_cancel() {
 	to_slot = -1;
 	from_node = -1;
 	from_slot = -1;
+	connection_node_insert_requested = false;
 }
 
 void VisualShaderEditor::_update_varying_tree() {
@@ -4933,6 +5113,37 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::SET_COMMENT_DESCRIPTION:
 			_comment_desc_popup_show(get_screen_position() + get_local_mouse_position(), selected_comment);
 			break;
+		default:
+			break;
+	}
+}
+
+void VisualShaderEditor::_connection_menu_id_pressed(int p_idx) {
+	switch (p_idx) {
+		case ConnectionMenuOptions::DISCONNECT: {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Disconnect"));
+			undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", get_current_shader_type(), String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
+			undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", get_current_shader_type(), String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
+			undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", get_current_shader_type(), String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
+			undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", get_current_shader_type(), String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
+			undo_redo->commit_action();
+		} break;
+		case ConnectionMenuOptions::INSERT_NEW_NODE: {
+			VisualShaderNode::PortType input_port_type = VisualShaderNode::PORT_TYPE_MAX;
+			VisualShaderNode::PortType output_port_type = VisualShaderNode::PORT_TYPE_MAX;
+			Ref<VisualShaderNode> node1 = visual_shader->get_node(get_current_shader_type(), String(clicked_connection->from_node).to_int());
+			if (node1.is_valid()) {
+				output_port_type = node1->get_output_port_type(from_slot);
+			}
+			Ref<VisualShaderNode> node2 = visual_shader->get_node(get_current_shader_type(), String(clicked_connection->to_node).to_int());
+			if (node2.is_valid()) {
+				input_port_type = node2->get_input_port_type(to_slot);
+			}
+
+			connection_node_insert_requested = true;
+			_show_members_dialog(true, input_port_type, output_port_type);
+		} break;
 		default:
 			break;
 	}
@@ -5416,6 +5627,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	popup_menu->add_item(TTR("Duplicate"), NodeMenuOptions::DUPLICATE);
 	popup_menu->add_item(TTR("Clear Copy Buffer"), NodeMenuOptions::CLEAR_COPY_BUFFER);
 	popup_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
+
+	connection_popup_menu = memnew(PopupMenu);
+	add_child(connection_popup_menu);
+	connection_popup_menu->add_item(TTR("Disconnect"), ConnectionMenuOptions::DISCONNECT);
+	connection_popup_menu->add_item(TTR("Insert New Node"), ConnectionMenuOptions::INSERT_NEW_NODE);
+	connection_popup_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_connection_menu_id_pressed));
 
 	///////////////////////////////////////
 	// SHADER NODES TREE

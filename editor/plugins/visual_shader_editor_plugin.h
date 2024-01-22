@@ -34,13 +34,13 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "scene/gui/graph_edit.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
 
 class CodeEdit;
 class ColorPicker;
 class CurveEditor;
-class GraphEdit;
 class GraphElement;
 class MenuButton;
 class PopupPanel;
@@ -203,6 +203,7 @@ class VisualShaderEditor : public VBoxContainer {
 	VisualShaderNode::PortType members_input_port_type = VisualShaderNode::PORT_TYPE_MAX;
 	VisualShaderNode::PortType members_output_port_type = VisualShaderNode::PORT_TYPE_MAX;
 	PopupMenu *popup_menu = nullptr;
+	PopupMenu *connection_popup_menu = nullptr;
 	PopupMenu *constants_submenu = nullptr;
 	MenuButton *tools = nullptr;
 
@@ -280,6 +281,11 @@ class VisualShaderEditor : public VBoxContainer {
 		SEPARATOR3, // ignore
 		SET_COMMENT_TITLE,
 		SET_COMMENT_DESCRIPTION,
+	};
+
+	enum ConnectionMenuOptions {
+		INSERT_NEW_NODE,
+		DISCONNECT,
 	};
 
 	enum class VaryingMenuOptions {
@@ -397,6 +403,9 @@ class VisualShaderEditor : public VBoxContainer {
 	int from_node = -1;
 	int from_slot = -1;
 
+	Ref<GraphEdit::Connection> clicked_connection;
+	bool connection_node_insert_requested = false;
+
 	HashSet<int> selected_constants;
 	HashSet<int> selected_parameters;
 	int selected_comment = -1;
@@ -409,6 +418,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
+	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphEdit::Connection> *r_closest_connection, int *r_node_id = nullptr, int *r_to_port = nullptr);
+	void _handle_node_drop_on_connection();
 
 	void _comment_title_popup_show(const Point2 &p_position, int p_node_id);
 	void _comment_title_popup_hide();
@@ -501,6 +512,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	Vector2 menu_point;
 	void _node_menu_id_pressed(int p_idx);
+	void _connection_menu_id_pressed(int p_idx);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
