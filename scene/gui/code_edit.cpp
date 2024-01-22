@@ -624,6 +624,18 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	return TextEdit::get_cursor_shape(p_pos);
 }
 
+void CodeEdit::_unhide_carets() {
+	// Unfold caret and selection origin.
+	for (int i = 0; i < get_caret_count(); i++) {
+		if (_is_line_hidden(get_caret_line(i))) {
+			unfold_line(get_caret_line(i));
+		}
+		if (has_selection(i) && _is_line_hidden(get_selection_origin_line(i))) {
+			unfold_line(get_selection_origin_line(i));
+		}
+	}
+}
+
 /* Text manipulation */
 
 // Overridable actions
@@ -2846,10 +2858,12 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 
 	if (p_gutter == line_number_gutter) {
 		remove_secondary_carets();
-		set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_LINE, p_line, 0);
-		select(p_line, 0, p_line + 1, 0);
-		set_caret_line(p_line + 1);
-		set_caret_column(0);
+		set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_LINE);
+		if (p_line == get_line_count() - 1) {
+			select(p_line, 0, p_line, INT_MAX);
+		} else {
+			select(p_line, 0, p_line + 1, 0);
+		}
 		return;
 	}
 
