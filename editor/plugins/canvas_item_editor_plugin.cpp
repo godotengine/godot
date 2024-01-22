@@ -3933,7 +3933,7 @@ void CanvasItemEditor::_notification(int p_what) {
 				} else {
 					rect = Rect2();
 				}
-				Transform2D xform = ci->get_transform();
+				Transform2D xform = ci->get_global_transform();
 
 				if (rect != se->prev_rect || xform != se->prev_xform) {
 					viewport->queue_redraw();
