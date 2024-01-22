@@ -293,6 +293,10 @@ private:
 	void _clear();
 	void _update_caches();
 
+	void _close_ime_window();
+	void _update_ime_window_position();
+	void _update_ime_text();
+
 	// User control.
 	bool overtype_mode = false;
 	bool context_menu_enabled = true;
@@ -696,6 +700,8 @@ public:
 	/* Text */
 	// Text properties.
 	bool has_ime_text() const;
+	void cancel_ime();
+	void apply_ime();
 
 	void set_editable(const bool p_editable);
 	bool is_editable() const;
