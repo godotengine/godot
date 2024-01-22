@@ -249,6 +249,10 @@ void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 	emit_signal(SNAME("resource_saved"), p_resource);
 }
 
+void EditorPlugin::notify_scene_saved(const String &p_scene_filepath) {
+	emit_signal(SNAME("scene_saved"), p_scene_filepath);
+}
+
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	bool success = false;
 	GDVIRTUAL_CALL(_forward_canvas_gui_input, p_event, success);
@@ -632,6 +636,7 @@ void EditorPlugin::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 
 	BIND_ENUM_CONSTANT(CONTAINER_TOOLBAR);

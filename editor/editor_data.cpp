@@ -361,6 +361,12 @@ void EditorData::notify_resource_saved(const Ref<Resource> &p_resource) {
 	}
 }
 
+void EditorData::notify_scene_saved(const String &p_path) {
+	for (int i = 0; i < editor_plugins.size(); i++) {
+		editor_plugins[i]->notify_scene_saved(p_path);
+	}
+}
+
 void EditorData::clear_editor_states() {
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->clear();
