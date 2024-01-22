@@ -90,6 +90,7 @@ bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	// TODO: Should this be static?
+	register_annotation(MethodInfo("@uid", PropertyInfo(Variant::STRING, "uid")), AnnotationInfo::SCRIPT, &GDScriptParser::uid_annotation);
 	register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 	register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 	register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
@@ -3839,6 +3840,11 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 
 	// For other annotations, see `GDScriptAnalyzer::resolve_annotation()`.
 
+	return true;
+}
+
+// This annotation exists for forward compatibility with 4.3 and beyond. It has no functionality in version 4.2 and below.
+bool GDScriptParser::uid_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	return true;
 }
 

@@ -681,6 +681,15 @@
 				[b]Note:[/b] As annotations describe their subject, the [annotation @tool] annotation must be placed before the class definition and inheritance.
 			</description>
 		</annotation>
+		<annotation name="@uid">
+			<return type="void" />
+			<param index="0" name="uid" type="String" />
+			<description>
+				[i]This annotation exists for forward compatibility with 4.3 and beyond. It has no functionality in version 4.2 and below.[/i]
+				Stores information about UID of this script. This annotation is auto-generated when saving the script and must not be modified manually. Only applies to scripts saved as separate files (i.e. not built-in).
+				[b]Note:[/b] Unlike most other annotations, the argument of the [annotation @uid] annotation must be a string literal (constant expressions are not supported).
+			</description>
+		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="warning" type="String" />
