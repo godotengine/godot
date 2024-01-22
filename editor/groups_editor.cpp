@@ -783,6 +783,9 @@ void GroupsEditor::_groups_gui_input(Ref<InputEvent> p_event) {
 			_menu_id_pressed(DELETE_GROUP);
 		} else if (ED_IS_SHORTCUT("groups_editor/rename", p_event)) {
 			_menu_id_pressed(RENAME_GROUP);
+		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			filter->grab_focus();
+			filter->select_all();
 		} else {
 			return;
 		}
