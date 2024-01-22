@@ -7,8 +7,10 @@ pluginManagement {
         id 'org.jetbrains.kotlin.android' version versions.kotlinVersion
     }
     repositories {
-        gradlePluginPortal()
         google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 }
 
