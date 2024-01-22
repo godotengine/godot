@@ -867,10 +867,16 @@ uniform highp sampler2DArray color_buffer; // texunit:-5
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
+ivec3 multiview_uv(ivec2 uv) {
+	return ivec3(uv, int(ViewIndex));
+}
 #else
 uniform highp sampler2D depth_buffer; // texunit:-6
 uniform highp sampler2D color_buffer; // texunit:-5
 vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
+ivec2 multiview_uv(ivec2 uv) {
 	return uv;
 }
 #endif
