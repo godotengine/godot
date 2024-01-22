@@ -142,6 +142,7 @@ private:
 		bool skip_acquire_swapchain = false;
 	};
 
+	bool new_swapchains_required = true;
 	OpenXRSwapChainInfo swapchains[OPENXR_SWAPCHAIN_MAX];
 
 	XrSpace play_space = XR_NULL_HANDLE;
@@ -231,6 +232,7 @@ private:
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
 	bool create_swapchains();
+	void free_swapchains();
 	void destroy_session();
 
 	// swapchains
