@@ -35,6 +35,13 @@
 				If argument [param get_groups] is true, parameter grouping hints will be provided.
 			</description>
 		</method>
+		<method name="load">
+			<return type="void" />
+			<description>
+				Loads the shader object immediately.
+				[b]Note:[/b] This only affects the `Compatability` renderer, as other renderers use async compilation.
+			</description>
+		</method>
 		<method name="set_default_texture_parameter">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />

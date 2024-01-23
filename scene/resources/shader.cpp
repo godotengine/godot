@@ -209,6 +209,8 @@ void Shader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_shader_uniform_list", "get_groups"), &Shader::_get_shader_uniform_list, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("load"), &Shader::load);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
 
 	BIND_ENUM_CONSTANT(MODE_SPATIAL);
@@ -216,6 +218,10 @@ void Shader::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_PARTICLES);
 	BIND_ENUM_CONSTANT(MODE_SKY);
 	BIND_ENUM_CONSTANT(MODE_FOG);
+}
+
+void Shader::load() {
+	RenderingServer::get_singleton()->shader_load(shader);
 }
 
 Shader::Shader() {
