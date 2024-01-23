@@ -123,6 +123,14 @@
 				Called when the OpenXR session state is changed to visible. This means OpenXR is now ready to receive frames.
 			</description>
 		</method>
+		<method name="_set_hand_joint_locations_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="hand_index" type="int" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Adds additional data structures when each hand tracker is created.
+			</description>
+		</method>
 		<method name="_set_instance_create_info_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
