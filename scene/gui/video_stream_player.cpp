@@ -224,6 +224,12 @@ bool VideoStreamPlayer::has_expand() const {
 void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	stop();
 
+	// Make sure to handle stream changes seamlessly, e.g. when done via
+	// translation remapping.
+	if (stream.is_valid()) {
+		stream->disconnect("changed", callable_mp(this, &VideoStreamPlayer::set_stream));
+	}
+
 	AudioServer::get_singleton()->lock();
 	mix_buffer.resize(AudioServer::get_singleton()->thread_get_mix_buffer_size());
 	stream = p_stream;
@@ -234,6 +240,10 @@ void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 		playback = Ref<VideoStreamPlayback>();
 	}
 	AudioServer::get_singleton()->unlock();
+
+	if (stream.is_valid()) {
+		stream->connect("changed", callable_mp(this, &VideoStreamPlayer::set_stream).bind(stream));
+	}
 
 	if (!playback.is_null()) {
 		playback->set_paused(paused);
