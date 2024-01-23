@@ -445,6 +445,9 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 }
 
 void EditorHelpSearch::Runner::_populate_cache() {
+	// Deselect to prevent re-selection issues.
+	results_tree->deselect_all();
+
 	root_item = results_tree->get_root();
 
 	if (root_item) {

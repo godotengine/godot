@@ -113,6 +113,8 @@ private:
 	void _stop_internal(bool p_reset, bool p_keep_state);
 	void _check_immediately_after_start();
 
+	float get_current_blend_amount();
+
 	bool playing = false;
 
 protected:

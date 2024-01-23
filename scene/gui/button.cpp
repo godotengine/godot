@@ -167,20 +167,21 @@ void Button::_notification(int p_what) {
 
 			const int h_separation = MAX(0, theme_cache.h_separation);
 
+			float left_internal_margin_with_h_separation = _internal_margin[SIDE_LEFT];
+			float right_internal_margin_with_h_separation = _internal_margin[SIDE_RIGHT];
 			{ // The width reserved for internal element in derived classes (and h_separation if need).
-				float internal_margin = _internal_margin[SIDE_LEFT] + _internal_margin[SIDE_RIGHT];
 
 				if (!xl_text.is_empty() || h_separation_is_valid_when_no_text) {
 					if (_internal_margin[SIDE_LEFT] > 0.0f) {
-						internal_margin += h_separation;
+						left_internal_margin_with_h_separation += h_separation;
 					}
 
 					if (_internal_margin[SIDE_RIGHT] > 0.0f) {
-						internal_margin += h_separation;
+						right_internal_margin_with_h_separation += h_separation;
 					}
 				}
 
-				drawable_size_remained.width -= internal_margin; // The size after the internal element is stripped.
+				drawable_size_remained.width -= left_internal_margin_with_h_separation + right_internal_margin_with_h_separation; // The size after the internal element is stripped.
 			}
 
 			HorizontalAlignment icon_align_rtl_checked = horizontal_icon_alignment;
@@ -308,12 +309,12 @@ void Button::_notification(int p_what) {
 						case HORIZONTAL_ALIGNMENT_FILL:
 						case HORIZONTAL_ALIGNMENT_LEFT: {
 							icon_ofs.x += style_margin_left;
-							icon_ofs.x += _internal_margin[SIDE_LEFT];
+							icon_ofs.x += left_internal_margin_with_h_separation;
 						} break;
 
 						case HORIZONTAL_ALIGNMENT_RIGHT: {
 							icon_ofs.x = size.x - style_margin_right;
-							icon_ofs.x -= _internal_margin[SIDE_RIGHT];
+							icon_ofs.x -= right_internal_margin_with_h_separation;
 							icon_ofs.x -= icon_size.width;
 						} break;
 					}
@@ -368,7 +369,7 @@ void Button::_notification(int p_what) {
 					case HORIZONTAL_ALIGNMENT_LEFT:
 					case HORIZONTAL_ALIGNMENT_RIGHT: {
 						text_ofs.x += style_margin_left;
-						text_ofs.x += _internal_margin[SIDE_LEFT];
+						text_ofs.x += left_internal_margin_with_h_separation;
 						if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
 							// Offset by the space's width that occupied by icon and h_separation together.
 							text_ofs.x += custom_element_size.width - drawable_size_remained.width;

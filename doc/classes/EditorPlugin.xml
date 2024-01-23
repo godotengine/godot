@@ -759,7 +759,7 @@
 		<signal name="resource_saved">
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				Emitted when the given [param resource] was saved on disc.
+				Emitted when the given [param resource] was saved on disc. See also [signal scene_saved].
 			</description>
 		</signal>
 		<signal name="scene_changed">
@@ -771,7 +771,13 @@
 		<signal name="scene_closed">
 			<param index="0" name="filepath" type="String" />
 			<description>
-				Emitted when user closes a scene. The argument is file path to a closed scene.
+				Emitted when user closes a scene. The argument is a file path to the closed scene.
+			</description>
+		</signal>
+		<signal name="scene_saved">
+			<param index="0" name="filepath" type="String" />
+			<description>
+				Emitted when a scene was saved on disc. The argument is a file path to the saved scene. See also [signal resource_saved].
 			</description>
 		</signal>
 	</signals>
