@@ -26,7 +26,6 @@
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
 			The polygon's list of vertices. Each point will be connected to the next, and the final point will be connected to the first.
 			[b]Note:[/b] The returned vertices are in the local coordinate space of the given [CollisionPolygon2D].
-			[b]Warning:[/b] The returned value is a clone of the [PackedVector2Array], not a reference.
 		</member>
 	</members>
 	<constants>
