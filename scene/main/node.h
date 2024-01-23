@@ -108,6 +108,12 @@ public:
 		INTERNAL_MODE_BACK,
 	};
 
+	enum AutoTranslateMode {
+		AUTO_TRANSLATE_MODE_INHERIT,
+		AUTO_TRANSLATE_MODE_ALWAYS,
+		AUTO_TRANSLATE_MODE_DISABLED,
+	};
+
 	struct Comparator {
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
@@ -210,6 +216,10 @@ private:
 
 		bool display_folded = false;
 		bool editable_instance = false;
+
+		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
+		mutable bool is_auto_translating = true;
+		mutable bool is_auto_translate_dirty = true;
 
 		mutable NodePath *path_cache = nullptr;
 
@@ -506,6 +516,7 @@ public:
 	void propagate_call(const StringName &p_method, const Array &p_args = Array(), const bool p_parent_first = false);
 
 	/* PROCESSING */
+
 	void set_physics_process(bool p_process);
 	double get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
@@ -647,6 +658,7 @@ public:
 
 	void set_display_folded(bool p_folded);
 	bool is_displayed_folded() const;
+
 	/* NETWORK */
 
 	virtual void set_multiplayer_authority(int p_peer_id, bool p_recursive = true);
@@ -665,6 +677,17 @@ public:
 	Error rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
+
+	/* INTERNATIONALIZATION */
+
+	void set_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_auto_translate_mode() const;
+	bool can_auto_translate() const;
+
+	_FORCE_INLINE_ String atr(const String p_message, const StringName p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
+	_FORCE_INLINE_ String atr_n(const String p_message, const StringName &p_message_plural, int p_n, const StringName p_context = "") const { return can_auto_translate() ? tr_n(p_message, p_message_plural, p_n, p_context) : p_message; }
+
+	/* THREADING */
 
 	void call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
 	template <typename... VarArgs>
@@ -725,6 +748,7 @@ VARIANT_ENUM_CAST(Node::ProcessMode);
 VARIANT_ENUM_CAST(Node::ProcessThreadGroup);
 VARIANT_BITFIELD_CAST(Node::ProcessThreadMessages);
 VARIANT_ENUM_CAST(Node::InternalMode);
+VARIANT_ENUM_CAST(Node::AutoTranslateMode);
 
 typedef HashSet<Node *, Node::Comparator> NodeSet;
 

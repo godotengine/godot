@@ -1316,7 +1316,7 @@ GridMapEditor::GridMapEditor() {
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
 	mesh_library_palette = memnew(ItemList);
-	mesh_library_palette->set_auto_translate(false);
+	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
 	mesh_library_palette->connect("gui_input", callable_mp(this, &GridMapEditor::_mesh_library_palette_input));

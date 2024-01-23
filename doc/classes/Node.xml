@@ -186,6 +186,32 @@
 				[b]Note:[/b] [SceneTree]'s group methods will [i]not[/i] work on this node if not inside the tree (see [method is_inside_tree]).
 			</description>
 		</method>
+		<method name="atr" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<description>
+				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
+				This method works the same as [method Object.tr], with the addition of respecting the [member auto_translate_mode] state.
+				If [method Object.can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method Object.set_message_translation].
+				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url].
+			</description>
+		</method>
+		<method name="atr_n" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="plural_message" type="StringName" />
+			<param index="2" name="n" type="int" />
+			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
+			<description>
+				Translates a [param message] or [param plural_message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
+				This method works the same as [method Object.tr_n], with the addition of respecting the [member auto_translate_mode] state.
+				If [method Object.can_translate_messages] is [code]false[/code], or no translation is available, this method returns [param message] or [param plural_message], without changes. See [method Object.set_message_translation].
+				The [param n] is the number, or amount, of the message's subject. It is used by the translation system to fetch the correct plural form for the current language.
+				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url].
+				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended to handle these cases with [method atr].
+			</description>
+		</method>
 		<method name="call_deferred_thread_group" qualifiers="vararg">
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
@@ -203,7 +229,7 @@
 		<method name="can_process" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node can receive processing notifications and input callbacks ([constant NOTIFICATION_PROCESS], [method _input], etc) from the [SceneTree] and [Viewport]. The returned value depends on [member process_mode]:
+				Returns [code]true[/code] if the node can receive processing notifications and input callbacks ([constant NOTIFICATION_PROCESS], [method _input], etc.) from the [SceneTree] and [Viewport]. The returned value depends on [member process_mode]:
 				- If set to [constant PROCESS_MODE_PAUSABLE], returns [code]true[/code] when the game is processing, i.e. [member SceneTree.paused] is [code]false[/code];
 				- If set to [constant PROCESS_MODE_WHEN_PAUSED], returns [code]true[/code] when the game is paused, i.e. [member SceneTree.paused] is [code]true[/code];
 				- If set to [constant PROCESS_MODE_ALWAYS], always returns [code]true[/code];
@@ -923,6 +949,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="auto_translate_mode" type="int" setter="set_auto_translate_mode" getter="get_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
+			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). See [enum AutoTranslateMode].
+			Also decides if the node's strings should be parsed for POT generation.
+		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
 			An optional description to the node. It will be displayed as a tooltip when hovering over the node in the editor's Scene dock.
 		</member>
@@ -1180,10 +1210,10 @@
 			Notification received when the [TextServer] is changed.
 		</constant>
 		<constant name="PROCESS_MODE_INHERIT" value="0" enum="ProcessMode">
-			Inherits [member process_mode] from the node's parent. For the root node, it is equivalent to [constant PROCESS_MODE_PAUSABLE]. This is the default for any newly created node.
+			Inherits [member process_mode] from the node's parent. This is the default for any newly created node.
 		</constant>
 		<constant name="PROCESS_MODE_PAUSABLE" value="1" enum="ProcessMode">
-			Stops processing when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED].
+			Stops processing when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED], and the default for the root node.
 		</constant>
 		<constant name="PROCESS_MODE_WHEN_PAUSED" value="2" enum="ProcessMode">
 			Process [b]only[/b] when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_PAUSABLE].
@@ -1232,6 +1262,16 @@
 		</constant>
 		<constant name="INTERNAL_MODE_BACK" value="2" enum="InternalMode">
 			The node will be placed at the end of the parent's children list, after any non-internal sibling.
+		</constant>
+		<constant name="AUTO_TRANSLATE_MODE_INHERIT" value="0" enum="AutoTranslateMode">
+			Inherits [member auto_translate_mode] from the node's parent. This is the default for any newly created node.
+		</constant>
+		<constant name="AUTO_TRANSLATE_MODE_ALWAYS" value="1" enum="AutoTranslateMode">
+			Always automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_DISABLED], and the default for the root node.
+		</constant>
+		<constant name="AUTO_TRANSLATE_MODE_DISABLED" value="2" enum="AutoTranslateMode">
+			Never automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_ALWAYS].
+			String parsing for POT generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
 		</constant>
 	</constants>
 </class>

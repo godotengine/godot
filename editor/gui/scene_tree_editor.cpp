@@ -1601,7 +1601,7 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 		Label *label = memnew(Label);
 		hb->add_child(label);
 		label->set_text(name);
-		label->set_auto_translate(false);
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	}
 
 	show_all_nodes->show();
