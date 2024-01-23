@@ -50,7 +50,9 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	Label *bar_beats_label = nullptr;
 	SpinBox *bar_beats_edit = nullptr;
 	CheckBox *loop = nullptr;
+	Label *loop_offset_label = nullptr;
 	SpinBox *loop_offset = nullptr;
+	CheckBox *loop_use_samples = nullptr;
 	ColorRect *color_rect = nullptr;
 	Ref<AudioStream> stream;
 	AudioStreamPlayer *_player = nullptr;

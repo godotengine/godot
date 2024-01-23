@@ -33,5 +33,8 @@
 			Only has an effect if [member loop] is [code]true[/code].
 			A more convenient editor for [member loop_offset] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
 		</member>
+		<member name="loop_use_samples" type="bool" setter="" getter="" default="false">
+			If enabled, [member loop_offset] will be interpreted as being defined in samples, instead of in seconds. This allows for greater precision, but will often not be needed. Use this if you notice a pop whenever your audio loops.
+		</member>
 	</members>
 </class>

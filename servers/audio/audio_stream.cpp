@@ -216,6 +216,21 @@ bool AudioStream::is_monophonic() const {
 	return ret;
 }
 
+float AudioStream::get_sample_rate() const {
+	float ret = 0;
+	GDVIRTUAL_CALL(_get_sample_rate, ret);
+	return ret;
+}
+
+double AudioStream::sample_to_seconds(int p_sample_index) const {
+	float sample_rate = get_sample_rate();
+	if (sample_rate == 0) {
+		WARN_PRINT("The AudioStream sample rate was 0. Assumed 44,100 Hz instead.");
+		sample_rate = 44100;
+	}
+	return p_sample_index / sample_rate;
+}
+
 double AudioStream::get_bpm() const {
 	double ret = 0;
 	GDVIRTUAL_CALL(_get_bpm, ret);
