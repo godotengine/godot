@@ -87,6 +87,7 @@ BASE_STRINGS = [
     "This method may be changed or removed in future versions.",
     "This operator may be changed or removed in future versions.",
     "This theme property may be changed or removed in future versions.",
+    "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.",
 ]
 strings_l10n: Dict[str, str] = {}
 
@@ -143,6 +144,18 @@ CLASSES_WITH_CSHARP_DIFFERENCES: List[str] = [
     "PackedVector2Array",
     "PackedVector3Array",
     "Variant",
+]
+
+PACKED_ARRAY_TYPES: List[str] = [
+    "PackedByteArray",
+    "PackedColorArray",
+    "PackedFloat32Array",
+    "Packedfloat64Array",
+    "PackedInt32Array",
+    "PackedInt64Array",
+    "PackedStringArray",
+    "PackedVector2Array",
+    "PackedVector3Array",
 ]
 
 
@@ -1277,6 +1290,9 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if property_def.text is not None and property_def.text.strip() != "":
                     f.write(f"{format_text_block(property_def.text.strip(), property_def, state)}\n\n")
+                    if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
+                        tmp = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
+                        f.write(f"{format_text_block(tmp, property_def, state)}\n\n")
                 elif property_def.deprecated is None and property_def.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
