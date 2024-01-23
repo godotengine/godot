@@ -3131,20 +3131,6 @@ PackedStringArray Node::get_configuration_warnings() const {
 	return ret;
 }
 
-String Node::get_configuration_warnings_as_string() const {
-	PackedStringArray warnings = get_configuration_warnings();
-	String all_warnings;
-	for (int i = 0; i < warnings.size(); i++) {
-		if (i > 0) {
-			all_warnings += "\n\n";
-		}
-		// Format as a bullet point list to make multiple warnings easier to distinguish
-		// from each other.
-		all_warnings += String::utf8("•  ") + warnings[i];
-	}
-	return all_warnings;
-}
-
 void Node::update_configuration_warnings() {
 	ERR_THREAD_GUARD
 #ifdef TOOLS_ENABLED
