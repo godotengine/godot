@@ -144,7 +144,7 @@ namespace Godot.SourceGenerators
                 .Append("    /// </summary>\n");
 
             source.Append(
-                $"    public new class MethodName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
+                $"    public new class MethodName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
