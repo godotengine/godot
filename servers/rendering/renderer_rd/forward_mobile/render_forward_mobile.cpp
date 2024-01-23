@@ -263,28 +263,11 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 
 RID RenderForwardMobile::reflection_probe_create_framebuffer(RID p_color, RID p_depth) {
 	// Our attachments
-	Vector<RID> fb;
-	fb.push_back(p_color); // 0
-	fb.push_back(p_depth); // 1
+	Vector<RID> attachments;
+	attachments.push_back(p_color); // 0
+	attachments.push_back(p_depth); // 1
 
-	// Now define our subpasses
-	Vector<RD::FramebufferPass> passes;
-	RD::FramebufferPass pass;
-
-	// re-using the same attachments
-	pass.color_attachments.push_back(0);
-	pass.depth_attachment = 1;
-
-	// - opaque pass
-	passes.push_back(pass);
-
-	// - sky pass
-	passes.push_back(pass);
-
-	// - alpha pass
-	passes.push_back(pass);
-
-	return RD::get_singleton()->framebuffer_create_multipass(fb, passes);
+	return RD::get_singleton()->framebuffer_create(attachments);
 }
 
 void RenderForwardMobile::setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) {
@@ -1048,10 +1031,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				RENDER_TIMESTAMP("Render Transparent");
 
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
-
-				if (rb_data.is_valid()) {
-					framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_RENDER_PASS);
-				}
 
 				// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
 				//_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, false);
