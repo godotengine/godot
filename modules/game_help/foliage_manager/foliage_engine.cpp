@@ -35,6 +35,7 @@ namespace Foliage
 
     void FoliageEngine::init(TypedArray<FoliageMapChunkConfig> map_config)
     {
+        print_line("foliage engine init");
         clear();
         for (int i = 0; i < map_config.size(); i++)
         {

@@ -285,6 +285,8 @@ protected:
 
 	void _notification(int p_notification);
 
+	virtual void _enter_tree(){}
+	virtual void _exit_tree(){}
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);

@@ -261,6 +261,7 @@ void Node::_propagate_enter_tree() {
 
 	notification(NOTIFICATION_ENTER_TREE);
 
+	_enter_tree();
 	GDVIRTUAL_CALL(_enter_tree);
 
 	emit_signal(SceneStringNames::get_singleton()->tree_entered);
@@ -337,7 +338,7 @@ void Node::_propagate_exit_tree() {
 	}
 
 	data.blocked--;
-
+	_exit_tree();
 	GDVIRTUAL_CALL(_exit_tree);
 
 	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
