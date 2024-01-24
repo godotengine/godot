@@ -775,6 +775,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		_render_batch(p_lights, i, r_render_info);
 	}
 
+	glDisable(GL_SCISSOR_TEST);
 	state.current_batch_index = 0;
 	state.canvas_instance_batches.clear();
 	state.last_item_index += index;
