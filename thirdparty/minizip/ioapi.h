@@ -144,7 +144,7 @@ typedef long     (ZCALLBACK *tell_file_func)      (voidpf opaque, voidpf stream)
 typedef long     (ZCALLBACK *seek_file_func)      (voidpf opaque, voidpf stream, uLong offset, int origin);
 
 
-/* here is the "old" 32 bits structure structure */
+/* here is the "old" 32 bits structure */
 typedef struct zlib_filefunc_def_s
 {
     open_file_func      zopen_file;
