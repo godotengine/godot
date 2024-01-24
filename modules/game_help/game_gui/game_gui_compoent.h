@@ -5,9 +5,9 @@
 #include "scene/gui/container.h"
 #include "scene/main/viewport.h"
 
-class GGComponent : Container
+class GUIComponent : public Container
 {
-    GDCLASS(GGComponent, Container);
+    GDCLASS(GUIComponent, Container);
     static void _bind_methods();
     public:
     // The possible horizontal and vertical sizing modes for a GameGUI component.
@@ -39,6 +39,10 @@ class GGComponent : Container
     };
     ScalingMode horizontal_mode = S_EXPAND_TO_FILL;
     ScalingMode vertical_mode = S_EXPAND_TO_FILL;
+    Vector2 layout_size = Vector2(0,0);
+    Control* reference_node;
+    String height_parameter = "";
+    Dictionary parameters ;
 	void set_horizontal_mode(ScalingMode value)
     {
 		if (horizontal_mode == value)
@@ -70,6 +74,7 @@ class GGComponent : Container
 		request_layout();
 
     }
+    ScalingMode get_horizontal_mode(){return horizontal_mode;}
     
 	void set_vertical_mode(ScalingMode value)
     {
@@ -102,7 +107,7 @@ class GGComponent : Container
 		request_layout();
 
     }
-    Vector2 layout_size = Vector2(0,0);
+    ScalingMode get_vertical_mode(){return vertical_mode;}
 	void set_layout_size(Vector2 value)
     {
 		if (layout_size == value)
@@ -114,11 +119,11 @@ class GGComponent : Container
 		request_layout();
         
     }
+    Vector2 get_layout_size(){return layout_size;}
     // An optional node to use as a size reference for [b]Proportional[/b] scaling
     // mode. The reference node must be in a subtree higher in the scene tree than
     // this node. Often the size reference is an invisible root-level square-aspect
     // component; this allows same-size horizontal and vertical proportional spacers.
-    Control* reference_node;
 	void set_reference_node(Control* value)
     {
 		if (reference_node != value)
@@ -128,6 +133,7 @@ class GGComponent : Container
 
         }
     }
+    Control* get_reference_node(){return reference_node;}
     String width_parameter = "";
 	void set_width_parameter(String value)
     {
@@ -138,8 +144,8 @@ class GGComponent : Container
 			request_layout();
 
     }
+    String get_width_parameter(){return width_parameter;}
     // The name of the parameter to use for the [b]Parameter[/b] vertical_mode scaling mode.
-    String height_parameter = "";
 	void set_height_parameter(String value)
     {
 		if (height_parameter == value)
@@ -148,10 +154,10 @@ class GGComponent : Container
 		if (value != "" || has_parameter(value))
 			request_layout();
     }
+    String get_height_parameter(){return height_parameter;}
     // Parameter definitions for nodes that use scaling mode PARAMETER. Parameters are stored
-    // the root of a GGComponent subtree. Use [method get_parameter], [method has_parameter], and
+    // the root of a GUIComponent subtree. Use [method get_parameter], [method has_parameter], and
     // [method set_parameter] to access parameters from any subtree nodes.
-    Dictionary parameters ;
 	void set_parameters(Dictionary value)
     {
 		if (parameters == value)
@@ -160,7 +166,8 @@ class GGComponent : Container
 		request_layout();
 
     }
-    // A top-level GGComponent is one that has no GGComponent parent.
+    Dictionary get_parameters(){return parameters;}
+    // A top-level GUIComponent is one that has no GUIComponent parent.
     // It oversees the layout of its descendent nodes.
     bool _is_top_level = false;
     int _layout_stage = 0 ;// top-level component use. 0=layout finished, 1=layout requested, 2=performing layout
@@ -170,7 +177,7 @@ class GGComponent : Container
     //-------------------------------------------------------------------------------
 
 // Utility method that draws a texture with any combination of horizontal and vertical fill modes: Stretch, Tile, Tile Fit.
-// Used primarily by [GGComponent].
+// Used primarily by [GUIComponent].
 void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rect, FillMode horizontal_fill_mode = STRETCH,
 		FillMode vertical_fill_mode = STRETCH, Color _modulate=Color(1,1,1,1) )
     {
@@ -319,7 +326,7 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
 
     }
     // Returns the specified parameter's value if it exists in the [member parameters]
-    // of this node or a [GGComponent] ancestor. If it doesn't exist, returns
+    // of this node or a [GUIComponent] ancestor. If it doesn't exist, returns
     // [code]0[/code] or a specified default result.
     Variant get_parameter( String parameter_name, Variant default_result=0 )
     {
@@ -330,12 +337,12 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
             return default_result;
 
     }
-    // Returns the root of this GGComponent subtree.
-    GGComponent* get_top_level_component()
+    // Returns the root of this GUIComponent subtree.
+    GUIComponent* get_top_level_component()
     {
         auto cur = this;
         while (cur && !cur->_is_top_level)
-            cur = Object::cast_to<GGComponent>( cur->get_parent());
+            cur = Object::cast_to<GUIComponent>( cur->get_parent());
         return cur;
 
     }
@@ -394,7 +401,7 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
     {
         // Overrideable.
         // Called at the beginning of layout.
-        // Override and adjust this GGComponent's size if desired.
+        // Override and adjust this GUIComponent's size if desired.
         //pass
 
     }
@@ -446,7 +453,7 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
             Control* child = Object::cast_to<Control>( get_child(i));
             if (!child->is_visible())
                 continue;
-            if (child->is_class("Control"))   // includes GGComponent
+            if (child->is_class("Control"))   // includes GUIComponent
             {
                 max_w = MAX( max_w, child->get_size().x );
                 max_h = MAX( max_h, child->get_size().y );
@@ -487,8 +494,8 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
     {
         auto pos = available_bounds.position;
 
-        GGComponent* com = Object::cast_to<GGComponent>( component ); // child->cast_to<GGComponent>();
-        if (com)  // includes GGComponent
+        GUIComponent* com = Object::cast_to<GUIComponent>( component ); // child->cast_to<GUIComponent>();
+        if (com)  // includes GUIComponent
         {
             int64_t h_size_flags = com->get_h_size_flags();
             int64_t v_size_flags = com->get_v_size_flags();
@@ -519,7 +526,7 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
         }
         
         Control* con = Object::cast_to<Control>( child ); // child->cast_to<Control>();
-        GGComponent* com = Object::cast_to<GGComponent>( child ); // child->cast_to<GGComponent>();
+        GUIComponent* com = Object::cast_to<GUIComponent>( child ); // child->cast_to<GUIComponent>();
         if ( con->is_visible())
             return;
         if (com)
@@ -537,7 +544,7 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
 
 
         auto component_size = available_size;
-        GGComponent* is_gg = Object::cast_to<GGComponent>( component ); // child->cast_to<GGComponent>();
+        GUIComponent* is_gg = Object::cast_to<GUIComponent>( component ); // child->cast_to<GUIComponent>();
         Control* con = Object::cast_to<Control>( component ); // child->cast_to<Control>();
         if (is_gg )
             is_gg->_on_resolve_size( available_size );
@@ -671,7 +678,7 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
     void _perform_component_layout( Node * component, Rect2 available_bounds )
     {
         
-        GGComponent* com = Object::cast_to<GGComponent>( component ); // child->cast_to<GGComponent>();
+        GUIComponent* com = Object::cast_to<GUIComponent>( component ); // child->cast_to<GUIComponent>();
         Control* con = Object::cast_to<Control>( component ); // child->cast_to<Control>();
         if (com)
             com->_perform_layout(available_bounds);
@@ -680,7 +687,7 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
     }
     Vector2 _resolve_shrink_to_fit_size( Node * component, Vector2 available_size )
     {
-        GGComponent* com = Object::cast_to<GGComponent>( component ); // child->cast_to<GGComponent>();
+        GUIComponent* com = Object::cast_to<GUIComponent>( component ); // child->cast_to<GUIComponent>();
         if (!com) return available_size;
         Vector2 component_size = available_size;
         if( com->horizontal_mode == S_SHRINK_TO_FIT)
@@ -739,7 +746,7 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
         for(int i = 0;i < get_child_count(); ++i)
         {
             auto child = get_child(i);
-            GGComponent* com = Object::cast_to<GGComponent>( child ); // child->cast_to<GGComponent>();
+            GUIComponent* com = Object::cast_to<GUIComponent>( child ); // child->cast_to<GUIComponent>();
             if (com)
                 com->_update_size();
             else if( child->has_method("_on_update_size"))
@@ -750,7 +757,7 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
     public :
     virtual void _enter_tree() override
     {
-        _is_top_level = ! (get_parent()->is_class("GGComponent"));
+        _is_top_level = ! (get_parent()->is_class("GUIComponent"));
         if (_is_top_level)
         {
             connect( "resized", Callable(this, "_on_resized") );
@@ -848,4 +855,11 @@ void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rec
 
 
 };
+
+
+VARIANT_ENUM_CAST(GUIComponent::ScalingMode)
+VARIANT_ENUM_CAST(GUIComponent::TextSizeMode)
+VARIANT_ENUM_CAST(GUIComponent::FillMode)
+
+
 #endif
