@@ -2034,6 +2034,21 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 			default:
 				break;
 		}
+	} else {
+		if (p_context.current_class) {
+			GDScriptCompletionIdentifier base_identifier;
+
+			GDScriptCompletionIdentifier base;
+			base.value = p_context.base;
+			base.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+			base.type.kind = GDScriptParser::DataType::CLASS;
+			base.type.class_type = p_context.current_class;
+			base.type.is_meta_type = p_context.current_function && p_context.current_function->is_static;
+
+			if (_guess_identifier_type_from_base(p_context, base, p_identifier->name, base_identifier)) {
+				id_type = base_identifier.type;
+			}
+		}
 	}
 
 	while (suite) {
@@ -2087,8 +2102,15 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	if (last_assigned_expression && last_assign_line < p_context.current_line) {
 		GDScriptParser::CompletionContext c = p_context;
 		c.current_line = last_assign_line;
-		r_type.assigned_expression = last_assigned_expression;
-		if (_guess_expression_type(c, last_assigned_expression, r_type)) {
+		GDScriptCompletionIdentifier assigned_type;
+		if (_guess_expression_type(c, last_assigned_expression, assigned_type)) {
+			if (id_type.is_set() && assigned_type.type.is_set() && !GDScriptAnalyzer::check_type_compatibility(id_type, assigned_type.type)) {
+				// The assigned type is incompatible. The annotated type takes priority.
+				r_type.assigned_expression = last_assigned_expression;
+				r_type.type = id_type;
+			} else {
+				r_type = assigned_type;
+			}
 			return true;
 		}
 	}
@@ -2144,20 +2166,6 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	if (id_type.is_set() && !id_type.is_variant()) {
 		r_type.type = id_type;
 		return true;
-	}
-
-	// Check current class (including inheritance).
-	if (p_context.current_class) {
-		GDScriptCompletionIdentifier base;
-		base.value = p_context.base;
-		base.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-		base.type.kind = GDScriptParser::DataType::CLASS;
-		base.type.class_type = p_context.current_class;
-		base.type.is_meta_type = p_context.current_function && p_context.current_function->is_static;
-
-		if (_guess_identifier_type_from_base(p_context, base, p_identifier->name, r_type)) {
-			return true;
-		}
 	}
 
 	// Check global scripts.

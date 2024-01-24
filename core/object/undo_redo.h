@@ -80,6 +80,7 @@ private:
 	int current_action = -1;
 	bool force_keep_in_merge_ends = false;
 	int action_level = 0;
+	int max_steps = 0;
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
 	uint64_t version = 1;
@@ -134,6 +135,9 @@ public:
 	bool is_merging() const;
 
 	uint64_t get_version() const;
+
+	void set_max_steps(int p_max_steps);
+	int get_max_steps() const;
 
 	void set_commit_notify_callback(CommitNotifyCallback p_callback, void *p_ud);
 
