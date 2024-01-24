@@ -466,6 +466,13 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			break;
 		}
 
+		if (String::utf8(fname).ends_with("/")) {
+			// File is a directory, ignore it.
+			// Directories will be created when extracting each file.
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
 		String file_path(String::utf8(fname).simplify_path());
 
 		String file = file_path.get_file();
