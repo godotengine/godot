@@ -104,6 +104,12 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_top_popup_or_focused_window" qualifiers="const">
+			<return type="Window" />
+			<description>
+				Returns the top [Popup] if available or the currently focused [Window].
+			</description>
+		</method>
 		<method name="get_viewport_rid" qualifiers="const">
 			<return type="RID" />
 			<description>

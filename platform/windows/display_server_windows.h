@@ -447,7 +447,7 @@ class DisplayServerWindows : public DisplayServer {
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	RBMap<WindowID, WindowData> windows;
 
-	WindowID last_focused_window = INVALID_WINDOW_ID;
+	WindowID currently_focused_window = INVALID_WINDOW_ID;
 
 	HCURSOR hCursor;
 
@@ -485,7 +485,7 @@ class DisplayServerWindows : public DisplayServer {
 	void _update_real_mouse_position(WindowID p_window);
 
 	void _set_mouse_mode_impl(MouseMode p_mode);
-	WindowID _get_focused_window_or_popup() const;
+	virtual WindowID _get_focused_window_or_popup() const override;
 	void _register_raw_input_devices(WindowID p_target_window);
 
 	void _process_activate_event(WindowID p_window_id, WPARAM wParam, LPARAM lParam);

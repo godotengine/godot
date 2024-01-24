@@ -669,6 +669,7 @@ public:
 
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window() const;
+	Window *get_top_popup_or_focused_window() const;
 
 	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
 

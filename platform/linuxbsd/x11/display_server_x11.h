@@ -230,7 +230,7 @@ class DisplayServerX11 : public DisplayServer {
 	List<WindowID> popup_list;
 
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
-	WindowID last_focused_window = INVALID_WINDOW_ID;
+	WindowID currently_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
@@ -353,7 +353,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	Context context = CONTEXT_ENGINE;
 
-	WindowID _get_focused_window_or_popup() const;
+	virtual WindowID _get_focused_window_or_popup() const override;
 	bool _window_focus_check();
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);

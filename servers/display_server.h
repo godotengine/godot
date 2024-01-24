@@ -337,6 +337,10 @@ public:
 
 	typedef int WindowID;
 
+private:
+	virtual WindowID _get_focused_window_or_popup() const { return MAIN_WINDOW_ID; };
+
+public:
 	virtual Vector<DisplayServer::WindowID> get_window_list() const = 0;
 
 	enum WindowFlags {
@@ -374,6 +378,7 @@ public:
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const = 0;
+	ObjectID get_top_popup_or_focused_window() const;
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const = 0;

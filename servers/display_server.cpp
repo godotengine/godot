@@ -457,6 +457,14 @@ void DisplayServer::delete_sub_window(WindowID p_id) {
 	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
 }
 
+ObjectID DisplayServer::get_top_popup_or_focused_window() const {
+	WindowID wid = _get_focused_window_or_popup();
+	if (wid == INVALID_WINDOW_ID) {
+		return ObjectID();
+	}
+	return window_get_attached_instance_id(wid);
+}
+
 void DisplayServer::window_set_exclusive(WindowID p_window, bool p_exclusive) {
 	// Do nothing, if not supported.
 }
@@ -721,6 +729,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_window_list"), &DisplayServer::get_window_list);
 	ClassDB::bind_method(D_METHOD("get_window_at_screen_position", "position"), &DisplayServer::get_window_at_screen_position);
+	ClassDB::bind_method(D_METHOD("get_top_popup_or_focused_window"), &DisplayServer::get_top_popup_or_focused_window);
 
 	ClassDB::bind_method(D_METHOD("window_get_native_handle", "handle_type", "window_id"), &DisplayServer::window_get_native_handle, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_active_popup"), &DisplayServer::window_get_active_popup);

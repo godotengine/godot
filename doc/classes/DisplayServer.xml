@@ -194,6 +194,12 @@
 				[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 			</description>
 		</method>
+		<method name="get_top_popup_or_focused_window" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the [method Object.get_instance_id] of the top [Popup] if available or of the currently focused [Window].
+			</description>
+		</method>
 		<method name="get_window_at_screen_position" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="position" type="Vector2i" />
