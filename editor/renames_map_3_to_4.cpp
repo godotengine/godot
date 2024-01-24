@@ -642,7 +642,6 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "_SetEditorDescription", "SetEditorDescription" }, // Node
 	{ "_SetPlaying", "SetPlaying" }, // AnimatedSprite3D
 	{ "_ToplevelRaiseSelf", "_TopLevelRaiseSelf" }, // CanvasItem
-	{ "_UpdateWrapAt", "_UpdateWrapAtColumn" }, // TextEdit
 	{ "AddCancel", "AddCancelButton" }, // AcceptDialog
 	{ "AddCentralForce", "AddConstantCentralForce" }, //RigidBody2D
 	{ "AddChildBelowNode", "AddSibling" }, // Node
