@@ -55,10 +55,10 @@ bool SkeletonModification2DPhysicalBones::_set(const StringName &p_path, const V
 
 		if (what == "nodepath") {
 			set_physical_bone_node(which, p_value);
+			return true;
 		}
-		return true;
 	}
-	return true;
+	return false;
 }
 
 bool SkeletonModification2DPhysicalBones::_get(const StringName &p_path, Variant &r_ret) const {
@@ -79,10 +79,10 @@ bool SkeletonModification2DPhysicalBones::_get(const StringName &p_path, Variant
 
 		if (what == "nodepath") {
 			r_ret = get_physical_bone_node(which);
+			return true;
 		}
-		return true;
 	}
-	return true;
+	return false;
 }
 
 void SkeletonModification2DPhysicalBones::_get_property_list(List<PropertyInfo> *p_list) const {

@@ -907,9 +907,16 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 defines=mono_defines,
             )
 
-        env["MSVSBUILDCOM"] = module_configs.build_commandline("scons")
-        env["MSVSREBUILDCOM"] = module_configs.build_commandline("scons vsproj=yes")
-        env["MSVSCLEANCOM"] = module_configs.build_commandline("scons --clean")
+        scons_cmd = "scons"
+
+        path_to_venv = os.getenv("VIRTUAL_ENV")
+        path_to_scons_exe = Path(str(path_to_venv)) / "Scripts" / "scons.exe"
+        if path_to_venv and path_to_scons_exe.exists():
+            scons_cmd = str(path_to_scons_exe)
+
+        env["MSVSBUILDCOM"] = module_configs.build_commandline(scons_cmd)
+        env["MSVSREBUILDCOM"] = module_configs.build_commandline(f"{scons_cmd} vsproj=yes")
+        env["MSVSCLEANCOM"] = module_configs.build_commandline(f"{scons_cmd} --clean")
         if not env.get("MSVS"):
             env["MSVS"]["PROJECTSUFFIX"] = ".vcxproj"
             env["MSVS"]["SOLUTIONSUFFIX"] = ".sln"

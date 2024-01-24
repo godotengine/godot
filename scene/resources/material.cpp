@@ -1914,7 +1914,7 @@ void BaseMaterial3D::set_texture(TextureParam p_param, const Ref<Texture2D> &p_t
 	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
 
 	textures[p_param] = p_texture;
-	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	Variant rid = p_texture.is_valid() ? Variant(p_texture->get_rid()) : Variant();
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
 
 	if (p_texture.is_valid() && p_param == TEXTURE_ALBEDO) {
@@ -3147,7 +3147,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "flags_use_shadow_to_opacity", "shadow_to_opacity" },
 			{ "flags_no_depth_test", "no_depth_test" },
 			{ "flags_use_point_size", "use_point_size" },
-			{ "flags_fixed_size", "fixed_Size" },
+			{ "flags_fixed_size", "fixed_size" },
 			{ "flags_albedo_tex_force_srgb", "albedo_texture_force_srgb" },
 			{ "flags_do_not_receive_shadows", "disable_receive_shadows" },
 			{ "flags_disable_ambient_light", "disable_ambient_light" },
