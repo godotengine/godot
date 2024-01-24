@@ -2041,6 +2041,12 @@ void RendererCanvasCull::update_visibility_notifiers() {
 	}
 }
 
+Rect2 RendererCanvasCull::_debug_canvas_item_get_rect(RID p_item) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL_V(canvas_item, Rect2());
+	return canvas_item->get_rect();
+}
+
 bool RendererCanvasCull::free(RID p_rid) {
 	if (canvas_owner.owns(p_rid)) {
 		Canvas *canvas = canvas_owner.get_or_null(p_rid);

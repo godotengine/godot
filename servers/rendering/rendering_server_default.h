@@ -940,6 +940,8 @@ public:
 
 	FUNC1(canvas_set_shadow_texture_size, int)
 
+	FUNC1R(Rect2, _debug_canvas_item_get_rect, RID)
+
 	/* GLOBAL SHADER UNIFORMS */
 
 #undef server_name

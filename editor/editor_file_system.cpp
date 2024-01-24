@@ -2154,6 +2154,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 	}
 
+	// Update cpos, newly created files could've changed the index of the reimported p_file.
+	_find_file(p_file, &fs, cpos);
+
 	//update modified times, to avoid reimport
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
@@ -2348,7 +2351,13 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
 	ERR_FAIL_COND_V_MSG(!importing, ERR_INVALID_PARAMETER, "Can only append files to import during a current reimport process.");
-	return _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters);
+	Error ret = _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters);
+
+	// Emit the resource_reimported signal for the single file we just reimported.
+	Vector<String> reloads;
+	reloads.append(p_file);
+	emit_signal(SNAME("resources_reimported"), reloads);
+	return ret;
 }
 
 Error EditorFileSystem::_resource_import(const String &p_path) {

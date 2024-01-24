@@ -582,6 +582,8 @@ void TreeItem::set_custom_draw(int p_column, Object *p_object, const StringName 
 
 	cells.write[p_column].custom_draw_obj = p_object->get_instance_id();
 	cells.write[p_column].custom_draw_callback = p_callback;
+
+	_changed_notify(p_column);
 }
 
 void TreeItem::set_collapsed(bool p_collapsed) {
@@ -1298,8 +1300,14 @@ void TreeItem::clear_custom_color(int p_column) {
 void TreeItem::set_custom_font(int p_column, const Ref<Font> &p_font) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
+	if (cells[p_column].custom_font == p_font) {
+		return;
+	}
+
 	cells.write[p_column].custom_font = p_font;
 	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
 }
 
 Ref<Font> TreeItem::get_custom_font(int p_column) const {
@@ -1310,8 +1318,14 @@ Ref<Font> TreeItem::get_custom_font(int p_column) const {
 void TreeItem::set_custom_font_size(int p_column, int p_font_size) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
+	if (cells[p_column].custom_font_size == p_font_size) {
+		return;
+	}
+
 	cells.write[p_column].custom_font_size = p_font_size;
 	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
 }
 
 int TreeItem::get_custom_font_size(int p_column) const {
@@ -1360,8 +1374,14 @@ Color TreeItem::get_custom_bg_color(int p_column) const {
 void TreeItem::set_custom_as_button(int p_column, bool p_button) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
+	if (cells[p_column].custom_button == p_button) {
+		return;
+	}
+
 	cells.write[p_column].custom_button = p_button;
 	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
 }
 
 bool TreeItem::is_custom_set_as_button(int p_column) const {

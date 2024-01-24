@@ -221,8 +221,12 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 		//compressed bc
 
 		uint32_t size = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
-		ERR_FAIL_COND_V(size != pitch, Ref<Resource>());
-		ERR_FAIL_COND_V(!(flags & DDSD_LINEARSIZE), Ref<Resource>());
+
+		if (flags & DDSD_LINEARSIZE) {
+			ERR_FAIL_COND_V_MSG(size != pitch, Ref<Resource>(), "DDS header flags specify that a linear size of the top-level image is present, but the specified size does not match the expected value.");
+		} else {
+			ERR_FAIL_COND_V_MSG(pitch != 0, Ref<Resource>(), "DDS header flags specify that no linear size will given for the top-level image, but a non-zero linear size value is present in the header.");
+		}
 
 		for (uint32_t i = 1; i < mipmaps; i++) {
 			w = MAX(1u, w >> 1);
