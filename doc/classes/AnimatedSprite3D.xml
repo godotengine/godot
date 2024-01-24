@@ -104,6 +104,7 @@
 		<signal name="animation_finished">
 			<description>
 				Emitted when the animation reaches the end, or the start if it is played in reverse. When the animation finishes, it pauses the playback.
+				[b]Note:[/b] This signal is not emitted if an animation is looping.
 			</description>
 		</signal>
 		<signal name="animation_looped">
