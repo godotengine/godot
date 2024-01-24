@@ -129,12 +129,6 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 		return;
 	}
 
-	if (primary_interface->get_play_area_mode() == XRInterface::XR_PLAY_AREA_STAGE) {
-		// center_on_hmd is not available in this mode
-		reference_frame = Transform3D();
-		return;
-	}
-
 	// clear our current reference frame or we'll end up double adjusting it
 	reference_frame = Transform3D();
 
