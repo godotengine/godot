@@ -584,14 +584,30 @@ Variant TreeItem::get_metadata(int p_column) const {
 	return cells[p_column].meta;
 }
 
+#ifndef DISABLE_DEPRECATED
 void TreeItem::set_custom_draw(int p_column, Object *p_object, const StringName &p_callback) {
+	WARN_DEPRECATED_MSG(R"*(The "set_custom_draw()" method is deprecated, use "set_custom_draw_callback()" instead.)*");
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_NULL(p_object);
 
-	cells.write[p_column].custom_draw_obj = p_object->get_instance_id();
+	cells.write[p_column].custom_draw_callback = Callable(p_object, p_callback);
+
+	_changed_notify(p_column);
+}
+#endif // DISABLE_DEPRECATED
+
+void TreeItem::set_custom_draw_callback(int p_column, const Callable &p_callback) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
 	cells.write[p_column].custom_draw_callback = p_callback;
 
 	_changed_notify(p_column);
+}
+
+Callable TreeItem::get_custom_draw_callback(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Callable());
+
+	return cells[p_column].custom_draw_callback;
 }
 
 void TreeItem::set_collapsed(bool p_collapsed) {
@@ -1594,7 +1610,11 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_metadata", "column", "meta"), &TreeItem::set_metadata);
 	ClassDB::bind_method(D_METHOD("get_metadata", "column"), &TreeItem::get_metadata);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_custom_draw", "column", "object", "callback"), &TreeItem::set_custom_draw);
+#endif // DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_custom_draw_callback", "column", "callback"), &TreeItem::set_custom_draw_callback);
+	ClassDB::bind_method(D_METHOD("get_custom_draw_callback", "column"), &TreeItem::get_custom_draw_callback);
 
 	ClassDB::bind_method(D_METHOD("set_collapsed", "enable"), &TreeItem::set_collapsed);
 	ClassDB::bind_method(D_METHOD("is_collapsed"), &TreeItem::is_collapsed);
@@ -2317,10 +2337,15 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				} break;
 				case TreeItem::CELL_MODE_CUSTOM: {
-					if (p_item->cells[i].custom_draw_obj.is_valid()) {
-						Object *cdo = ObjectDB::get_instance(p_item->cells[i].custom_draw_obj);
-						if (cdo) {
-							cdo->call(p_item->cells[i].custom_draw_callback, p_item, Rect2(item_rect));
+					if (p_item->cells[i].custom_draw_callback.is_valid()) {
+						Variant args[] = { p_item, Rect2(item_rect) };
+						const Variant *argptrs[] = { &args[0], &args[1] };
+
+						Callable::CallError ce;
+						Variant ret;
+						p_item->cells[i].custom_draw_callback.callp(argptrs, 2, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT("Error calling custom draw method: " + Variant::get_callable_error_text(p_item->cells[i].custom_draw_callback, argptrs, 2, ce) + ".");
 						}
 					}
 
