@@ -310,12 +310,14 @@
 			[b]Note:[/b] Unless this value is [code]1.0[/code], the key value in animation will not match the actual position value.
 		</member>
 		<member name="show_rest_only" type="bool" setter="set_show_rest_only" getter="is_show_rest_only" default="false">
+			If [code]true[/code], forces the bones in their default rest pose, regardless of their values. In the editor, this also prevents the bones from being edited.
 		</member>
 	</members>
 	<signals>
 		<signal name="bone_enabled_changed">
 			<param index="0" name="bone_idx" type="int" />
 			<description>
+				Emitted when the bone at [param bone_idx] is toggled with [method set_bone_enabled]. Use [method is_bone_enabled] to check the new value.
 			</description>
 		</signal>
 		<signal name="bone_pose_changed">
@@ -326,15 +328,19 @@
 		</signal>
 		<signal name="pose_updated">
 			<description>
+				Emitted when the pose is updated, after [constant NOTIFICATION_UPDATE_SKELETON] is received.
 			</description>
 		</signal>
 		<signal name="show_rest_only_changed">
 			<description>
+				Emitted when the value of [member show_rest_only] changes.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
+			Notification received when this skeleton's pose needs to be updated.
+			This notification is received [i]before[/i] the related [signal pose_updated] signal.
 		</constant>
 	</constants>
 </class>
