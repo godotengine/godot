@@ -5326,8 +5326,21 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 	return result;
 }
 
-// TODO: Add safe/unsafe return variable (for variant cases)
 bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node) {
+#ifdef DEBUG_ENABLED
+	if (p_source_node) {
+		if (p_target.kind == GDScriptParser::DataType::ENUM) {
+			if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
+				parser->push_warning(p_source_node, GDScriptWarning::INT_AS_ENUM_WITHOUT_CAST);
+			}
+		}
+	}
+#endif
+	return check_type_compatibility(p_target, p_source, p_allow_implicit_conversion, p_source_node);
+}
+
+// TODO: Add safe/unsafe return variable (for variant cases)
+bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node) {
 	// These return "true" so it doesn't affect users negatively.
 	ERR_FAIL_COND_V_MSG(!p_target.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset target type");
 	ERR_FAIL_COND_V_MSG(!p_source.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset value type");
@@ -5362,11 +5375,6 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 
 	if (p_target.kind == GDScriptParser::DataType::ENUM) {
 		if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
-#ifdef DEBUG_ENABLED
-			if (p_source_node) {
-				parser->push_warning(p_source_node, GDScriptWarning::INT_AS_ENUM_WITHOUT_CAST);
-			}
-#endif
 			return true;
 		}
 		if (p_source.kind == GDScriptParser::DataType::ENUM) {
