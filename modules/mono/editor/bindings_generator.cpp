@@ -1621,9 +1621,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			} else {
 				// Hide the constructor
-				output.append(MEMBER_BEGIN "internal ");
-				output.append(itype.proxy_name);
-				output.append("() {}\n");
+				output << MEMBER_BEGIN "internal " << itype.proxy_name << "() : this("
+					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
+					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
+					   << INDENT3 "_ConstructAndInitialize(null, "
+					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
+					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			}
 
 			// Add.. em.. trick constructor. Sort of.
