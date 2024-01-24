@@ -9,7 +9,7 @@ mode_instanced = #define USE_ATTRIBUTES \n#define USE_INSTANCING
 
 #[specializations]
 
-DISABLE_LIGHTING = false
+DISABLE_LIGHTING = true
 USE_RGBA_SHADOWS = false
 SINGLE_INSTANCE = false
 
