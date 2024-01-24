@@ -1455,7 +1455,6 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
-	render_list[RENDER_LIST_SECONDARY].sort_by_key();
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
@@ -1500,7 +1499,6 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
-	render_list[RENDER_LIST_SECONDARY].sort_by_key();
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
@@ -1582,7 +1580,6 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	PassMode pass_mode = PASS_MODE_SHADOW;
 
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
-	render_list[RENDER_LIST_SECONDARY].sort_by_key();
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
@@ -2468,24 +2465,22 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	//sortkey
 	uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(sdcache->surface);
 
-	sdcache->sort.sort_key1 = 0;
-	sdcache->sort.sort_key2 = 0;
-
 	sdcache->sort.surface_index = p_surface;
 	sdcache->sort.material_id_low = p_material_id & 0x0000FFFF;
 	sdcache->sort.material_id_hi = p_material_id >> 16;
 	sdcache->sort.shader_id = p_shader_id;
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
+	sdcache->sort.format = format;
 	sdcache->sort.spec_consts = 0;
-	sdcache->sort.spec_consts |= (1 && sdcache->owner->use_projector) << SPEC_CONSTANT_USING_PROJECTOR;
-	sdcache->sort.spec_consts |= (1 && sdcache->owner->use_soft_shadow) << SPEC_CONSTANT_USING_SOFT_SHADOWS;
-	sdcache->sort.spec_consts |= (1 && sdcache->owner->omni_light_count == 0) << SPEC_CONSTANT_DISABLE_OMNI_LIGHTS;
-	sdcache->sort.spec_consts |= (1 && sdcache->owner->spot_light_count == 0) << SPEC_CONSTANT_DISABLE_SPOT_LIGHTS;
-	sdcache->sort.spec_consts |= (1 && sdcache->owner->reflection_probe_count == 0) << SPEC_CONSTANT_DISABLE_REFLECTION_PROBES;
-	sdcache->sort.spec_consts |= (1 && sdcache->owner->decals_count == 0) << SPEC_CONSTANT_DISABLE_DECALS;
+	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->use_projector) << SPEC_CONSTANT_USING_PROJECTOR;
+	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->use_soft_shadow) << SPEC_CONSTANT_USING_SOFT_SHADOWS;
+	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->omni_light_count == 0) << SPEC_CONSTANT_DISABLE_OMNI_LIGHTS;
+	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->spot_light_count == 0) << SPEC_CONSTANT_DISABLE_SPOT_LIGHTS;
+	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->reflection_probe_count == 0) << SPEC_CONSTANT_DISABLE_REFLECTION_PROBES;
+	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->decals_count == 0) << SPEC_CONSTANT_DISABLE_DECALS;
 	// sdcache->sort.uses_forward_gi = ginstance->can_sdfgi;
 	sdcache->sort.priority = p_material->priority;
-	
+
 	if (p_material->shader_data->uses_tangent && !(format & RS::ARRAY_FORMAT_TANGENT)) {
 		String shader_path = p_material->shader_data->path.is_empty() ? "" : "(" + p_material->shader_data->path + ")";
 		String mesh_path = mesh_storage->mesh_get_path(p_mesh).is_empty() ? "" : "(" + mesh_storage->mesh_get_path(p_mesh) + ")";

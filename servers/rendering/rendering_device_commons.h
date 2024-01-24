@@ -271,6 +271,25 @@ public:
 		DATA_FORMAT_MAX,
 	};
 
+	enum BreadcrumbMarker {
+		// Environment
+		REFLECTION_PROBES = 0,
+		SKY_SETUP,
+		SKY_DRAW,
+		// Shadows
+		SHADOW_PASS_DIRECTIONAL,
+		SHADOW_PASS_CUBE,
+		// Geometry passes
+		OPAQUE_PASS,
+		ALPHA_PASS,
+		TRANSPARENT_PASS,
+		// Screen effects
+		POST_PROCESSING_PASS,
+		BLIT_PASS,
+		// Other
+		DEBUG_PASS
+	};
+
 	enum CompareOperator {
 		COMPARE_OP_NEVER,
 		COMPARE_OP_LESS,

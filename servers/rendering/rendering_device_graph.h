@@ -54,7 +54,8 @@ public:
 			TYPE_DISPATCH,
 			TYPE_DISPATCH_INDIRECT,
 			TYPE_SET_PUSH_CONSTANT,
-			TYPE_UNIFORM_SET_PREPARE_FOR_USE
+			TYPE_UNIFORM_SET_PREPARE_FOR_USE,
+			TYPE_ADD_BREADCRUMB
 		};
 
 		Type type = TYPE_NONE;
@@ -78,7 +79,8 @@ public:
 			TYPE_SET_PUSH_CONSTANT,
 			TYPE_SET_SCISSOR,
 			TYPE_SET_VIEWPORT,
-			TYPE_UNIFORM_SET_PREPARE_FOR_USE
+			TYPE_UNIFORM_SET_PREPARE_FOR_USE,
+			TYPE_ADD_BREADCRUMB
 		};
 
 		Type type = TYPE_NONE;
@@ -493,6 +495,10 @@ private:
 		Rect2i rect;
 	};
 
+	struct DrawListAddBreadcrumbInstruction : DrawListInstruction {
+		uint32_t data;
+	};
+
 	struct DrawListUniformSetPrepareForUseInstruction : DrawListInstruction {
 		RDD::UniformSetID uniform_set;
 		RDD::ShaderID shader;
@@ -545,6 +551,10 @@ private:
 		_FORCE_INLINE_ const uint8_t *data() const {
 			return reinterpret_cast<const uint8_t *>(&this[1]);
 		}
+	};
+
+	struct ComputeListAddBreadcrumbInstruction : ComputeListInstruction {
+		uint32_t data;
 	};
 
 	struct ComputeListUniformSetPrepareForUseInstruction : ComputeListInstruction {
@@ -668,6 +678,7 @@ public:
 	void add_compute_list_uniform_set_prepare_for_use(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
 	void add_compute_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_compute_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
+	void add_compute_list_breadcrumb(RDD::BreadcrumbMarker p_phase, uint32_t p_user_data);
 	void add_compute_list_end();
 	void add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth);
 	void add_draw_list_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint32_t p_offset);
@@ -688,6 +699,7 @@ public:
 	void add_draw_list_uniform_set_prepare_for_use(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
 	void add_draw_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_draw_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
+	void add_draw_list_breadcrumb(RDD::BreadcrumbMarker p_phase, uint32_t p_user_data);
 	void add_draw_list_end();
 	void add_texture_clear(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range);
 	void add_texture_copy(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, RDD::TextureCopyRegion p_region);

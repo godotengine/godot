@@ -298,22 +298,6 @@ private:
 
 		//should eventually be replaced by radix
 
-		struct SortByKey {
-			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
-				return (A->sort.sort_key2 == B->sort.sort_key2) ? (A->sort.sort_key1 < B->sort.sort_key1) : (A->sort.sort_key2 < B->sort.sort_key2);
-			}
-		};
-
-		void sort_by_key() {
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter;
-			sorter.sort(elements.ptr(), elements.size());
-		}
-
-		void sort_by_key_range(uint32_t p_from, uint32_t p_size) {
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter;
-			sorter.sort(elements.ptr() + p_from, p_size);
-		}
-
 		struct SortByDepth {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
 				return (A->owner->depth < B->owner->depth);
@@ -343,8 +327,13 @@ private:
 
 		struct SortForRendering {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
-				if (A->sort.shader_id == B->sort.shader_id)
-					return (A->sort.spec_consts == B->sort.spec_consts) ? (A->owner->depth < B->owner->depth) : (A->sort.spec_consts < B->sort.spec_consts);
+				if (A->sort.shader_id == B->sort.shader_id) {
+					if (A->sort.format == B->sort.format) {
+						return (A->sort.spec_consts == B->sort.spec_consts) ? (A->owner->depth < B->owner->depth) : (A->sort.spec_consts < B->sort.spec_consts);
+					} else {
+						return A->sort.format < B->sort.format;
+					}
+				}
 				return (A->sort.shader_id < B->sort.shader_id);
 			}
 		};
@@ -461,6 +450,7 @@ protected:
 
 				uint64_t material_id_hi : 16;
 				uint64_t shader_id : 32;
+				uint64_t format;
 				uint64_t spec_consts : 32;
 				uint64_t uses_lightmap : 4; // sort by lightmap id here, not whether its yes/no (is 4 bits enough?)
 				uint64_t depth_layer : 4;
@@ -468,10 +458,6 @@ protected:
 
 				// uint64_t lod_index : 8; // no need to sort on LOD
 				// uint64_t uses_forward_gi : 1; // no GI here, remove
-			};
-			struct {
-				uint64_t sort_key1;
-				uint64_t sort_key2;
 			};
 		} sort;
 

@@ -704,6 +704,11 @@ public:
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) = 0;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) = 0;
 
+	/****************/
+	/**** DEBUG *****/
+	/****************/
+	virtual void command_add_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) = 0;
+
 	/********************/
 	/**** SUBMISSION ****/
 	/********************/

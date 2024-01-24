@@ -4448,6 +4448,10 @@ void RenderingDevice::compute_list_add_barrier(ComputeListID p_list) {
 	}
 }
 
+void RenderingDevice::compute_list_insert_breadcrumb(BreadcrumbMarker p_phase, uint32_t data) {
+	draw_graph.add_compute_list_breadcrumb(p_phase, data);
+}
+
 void RenderingDevice::compute_list_end() {
 	ERR_FAIL_NULL(compute_list);
 
@@ -4790,8 +4794,12 @@ void RenderingDevice::draw_command_begin_label(String p_label_name, const Color 
 	if (!context->is_debug_utils_enabled()) {
 		return;
 	}
-
+	
 	draw_graph.begin_label(p_label_name, p_color);
+}
+
+void RenderingDevice::draw_list_insert_breadcrumb(BreadcrumbMarker p_phase, uint32_t p_user_data) {
+	draw_graph.add_draw_list_breadcrumb(p_phase, p_user_data);
 }
 
 #ifndef DISABLE_DEPRECATED
