@@ -289,6 +289,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	// UXTheme API
 	static bool dark_title_available;
+	static bool use_legacy_dark_mode_before_20H1;
 	static bool ux_theme_available;
 	static ShouldAppsUseDarkModePtr ShouldAppsUseDarkMode;
 	static GetImmersiveColorFromColorSetExPtr GetImmersiveColorFromColorSetEx;
