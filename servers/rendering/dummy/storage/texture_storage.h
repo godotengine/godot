@@ -46,9 +46,7 @@ private:
 	mutable RID_PtrOwner<DummyTexture> texture_owner;
 
 public:
-	static TextureStorage *get_singleton() {
-		return singleton;
-	};
+	static TextureStorage *get_singleton() { return singleton; }
 
 	TextureStorage();
 	~TextureStorage();
