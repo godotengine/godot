@@ -395,6 +395,7 @@ void GDMono::initialize() {
 
 		if (godot_plugins_initialize != nullptr) {
 			is_native_aot = true;
+			runtime_initialized = true;
 		} else {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
