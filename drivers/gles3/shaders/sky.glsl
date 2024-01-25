@@ -122,7 +122,8 @@ layout(std140) uniform MultiviewData { // ubo:5
 multiview_data;
 #endif
 
-layout(location = 0) out vec4 frag_color;
+layout(location = 0) out vec4 frag_color_final;
+vec4 frag_color;
 
 #ifdef USE_DEBANDING
 // https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
@@ -217,4 +218,11 @@ void main() {
 #ifdef USE_DEBANDING
 	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy) * luminance_multiplier;
 #endif
+
+	// Instead of writing directly to final frag_color,
+	// we use an intermediate, and only write
+	// to the final output ONCE at the end of the shader.
+	// This is because some hardware can have huge
+	// slowdown if you modify frag_color_final multiple times.
+	frag_color_final = frag_color;
 }

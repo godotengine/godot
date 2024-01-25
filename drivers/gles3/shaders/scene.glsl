@@ -884,7 +884,8 @@ ivec2 multiview_uv(ivec2 uv) {
 uniform highp mat4 world_transform;
 uniform mediump float opaque_prepass_threshold;
 
-layout(location = 0) out vec4 frag_color;
+layout(location = 0) out vec4 frag_color_final;
+vec4 frag_color;
 
 vec3 F0(float metallic, float specular, vec3 albedo) {
 	float dielectric = 0.16 * specular * specular;
@@ -1922,4 +1923,11 @@ void main() {
 #endif // USE_ADDITIVE_LIGHTING
 
 #endif //!MODE_RENDER_DEPTH
+
+	// Instead of writing directly to final frag_color,
+	// we use an intermediate, and only write
+	// to the final output ONCE at the end of the shader.
+	// This is because some hardware can have huge
+	// slowdown if you modify frag_color_final multiple times.
+	frag_color_final = frag_color;
 }

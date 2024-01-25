@@ -106,7 +106,8 @@ uniform float glow_hdr_scale;
 uniform float camera_z_far;
 uniform float camera_z_near;
 
-layout(location = 0) out vec4 frag_color;
+layout(location = 0) out vec4 frag_color_final;
+vec4 frag_color;
 
 void main() {
 #ifdef GLOW_GAUSSIAN_HORIZONTAL
@@ -288,4 +289,11 @@ void main() {
 	frag_color = min(frag_color * feedback, vec4(luminance_cap));
 
 #endif
+
+	// Instead of writing directly to final frag_color,
+	// we use an intermediate, and only write
+	// to the final output ONCE at the end of the shader.
+	// This is because some hardware can have huge
+	// slowdown if you modify frag_color_final multiple times.
+	frag_color_final = frag_color;
 }
