@@ -54,19 +54,9 @@ namespace GodotPlugins
             string? assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
             if (assemblyPath != null)
             {
+                // Loading directly from the path lets `netcoredbg` see the debug symbols
                 AssemblyLoadedPath = assemblyPath;
-
-                // Load in memory to prevent locking the file
-                using var assemblyFile = File.Open(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                string pdbPath = Path.ChangeExtension(assemblyPath, ".pdb");
-
-                if (File.Exists(pdbPath))
-                {
-                    using var pdbFile = File.Open(pdbPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return LoadFromStream(assemblyFile, pdbFile);
-                }
-
-                return LoadFromStream(assemblyFile);
+                return LoadFromAssemblyPath(assemblyPath);
             }
 
             return null;
