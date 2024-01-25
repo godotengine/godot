@@ -163,7 +163,6 @@ def get_version_info(module_version_string="", silent=False):
         "status": str(version.status),
         "build": str(build_name),
         "module_config": str(version.module_config) + module_version_string,
-        "year": int(version.year),
         "website": str(version.website),
         "docs_branch": str(version.docs),
     }
@@ -232,7 +231,6 @@ def generate_version_header(module_version_string=""):
 #define VERSION_STATUS "{status}"
 #define VERSION_BUILD "{build}"
 #define VERSION_MODULE_CONFIG "{module_config}"
-#define VERSION_YEAR {year}
 #define VERSION_WEBSITE "{website}"
 #define VERSION_DOCS_BRANCH "{docs_branch}"
 #define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
