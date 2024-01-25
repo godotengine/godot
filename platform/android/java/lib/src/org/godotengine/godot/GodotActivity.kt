@@ -41,6 +41,13 @@ import androidx.fragment.app.FragmentActivity
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 
+// <TF>
+// @ShadyTF : Thermal status support
+import android.os.Build
+import android.os.PowerManager
+// </TF>
+
+
 /**
  * Base abstract activity for Android apps intending to use Godot as the primary screen.
  *
@@ -58,6 +65,13 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		protected val EXTRA_NEW_LAUNCH = "new_launch_requested"
 	}
 
+	// <TF>
+	// @ShadyTF : Thermal status support
+	private var thermalStatusMap: HashMap<Int, Int>? = null
+	private val MOBILE_THERMAL_NOT_SUPPORTED = -2
+	private val MOBILE_THERMAL_ERROR = -1
+	private external fun nativeThermalEvent(nativeStatus: Int)
+	// </TF>
 	/**
 	 * Interaction with the [Godot] object is delegated to the [GodotFragment] class.
 	 */
@@ -73,7 +87,38 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		setContentView(R.layout.godot_app_layout)
 
 		handleStartIntent(intent, true)
+		// <TF>
+		// @ShadyTF : Thermal status support
+		thermalStatusMap = java.util.HashMap()
 
+		try {
+			if (Build.VERSION.SDK_INT >= 29) {
+				thermalStatusMap!![PowerManager.THERMAL_STATUS_NONE]      = 0 // Main::ThermalState::THERMAL_STATE_NONE
+				thermalStatusMap!![PowerManager.THERMAL_STATUS_LIGHT]     = 1 // Main::ThermalState::THERMAL_STATE_LIGHT
+				thermalStatusMap!![PowerManager.THERMAL_STATUS_MODERATE]  = 2 // Main::ThermalState::THERMAL_STATE_MODERATE
+				thermalStatusMap!![PowerManager.THERMAL_STATUS_SEVERE]    = 3 // Main::ThermalState::THERMAL_STATE_SEVERE
+				thermalStatusMap!![PowerManager.THERMAL_STATUS_CRITICAL]  = 4 // Main::ThermalState::THERMAL_STATE_CRITICAL
+				thermalStatusMap!![PowerManager.THERMAL_STATUS_EMERGENCY] = 5 // Main::ThermalState::THERMAL_STATE_EMERGENCY
+				thermalStatusMap!![PowerManager.THERMAL_STATUS_SHUTDOWN]  = 6 // Main::ThermalState::THERMAL_STATE_SHUTDOWN
+			}
+		} catch (e: Exception) {
+			Log.i(TAG, "Failed to populate mMobileThermalMap: " + e.message)
+		}
+
+		try {
+			if (Build.VERSION.SDK_INT >= 29) {
+				val pManager = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
+				pManager.addThermalStatusListener { status: Int ->
+					val nativeStatus = thermalStatusMap!![status]
+					nativeThermalEvent(nativeStatus ?: MOBILE_THERMAL_ERROR)
+				}
+			} else {
+				nativeThermalEvent(MOBILE_THERMAL_NOT_SUPPORTED)
+			}
+		} catch (e: java.lang.Exception) {
+			Log.i(TAG, "Failed to setup thermal status listener: " + e.message)
+		}
+		// </TF>
 		val currentFragment = supportFragmentManager.findFragmentById(R.id.godot_fragment_container)
 		if (currentFragment is GodotFragment) {
 			Log.v(TAG, "Reusing existing Godot fragment instance.")

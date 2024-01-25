@@ -520,3 +520,15 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 	}
 }
 }
+
+
+// <TF>
+// @ShadyTF : Thermal state support
+extern "C"
+JNIEXPORT void JNICALL
+Java_org_godotengine_godot_GodotActivity_nativeThermalEvent(JNIEnv *env, jobject thiz,
+                                                            jint native_state) {
+    const Main::ThermalState thermal_state = (Main::ThermalState)native_state;
+    Main::update_thermal_state( thermal_state );
+}
+// </TF>
