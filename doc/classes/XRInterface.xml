@@ -102,16 +102,18 @@
 				Is [code]true[/code] if this interface has been initialized.
 			</description>
 		</method>
-		<method name="is_passthrough_enabled">
+		<method name="is_passthrough_enabled" is_deprecated="true">
 			<return type="bool" />
 			<description>
 				Is [code]true[/code] if passthrough is enabled.
+				[i]Deprecated.[/i] Check if [member environment_blend_mode] is [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.
 			</description>
 		</method>
-		<method name="is_passthrough_supported">
+		<method name="is_passthrough_supported" is_deprecated="true">
 			<return type="bool" />
 			<description>
 				Is [code]true[/code] if this interface supports passthrough.
+				[i]Deprecated.[/i] Check that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is supported using [method get_supported_environment_blend_modes], instead.
 			</description>
 		</method>
 		<method name="set_environment_blend_mode">
@@ -143,17 +145,19 @@
 				Sets the active play area mode, will return [code]false[/code] if the mode can't be used with this interface.
 			</description>
 		</method>
-		<method name="start_passthrough">
+		<method name="start_passthrough" is_deprecated="true">
 			<return type="bool" />
 			<description>
 				Starts passthrough, will return [code]false[/code] if passthrough couldn't be started.
 				[b]Note:[/b] The viewport used for XR must have a transparent background, otherwise passthrough may not properly render.
+				[i]Deprecated.[/i] Set the [member environment_blend_mode] to [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.
 			</description>
 		</method>
-		<method name="stop_passthrough">
+		<method name="stop_passthrough" is_deprecated="true">
 			<return type="void" />
 			<description>
 				Stops passthrough.
+				[i]Deprecated.[/i] Set the [member environment_blend_mode] to [constant XRInterface.XR_ENV_BLEND_MODE_OPAQUE], instead.
 			</description>
 		</method>
 		<method name="supports_play_area_mode">
