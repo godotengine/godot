@@ -46,11 +46,11 @@
 #include "openxr_platform_inc.h"
 
 #ifdef VULKAN_ENABLED
-#include "extensions/openxr_vulkan_extension.h"
+#include "extensions/platform/openxr_vulkan_extension.h"
 #endif
 
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
-#include "extensions/openxr_opengl_extension.h"
+#include "extensions/platform/openxr_opengl_extension.h"
 #endif
 
 #include "extensions/openxr_composition_layer_depth_extension.h"

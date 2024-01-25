@@ -32,7 +32,7 @@
 
 #ifdef GLES3_ENABLED
 
-#include "../openxr_util.h"
+#include "../../openxr_util.h"
 
 #include "drivers/gles3/effects/copy_effects.h"
 #include "drivers/gles3/storage/texture_storage.h"

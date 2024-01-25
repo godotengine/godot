@@ -31,8 +31,8 @@
 #ifndef OPENXR_ANDROID_EXTENSION_H
 #define OPENXR_ANDROID_EXTENSION_H
 
-#include "../util.h"
-#include "openxr_extension_wrapper.h"
+#include "../../util.h"
+#include "../openxr_extension_wrapper.h"
 
 class OpenXRAndroidExtension : public OpenXRExtensionWrapper {
 public:

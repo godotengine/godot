@@ -61,7 +61,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
-#include "extensions/openxr_android_extension.h"
+#include "extensions/platform/openxr_android_extension.h"
 #endif
 
 #include "core/config/project_settings.h"
