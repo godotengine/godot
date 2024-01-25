@@ -125,10 +125,16 @@ layout(location = 9) out highp float dp_clip;
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
+ivec3 multiview_uv(ivec2 uv) {
+	return ivec3(uv, int(ViewIndex));
+}
 #else
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
+ivec2 multiview_uv(ivec2 uv) {
 	return uv;
 }
 #endif //USE_MULTIVIEW
@@ -568,10 +574,16 @@ layout(location = 9) highp in float dp_clip;
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
+ivec3 multiview_uv(ivec2 uv) {
+	return ivec3(uv, int(ViewIndex));
+}
 #else
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
+ivec2 multiview_uv(ivec2 uv) {
 	return uv;
 }
 #endif //USE_MULTIVIEW
