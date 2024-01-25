@@ -119,9 +119,33 @@
 			<param index="6" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
-				Callbacks have the following arguments: [code]bool status, PackedStringArray selected_paths, int selected_filter_index[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature.
-				[b]Note:[/b] This method is implemented on Linux, Windows and macOS.
+				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code].
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature, i.e. Linux, Windows, and macOS.
+				[b]Note:[/b] [param current_directory] might be ignored.
+				[b]Note:[/b] On Linux, [param show_hidden] is ignored.
+				[b]Note:[/b] On macOS, native file dialogs have no title.
+				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
+			</description>
+		</method>
+		<method name="file_dialog_with_options_show">
+			<return type="int" enum="Error" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="current_directory" type="String" />
+			<param index="2" name="root" type="String" />
+			<param index="3" name="filename" type="String" />
+			<param index="4" name="show_hidden" type="bool" />
+			<param index="5" name="mode" type="int" enum="DisplayServer.FileDialogMode" />
+			<param index="6" name="filters" type="PackedStringArray" />
+			<param index="7" name="options" type="Dictionary[]" />
+			<param index="8" name="callback" type="Callable" />
+			<description>
+				Displays OS native dialog for selecting files or directories in the file system with additional user selectable options.
+				[param options] is array of [Dictionary]s with the following keys:
+				- [code]"name"[/code] - option's name [String].
+				- [code]"values"[/code] - [PackedStringArray] of values. If empty, boolean option (check box) is used.
+				- [code]"default"[/code] - default selected option index ([int]) or default boolean value ([bool]).
+				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int, selected_option: Dictionary[/code].
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature, i.e. Linux, Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] On Linux, [param show_hidden] is ignored.
 				[b]Note:[/b] On macOS, native file dialogs have no title.

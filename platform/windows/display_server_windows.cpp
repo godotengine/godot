@@ -219,7 +219,137 @@ void DisplayServerWindows::tts_stop() {
 	tts->stop();
 }
 
+// Silence warning due to a COM API weirdness.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+
+class FileDialogEventHandler : public IFileDialogEvents, public IFileDialogControlEvents {
+	LONG ref_count = 1;
+	int ctl_id = 1;
+
+	HashMap<int, String> ctls;
+	Dictionary selected;
+	String root;
+
+public:
+	// IUnknown methods
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppv) {
+		static const QITAB qit[] = {
+			QITABENT(FileDialogEventHandler, IFileDialogEvents),
+			QITABENT(FileDialogEventHandler, IFileDialogControlEvents),
+			{ 0, 0 },
+		};
+		return QISearch(this, qit, riid, ppv);
+	}
+
+	ULONG STDMETHODCALLTYPE AddRef() {
+		return InterlockedIncrement(&ref_count);
+	}
+
+	ULONG STDMETHODCALLTYPE Release() {
+		long ref = InterlockedDecrement(&ref_count);
+		if (!ref) {
+			delete this;
+		}
+		return ref;
+	}
+
+	// IFileDialogEvents methods
+	HRESULT STDMETHODCALLTYPE OnFileOk(IFileDialog *) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnFolderChange(IFileDialog *) { return S_OK; };
+
+	HRESULT STDMETHODCALLTYPE OnFolderChanging(IFileDialog *p_pfd, IShellItem *p_item) {
+		if (root.is_empty()) {
+			return S_OK;
+		}
+
+		LPWSTR lpw_path = nullptr;
+		p_item->GetDisplayName(SIGDN_FILESYSPATH, &lpw_path);
+		if (!lpw_path) {
+			return S_FALSE;
+		}
+		String path = String::utf16((const char16_t *)lpw_path).simplify_path();
+		if (!path.begins_with(root.simplify_path())) {
+			return S_FALSE;
+		}
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE OnHelp(IFileDialog *) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnSelectionChange(IFileDialog *) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnShareViolation(IFileDialog *, IShellItem *, FDE_SHAREVIOLATION_RESPONSE *) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnTypeChange(IFileDialog *pfd) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnOverwrite(IFileDialog *, IShellItem *, FDE_OVERWRITE_RESPONSE *) { return S_OK; };
+
+	// IFileDialogControlEvents methods
+	HRESULT STDMETHODCALLTYPE OnItemSelected(IFileDialogCustomize *p_pfdc, DWORD p_ctl_id, DWORD p_item_idx) {
+		if (ctls.has(p_ctl_id)) {
+			selected[ctls[p_ctl_id]] = (int)p_item_idx;
+		}
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE OnButtonClicked(IFileDialogCustomize *, DWORD) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnCheckButtonToggled(IFileDialogCustomize *p_pfdc, DWORD p_ctl_id, BOOL p_checked) {
+		if (ctls.has(p_ctl_id)) {
+			selected[ctls[p_ctl_id]] = (bool)p_checked;
+		}
+		return S_OK;
+	}
+	HRESULT STDMETHODCALLTYPE OnControlActivating(IFileDialogCustomize *, DWORD) { return S_OK; };
+
+	Dictionary get_selected() {
+		return selected;
+	}
+
+	void set_root(const String &p_root) {
+		root = p_root;
+	}
+
+	void add_option(IFileDialogCustomize *p_pfdc, const String &p_name, const Vector<String> &p_options, int p_default) {
+		int gid = ctl_id++;
+		int cid = ctl_id++;
+
+		if (p_options.size() == 0) {
+			// Add check box.
+			p_pfdc->StartVisualGroup(gid, L"");
+			p_pfdc->AddCheckButton(cid, (LPCWSTR)p_name.utf16().get_data(), p_default);
+			p_pfdc->SetControlState(cid, CDCS_VISIBLE | CDCS_ENABLED);
+			p_pfdc->EndVisualGroup();
+			selected[p_name] = (bool)p_default;
+		} else {
+			// Add combo box.
+			p_pfdc->StartVisualGroup(gid, (LPCWSTR)p_name.utf16().get_data());
+			p_pfdc->AddComboBox(cid);
+			p_pfdc->SetControlState(cid, CDCS_VISIBLE | CDCS_ENABLED);
+			for (int i = 0; i < p_options.size(); i++) {
+				p_pfdc->AddControlItem(cid, i, (LPCWSTR)p_options[i].utf16().get_data());
+			}
+			p_pfdc->SetSelectedControlItem(cid, p_default);
+			p_pfdc->EndVisualGroup();
+			selected[p_name] = p_default;
+		}
+		ctls[cid] = p_name;
+	}
+
+	virtual ~FileDialogEventHandler(){};
+};
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+}
+
+Error DisplayServerWindows::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true);
+}
+
+Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
@@ -269,6 +399,31 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, (void **)&pfd);
 	}
 	if (SUCCEEDED(hr)) {
+		IFileDialogEvents *pfde = nullptr;
+		FileDialogEventHandler *event_handler = new FileDialogEventHandler();
+		hr = event_handler->QueryInterface(IID_PPV_ARGS(&pfde));
+
+		DWORD cookie = 0;
+		hr = pfd->Advise(pfde, &cookie);
+
+		IFileDialogCustomize *pfdc = nullptr;
+		hr = pfd->QueryInterface(IID_PPV_ARGS(&pfdc));
+
+		for (int i = 0; i < p_options.size(); i++) {
+			const Dictionary &item = p_options[i];
+			if (!item.has("name") || !item.has("values") || !item.has("default")) {
+				continue;
+			}
+			const String &name = item["name"];
+			const Vector<String> &options = item["values"];
+			int default_idx = item["default"];
+
+			event_handler->add_option(pfdc, name, options, default_idx);
+		}
+		event_handler->set_root(p_root);
+
+		pfdc->Release();
+
 		DWORD flags;
 		pfd->GetOptions(&flags);
 		if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
@@ -306,8 +461,18 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		}
 
 		hr = pfd->Show(windows[window_id].hWnd);
+		pfd->Unadvise(cookie);
+
+		Dictionary options = event_handler->get_selected();
+
+		pfde->Release();
+		event_handler->Release();
+
 		UINT index = 0;
 		pfd->GetFileTypeIndex(&index);
+		if (index > 0) {
+			index = index - 1;
+		}
 
 		if (SUCCEEDED(hr)) {
 			Vector<String> file_names;
@@ -346,30 +511,60 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 				}
 			}
 			if (!p_callback.is_null()) {
-				Variant v_result = true;
-				Variant v_files = file_names;
-				Variant v_index = index;
-				Variant ret;
-				Callable::CallError ce;
-				const Variant *args[3] = { &v_result, &v_files, &v_index };
+				if (p_options_in_cb) {
+					Variant v_result = true;
+					Variant v_files = file_names;
+					Variant v_index = index;
+					Variant v_opt = options;
+					Variant ret;
+					Callable::CallError ce;
+					const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-				p_callback.callp(args, 3, ret, ce);
-				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					p_callback.callp(args, 4, ret, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 4, ce)));
+					}
+				} else {
+					Variant v_result = true;
+					Variant v_files = file_names;
+					Variant v_index = index;
+					Variant ret;
+					Callable::CallError ce;
+					const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+					p_callback.callp(args, 3, ret, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					}
 				}
 			}
 		} else {
 			if (!p_callback.is_null()) {
-				Variant v_result = false;
-				Variant v_files = Vector<String>();
-				Variant v_index = index;
-				Variant ret;
-				Callable::CallError ce;
-				const Variant *args[3] = { &v_result, &v_files, &v_index };
+				if (p_options_in_cb) {
+					Variant v_result = false;
+					Variant v_files = Vector<String>();
+					Variant v_index = index;
+					Variant v_opt = options;
+					Variant ret;
+					Callable::CallError ce;
+					const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-				p_callback.callp(args, 3, ret, ce);
-				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					p_callback.callp(args, 4, ret, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 4, ce)));
+					}
+				} else {
+					Variant v_result = false;
+					Variant v_files = Vector<String>();
+					Variant v_index = index;
+					Variant ret;
+					Callable::CallError ce;
+					const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+					p_callback.callp(args, 3, ret, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					}
 				}
 			}
 		}
