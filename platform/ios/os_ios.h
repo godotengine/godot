@@ -41,10 +41,12 @@
 #include "servers/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+
 #if defined(VULKAN_ENABLED)
 #import "vulkan_context_ios.h"
-
-#include "drivers/vulkan/rendering_device_vulkan.h"
+#endif
 #endif
 
 class OS_IOS : public OS_Unix {

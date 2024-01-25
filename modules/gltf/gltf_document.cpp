@@ -573,8 +573,11 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> p_state) {
 		// Determine what to use for the scene name.
 		if (scene_dict.has("name") && !String(scene_dict["name"]).is_empty() && !((String)scene_dict["name"]).begins_with("Scene")) {
 			p_state->scene_name = scene_dict["name"];
-		} else {
+		} else if (p_state->scene_name.is_empty()) {
 			p_state->scene_name = p_state->filename;
+		}
+		if (_naming_version == 0) {
+			p_state->scene_name = _gen_unique_name(p_state, p_state->scene_name);
 		}
 	}
 
@@ -2797,9 +2800,26 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				array[Mesh::ARRAY_INDEX] = indices;
 			}
 
-			bool generate_tangents = p_state->force_generate_tangents && (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("TEXCOORD_0") && a.has("NORMAL"));
+			bool generate_tangents = p_state->force_generate_tangents && (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("NORMAL"));
 
-			if (p_state->force_disable_compression || !a.has("POSITION") || !a.has("NORMAL") || !(a.has("TANGENT") || generate_tangents) || p.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
+			if (generate_tangents && !a.has("TEXCOORD_0")) {
+				// If we don't have UVs we provide a dummy tangent array.
+				Vector<float> tangents;
+				tangents.resize(vertex_num * 4);
+				float *tangentsw = tangents.ptrw();
+
+				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
+				for (int k = 0; k < vertex_num; k++) {
+					Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[k]);
+					tangentsw[k * 4 + 0] = tan.x;
+					tangentsw[k * 4 + 1] = tan.y;
+					tangentsw[k * 4 + 2] = tan.z;
+					tangentsw[k * 4 + 3] = 1.0;
+				}
+				array[Mesh::ARRAY_TANGENT] = tangents;
+			}
+
+			if (p_state->force_disable_compression || !a.has("POSITION") || !a.has("NORMAL") || p.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
 				flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
 
@@ -2810,7 +2830,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				mesh_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 			}
 			mesh_surface_tool->index();
-			if (generate_tangents) {
+			if (generate_tangents && a.has("TEXCOORD_0")) {
 				//must generate mikktspace tangents.. ergh..
 				mesh_surface_tool->generate_tangents();
 			}
@@ -3006,6 +3026,14 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+void GLTFDocument::set_naming_version(int p_version) {
+	_naming_version = p_version;
+}
+
+int GLTFDocument::get_naming_version() const {
+	return _naming_version;
+}
+
 void GLTFDocument::set_image_format(const String &p_image_format) {
 	_image_format = p_image_format;
 }
@@ -3190,7 +3218,7 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 			bool must_import = true;
 			Vector<uint8_t> img_data = p_image->get_data();
 			Dictionary generator_parameters;
-			String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + p_image->get_name();
+			String file_path = p_state->get_base_path().path_join(p_state->filename.get_basename() + "_" + p_image->get_name());
 			file_path += p_file_extension.is_empty() ? ".png" : p_file_extension;
 			if (FileAccess::exists(file_path + ".import")) {
 				Ref<ConfigFile> config;
@@ -3202,6 +3230,8 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 				if (!generator_parameters.has("md5")) {
 					must_import = false; // Didn't come from a gltf document; don't overwrite.
 				}
+			}
+			if (must_import) {
 				String existing_md5 = generator_parameters["md5"];
 				unsigned char md5_hash[16];
 				CryptoCore::md5(img_data.ptr(), img_data.size(), md5_hash);
@@ -3630,141 +3660,143 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 
 		mr["metallicFactor"] = base_material->get_metallic();
 		mr["roughnessFactor"] = base_material->get_roughness();
-		bool has_roughness = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
-		bool has_ao = base_material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
-		bool has_metalness = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_image().is_valid();
-		if (has_ao || has_roughness || has_metalness) {
-			Dictionary mrt;
-			Ref<Texture2D> roughness_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
-			BaseMaterial3D::TextureChannel roughness_channel = base_material->get_roughness_texture_channel();
-			Ref<Texture2D> metallic_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
-			BaseMaterial3D::TextureChannel metalness_channel = base_material->get_metallic_texture_channel();
-			Ref<Texture2D> ao_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION);
-			BaseMaterial3D::TextureChannel ao_channel = base_material->get_ao_texture_channel();
-			Ref<ImageTexture> orm_texture;
-			orm_texture.instantiate();
-			Ref<Image> orm_image;
-			orm_image.instantiate();
-			int32_t height = 0;
-			int32_t width = 0;
-			Ref<Image> ao_image;
-			if (has_ao) {
-				height = ao_texture->get_height();
-				width = ao_texture->get_width();
-				ao_image = ao_texture->get_image();
-				Ref<ImageTexture> img_tex = ao_image;
-				if (img_tex.is_valid()) {
-					ao_image = img_tex->get_image();
-				}
-				if (ao_image->is_compressed()) {
-					ao_image->decompress();
-				}
-			}
-			Ref<Image> roughness_image;
-			if (has_roughness) {
-				height = roughness_texture->get_height();
-				width = roughness_texture->get_width();
-				roughness_image = roughness_texture->get_image();
-				Ref<ImageTexture> img_tex = roughness_image;
-				if (img_tex.is_valid()) {
-					roughness_image = img_tex->get_image();
-				}
-				if (roughness_image->is_compressed()) {
-					roughness_image->decompress();
-				}
-			}
-			Ref<Image> metallness_image;
-			if (has_metalness) {
-				height = metallic_texture->get_height();
-				width = metallic_texture->get_width();
-				metallness_image = metallic_texture->get_image();
-				Ref<ImageTexture> img_tex = metallness_image;
-				if (img_tex.is_valid()) {
-					metallness_image = img_tex->get_image();
-				}
-				if (metallness_image->is_compressed()) {
-					metallness_image->decompress();
-				}
-			}
-			Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
-			if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
-				height = albedo_texture->get_height();
-				width = albedo_texture->get_width();
-			}
-			orm_image->initialize_data(width, height, false, Image::FORMAT_RGBA8);
-			if (ao_image.is_valid() && ao_image->get_size() != Vector2(width, height)) {
-				ao_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
-			}
-			if (roughness_image.is_valid() && roughness_image->get_size() != Vector2(width, height)) {
-				roughness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
-			}
-			if (metallness_image.is_valid() && metallness_image->get_size() != Vector2(width, height)) {
-				metallness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
-			}
-			for (int32_t h = 0; h < height; h++) {
-				for (int32_t w = 0; w < width; w++) {
-					Color c = Color(1.0f, 1.0f, 1.0f);
-					if (has_ao) {
-						if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
-							c.r = ao_image->get_pixel(w, h).r;
-						} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
-							c.r = ao_image->get_pixel(w, h).g;
-						} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
-							c.r = ao_image->get_pixel(w, h).b;
-						} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
-							c.r = ao_image->get_pixel(w, h).a;
-						}
-					}
-					if (has_roughness) {
-						if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
-							c.g = roughness_image->get_pixel(w, h).r;
-						} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
-							c.g = roughness_image->get_pixel(w, h).g;
-						} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
-							c.g = roughness_image->get_pixel(w, h).b;
-						} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
-							c.g = roughness_image->get_pixel(w, h).a;
-						}
-					}
-					if (has_metalness) {
-						if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
-							c.b = metallness_image->get_pixel(w, h).r;
-						} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
-							c.b = metallness_image->get_pixel(w, h).g;
-						} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
-							c.b = metallness_image->get_pixel(w, h).b;
-						} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
-							c.b = metallness_image->get_pixel(w, h).a;
-						}
-					}
-					orm_image->set_pixel(w, h, c);
-				}
-			}
-			orm_image->generate_mipmaps();
-			orm_texture->set_image(orm_image);
-			GLTFTextureIndex orm_texture_index = -1;
+		if (_image_format != "None") {
+			bool has_roughness = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
+			bool has_ao = base_material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
+			bool has_metalness = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_image().is_valid();
 			if (has_ao || has_roughness || has_metalness) {
-				orm_texture->set_name(material->get_name() + "_orm");
-				orm_texture_index = _set_texture(p_state, orm_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
-			}
-			if (has_ao) {
-				Dictionary occt;
-				occt["index"] = orm_texture_index;
-				d["occlusionTexture"] = occt;
-			}
-			if (has_roughness || has_metalness) {
-				mrt["index"] = orm_texture_index;
-				Dictionary extensions = _serialize_texture_transform_uv1(material);
-				if (!extensions.is_empty()) {
-					mrt["extensions"] = extensions;
-					p_state->use_khr_texture_transform = true;
+				Dictionary mrt;
+				Ref<Texture2D> roughness_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
+				BaseMaterial3D::TextureChannel roughness_channel = base_material->get_roughness_texture_channel();
+				Ref<Texture2D> metallic_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
+				BaseMaterial3D::TextureChannel metalness_channel = base_material->get_metallic_texture_channel();
+				Ref<Texture2D> ao_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION);
+				BaseMaterial3D::TextureChannel ao_channel = base_material->get_ao_texture_channel();
+				Ref<ImageTexture> orm_texture;
+				orm_texture.instantiate();
+				Ref<Image> orm_image;
+				orm_image.instantiate();
+				int32_t height = 0;
+				int32_t width = 0;
+				Ref<Image> ao_image;
+				if (has_ao) {
+					height = ao_texture->get_height();
+					width = ao_texture->get_width();
+					ao_image = ao_texture->get_image();
+					Ref<ImageTexture> img_tex = ao_image;
+					if (img_tex.is_valid()) {
+						ao_image = img_tex->get_image();
+					}
+					if (ao_image->is_compressed()) {
+						ao_image->decompress();
+					}
 				}
-				mr["metallicRoughnessTexture"] = mrt;
+				Ref<Image> roughness_image;
+				if (has_roughness) {
+					height = roughness_texture->get_height();
+					width = roughness_texture->get_width();
+					roughness_image = roughness_texture->get_image();
+					Ref<ImageTexture> img_tex = roughness_image;
+					if (img_tex.is_valid()) {
+						roughness_image = img_tex->get_image();
+					}
+					if (roughness_image->is_compressed()) {
+						roughness_image->decompress();
+					}
+				}
+				Ref<Image> metallness_image;
+				if (has_metalness) {
+					height = metallic_texture->get_height();
+					width = metallic_texture->get_width();
+					metallness_image = metallic_texture->get_image();
+					Ref<ImageTexture> img_tex = metallness_image;
+					if (img_tex.is_valid()) {
+						metallness_image = img_tex->get_image();
+					}
+					if (metallness_image->is_compressed()) {
+						metallness_image->decompress();
+					}
+				}
+				Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
+					height = albedo_texture->get_height();
+					width = albedo_texture->get_width();
+				}
+				orm_image->initialize_data(width, height, false, Image::FORMAT_RGBA8);
+				if (ao_image.is_valid() && ao_image->get_size() != Vector2(width, height)) {
+					ao_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
+				}
+				if (roughness_image.is_valid() && roughness_image->get_size() != Vector2(width, height)) {
+					roughness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
+				}
+				if (metallness_image.is_valid() && metallness_image->get_size() != Vector2(width, height)) {
+					metallness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
+				}
+				for (int32_t h = 0; h < height; h++) {
+					for (int32_t w = 0; w < width; w++) {
+						Color c = Color(1.0f, 1.0f, 1.0f);
+						if (has_ao) {
+							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
+								c.r = ao_image->get_pixel(w, h).r;
+							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
+								c.r = ao_image->get_pixel(w, h).g;
+							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
+								c.r = ao_image->get_pixel(w, h).b;
+							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
+								c.r = ao_image->get_pixel(w, h).a;
+							}
+						}
+						if (has_roughness) {
+							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
+								c.g = roughness_image->get_pixel(w, h).r;
+							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
+								c.g = roughness_image->get_pixel(w, h).g;
+							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
+								c.g = roughness_image->get_pixel(w, h).b;
+							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
+								c.g = roughness_image->get_pixel(w, h).a;
+							}
+						}
+						if (has_metalness) {
+							if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
+								c.b = metallness_image->get_pixel(w, h).r;
+							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
+								c.b = metallness_image->get_pixel(w, h).g;
+							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
+								c.b = metallness_image->get_pixel(w, h).b;
+							} else if (BaseMaterial3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
+								c.b = metallness_image->get_pixel(w, h).a;
+							}
+						}
+						orm_image->set_pixel(w, h, c);
+					}
+				}
+				orm_image->generate_mipmaps();
+				orm_texture->set_image(orm_image);
+				GLTFTextureIndex orm_texture_index = -1;
+				if (has_ao || has_roughness || has_metalness) {
+					orm_texture->set_name(material->get_name() + "_orm");
+					orm_texture_index = _set_texture(p_state, orm_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+				}
+				if (has_ao) {
+					Dictionary occt;
+					occt["index"] = orm_texture_index;
+					d["occlusionTexture"] = occt;
+				}
+				if (has_roughness || has_metalness) {
+					mrt["index"] = orm_texture_index;
+					Dictionary extensions = _serialize_texture_transform_uv1(material);
+					if (!extensions.is_empty()) {
+						mrt["extensions"] = extensions;
+						p_state->use_khr_texture_transform = true;
+					}
+					mr["metallicRoughnessTexture"] = mrt;
+				}
 			}
 		}
 
 		d["pbrMetallicRoughness"] = mr;
-		if (base_material->get_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING)) {
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING) && _image_format != "None") {
 			Dictionary nt;
 			Ref<ImageTexture> tex;
 			tex.instantiate();
@@ -3817,7 +3849,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			d["emissiveFactor"] = arr;
 		}
 
-		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION) && _image_format != "None") {
 			Dictionary et;
 			Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 			GLTFTextureIndex gltf_texture_index = -1;
@@ -5017,7 +5049,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 		AnimationPlayer *animation_player = p_state->animation_players[player_i];
 		List<StringName> animations;
 		animation_player->get_animation_list(&animations);
-		for (StringName animation_name : animations) {
+		for (const StringName &animation_name : animations) {
 			_convert_animation(p_state, animation_player, animation_name);
 		}
 	}
@@ -5341,12 +5373,22 @@ void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
 		}
 		String gltf_node_name = gltf_node->get_name();
 		if (gltf_node_name.is_empty()) {
-			if (gltf_node->mesh >= 0) {
-				gltf_node_name = "Mesh";
-			} else if (gltf_node->camera >= 0) {
-				gltf_node_name = "Camera";
+			if (_naming_version == 0) {
+				if (gltf_node->mesh >= 0) {
+					gltf_node_name = _gen_unique_name(p_state, "Mesh");
+				} else if (gltf_node->camera >= 0) {
+					gltf_node_name = _gen_unique_name(p_state, "Camera3D");
+				} else {
+					gltf_node_name = _gen_unique_name(p_state, "Node");
+				}
 			} else {
-				gltf_node_name = "Node";
+				if (gltf_node->mesh >= 0) {
+					gltf_node_name = "Mesh";
+				} else if (gltf_node->camera >= 0) {
+					gltf_node_name = "Camera";
+				} else {
+					gltf_node_name = "Node";
+				}
 			}
 		}
 		gltf_node->set_name(_gen_unique_name(p_state, gltf_node_name));
@@ -5846,6 +5888,10 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 		BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
 
 		p_scene_parent->add_child(bone_attachment, true);
+
+		// Find the correct bone_idx so we can properly serialize it.
+		bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+
 		bone_attachment->set_owner(p_scene_root);
 
 		// There is no gltf_node that represent this, so just directly create a unique name
@@ -5949,6 +5995,10 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 			BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, p_node_index);
 
 			p_scene_parent->add_child(bone_attachment, true);
+
+			// Find the correct bone_idx so we can properly serialize it.
+			bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+
 			bone_attachment->set_owner(p_scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name
@@ -6105,9 +6155,9 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 
 			const float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
 
-			const T from = p_values[idx * 3 + 1];
+			const T &from = p_values[idx * 3 + 1];
 			const T c1 = from + p_values[idx * 3 + 2];
-			const T to = p_values[idx * 3 + 4];
+			const T &to = p_values[idx * 3 + 4];
 			const T c2 = to + p_values[idx * 3 + 3];
 
 			return interp.bezier(from, c1, c2, to, c);
@@ -6224,7 +6274,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 				if (p_remove_immutable_tracks) {
 					Vector3 base_pos = p_state->nodes[track_i.key]->position;
 					for (int i = 0; i < track.position_track.times.size(); i++) {
-						Vector3 value = track.position_track.values[track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
+						int value_index = track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i;
+						ERR_FAIL_COND_MSG(value_index >= track.position_track.values.size(), "Animation sampler output accessor with 'CUBICSPLINE' interpolation doesn't have enough elements.");
+						Vector3 value = track.position_track.values[value_index];
 						if (!value.is_equal_approx(base_pos)) {
 							is_default = false;
 							break;
@@ -6236,6 +6288,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 					animation->add_track(Animation::TYPE_POSITION_3D);
 					animation->track_set_path(position_idx, transform_node_path);
 					animation->track_set_imported(position_idx, true); //helps merging later
+					if (track.position_track.interpolation == GLTFAnimation::INTERP_STEP) {
+						animation->track_set_interpolation_type(position_idx, Animation::InterpolationType::INTERPOLATION_NEAREST);
+					}
 					base_idx++;
 				}
 			}
@@ -6244,7 +6299,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 				if (p_remove_immutable_tracks) {
 					Quaternion base_rot = p_state->nodes[track_i.key]->rotation.normalized();
 					for (int i = 0; i < track.rotation_track.times.size(); i++) {
-						Quaternion value = track.rotation_track.values[track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i].normalized();
+						int value_index = track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i;
+						ERR_FAIL_COND_MSG(value_index >= track.rotation_track.values.size(), "Animation sampler output accessor with 'CUBICSPLINE' interpolation doesn't have enough elements.");
+						Quaternion value = track.rotation_track.values[value_index].normalized();
 						if (!value.is_equal_approx(base_rot)) {
 							is_default = false;
 							break;
@@ -6256,6 +6313,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 					animation->add_track(Animation::TYPE_ROTATION_3D);
 					animation->track_set_path(rotation_idx, transform_node_path);
 					animation->track_set_imported(rotation_idx, true); //helps merging later
+					if (track.rotation_track.interpolation == GLTFAnimation::INTERP_STEP) {
+						animation->track_set_interpolation_type(rotation_idx, Animation::InterpolationType::INTERPOLATION_NEAREST);
+					}
 					base_idx++;
 				}
 			}
@@ -6264,7 +6324,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 				if (p_remove_immutable_tracks) {
 					Vector3 base_scale = p_state->nodes[track_i.key]->scale;
 					for (int i = 0; i < track.scale_track.times.size(); i++) {
-						Vector3 value = track.scale_track.values[track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
+						int value_index = track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i;
+						ERR_FAIL_COND_MSG(value_index >= track.scale_track.values.size(), "Animation sampler output accessor with 'CUBICSPLINE' interpolation doesn't have enough elements.");
+						Vector3 value = track.scale_track.values[value_index];
 						if (!value.is_equal_approx(base_scale)) {
 							is_default = false;
 							break;
@@ -6276,6 +6338,9 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 					animation->add_track(Animation::TYPE_SCALE_3D);
 					animation->track_set_path(scale_idx, transform_node_path);
 					animation->track_set_imported(scale_idx, true); //helps merging later
+					if (track.scale_track.interpolation == GLTFAnimation::INTERP_STEP) {
+						animation->track_set_interpolation_type(scale_idx, Animation::InterpolationType::INTERPOLATION_NEAREST);
+					}
 					base_idx++;
 				}
 			}
@@ -7000,9 +7065,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 		} else if (String(final_track_path).contains(":")) {
 			//Process skeleton
 			const Vector<String> node_suffix = String(final_track_path).split(":");
-			const String node = node_suffix[0];
+			const String &node = node_suffix[0];
 			const NodePath node_path = node;
-			const String suffix = node_suffix[1];
+			const String &suffix = node_suffix[1];
 			Node *godot_node = animation_base_node->get_node_or_null(node_path);
 			if (!godot_node) {
 				continue;
@@ -7284,6 +7349,10 @@ void GLTFDocument::unregister_all_gltf_document_extensions() {
 	all_document_extensions.clear();
 }
 
+Vector<Ref<GLTFDocumentExtension>> GLTFDocument::get_all_gltf_document_extensions() {
+	return all_document_extensions;
+}
+
 PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err) {
 	Error err = _encode_buffer_glb(p_state, "");
 	if (r_err) {
@@ -7374,7 +7443,11 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	if (unlikely(p_state->scene_name.is_empty())) {
 		p_state->scene_name = single_root->get_name();
 	} else if (single_root->get_name() == StringName()) {
-		single_root->set_name(_gen_unique_name(p_state, p_state->scene_name));
+		if (_naming_version == 0) {
+			single_root->set_name(p_state->scene_name);
+		} else {
+			single_root->set_name(_gen_unique_name(p_state, p_state->scene_name));
+		}
 	}
 	return single_root;
 }

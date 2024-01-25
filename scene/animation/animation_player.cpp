@@ -151,6 +151,7 @@ void AnimationPlayer::_notification(int p_what) {
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				set_active(true);
 				play(autoplay);
+				_check_immediately_after_start();
 			}
 		} break;
 	}
@@ -232,7 +233,9 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 		pi.delta = delta;
 		pi.seeked = p_seeked;
 	}
-	pi.is_external_seeking = false;
+	// AnimationPlayer doesn't have internal seeking.
+	// However, immediately after playback, discrete keys should be retrieved with EXACT mode since behind keys must be ignored at that time.
+	pi.is_external_seeking = !p_started;
 	pi.looped_flag = looped_flag;
 	pi.weight = p_blend;
 	make_animation_instance(cd.from->name, pi);
@@ -521,8 +524,9 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 		return;
 	}
 
-	playback.current.pos = p_time;
+	_check_immediately_after_start();
 
+	playback.current.pos = p_time;
 	if (!playback.current.from) {
 		if (playback.assigned) {
 			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
@@ -536,6 +540,18 @@ void AnimationPlayer::seek(double p_time, bool p_update, bool p_update_only) {
 	playback.seeked = true;
 	if (p_update) {
 		_process_animation(0, p_update_only);
+		playback.seeked = false; // If animation was proceeded here, no more seek in internal process.
+	}
+}
+
+void AnimationPlayer::advance(double p_time) {
+	_check_immediately_after_start();
+	AnimationMixer::advance(p_time);
+}
+
+void AnimationPlayer::_check_immediately_after_start() {
+	if (playback.started) {
+		_process_animation(0); // Force process current key for Discrete/Method/Audio/AnimationPlayback. Then, started flag is cleared.
 	}
 }
 
@@ -651,7 +667,7 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 			r_options->push_back(String(name).quote());
 		}
 	}
-	Node::get_argument_options(p_function, p_idx, r_options);
+	AnimationMixer::get_argument_options(p_function, p_idx, r_options);
 }
 
 void AnimationPlayer::_animation_removed(const StringName &p_name, const StringName &p_library) {

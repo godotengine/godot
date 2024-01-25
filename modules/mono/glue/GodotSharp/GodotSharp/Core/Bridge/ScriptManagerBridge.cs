@@ -194,7 +194,7 @@ namespace Godot.Bridge
 
                 var native = GodotObject.InternalGetClassNativeBase(scriptType);
 
-                var field = native?.GetField("NativeName", BindingFlags.DeclaredOnly | BindingFlags.Static |
+                var field = native.GetField("NativeName", BindingFlags.DeclaredOnly | BindingFlags.Static |
                                                            BindingFlags.Public | BindingFlags.NonPublic);
 
                 if (field == null)
@@ -253,11 +253,15 @@ namespace Godot.Bridge
             {
                 var editorAssembly = AppDomain.CurrentDomain.GetAssemblies()
                     .FirstOrDefault(a => a.GetName().Name == "GodotSharpEditor");
-                wrapperType = editorAssembly?.GetType("Godot." + nativeTypeNameStr);
 
-                if (wrapperType == null)
+                if (editorAssembly != null)
                 {
-                    wrapperType = GetTypeByGodotClassAttr(editorAssembly, nativeTypeNameStr);
+                    wrapperType = editorAssembly.GetType("Godot." + nativeTypeNameStr);
+
+                    if (wrapperType == null)
+                    {
+                        wrapperType = GetTypeByGodotClassAttr(editorAssembly, nativeTypeNameStr);
+                    }
                 }
             }
 
@@ -280,7 +284,7 @@ namespace Godot.Bridge
             if (wrapperType != null && IsStatic(wrapperType))
             {
                 // A static class means this is a Godot singleton class. Try to get the Instance proxy type.
-                wrapperType = TypeGetProxyClass($"{nativeTypeNameStr}Instance");
+                wrapperType = TypeGetProxyClass($"{wrapperType.Name}Instance");
                 if (wrapperType == null)
                 {
                     // Otherwise, fallback to GodotObject.
@@ -657,6 +661,19 @@ namespace Godot.Bridge
                             var methodInfo = new Collections.Dictionary();
 
                             methodInfo.Add("name", method.Name);
+
+                            var returnVal = new Collections.Dictionary()
+                            {
+                                { "name", method.ReturnVal.Name },
+                                { "type", (int)method.ReturnVal.Type },
+                                { "usage", (int)method.ReturnVal.Usage }
+                            };
+                            if (method.ReturnVal.ClassName != null)
+                            {
+                                returnVal["class_name"] = method.ReturnVal.ClassName;
+                            }
+
+                            methodInfo.Add("return_val", returnVal);
 
                             var methodParams = new Collections.Array();
 

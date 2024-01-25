@@ -61,8 +61,6 @@ static const GLenum _cube_side_enum[6] = {
 TextureStorage::TextureStorage() {
 	singleton = this;
 
-	system_fbo = 0;
-
 	{ //create default textures
 		{ // White Textures
 
@@ -713,18 +711,20 @@ void TextureStorage::texture_free(RID p_texture) {
 		memdelete(t->canvas_texture);
 	}
 
-	if (t->tex_id != 0) {
-		if (!t->is_external) {
-			GLES3::Utilities::get_singleton()->texture_free_data(t->tex_id);
+	bool must_free_data = false;
+	if (t->is_proxy) {
+		if (t->proxy_to.is_valid()) {
+			Texture *proxy_to = texture_owner.get_or_null(t->proxy_to);
+			if (proxy_to) {
+				proxy_to->proxies.erase(p_texture);
+			}
 		}
-		t->tex_id = 0;
+	} else {
+		must_free_data = t->tex_id != 0 && !t->is_external;
 	}
-
-	if (t->is_proxy && t->proxy_to.is_valid()) {
-		Texture *proxy_to = texture_owner.get_or_null(t->proxy_to);
-		if (proxy_to) {
-			proxy_to->proxies.erase(p_texture);
-		}
+	if (must_free_data) {
+		GLES3::Utilities::get_singleton()->texture_free_data(t->tex_id);
+		t->tex_id = 0;
 	}
 
 	texture_atlas_remove_texture(p_texture);
@@ -766,7 +766,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
 	ERR_FAIL_COND_MSG(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY, "Cubemap Arrays are not supported in the GL Compatibility backend.");
 
-	Ref<Image> image = p_layers[0];
+	const Ref<Image> &image = p_layers[0];
 	{
 		int valid_width = 0;
 		int valid_height = 0;
@@ -1475,7 +1475,7 @@ void TextureStorage::update_texture_atlas() {
 		//generate atlas
 		Vector<TextureAtlas::SortItem> itemsv;
 		itemsv.resize(texture_atlas.textures.size());
-		int base_size = 8;
+		uint32_t base_size = 8;
 
 		int idx = 0;
 
@@ -1488,7 +1488,7 @@ void TextureStorage::update_texture_atlas() {
 			si.size.height = (src_tex->height / border) + 1;
 			si.pixel_size = Size2i(src_tex->width, src_tex->height);
 
-			if (base_size < si.size.width) {
+			if (base_size < (uint32_t)si.size.width) {
 				base_size = nearest_power_of_2_templated(si.size.width);
 			}
 
@@ -1519,7 +1519,7 @@ void TextureStorage::update_texture_atlas() {
 				TextureAtlas::SortItem &si = items[i];
 				int best_idx = -1;
 				int best_height = 0x7FFFFFFF;
-				for (int j = 0; j <= base_size - si.size.width; j++) {
+				for (uint32_t j = 0; j <= base_size - si.size.width; j++) {
 					int height = 0;
 					for (int k = 0; k < si.size.width; k++) {
 						int h = v_offsets[k + j];
@@ -1550,7 +1550,7 @@ void TextureStorage::update_texture_atlas() {
 				}
 			}
 
-			if (max_height <= base_size * 2) {
+			if ((uint32_t)max_height <= base_size * 2) {
 				atlas_height = max_height;
 				break; //good ratio, break;
 			}
@@ -1732,7 +1732,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 #else
 		{
 #endif
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_target, rt->color, 0);
 		}
 
 		// depth
@@ -1765,7 +1765,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 #else
 		{
 #endif
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture_target, rt->depth, 0);
 		}
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -1874,7 +1874,7 @@ void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 }
-void GLES3::TextureStorage::copy_scene_to_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture) {
+void GLES3::TextureStorage::check_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture) {
 	if (rt->backbuffer != 0 && rt->backbuffer_depth != 0) {
 		return;
 	}
@@ -1935,7 +1935,7 @@ void GLES3::TextureStorage::copy_scene_to_backbuffer(RenderTarget *rt, const boo
 	}
 }
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
-	// there is nothing to clear when DIRECT_TO_SCREEN is used
+	// there is nothing else to clear when DIRECT_TO_SCREEN is used
 	if (rt->direct_to_screen) {
 		return;
 	}
@@ -2229,6 +2229,7 @@ void TextureStorage::render_target_clear_used(RID p_render_target) {
 void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
+	ERR_FAIL_COND(rt->direct_to_screen);
 	if (p_msaa == rt->msaa) {
 		return;
 	}
@@ -2284,6 +2285,55 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 }
 
+GLuint TextureStorage::render_target_get_fbo(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, 0);
+
+	return rt->fbo;
+}
+
+GLuint TextureStorage::render_target_get_color(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, 0);
+
+	if (rt->overridden.color.is_valid()) {
+		Texture *texture = get_texture(rt->overridden.color);
+		ERR_FAIL_NULL_V(texture, 0);
+
+		return texture->tex_id;
+	} else {
+		return rt->color;
+	}
+}
+
+GLuint TextureStorage::render_target_get_depth(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, 0);
+
+	if (rt->overridden.depth.is_valid()) {
+		Texture *texture = get_texture(rt->overridden.depth);
+		ERR_FAIL_NULL_V(texture, 0);
+
+		return texture->tex_id;
+	} else {
+		return rt->depth;
+	}
+}
+
+void TextureStorage::render_target_set_reattach_textures(RID p_render_target, bool p_reattach_textures) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->reattach_textures = p_reattach_textures;
+}
+
+bool TextureStorage::render_target_is_reattach_textures(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->reattach_textures;
+}
+
 void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
@@ -2314,7 +2364,9 @@ Rect2i TextureStorage::_render_target_get_sdf_rect(const RenderTarget *rt) const
 			scale = 200;
 		} break;
 		default: {
-		}
+			ERR_PRINT("Invalid viewport SDF oversize, defaulting to 100%.");
+			scale = 100;
+		} break;
 	}
 
 	margin = (rt->size * scale / 100) - rt->size;
@@ -2391,6 +2443,7 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 			scale = 25;
 		} break;
 		default: {
+			ERR_PRINT("Invalid viewport SDF scale, defaulting to 100%.");
 			scale = 100;
 		} break;
 	}
@@ -2594,7 +2647,10 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, rt->color);
-	GLES3::CopyEffects::get_singleton()->copy_screen();
+	Rect2 normalized_region = region;
+	normalized_region.position = normalized_region.position / Size2(rt->size);
+	normalized_region.size = normalized_region.size / Size2(rt->size);
+	GLES3::CopyEffects::get_singleton()->copy_to_and_from_rect(normalized_region);
 
 	if (p_gen_mipmaps) {
 		GLES3::CopyEffects::get_singleton()->gaussian_blur(rt->backbuffer, rt->mipmap_count, region, rt->size);

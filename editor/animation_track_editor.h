@@ -68,6 +68,7 @@ public:
 	PropertyInfo hint;
 	NodePath base;
 	bool use_fps = false;
+	AnimationTrackEditor *editor = nullptr;
 
 	bool _hide_script_from_inspector() { return true; }
 	bool _hide_metadata_from_inspector() { return true; }
@@ -105,6 +106,7 @@ public:
 	Node *root_path = nullptr;
 
 	bool use_fps = false;
+	AnimationTrackEditor *editor = nullptr;
 
 	bool _hide_script_from_inspector() { return true; }
 	bool _hide_metadata_from_inspector() { return true; }
@@ -128,6 +130,11 @@ protected:
 
 class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
+
+	friend class AnimationBezierTrackEdit;
+	friend class AnimationTrackEditor;
+
+	static constexpr float SCROLL_ZOOM_FACTOR = 1.02f; // Zoom factor per mouse scroll in the animation editor. The closer to 1.0, the finer the control.
 
 	Ref<Animation> animation;
 	bool read_only = false;
@@ -165,6 +172,11 @@ class AnimationTimelineEdit : public Range {
 	bool dragging_hsize = false;
 	float dragging_hsize_from = 0.0f;
 	float dragging_hsize_at = 0.0f;
+	double last_zoom_scale = 1.0;
+	double hscroll_on_zoom_buffer = -1.0;
+
+	Vector2 zoom_scroll_origin;
+	bool zoom_callback_occured = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _track_added(int p_track);
@@ -409,7 +421,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _check_bezier_exist();
 
 	void _name_limit_changed();
-	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only);
+	void _timeline_changed(float p_new_pos, bool p_timeline_only);
 	void _track_remove_request(int p_track);
 	void _animation_track_remove_request(int p_track, Ref<Animation> p_from_animation);
 	void _track_grab_focus(int p_track);
@@ -478,6 +490,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	int insert_key_from_track_call_track = 0;
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
+
+	void _fetch_value_track_options(const NodePath &p_path, Animation::UpdateMode *r_update_mode, Animation::InterpolationType *r_interpolation_type, bool *r_loop_wrap);
 
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);

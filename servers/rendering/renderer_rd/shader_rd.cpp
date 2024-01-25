@@ -45,7 +45,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 	String text;
 
 	for (int i = 0; i < lines.size(); i++) {
-		String l = lines[i];
+		const String &l = lines[i];
 		bool push_chunk = false;
 
 		StageTemplate::Chunk chunk;
@@ -242,8 +242,8 @@ void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 
 		current_source = builder.as_string();
 		RD::ShaderStageSPIRVData stage;
-		stage.spir_v = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_VERTEX, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
-		if (stage.spir_v.size() == 0) {
+		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_VERTEX, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
+		if (stage.spirv.size() == 0) {
 			build_ok = false;
 		} else {
 			stage.shader_stage = RD::SHADER_STAGE_VERTEX;
@@ -260,8 +260,8 @@ void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 
 		current_source = builder.as_string();
 		RD::ShaderStageSPIRVData stage;
-		stage.spir_v = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_FRAGMENT, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
-		if (stage.spir_v.size() == 0) {
+		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_FRAGMENT, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
+		if (stage.spirv.size() == 0) {
 			build_ok = false;
 		} else {
 			stage.shader_stage = RD::SHADER_STAGE_FRAGMENT;
@@ -279,8 +279,8 @@ void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 		current_source = builder.as_string();
 
 		RD::ShaderStageSPIRVData stage;
-		stage.spir_v = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_COMPUTE, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
-		if (stage.spir_v.size() == 0) {
+		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_COMPUTE, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
+		if (stage.spirv.size() == 0) {
 			build_ok = false;
 		} else {
 			stage.shader_stage = RD::SHADER_STAGE_COMPUTE;
@@ -480,6 +480,7 @@ void ShaderRD::_save_to_cache(Version *p_version, int p_group) {
 }
 
 void ShaderRD::_allocate_placeholders(Version *p_version, int p_group) {
+	ERR_FAIL_NULL(p_version->variants);
 	for (uint32_t i = 0; i < group_to_variant_map[p_group].size(); i++) {
 		int variant_id = group_to_variant_map[p_group][i];
 		RID shader = RD::get_singleton()->shader_create_placeholder();

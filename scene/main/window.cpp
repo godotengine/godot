@@ -40,6 +40,14 @@
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 
+// Editor integration.
+
+int Window::root_layout_direction = 0;
+
+void Window::set_root_layout_direction(int p_root_dir) {
+	root_layout_direction = p_root_dir;
+}
+
 // Dynamic properties.
 
 bool Window::_set(const StringName &p_name, const Variant &p_value) {
@@ -284,7 +292,13 @@ void Window::set_title(const String &p_title) {
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
-		_update_window_size();
+		if (keep_title_visible) {
+			Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
+			Size2i size_limit = get_clamped_minimum_size();
+			if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
+				_update_window_size();
+			}
+		}
 	}
 }
 
@@ -681,6 +695,9 @@ void Window::_propagate_window_notification(Node *p_node, int p_notification) {
 void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 	switch (p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
+			if (!is_inside_tree()) {
+				return;
+			}
 			Window *root = get_tree()->get_root();
 			if (root->gui.windowmanager_window_over) {
 #ifdef DEV_ENABLED
@@ -696,6 +713,9 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			}
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
+			if (!is_inside_tree()) {
+				return;
+			}
 			Window *root = get_tree()->get_root();
 			if (!root->gui.windowmanager_window_over) {
 #ifdef DEV_ENABLED
@@ -955,6 +975,10 @@ Size2i Window::_clamp_window_size(const Size2i &p_size) {
 
 void Window::_update_window_size() {
 	Size2i size_limit = get_clamped_minimum_size();
+	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID && keep_title_visible) {
+		Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
+		size_limit = size_limit.max(title_size);
+	}
 
 	size = size.max(size_limit);
 
@@ -986,12 +1010,6 @@ void Window::_update_window_size() {
 		}
 
 		DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
-
-		if (keep_title_visible) {
-			Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
-			size_limit = size_limit.max(title_size);
-		}
-
 		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
 		DisplayServer::get_singleton()->window_set_size(size, window_id);
 	}
@@ -1142,7 +1160,10 @@ void Window::_update_viewport_size() {
 		}
 	}
 
-	notification(NOTIFICATION_WM_SIZE_CHANGED);
+	if (old_size != size) {
+		old_size = size;
+		notification(NOTIFICATION_WM_SIZE_CHANGED);
+	}
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
@@ -1291,7 +1312,13 @@ void Window::_notification(int p_what) {
 
 			if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
 				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
-				_update_window_size();
+				if (keep_title_visible) {
+					Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
+					Size2i size_limit = get_clamped_minimum_size();
+					if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
+						_update_window_size();
+					}
+				}
 			}
 		} break;
 
@@ -1489,7 +1516,7 @@ void Window::child_controls_changed() {
 	}
 
 	updating_child_controls = true;
-	call_deferred(SNAME("_update_child_controls"));
+	callable_mp(this, &Window::_update_child_controls).call_deferred();
 }
 
 void Window::_update_child_controls() {
@@ -1543,7 +1570,12 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	if (p_ev->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
+	// If the event needs to be handled in a Window-derived class, then it should overwrite
+	// `_input_from_window` instead of subscribing to the `window_input` signal, because the signal
+	// filters out internal events.
+	_input_from_window(p_ev);
+
+	if (p_ev->get_device() != InputEvent::DEVICE_ID_INTERNAL && is_inside_tree()) {
 		emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
 	}
 
@@ -1965,7 +1997,7 @@ void Window::_update_theme_item_cache() {
 	// Updating without a delay can cause a lot of lag.
 	if (!wrap_controls) {
 		updating_embedded_window = true;
-		call_deferred(SNAME("_update_embedded_window"));
+		callable_mp(this, &Window::_update_embedded_window).call_deferred();
 	} else {
 		child_controls_changed();
 	}
@@ -2517,9 +2549,32 @@ Window::LayoutDirection Window::get_layout_direction() const {
 bool Window::is_layout_rtl() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (layout_dir == LAYOUT_DIRECTION_INHERITED) {
+#ifdef TOOLS_ENABLED
+		if (is_part_of_edited_scene() && GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+			return true;
+		}
+		if (is_inside_tree()) {
+			Node *edited_scene_root = get_tree()->get_edited_scene_root();
+			if (edited_scene_root == this) {
+				int proj_root_layout_direction = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
+				if (proj_root_layout_direction == 1) {
+					return false;
+				} else if (proj_root_layout_direction == 2) {
+					return true;
+				} else if (proj_root_layout_direction == 3) {
+					String locale = OS::get_singleton()->get_locale();
+					return TS->is_locale_right_to_left(locale);
+				} else {
+					String locale = TranslationServer::get_singleton()->get_tool_locale();
+					return TS->is_locale_right_to_left(locale);
+				}
+			}
+		}
+#else
 		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 			return true;
 		}
+#endif
 		Node *parent_node = get_parent();
 		while (parent_node) {
 			Control *parent_control = Object::cast_to<Control>(parent_node);
@@ -2534,11 +2589,13 @@ bool Window::is_layout_rtl() const {
 			parent_node = parent_node->get_parent();
 		}
 
-		int root_dir = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
-		if (root_dir == 1) {
+		if (root_layout_direction == 1) {
 			return false;
-		} else if (root_dir == 2) {
+		} else if (root_layout_direction == 2) {
 			return true;
+		} else if (root_layout_direction == 3) {
+			String locale = OS::get_singleton()->get_locale();
+			return TS->is_locale_right_to_left(locale);
 		} else {
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
@@ -2742,9 +2799,6 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_wrap_controls", "enable"), &Window::set_wrap_controls);
 	ClassDB::bind_method(D_METHOD("is_wrapping_controls"), &Window::is_wrapping_controls);
 	ClassDB::bind_method(D_METHOD("child_controls_changed"), &Window::child_controls_changed);
-
-	ClassDB::bind_method(D_METHOD("_update_child_controls"), &Window::_update_child_controls);
-	ClassDB::bind_method(D_METHOD("_update_embedded_window"), &Window::_update_embedded_window);
 
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);

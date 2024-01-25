@@ -416,8 +416,8 @@ void SoftBody3D::_draw_soft_mesh() {
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
-		call_deferred(SNAME("set_as_top_level"), true);
-		call_deferred(SNAME("set_transform"), Transform3D());
+		callable_mp((Node3D *)this, &Node3D::set_as_top_level).call_deferred(true);
+		callable_mp((Node3D *)this, &Node3D::set_transform).call_deferred(Transform3D());
 	}
 
 	_update_physics_server();
@@ -471,6 +471,7 @@ void SoftBody3D::_become_mesh_owner() {
 	uint32_t surface_format = mesh->surface_get_format(0);
 
 	surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
+	surface_format &= ~Mesh::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 
 	Ref<ArrayMesh> soft_mesh;
 	soft_mesh.instantiate();

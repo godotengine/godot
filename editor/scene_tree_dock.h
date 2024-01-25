@@ -79,6 +79,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
 		TOOL_COPY_NODE_PATH,
+		TOOL_SHOW_IN_FILE_SYSTEM,
 		TOOL_OPEN_DOCUMENTATION,
 		TOOL_AUTO_EXPAND,
 		TOOL_SCENE_EDITABLE_CHILDREN,
@@ -143,6 +144,7 @@ class SceneTreeDock : public VBoxContainer {
 	EditorSelection *editor_selection = nullptr;
 
 	List<Node *> node_clipboard;
+	HashSet<Node *> node_clipboard_edited_scene_owned;
 	String clipboard_source_scene;
 	HashMap<String, HashMap<Ref<Resource>, Ref<Resource>>> clipboard_resource_remap;
 
@@ -201,6 +203,7 @@ class SceneTreeDock : public VBoxContainer {
 	};
 
 	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode = MODE_BIDI);
+	void _node_strip_signal_inheritance(Node *p_node);
 	void _load_request(const String &p_path);
 	void _script_open_request(const Ref<Script> &p_script);
 	void _push_item(Object *p_object);
@@ -220,6 +223,9 @@ class SceneTreeDock : public VBoxContainer {
 	void _delete_dialog_closed();
 
 	void _toggle_editable_children_from_selection();
+
+	void _reparent_nodes_to_root(Node *p_root, const Array &p_nodes, Node *p_owner);
+	void _reparent_nodes_to_paths_with_transform_and_name(Node *p_root, const Array &p_nodes, const Array &p_paths, const Array &p_transforms, const Array &p_names, Node *p_owner);
 	void _toggle_editable_children(Node *p_node);
 
 	void _toggle_placeholder_from_selection();
@@ -231,7 +237,7 @@ class SceneTreeDock : public VBoxContainer {
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	void _new_scene_from(String p_file);
-	void _set_node_owner_recursive(Node *p_node, Node *p_owner);
+	void _set_node_owner_recursive(Node *p_node, Node *p_owner, const HashMap<const Node *, Node *> &p_inverse_duplimap);
 
 	bool _validate_no_foreign();
 	bool _validate_no_instance();
@@ -281,7 +287,7 @@ class SceneTreeDock : public VBoxContainer {
 	static void _update_configuration_warning();
 
 	bool _update_node_path(Node *p_root_node, NodePath &r_node_path, HashMap<Node *, NodePath> *p_renames) const;
-	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames) const;
+	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_recursive(Variant &r_variant, Node *p_node, Node *p_by_node, const String type_hint, String &r_warn_message);
 	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_remove_old = true);
 

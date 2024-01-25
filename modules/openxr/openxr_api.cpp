@@ -87,7 +87,7 @@ String OpenXRAPI::get_default_action_map_resource_name() {
 	return name;
 }
 
-String OpenXRAPI::get_error_string(XrResult result) {
+String OpenXRAPI::get_error_string(XrResult result) const {
 	if (XR_SUCCEEDED(result)) {
 		return String("Succeeded");
 	}
@@ -289,7 +289,7 @@ bool OpenXRAPI::create_instance() {
 	for (KeyValue<String, bool *> &requested_extension : requested_extensions) {
 		if (!is_extension_supported(requested_extension.key)) {
 			if (requested_extension.value == nullptr) {
-				// Null means this is a manditory extension so we fail.
+				// Null means this is a mandatory extension so we fail.
 				ERR_FAIL_V_MSG(false, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.key + String(" extension!"));
 			} else {
 				// Set this extension as not supported.
@@ -804,6 +804,7 @@ bool OpenXRAPI::create_swapchains() {
 	*/
 
 	Size2 recommended_size = get_recommended_target_size();
+	uint32_t sample_count = 1;
 
 	// We start with our color swapchain...
 	{
@@ -827,7 +828,7 @@ bool OpenXRAPI::create_swapchains() {
 			print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(swapchain_format_to_use));
 		}
 
-		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
+		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, sample_count, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
 			return false;
 		}
 	}
@@ -863,7 +864,7 @@ bool OpenXRAPI::create_swapchains() {
 
 			// Note, if VK_FORMAT_D32_SFLOAT is used here but we're using the forward+ renderer, we should probably output a warning.
 
-			if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain, &swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data)) {
+			if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, sample_count, view_count, swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain, &swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data)) {
 				return false;
 			}
 
@@ -1260,6 +1261,7 @@ bool OpenXRAPI::resolve_instance_openxr_symbols() {
 	OPENXR_API_INIT_XR_FUNC_V(xrGetActionStateFloat);
 	OPENXR_API_INIT_XR_FUNC_V(xrGetActionStateVector2f);
 	OPENXR_API_INIT_XR_FUNC_V(xrGetCurrentInteractionProfile);
+	OPENXR_API_INIT_XR_FUNC_V(xrGetReferenceSpaceBoundsRect);
 	OPENXR_API_INIT_XR_FUNC_V(xrGetSystem);
 	OPENXR_API_INIT_XR_FUNC_V(xrGetSystemProperties);
 	OPENXR_API_INIT_XR_FUNC_V(xrLocateViews);
@@ -2069,6 +2071,25 @@ void OpenXRAPI::set_foveation_dynamic(bool p_foveation_dynamic) {
 	if (fov_ext != nullptr && fov_ext->is_enabled()) {
 		fov_ext->set_foveation_dynamic(p_foveation_dynamic ? XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_FB : XR_FOVEATION_DYNAMIC_DISABLED_FB);
 	}
+}
+
+Size2 OpenXRAPI::get_play_space_bounds() const {
+	Size2 ret;
+
+	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, Size2());
+
+	XrExtent2Df extents;
+
+	XrResult result = xrGetReferenceSpaceBoundsRect(session, reference_space, &extents);
+	if (XR_FAILED(result)) {
+		print_line("OpenXR: failed to get play space bounds! [", get_error_string(result), "]");
+		return ret;
+	}
+
+	ret.width = extents.width;
+	ret.height = extents.height;
+
+	return ret;
 }
 
 OpenXRAPI::OpenXRAPI() {

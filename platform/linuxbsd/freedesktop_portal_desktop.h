@@ -40,7 +40,7 @@ struct DBusMessage;
 struct DBusConnection;
 struct DBusMessageIter;
 
-class FreeDesktopPortalDesktop {
+class FreeDesktopPortalDesktop : public Object {
 private:
 	bool unsupported = false;
 
@@ -53,6 +53,8 @@ private:
 	static void append_dbus_dict_string(DBusMessageIter *p_iter, const String &p_key, const String &p_value, bool p_as_byte_array = false);
 	static void append_dbus_dict_bool(DBusMessageIter *p_iter, const String &p_key, bool p_value);
 	static bool file_chooser_parse_response(DBusMessageIter *p_iter, const Vector<String> &p_names, bool &r_cancel, Vector<String> &r_urls, int &r_index);
+
+	void _file_dialog_callback(const Callable &p_callable, const Variant &p_status, const Variant &p_list, const Variant &p_index);
 
 	struct FileDialogData {
 		Vector<String> filter_names;

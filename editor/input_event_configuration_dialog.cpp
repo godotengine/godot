@@ -553,9 +553,8 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			event_listener->grab_focus();
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			input_list_search->set_right_icon(input_list_search->get_editor_theme_icon(SNAME("Search")));
+			input_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			key_mode->set_item_icon(KEYMODE_KEYCODE, get_editor_theme_icon(SNAME("Keyboard")));
 			key_mode->set_item_icon(KEYMODE_PHY_KEYCODE, get_editor_theme_icon(SNAME("KeyboardPhysical")));
@@ -573,7 +572,7 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 	}
 }
 
-void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event) {
+void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event, const String &p_current_action_name) {
 	if (p_event.is_valid()) {
 		_set_event(p_event->duplicate(), p_event);
 	} else {
@@ -597,6 +596,12 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 		device_id_option->select(0);
 	}
 
+	if (!p_current_action_name.is_empty()) {
+		set_title(vformat(TTR("Event Configuration for \"%s\""), p_current_action_name));
+	} else {
+		set_title(TTR("Event Configuration"));
+	}
+
 	popup_centered(Size2(0, 400) * EDSCALE);
 }
 
@@ -612,13 +617,13 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 
-	set_title(TTR("Event Configuration"));
-	set_min_size(Size2i(550 * EDSCALE, 0)); // Min width
+	set_min_size(Size2i(550, 0) * EDSCALE);
 
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox);
 
 	event_as_text = memnew(Label);
+	event_as_text->set_custom_minimum_size(Size2(500, 0) * EDSCALE);
 	event_as_text->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	event_as_text->add_theme_font_size_override("font_size", 18 * EDSCALE);

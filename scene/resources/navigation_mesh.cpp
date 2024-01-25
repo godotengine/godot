@@ -127,7 +127,7 @@ NavigationMesh::SourceGeometryMode NavigationMesh::get_source_geometry_mode() co
 	return source_geometry_mode;
 }
 
-void NavigationMesh::set_source_group_name(StringName p_group_name) {
+void NavigationMesh::set_source_group_name(const StringName &p_group_name) {
 	source_group_name = p_group_name;
 }
 

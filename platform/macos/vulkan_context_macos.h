@@ -38,10 +38,13 @@
 #import <AppKit/AppKit.h>
 
 class VulkanContextMacOS : public VulkanContext {
-	virtual const char *_get_platform_surface_extension() const;
+	virtual const char *_get_platform_surface_extension() const override final;
 
 public:
-	Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, id p_window, int p_width, int p_height);
+	struct WindowPlatformData {
+		const id *view_ptr;
+	};
+	virtual Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) override final;
 
 	VulkanContextMacOS();
 	~VulkanContextMacOS();

@@ -193,6 +193,7 @@
 			<param index="0" name="right" type="Transform3D" />
 			<description>
 				Inversely transforms (multiplies) the [Plane] by the given [Transform3D] transformation matrix.
+				[code]plane * transform[/code] is equivalent to [code]transform.affine_inverse() * plane[/code]. See [method Transform3D.affine_inverse].
 			</description>
 		</operator>
 		<operator name="operator ==">

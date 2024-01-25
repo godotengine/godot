@@ -50,6 +50,8 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/import/3d/resource_importer_obj.h"
+#include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_bmfont.h"
@@ -58,8 +60,6 @@
 #include "editor/import/resource_importer_image.h"
 #include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
-#include "editor/import/resource_importer_obj.h"
-#include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_shader_file.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
@@ -129,7 +129,7 @@
 #include "editor/register_exporters.h"
 
 void register_editor_types() {
-	OS::get_singleton()->benchmark_begin_measure("register_editor_types");
+	OS::get_singleton()->benchmark_begin_measure("Editor", "Register Types");
 
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
@@ -282,11 +282,11 @@ void register_editor_types() {
 	ei_singleton.editor_only = true;
 	Engine::get_singleton()->add_singleton(ei_singleton);
 
-	OS::get_singleton()->benchmark_end_measure("register_editor_types");
+	OS::get_singleton()->benchmark_end_measure("Editor", "Register Types");
 }
 
 void unregister_editor_types() {
-	OS::get_singleton()->benchmark_begin_measure("unregister_editor_types");
+	OS::get_singleton()->benchmark_begin_measure("Editor", "Unregister Types");
 
 	EditorNode::cleanup();
 	EditorInterface::free();
@@ -296,5 +296,5 @@ void unregister_editor_types() {
 	}
 	EditorStringNames::free();
 
-	OS::get_singleton()->benchmark_end_measure("unregister_editor_types");
+	OS::get_singleton()->benchmark_end_measure("Editor", "Unregister Types");
 }

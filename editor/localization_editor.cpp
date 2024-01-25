@@ -189,7 +189,7 @@ void LocalizationEditor::_translation_res_select() {
 	if (updating_translations) {
 		return;
 	}
-	call_deferred(SNAME("update_translations"));
+	callable_mp(this, &LocalizationEditor::update_translations).call_deferred();
 }
 
 void LocalizationEditor::_translation_res_option_popup(bool p_arrow_clicked) {
@@ -545,7 +545,7 @@ void LocalizationEditor::update_translations() {
 
 				PackedStringArray selected = remaps[keys[i]];
 				for (int j = 0; j < selected.size(); j++) {
-					String s2 = selected[j];
+					const String &s2 = selected[j];
 					int qp = s2.rfind(":");
 					String path = s2.substr(0, qp);
 					String locale = s2.substr(qp + 1, s2.length());

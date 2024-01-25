@@ -91,10 +91,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::viewport->draw_viewports(p_swap_buffers);
 	RSG::canvas_render->update();
 
-	if (!OS::get_singleton()->get_current_rendering_driver_name().begins_with("opengl3")) {
-		// Already called for gl_compatibility renderer.
-		RSG::rasterizer->end_frame(p_swap_buffers);
-	}
+	RSG::rasterizer->end_frame(p_swap_buffers);
 
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
@@ -214,6 +211,7 @@ void RenderingServerDefault::_finish() {
 		free(test_cube);
 	}
 
+	RSG::canvas->finalize();
 	RSG::rasterizer->finalize();
 }
 
@@ -289,9 +287,11 @@ void RenderingServerDefault::set_default_clear_color(const Color &p_color) {
 	RSG::viewport->set_default_clear_color(p_color);
 }
 
+#ifndef DISABLE_DEPRECATED
 bool RenderingServerDefault::has_feature(Features p_feature) const {
 	return false;
 }
+#endif
 
 void RenderingServerDefault::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 	RSG::scene->sdfgi_set_debug_probe_select(p_position, p_dir);
@@ -379,6 +379,7 @@ void RenderingServerDefault::sync() {
 }
 
 void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Manually triggering the draw function from the RenderingServer can only be done on the main thread. Call this function from the main thread or use call_deferred().");
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
 	} else {

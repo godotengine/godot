@@ -33,7 +33,6 @@
 #include "container.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
-#include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -197,9 +196,15 @@ void Control::reparent(Node *p_parent, bool p_keep_global_transform) {
 
 // Editor integration.
 
+int Control::root_layout_direction = 0;
+
+void Control::set_root_layout_direction(int p_root_dir) {
+	root_layout_direction = p_root_dir;
+}
+
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	ERR_READ_THREAD_GUARD;
-	Node::get_argument_options(p_function, p_idx, r_options);
+	CanvasItem::get_argument_options(p_function, p_idx, r_options);
 
 	if (p_idx == 0) {
 		List<StringName> sn;
@@ -1625,7 +1630,7 @@ void Control::update_minimum_size() {
 	}
 	data.updating_last_minimum_size = true;
 
-	MessageQueue::get_singleton()->push_callable(callable_mp(this, &Control::_update_minimum_size));
+	callable_mp(this, &Control::_update_minimum_size).call_deferred();
 }
 
 void Control::set_block_minimum_size_adjust(bool p_block) {
@@ -1653,6 +1658,7 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 
 	data.custom_minimum_size = p_custom;
 	update_minimum_size();
+	update_configuration_warnings();
 }
 
 Size2 Control::get_custom_minimum_size() const {
@@ -1831,9 +1837,18 @@ bool Control::has_point(const Point2 &p_point) const {
 void Control::set_mouse_filter(MouseFilter p_filter) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_filter, 3);
+
+	if (data.mouse_filter == p_filter) {
+		return;
+	}
+
 	data.mouse_filter = p_filter;
 	notify_property_list_changed();
 	update_configuration_warnings();
+
+	if (get_viewport()) {
+		get_viewport()->_gui_update_mouse_over();
+	}
 }
 
 Control::MouseFilter Control::get_mouse_filter() const {
@@ -3014,10 +3029,35 @@ bool Control::is_layout_rtl() const {
 	if (data.is_rtl_dirty) {
 		const_cast<Control *>(this)->data.is_rtl_dirty = false;
 		if (data.layout_dir == LAYOUT_DIRECTION_INHERITED) {
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene() && GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+				const_cast<Control *>(this)->data.is_rtl = true;
+				return data.is_rtl;
+			}
+			if (is_inside_tree()) {
+				Node *edited_scene_root = get_tree()->get_edited_scene_root();
+				if (edited_scene_root == this) {
+					int proj_root_layout_direction = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
+					if (proj_root_layout_direction == 1) {
+						const_cast<Control *>(this)->data.is_rtl = false;
+					} else if (proj_root_layout_direction == 2) {
+						const_cast<Control *>(this)->data.is_rtl = true;
+					} else if (proj_root_layout_direction == 3) {
+						String locale = OS::get_singleton()->get_locale();
+						const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+					} else {
+						String locale = TranslationServer::get_singleton()->get_tool_locale();
+						const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+					}
+					return data.is_rtl;
+				}
+			}
+#else
 			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 				const_cast<Control *>(this)->data.is_rtl = true;
 				return data.is_rtl;
 			}
+#endif
 			Node *parent_node = get_parent();
 			while (parent_node) {
 				Control *parent_control = Object::cast_to<Control>(parent_node);
@@ -3034,11 +3074,13 @@ bool Control::is_layout_rtl() const {
 				parent_node = parent_node->get_parent();
 			}
 
-			int root_dir = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
-			if (root_dir == 1) {
+			if (root_layout_direction == 1) {
 				const_cast<Control *>(this)->data.is_rtl = false;
-			} else if (root_dir == 2) {
+			} else if (root_layout_direction == 2) {
 				const_cast<Control *>(this)->data.is_rtl = true;
+			} else if (root_layout_direction == 3) {
+				String locale = OS::get_singleton()->get_locale();
+				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
 			} else {
 				String locale = TranslationServer::get_singleton()->get_tool_locale();
 				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
@@ -3568,6 +3610,8 @@ void Control::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_RESIZED);
 	BIND_CONSTANT(NOTIFICATION_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_MOUSE_EXIT);
+	BIND_CONSTANT(NOTIFICATION_MOUSE_ENTER_SELF);
+	BIND_CONSTANT(NOTIFICATION_MOUSE_EXIT_SELF);
 	BIND_CONSTANT(NOTIFICATION_FOCUS_ENTER);
 	BIND_CONSTANT(NOTIFICATION_FOCUS_EXIT);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);

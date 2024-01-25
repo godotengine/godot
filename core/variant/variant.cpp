@@ -931,7 +931,7 @@ bool Variant::is_zero() const {
 			return *reinterpret_cast<const ::RID *>(_data._mem) == ::RID();
 		}
 		case OBJECT: {
-			return _get_obj().obj == nullptr;
+			return get_validated_object() == nullptr;
 		}
 		case CALLABLE: {
 			return reinterpret_cast<const Callable *>(_data._mem)->is_null();
@@ -1291,7 +1291,13 @@ void Variant::zero() {
 			break;
 
 		default:
+			Type prev_type = type;
 			this->clear();
+			if (type != prev_type) {
+				// clear() changes type to NIL, so it needs to be restored.
+				Callable::CallError ce;
+				Variant::construct(prev_type, *this, nullptr, 0, ce);
+			}
 			break;
 	}
 }

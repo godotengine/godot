@@ -479,8 +479,7 @@ bool TileSetScenesCollectionSourceEditor::_can_drop_data_fw(const Point2 &p_poin
 			}
 
 			for (int i = 0; i < files.size(); i++) {
-				String file = files[i];
-				String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+				String ftype = EditorFileSystem::get_singleton()->get_file_type(files[i]);
 
 				if (!ClassDB::is_parent_class(ftype, "PackedScene")) {
 					return false;
@@ -550,6 +549,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	split_container_right_side->add_child(right_vbox_container);
 
 	scene_tiles_list = memnew(ItemList);
+	scene_tiles_list->set_auto_translate(false);
 	scene_tiles_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	SET_DRAG_FORWARDING_CDU(scene_tiles_list, TileSetScenesCollectionSourceEditor);

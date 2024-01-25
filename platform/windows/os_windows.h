@@ -46,10 +46,15 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+
 #if defined(VULKAN_ENABLED)
 #include "vulkan_context_win.h"
-
-#include "drivers/vulkan/rendering_device_vulkan.h"
+#endif
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/d3d12_context.h"
+#endif
 #endif
 
 #include <io.h>

@@ -69,152 +69,173 @@ void CodeEdit::_notification(int p_what) {
 				}
 			}
 
-			bool code_completion_below = false;
-			if (caret_visible && code_completion_active && code_completion_options.size() > 0) {
-				const int code_completion_options_count = code_completion_options.size();
-				const int lines = MIN(code_completion_options_count, theme_cache.code_completion_max_lines);
-				const Size2 icon_area_size(row_height, row_height);
+			if (caret_visible) {
+				const bool draw_code_completion = code_completion_active && !code_completion_options.is_empty();
+				const bool draw_code_hint = !code_hint.is_empty();
 
-				code_completion_rect.size.width = code_completion_longest_line + theme_cache.code_completion_icon_separation + icon_area_size.width + 2;
-				code_completion_rect.size.height = lines * row_height;
+				/* Code hint */
+				Size2 code_hint_minsize;
+				if (draw_code_hint) {
+					const int font_height = theme_cache.font->get_height(theme_cache.font_size);
 
-				const Point2 caret_pos = get_caret_draw_pos();
-				const int total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
-				const bool can_fit_completion_above = (caret_pos.y - row_height > total_height);
-				const bool can_fit_completion_below = (caret_pos.y + row_height + total_height <= get_size().height);
-				if (!can_fit_completion_below && can_fit_completion_above) {
-					code_completion_rect.position.y = (caret_pos.y - total_height - row_height) + theme_cache.line_spacing;
-				} else {
-					code_completion_rect.position.y = caret_pos.y + (theme_cache.line_spacing / 2.0f);
-					code_completion_below = true;
-				}
+					Vector<String> code_hint_lines = code_hint.split("\n");
+					int line_count = code_hint_lines.size();
 
-				const int scroll_width = code_completion_options_count > theme_cache.code_completion_max_lines ? theme_cache.code_completion_scroll_width : 0;
-				const int code_completion_base_width = theme_cache.font->get_string_size(code_completion_base, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
-				if (caret_pos.x - code_completion_base_width + code_completion_rect.size.width + scroll_width > get_size().width) {
-					code_completion_rect.position.x = get_size().width - code_completion_rect.size.width - scroll_width;
-				} else {
-					code_completion_rect.position.x = caret_pos.x - code_completion_base_width;
-				}
-
-				draw_style_box(theme_cache.code_completion_style, Rect2(code_completion_rect.position - theme_cache.code_completion_style->get_offset(), code_completion_rect.size + theme_cache.code_completion_style->get_minimum_size() + Size2(scroll_width, 0)));
-				if (theme_cache.code_completion_background_color.a > 0.01) {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(code_completion_rect.position, code_completion_rect.size + Size2(scroll_width, 0)), theme_cache.code_completion_background_color);
-				}
-
-				code_completion_scroll_rect.position = code_completion_rect.position + Vector2(code_completion_rect.size.width, 0);
-				code_completion_scroll_rect.size = Vector2(scroll_width, code_completion_rect.size.height);
-
-				code_completion_line_ofs = CLAMP((code_completion_force_item_center < 0 ? code_completion_current_selected : code_completion_force_item_center) - lines / 2, 0, code_completion_options_count - lines);
-				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), theme_cache.code_completion_selected_color);
-
-				for (int i = 0; i < lines; i++) {
-					int l = code_completion_line_ofs + i;
-					ERR_CONTINUE(l < 0 || l >= code_completion_options_count);
-
-					Ref<TextLine> tl;
-					tl.instantiate();
-					tl->add_string(code_completion_options[l].display, theme_cache.font, theme_cache.font_size);
-
-					int yofs = (row_height - tl->get_size().y) / 2;
-					Point2 title_pos(code_completion_rect.position.x, code_completion_rect.position.y + i * row_height + yofs);
-
-					/* Draw completion icon if it is valid. */
-					const Ref<Texture2D> &icon = code_completion_options[l].icon;
-					Rect2 icon_area(code_completion_rect.position.x, code_completion_rect.position.y + i * row_height, icon_area_size.width, icon_area_size.height);
-					if (icon.is_valid()) {
-						Size2 icon_size = icon_area.size * 0.7;
-						icon->draw_rect(ci, Rect2(icon_area.position + (icon_area.size - icon_size) / 2, icon_size));
+					int max_width = 0;
+					for (int i = 0; i < line_count; i++) {
+						max_width = MAX(max_width, theme_cache.font->get_string_size(code_hint_lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x);
 					}
-					title_pos.x = icon_area.position.x + icon_area.size.width + theme_cache.code_completion_icon_separation;
+					code_hint_minsize = theme_cache.code_hint_style->get_minimum_size() + Size2(max_width, line_count * font_height + (theme_cache.line_spacing * line_count - 1));
 
-					tl->set_width(code_completion_rect.size.width - (icon_area_size.x + theme_cache.code_completion_icon_separation));
-					if (rtl) {
-						if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
-							draw_rect(Rect2(Point2(code_completion_rect.position.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
-						}
-						tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+					int offset = theme_cache.font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
+					if (code_hint_xpos == -0xFFFF) {
+						code_hint_xpos = get_caret_draw_pos().x - offset;
+					}
+					Point2 hint_ofs = Vector2(code_hint_xpos, get_caret_draw_pos().y);
+					if (code_hint_draw_below) {
+						hint_ofs.y += theme_cache.line_spacing / 2.0f;
 					} else {
-						if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
-							draw_rect(Rect2(Point2(code_completion_rect.position.x + code_completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
+						hint_ofs.y -= (code_hint_minsize.y + row_height) - theme_cache.line_spacing;
+					}
+
+					draw_style_box(theme_cache.code_hint_style, Rect2(hint_ofs, code_hint_minsize));
+
+					int yofs = 0;
+					for (int i = 0; i < line_count; i++) {
+						const String &line = code_hint_lines[i];
+
+						int begin = 0;
+						int end = 0;
+						if (line.contains(String::chr(0xFFFF))) {
+							begin = theme_cache.font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
+							end = theme_cache.font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
 						}
-						tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+
+						Point2 round_ofs = hint_ofs + theme_cache.code_hint_style->get_offset() + Vector2(0, theme_cache.font->get_ascent(theme_cache.font_size) + font_height * i + yofs);
+						round_ofs = round_ofs.round();
+						draw_string(theme_cache.font, round_ofs, line.replace(String::chr(0xFFFF), ""), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size, theme_cache.code_hint_color);
+						if (end > 0) {
+							// Draw an underline for the currently edited function parameter.
+							const Vector2 b = hint_ofs + theme_cache.code_hint_style->get_offset() + Vector2(begin, font_height + font_height * i + yofs);
+							draw_line(b, b + Vector2(end - begin, 0), theme_cache.code_hint_color, 2);
+
+							// Draw a translucent text highlight as well.
+							const Rect2 highlight_rect = Rect2(
+									b - Vector2(0, font_height),
+									Vector2(end - begin, font_height));
+							draw_rect(highlight_rect, theme_cache.code_hint_color * Color(1, 1, 1, 0.2));
+						}
+						yofs += theme_cache.line_spacing;
+					}
+				}
+
+				/* Code completion */
+				if (draw_code_completion) {
+					const int code_completion_options_count = code_completion_options.size();
+					const int lines = MIN(code_completion_options_count, theme_cache.code_completion_max_lines);
+					const Size2 icon_area_size(row_height, row_height);
+
+					code_completion_rect.size.width = code_completion_longest_line + theme_cache.code_completion_icon_separation + icon_area_size.width + 2;
+					code_completion_rect.size.height = lines * row_height;
+
+					const Point2 caret_pos = get_caret_draw_pos();
+					const int total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
+					int min_y = caret_pos.y - row_height;
+					int max_y = caret_pos.y + row_height + total_height;
+					if (draw_code_hint) {
+						if (code_hint_draw_below) {
+							max_y += code_hint_minsize.y;
+						} else {
+							min_y -= code_hint_minsize.y;
+						}
 					}
 
-					Point2 match_pos = Point2(code_completion_rect.position.x + icon_area_size.x + theme_cache.code_completion_icon_separation, code_completion_rect.position.y + i * row_height);
-
-					for (int j = 0; j < code_completion_options[l].matches.size(); j++) {
-						Pair<int, int> match_segment = code_completion_options[l].matches[j];
-						int match_offset = theme_cache.font->get_string_size(code_completion_options[l].display.substr(0, match_segment.first), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
-						int match_len = theme_cache.font->get_string_size(code_completion_options[l].display.substr(match_segment.first, match_segment.second), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
-
-						draw_rect(Rect2(match_pos + Point2(match_offset, 0), Size2(match_len, row_height)), theme_cache.code_completion_existing_color);
-					}
-					tl->draw(ci, title_pos, code_completion_options[l].font_color);
-				}
-
-				/* Draw a small scroll rectangle to show a position in the options. */
-				if (scroll_width) {
-					Color scroll_color = is_code_completion_scroll_hovered || is_code_completion_scroll_pressed ? theme_cache.code_completion_scroll_hovered_color : theme_cache.code_completion_scroll_color;
-
-					float r = (float)theme_cache.code_completion_max_lines / code_completion_options_count;
-					float o = (float)code_completion_line_ofs / code_completion_options_count;
-					draw_rect(Rect2(code_completion_rect.position.x + code_completion_rect.size.width, code_completion_rect.position.y + o * code_completion_rect.size.y, scroll_width, code_completion_rect.size.y * r), scroll_color);
-				}
-			}
-
-			/* Code hint */
-			if (caret_visible && !code_hint.is_empty() && (!code_completion_active || (code_completion_below != code_hint_draw_below))) {
-				const int font_height = theme_cache.font->get_height(theme_cache.font_size);
-
-				Vector<String> code_hint_lines = code_hint.split("\n");
-				int line_count = code_hint_lines.size();
-
-				int max_width = 0;
-				for (int i = 0; i < line_count; i++) {
-					max_width = MAX(max_width, theme_cache.font->get_string_size(code_hint_lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x);
-				}
-				Size2 minsize = theme_cache.code_hint_style->get_minimum_size() + Size2(max_width, line_count * font_height + (theme_cache.line_spacing * line_count - 1));
-
-				int offset = theme_cache.font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
-				if (code_hint_xpos == -0xFFFF) {
-					code_hint_xpos = get_caret_draw_pos().x - offset;
-				}
-				Point2 hint_ofs = Vector2(code_hint_xpos, get_caret_draw_pos().y);
-				if (code_hint_draw_below) {
-					hint_ofs.y += theme_cache.line_spacing / 2.0f;
-				} else {
-					hint_ofs.y -= (minsize.y + row_height) - theme_cache.line_spacing;
-				}
-
-				draw_style_box(theme_cache.code_hint_style, Rect2(hint_ofs, minsize));
-
-				int yofs = 0;
-				for (int i = 0; i < line_count; i++) {
-					const String &line = code_hint_lines[i];
-
-					int begin = 0;
-					int end = 0;
-					if (line.contains(String::chr(0xFFFF))) {
-						begin = theme_cache.font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
-						end = theme_cache.font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
+					const bool can_fit_completion_above = (min_y > total_height);
+					const bool can_fit_completion_below = (max_y <= get_size().height);
+					if (!can_fit_completion_below && can_fit_completion_above) {
+						code_completion_rect.position.y = (caret_pos.y - total_height - row_height) + theme_cache.line_spacing;
+						if (draw_code_hint && !code_hint_draw_below) {
+							code_completion_rect.position.y -= code_hint_minsize.y;
+						}
+					} else {
+						code_completion_rect.position.y = caret_pos.y + (theme_cache.line_spacing / 2.0f);
+						if (draw_code_hint && code_hint_draw_below) {
+							code_completion_rect.position.y += code_hint_minsize.y;
+						}
 					}
 
-					Point2 round_ofs = hint_ofs + theme_cache.code_hint_style->get_offset() + Vector2(0, theme_cache.font->get_ascent(theme_cache.font_size) + font_height * i + yofs);
-					round_ofs = round_ofs.round();
-					draw_string(theme_cache.font, round_ofs, line.replace(String::chr(0xFFFF), ""), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size, theme_cache.code_hint_color);
-					if (end > 0) {
-						// Draw an underline for the currently edited function parameter.
-						const Vector2 b = hint_ofs + theme_cache.code_hint_style->get_offset() + Vector2(begin, font_height + font_height * i + yofs);
-						draw_line(b, b + Vector2(end - begin, 0), theme_cache.code_hint_color, 2);
-
-						// Draw a translucent text highlight as well.
-						const Rect2 highlight_rect = Rect2(
-								b - Vector2(0, font_height),
-								Vector2(end - begin, font_height));
-						draw_rect(highlight_rect, theme_cache.code_hint_color * Color(1, 1, 1, 0.2));
+					const int scroll_width = code_completion_options_count > theme_cache.code_completion_max_lines ? theme_cache.code_completion_scroll_width : 0;
+					const int code_completion_base_width = theme_cache.font->get_string_size(code_completion_base, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
+					if (caret_pos.x - code_completion_base_width + code_completion_rect.size.width + scroll_width > get_size().width) {
+						code_completion_rect.position.x = get_size().width - code_completion_rect.size.width - scroll_width;
+					} else {
+						code_completion_rect.position.x = caret_pos.x - code_completion_base_width;
 					}
-					yofs += theme_cache.line_spacing;
+
+					draw_style_box(theme_cache.code_completion_style, Rect2(code_completion_rect.position - theme_cache.code_completion_style->get_offset(), code_completion_rect.size + theme_cache.code_completion_style->get_minimum_size() + Size2(scroll_width, 0)));
+					if (theme_cache.code_completion_background_color.a > 0.01) {
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(code_completion_rect.position, code_completion_rect.size + Size2(scroll_width, 0)), theme_cache.code_completion_background_color);
+					}
+
+					code_completion_scroll_rect.position = code_completion_rect.position + Vector2(code_completion_rect.size.width, 0);
+					code_completion_scroll_rect.size = Vector2(scroll_width, code_completion_rect.size.height);
+
+					code_completion_line_ofs = CLAMP((code_completion_force_item_center < 0 ? code_completion_current_selected : code_completion_force_item_center) - lines / 2, 0, code_completion_options_count - lines);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), theme_cache.code_completion_selected_color);
+
+					for (int i = 0; i < lines; i++) {
+						int l = code_completion_line_ofs + i;
+						ERR_CONTINUE(l < 0 || l >= code_completion_options_count);
+
+						Ref<TextLine> tl;
+						tl.instantiate();
+						tl->add_string(code_completion_options[l].display, theme_cache.font, theme_cache.font_size);
+
+						int yofs = (row_height - tl->get_size().y) / 2;
+						Point2 title_pos(code_completion_rect.position.x, code_completion_rect.position.y + i * row_height + yofs);
+
+						/* Draw completion icon if it is valid. */
+						const Ref<Texture2D> &icon = code_completion_options[l].icon;
+						Rect2 icon_area(code_completion_rect.position.x, code_completion_rect.position.y + i * row_height, icon_area_size.width, icon_area_size.height);
+						if (icon.is_valid()) {
+							Size2 icon_size = icon_area.size * 0.7;
+							icon->draw_rect(ci, Rect2(icon_area.position + (icon_area.size - icon_size) / 2, icon_size));
+						}
+						title_pos.x = icon_area.position.x + icon_area.size.width + theme_cache.code_completion_icon_separation;
+
+						tl->set_width(code_completion_rect.size.width - (icon_area_size.x + theme_cache.code_completion_icon_separation));
+						if (rtl) {
+							if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
+								draw_rect(Rect2(Point2(code_completion_rect.position.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
+							}
+							tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+						} else {
+							if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
+								draw_rect(Rect2(Point2(code_completion_rect.position.x + code_completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
+							}
+							tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+						}
+
+						Point2 match_pos = Point2(code_completion_rect.position.x + icon_area_size.x + theme_cache.code_completion_icon_separation, code_completion_rect.position.y + i * row_height);
+
+						for (int j = 0; j < code_completion_options[l].matches.size(); j++) {
+							Pair<int, int> match_segment = code_completion_options[l].matches[j];
+							int match_offset = theme_cache.font->get_string_size(code_completion_options[l].display.substr(0, match_segment.first), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
+							int match_len = theme_cache.font->get_string_size(code_completion_options[l].display.substr(match_segment.first, match_segment.second), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
+
+							draw_rect(Rect2(match_pos + Point2(match_offset, 0), Size2(match_len, row_height)), theme_cache.code_completion_existing_color);
+						}
+						tl->draw(ci, title_pos, code_completion_options[l].font_color);
+					}
+
+					/* Draw a small scroll rectangle to show a position in the options. */
+					if (scroll_width) {
+						Color scroll_color = is_code_completion_scroll_hovered || is_code_completion_scroll_pressed ? theme_cache.code_completion_scroll_hovered_color : theme_cache.code_completion_scroll_color;
+
+						float r = (float)theme_cache.code_completion_max_lines / code_completion_options_count;
+						float o = (float)code_completion_line_ofs / code_completion_options_count;
+						draw_rect(Rect2(code_completion_rect.position.x + code_completion_rect.size.width, code_completion_rect.position.y + o * code_completion_rect.size.y, scroll_width, code_completion_rect.size.y * r), scroll_color);
+					}
 				}
 			}
 		} break;
@@ -2904,7 +2925,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 
 	int in_region = -1;
 	for (int i = start_line; i < MIN(end_line + 1, line_count); i++) {
-		int current_end_region = (i <= 0 || delimiter_cache[i].size() < 1) ? -1 : delimiter_cache[i].back()->value();
+		int current_end_region = (i < 0 || delimiter_cache[i].size() < 1) ? -1 : delimiter_cache[i].back()->value();
 		in_region = (i <= 0 || delimiter_cache[i - 1].size() < 1) ? -1 : delimiter_cache[i - 1].back()->value();
 
 		const String &str = get_line(i);

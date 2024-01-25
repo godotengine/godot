@@ -64,6 +64,8 @@ void NavigationServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &NavigationServer3D::map_force_update);
 
+	ClassDB::bind_method(D_METHOD("map_get_random_point", "map", "navigation_layers", "uniformly"), &NavigationServer3D::map_get_random_point);
+
 	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result"), &NavigationServer3D::query_path);
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer3D::region_create);
@@ -83,6 +85,7 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_set_navigation_layers", "region", "navigation_layers"), &NavigationServer3D::region_set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("region_get_navigation_layers", "region"), &NavigationServer3D::region_get_navigation_layers);
 	ClassDB::bind_method(D_METHOD("region_set_transform", "region", "transform"), &NavigationServer3D::region_set_transform);
+	ClassDB::bind_method(D_METHOD("region_get_transform", "region"), &NavigationServer3D::region_get_transform);
 	ClassDB::bind_method(D_METHOD("region_set_navigation_mesh", "region", "navigation_mesh"), &NavigationServer3D::region_set_navigation_mesh);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("region_bake_navigation_mesh", "navigation_mesh", "root_node"), &NavigationServer3D::region_bake_navigation_mesh);
@@ -90,6 +93,7 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_connections_count", "region"), &NavigationServer3D::region_get_connections_count);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_start", "region", "connection"), &NavigationServer3D::region_get_connection_pathway_start);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_end", "region", "connection"), &NavigationServer3D::region_get_connection_pathway_end);
+	ClassDB::bind_method(D_METHOD("region_get_random_point", "region", "navigation_layers", "uniformly"), &NavigationServer3D::region_get_random_point);
 
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer3D::link_create);
 	ClassDB::bind_method(D_METHOD("link_set_map", "link", "map"), &NavigationServer3D::link_set_map);
@@ -122,20 +126,33 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_set_paused", "agent", "paused"), &NavigationServer3D::agent_set_paused);
 	ClassDB::bind_method(D_METHOD("agent_get_paused", "agent"), &NavigationServer3D::agent_get_paused);
 	ClassDB::bind_method(D_METHOD("agent_set_neighbor_distance", "agent", "distance"), &NavigationServer3D::agent_set_neighbor_distance);
+	ClassDB::bind_method(D_METHOD("agent_get_neighbor_distance", "agent"), &NavigationServer3D::agent_get_neighbor_distance);
 	ClassDB::bind_method(D_METHOD("agent_set_max_neighbors", "agent", "count"), &NavigationServer3D::agent_set_max_neighbors);
+	ClassDB::bind_method(D_METHOD("agent_get_max_neighbors", "agent"), &NavigationServer3D::agent_get_max_neighbors);
 	ClassDB::bind_method(D_METHOD("agent_set_time_horizon_agents", "agent", "time_horizon"), &NavigationServer3D::agent_set_time_horizon_agents);
+	ClassDB::bind_method(D_METHOD("agent_get_time_horizon_agents", "agent"), &NavigationServer3D::agent_get_time_horizon_agents);
 	ClassDB::bind_method(D_METHOD("agent_set_time_horizon_obstacles", "agent", "time_horizon"), &NavigationServer3D::agent_set_time_horizon_obstacles);
+	ClassDB::bind_method(D_METHOD("agent_get_time_horizon_obstacles", "agent"), &NavigationServer3D::agent_get_time_horizon_obstacles);
 	ClassDB::bind_method(D_METHOD("agent_set_radius", "agent", "radius"), &NavigationServer3D::agent_set_radius);
+	ClassDB::bind_method(D_METHOD("agent_get_radius", "agent"), &NavigationServer3D::agent_get_radius);
 	ClassDB::bind_method(D_METHOD("agent_set_height", "agent", "height"), &NavigationServer3D::agent_set_height);
+	ClassDB::bind_method(D_METHOD("agent_get_height", "agent"), &NavigationServer3D::agent_get_height);
 	ClassDB::bind_method(D_METHOD("agent_set_max_speed", "agent", "max_speed"), &NavigationServer3D::agent_set_max_speed);
+	ClassDB::bind_method(D_METHOD("agent_get_max_speed", "agent"), &NavigationServer3D::agent_get_max_speed);
 	ClassDB::bind_method(D_METHOD("agent_set_velocity_forced", "agent", "velocity"), &NavigationServer3D::agent_set_velocity_forced);
 	ClassDB::bind_method(D_METHOD("agent_set_velocity", "agent", "velocity"), &NavigationServer3D::agent_set_velocity);
+	ClassDB::bind_method(D_METHOD("agent_get_velocity", "agent"), &NavigationServer3D::agent_get_velocity);
 	ClassDB::bind_method(D_METHOD("agent_set_position", "agent", "position"), &NavigationServer3D::agent_set_position);
+	ClassDB::bind_method(D_METHOD("agent_get_position", "agent"), &NavigationServer3D::agent_get_position);
 	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &NavigationServer3D::agent_is_map_changed);
 	ClassDB::bind_method(D_METHOD("agent_set_avoidance_callback", "agent", "callback"), &NavigationServer3D::agent_set_avoidance_callback);
+	ClassDB::bind_method(D_METHOD("agent_has_avoidance_callback", "agent"), &NavigationServer3D::agent_has_avoidance_callback);
 	ClassDB::bind_method(D_METHOD("agent_set_avoidance_layers", "agent", "layers"), &NavigationServer3D::agent_set_avoidance_layers);
+	ClassDB::bind_method(D_METHOD("agent_get_avoidance_layers", "agent"), &NavigationServer3D::agent_get_avoidance_layers);
 	ClassDB::bind_method(D_METHOD("agent_set_avoidance_mask", "agent", "mask"), &NavigationServer3D::agent_set_avoidance_mask);
+	ClassDB::bind_method(D_METHOD("agent_get_avoidance_mask", "agent"), &NavigationServer3D::agent_get_avoidance_mask);
 	ClassDB::bind_method(D_METHOD("agent_set_avoidance_priority", "agent", "priority"), &NavigationServer3D::agent_set_avoidance_priority);
+	ClassDB::bind_method(D_METHOD("agent_get_avoidance_priority", "agent"), &NavigationServer3D::agent_get_avoidance_priority);
 
 	ClassDB::bind_method(D_METHOD("obstacle_create"), &NavigationServer3D::obstacle_create);
 	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_enabled", "obstacle", "enabled"), &NavigationServer3D::obstacle_set_avoidance_enabled);
@@ -147,11 +164,17 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("obstacle_set_paused", "obstacle", "paused"), &NavigationServer3D::obstacle_set_paused);
 	ClassDB::bind_method(D_METHOD("obstacle_get_paused", "obstacle"), &NavigationServer3D::obstacle_get_paused);
 	ClassDB::bind_method(D_METHOD("obstacle_set_radius", "obstacle", "radius"), &NavigationServer3D::obstacle_set_radius);
+	ClassDB::bind_method(D_METHOD("obstacle_get_radius", "obstacle"), &NavigationServer3D::obstacle_get_radius);
 	ClassDB::bind_method(D_METHOD("obstacle_set_height", "obstacle", "height"), &NavigationServer3D::obstacle_set_height);
+	ClassDB::bind_method(D_METHOD("obstacle_get_height", "obstacle"), &NavigationServer3D::obstacle_get_height);
 	ClassDB::bind_method(D_METHOD("obstacle_set_velocity", "obstacle", "velocity"), &NavigationServer3D::obstacle_set_velocity);
+	ClassDB::bind_method(D_METHOD("obstacle_get_velocity", "obstacle"), &NavigationServer3D::obstacle_get_velocity);
 	ClassDB::bind_method(D_METHOD("obstacle_set_position", "obstacle", "position"), &NavigationServer3D::obstacle_set_position);
+	ClassDB::bind_method(D_METHOD("obstacle_get_position", "obstacle"), &NavigationServer3D::obstacle_get_position);
 	ClassDB::bind_method(D_METHOD("obstacle_set_vertices", "obstacle", "vertices"), &NavigationServer3D::obstacle_set_vertices);
+	ClassDB::bind_method(D_METHOD("obstacle_get_vertices", "obstacle"), &NavigationServer3D::obstacle_get_vertices);
 	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_layers", "obstacle", "layers"), &NavigationServer3D::obstacle_set_avoidance_layers);
+	ClassDB::bind_method(D_METHOD("obstacle_get_avoidance_layers", "obstacle"), &NavigationServer3D::obstacle_get_avoidance_layers);
 
 	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_mesh", "source_geometry_data", "root_node", "callback"), &NavigationServer3D::parse_source_geometry_data, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data, DEFVAL(Callable()));
@@ -190,12 +213,12 @@ NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF_BASIC("navigation/2d/default_cell_size", 1.0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), 1.0);
 	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
 	GLOBAL_DEF_BASIC("navigation/2d/default_edge_connection_margin", 1.0);
 	GLOBAL_DEF_BASIC("navigation/2d/default_link_connection_radius", 4.0);
 
-	GLOBAL_DEF_BASIC("navigation/3d/default_cell_size", 0.25);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), 0.25);
 	GLOBAL_DEF_BASIC("navigation/3d/default_cell_height", 0.25);
 	GLOBAL_DEF("navigation/3d/default_up", Vector3(0, 1, 0));
 	GLOBAL_DEF("navigation/3d/use_edge_connections", true);
@@ -263,7 +286,7 @@ void NavigationServer3D::set_debug_enabled(bool p_enabled) {
 	debug_enabled = p_enabled;
 
 	if (debug_dirty) {
-		call_deferred("_emit_navigation_debug_changed_signal");
+		callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 	}
 #endif // DEBUG_ENABLED
 }
@@ -670,7 +693,7 @@ Color NavigationServer3D::get_debug_navigation_agent_path_color() const {
 void NavigationServer3D::set_debug_navigation_enable_edge_connections(const bool p_value) {
 	debug_navigation_enable_edge_connections = p_value;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enable_edge_connections() const {
@@ -691,7 +714,7 @@ bool NavigationServer3D::get_debug_navigation_enable_edge_connections_xray() con
 void NavigationServer3D::set_debug_navigation_enable_edge_lines(const bool p_value) {
 	debug_navigation_enable_edge_lines = p_value;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enable_edge_lines() const {
@@ -712,7 +735,7 @@ bool NavigationServer3D::get_debug_navigation_enable_edge_lines_xray() const {
 void NavigationServer3D::set_debug_navigation_enable_geometry_face_random_color(const bool p_value) {
 	debug_navigation_enable_geometry_face_random_color = p_value;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enable_geometry_face_random_color() const {
@@ -722,7 +745,7 @@ bool NavigationServer3D::get_debug_navigation_enable_geometry_face_random_color(
 void NavigationServer3D::set_debug_navigation_enable_link_connections(const bool p_value) {
 	debug_navigation_enable_link_connections = p_value;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enable_link_connections() const {
@@ -743,7 +766,7 @@ bool NavigationServer3D::get_debug_navigation_enable_link_connections_xray() con
 void NavigationServer3D::set_debug_navigation_avoidance_enable_agents_radius(const bool p_value) {
 	debug_navigation_avoidance_enable_agents_radius = p_value;
 	avoidance_debug_dirty = true;
-	call_deferred("_emit_avoidance_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_avoidance_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_avoidance_enable_agents_radius() const {
@@ -753,7 +776,7 @@ bool NavigationServer3D::get_debug_navigation_avoidance_enable_agents_radius() c
 void NavigationServer3D::set_debug_navigation_avoidance_enable_obstacles_radius(const bool p_value) {
 	debug_navigation_avoidance_enable_obstacles_radius = p_value;
 	avoidance_debug_dirty = true;
-	call_deferred("_emit_avoidance_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_avoidance_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_avoidance_enable_obstacles_radius() const {
@@ -763,7 +786,7 @@ bool NavigationServer3D::get_debug_navigation_avoidance_enable_obstacles_radius(
 void NavigationServer3D::set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value) {
 	debug_navigation_avoidance_enable_obstacles_static = p_value;
 	avoidance_debug_dirty = true;
-	call_deferred("_emit_avoidance_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_avoidance_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_avoidance_enable_obstacles_static() const {
@@ -844,7 +867,7 @@ void NavigationServer3D::set_debug_navigation_enable_agent_paths(const bool p_va
 	debug_navigation_enable_agent_paths = p_value;
 
 	if (debug_dirty) {
-		call_deferred("_emit_navigation_debug_changed_signal");
+		callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 	}
 }
 
@@ -869,7 +892,7 @@ bool NavigationServer3D::get_debug_navigation_enable_agent_paths_xray() const {
 void NavigationServer3D::set_debug_navigation_enabled(bool p_enabled) {
 	debug_navigation_enabled = p_enabled;
 	navigation_debug_dirty = true;
-	call_deferred("_emit_navigation_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_navigation_enabled() const {
@@ -879,7 +902,7 @@ bool NavigationServer3D::get_debug_navigation_enabled() const {
 void NavigationServer3D::set_debug_avoidance_enabled(bool p_enabled) {
 	debug_avoidance_enabled = p_enabled;
 	avoidance_debug_dirty = true;
-	call_deferred("_emit_avoidance_debug_changed_signal");
+	callable_mp(this, &NavigationServer3D::_emit_avoidance_debug_changed_signal).call_deferred();
 }
 
 bool NavigationServer3D::get_debug_avoidance_enabled() const {

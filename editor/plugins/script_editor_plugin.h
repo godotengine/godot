@@ -204,6 +204,10 @@ class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
 class FindInFilesPanel;
 
+#ifdef MINGW_ENABLED
+#undef FILE_OPEN
+#endif
+
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
 
@@ -395,6 +399,7 @@ class ScriptEditor : public PanelContainer {
 	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
 	bool convert_indent_on_save;
+	bool external_editor_active;
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);

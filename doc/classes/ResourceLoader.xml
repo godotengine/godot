@@ -28,6 +28,7 @@
 			<description>
 				Returns whether a recognized resource exists for the given [param path].
 				An optional [param type_hint] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader]. Anything that inherits from [Resource] can be used as a type hint, for example [Image].
+				[b]Note:[/b] If you use [method Resource.take_over_path], this method will return [code]true[/code] for the taken path even if the resource wasn't saved (i.e. exists only in resource cache).
 			</description>
 		</method>
 		<method name="get_dependencies">
@@ -137,10 +138,13 @@
 			The resource was loaded successfully and can be accessed via [method load_threaded_get].
 		</constant>
 		<constant name="CACHE_MODE_IGNORE" value="0" enum="CacheMode">
+			The resource is always loaded from disk, even if a cache entry exists for its path, and the newly loaded copy will not be cached. Instances loaded with this mode will exist independently.
 		</constant>
 		<constant name="CACHE_MODE_REUSE" value="1" enum="CacheMode">
+			If a resource is cached, returns the cached reference. Otherwise it's loaded from disk.
 		</constant>
 		<constant name="CACHE_MODE_REPLACE" value="2" enum="CacheMode">
+			The resource is always loaded from disk, even if a cache entry exists for its path. The cached entry will be replaced by the newly loaded copy.
 		</constant>
 	</constants>
 </class>

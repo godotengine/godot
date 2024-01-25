@@ -41,6 +41,8 @@ class Animation : public Resource {
 	RES_BASE_EXTENSION("anim");
 
 public:
+	typedef uint32_t TypeHash;
+
 	enum TrackType {
 		TYPE_VALUE, ///< Set a value in a property, can be interpolated.
 		TYPE_POSITION_3D, ///< Position 3D track
@@ -104,7 +106,8 @@ private:
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
 		bool loop_wrap = true;
-		NodePath path; // path to something
+		NodePath path; // Path to something.
+		TypeHash thash = 0; // Hash by Path + SubPath + TrackType.
 		bool imported = false;
 		bool enabled = true;
 		Track() {}
@@ -268,6 +271,8 @@ private:
 	real_t step = 0.1;
 	LoopMode loop_mode = LOOP_NONE;
 
+	void _track_update_hash(int p_track);
+
 	/* Animation compression page format (version 1):
 	 *
 	 * Animation uses bitwidth based compression separated into small pages. The intention is that pages fit easily in the cache, so decoding is cache efficient.
@@ -373,6 +378,8 @@ protected:
 
 	static void _bind_methods();
 
+	static bool inform_variant_array(int &r_min, int &r_max); // Returns true if max and min are swapped.
+
 public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
@@ -383,6 +390,8 @@ public:
 	void track_set_path(int p_track, const NodePath &p_path);
 	NodePath track_get_path(int p_track) const;
 	int find_track(const NodePath &p_path, const TrackType p_type) const;
+
+	TypeHash track_get_type_hash(int p_track) const;
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
@@ -487,11 +496,22 @@ public:
 	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);
 	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests
 
-	// Helper math functions for Variant.
+	// Helper functions for Variant.
+	static bool is_variant_interpolatable(const Variant p_value);
+
+	static Variant cast_to_blendwise(const Variant p_value);
+	static Variant cast_from_blendwise(const Variant p_value, const Variant::Type p_type);
+
+	static Variant string_to_array(const Variant p_value);
+	static Variant array_to_string(const Variant p_value);
+
 	static Variant add_variant(const Variant &a, const Variant &b);
 	static Variant subtract_variant(const Variant &a, const Variant &b);
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
-	static Variant interpolate_variant(const Variant &a, const Variant &b, float c);
+	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
+	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
+
+	static TrackType get_cache_type(TrackType p_type);
 
 	Animation();
 	~Animation();

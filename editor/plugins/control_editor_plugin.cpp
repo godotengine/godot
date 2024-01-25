@@ -189,7 +189,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 
-		String option_name = text_split[0];
+		const String &option_name = text_split[0];
 		if (option_name.begins_with("Preset")) {
 			String preset_name = option_name.trim_prefix("Preset");
 			String humanized_name = preset_name.capitalize();

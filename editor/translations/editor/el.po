@@ -887,15 +887,6 @@ msgstr "Κλείσιμο"
 msgid "Connect"
 msgstr "Σύνδεση"
 
-msgid "Class:"
-msgstr "Κλάση:"
-
-msgid "Signal:"
-msgstr "Σήμα:"
-
-msgid "No description."
-msgstr "Καμία Περιγραφή."
-
 msgid "Connect '%s' to '%s'"
 msgstr "Σύνδεση του '%s' στο '%s'"
 
@@ -1258,21 +1249,6 @@ msgstr "Χρυσοί Χορυγοί"
 
 msgid "Silver Sponsors"
 msgstr "Αργυροί Δωρητές"
-
-msgid "Bronze Sponsors"
-msgstr "Χάλκινοι Δωρητές"
-
-msgid "Mini Sponsors"
-msgstr "Μικροί Χορηγοί"
-
-msgid "Gold Donors"
-msgstr "Χρυσοί Δωρητές"
-
-msgid "Silver Donors"
-msgstr "Αργυροί Δωρητές"
-
-msgid "Bronze Donors"
-msgstr "Χάλκινοι Δωρητές"
 
 msgid "Donors"
 msgstr "Δωρητές"
@@ -1646,6 +1622,9 @@ msgstr "Επιστρεφόμενοι κωδικοί σφάλματος:"
 msgid "Top"
 msgstr "Κορυφή"
 
+msgid "Class:"
+msgstr "Κλάση:"
+
 msgid "Inherits:"
 msgstr "Κληρονομεί:"
 
@@ -1697,6 +1676,12 @@ msgstr ""
 
 msgid "Method Descriptions"
 msgstr "Περιγραφές μεθόδων"
+
+msgid "Property:"
+msgstr "Ιδιότητα:"
+
+msgid "Signal:"
+msgstr "Σήμα:"
 
 msgid "%d match."
 msgstr "%d αποτέλεσμα."
@@ -1760,9 +1745,6 @@ msgstr "Ιδιόκτησία"
 
 msgid "Theme Property"
 msgstr "Ιδιότητα Θέματος"
-
-msgid "Property:"
-msgstr "Ιδιότητα:"
 
 msgid "Move Up"
 msgstr "Μετακίνηση πάνω"
@@ -2031,17 +2013,6 @@ msgstr ""
 "Αποτυχία φόρτωσης δέσμης ενεργειών προσθέτου από τη διαδρομή: '%s'. Φαίνεται "
 "πως υπάρχει λάθος στον κώδικα.\n"
 "Έγινε απενεργοποίηση το προσθέτου '%s' για αποτροπή περαιτέρω προβλημάτων."
-
-msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Αδύνατη η φόρτωση δέσμης ενεργειών προσθέτου από τη διαδρομή: '%s'. Ο βασικός "
-"τύπος δεν είναι το EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Αδύνατη η φόρτωση δέσμης ενεργειών προσθέτου από τη διαδρομή: '%s'. Δεν είναι "
-"σε λειτουργία tool."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -2440,6 +2411,9 @@ msgstr ""
 msgid "Make Unique"
 msgstr "Κάνε μοναδικό"
 
+msgid "Save As..."
+msgstr "Αποθήκευση ως..."
+
 msgid "Show in FileSystem"
 msgstr "Εμφάνιση στο Σύστημα Αρχείων"
 
@@ -2613,11 +2587,11 @@ msgstr "Προτύπων Εξαγωγής Godot"
 msgid "Runnable"
 msgstr "Εκτελέσιμο"
 
-msgid "Resources to export:"
-msgstr "Πόροι για εξαγωγή:"
-
 msgid "Delete preset '%s'?"
 msgstr "Διαγραφή διαμόρφωσης '%s';"
+
+msgid "Resources to export:"
+msgstr "Πόροι για εξαγωγή:"
 
 msgid "Release"
 msgstr "Ελευθέρωση"
@@ -2751,9 +2725,6 @@ msgstr "Διπλασιασμός καταλόγου:"
 msgid "New Inherited Scene"
 msgstr "Νέα Κληρονομημένη Σκηνή"
 
-msgid "Set As Main Scene"
-msgstr "Ορισμός Ως Κύρια Σκηνή"
-
 msgid "Open Scenes"
 msgstr "Άνοιγμα Σκηνών"
 
@@ -2798,9 +2769,6 @@ msgstr "Μετονομασία..."
 
 msgid "Re-Scan Filesystem"
 msgstr "Εκ νέου σάρωση το συστήματος αρχείων"
-
-msgid "Toggle Split Mode"
-msgstr "Εναλλαγή Λειτουργίας Διαχωρισμού"
 
 msgid ""
 "Scanning Files,\n"
@@ -3137,9 +3105,6 @@ msgstr "Φόρτωσε υπάρχων πόρο στη μνήμη και επεξ
 
 msgid "Save the currently edited resource."
 msgstr "Αποθήκευσε το τρέχων επεξεργαζόμενο πόρο."
-
-msgid "Save As..."
-msgstr "Αποθήκευση ως..."
 
 msgid "Copy Resource"
 msgstr "Αντιγραφή πόρου"
@@ -3508,14 +3473,14 @@ msgstr "Καρφίτσωμα AnimationPlayer"
 msgid "Error!"
 msgstr "Σφάλμα!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Χρόνοι ανάμειξης κινήσεων"
+
 msgid "Blend Times:"
 msgstr "Χρόνοι ανάμειξης:"
 
 msgid "Next (Auto Queue):"
 msgstr "Επόμενο (Αυτόματη σειρά):"
-
-msgid "Cross-Animation Blend Times"
-msgstr "Χρόνοι ανάμειξης κινήσεων"
 
 msgid "Move Node"
 msgstr "Μετακίνηση Κόμβου"
@@ -6496,14 +6461,6 @@ msgstr ""
 "Η απενεργοποίηση του «editable_instance» θα επαναφέρει όλες τις ιδιότητες του "
 "κόμβου στις προεπιλογές τους."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Η ενεργοποίηση του «Φόρτωση ως μέσο κράτησης» θα απενεργοποιήσει το "
-"«Επεξεργάσιμα παιδιά» και θα επαναφέρει όλες τις ιδιότητες του κόμβου στις "
-"προεπιλογές τους."
-
 msgid "Make Local"
 msgstr "Κάνε τοπικό"
 
@@ -6560,9 +6517,6 @@ msgstr "Εκκαθάριση κληρονομικότητας"
 
 msgid "Editable Children"
 msgstr "Επεξεργάσιμα παιδιά"
-
-msgid "Load As Placeholder"
-msgstr "Φόρτωση ως μέσο κράτησης"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"

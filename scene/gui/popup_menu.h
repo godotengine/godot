@@ -40,6 +40,8 @@
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
 
+	static HashMap<String, PopupMenu *> system_menus;
+
 	struct Item {
 		Ref<Texture2D> icon;
 		int icon_max_width = 0;
@@ -90,6 +92,7 @@ class PopupMenu : public Popup {
 	};
 
 	String global_menu_name;
+	String system_menu_name;
 
 	bool close_allowed = false;
 	bool activated_by_keyboard = false;
@@ -112,7 +115,6 @@ class PopupMenu : public Popup {
 
 	void _shape_item(int p_idx);
 
-	virtual void gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
 
@@ -191,10 +193,13 @@ class PopupMenu : public Popup {
 	void _minimum_lifetime_timeout();
 	void _close_pressed();
 	void _menu_changed();
+	void _input_from_window_internal(const Ref<InputEvent> &p_event);
+	bool _set_item_accelerator(int p_index, const Ref<InputEventKey> &p_ie);
 
 protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -218,6 +223,9 @@ public:
 
 	String bind_global_menu();
 	void unbind_global_menu();
+	bool is_system_menu() const;
+	void set_system_menu_root(const String &p_special);
+	String get_system_menu_root() const;
 
 	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);

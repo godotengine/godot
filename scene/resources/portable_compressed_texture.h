@@ -39,6 +39,14 @@ class PortableCompressedTexture2D : public Texture2D {
 	GDCLASS(PortableCompressedTexture2D, Texture2D);
 
 public:
+	enum DataFormat {
+		DATA_FORMAT_UNDEFINED,
+		DATA_FORMAT_IMAGE,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
+		DATA_FORMAT_BASIS_UNIVERSAL,
+	};
+
 	enum CompressionMode {
 		COMPRESSION_MODE_LOSSLESS,
 		COMPRESSION_MODE_LOSSY,

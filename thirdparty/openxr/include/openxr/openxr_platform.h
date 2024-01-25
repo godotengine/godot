@@ -2,7 +2,7 @@
 #define OPENXR_PLATFORM_H_ 1
 
 /*
-** Copyright 2017-2023 The Khronos Group Inc.
+** Copyright 2017-2024, The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
@@ -22,7 +22,7 @@ extern "C" {
 #ifdef XR_USE_PLATFORM_ANDROID
 
 #define XR_KHR_android_thread_settings 1
-#define XR_KHR_android_thread_settings_SPEC_VERSION 5
+#define XR_KHR_android_thread_settings_SPEC_VERSION 6
 #define XR_KHR_ANDROID_THREAD_SETTINGS_EXTENSION_NAME "XR_KHR_android_thread_settings"
 
 typedef enum XrAndroidThreadTypeKHR {
@@ -489,16 +489,17 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsRequirements2KHR(
 #ifdef XR_USE_PLATFORM_EGL
 
 #define XR_MNDX_egl_enable 1
-#define XR_MNDX_egl_enable_SPEC_VERSION   1
+#define XR_MNDX_egl_enable_SPEC_VERSION   2
 #define XR_MNDX_EGL_ENABLE_EXTENSION_NAME "XR_MNDX_egl_enable"
+typedef PFN_xrVoidFunction (*PFN_xrEglGetProcAddressMNDX)(const char *name);
 // XrGraphicsBindingEGLMNDX extends XrSessionCreateInfo
 typedef struct XrGraphicsBindingEGLMNDX {
-    XrStructureType             type;
-    const void* XR_MAY_ALIAS    next;
-    PFNEGLGETPROCADDRESSPROC    getProcAddress;
-    EGLDisplay                  display;
-    EGLConfig                   config;
-    EGLContext                  context;
+    XrStructureType                type;
+    const void* XR_MAY_ALIAS       next;
+    PFN_xrEglGetProcAddressMNDX    getProcAddress;
+    EGLDisplay                     display;
+    EGLConfig                      config;
+    EGLContext                     context;
 } XrGraphicsBindingEGLMNDX;
 
 #endif /* XR_USE_PLATFORM_EGL */

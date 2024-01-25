@@ -4639,6 +4639,10 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 			return false;
 		}
 
+		if (shader->varyings.has(var->name)) {
+			return _validate_varying_assign(shader->varyings[var->name], r_message);
+		}
+
 		if (!(p_function_info.built_ins.has(var->name) && p_function_info.built_ins[var->name].constant)) {
 			return true;
 		}
@@ -4661,7 +4665,7 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 	return false;
 }
 
-bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat) {
+bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat) {
 	for (int i = 0; i < shader->vfunctions.size(); i++) {
 		if (shader->vfunctions[i].name == p_name) {
 			ERR_FAIL_INDEX_V(p_argument, shader->vfunctions[i].function->arguments.size(), false);
@@ -4695,7 +4699,7 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringNam
 	ERR_FAIL_V(false); //bug? function not found
 }
 
-bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin) {
+bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(const StringName &p_name, int p_argument, const StringName &p_builtin) {
 	for (int i = 0; i < shader->vfunctions.size(); i++) {
 		if (shader->vfunctions[i].name == p_name) {
 			ERR_FAIL_INDEX_V(p_argument, shader->vfunctions[i].function->arguments.size(), false);

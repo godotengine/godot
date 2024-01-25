@@ -74,7 +74,7 @@ fix build with our own copy of zstd (patch in `patches`).
 ## brotli
 
 - Upstream: https://github.com/google/brotli
-- Version: git (ed1995b6bda19244070ab5d331111f16f67c8054, 2023)
+- Version: 1.1.0 (ed738e842d2fbdf2d6459e39267a633c4a9b2f5d, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -118,6 +118,40 @@ Changes related to BC6H packing and unpacking made upstream in
 https://github.com/elasota/cvtt/commit/2e4b6b2747aec11f4cc6dd09ef43fa8ce769f6e2
 have been removed as they caused massive quality regressions. Apply the patches
 in the `patches/` folder when syncing on newer upstream commits.
+
+
+## d3d12ma
+
+- Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
+- Version: 2.1.0-development (4d16e802e0b9451c9d3c27cd308928c13b73acd6, 2023)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `src/D3D12MemAlloc.cpp`, `src/D3D12MemAlloc.natvis`
+- `include/D3D12MemAlloc.h`
+- `LICENSE.txt`, `NOTICES.txt`
+
+Important: Some files have Godot-made changes for use with MinGW.
+They are marked with `/* GODOT start */` and `/* GODOT end */`
+comments.
+
+
+## directx_headers
+
+- Upstream: https://github.com/microsoft/DirectX-Headers
+- Version: 1.611.1 (48f23952bc08a6dce0727339c07cedbc4797356c, 2023)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `include/directx/*.h`
+- `include/dxguids/*.h`
+- `LICENSE`
+
+Important: Some files have Godot-made changes for use with MinGW.
+They are marked with `/* GODOT start */` and `/* GODOT end */`
+comments.
 
 
 ## doctest
@@ -191,6 +225,8 @@ Files extracted from upstream source:
   ```
 - `AUTHORS.txt` and `LICENSE.txt`
 
+Two files (`ProcessRgtc.{cpp,hpp}`) have been added to provide RGTC compression implementation,
+based on library's `ProcessDxtc.{cpp,hpp}`.
 
 ## fonts
 
@@ -339,7 +375,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 8.1.1 (1d665c2b521512cdd56964138fc601debd1f1177, 2023)
+- Version: 8.2.2 (18a6e78549e8e04a281129ea8ca784ce85f111b8, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -353,7 +389,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 73.2 (680f521746a3bd6a86f25f25ee50a62d88b489cf, 2023)
+- Version: 74.1 (9edac7b78327a1cb58db29e2714b15f9fa14e4d7, 2023)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -365,7 +401,7 @@ Files extracted from upstream source:
 
 Files generated from upstream source:
 
-- The `icudt73l.dat` built with the provided `godot_data.json` config file (see
+- The `icudt74l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
@@ -375,7 +411,7 @@ Files generated from upstream source:
 3. Reconfigure ICU with custom data config:
    `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`
 4. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
-5. Copy `source/data/out/icudt73l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt73l.dat`
+5. Copy `source/data/out/icudt74l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt74l.dat`
 
 
 ## jpeg-compressor
@@ -480,7 +516,7 @@ in the MSVC debugger.
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.4 (aeb97a18913a86f051afab11b2c92c6be0c2eb83, 2023)
+- Version: 2.28.5 (47e8cc9db2e469d902b0e3093ae9e482c3d87188, 2023)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -490,8 +526,8 @@ File extracted from upstream release tarball:
 - All `.c` and `.h` from `library/` to `thirdparty/mbedtls/library/` except
   those starting with `psa_*`
 - The `LICENSE` file
-- Applied the patch in `patches/windows-arm64-hardclock.diff`
-  Applied the patch in `aesni-no-arm-intrinsics.patch` to fix MSVC ARM build
+- Applied the patch `windows-arm64-hardclock.diff` to fix Windows ARM64 build
+  Applied the patch `windows-entropy-bcrypt.diff` to fix Windows Store support
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
 - Added the file `godot_module_mbedtls_config.h` to customize the build
@@ -501,7 +537,7 @@ File extracted from upstream release tarball:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: git (4a287848fd664ae1c3fc8e5e008560534ceeb526, 2022)
+- Version: git (c21d3be6ddf627f8ca852ba4b6db9903b0557858, 2023)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -509,10 +545,27 @@ Files extracted from upstream repository:
 - All files in `src/`
 - `LICENSE.md`
 
-An [experimental upstream feature](https://github.com/zeux/meshoptimizer/tree/simplify-attr),
-has been backported. On top of that, it was modified to report only distance
-error metrics instead of a combination of distance and attribute errors. Patches
-for both changes can be found in the `patches` directory.
+A patch is included to modify the simplifier to report only distance error
+metrics instead of a combination of distance and attribute errors.
+
+
+## mingw-std-threads
+
+- Upstream: https://github.com/meganz/mingw-std-threads
+- Version: git (c931bac289dd431f1dd30fc4a5d1a7be36668073, 2023)
+- License: BSD-2-clause
+
+Files extracted from upstream repository:
+
+- `LICENSE`
+- `mingw.condition_variable.h`
+- `mingw.invoke.h`
+- `mingw.mutex.h`
+- `mingw.shared_mutex.h`
+- `mingw.thread.h`
+
+Once copied, apply `godot.patch` (needed because Godot is built without exceptions
+and to avoid std:: replacements leak in Clang builds).
 
 
 ## minimp3
@@ -565,6 +618,8 @@ Important: Some files have Godot-made changes for use in core/io.
 They are marked with `/* GODOT start */` and `/* GODOT end */`
 comments and a patch is provided in the `patches` folder.
 
+Another patch is included to fix CVE-2023-45853.
+
 
 ## misc
 
@@ -610,7 +665,7 @@ Collection of single-file libraries used in Godot components.
   * License: MIT
 - `r128.{c,h}`
   * Upstream: https://github.com/fahickman/r128
-  * Version: 1.4.4 (cf2e88fc3e7d7dfe99189686f914874cd0bda15e, 2020)
+  * Version: git (6fc177671c47640d5bb69af10cf4ee91050015a1, 2023)
   * License: Public Domain or Unlicense
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
@@ -672,7 +727,7 @@ with the provided patch.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.28 (f5beb0131f1bea8701ace744d1b50df9049bf331, 2023)
+- Version: 1.0.33 (dc1e23937fe45eabcce80f6588cf47449edb29d1, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -683,11 +738,13 @@ Files extracted from upstream source:
 - `src/*.{c,h}`
 - `src/external/jsoncpp/include/`
 - `src/external/jsoncpp/src/lib_json/`
+- `src/external/jsoncpp/{AUTHORS,LICENSE}`
 - `LICENSE` and `COPYING.adoc`
 
 Exclude:
 
 - `src/external/android-jni-wrappers` and `src/external/jnipp` (not used yet)
+- Obsolete `src/xr_generated_dispatch_table.{c,h}`
 - All CMake stuff: `cmake/`, `CMakeLists.txt` and `*.cmake`
 - All Gradle stuff: `*gradle*`, `AndroidManifest.xml`
 - All following files (and their `.license` files):
@@ -804,7 +861,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.11.0 (12260198d12719ea20939b68492accfc155d9ff5, 2023)
+- Version: 0.12.0 (25ea242d3867ed66807714f5a52d080984d3c8cc, 2024)
 - License: MIT
 
 Files extracted from upstream source:

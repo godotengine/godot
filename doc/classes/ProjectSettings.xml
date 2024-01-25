@@ -328,7 +328,8 @@
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/frame_delay_msec" type="int" setter="" getter="" default="0">
-			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
+			Forces a [i]constant[/i] delay between frames in the main loop (in milliseconds). In most situations, [member application/run/max_fps] should be preferred as an FPS limiter as it's more precise.
+			This setting can be overridden using the [code]--frame-delay &lt;ms;&gt;[/code] command line argument.
 		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables low-processor usage mode. This setting only works on desktop platforms. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
@@ -349,7 +350,7 @@
 			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
 			If [member display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
 			See also [member physics/common/physics_ticks_per_second].
-			This setting can be overridden using the [code]--max-fps &lt;fps;&gt;[/code] command line argument (including with a value of [code]0[/code] for unlimited framerate).
+			This setting can be overridden using the [code]--max-fps &lt;fps&gt;[/code] command line argument (including with a value of [code]0[/code] for unlimited framerate).
 			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.max_fps] instead.
 		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
@@ -392,6 +393,13 @@
 		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
 			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
+		</member>
+		<member name="audio/general/ios/mix_with_others" type="bool" setter="" getter="" default="false">
+			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosession/categoryoptions/1616611-mixwithothers]mixWithOthers[/url] option for the AVAudioSession on iOS. This will override the mix behavior, if the category is set to [code]Play and Record[/code], [code]Playback[/code], or [code]Multi Route[/code].
+			[code]Ambient[/code] always has this set per default.
+		</member>
+		<member name="audio/general/ios/session_category" type="int" setter="" getter="" default="0">
+			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosessioncategory]AVAudioSessionCategory[/url] on iOS. Use the [code]Playback[/code] category to get sound output, even if the phone is in silent mode.
 		</member>
 		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], text-to-speech support is enabled, see [method DisplayServer.tts_get_voices] and [method DisplayServer.tts_speak].
@@ -562,6 +570,7 @@
 		</member>
 		<member name="debug/gdscript/warnings/untyped_declaration" type="int" setter="" getter="" default="0">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable or parameter has no static type, or if a function has no static return type.
+			[b]Note:[/b] This warning is recommended together with [member EditorSettings.text_editor/completion/add_type_hints] to help achieve type safety.
 		</member>
 		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local constant is never used.
@@ -801,7 +810,9 @@
 			Main window can't be focused. No-focus window will ignore all input, except mouse clicks.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
-			Allows the window to be resizable by default.
+			If [code]true[/code], allows the window to be resizable by default.
+			[b]Note:[/b] This property is only read when the project starts. To change whether the window is resizable at runtime, set [member Window.unresizable] instead on the root Window, which can be retrieved using [code]get_viewport().get_window()[/code]. [member Window.unresizable] takes the opposite value of this setting.
+			[b]Note:[/b] Certain window managers can be configured to ignore the non-resizable status of a window. Do not rely on this setting as a guarantee that the window will [i]never[/i] be resizable.
 			[b]Note:[/b] This setting is ignored on iOS.
 		</member>
 		<member name="display/window/size/transparent" type="bool" setter="" getter="" default="false">
@@ -821,7 +832,7 @@
 		</member>
 		<member name="display/window/size/window_width_override" type="int" setter="" getter="" default="0">
 			On desktop platforms, overrides the game's initial window width. See also [member display/window/size/window_height_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
-			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window width is the viewport [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and Web.
+			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window width is the [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and Web.
 		</member>
 		<member name="display/window/stretch/aspect" type="String" setter="" getter="" default="&quot;keep&quot;">
 		</member>
@@ -836,6 +847,9 @@
 		</member>
 		<member name="display/window/stretch/scale_mode" type="String" setter="" getter="" default="&quot;fractional&quot;">
 			The policy to use to determine the final scale factor for 2D elements. This affects how [member display/window/stretch/scale] is applied, in addition to the automatic scale factor determined by [member display/window/stretch/mode].
+			[b]"fractional"[/b]: The scale factor will not be modified.
+			[b]"integer"[/b]: The scale factor will be floored to an integer value, which means that the screen size will always be an integer multiple of the base viewport size. This provides a crisp pixel art appearance.
+			[b]Note:[/b] When using integer scaling with a stretch mode, resizing the window to be smaller than the base viewport size will clip the contents. Consider preventing that by setting [member Window.min_size] to the same value as the base viewport size defined in [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 		</member>
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
 			If [code]true[/code] subwindows are embedded in the main window.
@@ -1096,7 +1110,7 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to swap input direction, i.e. change between left-to-right to right-to-left modes. Affects text-editting controls ([LineEdit], [TextEdit]).
+			Default [InputEventAction] to swap input direction, i.e. change between left-to-right to right-to-left modes. Affects text-editing controls ([LineEdit], [TextEdit]).
 		</member>
 		<member name="input/ui_text_add_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
 			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret and selects the next occurrence.
@@ -1207,15 +1221,15 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to accept an autocompetion hint.
+			Default [InputEventAction] to accept an autocompletion hint.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_query" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to request autocompetion.
+			Default [InputEventAction] to request autocompletion.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_replace" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to accept an autocompetion hint, replacing existing text.
+			Default [InputEventAction] to accept an autocompletion hint, replacing existing text.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_dedent" type="Dictionary" setter="" getter="">
@@ -1981,9 +1995,6 @@
 		<member name="memory/limits/message_queue/max_size_mb" type="int" setter="" getter="" default="32">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
-		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
-			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
-		</member>
 		<member name="navigation/2d/default_cell_size" type="float" setter="" getter="" default="1.0">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
@@ -2201,7 +2212,7 @@
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
-			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
+			[b]Note:[/b] This property is only read when the project starts. To change the physics jitter fix at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member application/run/max_fps].
@@ -2357,33 +2368,43 @@
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
 		</member>
-		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="">
 			Sets the driver to be used by the renderer when using the Compatibility renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
 		</member>
-		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="">
 			Android override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="">
 			iOS override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="">
 			LinuxBSD override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="">
 			macOS override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="">
 			Web override for [member rendering/gl_compatibility/driver].
 		</member>
-		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="">
 			Windows override for [member rendering/gl_compatibility/driver].
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_angle" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
+			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
-		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="" default="[]">
+		<member name="rendering/gl_compatibility/fallback_to_gles" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the compatibility renderer will fall back to OpenGLES if desktop OpenGL is not supported.
+			[b]Note:[/b] This setting is implemented only on Linux/X11.
+		</member>
+		<member name="rendering/gl_compatibility/fallback_to_native" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the compatibility renderer will fall back to native OpenGL if ANGLE over Metal is not supported.
+			[b]Note:[/b] This setting is implemented only on macOS.
+		</member>
+		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="">
 			An [Array] of devices which should always use the ANGLE renderer.
 			Each entry is a [Dictionary] with the following keys: [code]vendor[/code] and [code]name[/code]. [code]name[/code] can be set to [code]*[/code] to add all devices with the specified [code]vendor[/code].
+			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="rendering/gl_compatibility/item_buffer_size" type="int" setter="" getter="" default="16384">
 			Maximum number of canvas items commands that can be drawn in a single viewport update. If more render commands are issued they will be ignored. Decreasing this limit may improve performance on bandwidth limited devices. Increase this limit if you find that not all objects are being drawn in a frame.
@@ -2425,25 +2446,25 @@
 		<member name="rendering/lightmapping/bake_quality/high_quality_probe_ray_count" type="int" setter="" getter="" default="512">
 			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_HIGH].
 		</member>
-		<member name="rendering/lightmapping/bake_quality/high_quality_ray_count" type="int" setter="" getter="" default="256">
+		<member name="rendering/lightmapping/bake_quality/high_quality_ray_count" type="int" setter="" getter="" default="512">
 			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_HIGH].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/low_quality_probe_ray_count" type="int" setter="" getter="" default="64">
 			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_LOW].
 		</member>
-		<member name="rendering/lightmapping/bake_quality/low_quality_ray_count" type="int" setter="" getter="" default="16">
+		<member name="rendering/lightmapping/bake_quality/low_quality_ray_count" type="int" setter="" getter="" default="32">
 			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_LOW].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/medium_quality_probe_ray_count" type="int" setter="" getter="" default="256">
 			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_MEDIUM].
 		</member>
-		<member name="rendering/lightmapping/bake_quality/medium_quality_ray_count" type="int" setter="" getter="" default="64">
+		<member name="rendering/lightmapping/bake_quality/medium_quality_ray_count" type="int" setter="" getter="" default="128">
 			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_MEDIUM].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count" type="int" setter="" getter="" default="2048">
 			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_ULTRA].
 		</member>
-		<member name="rendering/lightmapping/bake_quality/ultra_quality_ray_count" type="int" setter="" getter="" default="1024">
+		<member name="rendering/lightmapping/bake_quality/ultra_quality_ray_count" type="int" setter="" getter="" default="2048">
 			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_ULTRA].
 		</member>
 		<member name="rendering/lightmapping/denoising/denoiser" type="int" setter="" getter="" default="0">
@@ -2514,8 +2535,6 @@
 			The maximum number of clustered elements ([OmniLight3D] + [SpotLight3D] + [Decal] + [ReflectionProbe]) that can be rendered at once in the camera view. If there are more clustered elements present in the camera view, some of them will not be rendered (leading to pop-in during camera movement). Enabling distance fade on lights and decals ([member Light3D.distance_fade_enabled], [member Decal.distance_fade_enabled]) can help avoid reaching this limit.
 			Decreasing this value may improve GPU performance on certain setups, even if the maximum number of clustered elements is never reached in the project.
 			[b]Note:[/b] This setting is only effective when using the Forward+ rendering method, not Mobile and Compatibility.
-		</member>
-		<member name="rendering/limits/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
 		</member>
 		<member name="rendering/limits/global_shader_variables/buffer_size" type="int" setter="" getter="" default="65536">
 		</member>
@@ -2594,22 +2613,37 @@
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
 			Override for [member rendering/renderer/rendering_method] on web.
 		</member>
-		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/d3d12/agility_sdk_version" type="int" setter="" getter="" default="610">
+			Version code of the Direct3D 12 Agility SDK to use ([code]D3D12SDKVersion[/code]).
+		</member>
+		<member name="rendering/rendering_device/d3d12/max_misc_descriptors_per_frame" type="int" setter="" getter="" default="512">
+			The number of entries in the miscellaneous descriptors heap the Direct3D 12 rendering driver uses each frame, used for various operations like clearing a texture.
+			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
+		</member>
+		<member name="rendering/rendering_device/d3d12/max_resource_descriptors_per_frame" type="int" setter="" getter="" default="16384">
+			The number of entries in the resource descriptors heap the Direct3D 12 rendering driver uses each frame, used for most rendering operations.
+			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
+		</member>
+		<member name="rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame" type="int" setter="" getter="" default="1024">
+			The number of entries in the sampler descriptors heap the Direct3D 12 rendering driver uses each frame, used for most rendering operations.
+			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
+		</member>
+		<member name="rendering/rendering_device/driver" type="String" setter="" getter="">
 			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the clustered renderer or the mobile renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
 		</member>
-		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="">
 			Android override for [member rendering/rendering_device/driver].
 		</member>
-		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="">
 			iOS override for [member rendering/rendering_device/driver].
 		</member>
-		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="">
 			LinuxBSD override for [member rendering/rendering_device/driver].
 		</member>
-		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="">
 			macOS override for [member rendering/rendering_device/driver].
 		</member>
-		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="">
 			Windows override for [member rendering/rendering_device/driver].
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/save_chunk_size_mb" type="float" setter="" getter="" default="3.0">
@@ -2677,7 +2711,6 @@
 			Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close).
 			Enabling temporal antialiasing ([member rendering/anti_aliasing/quality/use_taa]) will automatically apply a [code]-0.5[/code] offset to this value, while enabling FXAA ([member rendering/anti_aliasing/quality/screen_space_aa]) will automatically apply a [code]-0.25[/code] offset to this value. If both TAA and FXAA are enabled at the same time, an offset of [code]-0.75[/code] is applied to this value.
 			[b]Note:[/b] If [member rendering/scaling_3d/scale] is lower than [code]1.0[/code] (exclusive), [member rendering/textures/default_filters/texture_mipmap_bias] is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]log2(scaling_3d_scale) + mipmap_bias[/code].
-			[b]Note:[/b] This property is only read when the project starts. To change the mipmap LOD bias at run-time, set [member Viewport.texture_mipmap_bias] instead.
 		</member>
 		<member name="rendering/textures/default_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
@@ -2735,8 +2768,6 @@
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
 			Maximum number of threads to be used by [WorkerThreadPool]. Value of [code]-1[/code] means no limit.
 		</member>
-		<member name="threading/worker_pool/use_system_threads_for_low_priority_tasks" type="bool" setter="" getter="" default="true">
-		</member>
 		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://openxr_action_map.tres&quot;">
 			Action map configuration to load by default.
 		</member>
@@ -2757,9 +2788,11 @@
 		</member>
 		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
 			If true and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
+			[b]Note:[/b] Only works on compatibility renderer.
 		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
 			Applied foveation level if supported: 0 = off, 1 = low, 2 = medium, 3 = high.
+			[b]Note:[/b] Only works on compatibility renderer.
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
 			Specify the default reference space.

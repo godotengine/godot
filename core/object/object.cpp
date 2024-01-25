@@ -198,6 +198,7 @@ bool Object::_predelete() {
 	notification(NOTIFICATION_PREDELETE, true);
 	if (_predelete_ok) {
 		_class_name_ptr = nullptr; // Must restore, so constructors/destructors have proper class name access at each stage.
+		notification(NOTIFICATION_PREDELETE_CLEANUP, true);
 	}
 	return _predelete_ok;
 }
@@ -1346,12 +1347,10 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		s = &signal_map[p_signal];
 	}
 
-	Callable target = p_callable;
-
 	//compare with the base callable, so binds can be ignored
-	if (s->slot_map.has(*target.get_base_comparator())) {
+	if (s->slot_map.has(*p_callable.get_base_comparator())) {
 		if (p_flags & CONNECT_REFERENCE_COUNTED) {
-			s->slot_map[*target.get_base_comparator()].reference_count++;
+			s->slot_map[*p_callable.get_base_comparator()].reference_count++;
 			return OK;
 		} else {
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Signal '" + p_signal + "' is already connected to given callable '" + p_callable + "' in that object.");
@@ -1363,7 +1362,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	SignalData::Slot slot;
 
 	Connection conn;
-	conn.callable = target;
+	conn.callable = p_callable;
 	conn.signal = ::Signal(this, p_signal);
 	conn.flags = p_flags;
 	slot.conn = conn;
@@ -1375,7 +1374,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	}
 
 	//use callable version as key, so binds can be ignored
-	s->slot_map[*target.get_base_comparator()] = slot;
+	s->slot_map[*p_callable.get_base_comparator()] = slot;
 
 	return OK;
 }
@@ -1396,9 +1395,7 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 		ERR_FAIL_V_MSG(false, "Nonexistent signal: " + p_signal + ".");
 	}
 
-	Callable target = p_callable;
-
-	return s->slot_map.has(*target.get_base_comparator());
+	return s->slot_map.has(*p_callable.get_base_comparator());
 }
 
 void Object::disconnect(const StringName &p_signal, const Callable &p_callable) {

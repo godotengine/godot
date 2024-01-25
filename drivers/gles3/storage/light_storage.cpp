@@ -569,69 +569,171 @@ void LightStorage::lightmap_initialize(RID p_rid) {
 
 void LightStorage::lightmap_free(RID p_rid) {
 	Lightmap *lightmap = lightmap_owner.get_or_null(p_rid);
+	ERR_FAIL_NULL(lightmap);
 	lightmap->dependency.deleted_notify(p_rid);
 	lightmap_owner.free(p_rid);
 }
 
 void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+	lightmap->light_texture = p_light;
+	lightmap->uses_spherical_harmonics = p_uses_spherical_haromics;
+
+	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->light_texture);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
 void LightStorage::lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+	lightmap->bounds = p_bounds;
 }
 
 void LightStorage::lightmap_set_probe_interior(RID p_lightmap, bool p_interior) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+	lightmap->interior = p_interior;
 }
 
 void LightStorage::lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+
+	if (p_points.size()) {
+		ERR_FAIL_COND(p_points.size() * 9 != p_point_sh.size());
+		ERR_FAIL_COND((p_tetrahedra.size() % 4) != 0);
+		ERR_FAIL_COND((p_bsp_tree.size() % 6) != 0);
+	}
+
+	lightmap->points = p_points;
+	lightmap->point_sh = p_point_sh;
+	lightmap->tetrahedra = p_tetrahedra;
+	lightmap->bsp_tree = p_bsp_tree;
 }
 
 void LightStorage::lightmap_set_baked_exposure_normalization(RID p_lightmap, float p_exposure) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+
+	lightmap->baked_exposure = p_exposure;
 }
 
 PackedVector3Array LightStorage::lightmap_get_probe_capture_points(RID p_lightmap) const {
-	return PackedVector3Array();
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lightmap, PackedVector3Array());
+	return lightmap->points;
 }
 
 PackedColorArray LightStorage::lightmap_get_probe_capture_sh(RID p_lightmap) const {
-	return PackedColorArray();
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lightmap, PackedColorArray());
+	return lightmap->point_sh;
 }
 
 PackedInt32Array LightStorage::lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const {
-	return PackedInt32Array();
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lightmap, PackedInt32Array());
+	return lightmap->tetrahedra;
 }
 
 PackedInt32Array LightStorage::lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const {
-	return PackedInt32Array();
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lightmap, PackedInt32Array());
+	return lightmap->bsp_tree;
 }
 
 AABB LightStorage::lightmap_get_aabb(RID p_lightmap) const {
-	return AABB();
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lightmap, AABB());
+	return lightmap->bounds;
 }
 
 void LightStorage::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+
+	for (int i = 0; i < 9; i++) {
+		r_sh[i] = Color(0, 0, 0, 0);
+	}
+
+	if (!lm->points.size() || !lm->bsp_tree.size() || !lm->tetrahedra.size()) {
+		return;
+	}
+
+	static_assert(sizeof(Lightmap::BSP) == 24);
+
+	const Lightmap::BSP *bsp = (const Lightmap::BSP *)lm->bsp_tree.ptr();
+	int32_t node = 0;
+	while (node >= 0) {
+		if (Plane(bsp[node].plane[0], bsp[node].plane[1], bsp[node].plane[2], bsp[node].plane[3]).is_point_over(p_point)) {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_COND(bsp[node].over >= 0 && bsp[node].over < node);
+#endif
+
+			node = bsp[node].over;
+		} else {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_COND(bsp[node].under >= 0 && bsp[node].under < node);
+#endif
+			node = bsp[node].under;
+		}
+	}
+
+	if (node == Lightmap::BSP::EMPTY_LEAF) {
+		return; // Nothing could be done.
+	}
+
+	node = ABS(node) - 1;
+
+	uint32_t *tetrahedron = (uint32_t *)&lm->tetrahedra[node * 4];
+	Vector3 points[4] = { lm->points[tetrahedron[0]], lm->points[tetrahedron[1]], lm->points[tetrahedron[2]], lm->points[tetrahedron[3]] };
+	const Color *sh_colors[4]{ &lm->point_sh[tetrahedron[0] * 9], &lm->point_sh[tetrahedron[1] * 9], &lm->point_sh[tetrahedron[2] * 9], &lm->point_sh[tetrahedron[3] * 9] };
+	Color barycentric = Geometry3D::tetrahedron_get_barycentric_coords(points[0], points[1], points[2], points[3], p_point);
+
+	for (int i = 0; i < 4; i++) {
+		float c = CLAMP(barycentric[i], 0.0, 1.0);
+		for (int j = 0; j < 9; j++) {
+			r_sh[j] += sh_colors[i][j] * c;
+		}
+	}
 }
 
 bool LightStorage::lightmap_is_interior(RID p_lightmap) const {
-	return false;
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lightmap, false);
+	return lightmap->interior;
 }
 
 void LightStorage::lightmap_set_probe_capture_update_speed(float p_speed) {
+	lightmap_probe_capture_update_speed = p_speed;
 }
 
 float LightStorage::lightmap_get_probe_capture_update_speed() const {
-	return 0;
+	return lightmap_probe_capture_update_speed;
 }
 
 /* LIGHTMAP INSTANCE */
 
 RID LightStorage::lightmap_instance_create(RID p_lightmap) {
-	return RID();
+	LightmapInstance li;
+	li.lightmap = p_lightmap;
+	return lightmap_instance_owner.make_rid(li);
 }
 
 void LightStorage::lightmap_instance_free(RID p_lightmap) {
+	lightmap_instance_owner.free(p_lightmap);
 }
 
 void LightStorage::lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) {
+	LightmapInstance *li = lightmap_instance_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(li);
+	li->transform = p_transform;
 }
 
 /* SHADOW ATLAS API */
@@ -1019,6 +1121,7 @@ void LightStorage::update_directional_shadow_atlas() {
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, directional_shadow.depth, 0);
 	}
+	glUseProgram(0);
 	glDepthMask(GL_TRUE);
 	glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
 	RasterizerGLES3::clear_depth(1.0);

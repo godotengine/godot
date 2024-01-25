@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2024, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -18,6 +18,7 @@
 #endif  // OPENXR_HAVE_COMMON_CONFIG
 
 #include "filesystem_utils.hpp"
+#include "loader_init_data.hpp"
 #include "loader_platform.hpp"
 #include "platform_utils.hpp"
 #include "loader_logger.hpp"
@@ -274,16 +275,45 @@ static std::string GetXDGEnvAbsolute(const char *name, const char *fallback_path
     return fallback_paths;
 }
 
+/// @param rt_dir_prefix Directory prefix with a trailing slash
+static bool FindEitherActiveRuntimeFilename(const char *prefix_desc, const std::string &rt_dir_prefix, uint16_t major_version,
+                                            std::string &out) {
+    {
+        std::ostringstream oss;
+        oss << "Looking for active_runtime." XR_ARCH_ABI ".json or active_runtime.json in ";
+        oss << prefix_desc;
+        oss << ": ";
+        oss << rt_dir_prefix;
+
+        LoaderLogger::LogInfoMessage("", oss.str());
+    }
+    {
+        auto decorated_path = rt_dir_prefix + std::to_string(major_version) + "/active_runtime." XR_ARCH_ABI ".json";
+
+        if (FileSysUtilsPathExists(decorated_path)) {
+            out = decorated_path;
+            return true;
+        }
+    }
+    {
+        auto undecorated_path = rt_dir_prefix + std::to_string(major_version) + "/active_runtime.json";
+
+        if (FileSysUtilsPathExists(undecorated_path)) {
+            out = undecorated_path;
+            return true;
+        }
+    }
+    return false;
+}
 // Return the first instance of relative_path occurring in an XDG config dir according to standard
 // precedence order.
-static bool FindXDGConfigFile(const std::string &relative_path, std::string &out) {
-    out = GetXDGEnvHome("XDG_CONFIG_HOME", ".config");
-    if (!out.empty()) {
-        out += "/";
-        out += relative_path;
-
-        LoaderLogger::LogInfoMessage("", "Looking for " + relative_path + " in XDG_CONFIG_HOME: " + out);
-        if (FileSysUtilsPathExists(out)) {
+static bool FindXDGConfigFile(const char *relative_dir, uint16_t major_version, std::string &out) {
+    const std::string message{"Looking for active_runtime." XR_ARCH_ABI ".json or active_runtime.json"};
+    std::string dir_prefix = GetXDGEnvHome("XDG_CONFIG_HOME", ".config");
+    if (!dir_prefix.empty()) {
+        dir_prefix += "/";
+        dir_prefix += relative_dir;
+        if (FindEitherActiveRuntimeFilename("XDG_CONFIG_HOME", dir_prefix, major_version, out)) {
             return true;
         }
     }
@@ -294,29 +324,26 @@ static bool FindXDGConfigFile(const std::string &relative_path, std::string &out
         if (path.empty()) {
             continue;
         }
-        out = path;
-        out += "/";
-        out += relative_path;
-        LoaderLogger::LogInfoMessage("", "Looking for " + relative_path + " in an entry of XDG_CONFIG_DIRS: " + out);
-        if (FileSysUtilsPathExists(out)) {
+        dir_prefix = std::move(path);
+        dir_prefix += "/";
+        dir_prefix += relative_dir;
+        if (FindEitherActiveRuntimeFilename("an entry of XDG_CONFIG_DIRS", dir_prefix, major_version, out)) {
             return true;
         }
     }
 
-    out = SYSCONFDIR;
-    out += "/";
-    out += relative_path;
-    LoaderLogger::LogInfoMessage("", "Looking for " + relative_path + " in compiled-in SYSCONFDIR: " + out);
-    if (FileSysUtilsPathExists(out)) {
+    dir_prefix = SYSCONFDIR;
+    dir_prefix += "/";
+    dir_prefix += relative_dir;
+    if (FindEitherActiveRuntimeFilename("compiled-in SYSCONFDIR", dir_prefix, major_version, out)) {
         return true;
     }
 
 #if defined(EXTRASYSCONFDIR)
-    out = EXTRASYSCONFDIR;
-    out += "/";
-    out += relative_path;
-    LoaderLogger::LogInfoMessage("", "Looking for " + relative_path + " in compiled-in EXTRASYSCONFDIR: " + out);
-    if (FileSysUtilsPathExists(out)) {
+    dir_prefix = EXTRASYSCONFDIR;
+    dir_prefix += "/";
+    dir_prefix += relative_dir;
+    if (FindEitherActiveRuntimeFilename("compiled-in EXTRASYSCONFDIR", dir_prefix, major_version, out)) {
         return true;
     }
 #endif
@@ -632,23 +659,22 @@ XrResult RuntimeManifestFile::FindManifestFiles(std::vector<std::unique_ptr<Runt
         LoaderLogger::LogInfoMessage("",
                                      "RuntimeManifestFile::FindManifestFiles - using registry-specified runtime file " + filename);
 #elif defined(XR_OS_LINUX)
-        const std::string relative_path =
-            "openxr/" + std::to_string(XR_VERSION_MAJOR(XR_CURRENT_API_VERSION)) + "/active_runtime.json";
-        if (!FindXDGConfigFile(relative_path, filename)) {
+
+        if (!FindXDGConfigFile("openxr/", XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), filename)) {
             LoaderLogger::LogErrorMessage(
                 "", "RuntimeManifestFile::FindManifestFiles - failed to determine active runtime file path for this environment");
             return XR_ERROR_RUNTIME_UNAVAILABLE;
         }
 #else
 
-#if defined(XR_KHR_LOADER_INIT_SUPPORT)
+#if defined(XR_USE_PLATFORM_ANDROID)
         Json::Value virtualManifest;
         result = GetPlatformRuntimeVirtualManifest(virtualManifest);
         if (XR_SUCCESS == result) {
             RuntimeManifestFile::CreateIfValid(virtualManifest, "", manifest_files);
             return result;
         }
-#endif  // defined(XR_KHR_LOADER_INIT_SUPPORT)
+#endif  // defined(XR_USE_PLATFORM_ANDROID)
         if (!PlatformGetGlobalRuntimeFileName(XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), filename)) {
             LoaderLogger::LogErrorMessage(
                 "", "RuntimeManifestFile::FindManifestFiles - failed to determine active runtime file path for this environment");

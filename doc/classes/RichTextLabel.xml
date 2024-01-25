@@ -225,7 +225,28 @@
 			<return type="void" />
 			<param index="0" name="effect" type="Variant" />
 			<description>
-				Installs a custom effect. [param effect] should be a valid [RichTextEffect].
+				Installs a custom effect. This can also be done in the RichTextLabel inspector using the [member custom_effects] property. [param effect] should be a valid [RichTextEffect].
+				Example RichTextEffect:
+				[codeblock]
+				# effect.gd
+				class_name MyCustomEffect
+				extends RichTextEffect
+
+				var bbcode = "my_custom_effect"
+
+				# ...
+				[/codeblock]
+				Registering the above effect in RichTextLabel from script:
+				[codeblock]
+				# rich_text_label.gd
+				extends RichTextLabel
+
+				func _ready():
+				    install_effect(MyCustomEffect.new())
+
+				    # Alternatively, if not using `class_name` in the script that extends RichTextEffect:
+				    install_effect(preload("res://effect.gd").new())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_menu_visible" qualifiers="const">
@@ -764,10 +785,10 @@
 			The vertical separation of elements in a table.
 		</theme_item>
 		<theme_item name="text_highlight_h_padding" data_type="constant" type="int" default="3">
-			The horizontal padding around a highlighting and background color box.
+			The horizontal padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
 		</theme_item>
 		<theme_item name="text_highlight_v_padding" data_type="constant" type="int" default="3">
-			The vertical padding around a highlighting and background color box.
+			The vertical padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
 		</theme_item>
 		<theme_item name="bold_font" data_type="font" type="Font">
 			The font used for bold text.

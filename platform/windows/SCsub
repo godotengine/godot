@@ -29,7 +29,9 @@ res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 
-prog = env.add_program("#bin/godot", common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
+sources = common_win + res_obj
+
+prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
@@ -57,6 +59,59 @@ if env["vsproj"]:
     if env["windows_subsystem"] == "gui":
         for x in common_win_wrap:
             env.vs_srcs += ["platform/windows/" + str(x)]
+
+if env["d3d12"]:
+    dxc_target_aliases = {
+        "x86_32": "x86",
+        "x86_64": "x64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+    dxc_arch_subdir = dxc_target_aliases[env["arch"]]
+
+    agility_target_aliases = {
+        "x86_32": "win32",
+        "x86_64": "x64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+    agility_arch_subdir = agility_target_aliases[env["arch"]]
+
+    # Used in cases where we can have multiple archs side-by-side.
+    arch_bin_dir = "#bin/" + env["arch"]
+
+    # DXC
+    if env["dxc_path"] != "":
+        dxc_dll = "dxil.dll"
+        # Whether this one is loaded from arch-specific directory or not can be determined at runtime.
+        # Let's copy to both and let the user decide the distribution model.
+        for v in ["#bin", arch_bin_dir]:
+            env.Command(
+                v + "/" + dxc_dll,
+                env["dxc_path"] + "/bin/" + dxc_arch_subdir + "/" + dxc_dll,
+                Copy("$TARGET", "$SOURCE"),
+            )
+
+    # Agility SDK
+    if env["agility_sdk_path"] != "":
+        agility_dlls = ["D3D12Core.dll", "d3d12SDKLayers.dll"]
+        # Whether these are loaded from arch-specific directory or not has to be known at build time.
+        target_dir = arch_bin_dir if env["agility_sdk_multiarch"] else "#bin"
+        for dll in agility_dlls:
+            env.Command(
+                target_dir + "/" + dll,
+                env["agility_sdk_path"] + "/build/native/bin/" + agility_arch_subdir + "/" + dll,
+                Copy("$TARGET", "$SOURCE"),
+            )
+
+    # PIX
+    if env["pix_path"] != "":
+        pix_dll = "WinPixEventRuntime.dll"
+        env.Command(
+            "#bin/" + pix_dll,
+            env["pix_path"] + "/bin/" + dxc_arch_subdir + "/" + pix_dll,
+            Copy("$TARGET", "$SOURCE"),
+        )
 
 if not os.getenv("VCINSTALLDIR"):
     if env["debug_symbols"] and env["separate_debug_symbols"]:

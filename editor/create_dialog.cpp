@@ -309,8 +309,10 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 	}
 
-	bool is_deprecated = EditorHelp::get_doc_data()->class_list[p_type].is_deprecated;
-	bool is_experimental = EditorHelp::get_doc_data()->class_list[p_type].is_experimental;
+	HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(p_type);
+
+	bool is_deprecated = (class_doc && class_doc->value.is_deprecated);
+	bool is_experimental = (class_doc && class_doc->value.is_experimental);
 
 	if (is_deprecated) {
 		r_item->add_button(0, get_editor_theme_icon("StatusError"), 0, false, TTR("This class is marked as deprecated."));
@@ -330,7 +332,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_collapsed(should_collapse);
 	}
 
-	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
+	const String &description = DTR(class_doc ? class_doc->value.brief_description : "");
 	r_item->set_tooltip_text(0, description);
 
 	if (p_type_category == TypeCategory::OTHER_TYPE && !script_type) {
@@ -472,7 +474,7 @@ void CreateDialog::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				search_box->call_deferred(SNAME("grab_focus")); // still not visible
+				callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(); // Still not visible.
 				search_box->select_all();
 			} else {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
@@ -792,6 +794,7 @@ CreateDialog::CreateDialog() {
 	rec_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	recent = memnew(ItemList);
+	recent->set_auto_translate(false);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->set_allow_reselect(true);
 	recent->connect("item_selected", callable_mp(this, &CreateDialog::_history_selected));

@@ -31,7 +31,6 @@
 #include "scene_tree_editor.h"
 
 #include "core/config/project_settings.h"
-#include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -50,7 +49,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
-Node *SceneTreeEditor::get_scene_node() {
+Node *SceneTreeEditor::get_scene_node() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
 	return get_tree()->get_edited_scene_root();
@@ -121,7 +120,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 
 	} else if (p_id == BUTTON_GROUP) {
-		undo_redo->create_action(TTR("Button Group"));
+		undo_redo->create_action(TTR("Ungroup Children"));
 
 		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
 			undo_redo->add_do_method(n, "remove_meta", "_edit_group_");
@@ -311,7 +310,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
-			item->add_button(0, get_editor_theme_icon(SNAME("SceneUniqueName")), BUTTON_UNIQUE, false, vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
+			item->add_button(0, get_editor_theme_icon(SNAME("SceneUniqueName")), BUTTON_UNIQUE, p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene(), vformat(TTR("This node can be accessed from within anywhere in the scene by preceding it with the '%s' prefix in a node path.\nClick to disable this."), UNIQUE_NODE_PREFIX));
 		}
 
 		int num_connections = p_node->get_persistent_signal_connection_count();
@@ -361,33 +360,12 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	}
 
 	{
-		// Display the node name in all tooltips so that long node names can be previewed
-		// without having to rename them.
-		String tooltip = String(p_node->get_name());
-
-		if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
-			item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
-			tooltip += String("\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path());
-		} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
-			item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
-			tooltip += String("\n" + TTR("Instance:") + " " + p_node->get_scene_file_path());
+		_update_node_tooltip(p_node, item);
+		Callable delay_update_tooltip = callable_mp(this, &SceneTreeEditor::_queue_update_node_tooltip);
+		if (p_node->is_connected("editor_description_changed", delay_update_tooltip)) {
+			p_node->disconnect("editor_description_changed", delay_update_tooltip);
 		}
-
-		StringName custom_type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
-		tooltip += String("\n" + TTR("Type:") + " " + (custom_type != StringName() ? String(custom_type) : p_node->get_class()));
-
-		if (!p_node->get_editor_description().is_empty()) {
-			const PackedInt32Array boundaries = TS->string_get_word_breaks(p_node->get_editor_description(), "", 80);
-			tooltip += "\n";
-
-			for (int i = 0; i < boundaries.size(); i += 2) {
-				const int start = boundaries[i];
-				const int end = boundaries[i + 1];
-				tooltip += "\n" + p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
-			}
-		}
-
-		item->set_tooltip_text(0, tooltip);
+		p_node->connect("editor_description_changed", delay_update_tooltip.bind(item));
 	}
 
 	if (can_open_instance && is_scene_tree_dock) { // Show buttons only when necessary (SceneTreeDock) to avoid crashes.
@@ -498,6 +476,18 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 					EditorNode::get_singleton()->is_object_of_custom_type(p_node, E)) {
 				valid = true;
 				break;
+			} else {
+				Ref<Script> node_script = p_node->get_script();
+				while (node_script.is_valid()) {
+					if (node_script->get_path() == E) {
+						valid = true;
+						break;
+					}
+					node_script = node_script->get_base_script();
+				}
+				if (valid) {
+					break;
+				}
 			}
 		}
 
@@ -506,6 +496,46 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->set_selectable(0, false);
 		}
 	}
+}
+
+void SceneTreeEditor::_queue_update_node_tooltip(Node *p_node, TreeItem *p_item) {
+	Callable update_tooltip = callable_mp(this, &SceneTreeEditor::_update_node_tooltip);
+	if (update_node_tooltip_delay->is_connected("timeout", update_tooltip)) {
+		update_node_tooltip_delay->disconnect("timeout", update_tooltip);
+	}
+
+	update_node_tooltip_delay->connect("timeout", update_tooltip.bind(p_node, p_item));
+	update_node_tooltip_delay->start();
+}
+
+void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
+	// Display the node name in all tooltips so that long node names can be previewed
+	// without having to rename them.
+	String tooltip = p_node->get_name();
+
+	if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
+		p_item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+		tooltip += String("\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path());
+	} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
+		p_item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+		tooltip += String("\n" + TTR("Instance:") + " " + p_node->get_scene_file_path());
+	}
+
+	StringName custom_type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
+	tooltip += "\n" + TTR("Type:") + " " + (custom_type != StringName() ? String(custom_type) : p_node->get_class());
+
+	if (!p_node->get_editor_description().is_empty()) {
+		const PackedInt32Array boundaries = TS->string_get_word_breaks(p_node->get_editor_description(), "", 80);
+		tooltip += "\n";
+
+		for (int i = 0; i < boundaries.size(); i += 2) {
+			const int start = boundaries[i];
+			const int end = boundaries[i + 1];
+			tooltip += "\n" + p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
+		}
+	}
+
+	p_item->set_tooltip_text(0, tooltip);
 }
 
 void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
@@ -562,7 +592,7 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_update_tree");
+	callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 	tree_dirty = true;
 }
 
@@ -595,7 +625,7 @@ void SceneTreeEditor::_node_renamed(Node *p_node) {
 	emit_signal(SNAME("node_renamed"));
 
 	if (!tree_dirty) {
-		MessageQueue::get_singleton()->push_call(this, "_update_tree");
+		callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 		tree_dirty = true;
 	}
 }
@@ -656,6 +686,18 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 					EditorNode::get_singleton()->is_object_of_custom_type(n, E)) {
 				selectable = true;
 				break;
+			} else {
+				Ref<Script> node_script = n->get_script();
+				while (node_script.is_valid()) {
+					if (node_script->get_path() == E) {
+						selectable = true;
+						break;
+					}
+					node_script = node_script->get_base_script();
+				}
+				if (selectable) {
+					break;
+				}
 			}
 		}
 	}
@@ -704,7 +746,7 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 	}
 
 	for (int i = 0; i < p_terms.size(); i++) {
-		String term = p_terms[i];
+		const String &term = p_terms[i];
 
 		// Recognize special filter.
 		if (term.contains(":") && !term.get_slicec(':', 0).is_empty()) {
@@ -800,12 +842,12 @@ void SceneTreeEditor::_test_update_tree() {
 		return; // did not change
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_update_tree");
+	callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 	tree_dirty = true;
 }
 
 void SceneTreeEditor::_tree_process_mode_changed() {
-	MessageQueue::get_singleton()->push_call(this, "_update_tree");
+	callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 	tree_dirty = true;
 }
 
@@ -820,7 +862,7 @@ void SceneTreeEditor::_tree_changed() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_test_update_tree");
+	callable_mp(this, &SceneTreeEditor::_test_update_tree).call_deferred();
 	pending_test_update = true;
 }
 
@@ -1218,11 +1260,8 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 
 		Node *n = get_node(np);
 		if (n) {
-			// Only allow selection if not part of an instantiated scene.
-			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_scene_file_path().is_empty()) {
-				selected_nodes.push_back(n);
-				icons.push_back(next->get_icon(0));
-			}
+			selected_nodes.push_back(n);
+			icons.push_back(next->get_icon(0));
 		}
 		next = tree->get_next_selected(next);
 	}
@@ -1305,8 +1344,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		bool scene_drop = true;
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
-			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(files[i]);
 			if (ftype != "PackedScene") {
 				scene_drop = false;
 				break;
@@ -1336,7 +1374,21 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 	}
 
-	return String(d["type"]) == "nodes" && filter.is_empty();
+	if (filter.is_empty() && String(d["type"]) == "nodes") {
+		Array nodes = d["nodes"];
+
+		for (int i = 0; i < nodes.size(); i++) {
+			Node *n = get_node(nodes[i]);
+			// Nodes from an instantiated scene can't be rearranged.
+			if (n && n->get_owner() && n->get_owner() != get_scene_node() && !n->get_owner()->get_scene_file_path().is_empty()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -1431,7 +1483,6 @@ void SceneTreeEditor::set_connecting_signal(bool p_enable) {
 void SceneTreeEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_tree"), &SceneTreeEditor::_update_tree, DEFVAL(false)); // Still used by UndoRedo.
 	ClassDB::bind_method("_rename_node", &SceneTreeEditor::_rename_node);
-	ClassDB::bind_method("_test_update_tree", &SceneTreeEditor::_test_update_tree);
 
 	ClassDB::bind_method(D_METHOD("update_tree"), &SceneTreeEditor::update_tree);
 
@@ -1504,6 +1555,11 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	update_timer->set_wait_time(0.5);
 	add_child(update_timer);
 
+	update_node_tooltip_delay = memnew(Timer);
+	update_node_tooltip_delay->set_wait_time(0.5);
+	update_node_tooltip_delay->set_one_shot(true);
+	add_child(update_node_tooltip_delay);
+
 	script_types = memnew(List<StringName>);
 	ClassDB::get_inheriters_from_class("Script", script_types);
 }
@@ -1548,16 +1604,29 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 		HBoxContainer *hb = memnew(HBoxContainer);
 		hflow->add_child(hb);
 
+		// Attempt to get the correct name and icon for script path types.
+		String name = type;
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
+
+		// If we can't find a global class icon, try to find one for the script.
+		if (icon.is_null() && ResourceLoader::exists(type, "Script")) {
+			Ref<Script> node_script = ResourceLoader::load(type);
+			if (node_script.is_valid()) {
+				name = name.get_file();
+				icon = EditorNode::get_singleton()->get_object_icon(node_script.ptr());
+			}
+		}
+
 		TextureRect *trect = memnew(TextureRect);
 		hb->add_child(trect);
 		trect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 		trect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-		trect->set_meta("type", type);
+		trect->set_meta("icon", icon);
 		valid_type_icons.push_back(trect);
 
 		Label *label = memnew(Label);
 		hb->add_child(label);
-		label->set_text(type);
+		label->set_text(name);
 		label->set_auto_translate(false);
 	}
 
@@ -1571,7 +1640,7 @@ void SceneTreeDialog::_notification(int p_what) {
 				tree->update_tree();
 
 				// Select the search bar by default.
-				filter->call_deferred(SNAME("grab_focus"));
+				callable_mp((Control *)filter, &Control::grab_focus).call_deferred();
 			}
 		} break;
 
@@ -1583,7 +1652,7 @@ void SceneTreeDialog::_notification(int p_what) {
 			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			for (TextureRect *trect : valid_type_icons) {
 				trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
-				trect->set_texture(EditorNode::get_singleton()->get_class_icon(trect->get_meta("type")));
+				trect->set_texture(trect->get_meta("icon"));
 			}
 		} break;
 

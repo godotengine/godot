@@ -828,10 +828,12 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	Ref<StyleBoxEmpty> sbempty = memnew(StyleBoxEmpty);
 	for (int i = 0; i < hbc->get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(hbc->get_child(i));
+		child->begin_bulk_theme_override();
 		child->add_theme_style_override("normal", sbempty);
 		child->add_theme_style_override("hover", sbempty);
 		child->add_theme_style_override("focus", sbempty);
 		child->add_theme_style_override("pressed", sbempty);
+		child->end_bulk_theme_override();
 	}
 
 	HSeparator *separator = memnew(HSeparator);
@@ -910,6 +912,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	vb->add_child(effects);
 	effects->connect("item_edited", callable_mp(this, &EditorAudioBus::_effect_edited));
 	effects->connect("cell_selected", callable_mp(this, &EditorAudioBus::_effect_selected));
+	effects->connect("focus_exited", callable_mp(effects, &Tree::deselect_all));
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	SET_DRAG_FORWARDING_GCD(effects, EditorAudioBus);
 	effects->connect("item_mouse_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
@@ -1190,7 +1193,7 @@ void EditorAudioBuses::_server_save() {
 }
 
 void EditorAudioBuses::_select_layout() {
-	FileSystemDock::get_singleton()->select_file(edited_path);
+	FileSystemDock::get_singleton()->navigate_to_path(edited_path);
 }
 
 void EditorAudioBuses::_save_as_layout() {
@@ -1231,7 +1234,7 @@ void EditorAudioBuses::_load_default_layout() {
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-	call_deferred(SNAME("_select_layout"));
+	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
 void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
@@ -1247,7 +1250,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		AudioServer::get_singleton()->set_bus_layout(state);
 		_rebuild_buses();
 		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-		call_deferred(SNAME("_select_layout"));
+		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 
 	} else if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 		if (new_layout) {
@@ -1267,14 +1270,13 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		_rebuild_buses();
 		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-		call_deferred(SNAME("_select_layout"));
+		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 	}
 }
 
 void EditorAudioBuses::_bind_methods() {
 	ClassDB::bind_method("_update_bus", &EditorAudioBuses::_update_bus);
 	ClassDB::bind_method("_update_sends", &EditorAudioBuses::_update_sends);
-	ClassDB::bind_method("_select_layout", &EditorAudioBuses::_select_layout);
 }
 
 EditorAudioBuses::EditorAudioBuses() {
@@ -1367,7 +1369,7 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-	call_deferred(SNAME("_select_layout"));
+	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
 void AudioBusesEditorPlugin::edit(Object *p_node) {

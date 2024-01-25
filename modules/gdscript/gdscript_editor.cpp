@@ -104,7 +104,7 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 	return scr;
 }
 
-Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(StringName p_object) {
+Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(const StringName &p_object) {
 	Vector<ScriptLanguage::ScriptTemplate> templates;
 #ifdef TOOLS_ENABLED
 	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
@@ -537,7 +537,7 @@ struct GDScriptCompletionIdentifier {
 // appears. For example, if you are completing code in a class that inherits Node2D, a property found on Node2D
 // will have a "better" (lower) location "score" than a property that is found on CanvasItem.
 
-static int _get_property_location(StringName p_class, StringName p_property) {
+static int _get_property_location(const StringName &p_class, const StringName &p_property) {
 	if (!ClassDB::has_property(p_class, p_property)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
@@ -552,7 +552,7 @@ static int _get_property_location(StringName p_class, StringName p_property) {
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
-static int _get_constant_location(StringName p_class, StringName p_constant) {
+static int _get_constant_location(const StringName &p_class, const StringName &p_constant) {
 	if (!ClassDB::has_integer_constant(p_class, p_constant)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
@@ -567,7 +567,7 @@ static int _get_constant_location(StringName p_class, StringName p_constant) {
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
-static int _get_signal_location(StringName p_class, StringName p_signal) {
+static int _get_signal_location(const StringName &p_class, const StringName &p_signal) {
 	if (!ClassDB::has_signal(p_class, p_signal)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
@@ -582,7 +582,7 @@ static int _get_signal_location(StringName p_class, StringName p_signal) {
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
-static int _get_method_location(StringName p_class, StringName p_method) {
+static int _get_method_location(const StringName &p_class, const StringName &p_method) {
 	if (!ClassDB::has_method(p_class, p_method)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
@@ -597,7 +597,7 @@ static int _get_method_location(StringName p_class, StringName p_method) {
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
-static int _get_enum_constant_location(StringName p_class, StringName p_enum_constant) {
+static int _get_enum_constant_location(const StringName &p_class, const StringName &p_enum_constant) {
 	if (!ClassDB::get_integer_constant_enum(p_class, p_enum_constant)) {
 		return ScriptLanguage::LOCATION_OTHER;
 	}
@@ -620,9 +620,9 @@ static String _trim_parent_class(const String &p_class, const String &p_base_cla
 	}
 	Vector<String> names = p_class.split(".", false, 1);
 	if (names.size() == 2) {
-		String first = names[0];
-		String rest = names[1];
+		const String &first = names[0];
 		if (ClassDB::class_exists(p_base_class) && ClassDB::class_exists(first) && ClassDB::is_parent_class(p_base_class, first)) {
+			const String &rest = names[1];
 			return rest;
 		}
 	}
@@ -1083,6 +1083,12 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							List<PropertyInfo> members;
 							scr->get_script_property_list(&members);
 							for (const PropertyInfo &E : members) {
+								if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP)) {
+									continue;
+								}
+								if (E.name.contains("/")) {
+									continue;
+								}
 								int location = p_recursion_depth + _get_property_location(scr->get_class_name(), E.name);
 								ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
 								r_result.insert(option.display, option);
@@ -1152,7 +1158,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						List<PropertyInfo> pinfo;
 						ClassDB::get_property_list(type, &pinfo);
 						for (const PropertyInfo &E : pinfo) {
-							if (E.usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY)) {
+							if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP)) {
 								continue;
 							}
 							if (E.name.contains("/")) {
@@ -1204,6 +1210,8 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					return;
 				}
 
+				int location = ScriptLanguage::LOCATION_OTHER;
+
 				if (!p_only_functions) {
 					List<PropertyInfo> members;
 					if (p_base.value.get_type() != Variant::NIL) {
@@ -1213,8 +1221,15 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					}
 
 					for (const PropertyInfo &E : members) {
+						if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP)) {
+							continue;
+						}
 						if (!String(E.name).contains("/")) {
-							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
+							if (base_type.kind == GDScriptParser::DataType::ENUM) {
+								// Sort enum members in their declaration order.
+								location += 1;
+							}
 							if (GDScriptParser::theme_color_names.has(E.name)) {
 								option.theme_color_name = GDScriptParser::theme_color_names[E.name];
 							}
@@ -1230,7 +1245,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						// Enum types are static and cannot change, therefore we skip non-const dictionary methods.
 						continue;
 					}
-					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 					if (E.arguments.size()) {
 						option.insert_text += "(";
 					} else {
@@ -1485,11 +1500,8 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 			} break;
 			case GDScriptParser::Node::SELF: {
 				if (p_context.current_class) {
-					if (p_context.type != GDScriptParser::COMPLETION_SUPER_METHOD) {
-						r_type.type = p_context.current_class->get_datatype();
-					} else {
-						r_type.type = p_context.current_class->base_type;
-					}
+					r_type.type = p_context.current_class->get_datatype();
+					r_type.type.is_meta_type = false;
 					found = true;
 				}
 			} break;
@@ -2601,6 +2613,64 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					r_arghint = _make_arguments_hint(info, p_argidx);
 				}
 
+				if (p_argidx == 1 && p_context.node && p_context.node->type == GDScriptParser::Node::CALL && ClassDB::is_parent_class(class_name, SNAME("Tween")) && p_method == SNAME("tween_property")) {
+					// Get tweened objects properties.
+					GDScriptParser::ExpressionNode *tweened_object = static_cast<GDScriptParser::CallNode *>(p_context.node)->arguments[0];
+					StringName native_type = tweened_object->datatype.native_type;
+					switch (tweened_object->datatype.kind) {
+						case GDScriptParser::DataType::SCRIPT: {
+							Ref<Script> script = tweened_object->datatype.script_type;
+							native_type = script->get_instance_base_type();
+							int n = 0;
+							while (script.is_valid()) {
+								List<PropertyInfo> properties;
+								script->get_script_property_list(&properties);
+								for (const PropertyInfo &E : properties) {
+									if (E.usage & (PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_INTERNAL)) {
+										continue;
+									}
+									ScriptLanguage::CodeCompletionOption option(E.name.quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n);
+									r_result.insert(option.display, option);
+								}
+								script = script->get_base_script();
+								n++;
+							}
+						} break;
+						case GDScriptParser::DataType::CLASS: {
+							GDScriptParser::ClassNode *clss = tweened_object->datatype.class_type;
+							native_type = clss->base_type.native_type;
+							int n = 0;
+							while (clss) {
+								for (GDScriptParser::ClassNode::Member member : clss->members) {
+									if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+										ScriptLanguage::CodeCompletionOption option(member.get_name().quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n);
+										r_result.insert(option.display, option);
+									}
+								}
+								if (clss->base_type.kind == GDScriptParser::DataType::Kind::CLASS) {
+									clss = clss->base_type.class_type;
+									n++;
+								} else {
+									native_type = clss->base_type.native_type;
+									clss = nullptr;
+								}
+							}
+						} break;
+						default:
+							break;
+					}
+
+					List<PropertyInfo> properties;
+					ClassDB::get_property_list(native_type, &properties);
+					for (const PropertyInfo &E : properties) {
+						if (E.usage & (PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_INTERNAL)) {
+							continue;
+						}
+						ScriptLanguage::CodeCompletionOption option(E.name.quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+						r_result.insert(option.display, option);
+					}
+				}
+
 				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, SNAME("Node")) && (p_method == SNAME("get_node") || p_method == SNAME("has_node"))) {
 					// Get autoloads
 					List<PropertyInfo> props;
@@ -2667,6 +2737,7 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 	if (p_context.base == nullptr) {
 		return false;
 	}
+
 	const GDScriptParser::GetNodeNode *get_node = nullptr;
 
 	switch (p_subscript->base->type) {
@@ -2675,6 +2746,11 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 		} break;
 
 		case GDScriptParser::Node::IDENTIFIER: {
+			if (p_subscript->base->datatype.type_source == GDScriptParser::DataType::ANNOTATED_EXPLICIT) {
+				// Annotated type takes precedence.
+				return false;
+			}
+
 			const GDScriptParser::IdentifierNode *identifier_node = static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base);
 
 			switch (identifier_node->source) {
@@ -2715,10 +2791,19 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 			if (r_base != nullptr) {
 				*r_base = node;
 			}
-			r_base_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-			r_base_type.kind = GDScriptParser::DataType::NATIVE;
+
+			r_base_type.type_source = GDScriptParser::DataType::INFERRED;
 			r_base_type.builtin_type = Variant::OBJECT;
 			r_base_type.native_type = node->get_class_name();
+
+			Ref<Script> scr = node->get_script();
+			if (scr.is_null()) {
+				r_base_type.kind = GDScriptParser::DataType::NATIVE;
+			} else {
+				r_base_type.kind = GDScriptParser::DataType::SCRIPT;
+				r_base_type.script_type = scr;
+			}
+
 			return true;
 		}
 	}
@@ -2744,8 +2829,6 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	bool _static = false;
 	const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(p_call);
 	GDScriptParser::Node::Type callee_type = call->get_callee_type();
-
-	GDScriptCompletionIdentifier connect_base;
 
 	if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);

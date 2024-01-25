@@ -159,6 +159,7 @@ void EditorHelp::_update_theme_item_cache() {
 
 	theme_cache.background_style = get_theme_stylebox(SNAME("background"), SNAME("EditorHelp"));
 
+	class_desc->begin_bulk_theme_override();
 	class_desc->add_theme_font_override("normal_font", theme_cache.doc_font);
 	class_desc->add_theme_font_size_override("normal_font_size", theme_cache.doc_font_size);
 
@@ -168,6 +169,7 @@ void EditorHelp::_update_theme_item_cache() {
 	class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("text_highlight_h_padding", get_theme_constant(SNAME("text_highlight_h_padding"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("text_highlight_v_padding", get_theme_constant(SNAME("text_highlight_v_padding"), SNAME("EditorHelp")));
+	class_desc->end_bulk_theme_override();
 }
 
 void EditorHelp::_search(bool p_search_previous) {
@@ -1964,7 +1966,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 
 	if (class_desc->is_ready()) {
-		class_desc->call_deferred(SNAME("scroll_to_paragraph"), line);
+		callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).call_deferred(line);
 	} else {
 		scroll_to = line;
 	}
@@ -2358,38 +2360,41 @@ void EditorHelp::_add_text(const String &p_bbcode) {
 	_add_text_to_rt(p_bbcode, class_desc, this, edited_class);
 }
 
-Thread EditorHelp::thread;
+int EditorHelp::doc_generation_count = 0;
+String EditorHelp::doc_version_hash;
+Thread EditorHelp::worker_thread;
 
 void EditorHelp::_wait_for_thread() {
-	if (thread.is_started()) {
-		thread.wait_to_finish();
+	if (worker_thread.is_started()) {
+		worker_thread.wait_to_finish();
 	}
+}
+
+void EditorHelp::_compute_doc_version_hash() {
+	uint32_t version_hash = Engine::get_singleton()->get_version_info().hash();
+	doc_version_hash = vformat("%d/%d/%d/%s", version_hash, ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
 }
 
 String EditorHelp::get_cache_full_path() {
 	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor_doc_cache.res");
 }
 
-static bool first_attempt = true;
-
-static String _compute_doc_version_hash() {
-	uint32_t version_hash = Engine::get_singleton()->get_version_info().hash();
-	return vformat("%d/%d/%d/%s", version_hash, ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
-}
-
 void EditorHelp::_load_doc_thread(void *p_udata) {
-	DEV_ASSERT(first_attempt);
 	Ref<Resource> cache_res = ResourceLoader::load(get_cache_full_path());
-	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == _compute_doc_version_hash()) {
+	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == doc_version_hash) {
 		Array classes = cache_res->get_meta("classes", Array());
 		for (int i = 0; i < classes.size(); i++) {
 			doc->add_doc(DocData::ClassDoc::from_dict(classes[i]));
 		}
+
+		// Extensions' docs are not cached. Generate them now (on the main thread).
+		callable_mp_static(&EditorHelp::_gen_extensions_docs).call_deferred();
 	} else {
-		// We have to go back to the main thread to start from scratch.
-		first_attempt = false;
-		callable_mp_static(&EditorHelp::generate_doc).bind(true).call_deferred();
+		// We have to go back to the main thread to start from scratch, bypassing any possibly existing cache.
+		callable_mp_static(&EditorHelp::generate_doc).bind(false).call_deferred();
 	}
+
+	OS::get_singleton()->benchmark_end_measure("EditorHelp", vformat("Generate Documentation (Run %d)", doc_generation_count));
 }
 
 void EditorHelp::_gen_doc_thread(void *p_udata) {
@@ -2399,9 +2404,15 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 
 	Ref<Resource> cache_res;
 	cache_res.instantiate();
-	cache_res->set_meta("version_hash", _compute_doc_version_hash());
+	cache_res->set_meta("version_hash", doc_version_hash);
 	Array classes;
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
+		if (ClassDB::class_exists(E.value.name)) {
+			ClassDB::APIType api = ClassDB::get_api_type(E.value.name);
+			if (api == ClassDB::API_EXTENSION || api == ClassDB::API_EDITOR_EXTENSION) {
+				continue;
+			}
+		}
 		classes.push_back(DocData::ClassDoc::to_dict(E.value));
 	}
 	cache_res->set_meta("classes", classes);
@@ -2409,42 +2420,36 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 	if (err) {
 		ERR_PRINT("Cannot save editor help cache (" + get_cache_full_path() + ").");
 	}
+
+	OS::get_singleton()->benchmark_end_measure("EditorHelp", vformat("Generate Documentation (Run %d)", doc_generation_count));
 }
 
-static bool doc_gen_use_threads = true;
+void EditorHelp::_gen_extensions_docs() {
+	doc->generate((DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES | DocTools::GENERATE_FLAG_EXTENSION_CLASSES_ONLY));
+}
 
 void EditorHelp::generate_doc(bool p_use_cache) {
-	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
-	if (doc_gen_use_threads) {
-		// In case not the first attempt.
-		_wait_for_thread();
-	}
+	doc_generation_count++;
+	OS::get_singleton()->benchmark_begin_measure("EditorHelp", vformat("Generate Documentation (Run %d)", doc_generation_count));
 
-	DEV_ASSERT(first_attempt == (doc == nullptr));
+	// In case not the first attempt.
+	_wait_for_thread();
 
 	if (!doc) {
 		doc = memnew(DocTools);
 	}
 
-	if (p_use_cache && first_attempt && FileAccess::exists(get_cache_full_path())) {
-		if (doc_gen_use_threads) {
-			thread.start(_load_doc_thread, nullptr);
-		} else {
-			_load_doc_thread(nullptr);
-		}
+	if (doc_version_hash.is_empty()) {
+		_compute_doc_version_hash();
+	}
+
+	if (p_use_cache && FileAccess::exists(get_cache_full_path())) {
+		worker_thread.start(_load_doc_thread, nullptr);
 	} else {
 		print_verbose("Regenerating editor help cache");
-
-		// Not doable on threads unfortunately, since it instantiates all sorts of classes to get default values.
-		doc->generate(true);
-
-		if (doc_gen_use_threads) {
-			thread.start(_gen_doc_thread, nullptr);
-		} else {
-			_gen_doc_thread(nullptr);
-		}
+		doc->generate();
+		worker_thread.start(_gen_doc_thread, nullptr);
 	}
-	OS::get_singleton()->benchmark_end_measure("EditorHelp::generate_doc");
 }
 
 void EditorHelp::_toggle_scripts_pressed() {
@@ -2862,10 +2867,10 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 	PackedStringArray slices = p_text.split("|", true, 3);
 	ERR_FAIL_COND_MSG(slices.size() < 4, "Invalid tooltip formatting. The expect string should be formatted as 'type|class|property|args'.");
 
-	String type = slices[0];
-	String class_name = slices[1];
-	String property_name = slices[2];
-	String property_args = slices[3];
+	const String &type = slices[0];
+	const String &class_name = slices[1];
+	const String &property_name = slices[2];
+	const String &property_args = slices[3];
 
 	String title;
 	String description;

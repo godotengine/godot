@@ -315,9 +315,8 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
 
 		if (param_symbols.size() >= 2) {
-			String class_ = param_symbols[0];
-			StringName class_name = class_;
-			String member_name = param_symbols[param_symbols.size() - 1];
+			StringName class_name = param_symbols[0];
+			const String &member_name = param_symbols[param_symbols.size() - 1];
 			String inner_class_name;
 			if (param_symbols.size() >= 3) {
 				inner_class_name = param_symbols[1];
@@ -457,7 +456,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 					id = "class_global:" + symbol->native_class + ":" + symbol->name;
 					break;
 			}
-			call_deferred(SNAME("show_native_symbol_in_editor"), id);
+			callable_mp(this, &GDScriptTextDocument::show_native_symbol_in_editor).call_deferred(id);
 		} else {
 			notify_client_show_symbol(symbol);
 		}

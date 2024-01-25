@@ -93,24 +93,63 @@ void Path3D::_update_debug_mesh() {
 		return;
 	}
 
-	Vector<Vector3> vertex_array;
+	real_t interval = 0.1;
+	const real_t length = curve->get_baked_length();
 
-	for (int i = 1; i < curve->get_point_count(); i++) {
-		Vector3 line_end = curve->get_point_position(i);
-		Vector3 line_start = curve->get_point_position(i - 1);
-		vertex_array.push_back(line_start);
-		vertex_array.push_back(line_end);
+	if (length <= CMP_EPSILON) {
+		RS::get_singleton()->instance_set_visible(debug_instance, false);
+		return;
 	}
 
-	Array mesh_array;
-	mesh_array.resize(Mesh::ARRAY_MAX);
-	mesh_array[Mesh::ARRAY_VERTEX] = vertex_array;
+	const int sample_count = int(length / interval) + 2;
+	interval = length / (sample_count - 1);
+
+	Vector<Vector3> ribbon;
+	ribbon.resize(sample_count);
+	Vector3 *ribbon_ptr = ribbon.ptrw();
+
+	Vector<Vector3> bones;
+	bones.resize(sample_count * 4);
+	Vector3 *bones_ptr = bones.ptrw();
+
+	for (int i = 0; i < sample_count; i++) {
+		const Transform3D r = curve->sample_baked_with_rotation(i * interval, true, true);
+
+		const Vector3 p1 = r.origin;
+		const Vector3 side = r.basis.get_column(0);
+		const Vector3 up = r.basis.get_column(1);
+		const Vector3 forward = r.basis.get_column(2);
+
+		// Path3D as a ribbon.
+		ribbon_ptr[i] = p1;
+
+		// Fish Bone.
+		const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
+		const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
+
+		const int bone_idx = i * 4;
+
+		bones_ptr[bone_idx] = p1;
+		bones_ptr[bone_idx + 1] = p_left;
+		bones_ptr[bone_idx + 2] = p1;
+		bones_ptr[bone_idx + 3] = p_right;
+	}
+
+	Array ribbon_array;
+	ribbon_array.resize(Mesh::ARRAY_MAX);
+	ribbon_array[Mesh::ARRAY_VERTEX] = ribbon;
+
+	Array bone_array;
+	bone_array.resize(Mesh::ARRAY_MAX);
+	bone_array[Mesh::ARRAY_VERTEX] = bones;
 
 	debug_mesh->clear_surfaces();
-	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, mesh_array);
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINE_STRIP, ribbon_array);
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, bone_array);
 
 	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh->get_rid());
 	RS::get_singleton()->mesh_surface_set_material(debug_mesh->get_rid(), 0, st->get_debug_paths_material()->get_rid());
+	RS::get_singleton()->mesh_surface_set_material(debug_mesh->get_rid(), 1, st->get_debug_paths_material()->get_rid());
 	if (is_inside_tree()) {
 		RS::get_singleton()->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());

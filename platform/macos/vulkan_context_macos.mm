@@ -42,14 +42,14 @@ const char *VulkanContextMacOS::_get_platform_surface_extension() const {
 	return VK_MVK_MACOS_SURFACE_EXTENSION_NAME;
 }
 
-Error VulkanContextMacOS::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, id p_window, int p_width, int p_height) {
-	VkMacOSSurfaceCreateInfoMVK createInfo;
-	createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
-	createInfo.pNext = nullptr;
-	createInfo.flags = 0;
-	createInfo.pView = (__bridge const void *)p_window;
+Error VulkanContextMacOS::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) {
+	const WindowPlatformData *wpd = (const WindowPlatformData *)p_platform_data;
 
-	VkSurfaceKHR surface;
+	VkMacOSSurfaceCreateInfoMVK createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
+	createInfo.pView = (__bridge const void *)(*wpd->view_ptr);
+
+	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	VkResult err = vkCreateMacOSSurfaceMVK(get_instance(), &createInfo, nullptr, &surface);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);

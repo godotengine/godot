@@ -494,7 +494,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				in_function_arg_dicts = 0;
 			}
 
-			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[' && str[j] != '.') {
+			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[' && str[j] != ',' && str[j] != '.') {
 				expect_type = false;
 			}
 

@@ -381,6 +381,10 @@ float AnimatedSprite2D::get_playing_speed() const {
 }
 
 void AnimatedSprite2D::set_centered(bool p_center) {
+	if (centered == p_center) {
+		return;
+	}
+
 	centered = p_center;
 	queue_redraw();
 	item_rect_changed();
@@ -391,6 +395,10 @@ bool AnimatedSprite2D::is_centered() const {
 }
 
 void AnimatedSprite2D::set_offset(const Point2 &p_offset) {
+	if (offset == p_offset) {
+		return;
+	}
+
 	offset = p_offset;
 	queue_redraw();
 	item_rect_changed();
@@ -401,6 +409,10 @@ Point2 AnimatedSprite2D::get_offset() const {
 }
 
 void AnimatedSprite2D::set_flip_h(bool p_flip) {
+	if (hflip == p_flip) {
+		return;
+	}
+
 	hflip = p_flip;
 	queue_redraw();
 }
@@ -410,6 +422,10 @@ bool AnimatedSprite2D::is_flipped_h() const {
 }
 
 void AnimatedSprite2D::set_flip_v(bool p_flip) {
+	if (vflip == p_flip) {
+		return;
+	}
+
 	vflip = p_flip;
 	queue_redraw();
 }
@@ -561,14 +577,16 @@ PackedStringArray AnimatedSprite2D::get_configuration_warnings() const {
 }
 
 void AnimatedSprite2D::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
-		List<StringName> al;
-		frames->get_animation_list(&al);
-		for (const StringName &name : al) {
-			r_options->push_back(String(name).quote());
+	if (p_idx == 0 && frames.is_valid()) {
+		if (p_function == "play" || p_function == "play_backwards" || p_function == "set_animation" || p_function == "set_autoplay") {
+			List<StringName> al;
+			frames->get_animation_list(&al);
+			for (const StringName &name : al) {
+				r_options->push_back(String(name).quote());
+			}
 		}
 	}
-	Node::get_argument_options(p_function, p_idx, r_options);
+	Node2D::get_argument_options(p_function, p_idx, r_options);
 }
 
 #ifndef DISABLE_DEPRECATED

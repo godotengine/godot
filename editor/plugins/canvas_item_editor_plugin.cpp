@@ -345,7 +345,7 @@ void CanvasItemEditor::_snap_other_nodes(
 	}
 }
 
-Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsigned int p_forced_modes, const CanvasItem *p_self_canvas_item, List<CanvasItem *> p_other_nodes_exceptions) {
+Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsigned int p_forced_modes, const CanvasItem *p_self_canvas_item, const List<CanvasItem *> &p_other_nodes_exceptions) {
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
@@ -535,7 +535,7 @@ void CanvasItemEditor::_keying_changed() {
 	}
 }
 
-Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_list) {
+Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(const List<CanvasItem *> &p_list) {
 	ERR_FAIL_COND_V(p_list.is_empty(), Rect2());
 
 	// Handles the first element
@@ -830,7 +830,7 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 	return output;
 }
 
-void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones) {
+void CanvasItemEditor::_save_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool save_bones) {
 	original_transform = Transform2D();
 	bool transform_stored = false;
 
@@ -853,14 +853,14 @@ void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items
 	}
 }
 
-void CanvasItemEditor::_restore_canvas_item_state(List<CanvasItem *> p_canvas_items, bool restore_bones) {
+void CanvasItemEditor::_restore_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool restore_bones) {
 	for (CanvasItem *ci : drag_selection) {
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 		ci->_edit_set_state(se->undo_state);
 	}
 }
 
-void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_items, String action_name, bool commit_bones) {
+void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, String action_name, bool commit_bones) {
 	List<CanvasItem *> modified_canvas_items;
 	for (CanvasItem *ci : p_canvas_items) {
 		Dictionary old_state = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci)->undo_state;
@@ -976,7 +976,7 @@ void CanvasItemEditor::_node_created(Node *p_node) {
 		c->_edit_set_position(xform.xform(node_create_position));
 	}
 
-	call_deferred(SNAME("_reset_create_position")); // Defer the call in case more than one node is added.
+	callable_mp(this, &CanvasItemEditor::_reset_create_position).call_deferred(); // Defer the call in case more than one node is added.
 }
 
 void CanvasItemEditor::_reset_create_position() {
@@ -2014,14 +2014,14 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			if ((b->is_alt_pressed() && !b->is_command_or_control_pressed()) || tool == TOOL_MOVE) {
 				List<CanvasItem *> selection = _get_edited_canvas_items();
 
-				drag_selection.clear();
-				for (int i = 0; i < selection.size(); i++) {
-					if (_is_node_movable(selection[i], true)) {
-						drag_selection.push_back(selection[i]);
-					}
-				}
-
 				if (selection.size() > 0) {
+					drag_selection.clear();
+					for (int i = 0; i < selection.size(); i++) {
+						if (_is_node_movable(selection[i], true)) {
+							drag_selection.push_back(selection[i]);
+						}
+					}
+
 					drag_type = DRAG_MOVE;
 
 					CanvasItem *ci = selection[0];
@@ -2043,8 +2043,9 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 					drag_from = transform.affine_inverse().xform(b->get_position());
 					_save_canvas_item_state(drag_selection);
+
+					return true;
 				}
-				return true;
 			}
 		}
 	}
@@ -2057,8 +2058,8 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			drag_to = transform.affine_inverse().xform(m->get_position());
 			Point2 previous_pos;
 			if (drag_selection.size() == 1) {
-				Transform2D xform = drag_selection[0]->get_global_transform_with_canvas() * drag_selection[0]->get_transform().affine_inverse();
-				previous_pos = xform.xform(drag_selection[0]->_edit_get_position());
+				Transform2D parent_xform = drag_selection[0]->get_global_transform_with_canvas() * drag_selection[0]->get_transform().affine_inverse();
+				previous_pos = parent_xform.xform(drag_selection[0]->_edit_get_position());
 			} else {
 				previous_pos = _get_encompassing_rect_from_list(drag_selection).position;
 			}
@@ -2066,14 +2067,17 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			Point2 drag_delta = drag_to - drag_from;
 			if (drag_selection.size() == 1 && (drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y)) {
 				const CanvasItem *selected = drag_selection.front()->get();
-				drag_delta = selected->get_transform().affine_inverse().basis_xform(drag_delta);
+				Transform2D parent_xform = selected->get_global_transform_with_canvas() * selected->get_transform().affine_inverse();
+				Transform2D unscaled_transform = (transform * parent_xform * selected->_edit_get_transform()).orthonormalized();
+				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
+				drag_delta = simple_xform.affine_inverse().basis_xform(drag_delta);
 				if (drag_type == DRAG_MOVE_X) {
 					drag_delta.y = 0;
 				} else {
 					drag_delta.x = 0;
 				}
-				drag_delta = selected->get_transform().basis_xform(drag_delta);
+				drag_delta = simple_xform.basis_xform(drag_delta);
 			}
 			Point2 new_pos = snap_point(previous_pos + drag_delta, SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, nullptr, drag_selection);
 
@@ -2087,8 +2091,8 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			}
 
 			for (CanvasItem *ci : drag_selection) {
-				Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse() * ci->get_transform();
-				ci->_edit_set_position(ci->_edit_get_position() + xform.xform(new_pos) - xform.xform(previous_pos));
+				Transform2D parent_xform_inv = ci->get_transform() * ci->get_global_transform_with_canvas().affine_inverse();
+				ci->_edit_set_position(ci->_edit_get_position() + parent_xform_inv.basis_xform(new_pos - previous_pos));
 			}
 			return true;
 		}
@@ -2341,7 +2345,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT && !panner->is_panning()) {
+		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && !panner->is_panning() && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE)) {
 			// Single item selection
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
@@ -2376,7 +2380,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			} else {
 				bool still_selected = _select_click_on_item(ci, click, b->is_shift_pressed());
 				// Start dragging
-				if (still_selected) {
+				if (still_selected && (tool == TOOL_SELECT || tool == TOOL_MOVE)) {
 					// Drag the node(s) if requested
 					drag_start_origin = click;
 					drag_type = DRAG_QUEUED;
@@ -2460,7 +2464,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true) && drag_type == DRAG_NONE && tool == TOOL_SELECT) {
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true) && drag_type == DRAG_NONE) {
 		// Unselect everything
 		editor_selection->clear();
 		viewport->queue_redraw();
@@ -2606,7 +2610,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 	// Grab focus
 	if (!viewport->has_focus() && (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field())) {
-		viewport->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)viewport, &Control::grab_focus).call_deferred();
 	}
 }
 
@@ -3635,7 +3639,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
 	}
 
-	if (ci && !ci->_edit_use_rect() && (!editor_selection->is_selected(ci) || _is_node_locked(ci))) {
+	if (show_position_gizmos && ci && !ci->_edit_use_rect() && (!editor_selection->is_selected(ci) || _is_node_locked(ci))) {
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
 		// Draw the node's position
@@ -3772,13 +3776,13 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 		real_t offset = 0;
 
 		Ref<Texture2D> lock = get_editor_theme_icon(SNAME("LockViewport"));
-		if (p_node->has_meta("_edit_lock_") && show_edit_locks) {
+		if (show_lock_gizmos && p_node->has_meta("_edit_lock_")) {
 			lock->draw(viewport_ci, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			offset += lock->get_size().x;
 		}
 
 		Ref<Texture2D> group = get_editor_theme_icon(SNAME("GroupViewport"));
-		if (ci->has_meta("_edit_group_") && show_edit_locks) {
+		if (show_group_gizmos && ci->has_meta("_edit_group_")) {
 			group->draw(viewport_ci, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			//offset += group->get_size().x;
 		}
@@ -3907,6 +3911,11 @@ void CanvasItemEditor::_update_editor_settings() {
 
 void CanvasItemEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
+			EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
+		} break;
+
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
 
@@ -4286,16 +4295,28 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			view_menu->get_popup()->set_item_checked(idx, show_viewport);
 			viewport->queue_redraw();
 		} break;
-		case SHOW_EDIT_LOCKS: {
-			show_edit_locks = !show_edit_locks;
-			int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
-			view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
+		case SHOW_POSITION_GIZMOS: {
+			show_position_gizmos = !show_position_gizmos;
+			int idx = gizmos_menu->get_item_index(SHOW_POSITION_GIZMOS);
+			gizmos_menu->set_item_checked(idx, show_position_gizmos);
+			viewport->queue_redraw();
+		} break;
+		case SHOW_LOCK_GIZMOS: {
+			show_lock_gizmos = !show_lock_gizmos;
+			int idx = gizmos_menu->get_item_index(SHOW_LOCK_GIZMOS);
+			gizmos_menu->set_item_checked(idx, show_lock_gizmos);
+			viewport->queue_redraw();
+		} break;
+		case SHOW_GROUP_GIZMOS: {
+			show_group_gizmos = !show_group_gizmos;
+			int idx = gizmos_menu->get_item_index(SHOW_GROUP_GIZMOS);
+			gizmos_menu->set_item_checked(idx, show_group_gizmos);
 			viewport->queue_redraw();
 		} break;
 		case SHOW_TRANSFORMATION_GIZMOS: {
 			show_transformation_gizmos = !show_transformation_gizmos;
-			int idx = view_menu->get_popup()->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
-			view_menu->get_popup()->set_item_checked(idx, show_transformation_gizmos);
+			int idx = gizmos_menu->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
+			gizmos_menu->set_item_checked(idx, show_transformation_gizmos);
 			viewport->queue_redraw();
 		} break;
 		case SNAP_USE_NODE_PARENT: {
@@ -4707,7 +4728,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		zoom *= 0.90;
 		zoom_widget->set_zoom(zoom);
 		viewport->queue_redraw(); // Redraw to update the global canvas transform after zoom changes.
-		call_deferred(SNAME("center_at"), rect.get_center()); // Defer because the updated transform is needed.
+		callable_mp(this, &CanvasItemEditor::center_at).call_deferred(rect.get_center()); // Defer because the updated transform is needed.
 	} else {
 		center_at(rect.get_center());
 	}
@@ -4756,7 +4777,9 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["show_guides"] = show_guides;
 	state["show_helpers"] = show_helpers;
 	state["show_zoom_control"] = zoom_widget->is_visible();
-	state["show_edit_locks"] = show_edit_locks;
+	state["show_position_gizmos"] = show_position_gizmos;
+	state["show_lock_gizmos"] = show_lock_gizmos;
+	state["show_group_gizmos"] = show_group_gizmos;
 	state["show_transformation_gizmos"] = show_transformation_gizmos;
 	state["snap_rotation"] = snap_rotation;
 	state["snap_scale"] = snap_scale;
@@ -4893,16 +4916,28 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		view_menu->get_popup()->set_item_checked(idx, show_helpers);
 	}
 
-	if (state.has("show_edit_locks")) {
-		show_edit_locks = state["show_edit_locks"];
-		int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
-		view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
+	if (state.has("show_position_gizmos")) {
+		show_position_gizmos = state["show_position_gizmos"];
+		int idx = gizmos_menu->get_item_index(SHOW_POSITION_GIZMOS);
+		gizmos_menu->set_item_checked(idx, show_position_gizmos);
+	}
+
+	if (state.has("show_lock_gizmos")) {
+		show_lock_gizmos = state["show_lock_gizmos"];
+		int idx = gizmos_menu->get_item_index(SHOW_LOCK_GIZMOS);
+		gizmos_menu->set_item_checked(idx, show_lock_gizmos);
+	}
+
+	if (state.has("show_group_gizmos")) {
+		show_group_gizmos = state["show_group_gizmos"];
+		int idx = gizmos_menu->get_item_index(SHOW_GROUP_GIZMOS);
+		gizmos_menu->set_item_checked(idx, show_group_gizmos);
 	}
 
 	if (state.has("show_transformation_gizmos")) {
 		show_transformation_gizmos = state["show_transformation_gizmos"];
-		int idx = view_menu->get_popup()->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
-		view_menu->get_popup()->set_item_checked(idx, show_transformation_gizmos);
+		int idx = gizmos_menu->get_item_index(SHOW_TRANSFORMATION_GIZMOS);
+		gizmos_menu->set_item_checked(idx, show_transformation_gizmos);
 	}
 
 	if (state.has("show_zoom_control")) {
@@ -5049,9 +5084,6 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	SceneTreeDock::get_singleton()->connect("node_created", callable_mp(this, &CanvasItemEditor::_node_created));
 	SceneTreeDock::get_singleton()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
-
-	EditorRunBar::get_singleton()->call_deferred(SNAME("connect"), "play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
-	EditorRunBar::get_singleton()->call_deferred(SNAME("connect"), "stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
 
 	// Add some margin to the sides for better esthetics.
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
@@ -5320,7 +5352,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	group_button->set_theme_type_variation("FlatButton");
 	main_menu_hbox->add_child(group_button);
 	group_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(GROUP_SELECTED));
-	group_button->set_tooltip_text(TTR("Make selected node's children not selectable."));
+	group_button->set_tooltip_text(TTR("Groups the selected node with its children. This causes the parent to be selected when any child node is clicked in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	group_button->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::G));
 
@@ -5328,7 +5360,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	ungroup_button->set_theme_type_variation("FlatButton");
 	main_menu_hbox->add_child(ungroup_button);
 	ungroup_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNGROUP_SELECTED));
-	ungroup_button->set_tooltip_text(TTR("Make selected node's children selectable."));
+	ungroup_button->set_tooltip_text(TTR("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	ungroup_button->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::G));
 
@@ -5391,8 +5423,18 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTR("Show Guides"), Key::Y), SHOW_GUIDES);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_origin", TTR("Show Origin")), SHOW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_viewport", TTR("Show Viewport")), SHOW_VIEWPORT);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_edit_locks", TTR("Show Group And Lock Icons")), SHOW_EDIT_LOCKS);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_transformation_gizmos", TTR("Show Transformation Gizmos")), SHOW_TRANSFORMATION_GIZMOS);
+	p->add_separator();
+
+	gizmos_menu = memnew(PopupMenu);
+	gizmos_menu->set_name("GizmosMenu");
+	gizmos_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+	gizmos_menu->set_hide_on_checkable_item_selection(false);
+	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_position_gizmos", TTR("Position")), SHOW_POSITION_GIZMOS);
+	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_lock_gizmos", TTR("Lock")), SHOW_LOCK_GIZMOS);
+	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_group_gizmos", TTR("Group")), SHOW_GROUP_GIZMOS);
+	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_transformation_gizmos", TTR("Transformation")), SHOW_TRANSFORMATION_GIZMOS);
+	p->add_child(gizmos_menu);
+	p->add_submenu_item(TTR("Gizmos"), "GizmosMenu");
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), Key::F), VIEW_CENTER_TO_SELECTION);
@@ -5610,8 +5652,7 @@ void CanvasItemEditorViewport::_on_change_type_closed() {
 void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) const {
 	bool add_preview = false;
 	for (int i = 0; i < files.size(); i++) {
-		String path = files[i];
-		Ref<Resource> res = ResourceLoader::load(path);
+		Ref<Resource> res = ResourceLoader::load(files[i]);
 		ERR_FAIL_COND(res.is_null());
 		Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
@@ -5804,7 +5845,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 	Vector<String> error_files;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Create Node"));
+	undo_redo->create_action_for_history(TTR("Create Node"), EditorNode::get_editor_data().get_current_edited_scene_history_id());
 
 	for (int i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];

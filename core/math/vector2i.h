@@ -85,6 +85,14 @@ struct _NO_DISCARD_ Vector2i {
 		return Vector2i(MAX(x, p_vector2i.x), MAX(y, p_vector2i.y));
 	}
 
+	double distance_to(const Vector2i &p_to) const {
+		return (p_to - *this).length();
+	}
+
+	int64_t distance_squared_to(const Vector2i &p_to) const {
+		return (p_to - *this).length_squared();
+	}
+
 	Vector2i operator+(const Vector2i &p_v) const;
 	void operator+=(const Vector2i &p_v);
 	Vector2i operator-(const Vector2i &p_v) const;

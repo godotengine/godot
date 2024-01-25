@@ -518,13 +518,17 @@ String TranslationServer::get_country_name(const String &p_country) const {
 }
 
 void TranslationServer::set_locale(const String &p_locale) {
-	locale = standardize_locale(p_locale);
+	String new_locale = standardize_locale(p_locale);
+	if (locale == new_locale) {
+		return;
+	}
+
+	locale = new_locale;
+	ResourceLoader::reload_translation_remaps();
 
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
-
-	ResourceLoader::reload_translation_remaps();
 }
 
 String TranslationServer::get_locale() const {
@@ -816,10 +820,11 @@ bool TranslationServer::is_pseudolocalization_enabled() const {
 void TranslationServer::set_pseudolocalization_enabled(bool p_enabled) {
 	pseudolocalization_enabled = p_enabled;
 
+	ResourceLoader::reload_translation_remaps();
+
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
-	ResourceLoader::reload_translation_remaps();
 }
 
 void TranslationServer::set_editor_pseudolocalization(bool p_enabled) {
@@ -836,10 +841,11 @@ void TranslationServer::reload_pseudolocalization() {
 	pseudolocalization_suffix = GLOBAL_GET("internationalization/pseudolocalization/suffix");
 	pseudolocalization_skip_placeholders_enabled = GLOBAL_GET("internationalization/pseudolocalization/skip_placeholders");
 
+	ResourceLoader::reload_translation_remaps();
+
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
-	ResourceLoader::reload_translation_remaps();
 }
 
 StringName TranslationServer::pseudolocalize(const StringName &p_message) const {
@@ -875,7 +881,7 @@ StringName TranslationServer::tool_pseudolocalize(const StringName &p_message) c
 
 String TranslationServer::get_override_string(String &p_message) const {
 	String res;
-	for (int i = 0; i < p_message.size(); i++) {
+	for (int i = 0; i < p_message.length(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -889,7 +895,7 @@ String TranslationServer::get_override_string(String &p_message) const {
 
 String TranslationServer::double_vowels(String &p_message) const {
 	String res;
-	for (int i = 0; i < p_message.size(); i++) {
+	for (int i = 0; i < p_message.length(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -907,7 +913,7 @@ String TranslationServer::double_vowels(String &p_message) const {
 
 String TranslationServer::replace_with_accented_string(String &p_message) const {
 	String res;
-	for (int i = 0; i < p_message.size(); i++) {
+	for (int i = 0; i < p_message.length(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -930,7 +936,7 @@ String TranslationServer::wrap_with_fakebidi_characters(String &p_message) const
 	char32_t fakebidisuffix = U'\u202c';
 	res += fakebidiprefix;
 	// The fake bidi unicode gets popped at every newline so pushing it back at every newline.
-	for (int i = 0; i < p_message.size(); i++) {
+	for (int i = 0; i < p_message.length(); i++) {
 		if (p_message[i] == '\n') {
 			res += fakebidisuffix;
 			res += p_message[i];
@@ -972,7 +978,7 @@ const char32_t *TranslationServer::get_accented_version(char32_t p_character) co
 }
 
 bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
-	return p_index < p_message.size() - 1 && p_message[p_index] == '%' &&
+	return p_index < p_message.length() - 1 && p_message[p_index] == '%' &&
 			(p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
 					p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
 }

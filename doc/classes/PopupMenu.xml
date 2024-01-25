@@ -186,7 +186,7 @@
 			<param index="1" name="submenu" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
 			<description>
-				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument is the name of the child [PopupMenu] node that will be shown when the item is clicked.
+				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument must be the name of an existing [PopupMenu] that has been added as a child to this node. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
 			</description>
 		</method>
@@ -344,6 +344,12 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns [code]true[/code] if the specified item's shortcut is disabled.
+			</description>
+		</method>
+		<method name="is_system_menu" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the menu is bound to the special system menu.
 			</description>
 		</method>
 		<method name="remove_item">
@@ -565,6 +571,9 @@
 		</member>
 		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
 			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.
+		</member>
+		<member name="system_menu_root" type="String" setter="set_system_menu_root" getter="get_system_menu_root" default="&quot;&quot;">
+			If set to one of the values returned by [method DisplayServer.global_menu_get_system_menu_roots], this [PopupMenu] is bound to the special system menu. Only one [PopupMenu] can be bound to each special menu at a time.
 		</member>
 	</members>
 	<signals>

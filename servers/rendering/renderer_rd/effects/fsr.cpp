@@ -124,5 +124,5 @@ void FSR::fsr_upscale(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_r
 
 	RD::get_singleton()->compute_list_dispatch(compute_list, dispatch_x, dispatch_y, 1);
 
-	RD::get_singleton()->compute_list_end(compute_list);
+	RD::get_singleton()->compute_list_end();
 }

@@ -89,7 +89,7 @@ bool ResourceImporterMP3::has_advanced_options() const {
 void ResourceImporterMP3::show_advanced_options(const String &p_path) {
 	Ref<AudioStreamMP3> mp3_stream = import_mp3(p_path);
 	if (mp3_stream.is_valid()) {
-		AudioStreamImportSettings::get_singleton()->edit(p_path, "mp3", mp3_stream);
+		AudioStreamImportSettingsDialog::get_singleton()->edit(p_path, "mp3", mp3_stream);
 	}
 }
 #endif

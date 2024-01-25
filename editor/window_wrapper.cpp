@@ -34,6 +34,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/progress_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
@@ -73,7 +74,7 @@ class ShortcutBin : public Node {
 };
 
 Rect2 WindowWrapper::_get_default_window_rect() const {
-	// Assume that the control rect is the desidered one for the window.
+	// Assume that the control rect is the desired one for the window.
 	return wrapped_control->get_screen_rect();
 }
 
@@ -332,6 +333,8 @@ WindowWrapper::WindowWrapper() {
 	window_background = memnew(Panel);
 	window_background->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	window->add_child(window_background);
+
+	ProgressDialog::get_singleton()->add_host_window(window);
 }
 
 // ScreenSelect

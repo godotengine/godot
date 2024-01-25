@@ -476,6 +476,8 @@ public:
 	FUNC2(voxel_gi_set_interior, RID, bool)
 	FUNC2(voxel_gi_set_use_two_bounces, RID, bool)
 
+	FUNC0(sdfgi_reset)
+
 	/* PARTICLES */
 
 #undef ServerName
@@ -938,6 +940,8 @@ public:
 
 	FUNC1(canvas_set_shadow_texture_size, int)
 
+	FUNC1R(Rect2, _debug_canvas_item_get_rect, RID)
+
 	/* GLOBAL SHADER UNIFORMS */
 
 #undef server_name
@@ -1017,7 +1021,9 @@ public:
 	virtual Color get_default_clear_color() override;
 	virtual void set_default_clear_color(const Color &p_color) override;
 
+#ifndef DISABLE_DEPRECATED
 	virtual bool has_feature(Features p_feature) const override;
+#endif
 
 	virtual bool has_os_feature(const String &p_feature) const override;
 	virtual void set_debug_generate_wireframes(bool p_generate) override;

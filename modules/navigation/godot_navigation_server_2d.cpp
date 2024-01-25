@@ -141,6 +141,13 @@ static Transform3D trf2_to_trf3(const Transform2D &d) {
 	return Transform3D(b, o);
 }
 
+static Transform2D trf3_to_trf2(const Transform3D &d) {
+	Vector3 o = d.get_origin();
+	Vector3 nx = d.xform(Vector3(1, 0, 0)) - o;
+	Vector3 nz = d.xform(Vector3(0, 0, 1)) - o;
+	return Transform2D(nx.x, nx.z, nz.x, nz.z, o.x, o.z);
+}
+
 static ObjectID id_to_id(const ObjectID &id) {
 	return id;
 }
@@ -259,8 +266,12 @@ Vector<Vector2> FORWARD_5_R_C(vector_v3_to_v2, map_get_path, RID, p_map, Vector2
 Vector2 FORWARD_2_R_C(v3_to_v2, map_get_closest_point, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 RID FORWARD_2_C(map_get_closest_point_owner, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 
-RID FORWARD_0(region_create);
+Vector2 GodotNavigationServer2D::map_get_random_point(RID p_map, uint32_t p_naviation_layers, bool p_uniformly) const {
+	Vector3 result = NavigationServer3D::get_singleton()->map_get_random_point(p_map, p_naviation_layers, p_uniformly);
+	return v3_to_v2(result);
+}
 
+RID FORWARD_0(region_create);
 void FORWARD_2(region_set_enabled, RID, p_region, bool, p_enabled, rid_to_rid, bool_to_bool);
 bool FORWARD_1_C(region_get_enabled, RID, p_region, rid_to_rid);
 void FORWARD_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled, rid_to_rid, bool_to_bool);
@@ -279,6 +290,10 @@ void FORWARD_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigati
 uint32_t FORWARD_1_C(region_get_navigation_layers, RID, p_region, rid_to_rid);
 void FORWARD_2(region_set_transform, RID, p_region, Transform2D, p_transform, rid_to_rid, trf2_to_trf3);
 
+Transform2D GodotNavigationServer2D::region_get_transform(RID p_region) const {
+	return trf3_to_trf2(NavigationServer3D::get_singleton()->region_get_transform(p_region));
+}
+
 void GodotNavigationServer2D::region_set_navigation_polygon(RID p_region, Ref<NavigationPolygon> p_navigation_polygon) {
 	NavigationServer3D::get_singleton()->region_set_navigation_mesh(p_region, poly_to_mesh(p_navigation_polygon));
 }
@@ -286,6 +301,11 @@ void GodotNavigationServer2D::region_set_navigation_polygon(RID p_region, Ref<Na
 int FORWARD_1_C(region_get_connections_count, RID, p_region, rid_to_rid);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_start, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_end, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
+
+Vector2 GodotNavigationServer2D::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
+	Vector3 result = NavigationServer3D::get_singleton()->region_get_random_point(p_region, p_navigation_layers, p_uniformly);
+	return v3_to_v2(result);
+}
 
 RID FORWARD_0(link_create);
 
@@ -317,25 +337,60 @@ void FORWARD_2(agent_set_avoidance_enabled, RID, p_agent, bool, p_enabled, rid_t
 bool FORWARD_1_C(agent_get_avoidance_enabled, RID, p_agent, rid_to_rid);
 void FORWARD_2(agent_set_map, RID, p_agent, RID, p_map, rid_to_rid, rid_to_rid);
 void FORWARD_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_dist, rid_to_rid, real_to_real);
+real_t GodotNavigationServer2D::agent_get_neighbor_distance(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_get_neighbor_distance(p_agent);
+}
 void FORWARD_2(agent_set_max_neighbors, RID, p_agent, int, p_count, rid_to_rid, int_to_int);
+int GodotNavigationServer2D::agent_get_max_neighbors(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_get_max_neighbors(p_agent);
+}
 void FORWARD_2(agent_set_time_horizon_agents, RID, p_agent, real_t, p_time_horizon, rid_to_rid, real_to_real);
+real_t GodotNavigationServer2D::agent_get_time_horizon_agents(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_get_time_horizon_agents(p_agent);
+}
 void FORWARD_2(agent_set_time_horizon_obstacles, RID, p_agent, real_t, p_time_horizon, rid_to_rid, real_to_real);
+real_t GodotNavigationServer2D::agent_get_time_horizon_obstacles(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_get_time_horizon_obstacles(p_agent);
+}
 void FORWARD_2(agent_set_radius, RID, p_agent, real_t, p_radius, rid_to_rid, real_to_real);
+real_t GodotNavigationServer2D::agent_get_radius(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_get_radius(p_agent);
+}
 void FORWARD_2(agent_set_max_speed, RID, p_agent, real_t, p_max_speed, rid_to_rid, real_to_real);
+real_t GodotNavigationServer2D::agent_get_max_speed(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_get_max_speed(p_agent);
+}
 void FORWARD_2(agent_set_velocity_forced, RID, p_agent, Vector2, p_velocity, rid_to_rid, v2_to_v3);
 void FORWARD_2(agent_set_velocity, RID, p_agent, Vector2, p_velocity, rid_to_rid, v2_to_v3);
+Vector2 GodotNavigationServer2D::agent_get_velocity(RID p_agent) const {
+	return v3_to_v2(NavigationServer3D::get_singleton()->agent_get_velocity(p_agent));
+}
 void FORWARD_2(agent_set_position, RID, p_agent, Vector2, p_position, rid_to_rid, v2_to_v3);
-
+Vector2 GodotNavigationServer2D::agent_get_position(RID p_agent) const {
+	return v3_to_v2(NavigationServer3D::get_singleton()->agent_get_position(p_agent));
+}
 bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
 void FORWARD_2(agent_set_paused, RID, p_agent, bool, p_paused, rid_to_rid, bool_to_bool);
 bool FORWARD_1_C(agent_get_paused, RID, p_agent, rid_to_rid);
 
 void FORWARD_1(free, RID, p_object, rid_to_rid);
 void FORWARD_2(agent_set_avoidance_callback, RID, p_agent, Callable, p_callback, rid_to_rid, callable_to_callable);
+bool GodotNavigationServer2D::agent_has_avoidance_callback(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_has_avoidance_callback(p_agent);
+}
 
 void FORWARD_2(agent_set_avoidance_layers, RID, p_agent, uint32_t, p_layers, rid_to_rid, uint32_to_uint32);
+uint32_t GodotNavigationServer2D::agent_get_avoidance_layers(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_get_avoidance_layers(p_agent);
+}
 void FORWARD_2(agent_set_avoidance_mask, RID, p_agent, uint32_t, p_mask, rid_to_rid, uint32_to_uint32);
+uint32_t GodotNavigationServer2D::agent_get_avoidance_mask(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_get_avoidance_mask(p_agent);
+}
 void FORWARD_2(agent_set_avoidance_priority, RID, p_agent, real_t, p_priority, rid_to_rid, real_to_real);
+real_t GodotNavigationServer2D::agent_get_avoidance_priority(RID p_agent) const {
+	return NavigationServer3D::get_singleton()->agent_get_avoidance_priority(p_agent);
+}
 
 RID GodotNavigationServer2D::obstacle_create() {
 	RID obstacle = NavigationServer3D::get_singleton()->obstacle_create();
@@ -348,12 +403,27 @@ RID FORWARD_1_C(obstacle_get_map, RID, p_obstacle, rid_to_rid);
 void FORWARD_2(obstacle_set_paused, RID, p_obstacle, bool, p_paused, rid_to_rid, bool_to_bool);
 bool FORWARD_1_C(obstacle_get_paused, RID, p_obstacle, rid_to_rid);
 void FORWARD_2(obstacle_set_radius, RID, p_obstacle, real_t, p_radius, rid_to_rid, real_to_real);
+real_t GodotNavigationServer2D::obstacle_get_radius(RID p_obstacle) const {
+	return NavigationServer3D::get_singleton()->obstacle_get_radius(p_obstacle);
+}
 void FORWARD_2(obstacle_set_velocity, RID, p_obstacle, Vector2, p_velocity, rid_to_rid, v2_to_v3);
+Vector2 GodotNavigationServer2D::obstacle_get_velocity(RID p_obstacle) const {
+	return v3_to_v2(NavigationServer3D::get_singleton()->obstacle_get_velocity(p_obstacle));
+}
 void FORWARD_2(obstacle_set_position, RID, p_obstacle, Vector2, p_position, rid_to_rid, v2_to_v3);
+Vector2 GodotNavigationServer2D::obstacle_get_position(RID p_obstacle) const {
+	return v3_to_v2(NavigationServer3D::get_singleton()->obstacle_get_position(p_obstacle));
+}
 void FORWARD_2(obstacle_set_avoidance_layers, RID, p_obstacle, uint32_t, p_layers, rid_to_rid, uint32_to_uint32);
+uint32_t GodotNavigationServer2D::obstacle_get_avoidance_layers(RID p_obstacle) const {
+	return NavigationServer3D::get_singleton()->obstacle_get_avoidance_layers(p_obstacle);
+}
 
 void GodotNavigationServer2D::obstacle_set_vertices(RID p_obstacle, const Vector<Vector2> &p_vertices) {
 	NavigationServer3D::get_singleton()->obstacle_set_vertices(p_obstacle, vector_v2_to_v3(p_vertices));
+}
+Vector<Vector2> GodotNavigationServer2D::obstacle_get_vertices(RID p_obstacle) const {
+	return vector_v3_to_v2(NavigationServer3D::get_singleton()->obstacle_get_vertices(p_obstacle));
 }
 
 void GodotNavigationServer2D::query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const {

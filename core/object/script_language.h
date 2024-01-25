@@ -52,9 +52,11 @@ class ScriptServer {
 
 	static ScriptLanguage *_languages[MAX_LANGUAGES];
 	static int _language_count;
+	static bool languages_ready;
+	static Mutex languages_mutex;
+
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
-	static SafeFlag languages_finished; // Used until GH-76581 is fixed properly.
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -98,8 +100,7 @@ public:
 
 	static void init_languages();
 	static void finish_languages();
-
-	static bool are_languages_finished() { return languages_finished.is_set(); }
+	static bool are_languages_initialized();
 };
 
 class PlaceHolderScriptInstance;
@@ -242,7 +243,7 @@ public:
 	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) { return Vector<ScriptTemplate>(); }
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
@@ -383,10 +384,12 @@ public:
 		uint64_t call_count;
 		uint64_t total_time;
 		uint64_t self_time;
+		uint64_t internal_time;
 	};
 
 	virtual void profiling_start() = 0;
 	virtual void profiling_stop() = 0;
+	virtual void profiling_set_save_native_calls(bool p_enable) = 0;
 
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;

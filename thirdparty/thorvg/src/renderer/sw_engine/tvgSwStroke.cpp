@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -689,7 +689,6 @@ static void _endSubPath(SwStroke& stroke)
 
         //No specific corner processing is required if the turn is 0
         if (turn != 0) {
-
             //when we turn to the right, the inside is 0
             int32_t inside = 0;
 

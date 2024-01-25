@@ -485,7 +485,9 @@ struct _RigidBodyInOut {
 };
 
 void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
+	set_ignore_transform_notification(true);
 	set_global_transform(p_state->get_transform());
+	set_ignore_transform_notification(false);
 
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
@@ -501,16 +503,20 @@ void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
 void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	lock_callback();
 
-	set_ignore_transform_notification(true);
-
 	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
 		_sync_body_state(p_state);
 
+		Transform3D old_transform = get_global_transform();
 		GDVIRTUAL_CALL(_integrate_forces, p_state);
+		Transform3D new_transform = get_global_transform();
+
+		if (new_transform != old_transform) {
+			// Update the physics server with the new transform, to prevent it from being overwritten at the sync below.
+			PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_TRANSFORM, new_transform);
+		}
 	}
 
 	_sync_body_state(p_state);
-	set_ignore_transform_notification(false);
 	_on_transform_changed();
 
 	if (contact_monitor) {
@@ -2927,7 +2933,10 @@ void PhysicalBone3D::_notification(int p_what) {
 }
 
 void PhysicalBone3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
+	set_ignore_transform_notification(true);
 	set_global_transform(p_state->get_transform());
+	set_ignore_transform_notification(false);
+
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
 }
@@ -2937,16 +2946,20 @@ void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		return;
 	}
 
-	set_ignore_transform_notification(true);
-
 	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
 		_sync_body_state(p_state);
 
+		Transform3D old_transform = get_global_transform();
 		GDVIRTUAL_CALL(_integrate_forces, p_state);
+		Transform3D new_transform = get_global_transform();
+
+		if (new_transform != old_transform) {
+			// Update the physics server with the new transform, to prevent it from being overwritten at the sync below.
+			PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_TRANSFORM, new_transform);
+		}
 	}
 
 	_sync_body_state(p_state);
-	set_ignore_transform_notification(false);
 	_on_transform_changed();
 
 	Transform3D global_transform(p_state->get_transform());

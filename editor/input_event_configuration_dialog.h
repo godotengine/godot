@@ -120,7 +120,8 @@ protected:
 
 public:
 	// Pass an existing event to configure it. Alternatively, pass no event to start with a blank configuration.
-	void popup_and_configure(const Ref<InputEvent> &p_event = Ref<InputEvent>());
+	// An action name can be passed for descriptive purposes.
+	void popup_and_configure(const Ref<InputEvent> &p_event = Ref<InputEvent>(), const String &p_current_action_name = "");
 	Ref<InputEvent> get_event() const;
 
 	void set_allowed_input_types(int p_type_masks);

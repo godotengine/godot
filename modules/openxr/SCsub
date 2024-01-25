@@ -70,7 +70,7 @@ if env["builtin_openxr"]:
         # On Android the openxr_loader is provided by separate plugins for each device
         # Build the engine using object files
         khrloader_obj = []
-        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/xr_generated_dispatch_table.c")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/xr_generated_dispatch_table_core.c")
 
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/common/filesystem_utils.cpp")
         env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/common/object_info.cpp")
@@ -120,6 +120,7 @@ env_openxr.add_source_files(module_obj, "extensions/openxr_wmr_controller_extens
 env_openxr.add_source_files(module_obj, "extensions/openxr_ml2_controller_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_extension_wrapper_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_api_extension.cpp")
+env_openxr.add_source_files(module_obj, "extensions/openxr_meta_controller_extension.cpp")
 
 env.modules_sources += module_obj
 

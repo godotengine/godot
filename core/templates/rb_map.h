@@ -96,6 +96,8 @@ public:
 	typedef KeyValue<K, V> ValueType;
 
 	struct Iterator {
+		friend class RBMap<K, V, C, A>;
+
 		_FORCE_INLINE_ KeyValue<K, V> &operator*() const {
 			return E->key_value();
 		}
@@ -109,10 +111,15 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_it) const { return E == p_it.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_it) const { return E != p_it.E; }
 		explicit operator bool() const {
 			return E != nullptr;
+		}
+
+		Iterator &operator=(const Iterator &p_it) {
+			E = p_it.E;
+			return *this;
 		}
 		Iterator(Element *p_E) { E = p_E; }
 		Iterator() {}
@@ -136,10 +143,15 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_it) const { return E == p_it.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_it) const { return E != p_it.E; }
 		explicit operator bool() const {
 			return E != nullptr;
+		}
+
+		ConstIterator &operator=(const ConstIterator &p_it) {
+			E = p_it.E;
+			return *this;
 		}
 		ConstIterator(const Element *p_E) { E = p_E; }
 		ConstIterator() {}

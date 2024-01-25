@@ -32,7 +32,6 @@
 
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
-#include "core/object/message_queue.h"
 #include "scene/3d/light_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/physics_material.h"
@@ -975,7 +974,7 @@ void GridMap::_queue_octants_dirty() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_update_octants_callback");
+	callable_mp(this, &GridMap::_update_octants_callback).call_deferred();
 	awaiting_update = true;
 }
 
@@ -1082,7 +1081,6 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("local_to_map", "local_position"), &GridMap::local_to_map);
 	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &GridMap::map_to_local);
 
-	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
 #endif

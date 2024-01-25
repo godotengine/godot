@@ -102,6 +102,12 @@ public:
 		FILE_SORT_MAX,
 	};
 
+	enum Overwrite {
+		OVERWRITE_UNDECIDED,
+		OVERWRITE_REPLACE,
+		OVERWRITE_RENAME,
+	};
+
 private:
 	enum FileMenu {
 		FILE_OPEN,
@@ -121,6 +127,7 @@ private:
 		FILE_NEW,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_OPEN_EXTERNAL,
+		FILE_OPEN_IN_TERMINAL,
 		FILE_COPY_PATH,
 		FILE_COPY_UID,
 		FOLDER_EXPAND_ALL,
@@ -130,12 +137,6 @@ private:
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
-	};
-
-	enum Overwrite {
-		OVERWRITE_UNDECIDED,
-		OVERWRITE_REPLACE,
-		OVERWRITE_RENAME,
 	};
 
 	HashMap<String, Color> folder_colors;
@@ -225,6 +226,7 @@ private:
 	int history_max_size;
 
 	String current_path;
+	String select_after_scan;
 
 	bool initialized = false;
 
@@ -266,11 +268,11 @@ private:
 	void _update_import_dock();
 
 	void _get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Vector<String> &r_files, Vector<String> &r_folders) const;
-	void _find_file_owners(EditorFileSystemDirectory *p_efsd, const Vector<String> &p_renames, Vector<String> &r_file_owners) const;
+	void _find_file_owners(EditorFileSystemDirectory *p_efsd, const HashSet<String> &p_renames, HashSet<String> &r_file_owners) const;
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames);
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
-	void _before_move(HashMap<String, ResourceUID::ID> &r_uids, Vector<String> &r_file_owners) const;
-	void _update_dependencies_after_move(const HashMap<String, String> &p_renames, const Vector<String> &p_file_owners) const;
+	void _before_move(HashMap<String, ResourceUID::ID> &r_uids, HashSet<String> &r_file_owners) const;
+	void _update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const;
 	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const;
 	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames);
@@ -288,7 +290,6 @@ private:
 	void _duplicate_operation_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
 	Vector<String> _check_existing();
-	void _move_dialog_confirm(const String &p_path);
 	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
 
 	void _tree_rmb_option(int p_option);
@@ -304,6 +305,7 @@ private:
 	void _rescan();
 
 	void _change_split_mode();
+	void _split_dragged(int p_offset);
 
 	void _search_changed(const String &p_text, const Control *p_from);
 
@@ -369,6 +371,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	const HashMap<String, Color> &get_folder_colors() const;
+	Dictionary get_assigned_folder_colors() const;
+
 	Vector<String> get_selected_paths() const;
 	Vector<String> get_uncollapsed_paths() const;
 
@@ -382,8 +387,10 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 
-	int get_split_offset() { return split_box->get_split_offset(); }
-	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
+	int get_h_split_offset() const { return split_box_offset_h; }
+	void set_h_split_offset(int p_offset) { split_box_offset_h = p_offset; }
+	int get_v_split_offset() const { return split_box_offset_v; }
+	void set_v_split_offset(int p_offset) { split_box_offset_v = p_offset; }
 	void select_file(const String &p_file);
 
 	void set_display_mode(DisplayMode p_display_mode);
@@ -404,5 +411,7 @@ public:
 	FileSystemDock();
 	~FileSystemDock();
 };
+
+VARIANT_ENUM_CAST(FileSystemDock::Overwrite);
 
 #endif // FILESYSTEM_DOCK_H

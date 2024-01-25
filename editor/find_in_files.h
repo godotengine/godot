@@ -67,7 +67,7 @@ protected:
 private:
 	void _process();
 	void _iterate();
-	void _scan_dir(String path, PackedStringArray &out_folders);
+	void _scan_dir(String path, PackedStringArray &out_folders, PackedStringArray &out_files_to_scan);
 	void _scan_file(String fpath);
 
 	// Config

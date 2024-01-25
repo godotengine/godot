@@ -166,6 +166,21 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	bool body_in = p_status == PhysicsServer2D::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;
 
+	// Exit early if instance is invalid.
+	if (objid.is_null()) {
+		// Emit the appropriate signals.
+		lock_callback();
+		locked = true;
+		if (body_in) {
+			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, (Node *)nullptr, p_body_shape, p_area_shape);
+		} else {
+			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, (Node *)nullptr, p_body_shape, p_area_shape);
+		}
+		locked = false;
+		unlock_callback();
+		return;
+	}
+
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
 
@@ -261,6 +276,21 @@ void Area2D::_area_exit_tree(ObjectID p_id) {
 void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, int p_area_shape, int p_self_shape) {
 	bool area_in = p_status == PhysicsServer2D::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;
+
+	// Exit early if instance is invalid.
+	if (objid.is_null()) {
+		// Emit the appropriate signals.
+		lock_callback();
+		locked = true;
+		if (area_in) {
+			emit_signal(SceneStringNames::get_singleton()->area_shape_entered, p_area, (Node *)nullptr, p_area_shape, p_self_shape);
+		} else {
+			emit_signal(SceneStringNames::get_singleton()->area_shape_exited, p_area, (Node *)nullptr, p_area_shape, p_self_shape);
+		}
+		locked = false;
+		unlock_callback();
+		return;
+	}
 
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
@@ -384,11 +414,9 @@ void Area2D::_clear_monitoring() {
 	}
 }
 
-void Area2D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_EXIT_TREE: {
-			_clear_monitoring();
-		} break;
+void Area2D::_space_changed(const RID &p_new_space) {
+	if (p_new_space.is_null()) {
+		_clear_monitoring();
 	}
 }
 

@@ -97,6 +97,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		} else {
 			Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
+			if (r_error.error != Callable::CallError::CALL_OK) {
+				*r_ret = vformat(RTR(R"(Cannot convert "%s" to "%s".)"), Variant::get_type_name(p_args[0]->get_type()), Variant::get_type_name(Variant::Type(type)));
+			}
 		}
 	}
 #endif // DISABLE_DEPRECATED
@@ -130,8 +133,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				Error err = arr.resize(count);
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 
@@ -155,8 +158,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				Error err = arr.resize(to - from);
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 				for (int i = from; i < to; i++) {
@@ -191,16 +194,16 @@ struct GDScriptUtilityFunctionsDefinitions {
 				// Calculate how many.
 				int count = 0;
 				if (incr > 0) {
-					count = ((to - from - 1) / incr) + 1;
+					count = Math::division_round_up(to - from, incr);
 				} else {
-					count = ((from - to - 1) / -incr) + 1;
+					count = Math::division_round_up(from - to, -incr);
 				}
 
 				Error err = arr.resize(count);
 
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 
@@ -370,7 +373,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = gdscr->_new(nullptr, -1 /*skip initializer*/, r_error);
 
 		if (r_error.error != Callable::CallError::CALL_OK) {
-			*r_ret = Variant();
+			*r_ret = RTR("Cannot instantiate GDScript class.");
 			return;
 		}
 
@@ -467,7 +470,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void len(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 		switch (p_args[0]->get_type()) {
-			case Variant::STRING: {
+			case Variant::STRING:
+			case Variant::STRING_NAME: {
 				String d = *p_args[0];
 				*r_ret = d.length();
 			} break;

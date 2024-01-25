@@ -63,6 +63,7 @@
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "servers/display_server.h"
+#include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 
 struct FloatConstantDef {
@@ -181,7 +182,7 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 }
 
 void VisualShaderGraphPlugin::update_node_deferred(VisualShader::Type p_type, int p_node_id) {
-	call_deferred(SNAME("update_node"), p_type, p_node_id);
+	callable_mp(this, &VisualShaderGraphPlugin::update_node).call_deferred(p_type, p_node_id);
 }
 
 void VisualShaderGraphPlugin::update_node(VisualShader::Type p_type, int p_node_id) {
@@ -1095,9 +1096,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 		}
 
+		expression_box->begin_bulk_theme_override();
 		expression_box->add_theme_font_override("font", editor->get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
 		expression_box->add_theme_font_size_override("font_size", editor->get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 		expression_box->add_theme_color_override("font_color", text_color);
+		expression_box->end_bulk_theme_override();
+
 		expression_syntax_highlighter->set_number_color(number_color);
 		expression_syntax_highlighter->set_symbol_color(symbol_color);
 		expression_syntax_highlighter->set_function_color(function_color);
@@ -1488,14 +1492,14 @@ void VisualShaderEditor::_update_custom_script(const Ref<Script> &p_script) {
 	if (!_block_update_options_menu) {
 		_block_update_options_menu = true;
 
-		call_deferred(SNAME("_update_options_menu_deferred"));
+		callable_mp(this, &VisualShaderEditor::_update_options_menu_deferred);
 	}
 
 	// To prevent rebuilding the shader multiple times when multiple scripts are saved.
 	if (need_rebuild && !_block_rebuild_shader) {
 		_block_rebuild_shader = true;
 
-		call_deferred(SNAME("_rebuild_shader_deferred"));
+		callable_mp(this, &VisualShaderEditor::_rebuild_shader_deferred);
 	}
 }
 
@@ -1577,8 +1581,7 @@ void VisualShaderEditor::_resource_removed(const Ref<Resource> &p_resource) {
 
 	if (!pending_custom_scripts_to_delete) {
 		pending_custom_scripts_to_delete = true;
-
-		call_deferred("_resources_removed");
+		callable_mp(this, &VisualShaderEditor::_resources_removed).call_deferred();
 	}
 }
 
@@ -3318,11 +3321,11 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 	}
 
 	if (is_curve) {
-		graph_plugin->call_deferred(SNAME("update_curve"), id_to_use);
+		callable_mp(graph_plugin.ptr(), &VisualShaderGraphPlugin::update_curve).call_deferred(id_to_use);
 	}
 
 	if (is_curve_xyz) {
-		graph_plugin->call_deferred(SNAME("update_curve_xyz"), id_to_use);
+		callable_mp(graph_plugin.ptr(), &VisualShaderGraphPlugin::update_curve_xyz).call_deferred(id_to_use);
 	}
 
 	if (p_resource_path.is_empty()) {
@@ -3462,7 +3465,7 @@ void VisualShaderEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_t
 	VisualShader::Type type = get_current_shader_type();
 	drag_buffer.push_back({ type, p_node, p_from, p_to });
 	if (!drag_dirty) {
-		call_deferred(SNAME("_nodes_dragged"));
+		callable_mp(this, &VisualShaderEditor::_nodes_dragged).call_deferred();
 	}
 	drag_dirty = true;
 }
@@ -4076,6 +4079,12 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 		saved_node_pos_dirty = false;
 		members_dialog->set_position(graph->get_screen_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
 	}
+
+	if (members_dialog->is_visible()) {
+		members_dialog->grab_focus();
+		return;
+	}
+
 	members_dialog->popup();
 
 	// Keep dialog within window bounds.
@@ -4084,7 +4093,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
 	members_dialog->set_position(members_dialog->get_position() - difference);
 
-	node_filter->call_deferred(SNAME("grab_focus")); // Still not visible.
+	callable_mp((Control *)node_filter, &Control::grab_focus).call_deferred(); // Still not visible.
 	node_filter->select_all();
 }
 
@@ -4197,9 +4206,12 @@ void VisualShaderEditor::_notification(int p_what) {
 					}
 				}
 
+				preview_text->begin_bulk_theme_override();
 				preview_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
 				preview_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 				preview_text->add_theme_color_override("font_color", text_color);
+				preview_text->end_bulk_theme_override();
+
 				syntax_highlighter->set_number_color(number_color);
 				syntax_highlighter->set_symbol_color(symbol_color);
 				syntax_highlighter->set_function_color(function_color);
@@ -4213,9 +4225,11 @@ void VisualShaderEditor::_notification(int p_what) {
 				preview_text->add_comment_delimiter("//", "", true);
 
 				error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+				error_label->begin_bulk_theme_override();
 				error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
 				error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
 				error_label->add_theme_color_override("font_color", error_color);
+				error_label->end_bulk_theme_override();
 			}
 
 			tools->set_icon(get_editor_theme_icon(SNAME("Tools")));
@@ -4811,16 +4825,14 @@ void VisualShaderEditor::_varying_create() {
 	add_varying_dialog->hide();
 }
 
-void VisualShaderEditor::_varying_name_changed(const String &p_text) {
-	String name = p_text;
-
-	if (!name.is_valid_identifier()) {
+void VisualShaderEditor::_varying_name_changed(const String &p_name) {
+	if (!p_name.is_valid_identifier()) {
 		varying_error_label->show();
 		varying_error_label->set_text(TTR("Invalid name for varying."));
 		add_varying_dialog->get_ok_button()->set_disabled(true);
 		return;
 	}
-	if (visual_shader->has_varying(name)) {
+	if (visual_shader->has_varying(p_name)) {
 		varying_error_label->show();
 		varying_error_label->set_text(TTR("Varying with that name is already exist."));
 		add_varying_dialog->get_ok_button()->set_disabled(true);
@@ -5086,20 +5098,52 @@ void VisualShaderEditor::_update_preview() {
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_shader_uniform_type_func = _visual_shader_editor_get_global_shader_uniform_type;
 
-	ShaderLanguage sl;
-
-	Error err = sl.compile(code, info);
-
 	for (int i = 0; i < preview_text->get_line_count(); i++) {
 		preview_text->set_line_background_color(i, Color(0, 0, 0, 0));
 	}
+
+	String preprocessed_code;
+	{
+		String path = visual_shader->get_path();
+		String error_pp;
+		List<ShaderPreprocessor::FilePosition> err_positions;
+		ShaderPreprocessor preprocessor;
+		Error err = preprocessor.preprocess(code, path, preprocessed_code, &error_pp, &err_positions);
+		if (err != OK) {
+			ERR_FAIL_COND(err_positions.is_empty());
+
+			String file = err_positions.front()->get().file;
+			int err_line = err_positions.front()->get().line;
+			Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
+			preview_text->set_line_background_color(err_line - 1, error_line_color);
+			error_panel->show();
+
+			error_label->set_text("error(" + file + ":" + itos(err_line) + "): " + error_pp);
+			shader_error = true;
+			return;
+		}
+	}
+
+	ShaderLanguage sl;
+	Error err = sl.compile(preprocessed_code, info);
 	if (err != OK) {
+		int err_line;
+		String err_text;
+		Vector<ShaderLanguage::FilePosition> include_positions = sl.get_include_positions();
+		if (include_positions.size() > 1) {
+			// Error is in an include.
+			err_line = include_positions[0].line;
+			err_text = "error(" + itos(err_line) + ") in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
+		} else {
+			err_line = sl.get_error_line();
+			err_text = "error(" + itos(err_line) + "): " + sl.get_error_text();
+		}
+
 		Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
-		preview_text->set_line_background_color(sl.get_error_line() - 1, error_line_color);
+		preview_text->set_line_background_color(err_line - 1, error_line_color);
 		error_panel->show();
 
-		String text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
-		error_label->set_text(text);
+		error_label->set_text(err_text);
 		shader_error = true;
 	} else {
 		error_panel->hide();
@@ -5142,28 +5186,17 @@ void VisualShaderEditor::_visibility_changed() {
 void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_nodes", &VisualShaderEditor::_update_nodes);
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
-	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
-	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_parameter_ref_select_item", &VisualShaderEditor::_parameter_ref_select_item);
 	ClassDB::bind_method("_varying_select_item", &VisualShaderEditor::_varying_select_item);
 	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
-	ClassDB::bind_method("_clear_copy_buffer", &VisualShaderEditor::_clear_copy_buffer);
 	ClassDB::bind_method("_update_parameters", &VisualShaderEditor::_update_parameters);
 	ClassDB::bind_method("_update_varyings", &VisualShaderEditor::_update_varyings);
 	ClassDB::bind_method("_update_varying_tree", &VisualShaderEditor::_update_varying_tree);
 	ClassDB::bind_method("_set_mode", &VisualShaderEditor::_set_mode);
-	ClassDB::bind_method("_nodes_dragged", &VisualShaderEditor::_nodes_dragged);
-	ClassDB::bind_method("_float_constant_selected", &VisualShaderEditor::_float_constant_selected);
 	ClassDB::bind_method("_update_constant", &VisualShaderEditor::_update_constant);
 	ClassDB::bind_method("_update_parameter", &VisualShaderEditor::_update_parameter);
-	ClassDB::bind_method("_expand_output_port", &VisualShaderEditor::_expand_output_port);
-	ClassDB::bind_method("_update_options_menu_deferred", &VisualShaderEditor::_update_options_menu_deferred);
-	ClassDB::bind_method("_rebuild_shader_deferred", &VisualShaderEditor::_rebuild_shader_deferred);
-	ClassDB::bind_method("_resources_removed", &VisualShaderEditor::_resources_removed);
 	ClassDB::bind_method("_update_next_previews", &VisualShaderEditor::_update_next_previews);
-
-	ClassDB::bind_method("_is_available", &VisualShaderEditor::_is_available);
 }
 
 VisualShaderEditor::VisualShaderEditor() {
@@ -5343,6 +5376,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_window = memnew(Window);
 	preview_window->set_title(TTR("Generated Shader Code"));
 	preview_window->set_visible(preview_showed);
+	preview_window->set_exclusive(true);
 	preview_window->connect("close_requested", callable_mp(this, &VisualShaderEditor::_preview_close_requested));
 	preview_window->connect("size_changed", callable_mp(this, &VisualShaderEditor::_preview_size_changed));
 	add_child(preview_window);
@@ -5444,7 +5478,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	members_dialog = memnew(ConfirmationDialog);
 	members_dialog->set_title(TTR("Create Shader Node"));
-	members_dialog->set_exclusive(false);
+	members_dialog->set_exclusive(true);
 	members_dialog->add_child(members_vb);
 	members_dialog->set_ok_button_text(TTR("Create"));
 	members_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualShaderEditor::_member_create));
@@ -5456,7 +5490,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	{
 		add_varying_dialog = memnew(ConfirmationDialog);
 		add_varying_dialog->set_title(TTR("Create Shader Varying"));
-		add_varying_dialog->set_exclusive(false);
+		add_varying_dialog->set_exclusive(true);
 		add_varying_dialog->set_ok_button_text(TTR("Create"));
 		add_varying_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualShaderEditor::_varying_create));
 		add_varying_dialog->get_ok_button()->set_disabled(true);
@@ -5502,7 +5536,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	{
 		remove_varying_dialog = memnew(ConfirmationDialog);
 		remove_varying_dialog->set_title(TTR("Delete Shader Varying"));
-		remove_varying_dialog->set_exclusive(false);
+		remove_varying_dialog->set_exclusive(true);
 		remove_varying_dialog->set_ok_button_text(TTR("Delete"));
 		remove_varying_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualShaderEditor::_varying_deleted));
 		add_child(remove_varying_dialog);

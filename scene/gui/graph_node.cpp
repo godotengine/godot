@@ -482,6 +482,27 @@ Color GraphNode::get_slot_color_left(int p_slot_index) const {
 	return slot_table[p_slot_index].color_left;
 }
 
+void GraphNode::set_slot_custom_icon_left(int p_slot_index, const Ref<Texture2D> &p_custom_icon) {
+	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set custom_port_icon_left for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
+
+	if (slot_table[p_slot_index].custom_port_icon_left == p_custom_icon) {
+		return;
+	}
+
+	slot_table[p_slot_index].custom_port_icon_left = p_custom_icon;
+	queue_redraw();
+	port_pos_dirty = true;
+
+	emit_signal(SNAME("slot_updated"), p_slot_index);
+}
+
+Ref<Texture2D> GraphNode::get_slot_custom_icon_left(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
+		return Ref<Texture2D>();
+	}
+	return slot_table[p_slot_index].custom_port_icon_left;
+}
+
 bool GraphNode::is_slot_enabled_right(int p_slot_index) const {
 	if (!slot_table.has(p_slot_index)) {
 		return false;
@@ -543,6 +564,27 @@ Color GraphNode::get_slot_color_right(int p_slot_index) const {
 		return Color(1, 1, 1, 1);
 	}
 	return slot_table[p_slot_index].color_right;
+}
+
+void GraphNode::set_slot_custom_icon_right(int p_slot_index, const Ref<Texture2D> &p_custom_icon) {
+	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set custom_port_icon_right for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
+
+	if (slot_table[p_slot_index].custom_port_icon_right == p_custom_icon) {
+		return;
+	}
+
+	slot_table[p_slot_index].custom_port_icon_right = p_custom_icon;
+	queue_redraw();
+	port_pos_dirty = true;
+
+	emit_signal(SNAME("slot_updated"), p_slot_index);
+}
+
+Ref<Texture2D> GraphNode::get_slot_custom_icon_right(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
+		return Ref<Texture2D>();
+	}
+	return slot_table[p_slot_index].custom_port_icon_right;
 }
 
 bool GraphNode::is_slot_draw_stylebox(int p_slot_index) const {
@@ -620,7 +662,7 @@ void GraphNode::_port_pos_update() {
 				port_cache.pos = Point2i(edgeofs, vertical_ofs + size.height / 2);
 				port_cache.type = slot_table[i].type_left;
 				port_cache.color = slot_table[i].color_left;
-				port_cache.slot_index = child->get_index(); // Index with internal nodes included.
+				port_cache.slot_index = child->get_index(false);
 				left_port_cache.push_back(port_cache);
 			}
 			if (slot_table[i].enable_right) {
@@ -628,7 +670,7 @@ void GraphNode::_port_pos_update() {
 				port_cache.pos = Point2i(get_size().width - edgeofs, vertical_ofs + size.height / 2);
 				port_cache.type = slot_table[i].type_right;
 				port_cache.color = slot_table[i].color_right;
-				port_cache.slot_index = child->get_index(); // Index with internal nodes included.
+				port_cache.slot_index = child->get_index(false);
 				right_port_cache.push_back(port_cache);
 			}
 		}
@@ -797,6 +839,9 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slot_color_left", "slot_index", "color"), &GraphNode::set_slot_color_left);
 	ClassDB::bind_method(D_METHOD("get_slot_color_left", "slot_index"), &GraphNode::get_slot_color_left);
 
+	ClassDB::bind_method(D_METHOD("set_slot_custom_icon_left", "slot_index", "custom_icon"), &GraphNode::set_slot_custom_icon_left);
+	ClassDB::bind_method(D_METHOD("get_slot_custom_icon_left", "slot_index"), &GraphNode::get_slot_custom_icon_left);
+
 	ClassDB::bind_method(D_METHOD("is_slot_enabled_right", "slot_index"), &GraphNode::is_slot_enabled_right);
 	ClassDB::bind_method(D_METHOD("set_slot_enabled_right", "slot_index", "enable"), &GraphNode::set_slot_enabled_right);
 
@@ -805,6 +850,9 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_slot_color_right", "slot_index", "color"), &GraphNode::set_slot_color_right);
 	ClassDB::bind_method(D_METHOD("get_slot_color_right", "slot_index"), &GraphNode::get_slot_color_right);
+
+	ClassDB::bind_method(D_METHOD("set_slot_custom_icon_right", "slot_index", "custom_icon"), &GraphNode::set_slot_custom_icon_right);
+	ClassDB::bind_method(D_METHOD("get_slot_custom_icon_right", "slot_index"), &GraphNode::get_slot_custom_icon_right);
 
 	ClassDB::bind_method(D_METHOD("is_slot_draw_stylebox", "slot_index"), &GraphNode::is_slot_draw_stylebox);
 	ClassDB::bind_method(D_METHOD("set_slot_draw_stylebox", "slot_index", "enable"), &GraphNode::set_slot_draw_stylebox);

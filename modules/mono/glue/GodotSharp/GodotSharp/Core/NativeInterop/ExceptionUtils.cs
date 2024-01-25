@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 #nullable enable
@@ -238,6 +239,14 @@ namespace Godot.NativeInterop
             }
 
             return variant->Type.ToString();
+        }
+
+        internal static void ThrowIfNullPtr(IntPtr ptr, [CallerArgumentExpression("ptr")] string? paramName = null)
+        {
+            if (ptr == IntPtr.Zero)
+            {
+                throw new ArgumentNullException(paramName);
+            }
         }
     }
 }

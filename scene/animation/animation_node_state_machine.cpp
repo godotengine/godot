@@ -860,7 +860,7 @@ double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, An
 			pi.time = 0;
 			pi.seeked = true;
 		}
-		fading_from_rem = p_state_machine->blend_node(p_state_machine->states[fading_from].node, fading_from, pi, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+		fading_from_rem = p_state_machine->blend_node(p_state_machine->states[fading_from].node, fading_from, pi, AnimationNode::FILTER_IGNORE, true, p_test_only); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
 		// Guess playback position.
 		if (fading_from_rem > len_fade_from) { /// Weird but ok.
@@ -976,7 +976,7 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 			pi.seeked = true;
 			pi.is_external_seeking = false;
 			pi.weight = 0;
-			p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true);
+			p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, p_test_only);
 		}
 
 		// Just get length to find next recursive.

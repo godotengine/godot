@@ -35,6 +35,7 @@
 #import "app_delegate.h"
 #import "display_server_ios.h"
 #import "godot_view.h"
+#import "ios_terminal_logger.h"
 #import "view_controller.h"
 
 #include "core/config/project_settings.h"
@@ -50,15 +51,17 @@
 #import <dlfcn.h>
 #include <sys/sysctl.h>
 
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-
 #import <QuartzCore/CAMetalLayer.h>
+
+#if defined(VULKAN_ENABLED)
 #ifdef USE_VOLK
 #include <volk.h>
 #else
 #include <vulkan/vulkan.h>
 #endif
+#endif // VULKAN_ENABLED
 #endif
 
 // Initialization order between compilation units is not guaranteed,
@@ -72,16 +75,15 @@ HashMap<String, void *> OS_IOS::dynamic_symbol_lookup_table;
 
 void add_ios_init_callback(init_callback cb) {
 	if (ios_init_callbacks_count == ios_init_callbacks_capacity) {
-		void *new_ptr = realloc(ios_init_callbacks, sizeof(cb) * 32);
+		void *new_ptr = realloc(ios_init_callbacks, sizeof(cb) * (ios_init_callbacks_capacity + 32));
 		if (new_ptr) {
 			ios_init_callbacks = (init_callback *)(new_ptr);
 			ios_init_callbacks_capacity += 32;
+		} else {
+			ERR_FAIL_MSG("Unable to allocate memory for extension callbacks.");
 		}
 	}
-	if (ios_init_callbacks_capacity > ios_init_callbacks_count) {
-		ios_init_callbacks[ios_init_callbacks_count] = cb;
-		++ios_init_callbacks_count;
-	}
+	ios_init_callbacks[ios_init_callbacks_count++] = cb;
 }
 
 void register_dynamic_symbol(char *name, void *address) {
@@ -104,12 +106,7 @@ OS_IOS::OS_IOS() {
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(SyslogLogger));
-#ifdef DEBUG_ENABLED
-	// it seems iOS app's stdout/stderr is only obtainable if you launch it from
-	// Xcode
-	loggers.push_back(memnew(StdLogger));
-#endif
+	loggers.push_back(memnew(IOSTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	AudioDriverManager::add_driver(&audio_driver);
@@ -255,6 +252,8 @@ Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle,
 		// Load .dylib converted to framework from a standard iOS location.
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file().get_basename() + ".framework"));
 	}
+
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));

@@ -306,19 +306,20 @@ RendererCompositorRD::RendererCompositorRD() {
 	fog = memnew(RendererRD::Fog);
 	canvas = memnew(RendererCanvasRenderRD());
 
-	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+	String rendering_method = OS::get_singleton()->get_current_rendering_method();
 	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 	if (rendering_method == "mobile" || textures_per_stage < 48) {
-		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile());
 		if (rendering_method == "forward_plus") {
 			WARN_PRINT_ONCE("Platform supports less than 48 textures per stage which is less than required by the Clustered renderer. Defaulting to Mobile renderer.");
 		}
+		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile());
 	} else if (rendering_method == "forward_plus") {
-		// default to our high end renderer
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered());
 	} else {
-		ERR_FAIL_MSG("Cannot instantiate RenderingDevice-based renderer with renderer type " + rendering_method);
+		// Fall back to our high end renderer.
+		ERR_PRINT(vformat("Cannot instantiate RenderingDevice-based renderer with renderer type '%s'. Defaulting to Forward+ renderer.", rendering_method));
+		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered());
 	}
 
 	scene->init();

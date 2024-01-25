@@ -127,7 +127,7 @@ public:
 	void set_source_geometry_mode(SourceGeometryMode p_geometry_mode);
 	SourceGeometryMode get_source_geometry_mode() const;
 
-	void set_source_geometry_group_name(StringName p_group_name);
+	void set_source_geometry_group_name(const StringName &p_group_name);
 	StringName get_source_geometry_group_name() const;
 
 	void set_agent_radius(real_t p_value);

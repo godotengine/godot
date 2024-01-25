@@ -925,6 +925,14 @@
 				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
+		<method name="debug_canvas_item_get_rect">
+			<return type="Rect2" />
+			<param index="0" name="item" type="RID" />
+			<description>
+				Returns the bounding rectangle for a canvas item in local space, as calculated by the renderer. This bound is used internally for culling.
+				[b]Warning:[/b] This function is intended for debugging in the editor, and will pass through and return a zero [Rect2] in exported projects.
+			</description>
+		</method>
 		<method name="decal_create">
 			<return type="RID" />
 			<description>
@@ -1362,7 +1370,7 @@
 			<param index="0" name="swap_buffers" type="bool" default="true" />
 			<param index="1" name="frame_step" type="float" default="0.0" />
 			<description>
-				Forces redrawing of all viewports at once.
+				Forces redrawing of all viewports at once. Must be called from the main thread.
 			</description>
 		</method>
 		<method name="force_sync">
@@ -1548,11 +1556,11 @@
 				Returns [code]true[/code] if changes have been made to the RenderingServer's data. [method force_draw] is usually called if this happens.
 			</description>
 		</method>
-		<method name="has_feature" qualifiers="const">
+		<method name="has_feature" qualifiers="const" is_deprecated="true">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="RenderingServer.Features" />
 			<description>
-				Not yet implemented. Always returns [code]false[/code].
+				[i]Deprecated.[/i] This method has not been used since Godot 3.0. Always returns false.
 			</description>
 		</method>
 		<method name="has_os_feature" qualifiers="const">
@@ -3329,7 +3337,7 @@
 			<return type="int" enum="Image.Format" />
 			<param index="0" name="texture" type="RID" />
 			<description>
-				Returns the [enum Image.Format] for the texture.
+				Returns the format for the texture.
 			</description>
 		</method>
 		<method name="texture_get_native_handle" qualifiers="const">
@@ -4226,7 +4234,7 @@
 			Flag used to mark that the mesh does not have a vertex array and instead will infer vertex positions in the shader using indices and other information.
 		</constant>
 		<constant name="ARRAY_FLAG_COMPRESS_ATTRIBUTES" value="536870912" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark that a mesh is using compressed attributes (vertices, normals, tangents, uvs). When this form of compression is enabled, vertex positions will be packed into into an RGBA16UNORM attribute and scaled in the vertex shader. The normal and tangent will be packed into a RG16UNORM representing an axis, and an 16 bit float stored in the A-channel of the vertex. UVs will use 16-bit normalized floats instead of full 32 bit signed floats. When using this compression mode you must either use vertices, normals, and tangents or only vertices. You cannot use normals without tangents. Importers will automatically enable this compression if they can.
+			Flag used to mark that a mesh is using compressed attributes (vertices, normals, tangents, UVs). When this form of compression is enabled, vertex positions will be packed into an RGBA16UNORM attribute and scaled in the vertex shader. The normal and tangent will be packed into an RG16UNORM representing an axis, and a 16-bit float stored in the A-channel of the vertex. UVs will use 16-bit normalized floats instead of full 32-bit signed floats. When using this compression mode you must use either vertices, normals, and tangents or only vertices. You cannot use normals without tangents. Importers will automatically enable this compression if they can.
 		</constant>
 		<constant name="ARRAY_FLAG_FORMAT_VERSION_BASE" value="35" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark the start of the bits used to store the mesh version.
@@ -4505,9 +4513,10 @@
 			Draw particles in the order that they appear in the particles array.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_LIFETIME" value="1" enum="ParticlesDrawOrder">
-			Sort particles based on their lifetime.
+			Sort particles based on their lifetime. In other words, the particle with the highest lifetime is drawn at the front.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="ParticlesDrawOrder">
+			Sort particles based on the inverse of their lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_VIEW_DEPTH" value="3" enum="ParticlesDrawOrder">
 			Sort particles based on their distance to the camera.
@@ -4685,7 +4694,10 @@
 		<constant name="VIEWPORT_RENDER_INFO_TYPE_SHADOW" value="1" enum="ViewportRenderInfoType">
 			Shadow render pass. Objects will be rendered several times depending on the number of amounts of lights with shadows and the number of directional shadow splits.
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_TYPE_MAX" value="2" enum="ViewportRenderInfoType">
+		<constant name="VIEWPORT_RENDER_INFO_TYPE_CANVAS" value="2" enum="ViewportRenderInfoType">
+			Canvas item rendering. This includes all 2D rendering.
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_TYPE_MAX" value="3" enum="ViewportRenderInfoType">
 			Represents the size of the [enum ViewportRenderInfoType] enum.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
@@ -5129,22 +5141,26 @@
 			Uses the default filter mode for this [Viewport].
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="1" enum="CanvasItemTextureFilter">
-			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
+			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="2" enum="CanvasItemTextureFilter">
-			The texture filter blends between the nearest 4 pixels. Use this when you want to avoid a pixelated style, but do not want mipmaps.
+			The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="CanvasItemTextureFilter">
-			The texture filter reads from the nearest pixel in the nearest mipmap. The fastest way to read from textures with mipmaps.
+			The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4" enum="CanvasItemTextureFilter">
-			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps.
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="CanvasItemTextureFilter">
-			The texture filter reads from the nearest pixel, but selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera.
+			The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS] is usually more appropriate in this case.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="CanvasItemTextureFilter">
-			The texture filter blends between the nearest 4 pixels and selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. This is the slowest of the filtering options, but results in the highest quality texturing.
+			The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS] is usually more appropriate in this case.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_MAX" value="7" enum="CanvasItemTextureFilter">
 			Max value for [enum CanvasItemTextureFilter] enum.
@@ -5316,11 +5332,11 @@
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
 			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
 		</constant>
-		<constant name="FEATURE_SHADERS" value="0" enum="Features">
-			Hardware supports shaders. This enum is currently unused in Godot 3.x.
+		<constant name="FEATURE_SHADERS" value="0" enum="Features" is_deprecated="true">
+			[i]Deprecated.[/i] This constant has not been used since Godot 3.0.
 		</constant>
-		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features">
-			Hardware supports multithreading. This enum is currently unused in Godot 3.x.
+		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features" is_deprecated="true">
+			[i]Deprecated.[/i] This constant has not been used since Godot 3.0.
 		</constant>
 	</constants>
 </class>

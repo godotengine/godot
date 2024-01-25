@@ -7,7 +7,6 @@
 		[Skeleton3D] provides an interface for managing a hierarchy of bones, including pose, rest and animation (see [Animation]). It can also use ragdoll physics.
 		The overall transform of a bone with respect to the skeleton is determined by bone pose. Bone rest defines the initial transform of the bone pose.
 		Note that "global pose" below refers to the overall transform of the bone with respect to skeleton, so it is not the actual global/world transform of the bone.
-		To setup different types of inverse kinematics, consider using [SkeletonIK3D], or add a custom IK implementation in [method Node._process] as a child node.
 	</description>
 	<tutorials>
 		<link title="3D Inverse Kinematics Demo">https://godotengine.org/asset-library/asset/523</link>
@@ -126,18 +125,21 @@
 			<return type="Vector3" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
+				Returns the pose position of the bone at [param bone_idx]. The returned [Vector3] is in the local coordinate space of the [Skeleton3D] node.
 			</description>
 		</method>
 		<method name="get_bone_pose_rotation" qualifiers="const">
 			<return type="Quaternion" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
+				Returns the pose rotation of the bone at [param bone_idx]. The returned [Quaternion] is local to the bone with respect to the rotation of any parent bones.
 			</description>
 		</method>
 		<method name="get_bone_pose_scale" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
+				Returns the pose scale of the bone at [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_rest" qualifiers="const">
@@ -265,6 +267,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="position" type="Vector3" />
 			<description>
+				Sets the pose position of the bone at [param bone_idx] to [param position]. [param position] is a [Vector3] describing a position local to the [Skeleton3D] node.
 			</description>
 		</method>
 		<method name="set_bone_pose_rotation">
@@ -272,6 +275,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="rotation" type="Quaternion" />
 			<description>
+				Sets the pose rotation of the bone at [param bone_idx] to [param rotation]. [param rotation] is a [Quaternion] describing a rotation in the bone's local coordinate space with respect to the rotation of any parent bones.
 			</description>
 		</method>
 		<method name="set_bone_pose_scale">
@@ -279,6 +283,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="scale" type="Vector3" />
 			<description>
+				Sets the pose scale of the bone at [param bone_idx] to [param scale].
 			</description>
 		</method>
 		<method name="set_bone_rest">

@@ -758,6 +758,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			int calls = frame.script_functions[i].call_count;
 			float total = frame.script_functions[i].total_time;
 			float self = frame.script_functions[i].self_time;
+			float internal = frame.script_functions[i].internal_time;
 
 			EditorProfiler::Metric::Category::Item item;
 			if (profiler_signature.has(signature)) {
@@ -782,6 +783,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			item.calls = calls;
 			item.self = self;
 			item.total = total;
+			item.internal = internal;
 			funcs.items.write[i] = item;
 		}
 
@@ -1097,7 +1099,9 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 				// Add max funcs options to request.
 				Array opts;
 				int max_funcs = EDITOR_GET("debugger/profiler_frame_max_functions");
+				bool include_native = EDITOR_GET("debugger/profile_native_calls");
 				opts.push_back(CLAMP(max_funcs, 16, 512));
+				opts.push_back(include_native);
 				msg_data.push_back(opts);
 			}
 			_put_msg("profiler:servers", msg_data);
@@ -1683,7 +1687,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			// Parse back the `file:line @ method()` string.
 			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
-			const String file = file_line_number[0];
+			const String &file = file_line_number[0];
 			const int line_number = file_line_number[1].to_int();
 
 			// Construct a GitHub repository URL and open it in the user's default web browser.

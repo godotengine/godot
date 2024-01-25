@@ -69,7 +69,7 @@ void POTGenerator::generate_pot(const String &p_file) {
 	for (int i = 0; i < files.size(); i++) {
 		Vector<String> msgids;
 		Vector<Vector<String>> msgids_context_plural;
-		String file_path = files[i];
+		const String &file_path = files[i];
 		String file_extension = file_path.get_extension();
 
 		if (EditorTranslationParser::get_singleton()->can_parse(file_extension)) {
@@ -80,7 +80,7 @@ void POTGenerator::generate_pot(const String &p_file) {
 		}
 
 		for (int j = 0; j < msgids_context_plural.size(); j++) {
-			Vector<String> entry = msgids_context_plural[j];
+			const Vector<String> &entry = msgids_context_plural[j];
 			_add_new_msgid(entry[0], entry[1], entry[2], file_path);
 		}
 		for (int j = 0; j < msgids.size(); j++) {
@@ -141,7 +141,7 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 
 			// Write context.
 			if (!context.is_empty()) {
-				file->store_line("msgctxt " + context.c_escape().quote());
+				file->store_line("msgctxt " + context.json_escape().quote());
 			}
 
 			// Write msgid.
@@ -183,11 +183,11 @@ void POTGenerator::_write_msgid(Ref<FileAccess> r_file, const String &p_id, bool
 	}
 
 	for (int i = 0; i < lines.size() - 1; i++) {
-		r_file->store_line((lines[i] + "\n").c_escape().quote());
+		r_file->store_line((lines[i] + "\n").json_escape().quote());
 	}
 
 	if (!last_line.is_empty()) {
-		r_file->store_line(last_line.c_escape().quote());
+		r_file->store_line(last_line.json_escape().quote());
 	}
 }
 

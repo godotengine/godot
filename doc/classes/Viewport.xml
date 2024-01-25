@@ -75,7 +75,7 @@
 			<return type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<param index="0" name="quadrant" type="int" />
 			<description>
-				Returns the [enum PositionalShadowAtlasQuadrantSubdiv] of the specified quadrant.
+				Returns the positional shadow atlas quadrant subdivision of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_render_info">
@@ -126,6 +126,13 @@
 			<return type="Control" />
 			<description>
 				Returns the [Control] having the focus within this viewport. If no [Control] has the focus, returns null.
+			</description>
+		</method>
+		<method name="gui_get_hovered_control" qualifiers="const">
+			<return type="Control" />
+			<description>
+				Returns the [Control] that the mouse is currently hovering over in this viewport. If no [Control] has the cursor, returns null.
+				Typically the leaf [Control] node or deepest level of the subtree which claims hover. This is very useful when used together with [method Node.is_ancestor_of] to find if the mouse is within a control tree.
 			</description>
 		</method>
 		<method name="gui_is_drag_successful" qualifiers="const">
@@ -258,11 +265,8 @@
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
 		</member>
-		<member name="disable_2d" type="bool" setter="set_disable_2d" getter="is_2d_disabled" default="false">
-			If [code]true[/code], disables 2D rendering while keeping 3D rendering. See also [member disable_3d].
-		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
-			If [code]true[/code], disables 3D rendering while keeping 2D rendering. See also [member disable_2d].
+			Disable 3D rendering (but keep 2D rendering).
 		</member>
 		<member name="fsr_sharpness" type="float" setter="set_fsr_sharpness" getter="get_fsr_sharpness" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
@@ -563,16 +567,18 @@
 			Draws the internal resolution buffer of the scene before post-processing is applied.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
-			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
+			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="1" enum="DefaultCanvasItemTextureFilter">
-			The texture filter blends between the nearest 4 pixels. Use this when you want to avoid a pixelated style, but do not want mipmaps.
+			The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="2" enum="DefaultCanvasItemTextureFilter">
-			The texture filter reads from the nearest pixel in the nearest mipmap. The fastest way to read from textures with mipmaps.
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="DefaultCanvasItemTextureFilter">
-			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps.
+			The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX" value="4" enum="DefaultCanvasItemTextureFilter">
 			Max value for [enum DefaultCanvasItemTextureFilter] enum.

@@ -143,6 +143,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="node" type="AnimationNode" />
 			<description>
+				Replaces the given animation node with a new animation node.
 			</description>
 		</method>
 		<method name="set_graph_offset">

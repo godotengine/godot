@@ -260,6 +260,10 @@ class VisualShaderEditor : public VBoxContainer {
 		COLLAPSE_ALL
 	};
 
+#ifdef MINGW_ENABLED
+#undef DELETE
+#endif
+
 	enum NodeMenuOptions {
 		ADD,
 		SEPARATOR, // ignore
@@ -487,7 +491,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _member_cancel();
 
 	void _varying_create();
-	void _varying_name_changed(const String &p_text);
+	void _varying_name_changed(const String &p_name);
 	void _varying_deleted();
 	void _varying_selected();
 	void _varying_unselected();

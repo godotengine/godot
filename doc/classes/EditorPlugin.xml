@@ -327,7 +327,7 @@
 			<param index="0" name="object" type="Object" />
 			<description>
 				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return [code]true[/code], then you will get the functions [method _edit] and [method _make_visible] called when the editor requests them. If you have declared the methods [method _forward_canvas_gui_input] and [method _forward_3d_gui_input] these will be called too.
-				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handes more types of objects and they are edited at the same time, it will result in errors.
+				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handles more types of objects and they are edited at the same time, it will result in errors.
 			</description>
 		</method>
 		<method name="_has_main_screen" qualifiers="virtual const">
@@ -541,7 +541,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="submenu" type="PopupMenu" />
 			<description>
-				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [code]remove_tool_menu_item(name)[/code] on plugin clean up to remove the menu.
+				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [method remove_tool_menu_item] on plugin clean up to remove the menu.
 			</description>
 		</method>
 		<method name="add_translation_parser_plugin">

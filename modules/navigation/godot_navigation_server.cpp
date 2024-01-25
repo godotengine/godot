@@ -331,6 +331,13 @@ RID GodotNavigationServer::agent_get_map(RID p_agent) const {
 	return RID();
 }
 
+Vector3 GodotNavigationServer::map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const {
+	const NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL_V(map, Vector3());
+
+	return map->get_random_point(p_navigation_layers, p_uniformly);
+}
+
 RID GodotNavigationServer::region_create() {
 	MutexLock lock(operations_mutex);
 
@@ -382,6 +389,13 @@ COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform) {
 	ERR_FAIL_NULL(region);
 
 	region->set_transform(p_transform);
+}
+
+Transform3D GodotNavigationServer::region_get_transform(RID p_region) const {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Transform3D());
+
+	return region->get_transform();
 }
 
 COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost) {
@@ -496,6 +510,13 @@ Vector3 GodotNavigationServer::region_get_connection_pathway_end(RID p_region, i
 	ERR_FAIL_NULL_V(region, Vector3());
 
 	return region->get_connection_pathway_end(p_connection_id);
+}
+
+Vector3 GodotNavigationServer::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Vector3());
+
+	return region->get_random_point(p_navigation_layers, p_uniformly);
 }
 
 RID GodotNavigationServer::link_create() {
@@ -705,6 +726,13 @@ COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance) {
 	agent->set_neighbor_distance(p_distance);
 }
 
+real_t GodotNavigationServer::agent_get_neighbor_distance(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_neighbor_distance();
+}
+
 COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count) {
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL(agent);
@@ -712,20 +740,41 @@ COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count) {
 	agent->set_max_neighbors(p_count);
 }
 
+int GodotNavigationServer::agent_get_max_neighbors(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_max_neighbors();
+}
+
 COMMAND_2(agent_set_time_horizon_agents, RID, p_agent, real_t, p_time_horizon) {
-	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizion must be positive.");
+	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizon must be positive.");
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL(agent);
 
 	agent->set_time_horizon_agents(p_time_horizon);
 }
 
+real_t GodotNavigationServer::agent_get_time_horizon_agents(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_time_horizon_agents();
+}
+
 COMMAND_2(agent_set_time_horizon_obstacles, RID, p_agent, real_t, p_time_horizon) {
-	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizion must be positive.");
+	ERR_FAIL_COND_MSG(p_time_horizon < 0.0, "Time horizon must be positive.");
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL(agent);
 
 	agent->set_time_horizon_obstacles(p_time_horizon);
+}
+
+real_t GodotNavigationServer::agent_get_time_horizon_obstacles(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_time_horizon_obstacles();
 }
 
 COMMAND_2(agent_set_radius, RID, p_agent, real_t, p_radius) {
@@ -736,12 +785,26 @@ COMMAND_2(agent_set_radius, RID, p_agent, real_t, p_radius) {
 	agent->set_radius(p_radius);
 }
 
+real_t GodotNavigationServer::agent_get_radius(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_radius();
+}
+
 COMMAND_2(agent_set_height, RID, p_agent, real_t, p_height) {
 	ERR_FAIL_COND_MSG(p_height < 0.0, "Height must be positive.");
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL(agent);
 
 	agent->set_height(p_height);
+}
+
+real_t GodotNavigationServer::agent_get_height(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_height();
 }
 
 COMMAND_2(agent_set_max_speed, RID, p_agent, real_t, p_max_speed) {
@@ -752,11 +815,25 @@ COMMAND_2(agent_set_max_speed, RID, p_agent, real_t, p_max_speed) {
 	agent->set_max_speed(p_max_speed);
 }
 
+real_t GodotNavigationServer::agent_get_max_speed(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_max_speed();
+}
+
 COMMAND_2(agent_set_velocity, RID, p_agent, Vector3, p_velocity) {
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL(agent);
 
 	agent->set_velocity(p_velocity);
+}
+
+Vector3 GodotNavigationServer::agent_get_velocity(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, Vector3());
+
+	return agent->get_velocity();
 }
 
 COMMAND_2(agent_set_velocity_forced, RID, p_agent, Vector3, p_velocity) {
@@ -771,6 +848,13 @@ COMMAND_2(agent_set_position, RID, p_agent, Vector3, p_position) {
 	ERR_FAIL_NULL(agent);
 
 	agent->set_position(p_position);
+}
+
+Vector3 GodotNavigationServer::agent_get_position(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, Vector3());
+
+	return agent->get_position();
 }
 
 bool GodotNavigationServer::agent_is_map_changed(RID p_agent) const {
@@ -795,10 +879,24 @@ COMMAND_2(agent_set_avoidance_callback, RID, p_agent, Callable, p_callback) {
 	}
 }
 
+bool GodotNavigationServer::agent_has_avoidance_callback(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, false);
+
+	return agent->has_avoidance_callback();
+}
+
 COMMAND_2(agent_set_avoidance_layers, RID, p_agent, uint32_t, p_layers) {
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL(agent);
 	agent->set_avoidance_layers(p_layers);
+}
+
+uint32_t GodotNavigationServer::agent_get_avoidance_layers(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_avoidance_layers();
 }
 
 COMMAND_2(agent_set_avoidance_mask, RID, p_agent, uint32_t, p_mask) {
@@ -807,12 +905,26 @@ COMMAND_2(agent_set_avoidance_mask, RID, p_agent, uint32_t, p_mask) {
 	agent->set_avoidance_mask(p_mask);
 }
 
+uint32_t GodotNavigationServer::agent_get_avoidance_mask(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_avoidance_mask();
+}
+
 COMMAND_2(agent_set_avoidance_priority, RID, p_agent, real_t, p_priority) {
 	ERR_FAIL_COND_MSG(p_priority < 0.0, "Avoidance priority must be between 0.0 and 1.0 inclusive.");
 	ERR_FAIL_COND_MSG(p_priority > 1.0, "Avoidance priority must be between 0.0 and 1.0 inclusive.");
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL(agent);
 	agent->set_avoidance_priority(p_priority);
+}
+
+real_t GodotNavigationServer::agent_get_avoidance_priority(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_NULL_V(agent, 0);
+
+	return agent->get_avoidance_priority();
 }
 
 RID GodotNavigationServer::obstacle_create() {
@@ -899,10 +1011,24 @@ COMMAND_2(obstacle_set_radius, RID, p_obstacle, real_t, p_radius) {
 	obstacle->set_radius(p_radius);
 }
 
+real_t GodotNavigationServer::obstacle_get_radius(RID p_obstacle) const {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_NULL_V(obstacle, 0);
+
+	return obstacle->get_radius();
+}
+
 COMMAND_2(obstacle_set_height, RID, p_obstacle, real_t, p_height) {
 	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
 	ERR_FAIL_NULL(obstacle);
 	obstacle->set_height(p_height);
+}
+
+real_t GodotNavigationServer::obstacle_get_height(RID p_obstacle) const {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_NULL_V(obstacle, 0);
+
+	return obstacle->get_height();
 }
 
 COMMAND_2(obstacle_set_velocity, RID, p_obstacle, Vector3, p_velocity) {
@@ -912,10 +1038,24 @@ COMMAND_2(obstacle_set_velocity, RID, p_obstacle, Vector3, p_velocity) {
 	obstacle->set_velocity(p_velocity);
 }
 
+Vector3 GodotNavigationServer::obstacle_get_velocity(RID p_obstacle) const {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_NULL_V(obstacle, Vector3());
+
+	return obstacle->get_velocity();
+}
+
 COMMAND_2(obstacle_set_position, RID, p_obstacle, Vector3, p_position) {
 	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
 	ERR_FAIL_NULL(obstacle);
 	obstacle->set_position(p_position);
+}
+
+Vector3 GodotNavigationServer::obstacle_get_position(RID p_obstacle) const {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_NULL_V(obstacle, Vector3());
+
+	return obstacle->get_position();
 }
 
 void GodotNavigationServer::obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) {
@@ -924,10 +1064,24 @@ void GodotNavigationServer::obstacle_set_vertices(RID p_obstacle, const Vector<V
 	obstacle->set_vertices(p_vertices);
 }
 
+Vector<Vector3> GodotNavigationServer::obstacle_get_vertices(RID p_obstacle) const {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_NULL_V(obstacle, Vector<Vector3>());
+
+	return obstacle->get_vertices();
+}
+
 COMMAND_2(obstacle_set_avoidance_layers, RID, p_obstacle, uint32_t, p_layers) {
 	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
 	ERR_FAIL_NULL(obstacle);
 	obstacle->set_avoidance_layers(p_layers);
+}
+
+uint32_t GodotNavigationServer::obstacle_get_avoidance_layers(RID p_obstacle) const {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_NULL_V(obstacle, 0);
+
+	return obstacle->get_avoidance_layers();
 }
 
 void GodotNavigationServer::parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {

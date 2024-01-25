@@ -45,6 +45,7 @@ ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
 void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
 	localization_editor->connect_filesystem_dock_signals(p_fs_dock);
+	group_settings->connect_filesystem_dock_signals(p_fs_dock);
 }
 
 void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
@@ -62,12 +63,15 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
+	group_settings->update_groups();
 	plugin_settings->update_plugins();
 	import_defaults_editor->clear();
 
 	if (p_clear_filter) {
 		search_box->clear();
 	}
+
+	_focus_current_search_box();
 }
 
 void ProjectSettingsEditor::queue_save() {
@@ -171,7 +175,7 @@ void ProjectSettingsEditor::_feature_selected(int p_index) {
 void ProjectSettingsEditor::_update_property_box() {
 	const String setting = _get_setting_name();
 	const Vector<String> t = setting.split(".", true, 1);
-	const String name = t[0];
+	const String &name = t[0];
 	const String feature = (t.size() == 2) ? t[1] : "";
 	bool feature_invalid = (t.size() == 2) && (t[1].is_empty());
 
@@ -253,8 +257,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (k->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F))) {
-			search_box->grab_focus();
-			search_box->select_all();
+			_focus_current_search_box();
 			handled = true;
 		}
 
@@ -323,6 +326,25 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	int id = 1;
 	for (const String &E : presets) {
 		feature_box->add_item(E, id++);
+	}
+}
+
+void ProjectSettingsEditor::_tabs_tab_changed(int p_tab) {
+	_focus_current_search_box();
+}
+
+void ProjectSettingsEditor::_focus_current_search_box() {
+	Control *tab = tab_container->get_current_tab_control();
+	LineEdit *current_search_box = nullptr;
+	if (tab == general_editor) {
+		current_search_box = search_box;
+	} else if (tab == action_map_editor) {
+		current_search_box = action_map_editor->get_search_box();
+	}
+
+	if (current_search_box) {
+		current_search_box->grab_focus();
+		current_search_box->select_all();
 	}
 }
 
@@ -596,6 +618,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container = memnew(TabContainer);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	tab_container->set_theme_type_variation("TabContainerOdd");
+	tab_container->connect("tab_changed", callable_mp(this, &ProjectSettingsEditor::_tabs_tab_changed));
 	add_child(tab_container);
 
 	general_editor = memnew(VBoxContainer);
@@ -708,6 +731,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	shaders_global_shader_uniforms_editor->set_name(TTR("Shader Globals"));
 	shaders_global_shader_uniforms_editor->connect("globals_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(shaders_global_shader_uniforms_editor);
+
+	group_settings = memnew(GroupSettingsEditor);
+	group_settings->set_name(TTR("Global Groups"));
+	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
+	tab_container->add_child(group_settings);
 
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));

@@ -403,6 +403,29 @@ TEST_CASE("[Image] Custom mipmaps") {
 	}
 }
 
+TEST_CASE("[Image] Convert image") {
+	for (int format = Image::FORMAT_RF; format < Image::FORMAT_RGBE9995; format++) {
+		for (int new_format = Image::FORMAT_RF; new_format < Image::FORMAT_RGBE9995; new_format++) {
+			Ref<Image> image = memnew(Image(4, 4, false, (Image::Format)format));
+			image->convert((Image::Format)new_format);
+			String format_string = Image::format_names[(Image::Format)format];
+			String new_format_string = Image::format_names[(Image::Format)new_format];
+			format_string = "Error converting from " + format_string + " to " + new_format_string + ".";
+			CHECK_MESSAGE(image->get_format() == new_format, format_string);
+		}
+	}
+
+	Ref<Image> image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+	PackedByteArray image_data = image->get_data();
+	image->convert((Image::Format)-1);
+	CHECK_MESSAGE(image->get_data() == image_data, "Image conversion to invalid type (-1) should not alter image.");
+
+	Ref<Image> image2 = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+	image_data = image2->get_data();
+	image2->convert((Image::Format)(Image::FORMAT_MAX + 1));
+	CHECK_MESSAGE(image2->get_data() == image_data, "Image conversion to invalid type (Image::FORMAT_MAX + 1) should not alter image.");
+}
+
 } // namespace TestImage
 
 #endif // TEST_IMAGE_H

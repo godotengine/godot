@@ -1026,7 +1026,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				Ref<Resource> res;
 				Error err = p_res_parser->ext_func(p_res_parser->userdata, p_stream, res, line, r_err_str);
 				if (err) {
-					return err;
+					// If the file is missing, the error can be ignored.
+					if (err != ERR_FILE_NOT_FOUND && err != ERR_CANT_OPEN) {
+						return err;
+					}
 				}
 
 				value = res;
@@ -1075,7 +1078,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			static HashMap<StringName, Variant::Type> builtin_types;
+			static HashMap<String, Variant::Type> builtin_types;
 			if (builtin_types.is_empty()) {
 				for (int i = 1; i < Variant::VARIANT_MAX; i++) {
 					builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;

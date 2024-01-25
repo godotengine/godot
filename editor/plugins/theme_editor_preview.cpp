@@ -266,11 +266,11 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_root->add_child(preview_bg);
 
 	preview_content = memnew(MarginContainer);
-	preview_root->add_child(preview_content);
 	preview_content->add_theme_constant_override("margin_right", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_top", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_left", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
+	preview_root->add_child(preview_content);
 
 	preview_overlay = memnew(MarginContainer);
 	preview_overlay->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -354,8 +354,8 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 
 	PopupMenu *test_submenu = memnew(PopupMenu);
 	test_menu_button->get_popup()->add_child(test_submenu);
-	test_submenu->set_name("submenu");
-	test_menu_button->get_popup()->add_submenu_item(TTR("Submenu"), "submenu");
+	test_submenu->set_name("SubMenu");
+	test_menu_button->get_popup()->add_submenu_item(TTR("Submenu"), "SubMenu");
 	test_submenu->add_item(TTR("Subitem 1"));
 	test_submenu->add_item(TTR("Subitem 2"));
 	first_vb->add_child(test_menu_button);

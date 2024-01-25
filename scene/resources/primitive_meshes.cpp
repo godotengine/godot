@@ -232,8 +232,6 @@ RID PrimitiveMesh::get_rid() const {
 }
 
 void PrimitiveMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update"), &PrimitiveMesh::_update);
-
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &PrimitiveMesh::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &PrimitiveMesh::get_material);
 
@@ -552,7 +550,7 @@ void CapsuleMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
 
 	ADD_LINKED_PROPERTY("radius", "height");
 	ADD_LINKED_PROPERTY("height", "radius");
@@ -594,7 +592,8 @@ int CapsuleMesh::get_radial_segments() const {
 }
 
 void CapsuleMesh::set_rings(const int p_rings) {
-	rings = p_rings > 1 ? p_rings : 1;
+	ERR_FAIL_COND(p_rings < 0);
+	rings = p_rings;
 	_request_update();
 }
 
@@ -1161,7 +1160,7 @@ void CylinderMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_top"), "set_cap_top", "is_cap_top");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_bottom"), "set_cap_bottom", "is_cap_bottom");
 }
@@ -1206,7 +1205,8 @@ int CylinderMesh::get_radial_segments() const {
 }
 
 void CylinderMesh::set_rings(const int p_rings) {
-	rings = p_rings > 0 ? p_rings : 0;
+	ERR_FAIL_COND(p_rings < 0);
+	rings = p_rings;
 	_request_update();
 }
 
@@ -1300,7 +1300,11 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 				points.push_back(Vector3(-x, z, 0.0) + center_offset);
 			}
 			normals.push_back(normal);
-			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
+			if (orientation == FACE_X) {
+				ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
+			} else {
+				ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
+			}
 			uvs.push_back(Vector2(1.0 - u, 1.0 - v)); /* 1.0 - uv to match orientation with Quad */
 			point++;
 
@@ -1472,15 +1476,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
-		float scale = (y - start_pos.y) / size.y;
+		float scale = j / (subdivide_h + 1.0);
 		float scaled_size_x = size.x * scale;
 		float start_x = start_pos.x + (1.0 - scale) * size.x * left_to_right;
 		float offset_front = (1.0 - scale) * onethird * left_to_right;
 		float offset_back = (1.0 - scale) * onethird * (1.0 - left_to_right);
 
 		float v = j;
-		float v2 = j / (subdivide_h + 1.0);
-		v /= (2.0 * (subdivide_h + 1.0));
+		float v2 = scale;
+		v /= 2.0 * (subdivide_h + 1.0);
 
 		x = 0.0;
 		for (i = 0; i <= (subdivide_w + 1); i++) {
@@ -1562,15 +1566,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
-		float v = j;
-		float v2 = j / (subdivide_h + 1.0);
-		v /= (2.0 * (subdivide_h + 1.0));
-
 		float left, right;
-		float scale = (y - start_pos.y) / size.y;
+		float scale = j / (subdivide_h + 1.0);
 
 		left = start_pos.x + (size.x * (1.0 - scale) * left_to_right);
 		right = left + (size.x * scale);
+
+		float v = j;
+		float v2 = scale;
+		v /= 2.0 * (subdivide_h + 1.0);
 
 		z = start_pos.z;
 		for (i = 0; i <= (subdivide_d + 1); i++) {
@@ -1915,7 +1919,8 @@ int SphereMesh::get_radial_segments() const {
 }
 
 void SphereMesh::set_rings(const int p_rings) {
-	rings = p_rings > 1 ? p_rings : 1;
+	ERR_FAIL_COND(p_rings < 1);
+	rings = p_rings;
 	_request_update();
 }
 
@@ -2722,7 +2727,6 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 	GlyphMeshData &gl_data = cache[p_key];
 
 	Dictionary d = TS->font_get_glyph_contours(p_gl.font_rid, p_gl.font_size, p_gl.index);
-	Vector2 origin = Vector2(p_gl.x_off, p_gl.y_off) * pixel_size;
 
 	PackedVector3Array points = d["points"];
 	PackedInt32Array contours = d["contours"];
@@ -2742,7 +2746,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 		for (int32_t j = start; j <= end; j++) {
 			if (points[j].z == TextServer::CONTOUR_CURVE_TAG_ON) {
 				// Point on the curve.
-				Vector2 p = Vector2(points[j].x, points[j].y) * pixel_size + origin;
+				Vector2 p = Vector2(points[j].x, points[j].y) * pixel_size;
 				polygon.push_back(ContourPoint(p, true));
 			} else if (points[j].z == TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
 				// Conic Bezier arc.
@@ -2776,7 +2780,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 					real_t t2 = t * t;
 
 					Vector2 point = p1 + omt2 * (p0 - p1) + t2 * (p2 - p1);
-					Vector2 p = point * pixel_size + origin;
+					Vector2 p = point * pixel_size;
 					polygon.push_back(ContourPoint(p, false));
 					t += step;
 				}
@@ -2810,7 +2814,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				real_t t = step;
 				while (t < 1.0) {
 					Vector2 point = p0.bezier_interpolate(p1, p2, p3, t);
-					Vector2 p = point * pixel_size + origin;
+					Vector2 p = point * pixel_size;
 					polygon.push_back(ContourPoint(p, false));
 					t += step;
 				}
@@ -3045,6 +3049,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 				GlyphMeshKey key = GlyphMeshKey(glyphs[j].font_rid.get_id(), glyphs[j].index);
 				_generate_glyph_mesh_data(key, glyphs[j]);
 				GlyphMeshData &gl_data = cache[key];
+				const Vector2 gl_of = Vector2(glyphs[j].x_off, glyphs[j].y_off) * pixel_size;
 
 				p_size += glyphs[j].repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
 				i_size += glyphs[j].repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
@@ -3057,10 +3062,10 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 				}
 
 				for (int r = 0; r < glyphs[j].repeat; r++) {
-					min_p.x = MIN(gl_data.min_p.x + offset.x, min_p.x);
-					min_p.y = MIN(gl_data.min_p.y - offset.y, min_p.y);
-					max_p.x = MAX(gl_data.max_p.x + offset.x, max_p.x);
-					max_p.y = MAX(gl_data.max_p.y - offset.y, max_p.y);
+					min_p.x = MIN(gl_data.min_p.x + offset.x + gl_of.x, min_p.x);
+					min_p.y = MIN(gl_data.min_p.y - offset.y + gl_of.y, min_p.y);
+					max_p.x = MAX(gl_data.max_p.x + offset.x + gl_of.x, max_p.x);
+					max_p.y = MAX(gl_data.max_p.y - offset.y + gl_of.y, max_p.y);
 
 					offset.x += glyphs[j].advance * pixel_size;
 				}
@@ -3126,12 +3131,13 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 
 				int64_t ts = gl_data.triangles.size();
 				const Vector2 *ts_ptr = gl_data.triangles.ptr();
+				const Vector2 gl_of = Vector2(glyphs[j].x_off, glyphs[j].y_off) * pixel_size;
 
 				for (int r = 0; r < glyphs[j].repeat; r++) {
 					for (int k = 0; k < ts; k += 3) {
 						// Add front face.
 						for (int l = 0; l < 3; l++) {
-							Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, depth / 2.0);
+							Vector3 point = Vector3(ts_ptr[k + l].x + offset.x + gl_of.x, -ts_ptr[k + l].y + offset.y - gl_of.y, depth / 2.0);
 							vertices_ptr[p_idx] = point;
 							normals_ptr[p_idx] = Vector3(0.0, 0.0, 1.0);
 							if (has_depth) {
@@ -3149,7 +3155,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 						if (has_depth) {
 							// Add back face.
 							for (int l = 2; l >= 0; l--) {
-								Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, -depth / 2.0);
+								Vector3 point = Vector3(ts_ptr[k + l].x + offset.x + gl_of.x, -ts_ptr[k + l].y + offset.y - gl_of.y, -depth / 2.0);
 								vertices_ptr[p_idx] = point;
 								normals_ptr[p_idx] = Vector3(0.0, 0.0, -1.0);
 								uvs_ptr[p_idx] = Vector2(Math::remap(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::remap(point.y, -max_p.y, -min_p.y, real_t(0.8), real_t(0.4)));
@@ -3182,10 +3188,10 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 								real_t seg_len = (ps_ptr[next].point - ps_ptr[l].point).length();
 
 								Vector3 quad_faces[4] = {
-									Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, -depth / 2.0),
-									Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, -depth / 2.0),
-									Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, depth / 2.0),
-									Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, depth / 2.0),
+									Vector3(ps_ptr[l].point.x + offset.x + gl_of.x, -ps_ptr[l].point.y + offset.y - gl_of.y, -depth / 2.0),
+									Vector3(ps_ptr[next].point.x + offset.x + gl_of.x, -ps_ptr[next].point.y + offset.y - gl_of.y, -depth / 2.0),
+									Vector3(ps_ptr[l].point.x + offset.x + gl_of.x, -ps_ptr[l].point.y + offset.y - gl_of.y, depth / 2.0),
+									Vector3(ps_ptr[next].point.x + offset.x + gl_of.x, -ps_ptr[next].point.y + offset.y - gl_of.y, depth / 2.0),
 								};
 								for (int m = 0; m < 4; m++) {
 									const Vector2 &d = ((m % 2) == 0) ? d1 : d2;
@@ -3334,7 +3340,6 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &TextMesh::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &TextMesh::is_uppercase);
 
-	ClassDB::bind_method(D_METHOD("_font_changed"), &TextMesh::_font_changed);
 	ClassDB::bind_method(D_METHOD("_request_update"), &TextMesh::_request_update);
 
 	ADD_GROUP("Text", "");
@@ -3438,14 +3443,16 @@ void TextMesh::_font_changed() {
 
 void TextMesh::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
+		const Callable font_changed = callable_mp(this, &TextMesh::_font_changed);
+
 		if (font_override.is_valid()) {
-			font_override->disconnect_changed(Callable(this, "_font_changed"));
+			font_override->disconnect_changed(font_changed);
 		}
 		font_override = p_font;
 		dirty_font = true;
 		dirty_cache = true;
 		if (font_override.is_valid()) {
-			font_override->connect_changed(Callable(this, "_font_changed"));
+			font_override->connect_changed(font_changed);
 		}
 		_request_update();
 	}

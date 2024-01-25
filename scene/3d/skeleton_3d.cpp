@@ -30,7 +30,6 @@
 
 #include "skeleton_3d.h"
 
-#include "core/object/message_queue.h"
 #include "core/variant/type_info.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/resources/surface_tool.h"

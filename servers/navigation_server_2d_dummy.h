@@ -58,6 +58,7 @@ public:
 	TypedArray<RID> map_get_agents(RID p_map) const override { return TypedArray<RID>(); }
 	TypedArray<RID> map_get_obstacles(RID p_map) const override { return TypedArray<RID>(); }
 	void map_force_update(RID p_map) override {}
+	Vector2 map_get_random_point(RID p_map, uint32_t p_naviation_layers, bool p_uniformly) const override { return Vector2(); };
 
 	RID region_create() override { return RID(); }
 	void region_set_enabled(RID p_region, bool p_enabled) override {}
@@ -76,10 +77,12 @@ public:
 	void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) override {}
 	uint32_t region_get_navigation_layers(RID p_region) const override { return 0; }
 	void region_set_transform(RID p_region, Transform2D p_transform) override {}
+	Transform2D region_get_transform(RID p_region) const override { return Transform2D(); }
 	void region_set_navigation_polygon(RID p_region, Ref<NavigationPolygon> p_navigation_polygon) override {}
 	int region_get_connections_count(RID p_region) const override { return 0; }
 	Vector2 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override { return Vector2(); }
 	Vector2 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override { return Vector2(); }
+	Vector2 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override { return Vector2(); };
 
 	RID link_create() override { return RID(); }
 	void link_set_map(RID p_link, RID p_map) override {}
@@ -109,19 +112,31 @@ public:
 	void agent_set_avoidance_enabled(RID p_agent, bool p_enabled) override {}
 	bool agent_get_avoidance_enabled(RID p_agent) const override { return false; }
 	void agent_set_neighbor_distance(RID p_agent, real_t p_distance) override {}
+	real_t agent_get_neighbor_distance(RID p_agent) const override { return 0; }
 	void agent_set_max_neighbors(RID p_agent, int p_count) override {}
+	int agent_get_max_neighbors(RID p_agent) const override { return 0; }
 	void agent_set_time_horizon_agents(RID p_agent, real_t p_time_horizon) override {}
+	real_t agent_get_time_horizon_agents(RID p_agent) const override { return 0; }
 	void agent_set_time_horizon_obstacles(RID p_agent, real_t p_time_horizon) override {}
+	real_t agent_get_time_horizon_obstacles(RID p_agent) const override { return 0; }
 	void agent_set_radius(RID p_agent, real_t p_radius) override {}
+	real_t agent_get_radius(RID p_agent) const override { return 0; }
 	void agent_set_max_speed(RID p_agent, real_t p_max_speed) override {}
+	real_t agent_get_max_speed(RID p_agent) const override { return 0; }
 	void agent_set_velocity_forced(RID p_agent, Vector2 p_velocity) override {}
 	void agent_set_velocity(RID p_agent, Vector2 p_velocity) override {}
+	Vector2 agent_get_velocity(RID p_agent) const override { return Vector2(); }
 	void agent_set_position(RID p_agent, Vector2 p_position) override {}
+	Vector2 agent_get_position(RID p_agent) const override { return Vector2(); }
 	bool agent_is_map_changed(RID p_agent) const override { return false; }
 	void agent_set_avoidance_callback(RID p_agent, Callable p_callback) override {}
+	bool agent_has_avoidance_callback(RID p_agent) const override { return false; }
 	void agent_set_avoidance_layers(RID p_agent, uint32_t p_layers) override {}
+	uint32_t agent_get_avoidance_layers(RID p_agent) const override { return 0; }
 	void agent_set_avoidance_mask(RID p_agent, uint32_t p_mask) override {}
+	uint32_t agent_get_avoidance_mask(RID p_agent) const override { return 0; }
 	void agent_set_avoidance_priority(RID p_agent, real_t p_priority) override {}
+	real_t agent_get_avoidance_priority(RID p_agent) const override { return 0; }
 
 	RID obstacle_create() override { return RID(); }
 	void obstacle_set_avoidance_enabled(RID p_obstacle, bool p_enabled) override {}
@@ -131,10 +146,15 @@ public:
 	void obstacle_set_paused(RID p_obstacle, bool p_paused) override {}
 	bool obstacle_get_paused(RID p_obstacle) const override { return false; }
 	void obstacle_set_radius(RID p_obstacle, real_t p_radius) override {}
+	real_t obstacle_get_radius(RID p_agent) const override { return 0; }
 	void obstacle_set_velocity(RID p_obstacle, Vector2 p_velocity) override {}
+	Vector2 obstacle_get_velocity(RID p_agent) const override { return Vector2(); }
 	void obstacle_set_position(RID p_obstacle, Vector2 p_position) override {}
+	Vector2 obstacle_get_position(RID p_agent) const override { return Vector2(); }
 	void obstacle_set_vertices(RID p_obstacle, const Vector<Vector2> &p_vertices) override {}
+	Vector<Vector2> obstacle_get_vertices(RID p_agent) const override { return Vector<Vector2>(); }
 	void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) override {}
+	uint32_t obstacle_get_avoidance_layers(RID p_agent) const override { return 0; }
 
 	void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const override {}
 

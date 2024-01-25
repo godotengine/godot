@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "scene/resources/compressed_texture.h"
 
@@ -108,13 +109,21 @@ void ResourceImporterTexture::update_imports() {
 			bool changed = false;
 
 			if (E.value.flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
-				print_line(vformat(TTR("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded)."), String(E.key)));
+				String message = vformat(TTR("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded)."), String(E.key));
+#ifdef TOOLS_ENABLED
+				EditorToaster::get_singleton()->popup_str(message);
+#endif
+				print_line(message);
 				cf->set_value("params", "compress/normal_map", 1);
 				changed = true;
 			}
 
 			if (E.value.flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
-				print_line(vformat(TTR("%s: Texture detected as used as a roughness map in 3D. Enabling roughness limiter based on the detected associated normal map at %s."), String(E.key), E.value.normal_path_for_roughness));
+				String message = vformat(TTR("%s: Texture detected as used as a roughness map in 3D. Enabling roughness limiter based on the detected associated normal map at %s."), String(E.key), E.value.normal_path_for_roughness);
+#ifdef TOOLS_ENABLED
+				EditorToaster::get_singleton()->popup_str(message);
+#endif
+				print_line(message);
 				cf->set_value("params", "roughness/mode", E.value.channel_for_roughness + 2);
 				cf->set_value("params", "roughness/src_normal", E.value.normal_path_for_roughness);
 				changed = true;
@@ -131,7 +140,11 @@ void ResourceImporterTexture::update_imports() {
 					cf->set_value("params", "compress/mode", COMPRESS_BASIS_UNIVERSAL);
 					compress_string = "Basis Universal";
 				}
-				print_line(vformat(TTR("%s: Texture detected as used in 3D. Enabling mipmap generation and setting the texture compression mode to %s."), String(E.key), compress_string));
+				String message = vformat(TTR("%s: Texture detected as used in 3D. Enabling mipmap generation and setting the texture compression mode to %s."), String(E.key), compress_string);
+#ifdef TOOLS_ENABLED
+				EditorToaster::get_singleton()->popup_str(message);
+#endif
+				print_line(message);
 				cf->set_value("params", "mipmaps/generate", true);
 				changed = true;
 			}
@@ -366,14 +379,6 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	f->store_32(0);
 	f->store_32(0);
 	f->store_32(0);
-
-	/*
-	print_line("streamable " + itos(p_streamable));
-	print_line("mipmaps " + itos(p_mipmaps));
-	print_line("detect_3d " + itos(p_detect_3d));
-	print_line("roughness " + itos(p_detect_roughness));
-	print_line("normal " + itos(p_detect_normal));
-*/
 
 	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() > Image::FORMAT_RGBA8) {
 		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED; //these can't go as lossy
@@ -740,6 +745,10 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 
 	if (meta.has("has_editor_variant")) {
 		String imported_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_path);
+		if (!FileAccess::exists(imported_path)) {
+			return false;
+		}
+
 		String editor_meta_path = imported_path.replace(".editor.ctex", ".editor.meta");
 		Dictionary editor_meta = _load_editor_meta(editor_meta_path);
 

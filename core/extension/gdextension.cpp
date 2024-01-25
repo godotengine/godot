@@ -35,6 +35,7 @@
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 #include "core/version.h"
+#include "gdextension_manager.h"
 
 extern void gdextension_setup_interface();
 extern GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name);
@@ -663,26 +664,25 @@ void GDExtension::_get_library_path(GDExtensionClassLibraryPtr p_library, GDExte
 	memnew_placement(r_path, String(self->library_path));
 }
 
-HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
+HashMap<StringName, GDExtensionInterfaceFunctionPtr> GDExtension::gdextension_interface_functions;
 
-void GDExtension::register_interface_function(StringName p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
+void GDExtension::register_interface_function(const StringName &p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
 	ERR_FAIL_COND_MSG(gdextension_interface_functions.has(p_function_name), "Attempt to register interface function '" + p_function_name + "', which appears to be already registered.");
 	gdextension_interface_functions.insert(p_function_name, p_function_pointer);
 }
 
-GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(StringName p_function_name) {
+GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(const StringName &p_function_name) {
 	GDExtensionInterfaceFunctionPtr *function = gdextension_interface_functions.getptr(p_function_name);
 	ERR_FAIL_NULL_V_MSG(function, nullptr, "Attempt to get non-existent interface function: " + String(p_function_name) + ".");
 	return *function;
 }
 
 Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol) {
-	library_path = p_path;
-
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	// If running on the editor on Windows, we copy the library and open the copy.
 	// This is so the original file isn't locked and can be updated by a compiler.
+	bool library_copied = false;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (!FileAccess::exists(abs_path)) {
 			ERR_PRINT("GDExtension library not found: " + library_path);
@@ -704,6 +704,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 			return ERR_CANT_CREATE;
 		}
 		FileAccess::set_hidden_attribute(copy_path, true);
+		library_copied = true;
 
 		// Save the copied path so it can be deleted later.
 		temp_lib_path = copy_path;
@@ -713,11 +714,17 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 	}
 #endif
 
-	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true);
-	if (err != OK) {
-		ERR_PRINT("GDExtension dynamic library not found: " + abs_path);
-		return err;
+	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &library_path);
+	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, "GDExtension dynamic library not found: " + abs_path);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Can't open GDExtension dynamic library: " + abs_path);
+
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
+	// If we copied the file, let's change the library path to point at the original,
+	// because that's what we want to check to see if it's changed.
+	if (library_copied) {
+		library_path = library_path.get_base_dir() + "\\" + p_path.get_file();
 	}
+#endif
 
 	void *entry_funcptr = nullptr;
 
@@ -835,6 +842,10 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("get_library_path", (GDExtensionInterfaceFunctionPtr)&GDExtension::_get_library_path);
 }
 
+void GDExtension::finalize_gdextensions() {
+	gdextension_interface_functions.clear();
+}
+
 Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension) {
 	ERR_FAIL_COND_V_MSG(p_extension.is_valid() && p_extension->is_library_open(), ERR_ALREADY_IN_USE, "Cannot load GDExtension resource into already opened library.");
 
@@ -899,6 +910,8 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	bool is_static_library = library_path.ends_with(".a") || library_path.ends_with(".xcframework");
+
 	if (!library_path.is_resource_file() && !library_path.is_absolute_path()) {
 		library_path = p_path.get_base_dir().path_join(library_path);
 	}
@@ -910,12 +923,12 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 #ifdef TOOLS_ENABLED
 	p_extension->set_reloadable(config->get_value("configuration", "reloadable", false) && Engine::get_singleton()->is_extension_reloading_enabled());
 
-	p_extension->update_last_modified_time(MAX(
-			FileAccess::get_modified_time(library_path),
-			FileAccess::get_modified_time(p_path)));
+	p_extension->update_last_modified_time(
+			FileAccess::get_modified_time(p_path),
+			FileAccess::get_modified_time(library_path));
 #endif
 
-	err = p_extension->open_library(library_path, entry_symbol);
+	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol);
 	if (err != OK) {
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 		// If the DLL fails to load, make sure that temporary DLL copies are cleaned up.
@@ -949,6 +962,15 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 }
 
 Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	// We can't have two GDExtension resource object representing the same library, because
+	// loading (or unloading) a GDExtension affects global data. So, we need reuse the same
+	// object if one has already been loaded (even if caching is disabled at the resource
+	// loader level).
+	GDExtensionManager *manager = GDExtensionManager::get_singleton();
+	if (manager->is_extension_loaded(p_path)) {
+		return manager->get_extension(p_path);
+	}
+
 	Ref<GDExtension> lib;
 	Error err = load_gdextension_resource(p_path, lib);
 	if (err != OK && r_error) {
@@ -976,10 +998,13 @@ String GDExtensionResourceLoader::get_resource_type(const String &p_path) const 
 
 #ifdef TOOLS_ENABLED
 bool GDExtension::has_library_changed() const {
-	if (FileAccess::get_modified_time(get_path()) > last_modified_time) {
+	// Check only that the last modified time is different (rather than checking
+	// that it's newer) since some OS's (namely Windows) will preserve the modified
+	// time by default when copying files.
+	if (FileAccess::get_modified_time(get_path()) != resource_last_modified_time) {
 		return true;
 	}
-	if (FileAccess::get_modified_time(library_path) > last_modified_time) {
+	if (FileAccess::get_modified_time(library_path) != library_last_modified_time) {
 		return true;
 	}
 	return false;

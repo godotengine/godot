@@ -1073,6 +1073,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shaped_text_get_custom_ellipsis" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_shaped_text_get_custom_punctuation" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="shaped" type="RID" />
@@ -1326,6 +1332,13 @@
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="override" type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_set_custom_ellipsis" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="char" type="int" />
 			<description>
 			</description>
 		</method>

@@ -774,6 +774,8 @@ Error ResourceLoaderBinary::load() {
 			res = Ref<Resource>(r);
 			if (!path.is_empty() && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 				r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); //if got here because the resource with same path has different type, replace it
+			} else if (!path.is_resource_file()) {
+				r->set_path_cache(path);
 			}
 			r->set_scene_unique_id(id);
 		}
@@ -1452,8 +1454,10 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	fw.unref();
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	da->remove(p_path);
-	da->rename(p_path + ".depren", p_path);
+	if (da->exists(p_path + ".depren")) {
+		da->remove(p_path);
+		da->rename(p_path + ".depren", p_path);
+	}
 	return OK;
 }
 

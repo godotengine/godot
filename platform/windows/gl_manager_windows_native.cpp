@@ -104,8 +104,8 @@ static bool nvapi_err_check(const char *msg, int status) {
 }
 
 // On windows we have to disable threaded optimization when using NVIDIA graphics cards
-// to avoid stuttering, see https://github.com/microsoft/vscode-cpptools/issues/6592
-// also see https://github.com/Ryujinx/Ryujinx/blob/master/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
+// to avoid stuttering, see https://stackoverflow.com/questions/36959508/nvidia-graphics-driver-causing-noticeable-frame-stuttering/37632948
+// also see https://github.com/Ryujinx/Ryujinx/blob/master/src/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
 void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	HMODULE nvapi = 0;
 #ifdef _WIN64
@@ -148,6 +148,10 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	print_verbose("NVAPI: Init OK!");
 
 	NvDRSSessionHandle session_handle;
+
+	if (NvAPI_DRS_CreateSession == nullptr) {
+		return;
+	}
 
 	if (!nvapi_err_check("NVAPI: Error creating DRS session", NvAPI_DRS_CreateSession(&session_handle))) {
 		NvAPI_Unload();

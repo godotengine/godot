@@ -86,6 +86,8 @@ class GDScript : public Script {
 	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
 	friend class GDScriptDocGen;
+	friend class GDScriptLambdaCallable;
+	friend class GDScriptLambdaSelfCallable;
 	friend class GDScriptLanguage;
 	friend struct GDScriptUtilityFunctionsDefinitions;
 
@@ -107,6 +109,36 @@ class GDScript : public Script {
 	HashMap<StringName, Ref<GDScript>> subclasses;
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
+
+	struct LambdaInfo {
+		int capture_count;
+		bool use_self;
+	};
+
+	HashMap<GDScriptFunction *, LambdaInfo> lambda_info;
+
+public:
+	class UpdatableFuncPtr {
+		friend class GDScript;
+
+		GDScriptFunction *ptr = nullptr;
+		GDScript *script = nullptr;
+		List<UpdatableFuncPtr *>::Element *list_element = nullptr;
+
+	public:
+		GDScriptFunction *operator->() const { return ptr; }
+		operator GDScriptFunction *() const { return ptr; }
+
+		UpdatableFuncPtr(GDScriptFunction *p_function);
+		~UpdatableFuncPtr();
+	};
+
+private:
+	// List is used here because a ptr to elements are stored, so the memory locations need to be stable
+	List<UpdatableFuncPtr *> func_ptrs_to_update;
+	Mutex func_ptrs_to_update_mutex;
+
+	void _recurse_replace_function_ptrs(const HashMap<GDScriptFunction *, GDScriptFunction *> &p_replacements) const;
 
 #ifdef TOOLS_ENABLED
 	// For static data storage during hot-reloading.
@@ -145,6 +177,7 @@ class GDScript : public Script {
 	//exported members
 	String source;
 	String path;
+	bool path_valid = false; // False if using default path.
 	StringName local_name; // Inner class identifier or `class_name`.
 	StringName global_name; // `class_name`.
 	String fully_qualified_name;
@@ -163,13 +196,14 @@ class GDScript : public Script {
 	HashSet<PlaceHolderScriptInstance *> placeholders;
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
+	void _update_exports_down(bool p_base_exports_changed);
 #endif
 
 #ifdef DEBUG_ENABLED
 	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
 #endif
 
-	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr, bool p_base_exports_changed = false);
 
 	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
 
@@ -219,7 +253,7 @@ public:
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 
 	RBSet<GDScript *> get_dependencies();
-	RBSet<GDScript *> get_inverted_dependencies();
+	HashMap<GDScript *, RBSet<GDScript *>> get_all_dependencies();
 	RBSet<GDScript *> get_must_clear_dependencies();
 
 	virtual bool has_script_signal(const StringName &p_signal) const override;
@@ -404,6 +438,7 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	SelfList<GDScriptFunction>::List function_list;
 	bool profiling;
+	bool profile_native_calls;
 	uint64_t script_frame_time;
 
 	HashMap<String, ObjectID> orphan_subclasses;
@@ -505,7 +540,7 @@ public:
 	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
 #ifndef DISABLE_DEPRECATED
@@ -550,6 +585,8 @@ public:
 
 	virtual void profiling_start() override;
 	virtual void profiling_stop() override;
+	virtual void profiling_set_save_native_calls(bool p_enable) override;
+	void profiling_collate_native_call_data(bool p_accumulated);
 
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override;

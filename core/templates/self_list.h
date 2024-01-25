@@ -159,6 +159,9 @@ public:
 		_FORCE_INLINE_ SelfList<T> *first() { return _first; }
 		_FORCE_INLINE_ const SelfList<T> *first() const { return _first; }
 
+		// Forbid copying, which has broken behavior.
+		void operator=(const List &) = delete;
+
 		_FORCE_INLINE_ List() {}
 		_FORCE_INLINE_ ~List() {
 			// A self list must be empty on destruction.
@@ -184,6 +187,9 @@ public:
 	_FORCE_INLINE_ const SelfList<T> *next() const { return _next; }
 	_FORCE_INLINE_ const SelfList<T> *prev() const { return _prev; }
 	_FORCE_INLINE_ T *self() const { return _self; }
+
+	// Forbid copying, which has broken behavior.
+	void operator=(const SelfList<T> &) = delete;
 
 	_FORCE_INLINE_ SelfList(T *p_self) {
 		_self = p_self;

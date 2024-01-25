@@ -267,6 +267,11 @@ void DisplayServer::global_menu_clear(const String &p_menu_root) {
 	WARN_PRINT("Global menus not supported by this display server.");
 }
 
+Dictionary DisplayServer::global_menu_get_system_menu_roots() const {
+	WARN_PRINT("Global menus not supported by this display server.");
+	return Dictionary();
+}
+
 bool DisplayServer::tts_is_speaking() const {
 	WARN_PRINT("TTS is not supported by this display server.");
 	return false;
@@ -651,6 +656,8 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("global_menu_remove_item", "menu_root", "idx"), &DisplayServer::global_menu_remove_item);
 	ClassDB::bind_method(D_METHOD("global_menu_clear", "menu_root"), &DisplayServer::global_menu_clear);
+
+	ClassDB::bind_method(D_METHOD("global_menu_get_system_menu_roots"), &DisplayServer::global_menu_get_system_menu_roots);
 
 	ClassDB::bind_method(D_METHOD("tts_is_speaking"), &DisplayServer::tts_is_speaking);
 	ClassDB::bind_method(D_METHOD("tts_is_paused"), &DisplayServer::tts_is_paused);

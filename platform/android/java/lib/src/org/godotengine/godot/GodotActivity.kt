@@ -30,7 +30,6 @@
 
 package org.godotengine.godot
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -79,10 +78,6 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		private set
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		// We exclude certain permissions from the set we request at startup, as they'll be
-		// requested on demand based on use-cases.
-		PermissionsUtil.requestManifestPermissions(this, setOf(Manifest.permission.RECORD_AUDIO))
-
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.godot_app_layout)
 
@@ -201,7 +196,8 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 		godotFragment?.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-		if (requestCode == PermissionsUtil.REQUEST_ALL_PERMISSION_REQ_CODE) {
+		// Logging the result of permission requests
+		if (requestCode == PermissionsUtil.REQUEST_ALL_PERMISSION_REQ_CODE || requestCode == PermissionsUtil.REQUEST_SINGLE_PERMISSION_REQ_CODE) {
 			Log.d(TAG, "Received permissions request result..")
 			for (i in permissions.indices) {
 				val permissionGranted = grantResults[i] == PackageManager.PERMISSION_GRANTED

@@ -103,6 +103,11 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 }
 
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
+	GLES3::Utilities *utils = GLES3::Utilities::get_singleton();
+	utils->capture_timestamps_end();
+}
+
+void RasterizerGLES3::end_viewport(bool p_swap_buffers) {
 	if (p_swap_buffers) {
 		DisplayServer::get_singleton()->swap_buffers();
 	} else {
@@ -352,13 +357,6 @@ RasterizerGLES3::~RasterizerGLES3() {
 }
 
 void RasterizerGLES3::prepare_for_blitting_render_targets() {
-	// This is a hack, but this function is called one time after all viewports have been updated.
-	// So it marks the end of the frame for all viewports
-	// In the OpenGL renderer we have to call end_frame for each viewport so we can swap the
-	// buffers for each window before proceeding to the next.
-	// This allows us to only increment the frame after all viewports are done.
-	GLES3::Utilities *utils = GLES3::Utilities::get_singleton();
-	utils->capture_timestamps_end();
 }
 
 void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer, bool p_first) {
@@ -474,7 +472,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	copy_effects->copy_to_rect(screenrect);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	end_frame(true);
+	end_viewport(true);
 
 	texture_storage->texture_free(texture);
 }

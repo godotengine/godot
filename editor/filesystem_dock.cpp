@@ -47,7 +47,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_dir_dialog.h"
 #include "editor/gui/editor_scene_tabs.h"
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/scene_import_settings.h"
 #include "editor/import_dock.h"
 #include "editor/plugins/editor_resource_tooltip_plugins.h"
 #include "editor/scene_create_dialog.h"
@@ -88,6 +88,7 @@ void FileSystemList::_line_editor_submit(String p_text) {
 bool FileSystemList::edit_selected() {
 	ERR_FAIL_COND_V_MSG(!is_anything_selected(), false, "No item selected.");
 	int s = get_current();
+	ERR_FAIL_COND_V_MSG(s < 0, false, "No current item selected.");
 	ensure_current_is_visible();
 
 	Rect2 rect;
@@ -387,7 +388,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	const Color default_folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
 	for (int i = 0; i < favorite_paths.size(); i++) {
-		String favorite = favorite_paths[i];
+		const String &favorite = favorite_paths[i];
 		if (!favorite.begins_with("res://")) {
 			continue;
 		}
@@ -469,8 +470,6 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 			case DISPLAY_MODE_HSPLIT:
 			case DISPLAY_MODE_VSPLIT:
 				const bool is_vertical = display_mode == DISPLAY_MODE_VSPLIT;
-				const int split_offset = split_box->get_split_offset();
-				is_vertical ? split_box_offset_h = split_offset : split_box_offset_v = split_offset;
 				split_box->set_vertical(is_vertical);
 
 				const int actual_offset = is_vertical ? split_box_offset_v : split_box_offset_h;
@@ -652,7 +651,7 @@ void FileSystemDock::_notification(int p_what) {
 void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_selected) {
 	// Update the import dock.
 	import_dock_needs_update = true;
-	call_deferred(SNAME("_update_import_dock"));
+	callable_mp(this, &FileSystemDock::_update_import_dock).call_deferred();
 
 	// Return if we don't select something new.
 	if (!p_selected) {
@@ -733,7 +732,11 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	_update_tree(get_uncollapsed_paths(), false, p_select_in_favorites, true);
 	if (display_mode != DISPLAY_MODE_TREE_ONLY) {
 		_update_file_list(false);
-		files->get_v_scroll_bar()->set_value(0);
+
+		// Reset the scroll for a directory.
+		if (p_path.ends_with("/")) {
+			files->get_v_scroll_bar()->set_value(0);
+		}
 	}
 
 	String file_name = p_path.get_file();
@@ -751,6 +754,14 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 void FileSystemDock::navigate_to_path(const String &p_path) {
 	file_list_search_box->clear();
 	_navigate_to_path(p_path);
+
+	// Ensure that the FileSystem dock is visible.
+	if (get_window() == get_tree()->get_root()) {
+		TabContainer *tab_container = (TabContainer *)get_parent_control();
+		tab_container->set_current_tab(tab_container->get_tab_idx_from_control((Control *)this));
+	} else {
+		get_window()->grab_focus();
+	}
 }
 
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
@@ -903,12 +914,13 @@ void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file
 }
 
 void FileSystemDock::_update_file_list(bool p_keep_selection) {
-	// Register the previously selected items.
-	HashSet<String> cselection;
+	// Register the previously current and selected items.
+	HashSet<String> previous_selection;
+	HashSet<int> valid_selection;
 	if (p_keep_selection) {
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->is_selected(i)) {
-				cselection.insert(files->get_item_text(i));
+				previous_selection.insert(files->get_item_text(i));
 			}
 		}
 	}
@@ -1064,8 +1076,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					Color this_folder_color = has_custom_color ? folder_colors[assigned_folder_colors[dpath]] : inherited_folder_color;
 					files->set_item_icon_modulate(-1, editor_is_dark_theme ? this_folder_color : this_folder_color * 1.75);
 
-					if (cselection.has(dname)) {
+					if (previous_selection.has(dname)) {
 						files->select(files->get_item_count() - 1, false);
+						valid_selection.insert(files->get_item_count() - 1);
 					}
 				}
 			}
@@ -1138,8 +1151,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		}
 
 		// Select the items.
-		if (cselection.has(fname)) {
+		if (previous_selection.has(fname)) {
 			files->select(item_index, false);
+			valid_selection.insert(item_index);
 		}
 
 		if (!p_keep_selection && !file.is_empty() && fname == file) {
@@ -1155,14 +1169,17 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		}
 		files->set_item_tooltip(item_index, tooltip);
 	}
+
+	// If we only have any selected items retained, we need to update the current idx.
+	if (!valid_selection.is_empty()) {
+		files->set_current(*valid_selection.begin());
+	}
 }
 
 void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites) {
 	String fpath = p_path;
 	if (fpath.ends_with("/")) {
-		if (fpath != "res://") {
-			fpath = fpath.substr(0, fpath.length() - 1);
-		}
+		// Ignore a directory.
 	} else if (fpath != "Favorites") {
 		if (FileAccess::exists(fpath + ".import")) {
 			Ref<ConfigFile> config;
@@ -1181,12 +1198,12 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 
 		String resource_type = ResourceLoader::get_resource_type(fpath);
 
-		if (resource_type == "PackedScene") {
+		if (resource_type == "PackedScene" || resource_type == "AnimationLibrary") {
 			bool is_imported = false;
 
 			{
 				List<String> importer_exts;
-				ResourceImporterScene::get_scene_singleton()->get_recognized_extensions(&importer_exts);
+				ResourceImporterScene::get_scene_importer_extensions(&importer_exts);
 				String extension = fpath.get_extension();
 				for (const String &E : importer_exts) {
 					if (extension.nocasecmp_to(E) == 0) {
@@ -1197,27 +1214,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			}
 
 			if (is_imported) {
-				ResourceImporterScene::get_scene_singleton()->show_advanced_options(fpath);
-			} else {
-				EditorNode::get_singleton()->open_request(fpath);
-			}
-		} else if (resource_type == "AnimationLibrary") {
-			bool is_imported = false;
-
-			{
-				List<String> importer_exts;
-				ResourceImporterScene::get_animation_singleton()->get_recognized_extensions(&importer_exts);
-				String extension = fpath.get_extension();
-				for (const String &E : importer_exts) {
-					if (extension.nocasecmp_to(E) == 0) {
-						is_imported = true;
-						break;
-					}
-				}
-			}
-
-			if (is_imported) {
-				ResourceImporterScene::get_animation_singleton()->show_advanced_options(fpath);
+				SceneImportSettingsDialog::get_singleton()->open_settings(p_path, resource_type == "AnimationLibrary");
 			} else {
 				EditorNode::get_singleton()->open_request(fpath);
 			}
@@ -1295,6 +1292,13 @@ void FileSystemDock::_fs_changed() {
 
 	if (file_list_vb->is_visible()) {
 		_update_file_list(true);
+	}
+
+	if (!select_after_scan.is_empty()) {
+		_navigate_to_path(select_after_scan);
+		select_after_scan.clear();
+		import_dock_needs_update = true;
+		_update_import_dock();
 	}
 
 	set_process(false);
@@ -1377,7 +1381,7 @@ void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Ve
 	}
 }
 
-void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const Vector<String> &p_renames, Vector<String> &r_file_owners) const {
+void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const HashSet<String> &p_renames, HashSet<String> &r_file_owners) const {
 	for (int i = 0; i < p_efsd->get_subdir_count(); i++) {
 		_find_file_owners(p_efsd->get_subdir(i), p_renames, r_file_owners);
 	}
@@ -1385,7 +1389,7 @@ void FileSystemDock::_find_file_owners(EditorFileSystemDirectory *p_efsd, const 
 		Vector<String> deps = p_efsd->get_file_deps(i);
 		for (int j = 0; j < deps.size(); j++) {
 			if (p_renames.has(deps[j])) {
-				r_file_owners.push_back(p_efsd->get_file_path(i));
+				r_file_owners.insert(p_efsd->get_file_path(i));
 				break;
 			}
 		}
@@ -1476,8 +1480,6 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.") + "\n" + old_path + "\n");
 		return;
 	}
-	const_cast<FileSystemDock *>(this)->current_path = new_path;
-
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
 	if (p_item.is_file) {
@@ -1528,6 +1530,8 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			}
 		}
 	} else {
+		da->make_dir(new_path);
+
 		// Recursively duplicate all files inside the folder.
 		Ref<DirAccess> old_dir = DirAccess::open(old_path);
 		ERR_FAIL_COND(old_dir.is_null());
@@ -1552,7 +1556,9 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const {
 	// Update the paths in ResourceUID, so that UIDs remain valid.
 	for (const KeyValue<String, ResourceUID::ID> &pair : p_uids) {
-		ResourceUID::get_singleton()->set_id(pair.value, p_renames[pair.key]);
+		if (p_renames.has(pair.key)) {
+			ResourceUID::get_singleton()->set_id(pair.value, p_renames[pair.key]);
+		}
 	}
 
 	// Rename all resources loaded, be it subresources or actual resources.
@@ -1576,22 +1582,30 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 	}
 }
 
-void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const Vector<String> &p_file_owners) const {
+void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const {
 	// The following code assumes that the following holds:
 	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
 	// 2) ResourceLoader can use the new paths without needing to call rescan.
+
+	// The currently edited scene should be reloaded first, so get it's path (GH-82652).
+	const String &edited_scene_path = EditorNode::get_editor_data().get_scene_path(EditorNode::get_editor_data().get_edited_scene());
 	List<String> scenes_to_reload;
-	for (int i = 0; i < p_file_owners.size(); ++i) {
+	for (const String &E : p_file_owners) {
 		// Because we haven't called a rescan yet the found remap might still be an old path itself.
-		const String file = p_renames.has(p_file_owners[i]) ? p_renames[p_file_owners[i]] : p_file_owners[i];
+		const HashMap<String, String>::ConstIterator I = p_renames.find(E);
+		const String file = I ? I->value : E;
 		print_verbose("Remapping dependencies for: " + file);
 		const Error err = ResourceLoader::rename_dependencies(file, p_renames);
 		if (err == OK) {
 			if (ResourceLoader::get_resource_type(file) == "PackedScene") {
-				scenes_to_reload.push_back(file);
+				if (file == edited_scene_path) {
+					scenes_to_reload.push_front(file);
+				} else {
+					scenes_to_reload.push_back(file);
+				}
 			}
 		} else {
-			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies for:") + "\n" + p_file_owners[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies for:") + "\n" + E + "\n");
 		}
 	}
 
@@ -1685,7 +1699,7 @@ void FileSystemDock::_make_scene_confirm() {
 	int idx = EditorNode::get_singleton()->new_scene();
 	EditorNode::get_editor_data().set_scene_path(idx, scene_path);
 	EditorNode::get_singleton()->set_edited_scene(make_scene_dialog->create_scene_root());
-	EditorNode::get_singleton()->save_scene_list({ scene_path });
+	EditorNode::get_singleton()->save_scene_if_open(scene_path);
 }
 
 void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
@@ -1783,12 +1797,14 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 	if (new_exist) {
 		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
-		ti->set_text(col_index, old_name);
+		if (ti) {
+			ti->set_text(col_index, old_name);
+		}
 		return;
 	}
 
 	HashMap<String, ResourceUID::ID> uids;
-	Vector<String> file_owners; // The files that use these moved/renamed resource files.
+	HashSet<String> file_owners; // The files that use these moved/renamed resource files.
 	_before_move(uids, file_owners);
 
 	HashMap<String, String> file_renames;
@@ -1865,10 +1881,6 @@ Vector<String> FileSystemDock::_check_existing() {
 	return conflicting_items;
 }
 
-void FileSystemDock::_move_dialog_confirm(const String &p_path) {
-	_move_operation_confirm(p_path, move_dialog->is_copy_pressed());
-}
-
 void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_copy, Overwrite p_overwrite) {
 	if (p_overwrite == OVERWRITE_UNDECIDED) {
 		to_move_path = p_to_path;
@@ -1894,22 +1906,16 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		if (p_overwrite == OVERWRITE_RENAME) {
 			new_paths.write[i] = _get_unique_name(to_move[i], p_to_path);
 		} else {
-			new_paths.write[i] = p_to_path.path_join(to_move[i].path.get_file());
+			new_paths.write[i] = p_to_path.path_join(to_move[i].path.trim_suffix("/").get_file());
 		}
 	}
 
 	if (p_copy) {
 		bool is_copied = false;
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_duplicate_item(to_move[i], new_path);
+			if (to_move[i].path != new_paths[i]) {
+				_try_duplicate_item(to_move[i], new_paths[i]);
+				select_after_scan = new_paths[i];
 				is_copied = true;
 			}
 		}
@@ -1926,7 +1932,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		}
 
 		HashMap<String, ResourceUID::ID> uids;
-		Vector<String> file_owners; // The files that use these moved/renamed resource files.
+		HashSet<String> file_owners; // The files that use these moved/renamed resource files.
 		_before_move(uids, file_owners);
 
 		bool is_moved = false;
@@ -1934,15 +1940,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		HashMap<String, String> folder_renames;
 
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path;
-			String new_path = new_paths[i];
-
-			if (!to_move[i].is_file) {
-				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
-			}
-
-			if (old_path != new_path) {
-				_try_move_item(to_move[i], new_path, file_renames, folder_renames);
+			if (to_move[i].path != new_paths[i]) {
+				_try_move_item(to_move[i], new_paths[i], file_renames, folder_renames);
 				is_moved = true;
 			}
 		}
@@ -1965,11 +1964,11 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 }
 
-void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Vector<String> &r_file_owners) const {
-	Vector<String> renamed_files;
+void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, HashSet<String> &r_file_owners) const {
+	HashSet<String> renamed_files;
 	for (int i = 0; i < to_move.size(); i++) {
 		if (to_move[i].is_file) {
-			renamed_files.push_back(to_move[i].path);
+			renamed_files.insert(to_move[i].path);
 			ResourceUID::ID uid = ResourceLoader::get_resource_uid(to_move[i].path);
 			if (uid != ResourceUID::INVALID_ID) {
 				r_uids[to_move[i].path] = uid;
@@ -1982,7 +1981,7 @@ void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Vect
 				current_folder = folders.front()->get();
 				for (int j = 0; j < current_folder->get_file_count(); j++) {
 					const String file_path = current_folder->get_file_path(j);
-					renamed_files.push_back(file_path);
+					renamed_files.insert(file_path);
 					ResourceUID::ID uid = ResourceLoader::get_resource_uid(file_path);
 					if (uid != ResourceUID::INVALID_ID) {
 						r_uids[file_path] = uid;
@@ -2130,6 +2129,135 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_OPEN_IN_TERMINAL: {
+			String fpath = current_path;
+			if (current_path == "Favorites") {
+				fpath = p_selected[0];
+			}
+
+			Vector<String> terminal_emulators;
+			const String terminal_emulator_setting = EDITOR_GET("filesystem/external_programs/terminal_emulator");
+			if (terminal_emulator_setting.is_empty()) {
+				// Figure out a default terminal emulator to use.
+#if defined(WINDOWS_ENABLED)
+				// Default to PowerShell as done by Windows 10 and later.
+				terminal_emulators.push_back("powershell");
+#elif defined(MACOS_ENABLED)
+				terminal_emulators.push_back("/System/Applications/Utilities/Terminal.app");
+#elif defined(LINUXBSD_ENABLED)
+				// Try terminal emulators that ship with common Linux distributions first.
+				terminal_emulators.push_back("gnome-terminal");
+				terminal_emulators.push_back("konsole");
+				terminal_emulators.push_back("xfce4-terminal");
+				terminal_emulators.push_back("lxterminal");
+				terminal_emulators.push_back("kitty");
+				terminal_emulators.push_back("alacritty");
+				terminal_emulators.push_back("urxvt");
+				terminal_emulators.push_back("xterm");
+#endif
+			} else {
+				// Use the user-specified terminal.
+				terminal_emulators.push_back(terminal_emulator_setting);
+			}
+
+			String arguments = EDITOR_GET("filesystem/external_programs/terminal_emulator_flags");
+			if (arguments.is_empty()) {
+				// NOTE: This default value is ignored further below if the terminal executable is `powershell` or `cmd`,
+				// due to these terminals requiring nonstandard syntax to start in a specified folder.
+				arguments = "{directory}";
+			}
+
+#ifdef LINUXBSD_ENABLED
+			String chosen_terminal_emulator;
+			for (const String &terminal_emulator : terminal_emulators) {
+				List<String> test_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
+				test_args.push_back("-v");
+				test_args.push_back(terminal_emulator);
+				// Silence command name being printed when found. (stderr is already silenced by `OS::execute()` by default.)
+				// FIXME: This doesn't appear to silence stdout.
+				test_args.push_back(">");
+				test_args.push_back("/dev/null");
+				int exit_code = 0;
+				const Error err = OS::get_singleton()->execute("command", test_args, nullptr, &exit_code);
+				if (err == OK && exit_code == EXIT_SUCCESS) {
+					chosen_terminal_emulator = terminal_emulator;
+					break;
+				} else if (err == ERR_CANT_FORK) {
+					ERR_PRINT_ED(vformat(TTR("Couldn't run external program to check for terminal emulator presence: command -v %s"), terminal_emulator));
+				}
+			}
+#else
+			// On Windows and macOS, the first (and only) terminal emulator in the list is always available.
+			String chosen_terminal_emulator = terminal_emulators[0];
+#endif
+
+			List<String> terminal_emulator_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
+#ifdef LINUXBSD_ENABLED
+			// Prepend default arguments based on the terminal emulator name.
+			// Use `String.ends_with()` so that installations in non-default paths
+			// or `/usr/local/bin` are detected correctly.
+			if (chosen_terminal_emulator.ends_with("konsole")) {
+				terminal_emulator_args.push_back("--workdir");
+			}
+#endif
+
+			bool append_default_args = true;
+
+#ifdef WINDOWS_ENABLED
+			// Prepend default arguments based on the terminal emulator name.
+			// Use `String.get_basename().to_lower()` to handle Windows' case-insensitive paths
+			// with optional file extensions for executables in `PATH`.
+			if (chosen_terminal_emulator.get_basename().to_lower() == "powershell") {
+				terminal_emulator_args.push_back("-noexit");
+				terminal_emulator_args.push_back("-command");
+				terminal_emulator_args.push_back("cd '{directory}'");
+				append_default_args = false;
+			} else if (chosen_terminal_emulator.get_basename().to_lower() == "cmd") {
+				terminal_emulator_args.push_back("/K");
+				terminal_emulator_args.push_back("cd /d {directory}");
+				append_default_args = false;
+			}
+#endif
+
+			Vector<String> arguments_array = arguments.split(" ");
+			for (const String &argument : arguments_array) {
+				if (!append_default_args && argument == "{directory}") {
+					// Prevent appending a `{directory}` placeholder twice when using powershell or cmd.
+					// This allows users to enter the path to cmd or PowerShell in the custom terminal emulator path,
+					// and make it work without having to enter custom arguments.
+					continue;
+				}
+				terminal_emulator_args.push_back(argument);
+			}
+
+			const bool is_directory = fpath.ends_with("/");
+			for (int i = 0; i < terminal_emulator_args.size(); i++) {
+				if (is_directory) {
+					terminal_emulator_args[i] = terminal_emulator_args[i].replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath));
+				} else {
+					terminal_emulator_args[i] = terminal_emulator_args[i].replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath).get_base_dir());
+				}
+			}
+
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				// Print full command line to help with troubleshooting.
+				String command_string = chosen_terminal_emulator;
+				for (const String &arg : terminal_emulator_args) {
+					command_string += " " + arg;
+				}
+				print_line("Opening terminal emulator:", command_string);
+			}
+
+			const Error err = OS::get_singleton()->create_process(chosen_terminal_emulator, terminal_emulator_args, nullptr, true);
+			if (err != OK) {
+				String args_string;
+				for (int i = 0; i < terminal_emulator_args.size(); i++) {
+					args_string += terminal_emulator_args[i];
+				}
+				ERR_PRINT_ED(vformat(TTR("Couldn't run external terminal program (error code %d): %s %s\nCheck `filesystem/external_programs/terminal_emulator` and `filesystem/external_programs/terminal_emulator_flags` in the Editor Settings."), err, chosen_terminal_emulator, args_string));
+			}
+		} break;
+
 		case FILE_OPEN: {
 			// Open folders.
 			TreeItem *selected = tree->get_root();
@@ -2167,7 +2295,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Instantiate all selected scenes.
 			Vector<String> paths;
 			for (int i = 0; i < p_selected.size(); i++) {
-				String fpath = p_selected[i];
+				const String &fpath = p_selected[i];
 				if (EditorFileSystem::get_singleton()->get_file_type(fpath) == "PackedScene") {
 					paths.push_back(fpath);
 				}
@@ -2205,7 +2333,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_DEPENDENCIES: {
 			// Checkout the file dependencies.
 			if (!p_selected.is_empty()) {
-				String fpath = p_selected[0];
+				const String &fpath = p_selected[0];
 				deps_editor->edit(fpath);
 			}
 		} break;
@@ -2213,7 +2341,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_OWNERS: {
 			// Checkout the file owners.
 			if (!p_selected.is_empty()) {
-				String fpath = p_selected[0];
+				const String &fpath = p_selected[0];
 				owners_editor->show(fpath);
 			}
 		} break;
@@ -2223,12 +2351,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			to_move.clear();
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 			for (int i = collapsed_paths.size() - 1; i >= 0; i--) {
-				String fpath = collapsed_paths[i];
+				const String &fpath = collapsed_paths[i];
 				if (fpath != "res://") {
 					to_move.push_back(FileOrFolder(fpath, !fpath.ends_with("/")));
 				}
 			}
 			if (to_move.size() > 0) {
+				move_dialog->config(p_selected);
 				move_dialog->popup_centered_ratio(0.4);
 			}
 		} break;
@@ -2270,7 +2399,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 
 			for (int i = 0; i < collapsed_paths.size(); i++) {
-				String fpath = collapsed_paths[i];
+				const String &fpath = collapsed_paths[i];
 				if (fpath != "res://") {
 					if (fpath.ends_with("/")) {
 						remove_folders.push_back(fpath);
@@ -2342,7 +2471,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		case FILE_COPY_PATH: {
 			if (!p_selected.is_empty()) {
-				String fpath = p_selected[0];
+				const String &fpath = p_selected[0];
 				DisplayServer::get_singleton()->clipboard_set(fpath);
 			}
 		} break;
@@ -2454,6 +2583,14 @@ void FileSystemDock::_change_split_mode() {
 	emit_signal(SNAME("display_mode_changed"));
 }
 
+void FileSystemDock::_split_dragged(int p_offset) {
+	if (split_box->is_vertical()) {
+		split_box_offset_v = p_offset;
+	} else {
+		split_box_offset_h = p_offset;
+	}
+}
+
 void FileSystemDock::fix_dependencies(const String &p_for_file) {
 	deps_editor->edit(p_for_file);
 }
@@ -2503,6 +2640,7 @@ Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
 		// No tooltip for directory.
 		return nullptr;
 	}
+	ERR_FAIL_COND_V(!FileAccess::exists(p_path), nullptr);
 
 	const String type = ResourceLoader::get_resource_type(p_path);
 	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
@@ -2853,7 +2991,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 
 	// Update project settings with new folder colors.
 	for (int i = 0; i < selected.size(); i++) {
-		String fpath = selected[i];
+		const String &fpath = selected[i];
 
 		if (chosen_color_name) {
 			assigned_folder_colors[fpath] = chosen_color_name;
@@ -2884,7 +3022,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	bool all_not_favorites = true;
 
 	for (int i = 0; i < p_paths.size(); i++) {
-		String fpath = p_paths[i];
+		const String &fpath = p_paths[i];
 		if (fpath.ends_with("/")) {
 			foldernames.push_back(fpath);
 			all_files = false;
@@ -2915,7 +3053,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scene"), FILE_OPEN);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("New Inherited Scene"), FILE_INHERIT);
 				if (GLOBAL_GET("application/run/main_scene") != filenames[0]) {
-					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTR("Set As Main Scene"), FILE_MAIN_SCENE);
+					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTR("Set as Main Scene"), FILE_MAIN_SCENE);
 				}
 			} else {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open Scenes"), FILE_OPEN);
@@ -2975,7 +3113,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			folder_colors_menu->add_separator();
 
 			for (const KeyValue<String, Color> &E : folder_colors) {
-				folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR(E.key.capitalize()));
+				folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), E.key.capitalize());
 
 				folder_colors_menu->set_item_icon_modulate(-1, editor_is_dark_theme ? E.value : E.value * 2);
 				folder_colors_menu->set_item_metadata(-1, E.key);
@@ -3042,19 +3180,23 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	}
 
 	if (p_paths.size() == 1) {
-		const String fpath = p_paths[0];
+		const String &fpath = p_paths[0];
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 		p_popup->add_separator();
 
 		// Opening the system file manager is not supported on the Android and web editors.
 		const bool is_directory = fpath.ends_with("/");
-		const String item_text = is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager");
+
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), item_text);
+		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager"));
+
 		if (!is_directory) {
 			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_OPEN_EXTERNAL);
 		}
+
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
+		p_popup->set_item_text(p_popup->get_item_index(FILE_OPEN_IN_TERMINAL), is_directory ? TTR("Open in Terminal") : TTR("Open Containing Folder in Terminal"));
 #endif
 
 		current_path = fpath;
@@ -3099,6 +3241,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
 	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
 #endif
 
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
@@ -3186,7 +3329,7 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 
 	// Update the import dock.
 	import_dock_needs_update = true;
-	call_deferred(SNAME("_update_import_dock"));
+	callable_mp(this, &FileSystemDock::_update_import_dock).call_deferred();
 }
 
 void FileSystemDock::_tree_mouse_exited() {
@@ -3277,6 +3420,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_SHOW_IN_EXPLORER);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_event)) {
 			_tree_rmb_option(FILE_OPEN_EXTERNAL);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
+			_tree_rmb_option(FILE_OPEN_IN_TERMINAL);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
@@ -3337,6 +3482,8 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			_file_list_rmb_option(FILE_RENAME);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
 			_file_list_rmb_option(FILE_SHOW_IN_EXPLORER);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
+			_file_list_rmb_option(FILE_OPEN_IN_TERMINAL);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
@@ -3418,7 +3565,7 @@ void FileSystemDock::_update_import_dock() {
 	Vector<String> imports;
 	String import_type;
 	for (int i = 0; i < efiles.size(); i++) {
-		String fpath = efiles[i];
+		const String &fpath = efiles[i];
 		Ref<ConfigFile> cf;
 		cf.instantiate();
 		Error err = cf->load(fpath + ".import");
@@ -3472,6 +3619,14 @@ void FileSystemDock::_file_sort_popup(int p_id) {
 	set_file_sort((FileSortOption)p_id);
 }
 
+const HashMap<String, Color> &FileSystemDock::get_folder_colors() const {
+	return folder_colors;
+}
+
+Dictionary FileSystemDock::get_assigned_folder_colors() const {
+	return assigned_folder_colors;
+}
+
 MenuButton *FileSystemDock::_create_file_menu_button() {
 	MenuButton *button = memnew(MenuButton);
 	button->set_flat(true);
@@ -3490,15 +3645,10 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 }
 
 void FileSystemDock::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_tree"), &FileSystemDock::_update_tree);
-
 	ClassDB::bind_method(D_METHOD("_file_list_thumbnail_done"), &FileSystemDock::_file_list_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_tree_thumbnail_done"), &FileSystemDock::_tree_thumbnail_done);
-	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
 
 	ClassDB::bind_method(D_METHOD("navigate_to_path", "path"), &FileSystemDock::navigate_to_path);
-
-	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
 
 	ClassDB::bind_method(D_METHOD("add_resource_tooltip_plugin", "plugin"), &FileSystemDock::add_resource_tooltip_plugin);
 	ClassDB::bind_method(D_METHOD("remove_resource_tooltip_plugin", "plugin"), &FileSystemDock::remove_resource_tooltip_plugin);
@@ -3533,18 +3683,19 @@ FileSystemDock::FileSystemDock() {
 	// Opening the system file manager or opening in an external program is not supported on the Android and web editors.
 	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"));
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTR("Open in External Program"));
+	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTR("Open in Terminal"));
 #endif
 
-	folder_colors = HashMap<String, Color>();
-	folder_colors["red"] = Color(1.0, 0.271, 0.271);
-	folder_colors["orange"] = Color(1.0, 0.561, 0.271);
-	folder_colors["yellow"] = Color(1.0, 0.890, 0.271);
-	folder_colors["green"] = Color(0.502, 1.0, 0.271);
-	folder_colors["teal"] = Color(0.271, 1.0, 0.635);
-	folder_colors["blue"] = Color(0.271, 0.843, 1.0);
-	folder_colors["purple"] = Color(0.502, 0.271, 1.0);
-	folder_colors["pink"] = Color(1.0, 0.271, 0.588);
-	folder_colors["gray"] = Color(0.616, 0.616, 0.616);
+	// Properly translating color names would require a separate HashMap, so for simplicity they are provided as comments.
+	folder_colors["red"] = Color(1.0, 0.271, 0.271); // TTR("Red")
+	folder_colors["orange"] = Color(1.0, 0.561, 0.271); // TTR("Orange")
+	folder_colors["yellow"] = Color(1.0, 0.890, 0.271); // TTR("Yellow")
+	folder_colors["green"] = Color(0.502, 1.0, 0.271); // TTR("Green")
+	folder_colors["teal"] = Color(0.271, 1.0, 0.635); // TTR("Teal")
+	folder_colors["blue"] = Color(0.271, 0.843, 1.0); // TTR("Blue")
+	folder_colors["purple"] = Color(0.502, 0.271, 1.0); // TTR("Purple")
+	folder_colors["pink"] = Color(1.0, 0.271, 0.588); // TTR("Pink")
+	folder_colors["gray"] = Color(0.616, 0.616, 0.616); // TTR("Gray")
 
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
 
@@ -3614,6 +3765,8 @@ FileSystemDock::FileSystemDock() {
 
 	split_box = memnew(SplitContainer);
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	split_box->connect("dragged", callable_mp(this, &FileSystemDock::_split_dragged));
+	split_box_offset_h = 240 * EDSCALE;
 	add_child(split_box);
 
 	tree = memnew(FileSystemTree);
@@ -3694,7 +3847,8 @@ FileSystemDock::FileSystemDock() {
 
 	move_dialog = memnew(EditorDirDialog);
 	add_child(move_dialog);
-	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_dialog_confirm));
+	move_dialog->connect("move_pressed", callable_mp(this, &FileSystemDock::_move_operation_confirm).bind(false, OVERWRITE_UNDECIDED));
+	move_dialog->connect("copy_pressed", callable_mp(this, &FileSystemDock::_move_operation_confirm).bind(true, OVERWRITE_UNDECIDED));
 
 	overwrite_dialog = memnew(ConfirmationDialog);
 	add_child(overwrite_dialog);
@@ -3731,7 +3885,7 @@ FileSystemDock::FileSystemDock() {
 
 	make_dir_dialog = memnew(DirectoryCreateDialog);
 	add_child(make_dir_dialog);
-	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_rescan));
+	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_rescan).unbind(1));
 
 	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);

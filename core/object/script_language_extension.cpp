@@ -107,7 +107,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_supports_builtin_mode);
 	GDVIRTUAL_BIND(_supports_documentation);
 	GDVIRTUAL_BIND(_can_inherit_from_file);
-	GDVIRTUAL_BIND(_find_function, "class_name", "function_name");
+	GDVIRTUAL_BIND(_find_function, "function", "code");
 	GDVIRTUAL_BIND(_make_function, "class_name", "function_name", "function_args");
 	GDVIRTUAL_BIND(_open_in_external_editor, "script", "line", "column");
 	GDVIRTUAL_BIND(_overrides_external_editor);
@@ -145,6 +145,7 @@ void ScriptLanguageExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_profiling_start);
 	GDVIRTUAL_BIND(_profiling_stop);
+	GDVIRTUAL_BIND(_profiling_set_save_native_calls, "enable");
 
 	GDVIRTUAL_BIND(_profiling_get_accumulated_data, "info_array", "info_max");
 	GDVIRTUAL_BIND(_profiling_get_frame_data, "info_array", "info_max");

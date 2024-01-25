@@ -52,7 +52,7 @@ class RenderingServer : public Object {
 	int mm_policy = 0;
 	bool render_loop_enabled = true;
 
-	Array _get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb) const;
+	Array _get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb, const Vector4 &p_uv_scale) const;
 
 	const Vector2 SMALL_VEC2 = Vector2(CMP_EPSILON, CMP_EPSILON);
 	const Vector3 SMALL_VEC3 = Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON);
@@ -298,6 +298,8 @@ public:
 		ARRAY_FLAG_FORMAT_VERSION_MASK = 0xFF, // 8 bits version
 	};
 
+	static_assert(sizeof(ArrayFormat) == 8, "ArrayFormat should be 64 bits long.");
+
 	enum PrimitiveType {
 		PRIMITIVE_POINTS,
 		PRIMITIVE_LINES,
@@ -325,6 +327,10 @@ public:
 		};
 		Vector<LOD> lods;
 		Vector<AABB> bone_aabbs;
+
+		// Transforms used in runtime bone AABBs compute.
+		// Since bone AABBs is saved in Mesh space, but bones is in Skeleton space.
+		Transform3D mesh_to_skeleton_xform;
 
 		Vector<uint8_t> blend_shape_data;
 
@@ -630,6 +636,8 @@ public:
 	};
 
 	virtual void voxel_gi_set_quality(VoxelGIQuality) = 0;
+
+	virtual void sdfgi_reset() = 0;
 
 	/* LIGHTMAP */
 
@@ -957,6 +965,7 @@ public:
 	enum ViewportRenderInfoType {
 		VIEWPORT_RENDER_INFO_TYPE_VISIBLE,
 		VIEWPORT_RENDER_INFO_TYPE_SHADOW,
+		VIEWPORT_RENDER_INFO_TYPE_CANVAS,
 		VIEWPORT_RENDER_INFO_TYPE_MAX
 	};
 
@@ -1487,6 +1496,9 @@ public:
 
 	virtual void canvas_set_shadow_texture_size(int p_size) = 0;
 
+	Rect2 debug_canvas_item_get_rect(RID p_item);
+	virtual Rect2 _debug_canvas_item_get_rect(RID p_item) = 0;
+
 	/* GLOBAL SHADER UNIFORMS */
 
 	enum GlobalShaderParameterType {
@@ -1600,13 +1612,14 @@ public:
 	virtual Color get_default_clear_color() = 0;
 	virtual void set_default_clear_color(const Color &p_color) = 0;
 
+#ifndef DISABLE_DEPRECATED
+	// Never actually used, should be removed when we can break compatibility.
 	enum Features {
 		FEATURE_SHADERS,
 		FEATURE_MULTITHREADED,
 	};
-
 	virtual bool has_feature(Features p_feature) const = 0;
-
+#endif
 	virtual bool has_os_feature(const String &p_feature) const = 0;
 
 	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
@@ -1627,11 +1640,21 @@ public:
 
 	virtual void call_on_render_thread(const Callable &p_callable) = 0;
 
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
 	RenderingServer();
 	virtual ~RenderingServer();
 
+#ifdef TOOLS_ENABLED
+	typedef void (*SurfaceUpgradeCallback)();
+	void set_surface_upgrade_callback(SurfaceUpgradeCallback p_callback);
+	void set_warn_on_surface_upgrade(bool p_warn);
+#endif
+
 #ifndef DISABLE_DEPRECATED
-	static void _fix_surface_compatibility(SurfaceData &p_surface);
+	void fix_surface_compatibility(SurfaceData &p_surface, const String &p_path = "");
 #endif
 
 private:
@@ -1647,6 +1670,10 @@ private:
 	TypedArray<Dictionary> _instance_geometry_get_shader_parameter_list(RID p_instance) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
+#ifdef TOOLS_ENABLED
+	SurfaceUpgradeCallback surface_upgrade_callback = nullptr;
+	bool warn_on_surface_upgrade = true;
+#endif
 };
 
 // Make variant understand the enums.
@@ -1722,9 +1749,12 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
-VARIANT_ENUM_CAST(RenderingServer::Features);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
+
+#ifndef DISABLE_DEPRECATED
+VARIANT_ENUM_CAST(RenderingServer::Features);
+#endif
 
 // Alias to make it easier to use.
 #define RS RenderingServer

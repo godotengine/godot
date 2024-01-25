@@ -96,13 +96,14 @@
 				[gdscript]
 				"move_local_x".capitalize()   # Returns "Move Local X"
 				"sceneFile_path".capitalize() # Returns "Scene File Path"
+				"2D, FPS, PNG".capitalize()   # Returns "2d, Fps, Png"
 				[/gdscript]
 				[csharp]
 				"move_local_x".Capitalize();   // Returns "Move Local X"
 				"sceneFile_path".Capitalize(); // Returns "Scene File Path"
+				"2D, FPS, PNG".Capitalize();   // Returns "2d, Fps, Png"
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method not the same as the default appearance of properties in the Inspector dock, as it does not capitalize acronyms ([code]"2D"[/code], [code]"FPS"[/code], [code]"PNG"[/code], etc.) as you may expect.
 			</description>
 		</method>
 		<method name="casecmp_to" qualifiers="const">
@@ -318,7 +319,7 @@
 			<return type="int" />
 			<description>
 				Returns the 32-bit hash value representing the string's contents.
-				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.
+				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the contrary, strings with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="hex_decode" qualifiers="const">
@@ -949,7 +950,7 @@
 		<method name="to_lower" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to lowercase.
+				Returns the string converted to [code]lowercase[/code].
 			</description>
 		</method>
 		<method name="to_pascal_case" qualifiers="const">
@@ -962,12 +963,25 @@
 			<return type="String" />
 			<description>
 				Returns the string converted to [code]snake_case[/code].
+				[b]Note:[/b] Numbers followed by a [i]single[/i] letter are not separated in the conversion to keep some words (such as "2D") together.
+				[codeblocks]
+				[gdscript]
+				"Node2D".to_snake_case()               # Returns "node_2d"
+				"2nd place".to_snake_case()            # Returns "2_nd_place"
+				"Texture3DAssetFolder".to_snake_case() # Returns "texture_3d_asset_folder"
+				[/gdscript]
+				[csharp]
+				"Node2D".ToSnakeCase();               // Returns "node_2d"
+				"2nd place".ToSnakeCase();            // Returns "2_nd_place"
+				"Texture3DAssetFolder".ToSnakeCase(); // Returns "texture_3d_asset_folder"
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="to_upper" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to uppercase.
+				Returns the string converted to [code]UPPERCASE[/code].
 			</description>
 		</method>
 		<method name="to_utf8_buffer" qualifiers="const">

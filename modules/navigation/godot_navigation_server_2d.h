@@ -76,6 +76,7 @@ public:
 	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
 	virtual TypedArray<RID> map_get_obstacles(RID p_map) const override;
 	virtual void map_force_update(RID p_map) override;
+	virtual Vector2 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
 
 	virtual RID region_create() override;
 	virtual void region_set_enabled(RID p_region, bool p_enabled) override;
@@ -94,10 +95,12 @@ public:
 	virtual void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) override;
 	virtual uint32_t region_get_navigation_layers(RID p_region) const override;
 	virtual void region_set_transform(RID p_region, Transform2D p_transform) override;
+	virtual Transform2D region_get_transform(RID p_region) const override;
 	virtual void region_set_navigation_polygon(RID p_region, Ref<NavigationPolygon> p_navigation_polygon) override;
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector2 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector2 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
+	virtual Vector2 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override;
 
 	virtual RID link_create() override;
 
@@ -157,6 +160,7 @@ public:
 	/// low, the simulation will not be safe.
 	/// Must be non-negative.
 	virtual void agent_set_neighbor_distance(RID p_agent, real_t p_distance) override;
+	virtual real_t agent_get_neighbor_distance(RID p_agent) const override;
 
 	/// The maximum number of other agents this
 	/// agent takes into account in the navigation.
@@ -165,6 +169,7 @@ public:
 	/// number is too low, the simulation will not
 	/// be safe.
 	virtual void agent_set_max_neighbors(RID p_agent, int p_count) override;
+	virtual int agent_get_max_neighbors(RID p_agent) const override;
 
 	/// The minimal amount of time for which this
 	/// agent's velocities that are computed by the
@@ -174,17 +179,20 @@ public:
 	/// other agents, but the less freedom this
 	/// agent has in choosing its velocities.
 	/// Must be positive.
-
 	virtual void agent_set_time_horizon_agents(RID p_agent, real_t p_time_horizon) override;
+	virtual real_t agent_get_time_horizon_agents(RID p_agent) const override;
 	virtual void agent_set_time_horizon_obstacles(RID p_agent, real_t p_time_horizon) override;
+	virtual real_t agent_get_time_horizon_obstacles(RID p_agent) const override;
 
 	/// The radius of this agent.
 	/// Must be non-negative.
 	virtual void agent_set_radius(RID p_agent, real_t p_radius) override;
+	virtual real_t agent_get_radius(RID p_agent) const override;
 
 	/// The maximum speed of this agent.
 	/// Must be non-negative.
 	virtual void agent_set_max_speed(RID p_agent, real_t p_max_speed) override;
+	virtual real_t agent_get_max_speed(RID p_agent) const override;
 
 	/// forces and agent velocity change in the avoidance simulation, adds simulation instability if done recklessly
 	virtual void agent_set_velocity_forced(RID p_agent, Vector2 p_velocity) override;
@@ -192,19 +200,27 @@ public:
 	/// The wanted velocity for the agent as a "suggestion" to the avoidance simulation.
 	/// The simulation will try to fulfill this velocity wish if possible but may change the velocity depending on other agent's and obstacles'.
 	virtual void agent_set_velocity(RID p_agent, Vector2 p_velocity) override;
+	virtual Vector2 agent_get_velocity(RID p_agent) const override;
 
 	/// Position of the agent in world space.
 	virtual void agent_set_position(RID p_agent, Vector2 p_position) override;
+	virtual Vector2 agent_get_position(RID p_agent) const override;
 
 	/// Returns true if the map got changed the previous frame.
 	virtual bool agent_is_map_changed(RID p_agent) const override;
 
 	/// Callback called at the end of the RVO process
 	virtual void agent_set_avoidance_callback(RID p_agent, Callable p_callback) override;
+	virtual bool agent_has_avoidance_callback(RID p_agent) const override;
 
 	virtual void agent_set_avoidance_layers(RID p_agent, uint32_t p_layers) override;
+	virtual uint32_t agent_get_avoidance_layers(RID p_agent) const override;
+
 	virtual void agent_set_avoidance_mask(RID p_agent, uint32_t p_mask) override;
+	virtual uint32_t agent_get_avoidance_mask(RID p_agent) const override;
+
 	virtual void agent_set_avoidance_priority(RID p_agent, real_t p_priority) override;
+	virtual real_t agent_get_avoidance_priority(RID p_agent) const override;
 
 	virtual RID obstacle_create() override;
 	virtual void obstacle_set_avoidance_enabled(RID p_obstacle, bool p_enabled) override;
@@ -214,10 +230,15 @@ public:
 	virtual void obstacle_set_paused(RID p_obstacle, bool p_paused) override;
 	virtual bool obstacle_get_paused(RID p_obstacle) const override;
 	virtual void obstacle_set_radius(RID p_obstacle, real_t p_radius) override;
+	virtual real_t obstacle_get_radius(RID p_obstacle) const override;
 	virtual void obstacle_set_velocity(RID p_obstacle, Vector2 p_velocity) override;
+	virtual Vector2 obstacle_get_velocity(RID p_obstacle) const override;
 	virtual void obstacle_set_position(RID p_obstacle, Vector2 p_position) override;
+	virtual Vector2 obstacle_get_position(RID p_obstacle) const override;
 	virtual void obstacle_set_vertices(RID p_obstacle, const Vector<Vector2> &p_vertices) override;
+	virtual Vector<Vector2> obstacle_get_vertices(RID p_obstacle) const override;
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) override;
+	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const override;
 
 	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const override;
 

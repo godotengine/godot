@@ -97,6 +97,7 @@ struct hb_bit_page_t
   static inline constexpr unsigned len ()
   { return ARRAY_LENGTH_CONST (v); }
 
+  operator bool () const { return !is_empty (); }
   bool is_empty () const
   {
     if (has_population ()) return !population;
@@ -218,6 +219,7 @@ struct hb_bit_page_t
     return count;
   }
 
+  bool operator == (const hb_bit_page_t &other) const { return is_equal (other); }
   bool is_equal (const hb_bit_page_t &other) const
   {
     for (unsigned i = 0; i < len (); i++)
@@ -225,6 +227,7 @@ struct hb_bit_page_t
 	return false;
     return true;
   }
+  bool operator <= (const hb_bit_page_t &larger_page) const { return is_subset (larger_page); }
   bool is_subset (const hb_bit_page_t &larger_page) const
   {
     if (has_population () && larger_page.has_population () &&

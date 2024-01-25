@@ -24,6 +24,9 @@ thirdparty_sources = [
     "src/loaders/svg/tvgSvgUtil.cpp",
     "src/loaders/svg/tvgXmlParser.cpp",
     "src/loaders/raw/tvgRawLoader.cpp",
+    "src/loaders/external_png/tvgPngLoader.cpp",
+    "src/loaders/jpg/tvgJpgd.cpp",
+    "src/loaders/jpg/tvgJpgLoader.cpp",
     # renderer common
     "src/renderer/tvgAccessor.cpp",
     # "src/renderer/tvgAnimation.cpp",
@@ -40,6 +43,8 @@ thirdparty_sources = [
     "src/renderer/tvgShape.cpp",
     "src/renderer/tvgSwCanvas.cpp",
     "src/renderer/tvgTaskScheduler.cpp",
+    "src/renderer/tvgText.cpp",
+    # "src/renderer/tvgWgCanvas.cpp",
     # renderer sw_engine
     "src/renderer/sw_engine/tvgSwFill.cpp",
     "src/renderer/sw_engine/tvgSwImage.cpp",
@@ -68,6 +73,8 @@ env_thirdparty.Prepend(
         thirdparty_dir + "src/renderer",
         thirdparty_dir + "src/renderer/sw_engine",
         thirdparty_dir + "src/loaders/raw",
+        thirdparty_dir + "src/loaders/external_png",
+        thirdparty_dir + "src/loaders/jpg",
     ]
 )
 

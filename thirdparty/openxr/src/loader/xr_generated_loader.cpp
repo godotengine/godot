@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2024, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -6,7 +6,7 @@
 //     See loader_source_generator.py for modifications
 // ************************************************************
 
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2024, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -36,7 +36,7 @@
 #include "loader_logger.hpp"
 #include "loader_platform.hpp"
 #include "runtime_interface.hpp"
-#include "xr_generated_dispatch_table.h"
+#include "xr_generated_dispatch_table_core.h"
 
 #include "xr_dependencies.h"
 #include <openxr/openxr.h>

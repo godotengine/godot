@@ -35,13 +35,15 @@
 # Deolindo <deolindojvn@gmail.com>, 2023.
 # Hevinis <meauriocardoso@gmail.com>, 2023.
 # Ricardo Caetano <ricardofilipecaetano@gmail.com>, 2023.
+# Henricky Corazza Serrão <henrickyserrao@gmail.com>, 2023.
+# Ricardo Bustamante <ricardobqueiroz@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-10 08:17+0000\n"
-"Last-Translator: Ricardo Caetano <ricardofilipecaetano@gmail.com>\n"
+"PO-Revision-Date: 2023-12-07 23:30+0000\n"
+"Last-Translator: Ricardo Bustamante <ricardobqueiroz@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -49,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -180,6 +182,12 @@ msgstr "Força de Panning 2D"
 msgid "3D Panning Strength"
 msgstr "Força de Panning 3D"
 
+msgid "iOS"
+msgstr "iOS"
+
+msgid "Mix With Others"
+msgstr "Misturar Com Outros"
+
 msgid "Editor"
 msgstr "Editor"
 
@@ -188,6 +196,12 @@ msgstr "Script"
 
 msgid "Search in File Extensions"
 msgstr "Pesquisar em Extensões de Arquivo"
+
+msgid "Subwindows"
+msgstr "Subjanelas"
+
+msgid "Embed Subwindows"
+msgstr "Incorporar subjanelas"
 
 msgid "Physics"
 msgstr "Física"
@@ -221,6 +235,9 @@ msgstr "Compressão"
 
 msgid "Zstd"
 msgstr "Zstd"
+
+msgid "Compression Level"
+msgstr "Nível de Compressão"
 
 msgid "Zlib"
 msgstr "Zlib"
@@ -267,6 +284,9 @@ msgstr "Fontes Dinâmicas"
 msgid "Use Oversampling"
 msgstr "Usar Sobreamostragem"
 
+msgid "Pipeline Cache"
+msgstr "Cache de Pipeline"
+
 msgid "Vulkan"
 msgstr "Vulkan"
 
@@ -305,6 +325,9 @@ msgstr "Usar Entrada Acumulada"
 
 msgid "Input Devices"
 msgstr "Dispositivos de Entrada"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "Comportamento de Acabou de Pressionar (Legado)"
 
 msgid "Device"
 msgstr "Aparelho"
@@ -365,6 +388,9 @@ msgstr "Valor do Eixo"
 
 msgid "Index"
 msgstr "Índice"
+
+msgid "Double Tap"
+msgstr "Toque Duplo"
 
 msgid "Action"
 msgstr "Ação"
@@ -753,6 +779,9 @@ msgstr "FBX"
 msgid "FBX2glTF Path"
 msgstr "Caminho para FBX2glTF"
 
+msgid "Oidn Denoise Path"
+msgstr "Caminho Oidn de Remoção de Ruído"
+
 msgid "Docks"
 msgstr "Painéis"
 
@@ -1073,6 +1102,9 @@ msgstr "Tamanho do Contorno dos Ossos"
 
 msgid "Viewport Border Color"
 msgstr "Cor da borda do Viewport"
+
+msgid "Use Integer Zoom by Default"
+msgstr "Usar Zoom Inteiro por Padrão"
 
 msgid "Sub Editors Panning Scheme"
 msgstr "Esquema de painéis do Sub Editor"
@@ -1728,6 +1760,12 @@ msgstr "Caminho de Log"
 msgid "Driver"
 msgstr "Driver"
 
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia Desabilitar Otimização em Threads"
+
+msgid "Force Angle on Devices"
+msgstr "Forçar Ângulo em Dispositivos"
+
 msgid "Include Text Server Data"
 msgstr "Incluir dados de Servidor de Texto"
 
@@ -1775,9 +1813,6 @@ msgstr "Intervalo de Frames (ms)"
 
 msgid "Low Processor Mode"
 msgstr "Modo de Baixo Uso do Processador"
-
-msgid "iOS"
-msgstr "iOS"
 
 msgid "Allow High Refresh Rate"
 msgstr "Permitir Alta Taxa de Refresh"
@@ -1844,6 +1879,9 @@ msgstr "Emular Toque do Rato"
 
 msgid "Emulate Mouse From Touch"
 msgstr "Emular o Rato do Toque"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Mouse Cursor"
 msgstr "Cursor do Rato"
@@ -2027,6 +2065,9 @@ msgstr "Massa"
 
 msgid "Angular Velocity"
 msgstr "Velocidade Angular"
+
+msgid "Is Trigger"
+msgstr "É Gatilho"
 
 msgid "Json"
 msgstr "Json"
@@ -2391,9 +2432,6 @@ msgstr "Tipo de Espaço de Referência"
 msgid "Visibility State"
 msgstr "Estado de Visibilidade"
 
-msgid "Android"
-msgstr "Android"
-
 msgid "Android SDK Path"
 msgstr "Caminho do SDK Android"
 
@@ -2408,6 +2446,9 @@ msgstr "Depurar Senha de Armazenamento de Chaves"
 
 msgid "Force System User"
 msgstr "Forçar Usuário do Sistema"
+
+msgid "Use Wi-Fi for Remote Debug"
+msgstr "Use Wi-Fi para Depuração Remota"
 
 msgid "Launcher Icons"
 msgstr "Ícones do Inicializador"
@@ -2439,17 +2480,20 @@ msgstr "Plugins"
 msgid "Architectures"
 msgstr "Arquiteturas"
 
+msgid "Keystore"
+msgstr "Keystore"
+
 msgid "Debug User"
-msgstr "Depurar Utilizador"
+msgstr "Usuário de Depuração"
 
 msgid "Debug Password"
-msgstr "Depurar Palavra-passe"
+msgstr "Senha de Depuração"
 
 msgid "Release User"
-msgstr "Liberar Utilizador"
+msgstr "Usuário de Lançamento"
 
 msgid "Release Password"
-msgstr "Liberar Palavra-passe"
+msgstr "Senha de Lançamento"
 
 msgid "Code"
 msgstr "Código"
@@ -2468,6 +2512,9 @@ msgstr "Categoria da App"
 
 msgid "Exclude From Recents"
 msgstr "Excluir de Recentes"
+
+msgid "Show in Android Tv"
+msgstr "Mostrar em Android TV"
 
 msgid "Graphics"
 msgstr "Gráficos"
@@ -3510,6 +3557,9 @@ msgstr "Flags"
 msgid "Billboard"
 msgstr "'Billboard'"
 
+msgid "Double Sided"
+msgstr "Dois Lados"
+
 msgid "No Depth Test"
 msgstr "Sem Teste de Profundidade"
 
@@ -3813,6 +3863,9 @@ msgstr "Nó Raiz"
 msgid "Root Motion"
 msgstr "Movimento Raiz"
 
+msgid "Method"
+msgstr "Método"
+
 msgid "Reset"
 msgstr "Repor"
 
@@ -3888,6 +3941,12 @@ msgstr "Forma do Cursor Predefinida"
 msgid "Scroll Offset"
 msgstr "Deslocamento da Rolagem"
 
+msgid "Show Grid"
+msgstr "Mostrar Grade"
+
+msgid "Toolbar Menu"
+msgstr "Menu de Ferramentas"
+
 msgid "Title"
 msgstr "Titulo"
 
@@ -3927,14 +3986,14 @@ msgstr "Caracteres Visiveis"
 msgid "Max Length"
 msgstr "Máx. Comprimento"
 
+msgid "Blink"
+msgstr "Piscar"
+
 msgid "Secret"
 msgstr "Secreto"
 
 msgid "Secret Character"
 msgstr "Caracteres Secretos"
-
-msgid "Blink"
-msgstr "Piscar"
 
 msgid "Underline"
 msgstr "Sublinhado"
@@ -4005,14 +4064,14 @@ msgstr "Rolagem Ativada"
 msgid "Use Hidden Tabs for Min Size"
 msgstr "Usar Esconder Tabs para Tamanho Mínimo"
 
-msgid "Syntax Highlighter"
-msgstr "Destaque de Sintaxe"
-
 msgid "Draw"
 msgstr "Desenhar"
 
 msgid "Move on Right Click"
 msgstr "Mover com Botão Direito"
+
+msgid "Syntax Highlighter"
+msgstr "Destaque de Sintaxe"
 
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Detecção de ociosidade de edição de texto (seg)"
@@ -4112,6 +4171,9 @@ msgstr "'MSAA 2D'"
 
 msgid "MSAA 3D"
 msgstr "'MSAA 3D'"
+
+msgid "HDR 2D"
+msgstr "HDR 2D"
 
 msgid "Use Debanding"
 msgstr "Usar Debanding"
@@ -4274,6 +4336,9 @@ msgstr "1"
 
 msgid "2"
 msgstr "2"
+
+msgid "3"
+msgstr "3"
 
 msgid "4"
 msgstr "4"
@@ -4457,12 +4522,6 @@ msgstr "Vãos de Baixa Altura Caminháveis"
 
 msgid "Bundled"
 msgstr "Agrupados"
-
-msgid "Point Texture"
-msgstr "Textura de Ponto"
-
-msgid "Normal Texture"
-msgstr "Textura Normal"
 
 msgid "Turbulence"
 msgstr "Turbulência"
