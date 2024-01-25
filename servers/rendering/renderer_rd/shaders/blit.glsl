@@ -115,7 +115,6 @@ void main() {
 #else
 	color = texture(src_rt, uv);
 #endif
-
 	if (data.convert_to_srgb) {
 		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
 	}

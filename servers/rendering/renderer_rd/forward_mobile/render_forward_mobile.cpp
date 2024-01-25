@@ -942,8 +942,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	{
 		if (rb_data.is_valid()) {
 			RD::get_singleton()->draw_command_begin_label("Render 3D Pass");
+			RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::OPAQUE_PASS);
 		} else {
 			RD::get_singleton()->draw_command_begin_label("Render Reflection Probe Pass");
+			RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::REFLECTION_PROBES);
 		}
 
 		// opaque pass
@@ -1029,6 +1031,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				// transparent pass
 
 				RD::get_singleton()->draw_command_begin_label("Render Transparent");
+				RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::TRANSPARENT_PASS);
 
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
 
@@ -1071,6 +1074,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
 				RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
+				RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::TRANSPARENT_PASS);
 				RENDER_TIMESTAMP("Render Transparent");
 
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
@@ -1093,6 +1097,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	if (rb_data.is_valid() && !using_subpass_post_process) {
 		RD::get_singleton()->draw_command_begin_label("Post process pass");
+		RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::POST_PROCESSING_PASS);
 
 		if (ce_has_post_transparent) {
 			_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
@@ -1110,6 +1115,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		_disable_clear_request(p_render_data);
 	}
 
+	RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::DEBUG_PASS);
 	_render_buffers_debug_draw(p_render_data);
 }
 
@@ -1392,6 +1398,7 @@ void RenderForwardMobile::_render_shadow_end() {
 	Size2 fb_size = RD::get_singleton()->framebuffer_get_size(framebuffer);
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 	RD::DrawListID draw_list;
+	RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL);
 
 	while (curr_shadow_index < scene_state.shadow_passes.size()) {
 		// 4 = shadow cascades amount

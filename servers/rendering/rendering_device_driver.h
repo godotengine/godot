@@ -708,6 +708,7 @@ public:
 	/**** DEBUG *****/
 	/****************/
 	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) = 0;
+	virtual void print_lost_device_info(Error err) = 0;
 
 	/********************/
 	/**** SUBMISSION ****/

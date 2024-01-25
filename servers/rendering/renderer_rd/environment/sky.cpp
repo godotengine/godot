@@ -1294,6 +1294,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 		cm = correction * cm;
 
 		// Note, we ignore environment_get_sky_orientation here as this is applied when we do our lookup in our scene shader.
+		RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::SKY_PASS);
 
 		if (shader_data->uses_quarter_res && roughness_layers >= 3) {
 			RD::get_singleton()->draw_command_begin_label("Render Sky to Quarter Res Cubemap");

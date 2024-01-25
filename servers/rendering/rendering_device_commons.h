@@ -274,8 +274,9 @@ public:
 	enum BreadcrumbMarker {
 		// Environment
 		REFLECTION_PROBES = 0,
-		SKY_SETUP,
-		SKY_DRAW,
+		SKY_PASS,
+		// Light mapping
+		LIGHTMAPPER_PASS,
 		// Shadows
 		SHADOW_PASS_DIRECTIONAL,
 		SHADOW_PASS_CUBE,

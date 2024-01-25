@@ -3310,6 +3310,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	clear_value.color = p_clear_color;
 
 	RDD::RenderPassID render_pass = driver->swap_chain_get_render_pass(sc_it->value);
+	draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::BLIT_PASS);
 	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, clear_value, true, false);
 
 	_draw_list_set_viewport(viewport);

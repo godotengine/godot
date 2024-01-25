@@ -35,7 +35,6 @@
 #include "core/math/transform_3d.h"
 
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
-	RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::BLIT_PASS);
 	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
 	if (err != OK) {
 		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.
@@ -251,7 +250,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	blit.push_constant.layer = 0;
 	blit.push_constant.eye_center[0] = 0;
 	blit.push_constant.eye_center[1] = 0;
-	blit.push_constant.k1 = 0;
+	blit.push_constant.k1 = 1;
 	blit.push_constant.k2 = 0;
 	blit.push_constant.upscale = 1.0;
 	blit.push_constant.aspect_ratio = 1.0;

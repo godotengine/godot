@@ -159,10 +159,14 @@ private:
 
 	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
 
+private:
+	BufferID breadcrumb_buffer;
+	void *breadcrumb_ptr;
+
+public:
 	/*****************/
 	/**** BUFFERS ****/
 	/*****************/
-private:
 	struct BufferInfo {
 		VkBuffer vk_buffer = VK_NULL_HANDLE;
 		struct {
@@ -173,9 +177,6 @@ private:
 		VkBufferView vk_view = VK_NULL_HANDLE; // For texel buffers.
 	};
 
-	BufferID breadcrumb_buffer;
-
-public:
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
@@ -613,6 +614,7 @@ public:
 	/**** DEBUG *****/
 	/****************/
 	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
+	virtual void print_lost_device_info(Error err) override final;
 
 	/********************/
 	/**** SUBMISSION ****/
