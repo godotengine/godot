@@ -35,6 +35,7 @@
 #include "core/math/transform_3d.h"
 
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
+	RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::BLIT_PASS);
 	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
 	if (err != OK) {
 		// Window is minimized and does not have valid swapchain, skip drawing without printing errors.

@@ -173,6 +173,8 @@ private:
 		VkBufferView vk_view = VK_NULL_HANDLE; // For texel buffers.
 	};
 
+	BufferID breadcrumb_buffer;
+
 public:
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;

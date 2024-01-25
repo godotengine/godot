@@ -1874,7 +1874,7 @@ void RenderingDeviceGraph::add_synchronization() {
 void RenderingDeviceGraph::insert_breadcrumb(uint32_t p_data) {
 	int32_t command_index;
 	RecordedInsertBreadcrumbCommand *command = static_cast<RecordedInsertBreadcrumbCommand *>(_allocate_command(sizeof(RecordedInsertBreadcrumbCommand), command_index));
-	command->type = RecordedCommand::TYPE_CAPTURE_TIMESTAMP;
+	command->type = RecordedCommand::TYPE_INSERT_BREADCRUMB;
 	command->dst_stages = 0;
 	command->data = p_data;
 	_add_command_to_graph(nullptr, nullptr, 0, command_index, command);

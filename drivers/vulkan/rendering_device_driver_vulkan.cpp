@@ -4759,7 +4759,7 @@ void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer
 /**** DEBUG *****/
 /****************/
 void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
-	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, breadcrumb_buffer, 0, sizeof(uint32_t), p_data);
+	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, ((BufferInfo*)breadcrumb_buffer.id)->vk_buffer, 0, sizeof(uint32_t), p_data);
 }
 
 /********************/
@@ -5013,9 +5013,12 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 	DEV_ASSERT(p_context_driver != nullptr);
 
 	context_driver = p_context_driver;
+	breadcrumb_buffer = buffer_create(sizeof(uint32_t), BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU);
 }
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
+	buffer_free(breadcrumb_buffer);
+
 	while (small_allocs_pools.size()) {
 		HashMap<uint32_t, VmaPool>::Iterator E = small_allocs_pools.begin();
 		vmaDestroyPool(allocator, E->value);
