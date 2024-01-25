@@ -4755,6 +4755,13 @@ void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer
 	functions.CmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
 }
 
+/****************/
+/**** DEBUG *****/
+/****************/
+void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
+	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, breadcrumb_buffer, 0, sizeof(uint32_t), p_data);
+}
+
 /********************/
 /**** SUBMISSION ****/
 /********************/

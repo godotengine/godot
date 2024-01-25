@@ -637,11 +637,6 @@ void RenderingDeviceGraph::_run_compute_list_command(RDD::CommandBufferID p_comm
 				driver->command_uniform_set_prepare_for_use(p_command_buffer, uniform_set_prepare_for_use_instruction->uniform_set, uniform_set_prepare_for_use_instruction->shader, uniform_set_prepare_for_use_instruction->set_index);
 				instruction_data_cursor += sizeof(ComputeListUniformSetPrepareForUseInstruction);
 			} break;
-			case ComputeListInstruction::TYPE_ADD_BREADCRUMB: {
-				const ComputeListAddBreadcrumbInstruction *add_breadcrumb_instruction = reinterpret_cast<const ComputeListAddBreadcrumbInstruction *>(instruction);
-				driver->command_add_breadcrumb(p_command_buffer, add_breadcrumb_instruction->data);
-				instruction_data_cursor += sizeof(ComputeListAddBreadcrumbInstruction);
-			} break;
 			default:
 				DEV_ASSERT(false && "Unknown compute list instruction type.");
 				return;
@@ -744,11 +739,6 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 				driver->command_uniform_set_prepare_for_use(p_command_buffer, uniform_set_prepare_for_use_instruction->uniform_set, uniform_set_prepare_for_use_instruction->shader, uniform_set_prepare_for_use_instruction->set_index);
 				instruction_data_cursor += sizeof(DrawListUniformSetPrepareForUseInstruction);
 			} break;
-			case DrawListInstruction::TYPE_ADD_BREADCRUMB: {
-				const DrawListAddBreadcrumbInstruction *add_breadcrumb_instruction = reinterpret_cast<const DrawListAddBreadcrumbInstruction *>(instruction);
-				driver->command_add_breadcrumb(p_command_buffer, add_breadcrumb_instruction->data);
-				instruction_data_cursor += sizeof(DrawListAddBreadcrumbInstruction);
-			} break;
 			default:
 				DEV_ASSERT(false && "Unknown draw list instruction type.");
 				return;
@@ -837,6 +827,10 @@ void RenderingDeviceGraph::_run_render_commands(RDD::CommandBufferID p_command_b
 			case RecordedCommand::TYPE_CAPTURE_TIMESTAMP: {
 				const RecordedCaptureTimestampCommand *texture_capture_timestamp_command = reinterpret_cast<const RecordedCaptureTimestampCommand *>(command);
 				driver->command_timestamp_write(p_command_buffer, texture_capture_timestamp_command->pool, texture_capture_timestamp_command->index);
+			} break;
+			case RecordedCommand::TYPE_INSERT_BREADCRUMB: {
+				const RecordedInsertBreadcrumbCommand *insert_breadcrumb_command = reinterpret_cast<const RecordedInsertBreadcrumbCommand *>(command);
+				driver->command_insert_breadcrumb(p_command_buffer, insert_breadcrumb_command->data);
 			} break;
 			default: {
 				DEV_ASSERT(false && "Unknown recorded command type.");
@@ -1471,12 +1465,6 @@ void RenderingDeviceGraph::add_compute_list_uniform_set_prepare_for_use(RDD::Sha
 	instruction->set_index = set_index;
 }
 
-void RenderingDeviceGraph::add_compute_list_breadcrumb(RDD::BreadcrumbMarker p_phase, uint32_t p_userdata) {
-	ComputeListAddBreadcrumb *instruction = reinterpret_cast<ComputeListAddBreadcrumb *>(_allocate_draw_list_instruction(sizeof(ComputeListAddBreadcrumb)));
-	instruction->type = ComputeListInstruction::TYPE_ADD_BREADCRUMB;
-	instruction->data = (((uint32_t)p_phase) << 16) | (p_userdata & ((1 << 16) - 1));
-}
-
 void RenderingDeviceGraph::add_compute_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage) {
 	DEV_ASSERT(p_tracker != nullptr);
 
@@ -1695,13 +1683,6 @@ void RenderingDeviceGraph::add_draw_list_uniform_set_prepare_for_use(RDD::Shader
 	instruction->set_index = set_index;
 }
 
-void RenderingDeviceGraph::add_draw_list_breadcrumb(RDD::BreadcrumbMarker p_phase, uint32_t p_userdata) {
-	DrawListAddBreadcrumbInstruction *instruction = reinterpret_cast<DrawListAddBreadcrumbInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListAddBreadcrumbInstruction)));
-	instruction->type = DrawListInstruction::TYPE_UNIFORM_SET_PREPARE_FOR_USE;
-	instruction->data = (((uint32_t)p_phase) << 16) | (p_userdata & ((1<<16)-1));
-}
-
-
 void RenderingDeviceGraph::add_draw_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage) {
 	p_tracker->reset_if_outdated(tracking_frame);
 
@@ -1889,6 +1870,16 @@ void RenderingDeviceGraph::add_synchronization() {
 		command_synchronization_pending = true;
 	}
 }
+
+void RenderingDeviceGraph::insert_breadcrumb(uint32_t p_data) {
+	int32_t command_index;
+	RecordedInsertBreadcrumbCommand *command = static_cast<RecordedInsertBreadcrumbCommand *>(_allocate_command(sizeof(RecordedInsertBreadcrumbCommand), command_index));
+	command->type = RecordedCommand::TYPE_CAPTURE_TIMESTAMP;
+	command->dst_stages = 0;
+	command->data = p_data;
+	_add_command_to_graph(nullptr, nullptr, 0, command_index, command);
+}
+
 
 void RenderingDeviceGraph::begin_label(const String &p_label_name, const Color &p_color) {
 	uint32_t command_label_offset = command_label_chars.size();

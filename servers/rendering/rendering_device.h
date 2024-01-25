@@ -1121,7 +1121,6 @@ public:
 	void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_disable_scissor(DrawListID p_list);
 
-	void draw_list_insert_breadcrumb(BreadcrumbMarker p_phase, uint32_t p_user_data);
 	uint32_t draw_list_get_current_pass();
 	DrawListID draw_list_switch_to_next_pass();
 
@@ -1180,7 +1179,6 @@ public:
 	void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
 	void compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads);
 	void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset);
-	void compute_list_insert_breadcrumb(BreadcrumbMarker p_phase, uint32_t p_user_data);
 	void compute_list_add_barrier(ComputeListID p_list);
 
 	void compute_list_end();
@@ -1359,6 +1357,7 @@ public:
 
 	void draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
 	void draw_command_end_label();
+	void draw_command_insert_breadcrumb(uint32_t p_phase, uint32_t data = 0);
 
 	String get_device_vendor_name() const;
 	String get_device_name() const;

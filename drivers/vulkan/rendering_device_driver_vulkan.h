@@ -610,7 +610,7 @@ public:
 	/****************/
 	/**** DEBUG *****/
 	/****************/
-	virtual void command_add_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) = 0;
+	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
 
 	/********************/
 	/**** SUBMISSION ****/

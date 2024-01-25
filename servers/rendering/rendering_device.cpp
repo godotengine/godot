@@ -3400,7 +3400,7 @@ Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, 
 			}
 		}
 	}
-
+	
 	draw_graph.add_draw_list_begin(p_render_pass, p_framebuffer_driver_id, Rect2i(p_viewport_offset, p_viewport_size), clear_values, uses_color, uses_depth);
 	draw_graph.add_draw_list_usages(resource_trackers, resource_usages);
 
@@ -4448,10 +4448,6 @@ void RenderingDevice::compute_list_add_barrier(ComputeListID p_list) {
 	}
 }
 
-void RenderingDevice::compute_list_insert_breadcrumb(BreadcrumbMarker p_phase, uint32_t data) {
-	draw_graph.add_compute_list_breadcrumb(p_phase, data);
-}
-
 void RenderingDevice::compute_list_end() {
 	ERR_FAIL_NULL(compute_list);
 
@@ -4798,8 +4794,9 @@ void RenderingDevice::draw_command_begin_label(String p_label_name, const Color 
 	draw_graph.begin_label(p_label_name, p_color);
 }
 
-void RenderingDevice::draw_list_insert_breadcrumb(BreadcrumbMarker p_phase, uint32_t p_user_data) {
-	draw_graph.add_draw_list_breadcrumb(p_phase, p_user_data);
+void RenderingDevice::draw_command_insert_breadcrumb(uint32_t p_phase, uint32_t data) {
+	// High 16 bits: rendering phase, low 16 bits: user data
+	draw_graph.insert_breadcrumb((p_phase << 16) | (data & ((1 << 16) - 1)));
 }
 
 #ifndef DISABLE_DEPRECATED
