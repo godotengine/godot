@@ -804,8 +804,11 @@ Vector2i Sprite3D::get_frame_coords() const {
 }
 
 void Sprite3D::set_vframes(int p_amount) {
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of vframes cannot be smaller than 1.");
 	vframes = p_amount;
+	if (frame >= vframes * hframes) {
+		frame = 0;
+	}
 	_queue_redraw();
 	notify_property_list_changed();
 }
@@ -815,8 +818,22 @@ int Sprite3D::get_vframes() const {
 }
 
 void Sprite3D::set_hframes(int p_amount) {
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of hframes cannot be smaller than 1.");
+	if (vframes > 1) {
+		// Adjust the frame to fit new sheet dimensions.
+		int original_column = frame % hframes;
+		if (original_column >= p_amount) {
+			// Frame's column was dropped, reset.
+			frame = 0;
+		} else {
+			int original_row = frame / hframes;
+			frame = original_row * p_amount + original_column;
+		}
+	}
 	hframes = p_amount;
+	if (frame >= vframes * hframes) {
+		frame = 0;
+	}
 	_queue_redraw();
 	notify_property_list_changed();
 }
@@ -1348,14 +1365,16 @@ PackedStringArray AnimatedSprite3D::get_configuration_warnings() const {
 }
 
 void AnimatedSprite3D::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
-		List<StringName> al;
-		frames->get_animation_list(&al);
-		for (const StringName &name : al) {
-			r_options->push_back(String(name).quote());
+	if (p_idx == 0 && frames.is_valid()) {
+		if (p_function == "play" || p_function == "play_backwards" || p_function == "set_animation" || p_function == "set_autoplay") {
+			List<StringName> al;
+			frames->get_animation_list(&al);
+			for (const StringName &name : al) {
+				r_options->push_back(String(name).quote());
+			}
 		}
 	}
-	Node::get_argument_options(p_function, p_idx, r_options);
+	SpriteBase3D::get_argument_options(p_function, p_idx, r_options);
 }
 
 #ifndef DISABLE_DEPRECATED

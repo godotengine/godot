@@ -102,16 +102,12 @@
 #include "tests/scene/test_curve_3d.h"
 #include "tests/scene/test_gradient.h"
 #include "tests/scene/test_navigation_agent_2d.h"
-#include "tests/scene/test_navigation_agent_3d.h"
 #include "tests/scene/test_navigation_obstacle_2d.h"
-#include "tests/scene/test_navigation_obstacle_3d.h"
 #include "tests/scene/test_navigation_region_2d.h"
-#include "tests/scene/test_navigation_region_3d.h"
 #include "tests/scene/test_node.h"
 #include "tests/scene/test_node_2d.h"
 #include "tests/scene/test_packed_scene.h"
 #include "tests/scene/test_path_2d.h"
-#include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_primitives.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_text_edit.h"
@@ -121,9 +117,16 @@
 #include "tests/scene/test_window.h"
 #include "tests/servers/rendering/test_shader_preprocessor.h"
 #include "tests/servers/test_navigation_server_2d.h"
-#include "tests/servers/test_navigation_server_3d.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
+
+#ifndef _3D_DISABLED
+#include "tests/scene/test_navigation_agent_3d.h"
+#include "tests/scene/test_navigation_obstacle_3d.h"
+#include "tests/scene/test_navigation_region_3d.h"
+#include "tests/scene/test_path_3d.h"
+#include "tests/servers/test_navigation_server_3d.h"
+#endif // _3D_DISABLED
 
 #include "modules/modules_tests.gen.h"
 

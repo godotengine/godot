@@ -4,7 +4,7 @@
 		An optionally compressed [Cubemap].
 	</brief_description>
 	<description>
-		A cubemap that is loaded from a [code].ccube[/code] file. This file format is internal to Godot; it is created by importing other image formats with the import system. [CompressedCubemap] can use one of 4 compresson methods:
+		A cubemap that is loaded from a [code].ccube[/code] file. This file format is internal to Godot; it is created by importing other image formats with the import system. [CompressedCubemap] can use one of 4 compression methods:
 		- Lossless (WebP or PNG, uncompressed on the GPU)
 		- Lossy (WebP, uncompressed on the GPU)
 		- VRAM Compressed (compressed on the GPU)

@@ -225,6 +225,7 @@ private:
 	int history_max_size;
 
 	String current_path;
+	String select_after_scan;
 
 	bool initialized = false;
 

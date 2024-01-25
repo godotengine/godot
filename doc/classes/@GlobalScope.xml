@@ -234,20 +234,9 @@
 
 				var b = clamp(8.1, 0.9, 5.5)
 				# b is 5.5
-
-				var c = clamp(Vector2(-3.5, -4), Vector2(-3.2, -2), Vector2(2, 6.5))
-				# c is (-3.2, -2)
-
-				var d = clamp(Vector2i(7, 8), Vector2i(-3, -2), Vector2i(2, 6))
-				# d is (2, 6)
-
-				var e = clamp(Vector3(-7, 8.5, -3.8), Vector3(-3, -2, 5.4), Vector3(-2, 6, -4.1))
-				# e is (-3, -2, 5.4)
-
-				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
-				# f is (-4, -5, -6)
 				[/codeblock]
-				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], [method Vector4i.clamp], or [method Color.clamp].
+				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], [method Vector4i.clamp], or [method Color.clamp] (not currently supported by this method).
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise clamping, and will pick [param min] if [code]value &lt; min[/code] or [param max] if [code]value &gt; max[/code]. To perform component-wise clamping use the methods listed above.
 			</description>
 		</method>
 		<method name="clampf">
@@ -1439,6 +1428,7 @@
 			<description>
 				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes_to_var].
 				[b]Note:[/b] If you need object serialization, see [method var_to_bytes_with_objects].
+				[b]Note:[/b] Encoding [Callable] is not supported and will result in an empty value, regardless of the data.
 			</description>
 		</method>
 		<method name="var_to_bytes_with_objects">
@@ -1446,6 +1436,7 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include executable code). Deserialization can be done with [method bytes_to_var_with_objects].
+				[b]Note:[/b] Encoding [Callable] is not supported and will result in an empty value, regardless of the data.
 			</description>
 		</method>
 		<method name="var_to_str">

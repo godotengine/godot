@@ -63,8 +63,7 @@ public:
 	int64_t max_renderable_lights = 0;
 	int64_t max_lights_per_object = 0;
 
-	// TODO implement wireframe in OpenGL
-	// bool generate_wireframes;
+	bool generate_wireframes = false;
 
 	HashSet<String> extensions;
 

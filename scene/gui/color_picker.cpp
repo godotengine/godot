@@ -74,7 +74,7 @@ void ColorPicker::_notification(int p_what) {
 				sliders[i]->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 			}
 			alpha_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
-			alpha_label->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
+			alpha_slider->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 
 			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
 				mode_btns[i]->begin_bulk_theme_override();
@@ -556,16 +556,17 @@ void ColorPicker::_html_submitted(const String &p_html) {
 		return;
 	}
 
-	const Color previous_color = color;
-	color = Color::from_string(p_html.strip_edges(), previous_color);
+	Color new_color = Color::from_string(p_html.strip_edges(), color);
 
 	if (!is_editing_alpha()) {
-		color.a = previous_color.a;
+		new_color.a = color.a;
 	}
 
-	if (color == previous_color) {
+	if (new_color.to_argb32() == color.to_argb32()) {
 		return;
 	}
+	color = new_color;
+
 	if (!is_inside_tree()) {
 		return;
 	}

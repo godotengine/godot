@@ -322,9 +322,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								if (member.type == GDScriptParser::ClassNode::Member::FUNCTION || member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
 									// Get like it was a property.
 									GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
-									GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
 
-									gen->write_get_named(temp, identifier, self);
+									GDScriptCodeGenerator::Address base(GDScriptCodeGenerator::Address::SELF);
+									if (member.type == GDScriptParser::ClassNode::Member::FUNCTION && member.function->is_static) {
+										base = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS);
+									}
+
+									gen->write_get_named(temp, identifier, base);
 									return temp;
 								}
 							}

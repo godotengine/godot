@@ -1981,8 +1981,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		if (oc->vertex_array.is_null()) {
 			//create from scratch
 			//vertices
-			// TODO: geometry is always of length lc * 6 * sizeof(float), so in doubles builds this will receive half the data it needs
-			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(real_t), geometry);
+			oc->vertex_buffer = RD::get_singleton()->vertex_buffer_create(lc * 6 * sizeof(float), geometry);
 
 			Vector<RID> buffer;
 			buffer.push_back(oc->vertex_buffer);
@@ -2043,7 +2042,18 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		if (oc->sdf_vertex_array.is_null()) {
 			//create from scratch
 			//vertices
-			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(real_t), p_points.to_byte_array());
+#ifdef REAL_T_IS_DOUBLE
+			PackedFloat32Array float_points;
+			float_points.resize(p_points.size() * 2);
+			float *float_points_ptr = (float *)float_points.ptrw();
+			for (int i = 0; i < p_points.size(); i++) {
+				float_points_ptr[i * 2] = p_points[i].x;
+				float_points_ptr[i * 2 + 1] = p_points[i].y;
+			}
+			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), float_points.to_byte_array());
+#else
+			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), p_points.to_byte_array());
+#endif
 			oc->sdf_index_buffer = RD::get_singleton()->index_buffer_create(sdf_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, sdf_indices.to_byte_array());
 			oc->sdf_index_array = RD::get_singleton()->index_array_create(oc->sdf_index_buffer, 0, sdf_indices.size());
 
@@ -2054,7 +2064,18 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 
 		} else {
 			//update existing
-			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(real_t) * 2 * p_points.size(), p_points.ptr());
+#ifdef REAL_T_IS_DOUBLE
+			PackedFloat32Array float_points;
+			float_points.resize(p_points.size() * 2);
+			float *float_points_ptr = (float *)float_points.ptrw();
+			for (int i = 0; i < p_points.size(); i++) {
+				float_points_ptr[i * 2] = p_points[i].x;
+				float_points_ptr[i * 2 + 1] = p_points[i].y;
+			}
+			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(float) * 2 * p_points.size(), float_points.ptr());
+#else
+			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(float) * 2 * p_points.size(), p_points.ptr());
+#endif
 			RD::get_singleton()->buffer_update(oc->sdf_index_buffer, 0, sdf_indices.size() * sizeof(int32_t), sdf_indices.ptr());
 		}
 	}
@@ -2578,15 +2599,15 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		//pipelines
 		Vector<RD::VertexAttribute> vf;
 		RD::VertexAttribute vd;
-		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32B32_SFLOAT : RD::DATA_FORMAT_R64G64B64_SFLOAT;
+		vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+		vd.stride = sizeof(float) * 3;
 		vd.location = 0;
 		vd.offset = 0;
-		vd.stride = sizeof(real_t) * 3;
 		vf.push_back(vd);
 		shadow_render.vertex_format = RD::get_singleton()->vertex_format_create(vf);
 
-		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32_SFLOAT : RD::DATA_FORMAT_R64G64_SFLOAT;
-		vd.stride = sizeof(real_t) * 2;
+		vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+		vd.stride = sizeof(float) * 2;
 
 		vf.write[0] = vd;
 		shadow_render.sdf_vertex_format = RD::get_singleton()->vertex_format_create(vf);

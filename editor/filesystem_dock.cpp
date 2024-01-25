@@ -859,18 +859,7 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 
 struct FileSystemDock::FileInfoTypeComparator {
 	bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
-		// Uses the extension, then the icon name to distinguish file types.
-		String icon_path_a = "";
-		String icon_path_b = "";
-		Ref<Texture2D> icon_a = EditorNode::get_singleton()->get_class_icon(p_a.type);
-		if (icon_a.is_valid()) {
-			icon_path_a = icon_a->get_name();
-		}
-		Ref<Texture2D> icon_b = EditorNode::get_singleton()->get_class_icon(p_b.type);
-		if (icon_b.is_valid()) {
-			icon_path_b = icon_b->get_name();
-		}
-		return NaturalNoCaseComparator()(p_a.name.get_extension() + icon_path_a + p_a.name.get_basename(), p_b.name.get_extension() + icon_path_b + p_b.name.get_basename());
+		return NaturalNoCaseComparator()(p_a.name.get_extension() + p_a.type + p_a.name.get_basename(), p_b.name.get_extension() + p_b.type + p_b.name.get_basename());
 	}
 };
 
@@ -1308,6 +1297,13 @@ void FileSystemDock::_fs_changed() {
 		_update_file_list(true);
 	}
 
+	if (!select_after_scan.is_empty()) {
+		_navigate_to_path(select_after_scan);
+		select_after_scan.clear();
+		import_dock_needs_update = true;
+		_update_import_dock();
+	}
+
 	set_process(false);
 }
 
@@ -1487,8 +1483,6 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.") + "\n" + old_path + "\n");
 		return;
 	}
-	const_cast<FileSystemDock *>(this)->current_path = new_path;
-
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
 	if (p_item.is_file) {
@@ -1928,6 +1922,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		for (int i = 0; i < to_move.size(); i++) {
 			if (to_move[i].path != new_paths[i]) {
 				_try_duplicate_item(to_move[i], new_paths[i]);
+				select_after_scan = new_paths[i];
 				is_copied = true;
 			}
 		}

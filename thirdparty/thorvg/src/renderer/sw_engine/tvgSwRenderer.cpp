@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,8 +45,11 @@ struct SwTask : Task
     bool pushed = false;                  //Pushed into task list?
     bool disposed = false;                //Disposed task?
 
-    RenderRegion bounds() const
+    RenderRegion bounds()
     {
+        //Can we skip the synchronization?
+        done();
+
         RenderRegion region;
 
         //Range over?
@@ -139,7 +142,9 @@ struct SwShapeTask : SwTask
             visibleFill = (alpha > 0 || rshape->fill);
             if (visibleFill || clipper) {
                 shapeReset(&shape);
-                if (!shapePrepare(&shape, rshape, transform, clipRegion, bbox, mpool, tid, clips.count > 0 ? true : false)) goto err;
+                if (!shapePrepare(&shape, rshape, transform, clipRegion, bbox, mpool, tid, clips.count > 0 ? true : false)) {
+                    visibleFill = false;
+                }
             }
         }
         //Fill
@@ -276,10 +281,8 @@ struct SwImageTask : SwTask
         auto clipRegion = bbox;
 
         //Convert colorspace if it's not aligned.
-        if (source->owner) {
-            if (source->cs != surface->cs) rasterConvertCS(source, surface->cs);
-            if (!source->premultiplied) rasterPremultiply(source);
-        }
+        rasterConvertCS(source, surface->cs);
+        rasterPremultiply(source);
 
         image.data = source->data;
         image.w = source->w;
@@ -431,7 +434,6 @@ bool SwRenderer::target(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, 
     surface->cs = cs;
     surface->channelSize = CHANNEL_SIZE(cs);
     surface->premultiplied = true;
-    surface->owner = true;
 
     vport.x = vport.y = 0;
     vport.w = surface->w;
@@ -633,11 +635,8 @@ Compositor* SwRenderer::target(const RenderRegion& region, ColorSpace cs)
 
     //New Composition
     if (!cmp) {
-        cmp = new SwSurface;
-
         //Inherits attributes from main surface
-        *cmp = *surface;
-
+        cmp = new SwSurface(surface);
         cmp->compositor = new SwCompositor;
 
         //TODO: We can optimize compositor surface size from (surface->stride x surface->h) to Parameter(w x h)

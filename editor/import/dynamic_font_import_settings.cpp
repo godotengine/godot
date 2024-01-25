@@ -1345,6 +1345,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page2_description->set_text(TTR("Add font size, and variation coordinates, and select glyphs to pre-render:"));
 	page2_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	page2_description->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	page2_vb->add_child(page2_description);
 
 	HSplitContainer *page2_hb = memnew(HSplitContainer);
@@ -1418,6 +1419,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page2_0_description->set_text(TTR("Select translations to add all required glyphs to pre-render list:"));
 	page2_0_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_0_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	page2_0_description->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	page2_0_vb->add_child(page2_0_description);
 
 	locale_tree = memnew(Tree);
@@ -1449,6 +1451,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page2_1_description->set_text(TTR("Enter a text and select OpenType features to shape and add all required glyphs to pre-render list:"));
 	page2_1_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_1_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	page2_1_description->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	page2_1_vb->add_child(page2_1_description);
 
 	HSplitContainer *page2_1_hb = memnew(HSplitContainer);
@@ -1486,6 +1489,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page2_2_description->set_text(TTR("Add or remove glyphs from the character map to pre-render list:\nNote: Some stylistic alternatives and glyph variants do not have one-to-one correspondence to character, and not shown in this map, use \"Glyphs from the text\" tab to add these."));
 	page2_2_description->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	page2_2_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	page2_2_description->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	page2_2_vb->add_child(page2_2_description);
 
 	HSplitContainer *glyphs_split = memnew(HSplitContainer);

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A 2×3 matrix (2 rows, 3 columns) used for 2D linear transformations. It can represent transformations such as translation, rotation, and scaling. It consists of three [Vector2] values: [member x], [member y], and the [member origin].
-		For more information, read the "Matrices and transforms" documentation article.
+		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>

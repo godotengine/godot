@@ -5485,7 +5485,7 @@ Variant Animation::cast_to_blendwise(const Variant p_value) {
 	switch (p_value.get_type()) {
 		case Variant::BOOL:
 		case Variant::INT: {
-			return p_value.operator real_t();
+			return p_value.operator double();
 		} break;
 		case Variant::STRING:
 		case Variant::STRING_NAME: {
@@ -5521,7 +5521,7 @@ Variant Animation::cast_from_blendwise(const Variant p_value, const Variant::Typ
 			return p_value.operator real_t() >= 0.5;
 		} break;
 		case Variant::INT: {
-			return (int)Math::round(p_value.operator real_t());
+			return (int64_t)Math::round(p_value.operator double());
 		} break;
 		case Variant::STRING: {
 			return array_to_string(p_value);
@@ -5594,8 +5594,12 @@ Variant Animation::array_to_string(const Variant p_value) {
 }
 
 Variant Animation::add_variant(const Variant &a, const Variant &b) {
-	if (a.get_type() != b.get_type() && !a.is_array()) {
-		return a;
+	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			return add_variant(cast_to_blendwise(a), cast_to_blendwise(b));
+		} else if (!a.is_array()) {
+			return a;
+		}
 	}
 
 	switch (a.get_type()) {
@@ -5603,7 +5607,7 @@ Variant Animation::add_variant(const Variant &a, const Variant &b) {
 			return Variant();
 		} break;
 		case Variant::FLOAT: {
-			return (a.operator real_t()) + (b.operator real_t());
+			return (a.operator double()) + (b.operator double());
 		} break;
 		case Variant::RECT2: {
 			const Rect2 ra = a.operator Rect2();
@@ -5704,8 +5708,12 @@ Variant Animation::add_variant(const Variant &a, const Variant &b) {
 }
 
 Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
-	if (a.get_type() != b.get_type() && !a.is_array()) {
-		return a;
+	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			return subtract_variant(cast_to_blendwise(a), cast_to_blendwise(b));
+		} else if (!a.is_array()) {
+			return a;
+		}
 	}
 
 	switch (a.get_type()) {
@@ -5713,7 +5721,7 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 			return Variant();
 		} break;
 		case Variant::FLOAT: {
-			return (a.operator real_t()) - (b.operator real_t());
+			return (a.operator double()) - (b.operator double());
 		} break;
 		case Variant::RECT2: {
 			const Rect2 ra = a.operator Rect2();
@@ -5814,8 +5822,12 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 }
 
 Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
-	if (a.get_type() != b.get_type() && !a.is_array()) {
-		return a;
+	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			return blend_variant(cast_to_blendwise(a), cast_to_blendwise(b), c);
+		} else if (!a.is_array()) {
+			return a;
+		}
 	}
 
 	switch (a.get_type()) {
@@ -5823,7 +5835,7 @@ Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
 			return Variant();
 		} break;
 		case Variant::FLOAT: {
-			return (a.operator real_t()) + (b.operator real_t()) * c;
+			return (a.operator double()) + (b.operator double()) * c;
 		} break;
 		case Variant::VECTOR2: {
 			return (a.operator Vector2()) + (b.operator Vector2()) * c;
@@ -5947,8 +5959,12 @@ Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
 }
 
 Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element) {
-	if (a.get_type() != b.get_type() && !a.is_array()) {
-		return a;
+	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			return interpolate_variant(cast_to_blendwise(a), cast_to_blendwise(b), c);
+		} else if (!a.is_array()) {
+			return a;
+		}
 	}
 
 	switch (a.get_type()) {
@@ -5956,8 +5972,8 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			return Variant();
 		} break;
 		case Variant::FLOAT: {
-			const real_t va = a.operator real_t();
-			return va + ((b.operator real_t()) - va) * c;
+			const double va = a.operator double();
+			return va + ((b.operator double()) - va) * c;
 		} break;
 		case Variant::VECTOR2: {
 			return (a.operator Vector2()).lerp(b.operator Vector2(), c);

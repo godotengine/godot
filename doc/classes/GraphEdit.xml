@@ -154,7 +154,7 @@
 		<method name="get_connection_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>
-				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
+				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from_node: "GraphNode name 0", to_port: 1, to_node: "GraphNode name 1" }[/code].
 			</description>
 		</method>
 		<method name="get_menu_hbox">
@@ -298,7 +298,7 @@
 	<signals>
 		<signal name="begin_node_move">
 			<description>
-				Emitted at the beginning of a GraphNode movement.
+				Emitted at the beginning of a [GraphElement]'s movement.
 			</description>
 		</signal>
 		<signal name="connection_drag_ended">
@@ -341,13 +341,14 @@
 		</signal>
 		<signal name="copy_nodes_request">
 			<description>
-				Emitted when the user presses [kbd]Ctrl + C[/kbd].
+				Emitted when this [GraphEdit] captures a [code]ui_copy[/code] action ([kbd]Ctrl + C[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be copied.
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
 			<param index="0" name="nodes" type="StringName[]" />
 			<description>
-				Emitted when attempting to remove a GraphNode from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
+				Emitted when this [GraphEdit] captures a [code]ui_graph_delete[/code] action ([kbd]Delete[/kbd] by default).
+				[param nodes] is an array of node names that should be removed. These usually include all selected nodes.
 			</description>
 		</signal>
 		<signal name="disconnection_request">
@@ -361,28 +362,29 @@
 		</signal>
 		<signal name="duplicate_nodes_request">
 			<description>
-				Emitted when a GraphNode is attempted to be duplicated in the GraphEdit.
+				Emitted when this [GraphEdit] captures a [code]ui_graph_duplicate[/code] action ([kbd]Ctrl + D[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be duplicated.
 			</description>
 		</signal>
 		<signal name="end_node_move">
 			<description>
-				Emitted at the end of a GraphNode movement.
+				Emitted at the end of a [GraphElement]'s movement.
 			</description>
 		</signal>
 		<signal name="node_deselected">
 			<param index="0" name="node" type="Node" />
 			<description>
+				Emitted when the given [GraphElement] node is deselected.
 			</description>
 		</signal>
 		<signal name="node_selected">
 			<param index="0" name="node" type="Node" />
 			<description>
-				Emitted when a GraphNode is selected.
+				Emitted when the given [GraphElement] node is selected.
 			</description>
 		</signal>
 		<signal name="paste_nodes_request">
 			<description>
-				Emitted when the user presses [kbd]Ctrl + V[/kbd].
+				Emitted when this [GraphEdit] captures a [code]ui_paste[/code] action ([kbd]Ctrl + V[/kbd] by default). In general, this signal indicates that previously copied [GraphElement]s should be pasted.
 			</description>
 		</signal>
 		<signal name="popup_request">

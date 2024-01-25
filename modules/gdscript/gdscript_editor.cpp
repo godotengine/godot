@@ -1210,6 +1210,8 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					return;
 				}
 
+				int location = ScriptLanguage::LOCATION_OTHER;
+
 				if (!p_only_functions) {
 					List<PropertyInfo> members;
 					if (p_base.value.get_type() != Variant::NIL) {
@@ -1223,7 +1225,11 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							continue;
 						}
 						if (!String(E.name).contains("/")) {
-							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
+							if (base_type.kind == GDScriptParser::DataType::ENUM) {
+								// Sort enum members in their declaration order.
+								location += 1;
+							}
 							if (GDScriptParser::theme_color_names.has(E.name)) {
 								option.theme_color_name = GDScriptParser::theme_color_names[E.name];
 							}
@@ -1239,7 +1245,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						// Enum types are static and cannot change, therefore we skip non-const dictionary methods.
 						continue;
 					}
-					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 					if (E.arguments.size()) {
 						option.insert_text += "(";
 					} else {
@@ -1494,11 +1500,8 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 			} break;
 			case GDScriptParser::Node::SELF: {
 				if (p_context.current_class) {
-					if (p_context.type != GDScriptParser::COMPLETION_SUPER_METHOD) {
-						r_type.type = p_context.current_class->get_datatype();
-					} else {
-						r_type.type = p_context.current_class->base_type;
-					}
+					r_type.type = p_context.current_class->get_datatype();
+					r_type.type.is_meta_type = false;
 					found = true;
 				}
 			} break;
@@ -2676,10 +2679,6 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 	if (p_context.base == nullptr) {
 		return false;
 	}
-	if (p_subscript->base->datatype.type_source == GDScriptParser::DataType::ANNOTATED_EXPLICIT) {
-		// Annotated type takes precedence.
-		return false;
-	}
 
 	const GDScriptParser::GetNodeNode *get_node = nullptr;
 
@@ -2689,6 +2688,11 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 		} break;
 
 		case GDScriptParser::Node::IDENTIFIER: {
+			if (p_subscript->base->datatype.type_source == GDScriptParser::DataType::ANNOTATED_EXPLICIT) {
+				// Annotated type takes precedence.
+				return false;
+			}
+
 			const GDScriptParser::IdentifierNode *identifier_node = static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base);
 
 			switch (identifier_node->source) {

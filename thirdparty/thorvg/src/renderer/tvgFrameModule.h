@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,15 @@
 namespace tvg
 {
 
-class FrameModule: public LoadModule
+class FrameModule: public ImageLoader
 {
 public:
+    FrameModule(FileType type) : ImageLoader(type) {}
     virtual ~FrameModule() {}
 
-    virtual bool frame(uint32_t frameNo) = 0;   //set the current frame number
-
-    virtual uint32_t totalFrame() = 0;      //return the total frame count
-    virtual uint32_t curFrame() = 0;        //return the current frame number
+    virtual bool frame(float no) = 0;       //set the current frame number
+    virtual float totalFrame() = 0;         //return the total frame count
+    virtual float curFrame() = 0;           //return the current frame number
     virtual float duration() = 0;           //return the animation duration in seconds
 
     virtual bool animatable() override { return true; }
