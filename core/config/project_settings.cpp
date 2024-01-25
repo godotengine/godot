@@ -268,6 +268,15 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 		return p_path.replace("user://", "");
 	}
 
+	// Custom resource paths
+	Dictionary resource_paths = FileAccess::get_resource_paths();
+	for (int i = 0; i < resource_paths.size(); i++) {
+		String key = resource_paths.get_key_at_index(i);
+		if (p_path.begins_with(key + "://")) {
+			return p_path.replace(key + ":/", resource_paths[key]);
+		}
+	}
+
 	return p_path;
 }
 

@@ -42,6 +42,8 @@ FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
 
 FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
 
+HashMap<String, String> FileAccess::resource_paths = HashMap<String, String>();
+
 bool FileAccess::backup_save = false;
 thread_local Error FileAccess::last_file_open_error = OK;
 
@@ -75,7 +77,6 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
-
 	} else {
 		ret = create(ACCESS_FILESYSTEM);
 	}
@@ -210,6 +211,11 @@ String FileAccess::fix_path(const String &p_path) const {
 
 		} break;
 		case ACCESS_FILESYSTEM: {
+			for (KeyValue<String, String> kv : resource_paths) {
+				if (r_path.begins_with(kv.key + "://")) {
+					return r_path.replace(kv.key + ":/", kv.value);
+				}
+			}
 			return r_path;
 		} break;
 		case ACCESS_MAX:
@@ -852,6 +858,70 @@ String FileAccess::get_sha256(const String &p_file) {
 	return String::hex_encode_buffer(hash, 32);
 }
 
+void FileAccess::add_resource_path(const String &p_protocol, const String &p_path) {
+	ERR_FAIL_COND_MSG(p_protocol.length() == 0, "Protocol parameter is empty.");
+
+	String protocol = p_protocol;
+	if (protocol.ends_with("://")) {
+		protocol = protocol.left(protocol.length() - 3);
+	}
+
+	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat("Protocol \"%s://\" is built-in.", protocol));
+	ERR_FAIL_COND_MSG(resource_paths.has(p_protocol), vformat("Protocol \"%s://\" is already registered.", protocol));
+
+	resource_paths[protocol] = p_path;
+}
+
+void FileAccess::remove_resource_path(const String &p_protocol) {
+	ERR_FAIL_COND_MSG(p_protocol.length() == 0, "Protocol parameter is empty.");
+
+	String protocol = p_protocol;
+	if (protocol.ends_with("://")) {
+		protocol = protocol.left(protocol.length() - 3);
+	}
+
+	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat("Protocol \"%s://\" is built-in.", protocol));
+	ERR_FAIL_COND_MSG(!resource_paths.has(p_protocol), vformat("Protocol \"%s://\" is not registered.", protocol));
+
+	resource_paths.erase(protocol);
+}
+
+bool FileAccess::is_resource_path(const String &p_protocol) {
+	ERR_FAIL_COND_V_MSG(p_protocol.length() == 0, false, "Protocol parameter is empty.");
+
+	String protocol = p_protocol;
+	if (protocol.ends_with("://")) {
+		protocol = protocol.left(protocol.length() - 3);
+	}
+
+	ERR_FAIL_COND_V_MSG(protocol == "res" || protocol == "user", false, vformat("Protocol \"%s://\" is built-in.", protocol));
+
+	return resource_paths.has(protocol);
+}
+
+String FileAccess::get_resource_path(const String &p_protocol) {
+	if (!is_resource_path(p_protocol)) {
+		return "";
+	}
+
+	String protocol = p_protocol;
+	if (protocol.ends_with("://")) {
+		protocol = protocol.left(protocol.length() - 3);
+	}
+
+	return resource_paths[protocol];
+}
+
+Dictionary FileAccess::get_resource_paths() {
+	Dictionary output;
+
+	for (KeyValue<String, String> kv : resource_paths) {
+		output[kv.key] = kv.value;
+	}
+
+	return output;
+}
+
 void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open", "path", "flags"), &FileAccess::_open);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key"), &FileAccess::open_encrypted);
@@ -917,6 +987,12 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_hidden_attribute", "file", "hidden"), &FileAccess::set_hidden_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "file", "ro"), &FileAccess::set_read_only_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "file"), &FileAccess::get_read_only_attribute);
+
+	ClassDB::bind_static_method("FileAccess", D_METHOD("add_resource_path", "protocol", "path"), &FileAccess::add_resource_path);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_resource_path", "protocol"), &FileAccess::remove_resource_path);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("is_resource_path", "protocol"), &FileAccess::is_resource_path);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_resource_path", "protocol"), &FileAccess::get_resource_path);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_resource_paths"), &FileAccess::get_resource_paths);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
 

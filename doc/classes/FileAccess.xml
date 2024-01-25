@@ -43,6 +43,13 @@
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
+		<method name="add_resource_path" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="protocol" type="String" />
+			<param index="1" name="path" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="close">
 			<return type="void" />
 			<description>
@@ -253,6 +260,17 @@
 				Returns the next bits from the file as a floating-point number.
 			</description>
 		</method>
+		<method name="get_resource_path" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="protocol" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_resource_paths" qualifiers="static">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
 		<method name="get_sha256" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
@@ -281,6 +299,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the file is currently opened.
+			</description>
+		</method>
+		<method name="is_resource_path" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="protocol" type="String" />
+			<description>
 			</description>
 		</method>
 		<method name="open" qualifiers="static">
@@ -322,6 +346,12 @@
 			<description>
 				Creates a new [FileAccess] object and opens an encrypted file in write or read mode. You need to pass a password to encrypt/decrypt it.
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
+			</description>
+		</method>
+		<method name="remove_resource_path" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="protocol" type="String" />
+			<description>
 			</description>
 		</method>
 		<method name="seek">
