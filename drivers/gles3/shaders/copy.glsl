@@ -8,6 +8,7 @@ mode_gaussian_blur = #define MODE_GAUSSIAN_BLUR
 mode_mipmap = #define MODE_MIPMAP
 mode_simple_color = #define MODE_SIMPLE_COLOR \n#define USE_COPY_SECTION
 mode_cube_to_octahedral = #define CUBE_TO_OCTAHEDRAL \n#define USE_COPY_SECTION
+mode_cube_to_panorama = #define CUBE_TO_PANORAMA
 
 #[specializations]
 
@@ -53,20 +54,33 @@ uniform highp vec2 pixel_size;
 #endif
 
 #ifdef CUBE_TO_OCTAHEDRAL
-uniform samplerCube source_cube; // texunit:0
-
 vec3 oct_to_vec3(vec2 e) {
 	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
 	float t = max(-v.z, 0.0);
 	v.xy += t * -sign(v.xy);
 	return normalize(v);
 }
-#else
-uniform sampler2D source; // texunit:0
-
 #endif
 
+#ifdef CUBE_TO_PANORAMA
+uniform lowp float mip_level;
+#endif
+
+#if defined(CUBE_TO_OCTAHEDRAL) || defined(CUBE_TO_PANORAMA)
+uniform samplerCube source_cube; // texunit:0
+
+#else // ~(defined(CUBE_TO_OCTAHEDRAL) || defined(CUBE_TO_PANORAMA))
+uniform sampler2D source; // texunit:0
+
+#endif // !(defined(CUBE_TO_OCTAHEDRAL) || defined(CUBE_TO_PANORAMA))
+
 layout(location = 0) out vec4 frag_color;
+
+// This expects 0-1 range input, outside that range it behaves poorly.
+vec3 srgb_to_linear(vec3 color) {
+	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+	return color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);
+}
 
 void main() {
 #ifdef MODE_SIMPLE_COPY
@@ -109,6 +123,23 @@ void main() {
 	// Treat the UV coordinates as 0-1 encoded octahedral coordinates.
 	vec3 dir = oct_to_vec3(uv_interp * 2.0 - 1.0);
 	frag_color = texture(source_cube, dir);
+
+#endif
+
+#ifdef CUBE_TO_PANORAMA
+
+	const float PI = 3.14159265359;
+
+	float phi = uv_interp.x * 2.0 * PI;
+	float theta = uv_interp.y * PI;
+
+	vec3 normal;
+	normal.x = sin(phi) * sin(theta) * -1.0;
+	normal.y = cos(theta);
+	normal.z = cos(phi) * sin(theta) * -1.0;
+
+	vec3 color = srgb_to_linear(textureLod(source_cube, normal, mip_level).rgb);
+	frag_color = vec4(color, 1.0);
 
 #endif
 }

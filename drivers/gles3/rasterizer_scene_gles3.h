@@ -61,6 +61,7 @@ enum PassMode {
 	PASS_MODE_COLOR_TRANSPARENT,
 	PASS_MODE_SHADOW,
 	PASS_MODE_DEPTH,
+	PASS_MODE_MATERIAL,
 };
 
 // These should share as much as possible with SkyUniform Location
@@ -375,7 +376,7 @@ private:
 			float ambient_light_color_energy[4];
 
 			float ambient_color_sky_mix;
-			uint32_t material_uv2_mode;
+			uint32_t pad2;
 			float emissive_exposure_normalization;
 			uint32_t use_ambient_light = 0;
 
@@ -465,13 +466,15 @@ private:
 		bool reverse_cull = false;
 		uint64_t spec_constant_base_flags = 0;
 		bool force_wireframe = false;
+		Vector2 uv_offset = Vector2(0, 0);
 
-		RenderListParameters(GeometryInstanceSurface **p_elements, int p_element_count, bool p_reverse_cull, uint64_t p_spec_constant_base_flags, bool p_force_wireframe = false) {
+		RenderListParameters(GeometryInstanceSurface **p_elements, int p_element_count, bool p_reverse_cull, uint64_t p_spec_constant_base_flags, bool p_force_wireframe = false, Vector2 p_uv_offset = Vector2()) {
 			elements = p_elements;
 			element_count = p_element_count;
 			reverse_cull = p_reverse_cull;
 			spec_constant_base_flags = p_spec_constant_base_flags;
 			force_wireframe = p_force_wireframe;
+			uv_offset = p_uv_offset;
 		}
 	};
 
@@ -647,6 +650,10 @@ protected:
 	void _draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y);
 	void _free_sky_data(Sky *p_sky);
 
+	// Needed for a single argument calls (material and uv2).
+	PagedArrayPool<RenderGeometryInstance *> cull_argument_pool;
+	PagedArray<RenderGeometryInstance *> cull_argument;
+
 public:
 	static RasterizerSceneGLES3 *get_singleton() { return singleton; }
 
@@ -747,6 +754,7 @@ public:
 	void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override;
 
 	TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) override;
+	void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, GLuint p_framebuffer, const Rect2i &p_region);
 
 	bool free(RID p_rid) override;
 	void update() override;

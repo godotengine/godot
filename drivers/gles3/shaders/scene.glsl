@@ -31,6 +31,7 @@ USE_ADDITIVE_LIGHTING = false
 // these are false, we are doing a directional light pass.
 ADDITIVE_OMNI = false
 ADDITIVE_SPOT = false
+RENDER_MATERIAL = false
 
 
 #[vertex]
@@ -90,7 +91,7 @@ layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 #endif
 
-#if defined(UV2_USED) || defined(USE_LIGHTMAP)
+#if defined(UV2_USED) || defined(USE_LIGHTMAP) || defined(RENDER_MATERIAL)
 layout(location = 5) in vec2 uv2_attrib;
 #endif
 
@@ -160,12 +161,12 @@ layout(std140) uniform SceneData { // ubo:2
 	mediump vec4 ambient_light_color_energy;
 
 	mediump float ambient_color_sky_mix;
-	bool material_uv2_mode;
+	float pad2;
 	float emissive_exposure_normalization;
 	bool use_ambient_light;
+
 	bool use_ambient_cubemap;
 	bool use_reflection_cubemap;
-
 	float fog_aerial_perspective;
 	float time;
 
@@ -248,6 +249,10 @@ uniform highp vec3 compressed_aabb_size;
 uniform highp vec4 uv_scale;
 
 uniform highp uint model_flags;
+
+#ifdef RENDER_MATERIAL
+uniform mediump vec2 uv_offset;
+#endif
 
 /* Varyings */
 
@@ -511,6 +516,12 @@ void main() {
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
 #endif
+
+#ifdef RENDER_MATERIAL
+	gl_Position.xy = (uv2_attrib.xy + uv_offset) * 2.0 - 1.0;
+	gl_Position.z = 0.00001;
+	gl_Position.w = 1.0;
+#endif
 }
 
 /* clang-format off */
@@ -632,12 +643,12 @@ layout(std140) uniform SceneData { // ubo:2
 	mediump vec4 ambient_light_color_energy;
 
 	mediump float ambient_color_sky_mix;
-	bool material_uv2_mode;
+	float pad2;
 	float emissive_exposure_normalization;
 	bool use_ambient_light;
+
 	bool use_ambient_cubemap;
 	bool use_reflection_cubemap;
-
 	float fog_aerial_perspective;
 	float time;
 
@@ -884,7 +895,19 @@ ivec2 multiview_uv(ivec2 uv) {
 uniform highp mat4 world_transform;
 uniform mediump float opaque_prepass_threshold;
 
+#ifndef MODE_RENDER_DEPTH
+#ifdef RENDER_MATERIAL
+layout(location = 0) out vec4 albedo_output_buffer;
+layout(location = 1) out vec4 normal_output_buffer;
+layout(location = 2) out vec4 orm_output_buffer;
+layout(location = 3) out vec4 emission_output_buffer;
+
+#else // !RENDER_MATERIAL
+// Normal color rendering.
 layout(location = 0) out vec4 frag_color;
+
+#endif // !RENDER_MATERIAL
+#endif // !MODE_RENDER_DEPTH
 
 vec3 F0(float metallic, float specular, vec3 albedo) {
 	float dielectric = 0.16 * specular * specular;
@@ -1666,6 +1689,23 @@ void main() {
 
 // Nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
 #else // !MODE_RENDER_DEPTH
+
+#ifdef RENDER_MATERIAL
+
+	albedo_output_buffer.rgb = albedo;
+	albedo_output_buffer.a = alpha;
+
+	normal_output_buffer.rgb = normal * 0.5 + 0.5;
+	normal_output_buffer.a = 0.0;
+
+	orm_output_buffer.r = ao;
+	orm_output_buffer.g = roughness;
+	orm_output_buffer.b = metallic;
+	orm_output_buffer.a = 1.0;
+
+	emission_output_buffer.rgb = emission;
+	emission_output_buffer.a = 0.0;
+#else // !RENDER_MATERIAL
 #ifdef BASE_PASS
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
@@ -1920,6 +1960,6 @@ void main() {
 
 	frag_color.rgb += additive_light_color;
 #endif // USE_ADDITIVE_LIGHTING
-
+#endif // !RENDER_MATERIAL
 #endif //!MODE_RENDER_DEPTH
 }

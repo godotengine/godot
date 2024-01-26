@@ -65,6 +65,7 @@ public:
 	void copy_to_and_from_rect(const Rect2 &p_rect);
 	void copy_screen();
 	void copy_cube_to_rect(const Rect2 &p_rect);
+	void copy_cube_to_panorama(float p_mip_level);
 	void bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region);
 	void gaussian_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region, const Size2i &p_size);
 	void set_color(const Color &p_color, const Rect2i &p_region);
