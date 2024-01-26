@@ -298,7 +298,6 @@ class EditorFileSystem : public Node {
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
 	bool _scan_extensions();
-	bool _scan_import_support(Vector<String> reimports);
 
 	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 
@@ -316,6 +315,7 @@ public:
 	void scan();
 	void scan_changes();
 	void update_file(const String &p_file);
+	bool scan_import_support(Vector<String> p_reimports);
 	HashSet<String> get_valid_extensions() const;
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);

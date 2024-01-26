@@ -524,7 +524,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	return false; //nothing changed
 }
 
-bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
+bool EditorFileSystem::scan_import_support(Vector<String> p_reimports) {
 	if (import_support_queries.size() == 0) {
 		return false;
 	}
@@ -545,8 +545,8 @@ bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
 		return false; //well nothing to do
 	}
 
-	for (int i = 0; i < reimports.size(); i++) {
-		HashMap<String, int>::Iterator E = import_support_test.find(reimports[i].get_extension().to_lower());
+	for (int i = 0; i < p_reimports.size(); i++) {
+		HashMap<String, int>::Iterator E = import_support_test.find(p_reimports[i].get_extension().to_lower());
 		if (E) {
 			import_support_tested.write[E->value] = true;
 		}
@@ -693,7 +693,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	}
 
 	if (reimports.size()) {
-		if (_scan_import_support(reimports)) {
+		if (scan_import_support(reimports)) {
 			return true;
 		}
 

@@ -572,6 +572,12 @@ void ImportDock::_reimport() {
 		Error err = config->load(params->paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
 
+		// Added this to check if we have proper importer support for
+		// these files before we actually attempt to import it.
+		// This will allow user to set blender_path and fbx2gltf_paths
+		// if they reimport those files and don't have the settings set.
+		EditorFileSystem::get_singleton()->scan_import_support(params->paths);
+
 		if (params->importer.is_valid()) {
 			String importer_name = params->importer->get_importer_name();
 
