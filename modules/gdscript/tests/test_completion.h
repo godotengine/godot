@@ -31,6 +31,9 @@
 #ifndef TEST_COMPLETION_H
 #define TEST_COMPLETION_H
 
+#include "core/io/resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
 #ifdef TOOLS_ENABLED
 
 #include "core/io/config_file.h"
@@ -140,8 +143,20 @@ static void test_directory(const String &p_dir) {
 			bool forced;
 
 			Node *owner = nullptr;
+			print_line("before owner load");
 			if (conf.has_section_key("input", "scene")) {
-				Ref<PackedScene> scene = ResourceLoader::load(conf.get_value("input", "scene"), "PackedScene");
+				/*List<String> deps;
+				ResourceLoader::get_dependencies(conf.get_value("input", "scene"), &deps);
+				for (const String &E : deps) {
+					print_line(E);
+					print_line(ResourceLoader::exists(E));
+					print_line(ResourceLoader::get_resource_type(E));
+					Ref<GDScript> s = ResourceLoader::load(E);
+					if (s->is_valid()) {
+						print_line(s->get_members().size());
+					}
+				}*/
+				Ref<PackedScene> scene = ResourceLoader::load(conf.get_value("input", "scene"), "PackedScene", ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP);
 				if (scene.is_valid()) {
 					owner = scene->instantiate();
 				}
@@ -151,11 +166,16 @@ static void test_directory(const String &p_dir) {
 					owner = scene->instantiate();
 				}
 			}
-
+			print_line("after owner load");
+			if (owner != nullptr) {
+				print_line("owner", owner->to_string());
+			} else {
+				print_line("no owner");
+			}
 			GDScriptLanguage::get_singleton()->complete_code(code, path.path_join(next), owner, &options, forced, call_hint);
 			String contains_excluded;
 			for (ScriptLanguage::CodeCompletionOption &option : options) {
-				print_line(option.display);
+				//print_line(option.display);
 				for (const Dictionary &E : exclude) {
 					if (match_option(E, option)) {
 						contains_excluded = option.display;
@@ -199,6 +219,8 @@ static void test_directory(const String &p_dir) {
 
 TEST_SUITE("[Modules][GDScript][Completion]") {
 	TEST_CASE("[Editor] Check suggestion list") {
+		ResourceUID::initialize_class();
+
 		// Set all editor settings that code completion relies on.
 		EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", false);
 		init_language("modules/gdscript/tests/scripts");

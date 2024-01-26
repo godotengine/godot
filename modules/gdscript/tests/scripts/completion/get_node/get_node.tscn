@@ -12,8 +12,8 @@
 unique_name_in_owner = true
 
 [node name="UniqueA" type="Node" parent="UniqueNames"]
-script = ExtResource("1_ldc4g")
 unique_name_in_owner = true
+script = ExtResource("1_ldc4g")
 
 [node name="A" type="Node" parent="."]
 script = ExtResource("1_ldc4g")

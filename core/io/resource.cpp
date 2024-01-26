@@ -31,6 +31,7 @@
 #include "resource.h"
 
 #include "core/core_string_names.h"
+#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
@@ -84,6 +85,9 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 	path_cache = p_path;
 
 	if (!path_cache.is_empty()) {
+		if (p_path.ends_with("class_a.notest.gd")) {
+			print_line("Setting resource path to class_a.notest.gd");
+		}
 		ResourceCache::resources[path_cache] = this;
 	}
 	ResourceCache::lock.unlock();

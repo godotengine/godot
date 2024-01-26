@@ -304,13 +304,22 @@ void GDScript::get_script_method_list(List<MethodInfo> *r_list) const {
 }
 
 void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const {
+	print_line("GDSCript get_script_property list");
 	const GDScript *sptr = this;
+	print_line(this);
 	List<PropertyInfo> props;
-
 	while (sptr) {
+		print_line("while running");
+		print_line(sptr->get_source_code());
+		print_line(sptr->reloading);
+		print_line(sptr->member_indices.size());
+		print_line(sptr->members.size());
+		print_line(sptr->get_members().size());
 		Vector<_GDScriptMemberSort> msort;
 		for (const KeyValue<StringName, MemberInfo> &E : sptr->member_indices) {
+			print_line(E.key);
 			if (!sptr->members.has(E.key)) {
+				print_line("skipping");
 				continue; // Skip base class members.
 			}
 			_GDScriptMemberSort ms;
@@ -330,6 +339,7 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 #endif // TOOLS_ENABLED
 
 		for (const PropertyInfo &E : props) {
+			print_line("pushing_back", E.name);
 			r_list->push_back(E);
 		}
 
@@ -687,6 +697,7 @@ void GDScript::_restore_old_static_data() {
 #endif
 
 Error GDScript::reload(bool p_keep_state) {
+	print_line("reload", this->get_script_path());
 	if (reloading) {
 		return OK;
 	}
@@ -1016,6 +1027,7 @@ String GDScript::get_script_path() const {
 }
 
 Error GDScript::load_source_code(const String &p_path) {
+	print_line("load source code", p_path);
 	if (p_path.is_empty() || p_path.begins_with("gdscript://") || ResourceLoader::get_resource_type(p_path.get_slice("::", 0)) == "PackedScene") {
 		return OK;
 	}
@@ -2816,6 +2828,7 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 /*************** RESOURCE ***************/
 
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	print_line("resource format loader load", p_path);
 	Error err;
 	bool ignoring = p_cache_mode == CACHE_MODE_IGNORE || p_cache_mode == CACHE_MODE_IGNORE_DEEP;
 	Ref<GDScript> scr = GDScriptCache::get_full_script(p_original_path, err, "", ignoring);
@@ -2839,6 +2852,7 @@ void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_ext
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
+	print_line("GDScrip resource loader handles", p_type);
 	return (p_type == "Script" || p_type == "GDScript");
 }
 

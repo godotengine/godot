@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/string/print_string.h"
 #include "gdscript.h"
 
 #include "gdscript_analyzer.h"
@@ -1128,15 +1129,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				print_line("identifier script");
 				Ref<Script> scr = base_type.script_type;
 				if (scr.is_valid()) {
-<<<<<<< HEAD
 					if (p_types_only) {
 						// TODO: Need to implement Script::get_script_enum_list and retrieve the enum list from a script.
 					} else if (!p_only_functions) {
-=======
-					print_line("script valid");
-					if (!p_only_functions) {
-						print_line("not only functions");
->>>>>>> ae78637b78 (Add test for `get_node` autocompletion)
 						if (!base_type.is_meta_type) {
 							print_line("no meta type");
 							List<PropertyInfo> members;
@@ -2056,6 +2051,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 }
 
 static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::IdentifierNode *p_identifier, GDScriptCompletionIdentifier &r_type) {
+	print_line("guess identifier type");
 	static int recursion_depth = 0;
 	RecursionCheck recursion(&recursion_depth);
 	if (unlikely(recursion.check())) {
@@ -2114,7 +2110,9 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 				break;
 		}
 	} else {
+		print_line("not local");
 		if (p_context.current_class) {
+			print_line("current class exists");
 			GDScriptCompletionIdentifier base_identifier;
 
 			GDScriptCompletionIdentifier base;
@@ -2302,6 +2300,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 }
 
 static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
+	print_line("_guess_identifier_type_from_base");
 	static int recursion_depth = 0;
 	RecursionCheck recursion(&recursion_depth);
 	if (unlikely(recursion.check())) {
@@ -2313,7 +2312,9 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 	while (base_type.is_set()) {
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS:
+				print_line("CLASS");
 				if (base_type.class_type->has_member(p_identifier)) {
+					print_line("has member");
 					const GDScriptParser::ClassNode::Member &member = base_type.class_type->get_member(p_identifier);
 					switch (member.type) {
 						case GDScriptParser::ClassNode::Member::CONSTANT:
@@ -2323,29 +2324,40 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 							}
 							return true;
 						case GDScriptParser::ClassNode::Member::VARIABLE:
+							print_line("variable");
 							if (!is_static || member.variable->is_static) {
+								print_line("1");
 								if (member.variable->get_datatype().is_set() && !member.variable->get_datatype().is_variant()) {
+									print_line("2");
 									r_type.type = member.variable->get_datatype();
 									return true;
 								} else if (member.variable->initializer) {
+									print_line("3");
 									const GDScriptParser::ExpressionNode *init = member.variable->initializer;
 									if (init->is_constant) {
+										print_line("4");
 										r_type.value = init->reduced_value;
 										r_type = _type_from_variant(init->reduced_value, p_context);
 										return true;
 									} else if (init->start_line == p_context.current_line) {
+										print_line("5");
 										return false;
 										// Detects if variable is assigned to itself
 									} else if (_is_expression_named_identifier(init, member.variable->identifier->name)) {
+										print_line("6");
 										if (member.variable->initializer->get_datatype().is_set()) {
+											print_line("7");
 											r_type.type = member.variable->initializer->get_datatype();
 										} else if (member.variable->get_datatype().is_set() && !member.variable->get_datatype().is_variant()) {
+											print_line("8");
 											r_type.type = member.variable->get_datatype();
 										}
 										return true;
 									} else if (_guess_expression_type(p_context, init, r_type)) {
+										print_line("9");
 										return true;
 									} else if (init->get_datatype().is_set() && !init->get_datatype().is_variant()) {
+										print_line("10");
 										r_type.type = init->get_datatype();
 										return true;
 									}
@@ -2847,6 +2859,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 }
 
 static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::SubscriptNode *p_subscript, GDScriptParser::DataType &r_base_type, Variant *r_base = nullptr) {
+	print_line("get subscript type");
 	if (p_context.base == nullptr) {
 		return false;
 	}
@@ -2859,10 +2872,13 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 		} break;
 
 		case GDScriptParser::Node::IDENTIFIER: {
+			print_line("identifier");
 			if (p_subscript->base->datatype.type_source == GDScriptParser::DataType::ANNOTATED_EXPLICIT) {
+				print_line("annotated type takes precedence");
 				// Annotated type takes precedence.
 				return false;
 			}
+			print_line("annotated type did not work", p_subscript->base->datatype.type_source);
 
 			const GDScriptParser::IdentifierNode *identifier_node = static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base);
 
@@ -3177,11 +3193,17 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			[[fallthrough]];
 		case GDScriptParser::COMPLETION_ATTRIBUTE: {
 			print_line("completion attribute");
+			if (completion_context.base != nullptr) {
+				print_line("base", completion_context.base->to_string());
+			} else {
+				print_line("no base");
+			}
 			r_forced = true;
 			const GDScriptParser::SubscriptNode *attr = static_cast<const GDScriptParser::SubscriptNode *>(completion_context.node);
 			if (attr->base) {
 				GDScriptCompletionIdentifier base;
 				bool found_type = _get_subscript_type(completion_context, attr, base.type);
+				print_line("found through subscript type", found_type);
 				if (!found_type && !_guess_expression_type(completion_context, attr->base, base)) {
 					break;
 				}

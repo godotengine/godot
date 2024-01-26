@@ -30,6 +30,7 @@
 
 #include "gdscript_compiler.h"
 
+#include "core/string/print_string.h"
 #include "gdscript.h"
 #include "gdscript_byte_codegen.h"
 #include "gdscript_cache.h"
@@ -2579,11 +2580,17 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 // RPC info for its base classes first, then for itself, then for inner classes.
 // Warning: this function cannot initiate compilation of other classes, or it will result in cyclic dependency issues.
 Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
+	print_line("prepare compilation", p_script->get_script_path());
+	print_line(p_script->get_source_code());
+	//print_line(p_class->extends[0]);
+	print_line(p_class->members.size());
 	if (parsed_classes.has(p_script)) {
+		print_line("already parsed");
 		return OK;
 	}
 
 	if (parsing_classes.has(p_script)) {
+		print_line("already parsing");
 		String class_name = p_class->identifier ? String(p_class->identifier->name) : p_class->fqcn;
 		_set_error(vformat(R"(Cyclic class reference for "%s".)", class_name), p_class);
 		return ERR_PARSE_ERROR;
@@ -2712,8 +2719,11 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	for (int i = 0; i < p_class->members.size(); i++) {
 		const GDScriptParser::ClassNode::Member &member = p_class->members[i];
+		print_line(member.get_name());
+		print_line(member.type);
 		switch (member.type) {
 			case GDScriptParser::ClassNode::Member::VARIABLE: {
+				print_line("variable");
 				const GDScriptParser::VariableNode *variable = member.variable;
 				StringName name = variable->identifier->name;
 
@@ -2756,9 +2766,11 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				minfo.property_info = prop_info;
 
 				if (variable->is_static) {
+					print_line("static");
 					minfo.index = p_script->static_variables_indices.size();
 					p_script->static_variables_indices[name] = minfo;
 				} else {
+					print_line("inserting");
 					minfo.index = p_script->member_indices.size();
 					p_script->member_indices[name] = minfo;
 					p_script->members.insert(name);
@@ -3174,6 +3186,7 @@ void GDScriptCompiler::_get_function_ptr_replacements(HashMap<GDScriptFunction *
 }
 
 Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_script, bool p_keep_state) {
+	print_line("compile", p_script->get_script_path());
 	err_line = -1;
 	err_column = -1;
 	error = "";
