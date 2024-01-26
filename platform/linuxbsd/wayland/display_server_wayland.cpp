@@ -557,6 +557,37 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	return ret;
 }
 
+int64_t DisplayServerWayland::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	switch (p_handle_type) {
+		case DISPLAY_HANDLE: {
+			return (int64_t)wayland_thread.get_wl_display();
+		} break;
+
+		case WINDOW_HANDLE: {
+			return (int64_t)wayland_thread.window_get_wl_surface(p_window);
+		} break;
+
+		case WINDOW_VIEW: {
+			return 0; // Not supported.
+		} break;
+
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			if (egl_manager) {
+				return (int64_t)egl_manager->get_context(p_window);
+			}
+			return 0;
+		} break;
+#endif // GLES3_ENABLED
+
+		default: {
+			return 0;
+		} break;
+	}
+}
+
 DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(const Point2i &p_position) const {
 	// Standard Wayland APIs don't support this.
 	return MAIN_WINDOW_ID;
