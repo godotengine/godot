@@ -34,6 +34,12 @@
 #include "gdscript_tokenizer.h"
 
 class GDScriptTokenizerBuffer : public GDScriptTokenizer {
+public:
+	enum CompressMode {
+		COMPRESS_NONE,
+		COMPRESS_ZSTD,
+	};
+
 	enum {
 		TOKEN_BYTE_MASK = 0x80,
 		TOKEN_BITS = 8,
@@ -64,7 +70,7 @@ class GDScriptTokenizerBuffer : public GDScriptTokenizer {
 
 public:
 	Error set_code_buffer(const Vector<uint8_t> &p_buffer);
-	static Vector<uint8_t> parse_code_string(const String &p_code);
+	static Vector<uint8_t> parse_code_string(const String &p_code, CompressMode p_compress_mode);
 
 	virtual int get_cursor_line() const override;
 	virtual int get_cursor_column() const override;

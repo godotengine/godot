@@ -365,6 +365,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	pop_multiline();
 
 	memdelete(text_tokenizer);
+	tokenizer = nullptr;
 
 #ifdef DEBUG_ENABLED
 	if (multiline_stack.size() > 0) {
@@ -384,6 +385,7 @@ Error GDScriptParser::parse_binary(const Vector<uint8_t> &p_binary, const String
 	Error err = buffer_tokenizer->set_code_buffer(p_binary);
 
 	if (err) {
+		memdelete(buffer_tokenizer);
 		return err;
 	}
 
@@ -404,6 +406,7 @@ Error GDScriptParser::parse_binary(const Vector<uint8_t> &p_binary, const String
 	pop_multiline();
 
 	memdelete(buffer_tokenizer);
+	tokenizer = nullptr;
 
 	if (errors.is_empty()) {
 		return OK;

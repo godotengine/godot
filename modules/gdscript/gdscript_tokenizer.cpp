@@ -284,7 +284,7 @@ void GDScriptTokenizerText::push_expression_indented_block() {
 }
 
 void GDScriptTokenizerText::pop_expression_indented_block() {
-	ERR_FAIL_COND(indent_stack_stack.size() == 0);
+	ERR_FAIL_COND(indent_stack_stack.is_empty());
 	indent_stack = indent_stack_stack.back()->get();
 	indent_stack_stack.pop_back();
 }

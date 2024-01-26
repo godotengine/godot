@@ -57,6 +57,7 @@ public:
 	enum ScriptExportMode {
 		MODE_SCRIPT_TEXT,
 		MODE_SCRIPT_BINARY_TOKENS,
+		MODE_SCRIPT_BINARY_TOKENS_COMPRESSED,
 	};
 
 private:
@@ -89,7 +90,7 @@ private:
 	bool enc_directory = false;
 
 	String script_key;
-	int script_mode = MODE_SCRIPT_BINARY_TOKENS;
+	int script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);

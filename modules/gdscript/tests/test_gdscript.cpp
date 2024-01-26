@@ -111,7 +111,7 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<String> &p_lines);
 
 static void test_tokenizer_buffer(const String &p_code, const Vector<String> &p_lines) {
-	Vector<uint8_t> binary = GDScriptTokenizerBuffer::parse_code_string(p_code);
+	Vector<uint8_t> binary = GDScriptTokenizerBuffer::parse_code_string(p_code, GDScriptTokenizerBuffer::COMPRESS_NONE);
 	test_tokenizer_buffer(binary, p_lines);
 }
 

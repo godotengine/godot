@@ -1398,7 +1398,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_vb->add_margin_child(TTR("GDScript Export Mode:"), script_mode);
 	script_mode->add_item(TTR("Text (easier debugging)"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
 	script_mode->add_item(TTR("Binary tokens (faster loading)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS);
+	script_mode->add_item(TTR("Compressed binary tokens (smaller files)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
 	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
+
 	sections->add_child(script_vb);
 
 	sections->connect("tab_changed", callable_mp(this, &ProjectExportDialog::_tab_changed));

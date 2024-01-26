@@ -84,7 +84,7 @@ class EditorExportGDScript : public EditorExportPlugin {
 
 public:
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) override {
-		int script_mode = EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS;
+		int script_mode = EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
 
 		const Ref<EditorExportPreset> &preset = get_export_preset();
 
@@ -103,7 +103,8 @@ public:
 
 		String source;
 		source.parse_utf8(reinterpret_cast<const char *>(file.ptr()), file.size());
-		file = GDScriptTokenizerBuffer::parse_code_string(source);
+		GDScriptTokenizerBuffer::CompressMode compress_mode = script_mode == EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED ? GDScriptTokenizerBuffer::COMPRESS_ZSTD : GDScriptTokenizerBuffer::COMPRESS_NONE;
+		file = GDScriptTokenizerBuffer::parse_code_string(source, compress_mode);
 		if (file.is_empty()) {
 			return;
 		}

@@ -30,6 +30,7 @@
 
 #include "gdscript_tokenizer_buffer.h"
 
+#include "core/io/compression.h"
 #include "core/io/marshalls.h"
 
 #define TOKENIZER_VERSION 100
@@ -139,19 +140,31 @@ GDScriptTokenizer::Token GDScriptTokenizerBuffer::_binary_to_token(const uint8_t
 
 Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) {
 	const uint8_t *buf = p_buffer.ptr();
-	int total_len = p_buffer.size();
-	ERR_FAIL_COND_V(p_buffer.size() < 24 || p_buffer[0] != 'G' || p_buffer[1] != 'D' || p_buffer[2] != 'S' || p_buffer[3] != 'C', ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_buffer.size() < 12 || p_buffer[0] != 'G' || p_buffer[1] != 'D' || p_buffer[2] != 'S' || p_buffer[3] != 'C', ERR_INVALID_DATA);
 
 	int version = decode_uint32(&buf[4]);
 	ERR_FAIL_COND_V_MSG(version > TOKENIZER_VERSION, ERR_INVALID_DATA, "Binary GDScript is too recent! Please use a newer engine version.");
 
-	uint32_t identifier_count = decode_uint32(&buf[8]);
-	uint32_t constant_count = decode_uint32(&buf[12]);
-	uint32_t token_line_count = decode_uint32(&buf[16]);
-	uint32_t token_count = decode_uint32(&buf[20]);
+	int decompressed_size = decode_uint32(&buf[8]);
 
-	const uint8_t *b = &buf[24];
-	total_len -= 24;
+	Vector<uint8_t> contents;
+	if (decompressed_size == 0) {
+		contents = p_buffer.slice(12);
+	} else {
+		contents.resize(decompressed_size);
+		int result = Compression::decompress(contents.ptrw(), contents.size(), &buf[12], p_buffer.size() - 12, Compression::MODE_ZSTD);
+		ERR_FAIL_COND_V_MSG(result != decompressed_size, ERR_INVALID_DATA, "Error decompressing GDScript tokenizer buffer.");
+	}
+
+	int total_len = contents.size();
+	buf = contents.ptr();
+	uint32_t identifier_count = decode_uint32(&buf[0]);
+	uint32_t constant_count = decode_uint32(&buf[4]);
+	uint32_t token_line_count = decode_uint32(&buf[8]);
+	uint32_t token_count = decode_uint32(&buf[16]);
+
+	const uint8_t *b = &buf[20];
+	total_len -= 20;
 
 	identifiers.resize(identifier_count);
 	for (uint32_t i = 0; i < identifier_count; i++) {
@@ -226,9 +239,7 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 	return OK;
 }
 
-Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code) {
-	Vector<uint8_t> buf;
-
+Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code, CompressMode p_compress_mode) {
 	HashMap<StringName, uint32_t> identifier_map;
 	HashMap<Variant, uint32_t, VariantHasher, VariantComparator> constant_map;
 	Vector<uint8_t> token_buffer;
@@ -280,28 +291,23 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 		}
 	}
 
-	// Save header.
-	buf.resize(24);
-	buf.write[0] = 'G';
-	buf.write[1] = 'D';
-	buf.write[2] = 'S';
-	buf.write[3] = 'C';
-	encode_uint32(TOKENIZER_VERSION, &buf.write[4]);
-	encode_uint32(identifier_map.size(), &buf.write[8]);
-	encode_uint32(constant_map.size(), &buf.write[12]);
-	encode_uint32(token_lines.size(), &buf.write[16]);
-	encode_uint32(token_counter, &buf.write[20]);
+	Vector<uint8_t> contents;
+	contents.resize(20);
+	encode_uint32(identifier_map.size(), &contents.write[0]);
+	encode_uint32(constant_map.size(), &contents.write[4]);
+	encode_uint32(token_lines.size(), &contents.write[8]);
+	encode_uint32(token_counter, &contents.write[16]);
 
-	int buf_pos = 24;
+	int buf_pos = 20;
 
 	// Save identifiers.
 	for (const StringName &id : rev_identifier_map) {
 		String s = id.operator String();
 		int len = s.length();
 
-		buf.resize(buf_pos + (len + 1) * 4);
+		contents.resize(buf_pos + (len + 1) * 4);
 
-		encode_uint32(len, &buf.write[buf_pos]);
+		encode_uint32(len, &contents.write[buf_pos]);
 		buf_pos += 4;
 
 		for (int i = 0; i < len; i++) {
@@ -309,7 +315,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 			encode_uint32(s[i], tmp);
 
 			for (int b = 0; b < 4; b++) {
-				buf.write[buf_pos + b] = tmp[b] ^ 0xb6;
+				contents.write[buf_pos + b] = tmp[b] ^ 0xb6;
 			}
 
 			buf_pos += 4;
@@ -322,28 +328,58 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 		// Objects cannot be constant, never encode objects.
 		Error err = encode_variant(v, nullptr, len, false);
 		ERR_FAIL_COND_V_MSG(err != OK, Vector<uint8_t>(), "Error when trying to encode Variant.");
-		buf.resize(buf_pos + len);
-		encode_variant(v, &buf.write[buf_pos], len, false);
+		contents.resize(buf_pos + len);
+		encode_variant(v, &contents.write[buf_pos], len, false);
 		buf_pos += len;
 	}
 
 	// Save lines and columns.
-	buf.resize(buf_pos + token_lines.size() * 16);
+	contents.resize(buf_pos + token_lines.size() * 16);
 	for (const KeyValue<uint32_t, uint32_t> &e : token_lines) {
-		encode_uint32(e.key, &buf.write[buf_pos]);
+		encode_uint32(e.key, &contents.write[buf_pos]);
 		buf_pos += 4;
-		encode_uint32(e.value, &buf.write[buf_pos]);
+		encode_uint32(e.value, &contents.write[buf_pos]);
 		buf_pos += 4;
 	}
 	for (const KeyValue<uint32_t, uint32_t> &e : token_columns) {
-		encode_uint32(e.key, &buf.write[buf_pos]);
+		encode_uint32(e.key, &contents.write[buf_pos]);
 		buf_pos += 4;
-		encode_uint32(e.value, &buf.write[buf_pos]);
+		encode_uint32(e.value, &contents.write[buf_pos]);
 		buf_pos += 4;
 	}
 
 	// Store tokens.
-	buf.append_array(token_buffer);
+	contents.append_array(token_buffer);
+
+	Vector<uint8_t> buf;
+
+	// Save header.
+	buf.resize(12);
+	buf.write[0] = 'G';
+	buf.write[1] = 'D';
+	buf.write[2] = 'S';
+	buf.write[3] = 'C';
+	encode_uint32(TOKENIZER_VERSION, &buf.write[4]);
+
+	switch (p_compress_mode) {
+		case COMPRESS_NONE:
+			encode_uint32(0u, &buf.write[8]);
+			buf.append_array(contents);
+			break;
+
+		case COMPRESS_ZSTD: {
+			encode_uint32(contents.size(), &buf.write[8]);
+			Vector<uint8_t> compressed;
+			int max_size = Compression::get_max_compressed_buffer_size(contents.size(), Compression::MODE_ZSTD);
+			compressed.resize(max_size);
+
+			int compressed_size = Compression::compress(compressed.ptrw(), contents.ptr(), contents.size(), Compression::MODE_ZSTD);
+			ERR_FAIL_COND_V_MSG(compressed_size < 0, Vector<uint8_t>(), "Error compressing GDScript tokenizer buffer.");
+			compressed.resize(compressed_size);
+
+			buf.append_array(compressed);
+		} break;
+	}
 
 	return buf;
 }
@@ -372,7 +408,7 @@ void GDScriptTokenizerBuffer::push_expression_indented_block() {
 }
 
 void GDScriptTokenizerBuffer::pop_expression_indented_block() {
-	ERR_FAIL_COND(indent_stack_stack.size() == 0);
+	ERR_FAIL_COND(indent_stack_stack.is_empty());
 	indent_stack = indent_stack_stack.back()->get();
 	indent_stack_stack.pop_back();
 }

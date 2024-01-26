@@ -270,7 +270,7 @@ void EditorExport::load_config() {
 		preset->set_include_filter(config->get_value(section, "include_filter"));
 		preset->set_exclude_filter(config->get_value(section, "exclude_filter"));
 		preset->set_export_path(config->get_value(section, "export_path", ""));
-		preset->set_script_export_mode(config->get_value(section, "script_export_mode", EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS));
+		preset->set_script_export_mode(config->get_value(section, "script_export_mode", EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED));
 
 		if (config->has_section_key(section, "encrypt_pck")) {
 			preset->set_enc_pck(config->get_value(section, "encrypt_pck"));
