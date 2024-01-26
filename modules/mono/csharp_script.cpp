@@ -697,18 +697,24 @@ struct CSharpScriptDepSort {
 			// Shouldn't happen but just in case...
 			return false;
 		}
-		const Script *I = B->get_base_script().ptr();
+		const CSharpScript *I = get_base_script(B.ptr()).ptr();
 		while (I) {
 			if (I == A.ptr()) {
 				// A is a base of B
 				return true;
 			}
 
-			I = I->get_base_script().ptr();
+			I = get_base_script(I).ptr();
 		}
 
 		// A isn't a base of B
 		return false;
+	}
+
+	// Special fix for constructed generic types.
+	Ref<CSharpScript> get_base_script(const CSharpScript *p_script) const {
+		Ref<CSharpScript> base_script = p_script->base_script;
+		return base_script.is_valid() && !base_script->class_name.is_empty() ? base_script : nullptr;
 	}
 };
 
