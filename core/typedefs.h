@@ -93,6 +93,7 @@
 #undef OK
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
 #undef MemoryBarrier
+#undef MONO_FONT
 #endif
 
 // Make room for our constexpr's below by overriding potential system-specific macros.
