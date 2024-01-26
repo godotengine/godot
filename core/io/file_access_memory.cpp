@@ -119,7 +119,7 @@ uint64_t FileAccessMemory::get_length() const {
 }
 
 bool FileAccessMemory::eof_reached() const {
-	return pos > length;
+	return pos >= length;
 }
 
 uint8_t FileAccessMemory::get_8() const {

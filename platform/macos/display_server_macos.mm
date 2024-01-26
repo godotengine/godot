@@ -34,6 +34,7 @@
 #include "godot_content_view.h"
 #include "godot_menu_delegate.h"
 #include "godot_menu_item.h"
+#include "godot_open_save_delegate.h"
 #include "godot_window.h"
 #include "godot_window_delegate.h"
 #include "key_mapping_macos.h"
@@ -2079,139 +2080,37 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	return OK;
 }
 
-@interface FileDialogDropdown : NSObject {
-	NSSavePanel *dialog;
-	NSMutableArray *allowed_types;
-	int cur_index;
-}
-
-- (instancetype)initWithDialog:(NSSavePanel *)p_dialog fileTypes:(NSMutableArray *)p_allowed_types;
-- (void)popupAction:(id)sender;
-- (int)getIndex;
-
-@end
-
-@implementation FileDialogDropdown
-
-- (int)getIndex {
-	return cur_index;
-}
-
-- (instancetype)initWithDialog:(NSSavePanel *)p_dialog fileTypes:(NSMutableArray *)p_allowed_types {
-	if ((self = [super init])) {
-		dialog = p_dialog;
-		allowed_types = p_allowed_types;
-		cur_index = 0;
-	}
-	return self;
-}
-
-- (void)popupAction:(id)sender {
-	NSUInteger index = [sender indexOfSelectedItem];
-	if (index < [allowed_types count]) {
-		[dialog setAllowedFileTypes:[allowed_types objectAtIndex:index]];
-		cur_index = index;
-	} else {
-		[dialog setAllowedFileTypes:@[]];
-		cur_index = -1;
-	}
-}
-
-@end
-
-FileDialogDropdown *_make_accessory_view(NSSavePanel *p_panel, const Vector<String> &p_filters) {
-	NSView *group = [[NSView alloc] initWithFrame:NSZeroRect];
-	group.translatesAutoresizingMaskIntoConstraints = NO;
-
-	NSTextField *label = [NSTextField labelWithString:[NSString stringWithUTF8String:RTR("Format").utf8().get_data()]];
-	label.translatesAutoresizingMaskIntoConstraints = NO;
-	if (@available(macOS 10.14, *)) {
-		label.textColor = NSColor.secondaryLabelColor;
-	}
-	if (@available(macOS 11.10, *)) {
-		label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-	}
-	[group addSubview:label];
-
-	NSPopUpButton *popup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
-	popup.translatesAutoresizingMaskIntoConstraints = NO;
-
-	NSMutableArray *allowed_types = [[NSMutableArray alloc] init];
-	bool allow_other = false;
-	for (int i = 0; i < p_filters.size(); i++) {
-		Vector<String> tokens = p_filters[i].split(";");
-		if (tokens.size() >= 1) {
-			String flt = tokens[0].strip_edges();
-			int filter_slice_count = flt.get_slice_count(",");
-
-			NSMutableArray *type_filters = [[NSMutableArray alloc] init];
-			for (int j = 0; j < filter_slice_count; j++) {
-				String str = (flt.get_slice(",", j).strip_edges());
-				if (str.strip_edges() == "*.*" || str.strip_edges() == "*") {
-					allow_other = true;
-				} else if (!str.is_empty()) {
-					[type_filters addObject:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
-				}
-			}
-
-			if ([type_filters count] > 0) {
-				NSString *name_str = [NSString stringWithUTF8String:((tokens.size() == 1) ? tokens[0] : vformat("%s (%s)", tokens[1], tokens[0])).strip_edges().utf8().get_data()];
-				[allowed_types addObject:type_filters];
-				[popup addItemWithTitle:name_str];
-			}
-		}
-	}
-	FileDialogDropdown *handler = [[FileDialogDropdown alloc] initWithDialog:p_panel fileTypes:allowed_types];
-	popup.target = handler;
-	popup.action = @selector(popupAction:);
-
-	[group addSubview:popup];
-
-	NSView *view = [[NSView alloc] initWithFrame:NSZeroRect];
-	view.translatesAutoresizingMaskIntoConstraints = NO;
-	[view addSubview:group];
-
-	NSMutableArray *constraints = [NSMutableArray array];
-	[constraints addObject:[popup.topAnchor constraintEqualToAnchor:group.topAnchor constant:10]];
-	[constraints addObject:[label.leadingAnchor constraintEqualToAnchor:group.leadingAnchor constant:10]];
-	[constraints addObject:[popup.leadingAnchor constraintEqualToAnchor:label.trailingAnchor constant:10]];
-	[constraints addObject:[popup.firstBaselineAnchor constraintEqualToAnchor:label.firstBaselineAnchor]];
-	[constraints addObject:[group.trailingAnchor constraintEqualToAnchor:popup.trailingAnchor constant:10]];
-	[constraints addObject:[group.bottomAnchor constraintEqualToAnchor:popup.bottomAnchor constant:10]];
-	[constraints addObject:[group.topAnchor constraintEqualToAnchor:view.topAnchor]];
-	[constraints addObject:[group.centerXAnchor constraintEqualToAnchor:view.centerXAnchor]];
-	[constraints addObject:[view.bottomAnchor constraintEqualToAnchor:group.bottomAnchor]];
-	[NSLayoutConstraint activateConstraints:constraints];
-
-	[p_panel setAllowsOtherFileTypes:allow_other];
-	if ([allowed_types count] > 0) {
-		[p_panel setAccessoryView:view];
-		[p_panel setAllowedFileTypes:[allowed_types objectAtIndex:0]];
-	}
-
-	return handler;
-}
-
 Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+}
+
+Error DisplayServerMacOS::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true);
+}
+
+Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
 
 	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
-	FileDialogDropdown *handler = nullptr;
-
 	WindowID prev_focus = last_focused_window;
 
+	GodotOpenSaveDelegate *panel_delegate = [[GodotOpenSaveDelegate alloc] init];
+	if (p_root.length() > 0) {
+		[panel_delegate setRootPath:p_root];
+	}
 	Callable callback = p_callback; // Make a copy for async completion handler.
 	if (p_mode == FILE_DIALOG_MODE_SAVE_FILE) {
 		NSSavePanel *panel = [NSSavePanel savePanel];
 
 		[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
-		handler = _make_accessory_view(panel, p_filters);
+		[panel_delegate makeAccessoryView:panel filters:p_filters options:p_options];
 		[panel setExtensionHidden:YES];
 		[panel setCanSelectHiddenExtension:YES];
 		[panel setCanCreateDirectories:YES];
 		[panel setShowsHiddenFiles:p_show_hidden];
+		[panel setDelegate:panel_delegate];
 		if (p_filename != "") {
 			NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
 			[panel setNameFieldStringValue:fileurl];
@@ -2248,30 +2147,60 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 							  url.parse_utf8([[[panel URL] path] UTF8String]);
 							  files.push_back(url);
 							  if (!callback.is_null()) {
-								  Variant v_result = true;
-								  Variant v_files = files;
-								  Variant v_index = [handler getIndex];
-								  Variant ret;
-								  Callable::CallError ce;
-								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+								  if (p_options_in_cb) {
+									  Variant v_result = true;
+									  Variant v_files = files;
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant v_opt = [panel_delegate getSelection];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-								  callback.callp(args, 3, ret, ce);
-								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  callback.callp(args, 4, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+									  }
+								  } else {
+									  Variant v_result = true;
+									  Variant v_files = files;
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+									  callback.callp(args, 3, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  }
 								  }
 							  }
 						  } else {
 							  if (!callback.is_null()) {
-								  Variant v_result = false;
-								  Variant v_files = Vector<String>();
-								  Variant v_index = [handler getIndex];
-								  Variant ret;
-								  Callable::CallError ce;
-								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+								  if (p_options_in_cb) {
+									  Variant v_result = false;
+									  Variant v_files = Vector<String>();
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant v_opt = [panel_delegate getSelection];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-								  callback.callp(args, 3, ret, ce);
-								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  callback.callp(args, 4, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+									  }
+								  } else {
+									  Variant v_result = false;
+									  Variant v_files = Vector<String>();
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+									  callback.callp(args, 3, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  }
 								  }
 							  }
 						  }
@@ -2283,13 +2212,14 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 		NSOpenPanel *panel = [NSOpenPanel openPanel];
 
 		[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
-		handler = _make_accessory_view(panel, p_filters);
+		[panel_delegate makeAccessoryView:panel filters:p_filters options:p_options];
 		[panel setExtensionHidden:YES];
 		[panel setCanSelectHiddenExtension:YES];
 		[panel setCanCreateDirectories:YES];
 		[panel setCanChooseFiles:(p_mode != FILE_DIALOG_MODE_OPEN_DIR)];
 		[panel setCanChooseDirectories:(p_mode == FILE_DIALOG_MODE_OPEN_DIR || p_mode == FILE_DIALOG_MODE_OPEN_ANY)];
 		[panel setShowsHiddenFiles:p_show_hidden];
+		[panel setDelegate:panel_delegate];
 		if (p_filename != "") {
 			NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
 			[panel setNameFieldStringValue:fileurl];
@@ -2333,30 +2263,60 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 								  files.push_back(url);
 							  }
 							  if (!callback.is_null()) {
-								  Variant v_result = true;
-								  Variant v_files = files;
-								  Variant v_index = [handler getIndex];
-								  Variant ret;
-								  Callable::CallError ce;
-								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+								  if (p_options_in_cb) {
+									  Variant v_result = true;
+									  Variant v_files = files;
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant v_opt = [panel_delegate getSelection];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-								  callback.callp(args, 3, ret, ce);
-								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  callback.callp(args, 4, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+									  }
+								  } else {
+									  Variant v_result = true;
+									  Variant v_files = files;
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+									  callback.callp(args, 3, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  }
 								  }
 							  }
 						  } else {
 							  if (!callback.is_null()) {
-								  Variant v_result = false;
-								  Variant v_files = Vector<String>();
-								  Variant v_index = [handler getIndex];
-								  Variant ret;
-								  Callable::CallError ce;
-								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+								  if (p_options_in_cb) {
+									  Variant v_result = false;
+									  Variant v_files = Vector<String>();
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant v_opt = [panel_delegate getSelection];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-								  callback.callp(args, 3, ret, ce);
-								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  callback.callp(args, 4, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+									  }
+								  } else {
+									  Variant v_result = false;
+									  Variant v_files = Vector<String>();
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+									  callback.callp(args, 3, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  }
 								  }
 							  }
 						  }

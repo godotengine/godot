@@ -494,6 +494,10 @@ public:
 	};
 	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
 
+	void texture_2d_initialize_from_texture(RID p_texture, Texture &p_tex) {
+		texture_owner.initialize_rid(p_texture, p_tex);
+	}
+
 	virtual bool can_create_resources_async() const override;
 
 	virtual RID texture_allocate() override;

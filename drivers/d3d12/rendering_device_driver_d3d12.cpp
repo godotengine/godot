@@ -91,10 +91,8 @@ extern "C" {
 
 static const D3D12_RANGE VOID_RANGE = {};
 
-static const uint32_t ROOT_CONSTANT_SPACE = RDD::MAX_UNIFORM_SETS + 1;
-static const uint32_t ROOT_CONSTANT_REGISTER = 0;
-static const uint32_t RUNTIME_DATA_SPACE = RDD::MAX_UNIFORM_SETS + 2;
-static const uint32_t RUNTIME_DATA_REGISTER = 0;
+static const uint32_t ROOT_CONSTANT_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 1);
+static const uint32_t RUNTIME_DATA_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 2);
 
 #ifdef DEV_ENABLED
 //#define DEBUG_COUNT_BARRIERS
@@ -2304,9 +2302,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		nir_options.lower_base_vertex = false;
 
 		dxil_spirv_runtime_conf dxil_runtime_conf = {};
-		dxil_runtime_conf.runtime_data_cbv.register_space = RUNTIME_DATA_SPACE;
 		dxil_runtime_conf.runtime_data_cbv.base_shader_register = RUNTIME_DATA_REGISTER;
-		dxil_runtime_conf.push_constant_cbv.register_space = ROOT_CONSTANT_SPACE;
 		dxil_runtime_conf.push_constant_cbv.base_shader_register = ROOT_CONSTANT_REGISTER;
 		dxil_runtime_conf.zero_based_vertex_instance_id = true;
 		dxil_runtime_conf.zero_based_compute_workgroup_id = true;
@@ -2424,10 +2420,10 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 				DEV_ASSERT(p_dxil_type < ARRAY_SIZE(DXIL_TYPE_TO_CLASS));
 				ResourceClass res_class = DXIL_TYPE_TO_CLASS[p_dxil_type];
 
-				if (p_register == ROOT_CONSTANT_REGISTER && p_space == ROOT_CONSTANT_SPACE) {
+				if (p_register == ROOT_CONSTANT_REGISTER && p_space == 0) {
 					DEV_ASSERT(res_class == RES_CLASS_CBV);
 					shader_data_in.binary_data.dxil_push_constant_stages |= (1 << shader_data_in.stage);
-				} else if (p_register == RUNTIME_DATA_REGISTER && p_space == RUNTIME_DATA_SPACE) {
+				} else if (p_register == RUNTIME_DATA_REGISTER && p_space == 0) {
 					DEV_ASSERT(res_class == RES_CLASS_CBV);
 					shader_data_in.binary_data.nir_runtime_data_root_param_idx = 1; // Temporary, to be determined later.
 				} else {
@@ -2586,7 +2582,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 			push_constant.InitAsConstants(
 					binary_data.push_constant_size / sizeof(uint32_t),
 					ROOT_CONSTANT_REGISTER,
-					ROOT_CONSTANT_SPACE,
+					0,
 					stages_to_d3d12_visibility(binary_data.dxil_push_constant_stages));
 			root_params.push_back(push_constant);
 		}
@@ -2599,7 +2595,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 			nir_runtime_data.InitAsConstants(
 					sizeof(dxil_spirv_vertex_runtime_data) / sizeof(uint32_t),
 					RUNTIME_DATA_REGISTER,
-					RUNTIME_DATA_SPACE,
+					0,
 					D3D12_SHADER_VISIBILITY_VERTEX);
 			root_params.push_back(nir_runtime_data);
 		}

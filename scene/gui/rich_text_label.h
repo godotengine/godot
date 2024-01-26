@@ -32,6 +32,7 @@
 #define RICH_TEXT_LABEL_H
 
 #include "core/object/worker_thread_pool.h"
+#include "core/templates/rid_owner.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
@@ -149,11 +150,18 @@ private:
 		ItemType type = ITEM_FRAME;
 		List<Item *> subitems;
 		List<Item *>::Element *E = nullptr;
+		ObjectID owner;
 		int line = 0;
+		RID rid;
 
 		void _clear_children() {
+			RichTextLabel *owner_rtl = Object::cast_to<RichTextLabel>(ObjectDB::get_instance(owner));
 			while (subitems.size()) {
-				memdelete(subitems.front()->get());
+				Item *subitem = subitems.front()->get();
+				if (subitem && subitem->rid.is_valid() && owner_rtl) {
+					owner_rtl->items.free(subitem->rid);
+				}
+				memdelete(subitem);
 				subitems.pop_front();
 			}
 		}
@@ -214,6 +222,14 @@ private:
 		Variant key;
 		String tooltip;
 		ItemImage() { type = ITEM_IMAGE; }
+		~ItemImage() {
+			if (image.is_valid()) {
+				RichTextLabel *owner_rtl = Object::cast_to<RichTextLabel>(ObjectDB::get_instance(owner));
+				if (owner_rtl) {
+					image->disconnect_changed(callable_mp(owner_rtl, &RichTextLabel::_texture_changed));
+				}
+			}
+		}
 	};
 
 	struct ItemFont : public Item {
@@ -462,6 +478,10 @@ private:
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line);
+
+	void _texture_changed(RID p_item);
+
+	RID_PtrOwner<Item> items;
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;

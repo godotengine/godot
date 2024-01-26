@@ -20,6 +20,7 @@ files = [
     "godot_main_macos.mm",
     "godot_menu_delegate.mm",
     "godot_menu_item.mm",
+    "godot_open_save_delegate.mm",
     "dir_access_macos.mm",
     "tts_macos.mm",
     "joypad_macos.cpp",

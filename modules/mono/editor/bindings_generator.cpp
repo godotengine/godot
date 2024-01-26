@@ -1621,9 +1621,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			} else {
 				// Hide the constructor
-				output.append(MEMBER_BEGIN "internal ");
-				output.append(itype.proxy_name);
-				output.append("() {}\n");
+				output << MEMBER_BEGIN "internal " << itype.proxy_name << "() : this("
+					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
+					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
+					   << INDENT3 "_ConstructAndInitialize(null, "
+					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
+					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
 			}
 
 			// Add.. em.. trick constructor. Sort of.
@@ -2237,10 +2241,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 				p_output.append(INDENT1 "/// </summary>");
 			}
-
-			if (p_imethod.method_doc->is_deprecated) {
-				p_output.append(MEMBER_BEGIN "[Obsolete(\"This method is deprecated.\")]");
-			}
 		}
 
 		if (default_args_doc.get_string_length()) {
@@ -2255,6 +2255,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
 			p_output.append(p_imethod.deprecation_message);
 			p_output.append("\")]");
+		} else if (p_imethod.method_doc && p_imethod.method_doc->is_deprecated) {
+			p_output.append(MEMBER_BEGIN "[Obsolete(\"This method is deprecated.\")]");
 		}
 
 		if (p_imethod.is_compat) {

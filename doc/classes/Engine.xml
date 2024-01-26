@@ -179,7 +179,6 @@
 				[code]status[/code]   - Holds the status (e.g. "beta", "rc1", "rc2", ... "stable") as a String
 				[code]build[/code]    - Holds the build name (e.g. "custom_build") as a String
 				[code]hash[/code]     - Holds the full Git commit hash as a String
-				[code]year[/code]     - Holds the year the version was released in as an int
 				[code]string[/code]   - [code]major[/code] + [code]minor[/code] + [code]patch[/code] + [code]status[/code] + [code]build[/code] in a single String
 				The [code]hex[/code] value is encoded as follows, from left to right: one byte for the major, one byte for the minor, one byte for the patch version. For example, "3.1.12" would be [code]0x03010C[/code]. [b]Note:[/b] It's still an int internally, and printing it will give you its decimal representation, which is not particularly meaningful. Use hexadecimal literals for easy version comparisons from code:
 				[codeblocks]

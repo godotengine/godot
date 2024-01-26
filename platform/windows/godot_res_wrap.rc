@@ -1,16 +1,12 @@
 #include "core/version.h"
-#ifndef _STR
-#define _STR(m_x) #m_x
-#define _MKSTR(m_x) _STR(m_x)
-#endif
 
 GODOT_ICON ICON platform/windows/godot_console.ico
 
 1 VERSIONINFO
-FILEVERSION    	VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
-PRODUCTVERSION 	VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
-FILEOS         	4
-FILETYPE       	1
+FILEVERSION     VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
+PRODUCTVERSION  VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
+FILEOS          4
+FILETYPE        1
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
@@ -21,7 +17,7 @@ BEGIN
             VALUE "FileVersion",            VERSION_NUMBER
             VALUE "ProductName",            VERSION_NAME " (Console)"
             VALUE "Licence",                "MIT"
-            VALUE "LegalCopyright",         "Copyright (c) 2007-" _MKSTR(VERSION_YEAR) " Juan Linietsky, Ariel Manzur and contributors"
+            VALUE "LegalCopyright",         "(c) 2007-present Juan Linietsky, Ariel Manzur and Godot Engine contributors"
             VALUE "Info",                   "https://godotengine.org"
             VALUE "ProductVersion",         VERSION_FULL_BUILD
         END

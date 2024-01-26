@@ -30,7 +30,7 @@
 
 #include "openxr_vulkan_extension.h"
 
-#include "../openxr_util.h"
+#include "../../openxr_util.h"
 
 #include "core/string/print_string.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_android_extension.h                                            */
+/*  godot_open_save_delegate.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_ANDROID_EXTENSION_H
-#define OPENXR_ANDROID_EXTENSION_H
+#ifndef GODOT_OPEN_SAVE_DELEGATE_H
+#define GODOT_OPEN_SAVE_DELEGATE_H
 
-#include "../util.h"
-#include "openxr_extension_wrapper.h"
+#import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
 
-class OpenXRAndroidExtension : public OpenXRExtensionWrapper {
-public:
-	static OpenXRAndroidExtension *get_singleton();
+#include "core/templates/hash_map.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 
-	OpenXRAndroidExtension();
+@interface GodotOpenSaveDelegate : NSObject <NSOpenSavePanelDelegate> {
+	NSSavePanel *dialog;
+	NSMutableArray *allowed_types;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
-	virtual void on_before_instance_created() override;
-	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) override;
+	HashMap<int, String> ctr_ids;
+	Dictionary options;
+	int cur_index;
+	int ctr_id;
 
-	virtual ~OpenXRAndroidExtension() override;
+	String root;
+}
 
-private:
-	static OpenXRAndroidExtension *singleton;
+- (void)makeAccessoryView:(NSSavePanel *)p_panel filters:(const Vector<String> &)p_filters options:(const TypedArray<Dictionary> &)p_options;
+- (void)setFileTypes:(NSMutableArray *)p_allowed_types;
+- (void)popupOptionAction:(id)p_sender;
+- (void)popupCheckAction:(id)p_sender;
+- (void)popupFileAction:(id)p_sender;
+- (int)getIndex;
+- (Dictionary)getSelection;
+- (int)setDefaultInt:(const String &)p_name value:(int)p_value;
+- (int)setDefaultBool:(const String &)p_name value:(bool)p_value;
+- (void)setRootPath:(const String &)p_root_path;
 
-	bool loader_init_extension_available = false;
-	bool create_instance_extension_available = false;
+@end
 
-	// Initialize the loader
-	EXT_PROTO_XRRESULT_FUNC1(xrInitializeLoaderKHR, (const XrLoaderInitInfoBaseHeaderKHR *), loaderInitInfo)
-};
-
-#endif // OPENXR_ANDROID_EXTENSION_H
+#endif // GODOT_OPEN_SAVE_DELEGATE_H

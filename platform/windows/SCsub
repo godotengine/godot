@@ -109,7 +109,7 @@ if env["d3d12"]:
             )
 
     # Agility SDK
-    if env["agility_sdk_path"] != "":
+    if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
         agility_dlls = ["D3D12Core.dll", "d3d12SDKLayers.dll"]
         # Whether these are loaded from arch-specific directory or not has to be known at build time.
         target_dir = arch_bin_dir if env["agility_sdk_multiarch"] else "#bin"
@@ -121,7 +121,7 @@ if env["d3d12"]:
             )
 
     # PIX
-    if env["pix_path"] != "":
+    if env["pix_path"] != "" and os.path.exists(env["pix_path"]):
         pix_dll = "WinPixEventRuntime.dll"
         env.Command(
             "#bin/" + pix_dll,

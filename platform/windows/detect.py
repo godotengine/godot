@@ -164,6 +164,22 @@ def get_opts():
 
     mingw = os.getenv("MINGW_PREFIX", "")
 
+    # Direct3D 12 SDK dependencies folder.
+    d3d12_deps_folder = os.getenv("LOCALAPPDATA")
+    if d3d12_deps_folder:
+        d3d12_deps_folder = os.path.join(d3d12_deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            d3d12_deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except:  # Give up.
+            d3d12_deps_folder = ""
+
     return [
         ("mingw_prefix", "MinGW prefix", mingw),
         # Targeted Windows version: 7 (and later), minimum supported version
@@ -188,15 +204,31 @@ def get_opts():
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         # Direct3D 12 support.
-        ("mesa_libs", "Path to the MESA/NIR static libraries (required for D3D12)", ""),
-        ("dxc_path", "Path to the DirectX Shader Compiler distribution (required for D3D12)", ""),
-        ("agility_sdk_path", "Path to the Agility SDK distribution (optional for D3D12)", ""),
+        (
+            "mesa_libs",
+            "Path to the MESA/NIR static libraries (required for D3D12)",
+            os.path.join(d3d12_deps_folder, "mesa"),
+        ),
+        (
+            "dxc_path",
+            "Path to the DirectX Shader Compiler distribution (required for D3D12)",
+            os.path.join(d3d12_deps_folder, "dxc"),
+        ),
+        (
+            "agility_sdk_path",
+            "Path to the Agility SDK distribution (optional for D3D12)",
+            os.path.join(d3d12_deps_folder, "agility_sdk"),
+        ),
         BoolVariable(
             "agility_sdk_multiarch",
             "Whether the Agility SDK DLLs will be stored in arch-specific subdirectories",
             False,
         ),
-        ("pix_path", "Path to the PIX runtime distribution (optional for D3D12)", ""),
+        (
+            "pix_path",
+            "Path to the PIX runtime distribution (optional for D3D12)",
+            os.path.join(d3d12_deps_folder, "pix"),
+        ),
     ]
 
 
@@ -441,6 +473,16 @@ def configure_msvc(env, vcvars_msvc_config):
             LIBS += ["vulkan"]
 
     if env["d3d12"]:
+        # Check whether we have d3d12 dependencies installed.
+        if not os.path.exists(env["mesa_libs"]) or not os.path.exists(env["dxc_path"]):
+            print("The Direct3D 12 rendering driver requires dependencies to be installed.")
+            print("You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
+            print("See the documentation for more information:")
+            print(
+                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+            )
+            sys.exit(255)
+
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["d3d12", "dxgi", "dxguid"]
         LIBS += ["version"]  # Mesa dependency.
@@ -452,14 +494,9 @@ def configure_msvc(env, vcvars_msvc_config):
         arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
 
         # PIX
-        if env["pix_path"] != "":
+        if env["pix_path"] != "" and os.path.exists(env["pix_path"]):
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             LIBS += ["WinPixEventRuntime"]
-
-        # Mesa
-        if env["mesa_libs"] == "":
-            print("The Direct3D 12 rendering driver requires mesa_libs to be set.")
-            sys.exit(255)
 
         env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
         LIBS += ["libNIR.windows." + env["arch"]]
@@ -663,15 +700,20 @@ def configure_mingw(env):
 
         arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
 
+        # Check whether we have d3d12 dependencies installed.
+        if not os.path.exists(env["mesa_libs"]) or not os.path.exists(env["dxc_path"]):
+            print("The Direct3D 12 rendering driver requires dependencies to be installed.")
+            print("You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
+            print("See the documentation for more information:")
+            print(
+                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+            )
+            sys.exit(255)
+
         # PIX
-        if env["pix_path"] != "":
+        if env["pix_path"] != "" and os.path.exists(env["pix_path"]):
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             env.Append(LIBS=["WinPixEventRuntime"])
-
-        # Mesa
-        if env["mesa_libs"] == "":
-            print("The Direct3D 12 rendering driver requires mesa_libs to be set.")
-            sys.exit(255)
 
         env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
         env.Append(LIBS=["libNIR.windows." + env["arch"]])

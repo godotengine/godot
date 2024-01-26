@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  mesh_storage.cpp                                                      */
+/*  openxr_android_extension.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,68 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "mesh_storage.h"
+#ifndef OPENXR_ANDROID_EXTENSION_H
+#define OPENXR_ANDROID_EXTENSION_H
 
-using namespace RendererDummy;
+#include "../../util.h"
+#include "../openxr_extension_wrapper.h"
 
-MeshStorage *MeshStorage::singleton = nullptr;
+class OpenXRAndroidExtension : public OpenXRExtensionWrapper {
+public:
+	static OpenXRAndroidExtension *get_singleton();
 
-MeshStorage::MeshStorage() {
-	singleton = this;
-}
+	OpenXRAndroidExtension();
 
-MeshStorage::~MeshStorage() {
-	singleton = nullptr;
-}
+	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual void on_before_instance_created() override;
+	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) override;
 
-RID MeshStorage::mesh_allocate() {
-	return mesh_owner.allocate_rid();
-}
+	virtual ~OpenXRAndroidExtension() override;
 
-void MeshStorage::mesh_initialize(RID p_rid) {
-	mesh_owner.initialize_rid(p_rid, DummyMesh());
-}
+private:
+	static OpenXRAndroidExtension *singleton;
 
-void MeshStorage::mesh_free(RID p_rid) {
-	DummyMesh *mesh = mesh_owner.get_or_null(p_rid);
-	ERR_FAIL_NULL(mesh);
+	bool loader_init_extension_available = false;
+	bool create_instance_extension_available = false;
 
-	mesh_owner.free(p_rid);
-}
+	// Initialize the loader
+	EXT_PROTO_XRRESULT_FUNC1(xrInitializeLoaderKHR, (const XrLoaderInitInfoBaseHeaderKHR *), loaderInitInfo)
+};
 
-void MeshStorage::mesh_clear(RID p_mesh) {
-	DummyMesh *m = mesh_owner.get_or_null(p_mesh);
-	ERR_FAIL_NULL(m);
-
-	m->surfaces.clear();
-}
-
-RID MeshStorage::multimesh_allocate() {
-	return multimesh_owner.allocate_rid();
-}
-
-void MeshStorage::multimesh_initialize(RID p_rid) {
-	multimesh_owner.initialize_rid(p_rid, DummyMultiMesh());
-}
-
-void MeshStorage::multimesh_free(RID p_rid) {
-	DummyMultiMesh *multimesh = multimesh_owner.get_or_null(p_rid);
-	ERR_FAIL_NULL(multimesh);
-
-	multimesh_owner.free(p_rid);
-}
-
-void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) {
-	DummyMultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-	ERR_FAIL_NULL(multimesh);
-	multimesh->buffer.resize(p_buffer.size());
-	float *cache_data = multimesh->buffer.ptrw();
-	memcpy(cache_data, p_buffer.ptr(), p_buffer.size() * sizeof(float));
-}
-
-Vector<float> MeshStorage::multimesh_get_buffer(RID p_multimesh) const {
-	DummyMultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-	ERR_FAIL_NULL_V(multimesh, Vector<float>());
-
-	return multimesh->buffer;
-}
+#endif // OPENXR_ANDROID_EXTENSION_H

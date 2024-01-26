@@ -738,6 +738,14 @@ void Viewport::_process_picking() {
 
 	while (physics_picking_events.size()) {
 		local_input_handled = false;
+		if (!handle_input_locally) {
+			Viewport *vp = this;
+			while (!Object::cast_to<Window>(vp) && vp->get_parent()) {
+				vp = vp->get_parent()->get_viewport();
+			}
+			vp->local_input_handled = false;
+		}
+
 		Ref<InputEvent> ev = physics_picking_events.front()->get();
 		physics_picking_events.pop_front();
 
