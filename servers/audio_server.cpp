@@ -273,7 +273,14 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 
 		//master master, send to output
 		int cs = master->channels.size();
+
+		// Take away 1 from the stride, as we are manually incrementing by 1 for stereo.
+		uintptr_t stride_minus_one = (cs * 2) - 1;
+
 		for (int k = 0; k < cs; k++) {
+			// The destination start for data will be the same in all cases.
+			int32_t *dest = &p_buffer[from_buf * (cs * 2) + (k * 2)];
+
 			if (master->channels[k].active) {
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
@@ -281,18 +288,25 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 					float l = CLAMP(buf[from + j].l, -1.0, 1.0);
 					int32_t vl = l * ((1 << 20) - 1);
 					int32_t vl2 = (vl < 0 ? -1 : 1) * (ABS(vl) << 11);
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 0] = vl2;
+					*dest = vl2;
+					dest++;
 
 					float r = CLAMP(buf[from + j].r, -1.0, 1.0);
 					int32_t vr = r * ((1 << 20) - 1);
 					int32_t vr2 = (vr < 0 ? -1 : 1) * (ABS(vr) << 11);
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 1] = vr2;
+					*dest = vr2;
+					dest += stride_minus_one;
 				}
 
 			} else {
+				// Bizarrely, profiling indicates that detecting the common case of cs == 1,
+				// k == 0, and using memset is SLOWER than setting them individually.
+				// Perhaps it gets optimized to a faster instruction than memset.
 				for (int j = 0; j < to_copy; j++) {
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 0] = 0;
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 1] = 0;
+					*dest = 0;
+					dest++;
+					*dest = 0;
+					dest += stride_minus_one;
 				}
 			}
 		}
