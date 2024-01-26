@@ -44,9 +44,24 @@ import org.godotengine.godot.utils.ProcessPhoenix
 // @ShadyTF : Thermal status support
 import android.os.Build
 import android.os.PowerManager
+import androidx.annotation.RequiresApi
+
+
+
+class GodotThermalWrapper {
+	companion object {
+		public var power_manager: PowerManager? = null
+		@RequiresApi(Build.VERSION_CODES.R)
+		public fun getThermalHeadRoom(forecast: Int): Float {
+			if (Build.VERSION.SDK_INT >= 30) {
+				return power_manager!!.getThermalHeadroom(forecast);
+			} else {
+				return -1.0f;
+			}
+		}
+	}
+}
 // </TF>
-
-
 /**
  * Base abstract activity for Android apps intending to use Godot as the primary screen.
  *
@@ -103,6 +118,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		try {
 			if (Build.VERSION.SDK_INT >= 29) {
 				val pManager = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
+				GodotThermalWrapper.Companion.power_manager = pManager;
 				pManager.addThermalStatusListener { status: Int ->
 					val nativeStatus = thermalStatusMap!![status]
 					nativeThermalEvent(nativeStatus ?: MOBILE_THERMAL_ERROR)

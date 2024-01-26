@@ -4080,4 +4080,16 @@ Main::ThermalState Main::get_thermal_state() {
 	return thermal_state;
 }
 
+float Main::get_thermal_headroom( int p_forecast_seconds ) {
+
+#if defined(ANDROID_ENABLED)
+	float GodotGetThermalHeadroom(int);
+	return GodotGetThermalHeadroom( p_forecast_seconds );
+#else
+	return -1.0f;
+#endif 
+
+}
+
+
 // </TF>
