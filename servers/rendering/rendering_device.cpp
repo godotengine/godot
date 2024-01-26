@@ -3805,6 +3805,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 	uint32_t valid_set_count = 0;
 	uint32_t first_set_index = 0;
 	uint32_t last_set_index = 0;
+	bool found_first_set = false;
 
 	for (uint32_t i = 0; i < dl->state.set_count; i++) {
 		if (dl->state.sets[i].pipeline_expected_format == 0) {
@@ -3822,11 +3823,14 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 			}
 		}
 #endif
-
+		if (!dl->state.sets[i].bound && !found_first_set) {
+			first_set_index = i;
+			found_first_set = true;
+		}
 		draw_graph.add_draw_list_uniform_set_prepare_for_use(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
 	}
 
-	for (uint32_t i = 0; i < dl->state.set_count; i++) {
+	for (uint32_t i = first_set_index; i < dl->state.set_count; i++) {
 		if (dl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
 		}
@@ -3846,17 +3850,18 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 				valid_set_count++;
 			}
 
-			last_set_index = i;
-
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
 			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 			dl->state.sets[i].bound = true;
+
+			last_set_index = i;
 		}
 	}
 
 	// Bind the remaining batch
-	if (valid_set_count > 0)
+	if (valid_set_count > 0) {
 		draw_graph.add_draw_list_bind_uniform_sets(dl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
+	}
 
 	if (p_use_indices) {
 #ifdef DEBUG_ENABLED
@@ -4235,6 +4240,7 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 	uint32_t valid_set_count = 0;
 	uint32_t first_set_index = 0;
 	uint32_t last_set_index = 0;
+	bool found_first_set = false;
 
 	for (uint32_t i = 0; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
@@ -4253,10 +4259,15 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 		}
 #endif
 
+		if (!cl->state.sets[i].bound && !found_first_set) {
+			first_set_index = i;
+			found_first_set = true;
+		}
+
 		draw_graph.add_compute_list_uniform_set_prepare_for_use(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 	}
 
-	for (uint32_t i = 0; i < cl->state.set_count; i++) {
+	for (uint32_t i = first_set_index; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
 		}
@@ -4350,6 +4361,7 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 	uint32_t valid_set_count = 0;
 	uint32_t first_set_index = 0;
 	uint32_t last_set_index = 0;
+	bool found_first_set = false;
 
 	for (uint32_t i = 0; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
@@ -4367,10 +4379,15 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 			}
 		}
 #endif
+		if (!cl->state.sets[i].bound && !found_first_set) {
+			first_set_index = i;
+			found_first_set = true;
+		}
+
 		draw_graph.add_compute_list_uniform_set_prepare_for_use(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 	}
 
-	for (uint32_t i = 0; i < cl->state.set_count; i++) {
+	for (uint32_t i = first_set_index; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
 		}

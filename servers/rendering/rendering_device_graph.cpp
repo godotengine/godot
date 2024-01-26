@@ -1128,7 +1128,6 @@ void RenderingDeviceGraph::_print_draw_list(const uint8_t *p_instruction_data, u
 				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
 				for (uint32_t i = 0; i < bind_uniform_sets_instruction->set_count; i++) {
 					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i]), "START INDEX", bind_uniform_sets_instruction->first_set_index);
-					instruction_data_cursor += sizeof(DrawListBindUniformSetInstruction);
 				}
 				instruction_data_cursor += sizeof(DrawListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
@@ -1224,7 +1223,6 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
 				for (uint32_t i = 0; i < bind_uniform_sets_instruction->set_count; i++) {
 					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i]), "START INDEX", bind_uniform_sets_instruction->first_set_index);
-					instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction);
 				}
 				instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
@@ -1562,9 +1560,8 @@ void RenderingDeviceGraph::add_draw_list_bind_uniform_sets(RDD::ShaderID p_shade
 	instruction->first_set_index = first_set_index;
 	instruction->set_count = set_count;
 
-	RDD::UniformSetID *ids = instruction->uniform_set_ids();
 	for (uint32_t i = 0; i < p_uniform_sets.size(); i++) {
-		ids[i] = p_uniform_sets[i];
+		instruction->uniform_set_ids()[i] = p_uniform_sets[i];
 	}
 }
 
