@@ -36,6 +36,8 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
@@ -79,7 +81,32 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
 	} else {
-		ret = create(ACCESS_FILESYSTEM);
+		for (KeyValue<String, Vector<String>> kv : resource_paths_class) {
+			if (p_path.begins_with(kv.key + "://")) {
+				if (ScriptServer::is_global_class(kv.value[0])) {
+					String path = ScriptServer::get_global_class_path(kv.value[0]);
+					Ref<Script> scr = ResourceLoader::load(path);
+					StringName ibt = scr->get_instance_base_type();
+					bool valid_type = ClassDB::is_parent_class(ibt, "FileAccess");
+					ERR_FAIL_COND_V_MSG(!valid_type, Ref<FileAccess>(), vformat("Failed to add a create a FileAccess instance, script '%s' does not inherit 'FileAccess'.", kv.value[0]));
+
+					Object *obj = ClassDB::instantiate(ibt);
+					ERR_FAIL_NULL_V_MSG(obj, Ref<FileAccess>(), vformat("Failed to add a FileAccess instance, cannot instantiate '%s'.", ibt));
+
+					ret = Ref<FileAccess>(Object::cast_to<FileAccess>(obj));
+					scr->instance_create(obj);
+					ret->set_script(scr);
+				} else if (ClassDB::can_instantiate(kv.value[0])) {
+					Object *obj = ClassDB::instantiate(kv.value[0]);
+					ERR_FAIL_NULL_V_MSG(obj, Ref<FileAccess>(), vformat("Failed to add a FileAccess instance, cannot instantiate '%s'.", kv.value[0]));
+					ret = Object::cast_to<Ref<FileAccess>>(obj);
+				}
+			}
+		}
+
+		if (ret.is_null()) {
+			ret = create(ACCESS_FILESYSTEM);
+		}
 	}
 
 	return ret;
