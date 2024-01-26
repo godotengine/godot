@@ -2897,8 +2897,11 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load C# script file '" + p_path + "'.");
 #endif
 
-	scr->set_path(p_original_path);
+	// Only one instance of a C# script is allowed to exist.
+	ERR_FAIL_COND_V_MSG(!scr->get_path().is_empty() && scr->get_path() != p_original_path, Ref<Resource>(),
+			"The C# script path is different from the path it was registered in the C# dictionary.");
 
+	scr->set_path(p_original_path, true);
 	scr->reload();
 
 	if (r_error) {
