@@ -230,12 +230,14 @@ public:
 			const void **argptrs = (const void **)alloca(argument_count * sizeof(void *));
 			for (uint32_t i = 0; i < argument_count; i++) {
 				argptrs[i] = VariantInternal::get_opaque_pointer(p_args[i]);
+				ERR_FAIL_NULL(argptrs[i]);
 			}
 
 			void *ret_opaque = nullptr;
 			if (r_ret) {
 				VariantInternal::initialize(r_ret, return_value_info.type);
-				ret_opaque = r_ret->get_type() == Variant::NIL ? r_ret : VariantInternal::get_opaque_pointer(r_ret);
+				ret_opaque = VariantInternal::get_opaque_pointer(r_ret);
+				ERR_FAIL_NULL(ret_opaque);
 			}
 
 			ptrcall(p_object, argptrs, ret_opaque);
