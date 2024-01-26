@@ -2862,9 +2862,17 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 	const String &property_name = slices[2];
 	const String &property_args = slices[3];
 
+	String formatted_text;
+
+	// Exclude internal properties, they are not documented.
+	if (type == "internal_property") {
+		formatted_text = "[i]" + TTR("This property can only be set in the Inspector.") + "[/i]";
+		set_text(formatted_text);
+		return;
+	}
+
 	String title;
 	String description;
-	String formatted_text;
 
 	if (type == "class") {
 		title = class_name;
