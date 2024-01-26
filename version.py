@@ -5,6 +5,6 @@ minor = 6
 patch = 0
 status = "beta"
 module_config = ""
-year = 2022
+year = 2024
 website = "https://godotengine.org"
 docs = "3.5"
