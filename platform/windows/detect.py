@@ -164,8 +164,21 @@ def get_opts():
 
     mingw = os.getenv("MINGW_PREFIX", "")
 
-    # Direct3D 12 SDK dependencies folder
-    d3d12_deps_folder = os.path.join(os.getenv("LOCALAPPDATA"), "Godot", "build_deps")
+    # Direct3D 12 SDK dependencies folder.
+    d3d12_deps_folder = os.getenv("LOCALAPPDATA")
+    if d3d12_deps_folder:
+        d3d12_deps_folder = os.path.join(d3d12_deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            d3d12_deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except:  # Give up.
+            d3d12_deps_folder = ""
 
     return [
         ("mingw_prefix", "MinGW prefix", mingw),
