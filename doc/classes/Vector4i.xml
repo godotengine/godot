@@ -6,7 +6,7 @@
 	<description>
 		A 4-element structure that can be used to represent 4D grid coordinates or any other quadruplet of integers.
 		It uses integer coordinates and is therefore preferable to [Vector4] when exact precision is required. Note that the values are limited to 32 bits, and unlike [Vector4] this cannot be configured with an engine build option. Use [int] or [PackedInt64Array] if 64-bit values are needed.
-		[b]Note:[/b] In a boolean context, a Vector4i will evaluate to [code]false[/code] if it's equal to [code]Vector4i(0, 0, 0, 0)[/code]. Otherwise, a Vector3i will always evaluate to [code]true[/code].
+		[b]Note:[/b] In a boolean context, a Vector4i will evaluate to [code]false[/code] if it's equal to [code]Vector4i(0, 0, 0, 0)[/code]. Otherwise, a Vector4i will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>
