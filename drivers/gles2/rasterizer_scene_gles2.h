@@ -66,6 +66,8 @@ public:
 
 	ShadowFilterMode shadow_filter_mode;
 
+	bool shadow_use_dithering;
+
 	RID default_material;
 	RID default_material_twosided;
 	RID default_shader;

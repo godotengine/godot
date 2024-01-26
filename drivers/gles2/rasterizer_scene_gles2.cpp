@@ -1912,6 +1912,7 @@ void RasterizerSceneGLES2::_setup_light_type(LightInstance *p_light, ShadowAtlas
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_SHADOW, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_MODE_PCF_5, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_MODE_PCF_13, false);
+	state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_USE_DITHERING, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::LIGHT_MODE_DIRECTIONAL, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::LIGHT_MODE_OMNI, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::LIGHT_MODE_SPOT, false);
@@ -1957,6 +1958,7 @@ void RasterizerSceneGLES2::_setup_light_type(LightInstance *p_light, ShadowAtlas
 				}
 				state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_MODE_PCF_5, shadow_filter_mode == SHADOW_FILTER_PCF5);
 				state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_MODE_PCF_13, shadow_filter_mode == SHADOW_FILTER_PCF13);
+				state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_USE_DITHERING, shadow_use_dithering);
 			}
 
 		} break;
@@ -1972,6 +1974,7 @@ void RasterizerSceneGLES2::_setup_light_type(LightInstance *p_light, ShadowAtlas
 				}
 				state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_MODE_PCF_5, shadow_filter_mode == SHADOW_FILTER_PCF5);
 				state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_MODE_PCF_13, shadow_filter_mode == SHADOW_FILTER_PCF13);
+				state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_USE_DITHERING, shadow_use_dithering);
 			}
 		} break;
 		case VS::LIGHT_SPOT: {
@@ -1986,6 +1989,7 @@ void RasterizerSceneGLES2::_setup_light_type(LightInstance *p_light, ShadowAtlas
 				}
 				state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_MODE_PCF_5, shadow_filter_mode == SHADOW_FILTER_PCF5);
 				state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_MODE_PCF_13, shadow_filter_mode == SHADOW_FILTER_PCF13);
+				state.scene_shader.set_conditional(SceneShaderGLES2::SHADOW_USE_DITHERING, shadow_use_dithering);
 			}
 		} break;
 	}
@@ -4113,6 +4117,7 @@ void RasterizerSceneGLES2::initialize() {
 	}
 
 	shadow_filter_mode = SHADOW_FILTER_NEAREST;
+	shadow_use_dithering = false;
 
 	glFrontFace(GL_CW);
 }
@@ -4125,6 +4130,8 @@ void RasterizerSceneGLES2::iteration() {
 		directional_shadow_size = directional_shadow_size_new;
 		directional_shadow_create();
 	}
+
+	shadow_use_dithering = bool(GLOBAL_GET("rendering/quality/shadows/use_dithering"));
 }
 
 void RasterizerSceneGLES2::finalize() {
