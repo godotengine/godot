@@ -60,6 +60,7 @@ class CSharpScript : public Script {
 
 	friend class CSharpInstance;
 	friend class CSharpLanguage;
+	friend struct CSharpScriptDepSort;
 
 	bool tool = false;
 	bool global_class = false;
