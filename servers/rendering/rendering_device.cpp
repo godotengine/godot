@@ -3310,8 +3310,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	clear_value.color = p_clear_color;
 
 	RDD::RenderPassID render_pass = driver->swap_chain_get_render_pass(sc_it->value);
-	draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::BLIT_PASS);
-	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, clear_value, true, false);
+	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, clear_value, true, false, RDD::BreadcrumbMarker::BLIT_PASS << 16);
 
 	_draw_list_set_viewport(viewport);
 	_draw_list_set_scissor(viewport);
@@ -3360,7 +3359,7 @@ Error RenderingDevice::_draw_list_setup_framebuffer(Framebuffer *p_framebuffer, 
 	return OK;
 }
 
-Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass) {
+Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass, uint32_t p_breadcrumb) {
 	LocalVector<RDD::RenderPassClearValue> clear_values;
 	LocalVector<RDG::ResourceTracker *> resource_trackers;
 	LocalVector<RDG::ResourceUsage> resource_usages;
@@ -3402,7 +3401,7 @@ Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, 
 		}
 	}
 	
-	draw_graph.add_draw_list_begin(p_render_pass, p_framebuffer_driver_id, Rect2i(p_viewport_offset, p_viewport_size), clear_values, uses_color, uses_depth);
+	draw_graph.add_draw_list_begin(p_render_pass, p_framebuffer_driver_id, Rect2i(p_viewport_offset, p_viewport_size), clear_values, uses_color, uses_depth, p_breadcrumb);
 	draw_graph.add_draw_list_usages(resource_trackers, resource_usages);
 
 	// Mark textures as bound.
@@ -3464,7 +3463,7 @@ void RenderingDevice::_draw_list_insert_clear_region(DrawList *p_draw_list, Fram
 	draw_graph.add_draw_list_clear_attachments(clear_attachments, rect);
 }
 
-RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region) {
+RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, RDD::BreadcrumbMarker p_phase, uint32_t p_breadcrumb_data) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG(draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
@@ -3510,7 +3509,8 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, &fb_driver_id, &render_pass, &draw_list_subpass_count);
 	ERR_FAIL_COND_V(err != OK, INVALID_ID);
 
-	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, fb_driver_id, render_pass);
+	uint32_t breadcrumb = (p_phase << 16) | (p_breadcrumb_data & ((1 << 16) - 1));
+	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, fb_driver_id, render_pass, breadcrumb);
 
 	if (err != OK) {
 		return INVALID_ID;
@@ -4793,11 +4793,6 @@ void RenderingDevice::draw_command_begin_label(String p_label_name, const Color 
 	}
 	
 	draw_graph.begin_label(p_label_name, p_color);
-}
-
-void RenderingDevice::draw_command_insert_breadcrumb(uint32_t p_phase, uint32_t data) {
-	// High 16 bits: rendering phase, low 16 bits: user data
-	draw_graph.insert_breadcrumb((p_phase << 16) | (data & ((1 << 16) - 1)));
 }
 
 #ifndef DISABLE_DEPRECATED

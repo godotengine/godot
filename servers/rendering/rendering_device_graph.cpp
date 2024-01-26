@@ -796,6 +796,7 @@ void RenderingDeviceGraph::_run_render_commands(RDD::CommandBufferID p_command_b
 			case RecordedCommand::TYPE_DRAW_LIST: {
 				const RecordedDrawListCommand *draw_list_command = reinterpret_cast<const RecordedDrawListCommand *>(command);
 				const VectorView clear_values(draw_list_command->clear_values(), draw_list_command->clear_values_count);
+				driver->command_insert_breadcrumb(p_command_buffer, draw_list_command->breadcrumb);
 				driver->command_begin_render_pass(p_command_buffer, draw_list_command->render_pass, draw_list_command->framebuffer, draw_list_command->command_buffer_type, draw_list_command->region, clear_values);
 				_run_draw_list_command(p_command_buffer, draw_list_command->instruction_data(), draw_list_command->instruction_data_size);
 				driver->command_end_render_pass(p_command_buffer);
@@ -827,10 +828,6 @@ void RenderingDeviceGraph::_run_render_commands(RDD::CommandBufferID p_command_b
 			case RecordedCommand::TYPE_CAPTURE_TIMESTAMP: {
 				const RecordedCaptureTimestampCommand *texture_capture_timestamp_command = reinterpret_cast<const RecordedCaptureTimestampCommand *>(command);
 				driver->command_timestamp_write(p_command_buffer, texture_capture_timestamp_command->pool, texture_capture_timestamp_command->index);
-			} break;
-			case RecordedCommand::TYPE_INSERT_BREADCRUMB: {
-				const RecordedInsertBreadcrumbCommand *insert_breadcrumb_command = reinterpret_cast<const RecordedInsertBreadcrumbCommand *>(command);
-				driver->command_insert_breadcrumb(p_command_buffer, insert_breadcrumb_command->data);
 			} break;
 			default: {
 				DEV_ASSERT(false && "Unknown recorded command type.");
@@ -1393,9 +1390,10 @@ void RenderingDeviceGraph::add_buffer_update(RDD::BufferID p_dst, ResourceTracke
 	_add_command_to_graph(&p_dst_tracker, &buffer_usage, 1, command_index, command);
 }
 
-void RenderingDeviceGraph::add_compute_list_begin() {
+void RenderingDeviceGraph::add_compute_list_begin(RDD::BreadcrumbMarker p_phase, uint32_t p_breadcrumb_data) {
 	compute_instruction_list.clear();
 	compute_instruction_list.has_dispatches = false;
+	compute_instruction_list.breadcrumb = (p_phase << 16) | (p_breadcrumb_data & ((1 << 16) - 1));
 	compute_instruction_list.index++;
 }
 
@@ -1506,7 +1504,7 @@ void RenderingDeviceGraph::add_compute_list_end() {
 	_add_command_to_graph(compute_instruction_list.command_trackers.ptr(), compute_instruction_list.command_tracker_usages.ptr(), compute_instruction_list.command_trackers.size(), command_index, command);
 }
 
-void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth) {
+void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb) {
 	draw_instruction_list.clear();
 	// We are forced to start the render pass if a clear operation is requested
 	draw_instruction_list.has_draws = p_clear_values.size() > 0;
@@ -1514,6 +1512,7 @@ void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, 
 	draw_instruction_list.render_pass = p_render_pass;
 	draw_instruction_list.framebuffer = p_framebuffer;
 	draw_instruction_list.region = p_region;
+	draw_instruction_list.breadcrumb = p_breadcrumb;
 	draw_instruction_list.clear_values.resize(p_clear_values.size());
 	for (uint32_t i = 0; i < p_clear_values.size(); i++) {
 		draw_instruction_list.clear_values[i] = p_clear_values[i];
@@ -1750,6 +1749,7 @@ void RenderingDeviceGraph::add_draw_list_end() {
 	command->framebuffer = draw_instruction_list.framebuffer;
 	command->command_buffer_type = command_buffer_type;
 	command->region = draw_instruction_list.region;
+	command->breadcrumb = draw_instruction_list.breadcrumb;
 	command->clear_values_count = draw_instruction_list.clear_values.size();
 
 	RDD::RenderPassClearValue *clear_values = command->clear_values();
@@ -1871,15 +1871,6 @@ void RenderingDeviceGraph::add_synchronization() {
 	}
 }
 
-void RenderingDeviceGraph::insert_breadcrumb(uint32_t p_data) {
-	int32_t command_index;
-	RecordedInsertBreadcrumbCommand *command = static_cast<RecordedInsertBreadcrumbCommand *>(_allocate_command(sizeof(RecordedInsertBreadcrumbCommand), command_index));
-	command->type = RecordedCommand::TYPE_INSERT_BREADCRUMB;
-	command->data = p_data;
-	_add_command_to_graph(nullptr, nullptr, 0, command_index, command);
-}
-
-
 void RenderingDeviceGraph::begin_label(const String &p_label_name, const Color &p_color) {
 	uint32_t command_label_offset = command_label_chars.size();
 	PackedByteArray command_label_utf8 = p_label_name.to_utf8_buffer();
@@ -1973,6 +1964,7 @@ void RenderingDeviceGraph::end(RDD::CommandBufferID p_command_buffer, bool p_reo
 			2, // TYPE_TEXTURE_GET_DATA
 			2, // TYPE_TEXTURE_RESOLVE
 			2, // TYPE_TEXTURE_UPDATE
+			2, // TYPE_INSERT_BREADCRUMB
 		};
 
 		commands_sorted.clear();

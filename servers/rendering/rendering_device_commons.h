@@ -272,8 +272,9 @@ public:
 	};
 
 	enum BreadcrumbMarker {
+		NONE = 0,
 		// Environment
-		REFLECTION_PROBES = 0,
+		REFLECTION_PROBES,
 		SKY_PASS,
 		// Light mapping
 		LIGHTMAPPER_PASS,
@@ -287,6 +288,7 @@ public:
 		// Screen effects
 		POST_PROCESSING_PASS,
 		BLIT_PASS,
+		UI_PASS,
 		// Other
 		DEBUG_PASS
 	};

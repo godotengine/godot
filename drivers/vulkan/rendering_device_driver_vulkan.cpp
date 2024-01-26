@@ -4759,6 +4759,8 @@ void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer
 /**** DEBUG *****/
 /****************/
 void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
+	if (p_data == BreadcrumbMarker::NONE)
+		return;
 	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, ((BufferInfo*)breadcrumb_buffer.id)->vk_buffer, 0, sizeof(uint32_t), p_data);
 }
 
@@ -4789,6 +4791,7 @@ void RenderingDeviceDriverVulkan::print_lost_device_info(Error err) {
 		}
 
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, errorMsg);
+		DEV_ASSERT(false);
 	}
 }
 

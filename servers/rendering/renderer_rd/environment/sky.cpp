@@ -1294,7 +1294,6 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 		cm = correction * cm;
 
 		// Note, we ignore environment_get_sky_orientation here as this is applied when we do our lookup in our scene shader.
-		RD::get_singleton()->draw_command_insert_breadcrumb(RDD::BreadcrumbMarker::SKY_PASS);
 
 		if (shader_data->uses_quarter_res && roughness_layers >= 3) {
 			RD::get_singleton()->draw_command_begin_label("Render Sky to Quarter Res Cubemap");
@@ -1308,7 +1307,8 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 				Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
 				RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES, sky_shader.default_shader_rd, p_render_buffers);
 
-				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[2].framebuffers[i], RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[2].framebuffers[i], RD::INITIAL_ACTION_LOAD,
+					RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1, 0, Rect2(), RDD::BreadcrumbMarker::SKY_PASS, i);
 				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[2].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, p_luminance_multiplier);
 				RD::get_singleton()->draw_list_end();
 			}
