@@ -1410,6 +1410,8 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 
 		// Cancel a drag
 		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+			drag_cancelled = true;
+			message_time = 3;
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
 			viewport->queue_redraw();
@@ -1493,6 +1495,8 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 
 		// Cancel a drag
 		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+			drag_cancelled = true;
+			message_time = 3;
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
 			viewport->queue_redraw();
@@ -1655,6 +1659,8 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 
 		// Cancel a drag
 		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+			drag_cancelled = true;
+			message_time = 3;
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
 			viewport->queue_redraw();
@@ -1856,6 +1862,8 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 
 		// Cancel a drag
 		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+			drag_cancelled = true;
+			message_time = 3;
 			_restore_canvas_item_state(drag_selection);
 			snap_target[0] = SNAP_TARGET_NONE;
 			snap_target[1] = SNAP_TARGET_NONE;
@@ -1995,6 +2003,8 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 
 		// Cancel a drag
 		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+			drag_cancelled = true;
+			message_time = 3;
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
 			viewport->queue_redraw();
@@ -2133,6 +2143,8 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 		// Cancel a drag
 		if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+			drag_cancelled = true;
+			message_time = 3;
 			_restore_canvas_item_state(drag_selection, true);
 			snap_target[0] = SNAP_TARGET_NONE;
 			snap_target[1] = SNAP_TARGET_NONE;
@@ -3685,53 +3697,69 @@ void CanvasItemEditor::_draw_hover() {
 }
 
 void CanvasItemEditor::_draw_transform_message() {
-	if (drag_type == DRAG_NONE || drag_selection.is_empty() || !drag_selection.front()->get()) {
+	bool dragging = drag_type != DRAG_NONE && !drag_selection.is_empty() && drag_selection.front()->get();
+
+	if (!drag_cancelled && !dragging) {
 		return;
 	}
-	String transform_message;
-	Transform2D current_transform = drag_selection.front()->get()->get_global_transform();
 
-	double snap = EDITOR_GET("interface/inspector/default_float_step");
-	int snap_step_decimals = Math::range_step_decimals(snap);
+	String transform_message;
+
+	if (drag_cancelled && !dragging) {
+		if (message_time > 0) {
+			transform_message = TTR("Transform Aborted.");
+		}
+	} else {
+		Transform2D current_transform = drag_selection.front()->get()->get_global_transform();
+
+		double snap = EDITOR_GET("interface/inspector/default_float_step");
+		int snap_step_decimals = Math::range_step_decimals(snap);
 #define FORMAT(value) (TS->format_number(String::num(value, snap_step_decimals)))
 
-	switch (drag_type) {
-		case DRAG_MOVE:
-		case DRAG_MOVE_X:
-		case DRAG_MOVE_Y: {
-			Vector2 delta = current_transform.get_origin() - original_transform.get_origin();
-			if (drag_type == DRAG_MOVE) {
-				transform_message = TTR("Moving:") + " (" + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ") px";
-			} else if (drag_type == DRAG_MOVE_X) {
-				transform_message = TTR("Moving:") + " " + FORMAT(delta.x) + " px";
-			} else if (drag_type == DRAG_MOVE_Y) {
-				transform_message = TTR("Moving:") + " " + FORMAT(delta.y) + " px";
-			}
-		} break;
+		switch (drag_type) {
+			case DRAG_MOVE:
+			case DRAG_MOVE_X:
+			case DRAG_MOVE_Y: {
+				Vector2 delta = current_transform.get_origin() - original_transform.get_origin();
+				if (drag_type == DRAG_MOVE) {
+					transform_message = TTR("Moving:") + " (" + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ") px";
+				} else if (drag_type == DRAG_MOVE_X) {
+					transform_message = TTR("Moving:") + " " + FORMAT(delta.x) + " px";
+				} else if (drag_type == DRAG_MOVE_Y) {
+					transform_message = TTR("Moving:") + " " + FORMAT(delta.y) + " px";
+				}
+			} break;
 
-		case DRAG_ROTATE: {
-			real_t delta = Math::rad_to_deg(current_transform.get_rotation() - original_transform.get_rotation());
-			transform_message = TTR("Rotating:") + " " + FORMAT(delta) + String::utf8(" °");
-		} break;
+			case DRAG_ROTATE: {
+				real_t delta = Math::rad_to_deg(current_transform.get_rotation() - original_transform.get_rotation());
+				transform_message = TTR("Rotating:") + " " + FORMAT(delta) + String::utf8(" °");
+			} break;
 
-		case DRAG_SCALE_X:
-		case DRAG_SCALE_Y:
-		case DRAG_SCALE_BOTH: {
-			Vector2 original_scale = (Math::is_zero_approx(original_transform.get_scale().x) || Math::is_zero_approx(original_transform.get_scale().y)) ? Vector2(CMP_EPSILON, CMP_EPSILON) : original_transform.get_scale();
-			Vector2 delta = current_transform.get_scale() / original_scale;
-			if (drag_type == DRAG_SCALE_BOTH) {
-				transform_message = TTR("Scaling:") + String::utf8(" ×(") + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ")";
-			} else if (drag_type == DRAG_SCALE_X) {
-				transform_message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.x);
-			} else if (drag_type == DRAG_SCALE_Y) {
-				transform_message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.y);
-			}
-		} break;
+			case DRAG_SCALE_X:
+			case DRAG_SCALE_Y:
+			case DRAG_SCALE_BOTH: {
+				Vector2 original_scale = (Math::is_zero_approx(original_transform.get_scale().x) || Math::is_zero_approx(original_transform.get_scale().y)) ? Vector2(CMP_EPSILON, CMP_EPSILON) : original_transform.get_scale();
+				Vector2 delta = current_transform.get_scale() / original_scale;
+				if (drag_type == DRAG_SCALE_BOTH) {
+					transform_message = TTR("Scaling:") + String::utf8(" ×(") + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ")";
+				} else if (drag_type == DRAG_SCALE_X) {
+					transform_message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.x);
+				} else if (drag_type == DRAG_SCALE_Y) {
+					transform_message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.y);
+				}
+			} break;
 
-		default:
-			break;
+			default:
+				break;
+		}
 	}
+
 #undef FORMAT
+
+	if (message_time <= 0 || dragging) {
+		drag_cancelled = false;
+		message_time = 0;
+	}
 
 	if (transform_message.is_empty()) {
 		return;
@@ -3916,7 +3944,6 @@ void CanvasItemEditor::_notification(int p_what) {
 			EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
 			EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
 		} break;
-
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
 
@@ -3993,6 +4020,18 @@ void CanvasItemEditor::_notification(int p_what) {
 				Bone2D *bone = Object::cast_to<Bone2D>(b);
 				if (bone && bone->get_length() != E.value.length) {
 					E.value.length = bone->get_length();
+					viewport->queue_redraw();
+				}
+			}
+
+			if (message_time > 0) {
+				if (message != last_message) {
+					viewport->queue_redraw();
+					last_message = message;
+				}
+
+				message_time -= get_physics_process_delta_time();
+				if (message_time < 0) {
 					viewport->queue_redraw();
 				}
 			}
