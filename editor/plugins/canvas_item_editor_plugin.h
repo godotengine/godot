@@ -523,6 +523,12 @@ private:
 
 	friend class CanvasItemEditorPlugin;
 
+	String last_message;
+	String message;
+	double message_time;
+
+	bool drag_cancelled = false;
+
 protected:
 	void _notification(int p_what);
 
