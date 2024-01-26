@@ -2237,10 +2237,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 				p_output.append(INDENT1 "/// </summary>");
 			}
-
-			if (p_imethod.method_doc->is_deprecated) {
-				p_output.append(MEMBER_BEGIN "[Obsolete(\"This method is deprecated.\")]");
-			}
 		}
 
 		if (default_args_doc.get_string_length()) {
@@ -2255,6 +2251,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
 			p_output.append(p_imethod.deprecation_message);
 			p_output.append("\")]");
+		} else if (p_imethod.method_doc && p_imethod.method_doc->is_deprecated) {
+			p_output.append(MEMBER_BEGIN "[Obsolete(\"This method is deprecated.\")]");
 		}
 
 		if (p_imethod.is_compat) {

@@ -185,7 +185,7 @@ namespace Godot.SourceGenerators
                 .Append("    /// </summary>\n");
 
             source.Append(
-                $"    public new class SignalName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.SignalName {{\n");
+                $"    public new class SignalName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.SignalName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
