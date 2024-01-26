@@ -176,10 +176,10 @@ class GUIComponent : public Container
     // EXTERNAL API
     //-------------------------------------------------------------------------------
 
-// Utility method that draws a texture with any combination of horizontal and vertical fill modes: Stretch, Tile, Tile Fit.
-// Used primarily by [GUIComponent].
-void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rect, FillMode horizontal_fill_mode = STRETCH,
-		FillMode vertical_fill_mode = STRETCH, Color _modulate=Color(1,1,1,1) )
+    // Utility method that draws a texture with any combination of horizontal and vertical fill modes: Stretch, Tile, Tile Fit.
+    // Used primarily by [GUIComponent].
+    void fill_texture( const Ref<Texture2D>& texture, Rect2 dest_rect, Rect2 src_rect, FillMode horizontal_fill_mode = STRETCH,
+            FillMode vertical_fill_mode = STRETCH, Color _modulate=Color(1,1,1,1) )
     {
 	    if (dest_rect.size.x <= 0 || dest_rect.size.y <= 0)
             return;
