@@ -38,6 +38,10 @@
 class FileAccessExtension : public FileAccess {
 	GDCLASS(FileAccessExtension, FileAccess);
 
+protected:
+	static void _bind_methods();
+
+private:
 	GDVIRTUAL1R(BitField<UnixPermissionFlags>, __get_unix_permissions, String);
 	virtual BitField<UnixPermissionFlags> _get_unix_permissions(const String &p_file) override;
 	GDVIRTUAL2R(Error, __set_unix_permissions, String, BitField<UnixPermissionFlags>);
@@ -52,17 +56,12 @@ class FileAccessExtension : public FileAccess {
 	GDVIRTUAL2R(Error, __set_read_only_attribute, String, bool);
 	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override;
 
-protected:
-	static void _bind_methods();
-
 	GDVIRTUAL2R(Error, _open_internal, String, int);
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override;
 	GDVIRTUAL1R(uint64_t, __get_modified_time, String);
 	virtual uint64_t _get_modified_time(const String &p_file) override;
 
 public:
-	// static Ref<FileAccessExtension> create();
-
 	GDVIRTUAL0RC(bool, _is_open);
 	virtual bool is_open() const override;
 

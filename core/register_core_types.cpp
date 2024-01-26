@@ -244,7 +244,7 @@ void register_core_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(FileAccess);
 	GDREGISTER_ABSTRACT_CLASS(DirAccess);
-	GDREGISTER_ABSTRACT_CLASS(FileAccessExtension);
+	GDREGISTER_VIRTUAL_CLASS(FileAccessExtension);
 	GDREGISTER_CLASS(core_bind::Thread);
 	GDREGISTER_CLASS(core_bind::Mutex);
 	GDREGISTER_CLASS(core_bind::Semaphore);

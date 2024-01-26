@@ -32,12 +32,6 @@
 
 #include "core/object/object.h"
 
-// Ref<FileAccessExtension> FileAccessExtension::create() {
-// 	Ref<FileAccessExtension> file_access;
-// 	file_access.instantiate();
-// 	return file_access;
-// }
-
 BitField<FileAccess::UnixPermissionFlags> FileAccessExtension::_get_unix_permissions(const String &p_file) {
 	BitField<UnixPermissionFlags> permissions = 0;
 	GDVIRTUAL_REQUIRED_CALL(__get_unix_permissions, p_file, permissions);
@@ -379,8 +373,6 @@ Error FileAccessExtension::reopen(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessExtension::_bind_methods() {
-	// ClassDB::bind_static_method("FileAccessExtension", D_METHOD("create"), &FileAccessExtension::create);
-
 	GDVIRTUAL_BIND(__get_unix_permissions, "file");
 	GDVIRTUAL_BIND(__set_unix_permissions, "file", "permissions");
 
