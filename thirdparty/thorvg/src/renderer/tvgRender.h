@@ -23,9 +23,9 @@
 #ifndef _TVG_RENDER_H_
 #define _TVG_RENDER_H_
 
-#include <mutex>
 #include "tvgCommon.h"
 #include "tvgArray.h"
+#include "tvgLock.h"
 
 namespace tvg
 {
@@ -54,7 +54,7 @@ struct Surface
         uint32_t* buf32;            //for explicit 32bits channels
         uint8_t*  buf8;             //for explicit 8bits grayscale
     };
-    mutex mtx;                      //used for thread safety
+    Key key;                        //a reserved lock for the thread safety
     uint32_t stride = 0;
     uint32_t w = 0, h = 0;
     ColorSpace cs = ColorSpace::Unsupported;
