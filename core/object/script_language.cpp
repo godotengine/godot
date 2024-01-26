@@ -168,6 +168,18 @@ ScriptLanguage *ScriptServer::get_language(int p_idx) {
 	return _languages[p_idx];
 }
 
+ScriptLanguage *ScriptServer::get_language_for_extension(const String &p_extension) {
+	MutexLock lock(languages_mutex);
+
+	for (int i = 0; i < _language_count; i++) {
+		if (_languages[i] && _languages[i]->get_extension() == p_extension) {
+			return _languages[i];
+		}
+	}
+
+	return nullptr;
+}
+
 Error ScriptServer::register_language(ScriptLanguage *p_language) {
 	MutexLock lock(languages_mutex);
 	ERR_FAIL_NULL_V(p_language, ERR_INVALID_PARAMETER);
