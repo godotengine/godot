@@ -133,6 +133,8 @@ private:
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
+	bool auto_translate = true;
+
 	RID text_rid;
 	Vector<RID> lines_rid;
 
@@ -181,6 +183,13 @@ public:
 
 	void set_text_direction(TextServer::Direction p_text_direction);
 	TextServer::Direction get_text_direction() const;
+
+	void set_auto_translate(bool p_enable);
+	bool is_auto_translating() const;
+
+	_FORCE_INLINE_ String atr(const String p_string) const {
+		return is_auto_translating() ? tr(p_string) : p_string;
+	}
 
 	void set_language(const String &p_language);
 	String get_language() const;

@@ -57,6 +57,9 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Label3D::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &Label3D::get_language);
 
+	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Label3D::set_auto_translate);
+	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Label3D::is_auto_translating);
+
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &Label3D::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &Label3D::get_structured_text_bidi_override);
 
@@ -164,6 +167,9 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 
+	ADD_GROUP("Localization", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
+
 	BIND_ENUM_CONSTANT(FLAG_SHADED);
 	BIND_ENUM_CONSTANT(FLAG_DOUBLE_SIDED);
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_DEPTH_TEST);
@@ -208,7 +214,7 @@ void Label3D::_notification(int p_what) {
 			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = tr(text);
+			String new_text = atr(text);
 			if (new_text == xl_text) {
 				return; // Nothing new.
 			}
@@ -635,8 +641,11 @@ void Label3D::_shape() {
 }
 
 void Label3D::set_text(const String &p_string) {
+	if (text == p_string) {
+		return;
+	}
 	text = p_string;
-	xl_text = tr(p_string);
+	xl_text = atr(p_string);
 	dirty_text = true;
 	_queue_update();
 }
@@ -683,6 +692,20 @@ void Label3D::set_text_direction(TextServer::Direction p_text_direction) {
 
 TextServer::Direction Label3D::get_text_direction() const {
 	return text_direction;
+}
+
+void Label3D::set_auto_translate(bool p_enable) {
+	if (p_enable == auto_translate) {
+		return;
+	}
+
+	auto_translate = p_enable;
+
+	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+}
+
+bool Label3D::is_auto_translating() const {
+	return auto_translate;
 }
 
 void Label3D::set_language(const String &p_language) {
