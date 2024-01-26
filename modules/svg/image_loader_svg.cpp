@@ -72,7 +72,7 @@ Ref<Image> ImageLoaderSVG::load_mem_svg(const uint8_t *p_svg, int p_size, float 
 	img.instantiate();
 
 	Error err = create_image_from_utf8_buffer(img, p_svg, p_size, p_scale, false);
-	ERR_FAIL_COND_V(err, Ref<Image>());
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("ImageLoaderSVG: Failed to create SVG from buffer, error code %d.", err));
 
 	return img;
 }
