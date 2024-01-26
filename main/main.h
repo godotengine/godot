@@ -59,7 +59,7 @@ public:
 #endif
 
 	// <TF>
-	// @ShadyTF : Thermal status support
+	// @ShadyTF : Thermal state support
 	enum ThermalState
 	{
 		THERMAL_STATE_MIN = -2,
@@ -81,6 +81,7 @@ public:
 	static const char* get_therrmal_state_string(ThermalState p_thermalState);
 	static void update_thermal_state(ThermalState p_thermalState);
 	static ThermalState get_thermal_state();
+	static float get_thermal_headroom( int p_forecast_seconds );
 	// </TF>
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
 	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
