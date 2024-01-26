@@ -5,7 +5,13 @@ import urllib.request
 import shutil
 
 # Base Godot dependencies path
-deps_folder = os.path.join(f"{os.getenv('LOCALAPPDATA')}", "Godot", "build_deps")
+# If cross-compiling (no LOCALAPPDATA), we install in `bin`
+deps_folder = os.getenv("LOCALAPPDATA")
+if deps_folder:
+    deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+else:
+    deps_folder = os.path.join("bin", "build_deps")
+
 # DirectX Shader Compiler
 dxc_version = "v1.7.2308"
 dxc_filename = "dxc_2023_08_14.zip"
