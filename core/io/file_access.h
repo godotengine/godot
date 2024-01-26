@@ -122,6 +122,8 @@ private:
 	static Ref<FileAccess> _open(const String &p_path, ModeFlags p_mode_flags);
 
 	static HashMap<String, String> resource_paths;
+	static HashMap<String, Vector<String>> resource_paths_class;
+	static String _get_protocol(const String &p_protocol);
 
 public:
 	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) { close_fail_notify = p_cbk; }
@@ -228,11 +230,19 @@ public:
 	static PackedByteArray _get_file_as_bytes(const String &p_path) { return get_file_as_bytes(p_path, &last_file_open_error); }
 	static String _get_file_as_string(const String &p_path) { return get_file_as_string(p_path, &last_file_open_error); }
 
+	// Resource paths
 	static void add_resource_path(const String &p_protocol, const String &p_path);
 	static void remove_resource_path(const String &p_protocol);
 	static bool is_resource_path(const String &p_protocol);
 	static String get_resource_path(const String &p_protocol);
 	static Dictionary get_resource_paths();
+
+	static void add_resource_path_class(const String &p_protocol, const String &p_custom_file_access_class, const String &p_custom_dir_access_class);
+	static void remove_resource_path_class(const String &p_protocol);
+	static bool is_resource_path_class(const String &p_protocol);
+	static Vector<String> get_resource_path_class(const String &p_protocol);
+	static Dictionary get_resource_paths_class();
+	// End resource paths
 
 	template <class T>
 	static void make_default(AccessType p_access) {
