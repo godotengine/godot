@@ -4918,7 +4918,6 @@ Viewport::Viewport() {
 
 	String id = itos(get_instance_id());
 	input_group = "_vp_input" + id;
-	gui_input_group = "_vp_gui_input" + id;
 	unhandled_input_group = "_vp_unhandled_input" + id;
 	shortcut_input_group = "_vp_shortcut_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
