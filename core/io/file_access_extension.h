@@ -81,6 +81,7 @@ public:
 	GDVIRTUAL1RC(Variant, _get_var, bool);
 	Variant get_var(bool p_allow_objects = false) const;
 
+	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 	GDVIRTUAL1RC(Vector<uint8_t>, _get_buffer, int64_t);
 	Vector<uint8_t> get_buffer(int64_t p_length) const;
 	GDVIRTUAL0RC(String, _get_line);

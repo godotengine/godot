@@ -124,6 +124,14 @@ Variant FileAccessExtension::get_var(bool p_allow_objects) const {
 	return var;
 }
 
+uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
+
+	Vector<uint8_t> buffer = get_buffer(p_length);
+	p_dst = buffer.ptrw();
+	return buffer.size();
+}
+
 Vector<uint8_t> FileAccessExtension::get_buffer(int64_t p_length) const {
 	Vector<uint8_t> buffer;
 	GDVIRTUAL_CALL(_get_buffer, p_length, buffer);
