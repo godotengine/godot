@@ -6,9 +6,6 @@ dotnet_diagnostic.CA1062.severity = error
 dotnet_diagnostic.CA1069.severity = none
 # CA1708: Identifiers should differ by more than case
 dotnet_diagnostic.CA1708.severity = none
-# CA1716: Identifiers should not match keywords
-# This is suppressed, because it will report `@event` as well as `event`
-dotnet_diagnostic.CA1716.severity = none
 # CS1591: Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CS1591.severity = none
 # CS1573: Parameter has no matching param tag in the XML comment

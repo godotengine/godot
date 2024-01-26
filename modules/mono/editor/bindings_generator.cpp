@@ -997,6 +997,12 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 	p_output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 
+	p_output.append("\n"
+					"#if !EXTRA_WARNINGS\n"
+					"#pragma warning disable CA1716 // Disable warning: "
+					"'Identifiers should not match keywords'\n"
+					"#endif\n");
+
 	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
 
 	for (const ConstantInterface &iconstant : global_constants) {
@@ -1094,6 +1100,11 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			p_output.append(CLOSE_BLOCK);
 		}
 	}
+
+	p_output.append("\n"
+					"#if !EXTRA_WARNINGS\n"
+					"#pragma warning restore CA1716\n"
+					"#endif\n");
 }
 
 Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
@@ -1409,6 +1420,14 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append("using System.ComponentModel;\n"); // EditorBrowsable
 	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
 	output.append("using Godot.NativeInterop;\n");
+
+	output.append("\n"
+				  "#if !EXTRA_WARNINGS\n"
+				  "#pragma warning disable CS0108 // Disable warning: "
+				  "'Member hides inherited member. Use the new keyword if hiding was intended.'\n"
+				  "#pragma warning disable CA1716 // Disable warning: "
+				  "'Identifiers should not match keywords'\n"
+				  "#endif\n");
 
 	output.append("\n#nullable disable\n");
 
@@ -1911,6 +1930,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output << INDENT1 "}\n";
 
 	output.append(CLOSE_BLOCK /* class */);
+
+	output.append("\n"
+				  "#if !EXTRA_WARNINGS\n"
+				  "#pragma warning restore CS0108\n"
+				  "#pragma warning restore CA1716\n"
+				  "#endif\n");
 
 	return _save_file(p_output_file, output);
 }
