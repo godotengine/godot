@@ -14,7 +14,7 @@
 		<method name="get_adjusted_transform" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the [member transform] with world scale and our reference frame applied. This is the transform used to position [XRNode3D] objects.
+				Returns the [member transform] with world scale and our reference frame applied. This is the transform used to position [XRNode3D] objects. Only the origin is adjusted, not the basis.
 			</description>
 		</method>
 	</methods>
