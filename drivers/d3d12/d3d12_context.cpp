@@ -59,6 +59,8 @@
 
 // Note: symbol is not available in MinGW and old MSVC import libraries.
 const CLSID CLSID_D3D12DeviceFactoryGodot = __uuidof(ID3D12DeviceFactory);
+const CLSID CLSID_D3D12DebugGodot = __uuidof(ID3D12Debug);
+const CLSID CLSID_D3D12SDKConfigurationGodot = __uuidof(ID3D12SDKConfiguration);
 
 extern "C" {
 char godot_nir_arch_name[32];
@@ -285,7 +287,7 @@ Error D3D12Context::_initialize_debug_layers() {
 	ComPtr<ID3D12Debug> debug_controller;
 	HRESULT res;
 	if (device_factory) {
-		res = device_factory->GetConfigurationInterface(CLSID_D3D12Debug, IID_PPV_ARGS(&debug_controller));
+		res = device_factory->GetConfigurationInterface(CLSID_D3D12DebugGodot, IID_PPV_ARGS(&debug_controller));
 	} else {
 		res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
 	}
@@ -820,7 +822,7 @@ void D3D12Context::_init_device_factory() {
 	ERR_FAIL_COND(!d3d_D3D12GetInterface);
 
 	ID3D12SDKConfiguration *sdk_config = nullptr;
-	if (SUCCEEDED(d3d_D3D12GetInterface(CLSID_D3D12SDKConfiguration, IID_PPV_ARGS(&sdk_config)))) {
+	if (SUCCEEDED(d3d_D3D12GetInterface(CLSID_D3D12SDKConfigurationGodot, IID_PPV_ARGS(&sdk_config)))) {
 		ID3D12SDKConfiguration1 *sdk_config1 = nullptr;
 		if (SUCCEEDED(sdk_config->QueryInterface(&sdk_config1))) {
 			if (SUCCEEDED(sdk_config1->CreateDeviceFactory(agility_sdk_version, agility_sdk_path.ascii().get_data(), IID_PPV_ARGS(device_factory.GetAddressOf())))) {
