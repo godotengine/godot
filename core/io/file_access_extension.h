@@ -41,6 +41,11 @@ class FileAccessExtension : public FileAccess {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL2R(Error, _open_internal, String, int);
+	virtual Error open_internal(const String &p_path, int p_mode_flags) override;
+	GDVIRTUAL1R(uint64_t, __get_modified_time, String);
+	virtual uint64_t _get_modified_time(const String &p_file) override;
+
 public:
 	GDVIRTUAL0RC(bool, _is_open);
 	virtual bool is_open() const override;
@@ -94,6 +99,58 @@ public:
 	String get_as_text(bool p_skip_cr = false) const;
 	GDVIRTUAL1RC(String, _get_as_utf8_string, bool);
 	virtual String get_as_utf8_string(bool p_skip_cr = false) const override;
+
+	GDVIRTUAL1(_set_big_endian, bool);
+	virtual void set_big_endian(bool p_big_endian) override;
+
+	GDVIRTUAL0RC(Error, _get_error);
+	virtual Error get_error() const override;
+
+	GDVIRTUAL0(_flush);
+	virtual void flush() override;
+	GDVIRTUAL1(_store_8, uint8_t);
+	virtual void store_8(uint8_t p_dest) override;
+	GDVIRTUAL1(_store_16, uint16_t);
+	virtual void store_16(uint16_t p_dest) override;
+	GDVIRTUAL1(_store_32, uint32_t);
+	virtual void store_32(uint32_t p_dest) override;
+	GDVIRTUAL1(_store_64, uint64_t);
+	virtual void store_64(uint64_t p_dest) override;
+
+	GDVIRTUAL1(_store_float, float);
+	virtual void store_float(float p_dest) override;
+	GDVIRTUAL1(_store_double, double);
+	virtual void store_double(double p_dest) override;
+	GDVIRTUAL1(_store_real, real_t);
+	virtual void store_real(real_t p_real) override;
+
+	GDVIRTUAL1(_store_string, String);
+	virtual void store_string(const String &p_string) override;
+	GDVIRTUAL1(_store_line, String);
+	virtual void store_line(const String &p_line) override;
+	GDVIRTUAL2(_store_csv_line, Vector<String>, String);
+	virtual void store_csv_line(const Vector<String> &p_values, const String &p_delim = ",") override;
+
+	GDVIRTUAL1(_store_pascal_string, String);
+	virtual void store_pascal_string(const String &p_string) override;
+	GDVIRTUAL0RC(String, _get_pascal_string);
+	virtual String get_pascal_string() override;
+
+	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override;
+	GDVIRTUAL1(_store_buffer, Vector<uint8_t>);
+	void store_buffer(const Vector<uint8_t> &p_buffer);
+
+	GDVIRTUAL2(_store_var, Variant, bool);
+	void store_var(const Variant &p_var, bool p_full_objects = false);
+
+	GDVIRTUAL0(_close);
+	virtual void close() override;
+
+	GDVIRTUAL1R(bool, _file_exists, String);
+	virtual bool file_exists(const String &p_name) override;
+
+	GDVIRTUAL2R(Error, _reopen, String, int);
+	virtual Error reopen(const String &p_path, int p_mode_flags) override;
 
 	FileAccessExtension();
 	~FileAccessExtension();

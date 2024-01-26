@@ -32,6 +32,18 @@
 
 #include "core/object/object.h"
 
+Error FileAccessExtension::open_internal(const String &p_path, int p_mode_flags) {
+	Error err = OK;
+	GDVIRTUAL_CALL(_open_internal, p_path, p_mode_flags, err);
+	return err;
+}
+
+uint64_t FileAccessExtension::_get_modified_time(const String &p_file) {
+	uint64_t time = 0;
+	GDVIRTUAL_CALL(__get_modified_time, p_file, time);
+	return time;
+}
+
 bool FileAccessExtension::is_open() const {
 	bool is_open = false;
 	GDVIRTUAL_CALL(_is_open, is_open);
@@ -124,12 +136,17 @@ Variant FileAccessExtension::get_var(bool p_allow_objects) const {
 	return var;
 }
 
-uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessExtension::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	Vector<uint8_t> buffer = get_buffer(p_length);
-	p_dst = buffer.ptrw();
-	return buffer.size();
+
+	int64_t i = 0;
+	for (i = 0; i < buffer.size(); i++) {
+		p_dst[i] = buffer.get(i);
+	}
+
+	return i;
 }
 
 Vector<uint8_t> FileAccessExtension::get_buffer(int64_t p_length) const {
@@ -168,7 +185,107 @@ String FileAccessExtension::get_as_utf8_string(bool p_skip_cr) const {
 	return val_as_utf8_string;
 }
 
+void FileAccessExtension::set_big_endian(bool p_big_endian) {
+	GDVIRTUAL_CALL(_set_big_endian, p_big_endian);
+}
+
+Error FileAccessExtension::get_error() const {
+	Error err = OK;
+	GDVIRTUAL_CALL(_get_error, err);
+	return err;
+}
+
+void FileAccessExtension::flush() {
+	GDVIRTUAL_CALL(_flush);
+}
+
+void FileAccessExtension::store_8(uint8_t p_dest) {
+	GDVIRTUAL_CALL(_store_8, p_dest);
+}
+
+void FileAccessExtension::store_16(uint16_t p_dest) {
+	GDVIRTUAL_CALL(_store_16, p_dest);
+}
+
+void FileAccessExtension::store_32(uint32_t p_dest) {
+	GDVIRTUAL_CALL(_store_32, p_dest);
+}
+
+void FileAccessExtension::store_64(uint64_t p_dest) {
+	GDVIRTUAL_CALL(_store_64, p_dest);
+}
+
+void FileAccessExtension::store_float(float p_dest) {
+	GDVIRTUAL_CALL(_store_float, p_dest);
+}
+
+void FileAccessExtension::store_double(double p_dest) {
+	GDVIRTUAL_CALL(_store_double, p_dest);
+}
+
+void FileAccessExtension::store_real(real_t p_dest) {
+	GDVIRTUAL_CALL(_store_real, p_dest);
+}
+
+void FileAccessExtension::store_string(const String &p_string) {
+	GDVIRTUAL_CALL(_store_string, p_string);
+}
+
+void FileAccessExtension::store_line(const String &p_line) {
+	GDVIRTUAL_CALL(_store_line, p_line);
+}
+
+void FileAccessExtension::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
+	GDVIRTUAL_CALL(_store_csv_line, p_values, p_delim);
+}
+
+void FileAccessExtension::store_pascal_string(const String &p_string) {
+	GDVIRTUAL_CALL(_store_pascal_string, p_string);
+}
+
+String FileAccessExtension::get_pascal_string() {
+	String string;
+	GDVIRTUAL_CALL(_get_pascal_string, string);
+	return string;
+}
+
+void FileAccessExtension::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	Vector<uint8_t> buffer;
+	uint64_t i = 0;
+	for (i = 0; i < p_length; i++) {
+		buffer.insert(i, p_src[i]);
+	}
+	store_buffer(buffer);
+}
+
+void FileAccessExtension::store_buffer(const Vector<uint8_t> &p_buffer) {
+	GDVIRTUAL_CALL(_store_buffer, p_buffer);
+}
+
+void FileAccessExtension::store_var(const Variant &p_var, bool p_full_objects) {
+	GDVIRTUAL_CALL(_store_var, p_var, p_full_objects);
+}
+
+void FileAccessExtension::close() {
+	GDVIRTUAL_CALL(_close);
+}
+
+bool FileAccessExtension::file_exists(const String &p_name) {
+	bool file_exists;
+	GDVIRTUAL_CALL(_file_exists, p_name, file_exists);
+	return file_exists;
+}
+
+Error FileAccessExtension::reopen(const String &p_path, int p_mode_flags) {
+	Error err = OK;
+	GDVIRTUAL_CALL(_reopen, p_path, p_mode_flags, err);
+	return err;
+}
+
 void FileAccessExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_open_internal, "path", "mode_flags");
+	GDVIRTUAL_BIND(__get_modified_time, "file");
+
 	GDVIRTUAL_BIND(_is_open);
 
 	GDVIRTUAL_BIND(_get_path);
@@ -198,6 +315,37 @@ void FileAccessExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_csv_line, "delim");
 	GDVIRTUAL_BIND(_get_as_text, "skip_cr");
 	GDVIRTUAL_BIND(_get_as_utf8_string, "skip_cr");
+
+	GDVIRTUAL_BIND(_set_big_endian, "big_endian");
+
+	GDVIRTUAL_BIND(_get_error);
+
+	GDVIRTUAL_BIND(_flush);
+	GDVIRTUAL_BIND(_store_8, "dest");
+	GDVIRTUAL_BIND(_store_16, "dest");
+	GDVIRTUAL_BIND(_store_32, "dest");
+	GDVIRTUAL_BIND(_store_64, "dest");
+
+	GDVIRTUAL_BIND(_store_float, "dest");
+	GDVIRTUAL_BIND(_store_double, "dest");
+	GDVIRTUAL_BIND(_store_real, "dest");
+
+	GDVIRTUAL_BIND(_store_string, "string");
+	GDVIRTUAL_BIND(_store_line, "line");
+	GDVIRTUAL_BIND(_store_csv_line, "values", "delim");
+
+	GDVIRTUAL_BIND(_store_pascal_string, "string");
+	GDVIRTUAL_BIND(_get_pascal_string);
+
+	GDVIRTUAL_BIND(_store_buffer, "buffer");
+
+	GDVIRTUAL_BIND(_store_var, "var", "full_objects");
+
+	GDVIRTUAL_BIND(_close);
+
+	GDVIRTUAL_BIND(_file_exists, "name");
+
+	GDVIRTUAL_BIND(_reopen, "path", "mode_flags");
 }
 
 FileAccessExtension::FileAccessExtension() {

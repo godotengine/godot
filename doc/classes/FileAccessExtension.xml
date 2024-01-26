@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FileAccessExtension" inherits="FileAccess" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="__get_modified_time" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="file" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_close" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_eof_reached" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_file_exists" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="name" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_flush" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_8" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_16" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_32" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_64" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_as_text" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="skip_cr" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_as_utf8_string" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="skip_cr" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_buffer" qualifiers="virtual const">
+			<return type="PackedByteArray" />
+			<param index="0" name="length" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_csv_line" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="delim" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_double" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_error" qualifiers="virtual const">
+			<return type="int" enum="Error" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_float" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_length" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_line" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_pascal_string" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_path" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_path_absolute" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_position" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_real" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_token" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_var" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="allow_objects" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_open" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_open_internal" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="mode_flags" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_reopen" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="mode_flags" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_seek" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="position" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_seek_end" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="position" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_big_endian" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="big_endian" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_8" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="dest" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_16" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="dest" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_32" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="dest" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_64" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="dest" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_buffer" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_csv_line" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="values" type="PackedStringArray" />
+			<param index="1" name="delim" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_double" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="dest" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_float" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="dest" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_line" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="line" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_pascal_string" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="string" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_real" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="dest" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_string" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="string" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_store_var" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="var" type="Variant" />
+			<param index="1" name="full_objects" type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
