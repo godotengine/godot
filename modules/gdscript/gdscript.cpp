@@ -865,6 +865,15 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 		top = top->_base;
 	}
 
+	if (native.is_valid()) {
+		Callable::CallError err;
+		Variant ret = native->callp(p_method, p_args, p_argcount, err);
+		if (err.error == Callable::CallError::CALL_OK) {
+			r_error = err;
+			return ret;
+		}
+	}
+
 	//none found, regular
 
 	return Script::callp(p_method, p_args, p_argcount, r_error);

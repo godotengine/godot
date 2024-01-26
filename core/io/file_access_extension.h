@@ -38,6 +38,20 @@
 class FileAccessExtension : public FileAccess {
 	GDCLASS(FileAccessExtension, FileAccess);
 
+	GDVIRTUAL1R(BitField<UnixPermissionFlags>, __get_unix_permissions, String);
+	virtual BitField<UnixPermissionFlags> _get_unix_permissions(const String &p_file) override;
+	GDVIRTUAL2R(Error, __set_unix_permissions, String, BitField<UnixPermissionFlags>);
+	virtual Error _set_unix_permissions(const String &p_file, BitField<UnixPermissionFlags> p_permissions) override;
+
+	GDVIRTUAL1R(bool, __get_hidden_attribute, String);
+	virtual bool _get_hidden_attribute(const String &p_file) override;
+	GDVIRTUAL2R(Error, __set_hidden_attribute, String, bool);
+	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override;
+	GDVIRTUAL1R(bool, __get_read_only_attribute, String);
+	virtual bool _get_read_only_attribute(const String &p_file) override;
+	GDVIRTUAL2R(Error, __set_read_only_attribute, String, bool);
+	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override;
+
 protected:
 	static void _bind_methods();
 
@@ -47,6 +61,8 @@ protected:
 	virtual uint64_t _get_modified_time(const String &p_file) override;
 
 public:
+	// static Ref<FileAccessExtension> create();
+
 	GDVIRTUAL0RC(bool, _is_open);
 	virtual bool is_open() const override;
 
@@ -99,9 +115,6 @@ public:
 	String get_as_text(bool p_skip_cr = false) const;
 	GDVIRTUAL1RC(String, _get_as_utf8_string, bool);
 	virtual String get_as_utf8_string(bool p_skip_cr = false) const override;
-
-	GDVIRTUAL1(_set_big_endian, bool);
-	virtual void set_big_endian(bool p_big_endian) override;
 
 	GDVIRTUAL0RC(Error, _get_error);
 	virtual Error get_error() const override;

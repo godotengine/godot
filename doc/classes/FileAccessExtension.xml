@@ -7,9 +7,48 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="__get_hidden_attribute" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="file" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="__get_modified_time" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="file" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="__get_read_only_attribute" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="file" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="__get_unix_permissions" qualifiers="virtual">
+			<return type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
+			<param index="0" name="file" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="__set_hidden_attribute" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="hidden" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="__set_read_only_attribute" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="ro" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="__set_unix_permissions" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
 			<description>
 			</description>
 		</method>
@@ -167,12 +206,6 @@
 		<method name="_seek_end" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="position" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="_set_big_endian" qualifiers="virtual">
-			<return type="void" />
-			<param index="0" name="big_endian" type="bool" />
 			<description>
 			</description>
 		</method>
