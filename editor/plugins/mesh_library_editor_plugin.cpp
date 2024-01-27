@@ -75,21 +75,31 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		p_library->clear();
 	}
 
+	// maximum depth how far into a node we look to find a MeshInstance3D
+	// note that we only pick the first found MeshInstance3D child of any given root node.
+	const int max_parenting_nodes = 4;
+
 	HashMap<int, MeshInstance3D *> mesh_instances;
 
 	for (int i = 0; i < p_scene->get_child_count(); i++) {
 		Node *child = p_scene->get_child(i);
 
 		if (!Object::cast_to<MeshInstance3D>(child)) {
-			if (child->get_child_count() > 0) {
-				child = child->get_child(0);
-				if (!Object::cast_to<MeshInstance3D>(child)) {
-					continue;
+			bool found = false;
+			for (int try_no = 0; try_no < max_parenting_nodes; try_no++) {
+				if (child->get_child_count() > 0) {
+					child = child->get_child(0);
+					if (Object::cast_to<MeshInstance3D>(child)) {
+						found = true;
+						break;
+					}
+				} else {
+					break;
 				}
-
-			} else {
-				continue;
 			}
+
+			if (!found)
+				continue;
 		}
 
 		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(child);
