@@ -183,7 +183,7 @@ void Node::_notification(int p_notification) {
 			if (GDVIRTUAL_IS_OVERRIDDEN(_physics_process)) {
 				set_physics_process(true);
 			}
-
+			_ready();
 			GDVIRTUAL_CALL(_ready);
 		} break;
 
