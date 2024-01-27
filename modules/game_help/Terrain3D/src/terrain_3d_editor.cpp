@@ -35,6 +35,7 @@ void Terrain3DEditor::Brush::set_data(Dictionary p_data) {
 	_texture_index = p_data["texture_index"];
 	_color = p_data["color"];
 	_roughness = p_data["roughness"];
+	_gradient_points = p_data["gradient_points"];
 	_enable = p_data["enable"];
 
 	_auto_regions = p_data["automatic_regions"];
@@ -145,6 +146,7 @@ void Terrain3DEditor::_operate_map(Vector3 p_global_position, real_t p_camera_di
 	real_t height = _brush.get_height();
 	Color color = _brush.get_color();
 	real_t roughness = _brush.get_roughness();
+	PackedVector3Array gradient_points = _brush.get_gradient_points();
 	bool enable = _brush.get_enable();
 	real_t gamma = _brush.get_gamma();
 
@@ -241,6 +243,32 @@ void Terrain3DEditor::_operate_map(Vector3 p_global_position, real_t p_camera_di
 
 							real_t avg = (srcf + left + right + up + down) * 0.2;
 							destf = Math::lerp(srcf, avg, brush_alpha * opacity);
+							break;
+						}
+						case GRADIENT: {
+							if (gradient_points.size() == 2) {
+								Vector3 point_1 = gradient_points[0];
+								Vector3 point_2 = gradient_points[1];
+
+								Vector2 point_1_xz = Vector2(point_1.x, point_1.z);
+								Vector2 point_2_xz = Vector2(point_2.x, point_2.z);
+								Vector2 brush_xz = Vector2(brush_global_position.x, brush_global_position.z);
+
+								if (_operation_movement.length_squared() > 0.0) {
+									// Ramp up/down only in the direction of movement, to avoid giving winding
+									// paths one edge higher than the other.
+									Vector2 movement_xz = Vector2(_operation_movement.x, _operation_movement.z).normalized();
+									Vector2 offset = movement_xz * Vector2(brush_offset).dot(movement_xz);
+									brush_xz = Vector2(p_global_position.x + offset.x, p_global_position.z + offset.y);
+								}
+
+								Vector2 dir = point_2_xz - point_1_xz;
+								real_t weight = dir.normalized().dot(brush_xz - point_1_xz) / dir.length();
+								weight = CLAMP(weight, (real_t)0.0, (real_t)1.0);
+								real_t height = Math::lerp(point_1.y, point_2.y, weight);
+
+								destf = Math::lerp(srcf, height, brush_alpha * opacity);
+							}
 							break;
 						}
 						default:
@@ -502,6 +530,8 @@ void Terrain3DEditor::start_operation(Vector3 p_global_position) {
 	_pending_undo = true;
 	_modified = false;
 	_modified_area = AABB();
+	_operation_position = p_global_position;
+	_operation_movement = Vector3();
 	if (_tool == REGION) {
 		_operate_region(p_global_position);
 	}
@@ -513,11 +543,7 @@ void Terrain3DEditor::operate(Vector3 p_global_position, real_t p_camera_directi
 		return;
 	}
 
-	// Calculate distance moved from the click, but this isn't used anywhere
-	if (_operation_position == Vector3()) {
-		_operation_position = p_global_position;
-	}
-	_operation_interval = p_global_position.distance_to(_operation_position);
+	_operation_movement = p_global_position - _operation_position;
 	_operation_position = p_global_position;
 
 	if (_tool == REGION) {
@@ -548,6 +574,7 @@ void Terrain3DEditor::_bind_methods() {
 	BIND_ENUM_CONSTANT(DIVIDE);
 	BIND_ENUM_CONSTANT(REPLACE);
 	BIND_ENUM_CONSTANT(AVERAGE);
+	BIND_ENUM_CONSTANT(GRADIENT);
 	BIND_ENUM_CONSTANT(OP_MAX);
 
 	BIND_ENUM_CONSTANT(HEIGHT);
@@ -573,6 +600,7 @@ void Terrain3DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start_operation", "position"), &Terrain3DEditor::start_operation);
 	ClassDB::bind_method(D_METHOD("operate", "position", "camera_direction"), &Terrain3DEditor::operate);
 	ClassDB::bind_method(D_METHOD("stop_operation"), &Terrain3DEditor::stop_operation);
+	ClassDB::bind_method(D_METHOD("is_operating"), &Terrain3DEditor::is_operating);
 
 	ClassDB::bind_method(D_METHOD("apply_undo", "maps"), &Terrain3DEditor::_apply_undo);
 

@@ -108,7 +108,7 @@
 		</member>
 		<member name="texture_list" type="Terrain3DTextureList" setter="set_texture_list" getter="get_texture_list">
 		</member>
-		<member name="version" type="String" setter="" getter="get_version" default="&quot;0.9.0-dev&quot;">
+		<member name="version" type="String" setter="" getter="get_version" default="&quot;0.9.1-dev&quot;">
 		</member>
 	</members>
 	<signals>

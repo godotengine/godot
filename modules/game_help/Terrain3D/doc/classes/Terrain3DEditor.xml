@@ -18,6 +18,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_singleton" qualifiers="static">
+			<return type="Terrain3DEditor" />
+			<description>
+			</description>
+		</method>
 		<method name="get_terrain">
 			<return type="Terrain3D" />
 			<description>
@@ -71,6 +76,19 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="terrain_edited">
+			<param index="0" name="edited_area" type="AABB" />
+			<description>
+				This signal is emitted whenever the editor is used to:
+				- add or remove a region,
+				- alter a region map with a brush tool,
+				- undo or redo any of the above operations.
+
+				The parameter contains the axis-aligned bounding box of the area edited.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="ADD" value="0" enum="Operation">
 		</constant>

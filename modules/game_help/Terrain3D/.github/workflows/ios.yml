@@ -1,0 +1,50 @@
+﻿name: 🍏 iOS Builds
+on: [ workflow_call, workflow_dispatch ]
+
+jobs:
+  build-macos:
+    name: 🍏 iOS ${{ matrix.arch }} ${{ matrix.target }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios]
+        target: [debug, release]
+        arch: [universal]
+
+    steps:
+      - name: Checkout Terrain3D
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Base Dependencies
+        uses: ./.github/actions/base-deps
+
+      - name: Setup Build Cache
+        uses: ./.github/actions/build-cache
+        with:
+          cache-name: ${{ matrix.platform }}-${{ matrix.target }}
+        continue-on-error: true
+
+      - name: Build Terrain3D
+        env:
+            SCONS_CACHE: "${{ github.workspace }}/.scons-cache/"
+            TARGET: 'template_${{ matrix.target }}'
+            ARCH: '${{ matrix.arch }}'
+        shell: sh
+        run: |
+            scons target=$TARGET platform='${{ matrix.platform }}' arch=$ARCH debug_symbols=no -j2
+
+      - name: Include Files
+        shell: sh
+        run: |
+          ls -l project/addons/terrain_3d/bin/*
+          cp '${{ github.workspace }}/README.md' '${{ github.workspace }}/LICENSE.txt' ${{ github.workspace }}/project/addons/terrain_3d/
+
+      - name: Upload Package
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.repository.name }}
+          path: |
+            ${{ github.workspace }}/project/

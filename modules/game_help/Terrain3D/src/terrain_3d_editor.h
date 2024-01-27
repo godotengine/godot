@@ -28,6 +28,7 @@ public:
 		DIVIDE,
 		REPLACE,
 		AVERAGE,
+		GRADIENT,
 		OP_MAX,
 	};
 
@@ -38,6 +39,7 @@ public:
 		"Divide",
 		"Replace",
 		"Average",
+		"Gradient",
 		"OP_MAX",
 	};
 
@@ -77,6 +79,7 @@ public:
 		int _texture_index = 0;
 		Color _color = COLOR_ROUGHNESS;
 		real_t _roughness = 0.5;
+		PackedVector3Array _gradient_points;
 		bool _enable = false;
 
 		bool _auto_regions = false;
@@ -98,6 +101,7 @@ public:
 		int get_texture_index() const { return _texture_index; }
 		Color get_color() const { return _color; }
 		real_t get_roughness() const { return _roughness; }
+		PackedVector3Array get_gradient_points() const { return _gradient_points; }
 		real_t get_enable() const { return _enable; }
 
 		bool auto_regions_enabled() const { return _auto_regions; }
@@ -115,7 +119,7 @@ private:
 	Operation _operation = ADD;
 	Brush _brush;
 	Vector3 _operation_position = Vector3();
-	real_t _operation_interval = 0.0f;
+	Vector3 _operation_movement = Vector3();
 	bool _pending_undo = false;
 	bool _modified = false;
 	AABB _modified_area;
@@ -162,6 +166,7 @@ public:
 	void start_operation(Vector3 p_global_position);
 	void operate(Vector3 p_global_position, real_t p_camera_direction);
 	void stop_operation();
+	bool is_operating() const { return _pending_undo; }
 
 protected:
 	static void _bind_methods();

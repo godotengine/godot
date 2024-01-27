@@ -51,7 +51,7 @@ Properties
    +---------------------------------------------------------------------------+----------------------------------------------------------------------------+-----------------+
    | :ref:`Terrain3DTextureList<class_Terrain3DTextureList>`                   | :ref:`texture_list<class_Terrain3D_property_texture_list>`                 |                 |
    +---------------------------------------------------------------------------+----------------------------------------------------------------------------+-----------------+
-   | :ref:`String<class_String>`                                               | :ref:`version<class_Terrain3D_property_version>`                           | ``"0.9.0-dev"`` |
+   | :ref:`String<class_String>`                                               | :ref:`version<class_Terrain3D_property_version>`                           | ``"0.9.1-dev"`` |
    +---------------------------------------------------------------------------+----------------------------------------------------------------------------+-----------------+
 
 .. rst-class:: classref-reftable-group
@@ -412,7 +412,7 @@ Property Descriptions
 
 .. rst-class:: classref-property
 
-:ref:`String<class_String>` **version** = ``"0.9.0-dev"``
+:ref:`String<class_String>` **version** = ``"0.9.1-dev"``
 
 .. rst-class:: classref-property-setget
 

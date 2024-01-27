@@ -10,6 +10,7 @@ const ICON_HEIGHT_SUB: String = "res://addons/terrain_3d/icons/icon_height_sub.s
 const ICON_HEIGHT_MUL: String = "res://addons/terrain_3d/icons/icon_height_mul.svg"
 const ICON_HEIGHT_DIV: String = "res://addons/terrain_3d/icons/icon_height_div.svg"
 const ICON_HEIGHT_FLAT: String = "res://addons/terrain_3d/icons/icon_height_flat.svg"
+const ICON_HEIGHT_SLOPE: String = "res://addons/terrain_3d/icons/icon_height_slope.svg"
 const ICON_HEIGHT_SMOOTH: String = "res://addons/terrain_3d/icons/icon_height_smooth.svg"
 const ICON_PAINT_TEXTURE: String = "res://addons/terrain_3d/icons/icon_brush.svg"
 const ICON_SPRAY_TEXTURE: String = "res://addons/terrain_3d/icons/icon_spray.svg"
@@ -37,6 +38,7 @@ func _ready() -> void:
 	add_tool_button(Terrain3DEditor.HEIGHT, Terrain3DEditor.MULTIPLY, "Expand (Away from 0)", load(ICON_HEIGHT_MUL), tool_group)
 	add_tool_button(Terrain3DEditor.HEIGHT, Terrain3DEditor.DIVIDE, "Reduce (Towards 0)", load(ICON_HEIGHT_DIV), tool_group)
 	add_tool_button(Terrain3DEditor.HEIGHT, Terrain3DEditor.REPLACE, "Flatten", load(ICON_HEIGHT_FLAT), tool_group)
+	add_tool_button(Terrain3DEditor.HEIGHT, Terrain3DEditor.GRADIENT, "Slope", load(ICON_HEIGHT_SLOPE), tool_group)
 	add_tool_button(Terrain3DEditor.HEIGHT, Terrain3DEditor.AVERAGE, "Smooth", load(ICON_HEIGHT_SMOOTH), tool_group)
 	add_child(HSeparator.new())
 	add_tool_button(Terrain3DEditor.TEXTURE, Terrain3DEditor.REPLACE, "Paint Base Texture", load(ICON_PAINT_TEXTURE), tool_group)

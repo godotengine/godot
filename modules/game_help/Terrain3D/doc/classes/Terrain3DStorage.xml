@@ -226,27 +226,6 @@
 			Array of images of format: FORMAT_RF, 32-bit per pixel as full-precision floating-point.
 			      However we interpret these images as format: [url=https://docs.godotengine.org/en/stable/classes/class_renderingdevice.html#class-renderingdevice-constant-data-format-r32-uint]RenderingDevice.DATA_FORMAT_R32_UINT[/url] aka OpenGL RG32UI 32-bit per pixel as unsigned integer. See [url=../docs/controlmap_format.html]Control map format[/url].
 		</member>
-		<member name="data_color_maps" type="Image[]" setter="set_color_maps" getter="get_color_maps" is_deprecated="true">
-			[i]Deprecated.[/i] See [member color_maps].
-		</member>
-		<member name="data_control_maps" type="Image[]" setter="set_control_maps" getter="get_control_maps" is_deprecated="true">
-			[i]Deprecated.[/i] See [member control_maps].
-		</member>
-		<member name="data_height_maps" type="Image[]" setter="set_height_maps" getter="get_height_maps" is_deprecated="true">
-			[i]Deprecated.[/i] See [member height_maps].
-		</member>
-		<member name="data_height_range" type="Vector2" setter="set_height_range" getter="get_height_range" is_deprecated="true">
-			[i]Deprecated.[/i] See [member height_range].
-		</member>
-		<member name="data_region_offsets" type="Vector2i[]" setter="set_region_offsets" getter="get_region_offsets" is_deprecated="true">
-			[i]Deprecated.[/i] See [member region_offsets].
-		</member>
-		<member name="data_surfaces" type="Terrain3DSurface[]" setter="set_surfaces" getter="get_surfaces" is_deprecated="true">
-			[i]Deprecated.[/i] See [Terrain3DTextureList].
-		</member>
-		<member name="data_version" type="float" setter="set_version" getter="get_version" is_deprecated="true">
-			[i]Deprecated.[/i] See [member version].
-		</member>
 		<member name="height_maps" type="Image[]" setter="set_height_maps" getter="get_height_maps" default="[]">
 			Array of images of format: FORMAT_RF, 32-bit per pixel as full-precision floating-point.
 			      Defines the height value of the terrain at a given pixel. This is sent to the vertex shader on the GPU which modifies the mesh in real-time.

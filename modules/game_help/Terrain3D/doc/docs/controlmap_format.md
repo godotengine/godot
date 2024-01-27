@@ -28,5 +28,4 @@ We process the uint as a bit field with the following definition, starting with 
 
 The 3 bit indices above are used to select a value from an 8-index array of values between 0-1, such as `{ 0.0f, .125f, .25f, .334f, .5f, .667f, .8f, 1.0f };` This allows us to store full range 0-1 values that would normally require 8 bits (256 values) in only 3 bits (8 values), since the fine gradations are not important. This idea came from the Witcher 3 presentation.
 
-
-
+C++ users can use the conversion and testing functions found in [util.h](https://github.com/TokisanGames/Terrain3D/blob/main/src/util.h)

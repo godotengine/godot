@@ -239,9 +239,7 @@ void Terrain3DStorage::update_regions(bool force_emit) {
 		LOG(DEBUG_CONT, "Regenerating color layered texture from ", _color_maps.size(), " maps");
 		for (int i = 0; i < _color_maps.size(); i++) {
 			Ref<Image> map = _color_maps[i];
-			if (!map->has_mipmaps()) {
-				map->generate_mipmaps();
-			}
+			map->generate_mipmaps();
 		}
 		_generated_color_maps.create(_color_maps);
 		force_emit = true;

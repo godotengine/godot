@@ -14,3 +14,5 @@ Contributors
 * Roman Shapiro [@rds1983](https://github.com/rds1983)
 * Skyrbunny [@SlashScreen](https://github.com/SlashScreen)
 * [@directedchaossoftware](https://github.com/directedchaossoftware)
+* Jacob Coughenour [@jacobcoughenour](https://github.com/jacobcoughenour)
+* [@stakira](https://github.com/stakira) / [@lfxu](https://github.com/lfxu)

@@ -29,7 +29,6 @@ Resources
     class_resource
     class_terrain3dmaterial
     class_terrain3dstorage
-    class_terrain3dsurface
     class_terrain3dtexture
     class_terrain3dtexturelist
 

@@ -22,37 +22,23 @@ Properties
 .. table::
    :widths: auto
 
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Image[]<class_Image>`                         | :ref:`color_maps<class_Terrain3DStorage_property_color_maps>`                   | ``[]``            |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Image[]<class_Image>`                         | :ref:`control_maps<class_Terrain3DStorage_property_control_maps>`               | ``[]``            |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Image[]<class_Image>`                         | :ref:`data_color_maps<class_Terrain3DStorage_property_data_color_maps>`         |                   |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Image[]<class_Image>`                         | :ref:`data_control_maps<class_Terrain3DStorage_property_data_control_maps>`     |                   |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Image[]<class_Image>`                         | :ref:`data_height_maps<class_Terrain3DStorage_property_data_height_maps>`       |                   |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Vector2<class_Vector2>`                       | :ref:`data_height_range<class_Terrain3DStorage_property_data_height_range>`     |                   |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Vector2i[]<class_Vector2i>`                   | :ref:`data_region_offsets<class_Terrain3DStorage_property_data_region_offsets>` |                   |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Terrain3DSurface[]<class_Terrain3DSurface>`   | :ref:`data_surfaces<class_Terrain3DStorage_property_data_surfaces>`             |                   |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`float<class_float>`                           | :ref:`data_version<class_Terrain3DStorage_property_data_version>`               |                   |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Image[]<class_Image>`                         | :ref:`height_maps<class_Terrain3DStorage_property_height_maps>`                 | ``[]``            |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Vector2<class_Vector2>`                       | :ref:`height_range<class_Terrain3DStorage_property_height_range>`               | ``Vector2(0, 0)`` |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`Vector2i[]<class_Vector2i>`                   | :ref:`region_offsets<class_Terrain3DStorage_property_region_offsets>`           | ``[]``            |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`RegionSize<enum_Terrain3DStorage_RegionSize>` | :ref:`region_size<class_Terrain3DStorage_property_region_size>`                 | ``1024``          |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`bool<class_bool>`                             | :ref:`save_16_bit<class_Terrain3DStorage_property_save_16_bit>`                 | ``false``         |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
-   | :ref:`float<class_float>`                           | :ref:`version<class_Terrain3DStorage_property_version>`                         | ``0.8``           |
-   +-----------------------------------------------------+---------------------------------------------------------------------------------+-------------------+
+   +-----------------------------------------------------+-----------------------------------------------------------------------+-------------------+
+   | :ref:`Image[]<class_Image>`                         | :ref:`color_maps<class_Terrain3DStorage_property_color_maps>`         | ``[]``            |
+   +-----------------------------------------------------+-----------------------------------------------------------------------+-------------------+
+   | :ref:`Image[]<class_Image>`                         | :ref:`control_maps<class_Terrain3DStorage_property_control_maps>`     | ``[]``            |
+   +-----------------------------------------------------+-----------------------------------------------------------------------+-------------------+
+   | :ref:`Image[]<class_Image>`                         | :ref:`height_maps<class_Terrain3DStorage_property_height_maps>`       | ``[]``            |
+   +-----------------------------------------------------+-----------------------------------------------------------------------+-------------------+
+   | :ref:`Vector2<class_Vector2>`                       | :ref:`height_range<class_Terrain3DStorage_property_height_range>`     | ``Vector2(0, 0)`` |
+   +-----------------------------------------------------+-----------------------------------------------------------------------+-------------------+
+   | :ref:`Vector2i[]<class_Vector2i>`                   | :ref:`region_offsets<class_Terrain3DStorage_property_region_offsets>` | ``[]``            |
+   +-----------------------------------------------------+-----------------------------------------------------------------------+-------------------+
+   | :ref:`RegionSize<enum_Terrain3DStorage_RegionSize>` | :ref:`region_size<class_Terrain3DStorage_property_region_size>`       | ``1024``          |
+   +-----------------------------------------------------+-----------------------------------------------------------------------+-------------------+
+   | :ref:`bool<class_bool>`                             | :ref:`save_16_bit<class_Terrain3DStorage_property_save_16_bit>`       | ``false``         |
+   +-----------------------------------------------------+-----------------------------------------------------------------------+-------------------+
+   | :ref:`float<class_float>`                           | :ref:`version<class_Terrain3DStorage_property_version>`               | ``0.8``           |
+   +-----------------------------------------------------+-----------------------------------------------------------------------+-------------------+
 
 .. rst-class:: classref-reftable-group
 
@@ -325,125 +311,6 @@ Array of images of format: FORMAT_RGBA8, 32-bits per pixel as four 8-bit compone
 Array of images of format: FORMAT_RF, 32-bit per pixel as full-precision floating-point.
 
       However we interpret these images as format: `RenderingDevice.DATA_FORMAT_R32_UINT <https://docs.godotengine.org/en/stable/classes/class_renderingdevice.html#class-renderingdevice-constant-data-format-r32-uint>`__ aka OpenGL RG32UI 32-bit per pixel as unsigned integer. See `Control map format <../docs/controlmap_format.html>`__.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DStorage_property_data_color_maps:
-
-.. rst-class:: classref-property
-
-:ref:`Image[]<class_Image>` **data_color_maps**
-
-.. rst-class:: classref-property-setget
-
-- void **set_color_maps** **(** :ref:`Image[]<class_Image>` value **)**
-- :ref:`Image[]<class_Image>` **get_color_maps** **(** **)**
-
-*Deprecated.* See :ref:`color_maps<class_Terrain3DStorage_property_color_maps>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DStorage_property_data_control_maps:
-
-.. rst-class:: classref-property
-
-:ref:`Image[]<class_Image>` **data_control_maps**
-
-.. rst-class:: classref-property-setget
-
-- void **set_control_maps** **(** :ref:`Image[]<class_Image>` value **)**
-- :ref:`Image[]<class_Image>` **get_control_maps** **(** **)**
-
-*Deprecated.* See :ref:`control_maps<class_Terrain3DStorage_property_control_maps>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DStorage_property_data_height_maps:
-
-.. rst-class:: classref-property
-
-:ref:`Image[]<class_Image>` **data_height_maps**
-
-.. rst-class:: classref-property-setget
-
-- void **set_height_maps** **(** :ref:`Image[]<class_Image>` value **)**
-- :ref:`Image[]<class_Image>` **get_height_maps** **(** **)**
-
-*Deprecated.* See :ref:`height_maps<class_Terrain3DStorage_property_height_maps>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DStorage_property_data_height_range:
-
-.. rst-class:: classref-property
-
-:ref:`Vector2<class_Vector2>` **data_height_range**
-
-.. rst-class:: classref-property-setget
-
-- void **set_height_range** **(** :ref:`Vector2<class_Vector2>` value **)**
-- :ref:`Vector2<class_Vector2>` **get_height_range** **(** **)**
-
-*Deprecated.* See :ref:`height_range<class_Terrain3DStorage_property_height_range>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DStorage_property_data_region_offsets:
-
-.. rst-class:: classref-property
-
-:ref:`Vector2i[]<class_Vector2i>` **data_region_offsets**
-
-.. rst-class:: classref-property-setget
-
-- void **set_region_offsets** **(** :ref:`Vector2i[]<class_Vector2i>` value **)**
-- :ref:`Vector2i[]<class_Vector2i>` **get_region_offsets** **(** **)**
-
-*Deprecated.* See :ref:`region_offsets<class_Terrain3DStorage_property_region_offsets>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DStorage_property_data_surfaces:
-
-.. rst-class:: classref-property
-
-:ref:`Terrain3DSurface[]<class_Terrain3DSurface>` **data_surfaces**
-
-.. rst-class:: classref-property-setget
-
-- void **set_surfaces** **(** :ref:`Terrain3DSurface[]<class_Terrain3DSurface>` value **)**
-- :ref:`Terrain3DSurface[]<class_Terrain3DSurface>` **get_surfaces** **(** **)**
-
-*Deprecated.* See :ref:`Terrain3DTextureList<class_Terrain3DTextureList>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Terrain3DStorage_property_data_version:
-
-.. rst-class:: classref-property
-
-:ref:`float<class_float>` **data_version**
-
-.. rst-class:: classref-property-setget
-
-- void **set_version** **(** :ref:`float<class_float>` value **)**
-- :ref:`float<class_float>` **get_version** **(** **)**
-
-*Deprecated.* See :ref:`version<class_Terrain3DStorage_property_version>`.
 
 .. rst-class:: classref-item-separator
 

@@ -2,11 +2,23 @@ Texturing the Terrain
 =========================
 
 ## Texture List
+
 Terrain3D supports up to 32 texture sets.
-* In the `Textures` panel, click `Add New`. Drag your [prepared texture](texture_prep.md) for albedo+height into the albedo slot. Drag your normal+roughness texture into the normal slot. Name it, and adjust the other settings as needed.
-* Right-click any texture in the list to bring it into edit mode.
-* Middle-click any texture to clear/delete it. You can only delete the last texture in the list.
-* You can reorder the textures by changing the texture id. This will change the texture rendered in the viewport as it does not change the values painted on the control maps.
+
+### Installing a Texture
+1. Once you've [created your textures](texture_prep.md), place them in your Godot project folder.
+2. Set the appropriate Import settings for them as defined in [compression formats](texture_prep.md#compression-format).
+3. Make a new texture slot in the `Textures` panel by clicking `Add New`. 
+4. Drag your texture file for albedo+height from the `FileSystem` panel into the albedo slot. Drag your normal+roughness texture into the normal slot. 
+5. In the inspector, name the texture and adjust the other settings as needed.
+
+
+### Managing the Texture List
+* Unused texture slots take up memory with the default generated textures. Remove unused slots.
+* Right-click any texture slot in the panel to bring it into edit mode.
+* Middle-click any texture slot to clear or delete it. You can only delete the last texture in the list.
+* Reorder textures by changing the texture id. This will change the texture rendered in the viewport as it does not change the values painted on the control map. In the future we'll add image processing tools that will allow changing texture ids painted on the terrain.
+
 
 ## Texture Painting
 
@@ -54,15 +66,19 @@ You can see the manual painting technique is the same as above. The key step her
 
 ## Color Painting
 
-In addition to painting textures, you can also paint colors on the terrain.
+In addition to painting textures, you can also paint colors on the terrain. There are two primary uses for the colormap.
 
-You can import a full image such as a satellite photo, and enable the color map debug view for GIS applications.
+### GIS Applications
+
+You can import a full image such as a satellite photo, and enable the color map debug view for GIS visualization.
 
 ```{image} images/gis.png
 :target: ../_images/gis.png
 ```
 
-Or you can use the `Paint Color` tool to paint colors on the terrain for variation. Colors are multiplied onto painted textures, which is a blend mode that only darkens.
+### Color Variation
+
+You can use the `Paint Color` tool to paint colors on the terrain. This is useful to adding variation. Colors are multiplied onto painted textures, which is a blend mode that only darkens.
 
 Try painting your terrain with subtle light grays, greens and browns to add depth, contours, and variation. Subtlety is key.
 
@@ -75,7 +91,7 @@ You can paint with the colormap on top of the autoshader. You can also use the p
 
 Use the `Paint Wetness` tool to modify the roughness of the textures. Reduce the roughness percentage to say -30% and wherever you paint the textures will become more glossy.
 
-If you wish to turn dirt into mud, try painting a light/medium grey on the colormap, then paint a -30% on the wetness.
+If you wish to turn dirt into mud, try painting a light/medium grey on the colormap to darken it, then paint a -30% on the wetness.
 
 Paint 0 to reset.
 

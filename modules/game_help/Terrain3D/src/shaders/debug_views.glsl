@@ -18,7 +18,7 @@ R"(
 
 //INSERT: DEBUG_GREY
 	// Show all grey
-	ALBEDO = vec3(0.3);
+	ALBEDO = vec3(0.2);
 	ROUGHNESS = 0.7;
 	SPECULAR = 0.;
 	NORMAL_MAP = vec3(0.5, 0.5, 1.0);

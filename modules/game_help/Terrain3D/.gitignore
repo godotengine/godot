@@ -2,11 +2,12 @@
 project/test/
 project/addons/godot-jolt/
 project/addons/terrain_3d/bin/
-project/addons/terrain_3d/editor/gterrain-ui/
 project/_dev/
 project/_export/
-project/tests/
-patches/
+project/_tests/
+src/_archive/
+_misc/
+_patches/
 *.zip
 
 # Docs

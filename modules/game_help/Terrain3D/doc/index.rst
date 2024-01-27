@@ -66,7 +66,7 @@ Developed for the Godot community by:
    :target: https://www.youtube.com/@outobugi
    :width: 24
 
-And other contributors displayed on `github contributors <https://github.com/TokisanGames/Terrain3D/graphs/contributors>`_ and in :doc:`authors`.
+And other contributors displayed on `github contributors <https://github.com/TokisanGames/Terrain3D/graphs/contributors>`_ and in :doc:`docs/authors`.
 
 Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk/blog/geometry-clipmaps.html>`_. Blog and repository code released under the MIT license per email communication with Mike.
 
@@ -76,14 +76,16 @@ Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk
    :caption: About
 
    docs/project_status
-   authors
-   license
+   docs/authors
+   docs/press
+   docs/license
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Getting Started
 
+   docs/tutorial_videos
    docs/installation
    docs/texture_prep
    docs/texture_painting
@@ -98,8 +100,9 @@ Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk
    :caption: Advanced Usage
 
    docs/integrating
-   docs/occlusion_culling
+   docs/mobile_web
    docs/navigation
+   docs/occlusion_culling
 
 .. toctree::
    :maxdepth: 1
@@ -111,7 +114,7 @@ Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk
    docs/previous_engines
    docs/controlmap_format
    docs/storage_format
-   contributing
+   docs/contributing
 
 
 .. toctree::

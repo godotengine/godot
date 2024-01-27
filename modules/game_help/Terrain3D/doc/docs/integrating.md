@@ -128,6 +128,11 @@ This is ideal for one lookup. However, if you wish to look up thousands of heigh
 ```
 
 
+### Getting Updates on Terrain Changes
+
+`Terrain3DStorage` has [signals](https://terrain3d.readthedocs.io/en/latest/api/class_terrain3dstorage.html#signals) that fire when updates occur. You can connect to them to receive updates.
+
+
 ### Regions
 
 Terrain3D provides users non-contiguous 1024x1024 sized regions on a 16x16 region grid. So a user might have a 1k x 2k island in one corner of the world and a 4k x 4k island elsewhere. In between are empty regions, visually flat space where they could place an ocean. No collision is generated there. 

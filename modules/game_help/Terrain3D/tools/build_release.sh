@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+## This file has been superseded by the github automated builds configured under /.github
+
 if [ "$3" == "" ]; then
 	echo "Usage: $0 <platform> <version> <godot version>"
 	echo "Platforms: linux|windows|all"

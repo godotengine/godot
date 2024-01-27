@@ -1,9 +1,9 @@
 Building from Source
 ====================
 
-## 0. Nightly Builds
+## 0. Push Builds aka Nightly Builds
 
-Github is configured to build automatically on every commit and PR push. If you want a more recent build than the releases, you can download these builds. They are exactly the same as the releases except for the commit used. However, they are inherently less tested and may have more problems than the release builds.
+Traditionally, nightly builds were automatically built by the development server every night. Our Github repository is configured to build automatically on every commit and PR push. If you want to test more recent versions of Terrain3D than the releases, you can download these builds. They are exactly the same as the releases except for the commit used. However, they are inherently less tested and may have more problems than the release builds.
 
 1. [Click here](https://github.com/TokisanGames/Terrain3D/actions/workflows/build.yml?query=branch%3Amain) for `Github Actions`, `Build All` workflow, `main` branch.
 

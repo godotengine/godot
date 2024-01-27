@@ -29,6 +29,8 @@ Methods
    +--------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
    | :ref:`Operation<enum_Terrain3DEditor_Operation>` | :ref:`get_operation<class_Terrain3DEditor_method_get_operation>` **(** **)**                                                                        |
    +--------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Terrain3DEditor<class_Terrain3DEditor>`    | :ref:`get_singleton<class_Terrain3DEditor_method_get_singleton>` **(** **)** |static|                                                               |
+   +--------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
    | :ref:`Terrain3D<class_Terrain3D>`                | :ref:`get_terrain<class_Terrain3DEditor_method_get_terrain>` **(** **)**                                                                            |
    +--------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
    | :ref:`Tool<enum_Terrain3DEditor_Tool>`           | :ref:`get_tool<class_Terrain3DEditor_method_get_tool>` **(** **)**                                                                                  |
@@ -47,6 +49,33 @@ Methods
    +--------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
    | void                                             | :ref:`stop_operation<class_Terrain3DEditor_method_stop_operation>` **(** **)**                                                                      |
    +--------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
+
+.. rst-class:: classref-section-separator
+
+----
+
+.. rst-class:: classref-descriptions-group
+
+Signals
+-------
+
+.. _class_Terrain3DEditor_signal_terrain_edited:
+
+.. rst-class:: classref-signal
+
+**terrain_edited** **(** :ref:`AABB<class_AABB>` edited_area **)**
+
+This signal is emitted whenever the editor is used to:
+
+- add or remove a region,
+
+- alter a region map with a brush tool,
+
+- undo or redo any of the above operations.
+
+
+
+The parameter contains the axis-aligned bounding box of the area edited.
 
 .. rst-class:: classref-section-separator
 
@@ -229,6 +258,20 @@ void **apply_undo** **(** :ref:`Array<class_Array>` maps **)**
 .. rst-class:: classref-method
 
 :ref:`Operation<enum_Terrain3DEditor_Operation>` **get_operation** **(** **)**
+
+.. container:: contribute
+
+	There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_Terrain3DEditor_method_get_singleton:
+
+.. rst-class:: classref-method
+
+:ref:`Terrain3DEditor<class_Terrain3DEditor>` **get_singleton** **(** **)** |static|
 
 .. container:: contribute
 

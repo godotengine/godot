@@ -15,14 +15,18 @@ enum SettingType {
 	DOUBLE_SLIDER,
 	COLOR_SELECT,
 	PICKER,
+	POINT_PICKER,
 }
 
+const PointPicker: Script = preload("res://addons/terrain_3d/editor/components/point_picker.gd")
 const DEFAULT_BRUSH: String = "circle0.exr"
 const BRUSH_PATH: String = "res://addons/terrain_3d/editor/brushes"
 const PICKER_ICON: String = "res://addons/terrain_3d/icons/icon_picker.svg"
 
 const NONE: int = 0x0
-const ALLOW_OUT_OF_BOUNDS: int = 0x1
+const ALLOW_LARGER: int = 0x1
+const ALLOW_SMALLER: int = 0x2
+const ALLOW_OUT_OF_BOUNDS: int = 0x3
 
 var brush_preview_material: ShaderMaterial
 
@@ -37,7 +41,7 @@ func _ready() -> void:
 	
 	add_brushes(list)
 
-	add_setting(SettingType.SLIDER, "size", 50, list, "m", 2, 200, 1, ALLOW_OUT_OF_BOUNDS)
+	add_setting(SettingType.SLIDER, "size", 50, list, "m", 4, 200, 1, ALLOW_LARGER)
 	add_setting(SettingType.SLIDER, "opacity", 10, list, "%", 1, 100)
 	add_setting(SettingType.CHECKBOX, "enable", true, list)
 	
@@ -50,6 +54,11 @@ func _ready() -> void:
 	add_setting(SettingType.SLIDER, "height", 50, list, "m", -500, 500, 0.1, ALLOW_OUT_OF_BOUNDS)
 	add_setting(SettingType.PICKER, "height picker", Terrain3DEditor.HEIGHT, list)
 	add_setting(SettingType.DOUBLE_SLIDER, "slope", 0, list, "°", 0, 180, 1)
+	
+	add_setting(SettingType.POINT_PICKER, "gradient_points", Terrain3DEditor.HEIGHT, list)
+	add_setting(SettingType.CHECKBOX, "drawable", false, list)
+	
+	settings["drawable"].toggled.connect(_on_drawable_toggled)
 
 	var spacer: Control = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -174,7 +183,7 @@ func _on_pick(p_type: Terrain3DEditor.Tool) -> void:
 	emit_signal("picking", p_type, _on_picked)
 
 
-func _on_picked(p_type: Terrain3DEditor.Tool, p_color: Color) -> void:
+func _on_picked(p_type: Terrain3DEditor.Tool, p_color: Color, p_global_position: Vector3) -> void:
 	match p_type:
 		Terrain3DEditor.HEIGHT:
 			settings["height"].value = p_color.r
@@ -183,6 +192,20 @@ func _on_picked(p_type: Terrain3DEditor.Tool, p_color: Color) -> void:
 		Terrain3DEditor.ROUGHNESS:
 			# 200... -.5 converts 0,1 to -100,100
 			settings["roughness"].value = round(200 * (p_color.a - 0.5))
+	_on_setting_changed()
+
+
+func _on_point_pick(p_type: Terrain3DEditor.Tool, p_name: String) -> void:
+	assert(p_type == Terrain3DEditor.HEIGHT)
+	emit_signal("picking", p_type, _on_point_picked.bind(p_name))
+
+
+func _on_point_picked(p_type: Terrain3DEditor.Tool, p_color: Color, p_global_position: Vector3, p_name: String) -> void:
+	assert(p_type == Terrain3DEditor.HEIGHT)
+	
+	var point: Vector3 = p_global_position
+	point.y = p_color.r
+	settings[p_name].add_point(point)
 	_on_setting_changed()
 
 
@@ -220,8 +243,9 @@ func add_setting(p_type: SettingType, p_name: StringName, p_value: Variant, p_pa
 			
 				slider = HSlider.new()
 				slider.share(control)
-				if p_flags & ALLOW_OUT_OF_BOUNDS:
+				if p_flags & ALLOW_LARGER:
 					slider.set_allow_greater(true)
+				if p_flags & ALLOW_SMALLER:
 					slider.set_allow_lesser(true)
 					
 			else:
@@ -263,7 +287,12 @@ func add_setting(p_type: SettingType, p_name: StringName, p_value: Variant, p_pa
 			control.icon = load(PICKER_ICON)
 			control.tooltip_text = "Pick value from the Terrain"
 			control.connect("pressed", _on_pick.bind(p_value))
-			
+		
+		SettingType.POINT_PICKER:
+			control = PointPicker.new()
+			control.connect("pressed", _on_point_pick.bind(p_value, p_name))
+			control.connect("value_changed", _on_setting_changed)
+		
 	container.add_child(control, true)
 	p_parent.add_child(container, true)
 	
@@ -285,6 +314,8 @@ func get_setting(p_setting: String) -> Variant:
 		value = object.is_pressed()
 	elif object is ColorPickerButton:
 		value = object.color
+	elif object is PointPicker:
+		value = object.get_points()
 	return value
 
 
@@ -315,6 +346,11 @@ func _on_setting_changed(p_data: Variant = null) -> void:
 
 	emit_signal("setting_changed")
 	
+
+func _on_drawable_toggled(p_button_pressed: bool) -> void:
+	if not p_button_pressed:
+		settings["gradient_points"].clear()
+
 
 func _get_brush_preview_material() -> ShaderMaterial:
 	if !brush_preview_material:

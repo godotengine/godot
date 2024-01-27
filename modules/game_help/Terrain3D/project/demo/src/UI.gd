@@ -32,7 +32,7 @@ func _unhandled_key_input(p_event: InputEvent) -> void:
 				get_tree().quit()
 			KEY_F10:
 				var vp = get_viewport()
-				vp.debug_draw = (vp.debug_draw + 1 ) % 4
+				vp.debug_draw = (vp.debug_draw + 1 ) % 6
 				get_viewport().set_input_as_handled()
 			KEY_F11:
 				toggle_fullscreen()

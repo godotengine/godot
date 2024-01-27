@@ -102,6 +102,8 @@ func _clear() -> void:
 		terrain = null
 		editor.set_terrain(null)
 		
+		ui.clear_picking()
+		
 	region_gizmo.clear()
 
 
@@ -140,7 +142,7 @@ func _forward_3d_gui_input(p_viewport_camera: Camera3D, p_event: InputEvent) -> 
 			current_region_position = region_position
 			update_region_grid()
 			
-		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and editor.is_operating():
 			editor.operate(mouse_global_position, p_viewport_camera.rotation.y)
 			return AFTER_GUI_INPUT_STOP
 
@@ -153,37 +155,33 @@ func _forward_3d_gui_input(p_viewport_camera: Camera3D, p_event: InputEvent) -> 
 					return AFTER_GUI_INPUT_STOP
 					
 				# If picking
-				if ui.picking != Terrain3DEditor.TOOL_MAX: 
-					var color: Color
-					match ui.picking:
-						Terrain3DEditor.HEIGHT:
-							color = terrain.get_storage().get_pixel(Terrain3DStorage.TYPE_HEIGHT, mouse_global_position)
-						Terrain3DEditor.ROUGHNESS:
-							color = terrain.get_storage().get_pixel(Terrain3DStorage.TYPE_COLOR, mouse_global_position)
-						Terrain3DEditor.COLOR:
-							color = terrain.get_storage().get_color(mouse_global_position)
-						_:
-							push_error("Unsupported picking type: ", ui.picking)
-							return AFTER_GUI_INPUT_STOP
-					ui.picking_callback.call(ui.picking, color)
-					ui.picking = Terrain3DEditor.TOOL_MAX
-					return AFTER_GUI_INPUT_STOP
-
+				if ui.is_picking():
+					ui.pick(mouse_global_position)
+					if not ui.operation_builder or not ui.operation_builder.is_ready():
+						return AFTER_GUI_INPUT_STOP
+				
 				# If adjusting regions
-				elif editor.get_tool() == Terrain3DEditor.REGION:
+				if editor.get_tool() == Terrain3DEditor.REGION:
 					# Skip regions that already exist or don't
 					var has_region: bool = terrain.get_storage().has_region(mouse_global_position)
 					var op: int = editor.get_operation()
 					if	( has_region and op == Terrain3DEditor.ADD) or \
 						( not has_region and op == Terrain3DEditor.SUBTRACT ):
 						return AFTER_GUI_INPUT_STOP
-
+				
+				# If an automatic operation is ready to go (e.g. gradient)
+				if ui.operation_builder and ui.operation_builder.is_ready():
+					ui.operation_builder.apply_operation(editor, mouse_global_position, p_viewport_camera.rotation.y)
+					return AFTER_GUI_INPUT_STOP
+				
 				# Mouse clicked, start editing
 				editor.start_operation(mouse_global_position)
-			else:
+				return AFTER_GUI_INPUT_STOP
+			
+			elif editor.is_operating():
 				# Mouse released, save undo data
 				editor.stop_operation()
-			return AFTER_GUI_INPUT_STOP
+				return AFTER_GUI_INPUT_STOP
 	
 	return AFTER_GUI_INPUT_PASS
 
