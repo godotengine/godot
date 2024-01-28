@@ -349,7 +349,7 @@ void EditorProfiler::_update_frame() {
 			category->set_custom_color(0, _get_color_from_signature(m.categories[i].signature));
 		}
 
-		for (int j = m.categories[i].items.size() - 1; j >= 0; j--) {
+		for (int j = 0; j < m.categories[i].items.size(); j++) {
 			const Metric::Category::Item &it = m.categories[i].items[j];
 
 			TreeItem *item = variables->create_item(category);

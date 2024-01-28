@@ -196,7 +196,7 @@ class ServersDebugger::ScriptsProfiler : public EngineProfiler {
 	typedef ServersDebugger::ScriptFunctionInfo FunctionInfo;
 	struct ProfileInfoSort {
 		bool operator()(ScriptLanguage::ProfilingInfo *A, ScriptLanguage::ProfilingInfo *B) const {
-			return A->total_time < B->total_time;
+			return A->total_time > B->total_time;
 		}
 	};
 	Vector<ScriptLanguage::ProfilingInfo> info;
