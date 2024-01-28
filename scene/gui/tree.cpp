@@ -868,7 +868,7 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 		} else if (!current) {
 			if (p_wrap) {
 				current = this;
-				TreeItem *temp = this->get_next_visible();
+				TreeItem *temp = get_next_visible();
 				while (temp) {
 					current = temp;
 					temp = temp->get_next_visible();
@@ -894,7 +894,7 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 
 TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *prev_item = this->_get_prev_in_tree(p_wrap);
+	TreeItem *prev_item = _get_prev_in_tree(p_wrap);
 	while (prev_item && !prev_item->is_visible()) {
 		prev_item = prev_item->_get_prev_in_tree(p_wrap);
 		if (prev_item == loop) {
@@ -935,7 +935,7 @@ TreeItem *TreeItem::_get_next_in_tree(bool p_wrap, bool p_include_invisible) {
 
 TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *next_item = this->_get_next_in_tree(p_wrap);
+	TreeItem *next_item = _get_next_in_tree(p_wrap);
 	while (next_item && !next_item->is_visible()) {
 		next_item = next_item->_get_next_in_tree(p_wrap);
 		if (next_item == loop) {
@@ -948,12 +948,12 @@ TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 }
 
 TreeItem *TreeItem::get_prev_in_tree(bool p_wrap) {
-	TreeItem *prev_item = this->_get_prev_in_tree(p_wrap, true);
+	TreeItem *prev_item = _get_prev_in_tree(p_wrap, true);
 	return prev_item;
 }
 
 TreeItem *TreeItem::get_next_in_tree(bool p_wrap) {
-	TreeItem *next_item = this->_get_next_in_tree(p_wrap, true);
+	TreeItem *next_item = _get_next_in_tree(p_wrap, true);
 	return next_item;
 }
 

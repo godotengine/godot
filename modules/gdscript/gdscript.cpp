@@ -1696,7 +1696,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		{
 			HashMap<StringName, MethodInfo>::ConstIterator E = sptr->_signals.find(p_name);
 			if (E) {
-				r_ret = Signal(this->owner, E->key);
+				r_ret = Signal(owner, E->key);
 				return true;
 			}
 		}
@@ -1705,9 +1705,9 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(p_name);
 			if (E) {
 				if (sptr->rpc_config.has(p_name)) {
-					r_ret = Callable(memnew(GDScriptRPCCallable(this->owner, E->key)));
+					r_ret = Callable(memnew(GDScriptRPCCallable(owner, E->key)));
 				} else {
-					r_ret = Callable(this->owner, E->key);
+					r_ret = Callable(owner, E->key);
 				}
 				return true;
 			}
@@ -2185,7 +2185,7 @@ void GDScriptLanguage::finish() {
 
 void GDScriptLanguage::profiling_start() {
 #ifdef DEBUG_ENABLED
-	MutexLock lock(this->mutex);
+	MutexLock lock(mutex);
 
 	SelfList<GDScriptFunction> *elem = function_list.first();
 	while (elem) {
@@ -2216,7 +2216,7 @@ void GDScriptLanguage::profiling_set_save_native_calls(bool p_enable) {
 
 void GDScriptLanguage::profiling_stop() {
 #ifdef DEBUG_ENABLED
-	MutexLock lock(this->mutex);
+	MutexLock lock(mutex);
 
 	profiling = false;
 #endif
@@ -2226,7 +2226,7 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 	int current = 0;
 #ifdef DEBUG_ENABLED
 
-	MutexLock lock(this->mutex);
+	MutexLock lock(mutex);
 
 	profiling_collate_native_call_data(true);
 	SelfList<GDScriptFunction> *elem = function_list.first();
@@ -2264,7 +2264,7 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 	int current = 0;
 
 #ifdef DEBUG_ENABLED
-	MutexLock lock(this->mutex);
+	MutexLock lock(mutex);
 
 	profiling_collate_native_call_data(false);
 	SelfList<GDScriptFunction> *elem = function_list.first();
@@ -2353,7 +2353,7 @@ void GDScriptLanguage::reload_all_scripts() {
 	print_verbose("GDScript: Reloading all scripts");
 	Array scripts;
 	{
-		MutexLock lock(this->mutex);
+		MutexLock lock(mutex);
 
 		SelfList<GDScript> *elem = script_list.first();
 		while (elem) {
@@ -2387,7 +2387,7 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 
 	List<Ref<GDScript>> scripts;
 	{
-		MutexLock lock(this->mutex);
+		MutexLock lock(mutex);
 
 		SelfList<GDScript> *elem = script_list.first();
 		while (elem) {
@@ -2519,7 +2519,7 @@ void GDScriptLanguage::frame() {
 
 #ifdef DEBUG_ENABLED
 	if (profiling) {
-		MutexLock lock(this->mutex);
+		MutexLock lock(mutex);
 
 		SelfList<GDScriptFunction> *elem = function_list.first();
 		while (elem) {

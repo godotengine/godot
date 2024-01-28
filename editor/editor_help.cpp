@@ -218,31 +218,31 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 
 		if (tag == "method") {
 			topic = "class_method";
-			table = &this->method_line;
+			table = &method_line;
 		} else if (tag == "constructor") {
 			topic = "class_method";
-			table = &this->method_line;
+			table = &method_line;
 		} else if (tag == "operator") {
 			topic = "class_method";
-			table = &this->method_line;
+			table = &method_line;
 		} else if (tag == "member") {
 			topic = "class_property";
-			table = &this->property_line;
+			table = &property_line;
 		} else if (tag == "enum") {
 			topic = "class_enum";
-			table = &this->enum_line;
+			table = &enum_line;
 		} else if (tag == "signal") {
 			topic = "class_signal";
-			table = &this->signal_line;
+			table = &signal_line;
 		} else if (tag == "constant") {
 			topic = "class_constant";
-			table = &this->constant_line;
+			table = &constant_line;
 		} else if (tag == "annotation") {
 			topic = "class_annotation";
-			table = &this->annotation_line;
+			table = &annotation_line;
 		} else if (tag == "theme_item") {
 			topic = "theme_item";
-			table = &this->theme_property_line;
+			table = &theme_property_line;
 		} else {
 			return;
 		}

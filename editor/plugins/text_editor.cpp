@@ -712,5 +712,5 @@ TextEditor::~TextEditor() {
 }
 
 void TextEditor::validate() {
-	this->code_editor->validate_script();
+	code_editor->validate_script();
 }

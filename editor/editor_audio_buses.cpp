@@ -328,7 +328,7 @@ void EditorAudioBus::_volume_changed(float p_normalized) {
 
 	updating_bus = true;
 
-	const float p_db = this->_normalized_volume_to_scaled_db(p_normalized);
+	const float p_db = _normalized_volume_to_scaled_db(p_normalized);
 
 	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 		// Snap the value when holding Ctrl for easier editing.

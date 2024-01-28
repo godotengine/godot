@@ -514,7 +514,7 @@ Vector3 Vector3::slide(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
-	return *this - p_normal * this->dot(p_normal);
+	return *this - p_normal * dot(p_normal);
 }
 
 Vector3 Vector3::bounce(const Vector3 &p_normal) const {
@@ -525,7 +525,7 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 must be normalized.");
 #endif
-	return 2.0f * p_normal * this->dot(p_normal) - *this;
+	return 2.0f * p_normal * dot(p_normal) - *this;
 }
 
 #endif // VECTOR3_H

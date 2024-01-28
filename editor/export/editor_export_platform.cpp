@@ -1210,7 +1210,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 
 				if (remap_features.size() > 1) {
-					this->resolve_platform_feature_priorities(p_preset, remap_features);
+					resolve_platform_feature_priorities(p_preset, remap_features);
 				}
 
 				err = OK;

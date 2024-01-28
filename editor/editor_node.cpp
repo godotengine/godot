@@ -2331,7 +2331,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	}
 
 	bool inspector_only = editor_history.is_current_inspector_only();
-	this->current = current_obj;
+	current = current_obj;
 
 	if (!current_obj) {
 		SceneTreeDock::get_singleton()->set_selected(nullptr);

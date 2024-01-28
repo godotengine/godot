@@ -1246,53 +1246,53 @@ void Variant::zero() {
 		case NIL:
 			break;
 		case BOOL:
-			this->_data._bool = false;
+			_data._bool = false;
 			break;
 		case INT:
-			this->_data._int = 0;
+			_data._int = 0;
 			break;
 		case FLOAT:
-			this->_data._float = 0;
+			_data._float = 0;
 			break;
 
 		case VECTOR2:
-			*reinterpret_cast<Vector2 *>(this->_data._mem) = Vector2();
+			*reinterpret_cast<Vector2 *>(_data._mem) = Vector2();
 			break;
 		case VECTOR2I:
-			*reinterpret_cast<Vector2i *>(this->_data._mem) = Vector2i();
+			*reinterpret_cast<Vector2i *>(_data._mem) = Vector2i();
 			break;
 		case RECT2:
-			*reinterpret_cast<Rect2 *>(this->_data._mem) = Rect2();
+			*reinterpret_cast<Rect2 *>(_data._mem) = Rect2();
 			break;
 		case RECT2I:
-			*reinterpret_cast<Rect2i *>(this->_data._mem) = Rect2i();
+			*reinterpret_cast<Rect2i *>(_data._mem) = Rect2i();
 			break;
 		case VECTOR3:
-			*reinterpret_cast<Vector3 *>(this->_data._mem) = Vector3();
+			*reinterpret_cast<Vector3 *>(_data._mem) = Vector3();
 			break;
 		case VECTOR3I:
-			*reinterpret_cast<Vector3i *>(this->_data._mem) = Vector3i();
+			*reinterpret_cast<Vector3i *>(_data._mem) = Vector3i();
 			break;
 		case VECTOR4:
-			*reinterpret_cast<Vector4 *>(this->_data._mem) = Vector4();
+			*reinterpret_cast<Vector4 *>(_data._mem) = Vector4();
 			break;
 		case VECTOR4I:
-			*reinterpret_cast<Vector4i *>(this->_data._mem) = Vector4i();
+			*reinterpret_cast<Vector4i *>(_data._mem) = Vector4i();
 			break;
 		case PLANE:
-			*reinterpret_cast<Plane *>(this->_data._mem) = Plane();
+			*reinterpret_cast<Plane *>(_data._mem) = Plane();
 			break;
 		case QUATERNION:
-			*reinterpret_cast<Quaternion *>(this->_data._mem) = Quaternion();
+			*reinterpret_cast<Quaternion *>(_data._mem) = Quaternion();
 			break;
 
 		case COLOR:
-			*reinterpret_cast<Color *>(this->_data._mem) = Color();
+			*reinterpret_cast<Color *>(_data._mem) = Color();
 			break;
 
 		default:
 			Type prev_type = type;
-			this->clear();
+			clear();
 			if (type != prev_type) {
 				// clear() changes type to NIL, so it needs to be restored.
 				Callable::CallError ce;
