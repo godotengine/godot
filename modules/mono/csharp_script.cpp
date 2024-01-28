@@ -2819,15 +2819,17 @@ CSharpScript::CSharpScript() {
 #ifdef DEBUG_ENABLED
 	{
 		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-		CSharpLanguage::get_singleton()->script_list.add(&this->script_list);
+		CSharpLanguage::get_singleton()->script_list.add(&script_list);
 	}
 #endif
 }
 
 CSharpScript::~CSharpScript() {
 #ifdef DEBUG_ENABLED
-	MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-	CSharpLanguage::get_singleton()->script_list.remove(&this->script_list);
+	{
+		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
+		CSharpLanguage::get_singleton()->script_list.remove(&script_list);
+	}
 #endif
 
 	if (GDMonoCache::godot_api_cache_updated) {
