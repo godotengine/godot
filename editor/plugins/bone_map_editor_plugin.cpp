@@ -196,7 +196,7 @@ void BonePicker::create_bones_tree(Skeleton3D *p_skeleton) {
 
 	items.insert(-1, root);
 
-	Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("BoneAttachment3D"));
+	Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("Bone"));
 
 	Vector<int> bones_to_process = p_skeleton->get_parentless_bones();
 	bool is_first = true;
