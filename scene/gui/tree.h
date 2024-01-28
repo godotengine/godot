@@ -266,6 +266,7 @@ public:
 	int get_button_id(int p_column, int p_index) const;
 	void erase_button(int p_column, int p_index);
 	int get_button_by_id(int p_column, int p_id) const;
+	Color get_button_color(int p_column, int p_index) const;
 	void set_button_tooltip_text(int p_column, int p_index, const String &p_tooltip);
 	void set_button(int p_column, int p_index, const Ref<Texture2D> &p_button);
 	void set_button_color(int p_column, int p_index, const Color &p_color);
