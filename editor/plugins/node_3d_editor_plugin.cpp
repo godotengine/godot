@@ -7561,6 +7561,7 @@ void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	}
 	ERR_FAIL_NULL(base);
 	Node *new_sun = preview_sun->duplicate();
+	new_sun->set_name(EditorNode::adjust_scene_name_casing(new_sun->get_name()));
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Preview Sun to Scene"));
@@ -7595,6 +7596,7 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
 		new_env->set_camera_attributes(preview_environment->get_camera_attributes()->duplicate(true));
 	}
+	new_env->set_name(EditorNode::adjust_name_casing(new_env->get_class_name()));
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Preview Environment to Scene"));
