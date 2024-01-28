@@ -129,7 +129,7 @@ void EditorPropertyRootMotion::_node_assign() {
 		if (skeleton) {
 			HashMap<int, TreeItem *> items;
 			items.insert(-1, ti);
-			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("BoneAttachment3D"));
+			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("Bone"));
 			Vector<int> bones_to_process = skeleton->get_parentless_bones();
 			while (bones_to_process.size() > 0) {
 				int current_bone_idx = bones_to_process[0];

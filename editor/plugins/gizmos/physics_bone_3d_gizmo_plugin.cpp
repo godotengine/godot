@@ -61,17 +61,17 @@ void PhysicalBone3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		return;
 	}
 
-	Skeleton3D *sk(physical_bone->find_skeleton_parent());
-	if (!sk) {
+	PhysicalBoneSimulator3D *sm(physical_bone->get_simulator());
+	if (!sm) {
 		return;
 	}
 
-	PhysicalBone3D *pb(sk->get_physical_bone(physical_bone->get_bone_id()));
+	PhysicalBone3D *pb(sm->get_physical_bone(physical_bone->get_bone_id()));
 	if (!pb) {
 		return;
 	}
 
-	PhysicalBone3D *pbp(sk->get_physical_bone_parent(physical_bone->get_bone_id()));
+	PhysicalBone3D *pbp(sm->get_physical_bone_parent(physical_bone->get_bone_id()));
 	if (!pbp) {
 		return;
 	}

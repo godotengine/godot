@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  xr_body_modifier_3d.h                                                 */
+/*  physical_bone_simulator_3d.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,72 +28,83 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef XR_BODY_MODIFIER_3D_H
-#define XR_BODY_MODIFIER_3D_H
+#ifndef PHYSICAL_BONE_SIMULATOR_3D_H
+#define PHYSICAL_BONE_SIMULATOR_3D_H
 
 #include "scene/3d/skeleton_modifier_3d.h"
-#include "servers/xr/xr_body_tracker.h"
 
-class Skeleton3D;
+#include "scene/3d/physics/physical_bone_3d.h"
 
-/**
-	The XRBodyModifier3D node drives a body skeleton using body tracking
-	data from an XRBodyTracker instance.
- */
+class PhysicalBone3D;
 
-class XRBodyModifier3D : public SkeletonModifier3D {
-	GDCLASS(XRBodyModifier3D, SkeletonModifier3D);
+class PhysicalBoneSimulator3D : public SkeletonModifier3D {
+	GDCLASS(PhysicalBoneSimulator3D, SkeletonModifier3D);
 
-public:
-	enum BodyUpdate {
-		BODY_UPDATE_UPPER_BODY = 1,
-		BODY_UPDATE_LOWER_BODY = 2,
-		BODY_UPDATE_HANDS = 4,
+	bool simulating = false;
+	bool enabled = true;
+
+	struct SimulatedBone {
+		int parent;
+		Vector<int> child_bones;
+
+		Transform3D global_pose;
+
+		PhysicalBone3D *physical_bone = nullptr;
+		PhysicalBone3D *cache_parent_physical_bone = nullptr;
+
+		SimulatedBone() {
+			parent = -1;
+			global_pose = Transform3D();
+			physical_bone = nullptr;
+			cache_parent_physical_bone = nullptr;
+		}
 	};
 
-	enum BoneUpdate {
-		BONE_UPDATE_FULL,
-		BONE_UPDATE_ROTATION_ONLY,
-		BONE_UPDATE_MAX
-	};
+	Vector<SimulatedBone> bones;
 
-	void set_body_tracker(const StringName &p_tracker_name);
-	StringName get_body_tracker() const;
-
-	void set_body_update(BitField<BodyUpdate> p_body_update);
-	BitField<BodyUpdate> get_body_update() const;
-
-	void set_bone_update(BoneUpdate p_bone_update);
-	BoneUpdate get_bone_update() const;
-
-	void set_show_when_tracked(bool p_show_when_tracked);
-	bool get_show_when_tracked() const;
-
-	void _notification(int p_what);
+	/// This is a slow API, so it's cached
+	PhysicalBone3D *_get_physical_bone_parent(int p_bone);
+	void _rebuild_physical_bones_cache();
+	void _reset_physical_bones_state();
 
 protected:
 	static void _bind_methods();
 
-	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) override;
+	virtual void _set_active(bool p_active) override;
+
+	void _bone_list_changed();
+	void _pose_updated();
+
 	virtual void _process_modification() override;
 
-private:
-	struct JointData {
-		int bone = -1;
-		int parent_joint = -1;
-	};
+	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) override;
 
-	StringName tracker_name = "/user/body";
-	BitField<BodyUpdate> body_update = BODY_UPDATE_UPPER_BODY | BODY_UPDATE_LOWER_BODY | BODY_UPDATE_HANDS;
-	BoneUpdate bone_update = BONE_UPDATE_FULL;
-	bool show_when_tracked = true;
-	JointData joints[XRBodyTracker::JOINT_MAX];
+public:
+#ifndef DISABLE_DEPRECATED
+	bool is_compat = false;
+#endif // _DISABLE_DEPRECATED
+	bool is_simulating_physics() const;
 
-	void _get_joint_data();
-	void _tracker_changed(const StringName &p_tracker_name, const Ref<XRBodyTracker> &p_tracker);
+	int find_bone(const String &p_name) const;
+	String get_bone_name(int p_bone) const;
+	int get_bone_count() const;
+	bool is_bone_parent_of(int p_bone_id, int p_parent_bone_id) const;
+
+	Transform3D get_bone_global_pose(int p_bone) const;
+	void set_bone_global_pose(int p_bone, const Transform3D &p_pose);
+
+	void bind_physical_bone_to_bone(int p_bone, PhysicalBone3D *p_physical_bone);
+	void unbind_physical_bone_from_bone(int p_bone);
+
+	PhysicalBone3D *get_physical_bone(int p_bone);
+	PhysicalBone3D *get_physical_bone_parent(int p_bone);
+
+	void physical_bones_stop_simulation();
+	void physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones);
+	void physical_bones_add_collision_exception(RID p_exception);
+	void physical_bones_remove_collision_exception(RID p_exception);
+
+	PhysicalBoneSimulator3D();
 };
 
-VARIANT_BITFIELD_CAST(XRBodyModifier3D::BodyUpdate)
-VARIANT_ENUM_CAST(XRBodyModifier3D::BoneUpdate)
-
-#endif // XR_BODY_MODIFIER_3D_H
+#endif // PHYSICAL_BONE_SIMULATOR_3D_H

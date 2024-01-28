@@ -47,6 +47,7 @@
 #include "editor/editor_string_names.h"
 #include "main/main.h"
 #include "scene/3d/bone_attachment_3d.h"
+#include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
@@ -1788,6 +1789,20 @@ static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Re
 	}
 }
 
+static void _reset_skeletons(Node *p_node) {
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node->get_child(i));
+		if (skeleton) {
+			if (skeleton->is_modifier_reset_on_save_enabled()) {
+				skeleton->restore_unmodified_poses();
+			} else {
+				skeleton->notification(Skeleton3D::NOTIFICATION_UPDATE_SKELETON);
+			}
+		}
+		_reset_skeletons(p_node->get_child(i));
+	}
+}
+
 void EditorNode::_save_scene(String p_file, int idx) {
 	if (!saving_scene.is_empty() && saving_scene == p_file) {
 		return;
@@ -1810,6 +1825,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	editor_data.apply_changes_in_editors();
 	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
 	_reset_animation_mixers(scene, &anim_backups);
+	_reset_skeletons(scene);
 	save_default_environment();
 
 	_save_editor_states(p_file, idx);
@@ -5508,9 +5524,9 @@ void EditorNode::_notify_scene_updated(Node *p_node) {
 	if (skel_3d) {
 		skel_3d->reset_bone_poses();
 	} else {
-		BoneAttachment3D *attachment = Object::cast_to<BoneAttachment3D>(p_node);
-		if (attachment) {
-			attachment->notify_rebind_required();
+		BoneAttachment3D *att = Object::cast_to<BoneAttachment3D>(p_node);
+		if (att) {
+			att->notify_rebind_required();
 		}
 	}
 

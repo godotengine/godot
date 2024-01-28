@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRHandModifier3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRHandModifier3D" inherits="SkeletonModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node for driving hand meshes from [XRHandTracker] data.
 	</brief_description>
@@ -17,9 +17,6 @@
 		</member>
 		<member name="hand_tracker" type="StringName" setter="set_hand_tracker" getter="get_hand_tracker" default="&amp;&quot;/user/left&quot;">
 			The name of the [XRHandTracker] registered with [XRServer] to obtain the hand tracking data from.
-		</member>
-		<member name="target" type="NodePath" setter="set_target" getter="get_target" default="NodePath(&quot;&quot;)">
-			A [NodePath] to a [Skeleton3D] to animate.
 		</member>
 	</members>
 	<constants>
