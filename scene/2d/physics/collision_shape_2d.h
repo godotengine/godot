@@ -47,8 +47,13 @@ class CollisionShape2D : public Node2D {
 	real_t one_way_collision_margin = 1.0;
 	Color debug_color;
 
+	CollisionObject2D *_get_ancestor_collision_object() const;
+	Transform2D _get_transform_to_collision_object() const;
+	void _set_transform_notifications();
+
 	void _shape_changed();
 	void _update_in_shape_owner(bool p_xform_only = false);
+	void _create_shape_owner_in_collision_object();
 	Color _get_default_debug_color() const;
 
 protected:
