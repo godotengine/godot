@@ -815,10 +815,7 @@ void AnimationTree::set_animation_player(const NodePath &p_path) {
 			remove_animation_library(animation_libraries[0].name);
 		}
 	}
-#ifdef TOOLS_ENABLED
 	emit_signal(SNAME("animation_player_changed")); // Needs to unpin AnimationPlayerEditor.
-	emit_signal(SNAME("mixer_updated"));
-#endif // TOOLS_ENABLED
 	_setup_animation_player();
 	notify_property_list_changed();
 }
@@ -964,9 +961,7 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 
-#ifdef TOOLS_ENABLED
 	ADD_SIGNAL(MethodInfo(SNAME("animation_player_changed")));
-#endif // TOOLS_ENABLED
 }
 
 AnimationTree::AnimationTree() {
