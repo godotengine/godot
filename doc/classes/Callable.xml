@@ -147,6 +147,12 @@
 				[b]Note:[/b] This method is always necessary for the [Dictionary] type, as property syntax is used to access its entries. You may also use this method when [param variant]'s type is not known in advance (for polymorphism).
 			</description>
 		</method>
+		<method name="get_argument_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total number of arguments this [Callable] should take, including optional arguments. This means that any arguments bound with [method bind] are [i]subtracted[/i] from the result, and any arguments unbound with [method unbind] are [i]added[/i] to the result.
+			</description>
+		</method>
 		<method name="get_bound_arguments" qualifiers="const">
 			<return type="Array" />
 			<description>

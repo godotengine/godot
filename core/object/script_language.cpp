@@ -102,6 +102,22 @@ Dictionary Script::_get_script_constant_map() {
 	return ret;
 }
 
+int Script::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	MethodInfo mi = get_method_info(p_method);
+
+	if (mi == MethodInfo()) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = true;
+	}
+	return mi.arguments.size();
+}
+
 #ifdef TOOLS_ENABLED
 
 PropertyInfo Script::get_class_category() const {

@@ -1666,6 +1666,31 @@ bool ClassDB::has_method(const StringName &p_class, const StringName &p_method, 
 	return false;
 }
 
+int ClassDB::get_method_argument_count(const StringName &p_class, const StringName &p_method, bool *r_is_valid, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		MethodBind **method = type->method_map.getptr(p_method);
+		if (method && *method) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return (*method)->get_argument_count();
+		}
+		if (p_no_inheritance) {
+			break;
+		}
+		type = type->inherits_ptr;
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
+}
+
 void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method) {
 	_bind_method_custom(p_class, p_method, false);
 }
