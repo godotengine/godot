@@ -66,3 +66,10 @@ GH-86158
 Validate extension JSON: Error: Field 'classes/GraphEdit/methods/get_connection_line': is_const changed value in new API, from false to true.
 
 get_connection_line was made const.
+
+
+GH-87668
+--------
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 8 to 9.
+
+Added optional "baseline_offset" argument. Compatibility method registered.

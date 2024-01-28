@@ -118,6 +118,7 @@
 			<param index="5" name="spacing_bottom" type="int" default="0" />
 			<param index="6" name="spacing_space" type="int" default="0" />
 			<param index="7" name="spacing_glyph" type="int" default="0" />
+			<param index="8" name="baseline_offset" type="float" default="0.0" />
 			<description>
 				Returns [TextServer] RID of the font cache for specific variation.
 			</description>
