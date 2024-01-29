@@ -1827,7 +1827,7 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandBu
 	cmd_buf_info->cmd_allocator.Attach(cmd_allocator);
 	cmd_buf_info->cmd_list.Attach(cmd_list);
 
-	RBMap<CommandPoolID, LocalVector<CommandBufferInfo *>>::Element* elem = pools_command_buffers.find(p_cmd_pool);
+	RBMap<CommandPoolID, LocalVector<CommandBufferInfo *>>::Element *elem = pools_command_buffers.find(p_cmd_pool);
 	if (elem != nullptr) {
 		elem->value().push_back(cmd_buf_info);
 	} else {
