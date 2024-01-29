@@ -282,6 +282,10 @@ void register_editor_types() {
 	ei_singleton.editor_only = true;
 	Engine::get_singleton()->add_singleton(ei_singleton);
 
+	// Required as GDExtensions can register docs at init time way before this
+	// class is actually instantiated.
+	EditorHelp::init_gdext_pointers();
+
 	OS::get_singleton()->benchmark_end_measure("Editor", "Register Types");
 }
 

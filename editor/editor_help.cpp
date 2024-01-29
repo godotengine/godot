@@ -31,6 +31,7 @@
 #include "editor_help.h"
 
 #include "core/core_constants.h"
+#include "core/extension/gdextension.h"
 #include "core/input/input.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
@@ -83,6 +84,7 @@ const Vector<String> classes_with_csharp_differences = {
 // TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
 // Might this be a problem?
 DocTools *EditorHelp::doc = nullptr;
+DocTools *EditorHelp::ext_doc = nullptr;
 
 static bool _attempt_doc_load(const String &p_class) {
 	// Docgen always happens in the outer-most class: it also generates docs for inner classes.
@@ -2369,6 +2371,28 @@ String EditorHelp::get_cache_full_path() {
 	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor_doc_cache.res");
 }
 
+void EditorHelp::load_xml_buffer(const uint8_t *p_buffer, int p_size) {
+	if (!ext_doc) {
+		ext_doc = memnew(DocTools);
+	}
+
+	ext_doc->load_xml(p_buffer, p_size);
+
+	if (doc) {
+		doc->load_xml(p_buffer, p_size);
+	}
+}
+
+void EditorHelp::remove_class(const String &p_class) {
+	if (ext_doc && ext_doc->has_doc(p_class)) {
+		ext_doc->remove_doc(p_class);
+	}
+
+	if (doc && doc->has_doc(p_class)) {
+		doc->remove_doc(p_class);
+	}
+}
+
 void EditorHelp::_load_doc_thread(void *p_udata) {
 	Ref<Resource> cache_res = ResourceLoader::load(get_cache_full_path());
 	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == doc_version_hash) {
@@ -2416,6 +2440,11 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 
 void EditorHelp::_gen_extensions_docs() {
 	doc->generate((DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES | DocTools::GENERATE_FLAG_EXTENSION_CLASSES_ONLY));
+
+	// Append extra doc data, as it gets overridden by the generation step.
+	if (ext_doc) {
+		doc->merge_from(*ext_doc);
+	}
 }
 
 void EditorHelp::generate_doc(bool p_use_cache) {
@@ -2552,6 +2581,11 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_help_callback", &EditorHelp::_help_callback);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
+}
+
+void EditorHelp::init_gdext_pointers() {
+	GDExtensionEditorHelp::editor_help_load_xml_buffer = &EditorHelp::load_xml_buffer;
+	GDExtensionEditorHelp::editor_help_remove_class = &EditorHelp::remove_class;
 }
 
 EditorHelp::EditorHelp() {

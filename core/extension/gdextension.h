@@ -197,6 +197,26 @@ public:
 		return extension_classes;
 	}
 };
+
+class GDExtensionEditorHelp {
+protected:
+	friend class EditorHelp;
+
+	// Similarly to EditorNode above, we need to be able to ask EditorHelp to parse
+	// new documentation data. Note though that, differently from EditorHelp, this
+	// is initialized even _before_ it gets instantiated, as we need to rely on
+	// this method while initializing the engine.
+	typedef void (*EditorHelpLoadXmlBufferFunc)(const uint8_t *p_buffer, int p_size);
+	static EditorHelpLoadXmlBufferFunc editor_help_load_xml_buffer;
+
+	typedef void (*EditorHelpRemoveClassFunc)(const String &p_class);
+	static EditorHelpRemoveClassFunc editor_help_remove_class;
+
+public:
+	static void load_xml_buffer(const uint8_t *p_buffer, int p_size);
+	static void remove_class(const String &p_class);
+};
+
 #endif // TOOLS_ENABLED
 
 #endif // GDEXTENSION_H
