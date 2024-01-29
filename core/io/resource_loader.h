@@ -167,7 +167,8 @@ private:
 		String remapped_path;
 		String dependent_path;
 		String type_hint;
-		float progress = 0.0;
+		float progress = 0.0f;
+		float max_reported_progress = 0.0f;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
 		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
