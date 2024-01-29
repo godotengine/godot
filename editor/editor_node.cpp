@@ -870,7 +870,11 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 		}
 
 		if (!res->editor_can_reload_from_file()) {
-			continue;
+			Ref<Script> scr = res;
+			// Scripts are reloaded via the script editor.
+			if (scr.is_null() || ScriptEditor::get_singleton()->get_open_scripts().has(scr)) {
+				continue;
+			}
 		}
 		if (!res->get_path().is_resource_file() && !res->get_path().is_absolute_path()) {
 			continue;
