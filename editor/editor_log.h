@@ -132,6 +132,9 @@ private:
 	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
 	HashMap<MessageType, LogFilter *> type_filter_map;
 
+	// Caches the value of the Show Timestamps editor setting.
+	bool show_timestamps = false;
+
 	RichTextLabel *log = nullptr;
 
 	Button *clear_button = nullptr;
@@ -179,6 +182,7 @@ private:
 	void _load_state();
 
 	void _update_theme();
+	void _update_settings();
 
 protected:
 	void _notification(int p_what);
