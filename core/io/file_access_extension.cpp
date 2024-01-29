@@ -33,61 +33,61 @@
 #include "core/object/object.h"
 
 BitField<FileAccess::UnixPermissionFlags> FileAccessExtension::_get_unix_permissions(const String &p_file) {
-	BitField<UnixPermissionFlags> permissions = 0;
+	BitField<UnixPermissionFlags> permissions;
 	GDVIRTUAL_REQUIRED_CALL(__get_unix_permissions, p_file, permissions);
 	return permissions;
 }
 
 Error FileAccessExtension::_set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
-	Error err = OK;
+	Error err;
 	GDVIRTUAL_REQUIRED_CALL(__set_unix_permissions, p_file, p_permissions, err);
 	return err;
 }
 
 bool FileAccessExtension::_get_hidden_attribute(const String &p_file) {
-	bool hidden_attribute = false;
+	bool hidden_attribute;
 	GDVIRTUAL_REQUIRED_CALL(__get_hidden_attribute, p_file, hidden_attribute);
 	return hidden_attribute;
 }
 
 Error FileAccessExtension::_set_hidden_attribute(const String &p_file, bool p_hidden) {
-	Error err = OK;
+	Error err;
 	GDVIRTUAL_REQUIRED_CALL(__set_hidden_attribute, p_file, p_hidden, err);
 	return err;
 }
 
 bool FileAccessExtension::_get_read_only_attribute(const String &p_file) {
-	bool read_only_attribute = false;
+	bool read_only_attribute;
 	GDVIRTUAL_REQUIRED_CALL(__get_read_only_attribute, p_file, read_only_attribute);
 	return read_only_attribute;
 }
 
 Error FileAccessExtension::_set_read_only_attribute(const String &p_file, bool p_read_only) {
-	Error err = OK;
+	Error err;
 	GDVIRTUAL_REQUIRED_CALL(__set_read_only_attribute, p_file, p_read_only, err);
 	return err;
 }
 
 Error FileAccessExtension::open_internal(const String &p_path, int p_mode_flags) {
-	Error err = OK;
+	Error err;
 	GDVIRTUAL_REQUIRED_CALL(_open_internal, p_path, p_mode_flags, err);
 	return err;
 }
 
 uint64_t FileAccessExtension::_get_modified_time(const String &p_file) {
-	uint64_t time = 0;
+	uint64_t time;
 	GDVIRTUAL_REQUIRED_CALL(__get_modified_time, p_file, time);
 	return time;
 }
 
 bool FileAccessExtension::is_open() const {
-	bool is_open = false;
+	bool is_open;
 	GDVIRTUAL_REQUIRED_CALL(_is_open, is_open);
 	return is_open;
 }
 
 String FileAccessExtension::get_path() const {
-	String path = "";
+	String path;
 	if (GDVIRTUAL_CALL(_get_path, path)) {
 		return path;
 	}
@@ -95,7 +95,7 @@ String FileAccessExtension::get_path() const {
 }
 
 String FileAccessExtension::get_path_absolute() const {
-	String path_absolute = "";
+	String path_absolute;
 	if (GDVIRTUAL_CALL(_get_path_absolute, path_absolute)) {
 		return path_absolute;
 	}
@@ -111,31 +111,31 @@ void FileAccessExtension::seek_end(int64_t p_position) {
 }
 
 uint64_t FileAccessExtension::get_position() const {
-	uint64_t position = 0;
+	uint64_t position;
 	GDVIRTUAL_REQUIRED_CALL(_get_position, position);
 	return position;
 }
 
 uint64_t FileAccessExtension::get_length() const {
-	uint64_t length = 0;
+	uint64_t length;
 	GDVIRTUAL_REQUIRED_CALL(_get_length, length);
 	return length;
 }
 
 bool FileAccessExtension::eof_reached() const {
-	bool eof_reached = false;
+	bool eof_reached;
 	GDVIRTUAL_REQUIRED_CALL(_eof_reached, eof_reached);
 	return eof_reached;
 }
 
 uint8_t FileAccessExtension::get_8() const {
-	uint8_t val = 0;
+	uint8_t val;
 	GDVIRTUAL_REQUIRED_CALL(_get_8, val);
 	return val;
 }
 
 uint16_t FileAccessExtension::get_16() const {
-	uint16_t val = 0;
+	uint16_t val;
 	if (GDVIRTUAL_CALL(_get_16, val)) {
 		return val;
 	}
@@ -143,7 +143,7 @@ uint16_t FileAccessExtension::get_16() const {
 }
 
 uint32_t FileAccessExtension::get_32() const {
-	uint32_t val = 0;
+	uint32_t val;
 	if (GDVIRTUAL_CALL(_get_32, val)) {
 		return val;
 	}
@@ -151,7 +151,7 @@ uint32_t FileAccessExtension::get_32() const {
 }
 
 uint64_t FileAccessExtension::get_64() const {
-	uint64_t val = 0;
+	uint64_t val;
 	if (GDVIRTUAL_CALL(_get_64, val)) {
 		return val;
 	}
@@ -159,7 +159,7 @@ uint64_t FileAccessExtension::get_64() const {
 }
 
 float FileAccessExtension::get_float() const {
-	float val = 0;
+	float val;
 	if (GDVIRTUAL_CALL(_get_float, val)) {
 		return val;
 	}
@@ -167,7 +167,7 @@ float FileAccessExtension::get_float() const {
 }
 
 double FileAccessExtension::get_double() const {
-	double val = 0;
+	double val;
 	if (GDVIRTUAL_CALL(_get_double, val)) {
 		return val;
 	}
@@ -175,7 +175,7 @@ double FileAccessExtension::get_double() const {
 }
 
 real_t FileAccessExtension::get_real() const {
-	real_t val = 0;
+	real_t val;
 	if (GDVIRTUAL_CALL(_get_real, val)) {
 		return val;
 	}
@@ -365,7 +365,7 @@ bool FileAccessExtension::file_exists(const String &p_name) {
 }
 
 Error FileAccessExtension::reopen(const String &p_path, int p_mode_flags) {
-	Error err = OK;
+	Error err;
 	if (GDVIRTUAL_CALL(_reopen, p_path, p_mode_flags, err)) {
 		return err;
 	}

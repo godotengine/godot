@@ -895,28 +895,28 @@ String FileAccess::_get_protocol(const String &p_protocol) {
 }
 
 void FileAccess::add_resource_path(const String &p_protocol, const String &p_path) {
-	ERR_FAIL_COND_MSG(p_protocol.length() == 0, "Protocol parameter is empty.");
+	ERR_FAIL_COND_MSG(p_protocol.is_empty(), "Protocol parameter is empty.");
 	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat("Protocol \"%s://\" is built-in.", protocol));
-	ERR_FAIL_COND_MSG(resource_paths.has(protocol), vformat("Protocol \"%s://\" is already registered as a resource path.", protocol));
-	ERR_FAIL_COND_MSG(resource_paths_class.has(protocol), vformat("Protocol \"%s://\" is already registered as a resource path class.", protocol));
+	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat(R"(Protocol "%s://" is built-in.)", protocol));
+	ERR_FAIL_COND_MSG(resource_paths.has(protocol), vformat(R"(Protocol "%s://" is already registered as a resource path.)", protocol));
+	ERR_FAIL_COND_MSG(resource_paths_class.has(protocol), vformat(R"(Protocol "%s://" is already registered as a resource path class.)", protocol));
 
 	resource_paths[protocol] = p_path;
 }
 
 void FileAccess::remove_resource_path(const String &p_protocol) {
-	ERR_FAIL_COND_MSG(p_protocol.length() == 0, "Protocol parameter is empty.");
+	ERR_FAIL_COND_MSG(p_protocol.is_empty(), "Protocol parameter is empty.");
 	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat("Protocol \"%s://\" is built-in.", protocol));
-	ERR_FAIL_COND_MSG(!resource_paths.has(protocol), vformat("Protocol \"%s://\" is not registered as a resource class.", protocol));
+	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat(R"(Protocol "%s://" is built-in.)", protocol));
+	ERR_FAIL_COND_MSG(!resource_paths.has(protocol), vformat(R"(Protocol "%s://" is not registered as a resource class.)", protocol));
 
 	resource_paths.erase(protocol);
 }
 
 bool FileAccess::is_resource_path(const String &p_protocol) {
-	ERR_FAIL_COND_V_MSG(p_protocol.length() == 0, false, "Protocol parameter is empty.");
+	ERR_FAIL_COND_V_MSG(p_protocol.is_empty(), false, "Protocol parameter is empty.");
 	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_V_MSG(protocol == "res" || protocol == "user", false, vformat("Protocol \"%s://\" is built-in.", protocol));
+	ERR_FAIL_COND_V_MSG(protocol == "res" || protocol == "user", false, vformat(R"(Protocol "%s://" is built-in.)", protocol));
 
 	return resource_paths.has(protocol);
 }
@@ -939,28 +939,28 @@ Dictionary FileAccess::get_resource_paths() {
 }
 
 void FileAccess::add_resource_path_class(const String &p_protocol, const String &p_file_access_class, const String &p_dir_access_class) {
-	ERR_FAIL_COND_MSG(p_protocol.length() == 0, "Protocol parameter is empty.");
+	ERR_FAIL_COND_MSG(p_protocol.is_empty(), "Protocol parameter is empty.");
 	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat("Protocol \"%s://\" is built-in.", protocol));
-	ERR_FAIL_COND_MSG(resource_paths.has(protocol), vformat("Protocol \"%s://\" is already registered as a resource path.", protocol));
-	ERR_FAIL_COND_MSG(resource_paths_class.has(protocol), vformat("Protocol \"%s://\" is already registered as a resource path class.", protocol));
+	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat(R"(Protocol "%s://" is built-in.)", protocol));
+	ERR_FAIL_COND_MSG(resource_paths.has(protocol), vformat(R"(Protocol "%s://" is already registered as a resource path.)", protocol));
+	ERR_FAIL_COND_MSG(resource_paths_class.has(protocol), vformat(R"(Protocol "%s://" is already registered as a resource path class.)", protocol));
 
 	resource_paths_class[protocol] = Vector<String>({ p_file_access_class, p_dir_access_class });
 }
 
 void FileAccess::remove_resource_path_class(const String &p_protocol) {
-	ERR_FAIL_COND_MSG(p_protocol.length() == 0, "Protocol parameter is empty.");
+	ERR_FAIL_COND_MSG(p_protocol.is_empty(), "Protocol parameter is empty.");
 	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat("Protocol \"%s://\" is built-in.", protocol));
-	ERR_FAIL_COND_MSG(!resource_paths_class.has(protocol) && !resource_paths_class.has(protocol), vformat("Protocol \"%s://\" is not registered as a resource path class.", protocol));
+	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat(R"(Protocol "%s://" is built-in.)", protocol));
+	ERR_FAIL_COND_MSG(!resource_paths_class.has(protocol) && !resource_paths_class.has(protocol), vformat(R"(Protocol "%s://" is not registered as a resource path class.)", protocol));
 
 	resource_paths_class.erase(protocol);
 }
 
 bool FileAccess::is_resource_path_class(const String &p_protocol) {
-	ERR_FAIL_COND_V_MSG(p_protocol.length() == 0, false, "Protocol parameter is empty.");
+	ERR_FAIL_COND_V_MSG(p_protocol.is_empty(), false, "Protocol parameter is empty.");
 	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_V_MSG(protocol == "res" || protocol == "user", false, vformat("Protocol \"%s://\" is built-in.", protocol));
+	ERR_FAIL_COND_V_MSG(protocol == "res" || protocol == "user", false, vformat(R"(Protocol "%s://" is built-in.)", protocol));
 
 	return resource_paths_class.has(protocol);
 }
