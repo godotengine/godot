@@ -520,9 +520,8 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 		res = r_basics.device.As(&info_queue);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 
-#if 0 // This causes crashes. Needs investigation.
 		ComPtr<ID3D12InfoQueue1> info_queue_1;
-		device.As(&info_queue_1);
+		r_basics.device.As(&info_queue_1);
 		if (info_queue_1) {
 			// Custom printing supported (added in Windows 10 Release Preview build 20236).
 
@@ -530,9 +529,7 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 
 			res = info_queue_1->RegisterMessageCallback(&_debug_message_func, D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS, nullptr, 0);
 			ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
-		} else
-#endif
-		{
+		} else {
 			// Rely on D3D12's own debug printing.
 
 			if (Engine::get_singleton()->is_abort_on_gpu_errors_enabled()) {
