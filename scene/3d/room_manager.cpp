@@ -330,11 +330,11 @@ void RoomManager::_refresh_from_project_settings() {
 	_show_debug = GLOBAL_GET("rendering/portals/debug/logging");
 	Portal::_portal_plane_convention = GLOBAL_GET("rendering/portals/advanced/flip_imported_portals");
 
-	// force not to show logs when not in editor
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		_show_debug = false;
-		_settings_log_pvs_generation = false;
-	}
+	// Disallow logs on final exports.
+#ifndef TOOLS_ENABLED
+	_show_debug = false;
+	_settings_log_pvs_generation = false;
+#endif
 }
 
 void RoomManager::set_roomlist_path(const NodePath &p_path) {
@@ -617,6 +617,7 @@ void RoomManager::rooms_convert() {
 	// now we run autoplace to place any statics that have not been explicitly placed in rooms.
 	// These will by definition not affect the room bounds, but is convenient for users to edit
 	// levels in a more freeform manner
+	convert_log("");
 	_autoplace_recursive(_roomlist);
 
 	bool generate_pvs = false;
@@ -1234,7 +1235,7 @@ bool RoomManager::_autoplace_object(VisualInstance *p_vi) {
 		Vector<Vector3> room_pts;
 
 		// we can reuse this function
-		_process_static(best_room, p_vi, room_pts, true);
+		_process_static(best_room, p_vi, room_pts, true, true);
 		return true;
 	}
 
@@ -1275,7 +1276,7 @@ void RoomManager::_autoplace_recursive(Spatial *p_node) {
 	}
 }
 
-void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer) {
+void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer, bool p_autoplaced) {
 	bool ignore = false;
 	VisualInstance *vi = Object::cast_to<VisualInstance>(p_node);
 
@@ -1296,6 +1297,11 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 	}
 
 	if (!ignore) {
+		String prefix = "\t\t\t";
+		if (p_autoplaced) {
+			prefix = "AUTOPLACED in " + p_room->get_name() + "\t";
+		}
+
 		// We'll have a done flag. This isn't strictly speaking necessary
 		// because the types should be mutually exclusive, but this would
 		// break if something changes the inheritance hierarchy of the nodes
@@ -1311,7 +1317,7 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 			if (p_add_to_portal_renderer) {
 				Vector<Vector3> dummy_pts;
 				VisualServer::get_singleton()->room_add_instance(p_room->_room_rid, light->get_instance(), light->get_transformed_aabb(), dummy_pts);
-				convert_log("\t\t\tLIGT\t" + light->get_name());
+				convert_log(prefix + "LIGHT\t" + light->get_name());
 			}
 		}
 
@@ -1348,7 +1354,7 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 				} // if bound found points
 
 				if (p_add_to_portal_renderer) {
-					String msg = "\t\t\tMESH\t" + mi->get_name();
+					String msg = prefix + "MESH\t" + mi->get_name();
 					if (!added) {
 						msg += "\t(unrecognized)";
 					}
@@ -1385,7 +1391,7 @@ void RoomManager::_process_static(Room *p_room, Spatial *p_node, Vector<Vector3>
 				} // if bound found points
 
 				if (p_add_to_portal_renderer) {
-					String msg = "\t\t\tGEOM\t" + gi->get_name();
+					String msg = prefix + "GEOM\t" + gi->get_name();
 					if (!added) {
 						msg += "\t(unrecognized)";
 					}
@@ -1415,7 +1421,7 @@ void RoomManager::_find_statics_recursive(Room *p_room, Spatial *p_node, Vector<
 		return;
 	}
 
-	_process_static(p_room, p_node, r_room_pts, p_add_to_portal_renderer);
+	_process_static(p_room, p_node, r_room_pts, p_add_to_portal_renderer, false);
 
 	for (int n = 0; n < p_node->get_child_count(); n++) {
 		Spatial *child = Object::cast_to<Spatial>(p_node->get_child(n));
