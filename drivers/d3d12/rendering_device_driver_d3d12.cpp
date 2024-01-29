@@ -1815,8 +1815,8 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandBu
 	// Bookkeep
 
 	CommandBufferInfo *cmd_buf_info = VersatileResource::allocate<CommandBufferInfo>(resources_allocator);
-	cmd_buf_info->cmd_allocator = cmd_allocator;
-	cmd_buf_info->cmd_list = cmd_list;
+	cmd_buf_info->cmd_allocator.Attach(cmd_allocator);
+	cmd_buf_info->cmd_list.Attach(cmd_list);
 
 	return CommandBufferID(cmd_buf_info);
 }
