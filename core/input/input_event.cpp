@@ -364,6 +364,15 @@ char32_t InputEventKey::get_unicode() const {
 	return unicode;
 }
 
+void InputEventKey::set_location(KeyLocation p_key_location) {
+	location = p_key_location;
+	emit_changed();
+}
+
+KeyLocation InputEventKey::get_location() const {
+	return location;
+}
+
 void InputEventKey::set_echo(bool p_enable) {
 	echo = p_enable;
 	emit_changed();
@@ -436,6 +445,23 @@ String InputEventKey::as_text_key_label() const {
 	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
 }
 
+String InputEventKey::as_text_location() const {
+	String loc;
+
+	switch (location) {
+		case KeyLocation::LEFT:
+			loc = "left";
+			break;
+		case KeyLocation::RIGHT:
+			loc = "right";
+			break;
+		default:
+			break;
+	}
+
+	return loc;
+}
+
 String InputEventKey::as_text() const {
 	String kc;
 
@@ -464,6 +490,11 @@ String InputEventKey::to_string() {
 	String kc = "";
 	String physical = "false";
 
+	String loc = as_text_location();
+	if (loc.is_empty()) {
+		loc = "unspecified";
+	}
+
 	if (keycode == Key::NONE && physical_keycode == Key::NONE && unicode != 0) {
 		kc = "U+" + String::num_uint64(unicode, 16) + " (" + String::chr(unicode) + ")";
 	} else if (keycode != Key::NONE) {
@@ -478,7 +509,7 @@ String InputEventKey::to_string() {
 	String mods = InputEventWithModifiers::as_text();
 	mods = mods.is_empty() ? "none" : mods;
 
-	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, pressed=%s, echo=%s", kc, mods, physical, p, e);
+	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, location=%s, pressed=%s, echo=%s", kc, mods, physical, loc, p, e);
 }
 
 Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode, bool p_physical) {
@@ -531,6 +562,9 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_ma
 		match = keycode == key->keycode;
 	} else if (physical_keycode != Key::NONE) {
 		match = physical_keycode == key->physical_keycode;
+		if (location != KeyLocation::UNSPECIFIED) {
+			match &= location == key->location;
+		}
 	} else {
 		match = false;
 	}
@@ -572,6 +606,9 @@ bool InputEventKey::is_match(const Ref<InputEvent> &p_event, bool p_exact_match)
 		return (keycode == key->keycode) &&
 				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
 	} else if (physical_keycode != Key::NONE) {
+		if (location != KeyLocation::UNSPECIFIED && location != key->location) {
+			return false;
+		}
 		return (physical_keycode == key->physical_keycode) &&
 				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
 	} else {
@@ -594,6 +631,9 @@ void InputEventKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_unicode", "unicode"), &InputEventKey::set_unicode);
 	ClassDB::bind_method(D_METHOD("get_unicode"), &InputEventKey::get_unicode);
 
+	ClassDB::bind_method(D_METHOD("set_location", "location"), &InputEventKey::set_location);
+	ClassDB::bind_method(D_METHOD("get_location"), &InputEventKey::get_location);
+
 	ClassDB::bind_method(D_METHOD("set_echo", "echo"), &InputEventKey::set_echo);
 
 	ClassDB::bind_method(D_METHOD("get_keycode_with_modifiers"), &InputEventKey::get_keycode_with_modifiers);
@@ -603,12 +643,14 @@ void InputEventKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("as_text_keycode"), &InputEventKey::as_text_keycode);
 	ClassDB::bind_method(D_METHOD("as_text_physical_keycode"), &InputEventKey::as_text_physical_keycode);
 	ClassDB::bind_method(D_METHOD("as_text_key_label"), &InputEventKey::as_text_key_label);
+	ClassDB::bind_method(D_METHOD("as_text_location"), &InputEventKey::as_text_location);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keycode"), "set_keycode", "get_keycode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_keycode"), "set_physical_keycode", "get_physical_keycode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "key_label"), "set_key_label", "get_key_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "location", PROPERTY_HINT_ENUM, "Unspecified,Left,Right"), "set_location", "get_location");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 

@@ -64,6 +64,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		bool show_mods = false;
 		bool show_device = false;
 		bool show_key = false;
+		bool show_location = false;
 
 		if (mod.is_valid()) {
 			show_mods = true;
@@ -77,12 +78,17 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 
 		if (k.is_valid()) {
 			show_key = true;
-			if (k->get_keycode() == Key::NONE && k->get_physical_keycode() == Key::NONE && k->get_key_label() != Key::NONE) {
+			Key phys_key = k->get_physical_keycode();
+			if (k->get_keycode() == Key::NONE && phys_key == Key::NONE && k->get_key_label() != Key::NONE) {
 				key_mode->select(KEYMODE_UNICODE);
 			} else if (k->get_keycode() != Key::NONE) {
 				key_mode->select(KEYMODE_KEYCODE);
-			} else if (k->get_physical_keycode() != Key::NONE) {
+			} else if (phys_key != Key::NONE) {
 				key_mode->select(KEYMODE_PHY_KEYCODE);
+				if (phys_key == Key::SHIFT || phys_key == Key::CTRL || phys_key == Key::ALT || phys_key == Key::META) {
+					key_location->select((int)k->get_location());
+					show_location = true;
+				}
 			} else {
 				// Invalid key.
 				event = Ref<InputEvent>();
@@ -103,6 +109,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		mod_container->set_visible(show_mods);
 		device_container->set_visible(show_device);
 		key_mode->set_visible(show_key);
+		location_container->set_visible(show_location);
 		additional_options_container->show();
 
 		// Update mode selector based on original key event.
@@ -239,6 +246,9 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 		} else if (key_mode->get_selected_id() == KEYMODE_UNICODE) {
 			k->set_physical_keycode(Key::NONE);
 			k->set_keycode(Key::NONE);
+		}
+		if (key_location->get_selected_id() == (int)KeyLocation::UNSPECIFIED) {
+			k->set_location(KeyLocation::UNSPECIFIED);
 		}
 	}
 
@@ -433,6 +443,17 @@ void InputEventConfigurationDialog::_key_mode_selected(int p_mode) {
 	_set_event(k, original_event);
 }
 
+void InputEventConfigurationDialog::_key_location_selected(int p_location) {
+	Ref<InputEventKey> k = event;
+	if (k.is_null()) {
+		return;
+	}
+
+	k->set_location((KeyLocation)p_location);
+
+	_set_event(k, original_event);
+}
+
 void InputEventConfigurationDialog::_input_list_item_selected() {
 	TreeItem *selected = input_list_tree->get_selected();
 
@@ -594,6 +615,8 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 
 		// Select "All Devices" by default.
 		device_id_option->select(0);
+		// Also "all locations".
+		key_location->select(0);
 	}
 
 	if (!p_current_action_name.is_empty()) {
@@ -725,6 +748,25 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	key_mode->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_key_mode_selected));
 	key_mode->hide();
 	additional_options_container->add_child(key_mode);
+
+	// Key Location Selection
+
+	location_container = memnew(HBoxContainer);
+	location_container->hide();
+
+	Label *location_label = memnew(Label);
+	location_label->set_text(TTR("Physical location"));
+	location_container->add_child(location_label);
+
+	key_location = memnew(OptionButton);
+	key_location->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	key_location->add_item(TTR("Any"), (int)KeyLocation::UNSPECIFIED);
+	key_location->add_item(TTR("Left"), (int)KeyLocation::LEFT);
+	key_location->add_item(TTR("Right"), (int)KeyLocation::RIGHT);
+	key_location->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_key_location_selected));
+
+	location_container->add_child(key_location);
+	additional_options_container->add_child(location_container);
 
 	main_vbox->add_child(additional_options_container);
 }

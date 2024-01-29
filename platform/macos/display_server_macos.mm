@@ -478,6 +478,7 @@ void DisplayServerMacOS::_process_key_events() {
 			k->set_physical_keycode(ke.physical_keycode);
 			k->set_key_label(ke.key_label);
 			k->set_unicode(ke.unicode);
+			k->set_location(ke.location);
 
 			_push_input(k);
 		} else {
@@ -506,6 +507,7 @@ void DisplayServerMacOS::_process_key_events() {
 				k->set_keycode(ke.keycode);
 				k->set_physical_keycode(ke.physical_keycode);
 				k->set_key_label(ke.key_label);
+				k->set_location(ke.location);
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].keycode == Key::NONE) {
 					k->set_unicode(key_event_buffer[i + 1].unicode);
