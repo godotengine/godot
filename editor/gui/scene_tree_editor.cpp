@@ -132,20 +132,32 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
-		String config_err = n->get_configuration_warnings_as_string();
-		if (config_err.is_empty()) {
+		const PackedStringArray warnings = n->get_configuration_warnings();
+
+		if (warnings.is_empty()) {
 			return;
 		}
 
-		const PackedInt32Array boundaries = TS->string_get_word_breaks(config_err, "", 80);
+		// Improve looks on tooltip, extra spacing on non-bullet point newlines.
+		const String bullet_point = U"•  ";
+		String all_warnings;
+		for (const String &w : warnings) {
+			all_warnings += "\n" + bullet_point + w;
+		}
+
+		// Limit the line width while keeping some padding.
+		// It is not efficient, but it does not have to be.
+		const PackedInt32Array boundaries = TS->string_get_word_breaks(all_warnings, "", 80);
 		PackedStringArray lines;
 		for (int i = 0; i < boundaries.size(); i += 2) {
 			const int start = boundaries[i];
 			const int end = boundaries[i + 1];
-			lines.append(config_err.substr(start, end - start + 1));
+			const String line = all_warnings.substr(start, end - start);
+			lines.append(line);
 		}
+		all_warnings = String("\n").join(lines).indent("    ").replace(U"    •", U"\n•").substr(2); // We don't want the first two newlines.
 
-		warning->set_text(String("\n").join(lines));
+		warning->set_text(all_warnings);
 		warning->popup_centered();
 
 	} else if (p_id == BUTTON_SIGNALS) {
@@ -282,9 +294,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 	if (can_rename) { //should be can edit..
 
-		String conf_warning = p_node->get_configuration_warnings_as_string();
-		if (!conf_warning.is_empty()) {
-			const int num_warnings = p_node->get_configuration_warnings().size();
+		const PackedStringArray warnings = p_node->get_configuration_warnings();
+		const int num_warnings = warnings.size();
+		if (num_warnings > 0) {
 			String warning_icon;
 			if (num_warnings == 1) {
 				warning_icon = SNAME("NodeWarning");
@@ -296,17 +308,15 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 			// Improve looks on tooltip, extra spacing on non-bullet point newlines.
 			const String bullet_point = U"•  ";
-			int next_newline = 0;
-			while (next_newline != -1) {
-				next_newline = conf_warning.find("\n", next_newline + 2);
-				if (conf_warning.substr(next_newline + 1, bullet_point.length()) != bullet_point) {
-					conf_warning = conf_warning.insert(next_newline + 1, "    ");
-				}
+			String all_warnings;
+			for (const String &w : warnings) {
+				all_warnings += "\n\n" + bullet_point + w.replace("\n", "\n    ");
+			}
+			if (num_warnings == 1) {
+				all_warnings.remove_at(0); // With only one warning, two newlines do not look great.
 			}
 
-			String newline = (num_warnings == 1 ? "\n" : "\n\n");
-
-			item->add_button(0, get_editor_theme_icon(warning_icon), BUTTON_WARNING, false, TTR("Node configuration warning:") + newline + conf_warning);
+			item->add_button(0, get_editor_theme_icon(warning_icon), BUTTON_WARNING, false, TTR("Node configuration warning:") + all_warnings);
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
@@ -1544,6 +1554,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	warning = memnew(AcceptDialog);
 	add_child(warning);
 	warning->set_title(TTR("Node Configuration Warning!"));
+	warning->set_flag(Window::FLAG_POPUP, true);
 
 	last_hash = 0;
 	blocked = 0;

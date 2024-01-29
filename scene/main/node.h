@@ -637,7 +637,6 @@ public:
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
 	virtual PackedStringArray get_configuration_warnings() const;
-	String get_configuration_warnings_as_string() const;
 
 	void update_configuration_warnings();
 
