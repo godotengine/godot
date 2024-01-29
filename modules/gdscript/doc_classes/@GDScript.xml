@@ -627,7 +627,7 @@
 				[/codeblock]
 				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
 				[b]Note:[/b] As annotations describe their subject, the [annotation @icon] annotation must be placed before the class definition and inheritance.
-				[b]Note:[/b] Unlike most other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
+				[b]Note:[/b] Unlike other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
 		<annotation name="@onready">
@@ -679,14 +679,6 @@
 				extends Node
 				[/codeblock]
 				[b]Note:[/b] As annotations describe their subject, the [annotation @tool] annotation must be placed before the class definition and inheritance.
-			</description>
-		</annotation>
-		<annotation name="@uid">
-			<return type="void" />
-			<param index="0" name="uid" type="String" />
-			<description>
-				Stores information about UID of this script. This annotation is auto-generated when saving the script and must not be modified manually. Only applies to scripts saved as separate files (i.e. not built-in).
-				[b]Note:[/b] Unlike most other annotations, the argument of the [annotation @uid] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
