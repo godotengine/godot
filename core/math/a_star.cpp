@@ -45,18 +45,6 @@ int64_t AStar3D::get_available_point_id() const {
 	return last_free_id;
 }
 
-void AStar3D::update_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale) {
-	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't update a point with negative id: %d.", p_id));
-	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't update a point with weight scale less than 0.0: %f.", p_weight_scale));
-
-	Point *found_pt;
-	bool p_exists = points.lookup(p_id, found_pt);
-	ERR_FAIL_COND_V_MSG(!p_exists, Vector3(), vformat("Can't update point's position. Point with id: %d doesn't exist.", p_id));
-
-	found_pt->pos = p_pos;
-	found_pt->weight_scale = p_weight_scale;
-}
-
 void AStar3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
 	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't add a point with weight scale less than 0.0: %f.", p_weight_scale));
@@ -70,6 +58,18 @@ void AStar3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scal
 	pt->closed_pass = 0;
 	pt->enabled = true;
 	points.set(p_id, pt);
+}
+
+void AStar3D::update_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale) {
+	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't update a point with negative id: %d.", p_id));
+	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't update a point with weight scale less than 0.0: %f.", p_weight_scale));
+
+	Point *found_pt;
+	bool p_exists = points.lookup(p_id, found_pt);
+	ERR_FAIL_COND_V_MSG(!p_exists, Vector3(), vformat("Can't update point's position. Point with id: %d doesn't exist.", p_id));
+
+	found_pt->pos = p_pos;
+	found_pt->weight_scale = p_weight_scale;
 }
 
 Vector3 AStar3D::get_point_position(int64_t p_id) const {
@@ -535,6 +535,7 @@ bool AStar3D::is_point_disabled(int64_t p_id) const {
 void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar3D::get_available_point_id);
 	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale"), &AStar3D::add_point, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("update_point", "id", "position", "weight_scale"), &AStar3D::update_point, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStar3D::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_position", "id", "position"), &AStar3D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStar3D::get_point_weight_scale);
@@ -574,6 +575,10 @@ AStar3D::~AStar3D() {
 
 int64_t AStar2D::get_available_point_id() const {
 	return astar.get_available_point_id();
+}
+
+void AStar2D::update_point(int64_t p_id, const Vector2 &p_pos, real_t p_weight_scale) {
+	astar.update_point(p_id, Vector3(p_pos.x, p_pos.y, 0), p_weight_scale);
 }
 
 void AStar2D::add_point(int64_t p_id, const Vector2 &p_pos, real_t p_weight_scale) {
@@ -854,6 +859,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar2D::get_available_point_id);
 	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale"), &AStar2D::add_point, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("update_point", "id", "position", "weight_scale"), &AStar2D::update_point, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStar2D::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_position", "id", "position"), &AStar2D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStar2D::get_point_weight_scale);
