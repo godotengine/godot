@@ -1,4 +1,6 @@
-[gd_resource type="BehaviorTree" load_steps=29 format=3 uid="uid://ddhxf0haxgw"]
+[gd_resource type="BehaviorTree" load_steps=30 format=3 uid="uid://ddhxf0haxgw"]
+
+[sub_resource type="BlackboardPlan" id="BlackboardPlan_salkr"]
 
 [sub_resource type="BBVariant" id="BBVariant_5o8fh"]
 resource_name = "200"
@@ -106,4 +108,5 @@ children = [SubResource("BTSelector_hw3on"), SubResource("BTSetAgentProperty_lh1
 children = [SubResource("BTSequence_7bmj1")]
 
 [resource]
+blackboard_plan = SubResource("BlackboardPlan_salkr")
 root_task = SubResource("BTRunLimit_034mk")

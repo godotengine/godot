@@ -34,23 +34,19 @@ Methods
    :widths: auto
 
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`erase_var<class_Blackboard_method_erase_var>` **(** Variant p_key **)**                                                  |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | Dictionary                          | :ref:`get_data<class_Blackboard_method_get_data>` **(** **)** |const|                                                          |
+   | void                                | :ref:`erase_var<class_Blackboard_method_erase_var>` **(** String p_name **)**                                                  |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
    | :ref:`Blackboard<class_Blackboard>` | :ref:`get_parent_scope<class_Blackboard_method_get_parent_scope>` **(** **)** |const|                                          |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | Variant                             | :ref:`get_var<class_Blackboard_method_get_var>` **(** Variant p_key, Variant p_default=null **)** |const|                      |
+   | Variant                             | :ref:`get_var<class_Blackboard_method_get_var>` **(** String p_name, Variant p_default=null **)** |const|                      |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | bool                                | :ref:`has_var<class_Blackboard_method_has_var>` **(** Variant p_key **)** |const|                                              |
+   | bool                                | :ref:`has_var<class_Blackboard_method_has_var>` **(** String p_name **)** |const|                                              |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
    | void                                | :ref:`prefetch_nodepath_vars<class_Blackboard_method_prefetch_nodepath_vars>` **(** Node p_node **)**                          |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`set_data<class_Blackboard_method_set_data>` **(** Dictionary p_data **)**                                                |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
    | void                                | :ref:`set_parent_scope<class_Blackboard_method_set_parent_scope>` **(** :ref:`Blackboard<class_Blackboard>` p_blackboard **)** |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`set_var<class_Blackboard_method_set_var>` **(** Variant p_key, Variant p_value **)**                                     |
+   | void                                | :ref:`set_var<class_Blackboard_method_set_var>` **(** String p_name, Variant p_value **)**                                     |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
    | :ref:`Blackboard<class_Blackboard>` | :ref:`top<class_Blackboard_method_top>` **(** **)** |const|                                                                    |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
@@ -68,21 +64,9 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-void **erase_var** **(** Variant p_key **)**
+void **erase_var** **(** String p_name **)**
 
 Removes a variable by its name.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Blackboard_method_get_data:
-
-.. rst-class:: classref-method
-
-Dictionary **get_data** **(** **)** |const|
-
-Returns Blackboard data as a ``Dictionary``.
 
 .. rst-class:: classref-item-separator
 
@@ -104,7 +88,7 @@ Returns a Blackboard that serves as the parent scope for this instance.
 
 .. rst-class:: classref-method
 
-Variant **get_var** **(** Variant p_key, Variant p_default=null **)** |const|
+Variant **get_var** **(** String p_name, Variant p_default=null **)** |const|
 
 Returns variable value.
 
@@ -116,7 +100,7 @@ Returns variable value.
 
 .. rst-class:: classref-method
 
-bool **has_var** **(** Variant p_key **)** |const|
+bool **has_var** **(** String p_name **)** |const|
 
 Returns ``true`` if the Blackboard contains the ``p_key`` variable, including the parent scopes.
 
@@ -131,18 +115,6 @@ Returns ``true`` if the Blackboard contains the ``p_key`` variable, including th
 void **prefetch_nodepath_vars** **(** Node p_node **)**
 
 If ``true``, any ``NodePath`` variables in the **Blackboard** are replaced with ``Node`` references when the tree is instantiated. References are retrieved by calling :ref:`Node.get_node<class_Node_method_get_node>` on the agent instance.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_Blackboard_method_set_data:
-
-.. rst-class:: classref-method
-
-void **set_data** **(** Dictionary p_data **)**
-
-Overwrites Blackboard data, replacing any previously stored variables within current scope. Use with caution.
 
 .. rst-class:: classref-item-separator
 
@@ -164,7 +136,7 @@ Assigns the parent scope. If a value isn't in the current Blackboard scope, it w
 
 .. rst-class:: classref-method
 
-void **set_var** **(** Variant p_key, Variant p_value **)**
+void **set_var** **(** String p_name, Variant p_value **)**
 
 Assigns a value to a Blackboard variable.
 

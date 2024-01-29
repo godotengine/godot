@@ -30,7 +30,7 @@ private:
 	LimboState *active_state;
 	HashMap<uint64_t, LimboState *> transitions;
 
-	_FORCE_INLINE_ uint64_t _get_transition_key(Node *p_from_state, const String &p_event) {
+	_FORCE_INLINE_ uint64_t _get_transition_key(LimboState *p_from_state, const String &p_event) {
 		uint64_t key = hash_djb2_one_64(Variant::OBJECT);
 		key = hash_djb2_one_64(Variant(p_from_state).hash(), key);
 		key = hash_djb2_one_64(p_event.hash(), key);
@@ -65,8 +65,7 @@ public:
 	virtual bool dispatch(const String &p_event, const Variant &p_cargo = Variant()) override;
 
 	void update(double p_delta);
-	void add_transition(Node *p_from_state, Node *p_to_state, const String &p_event);
-	// void add_transition_from_any_state(Node *p_to_state, const String &p_event);
+	void add_transition(LimboState *p_from_state, LimboState *p_to_state, const String &p_event);
 	LimboState *anystate() const { return nullptr; }
 
 	LimboHSM();

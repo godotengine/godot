@@ -16,6 +16,7 @@
 
 #include "../bt/behavior_tree.h"
 #include "../bt/tasks/bt_task.h"
+#include "editor_property_variable_name.h"
 #include "task_palette.h"
 #include "task_tree.h"
 
@@ -211,6 +212,7 @@ protected:
 public:
 	void set_plugin(EditorPlugin *p_plugin) { plugin = p_plugin; };
 	void edit_bt(Ref<BehaviorTree> p_behavior_tree, bool p_force_refresh = false);
+	Ref<BlackboardPlan> get_edited_blackboard_plan();
 
 	void apply_changes();
 

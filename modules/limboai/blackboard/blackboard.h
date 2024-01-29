@@ -12,10 +12,11 @@
 #ifndef BLACKBOARD_H
 #define BLACKBOARD_H
 
+#include "bb_variable.h"
+
 #ifdef LIMBOAI_MODULE
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
-#include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
 #include "scene/main/node.h"
 #endif // LIMBOAI_MODULE
@@ -25,7 +26,7 @@
 #include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/core/object.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/templates/hash_map.hpp>
 using namespace godot;
 #endif // LIMBOAI_GDEXTENSION
 
@@ -33,27 +34,31 @@ class Blackboard : public RefCounted {
 	GDCLASS(Blackboard, RefCounted);
 
 private:
-	Dictionary data;
+	HashMap<String, BBVariable> data;
 	Ref<Blackboard> parent;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_data(const Dictionary &p_value) { data = p_value; }
-	Dictionary get_data() const { return data; }
-
-	void set_parent_scope(const Ref<Blackboard> &p_blackboard) { parent = p_blackboard; }
-	Ref<Blackboard> get_parent_scope() const { return parent; }
+	void set_parent(const Ref<Blackboard> &p_blackboard) { parent = p_blackboard; }
+	Ref<Blackboard> get_parent() const { return parent; }
 
 	Ref<Blackboard> top() const;
 
-	Variant get_var(const Variant &p_key, const Variant &p_default) const;
-	void set_var(const Variant &p_key, const Variant &p_value);
-	bool has_var(const Variant &p_key) const;
-	void erase_var(const Variant &p_key);
+	Variant get_var(const String &p_name, const Variant &p_default) const;
+	void set_var(const String &p_name, const Variant &p_value);
+	bool has_var(const String &p_name) const;
+	void erase_var(const String &p_name);
+
+	void bind_var_to_property(const String &p_name, Object *p_object, const StringName &p_property);
+	void unbind_var(const String &p_name);
+
+	void add_var(const String &p_name, const BBVariable &p_var);
 
 	void prefetch_nodepath_vars(Node *p_node);
+
+	// TODO: Add serialization API.
 };
 
 #endif // BLACKBOARD_H

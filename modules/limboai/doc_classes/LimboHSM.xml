@@ -11,8 +11,8 @@
 	<methods>
 		<method name="add_transition">
 			<return type="void" />
-			<param index="0" name="p_from_state" type="Node" />
-			<param index="1" name="p_to_state" type="Node" />
+			<param index="0" name="p_from_state" type="LimboState" />
+			<param index="1" name="p_to_state" type="LimboState" />
 			<param index="2" name="p_event" type="String" />
 			<description>
 				Establishes a transition from one state to another when [param p_event] is dispatched. Both [param p_from_state] and [param p_to_state] must be immediate children of this state.

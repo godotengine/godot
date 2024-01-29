@@ -114,6 +114,9 @@ public:
 	static _ALWAYS_INLINE_ double pow(double p_x, double p_y) { return ::pow(p_x, p_y); }
 	static _ALWAYS_INLINE_ float pow(float p_x, float p_y) { return ::powf(p_x, p_y); }
 
+	
+	static _ALWAYS_INLINE_ float pow2(float p_x) { return p_x * p_x; }
+
 	static _ALWAYS_INLINE_ double log(double p_x) { return ::log(p_x); }
 	static _ALWAYS_INLINE_ float log(float p_x) { return ::logf(p_x); }
 

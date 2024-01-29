@@ -10,8 +10,8 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="_blackboard_data" type="Dictionary" setter="_set_blackboard_data" getter="_get_blackboard_data" default="{}">
-			Data that is used to populate a new scope of the [Blackboard].
+		<member name="blackboard_plan" type="BlackboardPlan" setter="set_blackboard_plan" getter="get_blackboard_plan">
+			Stores and manages variables that will be used in constructing new [Blackboard] instances.
 		</member>
 	</members>
 </class>

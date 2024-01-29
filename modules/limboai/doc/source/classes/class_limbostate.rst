@@ -35,13 +35,15 @@ Properties
 .. table::
    :widths: auto
 
-   +-------------------------------------+-----------------------------------------------------------------+
-   | String                              | :ref:`EVENT_FINISHED<class_LimboState_property_EVENT_FINISHED>` |
-   +-------------------------------------+-----------------------------------------------------------------+
-   | Node                                | :ref:`agent<class_LimboState_property_agent>`                   |
-   +-------------------------------------+-----------------------------------------------------------------+
-   | :ref:`Blackboard<class_Blackboard>` | :ref:`blackboard<class_LimboState_property_blackboard>`         |
-   +-------------------------------------+-----------------------------------------------------------------+
+   +---------------------------------------------+-------------------------------------------------------------------+
+   | String                                      | :ref:`EVENT_FINISHED<class_LimboState_property_EVENT_FINISHED>`   |
+   +---------------------------------------------+-------------------------------------------------------------------+
+   | Node                                        | :ref:`agent<class_LimboState_property_agent>`                     |
+   +---------------------------------------------+-------------------------------------------------------------------+
+   | :ref:`Blackboard<class_Blackboard>`         | :ref:`blackboard<class_LimboState_property_blackboard>`           |
+   +---------------------------------------------+-------------------------------------------------------------------+
+   | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`blackboard_plan<class_LimboState_property_blackboard_plan>` |
+   +---------------------------------------------+-------------------------------------------------------------------+
 
 .. rst-class:: classref-reftable-group
 
@@ -187,6 +189,23 @@ An agent associated with the state, assigned during initialization.
 - :ref:`Blackboard<class_Blackboard>` **get_blackboard** **(** **)**
 
 A key/value data store shared by states within the state machine to which this state belongs.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_LimboState_property_blackboard_plan:
+
+.. rst-class:: classref-property
+
+:ref:`BlackboardPlan<class_BlackboardPlan>` **blackboard_plan**
+
+.. rst-class:: classref-property-setget
+
+- void **set_blackboard_plan** **(** :ref:`BlackboardPlan<class_BlackboardPlan>` value **)**
+- :ref:`BlackboardPlan<class_BlackboardPlan>` **get_blackboard_plan** **(** **)**
+
+Stores and manages variables that will be used in constructing new :ref:`Blackboard<class_Blackboard>` instances.
 
 .. rst-class:: classref-section-separator
 

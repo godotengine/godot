@@ -11,4 +11,7 @@ void GUIVBox::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::INT, "vbox_content_alignment", PROPERTY_HINT_ENUM, "TOP,CENTER,BOTTOM"), "set_content_alignment", "get_content_alignment");
 
 
+	BIND_ENUM_CONSTANT(TOP);
+	BIND_ENUM_CONSTANT(CENTER);
+	BIND_ENUM_CONSTANT(BOTTOM);
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BBInt32Array" inherits="BBParam" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		PackedInt32Array-type parameter for [BehaviorTree] tasks. See [BBParam].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

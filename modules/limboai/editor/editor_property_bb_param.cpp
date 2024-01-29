@@ -17,7 +17,9 @@
 
 #include "modules/limboai/blackboard/bb_param/bb_param.h"
 #include "modules/limboai/blackboard/bb_param/bb_variant.h"
+#include "modules/limboai/editor/editor_property_variable_name.h"
 #include "modules/limboai/editor/mode_switch_button.h"
+#include "modules/limboai/util/limbo_string_names.h"
 
 #include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
@@ -263,8 +265,8 @@ void EditorPropertyBBParam::_type_selected(int p_index) {
 	update_property();
 }
 
-void EditorPropertyBBParam::_variable_edited(const String &p_text) {
-	_get_edited_param()->set_variable(p_text);
+void EditorPropertyBBParam::_variable_edited(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+	_get_edited_param()->set_variable(p_value);
 }
 
 void EditorPropertyBBParam::update_property() {
@@ -273,14 +275,15 @@ void EditorPropertyBBParam::update_property() {
 
 	if (param->get_value_source() == BBParam::BLACKBOARD_VAR) {
 		_remove_value_editor();
-		variable_edit->set_text(param->get_variable());
-		variable_edit->set_editable(true);
-		variable_edit->show();
+		variable_editor->set_object_and_property(param.ptr(), SNAME("variable"));
+		variable_editor->update_property();
+		variable_editor->show();
 		mode_button->call_deferred(SNAME("set_mode"), Mode::BIND_VAR, true);
 		type_choice->hide();
+		bottom_container->hide();
 	} else {
 		_create_value_editor(param->get_type());
-		variable_edit->hide();
+		variable_editor->hide();
 		value_editor->show();
 		value_editor->set_object_and_property(param.ptr(), SNAME("saved_value"));
 		value_editor->update_property();
@@ -295,9 +298,11 @@ void EditorPropertyBBParam::update_property() {
 	}
 }
 
-void EditorPropertyBBParam::setup(PropertyHint p_hint, const String &p_hint_text) {
+void EditorPropertyBBParam::setup(PropertyHint p_hint, const String &p_hint_text, const Ref<BlackboardPlan> &p_plan) {
 	param_type = p_hint_text;
 	property_hint = p_hint;
+	variable_editor->setup(p_plan);
+	variable_editor->set_name_split_ratio(0.0);
 }
 
 void EditorPropertyBBParam::_notification(int p_what) {
@@ -311,9 +316,9 @@ void EditorPropertyBBParam::_notification(int p_what) {
 
 			// Initialize mode button.
 			mode_button->clear();
-			mode_button->add_mode(Mode::SPECIFY_VALUE, get_editor_theme_icon(SNAME("LimboSpecifyValue")), TTR("Mode: Specify value.\nClick to switch mode."));
-			mode_button->add_mode(Mode::BIND_VAR, get_editor_theme_icon(SNAME("BTSetVar")), TTR("Mode: Bind blackboard variable.\nClick to switch mode."));
-			mode_button->set_mode(_get_edited_param()->get_value_source() == BBParam::BLACKBOARD_VAR ? Mode::BIND_VAR : Mode::SPECIFY_VALUE);
+			mode_button->add_mode(Mode::SPECIFY_VALUE, get_editor_theme_icon(SNAME("LimboSpecifyValue")), TTR("Mode: Set a specific value.\nClick to switch modes."));
+			mode_button->add_mode(Mode::BIND_VAR, get_editor_theme_icon(SNAME("BTSetVar")), TTR("Mode: Use a blackboard variable.\nClick to switch modes."));
+			mode_button->set_mode(_get_edited_param()->get_value_source() == BBParam::BLACKBOARD_VAR ? Mode::BIND_VAR : Mode::SPECIFY_VALUE, true);
 
 			bool is_variant_param = _get_edited_param()->is_class_ptr(BBVariant::get_class_ptr_static());
 			if (is_variant_param) {
@@ -337,7 +342,7 @@ void EditorPropertyBBParam::_notification(int p_what) {
 EditorPropertyBBParam::EditorPropertyBBParam() {
 	hbox = memnew(HBoxContainer);
 	add_child(hbox);
-	hbox->add_theme_constant_override(SNAME("separation"), 0);
+	hbox->add_theme_constant_override(LW_NAME(separation), 0);
 
 	bottom_container = memnew(MarginContainer);
 	bottom_container->set_theme_type_variation("MarginContainer4px");
@@ -346,24 +351,23 @@ EditorPropertyBBParam::EditorPropertyBBParam() {
 	mode_button = memnew(ModeSwitchButton);
 	hbox->add_child(mode_button);
 	mode_button->set_focus_mode(FOCUS_NONE);
-	mode_button->connect(SNAME("mode_changed"), callable_mp(this, &EditorPropertyBBParam::_mode_changed));
+	mode_button->connect(LW_NAME(mode_changed), callable_mp(this, &EditorPropertyBBParam::_mode_changed));
 
 	type_choice = memnew(MenuButton);
 	hbox->add_child(type_choice);
-	type_choice->get_popup()->connect(SNAME("id_pressed"), callable_mp(this, &EditorPropertyBBParam::_type_selected));
+	type_choice->get_popup()->connect(LW_NAME(id_pressed), callable_mp(this, &EditorPropertyBBParam::_type_selected));
 	type_choice->set_tooltip_text(TTR("Click to choose type"));
 	type_choice->set_flat(false);
 
 	editor_hbox = memnew(HBoxContainer);
 	hbox->add_child(editor_hbox);
 	editor_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
-	editor_hbox->add_theme_constant_override(SNAME("separation"), 0);
+	editor_hbox->add_theme_constant_override(LW_NAME(separation), 0);
 
-	variable_edit = memnew(LineEdit);
-	editor_hbox->add_child(variable_edit);
-	variable_edit->set_placeholder(TTR("Variable"));
-	variable_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	variable_edit->connect(SNAME("text_changed"), callable_mp(this, &EditorPropertyBBParam::_variable_edited));
+	variable_editor = memnew(EditorPropertyVariableName);
+	editor_hbox->add_child(variable_editor);
+	variable_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+	variable_editor->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyBBParam::_variable_edited));
 
 	param_type = SNAME("BBString");
 }
@@ -378,7 +382,7 @@ bool EditorInspectorPluginBBParam::parse_property(Object *p_object, const Varian
 	if (p_hint == PROPERTY_HINT_RESOURCE_TYPE && p_hint_text.begins_with("BB")) {
 		// TODO: Add more rigid hint check.
 		EditorPropertyBBParam *editor = memnew(EditorPropertyBBParam());
-		editor->setup(p_hint, p_hint_text);
+		editor->setup(p_hint, p_hint_text, plan_getter.call());
 		add_property_editor(p_path, editor);
 		return true;
 	}

@@ -135,15 +135,22 @@ namespace Foliage
         {
 
         }
+	public:
+		const Rect2& get_region()
+		{
+			return region;
+		}
     public:
         FoliagePrototypeAsset()
         {
 
         }
         void load_imp(Ref<FileAccess> & file,uint32_t version,bool is_big_endian) override;
-        void unload_imp() override;
-
+        virtual void on_load_finish() override;
+        virtual void unload_imp() override;
+		virtual void tick_imp() override;
     private:
+		Rect2 region;
 		String file_name = "foliage_prototype";
         Vector<FoliagePrototype> prototypes;
 		HashMap<int,Ref<FoliageCellAsset>> cellAssetConfig;

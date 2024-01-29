@@ -10,5 +10,11 @@ void GUIHBox::_bind_methods()
 	ADD_GROUP("HBox", "hbox_");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "hbox_content_alignment", PROPERTY_HINT_ENUM, "LEFT,CENTER,RIGHT"), "set_content_alignment", "get_content_alignment");
 
+    
+	BIND_ENUM_CONSTANT(LEFT);
+	BIND_ENUM_CONSTANT(CENTER);
+	BIND_ENUM_CONSTANT(RIGHT);
+
+
 
 }

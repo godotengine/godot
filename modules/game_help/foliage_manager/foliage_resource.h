@@ -20,22 +20,43 @@ namespace Foliage
         GDCLASS(FoliageResource,RefCounted)
         static void _bind_methods();
     public:
+        enum LoadState
+        {
+            LoadNone,
+            PreLoad,
+            LoadDataFinish,   
+            LoadFinish,            
+        };
+    public:
 		// 加載文件
 		void load_file(String _file);
-        void load(Ref<FileAccess> & file);
         void clear()
         {
             wait_load_finish();
             unload_imp();
+            loadState = LoadNone;
         }
 		void wait_load_finish();
 		bool is_load_finish();
+
+        void tick()
+        {
+            if(loadState == LoadDataFinish)
+            {
+                on_load_finish();
+                loadState = LoadFinish;
+            }
+            tick_imp();
+        }
     private:
+        void load(Ref<FileAccess> & file);
     
     	static void job_load_func(void* data,uint32_t index);
     public:
         virtual void load_imp(Ref<FileAccess> & file,uint32_t version,bool is_big_endian){}
+        virtual void on_load_finish(){}
         virtual void unload_imp(){}
+        virtual void tick_imp(){}
     private:
 		struct FileLoadData
 		{
@@ -46,7 +67,8 @@ namespace Foliage
 		Ref<TaskJobHandle> handle_load;
         FileLoadData load_data;
         String configFile;
-        bool is_load = false;
+    protected:
+	    LoadState loadState;
 
     };
 }

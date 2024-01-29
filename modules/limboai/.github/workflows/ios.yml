@@ -173,7 +173,8 @@ jobs:
           cp -r misc/dist/ios_xcode bin/
           cd bin/
 
-          strip *.a
+          # --- Note: Doesn't look like libs need stripping ---
+          # strip *.a
 
           mv libgodot.ios.template_debug.arm64.a ios_xcode/libgodot.ios.debug.xcframework/ios-arm64/libgodot.a
           # ! lipo -create libgodot.ios.template_debug.arm64.simulator.a libgodot.ios.template_debug.x86_64.simulator.a -output ios_xcode/libgodot.ios.debug.xcframework/ios-arm64_x86_64-simulator/libgodot.a
@@ -183,7 +184,7 @@ jobs:
           # ! lipo -create libgodot.ios.template_release.arm64.simulator.a libgodot.ios.template_release.x86_64.simulator.a -output ios_xcode/libgodot.ios.release.xcframework/ios-arm64_x86_64-simulator/libgodot.a
           mv libgodot.ios.template_release.x86_64.simulator.a ios_xcode/libgodot.ios.release.xcframework/ios-arm64_x86_64-simulator/libgodot.a
 
-          cp -r ~/VulkanSDK/*/MoltenVK/MoltenVK.xcframework ios_xcode
+          cp -r ~/VulkanSDK/*/macOS/lib/MoltenVK.xcframework ios_xcode
           rm -rf ios_xcode/MoltenVK.xcframework/{macos,tvos}*
 
           mkdir -p ${{github.workspace}}/out/templates/

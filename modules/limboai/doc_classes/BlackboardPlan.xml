@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BlackboardPlan" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Stores and manages variables that will be used in constructing new [Blackboard] instances.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

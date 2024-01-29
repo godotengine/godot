@@ -1,8 +1,20 @@
-[gd_scene load_steps=7 format=3 uid="uid://c26b8c8dndtop"]
+[gd_scene load_steps=8 format=3 uid="uid://c26b8c8dndtop"]
 
 [ext_resource type="Script" path="res://demo/examples/waypoints/patrolling_agent.gd" id="1_5wwhb"]
 [ext_resource type="BehaviorTree" uid="uid://cjkqi41oagagd" path="res://demo/ai/trees/waypoints.tres" id="2_66y4v"]
 [ext_resource type="Texture2D" uid="uid://d0mht3ntak7e5" path="res://demo/godot.png" id="3_64ge2"]
+
+[sub_resource type="BlackboardPlan" id="BlackboardPlan_b86q8"]
+var/speed/name = "speed"
+var/speed/type = 3
+var/speed/value = 300.0
+var/speed/hint = 1
+var/speed/hint_string = "10,1000,10"
+var/waypoints/name = "waypoints"
+var/waypoints/type = 28
+var/waypoints/value = []
+var/waypoints/hint = 0
+var/waypoints/hint_string = "22:"
 
 [sub_resource type="Animation" id="Animation_5id00"]
 length = 0.001
@@ -46,9 +58,7 @@ script = ExtResource("1_5wwhb")
 
 [node name="BTPlayer" type="BTPlayer" parent="."]
 behavior_tree = ExtResource("2_66y4v")
-_blackboard_data = {
-"speed": 200.0
-}
+blackboard_plan = SubResource("BlackboardPlan_b86q8")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("3_64ge2")

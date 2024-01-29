@@ -117,6 +117,9 @@
 		<member name="blackboard" type="Blackboard" setter="" getter="get_blackboard">
 			A key/value data store shared by states within the state machine to which this state belongs.
 		</member>
+		<member name="blackboard_plan" type="BlackboardPlan" setter="set_blackboard_plan" getter="get_blackboard_plan">
+			Stores and manages variables that will be used in constructing new [Blackboard] instances.
+		</member>
 	</members>
 	<signals>
 		<signal name="entered">

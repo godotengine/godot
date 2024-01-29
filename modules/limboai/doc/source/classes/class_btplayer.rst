@@ -38,6 +38,8 @@ Properties
    +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
    | :ref:`Blackboard<class_Blackboard>`         | :ref:`blackboard<class_BTPlayer_property_blackboard>`                         |           |
    +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
+   | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`blackboard_plan<class_BTPlayer_property_blackboard_plan>`               |           |
+   +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
    | bool                                        | :ref:`monitor_performance<class_BTPlayer_property_monitor_performance>`       | ``false`` |
    +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
    | bool                                        | :ref:`prefetch_nodepath_vars<class_BTPlayer_property_prefetch_nodepath_vars>` | ``true``  |
@@ -188,6 +190,23 @@ If ``true``, the behavior tree will be executed during update.
 - :ref:`Blackboard<class_Blackboard>` **get_blackboard** **(** **)**
 
 Holds data shared by the behavior tree tasks. See :ref:`Blackboard<class_Blackboard>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BTPlayer_property_blackboard_plan:
+
+.. rst-class:: classref-property
+
+:ref:`BlackboardPlan<class_BlackboardPlan>` **blackboard_plan**
+
+.. rst-class:: classref-property-setget
+
+- void **set_blackboard_plan** **(** :ref:`BlackboardPlan<class_BlackboardPlan>` value **)**
+- :ref:`BlackboardPlan<class_BlackboardPlan>` **get_blackboard_plan** **(** **)**
+
+Stores and manages variables that will be used in constructing new :ref:`Blackboard<class_Blackboard>` instances.
 
 .. rst-class:: classref-item-separator
 

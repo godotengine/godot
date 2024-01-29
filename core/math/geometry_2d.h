@@ -417,6 +417,29 @@ public:
 		return false;
 	}
 
+	static bool is_rect_intersecting_circle(Rect2 rect, Vector2 circle_pos,float circle_radius) {
+		float circleDistanceX = Math::abs(circle_pos.x - (rect.position.x + rect.size.x/2.0));
+		float circleDistanceY = Math::abs(circle_pos.y - (rect.position.y + rect.size.y/2.0));
+
+		if (circleDistanceX > (rect.size.x/2.0 + circle_radius)) {
+			return false;
+		}
+		if (circleDistanceY > (rect.size.y/2.0 + circle_radius)) {
+			return false;
+		}
+
+		if (circleDistanceX <= rect.size.x/2.0) {
+			return true;
+		}
+		if (circleDistanceY <= rect.size.y/2.0) {
+			return true;
+		}
+
+
+		float cornerDistance_sq = Math::pow2(circleDistanceX - rect.size.x/2.0) + Math::pow2(circleDistanceY - rect.size.y/2.0);
+		return cornerDistance_sq <= Math::pow2(circle_radius);
+	}
+
 	static real_t vec2_cross(const Point2 &O, const Point2 &A, const Point2 &B) {
 		return (real_t)(A.x - O.x) * (B.y - O.y) - (real_t)(A.y - O.y) * (B.x - O.x);
 	}

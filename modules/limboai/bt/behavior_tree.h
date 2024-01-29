@@ -12,11 +12,11 @@
 #ifndef BEHAVIOR_TREE_H
 #define BEHAVIOR_TREE_H
 
+#include "../blackboard/blackboard_plan.h"
 #include "tasks/bt_task.h"
 
 #ifdef LIMBOAI_MODULE
 #include "core/io/resource.h"
-#include "modules/limboai/blackboard/blackboard.h"
 #endif // LIMBOAI_MODULE
 
 #ifdef LIMBOAI_GDEXTENSION
@@ -29,7 +29,10 @@ class BehaviorTree : public Resource {
 
 private:
 	String description;
+	Ref<BlackboardPlan> blackboard_plan;
 	Ref<BTTask> root_task;
+
+	void _plan_changed();
 
 protected:
 	static void _bind_methods();
@@ -39,21 +42,21 @@ public:
 	virtual bool editor_can_reload_from_file() override { return false; }
 #endif
 
-	void set_description(String p_value) {
-		description = p_value;
-		emit_changed();
-	}
+	void set_description(const String &p_value);
 	String get_description() const { return description; }
 
-	void set_root_task(const Ref<BTTask> &p_value) {
-		root_task = p_value;
-		emit_changed();
-	}
+	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan);
+	Ref<BlackboardPlan> get_blackboard_plan() const { return blackboard_plan; }
+
+	void set_root_task(const Ref<BTTask> &p_value);
 	Ref<BTTask> get_root_task() const { return root_task; }
 
 	Ref<BehaviorTree> clone() const;
 	void copy_other(const Ref<BehaviorTree> &p_other);
 	Ref<BTTask> instantiate(Node *p_agent, const Ref<Blackboard> &p_blackboard) const;
+
+	BehaviorTree();
+	~BehaviorTree();
 };
 
 #endif // BEHAVIOR_TREE_H

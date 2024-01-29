@@ -26,6 +26,8 @@ private:
 	String success_event;
 	String failure_event;
 
+	void _update_blackboard_plan();
+
 protected:
 	static void _bind_methods();
 
@@ -34,7 +36,7 @@ protected:
 	virtual void _update(double p_delta) override;
 
 public:
-	void set_behavior_tree(const Ref<BehaviorTree> &p_value) { behavior_tree = p_value; }
+	void set_behavior_tree(const Ref<BehaviorTree> &p_value);
 	Ref<BehaviorTree> get_behavior_tree() const { return behavior_tree; }
 
 	void set_success_event(String p_success_event) { success_event = p_success_event; }
@@ -45,11 +47,8 @@ public:
 
 	BTState();
 
-#ifdef DEBUG_ENABLED
 protected:
 	void _notification(int p_notification);
-
-#endif
 };
 
 #endif // BT_STATE_H

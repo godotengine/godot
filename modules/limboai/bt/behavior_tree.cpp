@@ -11,6 +11,8 @@
 
 #include "behavior_tree.h"
 
+#include "../util/limbo_string_names.h"
+
 #ifdef LIMBOAI_MODULE
 #include "core/error/error_macros.h"
 #include "core/object/class_db.h"
@@ -21,6 +23,38 @@
 #ifdef LIMBOAI_GDEXTENSION
 #include "godot_cpp/core/error_macros.hpp"
 #endif // ! LIMBOAI_GDEXTENSION
+
+void BehaviorTree::set_description(const String &p_value) {
+	description = p_value;
+	emit_changed();
+}
+
+void BehaviorTree::set_blackboard_plan(const Ref<BlackboardPlan> &p_plan) {
+	if (blackboard_plan == p_plan) {
+		return;
+	}
+
+	if (Engine::get_singleton()->is_editor_hint() && blackboard_plan.is_valid() &&
+			blackboard_plan->is_connected(LW_NAME(changed), callable_mp(this, &BehaviorTree::_plan_changed))) {
+		blackboard_plan->disconnect(LW_NAME(changed), callable_mp(this, &BehaviorTree::_plan_changed));
+	}
+
+	blackboard_plan = p_plan;
+	if (blackboard_plan.is_null()) {
+		blackboard_plan = Ref<BlackboardPlan>(memnew(BlackboardPlan));
+	}
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		blackboard_plan->connect(LW_NAME(changed), callable_mp(this, &BehaviorTree::_plan_changed));
+	}
+
+	emit_changed();
+}
+
+void BehaviorTree::set_root_task(const Ref<BTTask> &p_value) {
+	root_task = p_value;
+	emit_changed();
+}
 
 Ref<BehaviorTree> BehaviorTree::clone() const {
 	Ref<BehaviorTree> copy = duplicate(false);
@@ -44,9 +78,15 @@ Ref<BTTask> BehaviorTree::instantiate(Node *p_agent, const Ref<Blackboard> &p_bl
 	return inst;
 }
 
+void BehaviorTree::_plan_changed() {
+	emit_changed();
+}
+
 void BehaviorTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_description", "p_value"), &BehaviorTree::set_description);
 	ClassDB::bind_method(D_METHOD("get_description"), &BehaviorTree::get_description);
+	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "p_plan"), &BehaviorTree::set_blackboard_plan);
+	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &BehaviorTree::get_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("set_root_task", "p_value"), &BehaviorTree::set_root_task);
 	ClassDB::bind_method(D_METHOD("get_root_task"), &BehaviorTree::get_root_task);
 	ClassDB::bind_method(D_METHOD("clone"), &BehaviorTree::clone);
@@ -54,5 +94,16 @@ void BehaviorTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instantiate", "p_agent", "p_blackboard"), &BehaviorTree::instantiate);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description", PROPERTY_HINT_MULTILINE_TEXT), "set_description", "get_description");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_blackboard_plan", "get_blackboard_plan");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root_task", PROPERTY_HINT_RESOURCE_TYPE, "BTTask", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_root_task", "get_root_task");
+}
+
+BehaviorTree::BehaviorTree() {
+}
+
+BehaviorTree::~BehaviorTree() {
+	if (Engine::get_singleton()->is_editor_hint() && blackboard_plan.is_valid() &&
+			blackboard_plan->is_connected(LW_NAME(changed), callable_mp(this, &BehaviorTree::_plan_changed))) {
+		blackboard_plan->disconnect(LW_NAME(changed), callable_mp(this, &BehaviorTree::_plan_changed));
+	}
 }

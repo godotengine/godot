@@ -5,6 +5,10 @@ namespace Foliage
 
     void FoliageResource::load_file(String _file)
     {
+        if(loadState != LoadNone)
+        {
+            return;
+        }
         configFile = _file;
         load_data.dest.reference_ptr(this);
         load_data.file = FileAccess::open(configFile, FileAccess::READ);
@@ -21,9 +25,9 @@ namespace Foliage
     }
     bool FoliageResource::is_load_finish()
     {
-        if(handle_load.is_valid())
+        if(loadState < LoadFinish)
         {
-            return handle_load->is_completed();
+            return false;
         }
         return true;
 
@@ -33,12 +37,14 @@ namespace Foliage
         FoliageResource::FileLoadData* d = (FoliageResource::FileLoadData*)data;
         Ref<FoliageResource> obj = d->dest;
         obj->load(d->file);
+        obj->loadState = LoadDataFinish;
         d->file.unref();
         d->dest.unref();
     }
     void FoliageResource::load(Ref<FileAccess> & file)
     {
         clear();
+        loadState = PreLoad;
         int64_t pos = file->get_position();
         uint32_t big_endian = 0;
         file->get_buffer((uint8_t*)&big_endian, 1);

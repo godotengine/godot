@@ -51,6 +51,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="blackboard_plan" type="BlackboardPlan" setter="set_blackboard_plan" getter="get_blackboard_plan">
+			Stores and manages variables that will be used in constructing new [Blackboard] instances.
+		</member>
 		<member name="description" type="String" setter="set_description" getter="get_description" default="&quot;&quot;">
 			User-provided description of the BehaviorTree.
 		</member>

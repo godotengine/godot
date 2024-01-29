@@ -11,17 +11,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="erase_var">
+		<method name="bind_var_to_property">
 			<return type="void" />
-			<param index="0" name="p_key" type="Variant" />
+			<param index="0" name="p_name" type="String" />
+			<param index="1" name="p_object" type="Object" />
+			<param index="2" name="p_property" type="StringName" />
 			<description>
-				Removes a variable by its name.
+				Establish a binding between a variable and the object's property specified by [param p_property] and [param p_object]. Changes to the variable update the property, and vice versa.
 			</description>
 		</method>
-		<method name="get_data" qualifiers="const">
-			<return type="Dictionary" />
+		<method name="erase_var">
+			<return type="void" />
+			<param index="0" name="p_name" type="String" />
 			<description>
-				Returns Blackboard data as a [Dictionary].
+				Removes a variable by its name.
 			</description>
 		</method>
 		<method name="get_parent_scope" qualifiers="const">
@@ -32,7 +35,7 @@
 		</method>
 		<method name="get_var" qualifiers="const">
 			<return type="Variant" />
-			<param index="0" name="p_key" type="Variant" />
+			<param index="0" name="p_name" type="String" />
 			<param index="1" name="p_default" type="Variant" default="null" />
 			<description>
 				Returns variable value.
@@ -40,7 +43,7 @@
 		</method>
 		<method name="has_var" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="p_key" type="Variant" />
+			<param index="0" name="p_name" type="String" />
 			<description>
 				Returns [code]true[/code] if the Blackboard contains the [param p_key] variable, including the parent scopes.
 			</description>
@@ -52,13 +55,6 @@
 				If [code]true[/code], any [NodePath] variables in the [Blackboard] are replaced with [Node] references when the tree is instantiated. References are retrieved by calling [method Node.get_node] on the agent instance.
 			</description>
 		</method>
-		<method name="set_data">
-			<return type="void" />
-			<param index="0" name="p_data" type="Dictionary" />
-			<description>
-				Overwrites Blackboard data, replacing any previously stored variables within current scope. Use with caution.
-			</description>
-		</method>
 		<method name="set_parent_scope">
 			<return type="void" />
 			<param index="0" name="p_blackboard" type="Blackboard" />
@@ -68,7 +64,7 @@
 		</method>
 		<method name="set_var">
 			<return type="void" />
-			<param index="0" name="p_key" type="Variant" />
+			<param index="0" name="p_name" type="String" />
 			<param index="1" name="p_value" type="Variant" />
 			<description>
 				Assigns a value to a Blackboard variable.
@@ -78,6 +74,13 @@
 			<return type="Blackboard" />
 			<description>
 				Returns the topmost [Blackboard] in the scope chain.
+			</description>
+		</method>
+		<method name="unbind_var">
+			<return type="void" />
+			<param index="0" name="p_name" type="String" />
+			<description>
+				Remove binding from a variable.
 			</description>
 		</method>
 	</methods>

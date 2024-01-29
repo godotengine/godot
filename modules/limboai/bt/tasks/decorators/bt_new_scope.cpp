@@ -15,10 +15,14 @@ void BTNewScope::initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) 
 	ERR_FAIL_COND(p_agent == nullptr);
 	ERR_FAIL_COND(p_blackboard == nullptr);
 
-	Ref<Blackboard> bb = memnew(Blackboard);
+	Ref<Blackboard> bb;
+	if (blackboard_plan.is_valid()) {
+		bb = blackboard_plan->create_blackboard();
+	} else {
+		bb = Ref<Blackboard>(memnew(Blackboard));
+	}
 
-	bb->set_data(blackboard_data.duplicate());
-	bb->set_parent_scope(p_blackboard);
+	bb->set_parent(p_blackboard);
 
 	BTDecorator::initialize(p_agent, bb);
 }
@@ -29,8 +33,8 @@ BT::Status BTNewScope::_tick(double p_delta) {
 }
 
 void BTNewScope::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_set_blackboard_data", "p_data"), &BTNewScope::_set_blackboard_data);
-	ClassDB::bind_method(D_METHOD("_get_blackboard_data"), &BTNewScope::_get_blackboard_data);
+	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "p_plan"), &BTNewScope::set_blackboard_plan);
+	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &BTNewScope::get_blackboard_plan);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_blackboard_data"), "_set_blackboard_data", "_get_blackboard_data");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_blackboard_plan", "get_blackboard_plan");
 }

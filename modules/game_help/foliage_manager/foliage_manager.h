@@ -19,7 +19,8 @@ namespace Foliage
     public:
         FoliageManager();
         ~FoliageManager();
-        void init(TypedArray<FoliageMapChunkConfig> map_config);
+        void load(String file_name);
+        void init(Ref<FoliageMapConfig> map_config);
         void clear();
         void set_camera(Camera3D* p_camera);
         void _notification(int p_what);

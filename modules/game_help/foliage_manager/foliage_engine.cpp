@@ -9,11 +9,8 @@ namespace Foliage
     {
         ClassDB ::bind_method(D_METHOD("set_chunk_asset_name", "map_name"), &FoliageMapChunkConfig::set_chunk_asset_name);
         ClassDB ::bind_method(D_METHOD("get_chunk_asset_name"), &FoliageMapChunkConfig::get_chunk_asset_name);
-        ClassDB ::bind_method(D_METHOD("set_page_offset", "offset"), &FoliageMapChunkConfig::set_page_offset);
-        ClassDB ::bind_method(D_METHOD("get_page_offset"), &FoliageMapChunkConfig::get_page_offset);
 
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "chunk_asset_name", PROPERTY_HINT_NONE), "set_chunk_asset_name", "get_chunk_asset_name");
-        ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "page_offset"), "set_page_offset", "get_page_offset");
     }
 
 
@@ -32,27 +29,37 @@ namespace Foliage
     }
 
 
+    void FoliageEngine::add_prototype(FoliagePrototypeAsset* _proto)
+    {
+        auto r = _proto->get_region();
+        FoliageCellPos pos;
+        pos.x = r.position.x / FoliageGlobals::PAGE_SIZE;
+        pos.z = r.position.y / FoliageGlobals::PAGE_SIZE;
+        prototypes.insert(pos.DecodeInt(),_proto);
+    }
+    void FoliageEngine::remove_prototype(FoliagePrototypeAsset* _proto)
+    {
+        auto r = _proto->get_region();
+        FoliageCellPos pos;
+        pos.x = r.position.x / FoliageGlobals::PAGE_SIZE;
+        pos.z = r.position.y / FoliageGlobals::PAGE_SIZE;
+        prototypes.erase(pos.DecodeInt());
 
-    void FoliageEngine::init(TypedArray<FoliageMapChunkConfig> map_config)
+    }
+
+    void FoliageEngine::init(Ref<FoliageMapConfig> _map_config)
     {
         print_line("foliage engine init");
         clear();
-        for (int i = 0; i < map_config.size(); i++)
-        {
-            Ref<FoliageMapChunkConfig> config = map_config[i];
-            // 加載每个地块
-            FoliagePrototypeAsset* proto_type = memnew(FoliagePrototypeAsset);
-            proto_type->load_file(config->foliage_asset_file_name);
-            FoliageCellPos map_pos;
-            map_pos.x = config->page_offset.x / FoliageGlobals::PAGE_SIZE;
-            map_pos.z = config->page_offset.y / FoliageGlobals::PAGE_SIZE;
-            prototypes.insert(map_pos.DecodeInt(),proto_type);
-
-
-        }
+        map_config = _map_config;
     }
     void FoliageEngine::update(const Vector3& camera_pos)
     {
+        // 檢測地块是否需要加载
+        if(map_config.is_valid())
+        {
+            map_config->update(Vector2(camera_pos.x, camera_pos.z), load_range);
+        }
         
     }
     void FoliageEngine::update_foliage_asset_load(const Vector3& camera_pos)

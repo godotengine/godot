@@ -18,11 +18,12 @@
 #include "../bt/tasks/composites/bt_probability_selector.h"
 #include "../bt/tasks/composites/bt_selector.h"
 #include "../bt/tasks/decorators/bt_subtree.h"
-#include "../editor/debugger/limbo_debugger_plugin.h"
-#include "../editor/editor_property_bb_param.h"
 #include "../util/limbo_compat.h"
 #include "../util/limbo_utility.h"
 #include "action_banner.h"
+#include "blackboard_plan_editor.h"
+#include "debugger/limbo_debugger_plugin.h"
+#include "editor_property_bb_param.h"
 
 #ifdef LIMBOAI_MODULE
 #include "core/config/project_settings.h"
@@ -183,8 +184,9 @@ void LimboAIEditor::_update_history_buttons() {
 }
 
 void LimboAIEditor::_new_bt() {
-	BehaviorTree *bt = memnew(BehaviorTree);
+	Ref<BehaviorTree> bt = memnew(BehaviorTree);
 	bt->set_root_task(memnew(BTSelector));
+	bt->set_blackboard_plan(memnew(BlackboardPlan));
 	EDIT_RESOURCE(bt);
 }
 
@@ -221,7 +223,21 @@ void LimboAIEditor::edit_bt(Ref<BehaviorTree> p_behavior_tree, bool p_force_refr
 		return;
 	}
 
+#ifdef LIMBOAI_MODULE
+	p_behavior_tree->editor_set_section_unfold("blackboard_plan", true);
+	p_behavior_tree->notify_property_list_changed();
+#endif // LIMBOAI_MODULE
+
+	if (task_tree->get_bt().is_valid() &&
+			task_tree->get_bt()->is_connected(LW_NAME(changed), callable_mp(this, &LimboAIEditor::_mark_as_dirty).bind(true))) {
+		task_tree->get_bt()->disconnect(LW_NAME(changed), callable_mp(this, &LimboAIEditor::_mark_as_dirty).bind(true));
+	}
+
 	task_tree->load_bt(p_behavior_tree);
+
+	if (task_tree->get_bt().is_valid()) {
+		task_tree->get_bt()->connect(LW_NAME(changed), callable_mp(this, &LimboAIEditor::_mark_as_dirty).bind(true));
+	}
 
 	int idx = history.find(p_behavior_tree);
 	if (idx != -1) {
@@ -237,6 +253,16 @@ void LimboAIEditor::edit_bt(Ref<BehaviorTree> p_behavior_tree, bool p_force_refr
 
 	_update_history_buttons();
 	_update_header();
+}
+
+Ref<BlackboardPlan> LimboAIEditor::get_edited_blackboard_plan() {
+	if (task_tree->get_bt().is_null()) {
+		return nullptr;
+	}
+	if (task_tree->get_bt()->get_blackboard_plan().is_null()) {
+		task_tree->get_bt()->set_blackboard_plan(memnew(BlackboardPlan));
+	}
+	return task_tree->get_bt()->get_blackboard_plan();
 }
 
 void LimboAIEditor::_mark_as_dirty(bool p_dirty) {
@@ -697,6 +723,11 @@ void LimboAIEditor::_on_visibility_changed() {
 void LimboAIEditor::_on_header_pressed() {
 	_update_header();
 	task_tree->deselect();
+#ifdef LIMBOAI_MODULE
+	if (task_tree->get_bt().is_valid()) {
+		task_tree->get_bt()->editor_set_section_unfold("blackboard_plan", true);
+	}
+#endif // LIMBOAI_MODULE
 	EDIT_RESOURCE(task_tree->get_bt());
 }
 
@@ -1042,6 +1073,11 @@ void LimboAIEditor::_notification(int p_what) {
 			cf->load(conf_path);
 			cf->set_value("bt_editor", "bteditor_hsplit", hsc->get_split_offset());
 			cf->save(conf_path);
+
+			if (task_tree->get_bt().is_valid() &&
+					task_tree->get_bt()->is_connected(LW_NAME(changed), callable_mp(this, &LimboAIEditor::_mark_as_dirty).bind(true))) {
+				task_tree->get_bt()->disconnect(LW_NAME(changed), callable_mp(this, &LimboAIEditor::_mark_as_dirty).bind(true));
+			}
 		} break;
 		case NOTIFICATION_READY: {
 			// **** Signals
@@ -1111,6 +1147,7 @@ void LimboAIEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_resave_modified"), &LimboAIEditor::_resave_modified);
 	ClassDB::bind_method(D_METHOD("_replace_task", "p_task", "p_by_task"), &LimboAIEditor::_replace_task);
 	ClassDB::bind_method(D_METHOD("_popup_file_dialog"), &LimboAIEditor::_popup_file_dialog);
+	ClassDB::bind_method(D_METHOD("get_edited_blackboard_plan"), &LimboAIEditor::get_edited_blackboard_plan);
 }
 
 LimboAIEditor::LimboAIEditor() {
@@ -1393,6 +1430,16 @@ void LimboAIEditorPlugin::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_READY: {
 			add_debugger_plugin(memnew(LimboDebuggerPlugin));
+			add_inspector_plugin(memnew(EditorInspectorPluginBBPlan));
+			EditorInspectorPluginVariableName *var_plugin = memnew(EditorInspectorPluginVariableName);
+			var_plugin->set_plan_getter(Callable(limbo_ai_editor, "get_edited_blackboard_plan"));
+			add_inspector_plugin(var_plugin);
+#ifdef LIMBOAI_MODULE
+			// ! Only used in the module version.
+			EditorInspectorPluginBBParam *param_plugin = memnew(EditorInspectorPluginBBParam);
+			param_plugin->set_plan_getter(Callable(limbo_ai_editor, "get_edited_blackboard_plan"));
+			add_inspector_plugin(param_plugin);
+#endif // LIMBOAI_MODULE
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			// Add BehaviorTree to the list of resources that should open in a new inspector.
@@ -1446,11 +1493,6 @@ LimboAIEditorPlugin::LimboAIEditorPlugin() {
 	MAIN_SCREEN_CONTROL()->add_child(limbo_ai_editor);
 	limbo_ai_editor->hide();
 	limbo_ai_editor->set_plugin(this);
-
-#ifdef LIMBOAI_MODULE
-	// ! Only used in the module version.
-	add_inspector_plugin(memnew(EditorInspectorPluginBBParam));
-#endif // LIMBOAI_MODULE
 }
 
 LimboAIEditorPlugin::~LimboAIEditorPlugin() {

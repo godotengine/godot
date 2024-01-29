@@ -288,6 +288,233 @@ Variant LimboUtility::perform_operation(Operation p_operation, const Variant &le
 	return ret;
 }
 
+String LimboUtility::get_property_hint_text(PropertyHint p_hint) const {
+	switch (p_hint) {
+		case PROPERTY_HINT_NONE: {
+			return "NONE";
+		}
+		case PROPERTY_HINT_RANGE: {
+			return "RANGE";
+		}
+		case PROPERTY_HINT_ENUM: {
+			return "ENUM";
+		}
+		case PROPERTY_HINT_ENUM_SUGGESTION: {
+			return "ENUM_SUGGESTION";
+		}
+		case PROPERTY_HINT_EXP_EASING: {
+			return "EXP_EASING";
+		}
+		case PROPERTY_HINT_LINK: {
+			return "LINK";
+		}
+		case PROPERTY_HINT_FLAGS: {
+			return "FLAGS";
+		}
+		case PROPERTY_HINT_LAYERS_2D_RENDER: {
+			return "LAYERS_2D_RENDER";
+		}
+		case PROPERTY_HINT_LAYERS_2D_PHYSICS: {
+			return "LAYERS_2D_PHYSICS";
+		}
+		case PROPERTY_HINT_LAYERS_2D_NAVIGATION: {
+			return "LAYERS_2D_NAVIGATION";
+		}
+		case PROPERTY_HINT_LAYERS_3D_RENDER: {
+			return "LAYERS_3D_RENDER";
+		}
+		case PROPERTY_HINT_LAYERS_3D_PHYSICS: {
+			return "LAYERS_3D_PHYSICS";
+		}
+		case PROPERTY_HINT_LAYERS_3D_NAVIGATION: {
+			return "LAYERS_3D_NAVIGATION";
+		}
+		case PROPERTY_HINT_FILE: {
+			return "FILE";
+		}
+		case PROPERTY_HINT_DIR: {
+			return "DIR";
+		}
+		case PROPERTY_HINT_GLOBAL_FILE: {
+			return "GLOBAL_FILE";
+		}
+		case PROPERTY_HINT_GLOBAL_DIR: {
+			return "GLOBAL_DIR";
+		}
+		case PROPERTY_HINT_RESOURCE_TYPE: {
+			return "RESOURCE_TYPE";
+		}
+		case PROPERTY_HINT_MULTILINE_TEXT: {
+			return "MULTILINE_TEXT";
+		}
+		case PROPERTY_HINT_EXPRESSION: {
+			return "EXPRESSION";
+		}
+		case PROPERTY_HINT_PLACEHOLDER_TEXT: {
+			return "PLACEHOLDER_TEXT";
+		}
+		case PROPERTY_HINT_COLOR_NO_ALPHA: {
+			return "COLOR_NO_ALPHA";
+		}
+		case PROPERTY_HINT_OBJECT_ID: {
+			return "OBJECT_ID";
+		}
+		case PROPERTY_HINT_TYPE_STRING: {
+			return "TYPE_STRING";
+		}
+		case PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE: {
+			return "NODE_PATH_TO_EDITED_NODE";
+		}
+		case PROPERTY_HINT_OBJECT_TOO_BIG: {
+			return "OBJECT_TOO_BIG";
+		}
+		case PROPERTY_HINT_NODE_PATH_VALID_TYPES: {
+			return "NODE_PATH_VALID_TYPES";
+		}
+		case PROPERTY_HINT_SAVE_FILE: {
+			return "SAVE_FILE";
+		}
+		case PROPERTY_HINT_GLOBAL_SAVE_FILE: {
+			return "GLOBAL_SAVE_FILE";
+		}
+		case PROPERTY_HINT_INT_IS_OBJECTID: {
+			return "INT_IS_OBJECTID";
+		}
+		case PROPERTY_HINT_INT_IS_POINTER: {
+			return "INT_IS_POINTER";
+		}
+		case PROPERTY_HINT_ARRAY_TYPE: {
+			return "ARRAY_TYPE";
+		}
+		case PROPERTY_HINT_LOCALE_ID: {
+			return "LOCALE_ID";
+		}
+		case PROPERTY_HINT_LOCALIZABLE_STRING: {
+			return "LOCALIZABLE_STRING";
+		}
+		case PROPERTY_HINT_NODE_TYPE: {
+			return "NODE_TYPE";
+		}
+		case PROPERTY_HINT_HIDE_QUATERNION_EDIT: {
+			return "HIDE_QUATERNION_EDIT";
+		}
+		case PROPERTY_HINT_PASSWORD: {
+			return "PASSWORD";
+		}
+		case PROPERTY_HINT_LAYERS_AVOIDANCE: {
+			return "LAYERS_AVOIDANCE";
+		}
+		case PROPERTY_HINT_MAX: {
+			return "MAX";
+		}
+	}
+	return "";
+}
+
+PackedInt32Array LimboUtility::get_property_hints_allowed_for_type(Variant::Type p_type) const {
+	PackedInt32Array hints;
+	hints.append(PROPERTY_HINT_NONE);
+
+	// * According to editor/editor_properties.cpp
+	switch (p_type) {
+		case Variant::Type::NIL:
+		case Variant::Type::RID:
+		case Variant::Type::CALLABLE:
+		case Variant::Type::SIGNAL:
+		case Variant::Type::BOOL: {
+		} break;
+		case Variant::Type::INT: {
+			hints.append(PROPERTY_HINT_RANGE);
+			hints.append(PROPERTY_HINT_ENUM);
+			hints.append(PROPERTY_HINT_FLAGS);
+			hints.append(PROPERTY_HINT_LAYERS_2D_RENDER);
+			hints.append(PROPERTY_HINT_LAYERS_2D_PHYSICS);
+			hints.append(PROPERTY_HINT_LAYERS_2D_NAVIGATION);
+			hints.append(PROPERTY_HINT_LAYERS_3D_RENDER);
+			hints.append(PROPERTY_HINT_LAYERS_3D_PHYSICS);
+			hints.append(PROPERTY_HINT_LAYERS_3D_NAVIGATION);
+			hints.append(PROPERTY_HINT_LAYERS_AVOIDANCE);
+		} break;
+		case Variant::Type::FLOAT: {
+			hints.append(PROPERTY_HINT_RANGE);
+			hints.append(PROPERTY_HINT_EXP_EASING);
+		} break;
+		case Variant::Type::STRING: {
+			hints.append(PROPERTY_HINT_ENUM);
+			hints.append(PROPERTY_HINT_ENUM_SUGGESTION);
+			hints.append(PROPERTY_HINT_FILE);
+			hints.append(PROPERTY_HINT_DIR);
+			hints.append(PROPERTY_HINT_GLOBAL_FILE);
+			hints.append(PROPERTY_HINT_GLOBAL_DIR);
+			hints.append(PROPERTY_HINT_MULTILINE_TEXT);
+			hints.append(PROPERTY_HINT_EXPRESSION);
+			hints.append(PROPERTY_HINT_PLACEHOLDER_TEXT);
+			// hints.append(PROPERTY_HINT_TYPE_STRING); // ! Causes a crash.
+			hints.append(PROPERTY_HINT_SAVE_FILE);
+			hints.append(PROPERTY_HINT_GLOBAL_SAVE_FILE);
+			hints.append(PROPERTY_HINT_LOCALE_ID);
+			hints.append(PROPERTY_HINT_PASSWORD);
+		} break;
+		case Variant::Type::VECTOR2:
+		case Variant::Type::VECTOR2I:
+		case Variant::Type::VECTOR3:
+		case Variant::Type::VECTOR3I:
+		case Variant::Type::VECTOR4:
+		case Variant::Type::VECTOR4I: {
+			hints.append(PROPERTY_HINT_RANGE);
+			hints.append(PROPERTY_HINT_LINK);
+		} break;
+		case Variant::Type::RECT2:
+		case Variant::Type::RECT2I:
+		case Variant::Type::TRANSFORM2D:
+		case Variant::Type::PLANE:
+		case Variant::Type::AABB:
+		case Variant::Type::BASIS:
+		case Variant::Type::TRANSFORM3D:
+		case Variant::Type::PROJECTION: {
+			hints.append(PROPERTY_HINT_RANGE);
+		} break;
+		case Variant::Type::QUATERNION: {
+			hints.append(PROPERTY_HINT_RANGE);
+			hints.append(PROPERTY_HINT_HIDE_QUATERNION_EDIT);
+		} break;
+		case Variant::Type::COLOR: {
+			hints.append(PROPERTY_HINT_COLOR_NO_ALPHA);
+		} break;
+		case Variant::Type::STRING_NAME: {
+			hints.append(PROPERTY_HINT_ENUM);
+			hints.append(PROPERTY_HINT_ENUM_SUGGESTION);
+			hints.append(PROPERTY_HINT_PLACEHOLDER_TEXT);
+			hints.append(PROPERTY_HINT_PASSWORD);
+		} break;
+		case Variant::Type::NODE_PATH: {
+			hints.append(PROPERTY_HINT_NODE_PATH_VALID_TYPES);
+			hints.append(PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT);
+
+		} break;
+		case Variant::Type::OBJECT: {
+			hints.append(PROPERTY_HINT_RESOURCE_TYPE);
+			hints.append(PROPERTY_HINT_NODE_TYPE);
+		} break;
+		case Variant::Type::DICTIONARY: {
+			hints.append(PROPERTY_HINT_LOCALIZABLE_STRING);
+		} break;
+		case Variant::Type::ARRAY:
+		case Variant::Type::PACKED_BYTE_ARRAY:
+		case Variant::Type::PACKED_INT32_ARRAY:
+		case Variant::Type::PACKED_INT64_ARRAY:
+		case Variant::Type::PACKED_FLOAT32_ARRAY:
+		case Variant::Type::PACKED_FLOAT64_ARRAY:
+		case Variant::Type::PACKED_STRING_ARRAY:
+		case Variant::Type::PACKED_VECTOR2_ARRAY:
+		case Variant::Type::PACKED_VECTOR3_ARRAY:
+		case Variant::Type::PACKED_COLOR_ARRAY:
+		case Variant::Type::VARIANT_MAX: {
+		} break;
+	}
+	return hints;
+}
+
 #ifdef TOOLS_ENABLED
 
 Ref<Shortcut> LimboUtility::add_shortcut(const String &p_path, const String &p_name, Key p_keycode) {

@@ -24,5 +24,3 @@ func _ready() -> void:
 	waypoints.reverse()
 	for wp in waypoints:
 		agent2.add_waypoint(wp.global_position)
-
-

@@ -88,6 +88,9 @@ public:
 	String get_operation_string(Operation p_operation) const;
 	Variant perform_operation(Operation p_operation, const Variant &left_value, const Variant &right_value);
 
+	String get_property_hint_text(PropertyHint p_hint) const;
+	PackedInt32Array get_property_hints_allowed_for_type(Variant::Type p_type) const;
+
 #ifdef TOOLS_ENABLED
 	Ref<Shortcut> add_shortcut(const String &p_path, const String &p_name, Key p_keycode = LW_KEY(NONE));
 	bool is_shortcut(const String &p_path, const Ref<InputEvent> &p_event) const;

@@ -8,8 +8,8 @@ on:
       - "README.md"
       - "LICENSE"
       - "**/*.png"
-      - "demo/*"
-      - "doc/*"
+      - "demo/**"
+      - "doc/**"
 
   pull_request:
     branches: [ master ]
@@ -17,8 +17,8 @@ on:
       - "README.md"
       - "LICENSE"
       - "**/*.png"
-      - "demo/*"
-      - "doc/*"
+      - "demo/**"
+      - "doc/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}

@@ -1,4 +1,6 @@
-[gd_resource type="BehaviorTree" load_steps=8 format=3 uid="uid://cen725hsk8lyl"]
+[gd_resource type="BehaviorTree" load_steps=9 format=3 uid="uid://cen725hsk8lyl"]
+
+[sub_resource type="BlackboardPlan" id="BlackboardPlan_00d6h"]
 
 [sub_resource type="BTComment" id="BTComment_84hry"]
 custom_name = "This is a test of ProbabilitySelector choosing action to execute"
@@ -24,4 +26,5 @@ children = [SubResource("BTProbabilitySelector_hy6es")]
 children = [SubResource("BTComment_84hry"), SubResource("BTDelay_mxnxy")]
 
 [resource]
+blackboard_plan = SubResource("BlackboardPlan_00d6h")
 root_task = SubResource("BTSequence_auek2")

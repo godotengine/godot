@@ -6,6 +6,7 @@
 
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
+#include "core/math/geometry_2d.h"
 
 namespace Foliage
 {
@@ -23,16 +24,40 @@ namespace Foliage
         {
             return foliage_asset_file_name;
         }
-        void set_page_offset(Vector2 _offset)
+        void load()
         {
-            page_offset = _offset;
+            if(foliage_prototype_asset.is_null())
+            {
+                foliage_prototype_asset = Ref(memnew(FoliagePrototypeAsset));
+            }
+            foliage_prototype_asset->load_file(foliage_asset_file_name);
         }
-        Vector2 get_page_offset()
+        void unload()
         {
-            return page_offset;
+            if(foliage_prototype_asset.is_valid())
+            {
+                foliage_prototype_asset->clear();
+            }
+        }
+        bool is_need_load(const Vector2& camera_circle,float radius)
+        {            
+            return Geometry2D::is_rect_intersecting_circle(chunk_area,camera_circle, radius);
+        }
+        void update(const Vector2& camera_circle,float radius)
+        {
+            if(is_need_load(camera_circle,radius))
+            {
+                foliage_prototype_asset->tick();
+                load();
+            }
+            else
+            {
+                unload();
+            }
         }
         String foliage_asset_file_name;
-        Vector2 page_offset;
+        Ref<FoliagePrototypeAsset> foliage_prototype_asset;
+        Rect2 chunk_area;
 
     };
     class FoliageMapConfig : public Resource
@@ -40,6 +65,7 @@ namespace Foliage
         public:
         GDCLASS(FoliageMapConfig, Resource);
         static void _bind_methods();
+    public:
         void set_config(TypedArray<FoliageMapChunkConfig> _config)
         {
             map_config = _config;
@@ -48,14 +74,25 @@ namespace Foliage
         {
             return map_config;
         }
-
+        void update(const Vector2& camera_circle,float radius)
+        {
+            for(int i = 0; i < map_config.size(); i++)
+            {
+                FoliageMapChunkConfig* config = (FoliageMapChunkConfig*)(Object*)map_config[i];
+                config->update(camera_circle,radius);
+            }
+        }
         TypedArray<FoliageMapChunkConfig> map_config;
+        Vector2 page_size;
+
+
     };
    
 
  // 单体植被管理器类
     class FoliageEngine
     {
+        friend class FoliagePrototypeAsset;
         public:
         static FoliageEngine & get_singleton()
         {
@@ -69,7 +106,7 @@ namespace Foliage
             int index = pos.DecodeInt();
             total_cell_datas[index] = (FoliageCellAsset::CellData *)_cell;
         }
-        void init(TypedArray<FoliageMapChunkConfig> map_config);
+        void init(Ref<FoliageMapConfig> _map_config);
         void clear();
         void set_camera(Camera3D* p_camera)
         {
@@ -82,11 +119,14 @@ namespace Foliage
         void update(const Vector3& camera_pos);
     private:
         void update_foliage_asset_load(const Vector3& camera_pos);
+        void add_prototype(FoliagePrototypeAsset* _proto);
+        void remove_prototype(FoliagePrototypeAsset* _proto);
         void upload_map(const FoliageCellPos& _pos)
         {
 
         }
         String map_name = "foliage_map";
+        Ref<FoliageMapConfig> map_config;
         // 設置主相機
         Camera3D* mainCamera;
         // 当前加载的格子列表
@@ -99,6 +139,7 @@ namespace Foliage
         HashMap<int,Ref<FoliageCellAsset>> cells;
         List<FoliageCellPos> load_map_index;
         class FoliageManager* curr_manager = nullptr;
+        float load_range = 4096;
         
         int map_page_count = 16;
         bool is_init = false;

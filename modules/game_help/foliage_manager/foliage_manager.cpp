@@ -2,7 +2,13 @@
 
 namespace Foliage
 {
-    void FoliageManager::init(TypedArray<FoliageMapChunkConfig> map_config)
+    void FoliageManager::load(String file_name)
+    {
+        Ref<Resource> ref = ResourceLoader::load(file_name);
+        if(ref.is_valid())
+            init(ref);
+    }
+    void FoliageManager::init(Ref<FoliageMapConfig> map_config)
     {
         FoliageEngine::get_singleton().init(map_config);
     }

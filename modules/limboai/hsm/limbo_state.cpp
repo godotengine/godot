@@ -69,8 +69,9 @@ void LimboState::_initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard)
 	agent = p_agent;
 
 	if (!p_blackboard.is_null()) {
-		if (!blackboard->get_data().is_empty()) {
-			blackboard->set_parent_scope(p_blackboard);
+		if (blackboard_plan.is_valid() && !blackboard_plan->is_empty()) {
+			blackboard = blackboard_plan->create_blackboard();
+			blackboard->set_parent(p_blackboard);
 		} else {
 			blackboard = p_blackboard;
 		}
@@ -179,8 +180,8 @@ void LimboState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_guard"), &LimboState::clear_guard);
 	ClassDB::bind_method(D_METHOD("get_blackboard"), &LimboState::get_blackboard);
 
-	ClassDB::bind_method(D_METHOD("_set_blackboard_data", "p_blackboard"), &LimboState::_set_blackboard_data);
-	ClassDB::bind_method(D_METHOD("_get_blackboard_data"), &LimboState::_get_blackboard_data);
+	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "p_plan"), &LimboState::set_blackboard_plan);
+	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &LimboState::get_blackboard_plan);
 
 #ifdef LIMBOAI_MODULE
 	GDVIRTUAL_BIND(_setup);
@@ -194,7 +195,7 @@ void LimboState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "EVENT_FINISHED", PROPERTY_HINT_NONE, "", 0), "", "event_finished");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "agent", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_agent", "get_agent");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard", 0), "", "get_blackboard");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_blackboard_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_blackboard_data", "_get_blackboard_data");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT), "set_blackboard_plan", "get_blackboard_plan");
 
 	ADD_SIGNAL(MethodInfo("setup"));
 	ADD_SIGNAL(MethodInfo("entered"));

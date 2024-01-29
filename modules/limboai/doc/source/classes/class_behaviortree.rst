@@ -41,9 +41,11 @@ Properties
 .. table::
    :widths: auto
 
-   +--------+-------------------------------------------------------------+--------+
-   | String | :ref:`description<class_BehaviorTree_property_description>` | ``""`` |
-   +--------+-------------------------------------------------------------+--------+
+   +---------------------------------------------+---------------------------------------------------------------------+--------+
+   | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`blackboard_plan<class_BehaviorTree_property_blackboard_plan>` |        |
+   +---------------------------------------------+---------------------------------------------------------------------+--------+
+   | String                                      | :ref:`description<class_BehaviorTree_property_description>`         | ``""`` |
+   +---------------------------------------------+---------------------------------------------------------------------+--------+
 
 .. rst-class:: classref-reftable-group
 
@@ -73,6 +75,23 @@ Methods
 
 Property Descriptions
 ---------------------
+
+.. _class_BehaviorTree_property_blackboard_plan:
+
+.. rst-class:: classref-property
+
+:ref:`BlackboardPlan<class_BlackboardPlan>` **blackboard_plan**
+
+.. rst-class:: classref-property-setget
+
+- void **set_blackboard_plan** **(** :ref:`BlackboardPlan<class_BlackboardPlan>` value **)**
+- :ref:`BlackboardPlan<class_BlackboardPlan>` **get_blackboard_plan** **(** **)**
+
+Stores and manages variables that will be used in constructing new :ref:`Blackboard<class_Blackboard>` instances.
+
+.. rst-class:: classref-item-separator
+
+----
 
 .. _class_BehaviorTree_property_description:
 

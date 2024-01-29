@@ -41,6 +41,7 @@ the other any time. For more information on this topic, see :ref:`gdextension`.
 
    getting-started/introduction
    getting-started/custom-tasks
+   getting-started/using-blackboard
    getting-started/gdextension
    getting-started/featured-classes
 

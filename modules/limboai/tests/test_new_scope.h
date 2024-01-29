@@ -50,7 +50,7 @@ TEST_CASE("[Modules][LimboAI] BTNewScope") {
 		CHECK(ns->get_blackboard() != parent->get_blackboard());
 		CHECK(ns->get_blackboard() == child->get_blackboard());
 		CHECK(parent->get_blackboard() == parent_bb);
-		CHECK(ns->get_blackboard()->get_parent_scope() == parent_bb);
+		CHECK(ns->get_blackboard()->get_parent() == parent_bb);
 
 		ns->get_blackboard()->set_var("fruit", "pear"); // * override "fruit"
 

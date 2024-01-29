@@ -27,8 +27,10 @@ extends Resource
 @export var dictionary_param: BBDictionary
 @export var array_param: BBArray
 @export var byte_array_param: BBByteArray
-@export var int_array_param: BBIntArray
-@export var float_array_param: BBFloatArray
+@export var int32_array_param: BBInt32Array
+@export var int64_array_param: BBInt64Array
+@export var float32_array_param: BBFloat32Array
+@export var float64_array_param: BBFloat64Array
 @export var string_array_param: BBStringArray
 @export var vector2_array_param: BBVector2Array
 @export var vector3_array_param: BBVector2Array

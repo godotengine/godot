@@ -33,9 +33,9 @@ Properties
 .. table::
    :widths: auto
 
-   +------------+---------------------------------------------------------------------+--------+
-   | Dictionary | :ref:`_blackboard_data<class_BTNewScope_property__blackboard_data>` | ``{}`` |
-   +------------+---------------------------------------------------------------------+--------+
+   +---------------------------------------------+-------------------------------------------------------------------+
+   | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`blackboard_plan<class_BTNewScope_property_blackboard_plan>` |
+   +---------------------------------------------+-------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -46,13 +46,18 @@ Properties
 Property Descriptions
 ---------------------
 
-.. _class_BTNewScope_property__blackboard_data:
+.. _class_BTNewScope_property_blackboard_plan:
 
 .. rst-class:: classref-property
 
-Dictionary **_blackboard_data** = ``{}``
+:ref:`BlackboardPlan<class_BlackboardPlan>` **blackboard_plan**
 
-Data that is used to populate a new scope of the :ref:`Blackboard<class_Blackboard>`.
+.. rst-class:: classref-property-setget
+
+- void **set_blackboard_plan** **(** :ref:`BlackboardPlan<class_BlackboardPlan>` value **)**
+- :ref:`BlackboardPlan<class_BlackboardPlan>` **get_blackboard_plan** **(** **)**
+
+Stores and manages variables that will be used in constructing new :ref:`Blackboard<class_Blackboard>` instances.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`
