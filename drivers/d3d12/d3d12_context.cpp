@@ -1127,6 +1127,10 @@ D3D12Context::D3D12Context() {
 }
 
 D3D12Context::~D3D12Context() {
+	if (md.driver) {
+		memdelete(md.driver);
+	}
+
 	if (md.fence_event) {
 		CloseHandle(md.fence_event);
 	}
