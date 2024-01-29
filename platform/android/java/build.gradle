@@ -160,10 +160,21 @@ task zipGradleBuild(type: Zip) {
     destinationDirectory = file(binDir)
 }
 
+/**
+ * Returns true if the scons build tasks responsible for generating the Godot native shared
+ * libraries should be excluded.
+ */
+def excludeSconsBuildTasks() {
+    return !isAndroidStudio() && !project.hasProperty("generateNativeLibs")
+}
+
+/**
+ * Generates the list of build tasks that should be excluded from the build process.\
+ */
 def templateExcludedBuildTask() {
     // We exclude these gradle tasks so we can run the scons command manually.
     def excludedTasks = []
-    if (!isAndroidStudio()) {
+    if (excludeSconsBuildTasks()) {
         logger.lifecycle("Excluding Android studio build tasks")
         for (String flavor : supportedFlavors) {
             String[] supportedBuildTypes = supportedFlavorsBuildTypes[flavor]
@@ -177,23 +188,42 @@ def templateExcludedBuildTask() {
     return excludedTasks
 }
 
-def templateBuildTasks() {
+/**
+ * Generates the build tasks for the given flavor
+ * @param flavor Must be one of the supported flavors ('template' / 'editor')
+ */
+def generateBuildTasks(String flavor = "template") {
+    if (!supportedFlavors.contains(flavor)) {
+        throw new GradleException("Invalid build flavor: $flavor")
+    }
+
     def tasks = []
 
-    // Only build the apks and aar files for which we have native shared libraries.
-    for (String target : supportedFlavorsBuildTypes["template"]) {
-        File targetLibs = new File("lib/libs/" + target)
-        if (targetLibs != null
+    // Only build the apks and aar files for which we have native shared libraries unless we intend
+    // to run the scons build tasks.
+    boolean excludeSconsBuildTasks = excludeSconsBuildTasks()
+    boolean isTemplate = flavor == "template"
+    String libsDir = isTemplate ? "lib/libs/" : "lib/libs/tools/"
+    for (String target : supportedFlavorsBuildTypes[flavor]) {
+        File targetLibs = new File(libsDir + target)
+        if (!excludeSconsBuildTasks || (targetLibs != null
             && targetLibs.isDirectory()
             && targetLibs.listFiles() != null
-            && targetLibs.listFiles().length > 0) {
+            && targetLibs.listFiles().length > 0)) {
             String capitalizedTarget = target.capitalize()
-            // Copy the generated aar library files to the build directory.
-            tasks += "copy" + capitalizedTarget + "AARToAppModule"
-            // Copy the generated aar library files to the bin directory.
-            tasks += "copy" + capitalizedTarget + "AARToBin"
-            // Copy the prebuilt binary templates to the bin directory.
-            tasks += "copy" + capitalizedTarget + "BinaryToBin"
+            if (isTemplate) {
+                // Copy the generated aar library files to the build directory.
+                tasks += "copy${capitalizedTarget}AARToAppModule"
+                // Copy the generated aar library files to the bin directory.
+                tasks += "copy${capitalizedTarget}AARToBin"
+                // Copy the prebuilt binary templates to the bin directory.
+                tasks += "copy${capitalizedTarget}BinaryToBin"
+            } else {
+                // Copy the generated editor apk to the bin directory.
+                tasks += "copyEditor${capitalizedTarget}ApkToBin"
+                // Copy the generated editor aab to the bin directory.
+                tasks += "copyEditor${capitalizedTarget}AabToBin"
+            }
         } else {
             logger.lifecycle("No native shared libs for target $target. Skipping build.")
         }
@@ -252,27 +282,13 @@ task copyEditorDevAabToBin(type: Copy) {
 /**
  * Generate the Godot Editor Android apk.
  *
- * Note: The Godot 'tools' shared libraries must have been generated (via scons) prior to running
- * this gradle task. The task will only build the apk(s) for which the shared libraries is
- * available.
+ * Note: Unless the 'generateNativeLibs` argument is specified, the Godot 'tools' shared libraries
+ * must have been generated (via scons) prior to running this gradle task.
+ * The task will only build the apk(s) for which the shared libraries is available.
  */
 task generateGodotEditor {
     gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
-
-    def tasks = []
-
-    for (String target : supportedFlavorsBuildTypes["editor"]) {
-        File targetLibs = new File("lib/libs/tools/" + target)
-        if (targetLibs != null
-            && targetLibs.isDirectory()
-            && targetLibs.listFiles() != null
-            && targetLibs.listFiles().length > 0) {
-            tasks += "copyEditor${target.capitalize()}ApkToBin"
-            tasks += "copyEditor${target.capitalize()}AabToBin"
-        }
-    }
-
-    dependsOn = tasks
+    dependsOn = generateBuildTasks("editor")
 }
 
 /**
@@ -280,7 +296,7 @@ task generateGodotEditor {
  */
 task generateGodotTemplates {
     gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
-    dependsOn = templateBuildTasks()
+    dependsOn = generateBuildTasks("template")
 
     finalizedBy 'zipGradleBuild'
 }
@@ -293,7 +309,7 @@ task generateDevTemplate {
     gradle.startParameter.projectProperties += [doNotStrip: "true"]
 
     gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
-    dependsOn = templateBuildTasks()
+    dependsOn = generateBuildTasks("template")
 
     finalizedBy 'zipGradleBuild'
 }
