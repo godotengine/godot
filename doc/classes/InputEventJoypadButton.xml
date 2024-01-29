@@ -20,6 +20,7 @@
 		</member>
 		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure" default="0.0">
 			Represents the pressure the user puts on the button with their finger, if the controller supports it. Ranges from [code]0[/code] to [code]1[/code].
+			[b]Note:[/b] This property is never set by the engine and is always [code]0[/code].
 		</member>
 	</members>
 	<constants>
