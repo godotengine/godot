@@ -154,7 +154,7 @@ private:
 
 	bool _convert_manual_bound(Room *p_room, Spatial *p_node, const LocalVector<Portal *> &p_portals);
 	void _check_portal_for_warnings(Portal *p_portal, const AABB &p_room_aabb_without_portals);
-	void _process_static(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer);
+	void _process_static(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer, bool p_autoplaced);
 	void _find_statics_recursive(Room *p_room, Spatial *p_node, Vector<Vector3> &r_room_pts, bool p_add_to_portal_renderer);
 	bool _convert_room_hull_preliminary(Room *p_room, const Vector<Vector3> &p_room_pts, const LocalVector<Portal *> &p_portals);
 
