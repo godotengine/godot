@@ -23,6 +23,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="include_in_bound" type="bool" setter="set_include_in_bound" getter="get_include_in_bound" default="false">
+			When a manual bound has not been explicitly specified for a [Room], the convex hull bound will be estimated from the geometry of the objects within the room. This setting determines whether the portal geometry is included in this estimate of the room bound.
+		</member>
 		<member name="linked_room" type="NodePath" setter="set_linked_room" getter="get_linked_room" default="NodePath(&quot;&quot;)">
 			This is a shortcut for setting the linked [Room] in the name of the [Portal] (the name is used during conversion).
 		</member>

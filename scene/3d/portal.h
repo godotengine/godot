@@ -87,6 +87,9 @@ public:
 	// primarily for the gizmo
 	void set_point(int p_idx, const Vector2 &p_point);
 
+	void set_include_in_bound(bool p_enabled) { _settings_include_in_bound = p_enabled; }
+	bool get_include_in_bound() const { return _settings_include_in_bound; }
+
 	String get_configuration_warning() const;
 
 	Portal();

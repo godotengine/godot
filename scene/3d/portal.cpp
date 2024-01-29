@@ -46,6 +46,7 @@ Portal::Portal() {
 
 	_settings_active = true;
 	_settings_two_way = true;
+	_settings_include_in_bound = false;
 	_internal = false;
 	_linkedroom_ID[0] = -1;
 	_linkedroom_ID[1] = -1;
@@ -696,8 +697,12 @@ void Portal::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_point", "index", "position"), &Portal::set_point);
 
+	ClassDB::bind_method(D_METHOD("set_include_in_bound", "p_enabled"), &Portal::set_include_in_bound);
+	ClassDB::bind_method(D_METHOD("get_include_in_bound"), &Portal::get_include_in_bound);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "portal_active"), "set_portal_active", "get_portal_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "two_way"), "set_two_way", "is_two_way");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_in_bound"), "set_include_in_bound", "get_include_in_bound");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "linked_room", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Room"), "set_linked_room", "get_linked_room");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_default_margin"), "set_use_default_margin", "get_use_default_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "portal_margin", PROPERTY_HINT_RANGE, "0.0,10.0,0.01"), "set_portal_margin", "get_portal_margin");

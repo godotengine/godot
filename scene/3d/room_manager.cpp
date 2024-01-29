@@ -1538,6 +1538,11 @@ bool RoomManager::_convert_room_hull_final(Room *p_room, const LocalVector<Porta
 		int portal_id = p_room->_portals[n];
 		Portal *portal = p_portals[portal_id];
 
+		// User can select whether to include in bound.
+		if (!portal->get_include_in_bound()) {
+			continue;
+		}
+
 		// don't add portals to the world bound that are internal to this room!
 		if (portal->is_portal_internal(p_room->_room_ID)) {
 			continue;
