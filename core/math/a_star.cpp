@@ -45,27 +45,31 @@ int64_t AStar3D::get_available_point_id() const {
 	return last_free_id;
 }
 
+void AStar3D::update_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale) {
+	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't update a point with negative id: %d.", p_id));
+	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't update a point with weight scale less than 0.0: %f.", p_weight_scale));
+
+	Point *found_pt;
+	bool p_exists = points.lookup(p_id, found_pt);
+	ERR_FAIL_COND_V_MSG(!p_exists, Vector3(), vformat("Can't update point's position. Point with id: %d doesn't exist.", p_id));
+
+	found_pt->pos = p_pos;
+	found_pt->weight_scale = p_weight_scale;
+}
+
 void AStar3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
 	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't add a point with weight scale less than 0.0: %f.", p_weight_scale));
 
-	Point *found_pt;
-	bool p_exists = points.lookup(p_id, found_pt);
-
-	if (!p_exists) {
-		Point *pt = memnew(Point);
-		pt->id = p_id;
-		pt->pos = p_pos;
-		pt->weight_scale = p_weight_scale;
-		pt->prev_point = nullptr;
-		pt->open_pass = 0;
-		pt->closed_pass = 0;
-		pt->enabled = true;
-		points.set(p_id, pt);
-	} else {
-		found_pt->pos = p_pos;
-		found_pt->weight_scale = p_weight_scale;
-	}
+	Point *pt = memnew(Point);
+	pt->id = p_id;
+	pt->pos = p_pos;
+	pt->weight_scale = p_weight_scale;
+	pt->prev_point = nullptr;
+	pt->open_pass = 0;
+	pt->closed_pass = 0;
+	pt->enabled = true;
+	points.set(p_id, pt);
 }
 
 Vector3 AStar3D::get_point_position(int64_t p_id) const {
