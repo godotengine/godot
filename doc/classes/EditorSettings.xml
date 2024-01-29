@@ -495,7 +495,7 @@
 		<member name="filesystem/file_dialog/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the editor's file dialogs (in pixels). See also [member docks/filesystem/thumbnail_size].
 		</member>
-		<member name="filesystem/import/blender/blender3_path" type="String" setter="" getter="">
+		<member name="filesystem/import/blender/blender_path" type="String" setter="" getter="">
 			The path to the directory containing the Blender executable used for converting the Blender 3D scene files [code].blend[/code] to glTF 2.0 format during import. Blender 3.0 or later is required.
 			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/blender/enabled].
 		</member>

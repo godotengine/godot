@@ -55,23 +55,39 @@ static void _editor_init() {
 
 	// Blend to glTF importer.
 
-	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
-	String blender3_path = EDITOR_GET("filesystem/import/blender/blender3_path");
-	if (blend_enabled) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (blender3_path.is_empty()) {
-			WARN_PRINT(TTR("Blend file import is enabled in the project settings, but no Blender path is configured in the editor settings. Blend files will not be imported."));
-		} else if (!da->dir_exists(blender3_path)) {
-			WARN_PRINT(TTR("Blend file import is enabled, but the Blender path doesn't point to an accessible directory. Blend files will not be imported."));
-		} else {
-			Ref<EditorSceneFormatImporterBlend> importer;
-			importer.instantiate();
-			ResourceImporterScene::add_scene_importer(importer);
+	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
+	if (blender_path.is_empty() && EditorSettings::get_singleton()->has_setting("filesystem/import/blender/blender3_path")) {
+		blender_path = EditorSettings::get_singleton()->get("filesystem/import/blender/blender3_path");
 
-			Ref<EditorFileSystemImportFormatSupportQueryBlend> blend_import_query;
-			blend_import_query.instantiate();
-			EditorFileSystem::get_singleton()->add_import_format_support_query(blend_import_query);
+		if (!blender_path.is_empty()) {
+#if defined(MACOS_ENABLED)
+			if (blender_path.contains(".app")) {
+				blender_path += "/Contents/MacOS/Blender";
+			} else {
+				blender_path += "/blender";
+			}
+#elif defined(WINDOWS_ENABLED)
+			blender_path += "\\blender.exe";
+#elif defined(UNIX_ENABLED)
+			blender_path += "/blender";
+#endif
+
+			EditorSettings::get_singleton()->set("filesystem/import/blender/blender_path", blender_path);
 		}
+
+		EditorSettings::get_singleton()->erase("filesystem/import/blender/blender3_path");
+		EditorSettings::get_singleton()->save();
+	}
+
+	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
+	if (blend_enabled) {
+		Ref<EditorSceneFormatImporterBlend> importer;
+		importer.instantiate();
+		ResourceImporterScene::add_scene_importer(importer);
+
+		Ref<EditorFileSystemImportFormatSupportQueryBlend> blend_import_query;
+		blend_import_query.instantiate();
+		EditorFileSystem::get_singleton()->add_import_format_support_query(blend_import_query);
 	}
 	memnew(EditorImportBlendRunner);
 	EditorNode::get_singleton()->add_child(EditorImportBlendRunner::get_singleton());
