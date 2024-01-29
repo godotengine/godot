@@ -10,8 +10,7 @@ ext {
 apply from: "../scripts/publish-module.gradle"
 
 dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.androidxFragment
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
 }
 
 def pathToRootDir = "../../../../"
@@ -37,6 +36,11 @@ android {
 
     kotlinOptions {
         jvmTarget = versions.javaVersion
+    }
+
+    buildFeatures {
+        aidl = true
+        buildConfig = true
     }
 
     buildTypes {
