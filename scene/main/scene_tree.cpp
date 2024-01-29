@@ -1228,6 +1228,21 @@ Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
 	return ret;
 }
 
+Node *SceneTree::_get_first_node_in_group(const StringName &p_group) {
+	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	if (!E) {
+		return nullptr; // No group.
+	}
+
+	_update_group_order(E->get()); // Update order just in case.
+
+	if (E->get().nodes.empty()) {
+		return nullptr;
+	}
+
+	return E->get().nodes[0];
+}
+
 bool SceneTree::has_group(const StringName &p_identifier) const {
 	return group_map.has(p_identifier);
 }
@@ -2091,6 +2106,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_group", "group", "property", "value"), &SceneTree::set_group);
 
 	ClassDB::bind_method(D_METHOD("get_nodes_in_group", "group"), &SceneTree::_get_nodes_in_group);
+	ClassDB::bind_method(D_METHOD("get_first_node_in_group", "group"), &SceneTree::_get_first_node_in_group);
 
 	ClassDB::bind_method(D_METHOD("set_current_scene", "child_node"), &SceneTree::set_current_scene);
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);

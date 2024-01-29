@@ -177,6 +177,7 @@ private:
 	_FORCE_INLINE_ void _update_group_order(Group &g, bool p_use_priority = false);
 
 	Array _get_nodes_in_group(const StringName &p_group);
+	Node *_get_first_node_in_group(const StringName &p_group);
 
 	Node *current_scene;
 
