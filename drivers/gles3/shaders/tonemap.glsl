@@ -507,9 +507,9 @@ void main() {
 	color.rgb += screen_space_dither(gl_FragCoord.xy);
 #endif
 
-	frag_color = color;
-
 #ifdef DISABLE_ALPHA
-	frag_color.a = 1.0;
+	color.a = 1.0;
 #endif
+
+	frag_color = color;
 }

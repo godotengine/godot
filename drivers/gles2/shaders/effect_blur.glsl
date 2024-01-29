@@ -126,6 +126,13 @@ uniform float camera_z_far;
 uniform float camera_z_near;
 
 void main() {
+	// Instead of writing directly to gl_FragColor,
+	// we use an intermediate, and only write
+	// to gl_FragColor ONCE at the end of the shader.
+	// This is because some hardware can have huge
+	// slowdown if you modify gl_FragColor multiple times.
+	vec4 frag_color;
+
 #ifdef GLOW_GAUSSIAN_HORIZONTAL
 	vec2 pix_size = pixel_size;
 	pix_size *= 0.5; //reading from larger buffer, so use more samples
@@ -164,7 +171,7 @@ void main() {
 #endif //USE_GLOW_HIGH_QUALITY
 
 	color *= glow_strength;
-	gl_FragColor = color;
+	frag_color = color;
 #endif //GLOW_GAUSSIAN_HORIZONTAL
 
 #ifdef GLOW_GAUSSIAN_VERTICAL
@@ -174,7 +181,7 @@ void main() {
 	color += texture2DLod(source_color, uv_interp + vec2(0.0, -1.0) * pixel_size, lod) * 0.233062;
 	color += texture2DLod(source_color, uv_interp + vec2(0.0, -2.0) * pixel_size, lod) * 0.122581;
 	color *= glow_strength;
-	gl_FragColor = color;
+	frag_color = color;
 #endif
 
 #ifndef USE_GLES_OVER_GL
@@ -280,7 +287,7 @@ void main() {
 		color_accum /= k_accum;
 	}
 
-	gl_FragColor = color_accum; ///k_accum;
+	frag_color = color_accum; ///k_accum;
 
 #endif
 
@@ -329,16 +336,17 @@ void main() {
 	}
 	color_accum.a = max(color_accum.a, sqrt(max_accum));
 
-	gl_FragColor = color_accum;
+	frag_color = color_accum;
 
 #endif
 
 #ifdef GLOW_FIRST_PASS
 
-	float luminance = max(gl_FragColor.r, max(gl_FragColor.g, gl_FragColor.b));
+	float luminance = max(frag_color.r, max(frag_color.g, frag_color.b));
 	float feedback = max(smoothstep(glow_hdr_threshold, glow_hdr_threshold + glow_hdr_scale, luminance), glow_bloom);
 
-	gl_FragColor = min(gl_FragColor * feedback, vec4(luminance_cap));
+	frag_color = min(frag_color * feedback, vec4(luminance_cap));
 
 #endif
+	gl_FragColor = frag_color;
 }
