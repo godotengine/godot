@@ -34,7 +34,7 @@
 #include "core/object/object.h"
 
 String DirAccessExtension::fix_path(String p_path) const {
-	String path;
+	String path = "";
 	if (GDVIRTUAL_CALL(_fix_path, p_path, path)) {
 		return path;
 	}
@@ -42,25 +42,25 @@ String DirAccessExtension::fix_path(String p_path) const {
 }
 
 Error DirAccessExtension::list_dir_begin() {
-	Error err;
+	Error err = OK;
 	GDVIRTUAL_REQUIRED_CALL(_list_dir_begin, err);
 	return err;
 }
 
 String DirAccessExtension::get_next() {
-	String next;
+	String next = "";
 	GDVIRTUAL_REQUIRED_CALL(_get_next, next);
 	return next;
 }
 
 bool DirAccessExtension::current_is_dir() const {
-	bool current_is_dir;
+	bool current_is_dir = false;
 	GDVIRTUAL_REQUIRED_CALL(_current_is_dir, current_is_dir);
 	return current_is_dir;
 }
 
 bool DirAccessExtension::current_is_hidden() const {
-	bool current_is_hidden;
+	bool current_is_hidden = false;
 	GDVIRTUAL_REQUIRED_CALL(_current_is_hidden, current_is_hidden);
 	return current_is_hidden;
 }
@@ -70,19 +70,19 @@ void DirAccessExtension::list_dir_end() {
 }
 
 int DirAccessExtension::get_drive_count() {
-	int count;
+	int count = 0;
 	GDVIRTUAL_REQUIRED_CALL(_get_drive_count, count);
 	return count;
 }
 
 String DirAccessExtension::get_drive(int p_drive) {
-	String drive;
+	String drive = "";
 	GDVIRTUAL_REQUIRED_CALL(_get_drive, p_drive, drive);
 	return drive;
 }
 
 int DirAccessExtension::get_current_drive() {
-	int drive;
+	int drive = 0;
 	if (GDVIRTUAL_CALL(_get_current_drive, drive)) {
 		return drive;
 	}
@@ -90,7 +90,7 @@ int DirAccessExtension::get_current_drive() {
 }
 
 bool DirAccessExtension::drives_are_shortcuts() {
-	bool drives_are_shortcuts;
+	bool drives_are_shortcuts = true;
 	if (GDVIRTUAL_CALL(_drives_are_shortcuts, drives_are_shortcuts)) {
 		return drives_are_shortcuts;
 	}
@@ -98,25 +98,25 @@ bool DirAccessExtension::drives_are_shortcuts() {
 }
 
 Error DirAccessExtension::change_dir(String p_dir) {
-	Error err;
+	Error err = OK;
 	GDVIRTUAL_REQUIRED_CALL(_change_dir, p_dir, err);
 	return err;
 }
 
 String DirAccessExtension::get_current_dir(bool p_include_drive) const {
-	String current_dir;
+	String current_dir = "";
 	GDVIRTUAL_REQUIRED_CALL(_get_current_dir, p_include_drive, current_dir);
 	return current_dir;
 }
 
 Error DirAccessExtension::make_dir(String p_dir) {
-	Error err;
+	Error err = OK;
 	GDVIRTUAL_REQUIRED_CALL(_make_dir, p_dir, err);
 	return err;
 }
 
 Error DirAccessExtension::make_dir_recursive(String p_dir) {
-	Error err;
+	Error err = OK;
 	if (GDVIRTUAL_CALL(_make_dir_recursive, p_dir, err)) {
 		return err;
 	}
@@ -124,7 +124,7 @@ Error DirAccessExtension::make_dir_recursive(String p_dir) {
 }
 
 Error DirAccessExtension::erase_contents_recursive() {
-	Error err;
+	Error err = OK;
 	if (GDVIRTUAL_CALL(_erase_contents_recursive, err)) {
 		return err;
 	}
@@ -132,19 +132,19 @@ Error DirAccessExtension::erase_contents_recursive() {
 }
 
 bool DirAccessExtension::file_exists(String p_file) {
-	bool file_exists;
+	bool file_exists = false;
 	GDVIRTUAL_REQUIRED_CALL(_file_exists, p_file, file_exists);
 	return file_exists;
 }
 
 bool DirAccessExtension::dir_exists(String p_file) {
-	bool dir_exists;
+	bool dir_exists = false;
 	GDVIRTUAL_REQUIRED_CALL(_file_exists, p_file, dir_exists);
 	return dir_exists;
 }
 
 bool DirAccessExtension::is_readable(String p_dir) {
-	bool is_readable;
+	bool is_readable = false;
 	if (GDVIRTUAL_CALL(_is_readable, p_dir, is_readable)) {
 		return is_readable;
 	}
@@ -152,7 +152,7 @@ bool DirAccessExtension::is_readable(String p_dir) {
 }
 
 bool DirAccessExtension::is_writable(String p_dir) {
-	bool is_writable;
+	bool is_writable = false;
 	if (GDVIRTUAL_CALL(_is_writable, p_dir, is_writable)) {
 		return is_writable;
 	}
@@ -160,13 +160,13 @@ bool DirAccessExtension::is_writable(String p_dir) {
 }
 
 uint64_t DirAccessExtension::get_space_left() {
-	uint64_t space_left;
+	uint64_t space_left = 0;
 	GDVIRTUAL_REQUIRED_CALL(_get_space_left, space_left);
 	return space_left;
 }
 
 Error DirAccessExtension::copy(String p_from, String p_to, int p_chmod_flags) {
-	Error err;
+	Error err = OK;
 	if (GDVIRTUAL_CALL(_copy, p_from, p_to, p_chmod_flags, err)) {
 		return err;
 	}
@@ -174,43 +174,43 @@ Error DirAccessExtension::copy(String p_from, String p_to, int p_chmod_flags) {
 }
 
 Error DirAccessExtension::rename(String p_from, String p_to) {
-	Error err;
+	Error err = OK;
 	GDVIRTUAL_REQUIRED_CALL(_rename, p_from, p_to, err);
 	return err;
 }
 
 Error DirAccessExtension::remove(String p_name) {
-	Error err;
+	Error err = OK;
 	GDVIRTUAL_REQUIRED_CALL(_remove, p_name, err);
 	return err;
 }
 
 bool DirAccessExtension::is_link(String p_file) {
-	bool is_link;
+	bool is_link = OK;
 	GDVIRTUAL_REQUIRED_CALL(_is_link, p_file, is_link);
 	return is_link;
 }
 
 String DirAccessExtension::read_link(String p_file) {
-	String link;
+	String link = "";
 	GDVIRTUAL_REQUIRED_CALL(_read_link, p_file, link);
 	return link;
 }
 
 Error DirAccessExtension::create_link(String p_source, String p_target) {
-	Error err;
+	Error err = OK;
 	GDVIRTUAL_REQUIRED_CALL(_create_link, p_source, p_target, err);
 	return err;
 }
 
 String DirAccessExtension::get_filesystem_type() const {
-	String filesystem_type;
+	String filesystem_type = "";
 	GDVIRTUAL_REQUIRED_CALL(_get_filesystem_type, filesystem_type);
 	return filesystem_type;
 }
 
 bool DirAccessExtension::is_case_sensitive(const String &p_path) const {
-	bool is_case_sensitive;
+	bool is_case_sensitive = false;
 	if (GDVIRTUAL_CALL(_is_case_sensitive, p_path, is_case_sensitive)) {
 		return is_case_sensitive;
 	}
