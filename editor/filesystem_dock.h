@@ -154,6 +154,8 @@ private:
 
 	HashSet<String> favorites;
 
+	Button *button_dock_placement = nullptr;
+
 	Button *button_toggle_display_mode = nullptr;
 	Button *button_reload = nullptr;
 	Button *button_file_list_display_mode = nullptr;
@@ -359,6 +361,11 @@ private:
 
 	void _feature_profile_changed();
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
+
+	void _change_bottom_dock_placement();
+
+	bool _can_dock_horizontal() const;
+	void _set_dock_horizontal(bool p_enable);
 
 private:
 	static FileSystemDock *singleton;

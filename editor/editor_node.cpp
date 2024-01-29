@@ -5160,16 +5160,36 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 	scene_tabs->update_scene_tabs();
 }
 
-Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
-	Button *tb = memnew(Button);
+class EditorBottomDockButton : public Button {
+	GDCLASS(EditorBottomDockButton, Button)
+
+	static void _bind_methods() {
+		ADD_SIGNAL(MethodInfo("dropping"));
+	}
+
+public:
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override {
+		if (!is_pressed()) {
+			const_cast<EditorBottomDockButton *>(this)->emit_signal("dropping");
+		}
+		return false;
+	}
+};
+
+Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item, bool p_at_front) {
+	Button *tb = memnew(EditorBottomDockButton);
 	tb->set_flat(true);
-	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch).bind(bottom_panel_items.size()));
+	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch_by_control).bind(p_item));
+	tb->connect("dropping", callable_mp(this, &EditorNode::_bottom_panel_switch_by_control).bind(true, p_item));
 	tb->set_text(p_text);
 	tb->set_toggle_mode(true);
 	tb->set_focus_mode(Control::FOCUS_NONE);
 	bottom_panel_vb->add_child(p_item);
 	bottom_panel_hb->move_to_front();
 	bottom_panel_hb_editors->add_child(tb);
+	if (p_at_front) {
+		bottom_panel_hb_editors->move_child(tb, 0);
+	}
 	p_item->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	p_item->hide();
 	BottomPanelItem bpi;
@@ -5207,11 +5227,6 @@ void EditorNode::raise_bottom_panel_item(Control *p_item) {
 			break;
 		}
 	}
-
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		bottom_panel_items[i].button->disconnect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch));
-		bottom_panel_items[i].button->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch).bind(i));
-	}
 }
 
 void EditorNode::remove_bottom_panel_item(Control *p_item) {
@@ -5227,10 +5242,14 @@ void EditorNode::remove_bottom_panel_item(Control *p_item) {
 			break;
 		}
 	}
+}
 
+void EditorNode::_bottom_panel_switch_by_control(bool p_enable, Control *p_control) {
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		bottom_panel_items[i].button->disconnect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch));
-		bottom_panel_items[i].button->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch).bind(i));
+		if (bottom_panel_items[i].control == p_control) {
+			_bottom_panel_switch(p_enable, i);
+			return;
+		}
 	}
 }
 
