@@ -315,7 +315,7 @@ void WindowWrapper::set_margins_enabled(bool p_enabled) {
 }
 
 WindowWrapper::WindowWrapper() {
-	if (SceneTree::get_singleton()->get_root()->is_embedding_subwindows() || EDITOR_GET("interface/editor/single_window_mode") || !EDITOR_GET("interface/multi_window/enable")) {
+	if (!EditorNode::get_singleton()->is_multi_window_enabled()) {
 		return;
 	}
 
@@ -375,7 +375,9 @@ void ScreenSelect::_build_advanced_menu() {
 }
 
 void ScreenSelect::_emit_screen_signal(int p_screen_idx) {
-	emit_signal("request_open_in_screen", p_screen_idx);
+	if (!is_disabled()) {
+		emit_signal("request_open_in_screen", p_screen_idx);
+	}
 }
 
 void ScreenSelect::_bind_methods() {
@@ -436,12 +438,18 @@ void ScreenSelect::pressed() {
 }
 
 ScreenSelect::ScreenSelect() {
-	set_tooltip_text(TTR("Make this panel floating.\nRight click to open the screen selector."));
 	set_button_mask(MouseButtonMask::RIGHT);
 	set_flat(true);
 	set_toggle_mode(true);
 	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
+
+	if (!EditorNode::get_singleton()->is_multi_window_enabled()) {
+		set_disabled(true);
+		set_tooltip_text(EditorNode::get_singleton()->get_multiwindow_support_tooltip_text());
+	} else {
+		set_tooltip_text(TTR("Make this panel floating.\nRight-click to open the screen selector."));
+	}
 
 	// Create the popup.
 	const Size2 borders = Size2(4, 4) * EDSCALE;

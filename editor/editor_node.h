@@ -758,6 +758,8 @@ public:
 
 	bool is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_resources_are_writable = false);
 
+	String get_multiwindow_support_tooltip_text() const;
+
 	bool is_changing_scene() const;
 
 	VBoxContainer *get_main_screen_control();
@@ -807,6 +809,7 @@ public:
 			List<AdditiveNodeEntry> &p_addition_list);
 
 	bool is_scene_open(const String &p_path);
+	bool is_multi_window_enabled() const;
 
 	void setup_color_picker(ColorPicker *p_picker);
 

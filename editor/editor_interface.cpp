@@ -235,6 +235,10 @@ bool EditorInterface::is_distraction_free_mode_enabled() const {
 	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
 }
 
+bool EditorInterface::is_multi_window_enabled() const {
+	return EditorNode::get_singleton()->is_multi_window_enabled();
+}
+
 float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
 }
@@ -445,6 +449,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
 	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
+	ClassDB::bind_method(D_METHOD("is_multi_window_enabled"), &EditorInterface::is_multi_window_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
 

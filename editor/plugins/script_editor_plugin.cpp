@@ -4074,17 +4074,18 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_forward->set_disabled(true);
 	script_forward->set_tooltip_text(TTR("Go to next edited document."));
 
-	if (p_wrapper->is_window_available()) {
-		menu_hb->add_child(memnew(VSeparator));
+	menu_hb->add_child(memnew(VSeparator));
 
-		make_floating = memnew(ScreenSelect);
-		make_floating->set_flat(true);
+	make_floating = memnew(ScreenSelect);
+	make_floating->set_flat(true);
+	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
+	if (!make_floating->is_disabled()) {
+		// Override default ScreenSelect tooltip if multi-window support is available.
 		make_floating->set_tooltip_text(TTR("Make the script editor floating."));
-		make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
-
-		menu_hb->add_child(make_floating);
-		p_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditor::_window_changed));
 	}
+
+	menu_hb->add_child(make_floating);
+	p_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditor::_window_changed));
 
 	tab_container->connect("tab_changed", callable_mp(this, &ScriptEditor::_tab_changed));
 
