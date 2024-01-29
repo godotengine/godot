@@ -436,6 +436,10 @@ void EditorProperty::set_doc_path(const String &p_doc_path) {
 	doc_path = p_doc_path;
 }
 
+void EditorProperty::set_internal(bool p_internal) {
+	internal = p_internal;
+}
+
 void EditorProperty::update_property() {
 	GDVIRTUAL_CALL(_update_property);
 }
@@ -748,10 +752,10 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("property_editor/copy_value", p_event)) {
 			menu_option(MENU_COPY_VALUE);
 			accept_event();
-		} else if (ED_IS_SHORTCUT("property_editor/paste_value", p_event) && !is_read_only()) {
+		} else if (!is_read_only() && ED_IS_SHORTCUT("property_editor/paste_value", p_event)) {
 			menu_option(MENU_PASTE_VALUE);
 			accept_event();
-		} else if (ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
+		} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
 			menu_option(MENU_COPY_PROPERTY_PATH);
 			accept_event();
 		}
@@ -1036,6 +1040,8 @@ void EditorProperty::_update_popup() {
 	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
 	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("CopyNodePath")), ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
 	menu->set_item_disabled(MENU_PASTE_VALUE, is_read_only());
+	menu->set_item_disabled(MENU_COPY_PROPERTY_PATH, internal);
+
 	if (!pin_hidden) {
 		menu->add_separator();
 		if (can_pin) {
@@ -3329,7 +3335,11 @@ void EditorInspector::update_tree() {
 				if (use_doc_hints) {
 					// `|` separator used in `EditorHelpTooltip` for formatting.
 					if (theme_item_name.is_empty()) {
-						ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name + "|");
+						if (p.usage & PROPERTY_USAGE_INTERNAL) {
+							ep->set_tooltip_text("internal_property|" + classname + "|" + property_prefix + p.name + "|");
+						} else {
+							ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name + "|");
+						}
 					} else {
 						ep->set_tooltip_text("theme_item|" + classname + "|" + theme_item_name + "|");
 					}
@@ -3337,6 +3347,8 @@ void EditorInspector::update_tree() {
 				}
 
 				ep->set_doc_path(doc_path);
+				ep->set_internal(p.usage & PROPERTY_USAGE_INTERNAL);
+
 				ep->update_property();
 				ep->_update_pin_flags();
 				ep->update_editor_property_status();
