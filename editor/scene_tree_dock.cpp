@@ -1578,6 +1578,15 @@ void SceneTreeDock::_load_request(const String &p_path) {
 }
 
 void SceneTreeDock::_script_open_request(const Ref<Script> &p_script) {
+	int plugin_count = EditorNode::get_singleton()->get_editor_data().get_editor_plugin_count();
+	for (int i = 0; i < plugin_count; i++) {
+		EditorPlugin *plugin = EditorNode::get_singleton()->get_editor_data().get_editor_plugin(i);
+		ScriptEditorPlugin *script_editor_plugin = Object::cast_to<ScriptEditorPlugin>(plugin);
+		if (!script_editor_plugin && plugin->handles(p_script.ptr())) {
+			EditorNode::get_singleton()->edit_resource(p_script);
+			return;
+		}
+	}
 	if (ScriptEditor::get_singleton()->edit(p_script, true)) {
 		EditorNode::get_singleton()->editor_select(EditorNode::EDITOR_SCRIPT);
 	}
