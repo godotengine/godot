@@ -33,6 +33,7 @@
 #include "core/math/transform_interpolator.h"
 #include "core/os/os.h"
 #include "visual_server_globals.h"
+#include "visual_server_light_culler.h"
 #include "visual_server_raster.h"
 
 #include <new>
@@ -337,7 +338,7 @@ void *VisualServerScene::_instance_pair(void *p_self, SpatialPartitionID, Instan
 		List<InstanceLightData::PairInfo>::Element *E = light->geometries.push_back(pinfo);
 
 		if (geom->can_cast_shadows) {
-			light->shadow_dirty = true;
+			light->make_shadow_dirty();
 		}
 		geom->lighting_dirty = true;
 
@@ -409,7 +410,7 @@ void VisualServerScene::_instance_unpair(void *p_self, SpatialPartitionID, Insta
 		light->geometries.erase(E);
 
 		if (geom->can_cast_shadows) {
-			light->shadow_dirty = true;
+			light->make_shadow_dirty();
 		}
 		geom->lighting_dirty = true;
 
@@ -489,6 +490,12 @@ void VisualServerScene::pre_draw(bool p_will_draw) {
 	// will not be drawn)
 	if (_interpolation_data.interpolation_enabled) {
 		update_interpolation_frame(p_will_draw);
+	}
+
+	// Opportunity to cheaply get any project settings that have changed.
+	if (ProjectSettings::get_singleton()->has_changes()) {
+		light_culler->set_caster_culling_active(GLOBAL_GET("rendering/quality/shadows/caster_culling"));
+		light_culler->set_light_culling_active(GLOBAL_GET("rendering/quality/shadows/light_culling"));
 	}
 }
 
@@ -802,7 +809,7 @@ void VisualServerScene::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 		if (geom->can_cast_shadows) {
 			for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
 				InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
-				light->shadow_dirty = true;
+				light->make_shadow_dirty();
 			}
 		}
 	}
@@ -1217,7 +1224,7 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 		if (geom->can_cast_shadows) {
 			for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
 				InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
-				light->shadow_dirty = true;
+				light->make_shadow_dirty();
 			}
 		}
 	}
@@ -2043,7 +2050,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 		VSG::scene_render->light_instance_set_transform(light->instance, *instance_xform);
-		light->shadow_dirty = true;
+		light->make_shadow_dirty();
 	}
 
 	if (p_instance->base_type == VS::INSTANCE_REFLECTION_PROBE) {
@@ -2075,7 +2082,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		if (geom->can_cast_shadows) {
 			for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
 				InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
-				light->shadow_dirty = true;
+				light->make_shadow_dirty();
 			}
 		}
 
@@ -2461,6 +2468,15 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 	switch (VSG::storage->light_get_type(p_instance->base)) {
 		case VS::LIGHT_DIRECTIONAL: {
+			// Directional light always needs preparing as it takes a different path to other lights.
+			light_culler->prepare_light(*p_instance);
+
+			// Directional lights can always do a tighter cull.
+			// This should occur because shadow_dirty_count is never decremented for directional lights.
+#ifdef DEV_ENABLED
+			DEV_CHECK_ONCE(!light->is_shadow_update_full());
+#endif
+
 			float max_distance = p_cam_projection.get_z_far();
 			float shadow_max = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 			if (shadow_max > 0 && !p_cam_orthogonal) { //its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
@@ -2719,6 +2735,10 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					VSG::scene_render->light_instance_set_shadow_transform(light->instance, ortho_camera, ortho_transform, 0, distances[i + 1], i, bias_scale);
 				}
 
+				// Do a secondary cull to remove casters that don't intersect with the camera frustum.
+				// Note this could possibly be done in a more efficient place if we can share the cull results for each split.
+				cull_count = light_culler->cull(cull_count, instance_shadow_cull_result);
+
 				VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 			}
 
@@ -2743,6 +2763,12 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					planes.write[5] = light_transform.xform(Plane(Vector3(0, 0, -z), 0));
 
 					int cull_count = p_scenario->sps->cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+
+					// Do a secondary cull to remove casters that don't intersect with the camera frustum.
+					if (!light->is_shadow_update_full()) {
+						cull_count = light_culler->cull(cull_count, instance_shadow_cull_result);
+					}
+
 					Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
 
 					for (int j = 0; j < cull_count; j++) {
@@ -2796,6 +2822,11 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					int cull_count = _cull_convex_from_point(p_scenario, light_transform, cm, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
 
+					// Do a secondary cull to remove casters that don't intersect with the camera frustum.
+					if (!light->is_shadow_update_full()) {
+						cull_count = light_culler->cull(cull_count, instance_shadow_cull_result);
+					}
+
 					Plane near_plane(xform.origin, -xform.basis.get_axis(2));
 					for (int j = 0; j < cull_count; j++) {
 						Instance *instance = instance_shadow_cull_result[j];
@@ -2830,6 +2861,11 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
 			int cull_count = _cull_convex_from_point(p_scenario, light_transform, cm, planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, light->previous_room_id_hint, VS::INSTANCE_GEOMETRY_MASK);
+
+			// Do a secondary cull to remove casters that don't intersect with the camera frustum.
+			if (!light->is_shadow_update_full()) {
+				cull_count = light_culler->cull(cull_count, instance_shadow_cull_result);
+			}
 
 			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
@@ -2991,6 +3027,9 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 };
 
 void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int32_t &r_previous_room_id_hint) {
+	// Prepare the light - camera volume culling system.
+	light_culler->prepare_camera(p_cam_transform, p_cam_projection);
+
 	// Note, in stereo rendering:
 	// - p_cam_transform will be a transform in the middle of our two eyes
 	// - p_cam_projection is a wider frustrum that encompasses both eyes
@@ -3283,16 +3322,41 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				}
 			}
 
-			if (light->shadow_dirty) {
-				light->last_version++;
-				light->shadow_dirty = false;
+			// We can detect whether multiple cameras are hitting this light, whether or not the shadow is dirty,
+			// so that we can turn off tighter caster culling.
+			light->detect_light_intersects_multiple_cameras(Engine::get_singleton()->get_frames_drawn());
+
+			if (light->is_shadow_dirty()) {
+				// Dirty shadows have no need to be drawn if
+				// the light volume doesn't intersect the camera frustum.
+
+				// Returns false if the entire light can be culled.
+				bool allow_redraw = light_culler->prepare_light(*ins);
+
+				// Directional lights aren't handled here, _light_instance_update_shadow is called from elsewhere.
+				// Checking for this in case this changes, as this is assumed.
+				DEV_CHECK_ONCE(VSG::storage->light_get_type(ins->base) != VS::LIGHT_DIRECTIONAL);
+
+				// Tighter caster culling to the camera frustum should work correctly with multiple viewports + cameras.
+				// The first camera will cull tightly, but if the light is present on more than 1 camera, the second will
+				// do a full render, and mark the light as non-dirty.
+				// There is however a cost to tighter shadow culling in this situation (2 shadow updates in 1 frame),
+				// so we should detect this and switch off tighter caster culling automatically.
+				// This is done in the logic for `decrement_shadow_dirty()`.
+				if (allow_redraw) {
+					light->last_version++;
+					light->decrement_shadow_dirty();
+				}
 			}
 
 			bool redraw = VSG::scene_render->shadow_atlas_update_light(p_shadow_atlas, light->instance, coverage, light->last_version);
 
 			if (redraw) {
 				//must redraw!
-				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario, p_visible_layers);
+				if (_light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario, p_visible_layers)) {
+					// If the light requests another update (animated material?)...
+					light->make_shadow_dirty();
+				}
 			}
 		}
 	}
@@ -4517,7 +4581,7 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 				//ability to cast shadows change, let lights now
 				for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
 					InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
-					light->shadow_dirty = true;
+					light->make_shadow_dirty();
 				}
 
 				geom->can_cast_shadows = can_cast_shadows;
@@ -4629,11 +4693,16 @@ VisualServerScene::VisualServerScene() {
 	probe_bake_thread.start(_gi_probe_bake_threads, this);
 	probe_bake_thread_exit = false;
 
+	light_culler = memnew(VisualServerLightCuller);
+
 	render_pass = 1;
 	singleton = this;
 	_use_bvh = GLOBAL_DEF("rendering/quality/spatial_partitioning/use_bvh", true);
 	GLOBAL_DEF("rendering/quality/spatial_partitioning/bvh_collision_margin", 0.1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/spatial_partitioning/bvh_collision_margin", PropertyInfo(Variant::REAL, "rendering/quality/spatial_partitioning/bvh_collision_margin", PROPERTY_HINT_RANGE, "0.0,2.0,0.01"));
+
+	light_culler->set_caster_culling_active(GLOBAL_DEF("rendering/quality/shadows/caster_culling", true));
+	light_culler->set_light_culling_active(GLOBAL_DEF("rendering/quality/shadows/light_culling", true));
 
 	_visual_server_callbacks = nullptr;
 }
@@ -4642,4 +4711,9 @@ VisualServerScene::~VisualServerScene() {
 	probe_bake_thread_exit = true;
 	probe_bake_sem.post();
 	probe_bake_thread.wait_to_finish();
+
+	if (light_culler) {
+		memdelete(light_culler);
+		light_culler = nullptr;
+	}
 }
