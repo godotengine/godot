@@ -1782,7 +1782,7 @@ RDD::CommandPoolID RenderingDeviceDriverD3D12::command_pool_create(CommandBuffer
 }
 
 void RenderingDeviceDriverD3D12::command_pool_free(CommandPoolID p_cmd_pool) {
-	RBMap<CommandPoolID, LocalVector<CommandBufferInfo *>>::Element* elem = pools_command_buffers.find(p_cmd_pool);
+	RBMap<CommandPoolID, LocalVector<CommandBufferInfo *>>::Element *elem = pools_command_buffers.find(p_cmd_pool);
 	if (elem != nullptr) {
 		for (LocalVector<CommandBufferInfo *>::Iterator it = elem->value().begin(); it != elem->value().end(); ++it) {
 			(*it)->cmd_allocator.Reset();
