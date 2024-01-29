@@ -221,6 +221,10 @@ void GodotNavigationServer2D::bake_from_source_geometry_data_async(const Ref<Nav
 #endif // CLIPPER2_ENABLED
 }
 
+bool GodotNavigationServer2D::is_baking_navigation_polygon(Ref<NavigationPolygon> p_navigation_polygon) const {
+	return NavMeshGenerator2D::get_singleton()->is_baking(p_navigation_polygon);
+}
+
 GodotNavigationServer2D::GodotNavigationServer2D() {}
 
 GodotNavigationServer2D::~GodotNavigationServer2D() {}

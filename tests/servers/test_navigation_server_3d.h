@@ -720,6 +720,24 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->free(map);
 		navigation_server->process(0.0); // Give server some cycles to commit.
 	}
+
+	TEST_CASE("[NavigationServer3D] Server should be able to bake asynchronously") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+
+		Array arr;
+		arr.resize(RS::ARRAY_MAX);
+		BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
+		source_geometry->add_mesh_array(arr, Transform3D());
+
+		// Race condition is present below, but baking should take many orders of magnitude
+		// longer than basic checks on the main thread, so it's fine.
+		navigation_server->bake_from_source_geometry_data_async(navigation_mesh, source_geometry, Callable());
+		CHECK(navigation_server->is_baking_navigation_mesh(navigation_mesh));
+		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
+		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
+	}
 }
 } //namespace TestNavigationServer3D
 
