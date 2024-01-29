@@ -5529,4 +5529,6 @@ RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
 	glsl_type_singleton_decref();
 
 	DEV_ASSERT(pools_command_buffers.is_empty());
+
+	resources_allocator.reset(true);
 }
