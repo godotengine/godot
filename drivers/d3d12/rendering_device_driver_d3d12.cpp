@@ -1831,8 +1831,7 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandBu
 	if (elem != nullptr) {
 		elem->value().push_back(cmd_buf_info);
 	} else {
-		LocalVector<CommandBufferInfo *> command_buffer_infos;
-		command_buffer_infos.push_back(cmd_buf_info);
+		LocalVector<CommandBufferInfo *> command_buffer_infos({ cmd_buf_info });
 		pools_command_buffers.insert(p_cmd_pool, command_buffer_infos);
 	}
 
