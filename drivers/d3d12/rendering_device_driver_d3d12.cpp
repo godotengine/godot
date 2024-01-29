@@ -5467,14 +5467,14 @@ RenderingDeviceDriverD3D12::RenderingDeviceDriverD3D12(D3D12Context *p_context, 
 
 				CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 
-				ID3D12Resource *resource = nullptr;
+				ComPtr<ID3D12Resource> resource;
 				res = allocator->CreateResource(
 						&allocation_desc,
 						&resource_desc,
 						D3D12_RESOURCE_STATE_COMMON,
 						nullptr,
 						&frames[frame_idx].aux_resource,
-						IID_PPV_ARGS(&resource));
+						IID_PPV_ARGS(resource.GetAddressOf()));
 				ERR_FAIL_COND_MSG(!SUCCEEDED(res), "D3D12MA::CreateResource failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 			}
 		}
