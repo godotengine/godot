@@ -205,7 +205,7 @@
 		<method name="create_tween">
 			<return type="Tween" />
 			<description>
-				Creates a new [Tween] and binds it to this node. Fails if the node is not inside the tree.
+				Creates a new [Tween] and binds it to this node.
 				This is the equivalent of doing:
 				[codeblocks]
 				[gdscript]
@@ -215,7 +215,8 @@
 				GetTree().CreateTween().BindNode(this);
 				[/csharp]
 				[/codeblocks]
-				The Tween will start automatically on the next process frame or physics frame (depending on [enum Tween.TweenProcessMode]).
+				The Tween will start automatically on the next process frame or physics frame (depending on [enum Tween.TweenProcessMode]). See [method Tween.bind_node] for more info on Tweens bound to nodes.
+				[b]Note:[/b] The method can still be used when the node is not inside [SceneTree]. It can fail in an unlikely case of using a custom [MainLoop].
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
