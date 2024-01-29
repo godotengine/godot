@@ -223,7 +223,7 @@ public:
 		}
 
 		bool operator!=(const DataType &p_other) const {
-			return !(this->operator==(p_other));
+			return !(*this == p_other);
 		}
 
 		void operator=(const DataType &p_other) {

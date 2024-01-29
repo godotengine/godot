@@ -1619,7 +1619,7 @@ Vector<int> ItemList::get_selected_items() {
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].selected) {
 			selected.push_back(i);
-			if (this->select_mode == SELECT_SINGLE) {
+			if (select_mode == SELECT_SINGLE) {
 				break;
 			}
 		}

@@ -109,7 +109,7 @@ Vector3 Vector3::octahedron_decode(const Vector2 &p_oct) {
 
 Vector2 Vector3::octahedron_tangent_encode(const float sign) const {
 	const float bias = 1.0f / 32767.0f;
-	Vector2 res = this->octahedron_encode();
+	Vector2 res = octahedron_encode();
 	res.y = MAX(res.y, bias);
 	res.y = res.y * 0.5f + 0.5f;
 	res.y = sign >= 0.0f ? res.y : 1 - res.y;

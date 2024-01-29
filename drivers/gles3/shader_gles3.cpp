@@ -561,7 +561,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	}
 
 	int cache_variant_count = static_cast<int>(f->get_32());
-	ERR_FAIL_COND_V_MSG(cache_variant_count != this->variant_count, false, "shader cache variant count mismatch, expected " + itos(this->variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
+	ERR_FAIL_COND_V_MSG(cache_variant_count != variant_count, false, "shader cache variant count mismatch, expected " + itos(variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
 
 	LocalVector<OAHashMap<uint64_t, Version::Specialization>> variants;
 	for (int i = 0; i < cache_variant_count; i++) {

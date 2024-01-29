@@ -2508,5 +2508,5 @@ void ScriptTextEditor::register_editor() {
 }
 
 void ScriptTextEditor::validate() {
-	this->code_editor->validate_script();
+	code_editor->validate_script();
 }

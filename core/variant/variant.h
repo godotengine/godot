@@ -176,7 +176,7 @@ private:
 	struct PackedArrayRefBase {
 		SafeRefCount refcount;
 		_FORCE_INLINE_ PackedArrayRefBase *reference() {
-			if (this->refcount.ref()) {
+			if (refcount.ref()) {
 				return this;
 			} else {
 				return nullptr;

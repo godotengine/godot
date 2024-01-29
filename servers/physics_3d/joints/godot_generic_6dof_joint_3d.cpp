@@ -360,7 +360,7 @@ bool GodotGeneric6DOFJoint3D::setup(real_t p_timestep) {
 	for (i = 0; i < 3; i++) {
 		//calculates error angle
 		if (m_angularLimits[i].m_enableLimit && testAngularLimitMotor(i)) {
-			normalWorld = this->getAxis(i);
+			normalWorld = getAxis(i);
 			// Create angular atom
 			buildAngularJacobian(m_jacAng[i], normalWorld);
 		}

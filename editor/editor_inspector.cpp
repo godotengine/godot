@@ -3789,13 +3789,13 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	// The "changing" variable must be true for properties that trigger events as typing occurs,
 	// like "text_changed" signal. E.g. text property of Label, Button, RichTextLabel, etc.
 	if (p_changing) {
-		this->changing++;
+		changing++;
 	}
 
 	_edit_set(p_path, p_value, p_update_all, p_name);
 
 	if (p_changing) {
-		this->changing--;
+		changing--;
 	}
 
 	if (restart_request_props.has(p_path)) {

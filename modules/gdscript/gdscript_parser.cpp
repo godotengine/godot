@@ -3865,7 +3865,7 @@ bool GDScriptParser::uid_annotation(const AnnotationNode *p_annotation, Node *p_
 	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
 
 #ifdef DEBUG_ENABLED
-	if (this->_has_uid) {
+	if (_has_uid) {
 		push_error(R"("@uid" annotation can only be used once.)", p_annotation);
 		return false;
 	}
@@ -3885,18 +3885,18 @@ bool GDScriptParser::uid_annotation(const AnnotationNode *p_annotation, Node *p_
 
 	class_node->uid_string = uid_string;
 
-	this->_has_uid = true;
+	_has_uid = true;
 	return true;
 }
 
 bool GDScriptParser::tool_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 #ifdef DEBUG_ENABLED
-	if (this->_is_tool) {
+	if (_is_tool) {
 		push_error(R"("@tool" annotation can only be used once.)", p_annotation);
 		return false;
 	}
 #endif // DEBUG_ENABLED
-	this->_is_tool = true;
+	_is_tool = true;
 	return true;
 }
 
