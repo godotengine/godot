@@ -97,7 +97,7 @@ if env["d3d12"]:
     arch_bin_dir = "#bin/" + env["arch"]
 
     # DXC
-    if env["dxc_path"] != "":
+    if env["dxc_path"] != "" and os.path.exists(env["dxc_path"]):
         dxc_dll = "dxil.dll"
         # Whether this one is loaded from arch-specific directory or not can be determined at runtime.
         # Let's copy to both and let the user decide the distribution model.
@@ -121,7 +121,7 @@ if env["d3d12"]:
             )
 
     # PIX
-    if env["pix_path"] != "" and os.path.exists(env["pix_path"]):
+    if env["use_pix"]:
         pix_dll = "WinPixEventRuntime.dll"
         env.Command(
             "#bin/" + pix_dll,
