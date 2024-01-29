@@ -227,6 +227,13 @@ Error D3D12Context::_check_capabilities() {
 		}
 	}
 
+	D3D12_FEATURE_DATA_D3D12_OPTIONS4 options4 = {};
+	res = md.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &options4, sizeof(options4));
+	if (SUCCEEDED(res)) {
+		shader_capabilities.native_16bit_ops = options4.Native16BitShaderOpsSupported;
+	}
+	print_verbose(String("  16-bit ops supported: ") + (shader_capabilities.native_16bit_ops ? "yes" : "no"));
+
 	D3D12_FEATURE_DATA_D3D12_OPTIONS6 options6 = {};
 	res = md.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof(options6));
 	if (SUCCEEDED(res)) {
