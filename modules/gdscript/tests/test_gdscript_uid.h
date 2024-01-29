@@ -55,6 +55,7 @@ static void test_script(const String &p_source, const String &p_target_source) {
 	script.instantiate();
 	script->set_source_code(p_source);
 	ResourceSaver::save(script, script_path);
+	ResourceSaver::set_uid(script_path, _resource_saver_get_resource_id_for_path(script_path, true));
 
 	Ref<FileAccess> fa = FileAccess::open(script_path, FileAccess::READ);
 	CHECK_EQ(fa->get_as_text(), p_target_source);
@@ -100,11 +101,9 @@ extends Node
 class_name TestClass
 )";
 
-		// Script has wrong UID saved. Remove it and add a correct one.
+		// Set script UID, replacing the old one.
 		// Inserts in the same line, but multiline annotations are flattened.
 		test_script(wrong_id_source, corrected_id_source);
-		// The stored UID is correct, so do not modify it.
-		test_script(correct_id_source, correct_id_source);
 	}
 }
 

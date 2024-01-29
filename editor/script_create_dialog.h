@@ -63,6 +63,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Button *path_button = nullptr;
 	EditorFileDialog *file_browse = nullptr;
 	CheckBox *built_in = nullptr;
+	CheckBox *add_uid = nullptr;
 	CheckBox *use_templates = nullptr;
 	VBoxContainer *path_vb = nullptr;
 	AcceptDialog *alert = nullptr;
@@ -99,6 +100,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _path_changed(const String &p_path = String());
 	void _language_changed(int l = 0);
 	void _built_in_pressed();
+	void _add_uid_toggled(bool p_enabled);
 	void _use_template_pressed();
 	bool _validate_parent(const String &p_string);
 	String _validate_path(const String &p_path, bool p_file_must_exist);
@@ -111,6 +113,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	virtual void ok_pressed() override;
 	void _create_new();
 	void _load_exist();
+	void _update_uid_button();
 	void _update_template_menu();
 	void _update_dialog();
 	ScriptLanguage::ScriptTemplate _get_current_template() const;

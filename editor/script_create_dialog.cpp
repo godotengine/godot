@@ -360,6 +360,10 @@ void ScriptCreateDialog::_create_new() {
 			alert->popup_centered();
 			return;
 		}
+
+		if (add_uid->is_pressed()) {
+			ResourceSaver::set_uid(lpath, ResourceUID::get_singleton()->create_id());
+		}
 	}
 
 	emit_signal(SNAME("script_created"), scr);
@@ -377,6 +381,17 @@ void ScriptCreateDialog::_load_exist() {
 
 	emit_signal(SNAME("script_created"), p_script);
 	hide();
+}
+
+void ScriptCreateDialog::_update_uid_button() {
+	if (language->supports_uid() && !is_built_in) {
+		const bool use_uid = EditorSettings::get_singleton()->get_project_metadata("script_setup", "add_uid", true);
+		add_uid->set_pressed_no_signal(use_uid);
+		add_uid->set_disabled(false);
+	} else {
+		add_uid->set_pressed_no_signal(false);
+		add_uid->set_disabled(true);
+	}
 }
 
 void ScriptCreateDialog::_language_changed(int l) {
@@ -423,6 +438,7 @@ void ScriptCreateDialog::_language_changed(int l) {
 	file_path->set_text(path);
 
 	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language_menu->get_item_text(language_menu->get_selected()));
+	_update_uid_button();
 
 	_parent_name_changed(parent_name->get_text());
 	validation_panel->update();
@@ -436,7 +452,12 @@ void ScriptCreateDialog::_built_in_pressed() {
 		is_built_in = false;
 		_path_changed(file_path->get_text());
 	}
+	_update_uid_button();
 	validation_panel->update();
+}
+
+void ScriptCreateDialog::_add_uid_toggled(bool p_enabled) {
+	EditorSettings::get_singleton()->set_project_metadata("script_setup", "add_uid", p_enabled);
 }
 
 void ScriptCreateDialog::_use_template_pressed() {
@@ -945,6 +966,14 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	built_in->connect("pressed", callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
 	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
 	gc->add_child(built_in);
+
+	/* Add UID. */
+
+	add_uid = memnew(CheckBox);
+	add_uid->set_text(TTR("On"));
+	add_uid->connect("toggled", callable_mp(this, &ScriptCreateDialog::_add_uid_toggled));
+	gc->add_child(memnew(Label(TTR("Add UID:"))));
+	gc->add_child(add_uid);
 
 	/* Path */
 

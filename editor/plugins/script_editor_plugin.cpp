@@ -1429,6 +1429,30 @@ void ScriptEditor::_menu_option(int p_option) {
 				es->run();
 			} break;
 
+			case FILE_INSERT_UID: {
+				Ref<Script> scr = current->get_edited_resource();
+				if (scr.is_null()) {
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot insert UID: edited file is not a Script."), EditorToaster::SEVERITY_WARNING);
+					break;
+				}
+				if (!scr->get_language()->supports_uid()) {
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot insert UID: edited script's language does not support UIDs."), EditorToaster::SEVERITY_WARNING);
+					break;
+				}
+				if (scr->is_built_in()) {
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot insert UID: edited script is built-in."), EditorToaster::SEVERITY_WARNING);
+					break;
+				}
+
+				const ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(scr->get_path(), false);
+				if (uid != ResourceUID::INVALID_ID) {
+					EditorToaster::get_singleton()->popup_str(TTR("Cannot insert UID: edited script already has a UID."), EditorToaster::SEVERITY_WARNING);
+					break;
+				}
+				
+				ResourceSaver::set_uid(scr->get_path(), ResourceUID::get_singleton()->create_id());
+			} break;
+
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
 					_ask_close_current_unsaved_tab(current);
@@ -4005,6 +4029,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::X), FILE_RUN);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/insert_uid", TTR("Insert UID")), FILE_INSERT_UID);
 
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KeyModifierMask::CMD_OR_CTRL | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);

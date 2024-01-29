@@ -253,6 +253,7 @@ public:
 #endif
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
+	virtual bool supports_uid() const { return false; }
 	virtual bool can_inherit_from_file() const { return false; }
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;

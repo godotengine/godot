@@ -222,6 +222,7 @@ class ScriptEditor : public PanelContainer {
 		FILE_SAVE_ALL,
 		FILE_THEME,
 		FILE_RUN,
+		FILE_INSERT_UID,
 		FILE_CLOSE,
 		CLOSE_DOCS,
 		CLOSE_ALL,

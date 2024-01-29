@@ -552,6 +552,7 @@ public:
 #endif
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
+	virtual bool supports_uid() const override;
 	virtual bool can_inherit_from_file() const override { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const override;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;

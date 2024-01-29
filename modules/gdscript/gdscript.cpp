@@ -2879,48 +2879,16 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 
 	String source = sqscr->get_source_code();
-	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, !p_resource->is_built_in());
 
 	{
-		bool source_changed = false;
 		Error err;
 		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 		ERR_FAIL_COND_V_MSG(err, err, "Cannot save GDScript file '" + p_path + "'.");
 
-		if (uid != ResourceUID::INVALID_ID) {
-			GDScriptParser parser;
-			parser.parse(source, "", false);
-			const GDScriptParser::ClassNode *c = parser.get_tree();
-			if (c && ResourceUID::get_singleton()->text_to_id(c->uid_string) != uid) {
-				const Vector2i &uid_idx = c->uid_lines;
-				PackedStringArray lines = source.split("\n");
-
-				if (uid_idx.x > -1) {
-					for (int i = uid_idx.x + 1; i <= uid_idx.y; i++) {
-						// If UID is written across multiple lines, erase extra lines.
-						lines.remove_at(uid_idx.x + 1);
-					}
-					lines.write[uid_idx.x] = GDScript::create_uid_line(ResourceUID::get_singleton()->id_to_text(uid));
-				} else {
-					lines.insert(0, GDScript::create_uid_line(ResourceUID::get_singleton()->id_to_text(uid)));
-				}
-				source = String("\n").join(lines);
-				source_changed = true;
-				file->store_string(String("\n").join(lines));
-			} else {
-				file->store_string(source);
-			}
-		}
-
+		file->store_string(source);
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 			return ERR_CANT_CREATE;
-		}
-
-		if (source_changed) {
-			sqscr->set_source_code(source);
-			sqscr->reload();
-			sqscr->emit_changed();
 		}
 	}
 
@@ -2964,9 +2932,20 @@ Error ResourceFormatSaverGDScript::set_uid(const String &p_path, ResourceUID::ID
 		}
 		lines.write[uid_idx.x] = GDScript::create_uid_line(ResourceUID::get_singleton()->id_to_text(p_uid));
 	} else {
-		f->store_line(GDScript::create_uid_line(ResourceUID::get_singleton()->id_to_text(p_uid)));
+		lines.insert(0, GDScript::create_uid_line(ResourceUID::get_singleton()->id_to_text(p_uid)));
 	}
-	f->store_string(String("\n").join(lines));
+
+	const String source = String("\n").join(lines);
+	f->store_string(source);
+	f->close();
+
+	Ref<GDScript> existing = ResourceCache::get_ref(p_path);
+	if (existing.is_valid()) {
+		existing->set_last_modified_time(FileAccess::get_modified_time(p_path));
+		existing->set_source_code(source);
+		existing->reload();
+		existing->emit_changed();
+	}
 
 	return OK;
 }
