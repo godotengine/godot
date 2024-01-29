@@ -176,6 +176,7 @@ VARIANT_ENUM_CAST(Variant::Operator);
 
 VARIANT_ENUM_CAST(Key);
 VARIANT_BITFIELD_CAST(KeyModifierMask);
+VARIANT_ENUM_CAST(KeyLocation);
 
 static inline Key &operator|=(Key &a, BitField<KeyModifierMask> b) {
 	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b.operator int64_t()));

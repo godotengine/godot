@@ -868,7 +868,7 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 		} else if (!current) {
 			if (p_wrap) {
 				current = this;
-				TreeItem *temp = this->get_next_visible();
+				TreeItem *temp = get_next_visible();
 				while (temp) {
 					current = temp;
 					temp = temp->get_next_visible();
@@ -894,7 +894,7 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 
 TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *prev_item = this->_get_prev_in_tree(p_wrap);
+	TreeItem *prev_item = _get_prev_in_tree(p_wrap);
 	while (prev_item && !prev_item->is_visible()) {
 		prev_item = prev_item->_get_prev_in_tree(p_wrap);
 		if (prev_item == loop) {
@@ -935,7 +935,7 @@ TreeItem *TreeItem::_get_next_in_tree(bool p_wrap, bool p_include_invisible) {
 
 TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *next_item = this->_get_next_in_tree(p_wrap);
+	TreeItem *next_item = _get_next_in_tree(p_wrap);
 	while (next_item && !next_item->is_visible()) {
 		next_item = next_item->_get_next_in_tree(p_wrap);
 		if (next_item == loop) {
@@ -948,12 +948,12 @@ TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 }
 
 TreeItem *TreeItem::get_prev_in_tree(bool p_wrap) {
-	TreeItem *prev_item = this->_get_prev_in_tree(p_wrap, true);
+	TreeItem *prev_item = _get_prev_in_tree(p_wrap, true);
 	return prev_item;
 }
 
 TreeItem *TreeItem::get_next_in_tree(bool p_wrap) {
-	TreeItem *next_item = this->_get_next_in_tree(p_wrap, true);
+	TreeItem *next_item = _get_next_in_tree(p_wrap, true);
 	return next_item;
 }
 
@@ -1220,6 +1220,12 @@ int TreeItem::get_button_by_id(int p_column, int p_id) const {
 	}
 
 	return -1;
+}
+
+Color TreeItem::get_button_color(int p_column, int p_index) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Color());
+	ERR_FAIL_INDEX_V(p_index, cells[p_column].buttons.size(), Color());
+	return cells[p_column].buttons[p_index].color;
 }
 
 void TreeItem::set_button_tooltip_text(int p_column, int p_index, const String &p_tooltip) {
@@ -1662,6 +1668,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button_tooltip_text", "column", "button_index"), &TreeItem::get_button_tooltip_text);
 	ClassDB::bind_method(D_METHOD("get_button_id", "column", "button_index"), &TreeItem::get_button_id);
 	ClassDB::bind_method(D_METHOD("get_button_by_id", "column", "id"), &TreeItem::get_button_by_id);
+	ClassDB::bind_method(D_METHOD("get_button_color", "column", "id"), &TreeItem::get_button_color);
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_index"), &TreeItem::get_button);
 	ClassDB::bind_method(D_METHOD("set_button_tooltip_text", "column", "button_index", "tooltip"), &TreeItem::set_button_tooltip_text);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_index", "button"), &TreeItem::set_button);

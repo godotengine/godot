@@ -606,6 +606,7 @@
 			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
 			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 			ke.unicode = 0;
+			ke.location = KeyMappingMacOS::translate_location([event keyCode]);
 			ke.raw = false;
 
 			ds->push_to_key_event_buffer(ke);
@@ -671,6 +672,7 @@
 	ke.physical_keycode = KeyMappingMacOS::translate_key(key);
 	ke.key_label = KeyMappingMacOS::remap_key(key, mod, true);
 	ke.unicode = 0;
+	ke.location = KeyMappingMacOS::translate_location(key);
 
 	ds->push_to_key_event_buffer(ke);
 }
@@ -698,6 +700,7 @@
 		ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
 		ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 		ke.unicode = 0;
+		ke.location = KeyMappingMacOS::translate_location([event keyCode]);
 		ke.raw = true;
 
 		ds->push_to_key_event_buffer(ke);

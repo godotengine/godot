@@ -372,7 +372,7 @@ bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	if (shader.is_valid()) {
 		const StringName *pr = remap_cache.getptr(p_name);
-		if (*pr) {
+		if (pr) {
 			r_property = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
 			return true;
 		}

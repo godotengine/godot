@@ -169,20 +169,26 @@ DisplayServer::WindowID DisplayServerWindows::_get_focused_window_or_popup() con
 void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window) {
 	use_raw_input = true;
 
-	RAWINPUTDEVICE rid[1] = {};
-	rid[0].usUsagePage = 0x01;
-	rid[0].usUsage = 0x02;
+	RAWINPUTDEVICE rid[2] = {};
+	rid[0].usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
+	rid[0].usUsage = 0x02; // HID_USAGE_GENERIC_MOUSE
 	rid[0].dwFlags = 0;
+
+	rid[1].usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
+	rid[1].usUsage = 0x06; // HID_USAGE_GENERIC_KEYBOARD
+	rid[1].dwFlags = 0;
 
 	if (p_target_window != INVALID_WINDOW_ID && windows.has(p_target_window)) {
 		// Follow the defined window
 		rid[0].hwndTarget = windows[p_target_window].hWnd;
+		rid[1].hwndTarget = windows[p_target_window].hWnd;
 	} else {
 		// Follow the keyboard focus
 		rid[0].hwndTarget = 0;
+		rid[1].hwndTarget = 0;
 	}
 
-	if (RegisterRawInputDevices(rid, 1, sizeof(rid[0])) == FALSE) {
+	if (RegisterRawInputDevices(rid, 2, sizeof(rid[0])) == FALSE) {
 		// Registration failed.
 		use_raw_input = false;
 	}
@@ -3348,7 +3354,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_INPUT: {
-			if (mouse_mode != MOUSE_MODE_CAPTURED || !use_raw_input) {
+			if (!use_raw_input) {
 				break;
 			}
 
@@ -3366,7 +3372,32 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			RAWINPUT *raw = (RAWINPUT *)lpb;
 
-			if (raw->header.dwType == RIM_TYPEMOUSE) {
+			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+				if (raw->data.keyboard.VKey == VK_SHIFT) {
+					// If multiple Shifts are held down at the same time,
+					// Windows natively only sends a KEYUP for the last one to be released.
+					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
+						if (GetAsyncKeyState(VK_SHIFT) < 0) {
+							// A Shift is released, but another Shift is still held
+							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+
+							KeyEvent ke;
+							ke.shift = false;
+							ke.alt = alt_mem;
+							ke.control = control_mem;
+							ke.meta = meta_mem;
+							ke.uMsg = WM_KEYUP;
+							ke.window_id = window_id;
+
+							ke.wParam = VK_SHIFT;
+							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
+							// Bit 30 -> key was previously down, bit 31 -> key is being released.
+							ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
+							key_event_buffer[key_event_pos++] = ke;
+						}
+					}
+				}
+			} else if (mouse_mode == MOUSE_MODE_CAPTURED && raw->header.dwType == RIM_TYPEMOUSE) {
 				Ref<InputEventMouseMotion> mm;
 				mm.instantiate();
 
@@ -4371,6 +4402,7 @@ void DisplayServerWindows::_process_key_events() {
 				}
 				Key key_label = keycode;
 				Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
+				KeyLocation location = KeyMappingWindows::get_location((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
 
 				static BYTE keyboard_state[256];
 				memset(keyboard_state, 0, 256);
@@ -4397,6 +4429,7 @@ void DisplayServerWindows::_process_key_events() {
 				}
 				k->set_keycode(keycode);
 				k->set_physical_keycode(physical_keycode);
+				k->set_location(location);
 				k->set_key_label(key_label);
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {

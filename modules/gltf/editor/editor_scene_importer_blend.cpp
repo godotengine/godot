@@ -55,20 +55,7 @@
 #endif
 
 static bool _get_blender_version(const String &p_path, int &r_major, int &r_minor, String *r_err = nullptr) {
-	String path = p_path;
-#ifdef WINDOWS_ENABLED
-	path = path.path_join("blender.exe");
-#else
-	path = path.path_join("blender");
-#endif
-
-#if defined(MACOS_ENABLED)
-	if (!FileAccess::exists(path)) {
-		path = p_path.path_join("Blender");
-	}
-#endif
-
-	if (!FileAccess::exists(path)) {
+	if (!FileAccess::exists(p_path)) {
 		if (r_err) {
 			*r_err = TTR("Path does not contain a Blender installation.");
 		}
@@ -77,7 +64,7 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	List<String> args;
 	args.push_back("--version");
 	String pipe;
-	Error err = OS::get_singleton()->execute(path, args, &pipe);
+	Error err = OS::get_singleton()->execute(p_path, args, &pipe);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = TTR("Can't execute Blender binary.");
@@ -87,7 +74,7 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	int bl = pipe.find("Blender ");
 	if (bl == -1) {
 		if (r_err) {
-			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s."), path);
+			*r_err = vformat(TTR("Unexpected --version output from Blender binary at: %s."), p_path);
 		}
 		return false;
 	}
@@ -126,7 +113,7 @@ void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
-	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
+	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 
 	if (blender_major_version == -1 || blender_minor_version == -1) {
 		_get_blender_version(blender_path, blender_major_version, blender_minor_version, nullptr);
@@ -369,7 +356,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
 
-	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender3_path").operator String())) {
+	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender_path").operator String())) {
 		// Intending to import Blender, but blend not configured.
 		return true;
 	}
@@ -409,11 +396,59 @@ void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path
 	}
 }
 
-bool EditorFileSystemImportFormatSupportQueryBlend::_autodetect_path(String p_path) {
-	if (_test_blender_path(p_path)) {
-		auto_detected_path = p_path;
-		return true;
+bool EditorFileSystemImportFormatSupportQueryBlend::_autodetect_path() {
+	// Autodetect
+	auto_detected_path = "";
+
+#if defined(MACOS_ENABLED)
+	Vector<String> find_paths = {
+		"/opt/homebrew/bin/blender",
+		"/opt/local/bin/blender",
+		"/usr/local/bin/blender",
+		"/usr/local/opt/blender",
+		"/Applications/Blender.app/Contents/MacOS/Blender",
+	};
+	{
+		List<String> mdfind_args;
+		mdfind_args.push_back("kMDItemCFBundleIdentifier=org.blenderfoundation.blender");
+
+		String output;
+		Error err = OS::get_singleton()->execute("mdfind", mdfind_args, &output);
+		if (err == OK) {
+			for (const String &find_path : output.split("\n")) {
+				find_paths.push_back(find_path.path_join("Contents/MacOS/Blender"));
+			}
+		}
 	}
+#elif defined(WINDOWS_ENABLED)
+	Vector<String> find_paths = {
+		"C:\\Program Files\\Blender Foundation\\blender.exe",
+		"C:\\Program Files (x86)\\Blender Foundation\\blender.exe",
+	};
+	{
+		char blender_opener_path[MAX_PATH];
+		DWORD path_len = MAX_PATH;
+		HRESULT res = AssocQueryString(0, ASSOCSTR_EXECUTABLE, ".blend", "open", blender_opener_path, &path_len);
+		if (res == S_OK) {
+			find_paths.push_back(String(blender_opener_path).get_base_dir().path_join("blender.exe"));
+		}
+	}
+
+#elif defined(UNIX_ENABLED)
+	Vector<String> find_paths = {
+		"/usr/bin/blender",
+		"/usr/local/bin/blender",
+		"/opt/blender/bin/blender",
+	};
+#endif
+
+	for (const String &find_path : find_paths) {
+		if (_test_blender_path(find_path)) {
+			auto_detected_path = find_path;
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -427,7 +462,7 @@ void EditorFileSystemImportFormatSupportQueryBlend::_select_install(String p_pat
 }
 void EditorFileSystemImportFormatSupportQueryBlend::_browse_install() {
 	if (blender_path->get_text() != String()) {
-		browse_dialog->set_current_dir(blender_path->get_text());
+		browse_dialog->set_current_file(blender_path->get_text());
 	}
 
 	browse_dialog->popup_centered_ratio();
@@ -479,76 +514,10 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
 	}
 
-	String path = EDITOR_GET("filesystem/import/blender/blender3_path");
+	String path = EDITOR_GET("filesystem/import/blender/blender_path");
 
-	if (path == "") {
-		// Autodetect
-		auto_detected_path = "";
-
-#if defined(MACOS_ENABLED)
-
-		{
-			Vector<String> mdfind_paths;
-			{
-				List<String> mdfind_args;
-				mdfind_args.push_back("kMDItemCFBundleIdentifier=org.blenderfoundation.blender");
-
-				String output;
-				Error err = OS::get_singleton()->execute("mdfind", mdfind_args, &output);
-				if (err == OK) {
-					mdfind_paths = output.split("\n");
-				}
-			}
-
-			bool found = false;
-			for (const String &found_path : mdfind_paths) {
-				found = _autodetect_path(found_path.path_join("Contents/MacOS"));
-				if (found) {
-					break;
-				}
-			}
-			if (!found) {
-				found = _autodetect_path("/opt/homebrew/bin");
-			}
-			if (!found) {
-				found = _autodetect_path("/opt/local/bin");
-			}
-			if (!found) {
-				found = _autodetect_path("/usr/local/bin");
-			}
-			if (!found) {
-				found = _autodetect_path("/usr/local/opt");
-			}
-			if (!found) {
-				found = _autodetect_path("/Applications/Blender.app/Contents/MacOS");
-			}
-		}
-#elif defined(WINDOWS_ENABLED)
-		{
-			char blender_opener_path[MAX_PATH];
-			DWORD path_len = MAX_PATH;
-			HRESULT res = AssocQueryString(0, ASSOCSTR_EXECUTABLE, ".blend", "open", blender_opener_path, &path_len);
-			if (res == S_OK && _autodetect_path(String(blender_opener_path).get_base_dir())) {
-				// Good.
-			} else if (_autodetect_path("C:\\Program Files\\Blender Foundation")) {
-				// Good.
-			} else {
-				_autodetect_path("C:\\Program Files (x86)\\Blender Foundation");
-			}
-		}
-
-#elif defined(UNIX_ENABLED)
-		if (_autodetect_path("/usr/bin")) {
-			// Good.
-		} else if (_autodetect_path("/usr/local/bin")) {
-			// Good
-		} else {
-			_autodetect_path("/opt/blender/bin");
-		}
-#endif
-		if (auto_detected_path != "") {
-			path = auto_detected_path;
-		}
+	if (path.is_empty() && _autodetect_path()) {
+		path = auto_detected_path;
 	}
 
 	blender_path->set_text(path);
@@ -569,7 +538,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 	if (confirmed) {
 		// Can only confirm a valid path.
-		EditorSettings::get_singleton()->set("filesystem/import/blender/blender3_path", blender_path->get_text());
+		EditorSettings::get_singleton()->set("filesystem/import/blender/blender_path", blender_path->get_text());
 		EditorSettings::get_singleton()->save();
 	} else {
 		// Disable Blender import

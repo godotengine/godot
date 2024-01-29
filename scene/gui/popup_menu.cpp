@@ -74,7 +74,7 @@ String PopupMenu::bind_global_menu() {
 	global_menu_name = "__PopupMenu#" + itos(get_instance_id());
 	if (system_menu_name.length() > 0) {
 		if (system_menus.has(system_menu_name)) {
-			WARN_PRINT(vformat("Attempting to bind PopupMenu to the special menu %s, but another menu is already bound to it. This menu: %s, current menu: %s", system_menu_name, this->get_description(), system_menus[system_menu_name]->get_description()));
+			WARN_PRINT(vformat("Attempting to bind PopupMenu to the special menu %s, but another menu is already bound to it. This menu: %s, current menu: %s", system_menu_name, get_description(), system_menus[system_menu_name]->get_description()));
 		} else {
 			const Dictionary &supported_special_names = DisplayServer::get_singleton()->global_menu_get_system_menu_roots();
 			if (supported_special_names.has(system_menu_name)) {

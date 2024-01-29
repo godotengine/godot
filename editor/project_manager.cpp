@@ -843,7 +843,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 			} break;
 			case Key::F: {
 				if (k->is_command_or_control_pressed()) {
-					this->search_box->grab_focus();
+					search_box->grab_focus();
 				} else {
 					keycode_handled = false;
 				}

@@ -13,6 +13,8 @@ denoise = "#define MODE_DENOISE";
 
 #VERSION_DEFINES
 
+#extension GL_EXT_samplerless_texture_functions : enable
+
 // One 2D local group focusing in one layer at a time, though all
 // in parallel (no barriers) makes more sense than a 3D local group
 // as this can take more advantage of the cache for each group.
@@ -152,7 +154,7 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 
 	uint iters = 0;
 	while (all(greaterThanEqual(icell, ivec3(0))) && all(lessThan(icell, ivec3(bake_params.grid_size))) && (iters < 1000)) {
-		uvec2 cell_data = texelFetch(usampler3D(grid, linear_sampler), icell, 0).xy;
+		uvec2 cell_data = texelFetch(grid, icell, 0).xy;
 		uint triangle_count = cell_data.x;
 		if (triangle_count > 0) {
 			uint hit = RAY_MISS;

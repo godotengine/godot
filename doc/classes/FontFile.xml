@@ -131,6 +131,13 @@
 				Returns embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
+		<method name="get_extra_baseline_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
 		<method name="get_extra_spacing" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="cache_index" type="int" />
@@ -443,6 +450,14 @@
 			<param index="1" name="strength" type="float" />
 			<description>
 				Sets embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+			</description>
+		</method>
+		<method name="set_extra_baseline_offset">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="baseline_offset" type="float" />
+			<description>
+				Sets extra baseline offset (as a fraction of font height).
 			</description>
 		</method>
 		<method name="set_extra_spacing">

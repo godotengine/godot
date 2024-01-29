@@ -224,6 +224,7 @@ def get_opts():
             "Whether the Agility SDK DLLs will be stored in arch-specific subdirectories",
             False,
         ),
+        BoolVariable("use_pix", "Use PIX (Performance tuning and debugging for DirectX 12) runtime", False),
         (
             "pix_path",
             "Path to the PIX runtime distribution (optional for D3D12)",
@@ -474,7 +475,7 @@ def configure_msvc(env, vcvars_msvc_config):
 
     if env["d3d12"]:
         # Check whether we have d3d12 dependencies installed.
-        if not os.path.exists(env["mesa_libs"]) or not os.path.exists(env["dxc_path"]):
+        if not os.path.exists(env["mesa_libs"]):
             print("The Direct3D 12 rendering driver requires dependencies to be installed.")
             print("You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
             print("See the documentation for more information:")
@@ -491,10 +492,13 @@ def configure_msvc(env, vcvars_msvc_config):
         if env["target"] == "release_debug":
             env.Append(CXXFLAGS=["/bigobj"])
 
-        arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
-
         # PIX
-        if env["pix_path"] != "" and os.path.exists(env["pix_path"]):
+        if not env["arch"] in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
+            env["use_pix"] = False
+
+        if env["use_pix"]:
+            arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
+
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             LIBS += ["WinPixEventRuntime"]
 
@@ -695,13 +699,8 @@ def configure_mingw(env):
             env.Append(LIBS=["vulkan"])
 
     if env["d3d12"]:
-        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
-        env.Append(LIBS=["d3d12", "dxgi", "dxguid"])
-
-        arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
-
         # Check whether we have d3d12 dependencies installed.
-        if not os.path.exists(env["mesa_libs"]) or not os.path.exists(env["dxc_path"]):
+        if not os.path.exists(env["mesa_libs"]):
             print("The Direct3D 12 rendering driver requires dependencies to be installed.")
             print("You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
             print("See the documentation for more information:")
@@ -710,8 +709,16 @@ def configure_mingw(env):
             )
             sys.exit(255)
 
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
+        env.Append(LIBS=["d3d12", "dxgi", "dxguid"])
+
         # PIX
-        if env["pix_path"] != "" and os.path.exists(env["pix_path"]):
+        if not env["arch"] in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
+            env["use_pix"] = False
+
+        if env["use_pix"]:
+            arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
+
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             env.Append(LIBS=["WinPixEventRuntime"])
 

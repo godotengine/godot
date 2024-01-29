@@ -425,6 +425,8 @@ bool SwRenderer::target(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, 
 {
     if (!data || stride == 0 || w == 0 || h == 0 || w > stride) return false;
 
+    clearCompositors();
+
     if (!surface) surface = new SwSurface;
 
     surface->data = data;
@@ -474,7 +476,6 @@ bool SwRenderer::postRender()
     }
     tasks.clear();
 
-    clearCompositors();
     return true;
 }
 

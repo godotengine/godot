@@ -225,6 +225,9 @@ Files extracted from upstream source:
   ```
 - `AUTHORS.txt` and `LICENSE.txt`
 
+Two files (`ProcessRGB.{cpp,hpp}`) have been modified to provide ETC2_R and ETC2_RG compression,
+the changes are based on the existing code.
+
 Two files (`ProcessRgtc.{cpp,hpp}`) have been added to provide RGTC compression implementation,
 based on library's `ProcessDxtc.{cpp,hpp}`.
 
@@ -859,7 +862,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.12.1 (d761e3c5622c0ffba2e5bb40da05751e2451e495, 2024)
+- Version: 0.12.3 (9d79f0ccef632fd3b43b8ea02def529b6a8d2288, 2024)
 - License: MIT
 
 Files extracted from upstream source:

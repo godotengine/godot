@@ -138,9 +138,6 @@ public:
 	float get_line_underline_position(int p_line) const;
 	float get_line_underline_thickness(int p_line) const;
 
-	int get_spacing_top() const;
-	int get_spacing_bottom() const;
-
 	Size2 get_dropcap_size() const;
 	int get_dropcap_lines() const;
 

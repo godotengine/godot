@@ -59,6 +59,8 @@
 
 // Note: symbol is not available in MinGW and old MSVC import libraries.
 const CLSID CLSID_D3D12DeviceFactoryGodot = __uuidof(ID3D12DeviceFactory);
+const CLSID CLSID_D3D12DebugGodot = __uuidof(ID3D12Debug);
+const CLSID CLSID_D3D12SDKConfigurationGodot = __uuidof(ID3D12SDKConfiguration);
 
 extern "C" {
 char godot_nir_arch_name[32];
@@ -225,6 +227,13 @@ Error D3D12Context::_check_capabilities() {
 		}
 	}
 
+	D3D12_FEATURE_DATA_D3D12_OPTIONS4 options4 = {};
+	res = md.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &options4, sizeof(options4));
+	if (SUCCEEDED(res)) {
+		shader_capabilities.native_16bit_ops = options4.Native16BitShaderOpsSupported;
+	}
+	print_verbose(String("  16-bit ops supported: ") + (shader_capabilities.native_16bit_ops ? "yes" : "no"));
+
 	D3D12_FEATURE_DATA_D3D12_OPTIONS6 options6 = {};
 	res = md.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof(options6));
 	if (SUCCEEDED(res)) {
@@ -285,7 +294,7 @@ Error D3D12Context::_initialize_debug_layers() {
 	ComPtr<ID3D12Debug> debug_controller;
 	HRESULT res;
 	if (device_factory) {
-		res = device_factory->GetConfigurationInterface(CLSID_D3D12Debug, IID_PPV_ARGS(&debug_controller));
+		res = device_factory->GetConfigurationInterface(CLSID_D3D12DebugGodot, IID_PPV_ARGS(&debug_controller));
 	} else {
 		res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
 	}
@@ -520,9 +529,8 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 		res = r_basics.device.As(&info_queue);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 
-#if 0 // This causes crashes. Needs investigation.
 		ComPtr<ID3D12InfoQueue1> info_queue_1;
-		device.As(&info_queue_1);
+		r_basics.device.As(&info_queue_1);
 		if (info_queue_1) {
 			// Custom printing supported (added in Windows 10 Release Preview build 20236).
 
@@ -530,9 +538,7 @@ Error D3D12Context::_create_device(DeviceBasics &r_basics) {
 
 			res = info_queue_1->RegisterMessageCallback(&_debug_message_func, D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS, nullptr, 0);
 			ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
-		} else
-#endif
-		{
+		} else {
 			// Rely on D3D12's own debug printing.
 
 			if (Engine::get_singleton()->is_abort_on_gpu_errors_enabled()) {
@@ -820,7 +826,7 @@ void D3D12Context::_init_device_factory() {
 	ERR_FAIL_COND(!d3d_D3D12GetInterface);
 
 	ID3D12SDKConfiguration *sdk_config = nullptr;
-	if (SUCCEEDED(d3d_D3D12GetInterface(CLSID_D3D12SDKConfiguration, IID_PPV_ARGS(&sdk_config)))) {
+	if (SUCCEEDED(d3d_D3D12GetInterface(CLSID_D3D12SDKConfigurationGodot, IID_PPV_ARGS(&sdk_config)))) {
 		ID3D12SDKConfiguration1 *sdk_config1 = nullptr;
 		if (SUCCEEDED(sdk_config->QueryInterface(&sdk_config1))) {
 			if (SUCCEEDED(sdk_config1->CreateDeviceFactory(agility_sdk_version, agility_sdk_path.ascii().get_data(), IID_PPV_ARGS(device_factory.GetAddressOf())))) {

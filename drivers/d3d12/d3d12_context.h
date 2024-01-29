@@ -174,7 +174,7 @@ private:
 	LocalVector<ID3D12CommandList *> command_list_queue;
 	uint32_t command_list_count = 1;
 
-	static void _debug_message_func(
+	static void STDMETHODCALLTYPE _debug_message_func(
 			D3D12_MESSAGE_CATEGORY p_category,
 			D3D12_MESSAGE_SEVERITY p_severity,
 			D3D12_MESSAGE_ID p_id,

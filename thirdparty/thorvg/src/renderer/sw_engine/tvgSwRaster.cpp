@@ -257,8 +257,8 @@ static uint32_t _interpUpScaler(const uint32_t *img, TVG_UNUSED uint32_t stride,
     auto ry2 = ry + 1;
     if (ry2 >= h) ry2 = h - 1;
 
-    auto dx = static_cast<size_t>((sx - rx) * 255.0f);
-    auto dy = static_cast<size_t>((sy - ry) * 255.0f);
+    auto dx = static_cast<uint8_t>((sx - rx) * 255.0f);
+    auto dy = static_cast<uint8_t>((sy - ry) * 255.0f);
 
     auto c1 = img[rx + ry * w];
     auto c2 = img[rx2 + ry * w];
@@ -281,20 +281,22 @@ static uint32_t _interpDownScaler(const uint32_t *img, uint32_t stride, uint32_t
     int32_t maxx = (int32_t)sx + n;
     if (maxx >= (int32_t)w) maxx = w;
 
+    int32_t inc = (n / 2) + 1;
+    n = 0;
+
     auto src = img + minx + miny * stride;
 
-    for (auto y = miny; y < maxy; ++y) {
+    for (auto y = miny; y < maxy; y += inc) {
         auto p = src;
-        for (auto x = minx; x < maxx; ++x, ++p) {
-            c[0] += *p >> 24;
-            c[1] += (*p >> 16) & 0xff;
-            c[2] += (*p >> 8) & 0xff;
-            c[3] += *p & 0xff;
+        for (auto x = minx; x < maxx; x += inc, p += inc) {
+            c[0] += A(*p);
+            c[1] += C1(*p);
+            c[2] += C2(*p);
+            c[3] += C3(*p);
+            ++n;
         }
-        src += stride;
+        src += (stride * inc);
     }
-
-    n = (maxy - miny) * (maxx - minx);
 
     c[0] /= n;
     c[1] /= n;
@@ -1855,7 +1857,7 @@ void rasterUnpremultiply(Surface* surface)
 
 void rasterPremultiply(Surface* surface)
 {
-    unique_lock<mutex> lock{surface->mtx};
+    ScopedLock lock(surface->key);
     if (surface->premultiplied || (surface->channelSize != sizeof(uint32_t))) return;
     surface->premultiplied = true;
 
@@ -1936,7 +1938,7 @@ bool rasterImage(SwSurface* surface, SwImage* image, const RenderMesh* mesh, con
 
 bool rasterConvertCS(Surface* surface, ColorSpace to)
 {
-    unique_lock<mutex> lock{surface->mtx};
+    ScopedLock lock(surface->key);
     if (surface->cs == to) return true;
 
     //TOOD: Support SIMD accelerations

@@ -53,8 +53,8 @@ private:
 
 public:
 	Spcap(unsigned int speaker_count, const Vector3 *speaker_directions) {
-		this->speakers.resize(speaker_count);
-		Speaker *w = this->speakers.ptrw();
+		speakers.resize(speaker_count);
+		Speaker *w = speakers.ptrw();
 		for (unsigned int speaker_num = 0; speaker_num < speaker_count; speaker_num++) {
 			w[speaker_num].direction = speaker_directions[speaker_num];
 			w[speaker_num].squared_gain = 0.0;
@@ -66,23 +66,23 @@ public:
 	}
 
 	unsigned int get_speaker_count() const {
-		return (unsigned int)this->speakers.size();
+		return (unsigned int)speakers.size();
 	}
 
 	Vector3 get_speaker_direction(unsigned int index) const {
-		return this->speakers.ptr()[index].direction;
+		return speakers.ptr()[index].direction;
 	}
 
 	void calculate(const Vector3 &source_direction, real_t tightness, unsigned int volume_count, real_t *volumes) const {
-		const Speaker *r = this->speakers.ptr();
+		const Speaker *r = speakers.ptr();
 		real_t sum_squared_gains = 0.0;
-		for (unsigned int speaker_num = 0; speaker_num < (unsigned int)this->speakers.size(); speaker_num++) {
+		for (unsigned int speaker_num = 0; speaker_num < (unsigned int)speakers.size(); speaker_num++) {
 			real_t initial_gain = 0.5 * powf(1.0 + r[speaker_num].direction.dot(source_direction), tightness) / r[speaker_num].effective_number_of_speakers;
 			r[speaker_num].squared_gain = initial_gain * initial_gain;
 			sum_squared_gains += r[speaker_num].squared_gain;
 		}
 
-		for (unsigned int speaker_num = 0; speaker_num < MIN(volume_count, (unsigned int)this->speakers.size()); speaker_num++) {
+		for (unsigned int speaker_num = 0; speaker_num < MIN(volume_count, (unsigned int)speakers.size()); speaker_num++) {
 			volumes[speaker_num] = sqrtf(r[speaker_num].squared_gain / sum_squared_gains);
 		}
 	}
