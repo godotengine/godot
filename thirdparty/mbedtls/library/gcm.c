@@ -2,19 +2,7 @@
  *  NIST SP800-38D compliant GCM implementation
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 /*
@@ -35,6 +23,7 @@
 #include "mbedtls/platform.h"
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
+#include "mbedtls/constant_time.h"
 
 #include <string.h>
 
@@ -478,7 +467,6 @@ int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char check_tag[16];
-    size_t i;
     int diff;
 
     GCM_VALIDATE_RET(ctx != NULL);
@@ -495,9 +483,7 @@ int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
     }
 
     /* Check tag in "constant-time" */
-    for (diff = 0, i = 0; i < tag_len; i++) {
-        diff |= tag[i] ^ check_tag[i];
-    }
+    diff = mbedtls_ct_memcmp(tag, check_tag, tag_len);
 
     if (diff != 0) {
         mbedtls_platform_zeroize(output, length);

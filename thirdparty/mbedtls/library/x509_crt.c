@@ -2,19 +2,7 @@
  *  X.509 certificate parsing and verification
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  *  The ITU-T X.509 standard defines a certificate format for PKI.
@@ -1741,6 +1729,7 @@ static int x509_get_other_name(const mbedtls_x509_buf *subject_alt_name,
     if (MBEDTLS_OID_CMP(MBEDTLS_OID_ON_HW_MODULE_NAME, &cur_oid) != 0) {
         return MBEDTLS_ERR_X509_FEATURE_UNAVAILABLE;
     }
+    other_name->type_id = cur_oid;
 
     p += len;
     if ((ret = mbedtls_asn1_get_tag(&p, end, &len,
@@ -1829,7 +1818,7 @@ static int x509_info_subject_alt_name(char **buf, size_t *size,
                 MBEDTLS_X509_SAFE_SNPRINTF;
 
                 if (MBEDTLS_OID_CMP(MBEDTLS_OID_ON_HW_MODULE_NAME,
-                                    &other_name->value.hardware_module_name.oid) != 0) {
+                                    &other_name->type_id) == 0) {
                     ret = mbedtls_snprintf(p, n, "\n%s        hardware module name :", prefix);
                     MBEDTLS_X509_SAFE_SNPRINTF;
                     ret =

@@ -1460,7 +1460,11 @@ bool String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 		int skip = 0;
 		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
 			if (skip == 0) {
+#if CHAR_MIN == 0
+				uint8_t c = *ptrtmp;
+#else
 				uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
+#endif
 
 				if (p_skip_cr && c == '\r') {
 					ptrtmp++;

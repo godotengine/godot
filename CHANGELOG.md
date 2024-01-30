@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [3.5.4] - TBD
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-5-3) for details.
+
+### Added
+
+#### Porting
+
+- iOS: Add project settings for AVAudioSessionCategory on iOS https://github.com/godotengine/godot/pull/83409
+
+### Changed
+
+#### Thirdparty
+
+- mbedtls updated to version 2.28.7.
+- miniupnpc update to version 2.2.5.
+- zlib/minizip updated to version 1.3.1.
+- CA root certificates updated to 2023-12-13 bundle from Mozilla.
+- SDL GameControllerDB updated to 2024-01-22 git snapshot.
+
+### Removed
+
+### Fixed
+
+#### Buildsystem
+
+- Fix Python 3.12 SyntaxError with regex escape sequences https://github.com/godotengine/godot/pull/82290 https://github.com/godotengine/godot/pull/85818
+- Web: Set what were default values for Web platform linker flags `-sSTACK_SIZE` and `-sDEFAULT_PTHREAD_STACK_SIZE` https://github.com/godotengine/godot/pull/86036
+- Web: Fix build when compiler version isn't properly detected https://github.com/godotengine/godot/pull/87739
+- Windows: Fix generating vsproj with SCons 4.6.0+ https://github.com/godotengine/godot/pull/85357
+
+#### Core
+
+- Fix `File.get_buffer` returning wrong length https://github.com/godotengine/godot/pull/84934
+
+#### Mono (C#)
+
+- Fix incorrect Rect2 sizing when using the Transform2D `*` operator https://github.com/godotengine/godot/pull/86466
+
+#### Porting
+
+- Server: Return exit code 0 when running `--version` or `--help` https://github.com/godotengine/godot/pull/83664
+- Windows: Add XInput device ID for wireless Series 2 Elite controller https://github.com/godotengine/godot/pull/82508
+- Windows: Fix Dummy audio driver initialization issue on WASAPI output device initialization failure https://github.com/godotengine/godot/pull/87261
+
+#### XR
+
+- Fix touch events in WebXR with an "immersive-ar" session https://github.com/godotengine/godot/pull/85521
+
+
 ## [3.5.3] - 2023-09-25
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-5-3) for details.
@@ -3024,6 +3074,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[3.5.4]: https://downloads.tuxfamily.org/godotengine/3.5.4/Godot_v3.5.4-stable_changelog_chrono.txt
 [3.5.3]: https://downloads.tuxfamily.org/godotengine/3.5.3/Godot_v3.5.3-stable_changelog_chrono.txt
 [3.5.2]: https://downloads.tuxfamily.org/godotengine/3.5.2/Godot_v3.5.2-stable_changelog_chrono.txt
 [3.5.1]: https://downloads.tuxfamily.org/godotengine/3.5.1/Godot_v3.5.1-stable_changelog_chrono.txt

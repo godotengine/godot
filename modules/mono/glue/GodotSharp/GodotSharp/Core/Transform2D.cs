@@ -487,7 +487,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Rect2 transformed (multiplied) by transformation matrix.
+        /// Returns a Rect2 transformed (multiplied) by the transformation matrix.
         /// </summary>
         /// <param name="transform">The transformation to apply.</param>
         /// <param name="rect">A Rect2 to transform.</param>
@@ -498,7 +498,7 @@ namespace Godot
             Vector2 toX = transform.x * rect.Size.x;
             Vector2 toY = transform.y * rect.Size.y;
 
-            return new Rect2(pos, rect.Size).Expand(pos + toX).Expand(pos + toY).Expand(pos + toX + toY);
+            return new Rect2(pos, new Vector2()).Expand(pos + toX).Expand(pos + toY).Expand(pos + toX + toY);
         }
 
         /// <summary>
@@ -514,7 +514,7 @@ namespace Godot
             Vector2 to2 = new Vector2(rect.Position.x + rect.Size.x, rect.Position.y + rect.Size.y) * transform;
             Vector2 to3 = new Vector2(rect.Position.x + rect.Size.x, rect.Position.y) * transform;
 
-            return new Rect2(pos, rect.Size).Expand(to1).Expand(to2).Expand(to3);
+            return new Rect2(pos, new Vector2()).Expand(to1).Expand(to2).Expand(to3);
         }
 
         /// <summary>

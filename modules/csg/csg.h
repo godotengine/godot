@@ -160,7 +160,7 @@ struct CSGBrushOperation {
 		};
 
 		struct Face2D {
-			int vertex_idx[3];
+			int vertex_idx[3] = {};
 		};
 
 		Vector<Vertex2D> vertices;
@@ -168,7 +168,7 @@ struct CSGBrushOperation {
 		Plane plane;
 		Transform to_2D;
 		Transform to_3D;
-		float vertex_snap2;
+		float vertex_snap2 = 0.0;
 
 		inline int _get_point_idx(const Vector2 &p_point);
 		inline int _add_vertex(const Vertex2D &p_vertex);

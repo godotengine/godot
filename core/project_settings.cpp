@@ -1089,6 +1089,10 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("audio/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
 
+	GLOBAL_DEF("audio/general/ios/session_category", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("audio/general/ios/session_category", PropertyInfo(Variant::INT, "audio/general/ios/session_category", PROPERTY_HINT_ENUM, "Ambient,Multi Route,Play and Record,Playback,Record,Solo Ambient"));
+	GLOBAL_DEF("audio/general/ios/mix_with_others", false);
+
 	PoolStringArray extensions = PoolStringArray();
 	extensions.push_back("gd");
 	if (Engine::get_singleton()->has_singleton("GodotSharp")) {

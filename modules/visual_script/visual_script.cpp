@@ -1696,11 +1696,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 			}
 
 			next = node->sequence_outputs[output];
-			if (next) {
-				VSDEBUG("GOT NEXT NODE - " + itos(next->get_id()));
-			} else {
-				VSDEBUG("GOT NEXT NODE - NULL");
-			}
+			VSDEBUG("GOT NEXT NODE - " + (next ? itos(next->get_id()) : "NULL"));
 		}
 
 		if (flow_stack) {

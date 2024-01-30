@@ -5,19 +5,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_THREADING_H
 #define MBEDTLS_THREADING_H
@@ -63,9 +51,9 @@ typedef struct mbedtls_threading_mutex_t {
  * \brief           Set your alternate threading implementation function
  *                  pointers and initialize global mutexes. If used, this
  *                  function must be called once in the main thread before any
- *                  other mbed TLS function is called, and
+ *                  other Mbed TLS function is called, and
  *                  mbedtls_threading_free_alt() must be called once in the main
- *                  thread after all other mbed TLS functions.
+ *                  thread after all other Mbed TLS functions.
  *
  * \note            mutex_init() and mutex_free() don't return a status code.
  *                  If mutex_init() fails, it should leave its argument (the
