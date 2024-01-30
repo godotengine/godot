@@ -498,40 +498,43 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		update_preview_themes(CanvasItemEditor::THEME_PREVIEW_EDITOR);
 	}
 
-	gui_base->add_theme_style_override("panel", theme->get_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
-	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, theme->get_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
-	main_vbox->add_theme_constant_override("separation", theme->get_constant(SNAME("top_bar_separation"), EditorStringName(Editor)));
+	// Update styles.
+	{
+		gui_base->add_theme_style_override("panel", theme->get_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
+		main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, theme->get_constant(SNAME("window_border_margin"), EditorStringName(Editor)));
+		main_vbox->add_theme_constant_override("separation", theme->get_constant(SNAME("top_bar_separation"), EditorStringName(Editor)));
 
-	scene_root_parent->add_theme_style_override("panel", theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
-	bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
-	main_menu->add_theme_style_override("hover", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
-	distraction_free->set_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
-	bottom_panel_raise->set_icon(theme->get_icon(SNAME("ExpandBottomDock"), EditorStringName(EditorIcons)));
+		scene_root_parent->add_theme_style_override("panel", theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
+		bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+		main_menu->add_theme_style_override("hover", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
+		distraction_free->set_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
+		bottom_panel_raise->set_icon(theme->get_icon(SNAME("ExpandBottomDock"), EditorStringName(EditorIcons)));
 
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), theme->get_icon(SNAME("HelpSearch"), EditorStringName(EditorIcons)));
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_DOCS), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_QA), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_REPORT_A_BUG), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), theme->get_icon(SNAME("ActionCopy"), EditorStringName(EditorIcons)));
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_SUGGEST_A_FEATURE), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_SEND_DOCS_FEEDBACK), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_COMMUNITY), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), theme->get_icon(SNAME("Godot"), EditorStringName(EditorIcons)));
-	help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), theme->get_icon(SNAME("Heart"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), theme->get_icon(SNAME("HelpSearch"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_DOCS), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_QA), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_REPORT_A_BUG), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), theme->get_icon(SNAME("ActionCopy"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUGGEST_A_FEATURE), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEND_DOCS_FEEDBACK), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_COMMUNITY), theme->get_icon(SNAME("ExternalLink"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), theme->get_icon(SNAME("Godot"), EditorStringName(EditorIcons)));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), theme->get_icon(SNAME("Heart"), EditorStringName(EditorIcons)));
 
-	if (EditorDebuggerNode::get_singleton()->is_visible()) {
-		bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
-	}
+		if (EditorDebuggerNode::get_singleton()->is_visible()) {
+			bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
+		}
 
-	for (int i = 0; i < main_editor_buttons.size(); i++) {
-		Button *tb = main_editor_buttons[i];
-		EditorPlugin *p_editor = editor_table[i];
-		Ref<Texture2D> icon = p_editor->get_icon();
+		for (int i = 0; i < main_editor_buttons.size(); i++) {
+			Button *tb = main_editor_buttons[i];
+			EditorPlugin *p_editor = editor_table[i];
+			Ref<Texture2D> icon = p_editor->get_icon();
 
-		if (icon.is_valid()) {
-			tb->set_icon(icon);
-		} else if (theme->has_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
-			tb->set_icon(theme->get_icon(p_editor->get_name(), EditorStringName(EditorIcons)));
+			if (icon.is_valid()) {
+				tb->set_icon(icon);
+			} else if (theme->has_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
+				tb->set_icon(theme->get_icon(p_editor->get_name(), EditorStringName(EditorIcons)));
+			}
 		}
 	}
 }

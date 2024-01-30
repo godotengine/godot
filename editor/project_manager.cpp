@@ -38,7 +38,6 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/string/translation.h"
 #include "core/version.h"
 #include "editor/editor_about.h"
 #include "editor/editor_settings.h"
@@ -48,6 +47,7 @@
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
 #include "editor/project_manager/project_tag.h"
+#include "editor/project_manager/quick_settings_dialog.h"
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -63,6 +63,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
+#include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -77,64 +78,9 @@ void ProjectManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Engine::get_singleton()->set_editor_hint(false);
-		} break;
 
-		case NOTIFICATION_THEME_CHANGED: {
-			const int top_bar_separation = get_theme_constant(SNAME("top_bar_separation"), EditorStringName(Editor));
-			root_container->add_theme_constant_override("margin_left", top_bar_separation);
-			root_container->add_theme_constant_override("margin_top", top_bar_separation);
-			root_container->add_theme_constant_override("margin_bottom", top_bar_separation);
-			root_container->add_theme_constant_override("margin_right", top_bar_separation);
-			main_vbox->add_theme_constant_override("separation", top_bar_separation);
-
-			background_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
-			main_view_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
-
-			title_bar_logo->set_icon(get_editor_theme_icon(SNAME("TitleBarLogo")));
-
-			_set_main_view_icon(MAIN_VIEW_PROJECTS, get_editor_theme_icon(SNAME("ProjectList")));
-			_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon(SNAME("AssetLib")));
-
-			// Project list.
-			{
-				loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
-				search_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("search_panel"), SNAME("ProjectManager")));
-
-				// Top bar.
-				search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-				language_btn->set_icon(get_editor_theme_icon(SNAME("Environment")));
-
-				// Sidebar.
-				create_btn->set_icon(get_editor_theme_icon(SNAME("Add")));
-				import_btn->set_icon(get_editor_theme_icon(SNAME("Load")));
-				scan_btn->set_icon(get_editor_theme_icon(SNAME("Search")));
-				open_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
-				run_btn->set_icon(get_editor_theme_icon(SNAME("Play")));
-				rename_btn->set_icon(get_editor_theme_icon(SNAME("Rename")));
-				manage_tags_btn->set_icon(get_editor_theme_icon("Script"));
-				erase_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
-				erase_missing_btn->set_icon(get_editor_theme_icon(SNAME("Clear")));
-				create_tag_btn->set_icon(get_editor_theme_icon("Add"));
-
-				tag_error->add_theme_color_override("font_color", get_theme_color("error_color", EditorStringName(Editor)));
-				tag_edit_error->add_theme_color_override("font_color", get_theme_color("error_color", EditorStringName(Editor)));
-
-				create_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
-				import_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
-				scan_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
-				open_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
-				run_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
-				rename_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
-				manage_tags_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
-				erase_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
-				erase_missing_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
-			}
-
-			// Asset library popup.
-			if (asset_library) {
-				// Removes extra border margins.
-				asset_library->add_theme_style_override("panel", memnew(StyleBoxEmpty));
-			}
+			// Theme has already been created in the constructor, so we can skip that step.
+			_update_theme(true);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -160,6 +106,12 @@ void ProjectManager::_notification(int p_what) {
 
 		case NOTIFICATION_WM_ABOUT: {
 			_show_about();
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				_update_theme();
+			}
 		} break;
 	}
 }
@@ -221,7 +173,94 @@ void ProjectManager::_update_size_limits() {
 		// We try to set it to half the screen resolution, but no smaller than the minimum window size.
 		Size2 half_screen_rect = (screen_rect.size * EDSCALE) / 2;
 		Size2 maximum_popup_size = MAX(half_screen_rect, minimum_size);
-		language_btn->get_popup()->set_max_size(maximum_popup_size);
+		quick_settings_dialog->update_size_limits(maximum_popup_size);
+	}
+}
+
+void ProjectManager::_update_theme(bool p_skip_creation) {
+	if (!p_skip_creation) {
+		theme = EditorThemeManager::generate_theme(theme);
+		DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
+	}
+
+	List<Ref<Theme>> editor_themes;
+	editor_themes.push_back(theme);
+	editor_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
+
+	ThemeContext *node_tc = ThemeDB::get_singleton()->get_theme_context(this);
+	if (node_tc) {
+		node_tc->set_themes(editor_themes);
+	} else {
+		ThemeDB::get_singleton()->create_theme_context(this, editor_themes);
+	}
+
+	Window *owner_window = get_window();
+	if (owner_window) {
+		ThemeContext *window_tc = ThemeDB::get_singleton()->get_theme_context(owner_window);
+		if (window_tc) {
+			window_tc->set_themes(editor_themes);
+		} else {
+			ThemeDB::get_singleton()->create_theme_context(owner_window, editor_themes);
+		}
+	}
+
+	// Update styles.
+	{
+		const int top_bar_separation = get_theme_constant(SNAME("top_bar_separation"), EditorStringName(Editor));
+		root_container->add_theme_constant_override("margin_left", top_bar_separation);
+		root_container->add_theme_constant_override("margin_top", top_bar_separation);
+		root_container->add_theme_constant_override("margin_bottom", top_bar_separation);
+		root_container->add_theme_constant_override("margin_right", top_bar_separation);
+		main_vbox->add_theme_constant_override("separation", top_bar_separation);
+
+		background_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
+		main_view_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+
+		title_bar_logo->set_icon(get_editor_theme_icon(SNAME("TitleBarLogo")));
+
+		_set_main_view_icon(MAIN_VIEW_PROJECTS, get_editor_theme_icon(SNAME("ProjectList")));
+		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon(SNAME("AssetLib")));
+
+		// Project list.
+		{
+			loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+			search_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("search_panel"), SNAME("ProjectManager")));
+
+			// Top bar.
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			quick_settings_button->set_icon(get_editor_theme_icon(SNAME("Tools")));
+
+			// Sidebar.
+			create_btn->set_icon(get_editor_theme_icon(SNAME("Add")));
+			import_btn->set_icon(get_editor_theme_icon(SNAME("Load")));
+			scan_btn->set_icon(get_editor_theme_icon(SNAME("Search")));
+			open_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			run_btn->set_icon(get_editor_theme_icon(SNAME("Play")));
+			rename_btn->set_icon(get_editor_theme_icon(SNAME("Rename")));
+			manage_tags_btn->set_icon(get_editor_theme_icon("Script"));
+			erase_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			erase_missing_btn->set_icon(get_editor_theme_icon(SNAME("Clear")));
+			create_tag_btn->set_icon(get_editor_theme_icon("Add"));
+
+			tag_error->add_theme_color_override("font_color", get_theme_color("error_color", EditorStringName(Editor)));
+			tag_edit_error->add_theme_color_override("font_color", get_theme_color("error_color", EditorStringName(Editor)));
+
+			create_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			import_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			scan_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			open_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			run_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			rename_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			manage_tags_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			erase_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			erase_missing_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+		}
+
+		// Asset library popup.
+		if (asset_library) {
+			// Removes extra border margins.
+			asset_library->add_theme_style_override("panel", memnew(StyleBoxEmpty));
+		}
 	}
 }
 
@@ -350,24 +389,6 @@ void ProjectManager::_open_asset_library_confirmed() {
 	_select_main_view(MAIN_VIEW_ASSETLIB);
 }
 
-// Quick settings.
-
-void ProjectManager::_language_selected(int p_id) {
-	String lang = language_btn->get_item_metadata(p_id);
-	EditorSettings::get_singleton()->set("interface/editor/editor_language", lang);
-
-	restart_required_dialog->popup_centered();
-}
-
-void ProjectManager::_restart_confirm() {
-	List<String> args = OS::get_singleton()->get_cmdline_args();
-	Error err = OS::get_singleton()->create_instance(args);
-	ERR_FAIL_COND(err);
-
-	_dim_window();
-	get_tree()->quit();
-}
-
 void ProjectManager::_dim_window() {
 	// This method must be called before calling `get_tree()->quit()`.
 	// Otherwise, its effect won't be visible
@@ -377,6 +398,21 @@ void ProjectManager::_dim_window() {
 	float c = 0.5f;
 	Color dim_color = Color(c, c, c);
 	set_modulate(dim_color);
+}
+
+// Quick settings.
+
+void ProjectManager::_show_quick_settings() {
+	quick_settings_dialog->popup_centered(Size2(600, 200) * EDSCALE);
+}
+
+void ProjectManager::_restart_confirmed() {
+	List<String> args = OS::get_singleton()->get_cmdline_args();
+	Error err = OS::get_singleton()->create_instance(args);
+	ERR_FAIL_COND(err);
+
+	_dim_window();
+	get_tree()->quit();
 }
 
 // Footer.
@@ -1048,10 +1084,9 @@ ProjectManager::ProjectManager() {
 		Window::set_root_layout_direction(pm_root_dir);
 
 		EditorThemeManager::initialize();
-		Ref<Theme> theme = EditorThemeManager::generate_theme();
+		theme = EditorThemeManager::generate_theme();
 		DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
-		set_theme(theme);
 		set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 		_build_icon_type_cache(theme);
@@ -1075,67 +1110,36 @@ ProjectManager::ProjectManager() {
 		title_bar = memnew(HBoxContainer);
 		main_vbox->add_child(title_bar);
 
+		HBoxContainer *left_hbox = memnew(HBoxContainer);
+		left_hbox->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
+		left_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		left_hbox->set_stretch_ratio(1.0);
+		title_bar->add_child(left_hbox);
+
 		title_bar_logo = memnew(Button);
 		title_bar_logo->set_flat(true);
-		title_bar->add_child(title_bar_logo);
+		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
 
-		HBoxContainer *left_spacer = memnew(HBoxContainer);
-		left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		title_bar->add_child(left_spacer);
-
 		main_view_toggles = memnew(HBoxContainer);
+		main_view_toggles->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+		main_view_toggles->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		main_view_toggles->set_stretch_ratio(2.0);
 		title_bar->add_child(main_view_toggles);
 
 		main_view_toggles_group.instantiate();
 
-		Control *right_spacer = memnew(Control);
-		right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		title_bar->add_child(right_spacer);
+		HBoxContainer *right_hbox = memnew(HBoxContainer);
+		right_hbox->set_alignment(BoxContainer::ALIGNMENT_END);
+		right_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		right_hbox->set_stretch_ratio(1.0);
+		title_bar->add_child(right_hbox);
 
-		quick_settings_hbox = memnew(HBoxContainer);
-		title_bar->add_child(quick_settings_hbox);
-	}
-
-	// Quick settings.
-	{
-		language_btn = memnew(OptionButton);
-		language_btn->set_focus_mode(Control::FOCUS_NONE);
-		language_btn->set_fit_to_longest_item(false);
-		language_btn->set_flat(true);
-		language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
-#ifdef ANDROID_ENABLED
-		// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
-		// Also, the dropdown it spawns is very tall and can't be scrolled without a hardware mouse.
-		language_btn->hide();
-#endif
-
-		Vector<String> editor_languages;
-		List<PropertyInfo> editor_settings_properties;
-		EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
-		for (const PropertyInfo &pi : editor_settings_properties) {
-			if (pi.name == "interface/editor/editor_language") {
-				editor_languages = pi.hint_string.split(",");
-				break;
-			}
-		}
-
-		String current_lang = EDITOR_GET("interface/editor/editor_language");
-		language_btn->set_text(current_lang);
-
-		for (int i = 0; i < editor_languages.size(); i++) {
-			const String &lang = editor_languages[i];
-			String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
-			language_btn->add_item(vformat("[%s] %s", lang, lang_name), i);
-			language_btn->set_item_metadata(i, lang);
-			if (current_lang == lang) {
-				language_btn->select(i);
-			}
-		}
-
-		quick_settings_hbox->add_child(language_btn);
+		quick_settings_button = memnew(Button);
+		quick_settings_button->set_flat(true);
+		quick_settings_button->set_text(TTR("Settings"));
+		right_hbox->add_child(quick_settings_button);
+		quick_settings_button->connect("pressed", callable_mp(this, &ProjectManager::_show_quick_settings));
 	}
 
 	main_view_container = memnew(PanelContainer);
@@ -1305,12 +1309,9 @@ ProjectManager::ProjectManager() {
 
 	// Dialogs.
 	{
-		restart_required_dialog = memnew(ConfirmationDialog);
-		restart_required_dialog->set_ok_button_text(TTR("Restart Now"));
-		restart_required_dialog->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
-		restart_required_dialog->set_cancel_button_text(TTR("Continue"));
-		restart_required_dialog->set_text(TTR("Settings changed!\nThe project manager must be restarted for changes to take effect."));
-		add_child(restart_required_dialog);
+		quick_settings_dialog = memnew(QuickSettingsDialog);
+		add_child(quick_settings_dialog);
+		quick_settings_dialog->connect("restart_required", callable_mp(this, &ProjectManager::_restart_confirmed));
 
 		scan_dir = memnew(EditorFileDialog);
 		scan_dir->set_previews_enabled(false);

@@ -46,6 +46,7 @@ class OptionButton;
 class PanelContainer;
 class ProjectDialog;
 class ProjectList;
+class QuickSettingsDialog;
 class RichTextLabel;
 class TabContainer;
 class VBoxContainer;
@@ -66,7 +67,10 @@ class ProjectManager : public Control {
 
 	// Main layout.
 
+	Ref<Theme> theme;
+
 	void _update_size_limits();
+	void _update_theme(bool p_skip_creation = false);
 
 	MarginContainer *root_container = nullptr;
 	Panel *background_panel = nullptr;
@@ -75,7 +79,7 @@ class ProjectManager : public Control {
 	HBoxContainer *title_bar = nullptr;
 	Button *title_bar_logo = nullptr;
 	HBoxContainer *main_view_toggles = nullptr;
-	HBoxContainer *quick_settings_hbox = nullptr;
+	Button *quick_settings_button = nullptr;
 
 	enum MainViewTab {
 		MAIN_VIEW_PROJECTS,
@@ -105,14 +109,14 @@ class ProjectManager : public Control {
 	void _suggest_asset_library();
 	void _open_asset_library_confirmed();
 
+	void _dim_window();
+
 	// Quick settings.
 
-	OptionButton *language_btn = nullptr;
-	ConfirmationDialog *restart_required_dialog = nullptr;
+	QuickSettingsDialog *quick_settings_dialog = nullptr;
 
-	void _language_selected(int p_id);
-	void _restart_confirm();
-	void _dim_window();
+	void _show_quick_settings();
+	void _restart_confirmed();
 
 	// Footer.
 
