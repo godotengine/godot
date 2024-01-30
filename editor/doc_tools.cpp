@@ -634,7 +634,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			// Theme items.
 			{
 				List<ThemeDB::ThemeItemBind> theme_items;
-				ThemeDB::get_singleton()->get_class_own_items(cname, &theme_items);
+				ThemeDB::get_singleton()->get_class_items(cname, &theme_items);
 				Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
 
 				for (const ThemeDB::ThemeItemBind &theme_item : theme_items) {

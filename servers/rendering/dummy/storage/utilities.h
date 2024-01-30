@@ -31,6 +31,7 @@
 #ifndef UTILITIES_DUMMY_H
 #define UTILITIES_DUMMY_H
 
+#include "material_storage.h"
 #include "mesh_storage.h"
 #include "servers/rendering/storage/utilities.h"
 #include "texture_storage.h"
@@ -62,6 +63,12 @@ public:
 			return true;
 		} else if (RendererDummy::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
 			RendererDummy::MeshStorage::get_singleton()->mesh_free(p_rid);
+			return true;
+		} else if (RendererDummy::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
+			RendererDummy::MeshStorage::get_singleton()->multimesh_free(p_rid);
+			return true;
+		} else if (RendererDummy::MaterialStorage::get_singleton()->owns_shader(p_rid)) {
+			RendererDummy::MaterialStorage::get_singleton()->shader_free(p_rid);
 			return true;
 		}
 		return false;
