@@ -742,6 +742,24 @@
 		<member name="debug/shapes/paths/geometry_width" type="float" setter="" getter="" default="2.0">
 			Line width of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
 		</member>
+		<member name="display/display_server/driver" type="String" setter="" getter="">
+			Sets the driver to be used by the display server. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
+		</member>
+		<member name="display/display_server/driver.android" type="String" setter="" getter="">
+			Android override for [member display/display_server/driver].
+		</member>
+		<member name="display/display_server/driver.ios" type="String" setter="" getter="">
+			iOS override for [member display/display_server/driver].
+		</member>
+		<member name="display/display_server/driver.linuxbsd" type="String" setter="" getter="">
+			LinuxBSD override for [member display/display_server/driver].
+		</member>
+		<member name="display/display_server/driver.macos" type="String" setter="" getter="">
+			MacOS override for [member display/display_server/driver].
+		</member>
+		<member name="display/display_server/driver.windows" type="String" setter="" getter="">
+			Windows override for [member display/display_server/driver].
+		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
 			Custom image for the mouse cursor (limited to 256×256).
 		</member>

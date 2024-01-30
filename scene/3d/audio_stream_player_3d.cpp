@@ -240,6 +240,7 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 }
 
 void AudioStreamPlayer3D::_notification(int p_what) {
+	internal->notification(p_what);
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			velocity_tracker->reset(get_global_transform().origin);

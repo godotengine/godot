@@ -167,12 +167,12 @@ static bool _start_success = false;
 
 // Drivers
 
+String display_driver = "";
 String tablet_driver = "";
 String text_driver = "";
 String rendering_driver = "";
 String rendering_method = "";
 static int text_driver_idx = -1;
-static int display_driver_idx = -1;
 static int audio_driver_idx = -1;
 
 // Engine config/tools
@@ -857,7 +857,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I = I->next();
 	}
 
-	String display_driver = "";
 	String audio_driver = "";
 	String project_path = ".";
 	bool upwards = false;
@@ -2155,23 +2154,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Display driver, e.g. X11, Wayland.
 	// Make sure that headless is the last one, which it is assumed to be by design.
 	DEV_ASSERT(NULL_DISPLAY_DRIVER == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
-	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
-		String name = DisplayServer::get_create_function_name(i);
-		if (display_driver == name) {
-			display_driver_idx = i;
-			break;
-		}
-	}
 
-	if (display_driver_idx < 0) {
-		// If the requested driver wasn't found, pick the first entry.
-		// If all else failed it would be the headless server.
-		display_driver_idx = 0;
-	}
-
-	// Store this in a globally accessible place, so we can retrieve the rendering drivers
-	// list from the display driver for the editor UI.
-	OS::get_singleton()->set_display_driver_id(display_driver_idx);
+	GLOBAL_DEF_RST_NOVAL("display/display_server/driver", "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
+	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
@@ -2415,7 +2404,26 @@ Error Main::setup2() {
 					rp_new.ext_func = _parse_resource_dummy;
 					rp_new.sub_func = _parse_resource_dummy;
 
-					while (true) {
+					bool screen_found = false;
+					String screen_property;
+
+					bool prefer_wayland_found = false;
+
+					if (editor) {
+						screen_property = "interface/editor/editor_screen";
+					} else if (project_manager) {
+						screen_property = "interface/editor/project_manager_screen";
+					} else {
+						// Skip.
+						screen_found = true;
+					}
+
+					if (!display_driver.is_empty()) {
+						// Skip.
+						prefer_wayland_found = true;
+					}
+
+					while (!screen_found || !prefer_wayland_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2424,17 +2432,21 @@ Error Main::setup2() {
 						if (err == ERR_FILE_EOF) {
 							break;
 						}
+
 						if (err == OK && !assign.is_empty()) {
-							if (project_manager) {
-								if (assign == "interface/editor/project_manager_screen") {
-									init_screen = value;
-									break;
+							if (!screen_found && assign == screen_property) {
+								init_screen = value;
+								screen_found = true;
+							}
+
+							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
+								if (value) {
+									display_driver = "wayland";
+								} else {
+									display_driver = "default";
 								}
-							} else if (editor) {
-								if (assign == "interface/editor/editor_screen") {
-									init_screen = value;
-									break;
-								}
+
+								prefer_wayland_found = true;
 							}
 						}
 					}
@@ -2492,7 +2504,33 @@ Error Main::setup2() {
 	{
 		OS::get_singleton()->benchmark_begin_measure("Servers", "Display");
 
-		String display_driver = DisplayServer::get_create_function_name(display_driver_idx);
+		if (display_driver.is_empty()) {
+			display_driver = GLOBAL_GET("display/display_server/driver");
+		}
+
+		int display_driver_idx = -1;
+
+		if (display_driver.is_empty() || display_driver == "default") {
+			display_driver_idx = 0;
+		} else {
+			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+				String name = DisplayServer::get_create_function_name(i);
+				if (display_driver == name) {
+					display_driver_idx = i;
+					break;
+				}
+			}
+
+			if (display_driver_idx < 0) {
+				// If the requested driver wasn't found, pick the first entry.
+				// If all else failed it would be the headless server.
+				display_driver_idx = 0;
+			}
+		}
+
+		// Store this in a globally accessible place, so we can retrieve the rendering drivers
+		// list from the display driver for the editor UI.
+		OS::get_singleton()->set_display_driver_id(display_driver_idx);
 
 		Vector2i *window_position = nullptr;
 		Vector2i position = init_custom_pos;
