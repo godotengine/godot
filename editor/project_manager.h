@@ -101,14 +101,14 @@ class ProjectManager : public Control {
 	VBoxContainer *local_projects_vb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
 
-	ConfirmationDialog *suggest_asset_library_dialog = nullptr;
-	RichTextLabel *suggest_asset_library_label = nullptr;
 	EditorAbout *about_dialog = nullptr;
 
 	void _show_about();
-	void _suggest_asset_library();
 	void _open_asset_library_confirmed();
 
+	AcceptDialog *error_dialog = nullptr;
+
+	void _show_error(const String &p_message, const Size2 &p_min_size = Size2());
 	void _dim_window();
 
 	// Quick settings.
@@ -126,12 +126,20 @@ class ProjectManager : public Control {
 
 	// Project list.
 
-	ProjectList *_project_list = nullptr;
+	VBoxContainer *empty_list_placeholder = nullptr;
+	Button *empty_list_create_project = nullptr;
+	Button *empty_list_import_project = nullptr;
+	Button *empty_list_open_assetlib = nullptr;
+	Label *empty_list_online_warning = nullptr;
+
+	void _update_list_placeholder();
+
+	ProjectList *project_list = nullptr;
 
 	LineEdit *search_box = nullptr;
 	Label *loading_label = nullptr;
 	OptionButton *filter_option = nullptr;
-	PanelContainer *search_panel = nullptr;
+	PanelContainer *project_list_panel = nullptr;
 
 	Button *create_btn = nullptr;
 	Button *import_btn = nullptr;
@@ -154,9 +162,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_open_ask = nullptr;
 	ConfirmationDialog *multi_run_ask = nullptr;
 
-	AcceptDialog *run_error_diag = nullptr;
-	AcceptDialog *dialog_error = nullptr;
-	ProjectDialog *npdialog = nullptr;
+	ProjectDialog *project_dialog = nullptr;
 
 	void _scan_projects();
 	void _run_project();

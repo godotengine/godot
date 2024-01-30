@@ -86,14 +86,10 @@ void ProjectManager::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			const int default_sorting = (int)EDITOR_GET("project_manager/sorting_order");
 			filter_option->select(default_sorting);
-			_project_list->set_order_option(default_sorting);
+			project_list->set_order_option(default_sorting);
 
 			_select_main_view(MAIN_VIEW_PROJECTS);
-
-			// Suggest browsing asset library to get templates/demos.
-			if (asset_library && _project_list->get_project_count() == 0) {
-				_suggest_asset_library();
-			}
+			_update_list_placeholder();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -112,6 +108,7 @@ void ProjectManager::_notification(int p_what) {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				_update_theme();
 			}
+			_update_list_placeholder();
 		} break;
 	}
 }
@@ -224,7 +221,14 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		// Project list.
 		{
 			loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
-			search_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("search_panel"), SNAME("ProjectManager")));
+			project_list_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("project_list"), SNAME("ProjectManager")));
+
+			empty_list_create_project->set_icon(get_editor_theme_icon(SNAME("Add")));
+			empty_list_import_project->set_icon(get_editor_theme_icon(SNAME("Load")));
+			empty_list_open_assetlib->set_icon(get_editor_theme_icon(SNAME("AssetLib")));
+
+			empty_list_online_warning->add_theme_font_override("font", get_theme_font(SNAME("italic"), EditorStringName(EditorFonts)));
+			empty_list_online_warning->add_theme_color_override("font_color", get_theme_color(SNAME("font_placeholder_color"), EditorStringName(Editor)));
 
 			// Top bar.
 			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
@@ -340,43 +344,6 @@ void ProjectManager::_show_about() {
 	about_dialog->popup_centered(Size2(780, 500) * EDSCALE);
 }
 
-void ProjectManager::_suggest_asset_library() {
-	if (!suggest_asset_library_dialog) {
-		suggest_asset_library_dialog = memnew(ConfirmationDialog);
-		suggest_asset_library_dialog->set_title(TTR("Getting Started with Godot"));
-		add_child(suggest_asset_library_dialog);
-		suggest_asset_library_dialog->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library_confirmed));
-
-		VBoxContainer *suggest_vbox = memnew(VBoxContainer);
-		suggest_asset_library_dialog->add_child(suggest_vbox);
-
-		suggest_asset_library_label = memnew(RichTextLabel);
-		suggest_asset_library_label->set_use_bbcode(true);
-		suggest_asset_library_label->set_fit_content(true);
-		suggest_asset_library_label->set_h_size_flags(SIZE_EXPAND_FILL);
-		suggest_asset_library_label->add_theme_style_override("normal", memnew(StyleBoxEmpty));
-		suggest_vbox->add_child(suggest_asset_library_label);
-	}
-
-	const int network_mode = EDITOR_GET("network/connection/network_mode");
-	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
-		const String line1 = TTR("You don't have any projects yet.");
-		const String line2 = TTR("Get started with one of the official project templates from the Asset Library!");
-		const String line3 = TTR("Note: The Asset Library requires an online connection and involves sending data over the internet.");
-
-		suggest_asset_library_label->set_text(vformat("%s\n\n[b]%s[/b]\n\n[i]%s[/i]", line1, line2, line3));
-		suggest_asset_library_dialog->set_ok_button_text(TTR("Go Online and Open Asset Library"));
-	} else {
-		const String line1 = TTR("You don't have any projects yet.");
-		const String line2 = TTR("Get started with one of the official project templates from the Asset Library!");
-
-		suggest_asset_library_label->set_text(vformat("%s\n\n[b]%s[/b]", line1, line2));
-		suggest_asset_library_dialog->set_ok_button_text(TTR("Open Asset Library"));
-	}
-
-	suggest_asset_library_dialog->popup_centered(Size2(540, 100) * EDSCALE);
-}
-
 void ProjectManager::_open_asset_library_confirmed() {
 	const int network_mode = EDITOR_GET("network/connection/network_mode");
 	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
@@ -387,6 +354,11 @@ void ProjectManager::_open_asset_library_confirmed() {
 
 	asset_library->disable_community_support();
 	_select_main_view(MAIN_VIEW_ASSETLIB);
+}
+
+void ProjectManager::_show_error(const String &p_message, const Size2 &p_min_size) {
+	error_dialog->set_text(p_message);
+	error_dialog->popup_centered(p_min_size);
 }
 
 void ProjectManager::_dim_window() {
@@ -423,12 +395,32 @@ void ProjectManager::_version_button_pressed() {
 
 // Project list.
 
+void ProjectManager::_update_list_placeholder() {
+	if (project_list->get_project_count() > 0) {
+		empty_list_placeholder->hide();
+		return;
+	}
+
+	empty_list_open_assetlib->set_visible(asset_library);
+
+	const int network_mode = EDITOR_GET("network/connection/network_mode");
+	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
+		empty_list_open_assetlib->set_text(TTR("Go Online and Open Asset Library"));
+		empty_list_online_warning->set_visible(true);
+	} else {
+		empty_list_open_assetlib->set_text(TTR("Open Asset Library"));
+		empty_list_online_warning->set_visible(false);
+	}
+
+	empty_list_placeholder->show();
+}
+
 void ProjectManager::_scan_projects() {
 	scan_dir->popup_file_dialog();
 }
 
 void ProjectManager::_run_project() {
-	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
 
 	if (selected_list.size() < 1) {
 		return;
@@ -443,13 +435,12 @@ void ProjectManager::_run_project() {
 }
 
 void ProjectManager::_run_project_confirm() {
-	Vector<ProjectList::Item> selected_list = _project_list->get_selected_projects();
+	Vector<ProjectList::Item> selected_list = project_list->get_selected_projects();
 
 	for (int i = 0; i < selected_list.size(); ++i) {
 		const String &selected_main = selected_list[i].main_scene;
 		if (selected_main.is_empty()) {
-			run_error_diag->set_text(TTR("Can't run project: no main scene defined.\nPlease edit the project and set the main scene in the Project Settings under the \"Application\" category."));
-			run_error_diag->popup_centered();
+			_show_error(TTR("Can't run project: Project has no main scene defined.\nPlease edit the project and set the main scene in the Project Settings under the \"Application\" category."));
 			continue;
 		}
 
@@ -457,8 +448,7 @@ void ProjectManager::_run_project_confirm() {
 
 		// `.substr(6)` on `ProjectSettings::get_singleton()->get_imported_files_path()` strips away the leading "res://".
 		if (!DirAccess::exists(path.path_join(ProjectSettings::get_singleton()->get_imported_files_path().substr(6)))) {
-			run_error_diag->set_text(TTR("Can't run project: Assets need to be imported.\nPlease edit the project to trigger the initial import."));
-			run_error_diag->popup_centered();
+			_show_error(TTR("Can't run project: Assets need to be imported first.\nPlease edit the project to trigger the initial import."));
 			continue;
 		}
 
@@ -483,14 +473,13 @@ void ProjectManager::_open_selected_projects() {
 	// This is especially important for the Web project manager.
 	loading_label->show();
 
-	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
 
 	for (const String &path : selected_list) {
 		String conf = path.path_join("project.godot");
 
 		if (!FileAccess::exists(conf)) {
-			dialog_error->set_text(vformat(TTR("Can't open project at '%s'."), path));
-			dialog_error->popup_centered();
+			_show_error(vformat(TTR("Can't open project at '%s'."), path));
 			return;
 		}
 
@@ -511,14 +500,14 @@ void ProjectManager::_open_selected_projects() {
 		ERR_FAIL_COND(err);
 	}
 
-	_project_list->project_opening_initiated = true;
+	project_list->project_opening_initiated = true;
 
 	_dim_window();
 	get_tree()->quit();
 }
 
 void ProjectManager::_open_selected_projects_ask() {
-	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
 
 	if (selected_list.size() < 1) {
 		return;
@@ -532,7 +521,7 @@ void ProjectManager::_open_selected_projects_ask() {
 		return;
 	}
 
-	ProjectList::Item project = _project_list->get_selected_projects()[0];
+	ProjectList::Item project = project_list->get_selected_projects()[0];
 	if (project.missing) {
 		return;
 	}
@@ -569,8 +558,7 @@ void ProjectManager::_open_selected_projects_ask() {
 	}
 	// Check if the file was generated by a newer, incompatible engine version.
 	if (config_version > ProjectSettings::CONFIG_VERSION) {
-		dialog_error->set_text(vformat(TTR("Can't open project \"%s\" at the following path:\n\n%s\n\nThe project settings were created by a newer engine version, whose settings are not compatible with this version."), project.project_name, project.path));
-		dialog_error->popup_centered(popup_min_size);
+		_show_error(vformat(TTR("Can't open project \"%s\" at the following path:\n\n%s\n\nThe project settings were created by a newer engine version, whose settings are not compatible with this version."), project.project_name, project.path), popup_min_size);
 		return;
 	}
 	// Check if the project is using features not supported by this build of Godot.
@@ -608,38 +596,38 @@ void ProjectManager::_open_selected_projects_ask() {
 }
 
 void ProjectManager::_install_project(const String &p_zip_path, const String &p_title) {
-	npdialog->set_mode(ProjectDialog::MODE_INSTALL);
-	npdialog->set_zip_path(p_zip_path);
-	npdialog->set_zip_title(p_title);
-	npdialog->show_dialog();
+	project_dialog->set_mode(ProjectDialog::MODE_INSTALL);
+	project_dialog->set_zip_path(p_zip_path);
+	project_dialog->set_zip_title(p_title);
+	project_dialog->show_dialog();
 }
 
 void ProjectManager::_import_project() {
-	npdialog->set_mode(ProjectDialog::MODE_IMPORT);
-	npdialog->ask_for_path_and_show();
+	project_dialog->set_mode(ProjectDialog::MODE_IMPORT);
+	project_dialog->ask_for_path_and_show();
 }
 
 void ProjectManager::_new_project() {
-	npdialog->set_mode(ProjectDialog::MODE_NEW);
-	npdialog->show_dialog();
+	project_dialog->set_mode(ProjectDialog::MODE_NEW);
+	project_dialog->show_dialog();
 }
 
 void ProjectManager::_rename_project() {
-	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
 
 	if (selected_list.size() == 0) {
 		return;
 	}
 
 	for (const String &E : selected_list) {
-		npdialog->set_project_path(E);
-		npdialog->set_mode(ProjectDialog::MODE_RENAME);
-		npdialog->show_dialog();
+		project_dialog->set_project_path(E);
+		project_dialog->set_mode(ProjectDialog::MODE_RENAME);
+		project_dialog->show_dialog();
 	}
 }
 
 void ProjectManager::_erase_project() {
-	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
+	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
 
 	if (selected_list.size() == 0) {
 		return;
@@ -663,17 +651,19 @@ void ProjectManager::_erase_missing_projects() {
 }
 
 void ProjectManager::_erase_project_confirm() {
-	_project_list->erase_selected_projects(false);
+	project_list->erase_selected_projects(false);
 	_update_project_buttons();
+	_update_list_placeholder();
 }
 
 void ProjectManager::_erase_missing_projects_confirm() {
-	_project_list->erase_missing_projects();
+	project_list->erase_missing_projects();
 	_update_project_buttons();
+	_update_list_placeholder();
 }
 
 void ProjectManager::_update_project_buttons() {
-	Vector<ProjectList::Item> selected_projects = _project_list->get_selected_projects();
+	Vector<ProjectList::Item> selected_projects = project_list->get_selected_projects();
 	bool empty_selection = selected_projects.is_empty();
 
 	bool is_missing_project_selected = false;
@@ -690,48 +680,48 @@ void ProjectManager::_update_project_buttons() {
 	manage_tags_btn->set_disabled(empty_selection || is_missing_project_selected || selected_projects.size() > 1);
 	run_btn->set_disabled(empty_selection || is_missing_project_selected);
 
-	erase_missing_btn->set_disabled(!_project_list->is_any_project_missing());
+	erase_missing_btn->set_disabled(!project_list->is_any_project_missing());
 }
 
 void ProjectManager::_on_projects_updated() {
-	Vector<ProjectList::Item> selected_projects = _project_list->get_selected_projects();
+	Vector<ProjectList::Item> selected_projects = project_list->get_selected_projects();
 	int index = 0;
 	for (int i = 0; i < selected_projects.size(); ++i) {
-		index = _project_list->refresh_project(selected_projects[i].path);
+		index = project_list->refresh_project(selected_projects[i].path);
 	}
 	if (index != -1) {
-		_project_list->ensure_project_visible(index);
+		project_list->ensure_project_visible(index);
 	}
 
-	_project_list->update_dock_menu();
+	project_list->update_dock_menu();
 }
 
 void ProjectManager::_on_project_created(const String &dir) {
-	_project_list->add_project(dir, false);
-	_project_list->save_config();
+	project_list->add_project(dir, false);
+	project_list->save_config();
 	search_box->clear();
-	int i = _project_list->refresh_project(dir);
-	_project_list->select_project(i);
-	_project_list->ensure_project_visible(i);
+	int i = project_list->refresh_project(dir);
+	project_list->select_project(i);
+	project_list->ensure_project_visible(i);
 	_open_selected_projects_ask();
 
-	_project_list->update_dock_menu();
+	project_list->update_dock_menu();
 }
 
 void ProjectManager::_on_order_option_changed(int p_idx) {
 	if (is_inside_tree()) {
-		_project_list->set_order_option(p_idx);
+		project_list->set_order_option(p_idx);
 	}
 }
 
 void ProjectManager::_on_search_term_changed(const String &p_term) {
-	_project_list->set_search_term(p_term);
-	_project_list->sort_projects();
+	project_list->set_search_term(p_term);
+	project_list->sort_projects();
 
 	// Select the first visible project in the list.
 	// This makes it possible to open a project without ever touching the mouse,
 	// as the search field is automatically focused on startup.
-	_project_list->select_first_visible_project();
+	project_list->select_first_visible_project();
 	_update_project_buttons();
 }
 
@@ -754,7 +744,7 @@ void ProjectManager::_manage_project_tags() {
 		project_tags->get_child(i)->queue_free();
 	}
 
-	const ProjectList::Item item = _project_list->get_selected_projects()[0];
+	const ProjectList::Item item = project_list->get_selected_projects()[0];
 	current_project_tags = item.tags;
 	for (const String &tag : current_project_tags) {
 		ProjectTag *tag_control = memnew(ProjectTag(tag, true));
@@ -798,7 +788,7 @@ void ProjectManager::_apply_project_tags() {
 	}
 
 	ConfigFile cfg;
-	const String project_godot = _project_list->get_selected_projects()[0].path.path_join("project.godot");
+	const String project_godot = project_list->get_selected_projects()[0].path.path_join("project.godot");
 	Error err = cfg.load(project_godot);
 	if (err != OK) {
 		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err));
@@ -876,7 +866,7 @@ void ProjectManager::_full_convert_button_pressed() {
 }
 
 void ProjectManager::_perform_full_project_conversion() {
-	Vector<ProjectList::Item> selected_list = _project_list->get_selected_projects();
+	Vector<ProjectList::Item> selected_list = project_list->get_selected_projects();
 	if (selected_list.is_empty()) {
 		return;
 	}
@@ -894,7 +884,7 @@ void ProjectManager::_perform_full_project_conversion() {
 	Error err = OS::get_singleton()->create_instance(args);
 	ERR_FAIL_COND(err);
 
-	_project_list->set_project_version(path, GODOT4_CONFIG_VERSION);
+	project_list->set_project_version(path, GODOT4_CONFIG_VERSION);
 }
 
 // Input and I/O.
@@ -930,15 +920,15 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 				_open_selected_projects_ask();
 			} break;
 			case Key::HOME: {
-				if (_project_list->get_project_count() > 0) {
-					_project_list->select_project(0);
+				if (project_list->get_project_count() > 0) {
+					project_list->select_project(0);
 					_update_project_buttons();
 				}
 
 			} break;
 			case Key::END: {
-				if (_project_list->get_project_count() > 0) {
-					_project_list->select_project(_project_list->get_project_count() - 1);
+				if (project_list->get_project_count() > 0) {
+					project_list->select_project(project_list->get_project_count() - 1);
 					_update_project_buttons();
 				}
 
@@ -948,10 +938,10 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 					break;
 				}
 
-				int index = _project_list->get_single_selected_index();
+				int index = project_list->get_single_selected_index();
 				if (index > 0) {
-					_project_list->select_project(index - 1);
-					_project_list->ensure_project_visible(index - 1);
+					project_list->select_project(index - 1);
+					project_list->ensure_project_visible(index - 1);
 					_update_project_buttons();
 				}
 
@@ -962,10 +952,10 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 					break;
 				}
 
-				int index = _project_list->get_single_selected_index();
-				if (index + 1 < _project_list->get_project_count()) {
-					_project_list->select_project(index + 1);
-					_project_list->ensure_project_visible(index + 1);
+				int index = project_list->get_single_selected_index();
+				if (index + 1 < project_list->get_project_count()) {
+					project_list->select_project(index + 1);
+					project_list->ensure_project_visible(index + 1);
 					_update_project_buttons();
 				}
 
@@ -1008,7 +998,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 	for (const String &E : folders_set) {
 		folders.push_back(E);
 	}
-	_project_list->find_projects_multiple(folders);
+	project_list->find_projects_multiple(folders);
 }
 
 // Object methods.
@@ -1159,7 +1149,7 @@ ProjectManager::ProjectManager() {
 			local_projects_vb->add_child(hb);
 
 			create_btn = memnew(Button);
-			create_btn->set_text(TTR("New"));
+			create_btn->set_text(TTR("Create"));
 			create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD_OR_CTRL | Key::N));
 			create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
 			hb->add_child(create_btn);
@@ -1178,9 +1168,8 @@ ProjectManager::ProjectManager() {
 
 			loading_label = memnew(Label(TTR("Loading, please wait...")));
 			loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			hb->add_child(loading_label);
-			// The loading label is shown later.
 			loading_label->hide();
+			hb->add_child(loading_label);
 
 			search_box = memnew(LineEdit);
 			search_box->set_placeholder(TTR("Filter Projects"));
@@ -1215,61 +1204,116 @@ ProjectManager::ProjectManager() {
 
 		// Project list and its sidebar.
 		{
-			HBoxContainer *search_tree_hb = memnew(HBoxContainer);
-			local_projects_vb->add_child(search_tree_hb);
-			search_tree_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			HBoxContainer *project_list_hbox = memnew(HBoxContainer);
+			local_projects_vb->add_child(project_list_hbox);
+			project_list_hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-			search_panel = memnew(PanelContainer);
-			search_panel->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			search_tree_hb->add_child(search_panel);
+			project_list_panel = memnew(PanelContainer);
+			project_list_panel->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			project_list_hbox->add_child(project_list_panel);
 
-			_project_list = memnew(ProjectList);
-			_project_list->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-			search_panel->add_child(_project_list);
-			_project_list->connect(ProjectList::SIGNAL_LIST_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
-			_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
-			_project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+			project_list = memnew(ProjectList);
+			project_list->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+			project_list_panel->add_child(project_list);
+			project_list->connect(ProjectList::SIGNAL_LIST_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
+			project_list->connect(ProjectList::SIGNAL_LIST_CHANGED, callable_mp(this, &ProjectManager::_update_list_placeholder));
+			project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
+			project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+
+			// Empty project list placeholder.
+			{
+				empty_list_placeholder = memnew(VBoxContainer);
+				empty_list_placeholder->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+				empty_list_placeholder->add_theme_constant_override("separation", 16 * EDSCALE);
+				empty_list_placeholder->hide();
+				project_list_panel->add_child(empty_list_placeholder);
+
+				RichTextLabel *empty_list_message = memnew(RichTextLabel);
+				empty_list_message->set_use_bbcode(true);
+				empty_list_message->set_fit_content(true);
+				empty_list_message->set_h_size_flags(SIZE_EXPAND_FILL);
+				empty_list_message->add_theme_style_override("normal", memnew(StyleBoxEmpty));
+
+				const String line1 = TTR("You don't have any projects yet.");
+				const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Library!");
+				empty_list_message->set_text(vformat("[center][b]%s[/b] %s[/center]", line1, line2));
+				empty_list_placeholder->add_child(empty_list_message);
+
+				HBoxContainer *empty_list_actions = memnew(HBoxContainer);
+				empty_list_actions->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+				empty_list_placeholder->add_child(empty_list_actions);
+
+				empty_list_create_project = memnew(Button);
+				empty_list_create_project->set_text(TTR("Create New Project"));
+				empty_list_create_project->set_theme_type_variation("PanelBackgroundButton");
+				empty_list_actions->add_child(empty_list_create_project);
+				empty_list_create_project->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
+
+				empty_list_import_project = memnew(Button);
+				empty_list_import_project->set_text(TTR("Import Existing Project"));
+				empty_list_import_project->set_theme_type_variation("PanelBackgroundButton");
+				empty_list_actions->add_child(empty_list_import_project);
+				empty_list_import_project->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
+
+				empty_list_open_assetlib = memnew(Button);
+				empty_list_open_assetlib->set_text(TTR("Open Asset Library"));
+				empty_list_open_assetlib->set_theme_type_variation("PanelBackgroundButton");
+				empty_list_actions->add_child(empty_list_open_assetlib);
+				empty_list_open_assetlib->connect("pressed", callable_mp(this, &ProjectManager::_open_asset_library_confirmed));
+
+				empty_list_online_warning = memnew(Label);
+				empty_list_online_warning->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
+				empty_list_online_warning->set_custom_minimum_size(Size2(220, 0) * EDSCALE);
+				empty_list_online_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+				empty_list_online_warning->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+				empty_list_online_warning->set_text(TTR("Note: The Asset Library requires an online connection and involves sending data over the internet."));
+				empty_list_placeholder->add_child(empty_list_online_warning);
+			}
 
 			// The side bar with the edit, run, rename, etc. buttons.
-			VBoxContainer *tree_vb = memnew(VBoxContainer);
-			tree_vb->set_custom_minimum_size(Size2(120, 120));
-			search_tree_hb->add_child(tree_vb);
+			VBoxContainer *project_list_sidebar = memnew(VBoxContainer);
+			project_list_sidebar->set_custom_minimum_size(Size2(120, 120));
+			project_list_hbox->add_child(project_list_sidebar);
 
-			tree_vb->add_child(memnew(HSeparator));
+			project_list_sidebar->add_child(memnew(HSeparator));
 
 			open_btn = memnew(Button);
 			open_btn->set_text(TTR("Edit"));
 			open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD_OR_CTRL | Key::E));
 			open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
-			tree_vb->add_child(open_btn);
+			project_list_sidebar->add_child(open_btn);
 
 			run_btn = memnew(Button);
 			run_btn->set_text(TTR("Run"));
 			run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD_OR_CTRL | Key::R));
 			run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
-			tree_vb->add_child(run_btn);
+			project_list_sidebar->add_child(run_btn);
 
 			rename_btn = memnew(Button);
 			rename_btn->set_text(TTR("Rename"));
 			// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
 			rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), Key::F2));
 			rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
-			tree_vb->add_child(rename_btn);
+			project_list_sidebar->add_child(rename_btn);
 
 			manage_tags_btn = memnew(Button);
 			manage_tags_btn->set_text(TTR("Manage Tags"));
-			tree_vb->add_child(manage_tags_btn);
+			project_list_sidebar->add_child(manage_tags_btn);
 
 			erase_btn = memnew(Button);
 			erase_btn->set_text(TTR("Remove"));
 			erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), Key::KEY_DELETE));
 			erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
-			tree_vb->add_child(erase_btn);
+			project_list_sidebar->add_child(erase_btn);
+
+			Control *filler = memnew(Control);
+			filler->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			project_list_sidebar->add_child(filler);
 
 			erase_missing_btn = memnew(Button);
 			erase_missing_btn->set_text(TTR("Remove Missing"));
 			erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
-			tree_vb->add_child(erase_missing_btn);
+			project_list_sidebar->add_child(erase_missing_btn);
 		}
 	}
 
@@ -1320,7 +1364,7 @@ ProjectManager::ProjectManager() {
 		scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
 		scan_dir->set_current_dir(EDITOR_GET("filesystem/directories/default_project_path"));
 		add_child(scan_dir);
-		scan_dir->connect("dir_selected", callable_mp(_project_list, &ProjectList::find_projects));
+		scan_dir->connect("dir_selected", callable_mp(project_list, &ProjectList::find_projects));
 
 		erase_missing_ask = memnew(ConfirmationDialog);
 		erase_missing_ask->set_ok_button_text(TTR("Remove All"));
@@ -1367,17 +1411,14 @@ ProjectManager::ProjectManager() {
 		ask_full_convert_dialog->connect("confirmed", callable_mp(this, &ProjectManager::_perform_full_project_conversion));
 		add_child(ask_full_convert_dialog);
 
-		npdialog = memnew(ProjectDialog);
-		npdialog->connect("projects_updated", callable_mp(this, &ProjectManager::_on_projects_updated));
-		npdialog->connect("project_created", callable_mp(this, &ProjectManager::_on_project_created));
-		add_child(npdialog);
+		project_dialog = memnew(ProjectDialog);
+		project_dialog->connect("projects_updated", callable_mp(this, &ProjectManager::_on_projects_updated));
+		project_dialog->connect("project_created", callable_mp(this, &ProjectManager::_on_project_created));
+		add_child(project_dialog);
 
-		run_error_diag = memnew(AcceptDialog);
-		run_error_diag->set_title(TTR("Can't run project"));
-		add_child(run_error_diag);
-
-		dialog_error = memnew(AcceptDialog);
-		add_child(dialog_error);
+		error_dialog = memnew(AcceptDialog);
+		error_dialog->set_title(TTR("Error"));
+		add_child(error_dialog);
 
 		about_dialog = memnew(EditorAbout);
 		add_child(about_dialog);
@@ -1469,7 +1510,7 @@ ProjectManager::ProjectManager() {
 		String autoscan_path = EDITOR_GET("filesystem/directories/autoscan_project_path");
 		if (!autoscan_path.is_empty()) {
 			if (dir_access->dir_exists(autoscan_path)) {
-				_project_list->find_projects(autoscan_path);
+				project_list->find_projects(autoscan_path);
 				scanned_for_projects = true;
 			} else {
 				Error error = dir_access->make_dir_recursive(autoscan_path);
@@ -1480,7 +1521,7 @@ ProjectManager::ProjectManager() {
 		}
 
 		if (!scanned_for_projects) {
-			_project_list->update_project_list();
+			project_list->update_project_list();
 		}
 	}
 

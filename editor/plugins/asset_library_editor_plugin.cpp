@@ -1043,6 +1043,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 	Button *first = memnew(Button);
 	first->set_text(TTR("First", "Pagination"));
+	first->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != 0) {
 		first->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(0));
 	} else {
@@ -1053,6 +1054,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 	Button *prev = memnew(Button);
 	prev->set_text(TTR("Previous", "Pagination"));
+	prev->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page > 0) {
 		prev->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
 	} else {
@@ -1063,26 +1065,22 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i < to; i++) {
+		Button *current = memnew(Button);
+		// Add padding to make page number buttons easier to click.
+		current->set_text(vformat(" %d ", i + 1));
+		current->set_theme_type_variation("PanelBackgroundButton");
 		if (i == p_page) {
-			Button *current = memnew(Button);
-			// Keep the extended padding for the currently active page (see below).
-			current->set_text(vformat(" %d ", i + 1));
 			current->set_disabled(true);
 			current->set_focus_mode(Control::FOCUS_NONE);
-
-			hbc->add_child(current);
 		} else {
-			Button *current = memnew(Button);
-			// Add padding to make page number buttons easier to click.
-			current->set_text(vformat(" %d ", i + 1));
 			current->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(i));
-
-			hbc->add_child(current);
 		}
+		hbc->add_child(current);
 	}
 
 	Button *next = memnew(Button);
 	next->set_text(TTR("Next", "Pagination"));
+	next->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page < p_page_count - 1) {
 		next->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
 	} else {
@@ -1094,6 +1092,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 	Button *last = memnew(Button);
 	last->set_text(TTR("Last", "Pagination"));
+	last->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != p_page_count - 1) {
 		last->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count - 1));
 	} else {
@@ -1619,6 +1618,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_message_button = memnew(Button);
 	library_message_button->set_h_size_flags(SIZE_SHRINK_CENTER);
+	library_message_button->set_theme_type_variation("PanelBackgroundButton");
 	library_message_box->add_child(library_message_button);
 
 	asset_top_page = memnew(HBoxContainer);

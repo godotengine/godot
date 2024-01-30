@@ -388,6 +388,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font("main_bold_msdf", EditorStringName(EditorFonts), bold_fc_msdf);
 	p_theme->set_font_size("bold_size", EditorStringName(EditorFonts), default_font_size);
 
+	p_theme->set_font("italic", EditorStringName(EditorFonts), italic_fc);
+	p_theme->set_font_size("italic_size", EditorStringName(EditorFonts), default_font_size);
+
 	// Title font.
 
 	p_theme->set_font("title", EditorStringName(EditorFonts), bold_fc);
