@@ -85,8 +85,8 @@ private:
 	bool buttons_visible = false;
 	bool missing_right = false;
 	Vector<Tab> tabs;
-	int current = 0;
-	int previous = 0;
+	int current = -1;
+	int previous = -1;
 	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
 	bool clip_tabs = true;
 	int rb_hover = -1;
@@ -94,6 +94,7 @@ private:
 	bool tab_style_v_flip = false;
 
 	bool select_with_rmb = false;
+	bool deselect_enabled = false;
 
 	int cb_hover = -1;
 	bool cb_pressing = false;
@@ -146,6 +147,7 @@ private:
 	int get_tab_width(int p_idx) const;
 	Size2 _get_tab_icon_size(int p_idx) const;
 	void _ensure_no_over_offset();
+	bool _can_deselect() const;
 
 	void _update_hover();
 	void _update_cache(bool p_update_hover = true);
@@ -249,6 +251,9 @@ public:
 
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;
+
+	void set_deselect_enabled(bool p_enabled);
+	bool get_deselect_enabled() const;
 
 	void ensure_tab_visible(int p_idx);
 
