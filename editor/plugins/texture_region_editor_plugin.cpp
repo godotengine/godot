@@ -698,7 +698,7 @@ void TextureRegionEditor::_set_snap_sep_y(float p_val) {
 }
 
 void TextureRegionEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
-	if (p_zoom < 0.25 || p_zoom > 8) {
+	if (p_zoom < min_draw_zoom || p_zoom > max_draw_zoom) {
 		return;
 	}
 
@@ -1165,6 +1165,11 @@ TextureRegionEditor::TextureRegionEditor() {
 	hb_grid->add_child(sb_sep_y);
 
 	hb_grid->hide();
+
+	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
+	draw_zoom = MAX(1.0f, EDSCALE);
+	max_draw_zoom = 128.0f * MAX(1.0f, EDSCALE);
+	min_draw_zoom = 0.01f * MAX(1.0f, EDSCALE);
 
 	texture_preview = memnew(PanelContainer);
 	vb->add_child(texture_preview);

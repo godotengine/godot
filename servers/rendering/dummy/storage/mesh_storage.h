@@ -138,6 +138,8 @@ public:
 
 	/* MULTIMESH API */
 
+	bool owns_multimesh(RID p_rid) { return multimesh_owner.owns(p_rid); }
+
 	virtual RID multimesh_allocate() override;
 	virtual void multimesh_initialize(RID p_rid) override;
 	virtual void multimesh_free(RID p_rid) override;

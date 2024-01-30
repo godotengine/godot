@@ -113,6 +113,8 @@ void EditorDockManager::_dock_select_popup_theme_changed() {
 		dock_tab_move_left->set_icon(dock_select_popup->get_editor_theme_icon(SNAME("Back")));
 		dock_tab_move_right->set_icon(dock_select_popup->get_editor_theme_icon(SNAME("Forward")));
 	}
+
+	dock_to_bottom->set_icon(dock_select_popup->get_editor_theme_icon(SNAME("ControlAlignBottomWide")));
 }
 
 void EditorDockManager::_dock_popup_exit() {
@@ -122,6 +124,19 @@ void EditorDockManager::_dock_popup_exit() {
 
 void EditorDockManager::_dock_pre_popup(int p_dock_slot) {
 	dock_popup_selected_idx = p_dock_slot;
+	dock_bottom_selected_idx = -1;
+
+	if (bool(dock_slot[p_dock_slot]->get_current_tab_control()->call("_can_dock_horizontal"))) {
+		dock_to_bottom->show();
+	} else {
+		dock_to_bottom->hide();
+	}
+
+	if (dock_float) {
+		dock_float->show();
+	}
+	dock_tab_move_right->show();
+	dock_tab_move_left->show();
 }
 
 void EditorDockManager::_dock_move_left() {
@@ -179,23 +194,43 @@ void EditorDockManager::_dock_select_input(const Ref<InputEvent> &p_input) {
 
 		Ref<InputEventMouseButton> mb = me;
 
-		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed() && dock_popup_selected_idx != nrect) {
-			dock_slot[nrect]->move_tab_from_tab_container(dock_slot[dock_popup_selected_idx], dock_slot[dock_popup_selected_idx]->get_current_tab(), dock_slot[nrect]->get_tab_count());
+		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+			if (dock_bottom_selected_idx != -1) {
+				EditorNode::get_singleton()->remove_bottom_panel_item(bottom_docks[dock_bottom_selected_idx]);
 
-			if (dock_slot[dock_popup_selected_idx]->get_tab_count() == 0) {
-				dock_slot[dock_popup_selected_idx]->hide();
-			} else {
-				dock_slot[dock_popup_selected_idx]->set_current_tab(0);
+				bottom_docks[dock_bottom_selected_idx]->call("_set_dock_horizontal", false);
+
+				dock_slot[nrect]->add_child(bottom_docks[dock_bottom_selected_idx]);
+				dock_slot[nrect]->show();
+				bottom_docks.remove_at(dock_bottom_selected_idx);
+				dock_bottom_selected_idx = -1;
+				dock_popup_selected_idx = nrect; // Move to dock popup selected.
+				dock_select->queue_redraw();
+
+				update_dock_slots_visibility(true);
+
+				_edit_current();
+				emit_signal(SNAME("layout_changed"));
 			}
 
-			dock_popup_selected_idx = nrect;
-			dock_slot[nrect]->show();
-			dock_select->queue_redraw();
+			if (dock_popup_selected_idx != nrect) {
+				dock_slot[nrect]->move_tab_from_tab_container(dock_slot[dock_popup_selected_idx], dock_slot[dock_popup_selected_idx]->get_current_tab(), dock_slot[nrect]->get_tab_count());
 
-			update_dock_slots_visibility(true);
+				if (dock_slot[dock_popup_selected_idx]->get_tab_count() == 0) {
+					dock_slot[dock_popup_selected_idx]->hide();
+				} else {
+					dock_slot[dock_popup_selected_idx]->set_current_tab(0);
+				}
 
-			_edit_current();
-			emit_signal(SNAME("layout_changed"));
+				dock_popup_selected_idx = nrect;
+				dock_slot[nrect]->show();
+				dock_select->queue_redraw();
+
+				update_dock_slots_visibility(true);
+
+				_edit_current();
+				emit_signal(SNAME("layout_changed"));
+			}
 		}
 	}
 }
@@ -327,6 +362,44 @@ void EditorDockManager::_dock_make_selected_float() {
 	_edit_current();
 }
 
+void EditorDockManager::bottom_dock_show_placement_popup(const Rect2i &p_position, Control *p_dock) {
+	dock_bottom_selected_idx = bottom_docks.find(p_dock);
+	ERR_FAIL_COND(dock_bottom_selected_idx == -1);
+	dock_popup_selected_idx = -1;
+	dock_to_bottom->hide();
+
+	Vector2 popup_pos = p_position.position;
+	popup_pos.y += p_position.size.height;
+
+	if (!EditorNode::get_singleton()->get_gui_base()->is_layout_rtl()) {
+		popup_pos.x -= dock_select_popup->get_size().width;
+		popup_pos.x += p_position.size.width;
+	}
+	dock_select_popup->set_position(popup_pos);
+	dock_select_popup->popup();
+	if (dock_float) {
+		dock_float->hide();
+	}
+	dock_tab_move_right->hide();
+	dock_tab_move_left->hide();
+}
+
+void EditorDockManager::_dock_move_selected_to_bottom() {
+	Control *dock = dock_slot[dock_popup_selected_idx]->get_current_tab_control();
+	dock_slot[dock_popup_selected_idx]->remove_child(dock);
+
+	dock->call("_set_dock_horizontal", true);
+
+	bottom_docks.push_back(dock);
+	EditorNode::get_singleton()->add_bottom_panel_item(dock->get_name(), dock, true);
+	dock_select_popup->hide();
+	update_dock_slots_visibility(true);
+	_edit_current();
+	emit_signal(SNAME("layout_changed"));
+
+	EditorNode::get_singleton()->make_bottom_panel_item_visible(dock);
+}
+
 void EditorDockManager::_dock_make_float(Control *p_dock, int p_slot_index, bool p_show_window) {
 	ERR_FAIL_NULL(p_dock);
 
@@ -434,6 +507,16 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 
 	p_layout->set_value(p_section, "dock_floating", floating_docks_dump);
 
+	Array bottom_docks_dump;
+
+	for (Control *bdock : bottom_docks) {
+		Control *dock = bdock;
+		String name = dock->get_name();
+		bottom_docks_dump.push_back(name);
+	}
+
+	p_layout->set_value(p_section, "dock_bottom", bottom_docks_dump);
+
 	for (int i = 0; i < vsplits.size(); i++) {
 		if (vsplits[i]->is_visible_in_tree()) {
 			p_layout->set_value(p_section, "dock_split_" + itos(i + 1), vsplits[i]->get_split_offset());
@@ -464,6 +547,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 
 			// FIXME: Find it, in a horribly inefficient way.
 			int atidx = -1;
+			int bottom_idx = -1;
 			Control *node = nullptr;
 			for (int k = 0; k < DOCK_SLOT_MAX; k++) {
 				if (!dock_slot[k]->has_node(name)) {
@@ -492,6 +576,18 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 					}
 				}
 			}
+
+			if (atidx == -1) {
+				// Try bottom docks.
+				for (Control *bdock : bottom_docks) {
+					if (bdock->get_name() == name) {
+						node = bdock;
+						bottom_idx = bottom_docks.find(node);
+						break;
+					}
+				}
+			}
+
 			if (!node) {
 				// Well, it's not anywhere.
 				continue;
@@ -505,6 +601,11 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 				dock_slot[i]->move_tab_from_tab_container(dock_slot[atidx], dock_slot[atidx]->get_tab_idx_from_control(node), 0);
 				dock_slot[i]->set_block_signals(false);
 				dock_slot[atidx]->set_block_signals(false);
+			} else if (bottom_idx != -1) {
+				bottom_docks.erase(node);
+				EditorNode::get_singleton()->remove_bottom_panel_item(node);
+				dock_slot[i]->add_child(node);
+				node->call("_set_dock_horizontal", false);
 			}
 
 			WindowWrapper *wrapper = Object::cast_to<WindowWrapper>(node);
@@ -524,6 +625,46 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 		int selected_tab_idx = p_layout->get_value(p_section, "dock_" + itos(i + 1) + "_selected_tab_idx");
 		if (selected_tab_idx >= 0 && selected_tab_idx < dock_slot[i]->get_tab_count()) {
 			callable_mp(dock_slot[i], &TabContainer::set_current_tab).call_deferred(selected_tab_idx);
+		}
+	}
+
+	Array dock_bottom = p_layout->get_value(p_section, "dock_bottom", Array());
+	for (int i = 0; i < dock_bottom.size(); i++) {
+		const String &name = dock_bottom[i];
+		// FIXME: Find it, in a horribly inefficient way.
+		int atidx = -1;
+		Control *node = nullptr;
+		for (int k = 0; k < DOCK_SLOT_MAX; k++) {
+			if (!dock_slot[k]->has_node(name)) {
+				continue;
+			}
+			node = Object::cast_to<Control>(dock_slot[k]->get_node(name));
+			if (!node) {
+				continue;
+			}
+			atidx = k;
+			break;
+		}
+
+		if (atidx == -1) {
+			// Try floating docks.
+			for (WindowWrapper *wrapper : floating_docks) {
+				if (wrapper->get_meta("dock_name") == name) {
+					atidx = wrapper->get_meta("dock_slot");
+					node = wrapper->get_wrapped_control();
+					wrapper->set_window_enabled(false);
+					break;
+				}
+			}
+		}
+
+		if (node) {
+			dock_slot[atidx]->remove_child(node);
+
+			node->call("_set_dock_horizontal", true);
+
+			bottom_docks.push_back(node);
+			EditorNode::get_singleton()->add_bottom_panel_item(node->get_name(), node, true);
 		}
 	}
 
@@ -711,9 +852,17 @@ EditorDockManager::EditorDockManager() {
 		dock_float->set_tooltip_text(TTR("Make this dock floating."));
 	}
 	dock_float->set_focus_mode(Control::FOCUS_NONE);
-	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	dock_float->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_float->connect("pressed", callable_mp(this, &EditorDockManager::_dock_make_selected_float));
 	dock_vb->add_child(dock_float);
+
+	dock_to_bottom = memnew(Button);
+	dock_to_bottom->set_text(TTR("Move to Bottom"));
+	dock_to_bottom->set_focus_mode(Control::FOCUS_NONE);
+	dock_to_bottom->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	dock_to_bottom->connect("pressed", callable_mp(this, &EditorDockManager::_dock_move_selected_to_bottom));
+	dock_to_bottom->hide();
+	dock_vb->add_child(dock_to_bottom);
 
 	dock_select_popup->reset_size();
 }

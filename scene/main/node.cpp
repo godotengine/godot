@@ -2327,8 +2327,14 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 
 Ref<Tween> Node::create_tween() {
 	ERR_THREAD_GUARD_V(Ref<Tween>());
-	ERR_FAIL_NULL_V_MSG(data.tree, nullptr, "Can't create Tween when not inside scene tree.");
-	Ref<Tween> tween = get_tree()->create_tween();
+
+	SceneTree *tree = data.tree;
+	if (!tree) {
+		tree = SceneTree::get_singleton();
+	}
+	ERR_FAIL_NULL_V_MSG(tree, Ref<Tween>(), "No available SceneTree to create the Tween.");
+
+	Ref<Tween> tween = tree->create_tween();
 	tween->bind_node(this);
 	return tween;
 }
