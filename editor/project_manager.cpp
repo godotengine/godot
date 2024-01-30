@@ -474,12 +474,12 @@ void ProjectManager::_open_selected_projects() {
 	loading_label->show();
 
 	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
-
 	for (const String &path : selected_list) {
 		String conf = path.path_join("project.godot");
 
 		if (!FileAccess::exists(conf)) {
-			_show_error(vformat(TTR("Can't open project at '%s'."), path));
+			loading_label->hide();
+			_show_error(vformat(TTR("Can't open project at '%s'.\nProject file doesn't exist or is inaccessible."), path));
 			return;
 		}
 
@@ -497,7 +497,12 @@ void ProjectManager::_open_selected_projects() {
 		args.push_back("--editor");
 
 		Error err = OS::get_singleton()->create_instance(args);
-		ERR_FAIL_COND(err);
+		if (err != OK) {
+			loading_label->hide();
+			_show_error(vformat(TTR("Can't open project at '%s'.\nFailed to start the editor."), path));
+			ERR_PRINT(vformat("Failed to start an editor instance for the project at '%s', error code %d.", path, err));
+			return;
+		}
 	}
 
 	project_list->project_opening_initiated = true;
@@ -508,7 +513,6 @@ void ProjectManager::_open_selected_projects() {
 
 void ProjectManager::_open_selected_projects_ask() {
 	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
-
 	if (selected_list.size() < 1) {
 		return;
 	}
