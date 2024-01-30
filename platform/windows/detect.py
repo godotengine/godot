@@ -477,7 +477,7 @@ def configure_msvc(env, vcvars_msvc_config):
         # Check whether we have d3d12 dependencies installed.
         if not os.path.exists(env["mesa_libs"]):
             print("The Direct3D 12 rendering driver requires dependencies to be installed.")
-            print("You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
+            print(r"You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
             print("See the documentation for more information:")
             print(
                 "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
@@ -702,7 +702,7 @@ def configure_mingw(env):
         # Check whether we have d3d12 dependencies installed.
         if not os.path.exists(env["mesa_libs"]):
             print("The Direct3D 12 rendering driver requires dependencies to be installed.")
-            print("You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
+            print(r"You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
             print("See the documentation for more information:")
             print(
                 "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
