@@ -41,11 +41,13 @@ class EditorFileDialog;
 class HFlowContainer;
 class LineEdit;
 class LinkButton;
+class MarginContainer;
 class OptionButton;
 class PanelContainer;
 class ProjectDialog;
 class ProjectList;
 class TabContainer;
+class VBoxContainer;
 
 class ProjectManager : public Control {
 	GDCLASS(ProjectManager, Control);
@@ -65,21 +67,39 @@ class ProjectManager : public Control {
 
 	void _update_size_limits();
 
+	MarginContainer *root_container = nullptr;
 	Panel *background_panel = nullptr;
-	Button *about_btn = nullptr;
-	LinkButton *version_btn = nullptr;
+	VBoxContainer *main_vbox = nullptr;
+
+	HBoxContainer *title_bar = nullptr;
+	Button *title_bar_logo = nullptr;
+	HBoxContainer *main_view_toggles = nullptr;
+	HBoxContainer *quick_settings_hbox = nullptr;
+
+	enum MainViewTab {
+		MAIN_VIEW_PROJECTS,
+		MAIN_VIEW_ASSETLIB,
+		MAIN_VIEW_MAX
+	};
+
+	MainViewTab current_main_view = MAIN_VIEW_PROJECTS;
+	HashMap<MainViewTab, Control *> main_view_map;
+	HashMap<MainViewTab, Button *> main_view_toggle_map;
+
+	PanelContainer *main_view_container = nullptr;
+	Ref<ButtonGroup> main_view_toggles_group;
+
+	Button *_add_main_view(MainViewTab p_id, const String &p_name, const Ref<Texture2D> &p_icon, Control *p_view_control);
+	void _set_main_view_icon(MainViewTab p_id, const Ref<Texture2D> &p_icon);
+	void _select_main_view(int p_id);
+
+	VBoxContainer *local_projects_vb = nullptr;
+	EditorAssetLibrary *asset_library = nullptr;
 
 	ConfirmationDialog *open_templates = nullptr;
 	EditorAbout *about = nullptr;
 
 	void _show_about();
-	void _version_button_pressed();
-
-	TabContainer *tabs = nullptr;
-	VBoxContainer *local_projects_vb = nullptr;
-	EditorAssetLibrary *asset_library = nullptr;
-
-	void _on_tab_changed(int p_tab);
 	void _open_asset_library();
 
 	// Quick settings.
@@ -90,6 +110,12 @@ class ProjectManager : public Control {
 	void _language_selected(int p_id);
 	void _restart_confirm();
 	void _dim_window();
+
+	// Footer.
+
+	LinkButton *version_btn = nullptr;
+
+	void _version_button_pressed();
 
 	// Project list.
 
@@ -120,8 +146,6 @@ class ProjectManager : public Control {
 	ConfirmationDialog *erase_missing_ask = nullptr;
 	ConfirmationDialog *multi_open_ask = nullptr;
 	ConfirmationDialog *multi_run_ask = nullptr;
-
-	HBoxContainer *settings_hb = nullptr;
 
 	AcceptDialog *run_error_diag = nullptr;
 	AcceptDialog *dialog_error = nullptr;
