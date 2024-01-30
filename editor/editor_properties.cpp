@@ -343,6 +343,18 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_strin
 	}
 }
 
+void EditorPropertyTextEnum::set_max_size(Size2i size) {
+	option_button->get_popup()->set_max_size(size);
+}
+
+Size2i EditorPropertyTextEnum::get_max_size() {
+	return option_button->get_popup()->get_max_size();
+}
+
+Size2i EditorPropertyTextEnum::get_size() {
+	return option_button->get_popup()->get_size();
+}
+
 void EditorPropertyTextEnum::_bind_methods() {
 }
 
@@ -3635,6 +3647,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options = p_hint_text.split(",", false);
+				// 360 is a arbitrary number.
+				// Also this effects every string enum setting.
+				editor->set_max_size(Size2i(editor->get_max_size().x, 360 * EDSCALE));
 				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {

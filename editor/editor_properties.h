@@ -131,6 +131,11 @@ protected:
 
 public:
 	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_loose_mode = false);
+	// These functions actually use the option_button's popup
+	void set_max_size(Size2i size);
+	Size2i get_max_size();
+	Size2i get_size();
+
 	virtual void update_property() override;
 	EditorPropertyTextEnum();
 };

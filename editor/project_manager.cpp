@@ -1019,6 +1019,8 @@ ProjectManager::ProjectManager() {
 		language_btn->set_focus_mode(Control::FOCUS_NONE);
 		language_btn->set_fit_to_longest_item(false);
 		language_btn->set_flat(true);
+		// 360 is a arbitrary number.
+		language_btn->get_popup()->set_max_size(Size2i(language_btn->get_popup()->get_max_size().x, 360 * EDSCALE));
 		language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
 #ifdef ANDROID_ENABLED
 		// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
