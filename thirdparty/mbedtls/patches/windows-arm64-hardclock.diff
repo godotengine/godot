@@ -1,8 +1,8 @@
 diff --git a/thirdparty/mbedtls/library/timing.c b/thirdparty/mbedtls/library/timing.c
-index 94b55b3715..58c2c2730d 100644
+index f2f0a4386b..7ef9f473b5 100644
 --- a/thirdparty/mbedtls/library/timing.c
 +++ b/thirdparty/mbedtls/library/timing.c
-@@ -190,8 +190,10 @@ unsigned long mbedtls_timing_hardclock(void)
+@@ -178,8 +178,10 @@ unsigned long mbedtls_timing_hardclock(void)
  #endif /* !HAVE_HARDCLOCK && MBEDTLS_HAVE_ASM &&
            __GNUC__ && __ia64__ */
  
