@@ -138,7 +138,7 @@ layout(std140) uniform DirectionalLightData { //ubo:3
 	highp vec4 light_pos_inv_radius;
 	mediump vec4 light_direction_attenuation;
 	mediump vec4 light_color_energy;
-	mediump vec4 light_params; // cone attenuation, angle, specular, shadow enabled,
+	mediump vec4 light_params; // cone attenuation, angle, specular, shadow blur (negative value = shadow disabled)
 	mediump vec4 light_clamp;
 	mediump vec4 shadow_color_contact;
 	highp mat4 shadow_matrix1;
@@ -157,7 +157,7 @@ struct LightData {
 	highp vec4 light_pos_inv_radius;
 	mediump vec4 light_direction_attenuation;
 	mediump vec4 light_color_energy;
-	mediump vec4 light_params; // cone attenuation, angle, specular, shadow enabled,
+	mediump vec4 light_params; // cone attenuation, angle, specular, shadow blur (negative value = shadow disabled)
 	mediump vec4 light_clamp;
 	mediump vec4 shadow_color_contact;
 	highp mat4 shadow_matrix;
@@ -834,7 +834,7 @@ layout(std140) uniform DirectionalLightData {
 	highp vec4 light_pos_inv_radius;
 	mediump vec4 light_direction_attenuation;
 	mediump vec4 light_color_energy;
-	mediump vec4 light_params; // cone attenuation, angle, specular, shadow enabled,
+	mediump vec4 light_params; // cone attenuation, angle, specular, shadow blur (negative value = shadow disabled)
 	mediump vec4 light_clamp;
 	mediump vec4 shadow_color_contact;
 	highp mat4 shadow_matrix1;
@@ -858,7 +858,7 @@ struct LightData {
 	highp vec4 light_pos_inv_radius;
 	mediump vec4 light_direction_attenuation;
 	mediump vec4 light_color_energy;
-	mediump vec4 light_params; // cone attenuation, angle, specular, shadow enabled,
+	mediump vec4 light_params; // cone attenuation, angle, specular,, shadow blur (negative value = shadow disabled)
 	mediump vec4 light_clamp;
 	mediump vec4 shadow_color_contact;
 	highp mat4 shadow_matrix;
@@ -1344,7 +1344,7 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 
 #if !defined(SHADOWS_DISABLED)
 #ifdef USE_SHADOW //ubershader-runtime
-	if (omni_lights[idx].light_params.w > 0.5) {
+	if (omni_lights[idx].light_params.w >= 0) {
 		// there is a shadowmap
 
 		highp vec3 splane = (omni_lights[idx].shadow_matrix * vec4(vertex, 1.0)).xyz;
@@ -1374,7 +1374,7 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 		splane.z = shadow_len * omni_lights[idx].light_pos_inv_radius.w;
 
 		splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
-		float shadow = sample_shadow(shadow_atlas, shadow_atlas_pixel_size, splane.xy, splane.z, clamp_rect);
+		float shadow = sample_shadow(shadow_atlas, shadow_atlas_pixel_size * omni_lights[idx].light_params.w, splane.xy, splane.z, clamp_rect);
 
 #ifdef USE_CONTACT_SHADOWS //ubershader-runtime
 
@@ -1413,12 +1413,12 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 
 #if !defined(SHADOWS_DISABLED)
 #ifdef USE_SHADOW //ubershader-runtime
-	if (spot_lights[idx].light_params.w > 0.5) {
+	if (spot_lights[idx].light_params.w >= 0) {
 		//there is a shadowmap
 		highp vec4 splane = (spot_lights[idx].shadow_matrix * vec4(vertex, 1.0));
 		splane.xyz /= splane.w;
 
-		float shadow = sample_shadow(shadow_atlas, shadow_atlas_pixel_size, splane.xy, splane.z, spot_lights[idx].light_clamp);
+		float shadow = sample_shadow(shadow_atlas, shadow_atlas_pixel_size * spot_lights[idx].light_params.w, splane.xy, splane.z, spot_lights[idx].light_clamp);
 
 #ifdef USE_CONTACT_SHADOWS //ubershader-runtime
 		if (shadow > 0.01 && spot_lights[idx].shadow_color_contact.a > 0.0) {
@@ -2273,12 +2273,12 @@ FRAGMENT_SHADER_CODE
 
 		//one one sample
 
-		float shadow = sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord.xy, pssm_coord.z, light_clamp);
+		float shadow = sample_shadow(directional_shadow, directional_shadow_pixel_size * light_params.w, pssm_coord.xy, pssm_coord.z, light_clamp);
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 
 		if (use_blend) {
-			shadow = mix(shadow, sample_shadow(directional_shadow, directional_shadow_pixel_size, pssm_coord2.xy, pssm_coord2.z, light_clamp), pssm_blend);
+			shadow = mix(shadow, sample_shadow(directional_shadow, directional_shadow_pixel_size * light_params.w, pssm_coord2.xy, pssm_coord2.z, light_clamp), pssm_blend);
 		}
 #endif //ubershader-runtime
 

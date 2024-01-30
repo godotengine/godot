@@ -247,6 +247,7 @@ void Light::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_bias", PROPERTY_HINT_RANGE, "-10,10,0.001"), "set_param", "get_param", PARAM_SHADOW_BIAS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_contact", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "shadow_blur", PROPERTY_HINT_RANGE, "0.1,8,0.01"), "set_param", "get_param", PARAM_SHADOW_BLUR);
 	ADD_GROUP("Editor", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
 	ADD_GROUP("", "");
@@ -267,6 +268,7 @@ void Light::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_NORMAL_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS_SPLIT_SCALE);
+	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(BAKE_DISABLED);
@@ -316,6 +318,7 @@ Light::Light(VisualServer::LightType p_type) {
 	set_param(PARAM_SHADOW_SPLIT_3_OFFSET, 0.5);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.0);
 	set_param(PARAM_SHADOW_BIAS, 0.15);
+	set_param(PARAM_SHADOW_BLUR, 1.0);
 	set_disable_scale(true);
 }
 

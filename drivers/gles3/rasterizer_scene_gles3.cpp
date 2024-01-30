@@ -2713,7 +2713,8 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 	ubo_data.light_params[0] = 0;
 	ubo_data.light_params[1] = 0;
 	ubo_data.light_params[2] = li->light_ptr->param[VS::LIGHT_PARAM_SPECULAR];
-	ubo_data.light_params[3] = 0;
+	// Shadow is assumed to be disabled until it's enabled below.
+	ubo_data.light_params[3] = -1.0;
 
 	Color shadow_color = li->light_ptr->shadow_color.to_linear();
 	ubo_data.light_shadow_color_contact[0] = shadow_color.r;
@@ -2784,6 +2785,9 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 			ubo_data.light_clamp[1] = atlas_rect.position.y;
 			ubo_data.light_clamp[2] = atlas_rect.size.x;
 			ubo_data.light_clamp[3] = atlas_rect.size.y;
+
+			// Shader will consider the shadow to be enabled.
+			ubo_data.light_params[3] = li->light_ptr->param[VS::LIGHT_PARAM_SHADOW_BLUR];
 		}
 	}
 
@@ -2849,7 +2853,8 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 				ubo_data.light_params[0] = 0;
 				ubo_data.light_params[1] = 0;
 				ubo_data.light_params[2] = li->light_ptr->param[VS::LIGHT_PARAM_SPECULAR];
-				ubo_data.light_params[3] = 0;
+				// Shadow is assumed to be disabled until it's enabled below.
+				ubo_data.light_params[3] = -1.0;
 
 				Color shadow_color = li->light_ptr->shadow_color.to_linear();
 				ubo_data.light_shadow_color_contact[0] = shadow_color.r;
@@ -2890,7 +2895,7 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 
 					store_transform(proj, ubo_data.shadow.matrix1);
 
-					ubo_data.light_params[3] = 1.0; //means it has shadow
+					ubo_data.light_params[3] = li->light_ptr->param[VS::LIGHT_PARAM_SHADOW_BLUR]; //means it has shadow
 					ubo_data.light_clamp[0] = float(x) / atlas_size;
 					ubo_data.light_clamp[1] = float(y) / atlas_size;
 					ubo_data.light_clamp[2] = float(width) / atlas_size;
@@ -2928,7 +2933,8 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 				ubo_data.light_params[0] = li->light_ptr->param[VS::LIGHT_PARAM_SPOT_ATTENUATION];
 				ubo_data.light_params[1] = Math::cos(Math::deg2rad(li->light_ptr->param[VS::LIGHT_PARAM_SPOT_ANGLE]));
 				ubo_data.light_params[2] = li->light_ptr->param[VS::LIGHT_PARAM_SPECULAR];
-				ubo_data.light_params[3] = 0;
+				// Shadow is assumed to be disabled until it's enabled below.
+				ubo_data.light_params[3] = -1.0;
 
 				Color shadow_color = li->light_ptr->shadow_color.to_linear();
 				ubo_data.light_shadow_color_contact[0] = shadow_color.r;
@@ -2961,7 +2967,7 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 
 					Rect2 rect(float(x) / atlas_size, float(y) / atlas_size, float(width) / atlas_size, float(height) / atlas_size);
 
-					ubo_data.light_params[3] = 1.0; //means it has shadow
+					ubo_data.light_params[3] = li->light_ptr->param[VS::LIGHT_PARAM_SHADOW_BLUR]; //means it has shadow
 					ubo_data.light_clamp[0] = rect.position.x;
 					ubo_data.light_clamp[1] = rect.position.y;
 					ubo_data.light_clamp[2] = rect.size.x;

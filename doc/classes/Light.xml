@@ -59,6 +59,10 @@
 		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" default="0.15">
 			Used to adjust shadow appearance. Too small a value results in self-shadowing ("shadow acne"), while too large a value causes shadows to separate from casters ("peter-panning"). Adjust as needed.
 		</member>
+		<member name="shadow_blur" type="float" setter="set_param" getter="get_param" default="1.0">
+			The shadow blur multiplier ([code]1.0[/code] is standard blur). Higher values result in a more diffuse shadow, but with possible banding artifacts. Adjusting [member shadow_blur] generally does not affect performance.
+			[b]Note:[/b] [member shadow_blur] is only effective when [member ProjectSettings.rendering/quality/shadows/filter_mode] is PCF5 or PCF13.
+		</member>
 		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color( 0, 0, 0, 1 )">
 			The color of shadows cast by this light.
 		</member>
@@ -122,7 +126,10 @@
 		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_bias_split_scale].
 		</constant>
-		<constant name="PARAM_MAX" value="16" enum="Param">
+		<constant name="PARAM_SHADOW_BLUR" value="16" enum="Param">
+			Constant for accessing [member shadow_blur].
+		</constant>
+		<constant name="PARAM_MAX" value="17" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">

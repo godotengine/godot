@@ -3648,7 +3648,10 @@
 		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="LightParam">
 			Increases bias on further splits to fix self-shadowing that only occurs far away from the camera.
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="16" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="16" enum="LightParam">
+			Shadow blur multiplier ([code]1.0[/code] is standard blur). Higher values result in a more diffuse shadow, but with possible banding artifacts.
+		</constant>
+		<constant name="LIGHT_PARAM_MAX" value="17" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
