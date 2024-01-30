@@ -191,10 +191,14 @@ class EditorAssetLibrary : public PanelContainer {
 	PanelContainer *library_scroll_bg = nullptr;
 	ScrollContainer *library_scroll = nullptr;
 	VBoxContainer *library_vb = nullptr;
-	Label *library_info = nullptr;
-	VBoxContainer *library_error = nullptr;
-	Label *library_error_label = nullptr;
-	Button *library_error_retry = nullptr;
+	VBoxContainer *library_message_box = nullptr;
+	Label *library_message = nullptr;
+	Button *library_message_button = nullptr;
+	Callable library_message_action;
+
+	void _set_library_message(const String &p_message);
+	void _set_library_message_with_action(const String &p_message, const String &p_action_text, const Callable &p_action);
+
 	LineEdit *filter = nullptr;
 	Timer *filter_debounce_timer = nullptr;
 	OptionButton *categories = nullptr;
@@ -213,8 +217,11 @@ class EditorAssetLibrary : public PanelContainer {
 
 	HTTPRequest *request = nullptr;
 
-	bool templates_only;
-	bool initial_loading;
+	bool templates_only = false;
+	bool initial_loading = true;
+	bool loading_blocked = false;
+
+	void _force_online_mode();
 
 	enum Support {
 		SUPPORT_OFFICIAL,

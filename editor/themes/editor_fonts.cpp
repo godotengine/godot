@@ -370,6 +370,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontVariation> italic_fc = default_fc->duplicate();
 	italic_fc->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
 
+	Ref<FontVariation> bold_italic_fc = bold_fc->duplicate();
+	bold_italic_fc->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+
 	// Setup theme.
 
 	p_theme->set_default_font(default_fc); // Default theme font config.
@@ -394,6 +397,8 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font("font", "MainScreenButton", bold_fc);
 	p_theme->set_font_size("font_size", "MainScreenButton", default_font_size + 2 * EDSCALE);
 
+	// Labels.
+
 	p_theme->set_font("font", "Label", default_fc);
 
 	p_theme->set_type_variation("HeaderSmall", "Label");
@@ -407,6 +412,11 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_type_variation("HeaderLarge", "Label");
 	p_theme->set_font("font", "HeaderLarge", bold_fc);
 	p_theme->set_font_size("font_size", "HeaderLarge", default_font_size + 3 * EDSCALE);
+
+	p_theme->set_font("normal_font", "RichTextLabel", default_fc);
+	p_theme->set_font("bold_font", "RichTextLabel", bold_fc);
+	p_theme->set_font("italics_font", "RichTextLabel", italic_fc);
+	p_theme->set_font("bold_italics_font", "RichTextLabel", bold_italic_fc);
 
 	// Documentation fonts
 	p_theme->set_font_size("doc_size", EditorStringName(EditorFonts), int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);

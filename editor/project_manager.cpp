@@ -59,6 +59,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
@@ -137,21 +138,15 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			int default_sorting = (int)EDITOR_GET("project_manager/sorting_order");
+			const int default_sorting = (int)EDITOR_GET("project_manager/sorting_order");
 			filter_option->select(default_sorting);
 			_project_list->set_order_option(default_sorting);
 
-#ifndef ANDROID_ENABLED
-			if (_project_list->get_project_count() >= 1) {
-				// Focus on the search box immediately to allow the user
-				// to search without having to reach for their mouse
-				search_box->grab_focus();
-			}
-#endif
+			_select_main_view(MAIN_VIEW_PROJECTS);
 
 			// Suggest browsing asset library to get templates/demos.
-			if (asset_library && open_templates && _project_list->get_project_count() == 0) {
-				open_templates->popup_centered();
+			if (asset_library && _project_list->get_project_count() == 0) {
+				_suggest_asset_library();
 			}
 		} break;
 
@@ -303,10 +298,54 @@ void ProjectManager::_select_main_view(int p_id) {
 }
 
 void ProjectManager::_show_about() {
-	about->popup_centered(Size2(780, 500) * EDSCALE);
+	about_dialog->popup_centered(Size2(780, 500) * EDSCALE);
 }
 
-void ProjectManager::_open_asset_library() {
+void ProjectManager::_suggest_asset_library() {
+	if (!suggest_asset_library_dialog) {
+		suggest_asset_library_dialog = memnew(ConfirmationDialog);
+		suggest_asset_library_dialog->set_title(TTR("Getting Started with Godot"));
+		add_child(suggest_asset_library_dialog);
+		suggest_asset_library_dialog->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library_confirmed));
+
+		VBoxContainer *suggest_vbox = memnew(VBoxContainer);
+		suggest_asset_library_dialog->add_child(suggest_vbox);
+
+		suggest_asset_library_label = memnew(RichTextLabel);
+		suggest_asset_library_label->set_use_bbcode(true);
+		suggest_asset_library_label->set_fit_content(true);
+		suggest_asset_library_label->set_h_size_flags(SIZE_EXPAND_FILL);
+		suggest_asset_library_label->add_theme_style_override("normal", memnew(StyleBoxEmpty));
+		suggest_vbox->add_child(suggest_asset_library_label);
+	}
+
+	const int network_mode = EDITOR_GET("network/connection/network_mode");
+	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
+		const String line1 = TTR("You don't have any projects yet.");
+		const String line2 = TTR("Get started with one of the official project templates from the Asset Library!");
+		const String line3 = TTR("Note: The Asset Library requires an online connection and involves sending data over the internet.");
+
+		suggest_asset_library_label->set_text(vformat("%s\n\n[b]%s[/b]\n\n[i]%s[/i]", line1, line2, line3));
+		suggest_asset_library_dialog->set_ok_button_text(TTR("Go Online and Open Asset Library"));
+	} else {
+		const String line1 = TTR("You don't have any projects yet.");
+		const String line2 = TTR("Get started with one of the official project templates from the Asset Library!");
+
+		suggest_asset_library_label->set_text(vformat("%s\n\n[b]%s[/b]", line1, line2));
+		suggest_asset_library_dialog->set_ok_button_text(TTR("Open Asset Library"));
+	}
+
+	suggest_asset_library_dialog->popup_centered(Size2(540, 100) * EDSCALE);
+}
+
+void ProjectManager::_open_asset_library_confirmed() {
+	const int network_mode = EDITOR_GET("network/connection/network_mode");
+	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
+		EditorSettings::get_singleton()->set_setting("network/connection/network_mode", EditorSettings::NETWORK_ONLINE);
+		EditorSettings::get_singleton()->notify_changes();
+		EditorSettings::get_singleton()->save();
+	}
+
 	asset_library->disable_community_support();
 	_select_main_view(MAIN_VIEW_ASSETLIB);
 }
@@ -1339,16 +1378,8 @@ ProjectManager::ProjectManager() {
 		dialog_error = memnew(AcceptDialog);
 		add_child(dialog_error);
 
-		if (asset_library) {
-			open_templates = memnew(ConfirmationDialog);
-			open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
-			open_templates->set_ok_button_text(TTR("Open Asset Library"));
-			open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
-			add_child(open_templates);
-		}
-
-		about = memnew(EditorAbout);
-		add_child(about);
+		about_dialog = memnew(EditorAbout);
+		add_child(about_dialog);
 	}
 
 	// Tag management.
@@ -1453,7 +1484,6 @@ ProjectManager::ProjectManager() {
 	}
 
 	_update_size_limits();
-	_select_main_view(MAIN_VIEW_PROJECTS);
 }
 
 ProjectManager::~ProjectManager() {

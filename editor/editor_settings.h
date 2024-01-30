@@ -57,6 +57,11 @@ public:
 		Vector<String> install_files;
 	};
 
+	enum NetworkMode {
+		NETWORK_OFFLINE,
+		NETWORK_ONLINE,
+	};
+
 private:
 	struct VariantContainer {
 		int order = 0;

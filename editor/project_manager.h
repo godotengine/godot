@@ -46,6 +46,7 @@ class OptionButton;
 class PanelContainer;
 class ProjectDialog;
 class ProjectList;
+class RichTextLabel;
 class TabContainer;
 class VBoxContainer;
 
@@ -96,11 +97,13 @@ class ProjectManager : public Control {
 	VBoxContainer *local_projects_vb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
 
-	ConfirmationDialog *open_templates = nullptr;
-	EditorAbout *about = nullptr;
+	ConfirmationDialog *suggest_asset_library_dialog = nullptr;
+	RichTextLabel *suggest_asset_library_label = nullptr;
+	EditorAbout *about_dialog = nullptr;
 
 	void _show_about();
-	void _open_asset_library();
+	void _suggest_asset_library();
+	void _open_asset_library_confirmed();
 
 	// Quick settings.
 
