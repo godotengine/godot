@@ -764,6 +764,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("run/output/always_open_output_on_play", true);
 	_initial_set("run/output/always_close_output_on_stop", false);
 
+	// Platform
+	_initial_set("run/platforms/linuxbsd/prefer_wayland", false);
+	set_restart_if_changed("run/platforms/linuxbsd/prefer_wayland", true);
+
 	/* Network */
 
 	// Debug
@@ -1419,6 +1423,12 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
+#ifdef LINUXBSD_ENABLED
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		return DisplayServer::get_singleton()->screen_get_max_scale();
+	}
+#endif
+
 #if defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
