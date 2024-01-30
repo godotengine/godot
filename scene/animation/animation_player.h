@@ -142,6 +142,8 @@ protected:
 	void _set_root_bind_compat_80813(const NodePath &p_root);
 	NodePath _get_root_bind_compat_80813() const;
 	void _seek_bind_compat_80813(double p_time, bool p_update = false);
+	void _play_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
+	void _play_backwards_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1);
 
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
