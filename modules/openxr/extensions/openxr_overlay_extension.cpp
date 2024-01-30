@@ -46,20 +46,8 @@ OpenXROverlayExtension *OpenXROverlayExtension::get_singleton() {
 OpenXROverlayExtension::OpenXROverlayExtension() {
 	singleton = this;
 
-	int session_layers_placement_setting = GLOBAL_GET("xr/openxr/extensions/overlay/session_layers_placement");
-	switch (session_layers_placement_setting) {
-		case 0: { // Back
-			session_layers_placement = 0;
-		} break;
-		case 1: { // Front
-			session_layers_placement = UINT32_MAX;
-		} break;
-		case 2: { // Custom
-			session_layers_placement = GLOBAL_GET("xr/openxr/extensions/overlay/custom_session_layers_placement");
-		} break;
-		default:
-			break;
-	}
+	enabled = GLOBAL_GET("xr/openxr/extensions/overlay/enabled");
+	session_layers_placement = GLOBAL_GET("xr/openxr/extensions/overlay/session_layers_placement");
 }
 
 OpenXROverlayExtension::~OpenXROverlayExtension() {
@@ -75,7 +63,7 @@ HashMap<String, bool *> OpenXROverlayExtension::get_requested_extensions() {
 }
 
 void *OpenXROverlayExtension::set_session_create_and_get_next_pointer(void *p_next_pointer) {
-	if (!available) {
+	if (!available || !enabled) {
 		return p_next_pointer;
 	}
 	XrSessionCreateInfoOverlayEXTX *session_create_info_overlay = new XrSessionCreateInfoOverlayEXTX();
@@ -90,4 +78,16 @@ void *OpenXROverlayExtension::set_session_create_and_get_next_pointer(void *p_ne
 
 bool OpenXROverlayExtension::is_available() {
 	return available;
+}
+
+bool OpenXROverlayExtension::is_enabled() {
+	return enabled;
+}
+
+uint32_t OpenXROverlayExtension::get_session_layers_placement() const {
+	return session_layers_placement;
+}
+
+void OpenXROverlayExtension::set_session_layers_placement(uint32_t p_session_layers_placement) {
+	session_layers_placement = p_session_layers_placement;
 }

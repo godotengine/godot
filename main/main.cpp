@@ -2772,7 +2772,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// OpenXR Overlay Settings
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/overlay/session_layers_placement", PROPERTY_HINT_ENUM, "Back,Front,Custom"), "1");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/overlay/custom_session_layers_placement", PROPERTY_HINT_RANGE, "0,4294967295"), UINT32_MAX); // Max is UINT32_MAX
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/overlay/session_layers_placement", PROPERTY_HINT_RANGE, "0,4294967295"), UINT32_MAX); // Max is UINT32_MAX
 #ifdef TOOLS_ENABLED
 	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
 

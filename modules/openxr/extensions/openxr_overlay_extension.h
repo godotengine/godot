@@ -44,11 +44,16 @@ public:
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
 
 	bool is_available();
+	bool is_enabled();
+
+	uint32_t get_session_layers_placement() const;
+	void set_session_layers_placement(uint32_t p_session_layers_placement);
 
 private:
 	static OpenXROverlayExtension *singleton;
 	uint32_t session_layers_placement = 0;
 	bool available = false;
+	bool enabled = false;
 };
 
 #endif // OPENXR_OVERLAY_EXTENSION_H

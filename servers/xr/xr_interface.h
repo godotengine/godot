@@ -167,6 +167,10 @@ public:
 	virtual RID get_vrs_texture(); /* obtain VRS texture */
 	virtual VRSTextureFormat get_vrs_texture_format() { return XR_VRS_TEXTURE_FORMAT_UNIFIED; }
 
+	/** overlay */
+	virtual bool is_overlay_supported() { return false; }
+	virtual bool is_overlay_enabled() { return false; }
+
 	XRInterface();
 	~XRInterface();
 };
