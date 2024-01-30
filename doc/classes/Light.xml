@@ -51,7 +51,7 @@
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0">
 			The size of the light in Godot units. Only considered in baked lightmaps and only if [member light_bake_mode] is set to [constant BAKE_ALL]. Increasing this value will make the shadows appear blurrier. This can be used to simulate area lights to an extent.
-			[b]Note:[/b] [member light_size] is not affected by [member Spatial.scale] (the light's scale or its parent's scale).
+			[b]Note:[/b] [member light_size] is not affected by [member Spatial.scale] (the light's scale or its parent's scale). [DirectionalLight]s with their bake mode set to [constant BAKE_INDIRECT] still have an adjustable [member light_size] property, but it will only be used for the baked shadowmask (see [member BakedLightmap.use_shadowmask]). This can be used to better integrate the shadowmask with real-time shadows by making it softer and less pixelated. Values between [code]0.01[/code] and [code]0.1[/code] work well for the purposes of shadowmasking.
 		</member>
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="0.5">
 			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.

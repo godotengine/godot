@@ -42,8 +42,9 @@ void *oidn_denoiser_init() {
 bool oidn_denoise(void *deviceptr, float *p_floats, int p_width, int p_height) {
 	OIDNDeviceImpl *device = (OIDNDeviceImpl *)deviceptr;
 	OIDNFilter filter = oidnNewFilter(device, "RTLightmap");
-	oidnSetSharedFilterImage(filter, "color", (void *)p_floats, OIDN_FORMAT_FLOAT3, p_width, p_height, 0, 0, 0);
-	oidnSetSharedFilterImage(filter, "output", (void *)p_floats, OIDN_FORMAT_FLOAT3, p_width, p_height, 0, 0, 0);
+	// Pass 16-byte pixel stride to preserve the unmodified 32-bit alpha channel.
+	oidnSetSharedFilterImage(filter, "color", (void *)p_floats, OIDN_FORMAT_FLOAT3, p_width, p_height, 0, 16, 0);
+	oidnSetSharedFilterImage(filter, "output", (void *)p_floats, OIDN_FORMAT_FLOAT3, p_width, p_height, 0, 16, 0);
 	oidnSetFilter1b(filter, "hdr", true);
 	oidnCommitFilter(filter);
 	oidnExecuteFilter(filter);
