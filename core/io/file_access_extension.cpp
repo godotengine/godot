@@ -87,7 +87,7 @@ bool FileAccessExtension::is_open() const {
 }
 
 String FileAccessExtension::get_path() const {
-	String path = "";
+	String path;
 	if (GDVIRTUAL_CALL(_get_path, path)) {
 		return path;
 	}
@@ -95,7 +95,7 @@ String FileAccessExtension::get_path() const {
 }
 
 String FileAccessExtension::get_path_absolute() const {
-	String path_absolute = "";
+	String path_absolute;
 	if (GDVIRTUAL_CALL(_get_path_absolute, path_absolute)) {
 		return path_absolute;
 	}
@@ -183,7 +183,7 @@ real_t FileAccessExtension::get_real() const {
 }
 
 Variant FileAccessExtension::get_var(bool p_allow_objects) const {
-	Variant var = Variant();
+	Variant var;
 	if (GDVIRTUAL_CALL(_get_var, p_allow_objects, var)) {
 		return var;
 	}
@@ -212,7 +212,7 @@ Vector<uint8_t> FileAccessExtension::get_buffer(int64_t p_length) const {
 }
 
 String FileAccessExtension::get_line() const {
-	String line = "";
+	String line;
 	if (GDVIRTUAL_CALL(_get_line, line)) {
 		return line;
 	}
@@ -220,7 +220,7 @@ String FileAccessExtension::get_line() const {
 }
 
 String FileAccessExtension::get_token() const {
-	String token = "";
+	String token;
 	if (GDVIRTUAL_CALL(_get_token, token)) {
 		return token;
 	}
@@ -228,7 +228,7 @@ String FileAccessExtension::get_token() const {
 }
 
 Vector<String> FileAccessExtension::get_csv_line(const String &p_delim) const {
-	Vector<String> csv_line = Vector<String>();
+	Vector<String> csv_line;
 	if (GDVIRTUAL_CALL(_get_csv_line, p_delim, csv_line)) {
 		return csv_line;
 	}
@@ -236,7 +236,7 @@ Vector<String> FileAccessExtension::get_csv_line(const String &p_delim) const {
 }
 
 String FileAccessExtension::get_as_text(bool p_skip_cr) const {
-	String val_as_text = "";
+	String val_as_text;
 	if (GDVIRTUAL_CALL(_get_as_text, p_skip_cr, val_as_text)) {
 		return val_as_text;
 	}
@@ -244,7 +244,7 @@ String FileAccessExtension::get_as_text(bool p_skip_cr) const {
 }
 
 String FileAccessExtension::get_as_utf8_string(bool p_skip_cr) const {
-	String val_as_utf8_string = "";
+	String val_as_utf8_string;
 	if (GDVIRTUAL_CALL(_get_as_utf8_string, p_skip_cr, val_as_utf8_string)) {
 		return val_as_utf8_string;
 	}
@@ -326,7 +326,7 @@ void FileAccessExtension::store_pascal_string(const String &p_string) {
 }
 
 String FileAccessExtension::get_pascal_string() {
-	String string = "";
+	String string;
 	if (GDVIRTUAL_CALL(_get_pascal_string, string)) {
 		return string;
 	}
@@ -334,7 +334,7 @@ String FileAccessExtension::get_pascal_string() {
 }
 
 void FileAccessExtension::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	Vector<uint8_t> buffer = Vector<uint8_t>();
+	Vector<uint8_t> buffer;
 	uint64_t i = 0;
 	for (i = 0; i < p_length; i++) {
 		buffer.insert(i, p_src[i]);

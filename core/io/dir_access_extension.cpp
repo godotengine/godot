@@ -34,7 +34,7 @@
 #include "core/object/object.h"
 
 String DirAccessExtension::fix_path(String p_path) const {
-	String path = "";
+	String path;
 	if (GDVIRTUAL_CALL(_fix_path, p_path, path)) {
 		return path;
 	}
@@ -48,7 +48,7 @@ Error DirAccessExtension::list_dir_begin() {
 }
 
 String DirAccessExtension::get_next() {
-	String next = "";
+	String next;
 	GDVIRTUAL_REQUIRED_CALL(_get_next, next);
 	return next;
 }
@@ -76,7 +76,7 @@ int DirAccessExtension::get_drive_count() {
 }
 
 String DirAccessExtension::get_drive(int p_drive) {
-	String drive = "";
+	String drive;
 	GDVIRTUAL_REQUIRED_CALL(_get_drive, p_drive, drive);
 	return drive;
 }
@@ -104,7 +104,7 @@ Error DirAccessExtension::change_dir(String p_dir) {
 }
 
 String DirAccessExtension::get_current_dir(bool p_include_drive) const {
-	String current_dir = "";
+	String current_dir;
 	GDVIRTUAL_REQUIRED_CALL(_get_current_dir, p_include_drive, current_dir);
 	return current_dir;
 }
@@ -192,7 +192,7 @@ bool DirAccessExtension::is_link(String p_file) {
 }
 
 String DirAccessExtension::read_link(String p_file) {
-	String link = "";
+	String link;
 	GDVIRTUAL_REQUIRED_CALL(_read_link, p_file, link);
 	return link;
 }
@@ -204,7 +204,7 @@ Error DirAccessExtension::create_link(String p_source, String p_target) {
 }
 
 String DirAccessExtension::get_filesystem_type() const {
-	String filesystem_type = "";
+	String filesystem_type;
 	GDVIRTUAL_REQUIRED_CALL(_get_filesystem_type, filesystem_type);
 	return filesystem_type;
 }
