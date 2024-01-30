@@ -390,8 +390,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font("title", EditorStringName(EditorFonts), bold_fc);
 	p_theme->set_font_size("title_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
 
-	p_theme->set_font("main_button_font", EditorStringName(EditorFonts), bold_fc);
-	p_theme->set_font_size("main_button_font_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
+	p_theme->set_type_variation("MainScreenButton", "Button");
+	p_theme->set_font("font", "MainScreenButton", bold_fc);
+	p_theme->set_font_size("font_size", "MainScreenButton", default_font_size + 2 * EDSCALE);
 
 	p_theme->set_font("font", "Label", default_fc);
 
