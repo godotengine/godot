@@ -430,7 +430,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 						path = remaps[path];
 					}
 
-					Ref<Resource> res = ResourceLoader::load(path, exttype);
+					Ref<Resource> res = ResourceLoader::load(path, exttype, cache_mode);
 
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
@@ -683,7 +683,7 @@ Error ResourceLoaderBinary::load() {
 		}
 
 		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
-		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, ResourceFormatLoader::CACHE_MODE_REUSE);
+		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode);
 		if (!external_resources[i].load_token.is_valid()) {
 			if (!ResourceLoader::get_abort_on_missing_resources()) {
 				ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
