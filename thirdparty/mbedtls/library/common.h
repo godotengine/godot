@@ -5,39 +5,23 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #ifndef MBEDTLS_LIBRARY_COMMON_H
 #define MBEDTLS_LIBRARY_COMMON_H
 
-#if defined(MBEDTLS_CONFIG_FILE)
-#include MBEDTLS_CONFIG_FILE
-#else
-#include "mbedtls/config.h"
-#endif
+#include "mbedtls/build_info.h"
+#include "alignment.h"
 
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stddef.h>
 
-/* Define `inline` on some non-C99-compliant compilers. */
-#if (defined(__ARMCC_VERSION) || defined(_MSC_VER)) && \
-    !defined(inline) && !defined(__cplusplus)
-#define inline __inline
-#endif
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
+#endif /* __ARM_NEON */
 
 /** Helper to define a function as static except when building invasive tests.
  *
@@ -59,6 +43,78 @@
 #else
 #define MBEDTLS_STATIC_TESTABLE static
 #endif
+
+#if defined(MBEDTLS_TEST_HOOKS)
+extern void (*mbedtls_test_hook_test_fail)(const char *test, int line, const char *file);
+#define MBEDTLS_TEST_HOOK_TEST_ASSERT(TEST) \
+    do { \
+        if ((!(TEST)) && ((*mbedtls_test_hook_test_fail) != NULL)) \
+        { \
+            (*mbedtls_test_hook_test_fail)( #TEST, __LINE__, __FILE__); \
+        } \
+    } while (0)
+#else
+#define MBEDTLS_TEST_HOOK_TEST_ASSERT(TEST)
+#endif /* defined(MBEDTLS_TEST_HOOKS) */
+
+/** \def ARRAY_LENGTH
+ * Return the number of elements of a static or stack array.
+ *
+ * \param array         A value of array (not pointer) type.
+ *
+ * \return The number of elements of the array.
+ */
+/* A correct implementation of ARRAY_LENGTH, but which silently gives
+ * a nonsensical result if called with a pointer rather than an array. */
+#define ARRAY_LENGTH_UNSAFE(array)            \
+    (sizeof(array) / sizeof(*(array)))
+
+#if defined(__GNUC__)
+/* Test if arg and &(arg)[0] have the same type. This is true if arg is
+ * an array but not if it's a pointer. */
+#define IS_ARRAY_NOT_POINTER(arg)                                     \
+    (!__builtin_types_compatible_p(__typeof__(arg),                \
+                                   __typeof__(&(arg)[0])))
+/* A compile-time constant with the value 0. If `const_expr` is not a
+ * compile-time constant with a nonzero value, cause a compile-time error. */
+#define STATIC_ASSERT_EXPR(const_expr)                                \
+    (0 && sizeof(struct { unsigned int STATIC_ASSERT : 1 - 2 * !(const_expr); }))
+
+/* Return the scalar value `value` (possibly promoted). This is a compile-time
+ * constant if `value` is. `condition` must be a compile-time constant.
+ * If `condition` is false, arrange to cause a compile-time error. */
+#define STATIC_ASSERT_THEN_RETURN(condition, value)   \
+    (STATIC_ASSERT_EXPR(condition) ? 0 : (value))
+
+#define ARRAY_LENGTH(array)                                           \
+    (STATIC_ASSERT_THEN_RETURN(IS_ARRAY_NOT_POINTER(array),         \
+                               ARRAY_LENGTH_UNSAFE(array)))
+
+#else
+/* If we aren't sure the compiler supports our non-standard tricks,
+ * fall back to the unsafe implementation. */
+#define ARRAY_LENGTH(array) ARRAY_LENGTH_UNSAFE(array)
+#endif
+/** Allow library to access its structs' private members.
+ *
+ * Although structs defined in header files are publicly available,
+ * their members are private and should not be accessed by the user.
+ */
+#define MBEDTLS_ALLOW_PRIVATE_ACCESS
+
+/**
+ * \brief       Securely zeroize a buffer then free it.
+ *
+ *              Similar to making consecutive calls to
+ *              \c mbedtls_platform_zeroize() and \c mbedtls_free(), but has
+ *              code size savings, and potential for optimisation in the future.
+ *
+ *              Guaranteed to be a no-op if \p buf is \c NULL and \p len is 0.
+ *
+ * \param buf   Buffer to be zeroized then freed.
+ * \param len   Length of the buffer in bytes
+ */
+void mbedtls_zeroize_and_free(void *buf, size_t len);
 
 /** Return an offset into a buffer.
  *
@@ -98,254 +154,130 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
     return p == NULL ? NULL : p + n;
 }
 
-/** Byte Reading Macros
- *
- * Given a multi-byte integer \p x, MBEDTLS_BYTE_n retrieves the n-th
- * byte from x, where byte 0 is the least significant byte.
- */
-#define MBEDTLS_BYTE_0(x) ((uint8_t) ((x)         & 0xff))
-#define MBEDTLS_BYTE_1(x) ((uint8_t) (((x) >> 8) & 0xff))
-#define MBEDTLS_BYTE_2(x) ((uint8_t) (((x) >> 16) & 0xff))
-#define MBEDTLS_BYTE_3(x) ((uint8_t) (((x) >> 24) & 0xff))
-#define MBEDTLS_BYTE_4(x) ((uint8_t) (((x) >> 32) & 0xff))
-#define MBEDTLS_BYTE_5(x) ((uint8_t) (((x) >> 40) & 0xff))
-#define MBEDTLS_BYTE_6(x) ((uint8_t) (((x) >> 48) & 0xff))
-#define MBEDTLS_BYTE_7(x) ((uint8_t) (((x) >> 56) & 0xff))
-
 /**
- * Get the unsigned 32 bits integer corresponding to four bytes in
- * big-endian order (MSB first).
+ * Perform a fast block XOR operation, such that
+ * r[i] = a[i] ^ b[i] where 0 <= i < n
  *
- * \param   data    Base address of the memory to get the four bytes from.
- * \param   offset  Offset from \p base of the first and most significant
- *                  byte of the four bytes to build the 32 bits unsigned
- *                  integer from.
+ * \param   r Pointer to result (buffer of at least \p n bytes). \p r
+ *            may be equal to either \p a or \p b, but behaviour when
+ *            it overlaps in other ways is undefined.
+ * \param   a Pointer to input (buffer of at least \p n bytes)
+ * \param   b Pointer to input (buffer of at least \p n bytes)
+ * \param   n Number of bytes to process.
  */
-#ifndef MBEDTLS_GET_UINT32_BE
-#define MBEDTLS_GET_UINT32_BE(data, offset)                  \
-    (                                                           \
-        ((uint32_t) (data)[(offset)] << 24)         \
-        | ((uint32_t) (data)[(offset) + 1] << 16)         \
-        | ((uint32_t) (data)[(offset) + 2] <<  8)         \
-        | ((uint32_t) (data)[(offset) + 3])         \
-    )
-#endif
-
-/**
- * Put in memory a 32 bits unsigned integer in big-endian order.
- *
- * \param   n       32 bits unsigned integer to put in memory.
- * \param   data    Base address of the memory where to put the 32
- *                  bits unsigned integer in.
- * \param   offset  Offset from \p base where to put the most significant
- *                  byte of the 32 bits unsigned integer \p n.
- */
-#ifndef MBEDTLS_PUT_UINT32_BE
-#define MBEDTLS_PUT_UINT32_BE(n, data, offset)                \
-    {                                                               \
-        (data)[(offset)] = MBEDTLS_BYTE_3(n);             \
-        (data)[(offset) + 1] = MBEDTLS_BYTE_2(n);             \
-        (data)[(offset) + 2] = MBEDTLS_BYTE_1(n);             \
-        (data)[(offset) + 3] = MBEDTLS_BYTE_0(n);             \
+inline void mbedtls_xor(unsigned char *r, const unsigned char *a, const unsigned char *b, size_t n)
+{
+    size_t i = 0;
+#if defined(MBEDTLS_EFFICIENT_UNALIGNED_ACCESS)
+#if defined(__ARM_NEON)
+    for (; (i + 16) <= n; i += 16) {
+        uint8x16_t v1 = vld1q_u8(a + i);
+        uint8x16_t v2 = vld1q_u8(b + i);
+        uint8x16_t x = veorq_u8(v1, v2);
+        vst1q_u8(r + i, x);
+    }
+#elif defined(__amd64__) || defined(__x86_64__) || defined(__aarch64__)
+    /* This codepath probably only makes sense on architectures with 64-bit registers */
+    for (; (i + 8) <= n; i += 8) {
+        uint64_t x = mbedtls_get_unaligned_uint64(a + i) ^ mbedtls_get_unaligned_uint64(b + i);
+        mbedtls_put_unaligned_uint64(r + i, x);
+    }
+#else
+    for (; (i + 4) <= n; i += 4) {
+        uint32_t x = mbedtls_get_unaligned_uint32(a + i) ^ mbedtls_get_unaligned_uint32(b + i);
+        mbedtls_put_unaligned_uint32(r + i, x);
     }
 #endif
-
-/**
- * Get the unsigned 32 bits integer corresponding to four bytes in
- * little-endian order (LSB first).
- *
- * \param   data    Base address of the memory to get the four bytes from.
- * \param   offset  Offset from \p base of the first and least significant
- *                  byte of the four bytes to build the 32 bits unsigned
- *                  integer from.
- */
-#ifndef MBEDTLS_GET_UINT32_LE
-#define MBEDTLS_GET_UINT32_LE(data, offset)                   \
-    (                                                           \
-        ((uint32_t) (data)[(offset)])         \
-        | ((uint32_t) (data)[(offset) + 1] <<  8)         \
-        | ((uint32_t) (data)[(offset) + 2] << 16)         \
-        | ((uint32_t) (data)[(offset) + 3] << 24)         \
-    )
 #endif
+    for (; i < n; i++) {
+        r[i] = a[i] ^ b[i];
+    }
+}
 
 /**
- * Put in memory a 32 bits unsigned integer in little-endian order.
+ * Perform a fast block XOR operation, such that
+ * r[i] = a[i] ^ b[i] where 0 <= i < n
  *
- * \param   n       32 bits unsigned integer to put in memory.
- * \param   data    Base address of the memory where to put the 32
- *                  bits unsigned integer in.
- * \param   offset  Offset from \p base where to put the least significant
- *                  byte of the 32 bits unsigned integer \p n.
+ * In some situations, this can perform better than mbedtls_xor (e.g., it's about 5%
+ * better in AES-CBC).
+ *
+ * \param   r Pointer to result (buffer of at least \p n bytes). \p r
+ *            may be equal to either \p a or \p b, but behaviour when
+ *            it overlaps in other ways is undefined.
+ * \param   a Pointer to input (buffer of at least \p n bytes)
+ * \param   b Pointer to input (buffer of at least \p n bytes)
+ * \param   n Number of bytes to process.
  */
-#ifndef MBEDTLS_PUT_UINT32_LE
-#define MBEDTLS_PUT_UINT32_LE(n, data, offset)                \
-    {                                                               \
-        (data)[(offset)] = MBEDTLS_BYTE_0(n);             \
-        (data)[(offset) + 1] = MBEDTLS_BYTE_1(n);             \
-        (data)[(offset) + 2] = MBEDTLS_BYTE_2(n);             \
-        (data)[(offset) + 3] = MBEDTLS_BYTE_3(n);             \
+static inline void mbedtls_xor_no_simd(unsigned char *r,
+                                       const unsigned char *a,
+                                       const unsigned char *b,
+                                       size_t n)
+{
+    size_t i = 0;
+#if defined(MBEDTLS_EFFICIENT_UNALIGNED_ACCESS)
+#if defined(__amd64__) || defined(__x86_64__) || defined(__aarch64__)
+    /* This codepath probably only makes sense on architectures with 64-bit registers */
+    for (; (i + 8) <= n; i += 8) {
+        uint64_t x = mbedtls_get_unaligned_uint64(a + i) ^ mbedtls_get_unaligned_uint64(b + i);
+        mbedtls_put_unaligned_uint64(r + i, x);
+    }
+#else
+    for (; (i + 4) <= n; i += 4) {
+        uint32_t x = mbedtls_get_unaligned_uint32(a + i) ^ mbedtls_get_unaligned_uint32(b + i);
+        mbedtls_put_unaligned_uint32(r + i, x);
     }
 #endif
-
-/**
- * Get the unsigned 16 bits integer corresponding to two bytes in
- * little-endian order (LSB first).
- *
- * \param   data    Base address of the memory to get the two bytes from.
- * \param   offset  Offset from \p base of the first and least significant
- *                  byte of the two bytes to build the 16 bits unsigned
- *                  integer from.
- */
-#ifndef MBEDTLS_GET_UINT16_LE
-#define MBEDTLS_GET_UINT16_LE(data, offset)                   \
-    (                                                           \
-        ((uint16_t) (data)[(offset)])         \
-        | ((uint16_t) (data)[(offset) + 1] <<  8)         \
-    )
 #endif
-
-/**
- * Put in memory a 16 bits unsigned integer in little-endian order.
- *
- * \param   n       16 bits unsigned integer to put in memory.
- * \param   data    Base address of the memory where to put the 16
- *                  bits unsigned integer in.
- * \param   offset  Offset from \p base where to put the least significant
- *                  byte of the 16 bits unsigned integer \p n.
- */
-#ifndef MBEDTLS_PUT_UINT16_LE
-#define MBEDTLS_PUT_UINT16_LE(n, data, offset)                \
-    {                                                               \
-        (data)[(offset)] = MBEDTLS_BYTE_0(n);             \
-        (data)[(offset) + 1] = MBEDTLS_BYTE_1(n);             \
+    for (; i < n; i++) {
+        r[i] = a[i] ^ b[i];
     }
+}
+
+/* Fix MSVC C99 compatible issue
+ *      MSVC support __func__ from visual studio 2015( 1900 )
+ *      Use MSVC predefine macro to avoid name check fail.
+ */
+#if (defined(_MSC_VER) && (_MSC_VER <= 1900))
+#define /*no-check-names*/ __func__ __FUNCTION__
 #endif
 
-/**
- * Get the unsigned 16 bits integer corresponding to two bytes in
- * big-endian order (MSB first).
- *
- * \param   data    Base address of the memory to get the two bytes from.
- * \param   offset  Offset from \p base of the first and most significant
- *                  byte of the two bytes to build the 16 bits unsigned
- *                  integer from.
- */
-#ifndef MBEDTLS_GET_UINT16_BE
-#define MBEDTLS_GET_UINT16_BE(data, offset)                   \
-    (                                                           \
-        ((uint16_t) (data)[(offset)] << 8)          \
-        | ((uint16_t) (data)[(offset) + 1])          \
-    )
+/* Define `asm` for compilers which don't define it. */
+/* *INDENT-OFF* */
+#ifndef asm
+#if defined(__IAR_SYSTEMS_ICC__)
+#define asm __asm
+#else
+#define asm __asm__
 #endif
-
-/**
- * Put in memory a 16 bits unsigned integer in big-endian order.
- *
- * \param   n       16 bits unsigned integer to put in memory.
- * \param   data    Base address of the memory where to put the 16
- *                  bits unsigned integer in.
- * \param   offset  Offset from \p base where to put the most significant
- *                  byte of the 16 bits unsigned integer \p n.
- */
-#ifndef MBEDTLS_PUT_UINT16_BE
-#define MBEDTLS_PUT_UINT16_BE(n, data, offset)                \
-    {                                                               \
-        (data)[(offset)] = MBEDTLS_BYTE_1(n);             \
-        (data)[(offset) + 1] = MBEDTLS_BYTE_0(n);             \
-    }
 #endif
+/* *INDENT-ON* */
 
-/**
- * Get the unsigned 64 bits integer corresponding to eight bytes in
- * big-endian order (MSB first).
+/*
+ * Define the constraint used for read-only pointer operands to aarch64 asm.
  *
- * \param   data    Base address of the memory to get the eight bytes from.
- * \param   offset  Offset from \p base of the first and most significant
- *                  byte of the eight bytes to build the 64 bits unsigned
- *                  integer from.
+ * This is normally the usual "r", but for aarch64_32 (aka ILP32,
+ * as found in watchos), "p" is required to avoid warnings from clang.
+ *
+ * Note that clang does not recognise '+p' or '=p', and armclang
+ * does not recognise 'p' at all. Therefore, to update a pointer from
+ * aarch64 assembly, it is necessary to use something like:
+ *
+ * uintptr_t uptr = (uintptr_t) ptr;
+ * asm( "ldr x4, [%x0], #8" ... : "+r" (uptr) : : )
+ * ptr = (void*) uptr;
+ *
+ * Note that the "x" in "%x0" is neccessary; writing "%0" will cause warnings.
  */
-#ifndef MBEDTLS_GET_UINT64_BE
-#define MBEDTLS_GET_UINT64_BE(data, offset)                   \
-    (                                                           \
-        ((uint64_t) (data)[(offset)] << 56)         \
-        | ((uint64_t) (data)[(offset) + 1] << 48)         \
-        | ((uint64_t) (data)[(offset) + 2] << 40)         \
-        | ((uint64_t) (data)[(offset) + 3] << 32)         \
-        | ((uint64_t) (data)[(offset) + 4] << 24)         \
-        | ((uint64_t) (data)[(offset) + 5] << 16)         \
-        | ((uint64_t) (data)[(offset) + 6] <<  8)         \
-        | ((uint64_t) (data)[(offset) + 7])         \
-    )
+#if defined(__aarch64__) && defined(MBEDTLS_HAVE_ASM)
+#if UINTPTR_MAX == 0xfffffffful
+/* ILP32: Specify the pointer operand slightly differently, as per #7787. */
+#define MBEDTLS_ASM_AARCH64_PTR_CONSTRAINT "p"
+#elif UINTPTR_MAX == 0xfffffffffffffffful
+/* Normal case (64-bit pointers): use "r" as the constraint for pointer operands to asm */
+#define MBEDTLS_ASM_AARCH64_PTR_CONSTRAINT "r"
+#else
+#error "Unrecognised pointer size for aarch64"
 #endif
-
-/**
- * Put in memory a 64 bits unsigned integer in big-endian order.
- *
- * \param   n       64 bits unsigned integer to put in memory.
- * \param   data    Base address of the memory where to put the 64
- *                  bits unsigned integer in.
- * \param   offset  Offset from \p base where to put the most significant
- *                  byte of the 64 bits unsigned integer \p n.
- */
-#ifndef MBEDTLS_PUT_UINT64_BE
-#define MBEDTLS_PUT_UINT64_BE(n, data, offset)                \
-    {                                                               \
-        (data)[(offset)] = MBEDTLS_BYTE_7(n);             \
-        (data)[(offset) + 1] = MBEDTLS_BYTE_6(n);             \
-        (data)[(offset) + 2] = MBEDTLS_BYTE_5(n);             \
-        (data)[(offset) + 3] = MBEDTLS_BYTE_4(n);             \
-        (data)[(offset) + 4] = MBEDTLS_BYTE_3(n);             \
-        (data)[(offset) + 5] = MBEDTLS_BYTE_2(n);             \
-        (data)[(offset) + 6] = MBEDTLS_BYTE_1(n);             \
-        (data)[(offset) + 7] = MBEDTLS_BYTE_0(n);             \
-    }
-#endif
-
-/**
- * Get the unsigned 64 bits integer corresponding to eight bytes in
- * little-endian order (LSB first).
- *
- * \param   data    Base address of the memory to get the eight bytes from.
- * \param   offset  Offset from \p base of the first and least significant
- *                  byte of the eight bytes to build the 64 bits unsigned
- *                  integer from.
- */
-#ifndef MBEDTLS_GET_UINT64_LE
-#define MBEDTLS_GET_UINT64_LE(data, offset)                   \
-    (                                                           \
-        ((uint64_t) (data)[(offset) + 7] << 56)         \
-        | ((uint64_t) (data)[(offset) + 6] << 48)         \
-        | ((uint64_t) (data)[(offset) + 5] << 40)         \
-        | ((uint64_t) (data)[(offset) + 4] << 32)         \
-        | ((uint64_t) (data)[(offset) + 3] << 24)         \
-        | ((uint64_t) (data)[(offset) + 2] << 16)         \
-        | ((uint64_t) (data)[(offset) + 1] <<  8)         \
-        | ((uint64_t) (data)[(offset)])         \
-    )
-#endif
-
-/**
- * Put in memory a 64 bits unsigned integer in little-endian order.
- *
- * \param   n       64 bits unsigned integer to put in memory.
- * \param   data    Base address of the memory where to put the 64
- *                  bits unsigned integer in.
- * \param   offset  Offset from \p base where to put the least significant
- *                  byte of the 64 bits unsigned integer \p n.
- */
-#ifndef MBEDTLS_PUT_UINT64_LE
-#define MBEDTLS_PUT_UINT64_LE(n, data, offset)                \
-    {                                                               \
-        (data)[(offset)] = MBEDTLS_BYTE_0(n);             \
-        (data)[(offset) + 1] = MBEDTLS_BYTE_1(n);             \
-        (data)[(offset) + 2] = MBEDTLS_BYTE_2(n);             \
-        (data)[(offset) + 3] = MBEDTLS_BYTE_3(n);             \
-        (data)[(offset) + 4] = MBEDTLS_BYTE_4(n);             \
-        (data)[(offset) + 5] = MBEDTLS_BYTE_5(n);             \
-        (data)[(offset) + 6] = MBEDTLS_BYTE_6(n);             \
-        (data)[(offset) + 7] = MBEDTLS_BYTE_7(n);             \
-    }
 #endif
 
 /* Always provide a static assert macro, so it can be used unconditionally.
@@ -360,6 +292,34 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
 #define MBEDTLS_STATIC_ASSERT(expr, msg)    static_assert(expr, msg);
 #else
 #define MBEDTLS_STATIC_ASSERT(expr, msg)
+#endif
+
+/* Define compiler branch hints */
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_expect)
+#define MBEDTLS_LIKELY(x)       __builtin_expect(!!(x), 1)
+#define MBEDTLS_UNLIKELY(x)     __builtin_expect(!!(x), 0)
+#endif
+#endif
+#if !defined(MBEDTLS_LIKELY)
+#define MBEDTLS_LIKELY(x)       x
+#define MBEDTLS_UNLIKELY(x)     x
+#endif
+
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION) && !defined(__clang__) \
+    && !defined(__llvm__) && !defined(__INTEL_COMPILER)
+/* Defined if the compiler really is gcc and not clang, etc */
+#define MBEDTLS_COMPILER_IS_GCC
+#endif
+
+/* For gcc -Os, override with -O2 for a given function.
+ *
+ * This will not affect behaviour for other optimisation settings, e.g. -O0.
+ */
+#if defined(MBEDTLS_COMPILER_IS_GCC) && defined(__OPTIMIZE_SIZE__)
+#define MBEDTLS_OPTIMIZE_FOR_PERFORMANCE __attribute__((optimize("-O2")))
+#else
+#define MBEDTLS_OPTIMIZE_FOR_PERFORMANCE
 #endif
 
 #endif /* MBEDTLS_LIBRARY_COMMON_H */

@@ -2,19 +2,7 @@
  *  CTR_DRBG implementation based on AES-256 (NIST SP 800-90)
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  *  The NIST SP 800-90 DRBGs are described in the following publication.
@@ -30,7 +18,6 @@
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
 
-#include <limits.h>
 #include <string.h>
 
 #if defined(MBEDTLS_FS_IO)
@@ -45,6 +32,7 @@
 void mbedtls_ctr_drbg_init(mbedtls_ctr_drbg_context *ctx)
 {
     memset(ctx, 0, sizeof(mbedtls_ctr_drbg_context));
+    mbedtls_aes_init(&ctx->aes_ctx);
     /* Indicate that the entropy nonce length is not set explicitly.
      * See mbedtls_ctr_drbg_set_nonce_len(). */
     ctx->reseed_counter = -1;
@@ -98,14 +86,13 @@ int mbedtls_ctr_drbg_set_nonce_len(mbedtls_ctr_drbg_context *ctx,
     if (len > MBEDTLS_CTR_DRBG_MAX_SEED_INPUT) {
         return MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
     }
-#if SIZE_MAX > INT_MAX
+
     /* This shouldn't be an issue because
      * MBEDTLS_CTR_DRBG_MAX_SEED_INPUT < INT_MAX in any sensible
      * configuration, but make sure anyway. */
     if (len > INT_MAX) {
         return MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
     }
-#endif
 
     /* For backward compatibility with Mbed TLS <= 2.19, store the
      * entropy nonce length in a field that already exists, but isn't
@@ -178,9 +165,7 @@ static int block_cipher_df(unsigned char *output,
         use_len = buf_len;
 
         while (use_len > 0) {
-            for (i = 0; i < MBEDTLS_CTR_DRBG_BLOCKSIZE; i++) {
-                chain[i] ^= p[i];
-            }
+            mbedtls_xor(chain, chain, p, MBEDTLS_CTR_DRBG_BLOCKSIZE);
             p += MBEDTLS_CTR_DRBG_BLOCKSIZE;
             use_len -= (use_len >= MBEDTLS_CTR_DRBG_BLOCKSIZE) ?
                        MBEDTLS_CTR_DRBG_BLOCKSIZE : use_len;
@@ -306,9 +291,9 @@ exit:
  * and with outputs
  *   ctx = initial_working_state
  */
-int mbedtls_ctr_drbg_update_ret(mbedtls_ctr_drbg_context *ctx,
-                                const unsigned char *additional,
-                                size_t add_len)
+int mbedtls_ctr_drbg_update(mbedtls_ctr_drbg_context *ctx,
+                            const unsigned char *additional,
+                            size_t add_len)
 {
     unsigned char add_input[MBEDTLS_CTR_DRBG_SEEDLEN];
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -328,20 +313,6 @@ exit:
     mbedtls_platform_zeroize(add_input, sizeof(add_input));
     return ret;
 }
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_ctr_drbg_update(mbedtls_ctr_drbg_context *ctx,
-                             const unsigned char *additional,
-                             size_t add_len)
-{
-    /* MAX_INPUT would be more logical here, but we have to match
-     * block_cipher_df()'s limits since we can't propagate errors */
-    if (add_len > MBEDTLS_CTR_DRBG_MAX_SEED_INPUT) {
-        add_len = MBEDTLS_CTR_DRBG_MAX_SEED_INPUT;
-    }
-    (void) mbedtls_ctr_drbg_update_ret(ctx, additional, add_len);
-}
-#endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 /* CTR_DRBG_Reseed with derivation function (SP 800-90A &sect;10.2.1.4.2)
  * mbedtls_ctr_drbg_reseed(ctx, additional, len, nonce_len)
@@ -460,8 +431,6 @@ int mbedtls_ctr_drbg_seed(mbedtls_ctr_drbg_context *ctx,
 #if defined(MBEDTLS_THREADING_C)
     mbedtls_mutex_init(&ctx->mutex);
 #endif
-
-    mbedtls_aes_init(&ctx->aes_ctx);
 
     ctx->f_entropy = f_entropy;
     ctx->p_entropy = p_entropy;
@@ -624,6 +593,9 @@ int mbedtls_ctr_drbg_write_seed_file(mbedtls_ctr_drbg_context *ctx,
         return MBEDTLS_ERR_CTR_DRBG_FILE_IO_ERROR;
     }
 
+    /* Ensure no stdio buffering of secrets, as such buffers cannot be wiped. */
+    mbedtls_setbuf(f, NULL);
+
     if ((ret = mbedtls_ctr_drbg_random(ctx, buf,
                                        MBEDTLS_CTR_DRBG_MAX_INPUT)) != 0) {
         goto exit;
@@ -656,6 +628,9 @@ int mbedtls_ctr_drbg_update_seed_file(mbedtls_ctr_drbg_context *ctx,
         return MBEDTLS_ERR_CTR_DRBG_FILE_IO_ERROR;
     }
 
+    /* Ensure no stdio buffering of secrets, as such buffers cannot be wiped. */
+    mbedtls_setbuf(f, NULL);
+
     n = fread(buf, 1, sizeof(buf), f);
     if (fread(&c, 1, 1, f) != 0) {
         ret = MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG;
@@ -668,7 +643,7 @@ int mbedtls_ctr_drbg_update_seed_file(mbedtls_ctr_drbg_context *ctx,
     fclose(f);
     f = NULL;
 
-    ret = mbedtls_ctr_drbg_update_ret(ctx, buf, n);
+    ret = mbedtls_ctr_drbg_update(ctx, buf, n);
 
 exit:
     mbedtls_platform_zeroize(buf, sizeof(buf));

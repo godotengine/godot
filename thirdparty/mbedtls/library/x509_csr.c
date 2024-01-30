@@ -2,19 +2,7 @@
  *  X.509 Certificate Signing Request (CSR) parsing
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  *  The ITU-T X.509 standard defines a certificate format for PKI.
@@ -64,6 +52,165 @@ static int x509_csr_get_version(unsigned char **p,
         }
 
         return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_VERSION, ret);
+    }
+
+    return 0;
+}
+
+/*
+ * Parse CSR extension requests in DER format
+ */
+static int x509_csr_parse_extensions(mbedtls_x509_csr *csr,
+                                     unsigned char **p, const unsigned char *end)
+{
+    int ret;
+    size_t len;
+    unsigned char *end_ext_data;
+    while (*p < end) {
+        mbedtls_x509_buf extn_oid = { 0, 0, NULL };
+        int ext_type = 0;
+
+        /* Read sequence tag */
+        if ((ret = mbedtls_asn1_get_tag(p, end, &len,
+                                        MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE)) != 0) {
+            return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+        }
+
+        end_ext_data = *p + len;
+
+        /* Get extension ID */
+        if ((ret = mbedtls_asn1_get_tag(p, end_ext_data, &extn_oid.len,
+                                        MBEDTLS_ASN1_OID)) != 0) {
+            return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+        }
+
+        extn_oid.tag = MBEDTLS_ASN1_OID;
+        extn_oid.p = *p;
+        *p += extn_oid.len;
+
+        /* Data should be octet string type */
+        if ((ret = mbedtls_asn1_get_tag(p, end_ext_data, &len,
+                                        MBEDTLS_ASN1_OCTET_STRING)) != 0) {
+            return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+        }
+
+        if (*p + len != end_ext_data) {
+            return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS,
+                                     MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
+        }
+
+        /*
+         * Detect supported extensions and skip unsupported extensions
+         */
+        ret = mbedtls_oid_get_x509_ext_type(&extn_oid, &ext_type);
+
+        if (ret == 0) {
+            /* Forbid repeated extensions */
+            if ((csr->ext_types & ext_type) != 0) {
+                return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS,
+                                         MBEDTLS_ERR_ASN1_INVALID_DATA);
+            }
+
+            csr->ext_types |= ext_type;
+
+            switch (ext_type) {
+                case MBEDTLS_X509_EXT_KEY_USAGE:
+                    /* Parse key usage */
+                    if ((ret = mbedtls_x509_get_key_usage(p, end_ext_data,
+                                                          &csr->key_usage)) != 0) {
+                        return ret;
+                    }
+                    break;
+
+                case MBEDTLS_X509_EXT_SUBJECT_ALT_NAME:
+                    /* Parse subject alt name */
+                    if ((ret = mbedtls_x509_get_subject_alt_name(p, end_ext_data,
+                                                                 &csr->subject_alt_names)) != 0) {
+                        return ret;
+                    }
+                    break;
+
+                case MBEDTLS_X509_EXT_NS_CERT_TYPE:
+                    /* Parse netscape certificate type */
+                    if ((ret = mbedtls_x509_get_ns_cert_type(p, end_ext_data,
+                                                             &csr->ns_cert_type)) != 0) {
+                        return ret;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        *p = end_ext_data;
+    }
+
+    if (*p != end) {
+        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS,
+                                 MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
+    }
+
+    return 0;
+}
+
+/*
+ * Parse CSR attributes in DER format
+ */
+static int x509_csr_parse_attributes(mbedtls_x509_csr *csr,
+                                     const unsigned char *start, const unsigned char *end)
+{
+    int ret;
+    size_t len;
+    unsigned char *end_attr_data;
+    unsigned char **p = (unsigned char **) &start;
+
+    while (*p < end) {
+        mbedtls_x509_buf attr_oid = { 0, 0, NULL };
+
+        if ((ret = mbedtls_asn1_get_tag(p, end, &len,
+                                        MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE)) != 0) {
+            return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+        }
+        end_attr_data = *p + len;
+
+        /* Get attribute ID */
+        if ((ret = mbedtls_asn1_get_tag(p, end_attr_data, &attr_oid.len,
+                                        MBEDTLS_ASN1_OID)) != 0) {
+            return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+        }
+
+        attr_oid.tag = MBEDTLS_ASN1_OID;
+        attr_oid.p = *p;
+        *p += attr_oid.len;
+
+        /* Check that this is an extension-request attribute */
+        if (MBEDTLS_OID_CMP(MBEDTLS_OID_PKCS9_CSR_EXT_REQ, &attr_oid) == 0) {
+            if ((ret = mbedtls_asn1_get_tag(p, end, &len,
+                                            MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SET)) != 0) {
+                return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+            }
+
+            if ((ret = mbedtls_asn1_get_tag(p, end, &len,
+                                            MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE)) !=
+                0) {
+                return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+            }
+
+            if ((ret = x509_csr_parse_extensions(csr, p, *p + len)) != 0) {
+                return ret;
+            }
+
+            if (*p != end_attr_data) {
+                return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS,
+                                         MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
+            }
+        }
+
+        *p = end_attr_data;
+    }
+
+    if (*p != end) {
+        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS,
+                                 MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
     }
 
     return 0;
@@ -197,6 +344,11 @@ int mbedtls_x509_csr_parse_der(mbedtls_x509_csr *csr,
         return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_FORMAT, ret);
     }
 
+    if ((ret = x509_csr_parse_attributes(csr, p, p + len)) != 0) {
+        mbedtls_x509_csr_free(csr);
+        return ret;
+    }
+
     p += len;
 
     end = csr->raw.p + csr->raw.len;
@@ -296,13 +448,13 @@ int mbedtls_x509_csr_parse_file(mbedtls_x509_csr *csr, const char *path)
 
     ret = mbedtls_x509_csr_parse(csr, buf, n);
 
-    mbedtls_platform_zeroize(buf, n);
-    mbedtls_free(buf);
+    mbedtls_zeroize_and_free(buf, n);
 
     return ret;
 }
 #endif /* MBEDTLS_FS_IO */
 
+#if !defined(MBEDTLS_X509_REMOVE_INFO)
 #define BEFORE_COLON    14
 #define BC              "14"
 /*
@@ -344,8 +496,47 @@ int mbedtls_x509_csr_info(char *buf, size_t size, const char *prefix,
                            (int) mbedtls_pk_get_bitlen(&csr->pk));
     MBEDTLS_X509_SAFE_SNPRINTF;
 
+    /*
+     * Optional extensions
+     */
+
+    if (csr->ext_types & MBEDTLS_X509_EXT_SUBJECT_ALT_NAME) {
+        ret = mbedtls_snprintf(p, n, "\n%ssubject alt name  :", prefix);
+        MBEDTLS_X509_SAFE_SNPRINTF;
+
+        if ((ret = mbedtls_x509_info_subject_alt_name(&p, &n,
+                                                      &csr->subject_alt_names,
+                                                      prefix)) != 0) {
+            return ret;
+        }
+    }
+
+    if (csr->ext_types & MBEDTLS_X509_EXT_NS_CERT_TYPE) {
+        ret = mbedtls_snprintf(p, n, "\n%scert. type        : ", prefix);
+        MBEDTLS_X509_SAFE_SNPRINTF;
+
+        if ((ret = mbedtls_x509_info_cert_type(&p, &n, csr->ns_cert_type)) != 0) {
+            return ret;
+        }
+    }
+
+    if (csr->ext_types & MBEDTLS_X509_EXT_KEY_USAGE) {
+        ret = mbedtls_snprintf(p, n, "\n%skey usage         : ", prefix);
+        MBEDTLS_X509_SAFE_SNPRINTF;
+
+        if ((ret = mbedtls_x509_info_key_usage(&p, &n, csr->key_usage)) != 0) {
+            return ret;
+        }
+    }
+
+    if (csr->ext_types != 0) {
+        ret = mbedtls_snprintf(p, n, "\n");
+        MBEDTLS_X509_SAFE_SNPRINTF;
+    }
+
     return (int) (size - n);
 }
+#endif /* MBEDTLS_X509_REMOVE_INFO */
 
 /*
  * Initialize a CSR
@@ -360,9 +551,6 @@ void mbedtls_x509_csr_init(mbedtls_x509_csr *csr)
  */
 void mbedtls_x509_csr_free(mbedtls_x509_csr *csr)
 {
-    mbedtls_x509_name *name_cur;
-    mbedtls_x509_name *name_prv;
-
     if (csr == NULL) {
         return;
     }
@@ -373,17 +561,11 @@ void mbedtls_x509_csr_free(mbedtls_x509_csr *csr)
     mbedtls_free(csr->sig_opts);
 #endif
 
-    name_cur = csr->subject.next;
-    while (name_cur != NULL) {
-        name_prv = name_cur;
-        name_cur = name_cur->next;
-        mbedtls_platform_zeroize(name_prv, sizeof(mbedtls_x509_name));
-        mbedtls_free(name_prv);
-    }
+    mbedtls_asn1_free_named_data_list_shallow(csr->subject.next);
+    mbedtls_asn1_sequence_free(csr->subject_alt_names.next);
 
     if (csr->raw.p != NULL) {
-        mbedtls_platform_zeroize(csr->raw.p, csr->raw.len);
-        mbedtls_free(csr->raw.p);
+        mbedtls_zeroize_and_free(csr->raw.p, csr->raw.len);
     }
 
     mbedtls_platform_zeroize(csr, sizeof(mbedtls_x509_csr));

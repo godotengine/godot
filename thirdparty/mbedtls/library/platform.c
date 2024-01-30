@@ -2,19 +2,7 @@
  *  Platform abstraction layer
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #include "common.h"
@@ -226,6 +214,28 @@ int mbedtls_platform_set_fprintf(int (*fprintf_func)(FILE *, const char *, ...))
 }
 #endif /* MBEDTLS_PLATFORM_FPRINTF_ALT */
 
+#if defined(MBEDTLS_PLATFORM_SETBUF_ALT)
+#if !defined(MBEDTLS_PLATFORM_STD_SETBUF)
+/*
+ * Make dummy function to prevent NULL pointer dereferences
+ */
+static void platform_setbuf_uninit(FILE *stream, char *buf)
+{
+    ((void) stream);
+    ((void) buf);
+}
+
+#define MBEDTLS_PLATFORM_STD_SETBUF   platform_setbuf_uninit
+#endif /* !MBEDTLS_PLATFORM_STD_SETBUF */
+void (*mbedtls_setbuf)(FILE *stream, char *buf) = MBEDTLS_PLATFORM_STD_SETBUF;
+
+int mbedtls_platform_set_setbuf(void (*setbuf_func)(FILE *stream, char *buf))
+{
+    mbedtls_setbuf = setbuf_func;
+    return 0;
+}
+#endif /* MBEDTLS_PLATFORM_SETBUF_ALT */
+
 #if defined(MBEDTLS_PLATFORM_EXIT_ALT)
 #if !defined(MBEDTLS_PLATFORM_STD_EXIT)
 /*
@@ -289,6 +299,9 @@ int mbedtls_platform_std_nv_seed_read(unsigned char *buf, size_t buf_len)
         return -1;
     }
 
+    /* Ensure no stdio buffering of secrets, as such buffers cannot be wiped. */
+    mbedtls_setbuf(file, NULL);
+
     if ((n = fread(buf, 1, buf_len, file)) != buf_len) {
         fclose(file);
         mbedtls_platform_zeroize(buf, buf_len);
@@ -307,6 +320,9 @@ int mbedtls_platform_std_nv_seed_write(unsigned char *buf, size_t buf_len)
     if ((file = fopen(MBEDTLS_PLATFORM_STD_NV_SEED_FILE, "w")) == NULL) {
         return -1;
     }
+
+    /* Ensure no stdio buffering of secrets, as such buffers cannot be wiped. */
+    mbedtls_setbuf(file, NULL);
 
     if ((n = fwrite(buf, 1, buf_len, file)) != buf_len) {
         fclose(file);
