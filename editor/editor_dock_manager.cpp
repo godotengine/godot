@@ -510,9 +510,7 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 	Array bottom_docks_dump;
 
 	for (Control *bdock : bottom_docks) {
-		Control *dock = bdock;
-		String name = dock->get_name();
-		bottom_docks_dump.push_back(name);
+		bottom_docks_dump.push_back(bdock->get_name());
 	}
 
 	p_layout->set_value(p_section, "dock_bottom", bottom_docks_dump);
