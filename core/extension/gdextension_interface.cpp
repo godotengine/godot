@@ -1302,6 +1302,7 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 	info_3->get_property_type_func = p_info->get_property_type_func;
 	info_3->validate_property_func = nullptr;
 	info_3->has_method_func = p_info->has_method_func;
+	info_3->get_method_argument_count_func = nullptr;
 	info_3->call_func = p_info->call_func;
 	info_3->notification_func = nullptr;
 	info_3->to_string_func = p_info->to_string_func;
@@ -1341,6 +1342,7 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create2(const GD
 	info_3->get_property_type_func = p_info->get_property_type_func;
 	info_3->validate_property_func = nullptr;
 	info_3->has_method_func = p_info->has_method_func;
+	info_3->get_method_argument_count_func = nullptr;
 	info_3->call_func = p_info->call_func;
 	info_3->notification_func = p_info->notification_func;
 	info_3->to_string_func = p_info->to_string_func;

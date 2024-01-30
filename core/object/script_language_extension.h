@@ -821,6 +821,14 @@ public:
 	}
 
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (native_info->get_method_argument_count_func) {
+			GDExtensionBool is_valid = 0;
+			GDExtensionInt ret = native_info->get_method_argument_count_func(instance, (GDExtensionStringNamePtr)&p_method, &is_valid);
+			if (r_is_valid) {
+				*r_is_valid = is_valid != 0;
+			}
+			return ret;
+		}
 		// Fallback to default.
 		return ScriptInstance::get_method_argument_count(p_method, r_is_valid);
 	}
@@ -912,7 +920,6 @@ public:
 			return reinterpret_cast<ScriptLanguage *>(lang);
 		}
 		return nullptr;
-		;
 	}
 	virtual ~ScriptInstanceExtension() {
 		if (native_info->free_func) {
