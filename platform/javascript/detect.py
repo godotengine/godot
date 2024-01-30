@@ -176,7 +176,7 @@ def configure(env):
     env["LIBSUFFIXES"] = ["$LIBSUFFIX"]
 
     # Get version info for checks below.
-    cc_semver = tuple(get_compiler_version(env))
+    cc_semver = tuple(get_compiler_version(env) or (3, 1, 39))
 
     env.Prepend(CPPPATH=["#platform/javascript"])
     env.Append(CPPDEFINES=["JAVASCRIPT_ENABLED", "UNIX_ENABLED"])
