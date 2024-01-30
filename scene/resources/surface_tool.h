@@ -42,6 +42,10 @@ class SurfaceTool : public RefCounted {
 	static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT];
 
 public:
+	template <typename T, typename U>
+	static ptrdiff_t offset_of(U T::*p_member) {
+		return reinterpret_cast<ptrdiff_t>(&(reinterpret_cast<T *>(0)->*p_member));
+	}
 	struct Vertex {
 		Vector3 vertex;
 		Color color;
@@ -171,6 +175,12 @@ private:
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 	void _add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const TypedArray<Plane> &p_tangents = TypedArray<Plane>());
+
+	void init_vertex_data(int p_index) {
+		Vertex &vertex = vertex_array[p_index];
+		vertex.binormal = Vector3();
+		vertex.tangent = Vector3();
+	}
 
 protected:
 	static void _bind_methods();

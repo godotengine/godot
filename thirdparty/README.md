@@ -658,8 +658,8 @@ Collection of single-file libraries used in Godot components.
   * Version: git (5976650443d68ccfadf1dea24999ee459dd2819d, 2013)
   * License: BSD-3-Clause
 - `mikktspace.{c,h}`
-  * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
-  * Version: 1.0 (2011)
+  * Upstream: https://github.com/mmikk/MikkTSpace.git
+  * Version: git (3e895b49d05ea07e4c2133156cfa94369e19e409) + Godot changes
   * License: zlib
 - `ok_color.h`
   * Upstream: https://github.com/bottosson/bottosson.github.io/blob/master/misc/ok_color.h

@@ -31,6 +31,7 @@
 #include "csg_shape.h"
 
 #include "core/math/geometry_2d.h"
+#include "scene/resources/surface_tool.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
@@ -342,6 +343,7 @@ void CSGShape3D::_update_shape() {
 		surfaces.write[i].vertices.resize(face_count[i] * 3);
 		surfaces.write[i].normals.resize(face_count[i] * 3);
 		surfaces.write[i].uvs.resize(face_count[i] * 3);
+		surfaces.write[i].indices.resize(face_count[i] * 3);
 		if (calculate_tangents) {
 			surfaces.write[i].tans.resize(face_count[i] * 3 * 4);
 		}
@@ -353,6 +355,7 @@ void CSGShape3D::_update_shape() {
 
 		surfaces.write[i].verticesw = surfaces.write[i].vertices.ptrw();
 		surfaces.write[i].normalsw = surfaces.write[i].normals.ptrw();
+		surfaces.write[i].indexsw = surfaces.write[i].indices.ptrw();
 		surfaces.write[i].uvsw = surfaces.write[i].uvs.ptrw();
 		if (calculate_tangents) {
 			surfaces.write[i].tansw = surfaces.write[i].tans.ptrw();
@@ -393,6 +396,7 @@ void CSGShape3D::_update_shape() {
 				surfaces[idx].verticesw[k] = v;
 				surfaces[idx].uvsw[k] = n->faces[i].uvs[j];
 				surfaces[idx].normalsw[k] = normal;
+				surfaces[idx].indexsw[k] = k;
 
 				if (calculate_tangents) {
 					// zero out our tangents for now
@@ -412,38 +416,26 @@ void CSGShape3D::_update_shape() {
 	//create surfaces
 
 	for (int i = 0; i < surfaces.size(); i++) {
-		// calculate tangents for this surface
-		bool have_tangents = calculate_tangents;
-		if (have_tangents) {
-			SMikkTSpaceInterface mkif;
-			mkif.m_getNormal = mikktGetNormal;
-			mkif.m_getNumFaces = mikktGetNumFaces;
-			mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
-			mkif.m_getPosition = mikktGetPosition;
-			mkif.m_getTexCoord = mikktGetTexCoord;
-			mkif.m_setTSpace = mikktSetTSpaceDefault;
-			mkif.m_setTSpaceBasic = nullptr;
-
-			SMikkTSpaceContext msc;
-			msc.m_pInterface = &mkif;
-			msc.m_pUserData = &surfaces.write[i];
-			have_tangents = genTangSpaceDefault(&msc);
-		}
-
 		if (surfaces[i].last_added == 0) {
 			continue;
 		}
+		Ref<SurfaceTool> surface_tool;
 
-		// and convert to surface array
-		Array array;
-		array.resize(Mesh::ARRAY_MAX);
+		surface_tool.instantiate();
+		surface_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
-		array[Mesh::ARRAY_VERTEX] = surfaces[i].vertices;
-		array[Mesh::ARRAY_NORMAL] = surfaces[i].normals;
-		array[Mesh::ARRAY_TEX_UV] = surfaces[i].uvs;
-		if (have_tangents) {
-			array[Mesh::ARRAY_TANGENT] = surfaces[i].tans;
+		for (int j = 0; j < surfaces[i].last_added; j++) {
+			surface_tool->set_normal(surfaces[i].normalsw[j]);
+			surface_tool->set_uv(surfaces[i].uvsw[j]);
+			surface_tool->add_vertex(surfaces[i].verticesw[j]);
 		}
+		for (int index_i = 0; index_i < surfaces[i].indices.size(); index_i++) {
+			surface_tool->add_index(surfaces[i].indices[index_i]);
+		}
+		surface_tool->index();
+		surface_tool->generate_tangents();
+
+		Array array = surface_tool->commit_to_arrays();
 
 		int idx = root_mesh->get_surface_count();
 		root_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
