@@ -2357,6 +2357,13 @@
 				To place in a scene, attach these particles to an instance using [method instance_set_base] using the returned RID.
 			</description>
 		</method>
+		<method name="particles_get_autostart">
+			<return type="bool" />
+			<argument index="0" name="particles" type="RID" />
+			<description>
+				Returns [code]true[/code] if particles are currently set to start emitting when entering the scene tree.
+			</description>
+		</method>
 		<method name="particles_get_current_aabb">
 			<return type="AABB" />
 			<argument index="0" name="particles" type="RID" />
@@ -2398,6 +2405,14 @@
 			<argument index="1" name="amount" type="int" />
 			<description>
 				Sets the number of particles to be drawn and allocates the memory for them. Equivalent to [member Particles.amount].
+			</description>
+		</method>
+		<method name="particles_set_autostart">
+			<return type="void" />
+			<argument index="0" name="particles" type="RID" />
+			<argument index="1" name="autostart" type="bool" />
+			<description>
+				If [code]true[/code], particles will start emitting when entering in scene tree, setting [member Particles.emitting] to [code]true[/code] automatically. Equivalent to [member Particles.autostart].
 			</description>
 		</method>
 		<method name="particles_set_custom_aabb">

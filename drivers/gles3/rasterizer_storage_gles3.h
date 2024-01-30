@@ -1191,6 +1191,7 @@ public:
 		bool inactive;
 		float inactive_time;
 		bool emitting;
+		bool autostart;
 		bool one_shot;
 		int amount;
 		float lifetime;
@@ -1237,6 +1238,7 @@ public:
 				inactive(true),
 				inactive_time(0.0),
 				emitting(false),
+				autostart(false),
 				one_shot(false),
 				amount(0),
 				lifetime(1.0),
@@ -1283,6 +1285,8 @@ public:
 
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting);
 	virtual bool particles_get_emitting(RID p_particles);
+	virtual void particles_set_autostart(RID p_particles, bool p_autostart);
+	virtual bool particles_get_autostart(RID p_particles);
 	virtual void particles_set_amount(RID p_particles, int p_amount);
 	virtual void particles_set_lifetime(RID p_particles, float p_lifetime);
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot);

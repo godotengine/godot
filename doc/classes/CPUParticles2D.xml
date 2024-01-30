@@ -127,6 +127,9 @@
 		<member name="anim_speed_random" type="float" setter="set_param_randomness" getter="get_param_randomness" default="0.0">
 			Animation speed randomness ratio.
 		</member>
+		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart" default="false">
+			If [code]true[/code], particles will start when entering the scene tree, setting [member emitting] to [code]true[/code] automatically.
+		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
 			Each particle's initial color. If [member texture] is defined, it will be multiplied by this color.
 		</member>

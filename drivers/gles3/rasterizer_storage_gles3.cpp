@@ -6259,6 +6259,20 @@ bool RasterizerStorageGLES3::particles_get_emitting(RID p_particles) {
 	return particles->emitting;
 }
 
+void RasterizerStorageGLES3::particles_set_autostart(RID p_particles, bool p_autostart) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->autostart = p_autostart;
+}
+
+bool RasterizerStorageGLES3::particles_get_autostart(RID p_particles) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, false);
+
+	return particles->autostart;
+}
+
 void RasterizerStorageGLES3::particles_set_amount(RID p_particles, int p_amount) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);

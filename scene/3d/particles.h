@@ -53,6 +53,7 @@ public:
 private:
 	RID particles;
 
+	bool autostart;
 	bool one_shot;
 	int amount;
 	float lifetime;
@@ -81,6 +82,7 @@ public:
 	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_emitting(bool p_emitting);
+	void set_autostart(bool p_autostart);
 	void set_amount(int p_amount);
 	void set_lifetime(float p_lifetime);
 	void set_one_shot(bool p_one_shot);
@@ -93,6 +95,7 @@ public:
 	void set_speed_scale(float p_scale);
 
 	bool is_emitting() const;
+	bool has_autostart() const;
 	int get_amount() const;
 	float get_lifetime() const;
 	bool get_one_shot() const;

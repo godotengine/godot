@@ -52,6 +52,10 @@ void Particles::set_emitting(bool p_emitting) {
 	}
 }
 
+void Particles::set_autostart(bool p_autostart) {
+	autostart = p_autostart;
+}
+
 void Particles::set_amount(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles cannot be smaller than 1.");
 	amount = p_amount;
@@ -119,6 +123,9 @@ void Particles::set_speed_scale(float p_scale) {
 
 bool Particles::is_emitting() const {
 	return VS::get_singleton()->particles_get_emitting(particles);
+}
+bool Particles::has_autostart() const {
+	return autostart;
 }
 int Particles::get_amount() const {
 	return amount;
@@ -298,6 +305,11 @@ void Particles::_validate_property(PropertyInfo &property) const {
 }
 
 void Particles::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (autostart) {
+			set_emitting(true);
+		}
+	}
 	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
 		if (can_process()) {
 			VS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
@@ -325,6 +337,7 @@ void Particles::_notification(int p_what) {
 
 void Particles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &Particles::set_emitting);
+	ClassDB::bind_method(D_METHOD("set_autostart", "autostart"), &Particles::set_autostart);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &Particles::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &Particles::set_lifetime);
 	ClassDB::bind_method(D_METHOD("set_one_shot", "enable"), &Particles::set_one_shot);
@@ -339,6 +352,7 @@ void Particles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &Particles::set_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &Particles::is_emitting);
+	ClassDB::bind_method(D_METHOD("has_autostart"), &Particles::has_autostart);
 	ClassDB::bind_method(D_METHOD("get_amount"), &Particles::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &Particles::get_lifetime);
 	ClassDB::bind_method(D_METHOD("get_one_shot"), &Particles::get_one_shot);
@@ -366,6 +380,7 @@ void Particles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &Particles::capture_aabb);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_EXP_RANGE, "1,1000000,1"), "set_amount", "get_amount");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime", PROPERTY_HINT_EXP_RANGE, "0.01,600.0,0.01,or_greater"), "set_lifetime", "get_lifetime");
@@ -400,6 +415,7 @@ Particles::Particles() {
 	set_base(particles);
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
+	set_autostart(false);
 	set_one_shot(false);
 	set_amount(8);
 	set_lifetime(1);

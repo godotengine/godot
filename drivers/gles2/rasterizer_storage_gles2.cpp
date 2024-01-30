@@ -4890,6 +4890,13 @@ bool RasterizerStorageGLES2::particles_get_emitting(RID p_particles) {
 	return false;
 }
 
+void RasterizerStorageGLES2::particles_set_autostart(RID p_particles, bool p_autostart) {
+}
+
+bool RasterizerStorageGLES2::particles_get_autostart(RID p_particles) {
+	return false;
+}
+
 void RasterizerStorageGLES2::particles_set_amount(RID p_particles, int p_amount) {
 }
 

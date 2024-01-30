@@ -47,6 +47,10 @@ void Particles2D::set_emitting(bool p_emitting) {
 		set_process_internal(false);
 	}
 }
+void Particles2D::set_autostart(bool p_autostart) {
+	autostart = p_autostart;
+	VS::get_singleton()->particles_set_autostart(particles, autostart);
+}
 
 void Particles2D::set_amount(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles cannot be smaller than 1.");
@@ -149,6 +153,9 @@ void Particles2D::set_show_visibility_rect(bool p_show_visibility_rect) {
 
 bool Particles2D::is_emitting() const {
 	return VS::get_singleton()->particles_get_emitting(particles);
+}
+bool Particles2D::has_autostart() const {
+	return VS::get_singleton()->particles_get_autostart(particles);
 }
 int Particles2D::get_amount() const {
 	return amount;
@@ -290,6 +297,12 @@ void Particles2D::restart() {
 }
 
 void Particles2D::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (autostart) {
+			set_emitting(true);
+		}
+	}
+
 	if (p_what == NOTIFICATION_DRAW) {
 		RID texture_rid;
 		if (texture.is_valid()) {
@@ -331,6 +344,7 @@ void Particles2D::_notification(int p_what) {
 
 void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &Particles2D::set_emitting);
+	ClassDB::bind_method(D_METHOD("set_autostart", "autostart"), &Particles2D::set_autostart);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &Particles2D::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &Particles2D::set_lifetime);
 	ClassDB::bind_method(D_METHOD("set_one_shot", "secs"), &Particles2D::set_one_shot);
@@ -345,6 +359,7 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &Particles2D::set_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &Particles2D::is_emitting);
+	ClassDB::bind_method(D_METHOD("has_autostart"), &Particles2D::has_autostart);
 	ClassDB::bind_method(D_METHOD("get_amount"), &Particles2D::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &Particles2D::get_lifetime);
 	ClassDB::bind_method(D_METHOD("get_one_shot"), &Particles2D::get_one_shot);
@@ -372,6 +387,7 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("restart"), &Particles2D::restart);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_EXP_RANGE, "1,1000000,1"), "set_amount", "get_amount");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater"), "set_lifetime", "get_lifetime");
@@ -401,6 +417,7 @@ Particles2D::Particles2D() {
 
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
+	set_autostart(false);
 	set_one_shot(false);
 	set_amount(8);
 	set_lifetime(1);

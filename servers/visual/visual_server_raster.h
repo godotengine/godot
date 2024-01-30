@@ -424,6 +424,8 @@ public:
 
 	BIND2(particles_set_emitting, RID, bool)
 	BIND1R(bool, particles_get_emitting, RID)
+	BIND2(particles_set_autostart, RID, bool)
+	BIND1R(bool, particles_get_autostart, RID)
 	BIND2(particles_set_amount, RID, int)
 	BIND2(particles_set_lifetime, RID, float)
 	BIND2(particles_set_one_shot, RID, bool)

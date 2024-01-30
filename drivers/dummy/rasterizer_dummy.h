@@ -675,6 +675,7 @@ public:
 	RID particles_create() { return RID(); }
 
 	void particles_set_emitting(RID p_particles, bool p_emitting) {}
+	void particles_set_autostart(RID p_particles, bool p_autostart) {}
 	void particles_set_amount(RID p_particles, int p_amount) {}
 	void particles_set_lifetime(RID p_particles, float p_lifetime) {}
 	void particles_set_one_shot(RID p_particles, bool p_one_shot) {}
@@ -701,6 +702,7 @@ public:
 	void particles_set_emission_transform(RID p_particles, const Transform &p_transform) {}
 
 	bool particles_get_emitting(RID p_particles) { return false; }
+	bool particles_get_autostart(RID p_autostart) { return false; }
 	int particles_get_draw_passes(RID p_particles) const { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const { return RID(); }
 
