@@ -711,7 +711,6 @@ XRInterface::PlayAreaMode OpenXRInterface::get_play_area_mode() const {
 }
 
 bool OpenXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
-	ERR_FAIL_COND_V_MSG(initialized, false, "Cannot change play area mode after OpenXR interface has been initialized");
 	ERR_FAIL_NULL_V(openxr_api, false);
 
 	XrReferenceSpaceType reference_space;
@@ -726,8 +725,15 @@ bool OpenXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 		return false;
 	}
 
-	openxr_api->set_requested_reference_space(reference_space);
-	return true;
+	if (openxr_api->set_requested_reference_space(reference_space)) {
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server) {
+			xr_server->clear_reference_frame();
+		}
+		return true;
+	}
+
+	return false;
 }
 
 PackedVector3Array OpenXRInterface::get_play_area() const {
