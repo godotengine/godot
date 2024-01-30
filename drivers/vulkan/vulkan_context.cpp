@@ -507,6 +507,10 @@ Error VulkanContext::_initialize_device_extensions() {
 	register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
+	// <TF>
+	// @ShadyTF ASTC decode mode extension
+	register_requested_device_extension(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME, false);
+	// </TF>
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
@@ -529,6 +533,10 @@ Error VulkanContext::_initialize_device_extensions() {
 	if (VK_GOOGLE_display_timing_enabled) {
 		register_requested_device_extension(VK_GOOGLE_DISPLAY_TIMING_EXTENSION_NAME, false);
 	}
+
+	
+		
+	
 
 	// obtain available device extensions
 	uint32_t device_extension_count = 0;
