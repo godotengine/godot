@@ -278,18 +278,18 @@ Files extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.5 (47e8cc9db2e469d902b0e3093ae9e482c3d87188, 2023)
+- Version: 2.28.7 (555f84735aecdbd76a566cf087ec8425dfb0c8ab, 2024)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
 
-- All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/` except `config_psa.h` and `psa_util.h`.
-- All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
-- The `LICENSE` file.
-- Applied the patch in `patches/1453.diff` to fix UWP build (upstream PR:
-  https://github.com/ARMmbed/mbedtls/pull/1453).
-  Applied the patch in `patches/windows-arm64-hardclock.diff`.
-  Applied the patch in `aesni-no-arm-intrinsics.patch` also to fix UWP build.
+- All `.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
+  except `config_psa.h` and `psa_util.h`
+- All `.c` and `.h` from `library/` to `thirdparty/mbedtls/library/` except
+  those starting with `psa_*`
+- The `LICENSE` file (edited to keep only the Apache 2.0 variant)
+- Applied the patch `windows-arm64-hardclock.diff` to fix Windows ARM64 build
+  Applied the patch `windows-entropy-bcrypt.diff` to fix Windows Store support
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 
