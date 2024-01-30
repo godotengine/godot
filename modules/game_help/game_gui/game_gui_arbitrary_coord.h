@@ -23,6 +23,19 @@ public:
         S_CONSTANT,      // 使用固定的缩放因子进行缩放。
         S_PARAMETER      // 使用子树参数进行缩放。
     };
+    bool is_scale_font;
+    void set_scale_font(bool value) { is_scale_font = value; request_layout(); }
+    bool get_scale_font() { return is_scale_font; }
+
+
+    float reference_height;
+    void set_reference_height(float value) { reference_height = value; request_layout(); }
+    float get_reference_height() { return reference_height; }
+
+    float reference_font_size = 0;
+    void set_reference_font_size(float value) { reference_font_size = value; request_layout(); }
+    float get_reference_font_size() { return reference_font_size; }
+
     // 子节点定位模式。
     PositioningMode positioning_mode = P_PROPORTIONAL;
     void set_positioning_mode(PositioningMode value)
@@ -239,7 +252,8 @@ public:
             else if (con->get_v_size_flags() & SIZE_SHRINK_END)
                 y_pos -= int(con->get_size().y);
 
-            _perform_component_layout( con, Rect2(Vector2(x_pos,y_pos),con->get_size()) );
+
+            _perform_component_layout( con, Rect2(Vector2(x_pos,y_pos),con->get_size()) );            
 
         }
     }
@@ -258,6 +272,16 @@ public:
 
             // 将缩放因子应用于子节点
             _resolve_child_size( child, (con->get_size() * scale).floor(), limited );
+
+            if(is_scale_font)
+            {
+				auto cur_scale = Math::floor(reference_node.size.y) / reference_height;
+
+				// Override the size of the font to dynamically size it
+				auto cur_size = reference_font_size * cur_scale;
+			    con->add_theme_font_size_override( "font_size", cur_size )
+
+            }
         }
 
     }

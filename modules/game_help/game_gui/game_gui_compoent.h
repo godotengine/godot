@@ -669,7 +669,11 @@ class GUIComponent : public Container
                 break;
         } 
 
-        if (!is_gg && con) con->set_size( component_size);
+        if (!is_gg && con) 
+        {
+            con->set_size( component_size);
+            
+        }
 
         return component_size;
 
