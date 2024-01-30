@@ -770,25 +770,28 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Network */
 
-	// Debug
-	_initial_set("network/debug/remote_host", "127.0.0.1"); // Hints provided in setup_network
+	// General
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/network_mode", 0, "Offline,Online");
 
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/debug/remote_port", 6007, "1,65535,1")
+	// HTTP Proxy
+	_initial_set("network/http_proxy/host", "");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/http_proxy/port", 8080, "1,65535,1")
 
 	// SSL
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "network/tls/editor_tls_certificates", _SYSTEM_CERTS_PATH, "*.crt,*.pem", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
-	// Debugger/profiler
+	// Debug
+	_initial_set("network/debug/remote_host", "127.0.0.1"); // Hints provided in setup_network
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/debug/remote_port", 6007, "1,65535,1")
+
+	/* Debugger/profiler */
+
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "debugger/auto_switch_to_remote_scene_tree", false, "")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/profiler_frame_history_size", 3600, "60,10000,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/profiler_frame_max_functions", 64, "16,512,1")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "debugger/remote_scene_tree_refresh_interval", 1.0, "0.1,10,0.01,or_greater")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "debugger/remote_inspect_refresh_interval", 0.2, "0.02,10,0.01,or_greater")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "debugger/profile_native_calls", false, "")
-
-	// HTTP Proxy
-	_initial_set("network/http_proxy/host", "");
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/http_proxy/port", 8080, "1,65535,1")
 
 	/* Extra config */
 
