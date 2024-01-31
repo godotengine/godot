@@ -4768,12 +4768,11 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, ((BufferInfo*)breadcrumb_buffer.id)->vk_buffer, 0, sizeof(uint32_t), p_data);
 }
 
-uint32_t RenderingDeviceDriverVulkan::get_breadcrumb() {
-	return *(uint32_t *)breadcrumb_ptr;
-}
-
 void RenderingDeviceDriverVulkan::print_lost_device_info() {
+	void *breadcrumb_ptr;
+	vmaMapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, &breadcrumb_ptr);
 	uint32_t last_breadcrumb = *(uint32_t*)breadcrumb_ptr;
+	vmaUnmapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle);
 	uint32_t phase = last_breadcrumb >> 16;
 	uint32_t user_data = last_breadcrumb & ((1 << 16) - 1);
 	String errorMsg = "Last known breadcrumb: ";
@@ -4790,7 +4789,8 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 		case BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL:	errorMsg += "SHADOW_PASS_DIRECTIONAL";	break;
 		case BreadcrumbMarker::SKY_PASS:				errorMsg += "SKY_PASS";					break;
 		case BreadcrumbMarker::TRANSPARENT_PASS:		errorMsg += "TRANSPARENT_PASS";			break;
-		default: errorMsg += "UNKNOWN_BREADCRUMB(" + itos((uint32_t)phase) + ')\0'; break;
+		case BreadcrumbMarker::UI_PASS:					errorMsg += "UI_PASS";					break;
+		default: errorMsg += "UNKNOWN_BREADCRUMB(" + itos((uint32_t)phase) + ')'; break;
 	}
 
 	if (user_data != 0) {
@@ -5052,12 +5052,9 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 
 	context_driver = p_context_driver;
 	breadcrumb_buffer = buffer_create(sizeof(uint32_t), BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU);
-	BufferInfo *buf_info = (BufferInfo *)breadcrumb_buffer.id;
-	vmaMapMemory(allocator, buf_info->allocation.handle, &breadcrumb_ptr);
 }
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
-	vmaUnmapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle);
 	buffer_free(breadcrumb_buffer);
 
 	while (small_allocs_pools.size()) {
