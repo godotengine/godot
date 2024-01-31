@@ -2214,6 +2214,10 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		device_queue.submit_mutex.lock();
 		err = vkQueueSubmit(device_queue.queue, 1, &submit_info, vk_fence);
 		device_queue.submit_mutex.unlock();
+
+		if (err == VK_ERROR_DEVICE_LOST) {
+			print_lost_device_info();
+		}
 		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 
 		if (fence != nullptr && !command_queue->pending_semaphores_for_fence.is_empty()) {
@@ -4764,35 +4768,36 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, ((BufferInfo*)breadcrumb_buffer.id)->vk_buffer, 0, sizeof(uint32_t), p_data);
 }
 
-void RenderingDeviceDriverVulkan::print_lost_device_info(Error err) {
-	if (err == VK_ERROR_DEVICE_LOST) {
-		uint32_t last_breadcrumb = *(uint32_t*)breadcrumb_ptr;
-		uint32_t phase = last_breadcrumb >> 16;
-		uint32_t user_data = last_breadcrumb & ((1 << 16) - 1);
-		String errorMsg = "Last known breadcrumb: ";
+uint32_t RenderingDeviceDriverVulkan::get_breadcrumb() {
+	return *(uint32_t *)breadcrumb_ptr;
+}
 
-		switch (phase) {
-			case BreadcrumbMarker::ALPHA_PASS:				errorMsg += "ALPHA_PASS";				break;
-			case BreadcrumbMarker::BLIT_PASS:				errorMsg += "BLIT_PASS";				break;
-			case BreadcrumbMarker::DEBUG_PASS:				errorMsg += "DEBUG_PASS";				break;
-			case BreadcrumbMarker::LIGHTMAPPER_PASS:		errorMsg += "LIGHTMAPPER_PASS";			break;
-			case BreadcrumbMarker::OPAQUE_PASS:				errorMsg += "OPAQUE_PASS";				break;
-			case BreadcrumbMarker::POST_PROCESSING_PASS:	errorMsg += "POST_PROCESSING_PASS";		break;
-			case BreadcrumbMarker::REFLECTION_PROBES:		errorMsg += "REFLECTION_PROBES";		break;
-			case BreadcrumbMarker::SHADOW_PASS_CUBE:		errorMsg += "SHADOW_PASS_CUBE";			break;
-			case BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL:	errorMsg += "SHADOW_PASS_DIRECTIONAL";	break;
-			case BreadcrumbMarker::SKY_PASS:				errorMsg += "SKY_PASS";					break;
-			case BreadcrumbMarker::TRANSPARENT_PASS:		errorMsg += "TRANSPARENT_PASS";			break;
-			default:										errorMsg += "UNKNOWN_BREADCRUMB";		break;
-		}
+void RenderingDeviceDriverVulkan::print_lost_device_info() {
+	uint32_t last_breadcrumb = *(uint32_t*)breadcrumb_ptr;
+	uint32_t phase = last_breadcrumb >> 16;
+	uint32_t user_data = last_breadcrumb & ((1 << 16) - 1);
+	String errorMsg = "Last known breadcrumb: ";
 
-		if (user_data != 0) {
-			errorMsg += user_data;
-		}
-
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, errorMsg);
-		DEV_ASSERT(false);
+	switch (phase) {
+		case BreadcrumbMarker::ALPHA_PASS:				errorMsg += "ALPHA_PASS";				break;
+		case BreadcrumbMarker::BLIT_PASS:				errorMsg += "BLIT_PASS";				break;
+		case BreadcrumbMarker::DEBUG_PASS:				errorMsg += "DEBUG_PASS";				break;
+		case BreadcrumbMarker::LIGHTMAPPER_PASS:		errorMsg += "LIGHTMAPPER_PASS";			break;
+		case BreadcrumbMarker::OPAQUE_PASS:				errorMsg += "OPAQUE_PASS";				break;
+		case BreadcrumbMarker::POST_PROCESSING_PASS:	errorMsg += "POST_PROCESSING_PASS";		break;
+		case BreadcrumbMarker::REFLECTION_PROBES:		errorMsg += "REFLECTION_PROBES";		break;
+		case BreadcrumbMarker::SHADOW_PASS_CUBE:		errorMsg += "SHADOW_PASS_CUBE";			break;
+		case BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL:	errorMsg += "SHADOW_PASS_DIRECTIONAL";	break;
+		case BreadcrumbMarker::SKY_PASS:				errorMsg += "SKY_PASS";					break;
+		case BreadcrumbMarker::TRANSPARENT_PASS:		errorMsg += "TRANSPARENT_PASS";			break;
+		default: errorMsg += "UNKNOWN_BREADCRUMB(" + itos((uint32_t)phase) + ')\0'; break;
 	}
+
+	if (user_data != 0) {
+		errorMsg += user_data;
+	}
+
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, errorMsg);
 }
 
 /********************/
