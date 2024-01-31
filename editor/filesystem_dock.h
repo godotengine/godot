@@ -230,8 +230,6 @@ private:
 	String current_path;
 	String select_after_scan;
 
-	bool initialized = false;
-
 	bool updating_tree = false;
 	int tree_update_id;
 	FileSystemTree *tree = nullptr;

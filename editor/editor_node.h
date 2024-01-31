@@ -657,6 +657,7 @@ private:
 	void _bottom_panel_switch_by_control(bool p_enable, Control *p_control);
 	void _bottom_panel_switch(bool p_enable, int p_idx);
 	void _bottom_panel_raise_toggled(bool);
+	bool _bottom_panel_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 
 	void _begin_first_scan();
 

@@ -5158,27 +5158,11 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 	scene_tabs->update_scene_tabs();
 }
 
-class EditorBottomDockButton : public Button {
-	GDCLASS(EditorBottomDockButton, Button)
-
-	static void _bind_methods() {
-		ADD_SIGNAL(MethodInfo("dropping"));
-	}
-
-public:
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override {
-		if (!is_pressed()) {
-			const_cast<EditorBottomDockButton *>(this)->emit_signal("dropping");
-		}
-		return false;
-	}
-};
-
 Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item, bool p_at_front) {
-	Button *tb = memnew(EditorBottomDockButton);
+	Button *tb = memnew(Button);
 	tb->set_flat(true);
 	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch_by_control).bind(p_item));
-	tb->connect("dropping", callable_mp(this, &EditorNode::_bottom_panel_switch_by_control).bind(true, p_item));
+	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorNode::_bottom_panel_drag_hover).bind(tb, p_item), Callable());
 	tb->set_text(p_text);
 	tb->set_toggle_mode(true);
 	tb->set_focus_mode(Control::FOCUS_NONE);
@@ -6013,6 +5997,13 @@ Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion
 
 void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 	top_split->set_visible(!p_pressed);
+}
+
+bool EditorNode::_bottom_panel_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control) {
+	if (!p_button->is_pressed()) {
+		_bottom_panel_switch_by_control(true, p_control);
+	}
+	return false;
 }
 
 void EditorNode::_update_renderer_color() {
