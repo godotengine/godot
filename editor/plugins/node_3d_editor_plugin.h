@@ -124,6 +124,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_AUDIO_LISTENER,
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
+		VIEW_TRANSFORM_GIZMO,
 		VIEW_GRID,
 		VIEW_INFORMATION,
 		VIEW_FRAME_TIME,
@@ -235,6 +236,7 @@ private:
 	bool orthogonal;
 	bool auto_orthogonal;
 	bool lock_rotation;
+	bool transform_gizmo_visible = true;
 	real_t gizmo_scale;
 
 	bool freelook_active;
