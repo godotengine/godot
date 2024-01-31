@@ -370,6 +370,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	if (strcmp(interface, zxdg_exporter_v1_interface.name) == 0) {
+		registry->wl_exporter = (struct zxdg_exporter_v1 *)wl_registry_bind(wl_registry, name, &zxdg_exporter_v1_interface, 1);
+		registry->wl_exporter_name = name;
+		return;
+	}
+
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		registry->wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, 4);
 		registry->wl_compositor_name = name;
@@ -566,6 +572,17 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		}
 
 		registry->wl_shm_name = 0;
+
+		return;
+	}
+
+	if (name == registry->wl_exporter_name) {
+		if (registry->wl_exporter) {
+			zxdg_exporter_v1_destroy(registry->wl_exporter);
+			registry->wl_exporter = nullptr;
+		}
+
+		registry->wl_exporter_name = 0;
 
 		return;
 	}
@@ -1105,6 +1122,13 @@ void WaylandThread::_xdg_toplevel_on_wm_capabilities(void *data, struct xdg_topl
 			} break;
 		}
 	}
+}
+
+void WaylandThread::_xdg_exported_on_exported(void *data, zxdg_exported_v1 *exported, const char *handle) {
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	ws->exported_handle = vformat("wayland:%s", String::utf8(handle));
 }
 
 void WaylandThread::_xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode) {
@@ -2975,6 +2999,11 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 	// "loop".
 	wl_surface_commit(ws.wl_surface);
 
+	if (registry.wl_exporter) {
+		ws.xdg_exported = zxdg_exporter_v1_export(registry.wl_exporter, ws.wl_surface);
+		zxdg_exported_v1_add_listener(ws.xdg_exported, &xdg_exported_listener, &ws);
+	}
+
 	// Wait for the surface to be configured before continuing.
 	wl_display_roundtrip(wl_display);
 }
@@ -3978,6 +4007,10 @@ void WaylandThread::destroy() {
 
 	if (registry.xdg_wm_base) {
 		xdg_wm_base_destroy(registry.xdg_wm_base);
+	}
+
+	if (registry.wl_exporter) {
+		zxdg_exporter_v1_destroy(registry.wl_exporter);
 	}
 
 	if (registry.wl_shm) {

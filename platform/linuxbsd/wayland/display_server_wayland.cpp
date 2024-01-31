@@ -196,6 +196,9 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_CLIPBOARD_PRIMARY:
+#ifdef DBUS_ENABLED
+		case FEATURE_NATIVE_DIALOG:
+#endif
 		case FEATURE_HIDPI: {
 			return true;
 		} break;
@@ -267,6 +270,22 @@ bool DisplayServerWayland::is_dark_mode() const {
 			// Preference unknown.
 			return false;
 	}
+}
+
+Error DisplayServerWayland::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	WindowID window_id = MAIN_WINDOW_ID;
+	// TODO: Use window IDs for multiwindow support.
+
+	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
+	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+}
+
+Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	WindowID window_id = MAIN_WINDOW_ID;
+	// TODO: Use window IDs for multiwindow support.
+
+	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
+	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
 }
 
 #endif
@@ -1192,10 +1211,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	if (context_rd) {
 		if (context_rd->initialize() != OK) {
+			ERR_PRINT(vformat("Could not initialize %s", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
 			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG(vformat("Could not initialize %s", context_rd->get_api_name()));
+			return;
 		}
 	}
 #endif
