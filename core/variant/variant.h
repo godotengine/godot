@@ -865,7 +865,7 @@ Variant Callable::call(VarArgs... p_args) const {
 }
 
 template <typename... VarArgs>
-Callable Callable::bind(VarArgs... p_args) {
+Callable Callable::bind(VarArgs... p_args) const {
 	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 	const Variant *argptrs[sizeof...(p_args) + 1];
 	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
