@@ -31,11 +31,14 @@
 #ifndef LOCAL_VECTOR_H
 #define LOCAL_VECTOR_H
 
+#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
 #include "core/templates/vector.h"
+#include "core/templates/vector_iterator.h"
 
+#include <cstring>
 #include <initializer_list>
 #include <type_traits>
 
@@ -46,38 +49,64 @@ class LocalVector {
 private:
 	U count = 0;
 	U capacity = 0;
-	T *data = nullptr;
+	T *data = nullptr; 
+
+protected:
+	_FORCE_INLINE_ void realloc_more(U p_size) {
+		CRASH_COND_MSG(p_size <= capacity, "Precondition for realloc_more not met");
+		
+		T *p_data = (T *)memrealloc(data, p_size * sizeof(T));
+		if (likely(p_data)) {
+			data = p_data;
+			capacity = p_size;
+		}
+		else {
+			CRASH_NOW_MSG(error_names[ERR_OUT_OF_MEMORY])
+		}
+	}
 
 public:
-	T *ptr() {
-		return data;
-	}
+	using Iterator = VectorIterator<T>;
+	using ConstIterator = ConstVectorIterator<T>;
 
-	const T *ptr() const {
-		return data;
-	}
+	T *ptr() { return data; }
+	const T *ptr() const { return data; }
 
 	_FORCE_INLINE_ void push_back(T p_elem) {
 		if (unlikely(count == capacity)) {
-			capacity = tight ? (capacity + 1) : MAX((U)1, capacity << 1);
-			data = (T *)memrealloc(data, capacity * sizeof(T));
-			CRASH_COND_MSG(!data, "Out of memory");
+			constexpr auto new_cap = [](U p_cap) noexcept {
+				if constexpr (tight) {
+					return p_cap + 1;
+				}
+				else {
+					return = MAX((U)1, p_cap << 1);
+				}
+			};
+
+			realloc_more(new_cap(capacity));
 		}
 
-		if constexpr (!std::is_trivially_constructible<T>::value && !force_trivial) {
+		if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
 			memnew_placement(&data[count++], T(p_elem));
-		} else {
+		}
+		else {
 			data[count++] = p_elem;
 		}
 	}
 
 	void remove_at(U p_index) {
 		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
-		count--;
-		for (U i = p_index; i < count; i++) {
-			data[i] = data[i + 1];
+		--count;
+		if constexpr (std::is_trivially_copyable_v<T>/* && !force_trivial ?*/) {
+			std::memmove(&data[p_index], &data[p_index + 1], 
+				(count - p_index) * sizeof(T));
 		}
-		if constexpr (!std::is_trivially_destructible<T>::value && !force_trivial) {
+		else {
+			for (U i = p_index; i < count - 1; ++i) {
+				data[i] = data[i + 1];
+			}
+		}
+		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
 			data[count].~T();
 		}
 	}
@@ -86,11 +115,11 @@ public:
 	/// remove. It's generally faster than `remove_at`.
 	void remove_at_unordered(U p_index) {
 		ERR_FAIL_INDEX(p_index, count);
-		count--;
+		--count;
 		if (count > p_index) {
 			data[p_index] = data[count];
 		}
-		if constexpr (!std::is_trivially_destructible<T>::value && !force_trivial) {
+		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
 			data[count].~T();
 		}
 	}
@@ -105,7 +134,7 @@ public:
 	}
 
 	void invert() {
-		for (U i = 0; i < count / 2; i++) {
+		for (U i = 0; i < count / 2; ++i) {
 			SWAP(data[i], data[count - i - 1]);
 		}
 	}
@@ -122,37 +151,42 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
 	_FORCE_INLINE_ U get_capacity() const { return capacity; }
 	_FORCE_INLINE_ void reserve(U p_size) {
-		p_size = tight ? p_size : nearest_power_of_2_templated(p_size);
+		constexpr auto new_size = [](U _p_size) noexcept {
+			if constexpr (tight) {
+				return _p_size;
+			}
+			else {
+				return nearest_power_of_2_templated(_p_size);
+			}
+		};
+		p_size = new_size(p_size);
+		
 		if (p_size > capacity) {
-			capacity = p_size;
-			data = (T *)memrealloc(data, capacity * sizeof(T));
-			CRASH_COND_MSG(!data, "Out of memory");
+			realloc_more(p_size);
 		}
 	}
 
 	_FORCE_INLINE_ U size() const { return count; }
 	void resize(U p_size) {
 		if (p_size < count) {
-			if constexpr (!std::is_trivially_destructible<T>::value && !force_trivial) {
-				for (U i = p_size; i < count; i++) {
+			if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
+				for (U i = p_size; i < count; ++i) {
 					data[i].~T();
 				}
 			}
 			count = p_size;
-		} else if (p_size > count) {
-			if (unlikely(p_size > capacity)) {
-				capacity = tight ? p_size : nearest_power_of_2_templated(p_size);
-				data = (T *)memrealloc(data, capacity * sizeof(T));
-				CRASH_COND_MSG(!data, "Out of memory");
-			}
-			if constexpr (!std::is_trivially_constructible<T>::value && !force_trivial) {
-				for (U i = count; i < p_size; i++) {
+		}
+		else if (p_size > count) {
+			reserve(p_size);
+			if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
+				for (U i = count; i < p_size; ++i) {
 					memnew_placement(&data[i], T);
 				}
 			}
 			count = p_size;
 		}
 	}
+
 	_FORCE_INLINE_ const T &operator[](U p_index) const {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
@@ -162,85 +196,34 @@ public:
 		return data[p_index];
 	}
 
-	struct Iterator {
-		_FORCE_INLINE_ T &operator*() const {
-			return *elem_ptr;
-		}
-		_FORCE_INLINE_ T *operator->() const { return elem_ptr; }
-		_FORCE_INLINE_ Iterator &operator++() {
-			elem_ptr++;
-			return *this;
-		}
-		_FORCE_INLINE_ Iterator &operator--() {
-			elem_ptr--;
-			return *this;
-		}
+	_FORCE_INLINE_ Iterator begin() { return { data }; }
+	_FORCE_INLINE_ Iterator end() { return { data + size() }; }
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return elem_ptr != b.elem_ptr; }
+	_FORCE_INLINE_ ConstIterator begin() const { return { ptr() }; }
+	_FORCE_INLINE_ ConstIterator end() const { return { ptr() + size()) }; }
 
-		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
-		Iterator() {}
-		Iterator(const Iterator &p_it) { elem_ptr = p_it.elem_ptr; }
-
-	private:
-		T *elem_ptr = nullptr;
-	};
-
-	struct ConstIterator {
-		_FORCE_INLINE_ const T &operator*() const {
-			return *elem_ptr;
-		}
-		_FORCE_INLINE_ const T *operator->() const { return elem_ptr; }
-		_FORCE_INLINE_ ConstIterator &operator++() {
-			elem_ptr++;
-			return *this;
-		}
-		_FORCE_INLINE_ ConstIterator &operator--() {
-			elem_ptr--;
-			return *this;
-		}
-
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
-
-		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
-		ConstIterator() {}
-		ConstIterator(const ConstIterator &p_it) { elem_ptr = p_it.elem_ptr; }
-
-	private:
-		const T *elem_ptr = nullptr;
-	};
-
-	_FORCE_INLINE_ Iterator begin() {
-		return Iterator(data);
-	}
-	_FORCE_INLINE_ Iterator end() {
-		return Iterator(data + size());
-	}
-
-	_FORCE_INLINE_ ConstIterator begin() const {
-		return ConstIterator(ptr());
-	}
-	_FORCE_INLINE_ ConstIterator end() const {
-		return ConstIterator(ptr() + size());
-	}
-
-	void insert(U p_pos, T p_val) {
-		ERR_FAIL_UNSIGNED_INDEX(p_pos, count + 1);
-		if (p_pos == count) {
+	void insert(U p_index, T p_val) {
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count + 1);
+		if (p_index == count) {
 			push_back(p_val);
-		} else {
+		}
+		else {
 			resize(count + 1);
-			for (U i = count - 1; i > p_pos; i--) {
-				data[i] = data[i - 1];
+			if constexpr (std::is_trivially_copyable_v<T>/* && !force_trivial ?*/) {
+				std::memmove(&data[p_index + 1], &data[p_index], 
+					(count - p_index - 1) * sizeof(T));
 			}
-			data[p_pos] = p_val;
+			else {
+				for (U i = count - 1; i > p_index; --i) {
+					data[i] = data[i - 1];
+				}
+			}	
+			data[p_index] = p_val;
 		}
 	}
 
 	int64_t find(const T &p_val, U p_from = 0) const {
-		for (U i = p_from; i < count; i++) {
+		for (U i = p_from; i < count; ++i) {
 			if (data[i] == p_val) {
 				return int64_t(i);
 			}
@@ -265,7 +248,7 @@ public:
 
 	void ordered_insert(T p_val) {
 		U i;
-		for (i = 0; i < count; i++) {
+		for (i = 0; i < count; ++i) {
 			if (p_val < data[i]) {
 				break;
 			}
@@ -298,19 +281,19 @@ public:
 	}
 	_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {
 		resize(p_from.size());
-		for (U i = 0; i < p_from.count; i++) {
+		for (U i = 0; i < p_from.count; ++i) {
 			data[i] = p_from.data[i];
 		}
 	}
 	inline void operator=(const LocalVector &p_from) {
 		resize(p_from.size());
-		for (U i = 0; i < p_from.count; i++) {
+		for (U i = 0; i < p_from.count; ++i) {
 			data[i] = p_from.data[i];
 		}
 	}
 	inline void operator=(const Vector<T> &p_from) {
 		resize(p_from.size());
-		for (U i = 0; i < count; i++) {
+		for (U i = 0; i < count; ++i) {
 			data[i] = p_from[i];
 		}
 	}
