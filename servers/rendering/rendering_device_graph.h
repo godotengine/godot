@@ -49,7 +49,6 @@ public:
 		enum Type {
 			TYPE_NONE,
 			TYPE_BIND_PIPELINE,
-			TYPE_BIND_UNIFORM_SET,
 			TYPE_BIND_UNIFORM_SETS,
 			TYPE_DISPATCH,
 			TYPE_DISPATCH_INDIRECT,
@@ -66,7 +65,6 @@ public:
 			TYPE_NONE,
 			TYPE_BIND_INDEX_BUFFER,
 			TYPE_BIND_PIPELINE,
-			TYPE_BIND_UNIFORM_SET,
 			TYPE_BIND_UNIFORM_SETS,
 			TYPE_BIND_VERTEX_BUFFERS,
 			TYPE_CLEAR_ATTACHMENTS,
@@ -385,12 +383,6 @@ private:
 		RDD::PipelineID pipeline;
 	};
 
-	struct DrawListBindUniformSetInstruction : DrawListInstruction {
-		RDD::UniformSetID uniform_set;
-		RDD::ShaderID shader;
-		uint32_t set_index = 0;
-	};
-
 	struct DrawListBindUniformSetsInstruction : DrawListInstruction {
 		RDD::ShaderID shader;
 		uint32_t first_set_index = 0;
@@ -506,12 +498,6 @@ private:
 
 	struct ComputeListBindPipelineInstruction : ComputeListInstruction {
 		RDD::PipelineID pipeline;
-	};
-
-	struct ComputeListBindUniformSetInstruction : ComputeListInstruction {
-		RDD::UniformSetID uniform_set;
-		RDD::ShaderID shader;
-		uint32_t set_index = 0;
 	};
 
 	struct ComputeListBindUniformSetsInstruction : ComputeListInstruction {

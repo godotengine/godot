@@ -605,11 +605,6 @@ void RenderingDeviceGraph::_run_compute_list_command(RDD::CommandBufferID p_comm
 				driver->command_bind_compute_pipeline(p_command_buffer, bind_pipeline_instruction->pipeline);
 				instruction_data_cursor += sizeof(ComputeListBindPipelineInstruction);
 			} break;
-			case ComputeListInstruction::TYPE_BIND_UNIFORM_SET: {
-				const ComputeListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const ComputeListBindUniformSetInstruction *>(instruction);
-				driver->command_bind_compute_uniform_set(p_command_buffer, bind_uniform_set_instruction->uniform_set, bind_uniform_set_instruction->shader, bind_uniform_set_instruction->set_index);
-				instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction);
-			} break;
 			case ComputeListInstruction::TYPE_BIND_UNIFORM_SETS: {
 				const ComputeListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const ComputeListBindUniformSetsInstruction *>(instruction);
 				driver->command_bind_compute_uniform_sets(p_command_buffer, VectorView<RDD::UniformSetID>(bind_uniform_sets_instruction->uniform_set_ids(), bind_uniform_sets_instruction->set_count), bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->set_count);
@@ -660,11 +655,6 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 				const DrawListBindPipelineInstruction *bind_pipeline_instruction = reinterpret_cast<const DrawListBindPipelineInstruction *>(instruction);
 				driver->command_bind_render_pipeline(p_command_buffer, bind_pipeline_instruction->pipeline);
 				instruction_data_cursor += sizeof(DrawListBindPipelineInstruction);
-			} break;
-			case DrawListInstruction::TYPE_BIND_UNIFORM_SET: {
-				const DrawListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const DrawListBindUniformSetInstruction *>(instruction);
-				driver->command_bind_render_uniform_set(p_command_buffer, bind_uniform_set_instruction->uniform_set, bind_uniform_set_instruction->shader, bind_uniform_set_instruction->set_index);
-				instruction_data_cursor += sizeof(DrawListBindUniformSetInstruction);
 			} break;
 			case DrawListInstruction::TYPE_BIND_UNIFORM_SETS: {
 				const DrawListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const DrawListBindUniformSetsInstruction *>(instruction);
@@ -1119,11 +1109,6 @@ void RenderingDeviceGraph::_print_draw_list(const uint8_t *p_instruction_data, u
 				print_line("\tBIND PIPELINE ID", itos(bind_pipeline_instruction->pipeline.id));
 				instruction_data_cursor += sizeof(DrawListBindPipelineInstruction);
 			} break;
-			case DrawListInstruction::TYPE_BIND_UNIFORM_SET: {
-				const DrawListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const DrawListBindUniformSetInstruction *>(instruction);
-				print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_set_instruction->uniform_set.id), "SET INDEX", bind_uniform_set_instruction->set_index);
-				instruction_data_cursor += sizeof(DrawListBindUniformSetInstruction);
-			} break;
 			case DrawListInstruction::TYPE_BIND_UNIFORM_SETS: {
 				const DrawListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const DrawListBindUniformSetsInstruction *>(instruction);
 				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
@@ -1214,18 +1199,13 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 				print_line("\tBIND PIPELINE ID", itos(bind_pipeline_instruction->pipeline.id));
 				instruction_data_cursor += sizeof(ComputeListBindPipelineInstruction);
 			} break;
-			case ComputeListInstruction::TYPE_BIND_UNIFORM_SET: {
-				const ComputeListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const ComputeListBindUniformSetInstruction *>(instruction);
-				print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_set_instruction->uniform_set.id), "SHADER ID", itos(bind_uniform_set_instruction->shader.id));
-				instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction);
-			} break;
 			case ComputeListInstruction::TYPE_BIND_UNIFORM_SETS: {
 				const ComputeListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const ComputeListBindUniformSetsInstruction *>(instruction);
 				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
 				for (uint32_t i = 0; i < bind_uniform_sets_instruction->set_count; i++) {
 					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i]), "START INDEX", bind_uniform_sets_instruction->first_set_index);
 				}
-				instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
+				instruction_data_cursor += sizeof(ComputeListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
 			case ComputeListInstruction::TYPE_DISPATCH: {
 				const ComputeListDispatchInstruction *dispatch_instruction = reinterpret_cast<const ComputeListDispatchInstruction *>(instruction);
@@ -1405,11 +1385,7 @@ void RenderingDeviceGraph::add_compute_list_bind_pipeline(RDD::PipelineID p_pipe
 }
 
 void RenderingDeviceGraph::add_compute_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
-	ComputeListBindUniformSetInstruction *instruction = reinterpret_cast<ComputeListBindUniformSetInstruction *>(_allocate_compute_list_instruction(sizeof(ComputeListBindUniformSetInstruction)));
-	instruction->type = ComputeListInstruction::TYPE_BIND_UNIFORM_SET;
-	instruction->shader = p_shader;
-	instruction->uniform_set = p_uniform_set;
-	instruction->set_index = set_index;
+	add_compute_list_bind_uniform_sets(p_shader, VectorView(&p_uniform_set, 1), set_index, 1);
 }
 
 void RenderingDeviceGraph::add_compute_list_bind_uniform_sets(RDD::ShaderID p_shader, VectorView<RDD::UniformSetID> p_uniform_sets, uint32_t first_set_index, uint32_t set_count) {
@@ -1548,11 +1524,7 @@ void RenderingDeviceGraph::add_draw_list_bind_pipeline(RDD::PipelineID p_pipelin
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
-	DrawListBindUniformSetInstruction *instruction = reinterpret_cast<DrawListBindUniformSetInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListBindUniformSetInstruction)));
-	instruction->type = DrawListInstruction::TYPE_BIND_UNIFORM_SET;
-	instruction->shader = p_shader;
-	instruction->uniform_set = p_uniform_set;
-	instruction->set_index = set_index;
+	add_draw_list_bind_uniform_sets(p_shader, VectorView(&p_uniform_set, 1), set_index, 1);
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_uniform_sets(RDD::ShaderID p_shader, VectorView<RDD::UniformSetID> p_uniform_sets, uint32_t first_set_index, uint32_t set_count) {
