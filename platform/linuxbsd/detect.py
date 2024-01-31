@@ -208,8 +208,8 @@ def configure(env: "Environment"):
 
     if env["wayland"]:
         if os.system("wayland-scanner -v") != 0:
-            print("wayland-scanner not found. Aborting.")
-            sys.exit(255)
+            print("wayland-scanner not found. Disabling wayland support.")
+            env["wayland"] = False
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
