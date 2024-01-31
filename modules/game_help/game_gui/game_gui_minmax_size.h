@@ -1,10 +1,10 @@
-#ifndef GAME_GUI_ARBITRARY_COORD_H
-#define GAME_GUI_ARBITRARY_COORD_H
+#ifndef GAME_GUI_MINMAX_SIZE_H
+#define GAME_GUI_MINMAX_SIZE_H
 #include "game_gui_compoent.h"
 
-class GUIMinMaxSize : public GUICompoent
+class GUIMinMaxSize : public GUIComponent
 {
-    GDCLASS(GUIMinMaxSize, GUICompoent);
+    GDCLASS(GUIMinMaxSize, GUIComponent);
     static void _bind_methods();
 public:
 
@@ -63,7 +63,7 @@ public:
 	
 		available_size.y = MIN( available_size.y, _effective_max_height() );
 
-	    GUICompoent::_resolve_size( available_size, limited );
+	    GUIComponent::_resolve_size( available_size, limited );
 
     }
 

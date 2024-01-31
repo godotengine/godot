@@ -275,11 +275,11 @@ public:
 
             if(is_scale_font)
             {
-				auto cur_scale = Math::floor(reference_node.size.y) / reference_height;
+				auto cur_scale = Math::floor(reference_node->get_size().y) / reference_height;
 
 				// Override the size of the font to dynamically size it
 				auto cur_size = reference_font_size * cur_scale;
-			    con->add_theme_font_size_override( "font_size", cur_size )
+			    con->add_theme_font_size_override( "font_size", cur_size );
 
             }
         }

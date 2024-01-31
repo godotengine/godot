@@ -33,12 +33,22 @@
 
 #include "core/object/class_db.h"
 #include  "game_gui_compoent.h"
+#include "game_gui_arbitrary_coord.h"
+#include "game_gui_hbox.h"
+#include "game_gui_vbox.h"
+#include "game_gui_space.h"
+#include "game_gui_minmax_size.h"
 
 void initialize_game_gui_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
 	ClassDB::register_class<GUIComponent>();
+	ClassDB::register_class<GUIArbitraryCoord>();
+	ClassDB::register_class<GUIHBox>();
+	ClassDB::register_class<GUIVBox>();
+	ClassDB::register_class<GUISpace>();
+	ClassDB::register_class<GUIMinMaxSize>();
 
 }
 

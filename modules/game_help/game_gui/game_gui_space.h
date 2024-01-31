@@ -295,7 +295,7 @@ public:
 
             }
             break;
-            PARAMETER:
+            case PARAMETER:
             {
                 size.x += (float)get_parameter(left_parameter,0);
                 size.x += (float)get_parameter(right_parameter,0);
