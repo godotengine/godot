@@ -63,6 +63,7 @@
 #include "wayland/protocol/wayland.gen.h"
 #include "wayland/protocol/xdg_activation.gen.h"
 #include "wayland/protocol/xdg_decoration.gen.h"
+#include "wayland/protocol/xdg_foreign.gen.h"
 #include "wayland/protocol/xdg_shell.gen.h"
 
 #ifdef LIBDECOR_ENABLED
@@ -132,6 +133,9 @@ public:
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
 
+		struct zxdg_exporter_v1 *wl_exporter = nullptr;
+		uint32_t wl_exporter_name = 0;
+
 		// wayland-protocols globals.
 
 		struct wp_viewporter *wp_viewporter = nullptr;
@@ -197,6 +201,9 @@ public:
 
 		struct wp_viewport *wp_viewport = nullptr;
 		struct wp_fractional_scale_v1 *wp_fractional_scale = nullptr;
+		struct zxdg_exported_v1 *xdg_exported = nullptr;
+
+		String exported_handle;
 
 		// Currently applied buffer scale.
 		int buffer_scale = 1;
@@ -599,6 +606,8 @@ private:
 
 	static void _xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode);
 
+	static void _xdg_exported_on_exported(void *data, zxdg_exported_v1 *exported, const char *handle);
+
 	static void _xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token);
 
 	// Core Wayland event listeners.
@@ -751,6 +760,10 @@ private:
 		.wheel = _wp_tablet_tool_on_wheel,
 		.button = _wp_tablet_tool_on_button,
 		.frame = _wp_tablet_tool_on_frame,
+	};
+
+	static constexpr struct zxdg_exported_v1_listener xdg_exported_listener = {
+		.handle = _xdg_exported_on_exported
 	};
 
 	static constexpr struct zxdg_toplevel_decoration_v1_listener xdg_toplevel_decoration_listener = {

@@ -971,6 +971,8 @@ Files extracted from upstream source:
 - `unstable/tablet/tablet-unstable-v2.xml`
 - `unstable/xdg-decoration/README`
 - `unstable/xdg-decoration/xdg-decoration-unstable-v1.xml`
+- `unstable/xdg-foreign/README`
+- `unstable/xdg-foreign/xdg-foreign-unstable-v1.xml`
 - `COPYING`
 
 
