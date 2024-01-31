@@ -643,6 +643,15 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_repository_options();
 			setup_http_request(request);
+
+			const bool loading_blocked_new = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
+			if (loading_blocked_new != loading_blocked) {
+				loading_blocked = loading_blocked_new;
+
+				if (!loading_blocked && is_visible()) {
+					_request_current_config(); // Reload config now that the network is available.
+				}
+			}
 		} break;
 	}
 }
@@ -929,9 +938,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 }
 
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
-	library_error->hide();
-	library_info->set_text(TTR("Loading..."));
-	library_info->show();
+	_set_library_message(TTR("Loading..."));
 
 	asset_top_page->hide();
 	asset_bottom_page->hide();
@@ -1036,6 +1043,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 	Button *first = memnew(Button);
 	first->set_text(TTR("First", "Pagination"));
+	first->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != 0) {
 		first->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(0));
 	} else {
@@ -1046,6 +1054,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 	Button *prev = memnew(Button);
 	prev->set_text(TTR("Previous", "Pagination"));
+	prev->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page > 0) {
 		prev->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
 	} else {
@@ -1056,26 +1065,22 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i < to; i++) {
+		Button *current = memnew(Button);
+		// Add padding to make page number buttons easier to click.
+		current->set_text(vformat(" %d ", i + 1));
+		current->set_theme_type_variation("PanelBackgroundButton");
 		if (i == p_page) {
-			Button *current = memnew(Button);
-			// Keep the extended padding for the currently active page (see below).
-			current->set_text(vformat(" %d ", i + 1));
 			current->set_disabled(true);
 			current->set_focus_mode(Control::FOCUS_NONE);
-
-			hbc->add_child(current);
 		} else {
-			Button *current = memnew(Button);
-			// Add padding to make page number buttons easier to click.
-			current->set_text(vformat(" %d ", i + 1));
 			current->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(i));
-
-			hbc->add_child(current);
 		}
+		hbc->add_child(current);
 	}
 
 	Button *next = memnew(Button);
 	next->set_text(TTR("Next", "Pagination"));
+	next->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page < p_page_count - 1) {
 		next->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
 	} else {
@@ -1087,6 +1092,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 	Button *last = memnew(Button);
 	last->set_text(TTR("Last", "Pagination"));
+	last->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != p_page_count - 1) {
 		last->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count - 1));
 	} else {
@@ -1104,10 +1110,14 @@ void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_req
 	if (requesting != REQUESTING_NONE) {
 		request->cancel_request();
 	}
+	error_hb->hide();
+
+	if (loading_blocked) {
+		_set_library_message_with_action(TTR("The Asset Library requires an online connection and involves sending data over the internet."), TTR("Go Online"), callable_mp(this, &EditorAssetLibrary::_force_online_mode));
+		return;
+	}
 
 	requesting = p_request_type;
-
-	error_hb->hide();
 	request->request(host + "/" + p_request + p_arguments);
 }
 
@@ -1156,8 +1166,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 	if (error_abort) {
 		if (requesting == REQUESTING_CONFIG) {
-			library_info->hide();
-			library_error->show();
+			_set_library_message_with_action(TTR("Failed to get repository configuration."), TTR("Retry"), callable_mp(this, &EditorAssetLibrary::_request_current_config));
 		}
 		error_hb->show();
 		return;
@@ -1265,18 +1274,17 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				}
 
 				if (!filter->get_text().is_empty()) {
-					library_info->set_text(
+					_set_library_message(
 							vformat(TTR("No results for \"%s\" for support level(s): %s."), filter->get_text(), support_list));
 				} else {
 					// No results, even though the user didn't search for anything specific.
 					// This is typically because the version number changed recently
 					// and no assets compatible with the new version have been published yet.
-					library_info->set_text(
+					_set_library_message(
 							vformat(TTR("No results compatible with %s %s for support level(s): %s.\nCheck the enabled support levels using the 'Support' button in the top-right corner."), String(VERSION_SHORT_NAME).capitalize(), String(VERSION_BRANCH), support_list));
 				}
-				library_info->show();
 			} else {
-				library_info->hide();
+				library_message_box->hide();
 			}
 
 			for (int i = 0; i < result.size(); i++) {
@@ -1432,6 +1440,39 @@ void EditorAssetLibrary::_update_asset_items_columns() {
 	asset_items_column_width = (get_size().x / new_columns) - (100 * EDSCALE);
 }
 
+void EditorAssetLibrary::_set_library_message(const String &p_message) {
+	library_message->set_text(p_message);
+
+	if (library_message_action.is_valid()) {
+		library_message_button->disconnect("pressed", library_message_action);
+		library_message_action = Callable();
+	}
+	library_message_button->hide();
+
+	library_message_box->show();
+}
+
+void EditorAssetLibrary::_set_library_message_with_action(const String &p_message, const String &p_action_text, const Callable &p_action) {
+	library_message->set_text(p_message);
+
+	library_message_button->set_text(p_action_text);
+	if (library_message_action.is_valid()) {
+		library_message_button->disconnect("pressed", library_message_action);
+		library_message_action = Callable();
+	}
+	library_message_action = p_action;
+	library_message_button->connect("pressed", library_message_action);
+	library_message_button->show();
+
+	library_message_box->show();
+}
+
+void EditorAssetLibrary::_force_online_mode() {
+	EditorSettings::get_singleton()->set_setting("network/connection/network_mode", EditorSettings::NETWORK_ONLINE);
+	EditorSettings::get_singleton()->notify_changes();
+	EditorSettings::get_singleton()->save();
+}
+
 void EditorAssetLibrary::disable_community_support() {
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, false);
 }
@@ -1443,7 +1484,7 @@ void EditorAssetLibrary::_bind_methods() {
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
-	initial_loading = true;
+	loading_blocked = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
 
 	VBoxContainer *library_main = memnew(VBoxContainer);
 	add_child(library_main);
@@ -1567,22 +1608,18 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_vb_border->add_child(library_vb);
 
-	library_info = memnew(Label);
-	library_info->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	library_vb->add_child(library_info);
+	library_message_box = memnew(VBoxContainer);
+	library_message_box->hide();
+	library_vb->add_child(library_message_box);
 
-	library_error = memnew(VBoxContainer);
-	library_error->hide();
-	library_vb->add_child(library_error);
+	library_message = memnew(Label);
+	library_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	library_message_box->add_child(library_message);
 
-	library_error_label = memnew(Label(TTR("Failed to get repository configuration.")));
-	library_error_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	library_error->add_child(library_error_label);
-
-	library_error_retry = memnew(Button(TTR("Retry")));
-	library_error_retry->set_h_size_flags(SIZE_SHRINK_CENTER);
-	library_error_retry->connect("pressed", callable_mp(this, &EditorAssetLibrary::_request_current_config));
-	library_error->add_child(library_error_retry);
+	library_message_button = memnew(Button);
+	library_message_button->set_h_size_flags(SIZE_SHRINK_CENTER);
+	library_message_button->set_theme_type_variation("PanelBackgroundButton");
+	library_message_box->add_child(library_message_button);
 
 	asset_top_page = memnew(HBoxContainer);
 	library_vb->add_child(asset_top_page);

@@ -171,6 +171,9 @@ public:
 #ifdef DBUS_ENABLED
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
 #endif
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
@@ -199,6 +202,8 @@ public:
 	virtual bool screen_is_kept_on() const override;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
+
+	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 

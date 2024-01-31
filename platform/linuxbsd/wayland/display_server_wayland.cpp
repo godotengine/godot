@@ -196,6 +196,9 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_CLIPBOARD_PRIMARY:
+#ifdef DBUS_ENABLED
+		case FEATURE_NATIVE_DIALOG:
+#endif
 		case FEATURE_HIDPI: {
 			return true;
 		} break;
@@ -267,6 +270,22 @@ bool DisplayServerWayland::is_dark_mode() const {
 			// Preference unknown.
 			return false;
 	}
+}
+
+Error DisplayServerWayland::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	WindowID window_id = MAIN_WINDOW_ID;
+	// TODO: Use window IDs for multiwindow support.
+
+	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
+	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+}
+
+Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	WindowID window_id = MAIN_WINDOW_ID;
+	// TODO: Use window IDs for multiwindow support.
+
+	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
+	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
 }
 
 #endif
@@ -555,6 +574,37 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	ret.push_back(MAIN_WINDOW_ID);
 
 	return ret;
+}
+
+int64_t DisplayServerWayland::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	switch (p_handle_type) {
+		case DISPLAY_HANDLE: {
+			return (int64_t)wayland_thread.get_wl_display();
+		} break;
+
+		case WINDOW_HANDLE: {
+			return (int64_t)wayland_thread.window_get_wl_surface(p_window);
+		} break;
+
+		case WINDOW_VIEW: {
+			return 0; // Not supported.
+		} break;
+
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			if (egl_manager) {
+				return (int64_t)egl_manager->get_context(p_window);
+			}
+			return 0;
+		} break;
+#endif // GLES3_ENABLED
+
+		default: {
+			return 0;
+		} break;
+	}
 }
 
 DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(const Point2i &p_position) const {
@@ -1192,10 +1242,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	if (context_rd) {
 		if (context_rd->initialize() != OK) {
+			ERR_PRINT(vformat("Could not initialize %s", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
 			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG(vformat("Could not initialize %s", context_rd->get_api_name()));
+			return;
 		}
 	}
 #endif

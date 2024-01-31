@@ -1497,6 +1497,10 @@ void OpenXRAPI::unregister_extension_wrapper(OpenXRExtensionWrapper *p_extension
 	registered_extension_wrappers.erase(p_extension_wrapper);
 }
 
+const Vector<OpenXRExtensionWrapper *> &OpenXRAPI::get_registered_extension_wrappers() {
+	return registered_extension_wrappers;
+}
+
 void OpenXRAPI::register_extension_metadata() {
 	for (OpenXRExtensionWrapper *extension_wrapper : registered_extension_wrappers) {
 		extension_wrapper->on_register_metadata();

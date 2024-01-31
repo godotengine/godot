@@ -1,10 +1,10 @@
 Backported from: https://github.com/Mbed-TLS/mbedtls/pull/8047
 
 diff --git a/thirdparty/mbedtls/library/entropy_poll.c b/thirdparty/mbedtls/library/entropy_poll.c
-index 3420616a06..fec2abc2e4 100644
+index cde49e66a0..4c5184686e 100644
 --- a/thirdparty/mbedtls/library/entropy_poll.c
 +++ b/thirdparty/mbedtls/library/entropy_poll.c
-@@ -51,32 +51,34 @@
+@@ -39,32 +39,34 @@
  
  #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
  

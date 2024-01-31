@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
+#include "rendering_light_culler.h"
 #include "rendering_server_default.h"
 
 #include <new>
@@ -158,7 +159,7 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 		light->geometries.insert(A);
 
 		if (geom->can_cast_shadows) {
-			light->shadow_dirty = true;
+			light->make_shadow_dirty();
 		}
 
 		if (A->scenario && A->array_index >= 0) {
@@ -265,7 +266,7 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		light->geometries.erase(A);
 
 		if (geom->can_cast_shadows) {
-			light->shadow_dirty = true;
+			light->make_shadow_dirty();
 		}
 
 		if (A->scenario && A->array_index >= 0) {
@@ -871,7 +872,7 @@ void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 		if (geom->can_cast_shadows) {
 			for (HashSet<RendererSceneCull::Instance *>::Iterator I = geom->lights.begin(); I != geom->lights.end(); ++I) {
 				InstanceLightData *light = static_cast<InstanceLightData *>((*I)->base_data);
-				light->shadow_dirty = true;
+				light->make_shadow_dirty();
 			}
 		}
 	}
@@ -1565,7 +1566,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 
 		RSG::light_storage->light_instance_set_transform(light->instance, p_instance->transform);
 		RSG::light_storage->light_instance_set_aabb(light->instance, p_instance->transform.xform(p_instance->aabb));
-		light->shadow_dirty = true;
+		light->make_shadow_dirty();
 
 		RS::LightBakeMode bake_mode = RSG::light_storage->light_get_bake_mode(p_instance->base);
 		if (RSG::light_storage->light_get_type(p_instance->base) != RS::LIGHT_DIRECTIONAL && bake_mode != light->bake_mode) {
@@ -1650,7 +1651,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		if (geom->can_cast_shadows) {
 			for (const Instance *E : geom->lights) {
 				InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
-				light->shadow_dirty = true;
+				light->make_shadow_dirty();
 			}
 		}
 
@@ -2075,6 +2076,9 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 }
 
 void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect) {
+	// For later tight culling, the light culler needs to know the details of the directional light.
+	light_culler->prepare_directional_light(p_instance, p_shadow_index);
+
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 	Transform3D light_transform = p_instance->transform;
@@ -2345,6 +2349,10 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
 
+					if (!light->is_shadow_update_full()) {
+						light_culler->cull_regular_light(instance_shadow_cull_result);
+					}
+
 					for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 						Instance *instance = instance_shadow_cull_result[j];
 						if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
@@ -2423,6 +2431,10 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
 
+					if (!light->is_shadow_update_full()) {
+						light_culler->cull_regular_light(instance_shadow_cull_result);
+					}
+
 					for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 						Instance *instance = instance_shadow_cull_result[j];
 						if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask)) {
@@ -2485,6 +2497,10 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 			p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
 
 			RendererSceneRender::RenderShadowData &shadow_data = render_shadow_data[max_shadows_used++];
+
+			if (!light->is_shadow_update_full()) {
+				light_culler->cull_regular_light(instance_shadow_cull_result);
+			}
 
 			for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 				Instance *instance = instance_shadow_cull_result[j];
@@ -2940,6 +2956,9 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 			}
 
 			for (uint32_t j = 0; j < cull_data.cull->shadow_count; j++) {
+				if (!light_culler->cull_directional_light(cull_data.scenario->instance_aabbs[i], j)) {
+					continue;
+				}
 				for (uint32_t k = 0; k < cull_data.cull->shadows[j].cascade_count; k++) {
 					if (IN_FRUSTUM(cull_data.cull->shadows[j].cascades[k].frustum) && VIS_CHECK) {
 						uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
@@ -2991,6 +3010,9 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows, RenderingMethod::RenderInfo *r_render_info) {
 	Instance *render_reflection_probe = instance_owner.get_or_null(p_reflection_probe); //if null, not rendering to it
+
+	// Prepare the light - camera volume culling system.
+	light_culler->prepare_camera(p_camera_data->main_transform, p_camera_data->main_projection);
 
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
 
@@ -3126,6 +3148,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 #ifdef DEBUG_CULL_TIME
 		uint64_t time_from = OS::get_singleton()->get_ticks_usec();
 #endif
+
 		if (cull_to > thread_cull_threshold) {
 			//multiple threads
 			for (InstanceCullResult &thread : scene_cull_result_threads) {
@@ -3263,9 +3286,31 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 				}
 			}
 
-			if (light->shadow_dirty) {
-				light->last_version++;
-				light->shadow_dirty = false;
+			// We can detect whether multiple cameras are hitting this light, whether or not the shadow is dirty,
+			// so that we can turn off tighter caster culling.
+			light->detect_light_intersects_multiple_cameras(Engine::get_singleton()->get_frames_drawn());
+
+			if (light->is_shadow_dirty()) {
+				// Dirty shadows have no need to be drawn if
+				// the light volume doesn't intersect the camera frustum.
+
+				// Returns false if the entire light can be culled.
+				bool allow_redraw = light_culler->prepare_regular_light(*ins);
+
+				// Directional lights aren't handled here, _light_instance_update_shadow is called from elsewhere.
+				// Checking for this in case this changes, as this is assumed.
+				DEV_CHECK_ONCE(RSG::light_storage->light_get_type(ins->base) != RS::LIGHT_DIRECTIONAL);
+
+				// Tighter caster culling to the camera frustum should work correctly with multiple viewports + cameras.
+				// The first camera will cull tightly, but if the light is present on more than 1 camera, the second will
+				// do a full render, and mark the light as non-dirty.
+				// There is however a cost to tighter shadow culling in this situation (2 shadow updates in 1 frame),
+				// so we should detect this and switch off tighter caster culling automatically.
+				// This is done in the logic for `decrement_shadow_dirty()`.
+				if (allow_redraw) {
+					light->last_version++;
+					light->decrement_shadow_dirty();
+				}
 			}
 
 			bool redraw = RSG::light_storage->shadow_atlas_update_light(p_shadow_atlas, light->instance, coverage, light->last_version);
@@ -3273,10 +3318,14 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			if (redraw && max_shadows_used < MAX_UPDATE_SHADOWS) {
 				//must redraw!
 				RENDER_TIMESTAMP("> Render Light3D " + itos(i));
-				light->shadow_dirty = _light_instance_update_shadow(ins, p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_orthogonal, p_camera_data->vaspect, p_shadow_atlas, scenario, p_screen_mesh_lod_threshold, p_visible_layers);
+				if (_light_instance_update_shadow(ins, p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_orthogonal, p_camera_data->vaspect, p_shadow_atlas, scenario, p_screen_mesh_lod_threshold, p_visible_layers)) {
+					light->make_shadow_dirty();
+				}
 				RENDER_TIMESTAMP("< Render Light3D " + itos(i));
 			} else {
-				light->shadow_dirty = redraw;
+				if (redraw) {
+					light->make_shadow_dirty();
+				}
 			}
 		}
 	}
@@ -3953,7 +4002,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 				//ability to cast shadows change, let lights now
 				for (const Instance *E : geom->lights) {
 					InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
-					light->shadow_dirty = true;
+					light->make_shadow_dirty();
 				}
 
 				geom->can_cast_shadows = can_cast_shadows;
@@ -4165,6 +4214,12 @@ RendererSceneCull::RendererSceneCull() {
 	thread_cull_threshold = MAX(thread_cull_threshold, (uint32_t)WorkerThreadPool::get_singleton()->get_thread_count()); //make sure there is at least one thread per CPU
 
 	dummy_occlusion_culling = memnew(RendererSceneOcclusionCull);
+
+	light_culler = memnew(RenderingLightCuller);
+
+	bool tighter_caster_culling = GLOBAL_DEF("rendering/lights_and_shadows/tighter_shadow_caster_culling", true);
+	light_culler->set_caster_culling_active(tighter_caster_culling);
+	light_culler->set_light_culling_active(tighter_caster_culling);
 }
 
 RendererSceneCull::~RendererSceneCull() {
@@ -4186,5 +4241,10 @@ RendererSceneCull::~RendererSceneCull() {
 
 	if (dummy_occlusion_culling) {
 		memdelete(dummy_occlusion_culling);
+	}
+
+	if (light_culler) {
+		memdelete(light_culler);
+		light_culler = nullptr;
 	}
 }

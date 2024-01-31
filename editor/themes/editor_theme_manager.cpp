@@ -1590,7 +1590,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
 	// Project manager.
 	{
-		p_theme->set_stylebox("search_panel", "ProjectManager", p_config.tree_panel_style);
+		p_theme->set_stylebox("project_list", "ProjectManager", p_config.tree_panel_style);
 		p_theme->set_constant("sidebar_button_icon_separation", "ProjectManager", int(6 * EDSCALE));
 
 		// ProjectTag.
@@ -1767,6 +1767,28 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			editor_log_button_pressed->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
 			editor_log_button_pressed->set_border_color(p_config.accent_color);
 			p_theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
+		}
+
+		// Buttons styles that stand out against the panel background (e.g. AssetLib).
+		{
+			p_theme->set_type_variation("PanelBackgroundButton", "Button");
+
+			Ref<StyleBoxFlat> panel_button_style = p_config.button_style->duplicate();
+			panel_button_style->set_bg_color(p_config.base_color.lerp(p_config.mono_color, 0.08));
+
+			Ref<StyleBoxFlat> panel_button_style_hover = p_config.button_style_hover->duplicate();
+			panel_button_style_hover->set_bg_color(p_config.base_color.lerp(p_config.mono_color, 0.16));
+
+			Ref<StyleBoxFlat> panel_button_style_pressed = p_config.button_style_pressed->duplicate();
+			panel_button_style_pressed->set_bg_color(p_config.base_color.lerp(p_config.mono_color, 0.20));
+
+			Ref<StyleBoxFlat> panel_button_style_disabled = p_config.button_style_disabled->duplicate();
+			panel_button_style_disabled->set_bg_color(p_config.disabled_bg_color);
+
+			p_theme->set_stylebox("normal", "PanelBackgroundButton", panel_button_style);
+			p_theme->set_stylebox("hover", "PanelBackgroundButton", panel_button_style_hover);
+			p_theme->set_stylebox("pressed", "PanelBackgroundButton", panel_button_style_pressed);
+			p_theme->set_stylebox("disabled", "PanelBackgroundButton", panel_button_style_disabled);
 		}
 
 		// Top bar selectors.
