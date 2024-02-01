@@ -215,26 +215,31 @@ public:
 		return false;
 	}
 
-	_FORCE_INLINE_ Iterator begin() { return { ptrw() }; }
-	_FORCE_INLINE_ Iterator end() { return { ptrw() + size() }; }
+	_FORCE_INLINE_ Iterator begin() { return Iterator(ptrw()); }
+	_FORCE_INLINE_ Iterator end(){ return Iterator(ptrw() + size()) };
+}
 
-	_FORCE_INLINE_ ConstIterator begin() const { return { ptr() }; }
-	_FORCE_INLINE_ ConstIterator end() const { return { ptr() + size() }; }
+_FORCE_INLINE_ ConstIterator
+begin() const {
+	return ConstIterator(ptr());
+}
+_FORCE_INLINE_ ConstIterator end() const { return ConstIterator(ptr() + size()); }
 
-	_FORCE_INLINE_ Vector() {}
-	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) {
-		Error err = _cowdata.resize(p_init.size());
-		ERR_FAIL_COND(err);
+_FORCE_INLINE_ Vector() {}
+_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) {
+	Error err = _cowdata.resize(p_init.size());
+	ERR_FAIL_COND(err);
 
-		Size i = 0;
-		for (const T &element : p_init) {
-			_cowdata.set(i++, element);
-		}
+	Size i = 0;
+	for (const T &element : p_init) {
+		_cowdata.set(i++, element);
 	}
-	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+}
+_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
 
-	_FORCE_INLINE_ ~Vector() {}
-};
+_FORCE_INLINE_ ~Vector() {}
+}
+;
 
 template <class T>
 void Vector<T>::reverse() {
