@@ -2583,7 +2583,7 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 	// <TF>
 	// @ShadyTF persistently mapped buffers
 	// all uniform buffers are persistent 
-	if (persistent_buffer_enabled ){
+	if (persistent_buffer_enabled && p_creation_bits.has_flag(BUFFER_CREATION_PERSISTENT_BIT) ){
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_PERSISTENT_BIT);
 
 		if (p_creation_bits.has_flag(BUFFER_CREATION_LINEAR_BIT)) {

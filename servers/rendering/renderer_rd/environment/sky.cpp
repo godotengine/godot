@@ -733,7 +733,12 @@ void SkyRD::init() {
 		sky_scene_state.directional_lights = memnew_arr(SkyDirectionalLightData, sky_scene_state.max_directional_lights);
 		sky_scene_state.last_frame_directional_lights = memnew_arr(SkyDirectionalLightData, sky_scene_state.max_directional_lights);
 		sky_scene_state.last_frame_directional_light_count = sky_scene_state.max_directional_lights + 1;
-		sky_scene_state.directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
+		// <TF>
+		// @ShadyTF persistently mapped buffers
+		// Was:
+		// sky_scene_state.directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
+		sky_scene_state.directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size, Vector<uint8_t>(), RD::BUFFER_CREATION_PERSISTENT_BIT);
+		// </TF>
 
 		String defines = "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(sky_scene_state.max_directional_lights) + "\n";
 		defines += "\n#define SAMPLERS_BINDING_FIRST_INDEX " + itos(SAMPLERS_BINDING_FIRST_INDEX) + "\n";
@@ -845,8 +850,12 @@ void sky() {
 
 		SkyMaterialData *md = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 		sky_shader.default_shader_rd = sky_shader.shader.version_get_shader(md->shader_data->version, SKY_VERSION_BACKGROUND);
-
-		sky_scene_state.uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SkySceneState::UBO));
+		// <TF>
+		// @ShadyTF persistently mapped buffers
+		// Was:
+		// sky_scene_state.uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SkySceneState::UBO));
+		sky_scene_state.uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SkySceneState::UBO), Vector<uint8_t>(), RD::BUFFER_CREATION_PERSISTENT_BIT);
+		// </TF>
 
 		Vector<RD::Uniform> uniforms;
 
