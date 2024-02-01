@@ -533,7 +533,7 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<u
 	ERR_FAIL_COND_V_MSG(p_usage.has_flag(STORAGE_BUFFER_USAGE_READONLY) && p_usage.has_flag(STORAGE_BUFFER_USAGE_WRITEONLY), RID(), "Cannot set both read and write ONLY flags");
 
 	Buffer buffer;
-	buffer.size = p_size_bytes; 
+	buffer.size = p_size_bytes;
 	buffer.usage = RDD::BUFFER_USAGE_STORAGE_BIT;
 	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_READONLY)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
