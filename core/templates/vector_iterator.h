@@ -31,141 +31,118 @@
 #ifndef VECTOR_ITERATOR_H
 #define VECTOR_ITERATOR_H
 
+#include <cstddef>
+
 /**
  * @class VectorIterator
  * Iterator for Vector and LocalVector.
  */
 
-#include <iterator>
-
 template <class T>
 struct ConstVectorIterator {
-	using iterator_category = std::random_access_iterator_tag;
 	using value_type = T;
 	using difference_type = ptrdiff_t;
-	using pointer = const value_type*;
-	using reference = const value_type&;
-	
-	reference operator*() const noexcept { return *elem_ptr; }
-	pointer operator->() const noexcept { return elem_ptr; }
+	using pointer = const value_type *;
+	using reference = const value_type &;
 
-	ConstVectorIterator &operator++() noexcept  {
+	reference operator*() const { return *elem_ptr; }
+	pointer operator->() const { return elem_ptr; }
+
+	ConstVectorIterator &operator++() {
 		++elem_ptr;
 		return *this;
 	}
-	ConstVectorIterator operator++(int) noexcept {
+	ConstVectorIterator operator++(int) {
 		ConstVectorIterator tmp = *this;
 		++*this;
 		return tmp;
 	}
 
-	ConstVectorIterator &operator--() noexcept {
+	ConstVectorIterator &operator--() {
 		--elem_ptr;
 		return *this;
 	}
-	ConstVectorIterator operator--(int) noexcept {
+	ConstVectorIterator operator--(int) {
 		ConstVectorIterator tmp = *this;
 		--*this;
 		return tmp;
 	}
 
-	bool operator==(const ConstVectorIterator &p_it) const noexcept
-		{ return elem_ptr == p_it.elem_ptr; }
-	bool operator!=(const ConstVectorIterator &p_it) const noexcept
-		{ return elem_ptr != p_it.elem_ptr; }
+	bool operator==(const ConstVectorIterator &p_it) const { return elem_ptr == p_it.elem_ptr; }
+	bool operator!=(const ConstVectorIterator &p_it) const { return elem_ptr != p_it.elem_ptr; }
 
-	bool operator< (const ConstVectorIterator &p_it) const noexcept 
-		{ return this->elem_ptr < p_it.elem_ptr; }
-	bool operator> (const ConstVectorIterator &p_it) const noexcept
-		{ return this->elem_ptr > p_it.elem_ptr; }
-	bool operator>=(const ConstVectorIterator &p_it) const noexcept
-		{ return !(this->elem_ptr < p_it.elem_ptr); }
-	bool operator<=(const ConstVectorIterator &p_it) const noexcept
-		{ return !(this->elem_ptr > p_it.elem_ptr); }
+	bool operator<(const ConstVectorIterator &p_it) const { return this->elem_ptr < p_it.elem_ptr; }
+	bool operator>(const ConstVectorIterator &p_it) const { return this->elem_ptr > p_it.elem_ptr; }
+	bool operator>=(const ConstVectorIterator &p_it) const { return !(this->elem_ptr < p_it.elem_ptr); }
+	bool operator<=(const ConstVectorIterator &p_it) const { return !(this->elem_ptr > p_it.elem_ptr); }
 
-	difference_type operator-(const ConstVectorIterator &p_it) const noexcept
-		{ return elem_ptr - p_it.elem_ptr; }
+	difference_type operator-(const ConstVectorIterator &p_it) const { return elem_ptr - p_it.elem_ptr; }
 
-	ConstVectorIterator operator+(const difference_type &p_diff) const noexcept
-		{ return { elem_ptr + p_diff }; }
-	ConstVectorIterator operator-(const difference_type &p_diff) const noexcept
-		{ return { elem_ptr - p_diff }; }
+	ConstVectorIterator operator+(const difference_type &p_diff) const { return { elem_ptr + p_diff }; }
+	ConstVectorIterator operator-(const difference_type &p_diff) const { return { elem_ptr - p_diff }; }
 
-	reference operator[] (const difference_type &p_offset) const noexcept 
-		{ return *(*this + p_offset); }
+	reference operator[](const difference_type &p_offset) const { return *(*this + p_offset); }
 
-	ConstVectorIterator(const T *p_ptr) noexcept : elem_ptr{ const_cast<T*>(p_ptr) } {}
-	ConstVectorIterator(T *p_ptr) noexcept : elem_ptr{ p_ptr } {}
-	ConstVectorIterator() noexcept {}
-	ConstVectorIterator(const ConstVectorIterator& p_it) noexcept = default;
+	ConstVectorIterator(const T *p_ptr) :
+			elem_ptr{ const_cast<T *>(p_ptr) } {}
+	ConstVectorIterator(T *p_ptr) :
+			elem_ptr{ p_ptr } {}
+	ConstVectorIterator() {}
+	ConstVectorIterator(const ConstVectorIterator &p_it) = default;
 
 protected:
 	T *elem_ptr = nullptr;
 };
-static_assert(std::is_trivially_copyable_v<ConstVectorIterator<size_t>>);
 
 template <class T>
-struct VectorIterator : ConstVectorIterator<T> 
-{
+struct VectorIterator : ConstVectorIterator<T> {
 	using _base = ConstVectorIterator<T>;
 	using _base::_base;
 
-	using iterator_category = std::random_access_iterator_tag;
 	using value_type = T;
 	using difference_type = ptrdiff_t;
-	using pointer = value_type*;
-	using reference = value_type&;
-	
-	reference operator*() const noexcept { return *elem_ptr; }
-	pointer operator->() const noexcept { return elem_ptr; }
+	using pointer = value_type *;
+	using reference = value_type &;
 
-	VectorIterator& operator++() noexcept {
+	reference operator*() const { return *elem_ptr; }
+	pointer operator->() const { return elem_ptr; }
+
+	VectorIterator &operator++() {
 		++elem_ptr;
 		return *this;
 	}
-	VectorIterator operator++(int) noexcept {
+	VectorIterator operator++(int) {
 		VectorIterator tmp = *this;
 		++*this;
 		return tmp;
 	}
 
-	VectorIterator &operator--() noexcept {
+	VectorIterator &operator--() {
 		--elem_ptr;
 		return *this;
 	}
-	VectorIterator operator--(int) noexcept {
+	VectorIterator operator--(int) {
 		VectorIterator tmp = *this;
 		--*this;
 		return tmp;
 	}
 
-	bool operator==(const VectorIterator &p_it) const noexcept
-		{ return elem_ptr == p_it.elem_ptr; }
-	bool operator!=(const VectorIterator &p_it) const noexcept
-		{ return elem_ptr != p_it.elem_ptr; }
+	bool operator==(const VectorIterator &p_it) const { return elem_ptr == p_it.elem_ptr; }
+	bool operator!=(const VectorIterator &p_it) const { return elem_ptr != p_it.elem_ptr; }
 
-	bool operator< (const VectorIterator &p_it) const noexcept
-		{ return this->elem_ptr < p_it.elem_ptr; }
-	bool operator> (const VectorIterator &p_it) const noexcept
-		{ return this->elem_ptr > p_it.elem_ptr; }
-	bool operator>=(const VectorIterator &p_it) const noexcept
-		{ return !(this->elem_ptr < p_it.elem_ptr); }
-	bool operator<=(const VectorIterator &p_it) const noexcept
-		{ return !(this->elem_ptr > p_it.elem_ptr); }
+	bool operator<(const VectorIterator &p_it) const { return this->elem_ptr < p_it.elem_ptr; }
+	bool operator>(const VectorIterator &p_it) const { return this->elem_ptr > p_it.elem_ptr; }
+	bool operator>=(const VectorIterator &p_it) const { return !(this->elem_ptr < p_it.elem_ptr); }
+	bool operator<=(const VectorIterator &p_it) const { return !(this->elem_ptr > p_it.elem_ptr); }
 
-	difference_type operator-(const VectorIterator &p_it) const noexcept
-		{ return elem_ptr - p_it.elem_ptr; }
+	difference_type operator-(const VectorIterator &p_it) const { return elem_ptr - p_it.elem_ptr; }
 
-	VectorIterator operator+(const difference_type &p_diff) const noexcept
-		{ return { elem_ptr + p_diff }; }
-	VectorIterator operator-(const difference_type &p_diff) const noexcept
-		{ return { elem_ptr - p_diff }; }
+	VectorIterator operator+(const difference_type &p_diff) const { return { elem_ptr + p_diff }; }
+	VectorIterator operator-(const difference_type &p_diff) const { return { elem_ptr - p_diff }; }
 
-	reference operator[] (const difference_type &p_offset) const noexcept 
-		{ return *(*this + p_offset); }
+	reference operator[](const difference_type &p_offset) const { return *(*this + p_offset); }
 
 	VectorIterator(const T *p_ptr) = delete;
 };
-static_assert(std::is_trivially_copyable_v<VectorIterator<size_t>>);
 
 #endif // VECTOR_ITERATOR_H
