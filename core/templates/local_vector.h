@@ -184,113 +184,111 @@ public:
 		return data[p_index];
 	}
 
-	_FORCE_INLINE_ Iterator begin() { return Iterator(data }; }
-	_FORCE_INLINE_ Iterator end() { return Iterator(data + size() };
-}
+	_FORCE_INLINE_ Iterator begin() { return Iterator(data); }
+	_FORCE_INLINE_ Iterator end() { return Iterator(data + size()); }
 
-_FORCE_INLINE_ ConstIterator begin() const { return ConstIterator(ptr()); }
-_FORCE_INLINE_ ConstIterator end() const { return ConstIterator(ptr() + size()); }
+	_FORCE_INLINE_ ConstIterator begin() const { return ConstIterator(ptr()); }
+	_FORCE_INLINE_ ConstIterator end() const { return ConstIterator(ptr() + size()); }
 
-void insert(U p_index, T p_val) {
-	ERR_FAIL_UNSIGNED_INDEX(p_index, count + 1);
-	if (p_index == count) {
-		push_back(p_val);
-	} else {
-		resize(count + 1);
-		if constexpr (std::is_trivially_copyable_v<T> /* || force_trivial ?*/) {
-			memmove(&data[p_index + 1], &data[p_index], (count - p_index - 1) * sizeof(T));
+	void insert(U p_index, T p_val) {
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count + 1);
+		if (p_index == count) {
+			push_back(p_val);
 		} else {
-			for (U i = count - 1; i > p_index; i--) {
-				data[i] = data[i - 1];
+			resize(count + 1);
+			if constexpr (std::is_trivially_copyable_v<T> /* || force_trivial ?*/) {
+				memmove(&data[p_index + 1], &data[p_index], (count - p_index - 1) * sizeof(T));
+			} else {
+				for (U i = count - 1; i > p_index; i--) {
+					data[i] = data[i - 1];
+				}
+			}
+			data[p_index] = p_val;
+		}
+	}
+
+	int64_t find(const T &p_val, U p_from = 0) const {
+		for (U i = p_from; i < count; i++) {
+			if (data[i] == p_val) {
+				return int64_t(i);
 			}
 		}
-		data[p_index] = p_val;
+		return -1;
 	}
-}
 
-int64_t find(const T &p_val, U p_from = 0) const {
-	for (U i = p_from; i < count; i++) {
-		if (data[i] == p_val) {
-			return int64_t(i);
+	template <class C>
+	void sort_custom() {
+		U len = count;
+		if (len == 0) {
+			return;
+		}
+
+		SortArray<T, C> sorter;
+		sorter.sort(data, len);
+	}
+
+	void sort() {
+		sort_custom<_DefaultComparator<T>>();
+	}
+
+	void ordered_insert(T p_val) {
+		U i;
+		for (i = 0; i < count; i++) {
+			if (p_val < data[i]) {
+				break;
+			}
+		}
+		insert(i, p_val);
+	}
+
+	operator Vector<T>() const {
+		Vector<T> ret;
+		ret.resize(size());
+		T *w = ret.ptrw();
+		memcpy(w, data, sizeof(T) * count);
+		return ret;
+	}
+
+	Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
+		Vector<uint8_t> ret;
+		ret.resize(count * sizeof(T));
+		uint8_t *w = ret.ptrw();
+		memcpy(w, data, sizeof(T) * count);
+		return ret;
+	}
+
+	_FORCE_INLINE_ LocalVector() {}
+	_FORCE_INLINE_ LocalVector(std::initializer_list<T> p_init) {
+		reserve(p_init.size());
+		for (const T &element : p_init) {
+			push_back(element);
 		}
 	}
-	return -1;
-}
-
-template <class C>
-void sort_custom() {
-	U len = count;
-	if (len == 0) {
-		return;
-	}
-
-	SortArray<T, C> sorter;
-	sorter.sort(data, len);
-}
-
-void sort() {
-	sort_custom<_DefaultComparator<T>>();
-}
-
-void ordered_insert(T p_val) {
-	U i;
-	for (i = 0; i < count; i++) {
-		if (p_val < data[i]) {
-			break;
+	_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {
+		resize(p_from.size());
+		for (U i = 0; i < p_from.count; i++) {
+			data[i] = p_from.data[i];
 		}
 	}
-	insert(i, p_val);
-}
+	inline void operator=(const LocalVector &p_from) {
+		resize(p_from.size());
+		for (U i = 0; i < p_from.count; i++) {
+			data[i] = p_from.data[i];
+		}
+	}
+	inline void operator=(const Vector<T> &p_from) {
+		resize(p_from.size());
+		for (U i = 0; i < count; i++) {
+			data[i] = p_from[i];
+		}
+	}
 
-operator Vector<T>() const {
-	Vector<T> ret;
-	ret.resize(size());
-	T *w = ret.ptrw();
-	memcpy(w, data, sizeof(T) * count);
-	return ret;
-}
-
-Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
-	Vector<uint8_t> ret;
-	ret.resize(count * sizeof(T));
-	uint8_t *w = ret.ptrw();
-	memcpy(w, data, sizeof(T) * count);
-	return ret;
-}
-
-_FORCE_INLINE_ LocalVector() {}
-_FORCE_INLINE_ LocalVector(std::initializer_list<T> p_init) {
-	reserve(p_init.size());
-	for (const T &element : p_init) {
-		push_back(element);
+	_FORCE_INLINE_ ~LocalVector() {
+		if (data) {
+			reset();
+		}
 	}
-}
-_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {
-	resize(p_from.size());
-	for (U i = 0; i < p_from.count; i++) {
-		data[i] = p_from.data[i];
-	}
-}
-inline void operator=(const LocalVector &p_from) {
-	resize(p_from.size());
-	for (U i = 0; i < p_from.count; i++) {
-		data[i] = p_from.data[i];
-	}
-}
-inline void operator=(const Vector<T> &p_from) {
-	resize(p_from.size());
-	for (U i = 0; i < count; i++) {
-		data[i] = p_from[i];
-	}
-}
-
-_FORCE_INLINE_ ~LocalVector() {
-	if (data) {
-		reset();
-	}
-}
-}
-;
+};
 
 template <class T, class U = uint32_t, bool force_trivial = false>
 using TightLocalVector = LocalVector<T, U, force_trivial, true>;

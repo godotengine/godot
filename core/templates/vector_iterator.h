@@ -78,8 +78,8 @@ struct ConstVectorIterator {
 
 	difference_type operator-(const ConstVectorIterator &p_it) const { return elem_ptr - p_it.elem_ptr; }
 
-	ConstVectorIterator operator+(const difference_type &p_diff) const { return { elem_ptr + p_diff }; }
-	ConstVectorIterator operator-(const difference_type &p_diff) const { return { elem_ptr - p_diff }; }
+	ConstVectorIterator operator+(const difference_type &p_diff) const { return ConstVectorIterator(elem_ptr + p_diff); }
+	ConstVectorIterator operator-(const difference_type &p_diff) const { return ConstVectorIterator(elem_ptr - p_diff); }
 
 	reference operator[](const difference_type &p_offset) const { return *(*this + p_offset); }
 
@@ -137,8 +137,8 @@ struct VectorIterator : ConstVectorIterator<T> {
 
 	difference_type operator-(const VectorIterator &p_it) const { return elem_ptr - p_it.elem_ptr; }
 
-	VectorIterator operator+(const difference_type &p_diff) const { return { elem_ptr + p_diff }; }
-	VectorIterator operator-(const difference_type &p_diff) const { return { elem_ptr - p_diff }; }
+	VectorIterator operator+(const difference_type &p_diff) const { return VectorIterator(elem_ptr + p_diff); }
+	VectorIterator operator-(const difference_type &p_diff) const { return VectorIterator(elem_ptr - p_diff); }
 
 	reference operator[](const difference_type &p_offset) const { return *(*this + p_offset); }
 
