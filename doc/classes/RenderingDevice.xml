@@ -1868,6 +1868,8 @@
 			Index buffer in 32-bit unsigned integer format. This limits the maximum index that can be specified to [code]4294967295[/code].
 		</constant>
 		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage" is_bitfield="true">
+		<constant name="STORAGE_BUFFER_USAGE_READONLY" value="2" enum="StorageBufferUsage" is_bitfield="true">
+		<constant name="STORAGE_BUFFER_USAGE_WRITEONLY" value="4" enum="StorageBufferUsage" is_bitfield="true">
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 			Sampler uniform.
