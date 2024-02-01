@@ -4016,7 +4016,7 @@ bool Animation::_quaternion_track_optimize_key(const TKey<Quaternion> t0, const 
 	if (q0.get_axis().dot(q1.get_axis()) >= 1.0 - p_allowed_angular_error * 2.0) {
 		double a0 = Math::acos(t0.value.dot(t1.value));
 		double a1 = Math::acos(t1.value.dot(t2.value));
-		if (a0 + a1 >= Math_PI) {
+		if (a0 + a1 >= Math_PI / 2) {
 			return false; // Rotation is more than 180 deg, keep key.
 		}
 		// Calc velocities.
