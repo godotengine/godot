@@ -2217,6 +2217,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 
 		if (err == VK_ERROR_DEVICE_LOST) {
 			print_lost_device_info();
+			CRASH_NOW_MSG("Vulkan device was lost.");
 		}
 		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 
@@ -4770,6 +4771,9 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 
 void RenderingDeviceDriverVulkan::print_lost_device_info() {
 	void *breadcrumb_ptr;
+	vmaFlushAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
+	vmaInvalidateAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
+
 	vmaMapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, &breadcrumb_ptr);
 	uint32_t last_breadcrumb = *(uint32_t*)breadcrumb_ptr;
 	vmaUnmapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle);
