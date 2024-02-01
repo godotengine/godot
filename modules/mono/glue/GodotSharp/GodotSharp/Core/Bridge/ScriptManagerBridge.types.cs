@@ -61,6 +61,8 @@ public static partial class ScriptManagerBridge
         private System.Collections.Generic.Dictionary<string, Type> _pathTypeMap = new();
         private System.Collections.Generic.Dictionary<Type, string> _typePathMap = new();
 
+        public System.Collections.Generic.IEnumerable<string> Paths => _pathTypeMap.Keys;
+
         public void Add(string scriptPath, Type scriptType)
         {
             _pathTypeMap.Add(scriptPath, scriptType);
