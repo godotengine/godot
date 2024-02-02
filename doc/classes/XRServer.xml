@@ -37,6 +37,12 @@
 				You should call this method after a few seconds have passed. For example, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, or when implementing a teleport mechanism.
 			</description>
 		</method>
+		<method name="clear_reference_frame" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Clears the reference frame that was set by previous calls to [method center_on_hmd].
+			</description>
+		</method>
 		<method name="find_interface" qualifiers="const">
 			<return type="XRInterface" />
 			<param index="0" name="name" type="String" />

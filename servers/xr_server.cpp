@@ -55,6 +55,7 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_world_origin"), &XRServer::get_world_origin);
 	ClassDB::bind_method(D_METHOD("set_world_origin", "world_origin"), &XRServer::set_world_origin);
 	ClassDB::bind_method(D_METHOD("get_reference_frame"), &XRServer::get_reference_frame);
+	ClassDB::bind_method(D_METHOD("clear_reference_frame"), &XRServer::get_reference_frame);
 	ClassDB::bind_method(D_METHOD("center_on_hmd", "rotation_mode", "keep_height"), &XRServer::center_on_hmd);
 	ClassDB::bind_method(D_METHOD("get_hmd_transform"), &XRServer::get_hmd_transform);
 
@@ -157,6 +158,10 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 
 	reference_frame = new_reference_frame.inverse();
 };
+
+void XRServer::clear_reference_frame() {
+	reference_frame = Transform3D();
+}
 
 Transform3D XRServer::get_hmd_transform() {
 	Transform3D hmd_transform;
