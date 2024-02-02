@@ -2239,11 +2239,14 @@ void PhysicalBone3D::reset_physics_simulation_state() {
 
 void PhysicalBone3D::reset_to_rest_position() {
 	if (parent_skeleton) {
-		if (-1 == bone_id) {
-			set_global_transform(parent_skeleton->get_global_transform() * body_offset);
+		Transform3D new_transform = parent_skeleton->get_global_transform();
+		if (bone_id == -1) {
+			new_transform *= body_offset;
 		} else {
-			set_global_transform(parent_skeleton->get_global_transform() * parent_skeleton->get_bone_global_pose(bone_id) * body_offset);
+			new_transform *= parent_skeleton->get_bone_global_pose(bone_id) * body_offset;
 		}
+		new_transform.orthonormalize();
+		set_global_transform(new_transform);
 	}
 }
 

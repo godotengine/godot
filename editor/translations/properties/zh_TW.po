@@ -46,13 +46,14 @@
 # Youuin Wang <los2516lir@gmail.com>, 2023.
 # Skyter Lin <linskyter@gmail.com>, 2023.
 # powder <hhurhxhdyruw@gmail.com>, 2023.
+# lemtea8 <polylemtea@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-24 17:38+0000\n"
-"Last-Translator: Skyter Lin <linskyter@gmail.com>\n"
+"PO-Revision-Date: 2024-01-16 01:10+0000\n"
+"Last-Translator: lemtea8 <polylemtea@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -60,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.1.1-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "應用"
@@ -288,7 +289,7 @@ msgid "Memory"
 msgstr "記憶體"
 
 msgid "Limits"
-msgstr "極限"
+msgstr "限制"
 
 msgid "Multithreaded Server"
 msgstr "多執行序伺服器"
@@ -3605,7 +3606,7 @@ msgstr "解除安裝時保留資料"
 msgid "Exclude From Recents"
 msgstr "從最近列表中排除"
 
-msgid "Show in Android Tv"
+msgid "Show in Android TV"
 msgstr "顯示在 Android TV 中"
 
 msgid "Show in App Library"

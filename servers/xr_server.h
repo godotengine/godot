@@ -142,6 +142,7 @@ public:
 		and in the virtual world out of sync
 	*/
 	Transform3D get_reference_frame() const;
+	void clear_reference_frame();
 	void center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height);
 
 	/*

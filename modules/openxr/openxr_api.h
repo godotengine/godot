@@ -232,7 +232,8 @@ private:
 	bool create_session();
 	bool load_supported_reference_spaces();
 	bool is_reference_space_supported(XrReferenceSpaceType p_reference_space);
-	bool setup_spaces();
+	bool setup_play_space();
+	bool setup_view_space();
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
 	bool create_swapchains();
@@ -339,7 +340,7 @@ public:
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
-	void set_requested_reference_space(XrReferenceSpaceType p_requested_reference_space);
+	bool set_requested_reference_space(XrReferenceSpaceType p_requested_reference_space);
 	XrReferenceSpaceType get_requested_reference_space() const { return requested_reference_space; }
 	XrReferenceSpaceType get_reference_space() const { return reference_space; }
 

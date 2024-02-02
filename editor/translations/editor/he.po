@@ -33,15 +33,15 @@
 # אורי מיכאל <000ori000@gmail.com>, 2023.
 # Benjamin Stern <benj_stern@hotmail.com>, 2023.
 # Roi Gabay <roigby@gmail.com>, 2023.
-# Kfir Pshititsky <Kfir4321@gmail.com>, 2023.
+# Kfir Pshititsky <Kfir4321@gmail.com>, 2023, 2024.
 # RoastedPear <RoastedPear@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-18 02:43+0000\n"
-"Last-Translator: RoastedPear <RoastedPear@outlook.com>\n"
+"PO-Revision-Date: 2024-01-23 18:16+0000\n"
+"Last-Translator: Kfir Pshititsky <Kfir4321@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
 "Language: he\n"
@@ -50,7 +50,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && n "
 "% 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 5.1\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "תהליכון ראשי"
@@ -232,11 +232,29 @@ msgstr "פעולה עם השם '%s' כבר קיימת."
 msgid "Add Event"
 msgstr "הוספת אירוע"
 
+msgid "Remove Action"
+msgstr "הסרת הפעולה"
+
+msgid "Cannot Remove Action"
+msgstr "לא ניתן להסיר את הפעולה"
+
+msgid "Filter by name..."
+msgstr "סינון לפי שם..."
+
+msgid "Clear All"
+msgstr "ניקוי הכול"
+
+msgid "Add New Action"
+msgstr "הוספת פעולה חדשה"
+
 msgid "Add"
 msgstr "הוספה"
 
+msgid "Show Built-in Actions"
+msgstr "הצגת פעולות מובנות"
+
 msgid "Action"
-msgstr "פעלה"
+msgstr "פעולה"
 
 msgid "Time:"
 msgstr "זמן:"
@@ -1088,7 +1106,7 @@ msgid "Uncompressing Assets"
 msgstr "פורס משאבים"
 
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "הקבצים הבאים נכשלו בחילוצם מהמשאב \"%s\":"
+msgstr "חילוץ הקבצים הבאים מהמשאב \"%s\" נכשל:"
 
 msgid "(and %s more files)"
 msgstr "(וגם %s קבצים נוספים)"
@@ -1296,6 +1314,9 @@ msgstr "חדש"
 
 msgid "Save"
 msgstr "שמירה"
+
+msgid "Actions:"
+msgstr "פעולות:"
 
 msgid "Export Profile"
 msgstr "ייצא פרופיל"
@@ -1812,14 +1833,14 @@ msgid "Can't reload a scene that was never saved."
 msgstr "לא ניתן לרענן סצנה שמעולם לא נשמרה."
 
 msgid "Reload Saved Scene"
-msgstr "טעינה מחדש של סצינה שמורה"
+msgstr "טעינה מחדש של סצנה שמורה"
 
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
-"הסצינה הנוכחית כוללת שינויים שלא נשמרו.\n"
-"האם לטעון מחדש את הסצינה? לא ניתן לבטל פעולה זו."
+"הסצנה הנוכחית כוללת שינויים שלא נשמרו.\n"
+"האם לטעון מחדש את הסצנה בכל זאת? לא ניתן לבטל פעולה זו."
 
 msgid "Save modified resources before reloading?"
 msgstr "לשמור את השינויים לפני הטעינה מחדש?"
@@ -1870,15 +1891,15 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"הסצינה '%s' יובאה באופן אוטומטי ואין אפשרות לשנות אותה.\n"
-"כדי לבצע בה שינויים, ניתן ליצור סצינה חדשה בירושה."
+"הסצנה \"%s\" יובאה באופן אוטומטי כך שאין אפשרות לשנות אותה.\n"
+"כדי לבצע בה שינויים ניתן ליצור סצנה חדשה בירושה."
 
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to open "
 "the scene, then save it inside the project path."
 msgstr ""
-"שגיאה בטעינת הסצנה, היא חייבת להיות בתוך נתיב המיזם. השתמש ב'ייבוא' כדי לפתוח "
-"את הסצינה, ואז שמור אותה בנתיב המיזם."
+"יש שגיאה בטעינת הסצנה – היא חייבת להיות בתוך נתיב המיזם. יש להשתמש ב\"ייבוא\" "
+"כדי לפתוח את הסצנה ואז לשמור אותה בנתיב המיזם."
 
 msgid "Scene '%s' has broken dependencies:"
 msgstr "לסצינה '%s' יש תלות חסרה:"
@@ -1941,7 +1962,7 @@ msgid "Distraction Free Mode"
 msgstr "מצב ללא הסחות דעת"
 
 msgid "Toggle distraction-free mode."
-msgstr "הפעל/בטל מצב ללא הסחות דעת."
+msgstr "הפעלה/ביטול של מצב ללא הסחות דעת."
 
 msgid "Scene"
 msgstr "סצנה"
@@ -2201,6 +2222,9 @@ msgstr "ביטול: %s"
 
 msgid "Redo: %s"
 msgstr "ביצוע חוזר: %s"
+
+msgid "Edit Built-in Action: %s"
+msgstr "עריכת הפעולה המובנית: %s"
 
 msgid "Editor Settings"
 msgstr "הגדרות עורך"
@@ -3518,6 +3542,12 @@ msgstr "לא ניתן להריץ מיזם"
 
 msgid "Delete Item"
 msgstr "מחיקת פריט"
+
+msgid "Input Map"
+msgstr "מפת קלט"
+
+msgid "Localization"
+msgstr "לוקליזציה"
 
 msgid "Autoload"
 msgstr "טעינה אוטומטית"

@@ -1826,7 +1826,9 @@ bool RenderingDeviceDriverD3D12::command_buffer_begin(CommandBufferID p_cmd_buff
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V(cmd_buf_info->cmd_list->GetType() != D3D12_COMMAND_LIST_TYPE_DIRECT, false);
 #endif
-	HRESULT res = cmd_buf_info->cmd_list->Reset(cmd_buf_info->cmd_allocator.Get(), nullptr);
+	HRESULT res = cmd_buf_info->cmd_allocator->Reset();
+	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), false, "Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+	res = cmd_buf_info->cmd_list->Reset(cmd_buf_info->cmd_allocator.Get(), nullptr);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), false, "Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	return true;
 }
@@ -1836,7 +1838,9 @@ bool RenderingDeviceDriverD3D12::command_buffer_begin_secondary(CommandBufferID 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V(cmd_buf_info->cmd_list->GetType() != D3D12_COMMAND_LIST_TYPE_BUNDLE, false);
 #endif
-	HRESULT res = cmd_buf_info->cmd_list->Reset(cmd_buf_info->cmd_allocator.Get(), nullptr);
+	HRESULT res = cmd_buf_info->cmd_allocator->Reset();
+	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), false, "Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+	res = cmd_buf_info->cmd_list->Reset(cmd_buf_info->cmd_allocator.Get(), nullptr);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), false, "Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	return true;
 }
