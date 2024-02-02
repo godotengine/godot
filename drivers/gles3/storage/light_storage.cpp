@@ -423,122 +423,298 @@ void LightStorage::light_instance_mark_visible(RID p_light_instance) {
 /* PROBE API */
 
 RID LightStorage::reflection_probe_allocate() {
-	return RID();
+	return reflection_probe_owner.allocate_rid();
 }
 
 void LightStorage::reflection_probe_initialize(RID p_rid) {
+	ReflectionProbe probe;
+
+	reflection_probe_owner.initialize_rid(p_rid, probe);
 }
 
 void LightStorage::reflection_probe_free(RID p_rid) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_rid);
+	reflection_probe->dependency.deleted_notify(p_rid);
+
+	reflection_probe_owner.free(p_rid);
 }
 
 void LightStorage::reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->update_mode = p_mode;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void LightStorage::reflection_probe_set_intensity(RID p_probe, float p_intensity) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->intensity = p_intensity;
 }
 
 void LightStorage::reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->ambient_mode = p_mode;
 }
 
 void LightStorage::reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->ambient_color = p_color;
 }
 
 void LightStorage::reflection_probe_set_ambient_energy(RID p_probe, float p_energy) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->ambient_color_energy = p_energy;
 }
 
 void LightStorage::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->max_distance = p_distance;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void LightStorage::reflection_probe_set_size(RID p_probe, const Vector3 &p_size) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->size = p_size;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void LightStorage::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->origin_offset = p_offset;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void LightStorage::reflection_probe_set_as_interior(RID p_probe, bool p_enable) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->interior = p_enable;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void LightStorage::reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->box_projection = p_enable;
 }
 
 void LightStorage::reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->enable_shadows = p_enable;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void LightStorage::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->cull_mask = p_layers;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->reflection_mask = p_layers;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->resolution = p_resolution;
 }
 
 AABB LightStorage::reflection_probe_get_aabb(RID p_probe) const {
-	return AABB();
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, AABB());
+
+	AABB aabb;
+	aabb.position = -reflection_probe->size / 2;
+	aabb.size = reflection_probe->size;
+
+	return aabb;
 }
 
 RS::ReflectionProbeUpdateMode LightStorage::reflection_probe_get_update_mode(RID p_probe) const {
-	return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE;
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, RenderingServer::REFLECTION_PROBE_UPDATE_ONCE);
+
+	return reflection_probe->update_mode;
 }
 
 uint32_t LightStorage::reflection_probe_get_cull_mask(RID p_probe) const {
-	return 0;
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, 0);
+
+	return reflection_probe->cull_mask;
 }
 
 uint32_t LightStorage::reflection_probe_get_reflection_mask(RID p_probe) const {
-	return 0;
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, 0);
+
+	return reflection_probe->reflection_mask;
 }
 
 Vector3 LightStorage::reflection_probe_get_size(RID p_probe) const {
-	return Vector3();
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, Vector3());
+
+	return reflection_probe->size;
 }
 
 Vector3 LightStorage::reflection_probe_get_origin_offset(RID p_probe) const {
-	return Vector3();
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, Vector3());
+
+	return reflection_probe->origin_offset;
 }
 
 float LightStorage::reflection_probe_get_origin_max_distance(RID p_probe) const {
-	return 0.0;
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, 0.0);
+
+	return reflection_probe->max_distance;
 }
 
 bool LightStorage::reflection_probe_renders_shadows(RID p_probe) const {
-	return false;
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, false);
+
+	return reflection_probe->enable_shadows;
 }
 
 void LightStorage::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->mesh_lod_threshold = p_ratio;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
 float LightStorage::reflection_probe_get_mesh_lod_threshold(RID p_probe) const {
-	return 0.0;
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, 0.0);
+
+	return reflection_probe->mesh_lod_threshold;
+}
+
+Dependency *LightStorage::reflection_probe_get_dependency(RID p_probe) const {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, nullptr);
+
+	return &reflection_probe->dependency;
 }
 
 /* REFLECTION ATLAS */
 
 RID LightStorage::reflection_atlas_create() {
-	return RID();
+	ReflectionAtlas ra;
+	ra.count = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_count");
+	ra.size = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_size");
+
+	return reflection_atlas_owner.make_rid(ra);
 }
 
 void LightStorage::reflection_atlas_free(RID p_ref_atlas) {
+	reflection_atlas_set_size(p_ref_atlas, 0, 0);
+
+	reflection_atlas_owner.free(p_ref_atlas);
 }
 
 int LightStorage::reflection_atlas_get_size(RID p_ref_atlas) const {
-	return 0;
+	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
+	ERR_FAIL_NULL_V(ra, 0);
+
+	return ra->size;
 }
 
 void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) {
+	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
+	ERR_FAIL_NULL(ra);
+
+	if (ra->size == p_reflection_size && ra->count == p_reflection_count) {
+		return; //no changes
+	}
+
+	ra->size = p_reflection_size;
+	ra->count = p_reflection_count;
+
+	if (ra->reflection != 0) {
+		//clear and invalidate everything
+		for (int i = 0; i < ra->reflections.size(); i++) {
+			for (int mip = 0; mip < ra->mipmap_count; mip++) {
+				for (int side = 0; side < 6; side++) {
+					if (ra->reflections[i].fbos[mip][side] != 0) {
+						glDeleteFramebuffers(1, &ra->reflections[i].fbos[mip][side]);
+						ra->reflections.write[i].fbos[mip][side] = 0;
+					}
+				}
+			}
+
+			if (ra->reflections[i].owner.is_null()) {
+				continue;
+			}
+			reflection_probe_release_atlas_index(ra->reflections[i].owner);
+			//rp->atlasindex clear
+		}
+
+		ra->reflections.clear();
+
+		GLES3::Utilities::get_singleton()->texture_free_data(ra->reflection);
+		ra->reflection = 0;
+
+		GLES3::Utilities::get_singleton()->texture_free_data(ra->depth);
+		ra->depth = 0;
+	}
+
+	if (ra->render_buffers.is_valid()) {
+		ra->render_buffers->free_render_buffer_data();
+	}
 }
 
 /* REFLECTION PROBE INSTANCE */
 
 RID LightStorage::reflection_probe_instance_create(RID p_probe) {
-	return RID();
+	ReflectionProbeInstance rpi;
+	rpi.probe = p_probe;
+
+	return reflection_probe_instance_owner.make_rid(rpi);
 }
 
 void LightStorage::reflection_probe_instance_free(RID p_instance) {
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	reflection_probe_release_atlas_index(p_instance);
+	reflection_probe_instance_owner.free(p_instance);
 }
 
 void LightStorage::reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) {
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL(rpi);
+
+	rpi->transform = p_transform;
+	rpi->dirty = true;
 }
 
 bool LightStorage::reflection_probe_has_atlas_index(RID p_instance) {
@@ -546,26 +722,257 @@ bool LightStorage::reflection_probe_has_atlas_index(RID p_instance) {
 }
 
 void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL(rpi);
+
+	if (rpi->atlas.is_null()) {
+		return; //nothing to release
+	}
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
+	ERR_FAIL_NULL(atlas);
+
+	ERR_FAIL_INDEX(rpi->atlas_index, atlas->reflections.size());
+	atlas->reflections.write[rpi->atlas_index].owner = RID();
+
+	rpi->atlas_index = -1;
+	rpi->atlas = RID();
 }
 
 bool LightStorage::reflection_probe_instance_needs_redraw(RID p_instance) {
-	return false;
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+
+	if (rpi->rendering) {
+		return false;
+	}
+
+	if (rpi->dirty) {
+		return true;
+	}
+
+	if (reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
+		return true;
+	}
+
+	return rpi->atlas_index == -1;
 }
 
 bool LightStorage::reflection_probe_instance_has_reflection(RID p_instance) {
-	return false;
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+
+	return rpi->atlas.is_valid();
 }
 
 bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) {
-	return false;
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_reflection_atlas);
+
+	ERR_FAIL_NULL_V(atlas, false);
+
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+
+	if (atlas->render_buffers.is_null()) {
+		atlas->render_buffers.instantiate();
+		atlas->render_buffers->configure_for_probe(Size2i(atlas->size, atlas->size));
+	}
+
+	// First we check if our atlas is initialized.
+
+	// Not making an exception for update_mode = REFLECTION_PROBE_UPDATE_ALWAYS, we are using
+	// the same render techniques regardless of realtime or update once (for now).
+
+	if (atlas->reflection == 0) {
+		// We need to create our textures
+		atlas->mipmap_count = Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1;
+		atlas->mipmap_count = MIN(atlas->mipmap_count, 8); // No more than 8 please..
+
+		{
+			glGenTextures(1, &atlas->reflection);
+			glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, atlas->reflection);
+
+			int size = atlas->size;
+
+#ifdef GL_API_ENABLED
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_RGB10_A2, size, size, 6 * atlas->count, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, nullptr);
+				glGenerateMipmap(GL_TEXTURE_CUBE_MAP_ARRAY);
+			}
+#endif
+#ifdef GLES_API_ENABLED
+			if (!RasterizerGLES3::is_gles_over_gl()) {
+				glTexStorage3D(GL_TEXTURE_CUBE_MAP_ARRAY, atlas->mipmap_count, GL_RGB10_A2, size, size, 6 * atlas->count);
+			}
+#endif // GLES_API_ENABLED
+
+			// Setup sizes and calculate how much memory we're using.
+			uint32_t data_size = 0;
+			for (int m = 0; m < atlas->mipmap_count; m++) {
+				atlas->mipmap_size[m] = size;
+				data_size += size * size * 6 * atlas->count * 4;
+				size = MAX(size >> 1, 1);
+			}
+
+			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAX_LEVEL, atlas->mipmap_count - 1);
+
+			GLES3::Utilities::get_singleton()->texture_allocated_data(atlas->reflection, data_size, "Reflection probe atlas (color)");
+		}
+
+		{
+			glGenTextures(1, &atlas->depth);
+			glBindTexture(GL_TEXTURE_2D_ARRAY, atlas->depth);
+
+			glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, atlas->size, atlas->size, 6 * atlas->count, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+
+			GLES3::Utilities::get_singleton()->texture_allocated_data(atlas->depth, atlas->size * atlas->size * 6 * atlas->count * 3, "Reflection probe atlas (depth)");
+		}
+
+		// Make room for our atlas entries
+		atlas->reflections.resize(atlas->count);
+
+		int layer = 0;
+		for (int i = 0; i < atlas->count; i++) {
+			atlas->reflections.write[i].layer_offset = layer;
+			for (int side = 0; side < 6; side++) {
+				for (int m = 0; m < atlas->mipmap_count; m++) {
+					GLuint fbo = 0;
+					glGenFramebuffers(1, &fbo);
+					glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+					glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, atlas->reflection, m, layer);
+					if (m == 0) {
+						glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, atlas->depth, 0, layer);
+					}
+
+					// TODO validate framebuffer
+					GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+					if (status != GL_FRAMEBUFFER_COMPLETE) {
+						WARN_PRINT("Could not create reflections framebuffer, status: " + texture_storage->get_framebuffer_error(status));
+					}
+
+					atlas->reflections.write[i].fbos[m][side] = fbo;
+				}
+				layer++;
+			}
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+	}
+
+	// Then we find a free slot for our reflection probe
+
+	if (rpi->atlas_index == -1) {
+		for (int i = 0; i < atlas->reflections.size(); i++) {
+			if (atlas->reflections[i].owner.is_null()) {
+				rpi->atlas_index = i;
+				break;
+			}
+		}
+		//find the one used last
+		if (rpi->atlas_index == -1) {
+			//everything is in use, find the one least used via LRU
+			uint64_t pass_min = 0;
+
+			for (int i = 0; i < atlas->reflections.size(); i++) {
+				ReflectionProbeInstance *rpi2 = reflection_probe_instance_owner.get_or_null(atlas->reflections[i].owner);
+				if (rpi2->last_pass < pass_min) {
+					pass_min = rpi2->last_pass;
+					rpi->atlas_index = i;
+				}
+			}
+		}
+	}
+
+	if (rpi->atlas_index != -1) { // should we fail if this is still -1 ?
+		atlas->reflections.write[rpi->atlas_index].owner = p_instance;
+	}
+
+	rpi->atlas = p_reflection_atlas;
+	rpi->rendering = true;
+	rpi->dirty = false;
+	rpi->processing_layer = 1;
+	rpi->processing_side = 0;
+
+	return true;
 }
 
 Ref<RenderSceneBuffers> LightStorage::reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) {
-	return Ref<RenderSceneBuffers>();
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_reflection_atlas);
+	ERR_FAIL_NULL_V(atlas, Ref<RenderSceneBuffersGLES3>());
+
+	return atlas->render_buffers;
 }
 
 bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
-	return true;
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+	ERR_FAIL_COND_V(!rpi->rendering, false);
+	ERR_FAIL_COND_V(rpi->atlas.is_null(), false);
+
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
+	if (!atlas || rpi->atlas_index == -1) {
+		//does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering)
+		rpi->rendering = false;
+		return false;
+	}
+
+	// atlas->reflections.write[i].fbos[m][side] = fbo;
+
+	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
+		// Using real time reflections, all roughness is done in one step
+		for (int m = 0; m < atlas->mipmap_count - 1; m++) {
+			for (int s = 0; s < 6; s++) {
+				glBindFramebuffer(GL_READ_FRAMEBUFFER, atlas->reflections[rpi->atlas_index].fbos[m][s]);
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, atlas->reflections[rpi->atlas_index].fbos[m + 1][s]);
+
+				glBlitFramebuffer(0, 0, atlas->mipmap_size[m], atlas->mipmap_size[m], 0, 0, atlas->mipmap_size[m + 1], atlas->mipmap_size[m + 1], GL_COLOR_BUFFER_BIT, GL_LINEAR);
+			}
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		rpi->rendering = false;
+		rpi->processing_side = 0;
+		rpi->processing_layer = 1;
+		return true;
+	} else {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, atlas->reflections[rpi->atlas_index].fbos[rpi->processing_layer][rpi->processing_side]);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, atlas->reflections[rpi->atlas_index].fbos[rpi->processing_layer + 1][rpi->processing_side]);
+
+		glBlitFramebuffer(0, 0, atlas->mipmap_size[rpi->processing_layer], atlas->mipmap_size[rpi->processing_layer], 0, 0, atlas->mipmap_size[rpi->processing_layer + 1], atlas->mipmap_size[rpi->processing_layer + 1], GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	rpi->processing_side++;
+	if (rpi->processing_side == 6) {
+		rpi->processing_side = 0;
+		rpi->processing_layer++;
+		if (rpi->processing_layer == atlas->mipmap_count - 1) {
+			rpi->rendering = false;
+			rpi->processing_layer = 1;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+GLuint LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, int p_index) {
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, 0);
+	ERR_FAIL_INDEX_V(p_index, 6, 0);
+
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
+	ERR_FAIL_NULL_V(atlas, 0);
+	return atlas->reflections[rpi->atlas_index].fbos[0][p_index];
 }
 
 /* LIGHTMAP CAPTURE */

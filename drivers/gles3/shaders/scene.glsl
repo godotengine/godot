@@ -564,8 +564,10 @@ void main() {
 1-color correction // In tonemap_inc.glsl
 2-radiance
 3-shadow
+4-lightmap textures
 5-screen
 6-depth
+7-reflection atlas
 
 */
 
@@ -622,7 +624,13 @@ in highp vec4 shadow_coord4;
 
 uniform samplerCube radiance_map; // texunit:-2
 
-#endif
+#endif // USE_RADIANCE_MAP
+
+#ifdef USE_REFLECTION_PROBES
+
+uniform samplerCubeArray reflection_atlas; // texunit:-7
+
+#endif // USE_REFLECTION_PROBES
 
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];

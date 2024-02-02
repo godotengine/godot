@@ -2312,6 +2312,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
 	bool apply_color_adjustments_in_post = false;
+	bool is_reflection_probe = p_reflection_probe.is_valid();
 
 	Ref<RenderSceneBuffersGLES3> rb;
 	if (p_render_buffers.is_valid()) {
@@ -2324,8 +2325,14 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 	}
 
-	GLES3::RenderTarget *rt = texture_storage->get_render_target(rb->render_target);
-	ERR_FAIL_NULL(rt);
+	Ref<RenderSceneBuffersGLES3> rb = p_render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+
+	GLES3::RenderTarget *rt = nullptr; // No render target for reflection probe
+	if (!is_reflection_probe) {
+		rt = texture_storage->get_render_target(rb->render_target);
+		ERR_FAIL_NULL(rt);
+	}
 
 	bool glow_enabled = false;
 	if (p_environment.is_valid() && rb.is_valid()) {
@@ -2342,7 +2349,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	RenderDataGLES3 render_data;
 	{
 		render_data.render_buffers = rb;
-		render_data.transparent_bg = rb.is_valid() ? rt->is_transparent : false;
+		render_data.transparent_bg = rt ? rt->is_transparent : false;
 		// Our first camera is used by default
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
@@ -2406,7 +2413,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_GLOBALS_UNIFORM_LOCATION, global_buffer);
 
 	Color clear_color;
-	if (p_render_buffers.is_valid()) {
+	if (!is_reflection_probe && rb->render_target.is_valid()) {
 		clear_color = texture_storage->render_target_get_clear_request_color(rb->render_target);
 	} else {
 		clear_color = texture_storage->get_default_clear_color();
@@ -2439,9 +2446,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	scene_state.ubo.emissive_exposure_normalization = -1.0; // Use default exposure normalization.
 
-	bool flip_y = !render_data.reflection_probe.is_valid();
+	bool flip_y = !is_reflection_probe;
 
-	if (rt->overridden.color.is_valid()) {
+	if (rt && rt->overridden.color.is_valid()) {
 		// If we've overridden the render target's color texture, then don't render upside down.
 		// We're probably rendering directly to an XR device.
 		flip_y = false;
@@ -2453,7 +2460,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	_render_shadows(&render_data, screen_size);
 
 	_setup_lights(&render_data, true, render_data.directional_light_count, render_data.omni_light_count, render_data.spot_light_count, render_data.directional_shadow_count);
-	_setup_environment(&render_data, render_data.reflection_probe.is_valid(), screen_size, flip_y, clear_color, false);
+	_setup_environment(&render_data, is_reflection_probe, screen_size, flip_y, clear_color, false);
 
 	_fill_render_list(RENDER_LIST_OPAQUE, &render_data, PASS_MODE_COLOR);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
@@ -2513,7 +2520,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(render_data.environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(render_data.environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			Projection projection = render_data.cam_projection;
-			if (render_data.reflection_probe.is_valid()) {
+			if (is_reflection_probe) {
 				Projection correction;
 				correction.columns[1][1] = -1.0;
 				projection = correction * render_data.cam_projection;
@@ -2534,7 +2541,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 	}
 
-	GLuint fbo = rb->get_render_fbo();
+	GLuint fbo = 0;
+	if (is_reflection_probe) {
+		fbo = GLES3::LightStorage::get_singleton()->reflection_probe_instance_get_framebuffer(render_data.reflection_probe, render_data.reflection_probe_pass);
+	} else {
+		fbo = rb->get_render_fbo();
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	glViewport(0, 0, rb->internal_size.x, rb->internal_size.y);
@@ -2658,7 +2670,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		_draw_sky(render_data.environment, render_data.cam_projection, render_data.cam_transform, sky_energy_multiplier, render_data.luminance_multiplier, p_camera_data->view_count > 1, flip_y, apply_color_adjustments_in_post);
 	}
 
-	if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
+	if (rt && (scene_state.used_screen_texture || scene_state.used_depth_texture)) {
 		Size2i size;
 		GLuint backbuffer_fbo = 0;
 		GLuint backbuffer = 0;
@@ -2716,7 +2728,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glFrontFace(GL_CCW);
 	}
 
-	if (rb.is_valid()) {
+	if (!is_reflection_probe && rb.is_valid()) {
 		_render_buffers_debug_draw(rb, p_shadow_atlas, fbo);
 	}
 
@@ -2724,9 +2736,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.reset_gl_state();
 	glUseProgram(0);
 
-	_render_post_processing(&render_data);
+	if (!is_reflection_probe) {
+		_render_post_processing(&render_data);
 
-	texture_storage->render_target_disable_clear_request(rb->render_target);
+		texture_storage->render_target_disable_clear_request(rb->render_target);
+	}
 
 	glActiveTexture(GL_TEXTURE0);
 }
