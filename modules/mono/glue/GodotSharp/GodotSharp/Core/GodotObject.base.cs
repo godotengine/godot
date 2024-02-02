@@ -38,6 +38,8 @@ namespace Godot
         {
             if (NativePtr == IntPtr.Zero)
             {
+                Debug.Assert(nativeCtor != null);
+
                 NativePtr = nativeCtor();
 
                 InteropUtils.TieManagedToUnmanaged(this, NativePtr,

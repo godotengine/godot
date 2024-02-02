@@ -31,10 +31,10 @@
 #include "editor/editor_command_palette.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/control.h"
 #include "scene/gui/tree.h"
 

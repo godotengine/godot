@@ -229,6 +229,12 @@ public:
 		count--;
 	}
 
+	void remove_at_unordered(uint64_t p_index) {
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
+		(*this)[p_index] = (*this)[count - 1];
+		pop_back();
+	}
+
 	void clear() {
 		//destruct if needed
 		if (!std::is_trivially_destructible<T>::value) {

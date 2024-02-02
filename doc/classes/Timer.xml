@@ -15,15 +15,15 @@
 		<method name="is_stopped" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the timer is stopped.
+				Returns [code]true[/code] if the timer is stopped or has not started.
 			</description>
 		</method>
 		<method name="start">
 			<return type="void" />
 			<param index="0" name="time_sec" type="float" default="-1" />
 			<description>
-				Starts the timer. Sets [member wait_time] to [param time_sec] if [code]time_sec &gt; 0[/code]. This also resets the remaining time to [member wait_time].
-				[b]Note:[/b] This method will not resume a paused timer. See [member paused].
+				Starts the timer, if it was not started already. Fails if the timer is not inside the tree. If [param time_sec] is greater than [code]0[/code], this value is used for the [member wait_time].
+				[b]Note:[/b] This method does not resume a paused timer. See [member paused].
 			</description>
 		</method>
 		<method name="stop">
@@ -35,40 +35,40 @@
 	</methods>
 	<members>
 		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart" default="false">
-			If [code]true[/code], the timer will automatically start when entering the scene tree.
-			[b]Note:[/b] This property is automatically set to [code]false[/code] after the timer enters the scene tree and starts.
+			If [code]true[/code], the timer will start immediately when it enters the scene tree.
+			[b]Note:[/b] After the timer enters the tree, this property is automatically set to [code]false[/code].
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot" default="false">
-			If [code]true[/code], the timer will stop when reaching 0. If [code]false[/code], it will restart.
+			If [code]true[/code], the timer will stop after reaching the end. Otherwise, as by default, the timer will automatically restart.
 		</member>
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
-			If [code]true[/code], the timer is paused and will not process until it is unpaused again, even if [method start] is called.
+			If [code]true[/code], the timer is paused. A paused timer does not process until this property is set back to [code]false[/code], even when [method start] is called.
 		</member>
 		<member name="process_callback" type="int" setter="set_timer_process_callback" getter="get_timer_process_callback" enum="Timer.TimerProcessCallback" default="1">
-			Processing callback. See [enum TimerProcessCallback].
+			Specifies when the timer is updated during the main loop (see [enum TimerProcessCallback]).
 		</member>
 		<member name="time_left" type="float" setter="" getter="get_time_left">
-			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
-			[b]Note:[/b] This value is read-only and cannot be set. It is based on [member wait_time], which can be set using [method start].
+			The timer's remaining time in seconds. This is always [code]0[/code] if the timer is stopped.
+			[b]Note:[/b] This property is read-only and cannot be modified. It is based on [member wait_time].
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
-			The wait time in seconds.
-			[b]Note:[/b] Timers can only emit once per rendered frame at most (or once per physics frame if [member process_callback] is [constant TIMER_PROCESS_PHYSICS]). This means very low wait times (lower than 0.05 seconds) will behave in significantly different ways depending on the rendered framerate. For very low wait times, it is recommended to use a process loop in a script instead of using a Timer node. Timers are affected by [member Engine.time_scale], a higher scale means quicker timeouts, and vice versa.
+			The time required for the timer to end, in seconds. This property can also be set every time [method start] is called.
+			[b]Note:[/b] Timers can only process once per physics or process frame (depending on the [member process_callback]). An unstable framerate may cause the timer to end inconsistently, which is especially noticeable if the wait time is lower than roughly [code]0.05[/code] seconds. For very short timers, it is recommended to write your own code instead of using a [Timer] node. Timers are also affected by [member Engine.time_scale].
 		</member>
 	</members>
 	<signals>
 		<signal name="timeout">
 			<description>
-				Emitted when the timer reaches 0.
+				Emitted when the timer reaches the end.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="TIMER_PROCESS_PHYSICS" value="0" enum="TimerProcessCallback">
-			Update the timer during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
+			Update the timer every physics process frame (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
 		</constant>
 		<constant name="TIMER_PROCESS_IDLE" value="1" enum="TimerProcessCallback">
-			Update the timer during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+			Update the timer every process (rendered) frame (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
 		</constant>
 	</constants>
 </class>

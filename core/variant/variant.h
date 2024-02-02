@@ -176,7 +176,7 @@ private:
 	struct PackedArrayRefBase {
 		SafeRefCount refcount;
 		_FORCE_INLINE_ PackedArrayRefBase *reference() {
-			if (this->refcount.ref()) {
+			if (refcount.ref()) {
 				return this;
 			} else {
 				return nullptr;
@@ -502,6 +502,7 @@ public:
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(KeyLocation)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
 

@@ -111,6 +111,7 @@ public:
 	}
 
 	// Records that data was allocated for state tracking purposes.
+	// Size is measured in bytes.
 	_FORCE_INLINE_ void texture_allocated_data(GLuint p_id, uint32_t p_size, String p_name = "") {
 		texture_mem_cache += p_size;
 #ifdef DEV_ENABLED

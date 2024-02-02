@@ -436,6 +436,8 @@ public:
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
+	virtual WindowID get_focused_window() const;
+
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) {}
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector3i(); }
 
@@ -512,6 +514,7 @@ public:
 		FILE_DIALOG_MODE_SAVE_MAX
 	};
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback);
 
 	virtual int keyboard_get_layout_count() const;
 	virtual int keyboard_get_current_layout() const;

@@ -163,7 +163,6 @@ def get_version_info(module_version_string="", silent=False):
         "status": str(version.status),
         "build": str(build_name),
         "module_config": str(version.module_config) + module_version_string,
-        "year": int(version.year),
         "website": str(version.website),
         "docs_branch": str(version.docs),
     }
@@ -232,7 +231,6 @@ def generate_version_header(module_version_string=""):
 #define VERSION_STATUS "{status}"
 #define VERSION_BUILD "{build}"
 #define VERSION_MODULE_CONFIG "{module_config}"
-#define VERSION_YEAR {year}
 #define VERSION_WEBSITE "{website}"
 #define VERSION_DOCS_BRANCH "{docs_branch}"
 #define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
@@ -1022,6 +1020,11 @@ def get_compiler_version(env):
         "metadata1": None,
         "metadata2": None,
         "date": None,
+        "apple_major": -1,
+        "apple_minor": -1,
+        "apple_patch1": -1,
+        "apple_patch2": -1,
+        "apple_patch3": -1,
     }
 
     if not env.msvc:
@@ -1049,8 +1052,32 @@ def get_compiler_version(env):
         for key, value in match.groupdict().items():
             if value is not None:
                 ret[key] = value
+
+    match_apple = re.search(
+        r"(?:(?<=clang-)|(?<=\) )|(?<=^))"
+        r"(?P<apple_major>\d+)"
+        r"(?:\.(?P<apple_minor>\d*))?"
+        r"(?:\.(?P<apple_patch1>\d*))?"
+        r"(?:\.(?P<apple_patch2>\d*))?"
+        r"(?:\.(?P<apple_patch3>\d*))?",
+        version,
+    )
+    if match_apple is not None:
+        for key, value in match_apple.groupdict().items():
+            if value is not None:
+                ret[key] = value
+
     # Transform semantic versioning to integers
-    for key in ["major", "minor", "patch"]:
+    for key in [
+        "major",
+        "minor",
+        "patch",
+        "apple_major",
+        "apple_minor",
+        "apple_patch1",
+        "apple_patch2",
+        "apple_patch3",
+    ]:
         ret[key] = int(ret[key] or -1)
     return ret
 

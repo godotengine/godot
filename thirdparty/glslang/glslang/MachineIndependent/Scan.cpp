@@ -1073,12 +1073,18 @@ int TScanContext::tokenizeIdentifier()
             parseContext.extensionTurnedOn(E_GL_NV_ray_tracing))
             return keyword;
         return identifierOrType();
+    case ACCSTRUCTEXT:
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_EXT_ray_tracing) ||
+            parseContext.extensionTurnedOn(E_GL_EXT_ray_query) ||
+            parseContext.extensionTurnedOn(E_GL_NV_displacement_micromap))
+            return keyword;
+        return identifierOrType();
     case PAYLOADEXT:
     case PAYLOADINEXT:
     case HITATTREXT:
     case CALLDATAEXT:
     case CALLDATAINEXT:
-    case ACCSTRUCTEXT:
         if (parseContext.symbolTable.atBuiltInLevel() ||
             parseContext.extensionTurnedOn(E_GL_EXT_ray_tracing) ||
             parseContext.extensionTurnedOn(E_GL_EXT_ray_query))

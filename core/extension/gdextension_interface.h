@@ -2617,6 +2617,31 @@ typedef void (*GDExtensionInterfaceEditorAddPlugin)(GDExtensionConstStringNamePt
  */
 typedef void (*GDExtensionInterfaceEditorRemovePlugin)(GDExtensionConstStringNamePtr p_class_name);
 
+/**
+ * @name editor_help_load_xml_from_utf8_chars
+ * @since 4.3
+ *
+ * Loads new XML-formatted documentation data in the editor.
+ *
+ * The provided pointer can be immediately freed once the function returns.
+ *
+ * @param p_data A pointer to an UTF-8 encoded C string (null terminated).
+ */
+typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8Chars)(const char *p_data);
+
+/**
+ * @name editor_help_load_xml_from_utf8_chars_and_len
+ * @since 4.3
+ *
+ * Loads new XML-formatted documentation data in the editor.
+ *
+ * The provided pointer can be immediately freed once the function returns.
+ *
+ * @param p_data A pointer to an UTF-8 encoded C string.
+ * @param p_size The number of bytes (not code units).
+ */
+typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen)(const char *p_data, GDExtensionInt p_size);
+
 #ifdef __cplusplus
 }
 #endif

@@ -308,6 +308,9 @@ public:
 	virtual void font_set_spacing(const RID &p_font_rid, SpacingType p_spacing, int64_t p_value) = 0;
 	virtual int64_t font_get_spacing(const RID &p_font_rid, SpacingType p_spacing) const = 0;
 
+	virtual void font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) = 0;
+	virtual float font_get_baseline_offset(const RID &p_font_rid) const = 0;
+
 	virtual void font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) = 0;
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const = 0;
 

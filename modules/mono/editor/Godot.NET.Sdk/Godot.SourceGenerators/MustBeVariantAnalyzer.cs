@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -34,7 +33,7 @@ namespace Godot.SourceGenerators
 
             // Method invocation or variable declaration that contained the type arguments
             var parentSyntax = context.Node.Parent;
-            Debug.Assert(parentSyntax != null);
+            Helper.ThrowIfNull(parentSyntax);
 
             var sm = context.SemanticModel;
 
@@ -49,9 +48,10 @@ namespace Godot.SourceGenerators
                     continue;
 
                 var typeSymbol = sm.GetSymbolInfo(typeSyntax).Symbol as ITypeSymbol;
-                Debug.Assert(typeSymbol != null);
+                Helper.ThrowIfNull(typeSymbol);
 
                 var parentSymbol = sm.GetSymbolInfo(parentSyntax).Symbol;
+                Helper.ThrowIfNull(parentSymbol);
 
                 if (!ShouldCheckTypeArgument(context, parentSyntax, parentSymbol, typeSyntax, typeSymbol, i))
                 {
@@ -69,7 +69,7 @@ namespace Godot.SourceGenerators
 
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(typeSymbol, typeCache);
 
-                if (marshalType == null)
+                if (marshalType is null)
                 {
                     Common.ReportGenericTypeArgumentMustBeVariant(context, typeSyntax, typeSymbol);
                     continue;
@@ -109,11 +109,19 @@ namespace Godot.SourceGenerators
         /// <returns><see langword="true"/> if the type must be variant and must be analyzed.</returns>
         private bool ShouldCheckTypeArgument(SyntaxNodeAnalysisContext context, SyntaxNode parentSyntax, ISymbol parentSymbol, TypeSyntax typeArgumentSyntax, ITypeSymbol typeArgumentSymbol, int typeArgumentIndex)
         {
-            var typeParamSymbol = parentSymbol switch
+            ITypeParameterSymbol? typeParamSymbol = parentSymbol switch
             {
-                IMethodSymbol methodSymbol => methodSymbol.TypeParameters[typeArgumentIndex],
-                INamedTypeSymbol typeSymbol => typeSymbol.TypeParameters[typeArgumentIndex],
-                _ => null,
+                IMethodSymbol methodSymbol when parentSyntax.Parent is AttributeSyntax &&
+                                                methodSymbol.ContainingType.TypeParameters.Length > 0
+                    => methodSymbol.ContainingType.TypeParameters[typeArgumentIndex],
+
+                IMethodSymbol { TypeParameters.Length: > 0 } methodSymbol
+                    => methodSymbol.TypeParameters[typeArgumentIndex],
+
+                INamedTypeSymbol { TypeParameters.Length: > 0 } typeSymbol
+                    => typeSymbol.TypeParameters[typeArgumentIndex],
+                _
+                    => null
             };
 
             if (typeParamSymbol == null)

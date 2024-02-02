@@ -406,7 +406,7 @@
 			[b]Note:[/b] Enabling TTS can cause addition idle CPU usage and interfere with the sleep mode, so consider disabling it if TTS is not used.
 		</member>
 		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
-			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
+			Setting to hardcode audio delay when playing video. Best to leave this unchanged unless you know what you are doing.
 		</member>
 		<member name="collada/use_ambient" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], ambient lights will be imported from COLLADA models as [DirectionalLight3D]. If [code]false[/code], ambient lights will be ignored.
@@ -433,16 +433,18 @@
 			If canvas item redraw debugging is active, this will be the time the flash will last each time they redraw.
 		</member>
 		<member name="debug/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], logs all output to files.
+			If [code]true[/code], logs all output and error messages to files. See also [member debug/file_logging/log_path], [member debug/file_logging/max_log_files], and [member application/run/flush_stdout_on_print].
 		</member>
 		<member name="debug/file_logging/enable_file_logging.pc" type="bool" setter="" getter="" default="true">
 			Desktop override for [member debug/file_logging/enable_file_logging], as log files are not readily accessible on mobile/Web platforms.
 		</member>
 		<member name="debug/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
 			Path at which to store log files for the project. Using a path under [code]user://[/code] is recommended.
+			This can be specified manually on the command line using the [code]--log-file &lt;file&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. If this command line argument is specified, log rotation is automatically disabled (see [member debug/file_logging/max_log_files]).
 		</member>
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
-			Specifies the maximum number of log files allowed (used for rotation).
+			Specifies the maximum number of log files allowed (used for rotation). Set to [code]1[/code] to disable log file rotation.
+			If the [code]--log-file &lt;file&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used, log rotation is always disabled.
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to false.
@@ -740,6 +742,24 @@
 		<member name="debug/shapes/paths/geometry_width" type="float" setter="" getter="" default="2.0">
 			Line width of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
 		</member>
+		<member name="display/display_server/driver" type="String" setter="" getter="">
+			Sets the driver to be used by the display server. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
+		</member>
+		<member name="display/display_server/driver.android" type="String" setter="" getter="">
+			Android override for [member display/display_server/driver].
+		</member>
+		<member name="display/display_server/driver.ios" type="String" setter="" getter="">
+			iOS override for [member display/display_server/driver].
+		</member>
+		<member name="display/display_server/driver.linuxbsd" type="String" setter="" getter="">
+			LinuxBSD override for [member display/display_server/driver].
+		</member>
+		<member name="display/display_server/driver.macos" type="String" setter="" getter="">
+			MacOS override for [member display/display_server/driver].
+		</member>
+		<member name="display/display_server/driver.windows" type="String" setter="" getter="">
+			Windows override for [member display/display_server/driver].
+		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
 			Custom image for the mouse cursor (limited to 256×256).
 		</member>
@@ -941,7 +961,7 @@
 		</member>
 		<member name="filesystem/import/blender/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
-			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender3_path[/code]. Blender 3.0 or later is required.
+			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender_path[/code]. Blender 3.0 or later is required.
 		</member>
 		<member name="filesystem/import/blender/enabled.android" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/blender/enabled] on Android where Blender can't easily be accessed from Godot.
@@ -2210,7 +2230,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the maximum number of simulated physics steps per frame at runtime, set [member Engine.max_physics_steps_per_frame] instead.
 		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
-			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
+			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be good enough for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics jitter fix at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
@@ -2528,6 +2548,10 @@
 		<member name="rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/lights_and_shadows/tighter_shadow_caster_culling" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], items that cannot cast shadows into the view frustum will not be rendered into shadow maps.
+			This can increase performance.
+		</member>
 		<member name="rendering/lights_and_shadows/use_physical_light_units" type="bool" setter="" getter="" default="false">
 			Enables the use of physically based units for light sources. Physically based units tend to be much larger than the arbitrary units used by Godot, but they can be used to match lighting within Godot to real-world lighting. Due to the large dynamic range of lighting conditions present in nature, Godot bakes exposure into the various lighting quantities before rendering. Most light sources bake exposure automatically at run time based on the active [CameraAttributes] resource, but [LightmapGI] and [VoxelGI] require a [CameraAttributes] resource to be set at bake time to reduce the dynamic range. At run time, Godot will automatically reconcile the baked exposure with the active exposure to ensure lighting remains consistent.
 		</member>
@@ -2551,6 +2575,7 @@
 			[b]Note:[/b] This setting is only effective when using the Compatibility rendering method, not Forward+ and Mobile.
 		</member>
 		<member name="rendering/limits/spatial_indexer/threaded_cull_minimum_instances" type="int" setter="" getter="" default="1000">
+			The minimum number of instances that must be present in a scene to enable culling computations on multiple threads. If a scene has fewer instances than this number, culling is done on a single thread.
 		</member>
 		<member name="rendering/limits/spatial_indexer/update_iterations_per_frame" type="int" setter="" getter="" default="10">
 		</member>

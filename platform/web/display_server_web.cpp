@@ -187,6 +187,7 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 
 	Key keycode = dom_code2godot_scancode(p_key_event_code.utf8().get_data(), p_key_event_key.utf8().get_data(), false);
 	Key scancode = dom_code2godot_scancode(p_key_event_code.utf8().get_data(), p_key_event_key.utf8().get_data(), true);
+	KeyLocation location = dom_code2godot_key_location(p_key_event_code.utf8().get_data());
 
 	DisplayServerWeb::KeyEvent ke;
 
@@ -197,6 +198,7 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 	ke.physical_keycode = scancode;
 	ke.key_label = fix_key_label(c, keycode);
 	ke.unicode = fix_unicode(c);
+	ke.location = location;
 	ke.mod = p_modifiers;
 
 	if (ds->key_event_pos >= ds->key_event_buffer.size()) {
@@ -1383,6 +1385,7 @@ void DisplayServerWeb::process_events() {
 			ev->set_physical_keycode(ke.physical_keycode);
 			ev->set_key_label(ke.key_label);
 			ev->set_unicode(ke.unicode);
+			ev->set_location(ke.location);
 			if (ke.raw) {
 				dom2godot_mod(ev, ke.mod, ke.keycode);
 			}

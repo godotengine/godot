@@ -42,8 +42,6 @@ class MenuButton : public Button {
 	bool disable_shortcuts = false;
 	PopupMenu *popup = nullptr;
 
-	Vector2i mouse_pos_adjusted;
-
 	void _popup_visibility_changed(bool p_visible);
 
 protected:

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -220,7 +219,7 @@ namespace Godot
                 {
                     if (hasText)
                     {
-                        sb.Append(instance.Substring(indentStop, i - indentStop));
+                        sb.Append(instance.AsSpan(indentStop, i - indentStop));
                     }
                     sb.Append('\n');
                     hasText = false;
@@ -252,7 +251,7 @@ namespace Godot
 
             if (hasText)
             {
-                sb.Append(instance.Substring(indentStop, instance.Length - indentStop));
+                sb.Append(instance.AsSpan(indentStop, instance.Length - indentStop));
             }
 
             return sb.ToString();
@@ -323,7 +322,7 @@ namespace Godot
                 string slice = aux.GetSliceCharacter(' ', i);
                 if (slice.Length > 0)
                 {
-                    slice = char.ToUpper(slice[0]) + slice.Substring(1);
+                    slice = char.ToUpperInvariant(slice[0]) + slice.Substring(1);
                     if (i > 0)
                         cap += " ";
                     cap += slice;
@@ -408,13 +407,13 @@ namespace Godot
                 bool shouldSplit = condA || condB || condC || canBreakNumberLetter || canBreakLetterNumber;
                 if (shouldSplit)
                 {
-                    newString += instance.Substring(startIndex, i - startIndex) + "_";
+                    newString += string.Concat(instance.AsSpan(startIndex, i - startIndex), "_");
                     startIndex = i;
                 }
             }
 
             newString += instance.Substring(startIndex, instance.Length - startIndex);
-            return lowerCase ? newString.ToLower() : newString;
+            return lowerCase ? newString.ToLowerInvariant() : newString;
         }
 
         /// <summary>
@@ -479,9 +478,9 @@ namespace Godot
                         return -1; // If this is empty, and the other one is not, then we're less... I think?
                     if (to[toIndex] == 0)
                         return 1; // Otherwise the other one is smaller..
-                    if (char.ToUpper(instance[instanceIndex]) < char.ToUpper(to[toIndex])) // More than
+                    if (char.ToUpperInvariant(instance[instanceIndex]) < char.ToUpperInvariant(to[toIndex])) // More than
                         return -1;
-                    if (char.ToUpper(instance[instanceIndex]) > char.ToUpper(to[toIndex])) // Less than
+                    if (char.ToUpperInvariant(instance[instanceIndex]) > char.ToUpperInvariant(to[toIndex])) // Less than
                         return 1;
 
                     instanceIndex++;
@@ -853,7 +852,7 @@ namespace Godot
                     else
                     {
                         sb.Append(prefix);
-                        sb.Append(instance.Substring(lineStart, i - lineStart + 1));
+                        sb.Append(instance.AsSpan(lineStart, i - lineStart + 1));
                     }
                     lineStart = i + 1;
                 }
@@ -861,7 +860,7 @@ namespace Godot
             if (lineStart != instance.Length)
             {
                 sb.Append(prefix);
-                sb.Append(instance.Substring(lineStart));
+                sb.Append(instance.AsSpan(lineStart));
             }
             return sb.ToString();
         }
@@ -925,8 +924,8 @@ namespace Godot
 
                 if (!caseSensitive)
                 {
-                    char sourcec = char.ToLower(instance[source]);
-                    char targetc = char.ToLower(text[target]);
+                    char sourcec = char.ToLowerInvariant(instance[source]);
+                    char targetc = char.ToLowerInvariant(text[target]);
                     match = sourcec == targetc;
                 }
                 else
@@ -1234,7 +1233,7 @@ namespace Godot
                         return false;
                     if (caseSensitive)
                         return instance[0] == expr[0];
-                    return (char.ToUpper(instance[0]) == char.ToUpper(expr[0])) &&
+                    return (char.ToUpperInvariant(instance[0]) == char.ToUpperInvariant(expr[0])) &&
                            ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
             }
         }

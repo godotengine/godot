@@ -2409,6 +2409,37 @@ int64_t TextServerAdvanced::_font_get_spacing(const RID &p_font_rid, SpacingType
 	}
 }
 
+void TextServerAdvanced::_font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) {
+	FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		if (fdv->baseline_offset != p_baseline_offset) {
+			fdv->baseline_offset = p_baseline_offset;
+		}
+	} else {
+		FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL(fd);
+
+		MutexLock lock(fd->mutex);
+		if (fd->baseline_offset != p_baseline_offset) {
+			_font_clear_cache(fd);
+			fd->baseline_offset = p_baseline_offset;
+		}
+	}
+}
+
+float TextServerAdvanced::_font_get_baseline_offset(const RID &p_font_rid) const {
+	FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		return fdv->baseline_offset;
+	} else {
+		FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL_V(fd, 0.0);
+
+		MutexLock lock(fd->mutex);
+		return fd->baseline_offset;
+	}
+}
+
 void TextServerAdvanced::_font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) {
 	FontAdvanced *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -5750,6 +5781,11 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 			gl.x_off = Math::round((double)glyph_pos[0].x_offset / (64.0 / scale));
 		}
 		gl.y_off = -Math::round((double)glyph_pos[0].y_offset / (64.0 / scale));
+		if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+			gl.y_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+		} else {
+			gl.x_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+		}
 
 		if ((glyph_info[0].codepoint != 0) || !u_isgraph(p_char)) {
 			gl.flags |= GRAPHEME_IS_VALID;
@@ -5964,6 +6000,11 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 					gl.x_off = Math::round((double)glyph_pos[i].x_offset / (64.0 / scale));
 				}
 				gl.y_off = -Math::round((double)glyph_pos[i].y_offset / (64.0 / scale));
+				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+					gl.y_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+				} else {
+					gl.x_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+				}
 			}
 			if (!last_run || i < glyph_count - 1) {
 				// Do not add extra spacing to the last glyph of the string.

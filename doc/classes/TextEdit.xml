@@ -1106,7 +1106,7 @@
 		</member>
 		<member name="caret_move_on_right_click" type="bool" setter="set_move_caret_on_right_click_enabled" getter="is_move_caret_on_right_click_enabled" default="true">
 			If [code]true[/code], a right-click moves the caret at the mouse position before displaying the context menu.
-			If [code]false[/code], the context menu disregards mouse location.
+			If [code]false[/code], the context menu ignores mouse location.
 		</member>
 		<member name="caret_multiple" type="bool" setter="set_multiple_carets_enabled" getter="is_multiple_carets_enabled" default="true">
 			Sets if multiple carets are allowed.

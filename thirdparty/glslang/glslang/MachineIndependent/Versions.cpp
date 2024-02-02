@@ -297,15 +297,17 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_NV_compute_shader_derivatives]            = EBhDisable;
     extensionBehavior[E_GL_NV_shader_texture_footprint]              = EBhDisable;
     extensionBehavior[E_GL_NV_mesh_shader]                           = EBhDisable;
-
     extensionBehavior[E_GL_NV_cooperative_matrix]                    = EBhDisable;
     extensionBehavior[E_GL_NV_shader_sm_builtins]                    = EBhDisable;
     extensionBehavior[E_GL_NV_integer_cooperative_matrix]            = EBhDisable;
-
     extensionBehavior[E_GL_NV_shader_invocation_reorder]             = EBhDisable;
+    extensionBehavior[E_GL_NV_displacement_micromap]                 = EBhDisable;
 
     // ARM
     extensionBehavior[E_GL_ARM_shader_core_builtins]                 = EBhDisable;
+
+    // QCOM
+    extensionBehavior[E_GL_QCOM_image_processing]                    = EBhDisable;
 
     // AEP
     extensionBehavior[E_GL_ANDROID_extension_pack_es31a]             = EBhDisable;
@@ -356,6 +358,7 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_EXT_opacity_micromap]            = EBhDisable;
     extensionBehavior[E_GL_EXT_ray_tracing_position_fetch]  = EBhDisable;
     extensionBehavior[E_GL_EXT_shader_tile_image]           = EBhDisable;
+    extensionBehavior[E_GL_EXT_texture_shadow_lod]          = EBhDisable;
 
     // OVR extensions
     extensionBehavior[E_GL_OVR_multiview]                = EBhDisable;
@@ -431,6 +434,8 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_OES_texture_buffer 1\n"
             "#define GL_OES_texture_cube_map_array 1\n"
             "#define GL_EXT_shader_non_constant_global_initializers 1\n"
+
+            "#define GL_QCOM_image_processing 1\n"
             ;
 
             if (version >= 300) {
@@ -554,6 +559,8 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_NV_cooperative_matrix 1\n"
             "#define GL_NV_integer_cooperative_matrix 1\n"
             "#define GL_NV_shader_invocation_reorder 1\n"
+
+            "#define GL_QCOM_image_processing 1\n"
 
             "#define GL_EXT_shader_explicit_arithmetic_types 1\n"
             "#define GL_EXT_shader_explicit_arithmetic_types_int8 1\n"

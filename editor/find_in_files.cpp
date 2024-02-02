@@ -34,8 +34,8 @@
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
@@ -747,7 +747,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 	String start = vformat("%3s: ", line_number);
 
 	item->set_text(text_index, start + text);
-	item->set_custom_draw(text_index, this, "_draw_result_text");
+	item->set_custom_draw_callback(text_index, callable_mp(this, &FindInFilesPanel::draw_result_text));
 
 	Result r;
 	r.line_number = line_number;
@@ -988,7 +988,6 @@ void FindInFilesPanel::set_progress_visible(bool p_visible) {
 void FindInFilesPanel::_bind_methods() {
 	ClassDB::bind_method("_on_result_found", &FindInFilesPanel::_on_result_found);
 	ClassDB::bind_method("_on_finished", &FindInFilesPanel::_on_finished);
-	ClassDB::bind_method("_draw_result_text", &FindInFilesPanel::draw_result_text);
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_SELECTED,
 			PropertyInfo(Variant::STRING, "path"),

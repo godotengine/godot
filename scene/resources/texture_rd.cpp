@@ -37,7 +37,7 @@ void Texture2DRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_rd_rid", "texture_rd_rid"), &Texture2DRD::set_texture_rd_rid);
 	ClassDB::bind_method(D_METHOD("get_texture_rd_rid"), &Texture2DRD::get_texture_rd_rid);
 
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "texture_rd_rid"), "set_texture_rd_rid", "get_texture_rd_rid");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "texture_rd_rid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_texture_rd_rid", "get_texture_rd_rid");
 }
 
 int Texture2DRD::get_width() const {
@@ -128,7 +128,7 @@ void TextureLayeredRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_rd_rid", "texture_rd_rid"), &TextureLayeredRD::set_texture_rd_rid);
 	ClassDB::bind_method(D_METHOD("get_texture_rd_rid"), &TextureLayeredRD::get_texture_rd_rid);
 
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "texture_rd_rid"), "set_texture_rd_rid", "get_texture_rd_rid");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "texture_rd_rid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_texture_rd_rid", "get_texture_rd_rid");
 }
 
 TextureLayered::LayeredType TextureLayeredRD::get_layered_type() const {
@@ -255,7 +255,7 @@ void Texture3DRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_rd_rid", "texture_rd_rid"), &Texture3DRD::set_texture_rd_rid);
 	ClassDB::bind_method(D_METHOD("get_texture_rd_rid"), &Texture3DRD::get_texture_rd_rid);
 
-	ADD_PROPERTY(PropertyInfo(Variant::RID, "texture_rd_rid"), "set_texture_rd_rid", "get_texture_rd_rid");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "texture_rd_rid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_texture_rd_rid", "get_texture_rd_rid");
 }
 
 Image::Format Texture3DRD::get_format() const {

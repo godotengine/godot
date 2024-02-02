@@ -401,8 +401,8 @@ double AnimationNodeBlendSpace1D::_process(const AnimationMixer::PlaybackInfo p_
 		}
 	}
 
-	set_parameter(this->closest, cur_closest);
-	set_parameter(this->length_internal, cur_length_internal);
+	set_parameter(closest, cur_closest);
+	set_parameter(length_internal, cur_length_internal);
 	return max_time_remaining;
 }
 

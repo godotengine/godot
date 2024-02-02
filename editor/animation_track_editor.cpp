@@ -35,7 +35,6 @@
 #include "core/input/input.h"
 #include "editor/animation_bezier_editor.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -43,6 +42,7 @@
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/tween.h"
 #include "scene/gui/check_box.h"
@@ -1921,7 +1921,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			Color linecolor = color;
 			linecolor.a = 0.2;
 
-			Color dc = get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor));
+			Color dc = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 			// NAMES AND ICONS //
 

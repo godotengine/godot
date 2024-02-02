@@ -36,7 +36,7 @@
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
 

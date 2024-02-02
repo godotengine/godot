@@ -119,6 +119,10 @@ public:
 		}
 	}
 
+	static real_t get_distance_to_segment(const Vector2 &p_point, const Vector2 *p_segment) {
+		return p_point.distance_to(get_closest_point_to_segment(p_point, p_segment));
+	}
+
 	static bool is_point_in_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
 		Vector2 an = a - s;
 		Vector2 bn = b - s;
@@ -247,6 +251,28 @@ public:
 			return res2;
 		}
 		return -1;
+	}
+
+	static bool segment_intersects_rect(const Vector2 &p_from, const Vector2 &p_to, const Rect2 &p_rect) {
+		if (p_rect.has_point(p_from) || p_rect.has_point(p_to)) {
+			return true;
+		}
+
+		const Vector2 rect_points[4] = {
+			p_rect.position,
+			p_rect.position + Vector2(p_rect.size.x, 0),
+			p_rect.position + p_rect.size,
+			p_rect.position + Vector2(0, p_rect.size.y)
+		};
+
+		// Check if any of the rect's edges intersect the segment.
+		for (int i = 0; i < 4; i++) {
+			if (segment_intersects_segment(p_from, p_to, rect_points[i], rect_points[(i + 1) % 4], nullptr)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	enum PolyBooleanOperation {

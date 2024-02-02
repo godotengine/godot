@@ -316,6 +316,14 @@ void UndoRedo::commit_action(bool p_execute) {
 	_redo(p_execute); // perform action
 	committing--;
 
+	if (max_steps > 0) {
+		// Clear early steps.
+
+		while (actions.size() > max_steps) {
+			_pop_history_tail();
+		}
+	}
+
 	if (add_message && callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
 	}
@@ -473,6 +481,14 @@ uint64_t UndoRedo::get_version() const {
 	return version;
 }
 
+void UndoRedo::set_max_steps(int p_max_steps) {
+	max_steps = p_max_steps;
+}
+
+int UndoRedo::get_max_steps() const {
+	return max_steps;
+}
+
 void UndoRedo::set_commit_notify_callback(CommitNotifyCallback p_callback, void *p_ud) {
 	callback = p_callback;
 	callback_ud = p_ud;
@@ -517,8 +533,12 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_undo"), &UndoRedo::has_undo);
 	ClassDB::bind_method(D_METHOD("has_redo"), &UndoRedo::has_redo);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
+	ClassDB::bind_method(D_METHOD("set_max_steps", "max_steps"), &UndoRedo::set_max_steps);
+	ClassDB::bind_method(D_METHOD("get_max_steps"), &UndoRedo::get_max_steps);
 	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);
 	ClassDB::bind_method(D_METHOD("undo"), &UndoRedo::undo);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_steps", PROPERTY_HINT_RANGE, "0,50,1,or_greater"), "set_max_steps", "get_max_steps");
 
 	ADD_SIGNAL(MethodInfo("version_changed"));
 

@@ -362,44 +362,6 @@ public:
 	int get_slide_collision_count() const;
 	PhysicsServer2D::MotionResult get_slide_collision(int p_bounce) const;
 
-	CharacterBody2D();
-	~CharacterBody2D();
-
-private:
-	real_t margin = 0.08;
-	MotionMode motion_mode = MOTION_MODE_GROUNDED;
-	PlatformOnLeave platform_on_leave = PLATFORM_ON_LEAVE_ADD_VELOCITY;
-
-	bool floor_constant_speed = false;
-	bool floor_stop_on_slope = true;
-	bool floor_block_on_wall = true;
-	bool slide_on_ceiling = true;
-	int max_slides = 4;
-	int platform_layer = 0;
-	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);
-	real_t floor_snap_length = 1;
-	real_t wall_min_slide_angle = Math::deg_to_rad((real_t)15.0);
-	Vector2 up_direction = Vector2(0.0, -1.0);
-	uint32_t platform_floor_layers = UINT32_MAX;
-	uint32_t platform_wall_layers = 0;
-	Vector2 velocity;
-
-	Vector2 floor_normal;
-	Vector2 platform_velocity;
-	Vector2 wall_normal;
-	Vector2 last_motion;
-	Vector2 previous_position;
-	Vector2 real_velocity;
-
-	RID platform_rid;
-	ObjectID platform_object_id;
-	bool on_floor = false;
-	bool on_ceiling = false;
-	bool on_wall = false;
-
-	Vector<PhysicsServer2D::MotionResult> motion_results;
-	Vector<Ref<KinematicCollision2D>> slide_colliders;
-
 	void set_safe_margin(real_t p_margin);
 	real_t get_safe_margin() const;
 
@@ -438,6 +400,44 @@ private:
 
 	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
 	PlatformOnLeave get_platform_on_leave() const;
+
+	CharacterBody2D();
+	~CharacterBody2D();
+
+private:
+	real_t margin = 0.08;
+	MotionMode motion_mode = MOTION_MODE_GROUNDED;
+	PlatformOnLeave platform_on_leave = PLATFORM_ON_LEAVE_ADD_VELOCITY;
+
+	bool floor_constant_speed = false;
+	bool floor_stop_on_slope = true;
+	bool floor_block_on_wall = true;
+	bool slide_on_ceiling = true;
+	int max_slides = 4;
+	int platform_layer = 0;
+	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);
+	real_t floor_snap_length = 1;
+	real_t wall_min_slide_angle = Math::deg_to_rad((real_t)15.0);
+	Vector2 up_direction = Vector2(0.0, -1.0);
+	uint32_t platform_floor_layers = UINT32_MAX;
+	uint32_t platform_wall_layers = 0;
+	Vector2 velocity;
+
+	Vector2 floor_normal;
+	Vector2 platform_velocity;
+	Vector2 wall_normal;
+	Vector2 last_motion;
+	Vector2 previous_position;
+	Vector2 real_velocity;
+
+	RID platform_rid;
+	ObjectID platform_object_id;
+	bool on_floor = false;
+	bool on_ceiling = false;
+	bool on_wall = false;
+
+	Vector<PhysicsServer2D::MotionResult> motion_results;
+	Vector<Ref<KinematicCollision2D>> slide_colliders;
 
 	void _move_and_slide_floating(double p_delta);
 	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);

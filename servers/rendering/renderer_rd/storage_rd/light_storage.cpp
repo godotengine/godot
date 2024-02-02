@@ -1119,6 +1119,14 @@ void LightStorage::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers
 	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
+void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->reflection_mask = p_layers;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
+}
+
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL(reflection_probe);
@@ -1166,6 +1174,13 @@ uint32_t LightStorage::reflection_probe_get_cull_mask(RID p_probe) const {
 	ERR_FAIL_NULL_V(reflection_probe, 0);
 
 	return reflection_probe->cull_mask;
+}
+
+uint32_t LightStorage::reflection_probe_get_reflection_mask(RID p_probe) const {
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, 0);
+
+	return reflection_probe->reflection_mask;
 }
 
 Vector3 LightStorage::reflection_probe_get_size(RID p_probe) const {
@@ -1681,7 +1696,7 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 
 		Vector3 extents = probe->size / 2;
 
-		rpi->cull_mask = probe->cull_mask;
+		rpi->cull_mask = probe->reflection_mask;
 
 		reflection_ubo.box_extents[0] = extents.x;
 		reflection_ubo.box_extents[1] = extents.y;
@@ -1693,7 +1708,7 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 		reflection_ubo.box_offset[0] = origin_offset.x;
 		reflection_ubo.box_offset[1] = origin_offset.y;
 		reflection_ubo.box_offset[2] = origin_offset.z;
-		reflection_ubo.mask = probe->cull_mask;
+		reflection_ubo.mask = probe->reflection_mask;
 
 		reflection_ubo.intensity = probe->intensity;
 		reflection_ubo.ambient_mode = probe->ambient_mode;
@@ -1988,7 +2003,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	for (int i = 0; i < 4; i++) {
 		//clear subdivisions
 		shadow_atlas->quadrants[i].shadows.clear();
-		shadow_atlas->quadrants[i].shadows.resize(1 << shadow_atlas->quadrants[i].subdivision);
+		shadow_atlas->quadrants[i].shadows.resize(int64_t(1) << int64_t(shadow_atlas->quadrants[i].subdivision));
 	}
 
 	//erase shadow atlas reference from lights

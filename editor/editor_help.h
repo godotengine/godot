@@ -113,6 +113,7 @@ class EditorHelp : public VBoxContainer {
 	RichTextLabel *class_desc = nullptr;
 	HSplitContainer *h_split = nullptr;
 	static DocTools *doc;
+	static DocTools *ext_doc;
 
 	ConfirmationDialog *search_dialog = nullptr;
 	LineEdit *search = nullptr;
@@ -209,6 +210,9 @@ public:
 	static void cleanup_doc();
 	static String get_cache_full_path();
 
+	static void load_xml_buffer(const uint8_t *p_buffer, int p_size);
+	static void remove_class(const String &p_class);
+
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class);
 	void update_doc();
@@ -227,6 +231,8 @@ public:
 	void set_scroll(int p_scroll);
 
 	void update_toggle_scripts_button();
+
+	static void init_gdext_pointers();
 
 	EditorHelp();
 	~EditorHelp();

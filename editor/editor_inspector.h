@@ -74,6 +74,7 @@ private:
 	StringName property;
 	String property_path;
 	String doc_path;
+	bool internal = false;
 	bool has_doc_tooltip = false;
 
 	int property_usage;
@@ -156,6 +157,7 @@ public:
 	EditorInspector *get_parent_inspector() const;
 
 	void set_doc_path(const String &p_doc_path);
+	void set_internal(bool p_internal);
 
 	virtual void update_property();
 	void update_editor_property_status();

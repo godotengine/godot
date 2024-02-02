@@ -510,7 +510,7 @@ Vector<uint8_t> RenderingDevice::buffer_get_data(RID p_buffer, uint32_t p_offset
 	_flush(true);
 
 	uint8_t *buffer_mem = driver->buffer_map(tmp_buffer);
-	ERR_FAIL_COND_V(!buffer_mem, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(buffer_mem, Vector<uint8_t>());
 
 	Vector<uint8_t> buffer_data;
 	{
@@ -773,12 +773,12 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
-	ERR_FAIL_COND_V(!src_texture, RID());
+	ERR_FAIL_NULL_V(src_texture, RID());
 
 	if (src_texture->owner.is_valid()) { // Ahh this is a share. The RenderingDeviceDriver needs the actual owner.
 		p_with_texture = src_texture->owner;
 		src_texture = texture_owner.get_or_null(src_texture->owner);
-		ERR_FAIL_COND_V(!src_texture, RID()); // This is a bug.
+		ERR_FAIL_NULL_V(src_texture, RID()); // This is a bug.
 	}
 
 	// Create view.
@@ -866,12 +866,12 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
-	ERR_FAIL_COND_V(!src_texture, RID());
+	ERR_FAIL_NULL_V(src_texture, RID());
 
 	if (src_texture->owner.is_valid()) { // // Ahh this is a share. The RenderingDeviceDriver needs the actual owner.
 		p_with_texture = src_texture->owner;
 		src_texture = texture_owner.get_or_null(src_texture->owner);
-		ERR_FAIL_COND_V(!src_texture, RID()); // This is a bug.
+		ERR_FAIL_NULL_V(src_texture, RID()); // This is a bug.
 	}
 
 	ERR_FAIL_COND_V_MSG(p_slice_type == TEXTURE_SLICE_CUBEMAP && (src_texture->type != TEXTURE_TYPE_CUBE && src_texture->type != TEXTURE_TYPE_CUBE_ARRAY), RID(),
@@ -1247,7 +1247,7 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, Vector<uint8_t>());
+	ERR_FAIL_NULL_V(tex, Vector<uint8_t>());
 
 	ERR_FAIL_COND_V_MSG(tex->bound, Vector<uint8_t>(),
 			"Texture can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to retrieve this texture.");
@@ -1362,7 +1362,7 @@ bool RenderingDevice::texture_is_shared(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, false);
+	ERR_FAIL_NULL_V(tex, false);
 	return tex->owner.is_valid();
 }
 
@@ -1374,7 +1374,7 @@ RD::TextureFormat RenderingDevice::texture_get_format(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, TextureFormat());
+	ERR_FAIL_NULL_V(tex, TextureFormat());
 
 	TextureFormat tf;
 
@@ -1397,7 +1397,7 @@ Size2i RenderingDevice::texture_size(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_COND_V(!tex, Size2i());
+	ERR_FAIL_NULL_V(tex, Size2i());
 	return Size2i(tex->width, tex->height);
 }
 
@@ -2041,7 +2041,7 @@ void RenderingDevice::framebuffer_set_invalidation_callback(RID p_framebuffer, I
 	_THREAD_SAFE_METHOD_
 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
-	ERR_FAIL_COND(!framebuffer);
+	ERR_FAIL_NULL(framebuffer);
 
 	framebuffer->invalidated_callback = p_callback;
 	framebuffer->invalidated_callback_userdata = p_userdata;
@@ -2522,7 +2522,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
 					RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(uniform.get_id(j));
-					ERR_FAIL_COND_V_MSG(!sampler_driver_id, RID(), "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
+					ERR_FAIL_NULL_V_MSG(sampler_driver_id, RID(), "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
 
 					driver_uniform.ids.push_back(*sampler_driver_id);
 				}
@@ -2538,7 +2538,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j += 2) {
 					RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(uniform.get_id(j + 0));
-					ERR_FAIL_COND_V_MSG(!sampler_driver_id, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
+					ERR_FAIL_NULL_V_MSG(sampler_driver_id, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
 					RID texture_id = uniform.get_id(j + 1);
 					Texture *texture = texture_owner.get_or_null(texture_id);
@@ -2687,7 +2687,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j += 2) {
 					RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(uniform.get_id(j + 0));
-					ERR_FAIL_COND_V_MSG(!sampler_driver_id, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
+					ERR_FAIL_NULL_V_MSG(sampler_driver_id, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
 					RID buffer_id = uniform.get_id(j + 1);
 					Buffer *buffer = texture_buffer_owner.get_or_null(buffer_id);
@@ -3748,7 +3748,7 @@ uint32_t RenderingDevice::draw_list_get_current_pass() {
 
 RenderingDevice::DrawListID RenderingDevice::draw_list_switch_to_next_pass() {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V(draw_list == nullptr, INVALID_ID);
+	ERR_FAIL_NULL_V(draw_list, INVALID_ID);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, INVALID_FORMAT_ID);
 
 	draw_list_current_subpass++;
@@ -3795,7 +3795,7 @@ void RenderingDevice::_draw_list_free(Rect2i *r_last_viewport) {
 void RenderingDevice::draw_list_end() {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_MSG(!draw_list, "Immediate draw list is already inactive.");
+	ERR_FAIL_NULL_MSG(draw_list, "Immediate draw list is already inactive.");
 
 	draw_graph.add_draw_list_end();
 
@@ -4090,7 +4090,7 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 
 	ComputeList *cl = compute_list;
 	Buffer *buffer = storage_buffer_owner.get_or_null(p_buffer);
-	ERR_FAIL_COND(!buffer);
+	ERR_FAIL_NULL(buffer);
 
 	ERR_FAIL_COND_MSG(!buffer->usage.has_flag(RDD::BUFFER_USAGE_INDIRECT_BIT), "Buffer provided was not created to do indirect dispatch.");
 
@@ -4210,7 +4210,7 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 		if (p_texture->owner.is_valid()) {
 			// Texture has an owner.
 			Texture *owner_texture = texture_owner.get_or_null(p_texture->owner);
-			ERR_FAIL_COND_V(!owner_texture, false);
+			ERR_FAIL_NULL_V(owner_texture, false);
 
 			if (owner_texture->draw_tracker != nullptr) {
 				// Create a tracker for this dependency in particular.

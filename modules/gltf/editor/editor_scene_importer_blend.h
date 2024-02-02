@@ -95,7 +95,7 @@ class EditorFileSystemImportFormatSupportQueryBlend : public EditorFileSystemImp
 	String auto_detected_path;
 	void _validate_path(String p_path);
 
-	bool _autodetect_path(String p_path);
+	bool _autodetect_path();
 
 	void _path_confirmed();
 

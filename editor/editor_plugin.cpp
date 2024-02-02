@@ -31,6 +31,7 @@
 #include "editor_plugin.h"
 
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_dock_manager.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_interface.h"
@@ -84,12 +85,12 @@ Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const Stri
 
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DockSlot(p_slot), p_control);
+	EditorDockManager::get_singleton()->add_control_to_dock(EditorDockManager::DockSlot(p_slot), p_control);
 }
 
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->remove_control_from_dock(p_control);
+	EditorDockManager::get_singleton()->remove_control_from_dock(p_control);
 }
 
 void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
@@ -246,6 +247,10 @@ void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
 
 void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 	emit_signal(SNAME("resource_saved"), p_resource);
+}
+
+void EditorPlugin::notify_scene_saved(const String &p_scene_filepath) {
+	emit_signal(SNAME("scene_saved"), p_scene_filepath);
 }
 
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
@@ -631,6 +636,7 @@ void EditorPlugin::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 
 	BIND_ENUM_CONSTANT(CONTAINER_TOOLBAR);

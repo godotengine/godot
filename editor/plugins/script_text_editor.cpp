@@ -36,10 +36,10 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 
@@ -824,7 +824,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 			scr->set_last_modified_time(rel_scr->get_last_modified_time());
 			scr->update_exports();
 
-			trigger_live_script_reload();
+			trigger_live_script_reload(scr->get_path());
 		}
 	}
 }
@@ -2507,5 +2507,5 @@ void ScriptTextEditor::register_editor() {
 }
 
 void ScriptTextEditor::validate() {
-	this->code_editor->validate_script();
+	code_editor->validate_script();
 }

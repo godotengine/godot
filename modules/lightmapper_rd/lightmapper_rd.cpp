@@ -769,7 +769,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 
 #ifdef DEBUG_TEXTURES
 	for (int i = 0; i < atlas_slices; i++) {
-		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+		Vector<uint8_t> s = rd->texture_get_data(source_light_tex, i);
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->convert(Image::FORMAT_RGBA8);
 		img->save_png("res://5_dilated_" + itos(i) + ".png");
@@ -1711,7 +1711,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			push_constant.ray_from = i * max_rays;
 			push_constant.ray_to = MIN((i + 1) * max_rays, int32_t(push_constant.ray_count));
 			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, Math::division_round_up(probe_positions.size(), 64), 1, 1);
+			rd->compute_list_dispatch(compute_list, Math::division_round_up((int)probe_positions.size(), 64), 1, 1);
 
 			rd->compute_list_end(); //done
 			rd->submit();

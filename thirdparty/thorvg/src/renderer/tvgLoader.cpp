@@ -24,6 +24,7 @@
 
 #include "tvgInlist.h"
 #include "tvgLoader.h"
+#include "tvgLock.h"
 
 #ifdef THORVG_SVG_LOADER_SUPPORT
     #include "tvgSvgLoader.h"
@@ -65,7 +66,7 @@ uint64_t HASH_KEY(const char* data, uint64_t size)
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static mutex mtx;
+static Key key;
 static Inlist<LoadModule> _activeLoaders;
 
 
@@ -211,7 +212,7 @@ static LoadModule* _findByType(const string& mimeType)
 
 static LoadModule* _findFromCache(const string& path)
 {
-    unique_lock<mutex> lock{mtx};
+    ScopedLock lock(key);
 
     auto loader = _activeLoaders.head;
 
@@ -231,7 +232,7 @@ static LoadModule* _findFromCache(const char* data, uint32_t size, const string&
     auto type = _convert(mimeType);
     if (type == FileType::Unknown) return nullptr;
 
-    unique_lock<mutex> lock{mtx};
+    ScopedLock lock(key);
     auto loader = _activeLoaders.head;
 
     auto key = HASH_KEY(data, size);
@@ -279,7 +280,7 @@ bool LoaderMgr::retrieve(LoadModule* loader)
     if (!loader) return false;
     if (loader->close()) {
         {
-            unique_lock<mutex> lock{mtx};
+            ScopedLock lock(key);
             _activeLoaders.remove(loader);
         }
         delete(loader);
@@ -298,7 +299,7 @@ LoadModule* LoaderMgr::loader(const string& path, bool* invalid)
         if (loader->open(path)) {
             loader->hashpath = strdup(path.c_str());
             {
-                unique_lock<mutex> lock{mtx};
+                ScopedLock lock(key);
                 _activeLoaders.back(loader);
             }
             return loader;
@@ -340,7 +341,7 @@ LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const string& mim
         if (auto loader = _findByType(mimeType)) {
             if (loader->open(data, size, copy)) {
                 loader->hashkey = HASH_KEY(data, size);                
-                unique_lock<mutex> lock{mtx};
+                ScopedLock lock(key);
                 _activeLoaders.back(loader);
                 return loader;
             } else {
@@ -356,7 +357,7 @@ LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const string& mim
                 if (loader->open(data, size, copy)) {
                     loader->hashkey = HASH_KEY(data, size);
                     {
-                        unique_lock<mutex> lock{mtx};
+                        ScopedLock lock(key);
                         _activeLoaders.back(loader);
                     }
                     return loader;
@@ -379,7 +380,7 @@ LoadModule* LoaderMgr::loader(const uint32_t *data, uint32_t w, uint32_t h, bool
     if (loader->open(data, w, h, copy)) {
         loader->hashkey = HASH_KEY((const char*)data, w * h);
         {
-            unique_lock<mutex> lock{mtx};
+            ScopedLock lock(key);
             _activeLoaders.back(loader);
         }
         return loader;

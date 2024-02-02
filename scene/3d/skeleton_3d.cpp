@@ -94,6 +94,19 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 		set_bone_pose_rotation(which, p_value);
 	} else if (what == "scale") {
 		set_bone_pose_scale(which, p_value);
+#ifndef DISABLE_DEPRECATED
+	} else if (what == "pose") {
+		// Kept for compatibility from 3.x to 4.x.
+		WARN_DEPRECATED_MSG("Skeleton uses old pose format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene." +
+				(is_inside_tree() ? vformat(" Path: \"%s\"", get_path()) : String()));
+		// Old Skeleton poses were relative to rest, new ones are absolute, so we need to recompute the pose.
+		// Skeleton3D nodes were always written with rest before pose, so this *SHOULD* work...
+		Transform3D rest = get_bone_rest(which);
+		Transform3D pose = rest * (Transform3D)p_value;
+		set_bone_pose_position(which, pose.origin);
+		set_bone_pose_rotation(which, pose.basis.get_rotation_quaternion());
+		set_bone_pose_scale(which, pose.basis.get_scale());
+#endif
 	} else {
 		return false;
 	}

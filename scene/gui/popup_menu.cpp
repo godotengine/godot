@@ -74,7 +74,7 @@ String PopupMenu::bind_global_menu() {
 	global_menu_name = "__PopupMenu#" + itos(get_instance_id());
 	if (system_menu_name.length() > 0) {
 		if (system_menus.has(system_menu_name)) {
-			WARN_PRINT(vformat("Attempting to bind PopupMenu to the special menu %s, but another menu is already bound to it. This menu: %s, current menu: %s", system_menu_name, this->get_description(), system_menus[system_menu_name]->get_description()));
+			WARN_PRINT(vformat("Attempting to bind PopupMenu to the special menu %s, but another menu is already bound to it. This menu: %s, current menu: %s", system_menu_name, get_description(), system_menus[system_menu_name]->get_description()));
 		} else {
 			const Dictionary &supported_special_names = DisplayServer::get_singleton()->global_menu_get_system_menu_roots();
 			if (supported_special_names.has(system_menu_name)) {
@@ -287,8 +287,7 @@ int PopupMenu::_get_items_total_height() const {
 		items_total_height += _get_item_height(i) + theme_cache.v_separation;
 	}
 
-	// Subtract a separator which is not needed for the last item.
-	return items_total_height - theme_cache.v_separation;
+	return items_total_height;
 }
 
 int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
@@ -297,14 +296,14 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	}
 
 	// Accounts for margin in the margin container
-	Point2 ofs = theme_cache.panel_style->get_offset() + Point2(0, theme_cache.v_separation / 2);
+	Point2 ofs = theme_cache.panel_style->get_offset();
 
 	if (ofs.y > p_over.y) {
 		return -1;
 	}
 
 	for (int i = 0; i < items.size(); i++) {
-		ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
+		ofs.y += theme_cache.v_separation;
 
 		ofs.y += _get_item_height(i);
 
@@ -2087,6 +2086,26 @@ void PopupMenu::set_item_indent(int p_idx, int p_indent) {
 	_menu_changed();
 }
 
+void PopupMenu::set_item_max_states(int p_idx, int p_max_states) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].max_states == p_max_states) {
+		return;
+	}
+
+	items.write[p_idx].max_states = p_max_states;
+
+	if (!global_menu_name.is_empty()) {
+		DisplayServer::get_singleton()->global_menu_set_item_max_states(global_menu_name, p_idx, p_max_states);
+	}
+
+	control->queue_redraw();
+	_menu_changed();
+}
+
 void PopupMenu::set_item_multistate(int p_idx, int p_state) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
@@ -2425,7 +2444,8 @@ void PopupMenu::clear(bool p_free_submenus) {
 	}
 
 	if (!global_menu_name.is_empty()) {
-		for (int i = 0; i < items.size(); i++) {
+		DisplayServer *ds = DisplayServer::get_singleton();
+		for (int i = items.size() - 1; i >= 0; i--) {
 			Item &item = items.write[i];
 			if (!item.submenu.is_empty()) {
 				PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu));
@@ -2434,8 +2454,8 @@ void PopupMenu::clear(bool p_free_submenus) {
 				}
 				item.submenu_bound = false;
 			}
+			ds->global_menu_remove_item(global_menu_name, i);
 		}
-		DisplayServer::get_singleton()->global_menu_clear(global_menu_name);
 	}
 	items.clear();
 
@@ -2724,6 +2744,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_shortcut", "index", "shortcut", "global"), &PopupMenu::set_item_shortcut, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_item_indent", "index", "indent"), &PopupMenu::set_item_indent);
 	ClassDB::bind_method(D_METHOD("set_item_multistate", "index", "state"), &PopupMenu::set_item_multistate);
+	ClassDB::bind_method(D_METHOD("set_item_multistate_max", "index", "max_states"), &PopupMenu::set_item_max_states);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut_disabled", "index", "disabled"), &PopupMenu::set_item_shortcut_disabled);
 
 	ClassDB::bind_method(D_METHOD("toggle_item_checked", "index"), &PopupMenu::toggle_item_checked);
@@ -2749,6 +2770,9 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "index"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "index"), &PopupMenu::get_item_shortcut);
 	ClassDB::bind_method(D_METHOD("get_item_indent", "index"), &PopupMenu::get_item_indent);
+
+	ClassDB::bind_method(D_METHOD("get_item_multistate_max", "index"), &PopupMenu::get_item_max_states);
+	ClassDB::bind_method(D_METHOD("get_item_multistate", "index"), &PopupMenu::get_item_state);
 
 	ClassDB::bind_method(D_METHOD("set_focused_item", "index"), &PopupMenu::set_focused_item);
 	ClassDB::bind_method(D_METHOD("get_focused_item"), &PopupMenu::get_focused_item);

@@ -67,21 +67,30 @@ def get_mvk_sdk_path():
     if not os.path.exists(dirname):
         return ""
 
-    ver_file = "0.0.0.0"
-    ver_num = ver_parse(ver_file)
-
+    ver_num = ver_parse("0.0.0.0")
     files = os.listdir(dirname)
+    lib_name_out = dirname
     for file in files:
         if os.path.isdir(os.path.join(dirname, file)):
             ver_comp = ver_parse(file)
-            lib_name = os.path.join(
-                os.path.join(dirname, file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/libMoltenVK.a"
-            )
-            if os.path.isfile(lib_name) and ver_comp > ver_num:
-                ver_num = ver_comp
-                ver_file = file
+            if ver_comp > ver_num:
+                # Try new SDK location.
+                lib_name = os.path.join(
+                    os.path.join(dirname, file), "macOS/lib/MoltenVK.xcframework/macos-arm64_x86_64/"
+                )
+                if os.path.isfile(os.path.join(lib_name, "libMoltenVK.a")):
+                    ver_num = ver_comp
+                    lib_name_out = lib_name
+                else:
+                    # Try old SDK location.
+                    lib_name = os.path.join(
+                        os.path.join(dirname, file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
+                    )
+                    if os.path.isfile(os.path.join(lib_name, "libMoltenVK.a")):
+                        ver_num = ver_comp
+                        lib_name_out = lib_name
 
-    return os.path.join(os.path.join(dirname, ver_file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/")
+    return lib_name_out
 
 
 def configure(env: "Environment"):
@@ -121,12 +130,12 @@ def configure(env: "Environment"):
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     cc_version = get_compiler_version(env)
-    cc_version_major = cc_version["major"]
-    cc_version_minor = cc_version["minor"]
+    cc_version_major = cc_version["apple_major"]
+    cc_version_minor = cc_version["apple_minor"]
     vanilla = is_vanilla_clang(env)
 
     # Workaround for Xcode 15 linker bug.
-    if not vanilla and cc_version_major == 15 and cc_version_minor == 0:
+    if not vanilla and cc_version_major == 1500 and cc_version_minor == 0:
         env.Prepend(LINKFLAGS=["-ld_classic"])
 
     env.Append(CCFLAGS=["-fobjc-arc"])
@@ -269,6 +278,12 @@ def configure(env: "Environment"):
             mvk_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
             if env["vulkan_sdk_path"] != "":
                 mvk_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
+                mvk_list.insert(
+                    0,
+                    os.path.join(
+                        os.path.expanduser(env["vulkan_sdk_path"]), "macOS/lib/MoltenVK.xcframework/macos-arm64_x86_64/"
+                    ),
+                )
                 mvk_list.insert(
                     0,
                     os.path.join(

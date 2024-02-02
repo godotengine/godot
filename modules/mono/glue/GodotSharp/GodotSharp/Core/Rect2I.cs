@@ -113,8 +113,8 @@ namespace Godot
         public readonly bool Encloses(Rect2I b)
         {
             return b._position.X >= _position.X && b._position.Y >= _position.Y &&
-               b._position.X + b._size.X < _position.X + _size.X &&
-               b._position.Y + b._size.Y < _position.Y + _size.Y;
+               b._position.X + b._size.X <= _position.X + _size.X &&
+               b._position.Y + b._size.Y <= _position.Y + _size.Y;
         }
 
         /// <summary>

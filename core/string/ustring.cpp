@@ -302,7 +302,7 @@ void String::copy_from(const char *p_cstr) {
 
 	resize(len + 1); // include 0
 
-	char32_t *dst = this->ptrw();
+	char32_t *dst = ptrw();
 
 	for (size_t i = 0; i <= len; i++) {
 #if CHAR_MIN == 0
@@ -339,7 +339,7 @@ void String::copy_from(const char *p_cstr, const int p_clip_to) {
 
 	resize(len + 1); // include 0
 
-	char32_t *dst = this->ptrw();
+	char32_t *dst = ptrw();
 
 	for (int i = 0; i < len; i++) {
 #if CHAR_MIN == 0
@@ -1043,7 +1043,7 @@ String String::_camelcase_to_underscore() const {
 	String new_string;
 	int start_index = 0;
 
-	for (int i = 1; i < this->size(); i++) {
+	for (int i = 1; i < size(); i++) {
 		bool is_prev_upper = is_ascii_upper_case(cstr[i - 1]);
 		bool is_prev_lower = is_ascii_lower_case(cstr[i - 1]);
 		bool is_prev_digit = is_digit(cstr[i - 1]);
@@ -1053,7 +1053,7 @@ String String::_camelcase_to_underscore() const {
 		bool is_curr_digit = is_digit(cstr[i]);
 
 		bool is_next_lower = false;
-		if (i + 1 < this->size()) {
+		if (i + 1 < size()) {
 			is_next_lower = is_ascii_lower_case(cstr[i + 1]);
 		}
 
@@ -1063,17 +1063,17 @@ String String::_camelcase_to_underscore() const {
 		const bool cond_d = (is_prev_upper || is_prev_lower) && is_curr_digit; // A2, a2
 
 		if (cond_a || cond_b || cond_c || cond_d) {
-			new_string += this->substr(start_index, i - start_index) + "_";
+			new_string += substr(start_index, i - start_index) + "_";
 			start_index = i;
 		}
 	}
 
-	new_string += this->substr(start_index, this->size() - start_index);
+	new_string += substr(start_index, size() - start_index);
 	return new_string.to_lower();
 }
 
 String String::capitalize() const {
-	String aux = this->_camelcase_to_underscore().replace("_", " ").strip_edges();
+	String aux = _camelcase_to_underscore().replace("_", " ").strip_edges();
 	String cap;
 	for (int i = 0; i < aux.get_slice_count(" "); i++) {
 		String slice = aux.get_slicec(' ', i);
@@ -1090,7 +1090,7 @@ String String::capitalize() const {
 }
 
 String String::to_camel_case() const {
-	String s = this->to_pascal_case();
+	String s = to_pascal_case();
 	if (!s.is_empty()) {
 		s[0] = _find_lower(s[0]);
 	}
@@ -1098,11 +1098,11 @@ String String::to_camel_case() const {
 }
 
 String String::to_pascal_case() const {
-	return this->capitalize().replace(" ", "");
+	return capitalize().replace(" ", "");
 }
 
 String String::to_snake_case() const {
-	return this->_camelcase_to_underscore().replace(" ", "_").strip_edges();
+	return _camelcase_to_underscore().replace(" ", "_").strip_edges();
 }
 
 String String::get_with_code_lines() const {
@@ -1185,7 +1185,7 @@ String String::get_slicec(char32_t p_splitter, int p_slice) const {
 		return String();
 	}
 
-	const char32_t *c = this->ptr();
+	const char32_t *c = ptr();
 	int i = 0;
 	int prev = 0;
 	int count = 0;
@@ -3516,7 +3516,7 @@ bool String::matchn(const String &p_wildcard) const {
 }
 
 String String::format(const Variant &values, const String &placeholder) const {
-	String new_string = String(this->ptr());
+	String new_string = String(ptr());
 
 	if (values.get_type() == Variant::ARRAY) {
 		Array values_arr = values;
@@ -4467,7 +4467,7 @@ bool String::is_valid_float() const {
 
 String String::path_to_file(const String &p_path) const {
 	// Don't get base dir for src, this is expected to be a dir already.
-	String src = this->replace("\\", "/");
+	String src = replace("\\", "/");
 	String dst = p_path.replace("\\", "/").get_base_dir();
 	String rel = src.path_to(dst);
 	if (rel == dst) { // failed
@@ -4478,7 +4478,7 @@ String String::path_to_file(const String &p_path) const {
 }
 
 String String::path_to(const String &p_path) const {
-	String src = this->replace("\\", "/");
+	String src = replace("\\", "/");
 	String dst = p_path.replace("\\", "/");
 	if (!src.ends_with("/")) {
 		src += "/";

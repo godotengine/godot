@@ -70,29 +70,29 @@ public:
 	Skeleton3D *get_godot_skeleton();
 
 	// Skeleton *get_godot_skeleton() {
-	// 	return this->godot_skeleton;
+	// 	return godot_skeleton;
 	// }
 	// void set_godot_skeleton(Skeleton p_*godot_skeleton) {
-	// 	this->godot_skeleton = p_godot_skeleton;
+	// 	godot_skeleton = p_godot_skeleton;
 	// }
 
 	TypedArray<String> get_unique_names();
 	void set_unique_names(TypedArray<String> p_unique_names);
 
 	//RBMap<int32_t, GLTFNodeIndex> get_godot_bone_node() {
-	//	return this->godot_bone_node;
+	//	return godot_bone_node;
 	//}
 	//void set_godot_bone_node(const RBMap<int32_t, GLTFNodeIndex> &p_godot_bone_node) {
-	//	this->godot_bone_node = p_godot_bone_node;
+	//	godot_bone_node = p_godot_bone_node;
 	//}
 	Dictionary get_godot_bone_node();
 	void set_godot_bone_node(Dictionary p_indict);
 
 	//Dictionary get_godot_bone_node() {
-	//	return VariantConversion::to_dict(this->godot_bone_node);
+	//	return VariantConversion::to_dict(godot_bone_node);
 	//}
 	//void set_godot_bone_node(Dictionary p_indict) {
-	//	VariantConversion::set_from_dict(this->godot_bone_node, p_indict);
+	//	VariantConversion::set_from_dict(godot_bone_node, p_indict);
 	//}
 
 	BoneAttachment3D *get_bone_attachment(int idx);

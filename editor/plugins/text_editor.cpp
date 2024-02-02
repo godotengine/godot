@@ -612,21 +612,6 @@ TextEditor::TextEditor() {
 
 	edit_hb = memnew(HBoxContainer);
 
-	search_menu = memnew(MenuButton);
-	search_menu->set_shortcut_context(this);
-	edit_hb->add_child(search_menu);
-	search_menu->set_text(TTR("Search"));
-	search_menu->set_switch_on_hover(true);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
-
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
-
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_shortcut_context(this);
 	edit_hb->add_child(edit_menu);
@@ -685,6 +670,21 @@ TextEditor::TextEditor() {
 	add_syntax_highlighter(highlighter);
 	set_syntax_highlighter(plain_highlighter);
 
+	search_menu = memnew(MenuButton);
+	search_menu->set_shortcut_context(this);
+	edit_hb->add_child(search_menu);
+	search_menu->set_text(TTR("Search"));
+	search_menu->set_switch_on_hover(true);
+	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
+
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
+	search_menu->get_popup()->add_separator();
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
+
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
 	edit_hb->add_child(goto_menu);
@@ -712,5 +712,5 @@ TextEditor::~TextEditor() {
 }
 
 void TextEditor::validate() {
-	this->code_editor->validate_script();
+	code_editor->validate_script();
 }
