@@ -378,8 +378,6 @@ namespace {
     int op_cmpl(int a) { return ~a; }
     int op_not(int a) { return !a; }
 
-};
-
 struct TBinop {
     int token, precedence, (*op)(int, int);
 } binop[] = {
@@ -411,6 +409,8 @@ struct TUnop {
     { '~', op_cmpl },
     { '!', op_not },
 };
+
+} // anonymous namespace
 
 #define NUM_ELEMENTS(A) (sizeof(A) / sizeof(A[0]))
 

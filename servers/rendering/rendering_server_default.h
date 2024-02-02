@@ -78,7 +78,7 @@ class RenderingServerDefault : public RenderingServer {
 	static void _thread_callback(void *_instance);
 	void _thread_loop();
 
-	Thread::ID server_thread;
+	Thread::ID server_thread = 0;
 	SafeFlag exit;
 	Thread thread;
 	SafeFlag draw_thread_up;
@@ -315,6 +315,9 @@ public:
 	FUNC2(mesh_set_custom_aabb, RID, const AABB &)
 	FUNC1RC(AABB, mesh_get_custom_aabb, RID)
 
+	FUNC2(mesh_set_path, RID, const String &)
+	FUNC1RC(String, mesh_get_path, RID)
+
 	FUNC2(mesh_set_shadow_mesh, RID, RID)
 
 	FUNC1(mesh_clear, RID)
@@ -401,6 +404,7 @@ public:
 	FUNC2(reflection_probe_set_enable_box_projection, RID, bool)
 	FUNC2(reflection_probe_set_enable_shadows, RID, bool)
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
+	FUNC2(reflection_probe_set_reflection_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
 	FUNC2(reflection_probe_set_mesh_lod_threshold, RID, float)
 

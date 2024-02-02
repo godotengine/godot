@@ -103,7 +103,8 @@ class EditorResourcePreview : public Node {
 	int small_thumbnail_size = -1;
 
 	static void _thread_func(void *ud);
-	void _thread();
+	void _thread(); // For rendering drivers supporting async texture creation.
+	static void _idle_callback(); // For other rendering drivers (i.e., OpenGL).
 	void _iterate();
 
 	void _write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, String p_hash, const Dictionary &p_metadata);

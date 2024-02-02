@@ -216,21 +216,19 @@ Result Shape::appendRect(float x, float y, float w, float h, float rx, float ry)
         pImpl->lineTo(x, y + h);
         pImpl->close();
     //circle
-    } else if (mathEqual(rx, halfW) && mathEqual(ry, halfH)) {
-        return appendCircle(x + (w * 0.5f), y + (h * 0.5f), rx, ry);
     } else {
         auto hrx = rx * PATH_KAPPA;
         auto hry = ry * PATH_KAPPA;
         pImpl->grow(10, 17);
-        pImpl->moveTo(x + rx, y);
-        pImpl->lineTo(x + w - rx, y);
-        pImpl->cubicTo(x + w - rx + hrx, y, x + w, y + ry - hry, x + w, y + ry);
+        pImpl->moveTo(x + w, y + ry);
         pImpl->lineTo(x + w, y + h - ry);
         pImpl->cubicTo(x + w, y + h - ry + hry, x + w - rx + hrx, y + h, x + w - rx, y + h);
         pImpl->lineTo(x + rx, y + h);
         pImpl->cubicTo(x + rx - hrx, y + h, x, y + h - ry + hry, x, y + h - ry);
         pImpl->lineTo(x, y + ry);
         pImpl->cubicTo(x, y + ry - hry, x + rx - hrx, y, x + rx, y);
+        pImpl->lineTo(x + w - rx, y);
+        pImpl->cubicTo(x + w - rx + hrx, y, x + w, y + ry - hry, x + w, y + ry);
         pImpl->close();
     }
 

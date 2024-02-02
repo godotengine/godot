@@ -36,10 +36,10 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/progress_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
@@ -466,6 +466,13 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			break;
 		}
 
+		if (String::utf8(fname).ends_with("/")) {
+			// File is a directory, ignore it.
+			// Directories will be created when extracting each file.
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
 		String file_path(String::utf8(fname).simplify_path());
 
 		String file = file_path.get_file();
@@ -758,7 +765,7 @@ void ExportTemplateManager::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			current_value->add_theme_font_override("font", get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 			current_missing_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			current_installed_label->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+			current_installed_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
 			mirror_options_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 		} break;

@@ -1403,6 +1403,37 @@ int64_t TextServerFallback::_font_get_spacing(const RID &p_font_rid, SpacingType
 	}
 }
 
+void TextServerFallback::_font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) {
+	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		if (fdv->baseline_offset != p_baseline_offset) {
+			fdv->baseline_offset = p_baseline_offset;
+		}
+	} else {
+		FontFallback *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL(fd);
+
+		MutexLock lock(fd->mutex);
+		if (fd->baseline_offset != p_baseline_offset) {
+			_font_clear_cache(fd);
+			fd->baseline_offset = p_baseline_offset;
+		}
+	}
+}
+
+float TextServerFallback::_font_get_baseline_offset(const RID &p_font_rid) const {
+	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		return fdv->baseline_offset;
+	} else {
+		FontFallback *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL_V(fd, 0.0);
+
+		MutexLock lock(fd->mutex);
+		return fd->baseline_offset;
+	}
+}
+
 void TextServerFallback::_font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -4105,12 +4136,12 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 						if (sd->orientation == ORIENTATION_HORIZONTAL) {
 							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x;
 							gl.x_off = 0;
-							gl.y_off = 0;
+							gl.y_off = _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
 							sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP));
 							sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM));
 						} else {
 							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).y;
-							gl.x_off = -Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5);
+							gl.x_off = -Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5) + _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
 							gl.y_off = _font_get_ascent(gl.font_rid, gl.font_size);
 							sd->ascent = MAX(sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 							sd->descent = MAX(sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));

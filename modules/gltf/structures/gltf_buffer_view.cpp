@@ -30,7 +30,11 @@
 
 #include "gltf_buffer_view.h"
 
+#include "../gltf_state.h"
+
 void GLTFBufferView::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("load_buffer_view_data", "state"), &GLTFBufferView::load_buffer_view_data);
+
 	ClassDB::bind_method(D_METHOD("get_buffer"), &GLTFBufferView::get_buffer);
 	ClassDB::bind_method(D_METHOD("set_buffer", "buffer"), &GLTFBufferView::set_buffer);
 	ClassDB::bind_method(D_METHOD("get_byte_offset"), &GLTFBufferView::get_byte_offset);
@@ -87,4 +91,14 @@ bool GLTFBufferView::get_indices() {
 
 void GLTFBufferView::set_indices(bool p_indices) {
 	indices = p_indices;
+}
+
+Vector<uint8_t> GLTFBufferView::load_buffer_view_data(const Ref<GLTFState> p_state) const {
+	ERR_FAIL_COND_V(p_state.is_null(), Vector<uint8_t>());
+	ERR_FAIL_COND_V_MSG(byte_stride > 0, Vector<uint8_t>(), "Buffer views with byte stride are not yet supported by this method.");
+	const TypedArray<Vector<uint8_t>> &buffers = p_state->get_buffers();
+	ERR_FAIL_INDEX_V(buffer, buffers.size(), Vector<uint8_t>());
+	const PackedByteArray &buffer_data = buffers[buffer];
+	const int64_t byte_end = byte_offset + byte_length;
+	return buffer_data.slice(byte_offset, byte_end);
 }

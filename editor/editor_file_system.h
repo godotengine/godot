@@ -165,7 +165,7 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
 
-	bool use_threads = true;
+	bool use_threads = false;
 	Thread thread;
 	static void _thread_func(void *_userdata);
 

@@ -35,9 +35,9 @@
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "editor/editor_scale.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
 
 void PluginConfigDialog::_clear_fields() {

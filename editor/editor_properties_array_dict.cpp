@@ -34,11 +34,11 @@
 #include "core/io/marshalls.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_vector.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/inspector_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/resources/packed_scene.h"
 
@@ -407,8 +407,8 @@ void EditorPropertyArray::update_property() {
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				new_prop->set_read_only(is_read_only());
-				callable_mp((Node *)slot.prop, &Node::add_sibling).call_deferred(new_prop, false);
-				callable_mp((Node *)slot.prop, &Node::queue_free).call_deferred();
+				slot.prop->add_sibling(new_prop, false);
+				slot.prop->queue_free();
 				slot.prop = new_prop;
 				slot.set_index(idx);
 			}

@@ -47,6 +47,8 @@ def get_opts():
         BoolVariable("fontconfig", "Use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
+        BoolVariable("wayland", "Enable Wayland display", True),
+        BoolVariable("libdecor", "Enable libdecor support", True),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
@@ -203,6 +205,11 @@ def configure(env: "Environment"):
 
     if env["use_sowrap"]:
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
+
+    if env["wayland"]:
+        if os.system("wayland-scanner -v") != 0:
+            print("wayland-scanner not found. Disabling wayland support.")
+            env["wayland"] = False
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
@@ -364,9 +371,13 @@ def configure(env: "Environment"):
             env.ParseConfig("pkg-config xkbcommon --cflags --libs")
             env.Append(CPPDEFINES=["XKB_ENABLED"])
         else:
-            print(
-                "Warning: libxkbcommon development libraries not found. Disabling dead key composition and key label support."
-            )
+            if env["wayland"]:
+                print("Error: libxkbcommon development libraries required by Wayland not found. Aborting.")
+                sys.exit(255)
+            else:
+                print(
+                    "Warning: libxkbcommon development libraries not found. Disabling dead key composition and key label support."
+                )
     else:
         env.Append(CPPDEFINES=["XKB_ENABLED"])
 
@@ -432,6 +443,33 @@ def configure(env: "Environment"):
                 sys.exit(255)
             env.ParseConfig("pkg-config xi --cflags --libs")
         env.Append(CPPDEFINES=["X11_ENABLED"])
+
+    if env["wayland"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists libdecor-0"):
+                print("Warning: libdecor development libraries not found. Disabling client-side decorations.")
+                env["libdecor"] = False
+            else:
+                env.ParseConfig("pkg-config libdecor-0 --cflags --libs")
+            if os.system("pkg-config --exists wayland-client"):
+                print("Error: Wayland client library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config wayland-client --cflags --libs")
+            if os.system("pkg-config --exists wayland-cursor"):
+                print("Error: Wayland cursor library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config wayland-cursor --cflags --libs")
+            if os.system("pkg-config --exists wayland-egl"):
+                print("Error: Wayland EGL library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config wayland-egl --cflags --libs")
+
+        if env["libdecor"]:
+            env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
+
+        env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers/wayland/"])
+        env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
+        env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])

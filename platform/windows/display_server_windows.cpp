@@ -52,6 +52,10 @@
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
 
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1
+#define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 19
+#endif
+
 #if defined(__GNUC__)
 // Workaround GCC warning from -Wcast-function-type.
 #define GetProcAddress (void *)GetProcAddress
@@ -165,20 +169,26 @@ DisplayServer::WindowID DisplayServerWindows::_get_focused_window_or_popup() con
 void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window) {
 	use_raw_input = true;
 
-	RAWINPUTDEVICE rid[1] = {};
-	rid[0].usUsagePage = 0x01;
-	rid[0].usUsage = 0x02;
+	RAWINPUTDEVICE rid[2] = {};
+	rid[0].usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
+	rid[0].usUsage = 0x02; // HID_USAGE_GENERIC_MOUSE
 	rid[0].dwFlags = 0;
+
+	rid[1].usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
+	rid[1].usUsage = 0x06; // HID_USAGE_GENERIC_KEYBOARD
+	rid[1].dwFlags = 0;
 
 	if (p_target_window != INVALID_WINDOW_ID && windows.has(p_target_window)) {
 		// Follow the defined window
 		rid[0].hwndTarget = windows[p_target_window].hWnd;
+		rid[1].hwndTarget = windows[p_target_window].hWnd;
 	} else {
 		// Follow the keyboard focus
 		rid[0].hwndTarget = 0;
+		rid[1].hwndTarget = 0;
 	}
 
-	if (RegisterRawInputDevices(rid, 1, sizeof(rid[0])) == FALSE) {
+	if (RegisterRawInputDevices(rid, 2, sizeof(rid[0])) == FALSE) {
 		// Registration failed.
 		use_raw_input = false;
 	}
@@ -219,7 +229,142 @@ void DisplayServerWindows::tts_stop() {
 	tts->stop();
 }
 
+// Silence warning due to a COM API weirdness.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+
+class FileDialogEventHandler : public IFileDialogEvents, public IFileDialogControlEvents {
+	LONG ref_count = 1;
+	int ctl_id = 1;
+
+	HashMap<int, String> ctls;
+	Dictionary selected;
+	String root;
+
+public:
+	// IUnknown methods
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppv) {
+		static const QITAB qit[] = {
+#ifdef __MINGW32__
+			{ &__uuidof(IFileDialogEvents), static_cast<decltype(qit[0].dwOffset)>(OFFSETOFCLASS(IFileDialogEvents, FileDialogEventHandler)) },
+			{ &__uuidof(IFileDialogControlEvents), static_cast<decltype(qit[0].dwOffset)>(OFFSETOFCLASS(IFileDialogControlEvents, FileDialogEventHandler)) },
+#else
+			QITABENT(FileDialogEventHandler, IFileDialogEvents),
+			QITABENT(FileDialogEventHandler, IFileDialogControlEvents),
+#endif
+			{ 0, 0 },
+		};
+		return QISearch(this, qit, riid, ppv);
+	}
+
+	ULONG STDMETHODCALLTYPE AddRef() {
+		return InterlockedIncrement(&ref_count);
+	}
+
+	ULONG STDMETHODCALLTYPE Release() {
+		long ref = InterlockedDecrement(&ref_count);
+		if (!ref) {
+			delete this;
+		}
+		return ref;
+	}
+
+	// IFileDialogEvents methods
+	HRESULT STDMETHODCALLTYPE OnFileOk(IFileDialog *) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnFolderChange(IFileDialog *) { return S_OK; };
+
+	HRESULT STDMETHODCALLTYPE OnFolderChanging(IFileDialog *p_pfd, IShellItem *p_item) {
+		if (root.is_empty()) {
+			return S_OK;
+		}
+
+		LPWSTR lpw_path = nullptr;
+		p_item->GetDisplayName(SIGDN_FILESYSPATH, &lpw_path);
+		if (!lpw_path) {
+			return S_FALSE;
+		}
+		String path = String::utf16((const char16_t *)lpw_path).simplify_path();
+		if (!path.begins_with(root.simplify_path())) {
+			return S_FALSE;
+		}
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE OnHelp(IFileDialog *) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnSelectionChange(IFileDialog *) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnShareViolation(IFileDialog *, IShellItem *, FDE_SHAREVIOLATION_RESPONSE *) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnTypeChange(IFileDialog *pfd) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnOverwrite(IFileDialog *, IShellItem *, FDE_OVERWRITE_RESPONSE *) { return S_OK; };
+
+	// IFileDialogControlEvents methods
+	HRESULT STDMETHODCALLTYPE OnItemSelected(IFileDialogCustomize *p_pfdc, DWORD p_ctl_id, DWORD p_item_idx) {
+		if (ctls.has(p_ctl_id)) {
+			selected[ctls[p_ctl_id]] = (int)p_item_idx;
+		}
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE OnButtonClicked(IFileDialogCustomize *, DWORD) { return S_OK; };
+	HRESULT STDMETHODCALLTYPE OnCheckButtonToggled(IFileDialogCustomize *p_pfdc, DWORD p_ctl_id, BOOL p_checked) {
+		if (ctls.has(p_ctl_id)) {
+			selected[ctls[p_ctl_id]] = (bool)p_checked;
+		}
+		return S_OK;
+	}
+	HRESULT STDMETHODCALLTYPE OnControlActivating(IFileDialogCustomize *, DWORD) { return S_OK; };
+
+	Dictionary get_selected() {
+		return selected;
+	}
+
+	void set_root(const String &p_root) {
+		root = p_root;
+	}
+
+	void add_option(IFileDialogCustomize *p_pfdc, const String &p_name, const Vector<String> &p_options, int p_default) {
+		int gid = ctl_id++;
+		int cid = ctl_id++;
+
+		if (p_options.size() == 0) {
+			// Add check box.
+			p_pfdc->StartVisualGroup(gid, L"");
+			p_pfdc->AddCheckButton(cid, (LPCWSTR)p_name.utf16().get_data(), p_default);
+			p_pfdc->SetControlState(cid, CDCS_VISIBLE | CDCS_ENABLED);
+			p_pfdc->EndVisualGroup();
+			selected[p_name] = (bool)p_default;
+		} else {
+			// Add combo box.
+			p_pfdc->StartVisualGroup(gid, (LPCWSTR)p_name.utf16().get_data());
+			p_pfdc->AddComboBox(cid);
+			p_pfdc->SetControlState(cid, CDCS_VISIBLE | CDCS_ENABLED);
+			for (int i = 0; i < p_options.size(); i++) {
+				p_pfdc->AddControlItem(cid, i, (LPCWSTR)p_options[i].utf16().get_data());
+			}
+			p_pfdc->SetSelectedControlItem(cid, p_default);
+			p_pfdc->EndVisualGroup();
+			selected[p_name] = p_default;
+		}
+		ctls[cid] = p_name;
+	}
+
+	virtual ~FileDialogEventHandler(){};
+};
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+}
+
+Error DisplayServerWindows::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true);
+}
+
+Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
@@ -269,6 +414,31 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, (void **)&pfd);
 	}
 	if (SUCCEEDED(hr)) {
+		IFileDialogEvents *pfde = nullptr;
+		FileDialogEventHandler *event_handler = new FileDialogEventHandler();
+		hr = event_handler->QueryInterface(IID_PPV_ARGS(&pfde));
+
+		DWORD cookie = 0;
+		hr = pfd->Advise(pfde, &cookie);
+
+		IFileDialogCustomize *pfdc = nullptr;
+		hr = pfd->QueryInterface(IID_PPV_ARGS(&pfdc));
+
+		for (int i = 0; i < p_options.size(); i++) {
+			const Dictionary &item = p_options[i];
+			if (!item.has("name") || !item.has("values") || !item.has("default")) {
+				continue;
+			}
+			const String &name = item["name"];
+			const Vector<String> &options = item["values"];
+			int default_idx = item["default"];
+
+			event_handler->add_option(pfdc, name, options, default_idx);
+		}
+		event_handler->set_root(p_root);
+
+		pfdc->Release();
+
 		DWORD flags;
 		pfd->GetOptions(&flags);
 		if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
@@ -306,8 +476,18 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		}
 
 		hr = pfd->Show(windows[window_id].hWnd);
+		pfd->Unadvise(cookie);
+
+		Dictionary options = event_handler->get_selected();
+
+		pfde->Release();
+		event_handler->Release();
+
 		UINT index = 0;
 		pfd->GetFileTypeIndex(&index);
+		if (index > 0) {
+			index = index - 1;
+		}
 
 		if (SUCCEEDED(hr)) {
 			Vector<String> file_names;
@@ -346,30 +526,60 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 				}
 			}
 			if (!p_callback.is_null()) {
-				Variant v_result = true;
-				Variant v_files = file_names;
-				Variant v_index = index;
-				Variant ret;
-				Callable::CallError ce;
-				const Variant *args[3] = { &v_result, &v_files, &v_index };
+				if (p_options_in_cb) {
+					Variant v_result = true;
+					Variant v_files = file_names;
+					Variant v_index = index;
+					Variant v_opt = options;
+					Variant ret;
+					Callable::CallError ce;
+					const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-				p_callback.callp(args, 3, ret, ce);
-				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					p_callback.callp(args, 4, ret, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 4, ce)));
+					}
+				} else {
+					Variant v_result = true;
+					Variant v_files = file_names;
+					Variant v_index = index;
+					Variant ret;
+					Callable::CallError ce;
+					const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+					p_callback.callp(args, 3, ret, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					}
 				}
 			}
 		} else {
 			if (!p_callback.is_null()) {
-				Variant v_result = false;
-				Variant v_files = Vector<String>();
-				Variant v_index = index;
-				Variant ret;
-				Callable::CallError ce;
-				const Variant *args[3] = { &v_result, &v_files, &v_index };
+				if (p_options_in_cb) {
+					Variant v_result = false;
+					Variant v_files = Vector<String>();
+					Variant v_index = index;
+					Variant v_opt = options;
+					Variant ret;
+					Callable::CallError ce;
+					const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-				p_callback.callp(args, 3, ret, ce);
-				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					p_callback.callp(args, 4, ret, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 4, ce)));
+					}
+				} else {
+					Variant v_result = false;
+					Variant v_files = Vector<String>();
+					Variant v_index = index;
+					Variant ret;
+					Callable::CallError ce;
+					const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+					p_callback.callp(args, 3, ret, ce);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callback, args, 3, ce)));
+					}
 				}
 			}
 		}
@@ -1948,6 +2158,10 @@ bool DisplayServerWindows::window_is_focused(WindowID p_window) const {
 	return wd.window_focused;
 }
 
+DisplayServerWindows::WindowID DisplayServerWindows::get_focused_window() const {
+	return last_focused_window;
+}
+
 bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -2959,6 +3173,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_CREATE: {
+			if (is_dark_mode_supported() && dark_title_available) {
+				BOOL value = is_dark_mode();
+
+				::DwmSetWindowAttribute(windows[window_id].hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+				SendMessageW(windows[window_id].hWnd, WM_PAINT, 0, 0);
+			}
+		} break;
 		case WM_NCPAINT: {
 			if (RenderingServer::get_singleton() && (windows[window_id].borderless || (windows[window_id].fullscreen && windows[window_id].multiwindow_fs))) {
 				Color color = RenderingServer::get_singleton()->get_default_clear_color();
@@ -3091,14 +3313,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, true) == CSTR_EQUAL) {
 				if (is_dark_mode_supported() && dark_title_available) {
 					BOOL value = is_dark_mode();
-					::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+					::DwmSetWindowAttribute(windows[window_id].hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 				}
 			}
 		} break;
 		case WM_THEMECHANGED: {
 			if (is_dark_mode_supported() && dark_title_available) {
 				BOOL value = is_dark_mode();
-				::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+				::DwmSetWindowAttribute(windows[window_id].hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 			}
 		} break;
 		case WM_SYSCOMMAND: // Intercept system commands.
@@ -3137,7 +3359,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_INPUT: {
-			if (mouse_mode != MOUSE_MODE_CAPTURED || !use_raw_input) {
+			if (!use_raw_input) {
 				break;
 			}
 
@@ -3155,7 +3377,32 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			RAWINPUT *raw = (RAWINPUT *)lpb;
 
-			if (raw->header.dwType == RIM_TYPEMOUSE) {
+			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+				if (raw->data.keyboard.VKey == VK_SHIFT) {
+					// If multiple Shifts are held down at the same time,
+					// Windows natively only sends a KEYUP for the last one to be released.
+					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
+						if (GetAsyncKeyState(VK_SHIFT) < 0) {
+							// A Shift is released, but another Shift is still held
+							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+
+							KeyEvent ke;
+							ke.shift = false;
+							ke.alt = alt_mem;
+							ke.control = control_mem;
+							ke.meta = meta_mem;
+							ke.uMsg = WM_KEYUP;
+							ke.window_id = window_id;
+
+							ke.wParam = VK_SHIFT;
+							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
+							// Bit 30 -> key was previously down, bit 31 -> key is being released.
+							ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
+							key_event_buffer[key_event_pos++] = ke;
+						}
+					}
+				}
+			} else if (mouse_mode == MOUSE_MODE_CAPTURED && raw->header.dwType == RIM_TYPEMOUSE) {
 				Ref<InputEventMouseMotion> mm;
 				mm.instantiate();
 
@@ -4160,6 +4407,7 @@ void DisplayServerWindows::_process_key_events() {
 				}
 				Key key_label = keycode;
 				Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
+				KeyLocation location = KeyMappingWindows::get_location((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
 
 				static BYTE keyboard_state[256];
 				memset(keyboard_state, 0, 256);
@@ -4186,6 +4434,7 @@ void DisplayServerWindows::_process_key_events() {
 				}
 				k->set_keycode(keycode);
 				k->set_physical_keycode(physical_keycode);
+				k->set_location(location);
 				k->set_key_label(key_label);
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {
@@ -4351,7 +4600,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		if (is_dark_mode_supported() && dark_title_available) {
 			BOOL value = is_dark_mode();
-			::DwmSetWindowAttribute(wd.hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+			::DwmSetWindowAttribute(wd.hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 		}
 
 #ifdef RD_ENABLED
@@ -4489,6 +4738,7 @@ WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
 
 // UXTheme API.
 bool DisplayServerWindows::dark_title_available = false;
+bool DisplayServerWindows::use_legacy_dark_mode_before_20H1 = false;
 bool DisplayServerWindows::ux_theme_available = false;
 ShouldAppsUseDarkModePtr DisplayServerWindows::ShouldAppsUseDarkMode = nullptr;
 GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromColorSetEx = nullptr;
@@ -4610,8 +4860,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
 
 		ux_theme_available = ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
-		if (os_ver.dwBuildNumber >= 22000) {
+		if (os_ver.dwBuildNumber >= 18363) {
 			dark_title_available = true;
+			if (os_ver.dwBuildNumber < 19041) {
+				use_legacy_dark_mode_before_20H1 = true;
+			}
 		}
 	}
 

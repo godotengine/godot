@@ -9,7 +9,7 @@ mode_instanced = #define USE_ATTRIBUTES \n#define USE_INSTANCING
 
 #[specializations]
 
-DISABLE_LIGHTING = false
+DISABLE_LIGHTING = true
 USE_RGBA_SHADOWS = false
 SINGLE_INSTANCE = false
 
@@ -587,6 +587,9 @@ void main() {
 
 	if (normal_used || (using_light && bool(read_draw_data_flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(normal_texture, uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
+		if (bool(read_draw_data_flags & FLAGS_TRANSPOSE_RECT)) {
+			normal.xy = normal.yx;
+		}
 		if (bool(read_draw_data_flags & FLAGS_FLIP_H)) {
 			normal.x = -normal.x;
 		}

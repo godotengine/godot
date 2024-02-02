@@ -241,6 +241,16 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 	make_animation_instance(cd.from->name, pi);
 }
 
+float AnimationPlayer::get_current_blend_amount() {
+	Playback &c = playback;
+	float blend = 1.0;
+	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
+		Blend &b = E->get();
+		blend = blend - b.blend_left;
+	}
+	return MAX(0, blend);
+}
+
 void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 	Playback &c = playback;
 
@@ -250,16 +260,8 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 		c.seeked = false;
 	}
 
-	// First, calc all blends weight.
-	float blend = 1.0;
-	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
-		Blend &b = E->get();
-		blend = MAX(0, blend - b.blend_left);
-		b.blend_left = MAX(0, b.blend_left - Math::absf(speed_scale * p_delta) / b.blend_time);
-	}
-
 	// Second, process current animation to check if the animation end reached.
-	_process_playback_data(c.current, p_delta, blend, seeked, p_started, true);
+	_process_playback_data(c.current, p_delta, get_current_blend_amount(), seeked, p_started, true);
 
 	// Finally, if not end the animation, do blending.
 	if (end_reached) {
@@ -269,6 +271,7 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 	List<List<Blend>::Element *> to_erase;
 	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
 		Blend &b = E->get();
+		b.blend_left = MAX(0, b.blend_left - Math::absf(speed_scale * p_delta) / b.blend_time);
 		if (b.blend_left <= 0) {
 			to_erase.push_back(E);
 			b.blend_left = CMP_EPSILON; // May want to play last frame.
@@ -405,7 +408,7 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 		if (blend_time > 0) {
 			Blend b;
 			b.data = c.current;
-			b.blend_left = 1.0;
+			b.blend_left = get_current_blend_amount();
 			b.blend_time = blend_time;
 			c.blend.push_back(b);
 		} else {

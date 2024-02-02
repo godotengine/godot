@@ -653,6 +653,8 @@ void GDExtension::_unregister_extension_class(GDExtensionClassLibraryPtr p_libra
 	if (!ext->is_reloading) {
 		self->extension_classes.erase(class_name);
 	}
+
+	GDExtensionEditorHelp::remove_class(class_name);
 #else
 	self->extension_classes.erase(class_name);
 #endif
@@ -1195,5 +1197,18 @@ void GDExtensionEditorPlugins::remove_extension_class(const StringName &p_class_
 	} else {
 		extension_classes.erase(p_class_name);
 	}
+}
+
+GDExtensionEditorHelp::EditorHelpLoadXmlBufferFunc GDExtensionEditorHelp::editor_help_load_xml_buffer = nullptr;
+GDExtensionEditorHelp::EditorHelpRemoveClassFunc GDExtensionEditorHelp::editor_help_remove_class = nullptr;
+
+void GDExtensionEditorHelp::load_xml_buffer(const uint8_t *p_buffer, int p_size) {
+	ERR_FAIL_NULL(editor_help_load_xml_buffer);
+	editor_help_load_xml_buffer(p_buffer, p_size);
+}
+
+void GDExtensionEditorHelp::remove_class(const String &p_class) {
+	ERR_FAIL_NULL(editor_help_remove_class);
+	editor_help_remove_class(p_class);
 }
 #endif // TOOLS_ENABLED

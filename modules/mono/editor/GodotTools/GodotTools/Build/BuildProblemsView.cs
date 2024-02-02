@@ -516,7 +516,7 @@ namespace GodotTools.Build
 
         public override void _Ready()
         {
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var editorSettings = EditorInterface.Singleton.GetEditorSettings();
             _layout = editorSettings.GetSetting(GodotSharpEditor.Settings.ProblemsLayout).As<ProblemsLayout>();
 
             Name = "Problems".TTR();
@@ -655,7 +655,7 @@ namespace GodotTools.Build
             switch ((long)what)
             {
                 case EditorSettings.NotificationEditorSettingsChanged:
-                    var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+                    var editorSettings = EditorInterface.Singleton.GetEditorSettings();
                     _layout = editorSettings.GetSetting(GodotSharpEditor.Settings.ProblemsLayout).As<ProblemsLayout>();
                     _toggleLayoutButton.ButtonPressed = GetToggleLayoutPressedState();
                     UpdateProblemsView();

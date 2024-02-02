@@ -64,7 +64,8 @@ public:
 
 	bool get_indices();
 	void set_indices(bool p_indices);
-	// matrices need to be transformed to this
+
+	Vector<uint8_t> load_buffer_view_data(const Ref<GLTFState> p_state) const;
 };
 
 #endif // GLTF_BUFFER_VIEW_H

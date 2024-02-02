@@ -372,7 +372,18 @@ Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_
 	}
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
-	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, p_filename, p_mode, p_filters, p_callback);
+	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+}
+
+Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	WindowID window_id = last_focused_window;
+
+	if (!windows.has(window_id)) {
+		window_id = MAIN_WINDOW_ID;
+	}
+
+	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
+	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
 }
 
 #endif
@@ -2010,8 +2021,8 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 		// RevertToPointerRoot is used to make sure we don't lose all focus in case
 		// a subwindow and its parent are both destroyed.
 		if (!wd_window.no_focus && !wd_window.is_popup && wd_window.focused) {
-			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup) {
-				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToPointerRoot, CurrentTime);
+			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup && _window_focus_check()) {
+				_set_input_focus(wd_parent.x11_window, RevertToPointerRoot);
 			}
 		}
 	} else {
@@ -2891,10 +2902,15 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	XFlush(x11_display);
 }
 
+DisplayServerX11::WindowID DisplayServerX11::get_focused_window() const {
+	return last_focused_window;
+}
+
 bool DisplayServerX11::window_is_focused(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
+
 	const WindowData &wd = windows[p_window];
 
 	return wd.focused;
@@ -2945,8 +2961,8 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 		XWindowAttributes xwa;
 		XSync(x11_display, False);
 		XGetWindowAttributes(x11_display, wd.x11_xim_window, &xwa);
-		if (xwa.map_state == IsViewable) {
-			XSetInputFocus(x11_display, wd.x11_xim_window, RevertToParent, CurrentTime);
+		if (xwa.map_state == IsViewable && _window_focus_check()) {
+			_set_input_focus(wd.x11_xim_window, RevertToParent);
 		}
 		XSetICFocus(wd.xic);
 	} else {
@@ -3496,6 +3512,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				bool keypress = xkeyevent->type == KeyPress;
 				Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 				Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
+				KeyLocation key_location = KeyMappingX11::get_location(xkeyevent->keycode);
 
 				if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
 					keycode -= 'a' - 'A';
@@ -3533,6 +3550,8 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 						k->set_unicode(fix_unicode(tmp[i]));
 					}
 
+					k->set_location(key_location);
+
 					k->set_echo(false);
 
 					if (k->get_keycode() == Key::BACKTAB) {
@@ -3557,6 +3576,8 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 	Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
+
+	KeyLocation key_location = KeyMappingX11::get_location(xkeyevent->keycode);
 
 	/* Phase 3, obtain a unicode character from the keysym */
 
@@ -3657,6 +3678,9 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	if (keypress) {
 		k->set_unicode(fix_unicode(unicode));
 	}
+
+	k->set_location(key_location);
+
 	k->set_echo(p_echo);
 
 	if (k->get_keycode() == Key::BACKTAB) {
@@ -4019,6 +4043,18 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 	}
 }
 
+void DisplayServerX11::_set_input_focus(Window p_window, int p_revert_to) {
+	Window focused_window;
+	int focus_ret_state;
+	XGetInputFocus(x11_display, &focused_window, &focus_ret_state);
+
+	// Only attempt to change focus if the window isn't already focused, in order to
+	// prevent issues with Godot stealing input focus with alternative window managers.
+	if (p_window != focused_window) {
+		XSetInputFocus(x11_display, p_window, p_revert_to, CurrentTime);
+	}
+}
+
 void DisplayServerX11::_poll_events_thread(void *ud) {
 	DisplayServerX11 *display_server = static_cast<DisplayServerX11 *>(ud);
 	display_server->_poll_events();
@@ -4226,6 +4262,22 @@ bool DisplayServerX11::mouse_process_popups() {
 		}
 	}
 	return closed;
+}
+
+bool DisplayServerX11::_window_focus_check() {
+	Window focused_window;
+	int focus_ret_state;
+	XGetInputFocus(x11_display, &focused_window, &focus_ret_state);
+
+	bool has_focus = false;
+	for (const KeyValue<int, DisplayServerX11::WindowData> &wid : windows) {
+		if (wid.value.x11_window == focused_window) {
+			has_focus = true;
+			break;
+		}
+	}
+
+	return has_focus;
 }
 
 void DisplayServerX11::process_events() {
@@ -4499,8 +4551,8 @@ void DisplayServerX11::process_events() {
 				// Set focus when menu window is started.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
-				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup) {
-					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup && _window_focus_check()) {
+					_set_input_focus(wd.x11_window, RevertToPointerRoot);
 				}
 
 				// Have we failed to set fullscreen while the window was unmapped?
@@ -4675,8 +4727,8 @@ void DisplayServerX11::process_events() {
 				// Set focus when menu window is re-used.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
-				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup) {
-					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup && _window_focus_check()) {
+					_set_input_focus(wd.x11_window, RevertToPointerRoot);
 				}
 
 				_window_changed(&event);
@@ -4720,7 +4772,7 @@ void DisplayServerX11::process_events() {
 					// RevertToPointerRoot is used to make sure we don't lose all focus in case
 					// a subwindow and its parent are both destroyed.
 					if (!wd.no_focus && !wd.is_popup) {
-						XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+						_set_input_focus(wd.x11_window, RevertToPointerRoot);
 					}
 
 					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;

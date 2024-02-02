@@ -865,6 +865,8 @@ Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, con
 }
 
 void Input::action_press(const StringName &p_action, float p_strength) {
+	ERR_FAIL_COND_MSG(!InputMap::get_singleton()->has_action(p_action), InputMap::get_singleton()->suggest_actions(p_action));
+
 	// Create or retrieve existing action.
 	ActionState &action_state = action_states[p_action];
 
@@ -879,6 +881,8 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 }
 
 void Input::action_release(const StringName &p_action) {
+	ERR_FAIL_COND_MSG(!InputMap::get_singleton()->has_action(p_action), InputMap::get_singleton()->suggest_actions(p_action));
+
 	// Create or retrieve existing action.
 	ActionState &action_state = action_states[p_action];
 	action_state.cache.pressed = 0;

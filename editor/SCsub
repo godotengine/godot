@@ -104,19 +104,6 @@ if env.editor_build:
         env.Run(editor_builders.make_doc_translations_header, "Generating translations header."),
     )
 
-    # Fonts
-    flist = glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.ttf")
-    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.otf"))
-    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.woff"))
-    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.woff2"))
-    flist.sort()
-    env.Depends("#editor/builtin_fonts.gen.h", flist)
-    env.CommandNoCache(
-        "#editor/builtin_fonts.gen.h",
-        flist,
-        env.Run(editor_builders.make_fonts_header, "Generating builtin fonts header."),
-    )
-
     env.add_source_files(env.editor_sources, "*.cpp")
     env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
 
@@ -126,6 +113,8 @@ if env.editor_build:
     SConscript("icons/SCsub")
     SConscript("import/SCsub")
     SConscript("plugins/SCsub")
+    SConscript("project_manager/SCsub")
+    SConscript("themes/SCsub")
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])

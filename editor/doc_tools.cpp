@@ -307,21 +307,21 @@ void DocTools::merge_from(const DocTools &p_data) {
 	}
 }
 
-void DocTools::remove_from(const DocTools &p_data) {
-	for (const KeyValue<String, DocData::ClassDoc> &E : p_data.class_list) {
-		if (class_list.has(E.key)) {
-			class_list.erase(E.key);
-		}
-	}
-}
-
 void DocTools::add_doc(const DocData::ClassDoc &p_class_doc) {
 	ERR_FAIL_COND(p_class_doc.name.is_empty());
 	class_list[p_class_doc.name] = p_class_doc;
+	inheriting[p_class_doc.inherits].insert(p_class_doc.name);
 }
 
 void DocTools::remove_doc(const String &p_class_name) {
 	ERR_FAIL_COND(p_class_name.is_empty() || !class_list.has(p_class_name));
+	const String &inherits = class_list[p_class_name].inherits;
+	if (inheriting.has(inherits)) {
+		inheriting[inherits].erase(p_class_name);
+		if (inheriting[inherits].is_empty()) {
+			inheriting.erase(inherits);
+		}
+	}
 	class_list.erase(p_class_name);
 }
 
@@ -390,6 +390,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			DocData::ClassDoc &c = class_list[cname];
 			c.name = cname;
 			c.inherits = ClassDB::get_parent_class(name);
+
+			inheriting[c.inherits].insert(cname);
 
 			List<PropertyInfo> properties;
 			List<PropertyInfo> own_properties;
@@ -632,7 +634,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			// Theme items.
 			{
 				List<ThemeDB::ThemeItemBind> theme_items;
-				ThemeDB::get_singleton()->get_class_own_items(cname, &theme_items);
+				ThemeDB::get_singleton()->get_class_items(cname, &theme_items);
 				Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
 
 				for (const ThemeDB::ThemeItemBind &theme_item : theme_items) {
@@ -692,6 +694,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		// it's not a ClassDB-exposed class.
 		class_list["Variant"] = DocData::ClassDoc();
 		class_list["Variant"].name = "Variant";
+		inheriting[""].insert("Variant");
 	}
 
 	// Add Variant data types.
@@ -708,6 +711,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		class_list[cname] = DocData::ClassDoc();
 		DocData::ClassDoc &c = class_list[cname];
 		c.name = cname;
+
+		inheriting[""].insert(cname);
 
 		Callable::CallError cerror;
 		Variant v;
@@ -870,6 +875,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		DocData::ClassDoc &c = class_list[cname];
 		c.name = cname;
 
+		inheriting[""].insert(cname);
+
 		// Global constants.
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			DocData::ConstantDoc cd;
@@ -952,6 +959,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			String cname = "@" + lang->get_name();
 			DocData::ClassDoc c;
 			c.name = cname;
+
+			inheriting[""].insert(cname);
 
 			// Get functions.
 			List<MethodInfo> minfo;
@@ -1194,6 +1203,8 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 		if (parser->has_attribute("inherits")) {
 			c.inherits = parser->get_named_attribute_value("inherits");
 		}
+
+		inheriting[c.inherits].insert(name);
 
 		if (parser->has_attribute("is_deprecated")) {
 			c.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
@@ -1633,6 +1644,18 @@ Error DocTools::load_compressed(const uint8_t *p_data, int p_compressed_size, in
 
 	Ref<XMLParser> parser = memnew(XMLParser);
 	Error err = parser->open_buffer(data);
+	if (err) {
+		return err;
+	}
+
+	_load(parser);
+
+	return OK;
+}
+
+Error DocTools::load_xml(const uint8_t *p_data, int p_size) {
+	Ref<XMLParser> parser = memnew(XMLParser);
+	Error err = parser->_open_buffer(p_data, p_size);
 	if (err) {
 		return err;
 	}

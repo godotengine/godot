@@ -614,6 +614,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);
+	String prevalidate_child_name(Node *p_child, StringName p_name);
 #endif
 	static String adjust_name_casing(const String &p_name);
 
@@ -636,7 +637,6 @@ public:
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
 	virtual PackedStringArray get_configuration_warnings() const;
-	String get_configuration_warnings_as_string() const;
 
 	void update_configuration_warnings();
 

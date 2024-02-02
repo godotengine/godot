@@ -15,6 +15,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_parameter" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Return the current value of a playback parameter by name (see [method AudioStream._get_parameter_list]).
+			</description>
+		</method>
 		<method name="_get_playback_position" qualifiers="virtual const">
 			<return type="float" />
 			<description>
@@ -37,6 +44,14 @@
 			<return type="void" />
 			<param index="0" name="position" type="float" />
 			<description>
+			</description>
+		</method>
+		<method name="_set_parameter" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Set the current value of a playback parameter by name (see [method AudioStream._get_parameter_list]).
 			</description>
 		</method>
 		<method name="_start" qualifiers="virtual">

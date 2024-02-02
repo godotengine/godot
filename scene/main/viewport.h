@@ -276,7 +276,6 @@ private:
 	Ref<World2D> world_2d;
 
 	StringName input_group;
-	StringName gui_input_group;
 	StringName shortcut_input_group;
 	StringName unhandled_input_group;
 	StringName unhandled_key_input_group;

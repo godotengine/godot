@@ -30,9 +30,13 @@
 
 #include "file_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/option_button.h"
 #include "scene/theme/theme_db.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;
@@ -56,20 +60,30 @@ void FileDialog::_focus_file_text() {
 }
 
 void FileDialog::popup(const Rect2i &p_rect) {
+	_update_option_controls();
+
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
 		ConfirmationDialog::popup(p_rect);
 	}
 #endif
 
-	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
-		DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+		String root;
+		if (access == ACCESS_RESOURCES) {
+			root = ProjectSettings::get_singleton()->get_resource_path();
+		} else if (access == ACCESS_USERDATA) {
+			root = OS::get_singleton()->get_user_data_dir();
+		}
+		DisplayServer::get_singleton()->file_dialog_with_options_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb));
 	} else {
 		ConfirmationDialog::popup(p_rect);
 	}
 }
 
 void FileDialog::set_visible(bool p_visible) {
+	_update_option_controls();
+
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
 		ConfirmationDialog::set_visible(p_visible);
@@ -77,23 +91,52 @@ void FileDialog::set_visible(bool p_visible) {
 	}
 #endif
 
-	if (access == ACCESS_FILESYSTEM && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		if (p_visible) {
-			DisplayServer::get_singleton()->file_dialog_show(get_title(), dir->get_text(), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+			String root;
+			if (access == ACCESS_RESOURCES) {
+				root = ProjectSettings::get_singleton()->get_resource_path();
+			} else if (access == ACCESS_USERDATA) {
+				root = OS::get_singleton()->get_user_data_dir();
+			}
+			DisplayServer::get_singleton()->file_dialog_with_options_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb));
 		}
 	} else {
 		ConfirmationDialog::set_visible(p_visible);
 	}
 }
 
-void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter) {
+void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options) {
 	if (p_ok) {
 		if (p_files.size() > 0) {
-			const String &f = p_files[0];
+			Vector<String> files = p_files;
+			if (access != ACCESS_FILESYSTEM) {
+				for (String &file_name : files) {
+					file_name = ProjectSettings::get_singleton()->localize_path(file_name);
+				}
+			}
+			String f = files[0];
 			if (mode == FILE_MODE_OPEN_FILES) {
-				emit_signal(SNAME("files_selected"), p_files);
+				emit_signal(SNAME("files_selected"), files);
 			} else {
 				if (mode == FILE_MODE_SAVE_FILE) {
+					if (p_filter >= 0 && p_filter < filters.size()) {
+						bool valid = false;
+						String flt = filters[p_filter].get_slice(";", 0);
+						int filter_slice_count = flt.get_slice_count(",");
+						for (int j = 0; j < filter_slice_count; j++) {
+							String str = (flt.get_slice(",", j).strip_edges());
+							if (f.match(str)) {
+								valid = true;
+								break;
+							}
+						}
+
+						if (!valid && filter_slice_count > 0) {
+							String str = (flt.get_slice(",", 0).strip_edges());
+							f += str.substr(1, str.length() - 1);
+						}
+					}
 					emit_signal(SNAME("file_selected"), f);
 				} else if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 					emit_signal(SNAME("file_selected"), f);
@@ -103,7 +146,8 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int
 			}
 			file->set_text(f);
 			dir->set_text(f.get_base_dir());
-			_filter_selected(p_filter);
+			selected_options = p_selected_options;
+			filter->select(p_filter);
 		}
 	} else {
 		file->set_text("");
@@ -1007,6 +1051,212 @@ void FileDialog::_update_drives(bool p_select) {
 
 bool FileDialog::default_show_hidden_files = false;
 
+TypedArray<Dictionary> FileDialog::_get_options() const {
+	TypedArray<Dictionary> out;
+	for (const FileDialog::Option &opt : options) {
+		Dictionary dict;
+		dict["name"] = opt.name;
+		dict["values"] = opt.values;
+		dict["default"] = (int)selected_options.get(opt.name, opt.default_idx);
+		out.push_back(dict);
+	}
+	return out;
+}
+
+void FileDialog::_option_changed_checkbox_toggled(bool p_pressed, const String &p_name) {
+	if (selected_options.has(p_name)) {
+		selected_options[p_name] = p_pressed;
+	}
+}
+
+void FileDialog::_option_changed_item_selected(int p_idx, const String &p_name) {
+	if (selected_options.has(p_name)) {
+		selected_options[p_name] = p_idx;
+	}
+}
+
+void FileDialog::_update_option_controls() {
+	if (!options_dirty) {
+		return;
+	}
+	options_dirty = false;
+
+	while (grid_options->get_child_count(false) > 0) {
+		Node *child = grid_options->get_child(0);
+		grid_options->remove_child(child);
+		child->queue_free();
+	}
+	selected_options.clear();
+
+	for (const FileDialog::Option &opt : options) {
+		Label *lbl = memnew(Label);
+		lbl->set_text(opt.name);
+		grid_options->add_child(lbl);
+		if (opt.values.is_empty()) {
+			CheckBox *cb = memnew(CheckBox);
+			cb->set_pressed(opt.default_idx);
+			grid_options->add_child(cb);
+			cb->connect("toggled", callable_mp(this, &FileDialog::_option_changed_checkbox_toggled).bind(opt.name));
+			selected_options[opt.name] = (bool)opt.default_idx;
+		} else {
+			OptionButton *ob = memnew(OptionButton);
+			for (const String &val : opt.values) {
+				ob->add_item(val);
+			}
+			ob->select(opt.default_idx);
+			grid_options->add_child(ob);
+			ob->connect("item_selected", callable_mp(this, &FileDialog::_option_changed_item_selected).bind(opt.name));
+			selected_options[opt.name] = opt.default_idx;
+		}
+	}
+}
+
+Dictionary FileDialog::get_selected_options() const {
+	return selected_options;
+}
+
+String FileDialog::get_option_name(int p_option) const {
+	ERR_FAIL_INDEX_V(p_option, options.size(), String());
+	return options[p_option].name;
+}
+
+Vector<String> FileDialog::get_option_values(int p_option) const {
+	ERR_FAIL_INDEX_V(p_option, options.size(), Vector<String>());
+	return options[p_option].values;
+}
+
+int FileDialog::get_option_default(int p_option) const {
+	ERR_FAIL_INDEX_V(p_option, options.size(), -1);
+	return options[p_option].default_idx;
+}
+
+void FileDialog::set_option_name(int p_option, const String &p_name) {
+	if (p_option < 0) {
+		p_option += get_option_count();
+	}
+	ERR_FAIL_INDEX(p_option, options.size());
+	options.write[p_option].name = p_name;
+	options_dirty = true;
+	if (is_visible()) {
+		_update_option_controls();
+	}
+}
+
+void FileDialog::set_option_values(int p_option, const Vector<String> &p_values) {
+	if (p_option < 0) {
+		p_option += get_option_count();
+	}
+	ERR_FAIL_INDEX(p_option, options.size());
+	options.write[p_option].values = p_values;
+	if (p_values.is_empty()) {
+		options.write[p_option].default_idx = CLAMP(options[p_option].default_idx, 0, 1);
+	} else {
+		options.write[p_option].default_idx = CLAMP(options[p_option].default_idx, 0, options[p_option].values.size() - 1);
+	}
+	options_dirty = true;
+	if (is_visible()) {
+		_update_option_controls();
+	}
+}
+
+void FileDialog::set_option_default(int p_option, int p_index) {
+	if (p_option < 0) {
+		p_option += get_option_count();
+	}
+	ERR_FAIL_INDEX(p_option, options.size());
+	if (options[p_option].values.is_empty()) {
+		options.write[p_option].default_idx = CLAMP(p_index, 0, 1);
+	} else {
+		options.write[p_option].default_idx = CLAMP(p_index, 0, options[p_option].values.size() - 1);
+	}
+	options_dirty = true;
+	if (is_visible()) {
+		_update_option_controls();
+	}
+}
+
+void FileDialog::add_option(const String &p_name, const Vector<String> &p_values, int p_index) {
+	Option opt;
+	opt.name = p_name;
+	opt.values = p_values;
+	if (opt.values.is_empty()) {
+		opt.default_idx = CLAMP(p_index, 0, 1);
+	} else {
+		opt.default_idx = CLAMP(p_index, 0, opt.values.size() - 1);
+	}
+	options.push_back(opt);
+	options_dirty = true;
+	if (is_visible()) {
+		_update_option_controls();
+	}
+}
+
+void FileDialog::set_option_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	int prev_size = options.size();
+
+	if (prev_size == p_count) {
+		return;
+	}
+	options.resize(p_count);
+
+	options_dirty = true;
+	notify_property_list_changed();
+	if (is_visible()) {
+		_update_option_controls();
+	}
+}
+
+int FileDialog::get_option_count() const {
+	return options.size();
+}
+
+bool FileDialog::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("option_") && components[0].trim_prefix("option_").is_valid_int()) {
+		int item_index = components[0].trim_prefix("option_").to_int();
+		String property = components[1];
+		if (property == "name") {
+			set_option_name(item_index, p_value);
+			return true;
+		} else if (property == "values") {
+			set_option_values(item_index, p_value);
+			return true;
+		} else if (property == "default") {
+			set_option_default(item_index, p_value);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool FileDialog::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("option_") && components[0].trim_prefix("option_").is_valid_int()) {
+		int item_index = components[0].trim_prefix("option_").to_int();
+		String property = components[1];
+		if (property == "name") {
+			r_ret = get_option_name(item_index);
+			return true;
+		} else if (property == "values") {
+			r_ret = get_option_values(item_index);
+			return true;
+		} else if (property == "default") {
+			r_ret = get_option_default(item_index);
+			return true;
+		}
+	}
+	return false;
+}
+
+void FileDialog::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < options.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("option_%d/name", i)));
+		p_list->push_back(PropertyInfo(Variant::PACKED_STRING_ARRAY, vformat("option_%d/values", i)));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("option_%d/default", i)));
+	}
+}
+
 void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &FileDialog::_cancel_pressed);
 
@@ -1014,6 +1264,16 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &FileDialog::add_filter, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("set_filters", "filters"), &FileDialog::set_filters);
 	ClassDB::bind_method(D_METHOD("get_filters"), &FileDialog::get_filters);
+	ClassDB::bind_method(D_METHOD("get_option_name", "option"), &FileDialog::get_option_name);
+	ClassDB::bind_method(D_METHOD("get_option_values", "option"), &FileDialog::get_option_values);
+	ClassDB::bind_method(D_METHOD("get_option_default", "option"), &FileDialog::get_option_default);
+	ClassDB::bind_method(D_METHOD("set_option_name", "option", "name"), &FileDialog::set_option_name);
+	ClassDB::bind_method(D_METHOD("set_option_values", "option", "values"), &FileDialog::set_option_values);
+	ClassDB::bind_method(D_METHOD("set_option_default", "option", "index"), &FileDialog::set_option_default);
+	ClassDB::bind_method(D_METHOD("set_option_count", "count"), &FileDialog::set_option_count);
+	ClassDB::bind_method(D_METHOD("get_option_count"), &FileDialog::get_option_count);
+	ClassDB::bind_method(D_METHOD("add_option", "name", "values", "index"), &FileDialog::add_option);
+	ClassDB::bind_method(D_METHOD("get_selected_options"), &FileDialog::get_selected_options);
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &FileDialog::get_current_dir);
 	ClassDB::bind_method(D_METHOD("get_current_file"), &FileDialog::get_current_file);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &FileDialog::get_current_path);
@@ -1043,6 +1303,7 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User Data,File System"), "set_access", "get_access");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "root_subfolder"), "set_root_subfolder", "get_root_subfolder");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
+	ADD_ARRAY_COUNT("Options", "option_count", "set_option_count", "get_option_count", "option_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_native_dialog"), "set_use_native_dialog", "get_use_native_dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
@@ -1194,6 +1455,11 @@ FileDialog::FileDialog() {
 	filter->set_clip_text(true); // too many extensions overflows it
 	file_box->add_child(filter);
 	vbox->add_child(file_box);
+
+	grid_options = memnew(GridContainer);
+	grid_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	grid_options->set_columns(2);
+	vbox->add_child(grid_options);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	_update_drives();

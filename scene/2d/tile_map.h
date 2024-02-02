@@ -71,17 +71,16 @@ private:
 	VisibilityMode navigation_visibility_mode = VISIBILITY_MODE_DEFAULT;
 
 	// Layers.
-	LocalVector<Ref<TileMapLayer>> layers;
-	Ref<TileMapLayer> default_layer; // Dummy layer to fetch default values.
+	LocalVector<TileMapLayer *> layers;
+	TileMapLayer *default_layer; // Dummy layer to fetch default values.
 	int selected_layer = -1;
 	bool pending_update = false;
 
+	// Transforms for collision_animatable.
 	Transform2D last_valid_transform;
 	Transform2D new_transform;
 
 	void _tile_set_changed();
-
-	void _update_notify_local_transform();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -97,6 +96,8 @@ protected:
 	Rect2i _get_used_rect_bind_compat_78328();
 	void _set_quadrant_size_compat_81070(int p_quadrant_size);
 	int _get_quadrant_size_compat_81070() const;
+	VisibilityMode _get_collision_visibility_mode_bind_compat_87115();
+	VisibilityMode _get_navigation_visibility_mode_bind_compat_87115();
 
 	static void _bind_compatibility_methods();
 #endif
@@ -150,15 +151,15 @@ public:
 	void set_selected_layer(int p_layer_id); // For editor use.
 	int get_selected_layer() const;
 
-	void set_collision_animatable(bool p_enabled);
+	void set_collision_animatable(bool p_collision_animatable);
 	bool is_collision_animatable() const;
 
 	// Debug visibility modes.
 	void set_collision_visibility_mode(VisibilityMode p_show_collision);
-	VisibilityMode get_collision_visibility_mode();
+	VisibilityMode get_collision_visibility_mode() const;
 
 	void set_navigation_visibility_mode(VisibilityMode p_show_navigation);
-	VisibilityMode get_navigation_visibility_mode();
+	VisibilityMode get_navigation_visibility_mode() const;
 
 	// Cells accessors.
 	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
@@ -192,7 +193,6 @@ public:
 
 	Vector2 map_to_local(const Vector2i &p_pos) const;
 	Vector2i local_to_map(const Vector2 &p_pos) const;
-
 	bool is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const;
 	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
 

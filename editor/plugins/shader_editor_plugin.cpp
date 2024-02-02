@@ -32,7 +32,6 @@
 
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
@@ -40,6 +39,7 @@
 #include "editor/plugins/text_shader_editor.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/shader_create_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"
@@ -643,19 +643,20 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 		file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(i), true);
 	}
 
-	if (window_wrapper->is_window_available()) {
-		Control *padding = memnew(Control);
-		padding->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		menu_hb->add_child(padding);
+	Control *padding = memnew(Control);
+	padding->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	menu_hb->add_child(padding);
 
-		make_floating = memnew(ScreenSelect);
-		make_floating->set_flat(true);
+	make_floating = memnew(ScreenSelect);
+	make_floating->set_flat(true);
+	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
+	if (!make_floating->is_disabled()) {
+		// Override default ScreenSelect tooltip if multi-window support is available.
 		make_floating->set_tooltip_text(TTR("Make the shader editor floating."));
-		make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
-
-		menu_hb->add_child(make_floating);
-		window_wrapper->connect("window_visibility_changed", callable_mp(this, &ShaderEditorPlugin::_window_changed));
 	}
+
+	menu_hb->add_child(make_floating);
+	window_wrapper->connect("window_visibility_changed", callable_mp(this, &ShaderEditorPlugin::_window_changed));
 
 	shader_list = memnew(ItemList);
 	shader_list->set_auto_translate(false);

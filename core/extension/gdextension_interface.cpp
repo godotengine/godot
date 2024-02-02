@@ -42,6 +42,8 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 
+#include <string.h>
+
 class CallableCustomExtension : public CallableCustom {
 	void *userdata;
 	void *token;
@@ -1373,6 +1375,19 @@ static void gdextension_editor_remove_plugin(GDExtensionConstStringNamePtr p_cla
 #endif
 }
 
+static void gdextension_editor_help_load_xml_from_utf8_chars_and_len(const char *p_data, GDExtensionInt p_size) {
+#ifdef TOOLS_ENABLED
+	GDExtensionEditorHelp::load_xml_buffer((const uint8_t *)p_data, p_size);
+#endif
+}
+
+static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data) {
+#ifdef TOOLS_ENABLED
+	size_t len = strlen(p_data);
+	gdextension_editor_help_load_xml_from_utf8_chars_and_len(p_data, len);
+#endif
+}
+
 #define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr)&gdextension_##m_name)
 
 void gdextension_setup_interface() {
@@ -1516,6 +1531,8 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(classdb_get_class_tag);
 	REGISTER_INTERFACE_FUNC(editor_add_plugin);
 	REGISTER_INTERFACE_FUNC(editor_remove_plugin);
+	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars);
+	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars_and_len);
 }
 
 #undef REGISTER_INTERFACE_FUNCTION

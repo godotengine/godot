@@ -35,9 +35,9 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -190,6 +190,10 @@ void EditorLog::_load_state() {
 	show_search_button->set_pressed(show_search);
 
 	is_loading_state = false;
+}
+
+void EditorLog::_meta_clicked(const String &p_meta) {
+	OS::get_singleton()->shell_open(p_meta);
 }
 
 void EditorLog::_clear_request() {
@@ -407,6 +411,7 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	log->set_deselect_on_focus_loss_enabled(false);
+	log->connect("meta_clicked", callable_mp(this, &EditorLog::_meta_clicked));
 	vb_left->add_child(log);
 
 	// Search box

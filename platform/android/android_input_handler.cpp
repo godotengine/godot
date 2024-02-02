@@ -124,6 +124,7 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 	ev->set_physical_keycode(physical_keycode);
 	ev->set_key_label(fix_key_label(p_key_label, keycode));
 	ev->set_unicode(fix_unicode(unicode));
+	ev->set_location(godot_location_from_android_code(p_physical_keycode));
 	ev->set_pressed(p_pressed);
 	ev->set_echo(p_echo);
 

@@ -1214,6 +1214,11 @@ String Node::validate_child_name(Node *p_child) {
 	_generate_serial_child_name(p_child, name);
 	return name;
 }
+
+String Node::prevalidate_child_name(Node *p_child, StringName p_name) {
+	_generate_serial_child_name(p_child, p_name);
+	return p_name;
+}
 #endif
 
 String Node::adjust_name_casing(const String &p_name) {
@@ -2321,8 +2326,14 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 
 Ref<Tween> Node::create_tween() {
 	ERR_THREAD_GUARD_V(Ref<Tween>());
-	ERR_FAIL_NULL_V_MSG(data.tree, nullptr, "Can't create Tween when not inside scene tree.");
-	Ref<Tween> tween = get_tree()->create_tween();
+
+	SceneTree *tree = data.tree;
+	if (!tree) {
+		tree = SceneTree::get_singleton();
+	}
+	ERR_FAIL_NULL_V_MSG(tree, Ref<Tween>(), "No available SceneTree to create the Tween.");
+
+	Ref<Tween> tween = tree->create_tween();
 	tween->bind_node(this);
 	return tween;
 }
@@ -3088,6 +3099,10 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
 	}
+	if (p_node->is_unique_name_in_owner() && p_node->get_owner() == p_base) {
+		String n = "%" + p_node->get_name();
+		r_options->push_back(n.quote());
+	}
 	String n = p_base->get_path_to(p_node);
 	r_options->push_back(n.quote());
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -3125,20 +3140,6 @@ PackedStringArray Node::get_configuration_warnings() const {
 	}
 
 	return ret;
-}
-
-String Node::get_configuration_warnings_as_string() const {
-	PackedStringArray warnings = get_configuration_warnings();
-	String all_warnings;
-	for (int i = 0; i < warnings.size(); i++) {
-		if (i > 0) {
-			all_warnings += "\n\n";
-		}
-		// Format as a bullet point list to make multiple warnings easier to distinguish
-		// from each other.
-		all_warnings += String::utf8("•  ") + warnings[i];
-	}
-	return all_warnings;
 }
 
 void Node::update_configuration_warnings() {

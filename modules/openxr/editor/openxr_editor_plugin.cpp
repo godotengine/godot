@@ -53,6 +53,11 @@ void OpenXREditorPlugin::make_visible(bool p_visible) {
 OpenXREditorPlugin::OpenXREditorPlugin() {
 	action_map_editor = memnew(OpenXRActionMapEditor);
 	EditorNode::get_singleton()->add_bottom_panel_item(TTR("OpenXR Action Map"), action_map_editor);
+
+#ifndef ANDROID_ENABLED
+	select_runtime = memnew(OpenXRSelectRuntime);
+	add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
+#endif
 }
 
 OpenXREditorPlugin::~OpenXREditorPlugin() {

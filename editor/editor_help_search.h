@@ -67,6 +67,16 @@ class EditorHelpSearch : public ConfirmationDialog {
 	class Runner;
 	Ref<Runner> search;
 
+	struct TreeCache {
+		HashMap<String, TreeItem *> item_cache;
+
+		void clear();
+
+		~TreeCache() {
+			clear();
+		}
+	} tree_cache;
+
 	void _update_results();
 
 	void _search_box_gui_input(const Ref<InputEvent> &p_event);
@@ -117,6 +127,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 
 	Control *ui_service = nullptr;
 	Tree *results_tree = nullptr;
+	TreeCache *tree_cache = nullptr;
 	String term;
 	Vector<String> terms;
 	int search_flags;
@@ -124,6 +135,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	Color disabled_color;
 
 	HashMap<String, DocData::ClassDoc>::Iterator iterator_doc;
+	LocalVector<RBSet<String, NaturalNoCaseComparator>::Element *> iterator_stack;
 	HashMap<String, ClassMatch> matches;
 	HashMap<String, ClassMatch>::Iterator iterator_match;
 	TreeItem *root_item = nullptr;
@@ -132,6 +144,9 @@ class EditorHelpSearch::Runner : public RefCounted {
 	float match_highest_score = 0;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
+
+	void _populate_cache();
+	bool _find_or_create_item(TreeItem *p_parent, const String &p_item_meta, TreeItem *&r_item);
 
 	bool _slice();
 	bool _phase_match_classes_init();
@@ -161,7 +176,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 public:
 	bool work(uint64_t slot = 100000);
 
-	Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags);
+	Runner(Control *p_icon_service, Tree *p_results_tree, TreeCache *p_tree_cache, const String &p_term, int p_search_flags);
 };
 
 #endif // EDITOR_HELP_SEARCH_H

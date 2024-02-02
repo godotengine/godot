@@ -143,7 +143,22 @@
 				[b]Note:[/b] This method suppresses any other connection request signals apart from [signal connection_drag_ended].
 			</description>
 		</method>
-		<method name="get_connection_line">
+		<method name="get_closest_connection_at_point" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="max_distance" type="float" default="4.0" />
+			<description>
+				Returns the closest connection to the given point in screen space. If no connection is found within [param max_distance] pixels, an empty [Dictionary] is returned.
+				A connection consists in a structure of the form [code]{ from_port: 0, from_node: "GraphNode name 0", to_port: 1, to_node: "GraphNode name 1" }[/code].
+				For example, getting a connection at a given mouse position can be achieved like this:
+				[codeblocks]
+				[gdscript]
+				var connection = get_closest_connection_at_point(mouse_event.get_position())
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_connection_line" qualifiers="const">
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_node" type="Vector2" />
 			<param index="1" name="to_node" type="Vector2" />
@@ -154,7 +169,14 @@
 		<method name="get_connection_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>
-				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from_node: "GraphNode name 0", to_port: 1, to_node: "GraphNode name 1" }[/code].
+				Returns an [Array] containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from_node: "GraphNode name 0", to_port: 1, to_node: "GraphNode name 1" }[/code].
+			</description>
+		</method>
+		<method name="get_connections_intersecting_with_rect" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="rect" type="Rect2" />
+			<description>
+				Returns an [Array] containing the list of connections that intersect with the given [Rect2]. A connection consists in a structure of the form [code]{ from_port: 0, from_node: "GraphNode name 0", to_port: 1, to_node: "GraphNode name 1" }[/code].
 			</description>
 		</method>
 		<method name="get_menu_hbox">
@@ -233,7 +255,7 @@
 		<member name="connection_lines_curvature" type="float" setter="set_connection_lines_curvature" getter="get_connection_lines_curvature" default="0.5">
 			The curvature of the lines between the nodes. 0 results in straight lines.
 		</member>
-		<member name="connection_lines_thickness" type="float" setter="set_connection_lines_thickness" getter="get_connection_lines_thickness" default="2.0">
+		<member name="connection_lines_thickness" type="float" setter="set_connection_lines_thickness" getter="get_connection_lines_thickness" default="4.0">
 			The thickness of the lines between the nodes.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
@@ -301,7 +323,7 @@
 	<signals>
 		<signal name="begin_node_move">
 			<description>
-				Emitted at the beginning of a GraphNode movement.
+				Emitted at the beginning of a [GraphElement]'s movement.
 			</description>
 		</signal>
 		<signal name="connection_drag_ended">
@@ -344,13 +366,14 @@
 		</signal>
 		<signal name="copy_nodes_request">
 			<description>
-				Emitted when the user presses [kbd]Ctrl + C[/kbd].
+				Emitted when this [GraphEdit] captures a [code]ui_copy[/code] action ([kbd]Ctrl + C[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be copied.
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
 			<param index="0" name="nodes" type="StringName[]" />
 			<description>
-				Emitted when attempting to remove a GraphNode from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
+				Emitted when this [GraphEdit] captures a [code]ui_graph_delete[/code] action ([kbd]Delete[/kbd] by default).
+				[param nodes] is an array of node names that should be removed. These usually include all selected nodes.
 			</description>
 		</signal>
 		<signal name="disconnection_request">
@@ -364,28 +387,29 @@
 		</signal>
 		<signal name="duplicate_nodes_request">
 			<description>
-				Emitted when a GraphNode is attempted to be duplicated in the GraphEdit.
+				Emitted when this [GraphEdit] captures a [code]ui_graph_duplicate[/code] action ([kbd]Ctrl + D[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be duplicated.
 			</description>
 		</signal>
 		<signal name="end_node_move">
 			<description>
-				Emitted at the end of a GraphNode movement.
+				Emitted at the end of a [GraphElement]'s movement.
 			</description>
 		</signal>
 		<signal name="node_deselected">
 			<param index="0" name="node" type="Node" />
 			<description>
+				Emitted when the given [GraphElement] node is deselected.
 			</description>
 		</signal>
 		<signal name="node_selected">
 			<param index="0" name="node" type="Node" />
 			<description>
-				Emitted when a GraphNode is selected.
+				Emitted when the given [GraphElement] node is selected.
 			</description>
 		</signal>
 		<signal name="paste_nodes_request">
 			<description>
-				Emitted when the user presses [kbd]Ctrl + V[/kbd].
+				Emitted when this [GraphEdit] captures a [code]ui_paste[/code] action ([kbd]Ctrl + V[/kbd] by default). In general, this signal indicates that previously copied [GraphElement]s should be pasted.
 			</description>
 		</signal>
 		<signal name="popup_request">
@@ -417,7 +441,16 @@
 	</constants>
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			Color of the connection's activity (see [method set_connection_activity]).
+			Color the connection line is interpolated to based on the activity value of a connection (see [method set_connection_activity]).
+		</theme_item>
+		<theme_item name="connection_hover_tint_color" data_type="color" type="Color" default="Color(0, 0, 0, 0.3)">
+			Color which is blended with the connection line when the mouse is hovering over it.
+		</theme_item>
+		<theme_item name="connection_rim_color" data_type="color" type="Color" default="Color(0.1, 0.1, 0.1, 0.6)">
+			Color of the rim around each connection line used for making intersecting lines more distinguishable.
+		</theme_item>
+		<theme_item name="connection_valid_target_tint_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.4)">
+			Color which is blended with the connection line when the currently dragged connection is hovering over a valid target port.
 		</theme_item>
 		<theme_item name="grid_major" data_type="color" type="Color" default="Color(1, 1, 1, 0.2)">
 			Color of major grid lines/dots.

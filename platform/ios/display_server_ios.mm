@@ -247,7 +247,7 @@ void DisplayServerIOS::touches_canceled(int p_idx) {
 
 // MARK: Keyboard
 
-void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, NSInteger p_modifier, bool p_pressed) {
+void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, NSInteger p_modifier, bool p_pressed, KeyLocation p_location) {
 	Ref<InputEventKey> ev;
 	ev.instantiate();
 	ev->set_echo(false);
@@ -270,6 +270,7 @@ void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_ph
 	ev->set_key_label(p_unshifted);
 	ev->set_physical_keycode(p_physical);
 	ev->set_unicode(fix_unicode(p_char));
+	ev->set_location(p_location);
 	perform_event(ev);
 }
 

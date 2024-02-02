@@ -530,6 +530,13 @@ public:
 	Vector<Vector2> get_tile_shape_polygon();
 	void draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform, Color p_color, bool p_filled = false, Ref<Texture2D> p_texture = Ref<Texture2D>());
 
+	// Used by TileMap/TileMapLayer
+	Vector2 map_to_local(const Vector2i &p_pos) const;
+	Vector2i local_to_map(const Vector2 &p_pos) const;
+	bool is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const;
+	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
+	Vector2i map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern);
+
 	Vector<Point2> get_terrain_polygon(int p_terrain_set);
 	Vector<Point2> get_terrain_peering_bit_polygon(int p_terrain_set, TileSet::CellNeighbor p_bit);
 	void draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, const TileData *p_tile_data);

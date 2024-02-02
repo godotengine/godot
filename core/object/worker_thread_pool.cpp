@@ -47,6 +47,7 @@ WorkerThreadPool *WorkerThreadPool::singleton = nullptr;
 thread_local CommandQueueMT *WorkerThreadPool::flushing_cmd_queue = nullptr;
 
 void WorkerThreadPool::_process_task(Task *p_task) {
+#ifdef THREADS_ENABLED
 	int pool_thread_index = thread_ids[Thread::get_caller_id()];
 	ThreadData &curr_thread = threads[pool_thread_index];
 	Task *prev_task = nullptr; // In case this is recursively called.
@@ -69,6 +70,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		curr_thread.current_task = p_task;
 		task_mutex.unlock();
 	}
+#endif
 
 	if (p_task->group) {
 		// Handling a group
@@ -143,6 +145,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		}
 	}
 
+#ifdef THREADS_ENABLED
 	{
 		curr_thread.current_task = prev_task;
 		if (p_task->low_priority) {
@@ -159,6 +162,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	}
 
 	set_current_thread_safe_for_nodes(safe_for_nodes_backup);
+#endif
 }
 
 void WorkerThreadPool::_thread_function(void *p_user) {
@@ -542,6 +546,7 @@ bool WorkerThreadPool::is_group_task_completed(GroupID p_group) const {
 }
 
 void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
+#ifdef THREADS_ENABLED
 	task_mutex.lock();
 	Group **groupp = groups.getptr(p_group);
 	task_mutex.unlock();
@@ -574,6 +579,7 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 	task_mutex.lock(); // This mutex is needed when Physics 2D and/or 3D is selected to run on a separate thread.
 	groups.erase(p_group);
 	task_mutex.unlock();
+#endif
 }
 
 int WorkerThreadPool::get_thread_index() {

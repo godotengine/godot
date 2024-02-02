@@ -76,83 +76,112 @@
 		<method name="_get_property_list" qualifiers="virtual">
 			<return type="Dictionary[]" />
 			<description>
-				Override this method to customize how script properties should be handled by the engine.
+				Override this method to provide a custom list of additional properties to handle by the engine.
 				Should return a property list, as an [Array] of dictionaries. The result is added to the array of [method get_property_list], and should be formatted in the same way. Each [Dictionary] must at least contain the [code]name[/code] and [code]type[/code] entries.
-				The example below displays [code]hammer_type[/code] in the Inspector dock, only if [code]holding_hammer[/code] is [code]true[/code]:
+				You can use [method _property_can_revert] and [method _property_get_revert] to customize the default values of the properties added by this method.
+				The example below displays a list of numbers shown as words going from [code]ZERO[/code] to [code]FIVE[/code], with [code]number_count[/code] controlling the size of the list:
 				[codeblocks]
 				[gdscript]
 				@tool
-				extends Node2D
+				extends Node
 
-				@export var holding_hammer = false:
-				    set(value):
-				        holding_hammer = value
+				@export var number_count = 3:
+				    set(nc):
+				        number_count = nc
+				        numbers.resize(number_count)
 				        notify_property_list_changed()
-				var hammer_type = 0
+
+				var numbers = PackedInt32Array([0, 0, 0])
 
 				func _get_property_list():
-				    # By default, `hammer_type` is not visible in the editor.
-				    var property_usage = PROPERTY_USAGE_NO_EDITOR
-
-				    if holding_hammer:
-				        property_usage = PROPERTY_USAGE_DEFAULT
-
 				    var properties = []
-				    properties.append({
-				        "name": "hammer_type",
-				        "type": TYPE_INT,
-				        "usage": property_usage, # See above assignment.
-				        "hint": PROPERTY_HINT_ENUM,
-				        "hint_string": "Wooden,Iron,Golden,Enchanted"
-				    })
+
+				    for i in range(number_count):
+				        properties.append({
+				            "name": "number_%d" % i,
+				            "type": TYPE_INT,
+				            "hint": PROPERTY_HINT_ENUM,
+				            "hint_string": "ZERO,ONE,TWO,THREE,FOUR,FIVE",
+				        })
 
 				    return properties
+
+				func _get(property):
+				    if property.begins_with("number_"):
+				        var index = property.get_slice("_", 1).to_int()
+				        return numbers[index]
+
+				func _set(property, value):
+				    if property.begins_with("number_"):
+				        var index = property.get_slice("_", 1).to_int()
+				        numbers[index] = value
+				        return true
+				    return false
 				[/gdscript]
 				[csharp]
 				[Tool]
-				public partial class MyNode2D : Node2D
+				public partial class MyNode : Node
 				{
-				    private bool _holdingHammer;
+				    private int _numberCount;
 
 				    [Export]
-				    public bool HoldingHammer
+				    public int NumberCount
 				    {
-				        get =&gt; _holdingHammer;
+				        get =&gt; _numberCount;
 				        set
 				        {
-				            _holdingHammer = value;
+				            _numberCount = value;
+				            _numbers.Resize(_numberCount);
 				            NotifyPropertyListChanged();
 				        }
 				    }
 
-				    public int HammerType { get; set; }
+				    private List&lt;int&gt; _numbers = new();
 
 				    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				    {
-				        // By default, `HammerType` is not visible in the editor.
-				        var propertyUsage = PropertyUsageFlags.NoEditor;
+				        var properties = new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;();
 
-				        if (HoldingHammer)
+				        for (int i = 0; i &lt; _numberCount; i++)
 				        {
-				            propertyUsage = PropertyUsageFlags.Default;
+				            properties.Add(new Godot.Collections.Dictionary()
+				            {
+				                { "name", $"number_{i}" },
+				                { "type", (int)Variant.Type.Int },
+				                { "hint", (int)PropertyHint.Enum },
+				                { "hint_string", "Zero,One,Two,Three,Four,Five" },
+				            });
 				        }
 
-				        var properties = new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;();
-				        properties.Add(new Godot.Collections.Dictionary()
-				        {
-				            { "name", "HammerType" },
-				            { "type", (int)Variant.Type.Int },
-				            { "usage", (int)propertyUsage }, // See above assignment.
-				            { "hint", (int)PropertyHint.Enum },
-				            { "hint_string", "Wooden,Iron,Golden,Enchanted" }
-				        });
-
 				        return properties;
+				    }
+
+				    public override Variant _Get(StringName property)
+				    {
+				        string propertyName = property.ToString();
+				        if (propertyName.StartsWith("number_"))
+				        {
+				            int index = int.Parse(propertyName.Substring("number_".Length));
+				            return _numbers[index];
+				        }
+				        return default;
+				    }
+
+				    public override bool _Set(StringName property, Variant value)
+				    {
+				        string propertyName = property.ToString();
+				        if (propertyName.StartsWith("number_"))
+				        {
+				            int index = int.Parse(propertyName.Substring("number_".Length));
+				            numbers[index] = value.As&lt;int&gt;();
+				            return true;
+				        }
+				        return false;
 				    }
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc.
+				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc. If you want to customize exported properties, use [method _validate_property].
 				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
 			</description>
 		</method>
@@ -274,7 +303,7 @@
 			<return type="void" />
 			<param index="0" name="property" type="Dictionary" />
 			<description>
-				Override this method to customize existing properties. Every property info goes through this method. The dictionary contents is the same as in [method _get_property_list].
+				Override this method to customize existing properties. Every property info goes through this method, except properties added with [method _get_property_list]. The dictionary contents is the same as in [method _get_property_list].
 				[codeblocks]
 				[gdscript]
 				@tool

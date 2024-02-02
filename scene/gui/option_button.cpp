@@ -60,7 +60,7 @@ Size2 OptionButton::get_minimum_size() const {
 	}
 
 	if (has_theme_icon(SNAME("arrow"))) {
-		const Size2 padding = theme_cache.normal->get_minimum_size();
+		const Size2 padding = _get_current_stylebox()->get_minimum_size();
 		const Size2 arrow_size = theme_cache.arrow_icon->get_size();
 
 		Size2 content_size = minsize - padding;
@@ -605,6 +605,8 @@ void OptionButton::set_disable_shortcuts(bool p_disabled) {
 
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {
+	_set_h_separation_is_valid_when_no_text(true);
+
 	set_toggle_mode(true);
 	set_process_shortcut_input(true);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);

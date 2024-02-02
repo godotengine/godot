@@ -34,6 +34,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -352,7 +353,7 @@ void ParticleProcessMaterialMinMaxPropertyEditor::_notification(int p_what) {
 			min_edit->add_theme_color_override(SNAME("label_color"), get_theme_color(SNAME("property_color_x"), EditorStringName(Editor)));
 			max_edit->add_theme_color_override(SNAME("label_color"), get_theme_color(SNAME("property_color_y"), EditorStringName(Editor)));
 
-			const bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
+			const bool dark_theme = EditorThemeManager::is_dark_theme();
 			const Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			background_color = dark_theme ? Color(0.3, 0.3, 0.3) : Color(0.7, 0.7, 0.7);
 			normal_color = dark_theme ? Color(0.5, 0.5, 0.5) : Color(0.8, 0.8, 0.8);

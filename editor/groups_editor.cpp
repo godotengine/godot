@@ -31,12 +31,12 @@
 #include "groups_editor.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/project_settings_editor.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/grid_container.h"
@@ -783,6 +783,9 @@ void GroupsEditor::_groups_gui_input(Ref<InputEvent> p_event) {
 			_menu_id_pressed(DELETE_GROUP);
 		} else if (ED_IS_SHORTCUT("groups_editor/rename", p_event)) {
 			_menu_id_pressed(RENAME_GROUP);
+		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			filter->grab_focus();
+			filter->select_all();
 		} else {
 			return;
 		}

@@ -4181,3 +4181,145 @@ void CompressEtc2Rgba( const uint32_t* src, uint64_t* dst, uint32_t blocks, size
     }
     while( --blocks );
 }
+
+// -- GODOT start --
+void CompressEtc2R8( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+{
+    int w = 0;
+    uint8_t r[4*4];
+    do
+    {
+#ifdef __SSE4_1__
+        __m128 px0 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 0 ) ) );
+        __m128 px1 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 1 ) ) );
+        __m128 px2 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 2 ) ) );
+        __m128 px3 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 3 ) ) );
+
+        _MM_TRANSPOSE4_PS( px0, px1, px2, px3 );
+
+        __m128i c0 = _mm_castps_si128( px0 );
+        __m128i c1 = _mm_castps_si128( px1 );
+        __m128i c2 = _mm_castps_si128( px2 );
+        __m128i c3 = _mm_castps_si128( px3 );
+
+        __m128i mask = _mm_setr_epi32( 0x0e0a0602, -1, -1, -1 );
+
+        __m128i a0 = _mm_shuffle_epi8( c0, mask );
+        __m128i a1 = _mm_shuffle_epi8( c1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+        __m128i a2 = _mm_shuffle_epi8( c2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+        __m128i a3 = _mm_shuffle_epi8( c3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+
+        __m128i s0 = _mm_or_si128( a0, a1 );
+        __m128i s1 = _mm_or_si128( a2, a3 );
+        __m128i s2 = _mm_or_si128( s0, s1 );
+
+        _mm_store_si128( (__m128i*)r, s2 );
+
+        src += 4;
+#else
+        auto ptr8 = r;
+        for( int x=0; x<4; x++ )
+        {
+            auto v = *src;
+            *ptr8++ = (v & 0xff0000) >> 16;
+            src += width;
+            v = *src;
+            *ptr8++ = (v & 0xff0000) >> 16;
+            src += width;
+            v = *src;
+            *ptr8++ = (v & 0xff0000) >> 16;
+            src += width;
+            v = *src;
+            *ptr8++ = (v & 0xff0000) >> 16;
+            src -= width * 3 - 1;
+        }
+#endif
+        if( ++w == width/4 )
+        {
+            src += width * 3;
+            w = 0;
+        }
+        *dst++ = ProcessAlpha_ETC2( r );
+    }
+    while( --blocks );
+}
+
+void CompressEtc2RG8( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+{
+    int w = 0;
+    uint8_t rg[4*4*2];
+    do
+    {
+#ifdef __SSE4_1__
+        __m128 px0 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 0 ) ) );
+        __m128 px1 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 1 ) ) );
+        __m128 px2 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 2 ) ) );
+        __m128 px3 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 3 ) ) );
+
+        _MM_TRANSPOSE4_PS( px0, px1, px2, px3 );
+
+        __m128i c0 = _mm_castps_si128( px0 );
+        __m128i c1 = _mm_castps_si128( px1 );
+        __m128i c2 = _mm_castps_si128( px2 );
+        __m128i c3 = _mm_castps_si128( px3 );
+
+        __m128i mask = _mm_setr_epi32( 0x0e0a0602, -1, -1, -1 );
+
+        __m128i r0 = _mm_shuffle_epi8( c0, mask );
+        __m128i r1 = _mm_shuffle_epi8( c1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+        __m128i r2 = _mm_shuffle_epi8( c2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+        __m128i r3 = _mm_shuffle_epi8( c3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+
+        __m128i s0 = _mm_or_si128( r0, r1 );
+        __m128i s1 = _mm_or_si128( r2, r3 );
+        __m128i s2 = _mm_or_si128( s0, s1 );
+
+        _mm_store_si128( (__m128i*)rg, s2 );
+
+        mask = _mm_setr_epi32( 0x0d090501, -1, -1, -1 );
+
+        r0 = _mm_shuffle_epi8( c0, mask );
+        r1 = _mm_shuffle_epi8( c1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+        r2 = _mm_shuffle_epi8( c2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+        r3 = _mm_shuffle_epi8( c3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+
+        s0 = _mm_or_si128( r0, r1 );
+        s1 = _mm_or_si128( r2, r3 );
+        s2 = _mm_or_si128( s0, s1 );
+
+        _mm_store_si128( (__m128i*)&rg[16], s2 );
+        src += 4;
+#else
+        auto ptrr = rg;
+        auto ptrg = ptrr + 16;
+        for( int x=0; x<4; x++ )
+        {
+            auto v = *src;
+            *ptrr++ = (v & 0xff0000) >> 16;
+            *ptrg++ = (v & 0xff00) >> 8;
+            src += width;
+            v = *src;
+            *ptrr++ = (v & 0xff0000) >> 16;
+			*ptrg++ = (v & 0xff00) >> 8;
+            src += width;
+            v = *src;
+            *ptrr++ = (v & 0xff0000) >> 16;
+			*ptrg++ = (v & 0xff00) >> 8;
+            src += width;
+            v = *src;
+            *ptrr++ = (v & 0xff0000) >> 16;
+			*ptrg++ = (v & 0xff00) >> 8;
+            src -= width * 3 - 1;
+        }
+#endif
+        if( ++w == width/4 )
+        {
+            src += width * 3;
+            w = 0;
+        }
+        *dst++ = ProcessAlpha_ETC2( rg );
+        *dst++ = ProcessAlpha_ETC2( &rg[16] );
+    }
+    while( --blocks );
+}
+// -- GODOT end --

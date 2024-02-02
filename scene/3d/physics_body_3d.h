@@ -381,6 +381,45 @@ public:
 	int get_slide_collision_count() const;
 	PhysicsServer3D::MotionResult get_slide_collision(int p_bounce) const;
 
+	void set_safe_margin(real_t p_margin);
+	real_t get_safe_margin() const;
+
+	bool is_floor_stop_on_slope_enabled() const;
+	void set_floor_stop_on_slope_enabled(bool p_enabled);
+
+	bool is_floor_constant_speed_enabled() const;
+	void set_floor_constant_speed_enabled(bool p_enabled);
+
+	bool is_floor_block_on_wall_enabled() const;
+	void set_floor_block_on_wall_enabled(bool p_enabled);
+
+	bool is_slide_on_ceiling_enabled() const;
+	void set_slide_on_ceiling_enabled(bool p_enabled);
+
+	int get_max_slides() const;
+	void set_max_slides(int p_max_slides);
+
+	real_t get_floor_max_angle() const;
+	void set_floor_max_angle(real_t p_radians);
+
+	real_t get_floor_snap_length();
+	void set_floor_snap_length(real_t p_floor_snap_length);
+
+	real_t get_wall_min_slide_angle() const;
+	void set_wall_min_slide_angle(real_t p_radians);
+
+	uint32_t get_platform_floor_layers() const;
+	void set_platform_floor_layers(const uint32_t p_exclude_layer);
+
+	uint32_t get_platform_wall_layers() const;
+	void set_platform_wall_layers(const uint32_t p_exclude_layer);
+
+	void set_motion_mode(MotionMode p_mode);
+	MotionMode get_motion_mode() const;
+
+	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
+	PlatformOnLeave get_platform_on_leave() const;
+
 	CharacterBody3D();
 	~CharacterBody3D();
 
@@ -434,45 +473,6 @@ private:
 
 	Vector<PhysicsServer3D::MotionResult> motion_results;
 	Vector<Ref<KinematicCollision3D>> slide_colliders;
-
-	void set_safe_margin(real_t p_margin);
-	real_t get_safe_margin() const;
-
-	bool is_floor_stop_on_slope_enabled() const;
-	void set_floor_stop_on_slope_enabled(bool p_enabled);
-
-	bool is_floor_constant_speed_enabled() const;
-	void set_floor_constant_speed_enabled(bool p_enabled);
-
-	bool is_floor_block_on_wall_enabled() const;
-	void set_floor_block_on_wall_enabled(bool p_enabled);
-
-	bool is_slide_on_ceiling_enabled() const;
-	void set_slide_on_ceiling_enabled(bool p_enabled);
-
-	int get_max_slides() const;
-	void set_max_slides(int p_max_slides);
-
-	real_t get_floor_max_angle() const;
-	void set_floor_max_angle(real_t p_radians);
-
-	real_t get_floor_snap_length();
-	void set_floor_snap_length(real_t p_floor_snap_length);
-
-	real_t get_wall_min_slide_angle() const;
-	void set_wall_min_slide_angle(real_t p_radians);
-
-	uint32_t get_platform_floor_layers() const;
-	void set_platform_floor_layers(const uint32_t p_exclude_layer);
-
-	uint32_t get_platform_wall_layers() const;
-	void set_platform_wall_layers(const uint32_t p_exclude_layer);
-
-	void set_motion_mode(MotionMode p_mode);
-	MotionMode get_motion_mode() const;
-
-	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
-	PlatformOnLeave get_platform_on_leave() const;
 
 	void _move_and_slide_floating(double p_delta);
 	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);

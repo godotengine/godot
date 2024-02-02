@@ -576,21 +576,23 @@
 			String u32text;
 			u32text.parse_utf16(text.ptr(), text.length());
 
+			DisplayServerMacOS::KeyEvent ke;
+			ke.window_id = window_id;
+			ke.macos_state = [event modifierFlags];
+			ke.pressed = true;
+			ke.echo = [event isARepeat];
+			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
+			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
+			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
+			ke.raw = true;
+
+			if (u32text.is_empty()) {
+				ke.unicode = 0;
+				ds->push_to_key_event_buffer(ke);
+			}
 			for (int i = 0; i < u32text.length(); i++) {
 				const char32_t codepoint = u32text[i];
-
-				DisplayServerMacOS::KeyEvent ke;
-
-				ke.window_id = window_id;
-				ke.macos_state = [event modifierFlags];
-				ke.pressed = true;
-				ke.echo = [event isARepeat];
-				ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
-				ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-				ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 				ke.unicode = fix_unicode(codepoint);
-				ke.raw = true;
-
 				ds->push_to_key_event_buffer(ke);
 			}
 		} else {
@@ -604,6 +606,7 @@
 			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
 			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 			ke.unicode = 0;
+			ke.location = KeyMappingMacOS::translate_location([event keyCode]);
 			ke.raw = false;
 
 			ds->push_to_key_event_buffer(ke);
@@ -669,6 +672,7 @@
 	ke.physical_keycode = KeyMappingMacOS::translate_key(key);
 	ke.key_label = KeyMappingMacOS::remap_key(key, mod, true);
 	ke.unicode = 0;
+	ke.location = KeyMappingMacOS::translate_location(key);
 
 	ds->push_to_key_event_buffer(ke);
 }
@@ -696,6 +700,7 @@
 		ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
 		ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 		ke.unicode = 0;
+		ke.location = KeyMappingMacOS::translate_location([event keyCode]);
 		ke.raw = true;
 
 		ds->push_to_key_event_buffer(ke);
