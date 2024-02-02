@@ -54,6 +54,7 @@ public:
 	virtual RID local_device_create() = 0;
 	virtual void local_device_push_command_buffers(RID p_local_device, const RDD::CommandBufferID *p_buffers, int p_count) = 0;
 	virtual void local_device_sync(RID p_local_device) = 0;
+    virtual bool local_device_check_status(RID p_local_device) = 0;
 	virtual void local_device_free(RID p_local_device) = 0;
 
 	virtual void set_setup_buffer(RDD::CommandBufferID p_command_buffer) = 0;

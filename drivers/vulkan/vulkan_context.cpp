@@ -42,6 +42,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cstdint>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_SHORT_NAME "GodotEngine"
@@ -1794,6 +1795,22 @@ Error VulkanContext::_create_semaphores() {
 		/*pNext*/ nullptr,
 		/*flags*/ 0,
 	};
+	// Create compute semaphore that can be polled to determine whether
+	// a given compute block has finished.
+    // Every time a compute call finishes, we'll increment the value
+    // of this semaphore by one, so we can check the status
+    VkSemaphoreTypeCreateInfo timelineCreateInfo = {
+        /*sType*/ VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+        /*pNext*/ nullptr,
+        /*semaphoreType*/ VK_SEMAPHORE_TYPE_TIMELINE,
+        /*initialValue*/ 0,
+    };
+
+	VkSemaphoreCreateInfo computeSemaphoreCreateInfo = {
+		/*sType*/ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+		/*pNext*/ &timelineCreateInfo,
+		/*flags*/ 0,
+	};
 
 	// Create fences that we can use to throttle if we get too far
 	// ahead of the image presents.
@@ -1815,6 +1832,9 @@ Error VulkanContext::_create_semaphores() {
 		}
 	}
 	frame_index = 0;
+
+    err = vkCreateSemaphore(device, &computeSemaphoreCreateInfo, nullptr, &compute_semaphore[0]);
+		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	// Get Memory information and properties.
 	vkGetPhysicalDeviceMemoryProperties(gpu, &memory_properties);
@@ -2781,16 +2801,26 @@ void VulkanContext::local_device_push_command_buffers(RID p_local_device, const 
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(ld->waiting);
 
+    compute_semaphore_signal_value += 1;
+
+    VkTimelineSemaphoreSubmitInfo signal_info;
+    signal_info.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+    signal_info.pNext = nullptr;
+    signal_info.waitSemaphoreValueCount = 0;
+    signal_info.signalSemaphoreValueCount = 1;
+    signal_info.pSignalSemaphoreValues = &compute_semaphore_signal_value;
+
 	VkSubmitInfo submit_info;
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.pNext = nullptr;
+	submit_info.pNext = &signal_info;
 	submit_info.pWaitDstStageMask = nullptr;
 	submit_info.waitSemaphoreCount = 0;
 	submit_info.pWaitSemaphores = nullptr;
 	submit_info.commandBufferCount = p_count;
 	submit_info.pCommandBuffers = (const VkCommandBuffer *)p_buffers;
-	submit_info.signalSemaphoreCount = 0;
-	submit_info.pSignalSemaphores = nullptr;
+	submit_info.signalSemaphoreCount = 1;
+	submit_info.pSignalSemaphores = &compute_semaphore[0];
+
 
 	VkResult err = vkQueueSubmit(ld->queue, 1, &submit_info, VK_NULL_HANDLE);
 	if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
@@ -2813,7 +2843,17 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 
 	vkDeviceWaitIdle(ld->device);
 	ld->waiting = false;
+
 }
+
+bool VulkanContext::local_device_check_status(RID p_local_device) {
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
+	ERR_FAIL_COND_V(!ld->waiting, false);
+    uint64_t out = 0;
+    vkGetSemaphoreCounterValue(ld->device, compute_semaphore[0], &out);
+    return out >= compute_semaphore_signal_value;
+}
+
 
 void VulkanContext::local_device_free(RID p_local_device) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
@@ -2901,6 +2941,7 @@ VulkanContext::~VulkanContext() {
 				vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
 			}
 		}
+        vkDestroySemaphore(device, compute_semaphore[0], nullptr);
 		if (inst_initialized && is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
 			DestroyDebugUtilsMessengerEXT(inst, dbg_messenger, nullptr);
 		}

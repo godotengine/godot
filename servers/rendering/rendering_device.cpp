@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_device.h"
+#include "core/os/thread_safe.h"
 #include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
@@ -4659,6 +4660,12 @@ void RenderingDevice::sync() {
 	local_device_processing = false;
 }
 
+bool RenderingDevice::check_status(){
+	_THREAD_SAFE_METHOD_
+
+        return context->local_device_check_status(local_device);
+}
+
 void RenderingDevice::_free_pending_resources(int p_frame) {
 	// Free in dependency usage order, so nothing weird happens.
 	// Pipelines.
@@ -5340,6 +5347,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frame_delay"), &RenderingDevice::get_frame_delay);
 	ClassDB::bind_method(D_METHOD("submit"), &RenderingDevice::submit);
 	ClassDB::bind_method(D_METHOD("sync"), &RenderingDevice::sync);
+	ClassDB::bind_method(D_METHOD("check_status"), &RenderingDevice::check_status);
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("barrier", "from", "to"), &RenderingDevice::barrier, DEFVAL(BARRIER_MASK_ALL_BARRIERS), DEFVAL(BARRIER_MASK_ALL_BARRIERS));

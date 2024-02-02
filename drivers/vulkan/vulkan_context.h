@@ -40,6 +40,7 @@
 #include "rendering_device_driver_vulkan.h"
 #include "servers/display_server.h"
 #include "servers/rendering/renderer_rd/api_context_rd.h"
+#include <cstdint>
 
 #ifdef USE_VOLK
 #include <volk.h>
@@ -133,6 +134,8 @@ private:
 	VkFormat format;
 	VkSemaphore draw_complete_semaphores[FRAME_LAG];
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
+	VkSemaphore compute_semaphore[1];
+    uint64_t compute_semaphore_signal_value = 0;
 	int frame_index = 0;
 	VkFence fences[FRAME_LAG];
 	VkPhysicalDeviceMemoryProperties memory_properties;
@@ -313,6 +316,7 @@ public:
 	virtual RID local_device_create() override final;
 	virtual void local_device_push_command_buffers(RID p_local_device, const RDD::CommandBufferID *p_buffers, int p_count) override final;
 	virtual void local_device_sync(RID p_local_device) override final;
+    virtual bool local_device_check_status(RID p_local_device) override final;
 	virtual void local_device_free(RID p_local_device) override final;
 
 	VkFormat get_screen_format() const;
