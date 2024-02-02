@@ -6491,7 +6491,7 @@ void Node3DEditor::_init_indicators() {
 // 3D editor origin line shader.
 
 shader_type spatial;
-render_mode blend_mix,cull_disabled,unshaded, fog_disabled;
+render_mode blend_mix, cull_disabled, unshaded, fog_disabled;
 
 void vertex() {
 	vec3 point_a = MODEL_MATRIX[3].xyz;
@@ -6603,7 +6603,6 @@ void fragment() {
 		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
 		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-		RS::get_singleton()->instance_set_ignore_culling(origin_instance, true);
 
 		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RS::SHADOW_CASTING_SETTING_OFF);
 
