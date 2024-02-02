@@ -39,13 +39,14 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "core/variant/dictionary.h"
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
 
 FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
 
-HashMap<String, String> FileAccess::resource_paths = HashMap<String, String>();
-HashMap<String, Vector<String>> FileAccess::resource_paths_class = HashMap<String, Vector<String>>();
+HashMap<String, String> FileAccess::custom_path_paths = HashMap<String, String>();
+HashMap<String, Vector<String>> FileAccess::custom_path_classes = HashMap<String, Vector<String>>();
 
 bool FileAccess::backup_save = false;
 thread_local Error FileAccess::last_file_open_error = OK;
@@ -81,7 +82,7 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
 	} else {
-		for (KeyValue<String, Vector<String>> kv : resource_paths_class) {
+		for (KeyValue<String, Vector<String>> kv : custom_path_classes) {
 			if (p_path.begins_with(kv.key + "://")) {
 				if (ScriptServer::is_global_class(kv.value[0])) {
 					String path = ScriptServer::get_global_class_path(kv.value[0]);
@@ -239,7 +240,7 @@ String FileAccess::fix_path(const String &p_path) const {
 
 		} break;
 		case ACCESS_FILESYSTEM: {
-			for (KeyValue<String, String> kv : resource_paths) {
+			for (KeyValue<String, String> kv : custom_path_paths) {
 				if (r_path.begins_with(kv.key + "://")) {
 					return r_path.replace(kv.key + ":/", kv.value);
 				}
@@ -886,99 +887,85 @@ String FileAccess::get_sha256(const String &p_file) {
 	return String::hex_encode_buffer(hash, 32);
 }
 
-String FileAccess::_get_protocol(const String &p_protocol) {
-	String protocol = p_protocol;
-	if (protocol.ends_with("://")) {
-		return protocol.left(protocol.length() - 3);
+String FileAccess::_get_custom_path_prefix(const String &p_prefix) {
+	String prefix = p_prefix;
+	if (prefix.ends_with("://")) {
+		return prefix.left(prefix.length() - 3);
 	}
-	return protocol;
+	return prefix;
 }
 
-void FileAccess::add_resource_path(const String &p_protocol, const String &p_path) {
-	ERR_FAIL_COND_MSG(p_protocol.is_empty(), "Protocol parameter is empty.");
-	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat(R"(Protocol "%s://" is built-in.)", protocol));
-	ERR_FAIL_COND_MSG(resource_paths.has(protocol), vformat(R"(Protocol "%s://" is already registered as a resource path.)", protocol));
-	ERR_FAIL_COND_MSG(resource_paths_class.has(protocol), vformat(R"(Protocol "%s://" is already registered as a resource path class.)", protocol));
-	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint() && protocol == "editor", R"(Protocol "editor://" cannot be registered when the editor is not running.)");
+void FileAccess::map_path_to_custom_path(const String &p_prefix, const String &p_path) {
+	ERR_FAIL_COND_MSG(p_prefix.is_empty(), "`p_prefix` parameter is empty.");
+	String prefix = _get_custom_path_prefix(p_prefix);
+	ERR_FAIL_COND_MSG(prefix == "res" || prefix == "user", vformat(R"(Prefix "%s://" is a built-in path. Doing nothing.)", prefix));
+	ERR_FAIL_COND_MSG(prefix == "editor", R"(Prefix "editor://" cannot be added with as a custom path.)");
+	ERR_FAIL_COND_MSG(custom_path_paths.has(prefix) || custom_path_classes.has(prefix), vformat(R"(Prefix "%s://" is already registered as a custom path.)", prefix));
+	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint() && prefix == "editor", R"(Prefix "editor://" cannot be registered when the editor is not running.)");
 
-	resource_paths[protocol] = p_path;
+	custom_path_paths[prefix] = p_path;
 }
 
-void FileAccess::remove_resource_path(const String &p_protocol) {
-	ERR_FAIL_COND_MSG(p_protocol.is_empty(), "Protocol parameter is empty.");
-	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat(R"(Protocol "%s://" is built-in.)", protocol));
-	ERR_FAIL_COND_MSG(!resource_paths.has(protocol), vformat(R"(Protocol "%s://" is not registered as a resource class.)", protocol));
-	ERR_FAIL_COND_MSG(protocol == "editor", R"(Protocol "editor://" cannot be unregistered.)");
+void FileAccess::map_classes_to_custom_path(const String &p_prefix, const String &p_file_access_class, const String &p_dir_access_class) {
+	ERR_FAIL_COND_MSG(p_prefix.is_empty(), "`p_prefix` parameter is empty.");
+	ERR_FAIL_COND_MSG(p_file_access_class.is_empty(), "`p_file_access_class` parameter is empty.");
+	ERR_FAIL_COND_MSG(p_dir_access_class.is_empty(), "`p_dir_access_class` parameter is empty.");
+	String prefix = _get_custom_path_prefix(p_prefix);
+	ERR_FAIL_COND_MSG(prefix == "res" || prefix == "user", vformat(R"(Prefix "%s://" is a built-in path. Doing nothing.)", prefix));
+	ERR_FAIL_COND_MSG(prefix == "editor", R"(Prefix "editor://" cannot be added with as a custom path.)");
+	ERR_FAIL_COND_MSG(custom_path_paths.has(prefix) || custom_path_classes.has(prefix), vformat(R"(Prefix "%s://" is already registered as a custom path.)", prefix));
+	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint() && prefix == "editor", R"(Prefix "editor://" cannot be registered when the editor is not running.)");
 
-	resource_paths.erase(protocol);
+	custom_path_classes[prefix] = Vector<String>({ p_file_access_class, p_dir_access_class });
 }
 
-bool FileAccess::is_resource_path(const String &p_protocol) {
-	ERR_FAIL_COND_V_MSG(p_protocol.is_empty(), false, "Protocol parameter is empty.");
-	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_V_MSG(protocol == "res" || protocol == "user", false, vformat(R"(Protocol "%s://" is built-in.)", protocol));
+void FileAccess::remove_custom_path(const String &p_prefix) {
+	ERR_FAIL_COND_MSG(p_prefix.is_empty(), "`p_prefix` parameter is empty.");
+	String prefix = _get_custom_path_prefix(p_prefix);
+	ERR_FAIL_COND_MSG(prefix == "res" || prefix == "user", vformat(R"(Prefix "%s://" is built-in.)", prefix));
+	ERR_FAIL_COND_MSG(!(custom_path_paths.has(prefix) || custom_path_classes.has(prefix)), vformat(R"(Prefix "%s://" is not registered as a custom path.)", prefix));
+	ERR_FAIL_COND_MSG(prefix == "editor", R"(Prefix "editor://" cannot be unregistered.)");
 
-	return resource_paths.has(protocol);
+	if (custom_path_paths.has(prefix)) {
+		custom_path_paths.erase(prefix);
+	} else {
+		custom_path_classes.erase(prefix);
+	}
 }
 
-String FileAccess::get_resource_path(const String &p_protocol) {
-	ERR_FAIL_COND_V_MSG(!is_resource_path(p_protocol), "", "Getting resource path from non resource path.");
-	String protocol = _get_protocol(p_protocol);
+bool FileAccess::is_custom_path(const String &p_prefix) {
+	ERR_FAIL_COND_V_MSG(p_prefix.is_empty(), false, "`p_prefix` parameter is empty.");
+	String prefix = _get_custom_path_prefix(p_prefix);
 
-	return resource_paths[protocol];
+	return custom_path_paths.has(prefix) || custom_path_classes.has(prefix);
 }
 
-Dictionary FileAccess::get_resource_paths() {
-	Dictionary output;
+Dictionary FileAccess::get_custom_path_data(const String &p_prefix) {
+	ERR_FAIL_COND_V_MSG(p_prefix.is_empty(), Dictionary(), "`p_prefix` parameter is empty.");
+	ERR_FAIL_COND_V_MSG(!is_custom_path(p_prefix), Dictionary(), "Getting data for an inexistent custom path.");
+	String prefix = _get_custom_path_prefix(p_prefix);
+	ERR_FAIL_COND_V_MSG(!(custom_path_paths.has(prefix) || custom_path_classes.has(prefix)), Dictionary(), vformat(R"(Prefix "%s://" is not registered as a custom path.)", prefix));
 
-	for (KeyValue<String, String> kv : resource_paths) {
-		output[kv.key] = kv.value;
+	Dictionary data;
+	data["prefix"] = prefix;
+
+	if (custom_path_paths.has(prefix)) {
+		data["type"] = "path";
+		data["path"] = custom_path_paths[prefix];
+	} else if (custom_path_classes.has(prefix)) {
+		data["type"] = "class";
+		data["file_access_class"] = custom_path_classes[prefix][0];
+		data["dir_access_class"] = custom_path_classes[prefix][1];
 	}
 
-	return output;
+	return data;
 }
 
-void FileAccess::add_resource_path_class(const String &p_protocol, const String &p_file_access_class, const String &p_dir_access_class) {
-	ERR_FAIL_COND_MSG(p_protocol.is_empty(), "Protocol parameter is empty.");
-	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat(R"(Protocol "%s://" is built-in.)", protocol));
-	ERR_FAIL_COND_MSG(protocol == "editor", R"(Protocol "editor://" cannot be added with `FileAccess::add_resource_path_class`)");
-	ERR_FAIL_COND_MSG(resource_paths.has(protocol), vformat(R"(Protocol "%s://" is already registered as a resource path.)", protocol));
-	ERR_FAIL_COND_MSG(resource_paths_class.has(protocol), vformat(R"(Protocol "%s://" is already registered as a resource path class.)", protocol));
+Vector<String> FileAccess::get_custom_paths() {
+	Vector<String> output;
 
-	resource_paths_class[protocol] = Vector<String>({ p_file_access_class, p_dir_access_class });
-}
-
-void FileAccess::remove_resource_path_class(const String &p_protocol) {
-	ERR_FAIL_COND_MSG(p_protocol.is_empty(), "Protocol parameter is empty.");
-	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_MSG(protocol == "res" || protocol == "user", vformat(R"(Protocol "%s://" is built-in.)", protocol));
-	ERR_FAIL_COND_MSG(!resource_paths_class.has(protocol) && !resource_paths_class.has(protocol), vformat(R"(Protocol "%s://" is not registered as a resource path class.)", protocol));
-
-	resource_paths_class.erase(protocol);
-}
-
-bool FileAccess::is_resource_path_class(const String &p_protocol) {
-	ERR_FAIL_COND_V_MSG(p_protocol.is_empty(), false, "Protocol parameter is empty.");
-	String protocol = _get_protocol(p_protocol);
-	ERR_FAIL_COND_V_MSG(protocol == "res" || protocol == "user", false, vformat(R"(Protocol "%s://" is built-in.)", protocol));
-
-	return resource_paths_class.has(protocol);
-}
-
-Vector<String> FileAccess::get_resource_path_class(const String &p_protocol) {
-	ERR_FAIL_COND_V_MSG(!is_resource_path(p_protocol), Vector<String>(), "Getting resource path class from non resource path.");
-	String protocol = _get_protocol(p_protocol);
-	return resource_paths_class[protocol];
-}
-
-Dictionary FileAccess::get_resource_paths_class() {
-	Dictionary output;
-
-	for (KeyValue<String, Vector<String>> kv : resource_paths_class) {
-		output[kv.key] = kv.value;
+	for (KeyValue<String, String> kv : custom_path_paths) {
+		output.append(kv.key);
 	}
 
 	return output;
@@ -1051,17 +1038,12 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "file"), &FileAccess::get_read_only_attribute);
 
 	// Resource paths
-	ClassDB::bind_static_method("FileAccess", D_METHOD("add_resource_path", "protocol", "path"), &FileAccess::add_resource_path);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_resource_path", "protocol"), &FileAccess::remove_resource_path);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("is_resource_path", "protocol"), &FileAccess::is_resource_path);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_resource_path", "protocol"), &FileAccess::get_resource_path);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_resource_paths"), &FileAccess::get_resource_paths);
-
-	ClassDB::bind_static_method("FileAccess", D_METHOD("add_resource_path_class", "protocol", "file_access_class", "dir_access_class"), &FileAccess::add_resource_path_class);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_resource_path_class", "protocol"), &FileAccess::remove_resource_path_class);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("is_resource_path_class", "protocol"), &FileAccess::is_resource_path_class);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_resource_path_class", "protocol"), &FileAccess::get_resource_path_class);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_resource_paths_class"), &FileAccess::get_resource_paths_class);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("map_path_to_custom_path", "protocol", "path"), &FileAccess::map_path_to_custom_path);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("map_classes_to_custom_path", "protocol", "file_access_class", "dir_access_class"), &FileAccess::map_classes_to_custom_path);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_custom_path", "protocol"), &FileAccess::remove_custom_path);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("is_custom_path", "protocol"), &FileAccess::is_custom_path);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_custom_path_data", "protocol"), &FileAccess::get_custom_path_data);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_custom_paths"), &FileAccess::get_custom_paths);
 	// End resource paths
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");

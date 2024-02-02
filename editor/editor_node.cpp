@@ -7376,7 +7376,7 @@ EditorNode::EditorNode() {
 
 	// Register `editor://` custom resource path
 	String editor_path = OS::get_singleton()->get_data_path().path_join(OS::get_singleton()->get_godot_dir_name());
-	FileAccess::add_resource_path("editor", editor_path);
+	FileAccess::map_path_to_custom_path("editor", editor_path);
 	Ref<DirAccess> editor_dir = DirAccess::open(String("editor://"));
 	editor_dir->make_dir("addons");
 }
