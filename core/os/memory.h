@@ -105,7 +105,7 @@ void memdelete(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
-	if (!std::is_trivially_destructible<T>::value) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
 		p_class->~T();
 	}
 
@@ -117,7 +117,7 @@ void memdelete_allocator(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
-	if (!std::is_trivially_destructible<T>::value) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
 		p_class->~T();
 	}
 
@@ -147,7 +147,7 @@ T *memnew_arr_template(size_t p_elements) {
 	ERR_FAIL_NULL_V(mem, failptr);
 	*(mem - 1) = p_elements;
 
-	if (!std::is_trivially_constructible<T>::value) {
+	if constexpr (!std::is_trivially_constructible_v<T>) {
 		T *elems = (T *)mem;
 
 		/* call operator new */
@@ -174,7 +174,7 @@ template <typename T>
 void memdelete_arr(T *p_class) {
 	uint64_t *ptr = (uint64_t *)p_class;
 
-	if (!std::is_trivially_destructible<T>::value) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
 		uint64_t elem_count = *(ptr - 1);
 
 		for (uint64_t i = 0; i < elem_count; i++) {

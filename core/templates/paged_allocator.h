@@ -101,7 +101,7 @@ public:
 
 private:
 	void _reset(bool p_allow_unfreed) {
-		if (!p_allow_unfreed || !std::is_trivially_destructible<T>::value) {
+		if (!p_allow_unfreed || !std::is_trivially_destructible_v<T>) {
 			ERR_FAIL_COND(allocs_available < pages_allocated * page_size);
 		}
 		if (pages_allocated) {
