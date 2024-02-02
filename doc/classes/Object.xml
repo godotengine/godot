@@ -1027,6 +1027,9 @@
 		<constant name="NOTIFICATION_PREDELETE" value="1">
 			Notification received when the object is about to be deleted. Can act as the deconstructor of some programming languages.
 		</constant>
+		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
+			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.
+		</constant>
 		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
 			Deferred connections trigger their [Callable]s on idle time (at the end of the frame), rather than instantly.
 		</constant>
