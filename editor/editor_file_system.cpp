@@ -50,10 +50,6 @@ EditorFileSystem *EditorFileSystem::singleton = nullptr;
 //the name is the version, to keep compatibility with different versions of Godot
 #define CACHE_FILE_NAME "filesystem_cache8"
 
-void EditorFileSystemDirectory::sort_files() {
-	files.sort_custom<FileInfoSort>();
-}
-
 int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
 	for (int i = 0; i < files.size(); i++) {
 		if (files[i]->file == p_file) {
@@ -578,7 +574,7 @@ bool EditorFileSystem::_update_scan_actions() {
 			case ItemAction::ACTION_DIR_ADD: {
 				int idx = 0;
 				for (int i = 0; i < ia.dir->subdirs.size(); i++) {
-					if (ia.new_dir->name.naturalnocasecmp_to(ia.dir->subdirs[i]->name) < 0) {
+					if (ia.new_dir->name.filenocasecmp_to(ia.dir->subdirs[i]->name) < 0) {
 						break;
 					}
 					idx++;
@@ -600,7 +596,7 @@ bool EditorFileSystem::_update_scan_actions() {
 			case ItemAction::ACTION_FILE_ADD: {
 				int idx = 0;
 				for (int i = 0; i < ia.dir->files.size(); i++) {
-					if (ia.new_file->file.naturalnocasecmp_to(ia.dir->files[i]->file) < 0) {
+					if (ia.new_file->file.filenocasecmp_to(ia.dir->files[i]->file) < 0) {
 						break;
 					}
 					idx++;
@@ -810,8 +806,8 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 
 	da->list_dir_end();
 
-	dirs.sort_custom<NaturalNoCaseComparator>();
-	files.sort_custom<NaturalNoCaseComparator>();
+	dirs.sort_custom<FileNoCaseComparator>();
+	files.sort_custom<FileNoCaseComparator>();
 
 	int total = dirs.size() + files.size();
 	int idx = 0;
@@ -832,7 +828,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 
 				int idx2 = 0;
 				for (int i = 0; i < p_dir->subdirs.size(); i++) {
-					if (efd->name.naturalnocasecmp_to(p_dir->subdirs[i]->name) < 0) {
+					if (efd->name.filenocasecmp_to(p_dir->subdirs[i]->name) < 0) {
 						break;
 					}
 					idx2++;
@@ -1409,7 +1405,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 			int idx2 = 0;
 			for (int j = 0; j < fs->get_subdir_count(); j++) {
-				if (efsd->name.naturalnocasecmp_to(fs->get_subdir(j)->get_name()) < 0) {
+				if (efsd->name.filenocasecmp_to(fs->get_subdir(j)->get_name()) < 0) {
 					break;
 				}
 				idx2++;
@@ -1766,7 +1762,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 		String file_name = p_file.get_file();
 
 		for (int i = 0; i < fs->files.size(); i++) {
-			if (p_file.naturalnocasecmp_to(fs->files[i]->file) < 0) {
+			if (p_file.filenocasecmp_to(fs->files[i]->file) < 0) {
 				break;
 			}
 			idx++;
