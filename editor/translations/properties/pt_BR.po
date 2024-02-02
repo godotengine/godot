@@ -162,13 +162,14 @@
 # Felipe Bertola <eduardodelphinodepaula@gmail.com>, 2023.
 # Vittor Paulo Vieira da Costa <vittorpaulovc@gmail.com>, 2023.
 # Matheus Macedo <mmanganelidemacedo@gmail.com>, 2023.
+# Davi Felipe <daviminion007@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-11-18 06:21+0000\n"
-"Last-Translator: Matheus Macedo <mmanganelidemacedo@gmail.com>\n"
+"PO-Revision-Date: 2024-02-01 17:01+0000\n"
+"Last-Translator: Davi Felipe <daviminion007@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -176,7 +177,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -1093,6 +1094,9 @@ msgstr "Habilitar pressão longa como clique no botão direito"
 msgid "Enable Pan and Scale Gestures"
 msgstr "Habilitar Pan e Gestos em Scala"
 
+msgid "Scale Gizmo Handles"
+msgstr "Dimensionar alças de gizmo"
+
 msgid "Display Close Button"
 msgstr "Mostrar botão Fechar"
 
@@ -1164,6 +1168,9 @@ msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "Caminho para FBX2glTF"
+
+msgid "Oidn"
+msgstr "Oidn"
 
 msgid "Docks"
 msgstr "Painéis"

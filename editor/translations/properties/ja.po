@@ -43,7 +43,7 @@
 # fadhliazhari <m.fadhliazhari@gmail.com>, 2022.
 # Chia-Hsiang Cheng <cche0109@student.monash.edu>, 2022.
 # meko <hirono.yoneyama@outlook.com>, 2022.
-# Fire Dingo <snowsable113@icloud.com>, 2022.
+# Fire Dingo <snowsable113@icloud.com>, 2022, 2024.
 # Narazaki Shuji <shujinarazaki@protonmail.com>, 2022.
 # ta ko <neji.cion@gmail.com>, 2022.
 # T K <kidaaam@gmail.com>, 2022, 2023.
@@ -59,8 +59,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-06 04:32+0000\n"
-"Last-Translator: Komaru Bomaru <ohmanhowwillithink@gmail.com>\n"
+"PO-Revision-Date: 2024-01-26 09:47+0000\n"
+"Last-Translator: Fire Dingo <snowsable113@icloud.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -68,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "アプリケーション"
@@ -790,6 +790,9 @@ msgstr "ローカライズの設定"
 msgid "Scene Tabs"
 msgstr "シーンタブ"
 
+msgid "Restore Scenes on Load"
+msgstr "ロード時にシーンを復元"
+
 msgid "Inspector"
 msgstr "インスペクター"
 
@@ -811,7 +814,16 @@ msgstr "水平ベクトル2編集"
 msgid "Horizontal Vector Types Editing"
 msgstr "水平ベクトルタイプ編集"
 
+msgid "Open Resources in Current Inspector"
+msgstr "リソースを現在のインスペクターで開く"
+
+msgid "Resources to Open in New Inspector"
+msgstr "新規インスペクターでリソースを開く"
+
 msgid "Default Color Picker Mode"
+msgstr "デフォルトのカラーピッカーモード"
+
+msgid "Default Color Picker Shape"
 msgstr "デフォルトのカラーピッカーモード"
 
 msgid "Base Type"
@@ -828,6 +840,12 @@ msgstr "エディターの言語"
 
 msgid "Display Scale"
 msgstr "表示スケール"
+
+msgid "Editor Screen"
+msgstr "エディター画面"
+
+msgid "Project Manager Screen"
+msgstr "プロジェクトマネージャー"
 
 msgid "Enable Pseudolocalization"
 msgstr "擬似ローカライズの有効化"
@@ -849,6 +867,9 @@ msgstr "コードフォントコンテキスト合字"
 
 msgid "Code Font Custom OpenType Features"
 msgstr "コードフォントカスタムOpenType機能"
+
+msgid "Font Antialiasing"
+msgstr "フォントのアンチエイリアス"
 
 msgid "Font Hinting"
 msgstr "フォントのヒンティング"
@@ -888,6 +909,9 @@ msgstr "テーマ"
 
 msgid "Preset"
 msgstr "プリセット"
+
+msgid "Icon and Font Color"
+msgstr "アイコンとフォントのカラー"
 
 msgid "Base Color"
 msgstr "ベースカラー"
@@ -1108,6 +1132,9 @@ msgstr "ミニマップを表示"
 msgid "Minimap Width"
 msgstr "ミニマップの幅"
 
+msgid "Lines"
+msgstr "ライン"
+
 msgid "Code Folding"
 msgstr "コードの折りたたみ"
 
@@ -1135,11 +1162,17 @@ msgstr "ナビゲーション"
 msgid "Move Caret on Right Click"
 msgstr "右クリックでキャレットを移動"
 
+msgid "Scroll Past End of File"
+msgstr "ファイルの末尾を越えたスクロール"
+
 msgid "Smooth Scrolling"
 msgstr "スムーズスクロール"
 
 msgid "V Scroll Speed"
 msgstr "垂直スクロールの速度"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "ノード選択時にスクリプトエディターにとどまる"
 
 msgid "Indent"
 msgstr "インデント"
@@ -1150,8 +1183,14 @@ msgstr "自動インデント"
 msgid "Files"
 msgstr "ファイル"
 
+msgid "Trim Trailing Whitespace on Save"
+msgstr "保存時に末尾の空白を取り除く"
+
 msgid "Autosave Interval Secs"
 msgstr "自動保存する間隔の秒数"
+
+msgid "Convert Indent on Save"
+msgstr "インデントを保存時に変換"
 
 msgid "Script List"
 msgstr "スクリプト一覧"
@@ -1679,13 +1718,28 @@ msgid "Except Bone Transform"
 msgstr "ボーントランスフォームを除外"
 
 msgid "Create From"
-msgstr "作成元"
+msgstr "用途"
+
+msgid "Scaling Mode"
+msgstr "スケールモード"
 
 msgid "Delimiter"
 msgstr "区切り文字"
 
-msgid "Rows"
+msgid "Character Ranges"
+msgstr "文字の範囲"
+
+msgid "Columns"
 msgstr "列"
+
+msgid "Rows"
+msgstr "行"
+
+msgid "Image Margin"
+msgstr "画像マージン"
+
+msgid "Character Margin"
+msgstr "文字マージン"
 
 msgid "High Quality"
 msgstr "高品質"
@@ -2401,8 +2455,23 @@ msgstr "色"
 msgid "Intensity"
 msgstr "強度"
 
+msgid "Light Type"
+msgstr "ライトタイプ"
+
 msgid "Range"
 msgstr "範囲"
+
+msgid "Inner Cone Angle"
+msgstr "コーン内側角度"
+
+msgid "Outer Cone Angle"
+msgstr "コーン外側角度"
+
+msgid "Diffuse Factor"
+msgstr "拡散反射係数"
+
+msgid "Gloss Factor"
+msgstr "光沢係数"
 
 msgid "Specular Factor"
 msgstr "鏡面反射係数"
@@ -2410,8 +2479,17 @@ msgstr "鏡面反射係数"
 msgid "Mass"
 msgstr "質量"
 
+msgid "Linear Velocity"
+msgstr "線形速度"
+
 msgid "Angular Velocity"
 msgstr "角速度"
+
+msgid "Center of Mass"
+msgstr "重心"
+
+msgid "Inertia Tensor"
+msgstr "慣性テンソル"
 
 msgid "Json"
 msgstr "JSON"
@@ -2422,6 +2500,9 @@ msgstr "メジャーバージョン"
 msgid "Minor Version"
 msgstr "マイナーバージョン"
 
+msgid "Copyright"
+msgstr "著作権"
+
 msgid "GLB Data"
 msgstr "GLBデータ"
 
@@ -2431,8 +2512,20 @@ msgstr "バッファ"
 msgid "Materials"
 msgstr "マテリアル"
 
+msgid "Scene Name"
+msgstr "シーン名"
+
+msgid "Base Path"
+msgstr "ベースパス"
+
+msgid "Filename"
+msgstr "ファイル名"
+
 msgid "Root Nodes"
 msgstr "ルートノード"
+
+msgid "Texture Samplers"
+msgstr "テクスチャサンプラー"
 
 msgid "Images"
 msgstr "画像"

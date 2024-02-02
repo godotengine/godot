@@ -2934,6 +2934,12 @@ msgstr ""
 "Nie je možné zapisovať do súboru '%s', súbor sa používa, je uzamknutý alebo "
 "chýbajú dostatočné oprávnenia."
 
+msgid "Mobile"
+msgstr "Mobil"
+
+msgid "Compatibility"
+msgstr "Kompatibilita"
+
 msgid "Pan View"
 msgstr "Zobrazenie Pan"
 
@@ -3068,15 +3074,6 @@ msgstr "Poslať spätnú väzbu Dokumentácie"
 
 msgid "Support Godot Development"
 msgstr "Podporte vývoj Godot"
-
-msgid "Choose a renderer."
-msgstr "Zvoliť renderer."
-
-msgid "Mobile"
-msgstr "Mobil"
-
-msgid "Compatibility"
-msgstr "Kompatibilita"
 
 msgid "Update Continuously"
 msgstr "Aktualizovať priebežne"

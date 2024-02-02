@@ -27,13 +27,16 @@
 # Maximiliano Gamón <maximilianogamon@gmail.com>, 2023.
 # Deleted User <noreply+68785@weblate.org>, 2023.
 # Evelyn Salido <evelynsalido2@gmail.com>, 2023.
+# Kann <iancanellas08@gmail.com>, 2023.
+# Diego22rct <diegorafaelcisnerostafur@gmail.com>, 2024.
+# Carlos Mena <menacarlos.asir@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-07 02:01+0000\n"
-"Last-Translator: Evelyn Salido <evelynsalido2@gmail.com>\n"
+"PO-Revision-Date: 2024-01-26 09:47+0000\n"
+"Last-Translator: Carlos Mena <menacarlos.asir@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -41,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo Principal"
@@ -121,6 +124,9 @@ msgstr "Eje-Y del Joystick 4"
 msgid "Unknown Joypad Axis"
 msgstr "Eje de Joypad Desconocido"
 
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Movimiento del Joypad en el eje %d (%s) con valor %.2f"
+
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "Acción Abajo, Cruz en Sony, Xbox A, Nintendo B"
 
@@ -169,6 +175,39 @@ msgstr "D-pad Derecha"
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Share en Xbox, Microphone en PS5, Capture en Nintendo"
 
+msgid "Joypad Button %d"
+msgstr "Bottón de Joypad %d"
+
+msgid "touched"
+msgstr "tocado"
+
+msgid "released"
+msgstr "Publicado"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Pantalla %s en(%s) con %s puntos táctiles"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"Pantalla arrastrada con %s puntos táctiles en la posición (%s) con velocidad "
+"de (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Ampliar Gesto en (%s) con factor %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Gesto \"Pan\" en (%s), con delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Entrada de MIDI en el canal=%s Mensaje=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Evento de entrada con atajo=%s"
+
+msgid "Accept"
+msgstr "Aceptar"
+
 msgid "Select"
 msgstr "Seleccionar"
 
@@ -180,6 +219,9 @@ msgstr "Arriba"
 
 msgid "Down"
 msgstr "Abajo"
+
+msgid "Page Up"
+msgstr "Subir página"
 
 msgid "End"
 msgstr "Fin"
@@ -199,17 +241,44 @@ msgstr "Deshacer"
 msgid "Redo"
 msgstr "Rehacer"
 
+msgid "New Blank Line"
+msgstr "Nueva línea en blanco"
+
+msgid "Backspace Word"
+msgstr "Retroceder palabra"
+
+msgid "Backspace all to Left"
+msgstr "Retroceder del todo hacia la izquierda"
+
 msgid "Delete"
 msgstr "Eliminar"
 
+msgid "Caret Up"
+msgstr "Interfaz Subir Página"
+
+msgid "Caret Page Up"
+msgstr "Interfaz Subir Página"
+
+msgid "Scroll Up"
+msgstr "Desplazarse hacia arriba"
+
+msgid "Scroll Down"
+msgstr "Desplazarse hacia abajo"
+
 msgid "Select All"
 msgstr "Seleccionar Todo"
+
+msgid "Submit Text"
+msgstr "Enviar Texto"
 
 msgid "Duplicate Nodes"
 msgstr "Duplicar Nodos"
 
 msgid "Delete Nodes"
 msgstr "Eliminar Nodos"
+
+msgid "Go Up One Level"
+msgstr "Subir un nivel"
 
 msgid "Refresh"
 msgstr "Refrescar"
@@ -235,6 +304,12 @@ msgstr "Argumentos inválidos para construir '%s'"
 msgid "On call to '%s':"
 msgstr "En la llamada a '%s':"
 
+msgid "Built-in script"
+msgstr "Script Integrado"
+
+msgid "Built-in"
+msgstr "Integrado"
+
 msgid "B"
 msgstr "B"
 
@@ -256,6 +331,14 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
+msgid "Example: %s"
+msgstr "Ejemplo: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "artículo %d"
+msgstr[1] "artículos %d"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -266,11 +349,20 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Ya existe una acción con el nombre '%s'."
 
+msgid "Revert Action"
+msgstr "Revertir Acción"
+
 msgid "Add Event"
 msgstr "Agregar Evento"
 
+msgid "Cannot Remove Action"
+msgstr "No se puede eliminar acción"
+
 msgid "Add"
 msgstr "Agregar"
+
+msgid "Show Built-in Actions"
+msgstr "Mostrar acciones integradas"
 
 msgid "Action"
 msgstr "Acción"
@@ -486,6 +578,9 @@ msgstr "Escalar"
 msgid "Methods"
 msgstr "Métodos"
 
+msgid "Bezier"
+msgstr "Bézier"
+
 msgid "Audio"
 msgstr "Audio"
 
@@ -583,6 +678,10 @@ msgstr "Limpiar"
 
 msgid "Scale Ratio:"
 msgstr "Ratio de Escala:"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sinusoide"
 
 msgid "Select Tracks to Copy"
 msgstr "Elegir Pistas a Copiar"
@@ -6939,14 +7038,6 @@ msgstr ""
 "Lenguaje cambiado.\n"
 "La interfaz de usuario se actualizara luego de reiniciar el editor o gestor "
 "de proyectos."
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"¿Estás seguro de querer examinar %s carpetas en busca de proyectos de Godot "
-"existentes?\n"
-"Podría demorar un rato."
 
 msgid "New Project"
 msgstr "Proyecto Nuevo"

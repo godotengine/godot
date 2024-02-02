@@ -4941,13 +4941,6 @@ msgstr ""
 "A interface actualizarase despois de reiniciar o editor ou administrador de "
 "proxectos."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Seguro que quere escanear proxectos de Godot en %s cartafois?\n"
-"Esto podería demorarse un tempo."
-
 msgid "New Project"
 msgstr "Novo Proxecto"
 

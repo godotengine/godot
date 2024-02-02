@@ -3623,6 +3623,15 @@ msgid ""
 msgstr ""
 "'%s' dosyasına yazılamıyor; dosya kullanımda, kilitli veya izinler eksik."
 
+msgid "Forward+"
+msgstr "İleri+"
+
+msgid "Mobile"
+msgstr "Mobil"
+
+msgid "Compatibility"
+msgstr "Uyumluluk"
+
 msgid "Pan View"
 msgstr "Görünümü Kaydır"
 
@@ -3799,22 +3808,6 @@ msgstr "Godot Hakkında"
 
 msgid "Support Godot Development"
 msgstr "Godot'yu Geliştirmeye Destek Olun"
-
-msgid "Choose a renderer."
-msgstr "Bir işleyici seçin."
-
-msgid "Forward+"
-msgstr "İleri+"
-
-msgid "Mobile"
-msgstr "Mobil"
-
-msgid "Compatibility"
-msgstr "Uyumluluk"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr ""
-"İşleyicinin değiştirilmesi, düzenleyicinin yeniden başlatılmasını gerektirir."
 
 msgid "Update Continuously"
 msgstr "Sürekli Güncelle"
@@ -13213,14 +13206,6 @@ msgstr ""
 "Değişiklik, düzenleyici veya proje yöneticisi yeniden başladığında etkili "
 "olacak."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Var olan Godot projeleri bulmak için, %s klasör taraması yapmak istediğinize "
-"emin misiniz?\n"
-"Bu biraz zaman alabilir."
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "Proje Yöneticisi"
@@ -14772,13 +14757,6 @@ msgstr "Bir paket segmentindeki ilk karakter '%s' karakteri olamaz."
 
 msgid "The package must have at least one '.' separator."
 msgstr "Paket en azından bir tane '.' ayıracına sahip olmalıdır."
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr ""
-"Proje ismi, paket ismi biçimi için gereksinimi karşılamıyor. Lütfen paket "
-"adını açık olarak belirtin."
 
 msgid "Invalid public key for APK expansion."
 msgstr "APK genişletmesi için geçersiz ortak anahtar."

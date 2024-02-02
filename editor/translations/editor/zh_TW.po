@@ -49,13 +49,14 @@
 # Skyter Lin <linskyter@gmail.com>, 2023.
 # powder <hhurhxhdyruw@gmail.com>, 2023.
 # Ink&Soul <mbyl_inkandsoul@foxmail.com>, 2023.
+# lemtea8 <polylemtea@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-23 09:02+0000\n"
-"Last-Translator: Ink&Soul <mbyl_inkandsoul@foxmail.com>\n"
+"PO-Revision-Date: 2024-01-16 01:10+0000\n"
+"Last-Translator: lemtea8 <polylemtea@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -63,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2.1-rc\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "主執行緒"
@@ -195,16 +196,16 @@ msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Share、PS5 麥克風、Nintendo 截圖"
 
 msgid "Xbox Paddle 1"
-msgstr "Xbox 撥片 1"
+msgstr "Xbox 搖桿 1"
 
 msgid "Xbox Paddle 2"
-msgstr "Xbox 撥片 2"
+msgstr "Xbox 搖桿 2"
 
 msgid "Xbox Paddle 3"
-msgstr "Xbox 撥片 3"
+msgstr "Xbox 搖桿 3"
 
 msgid "Xbox Paddle 4"
-msgstr "Xbox 撥片 4"
+msgstr "Xbox 搖桿 4"
 
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 觸控板"
@@ -840,7 +841,7 @@ msgid "animation"
 msgstr "動畫"
 
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr "AnimationPlayer 不能播放自己，只可播放其他 Player。"
+msgstr "AnimationPlayer 只可由其他 Player 播放。"
 
 msgid "property '%s'"
 msgstr "屬性「%s」"
@@ -1903,6 +1904,9 @@ msgstr "開發人員"
 msgid "Authors"
 msgstr "作者"
 
+msgid "Patrons"
+msgstr "贊助者"
+
 msgid "Platinum Sponsors"
 msgstr "白金贊助"
 
@@ -1911,6 +1915,18 @@ msgstr "黃金贊助"
 
 msgid "Silver Sponsors"
 msgstr "白銀贊助"
+
+msgid "Diamond Members"
+msgstr "鑽石級贊助"
+
+msgid "Titanium Members"
+msgstr "鈦級贊助"
+
+msgid "Platinum Members"
+msgstr "白金級贊助"
+
+msgid "Gold Members"
+msgstr "黃金級贊助"
 
 msgid "Donors"
 msgstr "捐贈者"
@@ -2746,11 +2762,23 @@ msgstr "方法說明"
 msgid "Operator Descriptions"
 msgstr "運算子說明"
 
+msgid "Metadata:"
+msgstr "Metadata:"
+
 msgid "Property:"
 msgstr "屬性："
 
+msgid "Method:"
+msgstr "方法:"
+
 msgid "Signal:"
 msgstr "訊號："
+
+msgid "Theme Item:"
+msgstr "主題項目:"
+
+msgid "No description available."
+msgstr "沒有說明。"
 
 msgid "%d match."
 msgstr "%d 件相符合的結果。"
@@ -3423,6 +3451,15 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr "無法寫入檔案'%s'，該檔案正被使用、鎖定或因權限不足。"
 
+msgid "Forward+"
+msgstr "Forward+"
+
+msgid "Mobile"
+msgstr "移動裝置"
+
+msgid "Compatibility"
+msgstr "編譯"
+
 msgid "Pan View"
 msgstr "平移檢視"
 
@@ -3519,6 +3556,9 @@ msgstr "工具"
 msgid "Orphan Resource Explorer..."
 msgstr "孤立資源瀏覽器..."
 
+msgid "Upgrade Mesh Surfaces..."
+msgstr "升級網格表面..."
+
 msgid "Reload Current Project"
 msgstr "重新載入目前專案"
 
@@ -3596,21 +3636,6 @@ msgstr "關於Godot"
 
 msgid "Support Godot Development"
 msgstr "支援 Godot 開發"
-
-msgid "Choose a renderer."
-msgstr "選擇渲染器。"
-
-msgid "Forward+"
-msgstr "Forward+"
-
-msgid "Mobile"
-msgstr "移動裝置"
-
-msgid "Compatibility"
-msgstr "編譯"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "更改渲染器需要重新啟動編輯器。"
 
 msgid "Update Continuously"
 msgstr "持續更新"
@@ -3823,6 +3848,12 @@ msgstr ""
 
 msgid "Assign..."
 msgstr "指派..."
+
+msgid "Copy as Text"
+msgstr "複製為文字"
+
+msgid "Show Node in Tree"
+msgstr "在節點樹中顯示"
 
 msgid "Invalid RID"
 msgstr "無效的 RID"
@@ -4371,6 +4402,9 @@ msgstr "確定要刪除預設設定「%s」？"
 msgid "Resources to exclude:"
 msgstr "排除的資源："
 
+msgid "Resources to override export behavior:"
+msgstr "覆寫匯出的資源："
+
 msgid "Resources to export:"
 msgstr "匯出的資源："
 
@@ -4660,6 +4694,9 @@ msgstr "複製資料夾："
 msgid "New Inherited Scene"
 msgstr "新增繼承場景"
 
+msgid "Set as Main Scene"
+msgstr "設為主場景"
+
 msgid "Open Scenes"
 msgstr "開啟場景"
 
@@ -4771,6 +4808,33 @@ msgstr "重新命名..."
 msgid "Open in External Program"
 msgstr "在外部程式中開啟"
 
+msgid "Red"
+msgstr "紅色"
+
+msgid "Orange"
+msgstr "橙色"
+
+msgid "Yellow"
+msgstr "黃色"
+
+msgid "Green"
+msgstr "綠色"
+
+msgid "Teal"
+msgstr "深青色"
+
+msgid "Blue"
+msgstr "藍色"
+
+msgid "Purple"
+msgstr "紫色"
+
+msgid "Pink"
+msgstr "粉紅色"
+
+msgid "Gray"
+msgstr "灰色"
+
 msgid "Go to previous selected folder/file."
 msgstr "前往上一個選擇的資料夾/檔案。"
 
@@ -4779,6 +4843,9 @@ msgstr "前往下一個選擇的資料夾/檔案。"
 
 msgid "Re-Scan Filesystem"
 msgstr "重新掃描檔案系統"
+
+msgid "Change Split Mode"
+msgstr "變更分割模式"
 
 msgid "Filter Files"
 msgstr "篩選檔案"
@@ -7412,6 +7479,9 @@ msgid ""
 "will be visible in the running project."
 msgstr "啟用此選項後，迴避對象的形狀、半徑和速度將在專案運行中可見。"
 
+msgid "Debug CanvasItem Redraws"
+msgstr "偵錯 CanvasItem 重繪"
+
 msgid "Synchronize Scene Changes"
 msgstr "同步常見更改"
 
@@ -9486,6 +9556,9 @@ msgstr "建立 LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D 預覽"
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "無法轉換空 sprite 為網格。"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "無法使用動畫影格將 Sprite 轉換為網格。"
@@ -12564,13 +12637,6 @@ msgstr ""
 "語言已變更。\n"
 "重新啟動編輯器或專案管理員後將會套用界面更新。"
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"確定要掃描 %s 中的 Godot 專案嗎？\n"
-"這可能需要一段時間。"
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "專案管理員"
@@ -13040,6 +13106,13 @@ msgid ""
 "reverted to their default."
 msgstr "禁用「editable_instance」將導致節點的所有屬性都被還原為其預設值。"
 
+msgid ""
+"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
+"all properties of the node to be reverted to their default."
+msgstr ""
+"啟用「Load As Placeholder」將禁用「Editable Children」並導致其所有節點都被還原"
+"為其預設值。"
+
 msgid "Make Local"
 msgstr "轉為本地"
 
@@ -13413,6 +13486,22 @@ msgstr "名稱「%s」是預留的著色器語言關鍵字。"
 msgid "Add Shader Global Parameter"
 msgstr "新增著色器全域參數"
 
+msgid ""
+"This project uses meshes with an outdated mesh format. Check the output log."
+msgstr "此專案使用過時的網格格式。請檢查輸出記錄。"
+
+msgid "Upgrading All Meshes in Project"
+msgstr "升級專案中所有網格"
+
+msgid "Attempting to re-save "
+msgstr "嘗試進行重新儲存 "
+
+msgid "Attempting to remove "
+msgstr "嘗試進行刪除 "
+
+msgid "Restart & Upgrade"
+msgstr "重新啟動並升級"
+
 msgid "Make this panel floating in the screen %d."
 msgstr "讓這個面板在螢幕 %d 中浮動。"
 
@@ -13441,6 +13530,9 @@ msgstr "更改環面外半徑"
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "convert() 函式收到了無效的引數，請使用 TYPE_* 常數。"
 
+msgid "Cannot resize array."
+msgstr "無法調整陣列大小。"
+
 msgid "Step argument is zero!"
 msgstr "Step 引數為 0！"
 
@@ -13464,6 +13556,9 @@ msgstr "無效的實體字典格式（位於 @path 的腳本無效）"
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "無效的實體字典（無效的子型別）"
+
+msgid "Cannot instantiate GDScript class."
+msgstr "無法實例化 GDScript 類別。"
 
 msgid "Value of type '%s' can't provide a length."
 msgstr "型別為 '%s' 的值無法提供長度。"
@@ -13663,6 +13758,9 @@ msgstr "構建直接光照"
 
 msgid "Integrate indirect lighting"
 msgstr "集成間接光照"
+
+msgid "Integrate indirect lighting %d%%"
+msgstr "集成間接光照 %d%%"
 
 msgid "Baking lightprobes"
 msgstr "正在烘焙光照探查"
@@ -13988,11 +14086,6 @@ msgstr "套件片段 (Segment) 的第一個字元不可為「%s」。"
 msgid "The package must have at least one '.' separator."
 msgstr "套件必須至少有一個「.」分隔字元。"
 
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr "專案名稱不符合包名稱格式要求。請明確指定專案名稱。"
-
 msgid "Invalid public key for APK expansion."
 msgstr "無效的 APK Expansion 公鑰。"
 
@@ -14056,6 +14149,9 @@ msgstr "無法於裝置上執行。"
 
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "使用 C#/.NET 時匯出到 Android 是實驗性的。"
+
+msgid "Android architecture %s not supported in C# projects."
+msgstr "Android 架構 %s 尚不支援C#專案。"
 
 msgid ""
 "Android build template not installed in the project. Install it from the "
@@ -14201,8 +14297,14 @@ msgstr "無法寫入擴充套件檔案！"
 msgid "Building Android Project (gradle)"
 msgstr "建置 Android 專案（Gradle）"
 
+msgid "Building of Android project failed, check output for the error:"
+msgstr "建置 Android 專案失敗，請檢查輸出以確認錯誤:"
+
 msgid "Moving output"
 msgstr "移動輸出"
+
+msgid "Unable to copy and rename export file:"
+msgstr "無法複製並重新命名匯出的檔案:"
 
 msgid "Package not found: \"%s\"."
 msgstr "未找到套件：「%s」。"
@@ -14270,6 +14372,12 @@ msgid ""
 ".ipa can only be built on macOS. Leaving Xcode project without building the "
 "package."
 msgstr ".ipa 只能在macOS上建置。離開 Xcode 專案而不建置專案。"
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr "使用 C#/.NET 時匯出到 iOS 需要 macOS 並且仍是實驗性的。"
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "使用 C#/.NET 時匯出到 iOS 是實驗性的。"
 
 msgid "Identifier is missing."
 msgstr "缺少識別符。"
@@ -15227,7 +15335,7 @@ msgstr "投影紋理只在陰影啟用時能夠正常工作。"
 msgid ""
 "Projector textures are not supported when using the GL Compatibility backend "
 "yet. Support will be added in a future release."
-msgstr "使用 GL Compatibility 後端時，還不支援投影器紋理。將在後續版本中加入。"
+msgstr "目前 GL Compatibility 後端尚不支援投影器紋理。將在後續版本中加入。"
 
 msgid "A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."
 msgstr "角度大於 90 度的 SpotLight3D 無法投射出陰影。"
@@ -15259,7 +15367,7 @@ msgstr "生成探查加速結構中"
 msgid ""
 "LightmapGI nodes are not supported when using the GL Compatibility backend "
 "yet. Support will be added in a future release."
-msgstr "使用 GL 相容性後端時，還不支援LightmapGI 節點。將在後續版本中加入。"
+msgstr "目前 GL 相容性後端尚不支援LightmapGI 節點。將在後續版本中加入。"
 
 msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
@@ -15343,7 +15451,7 @@ msgid ""
 "ReflectionProbes are not supported when using the GL Compatibility backend "
 "yet. Support will be added in a future release."
 msgstr ""
-"使用 GL Compatibility 後端時尚不支援 ReflectionProbe。將在後續版本中加入。"
+"目前 GL Compatibility 後端尚不支援 ReflectionProbe。將在後續版本中加入。"
 
 msgid ""
 "The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
@@ -15381,8 +15489,8 @@ msgid ""
 "VisibleOnScreenNotifier3D nodes are not supported when using the GL "
 "Compatibility backend yet. Support will be added in a future release."
 msgstr ""
-"使用 GL Compatibility 後端時尚不支援 VisibleOnScreenNotifier3D 節點。將在後續"
-"版本中加入。"
+"目前 GL Compatibility 後端尚不支援 VisibleOnScreenNotifier3D 節點。將在後續版"
+"本中加入。"
 
 msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
@@ -15423,7 +15531,7 @@ msgstr "正在生成距離場"
 msgid ""
 "VoxelGI nodes are not supported when using the GL Compatibility backend yet. "
 "Support will be added in a future release."
-msgstr "使用 GL Compatibility 後端時尚不支援 VoxelGI 節點。將在後續版本中加入。"
+msgstr "目前 GL Compatibility 後端尚不支援 VoxelGI 節點。將在後續版本中加入。"
 
 msgid ""
 "No VoxelGI data set, so this node is disabled. Bake static objects to enable "

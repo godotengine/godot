@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-01 04:24+0000\n"
+"PO-Revision-Date: 2023-12-13 21:53+0000\n"
 "Last-Translator: Koji Horaguchi <koji.horaguchi@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -77,7 +77,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.3-rc\n"
 
 msgid "Main Thread"
 msgstr "メインスレッド"
@@ -3443,6 +3443,17 @@ msgstr ""
 "さらなるエラーを防ぐため、'%s' のアドオンを無効化します。"
 
 msgid ""
+"Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."
+msgstr ""
+"パス '%s' からアドオンスクリプトをロードできません。基底型が EditorPlugin では"
+"ありません。"
+
+msgid "Unable to load addon script from path: '%s'. Script is not in tool mode."
+msgstr ""
+"パス '%s' からアドオンスクリプトをロードできません。スクリプトがツールモードで"
+"はありません。"
+
+msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
@@ -3545,6 +3556,15 @@ msgid ""
 msgstr ""
 "ファイル '%s'に書き込めません。ファイルが使用中か、ロックされているか、権限が"
 "ありません。"
+
+msgid "Forward+"
+msgstr "Forward+"
+
+msgid "Mobile"
+msgstr "モバイル"
+
+msgid "Compatibility"
+msgstr "互換性"
 
 msgid "Pan View"
 msgstr "パン・ビュー"
@@ -3722,21 +3742,6 @@ msgstr "Godotについて"
 
 msgid "Support Godot Development"
 msgstr "Godotの開発をサポートする"
-
-msgid "Choose a renderer."
-msgstr "レンダラーを選択。"
-
-msgid "Forward+"
-msgstr "Forward+"
-
-msgid "Mobile"
-msgstr "モバイル"
-
-msgid "Compatibility"
-msgstr "互換性"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "レンダラーを変更するには、エディターの再起動が必要です。"
 
 msgid "Update Continuously"
 msgstr "継続的に更新"
@@ -13044,13 +13049,6 @@ msgstr ""
 "エディターまたはプロジェクトマネージャーの再起動後にインターフェースが更新され"
 "ます。"
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"%s個のフォルダー内に存在するGodotプロジェクトをスキャンしますか？\n"
-"これにはしばらく時間がかかります。"
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "プロジェクトマネージャー"
@@ -14601,13 +14599,6 @@ msgstr "文字 '%s' はパッケージ セグメントの先頭に使用でき�
 
 msgid "The package must have at least one '.' separator."
 msgstr "パッケージには一つ以上の区切り文字 '.' が必要です。"
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr ""
-"プロジェクト名がパッケージ名の形式の要件を満たしていません。パッケージ名を明示"
-"的に指定してください。"
 
 msgid "Invalid public key for APK expansion."
 msgstr "APK expansion の公開鍵が無効です。"

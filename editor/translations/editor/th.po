@@ -17,13 +17,14 @@
 # Nuttapong Nut <nuttapong.510123@gmail.com>, 2023.
 # LadsForTea <jajasamag@gmail.com>, 2023.
 # Satakun Utama <galaxytomostore@gmail.com>, 2023.
+# รัชพล คิดการ <rutchaphon.far@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-24 17:38+0000\n"
-"Last-Translator: Atirut Wattanamongkol <artjang301@gmail.com>\n"
+"PO-Revision-Date: 2023-12-13 14:13+0000\n"
+"Last-Translator: รัชพล คิดการ <rutchaphon.far@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.1.1-dev\n"
+"X-Generator: Weblate 5.3-rc\n"
 
 msgid "Main Thread"
 msgstr "เธรดหลัก"
@@ -131,6 +132,9 @@ msgstr "ปุ่มจอยย้อนกลับ, จอย Sony Select, �
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "ปุ่มจอยนำทาง, จอย Sony ปุ่ม PS, จอย Xbox ปุ่ม Home"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "เริ่ม, หน้าต่าง Xbox, Nintendo พลัส"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "ปุ่มข้างในจอยสติ๊กซ้าย, จอย Sony L3, จอย Xbox L/LS"
@@ -6126,13 +6130,6 @@ msgid ""
 msgstr ""
 "ภาษาได้ถูกเปลี่ยนแล้ว\n"
 "การเปลี่ยนแปลงจะมีผลเมื่อเปิดตัวแก้ไขหรือตัวจัดการโปรเจกต์ใหม่"
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"ทำการสแกนหาโปรเจกต์ ในโฟลเดอร์ %s หรือไม่?\n"
-"อาจจะใช้เวลาสักครู่"
 
 msgid "New Project"
 msgstr "โปรเจกต์ใหม่"

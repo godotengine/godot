@@ -82,13 +82,14 @@
 # E D <th3-crasin3ss@hotmail.com>, 2023.
 # Frankie McEyes <mceyes@protonmail.com>, 2023.
 # Samuele Righi <blackdestinyx145@gmail.com>, 2023.
+# Ott8v <Ott8v@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-11 09:59+0000\n"
-"Last-Translator: Samuele Righi <blackdestinyx145@gmail.com>\n"
+"PO-Revision-Date: 2024-01-30 03:33+0000\n"
+"Last-Translator: Ott8v <Ott8v@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -96,7 +97,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -344,6 +345,9 @@ msgstr "Usa Input Accumulati"
 msgid "Input Devices"
 msgstr "Dispositivi Input"
 
+msgid "Compatibility"
+msgstr "Compatibilità"
+
 msgid "Device"
 msgstr "Dispositivo"
 
@@ -422,6 +426,9 @@ msgstr "Numero Controller"
 msgid "Controller Value"
 msgstr "Valore Controller"
 
+msgid "Events"
+msgstr "Eventi"
+
 msgid "Big Endian"
 msgstr "Big Endian"
 
@@ -475,6 +482,12 @@ msgstr "Stato"
 
 msgid "Network"
 msgstr "Reti"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "TLS"
+msgstr "TLS"
 
 msgid "Locale"
 msgstr "Locale"
@@ -715,6 +728,9 @@ msgstr "Importa"
 
 msgid "FBX"
 msgstr "FBX"
+
+msgid "Tools"
+msgstr "Strumenti"
 
 msgid "Docks"
 msgstr "Docks"
@@ -1244,6 +1260,12 @@ msgstr "ETC2"
 msgid "Export"
 msgstr "Esporta"
 
+msgid "SSH"
+msgstr "SSH"
+
+msgid "SCP"
+msgstr "SCP"
+
 msgid "Export Path"
 msgstr "Percorso di Esportazione"
 
@@ -1286,6 +1308,9 @@ msgstr "Crea da"
 msgid "Delimiter"
 msgstr "Delimitatore"
 
+msgid "Columns"
+msgstr "Colonne"
+
 msgid "Lossy Quality"
 msgstr "Qualità Lossy"
 
@@ -1327,6 +1352,9 @@ msgstr "Opzioni avanzate"
 
 msgid "Precision"
 msgstr "Precisione"
+
+msgid "Resolution"
+msgstr "Risoluzione"
 
 msgid "Height"
 msgstr "Altezza"

@@ -102,13 +102,13 @@
 # Emil Krebs <emil.krebs@typefox.io>, 2023.
 # Björn Reißig <bjoern.reissig@bytestorm.eu>, 2023.
 # Cerno_b <jan.biel@arcor.de>, 2023.
-# Cerno_b <cerno.b@gmail.com>, 2023.
+# Cerno_b <cerno.b@gmail.com>, 2023, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-27 01:40+0000\n"
+"PO-Revision-Date: 2024-01-19 08:19+0000\n"
 "Last-Translator: Cerno_b <cerno.b@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
@@ -117,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2.1-rc\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -294,7 +294,7 @@ msgid "Scale"
 msgstr "Skalierung"
 
 msgid "Scale Mode"
-msgstr "Skalierungs-Modus"
+msgstr "Skalierungsmodus"
 
 msgid "Debug"
 msgstr "Debuggen"
@@ -381,7 +381,7 @@ msgid "Common"
 msgstr "Allgemein"
 
 msgid "Snap Controls to Pixels"
-msgstr "Kontrollpunkte auf Pixeln einrasten"
+msgstr "Control-Vectices auf Pixeln einrasten"
 
 msgid "Fonts"
 msgstr "Schriftarten"
@@ -1155,7 +1155,7 @@ msgid "Oidn"
 msgstr "Oidn"
 
 msgid "Oidn Denoise Path"
-msgstr "Pfad Oidn Noise-Unterdrückung"
+msgstr "Pfad Oidn Rauschunterdrückung"
 
 msgid "Docks"
 msgstr "Docks"
@@ -1413,7 +1413,7 @@ msgid "Grid Division Level Min"
 msgstr "Minimale Rasterteilung"
 
 msgid "Grid Division Level Bias"
-msgstr "Rasterteilungsschwelle"
+msgstr "Rasterteilungs-Bias"
 
 msgid "Grid XZ Plane"
 msgstr "XZ-Rasterebene"
@@ -1860,7 +1860,7 @@ msgid "Zoom"
 msgstr "Zoom"
 
 msgid "Antialiasing"
-msgstr "Kantenglättung"
+msgstr "Antialiasing"
 
 msgid "Generate Mipmaps"
 msgstr "Mipmaps generieren"
@@ -2100,7 +2100,7 @@ msgid "Visibility Range End Margin"
 msgstr "Abstand Ende Sichtbarkeitsbereich"
 
 msgid "Visibility Range Fade Mode"
-msgstr "Sichtbarkeitsbereich Fade-Modus"
+msgstr "Sichtbarkeitsbereich Fading-Modus"
 
 msgid "Cast Shadow"
 msgstr "Schatten werfen"
@@ -2184,16 +2184,16 @@ msgid "LODs"
 msgstr "LODs"
 
 msgid "Normal Split Angle"
-msgstr "Normal-Trennungswinkel"
+msgstr "Normalen-Trennungswinkel"
 
 msgid "Normal Merge Angle"
-msgstr "Normal-Zusammenführungswinkel"
+msgstr "Normalen-Zusammenführungswinkel"
 
 msgid "Use External"
-msgstr "Externes benutzen"
+msgstr "Externes verwenden"
 
 msgid "Loop Mode"
-msgstr "Schleifenmodus"
+msgstr "Loop-Modus"
 
 msgid "Keep Custom Tracks"
 msgstr "Eigene Tracks behalten"
@@ -2280,10 +2280,10 @@ msgid "Roughness"
 msgstr "Rauheit"
 
 msgid "Src Normal"
-msgstr "Quelle Normal"
+msgstr "Normal Map-Quelle"
 
 msgid "Process"
-msgstr "Prozessverhalten"
+msgstr "Prozessierung"
 
 msgid "Fix Alpha Border"
 msgstr "Alpharand beheben"
@@ -2292,19 +2292,19 @@ msgid "Premult Alpha"
 msgstr "Alpha vormultiplizieren"
 
 msgid "Normal Map Invert Y"
-msgstr "Y der Normal-Map invertieren"
+msgstr "Normal Map-Y Invertieren"
 
 msgid "HDR as sRGB"
 msgstr "HDR als sRGB"
 
 msgid "HDR Clamp Exposure"
-msgstr "HDR Clamp-Exposure"
+msgstr "HDR Clamp-Belichtung"
 
 msgid "Size Limit"
-msgstr "Höchstmaß"
+msgstr "Größenbeschränkung"
 
 msgid "Detect 3D"
-msgstr "3D erkennen"
+msgstr "3D Erkennen"
 
 msgid "Compress To"
 msgstr "Komprimieren zu"
@@ -2331,7 +2331,7 @@ msgid "Trim Alpha Border From Region"
 msgstr "Alpharand von Region abschneiden"
 
 msgid "Force"
-msgstr "Kraft/Erzwingen"
+msgstr "Force"
 
 msgid "8 Bit"
 msgstr "8-Bit"
@@ -2349,16 +2349,16 @@ msgid "Edit"
 msgstr "Bearbeiten"
 
 msgid "Trim"
-msgstr "Abschneiden"
+msgstr "Beschneiden"
 
 msgid "Normalize"
 msgstr "Normalisieren"
 
 msgid "Loop Begin"
-msgstr "Schleifenbeginn"
+msgstr "Loop-Anfang"
 
 msgid "Loop End"
-msgstr "Schleifenende"
+msgstr "Loop-Ende"
 
 msgid "Asset Library"
 msgstr "Asset-Bibliothek"
@@ -2517,7 +2517,7 @@ msgid "Texture Region Size"
 msgstr "Textur-Regionsgröße"
 
 msgid "Use Texture Padding"
-msgstr "Texturenabstände benutzen"
+msgstr "Textur-Padding verwenden"
 
 msgid "Atlas Coords"
 msgstr "Atlaskoordinaten"
@@ -2733,7 +2733,7 @@ msgid "Reference Space"
 msgstr "Reference-Space"
 
 msgid "Environment Blend Mode"
-msgstr "Environment-Mischmodus"
+msgstr "Environment-Blending-Modus"
 
 msgid "Foveation Level"
 msgstr "Foveation-Grad"
@@ -2808,10 +2808,10 @@ msgid "Pointing"
 msgstr "Berührung"
 
 msgid "Emulate Touch From Mouse"
-msgstr "Druckberührung mit Maus emulieren"
+msgstr "Touch durch Maus emulieren"
 
 msgid "Emulate Mouse From Touch"
-msgstr "Maus durch Druckberührung emulieren"
+msgstr "Maus durch Touch emulieren"
 
 msgid "Android"
 msgstr "Android"
@@ -3195,7 +3195,7 @@ msgid "Sparse Values Byte Offset"
 msgstr "Sparse Wertebyteversatz"
 
 msgid "Loop"
-msgstr "Schleife"
+msgstr "Loop"
 
 msgid "Buffer"
 msgstr "Puffer"
@@ -3225,7 +3225,7 @@ msgid "Depth Near"
 msgstr "Tiefe Near"
 
 msgid "Blend Weights"
-msgstr "Mischgewichte"
+msgstr "Blending-Gewichte"
 
 msgid "Instance Materials"
 msgstr "Instanzmaterialien"
@@ -3378,7 +3378,7 @@ msgid "Bar Beats"
 msgstr "Takt-Beats"
 
 msgid "Loop Offset"
-msgstr "Schleifenversatz"
+msgstr "Loop-Versatz"
 
 msgid "Eye Height"
 msgstr "Augenhöhe"
@@ -3513,7 +3513,7 @@ msgid "Seamless"
 msgstr "Nahtlos"
 
 msgid "Seamless Blend Skirt"
-msgstr "Nahtlose Überblendungsbegrenzung"
+msgstr "Nahtlose Blending-Begrenzung"
 
 msgid "As Normal Map"
 msgstr "Als Normal-Map"
@@ -3660,7 +3660,7 @@ msgid "One Click Deploy Clear Previous Install"
 msgstr "Ein-Klick-Ausliefern leert vorherige Installation"
 
 msgid "Use Wi-Fi for Remote Debug"
-msgstr "WLAN für Remote-Debug benutzen"
+msgstr "WLAN für Remote-Debug verwenden"
 
 msgid "Wi-Fi Remote Debug Host"
 msgstr "WLAN-Remote-Debug-Host"
@@ -3734,8 +3734,8 @@ msgstr "Daten beibehalten nach Deinstallation"
 msgid "Exclude From Recents"
 msgstr "Aus Kürzliche Anwendungen ausschließen"
 
-msgid "Show in Android Tv"
-msgstr "In Android Tv anzeigen"
+msgid "Show in Android TV"
+msgstr "In Android TV anzeigen"
 
 msgid "Show in App Library"
 msgstr "In Appbibliothek anzeigen"
@@ -4587,7 +4587,7 @@ msgid "Spread"
 msgstr "Streuung"
 
 msgid "Initial Velocity"
-msgstr "Anfängliche Geschwindigkeit"
+msgstr "Anfangsgeschwindigkeit"
 
 msgid "Velocity Min"
 msgstr "Geschwindigkeit Min."
@@ -4701,7 +4701,7 @@ msgid "Sub Emitter"
 msgstr "Unteremitter"
 
 msgid "Process Material"
-msgstr "Materialverarbeitung"
+msgstr "Prozessmaterial"
 
 msgid "Interpolate"
 msgstr "Interpolieren"
@@ -4731,7 +4731,7 @@ msgid "Node B"
 msgstr "Node B"
 
 msgid "Bias"
-msgstr "Tendenz"
+msgstr "Bias"
 
 msgid "Disable Collision"
 msgstr "Kollisionen deaktivieren"
@@ -4773,7 +4773,7 @@ msgid "Energy"
 msgstr "Energie"
 
 msgid "Blend Mode"
-msgstr "Mischmodus"
+msgstr "Blending-Modus"
 
 msgid "Z Min"
 msgstr "Z Min."
@@ -4794,7 +4794,7 @@ msgid "Shadow"
 msgstr "Schatten"
 
 msgid "Filter Smooth"
-msgstr "Glättungsfilter"
+msgstr "Filterglättung"
 
 msgid "Texture Scale"
 msgstr "Texturskalierung"
@@ -4821,7 +4821,7 @@ msgid "Fill"
 msgstr "Füllen"
 
 msgid "Gradient"
-msgstr "Steigung"
+msgstr "Gradient"
 
 msgid "Texture Mode"
 msgstr "Texturmodus"
@@ -4857,7 +4857,7 @@ msgid "Multimesh"
 msgstr "Multimesh"
 
 msgid "Pathfinding"
-msgstr "Pfadfinden"
+msgstr "Wegfindung"
 
 msgid "Path Desired Distance"
 msgstr "Gewünschte Pfaddistanz"
@@ -4872,7 +4872,7 @@ msgid "Navigation Layers"
 msgstr "Navigationsebenen"
 
 msgid "Pathfinding Algorithm"
-msgstr "Pathfinding-Algorithmus"
+msgstr "Wegfindungs-Algorithmus"
 
 msgid "Path Postprocessing"
 msgstr "Pfad-Postprocessing"
@@ -4881,10 +4881,10 @@ msgid "Path Metadata Flags"
 msgstr "Pfad-Metadaten Flags"
 
 msgid "Avoidance"
-msgstr "Vermeidung"
+msgstr "Ausweichen"
 
 msgid "Avoidance Enabled"
-msgstr "Vermeidung aktiviert"
+msgstr "Ausweichen aktiviert"
 
 msgid "Neighbor Distance"
 msgstr "Nachbardistanz"
@@ -4902,13 +4902,13 @@ msgid "Max Speed"
 msgstr "Max. Geschwindigkeit"
 
 msgid "Avoidance Layers"
-msgstr "Vermeidungsebenen"
+msgstr "Ausweich-Ebenen"
 
 msgid "Avoidance Mask"
-msgstr "Vermeidungsmaske"
+msgstr "Ausweich-Maske"
 
 msgid "Avoidance Priority"
-msgstr "Vermeidungspriorität"
+msgstr "Ausweich-Priorität"
 
 msgid "Use Custom"
 msgstr "Eigene verwenden"
@@ -4944,10 +4944,10 @@ msgid "Navigation Polygon"
 msgstr "Navigationspolygon"
 
 msgid "Use Edge Connections"
-msgstr "Kantenverbindungen benutzen"
+msgstr "Kantenverbindungen verwenden"
 
 msgid "Constrain Avoidance"
-msgstr "Vermeidung einschränken"
+msgstr "Ausweichen einschränken"
 
 msgid "Skew"
 msgstr "Neigung"
@@ -5388,19 +5388,19 @@ msgid "Albedo Mix"
 msgstr "Albedo-Mix"
 
 msgid "Normal Fade"
-msgstr "Normal-Ausblenden"
+msgstr "Normalen-Fading"
 
 msgid "Vertical Fade"
-msgstr "Vertikales Ausblenden"
+msgstr "Vertikales Fading"
 
 msgid "Upper Fade"
-msgstr "Obiges Ausblenden"
+msgstr "Oberes Fading"
 
 msgid "Lower Fade"
-msgstr "Unteres Ausblenden"
+msgstr "Unteres Fading"
 
 msgid "Distance Fade"
-msgstr "Entfernungsausblenden"
+msgstr "Fern-Fading"
 
 msgid "Begin"
 msgstr "Beginn"
@@ -5442,16 +5442,16 @@ msgid "Visibility Range"
 msgstr "Sichtbarkeitsbereich"
 
 msgid "Begin Margin"
-msgstr "Beginnabstand"
+msgstr "Abstand Beginn"
 
 msgid "End"
 msgstr "Ende"
 
 msgid "End Margin"
-msgstr "Endabstand"
+msgstr "Abstand Ende"
 
 msgid "Fade Mode"
-msgstr "Ausblendmodus"
+msgstr "Fading-Modus"
 
 msgid "Solver Priority"
 msgstr "Solver-Priorität"
@@ -5463,7 +5463,7 @@ msgid "Params"
 msgstr "Parameter"
 
 msgid "Impulse Clamp"
-msgstr "Impulsabklemmen"
+msgstr "Impuls-Clamp"
 
 msgid "Relaxation"
 msgstr "Entspannung"
@@ -5553,7 +5553,7 @@ msgid "Double Sided"
 msgstr "Doppelseitig"
 
 msgid "No Depth Test"
-msgstr "Kein Tiefentest"
+msgstr "Keine Tiefenprüfung"
 
 msgid "Fixed Size"
 msgstr "Feste Größe"
@@ -5646,13 +5646,13 @@ msgid "Bake Mode"
 msgstr "Backmodus"
 
 msgid "Normal Bias"
-msgstr "Normalentendenz"
+msgstr "Normalen-Bias"
 
 msgid "Reverse Cull Face"
 msgstr "Cull-Fläche invertieren"
 
 msgid "Transmittance Bias"
-msgstr "Transmittance-Bias"
+msgstr "Transmissionsgrad-Bias"
 
 msgid "Opacity"
 msgstr "Deckkraft"
@@ -5673,10 +5673,10 @@ msgid "Split 3"
 msgstr "Aufspaltung 3"
 
 msgid "Blend Splits"
-msgstr "Mischaufspaltungen"
+msgstr "Blending-Aufspaltungen"
 
 msgid "Fade Start"
-msgstr "Verblassungsstart"
+msgstr "Fading-Start"
 
 msgid "Pancake Size"
 msgstr "Pancake-Größe"
@@ -5721,7 +5721,7 @@ msgid "Use Denoiser"
 msgstr "Rauschunterdrückung verwenden"
 
 msgid "Denoiser Strength"
-msgstr "Entrauscherstärke"
+msgstr "Rauschunterdrückungs-Stärke"
 
 msgid "Max Texture Size"
 msgstr "Max. Texturengröße"
@@ -5754,7 +5754,7 @@ msgid "Path Height Offset"
 msgstr "Pfadhöhenversatz"
 
 msgid "Use 3D Avoidance"
-msgstr "3D-Vermeidung verwenden"
+msgstr "3D-Ausweichen verwenden"
 
 msgid "Keep Y Velocity"
 msgstr "Y-Geschwindigkeit behalten"
@@ -5793,7 +5793,7 @@ msgid "Rotation Mode"
 msgstr "Rotationsmodus"
 
 msgid "Use Model Front"
-msgstr "Modellvorderseite benutzen"
+msgstr "Modellvorderseite verwenden"
 
 msgid "Tilt Enabled"
 msgstr "Neigung aktiviert"
@@ -5832,7 +5832,7 @@ msgid "Angular Limit Lower"
 msgstr "Untere Winkelgrenze"
 
 msgid "Angular Limit Bias"
-msgstr "Winkelgrenzen-Neigung"
+msgstr "Winkelgrenzen-Bias"
 
 msgid "Angular Limit Softness"
 msgstr "Winkelgrenzen-Glättung"
@@ -5925,7 +5925,7 @@ msgid "Origin Offset"
 msgstr "Ursprungsversatz"
 
 msgid "Box Projection"
-msgstr "Kastenprojektion"
+msgstr "Box-Projektion"
 
 msgid "Enable Shadows"
 msgstr "Schatten aktivieren"
@@ -6093,7 +6093,7 @@ msgid "Ignore Occlusion Culling"
 msgstr "Occlusion-Culling ignorieren"
 
 msgid "Global Illumination"
-msgstr "Globale Beleuchtung"
+msgstr "Global Illumination"
 
 msgid "Lightmap Scale"
 msgstr "Lightmap-Skalierung"
@@ -6105,7 +6105,7 @@ msgid "Propagation"
 msgstr "Verbreitung"
 
 msgid "Use Two Bounces"
-msgstr "Zwei Abprälle benutzen"
+msgstr "Zwei Abprälle verwenden"
 
 msgid "Tracker"
 msgstr "Tracker"
@@ -6126,16 +6126,16 @@ msgid "Mix Mode"
 msgstr "Mischmodus"
 
 msgid "Fadein Time"
-msgstr "Einblendzeit"
+msgstr "Fade-In-Zeit"
 
 msgid "Fadein Curve"
-msgstr "Einblendkurve"
+msgstr "Fade-In-Kurve"
 
 msgid "Fadeout Time"
-msgstr "Ausblendzeit"
+msgstr "Fade-Out-Zeit"
 
 msgid "Fadeout Curve"
-msgstr "Ausblendkurve"
+msgstr "Fade-Out-Kurve"
 
 msgid "Auto Restart"
 msgstr "Auto-Neustarten"
@@ -6150,10 +6150,10 @@ msgid "Random Delay"
 msgstr "Zufällige Zeitverzögerung"
 
 msgid "Xfade Time"
-msgstr "Überblendzeit"
+msgstr "Cross-Fade-Zeit"
 
 msgid "Xfade Curve"
-msgstr "Überblendkurve"
+msgstr "Cross-Fade-Kurve"
 
 msgid "Allow Transition to Self"
 msgstr "Übergang zu sich selbst erlauben"
@@ -6174,7 +6174,7 @@ msgid "Add Amount"
 msgstr "Menge hinzufügen"
 
 msgid "Blend Amount"
-msgstr "Abbildungsmenge"
+msgstr "Blending-Menge"
 
 msgid "Sub Amount"
 msgstr "Untermenge"
@@ -6246,7 +6246,7 @@ msgid "Playback Options"
 msgstr "Abspieloptionen"
 
 msgid "Default Blend Time"
-msgstr "Default-Mischzeit"
+msgstr "Default-Blending-Zeit"
 
 msgid "Movie Quit on Finish"
 msgstr "Beenden bei Filmende"
@@ -6537,7 +6537,7 @@ msgid "Root Subfolder"
 msgstr "Wurzel-Unterordner"
 
 msgid "Use Native Dialog"
-msgstr "Nativen Dialog benutzen"
+msgstr "Nativen Dialog verwenden"
 
 msgid "Scroll Offset"
 msgstr "Scrollversatz"
@@ -6894,10 +6894,10 @@ msgid "Vertical Scroll Mode"
 msgstr "Vertikaler Scrollmodus"
 
 msgid "Scroll Deadzone"
-msgstr "Scrollsperrzone"
+msgstr "Scroll-Totzone"
 
 msgid "Default Scroll Deadzone"
-msgstr "Default-Scrollsperrzone"
+msgstr "Default-Scroll-Totzone"
 
 msgid "Scrollable"
 msgstr "Scrollbar"
@@ -6966,7 +6966,7 @@ msgid "All Tabs in Front"
 msgstr "Alle Tabs vorne"
 
 msgid "Use Hidden Tabs for Min Size"
-msgstr "Versteckte Tabs für min. Größe benutzen"
+msgstr "Versteckte Tabs für min. Größe verwenden"
 
 msgid "Tab Focus Mode"
 msgstr "Tabfokusmodus"
@@ -7125,7 +7125,7 @@ msgid "Repeat"
 msgstr "Wiederholen"
 
 msgid "Use Parent Material"
-msgstr "Parent-Material benutzen"
+msgstr "Parent-Material verwenden"
 
 msgid "Diffuse"
 msgstr "Zerstreuen"
@@ -7224,7 +7224,7 @@ msgid "Draw 2D Outlines"
 msgstr "2D-Umrisse zeichnen"
 
 msgid "Anti Aliasing"
-msgstr "Kantenglättung"
+msgstr "Antialiasing"
 
 msgid "MSAA 2D"
 msgstr "MSAA 2D"
@@ -7245,13 +7245,13 @@ msgid "Screen Space AA"
 msgstr "Screen-Space AA"
 
 msgid "Use TAA"
-msgstr "TAA benutzen"
+msgstr "TAA verwenden"
 
 msgid "Use Debanding"
 msgstr "Debanding verwenden"
 
 msgid "Use Occlusion Culling"
-msgstr "Occlusion-Culling benutzen"
+msgstr "Occlusion-Culling verwenden"
 
 msgid "Mesh LOD"
 msgstr "Mesh-LOD"
@@ -7338,7 +7338,7 @@ msgid "Debug Draw"
 msgstr "Debug-Zeichnen"
 
 msgid "Use HDR 2D"
-msgstr "HDR 2D benutzen"
+msgstr "HDR 2D verwenden"
 
 msgid "Scaling 3D"
 msgstr "3D-Skalierung"
@@ -7590,7 +7590,7 @@ msgid "Particles Anim V Frames"
 msgstr "Partikelanimation V Frames"
 
 msgid "Particles Anim Loop"
-msgstr "Partikelanimationsschleife"
+msgstr "Partikelanimations-Loop"
 
 msgid "Load Path"
 msgstr "Ladepfad"
@@ -7641,7 +7641,7 @@ msgid "Source"
 msgstr "Quelle"
 
 msgid "Sky Contribution"
-msgstr "Himmel Beitrag"
+msgstr "Himmel-Beitrag"
 
 msgid "Reflected Light"
 msgstr "Reflektiertes Licht"
@@ -7659,10 +7659,10 @@ msgid "Max Steps"
 msgstr "Max Schritte"
 
 msgid "Fade In"
-msgstr "Einblenden"
+msgstr "Fade-In"
 
 msgid "Fade Out"
-msgstr "Ausblenden"
+msgstr "Fade-Out"
 
 msgid "Depth Tolerance"
 msgstr "Tiefentoleranz"
@@ -7683,7 +7683,7 @@ msgid "Sharpness"
 msgstr "Schärfe"
 
 msgid "Light Affect"
-msgstr "Lichtbeeinflussung"
+msgstr "Lichteinfluss"
 
 msgid "AO Channel Affect"
 msgstr "AO-Kanal-Beeinflussung"
@@ -7692,19 +7692,19 @@ msgid "SSIL"
 msgstr "SSIL"
 
 msgid "Normal Rejection"
-msgstr "Normale Ablehnung"
+msgstr "Normalen-Unterdrückung"
 
 msgid "SDFGI"
 msgstr "SDFGI"
 
 msgid "Use Occlusion"
-msgstr "Occlusion benutzen"
+msgstr "Occlusion verwenden"
 
 msgid "Read Sky Light"
 msgstr "Himmelslicht lesen"
 
 msgid "Bounce Feedback"
-msgstr "Bounce-Feedback"
+msgstr "Abprall-Feedback"
 
 msgid "Cascades"
 msgstr "Kaskaden"
@@ -7806,7 +7806,7 @@ msgid "Detail Spread"
 msgstr "Detailausbreitung"
 
 msgid "Ambient Inject"
-msgstr "Umgebungseinspeisung"
+msgstr "Umgebungs-Inject"
 
 msgid "Temporal Reprojection"
 msgstr "Zeitliche Reprojektion"
@@ -7827,7 +7827,7 @@ msgid "Height Falloff"
 msgstr "Höhenabfall"
 
 msgid "Edge Fade"
-msgstr "Kantenausblendung"
+msgstr "Kanten-Fading"
 
 msgid "Density Texture"
 msgstr "Dichtentextur"
@@ -7980,7 +7980,7 @@ msgid "Skin Mode"
 msgstr "Skin-Modus"
 
 msgid "Transmittance"
-msgstr "Übergang"
+msgstr "Transmissionsgrad"
 
 msgid "Boost"
 msgstr "Boost"
@@ -8046,10 +8046,10 @@ msgid "Point Size"
 msgstr "Punktgröße"
 
 msgid "Use Particle Trails"
-msgstr "Partikel-Trails benutzen"
+msgstr "Partikel-Trails verwenden"
 
 msgid "Proximity Fade"
-msgstr "Näherungsausblenden"
+msgstr "Nah-Fading"
 
 msgid "Distance"
 msgstr "Distanz"
@@ -8316,7 +8316,7 @@ msgid "Influence over Life"
 msgstr "Einfluss über Lebensdauer"
 
 msgid "Use Scale"
-msgstr "Skalierung benutzen"
+msgstr "Skalierung verwenden"
 
 msgid "Amount at End"
 msgstr "Anzahl bei Ende"
@@ -8343,7 +8343,7 @@ msgid "Add UV2"
 msgstr "UV2 hinzufügen"
 
 msgid "UV2 Padding"
-msgstr "UV2-Abstand"
+msgstr "UV2-Padding"
 
 msgid "Subdivide Width"
 msgstr "Unterteilungsbreite"
@@ -8424,7 +8424,7 @@ msgid "Default Joint Settings"
 msgstr "Default-Gelenkeinstellungen"
 
 msgid "Use Gravity"
-msgstr "Schwerkraft benutzen"
+msgstr "Schwerkraft verwenden"
 
 msgid "Bone Index"
 msgstr "Knochenindex"
@@ -8526,7 +8526,7 @@ msgid "Content Margins"
 msgstr "Inhalts-Ränder"
 
 msgid "Blend"
-msgstr "Mischen"
+msgstr "Blending"
 
 msgid "Top Left"
 msgstr "Oben links"
@@ -8679,7 +8679,7 @@ msgid "Physics Layers"
 msgstr "Physik-Ebenen"
 
 msgid "Terrain Sets"
-msgstr "Terrainsätze"
+msgstr "Terrain-Sets"
 
 msgid "Custom Data Layers"
 msgstr "Eigene Datenschichten"
@@ -8715,7 +8715,7 @@ msgid "Y Sort Origin"
 msgstr "Y-Sortierungsursprung"
 
 msgid "Terrain Set"
-msgstr "Terrainsatz"
+msgstr "Terrain-Set"
 
 msgid "Terrain"
 msgstr "Terrain"
@@ -9156,10 +9156,10 @@ msgid "Separator Outline Size"
 msgstr "Trennzeichenumrissfarbe"
 
 msgid "Item Start Padding"
-msgstr "Elementbegrenzung, Start"
+msgstr "Element-Padding, Start"
 
 msgid "Item End Padding"
-msgstr "Elementbegrenzungsstart, Ende"
+msgstr "Element-Padding, Ende"
 
 msgid "Panel Selected"
 msgstr "Panel ausgewählt"
@@ -9474,10 +9474,10 @@ msgid "Table Border"
 msgstr "Tabellenrand"
 
 msgid "Text Highlight H Padding"
-msgstr "Texthervorhebung H-Abstand"
+msgstr "Texthervorhebung H-Padding"
 
 msgid "Text Highlight V Padding"
-msgstr "Texthervorhebung V-Abstand"
+msgstr "Texthervorhebung V-Padding"
 
 msgid "H Grabber"
 msgstr "H-Greifer"
@@ -9777,10 +9777,10 @@ msgid "Default Up"
 msgstr "Default oben"
 
 msgid "Avoidance Use Multiple Threads"
-msgstr "Vermeidung benutzt mehrere Threads"
+msgstr "Ausweichen benutzt mehrere Threads"
 
 msgid "Avoidance Use High Priority Threads"
-msgstr "Vermeidung benutzt Threads mit hoher Priorität"
+msgstr "Ausweichen benutzt Threads mit hoher Priorität"
 
 msgid "Baking"
 msgstr "Backen"
@@ -10026,7 +10026,7 @@ msgid "Cull"
 msgstr "Cull"
 
 msgid "Unshaded"
-msgstr "Unschattiert"
+msgstr "kein Shading"
 
 msgid "Wireframe"
 msgstr "Drahtgitter"
@@ -10080,10 +10080,10 @@ msgid "Keep Data"
 msgstr "Daten behalten"
 
 msgid "Use Half Res Pass"
-msgstr "Halbe-Auflösung-Durchlauf benutzen"
+msgstr "Halbe-Auflösung-Durchlauf verwenden"
 
 msgid "Use Quarter Res Pass"
-msgstr "Viertel-Auflösung-Durchlauf benutzen"
+msgstr "Viertel-Auflösung-Durchlauf verwenden"
 
 msgid "Internal Size"
 msgstr "Interne Größe"
@@ -10125,7 +10125,7 @@ msgid "Time Rollover Secs"
 msgstr "Zeitüberlauf Sek."
 
 msgid "Use Physical Light Units"
-msgstr "Physische Lichteinheiten benutzen"
+msgstr "Physikalische Lichteinheiten verwenden"
 
 msgid "Soft Shadow Filter Quality"
 msgstr "Weichschattenfilterqualität"
@@ -10143,7 +10143,7 @@ msgid "Shader Cache"
 msgstr "Shader-Cache"
 
 msgid "Use Zstd Compression"
-msgstr "Zstd-Komprimierung benutzen"
+msgstr "Zstd-Komprimierung verwenden"
 
 msgid "Strip Debug"
 msgstr "Debuginformationen entfernen"
@@ -10179,7 +10179,7 @@ msgid "GI"
 msgstr "GI"
 
 msgid "Use Half Resolution"
-msgstr "Halbe Auflösung benutzen"
+msgstr "Halbe Auflösung verwenden"
 
 msgid "Overrides"
 msgstr "Überschreibungen"
@@ -10215,7 +10215,7 @@ msgid "Depth of Field Bokeh Quality"
 msgstr "Schärfentiefe-Bokehqualität"
 
 msgid "Depth of Field Use Jitter"
-msgstr "Schärfentiefe, Jitter benutzen"
+msgstr "Schärfentiefe, Jitter verwenden"
 
 msgid "Half Size"
 msgstr "Halbe Größe"
@@ -10227,10 +10227,10 @@ msgid "Blur Passes"
 msgstr "Unschärfendurchläufe"
 
 msgid "Fadeout From"
-msgstr "Ausblendung von"
+msgstr "Fade-Out von"
 
 msgid "Fadeout To"
-msgstr "Ausblendung zu"
+msgstr "Fade-Out nach"
 
 msgid "Screen Space Roughness Limiter"
 msgstr "Screen-Space-Grobheitsbegrenzer"
@@ -10284,7 +10284,7 @@ msgid "Probe Ray Count"
 msgstr "Probe-Strahlenzahl"
 
 msgid "Frames to Converge"
-msgstr "Frames zum Zusammenlaufen"
+msgstr "Frames zum Konvergieren"
 
 msgid "Frames to Update Lights"
 msgstr "Frames zum Aktualisieren der Lichter"

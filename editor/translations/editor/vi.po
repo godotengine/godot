@@ -36,13 +36,14 @@
 # Huu Le <huuptag@gmail.com>, 2023.
 # Phaspez <tramtrimin@gmail.com>, 2023.
 # phamminhkha <Phamminhkha.tc@gmail.com>, 2023.
+# Ziyn <notziyn@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-04 01:29+0000\n"
-"Last-Translator: IoeCmcomc <hopdaigia2004@gmail.com>\n"
+"PO-Revision-Date: 2024-01-07 19:06+0000\n"
+"Last-Translator: Ziyn <notziyn@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -50,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Chủ đề chính"
@@ -136,6 +137,9 @@ msgstr "Chuyển động của Joypad trên Trục %d (%s) với Giá trị %.2f
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "Hành động phía dưới, Sony X, Xbox A, Nintendo B"
 
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Thao tác bên phải, Sony Tròn, Xbox B, Nintendo A"
+
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
 msgstr "Thao tác bên trái, Sony Vuông, Xbox X, Nintendo Y"
 
@@ -162,6 +166,9 @@ msgstr "D-pad trái"
 
 msgid "D-pad Right"
 msgstr "D-pad phải"
+
+msgid "Pressure:"
+msgstr "Áp lực:"
 
 msgid "canceled"
 msgstr "Huỷ bỏ"
@@ -3445,6 +3452,9 @@ msgstr "Kiểm tra băm SHA-256 thất bại"
 msgid "Asset Download Error:"
 msgstr "Lỗi tải nguyên liệu:"
 
+msgid "Ready to install!"
+msgstr "Sẵn sàng để tải!"
+
 msgid "Downloading (%s / %s)..."
 msgstr "Đang tải (%s / %s)..."
 
@@ -3516,6 +3526,9 @@ msgstr "Trang:"
 
 msgid "Support"
 msgstr "Hỗ trợ"
+
+msgid "Failed to get repository configuration."
+msgstr "Không thể lấy được cài đặt của kho mã nguồn."
 
 msgid "Assets ZIP File"
 msgstr "Tệp tin ZIP Nguyên liệu"
@@ -5323,13 +5336,6 @@ msgstr ""
 "Đã thay đổi ngôn ngữ.\n"
 "Giao diện sẽ cập nhật sau khi khởi động lại trình biên tập hoặc trình quản lí "
 "dự án."
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Bạn có chắc chắn quét các thư mục %s để tìm các dự án Godot có sẵn?\n"
-"Điều này sẽ mất chút thời gian."
 
 msgid "New Project"
 msgstr "Tạo Dự Án"

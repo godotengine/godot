@@ -8,7 +8,7 @@
 # Nafis Ibrahim <thepreciousnafis@gmail.com>, 2018.
 # Muhammad Hazim bin Hafizalshah <muhammadhazimhafizalshah@gmail.com>, 2020.
 # keviinx <keviinx@yahoo.com>, 2020.
-# Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021, 2022.
+# Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021, 2022, 2024.
 # Jacque Fresco <aidter@use.startmail.com>, 2021.
 # Lemoney <railkill@gmail.com>, 2021, 2022.
 # dens-07 <densleyn01@gmail.com>, 2023.
@@ -17,8 +17,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-03 17:28+0000\n"
-"Last-Translator: dens-07 <densleyn01@gmail.com>\n"
+"PO-Revision-Date: 2024-01-09 13:37+0000\n"
+"Last-Translator: Keviindran Ramachandran <keviinx@yahoo.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
@@ -26,7 +26,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Main Thread"
+msgstr "Utas Utama"
 
 msgid "Unset"
 msgstr "Batal Set"
@@ -63,6 +66,9 @@ msgstr "Butang Ibu Jari 2"
 
 msgid "Button"
 msgstr "Butang"
+
+msgid "Double Click"
+msgstr "Klik Dua Kali"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Gerakan mouse di posisi (%s) dengan halaju (%s)"
@@ -121,6 +127,9 @@ msgstr "Kembali, Sony Pilih, Xbox Kembali, Nintendo -"
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Panduan, Sony PS, Xbox Home"
 
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Mula, Menu Xbox, Nintendo +"
+
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Batang Kiri, Sony L3, Xbox L/LS"
 
@@ -156,6 +165,9 @@ msgstr "Butang Joypad %d"
 
 msgid "Pressure:"
 msgstr "Tekanan:"
+
+msgid "canceled"
+msgstr "dibatalkan"
 
 msgid "touched"
 msgstr "Disentuh"
@@ -414,17 +426,66 @@ msgid "%d item"
 msgid_plural "%d items"
 msgstr[0] "Barang %d"
 
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
+"Nama tindakan tidak sah. Tidak boleh kosong atau mengandungi '/', ':', '=', "
+"'\\' atau '\"'"
+
+msgid "An action with the name '%s' already exists."
+msgstr "Tindakan dengan nama '%s' sudah wujud."
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Tidak Boleh Dikembalikan - Tindakan sama seperti yang asal"
+
+msgid "Revert Action"
+msgstr "Kembalikan Tindakan"
+
+msgid "Add Event"
+msgstr "Tambah Event"
+
+msgid "Remove Action"
+msgstr "Alihkan Tindakan"
+
+msgid "Cannot Remove Action"
+msgstr "Tidak Boleh Hapuskan Tindakan"
+
+msgid "Edit Event"
+msgstr "Edit Event"
+
+msgid "Remove Event"
+msgstr "Alihkan Event"
+
+msgid "Filter by name..."
+msgstr "Tapis mengikut nama..."
+
+msgid "Clear All"
+msgstr "Padam Semua"
+
+msgid "Add New Action"
+msgstr "Tambah Tindakan Baru"
+
 msgid "Add"
 msgstr "Tambah"
 
+msgid "Show Built-in Actions"
+msgstr "Paparkan Tindakan Terbina"
+
 msgid "Action"
 msgstr "Aksi"
+
+msgid "Deadzone"
+msgstr "Deadzone"
 
 msgid "Time:"
 msgstr "Masa:"
 
 msgid "Value:"
 msgstr "Nilai:"
+
+msgid "Update Selected Key Handles"
+msgstr "Kemaskan Pemegang Kunci Terpilih"
 
 msgid "Insert Key Here"
 msgstr "Masukkan Kunci di Sini"
@@ -435,17 +496,62 @@ msgstr "Gandakan Kunci Terpilih"
 msgid "Delete Selected Key(s)"
 msgstr "Padam Kunci Terpilih"
 
+msgid "Make Handles Free"
+msgstr "Bebaskan Pegangan"
+
+msgid "Make Handles Linear"
+msgstr "Buat Pegangan Linear"
+
+msgid "Make Handles Balanced"
+msgstr "Buat Pegangan Seimbang"
+
+msgid "Make Handles Mirrored"
+msgstr "Buat Pegangan Dicerminkan"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Buat Pegangan Seimbang (Auto Tangent)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Buat Pegangan Dicerminkan (Auto Tangent)"
+
 msgid "Add Bezier Point"
 msgstr "Tambah Titik Bezier"
 
 msgid "Move Bezier Points"
 msgstr "Pindah Titik-titik Bezier"
 
+msgid "Animation Duplicate Keys"
+msgstr "Animasi Ganda Kunci"
+
+msgid "Animation Delete Keys"
+msgstr "Animasi Padam Kunci"
+
+msgid "Focus"
+msgstr "Fokus"
+
+msgid "Select All Keys"
+msgstr "Pilih Semua Kunci"
+
+msgid "Deselect All Keys"
+msgstr "Batalkan Pilihan Semua Kunci"
+
+msgid "Animation Change Transition"
+msgstr "Animasi Ubah Transisi"
+
 msgid "Change Animation Length"
 msgstr "Ubah Panjang Animasi"
 
 msgid "Change Animation Loop"
 msgstr "Ubah Gelung Animasi"
+
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr ""
+"Tidak dapat menukar mod gelung pada animasi yang dibuat dari adgen yang "
+"diimport."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr ""
+"Tidak dapat menukar mod gelung pada animasi yang terbenam dalam adegan lain."
 
 msgid "Property Track"
 msgstr "Trek Sifat"

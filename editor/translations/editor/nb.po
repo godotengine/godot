@@ -3377,14 +3377,6 @@ msgstr ""
 "Fjern alle manglende prosjekter fra listen?\n"
 "Innhold i prosjektmappene vil ikke påvirkes."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Er du sikker på at du vil søke gjennom %s mapper etter eksisterende "
-"Godotprosjekter.\n"
-"Det kan ta en stund."
-
 msgid "New Project"
 msgstr "Nytt prosjekt"
 
