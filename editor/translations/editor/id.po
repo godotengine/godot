@@ -56,13 +56,14 @@
 # Avirur Rahman <avirahmandev@gmail.com>, 2023.
 # Nazan <121859424+nazhard@users.noreply.github.com>, 2023.
 # ekaknl22 <2200018407@webmail.uad.ac.id>, 2023.
+# Stephen Gunawan Susilo <gunawanstephen@yahoo.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-28 04:14+0000\n"
-"Last-Translator: Tito <ijavadroid@gmail.com>\n"
+"PO-Revision-Date: 2024-01-09 13:37+0000\n"
+"Last-Translator: Stephen Gunawan Susilo <gunawanstephen@yahoo.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -70,7 +71,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -2682,6 +2683,13 @@ msgstr ""
 "Saat ini belum ada deskripsi untuk konstruktor ini. Tolong bantu kami dengan "
 "[color=$color][url=$url]kontribusi[/url][/color]!"
 
+msgid ""
+"There is currently no description for this operator. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Belum ada deskripsi untuk operator ini. Tolong bantu kami dengan[color=$color]"
+"[url=$url]berkontribusi[/url][/color]!"
+
 msgid "Top"
 msgstr "Atas"
 
@@ -2933,6 +2941,12 @@ msgstr "Hapus elemen %d dari array properti dengan awalan %s."
 
 msgid "Move element %d to position %d in property array with prefix %s."
 msgstr "Pindahkan elemen %d ke posisi %d dalam array properti dengan awalan %s."
+
+msgid "Clear Property Array with Prefix %s"
+msgstr "Hapus Array Properti dengan Awalan %s."
+
+msgid "Resize Property Array with Prefix %s"
+msgstr "Ubah ukuran Array Properti dengan Awalan %s."
 
 msgid "Element %d: %s%d*"
 msgstr "Elemen %d: %s%d*"
@@ -3526,6 +3540,15 @@ msgstr ""
 "Tidak dapat menulis ke file '%s', file sedang digunakan, terkunci atau tidak "
 "memiliki izin."
 
+msgid "Forward+"
+msgstr "Forward+"
+
+msgid "Mobile"
+msgstr "Mobile"
+
+msgid "Compatibility"
+msgstr "Kecocokan"
+
 msgid "Pan View"
 msgstr "Geser Tampilan"
 
@@ -3703,21 +3726,6 @@ msgstr "Tentang Godot"
 msgid "Support Godot Development"
 msgstr "Dukung pengembangan Godot"
 
-msgid "Choose a renderer."
-msgstr "Pilih perender."
-
-msgid "Forward+"
-msgstr "Forward+"
-
-msgid "Mobile"
-msgstr "Mobile"
-
-msgid "Compatibility"
-msgstr "Kecocokan"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "Mengubah perender memerlukan restart ulang editor."
-
 msgid "Update Continuously"
 msgstr "Perbarui Terus-menerus"
 
@@ -3819,6 +3827,9 @@ msgstr "Muat Ulang"
 
 msgid "Resave"
 msgstr "Simpan Ulang"
+
+msgid "Create Version Control Metadata..."
+msgstr "Membuat Metadata Kontrol Versi..."
 
 msgid "Version Control Settings..."
 msgstr "Pengaturan Kontrol Versi..."
@@ -6860,6 +6871,12 @@ msgstr "Terkunci"
 
 msgid "Grouped"
 msgstr "Terkelompok"
+
+msgid "Add Node Here..."
+msgstr "Tambahkan Node Di sini..."
+
+msgid "Instantiate Scene Here..."
+msgstr "Buat Adegan di Sini..."
 
 msgid "Paste Node(s) Here"
 msgstr "Tempel Node di Sini"
@@ -11210,13 +11227,6 @@ msgstr ""
 "Bahasa diubah.\n"
 "Antarmuka akan diperbarui setelah menjalankan ulang editor atau manajer "
 "proyek."
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Apakah Anda yakin untuk memindai %s folder untuk proyek Godot yang ada?\n"
-"Ini bisa memakan waktu yang lama."
 
 msgid "New Project"
 msgstr "Proyek Baru"

@@ -3000,6 +3000,15 @@ msgstr "ذخیره و بستن"
 msgid "%d more folders"
 msgstr "%d پوشه‌های بیش تر"
 
+msgid "Forward+"
+msgstr "فوروارد+"
+
+msgid "Mobile"
+msgstr "موبایل"
+
+msgid "Compatibility"
+msgstr "سازگاری"
+
 msgid "Distraction Free Mode"
 msgstr "حالت بدون حواس‌پرتی"
 
@@ -3122,18 +3131,6 @@ msgstr "درباره گودو"
 
 msgid "Support Godot Development"
 msgstr "از توسعه گودو حمایت کنید"
-
-msgid "Choose a renderer."
-msgstr "یک رندرر(renderer) انتخاب کن."
-
-msgid "Forward+"
-msgstr "فوروارد+"
-
-msgid "Mobile"
-msgstr "موبایل"
-
-msgid "Compatibility"
-msgstr "سازگاری"
 
 msgid "Update Continuously"
 msgstr "بروزرسانی مستمر"
@@ -5862,13 +5859,6 @@ msgid ""
 msgstr ""
 "زبان تغییر کرد.\n"
 "رابط پس از راه اندازی مجدد ویرایشگر یا مدیر پروژه به‌روز می‌شود."
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"آیا مطمئن هستید که پوشه‌های %s را برای پروژه‌های گودوی موجود اسکن می‌کنید؟\n"
-"این کنش ممکن است مدتی طول بکشد."
 
 msgid "New Project"
 msgstr "پروژه جدید"

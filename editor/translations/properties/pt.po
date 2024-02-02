@@ -37,13 +37,15 @@
 # Ricardo Caetano <ricardofilipecaetano@gmail.com>, 2023.
 # Henricky Corazza Serrão <henrickyserrao@gmail.com>, 2023.
 # Ricardo Bustamante <ricardobqueiroz@gmail.com>, 2023.
+# Miguel Ângelo Oliveira Leirião <miguel.leiriao@hotmail.com>, 2024.
+# AegisTTN <tc.dev04@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-07 23:30+0000\n"
-"Last-Translator: Ricardo Bustamante <ricardobqueiroz@gmail.com>\n"
+"PO-Revision-Date: 2024-02-02 09:31+0000\n"
+"Last-Translator: AegisTTN <tc.dev04@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -51,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -262,6 +264,9 @@ msgstr "Limites"
 
 msgid "RID Pool Prealloc"
 msgstr "RID Pool Pré-alocação"
+
+msgid "Internationalization"
+msgstr "Internacionalização"
 
 msgid "Force Right to Left Layout Direction"
 msgstr "Forçar Direção de Layout Direita para Esquerda"
@@ -665,6 +670,9 @@ msgstr "Ligações contextuais da Fonte do código"
 msgid "Code Font Custom OpenType Features"
 msgstr "Recursos OpenType personalizados para a Fonte do código"
 
+msgid "Font Antialiasing"
+msgstr "Suavização de Fonte"
+
 msgid "Font Hinting"
 msgstr "Alinhar Fonte"
 
@@ -682,6 +690,9 @@ msgstr "Modo Livre de Distrações"
 
 msgid "Automatically Open Screenshots"
 msgstr "Abrir Capturas de Tela Automaticamente"
+
+msgid "Single Window Mode"
+msgstr "Modo de Janela Única"
 
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "Botões extra do Rato para Navegar no Histórico"
@@ -716,6 +727,9 @@ msgstr "Opacidade da Linha de Relacionamento"
 msgid "Border Size"
 msgstr "Tamanho da Borda"
 
+msgid "Corner Radius"
+msgstr "Raio do Canto"
+
 msgid "Additional Spacing"
 msgstr "Espaçamento Adicional"
 
@@ -737,6 +751,9 @@ msgstr "Ativar Pan e Gestos em Scala"
 msgid "Show Script Button"
 msgstr "Mostrar Botão de Script"
 
+msgid "Multi Window"
+msgstr "Janela Múltipla"
+
 msgid "Enable"
 msgstr "Ativar"
 
@@ -754,6 +771,9 @@ msgstr "Ao Salvar"
 
 msgid "Compress Binary Resources"
 msgstr "Comprimir Recursos Binários"
+
+msgid "Safe Save on Backup then Rename"
+msgstr "Guardar de Forma Segura na Cópia de Segurança e depois Renomear"
 
 msgid "File Dialog"
 msgstr "Arquivo de Diálogo"
@@ -778,6 +798,9 @@ msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "Caminho para FBX2glTF"
+
+msgid "Oidn"
+msgstr "OIDN"
 
 msgid "Oidn Denoise Path"
 msgstr "Caminho Oidn de Remoção de Ruído"
@@ -1641,7 +1664,7 @@ msgid "Camera"
 msgstr "Câmera"
 
 msgid "Decal"
-msgstr "Decalques"
+msgstr "Decalque"
 
 msgid "Particles"
 msgstr "Partículas"
@@ -2513,7 +2536,7 @@ msgstr "Categoria da App"
 msgid "Exclude From Recents"
 msgstr "Excluir de Recentes"
 
-msgid "Show in Android Tv"
+msgid "Show in Android TV"
 msgstr "Mostrar em Android TV"
 
 msgid "Graphics"
@@ -4949,6 +4972,9 @@ msgstr "Colidir com Áreas"
 msgid "Default Gravity"
 msgstr "Gravidade Padrão"
 
+msgid "Physics Engine"
+msgstr "Motor de Física"
+
 msgid "Vertex"
 msgstr "Vértice"
 
@@ -4975,6 +5001,9 @@ msgstr "GI"
 
 msgid "Overrides"
 msgstr "Sobrepõe"
+
+msgid "Decals"
+msgstr "Decalques"
 
 msgid "Shaders"
 msgstr "Shaders"

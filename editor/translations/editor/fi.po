@@ -19,13 +19,14 @@
 # Kasper <kasper.bjorkgren@gmail.com>, 2023.
 # Mitja <mitja.leino@hotmail.com>, 2023.
 # Aku <akulaku.ap@gmail.com>, 2023.
+# Jonni Lehtiranta <jonni.lehtiranta@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-08 07:17+0000\n"
-"Last-Translator: Mitja <mitja.leino@hotmail.com>\n"
+"PO-Revision-Date: 2024-01-02 09:06+0000\n"
+"Last-Translator: Jonni Lehtiranta <jonni.lehtiranta@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -33,10 +34,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
-msgstr "Pää Säie"
+msgstr "Pääsäie"
 
 msgid "Unset"
 msgstr "Asettamaton"
@@ -60,10 +61,10 @@ msgid "Mouse Wheel Down"
 msgstr "Hiiren rulla alas"
 
 msgid "Mouse Wheel Left"
-msgstr "Rullan vasen painike"
+msgstr "Hiiren rulla vasemmalle"
 
 msgid "Mouse Wheel Right"
-msgstr "Rullan oikea painike"
+msgstr "Hiiren rulla oikealle"
 
 msgid "Mouse Thumb Button 1"
 msgstr "Hiiren peukalopainike 1"
@@ -78,37 +79,37 @@ msgid "Double Click"
 msgstr "Kaksoisnapsautus"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
-msgstr "Hiiren liike sijainnissa (%s) ja kiihtyvyydellä (%s)"
+msgstr "Hiiren liike sijainnissa (%s) nopeudella (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Vasemman tatin X-akseli, Tatti 0 X-akseli"
+msgstr "Vasemman tatin X-akseli, tattiohjaimen 0 X-akseli"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Vasemman tatin Y-akseli, Tatti 0 Y-akseli"
+msgstr "Vasemman tatin Y-akseli, tattiohjaimen 0 Y-akseli"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "Oikean tatin X-akseli, Tatti 1 X-akseli"
+msgstr "Oikean tatin X-akseli, tattiohjaimen 1 X-akseli"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
-msgstr "Oikean tatin Y-akseli, Tatti 1 Y-akseli"
+msgstr "Oikean tatin Y-akseli, tattiohjaimen 1 Y-akseli"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "Tatti 2 X-akseli, vasen liipasin, Sony L2, Xbox LT"
+msgstr "Tattiohjaimen 2 X-akseli, vasen liipasin, Sony L2, Xbox LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "Tatti 2 Y-akseli, oikea liipasin, Sony R2, Xbox RT"
+msgstr "Tattiohjaimen 2 Y-akseli, oikea liipasin, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
-msgstr "Tatti 3 X-akseli"
+msgstr "Tattiohjaimen 3 X-akseli"
 
 msgid "Joystick 3 Y-Axis"
-msgstr "Tatti 3 Y-akseli"
+msgstr "Tattiohjaimen 3 Y-akseli"
 
 msgid "Joystick 4 X-Axis"
-msgstr "Tatti 4 X-akseli"
+msgstr "Tattiohjaimen 4 X-akseli"
 
 msgid "Joystick 4 Y-Axis"
-msgstr "Tatti 4 Y-akseli"
+msgstr "Tattiohjaimen 4 Y-akseli"
 
 msgid "Unknown Joypad Axis"
 msgstr "Tuntematon Peliohjaimen Akseli"
@@ -1104,6 +1105,10 @@ msgid "Sine"
 msgstr "Sini"
 
 msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Viides potenssi"
+
+msgctxt "Transition Type"
 msgid "Quart"
 msgstr "Vartti"
 
@@ -1118,6 +1123,10 @@ msgstr "Expo"
 msgctxt "Transition Type"
 msgid "Elastic"
 msgstr "Joustava"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Ympyränkaari"
 
 msgctxt "Transition Type"
 msgid "Bounce"
@@ -1467,6 +1476,9 @@ msgstr "Lähetetään lista muuttuneista tiedostoista:"
 
 msgid "Sending file:"
 msgstr "Lähetetään tiedosto:"
+
+msgid "ms"
+msgstr "ms"
 
 msgid "Monitors"
 msgstr "Monitoroijat"
@@ -2193,8 +2205,24 @@ msgstr "Navigaatio, 2D ja 3D."
 msgid "XR (AR and VR)."
 msgstr "XR (AR and VR)."
 
+msgid "Vulkan back-end of RenderingDevice."
+msgstr "RenderingDevicen Vulkan-backend."
+
+msgid ""
+"TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
+"library (if disabled, WOFF2 support is also disabled)."
+msgstr ""
+"TrueType-, OpenType-, Type 1- ja WOFF-fonttien tuki FreeType-kirjastoa "
+"käyttäen (jos kytketty pois, WOFF2-tuki kytkeytyy myös pois)."
+
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr "WOFF2-fonttien tuki FreeType- ja Brotli-kirjastoja käyttäen."
+
 msgid "General Features:"
 msgstr "Pääominaisuudet:"
+
+msgid "Text Rendering and Font Options:"
+msgstr "Tekstin piirtämisen ja fontin valinnat:"
 
 msgid "File saving failed."
 msgstr "Virhe tallennettaessa tiedostoa."
@@ -2435,6 +2463,10 @@ msgstr "Tuo tyypin: %s resursseja"
 
 msgid "No return value."
 msgstr "Ei palautus arvoa."
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Tämä arvo on kokonaisluku joka tulkitaan bittimaskina ao. lippujen summana."
 
 msgid "Deprecated"
 msgstr "Vanhentunut"
@@ -3338,6 +3370,15 @@ msgstr ""
 "Tiedostoon '%s' kirjoittaminen epäonnistui, tiedosto käytössä, lukossa tai "
 "käyttöoikeudet ovat puutteelliset."
 
+msgid "Forward+"
+msgstr "Eteenpäin+"
+
+msgid "Mobile"
+msgstr "Mobiili"
+
+msgid "Compatibility"
+msgstr "Yhteensopivuus"
+
 msgid "Pan View"
 msgstr "Panorointinäkymä"
 
@@ -3499,21 +3540,6 @@ msgstr "Tietoja Godotista"
 
 msgid "Support Godot Development"
 msgstr "Tue Godotin kehitystä"
-
-msgid "Choose a renderer."
-msgstr "Valitse renderöijä."
-
-msgid "Forward+"
-msgstr "Eteenpäin+"
-
-msgid "Mobile"
-msgstr "Mobiili"
-
-msgid "Compatibility"
-msgstr "Yhteensopivuus"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "Näyttöajurin vaihtaminen edellyttää editorin uudelleenkäynnistystä."
 
 msgid "Update Continuously"
 msgstr "Päivitä jatkuvasti"
@@ -3710,6 +3736,9 @@ msgstr "Näytä Solmu Puussa"
 msgid "Invalid RID"
 msgstr "Virheellinen RID"
 
+msgid "Recursion detected, unable to assign resource to property."
+msgstr "Rekursio havaittu, resurssin sijoittaminen ominaisuuteen epäonnistui."
+
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
@@ -3891,8 +3920,14 @@ msgstr "Oikea Sauva Alas, Tatti 1 Alas"
 msgid "Joystick 2 Left"
 msgstr "Tatti 2 Vasemmalle"
 
+msgid "Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"
+msgstr "Vasen liipaisin, Sony L2, Xbox LT, tattiohjain 2 oikea"
+
 msgid "Joystick 2 Up"
 msgstr "Tatti 2 Ylös"
+
+msgid "Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"
+msgstr "Oikea liipaisin, Sony L2, Xbox LT, tattiohjain 2 alas"
 
 msgid "Joystick 3 Left"
 msgstr "Tatti 3 Vasemmalle"
@@ -3959,6 +3994,9 @@ msgstr "Varastoidaan tiedostoa:"
 
 msgid "No export template found at the expected path:"
 msgstr "Vientimallia ei löytynyt odotetusta polusta:"
+
+msgid "ZIP Creation"
+msgstr "ZIPin Luominen"
 
 msgid "Could not open file to read from path \"%s\"."
 msgstr "Ei voitu avata luettavaksi tiedostoa polulta \"%s\"."
@@ -4111,6 +4149,9 @@ msgstr "Ladataan"
 
 msgid "Connection Error"
 msgstr "Yhteysvirhe"
+
+msgid "TLS Handshake Error"
+msgstr "Virhe TSL Kättelyssä"
 
 msgid "Can't open the export templates file."
 msgstr "Vientimallien tiedostoa ei voida avata."
@@ -4279,8 +4320,18 @@ msgstr "Vie valitut resurssit (ja riippuvuudet)"
 msgid "Export all resources in the project except resources checked below"
 msgstr "Vie kaikki muut projektin resurssit, paitsi alla merkatut"
 
+msgid "Export as dedicated server"
+msgstr "Vie palvelinohjelmistoksi"
+
 msgid "Export Mode:"
 msgstr "Vientitila:"
+
+msgid ""
+"\"Strip Visuals\" will replace the following resources with placeholders:"
+msgstr "\"Riisu kuvitukset\" korvaa seuraavat resurssit paikanvaraajilla:"
+
+msgid "Strip Visuals"
+msgstr "Riisu kuvitukset"
 
 msgid "Keep"
 msgstr "Pidä"
@@ -4312,6 +4363,12 @@ msgstr "Ominaisuuslista:"
 msgid "Encryption"
 msgstr "Salaus"
 
+msgid "Encrypt Exported PCK"
+msgstr "Salaa viety PCK-tiedosto"
+
+msgid "Encrypt Index (File Names and Info)"
+msgstr "Salaa indeksi (tiedostonimet ja info)"
+
 msgid ""
 "Filters to include files/folders\n"
 "(comma-separated, e.g: *.tscn, *.tres, scenes/*)"
@@ -4342,6 +4399,9 @@ msgstr ""
 msgid "More Info..."
 msgstr "Lisää Tietoa..."
 
+msgid "Export PCK/ZIP..."
+msgstr "Vie PCK/ZIP..."
+
 msgid "Export Project..."
 msgstr "Vie projekti..."
 
@@ -4369,8 +4429,18 @@ msgstr "Hallinnoi vientimalleja"
 msgid "Export With Debug"
 msgstr "Vie debugaten"
 
+msgid "Path to FBX2glTF executable is empty."
+msgstr "Polku FBX2glTF-sovellukseen on tyhjä."
+
 msgid "Error executing this file (wrong version or architecture)."
 msgstr "Virhe suorittaessa tätä tiedostoa (väärä versio tai arkkitehtuuri)."
+
+msgid ""
+"FBX2glTF is required for importing FBX files.\n"
+"Please download it and provide a valid path to the binary:"
+msgstr ""
+"FBX2glTF vaaditaan FBX-tiedostojen viemiseen.\n"
+"Lataa se internetistä ja syötä binääritiedoston polku:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "Paina tästä ladataksesi FBX2glTF"
@@ -5360,6 +5430,12 @@ msgstr "Korvaavuudet kielikohtaisesti:"
 
 msgid "Locale"
 msgstr "Kielialue"
+
+msgid "POT Generation"
+msgstr "POT Generointi"
+
+msgid "Generate POT"
+msgstr "Generoi POT"
 
 msgid "Set %s on %d nodes"
 msgstr "Aseta %s %d solmuun"
@@ -6431,6 +6507,9 @@ msgstr "Tartu apuviivoihin"
 msgid "Lock Selected Node(s)"
 msgstr "Lukitse valitut solmut"
 
+msgid "Unlock selected node, allowing selection and movement."
+msgstr "Poista valitun solmun lukitus, sallien valinnan ja liikuttamisen."
+
 msgid "Unlock Selected Node(s)"
 msgstr "Vapauta valitut solmut"
 
@@ -6439,6 +6518,9 @@ msgstr "Tee valitun solmun alisolmuista valitsemattomia."
 
 msgid "Group Selected Node(s)"
 msgstr "Ryhmitä valitut solmut"
+
+msgid "Make selected node's children selectable."
+msgstr "Tee valitun solmun alisolmuista valittavia."
 
 msgid "Ungroup Selected Node(s)"
 msgstr "Poista ryhmitys valituilta solmuilta"
@@ -6980,6 +7062,9 @@ msgstr "Käänteinen Liukuväri"
 msgid "Reverse/Mirror Gradient"
 msgstr "Käänteinen/Peilattu Liukuväri"
 
+msgid "Configure"
+msgstr "Määrittele"
+
 msgid "Create Occluder Polygon"
 msgstr "Luo peittopolygoni"
 
@@ -7412,6 +7497,9 @@ msgstr "Näytä rautalankamalli"
 msgid "Display Overdraw"
 msgstr "Näytä ylipiirto"
 
+msgid "Display Lighting"
+msgstr "Näytä Valaistus"
+
 msgid "Display Unshaded"
 msgstr "Näytä sävyttämätön"
 
@@ -7429,6 +7517,9 @@ msgstr "Näytä vempaimet"
 
 msgid "View Information"
 msgstr "Näytä tiedot"
+
+msgid "View Frame Time"
+msgstr "Näytä Ruudun Aika"
 
 msgid "Half Resolution"
 msgstr "Puolikas näyttötarkkuus"
@@ -7503,6 +7594,12 @@ msgstr "Tarraa solmut lattiaan"
 
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "Ei löydetty kiinteää lattiaa, johon kohdistaa valinta."
+
+msgid "Add Preview Sun to Scene"
+msgstr "Lisää Esikatselu Aurinko Kohtaukseen"
+
+msgid "Add Preview Environment to Scene"
+msgstr "Lisää Esikatselu Ympäristö Kohtaukseen"
 
 msgid "Preview disabled."
 msgstr "Esikatselu poistettu käytöstä."
@@ -7657,17 +7754,41 @@ msgstr "Esi"
 msgid "Post"
 msgstr "Jälki"
 
+msgid "Preview Sun"
+msgstr "Esikatselu Aurinko"
+
+msgid "Sun Direction"
+msgstr "Auringon Suunta"
+
 msgid "Sun Color"
 msgstr "Auringon Väri"
+
+msgid "Sun Energy"
+msgstr "Auringon Energia"
 
 msgid "Shadow Max Distance"
 msgstr "Varjojen Maksimi Etäisyys"
 
+msgid "Add Sun to Scene"
+msgstr "Lisää Aurinko Kohtaukseen"
+
+msgid "Preview Environment"
+msgstr "Esikatsele Ympäristöä"
+
 msgid "Sky Color"
 msgstr "Taivaan Väri"
 
+msgid "Ground Color"
+msgstr "Maan Väri"
+
+msgid "Sky Energy"
+msgstr "Taivaan Energia"
+
 msgid "Glow"
 msgstr "Hehku"
+
+msgid "Post Process"
+msgstr "Jälkikäsittely"
 
 msgid "Add Environment to Scene"
 msgstr "Lisää Ympäristö Kohtaukseen"
@@ -7989,6 +8110,9 @@ msgstr "Etsi seuraava"
 msgid "Find Previous"
 msgstr "Etsi edellinen"
 
+msgid "Filter Scripts"
+msgstr "Suodata Skriptejä"
+
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "Käytä metodilistalla aakkosellista järjestystä."
 
@@ -8080,6 +8204,9 @@ msgstr "Tyhjennä viimeisimmät skriptit"
 msgid "Standard"
 msgstr "Standardi"
 
+msgid "Plain Text"
+msgstr "Yksinkertainen Teksti"
+
 msgid "JSON"
 msgstr "JSON"
 
@@ -8115,6 +8242,12 @@ msgstr "Hae symboli"
 msgid "Pick Color"
 msgstr "Poimi väri"
 
+msgid "Folding"
+msgstr "Taittaminen"
+
+msgid "Indentation"
+msgstr "Sisennys"
+
 msgid "Uppercase"
 msgstr "Isot kirjaimet"
 
@@ -8138,6 +8271,9 @@ msgstr "Mene"
 
 msgid "Delete Line"
 msgstr "Poista rivi"
+
+msgid "Unindent"
+msgstr "Vähennä sisennystä"
 
 msgid "Toggle Comment"
 msgstr "Lisää tai poista kommentit"
@@ -8241,6 +8377,12 @@ msgstr "Ylikirjoita lepoasento"
 msgid "Create physical bones"
 msgstr "Luo fyysiset luut"
 
+msgid "Skeleton3D"
+msgstr "Luuranko3D"
+
+msgid "Create Physical Skeleton"
+msgstr "Luo Fyysinen Luuranko"
+
 msgid "Play IK"
 msgstr "Toista IK"
 
@@ -8285,6 +8427,9 @@ msgstr "Virheellinen geometria, ei voida luoda valopeitettä."
 
 msgid "Create LightOccluder2D Sibling"
 msgstr "Luo LightOccluder2D solmun sisar"
+
+msgid "Sprite2D"
+msgstr "Sprite2D"
 
 msgid "Simplification:"
 msgstr "Yksinkertaistus:"
@@ -8340,6 +8485,9 @@ msgstr "(tyhjä)"
 msgid "Animations:"
 msgstr "Animaatiot:"
 
+msgid "Filter Animations"
+msgstr "Suodata Animaatioita"
+
 msgid "Delete Animation"
 msgstr "Poista Animaatio"
 
@@ -8354,6 +8502,27 @@ msgstr "Palauta oletuslähennystaso"
 
 msgid "Add frame from file"
 msgstr "Lisää kehys tiedostosta"
+
+msgid "Add frames from sprite sheet"
+msgstr "Lisää ruudut sprite-arkista"
+
+msgid "Delete Frame"
+msgstr "Poista Ruutu"
+
+msgid "Copy Frame"
+msgstr "Kopioi Ruutu"
+
+msgid "Insert Empty (Before Selected)"
+msgstr "Syötä tyhjä (Valinnan Edelle)"
+
+msgid "Insert Empty (After Selected)"
+msgstr "Syötä tyhjä (Valinna Jälkeen)"
+
+msgid "Move Frame Left"
+msgstr "Siirrä Ruutua Vasemmalle"
+
+msgid "Move Frame Right"
+msgstr "Siirrä Ruutua Oikealle"
 
 msgid "Select Frames"
 msgstr "Valitse ruudut"
@@ -9927,12 +10096,9 @@ msgstr ""
 "Käyttöliittymä päivittyy, kun editori tai projektinhallinta käynnistetään "
 "uudelleen."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Haluatko varmasti etsiä %s kansiosta olemassa olevia Godot-projekteja?\n"
-"Tämä saattaa kestää hetken."
+msgctxt "Application"
+msgid "Project Manager"
+msgstr "Projektinhallinta"
 
 msgid "New Project"
 msgstr "Uusi projekti"
@@ -10262,6 +10428,15 @@ msgstr ""
 
 msgid "Make Local"
 msgstr "Tee paikallinen"
+
+msgid "Enable Scene Unique Name(s)"
+msgstr "Käytä Kohtauksen Uniikkeja Nimiä"
+
+msgid "Unique names already used by another node in the scene:"
+msgstr "Uniikki nimi on jo toisen solmun käytössä:"
+
+msgid "Disable Scene Unique Name(s)"
+msgstr "Ota Kohtauksen Uniikit Nimet Pois Käytöstä"
 
 msgid "New Scene Root"
 msgstr "Uusi kohtauksen pääkansio"
@@ -10692,6 +10867,9 @@ msgstr "Lisää toiminto"
 msgid "Add binding"
 msgstr "Lisää sidos"
 
+msgid "Pose"
+msgstr "Asento"
+
 msgid "Haptic"
 msgstr "Haptinen"
 
@@ -10737,6 +10915,11 @@ msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
 "\"Kohde SDK\" tulisi olla validi kokonaisluku, annettu \"%s\" ei ole validi."
+
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
+msgstr ""
+"\"Target SDK\" version on oltava suurempi tai yhtä suuri kuin \"Min SDK\" "
+"versionumeron."
 
 msgid "Select device from the list"
 msgstr "Valitse laite listasta"
@@ -10933,6 +11116,9 @@ msgstr "Ei voitu purkaa väliaikaista unaligned APK:ta."
 msgid "Invalid Identifier:"
 msgstr "Virheellinen Identifier osio:"
 
+msgid "Export Icons"
+msgstr "Vie Kuvakkeet"
+
 msgid "Identifier is missing."
 msgstr "Tunniste puuttuu."
 
@@ -11022,6 +11208,9 @@ msgstr ""
 msgid "Could not start xcrun executable."
 msgstr "xcrun-käynnistystiedostoa ei voitu käynnistää."
 
+msgid "Cannot sign file %s."
+msgstr "Tiedostoa %s ei voida allekirjoittaa."
+
 msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
 msgstr ""
 "Suhteelliset symboliset linkit eivät ole tuettuja tässä käyttöjärjestelmässä, "
@@ -11104,6 +11293,9 @@ msgstr "Virheellinen vientimalli: \"%s\"."
 
 msgid "Could not write file: \"%s\"."
 msgstr "Ei voitu kirjoittaa tiedostoa: \"%s\"."
+
+msgid "Icon Creation"
+msgstr "Kuvakkeen Luominen"
 
 msgid "Could not read file: \"%s\"."
 msgstr "Ei voitu lukea tiedostoa: \"%s\"."

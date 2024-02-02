@@ -99,13 +99,15 @@
 # "Francisco S. F." <fsanchezflorido@gmail.com>, 2023.
 # Jorge Julio Torres <jjulio.tlg.89@gmail.com>, 2023.
 # Chimi <tximi.sysaad@gmail.com>, 2023.
+# BIBALLO <dmoraleda11@gmail.com>, 2024.
+# Miguel de Dios Matias <tres.14159@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-23 17:10+0000\n"
-"Last-Translator: Chimi <tximi.sysaad@gmail.com>\n"
+"PO-Revision-Date: 2024-02-02 09:31+0000\n"
+"Last-Translator: Miguel de Dios Matias <tres.14159@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -113,7 +115,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2.1-rc\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -3667,8 +3669,8 @@ msgstr "Conservar Datos al Desinstalar"
 msgid "Exclude From Recents"
 msgstr "Excluir de los Recientes"
 
-msgid "Show in Android Tv"
-msgstr "Mostrar wn Android TV"
+msgid "Show in Android TV"
+msgstr "Mostrar en Android TV"
 
 msgid "Show in App Library"
 msgstr "Mostrar en la librería de Aplicaciones"

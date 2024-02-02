@@ -167,13 +167,16 @@
 # Ilia Brykin <brykin.ilia@gmail.com>, 2023.
 # Ruslan <vovavalenkov15@gmail.com>, 2023.
 # DLushin <dmiyashyt@gmail.com>, 2023.
+# a-d-polevoi <a.d.polevoi@gmail.com>, 2023.
+# "Станислав Л." <mr.levicsky@gmail.com>, 2023.
+# MaksKraft <Maksonchik2003@yandex.ru>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-28 04:14+0000\n"
-"Last-Translator: DLushin <dmiyashyt@gmail.com>\n"
+"PO-Revision-Date: 2024-01-08 20:42+0000\n"
+"Last-Translator: MaksKraft <Maksonchik2003@yandex.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -182,7 +185,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Главный поток"
@@ -215,10 +218,10 @@ msgid "Mouse Wheel Right"
 msgstr "Колёсико мыши вправо"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Кнопка большого пальца мыши 1"
+msgstr "Боковая кнопка мыши 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Кнопка большого пальца мыши 2"
+msgstr "Боковая кнопка мыши 2"
 
 msgid "Button"
 msgstr "Кнопка"
@@ -227,37 +230,37 @@ msgid "Double Click"
 msgstr "Двойной щелчок"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
-msgstr "Движение мыши в позиции (%s) со скоростью движения (%s)"
+msgstr "Движение мыши к позиции (%s) со скоростью движения (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Левый стик по оси X, джойстик 0 по оси X"
+msgstr "Ось X левого стика, Ось X джойстика 0"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Левый стик по оси Y, джойстик 0 по оси Y"
+msgstr "Ось Y левого стика, Ось Y джойстика 0"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "Правый стик по оси X, джойстик 1 по оси X"
+msgstr "Ось X правого стика, Ось X джойстика 1"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
-msgstr "Правый стик по оси Y, джойстик 1 по оси Y"
+msgstr "Ось Y правого стика, Ось Y джойстика 1"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "Джойстик 2 по оси X, левый триггер, Sony L2, Xbox LT"
+msgstr "Ось X джойстика 2, левый триггер, Sony L2, Xbox LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "Джойстик 2 по оси Y, правый триггер, Sony R2, Xbox RT"
+msgstr "Ось Y джойстика 2, правый триггер, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
-msgstr "Джойстик 3 по оси X"
+msgstr "Ось X джойстика 3"
 
 msgid "Joystick 3 Y-Axis"
-msgstr "Джойстик 3 по оси Y"
+msgstr "Ось Y джойстика 3"
 
 msgid "Joystick 4 X-Axis"
-msgstr "Джойстик 4 по оси X"
+msgstr "Ось X джойстика 4"
 
 msgid "Joystick 4 Y-Axis"
-msgstr "Джойстик 4 по оси Y"
+msgstr "Ось Y джойстика 3"
 
 msgid "Unknown Joypad Axis"
 msgstr "Неизвестная ось джойстика"
@@ -2407,7 +2410,7 @@ msgid "Text Server: Fallback"
 msgstr "Текстовый сервер: Резервный"
 
 msgid "Text Server: Advanced"
-msgstr "Текстовый сервер: Расширенный"
+msgstr "Текстовый сервер: Продвинутый"
 
 msgid "TTF, OTF, Type 1, WOFF1 Fonts"
 msgstr "Шрифты TTF, OTF, Type 1, WOFF1"
@@ -2419,7 +2422,7 @@ msgid "SIL Graphite Fonts"
 msgstr "Шрифты SIL Graphite"
 
 msgid "Multi-channel Signed Distance Field Font Rendering"
-msgstr "Многоканальный рендеринг шрифта поля расстояния со знаком"
+msgstr "Многоканальная отрисовка шрифтов методом полей расстояний со знаком"
 
 msgid "3D Nodes as well as RenderingServer access to 3D features."
 msgstr "3D-узлы, а также доступ RenderingServer к 3D-функциям."
@@ -2431,7 +2434,7 @@ msgid "3D Physics nodes and PhysicsServer3D."
 msgstr "Узлы 3D-физики и PhysicsServer3D."
 
 msgid "Navigation, both 2D and 3D."
-msgstr "Навигация (2D и 3D)."
+msgstr "Навигация для 2D и 3D."
 
 msgid "XR (AR and VR)."
 msgstr "XR (AR и VR)."
@@ -2439,11 +2442,10 @@ msgstr "XR (AR и VR)."
 msgid ""
 "RenderingDevice based rendering (if disabled, the OpenGL back-end is "
 "required)."
-msgstr ""
-"Рендеринг на основе RenderingDevice (если отключен, требуется OpenGL бэкенд)."
+msgstr "Отрисовка на RenderingDevice (при отключении, требуется OpenGL бэкенд)."
 
 msgid "OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
-msgstr "OpenGL бэкенд (если отключен, требуется RenderingDevice бэкенд)."
+msgstr "OpenGL бэкенд (при отключении, требуется RenderingDevice бэкенд)."
 
 msgid "Vulkan back-end of RenderingDevice."
 msgstr "Vulkan бэкенд RenderingDevice."
@@ -3566,6 +3568,17 @@ msgstr ""
 "Отключение аддона '%s' для предотвращения дальнейших ошибок."
 
 msgid ""
+"Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."
+msgstr ""
+"Не удалось загрузить скрипт расширения по пути: '%s' Базовый тип не "
+"EditorPlugin."
+
+msgid "Unable to load addon script from path: '%s'. Script is not in tool mode."
+msgstr ""
+"Не удалось загрузить скрипт расширения по пути: '%s'. Скрипт не в режиме "
+"инструмента."
+
+msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
@@ -3674,6 +3687,15 @@ msgid ""
 msgstr ""
 "Невозможно записать в файл '%s', файл используется, заблокирован или "
 "отсутствуют разрешения."
+
+msgid "Forward+"
+msgstr "Forward+"
+
+msgid "Mobile"
+msgstr "Мобильные устройства"
+
+msgid "Compatibility"
+msgstr "Совместимость"
 
 msgid "Pan View"
 msgstr "Панорамировать вид"
@@ -3852,21 +3874,6 @@ msgstr "О Godot"
 
 msgid "Support Godot Development"
 msgstr "Поддержать разработку Godot"
-
-msgid "Choose a renderer."
-msgstr "Выберите отрисовщик."
-
-msgid "Forward+"
-msgstr "Forward+"
-
-msgid "Mobile"
-msgstr "Мобильные устройства"
-
-msgid "Compatibility"
-msgstr "Совместимость"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "Изменение отрисовщика требует перезапуска редактора."
 
 msgid "Update Continuously"
 msgstr "Непрерывное обновление"
@@ -9916,7 +9923,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "Создать позу покоя из костей"
 
 msgid "Skeleton2D"
-msgstr "2D скелет"
+msgstr "Скелет2D"
 
 msgid "Reset to Rest Pose"
 msgstr "Задать позу покоя"
@@ -11235,7 +11242,7 @@ msgstr ""
 "Альтернативный: %d"
 
 msgid "Rendering"
-msgstr "*Рендеринг*"
+msgstr "Рендеринг"
 
 msgid "Texture Origin"
 msgstr "Центр координат текстуры"
@@ -11465,7 +11472,7 @@ msgid "Tile properties:"
 msgstr "Свойства тайла:"
 
 msgid "TileMap"
-msgstr "TileMap"
+msgstr "Тайловая карта"
 
 msgid "TileSet"
 msgstr "Набор тайлов"
@@ -13246,13 +13253,6 @@ msgstr ""
 "Язык изменён.\n"
 "Интерфейс обновится после перезапуска редактора или менеджера проектов."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Вы действительно хотите поискать существующие проекты Godot в %s папках?\n"
-"Это может занять много времени."
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "Менеджер проектов"
@@ -14144,11 +14144,60 @@ msgstr "Имя '%s' является зарезервированным слов
 msgid "Add Shader Global Parameter"
 msgstr "Добавить глобальный параметр шейдера"
 
+msgid ""
+"This project uses meshes with an outdated mesh format from previous Godot "
+"versions. The engine needs to update the format in order to use those meshes. "
+"Please use the 'Upgrade Mesh Surfaces' tool from the 'Project > Tools' menu. "
+"You can ignore this message and keep using outdated meshes, but keep in mind "
+"that this leads to increased load times every time you load the project."
+msgstr ""
+"Этот проект использует сетки с устаревшим форматом из предыдущих версий "
+"Godot. Движку необходимо обновить формат для использования этих сеток. "
+"Пожалуйста используйте инструмент 'Обновление поверхностей сетки' из меню "
+"'Проект > Инструменты'. Вы можете проигнорировать это сообщение и продолжить "
+"использовать устаревшие сетки, но помните, что это приведёт к увеличению "
+"времени загрузки каждый раз, когда вы загружаете проект."
+
+msgid ""
+"This project uses meshes with an outdated mesh format. Check the output log."
+msgstr ""
+"Этот проект использует сетки с устаревшим форматом. Проверьте журнал вывода."
+
 msgid "Upgrading All Meshes in Project"
 msgstr "Обновление всех сеток в проекте"
 
 msgid "Attempting to re-save "
 msgstr "Попытка повторного сохранения "
+
+msgid "Attempting to remove "
+msgstr "Попытка удаления "
+
+msgid ""
+"The mesh format has changed in Godot 4.2, which affects both imported meshes "
+"and meshes authored inside of Godot. The engine needs to update the format in "
+"order to use those meshes.\n"
+"\n"
+"If your project predates Godot 4.2 and contains meshes, we recommend you run "
+"this one time conversion tool. This update will restart the editor and may "
+"take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"You can still use your existing meshes as is. The engine will update each "
+"mesh in memory, but the update will not be saved. Choosing this option will "
+"lead to slower load times every time this project is loaded."
+msgstr ""
+"Формат сетки изменился в Godot 4.2, что влияет как на импортированные сетки, "
+"так и на сетки, созданные внутри Godot. Движку необходимо обновить формат, "
+"чтобы использовать эти сетки.\n"
+"\n"
+"Если ваш проект старше Godot 4.2 и содержит сетки, мы рекомендуем вам "
+"запустить этот инструмент однократного преобразования. Это обновление "
+"перезапустит редактор и может занять несколько минут. Обновление сделает "
+"сетки несовместимыми с предыдущими версиями Godot.\n"
+"\n"
+"Вы по-прежнему можете использовать существующие сетки как есть. Движок "
+"обновит каждую сетку в памяти, но обновление не будет сохранено. Выбор этой "
+"опции приведет к замедлению загрузки каждый раз при загрузке этого проекта."
 
 msgid "Restart & Upgrade"
 msgstr "Перезапустить и обновить"
@@ -14757,13 +14806,6 @@ msgstr "Символ '%s' не может стоять первым в сегм�
 
 msgid "The package must have at least one '.' separator."
 msgstr "Пакет должен иметь хотя бы один разделитель '.'."
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr ""
-"Имя проекта не соответствует требованиям формата имени пакета. Пожалуйста, "
-"укажите имя пакета в явном виде."
 
 msgid "Invalid public key for APK expansion."
 msgstr "Недействительный публичный ключ для расширения APK."

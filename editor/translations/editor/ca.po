@@ -20,13 +20,15 @@
 # Jordi Borràs <jborras@centrekepler.com>, 2023.
 # Marc GB <marc.giralt.butjosa@gmail.com>, 2023.
 # Ander Romero <anderromeroaldana@gmail.com>, 2023.
+# Francesc Arpi Roca <francesc.arpi@gmail.com>, 2024.
+# bene toff <benetoffix@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-16 17:47+0000\n"
-"Last-Translator: Ander Romero <anderromeroaldana@gmail.com>\n"
+"PO-Revision-Date: 2024-01-16 18:10+0000\n"
+"Last-Translator: bene toff <benetoffix@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -34,7 +36,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0.2\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Main Thread"
+msgstr "Fil principal"
 
 msgid "Unset"
 msgstr "Desactiva"
@@ -908,6 +913,9 @@ msgstr ""
 msgid "Animation Add RESET Keys"
 msgstr "Afegeix Claus de RESET a l'animació"
 
+msgid "Bake Animation as Linear Keys"
+msgstr "Precalcula l'animació com a Claus Lineals"
+
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
 "will not be saved.\n"
@@ -926,6 +934,9 @@ msgstr ""
 "Algunes opcions, com la repetició, poden trobar-s'hi. Per afegir-hi pistes "
 "personalitzades, activeu \"Desa en un fitxer\" i\n"
 "\"Mantingues les pistes personalitzades\"."
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "AnimationPlayer està inactiu. El playback no serà processat."
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Seleccioneu un node AnimationPlayer per a crear i editar animacions."
@@ -5997,14 +6008,6 @@ msgstr ""
 "L'idioma ha canviat.\n"
 "La interfície s'actualitzarà després de reiniciar l'editor o el gestor de "
 "projectes."
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Esteu segur que voleu escanejar %s carpetes per als projectes de Godot "
-"existents?\n"
-"Això pot trigar una estona."
 
 msgid "New Project"
 msgstr "Nou Projecte"

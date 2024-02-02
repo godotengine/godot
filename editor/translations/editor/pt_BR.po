@@ -153,7 +153,7 @@
 # Mauricio Mazur <mauricio.mazur12@gmail.com>, 2022.
 # ! Zyll <emanueljunior756@gmail.com>, 2022.
 # Kirrby <kirrby.gaming@gmail.com>, 2022.
-# Murilo Gama <murilovsky2030@gmail.com>, 2022, 2023.
+# Murilo Gama <murilovsky2030@gmail.com>, 2022, 2023, 2024.
 # Kauã Azevedo <Kazevic@pm.me>, 2022.
 # Zer0-Zer0 <dankmemerson@tutanota.com>, 2022.
 # Levi Ferreira <leviferreiramorais@gmail.com>, 2023.
@@ -175,14 +175,14 @@
 # "wendeli alves (wilcoxjvkb)" <wilcoxjvkb@gmail.com>, 2023.
 # Fernando Crozetta <fernando@czetta.com>, 2023.
 # Sergio Antonio <sergio.antonio.pn@proton.me>, 2023.
-# Martonio Junior <jose.mart.junior@gmail.com>, 2023.
+# Martonio Junior <jose.mart.junior@gmail.com>, 2023, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-11-21 15:04+0000\n"
-"Last-Translator: Martonio Junior <jose.mart.junior@gmail.com>\n"
+"PO-Revision-Date: 2024-01-11 08:00+0000\n"
+"Last-Translator: Murilo Gama <murilovsky2030@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -190,7 +190,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread principal"
@@ -2059,6 +2059,9 @@ msgstr "Desenvolvedores"
 msgid "Authors"
 msgstr "Autores"
 
+msgid "Patrons"
+msgstr "Patrões"
+
 msgid "Platinum Sponsors"
 msgstr "Patrocinadores Platina"
 
@@ -2070,6 +2073,15 @@ msgstr "Patrocinadores Prata"
 
 msgid "Diamond Members"
 msgstr "Patrocinadores Diamante"
+
+msgid "Titanium Members"
+msgstr "Membros Titânio"
+
+msgid "Platinum Members"
+msgstr "Membros Platina"
+
+msgid "Gold Members"
+msgstr "Membros Ouro"
 
 msgid "Donors"
 msgstr "Doadores"
@@ -2138,8 +2150,34 @@ msgstr "Sucesso!"
 msgid "Asset:"
 msgstr "Recurso:"
 
+msgid "Open the list of the asset contents and select which files to install."
+msgstr ""
+"Abra a lista de conteúdos do recurso e selecione quais arquivos instalar."
+
 msgid "Change Install Folder"
 msgstr "Alterar local de instalação"
+
+msgid ""
+"Change the folder where the contents of the asset are going to be installed."
+msgstr "Altere a pasta onde os conteúdos do recurso serão instalados."
+
+msgid "Ignore asset root"
+msgstr "Ignorar raiz do recurso"
+
+msgid "No files conflict with your project"
+msgstr "Nenhum arquivo conflita com o seu projeto"
+
+msgid "Show contents of the asset and conflicting files."
+msgstr "Mostrar o conteúdo do Recurso e arquivos conflitantes."
+
+msgid "Contents of the asset:"
+msgstr "Conteúdos do Recurso:"
+
+msgid "Installation preview:"
+msgstr "Pré-visualização da Instalação:"
+
+msgid "Configure Asset Before Installing"
+msgstr "Configurar Recurso antes de instalar"
 
 msgid "Install"
 msgstr "Instalar"
@@ -2746,6 +2784,15 @@ msgstr ""
 
 msgid "Error codes returned:"
 msgstr "Códigos de erro retornados:"
+
+msgid "There is currently no description for this method."
+msgstr "Atualmente não há uma descrição para este método."
+
+msgid "There is currently no description for this constructor."
+msgstr "Atualmente não há uma descrição para este construtor."
+
+msgid "There is currently no description for this operator."
+msgstr "Atualmente não há uma descrição para este operador."
 
 msgid "Top"
 msgstr "Superior"
@@ -3547,6 +3594,15 @@ msgstr ""
 "Não foi possível gravar no arquivo '%s', arquivo em uso, bloqueado ou sem "
 "permissões."
 
+msgid "Forward+"
+msgstr "Avançado+"
+
+msgid "Mobile"
+msgstr "Mobile"
+
+msgid "Compatibility"
+msgstr "Compatibilidade"
+
 msgid "Pan View"
 msgstr "Deslocar Visão"
 
@@ -3724,21 +3780,6 @@ msgstr "Sobre o Godot"
 
 msgid "Support Godot Development"
 msgstr "Apoie o Desenvolvimento do Godot"
-
-msgid "Choose a renderer."
-msgstr "Escolha um renderizador."
-
-msgid "Forward+"
-msgstr "Avançado+"
-
-msgid "Mobile"
-msgstr "Mobile"
-
-msgid "Compatibility"
-msgstr "Compatibilidade"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "A alteração do renderizador requer a reinicialização do editor."
 
 msgid "Update Continuously"
 msgstr "Atualizar Continuamente"
@@ -12600,14 +12641,6 @@ msgstr ""
 "A interface será atualizada após reiniciar o editor ou o gerenciador de "
 "projetos."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Tem certeza que deseja escanear %s pastas buscando projetos Godot "
-"existentes?\n"
-"Isso pode levar algum tempo."
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "Gerenciador de Projetos"
@@ -13963,13 +13996,6 @@ msgstr ""
 
 msgid "The package must have at least one '.' separator."
 msgstr "O pacote deve ter pelo menos um '.' separador."
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr ""
-"O nome do projeto não atende ao requisito para o formato do nome do pacote. "
-"Especifique explicitamente o nome do pacote."
 
 msgid "Invalid public key for APK expansion."
 msgstr "Chave pública inválida para expansão do APK."
