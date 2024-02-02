@@ -405,6 +405,13 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 	}
 }
 
+void RenderSceneBuffersGLES3::configure_for_probe(Size2i p_size) {
+	internal_size = p_size;
+	target_size = p_size;
+	scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
+	view_count = 1;
+}
+
 void RenderSceneBuffersGLES3::_clear_msaa3d_buffers() {
 	for (const FBDEF &cached_fbo : msaa3d.cached_fbos) {
 		GLuint fbo = cached_fbo.fbo;

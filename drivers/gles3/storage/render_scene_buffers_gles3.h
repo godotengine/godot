@@ -101,6 +101,7 @@ public:
 	RenderSceneBuffersGLES3();
 	virtual ~RenderSceneBuffersGLES3();
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
+	void configure_for_probe(Size2i p_size);
 
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override{};
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override{};
