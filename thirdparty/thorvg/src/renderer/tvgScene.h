@@ -59,7 +59,6 @@ struct SceneIterator : Iterator
 struct Scene::Impl
 {
     list<Paint*> paints;
-    RenderMethod* renderer = nullptr;    //keep it for explicit clear
     RenderData rd = nullptr;
     Scene* scene = nullptr;
     uint8_t opacity;                     //for composition
@@ -74,19 +73,10 @@ struct Scene::Impl
         for (auto paint : paints) {
             if (P(paint)->unref() == 0) delete(paint);
         }
-    }
 
-    bool dispose(RenderMethod& renderer)
-    {
-        for (auto paint : paints) {
-            paint->pImpl->dispose(renderer);
+        if (auto renderer = PP(scene)->renderer) {
+            renderer->dispose(rd);
         }
-
-        renderer.dispose(rd);
-        this->renderer = nullptr;
-        this->rd = nullptr;
-
-        return true;
     }
 
     bool needComposition(uint8_t opacity)
@@ -111,7 +101,7 @@ struct Scene::Impl
         return true;
     }
 
-    RenderData update(RenderMethod &renderer, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flag, bool clipper)
+    RenderData update(RenderMethod* renderer, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flag, bool clipper)
     {
         if ((needComp = needComposition(opacity))) {
             /* Overriding opacity value. If this scene is half-translucent,
@@ -120,14 +110,12 @@ struct Scene::Impl
             opacity = 255;
         }
 
-        this->renderer = &renderer;
-
         if (clipper) {
             Array<RenderData> rds(paints.size());
             for (auto paint : paints) {
                 rds.push(paint->pImpl->update(renderer, transform, clips, opacity, flag, true));
             }
-            rd = renderer.prepare(rds, rd, transform, clips, opacity, flag);
+            rd = renderer->prepare(rds, rd, transform, clips, opacity, flag);
             return rd;
         } else {
             for (auto paint : paints) {
@@ -137,13 +125,13 @@ struct Scene::Impl
         }
     }
 
-    bool render(RenderMethod& renderer)
+    bool render(RenderMethod* renderer)
     {
         Compositor* cmp = nullptr;
 
         if (needComp) {
-            cmp = renderer.target(bounds(renderer), renderer.colorSpace());
-            renderer.beginComposite(cmp, CompositeMethod::None, opacity);
+            cmp = renderer->target(bounds(renderer), renderer->colorSpace());
+            renderer->beginComposite(cmp, CompositeMethod::None, opacity);
             needComp = false;
         }
 
@@ -151,12 +139,12 @@ struct Scene::Impl
             if (!paint->pImpl->render(renderer)) return false;
         }
 
-        if (cmp) renderer.endComposite(cmp);
+        if (cmp) renderer->endComposite(cmp);
 
         return true;
     }
 
-    RenderRegion bounds(RenderMethod& renderer) const
+    RenderRegion bounds(RenderMethod* renderer) const
     {
         if (paints.empty()) return {0, 0, 0, 0};
 
@@ -226,14 +214,10 @@ struct Scene::Impl
 
     void clear(bool free)
     {
-        auto dispose = renderer ? true : false;
-
         for (auto paint : paints) {
-            if (dispose) free &= P(paint)->dispose(*renderer);
             if (P(paint)->unref() == 0 && free) delete(paint);
         }
         paints.clear();
-        renderer = nullptr;
     }
 
     Iterator* iterator()
