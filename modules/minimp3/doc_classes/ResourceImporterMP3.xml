@@ -28,10 +28,10 @@
 			If enabled, the audio will begin playing at the beginning after playback ends by reaching the end of the audio.
 			[b]Note:[/b] In [AudioStreamPlayer], the [signal AudioStreamPlayer.finished] signal won't be emitted for looping audio when it reaches the end of the audio file, as the audio will keep playing indefinitely.
 		</member>
-		<member name="loop_offset" type="float" setter="" getter="" default="0">
-			Determines where audio will start to loop after playback reaches the end of the audio. This can be used to only loop a part of the audio file, which is useful for some ambient sounds or music. The value is determined in seconds relative to the beginning of the audio. A value of [code]0.0[/code] will loop the entire audio file.
+		<member name="loop_offset_samples" type="int" setter="" getter="" default="0">
+			Determines where audio will start to loop after playback reaches the end of the audio. This can be used to only loop a part of the audio file, which is useful for some ambient sounds or music. The value is determined in samples relative to the beginning of the audio. A value of [code]0[/code] will loop the entire audio file.
 			Only has an effect if [member loop] is [code]true[/code].
-			A more convenient editor for [member loop_offset] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
+			A more convenient editor for [member loop_offset_samples] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
 		</member>
 	</members>
 </class>

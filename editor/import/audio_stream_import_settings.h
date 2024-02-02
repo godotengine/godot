@@ -35,6 +35,7 @@
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/texture.h"
 
@@ -42,6 +43,12 @@ class CheckBox;
 
 class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	GDCLASS(AudioStreamImportSettingsDialog, ConfirmationDialog);
+
+	enum class LoopOffsetUnit {
+		LOOP_OFFSET_UNIT_SECONDS,
+		LOOP_OFFSET_UNIT_SAMPLES,
+		LOOP_OFFSET_UNIT_BEATS
+	};
 
 	CheckBox *bpm_enabled = nullptr;
 	SpinBox *bpm_edit = nullptr;
@@ -51,6 +58,7 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	SpinBox *bar_beats_edit = nullptr;
 	CheckBox *loop = nullptr;
 	SpinBox *loop_offset = nullptr;
+	OptionButton *loop_offset_unit = nullptr;
 	ColorRect *color_rect = nullptr;
 	Ref<AudioStream> stream;
 	AudioStreamPlayer *_player = nullptr;
@@ -74,6 +82,7 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	bool _beat_len_dragging = false;
 	bool _pausing = false;
 	int _hovering_beat = -1;
+	int64_t _loop_offset_samples = 0;
 
 	HashMap<StringName, Variant> params;
 	String importer;
@@ -84,8 +93,13 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 	static AudioStreamImportSettingsDialog *singleton;
 
 	void _settings_changed();
+	void _unit_changed();
 
 	void _reimport();
+
+	double _samples_to_unit(int64_t p_samples) const;
+	double _seconds_to_unit(double p_seconds) const;
+	int64_t _unit_to_samples(double p_unit) const;
 
 protected:
 	void _notification(int p_what);

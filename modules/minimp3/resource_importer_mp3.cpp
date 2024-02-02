@@ -76,7 +76,7 @@ String ResourceImporterMP3::get_preset_name(int p_idx) const {
 
 void ResourceImporterMP3::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "loop_offset_samples"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,or_greater"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,or_greater"), 4));
@@ -117,7 +117,6 @@ Ref<AudioStreamMP3> ResourceImporterMP3::import_mp3(const String &p_path) {
 
 Error ResourceImporterMP3::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
-	float loop_offset = p_options["loop_offset"];
 	double bpm = p_options["bpm"];
 	float beat_count = p_options["beat_count"];
 	float bar_beats = p_options["bar_beats"];
@@ -127,7 +126,11 @@ Error ResourceImporterMP3::import(const String &p_source_file, const String &p_s
 		return ERR_CANT_OPEN;
 	}
 	mp3_stream->set_loop(loop);
-	mp3_stream->set_loop_offset(loop_offset);
+	if (p_options.has("loop_offset_samples")) {
+		mp3_stream->set_loop_offset((double)p_options["loop_offset_samples"] / mp3_stream->get_sampling_rate());
+	} else {
+		mp3_stream->set_loop_offset(p_options["loop_offset"]);
+	}
 	mp3_stream->set_bpm(bpm);
 	mp3_stream->set_beat_count(beat_count);
 	mp3_stream->set_bar_beats(bar_beats);

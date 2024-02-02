@@ -157,6 +157,8 @@ public:
 
 	virtual bool is_monophonic() const override;
 
+	virtual int get_sampling_rate() const override;
+
 	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
 
 	AudioStreamOggVorbis();

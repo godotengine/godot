@@ -216,6 +216,12 @@ bool AudioStream::is_monophonic() const {
 	return ret;
 }
 
+int AudioStream::get_sampling_rate() const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_sampling_rate, ret);
+	return ret;
+}
+
 double AudioStream::get_bpm() const {
 	double ret = 0;
 	GDVIRTUAL_CALL(_get_bpm, ret);
@@ -274,11 +280,13 @@ void AudioStream::get_parameter_list(List<Parameter> *r_parameters) {
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
+	ClassDB::bind_method(D_METHOD("get_sampling_rate"), &AudioStream::get_sampling_rate);
 	ClassDB::bind_method(D_METHOD("instantiate_playback"), &AudioStream::instantiate_playback);
 	GDVIRTUAL_BIND(_instantiate_playback);
 	GDVIRTUAL_BIND(_get_stream_name);
 	GDVIRTUAL_BIND(_get_length);
 	GDVIRTUAL_BIND(_is_monophonic);
+	GDVIRTUAL_BIND(_get_sampling_rate);
 	GDVIRTUAL_BIND(_get_bpm)
 	GDVIRTUAL_BIND(_get_beat_count)
 	GDVIRTUAL_BIND(_get_parameter_list)

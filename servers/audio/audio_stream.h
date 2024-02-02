@@ -127,6 +127,7 @@ protected:
 	GDVIRTUAL0RC(String, _get_stream_name)
 	GDVIRTUAL0RC(double, _get_length)
 	GDVIRTUAL0RC(bool, _is_monophonic)
+	GDVIRTUAL0RC(int, _get_sampling_rate)
 	GDVIRTUAL0RC(double, _get_bpm)
 	GDVIRTUAL0RC(bool, _has_loop)
 	GDVIRTUAL0RC(int, _get_bar_beats)
@@ -144,6 +145,7 @@ public:
 
 	virtual double get_length() const;
 	virtual bool is_monophonic() const;
+	virtual int get_sampling_rate() const;
 
 	void tag_used(float p_offset);
 	uint64_t get_tagged_frame() const;

@@ -253,6 +253,10 @@ bool AudioStreamMP3::is_monophonic() const {
 	return false;
 }
 
+int AudioStreamMP3::get_sampling_rate() const {
+	return (int)sample_rate;
+}
+
 void AudioStreamMP3::get_parameter_list(List<Parameter> *r_parameters) {
 	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
 }

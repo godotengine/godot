@@ -437,7 +437,17 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 			beats_edit->set_value(beats);
 			beats_enabled->set_pressed(beats > 0);
 			loop->set_pressed(config_file->get_value("params", "loop", false));
-			loop_offset->set_value(config_file->get_value("params", "loop_offset", 0));
+			loop_offset_unit->select((int)LoopOffsetUnit::LOOP_OFFSET_UNIT_SECONDS);
+			loop_offset->set_step(0.00001);
+			loop_offset->set_max(stream->get_length());
+			if (config_file->has_section_key("params", "loop_offset_samples")) {
+				_loop_offset_samples = config_file->get_value("params", "loop_offset_samples");
+				loop_offset->set_value(_samples_to_unit(_loop_offset_samples));
+			} else {
+				loop_offset->set_value(config_file->get_value("params", "loop_offset", 0));
+				_loop_offset_samples = _unit_to_samples(loop_offset->get_value());
+			}
+			stream->call("set_loop_offset", (double)_loop_offset_samples / stream->get_sampling_rate());
 			bar_beats_edit->set_value(config_file->get_value("params", "bar_beats", 4));
 
 			List<String> keys;
@@ -471,11 +481,20 @@ void AudioStreamImportSettingsDialog::_settings_changed() {
 
 	updating_settings = true;
 	stream->call("set_loop", loop->is_pressed());
-	stream->call("set_loop_offset", loop_offset->get_value());
+
+	const double current_loop_offset = _samples_to_unit(_loop_offset_samples);
+	const double new_loop_offset = loop_offset->get_value();
+	if (ABS(current_loop_offset - new_loop_offset) >= loop_offset->get_step() * 0.5) {
+		_loop_offset_samples = _unit_to_samples(new_loop_offset);
+		stream->call("set_loop_offset", (double)_loop_offset_samples / stream->get_sampling_rate());
+	}
+
 	if (loop->is_pressed()) {
 		loop_offset->set_editable(true);
+		loop_offset_unit->set_disabled(false);
 	} else {
 		loop_offset->set_editable(false);
+		loop_offset_unit->set_disabled(true);
 	}
 
 	if (bpm_enabled->is_pressed()) {
@@ -515,14 +534,82 @@ void AudioStreamImportSettingsDialog::_settings_changed() {
 	color_rect->queue_redraw();
 }
 
+void AudioStreamImportSettingsDialog::_unit_changed() {
+	if (updating_settings) {
+		return;
+	}
+
+	updating_settings = true;
+	loop_offset->set_max(_seconds_to_unit(stream->get_length()));
+	loop_offset->set_step(loop_offset_unit->get_selected() == (int)LoopOffsetUnit::LOOP_OFFSET_UNIT_SAMPLES ? 1.0 : 0.00001);
+	loop_offset->set_value(_samples_to_unit(_loop_offset_samples));
+	updating_settings = false;
+}
+
 void AudioStreamImportSettingsDialog::_reimport() {
 	params["loop"] = loop->is_pressed();
-	params["loop_offset"] = loop_offset->get_value();
+	params["loop_offset_samples"] = _loop_offset_samples;
 	params["bpm"] = bpm_enabled->is_pressed() ? double(bpm_edit->get_value()) : double(0);
 	params["beat_count"] = (bpm_enabled->is_pressed() && beats_enabled->is_pressed()) ? int(beats_edit->get_value()) : int(0);
 	params["bar_beats"] = (bpm_enabled->is_pressed()) ? int(bar_beats_edit->get_value()) : int(4);
 
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(path, importer, params);
+}
+
+double AudioStreamImportSettingsDialog::_samples_to_unit(int64_t p_samples) const {
+	double value;
+	switch ((LoopOffsetUnit)loop_offset_unit->get_selected()) {
+		case LoopOffsetUnit::LOOP_OFFSET_UNIT_SECONDS: {
+			value = (double)p_samples / stream->get_sampling_rate();
+			break;
+		}
+		case LoopOffsetUnit::LOOP_OFFSET_UNIT_SAMPLES: {
+			return p_samples;
+		}
+		case LoopOffsetUnit::LOOP_OFFSET_UNIT_BEATS: {
+			value = (double)p_samples / stream->get_sampling_rate() /
+					60.0 * bpm_edit->get_value();
+			break;
+		}
+		default: {
+			return p_samples;
+		}
+	}
+	return Math::round(value / loop_offset->get_step()) * loop_offset->get_step();
+}
+
+double AudioStreamImportSettingsDialog::_seconds_to_unit(double p_seconds) const {
+	switch ((LoopOffsetUnit)loop_offset_unit->get_selected()) {
+		case LoopOffsetUnit::LOOP_OFFSET_UNIT_SECONDS: {
+			return p_seconds;
+		}
+		case LoopOffsetUnit::LOOP_OFFSET_UNIT_SAMPLES: {
+			return p_seconds * stream->get_sampling_rate();
+		}
+		case LoopOffsetUnit::LOOP_OFFSET_UNIT_BEATS: {
+			return p_seconds / 60.0 * bpm_edit->get_value();
+		}
+		default: {
+			return p_seconds;
+		}
+	}
+}
+
+int64_t AudioStreamImportSettingsDialog::_unit_to_samples(double p_value) const {
+	switch ((LoopOffsetUnit)loop_offset_unit->get_selected()) {
+		case LoopOffsetUnit::LOOP_OFFSET_UNIT_SECONDS: {
+			return p_value * stream->get_sampling_rate();
+		}
+		case LoopOffsetUnit::LOOP_OFFSET_UNIT_SAMPLES: {
+			return p_value;
+		}
+		case LoopOffsetUnit::LOOP_OFFSET_UNIT_BEATS: {
+			return p_value / bpm_edit->get_value() * 60.0 * stream->get_sampling_rate();
+		}
+		default: {
+			return p_value;
+		}
+	}
 }
 
 AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
@@ -542,12 +629,16 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop_hb->add_spacer();
 	loop_hb->add_child(memnew(Label(TTR("Offset:"))));
 	loop_offset = memnew(SpinBox);
-	loop_offset->set_max(10000);
-	loop_offset->set_step(0.001);
-	loop_offset->set_suffix("sec");
-	loop_offset->set_tooltip_text(TTR("Loop offset (from beginning). Note that if BPM is set, this setting will be ignored."));
+	loop_offset->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
+	loop_offset->set_tooltip_text(TTR("Playback will loop back to this point after reaching the end of the stream."));
 	loop_offset->connect("value_changed", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop_offset);
+	loop_offset_unit = memnew(OptionButton);
+	loop_offset_unit->add_item(TTR("Seconds"));
+	loop_offset_unit->add_item(TTR("Samples"));
+	loop_offset_unit->add_item(TTR("Beats"));
+	loop_offset_unit->connect("item_selected", callable_mp(this, &AudioStreamImportSettingsDialog::_unit_changed).unbind(1));
+	loop_hb->add_child(loop_offset_unit);
 	main_vbox->add_margin_child(TTR("Loop:"), loop_hb);
 
 	HBoxContainer *interactive_hb = memnew(HBoxContainer);
