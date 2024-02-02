@@ -902,8 +902,6 @@ void FileAccess::add_resource_path(const String &p_protocol, const String &p_pat
 	ERR_FAIL_COND_MSG(resource_paths_class.has(protocol), vformat(R"(Protocol "%s://" is already registered as a resource path class.)", protocol));
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint() && protocol == "editor", R"(Protocol "editor://" cannot be registered when the editor is not running.)");
 
-	print_line(vformat("adding %s as a protocol for %s", p_protocol, p_path));
-
 	resource_paths[protocol] = p_path;
 }
 
