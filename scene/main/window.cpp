@@ -484,9 +484,12 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_enabled;
 
+	if (p_flag == FLAG_TRANSPARENT) {
+		set_transparent_background(p_enabled);
+	}
+
 	if (embedder) {
 		embedder->_sub_window_update(this);
-
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		if (!is_in_edited_scene_root()) {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
@@ -1285,6 +1288,9 @@ void Window::_notification(int p_what) {
 					_update_viewport_size(); // Then feed back to the viewport.
 					_update_window_callbacks();
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+					if (DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(FLAG_TRANSPARENT), window_id)) {
+						set_transparent_background(true);
+					}
 				} else {
 					// Create.
 					if (visible) {
