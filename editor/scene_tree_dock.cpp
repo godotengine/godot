@@ -1744,7 +1744,7 @@ bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, 
 	return false;
 }
 
-bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource) const {
+bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_variant, Variant &r_cleared_variant, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource) const {
 	switch (r_variant.get_type()) {
 		case Variant::NODE_PATH: {
 			NodePath node_path = r_variant;
@@ -1755,44 +1755,56 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 
 			if (!node_path.is_empty() && _update_node_path(p_root_node, node_path, p_renames)) {
 				r_variant = node_path;
+				r_cleared_variant = NodePath();
 				return true;
 			}
 		} break;
 
 		case Variant::ARRAY: {
 			Array a = r_variant;
+			Array cleared_a = r_variant;
 			bool updated = false;
 			for (int i = 0; i < a.size(); i++) {
 				Variant value = a[i];
-				if (_check_node_path_recursive(p_root_node, value, p_renames, p_inside_resource)) {
+				Variant cleared_value;
+				if (_check_node_path_recursive(p_root_node, value, cleared_value, p_renames, p_inside_resource)) {
 					if (!updated) {
 						a = a.duplicate(); // Need to duplicate for undo-redo to work.
+						cleared_a = cleared_a.duplicate();
 						updated = true;
 					}
 					a[i] = value;
+					cleared_a[i] = cleared_value;
 				}
 			}
 			if (updated) {
 				r_variant = a;
+				r_cleared_variant = cleared_a;
 				return true;
 			}
 		} break;
 
 		case Variant::DICTIONARY: {
 			Dictionary d = r_variant;
+			Dictionary cleared_d = r_variant;
 			bool updated = false;
 			for (int i = 0; i < d.size(); i++) {
 				Variant value = d.get_value_at_index(i);
-				if (_check_node_path_recursive(p_root_node, value, p_renames, p_inside_resource)) {
+				Variant cleared_value;
+				if (_check_node_path_recursive(p_root_node, value, cleared_value, p_renames, p_inside_resource)) {
 					if (!updated) {
 						d = d.duplicate(); // Need to duplicate for undo-redo to work.
+						cleared_d = cleared_d.duplicate();
 						updated = true;
 					}
-					d[d.get_key_at_index(i)] = value;
+					Variant key = d.get_key_at_index(i);
+					d[key] = value;
+					cleared_d[key] = cleared_value;
 				}
 			}
 			if (updated) {
 				r_variant = d;
+				r_cleared_variant = cleared_d;
 				return true;
 			}
 		} break;
@@ -1820,11 +1832,12 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 				String propertyname = E.name;
 				Variant old_variant = resource->get(propertyname);
 				Variant updated_variant = old_variant;
-				if (_check_node_path_recursive(p_root_node, updated_variant, p_renames, true)) {
+				Variant cleared_variant;
+				if (_check_node_path_recursive(p_root_node, updated_variant, cleared_variant, p_renames, true)) {
 					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 					undo_redo->add_do_property(resource, propertyname, updated_variant);
 					undo_redo->add_undo_property(resource, propertyname, old_variant);
-					resource->set(propertyname, updated_variant);
+					resource->set(propertyname, cleared_variant);
 				}
 			}
 			break;
@@ -1964,11 +1977,13 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 		String propertyname = E.name;
 		Variant old_variant = p_base->get(propertyname);
 		Variant updated_variant = old_variant;
-		if (_check_node_path_recursive(p_base, updated_variant, p_renames)) {
+		Variant cleared_variant;
+		if (_check_node_path_recursive(p_base, updated_variant, cleared_variant, p_renames)) {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->add_do_property(p_base, propertyname, updated_variant);
 			undo_redo->add_undo_property(p_base, propertyname, old_variant);
-			p_base->set(propertyname, updated_variant);
+			// Remove old node paths temporarily to avoid triggering errors.
+			p_base->set(propertyname, cleared_variant);
 		}
 	}
 
