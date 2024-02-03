@@ -1158,21 +1158,19 @@ void OpenXRInterface::end_frame() {
 }
 
 bool OpenXRInterface::is_passthrough_supported() {
-	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_supported();
+	return get_supported_environment_blend_modes().find(XR_ENV_BLEND_MODE_ALPHA_BLEND);
 }
 
 bool OpenXRInterface::is_passthrough_enabled() {
-	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_enabled();
+	return get_environment_blend_mode() == XR_ENV_BLEND_MODE_ALPHA_BLEND;
 }
 
 bool OpenXRInterface::start_passthrough() {
-	return passthrough_wrapper != nullptr && passthrough_wrapper->start_passthrough();
+	return set_environment_blend_mode(XR_ENV_BLEND_MODE_ALPHA_BLEND);
 }
 
 void OpenXRInterface::stop_passthrough() {
-	if (passthrough_wrapper) {
-		passthrough_wrapper->stop_passthrough();
-	}
+	set_environment_blend_mode(XR_ENV_BLEND_MODE_OPAQUE);
 }
 
 Array OpenXRInterface::get_supported_environment_blend_modes() {
@@ -1204,6 +1202,11 @@ Array OpenXRInterface::get_supported_environment_blend_modes() {
 				WARN_PRINT("Unsupported blend mode found: " + String::num_int64(int64_t(env_blend_modes[i])));
 		}
 	}
+
+	if (openxr_api->is_environment_blend_mode_alpha_blend_supported() == OpenXRAPI::OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING) {
+		modes.push_back(XR_ENV_BLEND_MODE_ALPHA_BLEND);
+	}
+
 	return modes;
 }
 
@@ -1422,8 +1425,6 @@ OpenXRInterface::OpenXRInterface() {
 	_set_default_pos(head_transform, 1.0, 0);
 	_set_default_pos(transform_for_view[0], 1.0, 1);
 	_set_default_pos(transform_for_view[1], 1.0, 2);
-
-	passthrough_wrapper = OpenXRFbPassthroughExtensionWrapper::get_singleton();
 }
 
 OpenXRInterface::~OpenXRInterface() {

@@ -32,7 +32,6 @@
 #define OPENXR_INTERFACE_H
 
 #include "action_map/openxr_action_map.h"
-#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
@@ -49,7 +48,6 @@ private:
 	OpenXRAPI *openxr_api = nullptr;
 	bool initialized = false;
 	XRInterface::TrackingStatus tracking_state;
-	OpenXRFbPassthroughExtensionWrapper *passthrough_wrapper = nullptr;
 
 	// At a minimum we need a tracker for our head
 	Ref<XRPositionalTracker> head;
