@@ -246,6 +246,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 		uint32_t net_id = pending_sync_net_ids[0];
 		pending_sync_net_ids.pop_front();
 		peers_info[pending_spawn_remote].recv_sync_ids[net_id] = sync->get_instance_id();
+		sync->set_net_id(net_id);
 
 		// Try to apply spawn state (before ready).
 		if (pending_buffer_size > 0) {
