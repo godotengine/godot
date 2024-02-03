@@ -182,6 +182,7 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion
 
 	PhysicsServer3D::MotionParameters parameters(p_from, p_motion, p_margin);
 	parameters.recovery_as_collision = p_recovery_as_collision;
+	parameters.max_collisions = p_max_collisions;
 
 	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 }
