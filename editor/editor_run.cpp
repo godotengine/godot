@@ -308,7 +308,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 	// Pass the debugger stop shortcut to the running instance(s).
 	String shortcut;
-	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop_running_project"), shortcut);
+	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop_running_project"), shortcut, nullptr, nullptr, true);
 	OS::get_singleton()->set_environment("__GODOT_EDITOR_STOP_SHORTCUT__", shortcut);
 
 	if (OS::get_singleton()->is_stdout_verbose()) {

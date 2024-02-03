@@ -1334,21 +1334,21 @@ void godotsharp_err_print_error(const godot_string *p_function, const godot_stri
 			p_editor_notify, p_type);
 }
 
-void godotsharp_var_to_str(const godot_variant *p_var, godot_string *r_ret) {
+void godotsharp_var_to_str(const godot_variant *p_var, bool p_full_objects, godot_string *r_ret) {
 	const Variant &var = *reinterpret_cast<const Variant *>(p_var);
 	String &vars = *memnew_placement(r_ret, String);
-	VariantWriter::write_to_string(var, vars);
+	VariantWriter::write_to_string(var, vars, nullptr, nullptr, p_full_objects);
 }
 
-void godotsharp_str_to_var(const godot_string *p_str, godot_variant *r_ret) {
+void godotsharp_str_to_var(const godot_string *p_str, bool p_allow_objects, godot_variant *r_ret) {
 	Variant ret;
 
 	VariantParser::StreamString ss;
 	ss.s = *reinterpret_cast<const String *>(p_str);
 
 	String errs;
-	int line;
-	Error err = VariantParser::parse(&ss, ret, errs, line);
+	int line = 1;
+	Error err = VariantParser::parse(&ss, ret, errs, line, nullptr, p_allow_objects);
 	if (err != OK) {
 		String err_str = "Parse error at line " + itos(line) + ": " + errs + ".";
 		ERR_PRINT(err_str);

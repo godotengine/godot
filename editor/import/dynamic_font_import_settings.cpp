@@ -1135,7 +1135,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	config.instantiate();
 	ERR_FAIL_NULL(config);
 
-	Error err = config->load(p_path + ".import");
+	Error err = config->load(p_path + ".import", true);
 	print_verbose("Loading import settings:");
 	if (err == OK) {
 		List<String> keys;

@@ -630,7 +630,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_a
 
 		Ref<ConfigFile> config;
 		config.instantiate();
-		Error err = config->load(p_path + ".import");
+		Error err = config->load(p_path + ".import", true);
 		if (err == OK) {
 			List<String> keys;
 			config->get_section_keys("params", &keys);

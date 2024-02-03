@@ -2395,7 +2395,7 @@ Error Main::setup2() {
 						next_tag.fields.clear();
 						next_tag.name = String();
 
-						err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new, true);
+						err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new, true, true);
 						if (err == ERR_FILE_EOF) {
 							break;
 						}

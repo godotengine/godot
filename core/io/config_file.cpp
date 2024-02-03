@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "config_file.h"
+#include "config_file.compat.inc"
 
 #include "core/io/file_access_encrypted.h"
 #include "core/os/keyboard.h"
@@ -131,7 +132,7 @@ void ConfigFile::erase_section_key(const String &p_section, const String &p_key)
 	}
 }
 
-String ConfigFile::encode_to_text() const {
+String ConfigFile::encode_to_text(bool p_full_objects) const {
 	StringBuilder sb;
 	bool first = true;
 	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
@@ -146,14 +147,14 @@ String ConfigFile::encode_to_text() const {
 
 		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
-			VariantWriter::write_to_string(F.value, vstr);
+			VariantWriter::write_to_string(F.value, vstr, nullptr, nullptr, p_full_objects);
 			sb.append(F.key.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
 	return sb.as_string();
 }
 
-Error ConfigFile::save(const String &p_path) {
+Error ConfigFile::save(const String &p_path, bool p_full_objects) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
@@ -161,10 +162,10 @@ Error ConfigFile::save(const String &p_path) {
 		return err;
 	}
 
-	return _internal_save(file);
+	return _internal_save(file, p_full_objects);
 }
 
-Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
+Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_key, bool p_full_objects) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
@@ -178,10 +179,10 @@ Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_
 	if (err) {
 		return err;
 	}
-	return _internal_save(fae);
+	return _internal_save(fae, p_full_objects);
 }
 
-Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass) {
+Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass, bool p_full_objects) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
@@ -196,10 +197,10 @@ Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass
 		return err;
 	}
 
-	return _internal_save(fae);
+	return _internal_save(fae, p_full_objects);
 }
 
-Error ConfigFile::_internal_save(Ref<FileAccess> file) {
+Error ConfigFile::_internal_save(Ref<FileAccess> file, bool p_full_objects) {
 	bool first = true;
 	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
 		if (first) {
@@ -213,7 +214,7 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 
 		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
-			VariantWriter::write_to_string(F.value, vstr);
+			VariantWriter::write_to_string(F.value, vstr, nullptr, nullptr, p_full_objects);
 			file->store_string(F.key.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
@@ -221,7 +222,7 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 	return OK;
 }
 
-Error ConfigFile::load(const String &p_path) {
+Error ConfigFile::load(const String &p_path, bool p_allow_objects) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
@@ -229,10 +230,10 @@ Error ConfigFile::load(const String &p_path) {
 		return err;
 	}
 
-	return _internal_load(p_path, f);
+	return _internal_load(p_path, f, p_allow_objects);
 }
 
-Error ConfigFile::load_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
+Error ConfigFile::load_encrypted(const String &p_path, const Vector<uint8_t> &p_key, bool p_allow_objects) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
@@ -246,10 +247,10 @@ Error ConfigFile::load_encrypted(const String &p_path, const Vector<uint8_t> &p_
 	if (err) {
 		return err;
 	}
-	return _internal_load(p_path, fae);
+	return _internal_load(p_path, fae, p_allow_objects);
 }
 
-Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass) {
+Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass, bool p_allow_objects) {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
@@ -264,25 +265,25 @@ Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass
 		return err;
 	}
 
-	return _internal_load(p_path, fae);
+	return _internal_load(p_path, fae, p_allow_objects);
 }
 
-Error ConfigFile::_internal_load(const String &p_path, Ref<FileAccess> f) {
+Error ConfigFile::_internal_load(const String &p_path, Ref<FileAccess> f, bool p_allow_objects) {
 	VariantParser::StreamFile stream;
 	stream.f = f;
 
-	Error err = _parse(p_path, &stream);
+	Error err = _parse(p_path, &stream, p_allow_objects);
 
 	return err;
 }
 
-Error ConfigFile::parse(const String &p_data) {
+Error ConfigFile::parse(const String &p_data, bool p_allow_objects) {
 	VariantParser::StreamString stream;
 	stream.s = p_data;
-	return _parse("<string>", &stream);
+	return _parse("<string>", &stream, p_allow_objects);
 }
 
-Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) {
+Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream, bool p_allow_objects) {
 	String assign;
 	Variant value;
 	VariantParser::Tag next_tag;
@@ -293,11 +294,12 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 	String section;
 
 	while (true) {
-		assign = Variant();
+		assign = String();
+		value = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, nullptr, true);
+		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, nullptr, true, p_allow_objects);
 		if (err == ERR_FILE_EOF) {
 			return OK;
 		} else if (err != OK) {
@@ -332,19 +334,19 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("erase_section", "section"), &ConfigFile::erase_section);
 	ClassDB::bind_method(D_METHOD("erase_section_key", "section", "key"), &ConfigFile::erase_section_key);
 
-	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
-	ClassDB::bind_method(D_METHOD("parse", "data"), &ConfigFile::parse);
-	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
+	ClassDB::bind_method(D_METHOD("load", "path", "allow_objects"), &ConfigFile::load, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("parse", "data", "allow_objects"), &ConfigFile::parse, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save", "path", "full_objects"), &ConfigFile::save, DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("encode_to_text"), &ConfigFile::encode_to_text);
+	ClassDB::bind_method(D_METHOD("encode_to_text", "full_objects"), &ConfigFile::encode_to_text, DEFVAL(false));
 
 	BIND_METHOD_ERR_RETURN_DOC("load", ERR_FILE_CANT_OPEN);
 
-	ClassDB::bind_method(D_METHOD("load_encrypted", "path", "key"), &ConfigFile::load_encrypted);
-	ClassDB::bind_method(D_METHOD("load_encrypted_pass", "path", "password"), &ConfigFile::load_encrypted_pass);
+	ClassDB::bind_method(D_METHOD("load_encrypted", "path", "key", "allow_objects"), &ConfigFile::load_encrypted, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load_encrypted_pass", "path", "password", "allow_objects"), &ConfigFile::load_encrypted_pass, DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("save_encrypted", "path", "key"), &ConfigFile::save_encrypted);
-	ClassDB::bind_method(D_METHOD("save_encrypted_pass", "path", "password"), &ConfigFile::save_encrypted_pass);
+	ClassDB::bind_method(D_METHOD("save_encrypted", "path", "key", "full_objects"), &ConfigFile::save_encrypted, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_encrypted_pass", "path", "password", "full_objects"), &ConfigFile::save_encrypted_pass, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("clear"), &ConfigFile::clear);
 }

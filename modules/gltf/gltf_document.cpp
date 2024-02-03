@@ -3227,7 +3227,7 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 			if (FileAccess::exists(file_path + ".import")) {
 				Ref<ConfigFile> config;
 				config.instantiate();
-				config->load(file_path + ".import");
+				config->load(file_path + ".import", true);
 				if (config->has_section_key("remap", "generator_parameters")) {
 					generator_parameters = (Dictionary)config->get_value("remap", "generator_parameters");
 				}

@@ -43,13 +43,29 @@ class ConfigFile : public RefCounted {
 
 	PackedStringArray _get_sections() const;
 	PackedStringArray _get_section_keys(const String &p_section) const;
-	Error _internal_load(const String &p_path, Ref<FileAccess> f);
-	Error _internal_save(Ref<FileAccess> file);
+	Error _internal_load(const String &p_path, Ref<FileAccess> f, bool p_allow_objects);
+	Error _internal_save(Ref<FileAccess> file, bool p_full_objects);
 
-	Error _parse(const String &p_path, VariantParser::Stream *p_stream);
+	Error _parse(const String &p_path, VariantParser::Stream *p_stream, bool p_allow_objects);
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	Error _save_bind_compat_80585(const String &p_path);
+	Error _load_bind_compat_80585(const String &p_path);
+	Error _parse_bind_compat_80585(const String &p_path);
+
+	String _encode_to_text_bind_compat_80585() const;
+
+	Error _load_encrypted_bind_compat_80585(const String &p_path, const Vector<uint8_t> &p_key);
+	Error _load_encrypted_pass_bind_compat_80585(const String &p_path, const String &p_pass);
+
+	Error _save_encrypted_bind_compat_80585(const String &p_path, const Vector<uint8_t> &p_key);
+	Error _save_encrypted_pass_bind_compat_80585(const String &p_path, const String &p_pass);
+
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	void set_value(const String &p_section, const String &p_key, const Variant &p_value);
@@ -64,19 +80,19 @@ public:
 	void erase_section(const String &p_section);
 	void erase_section_key(const String &p_section, const String &p_key);
 
-	Error save(const String &p_path);
-	Error load(const String &p_path);
-	Error parse(const String &p_data);
+	Error save(const String &p_path, bool p_full_objects = false);
+	Error load(const String &p_path, bool p_allow_objects = false);
+	Error parse(const String &p_data, bool p_allow_objects = false);
 
-	String encode_to_text() const; // used by exporter
+	String encode_to_text(bool p_full_objects = false) const;
 
 	void clear();
 
-	Error load_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
-	Error load_encrypted_pass(const String &p_path, const String &p_pass);
+	Error load_encrypted(const String &p_path, const Vector<uint8_t> &p_key, bool p_allow_objects = false);
+	Error load_encrypted_pass(const String &p_path, const String &p_pass, bool p_allow_objects = false);
 
-	Error save_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
-	Error save_encrypted_pass(const String &p_path, const String &p_pass);
+	Error save_encrypted(const String &p_path, const Vector<uint8_t> &p_key, bool p_full_objects = false);
+	Error save_encrypted_pass(const String &p_path, const String &p_pass, bool p_full_objects = false);
 };
 
 #endif // CONFIG_FILE_H

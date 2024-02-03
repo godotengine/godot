@@ -69,7 +69,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true, true);
 		if (err == ERR_FILE_EOF) {
 			return OK;
 		} else if (err != OK) {
@@ -296,7 +296,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true, true);
 		if (err == ERR_FILE_EOF) {
 			return;
 		} else if (err != OK) {
@@ -493,12 +493,12 @@ void ResourceImporter::_bind_methods() {
 Error ResourceFormatImporterSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
-	Error err = cf->load(p_path + ".import");
+	Error err = cf->load(p_path + ".import", true);
 	if (err != OK) {
 		return err;
 	}
 	cf->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(p_uid));
-	cf->save(p_path + ".import");
+	cf->save(p_path + ".import", true);
 
 	return OK;
 }

@@ -58,7 +58,7 @@ void EditorFileServer::_scan_files_changed(EditorFileSystemDirectory *efd, const
 			// Todo the modified times of remapped files should most likely be kept in EditorFileSystem to speed this up in the future.
 			Ref<ConfigFile> cf;
 			cf.instantiate();
-			Error err = cf->load(f + ".import");
+			Error err = cf->load(f + ".import", true);
 
 			ERR_CONTINUE(err != OK);
 			{

@@ -141,7 +141,7 @@ void SurfaceUpgradeTool::finish_upgrade() {
 	for (const String &file_path : reimport_paths) {
 		Ref<ConfigFile> config;
 		config.instantiate();
-		Error err = config->load(file_path);
+		Error err = config->load(file_path, true);
 		if (err != OK) {
 			ERR_PRINT("Could not open " + file_path + " for upgrade.");
 			continue;

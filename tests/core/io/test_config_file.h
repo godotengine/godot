@@ -115,6 +115,27 @@ antialiasing = false ; Duplicate key.
 			"The configuration file shouldn't parse successfully.");
 }
 
+TEST_CASE("[ConfigFile] Parsing object") {
+	const String config_source = R"(
+[test]
+
+test=Object(RefCounted,"script":null)
+)";
+	ConfigFile config_file;
+
+	ERR_PRINT_OFF;
+	Error error = config_file.parse(config_source);
+	ERR_PRINT_ON;
+
+	CHECK(error == ERR_UNAUTHORIZED);
+	CHECK(!config_file.has_section_key("test", "test"));
+
+	error = config_file.parse(config_source, true);
+
+	CHECK(error == OK);
+	CHECK(config_file.get_value("test", "test").get_type() == Variant::OBJECT);
+}
+
 TEST_CASE("[ConfigFile] Saving file") {
 	ConfigFile config_file;
 	config_file.set_value("player", "name", "Unnamed Player");

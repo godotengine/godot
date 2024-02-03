@@ -1106,7 +1106,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			config.instantiate();
 
 			if (FileAccess::exists(texture_path + ".import")) {
-				config->load(texture_path + ".import");
+				config->load(texture_path + ".import", true);
 			}
 
 			config->set_value("remap", "importer", "2d_array_texture");
@@ -1120,7 +1120,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			config->set_value("params", "slices/horizontal", 1);
 			config->set_value("params", "slices/vertical", texture_slice_count);
 
-			config->save(texture_path + ".import");
+			config->save(texture_path + ".import", true);
 
 			Error err = texture_image->save_exr(texture_path, false);
 			ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);

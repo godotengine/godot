@@ -605,7 +605,8 @@ namespace Godot
 
         /// <summary>
         /// Converts a formatted string that was returned by <see cref="VarToStr(Variant)"/>
-        /// to the original value.
+        /// to the equivalent value, without decoding objects.
+        /// Note: If you need object deserialization, see <see cref="StrToVarWithObjects"/>.
         /// </summary>
         /// <example>
         /// <code>
@@ -619,7 +620,23 @@ namespace Godot
         public static Variant StrToVar(string str)
         {
             using var godotStr = Marshaling.ConvertStringToNative(str);
-            NativeFuncs.godotsharp_str_to_var(godotStr, out godot_variant ret);
+            NativeFuncs.godotsharp_str_to_var(godotStr, godot_bool.False, out godot_variant ret);
+            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
+        }
+
+        /// <summary>
+        /// Converts a formatted string that was returned by <see cref="VarToStrWithObjects(Variant)"/>
+        /// to the equivalent value. Decoding objects is allowed.
+        /// Warning: Deserialized object can contain code which gets executed. Do not use this
+        /// option if the serialized object comes from untrusted sources to avoid potential security
+        /// threats (remote code execution).
+        /// </summary>
+        /// <param name="str">String that will be converted to Variant.</param>
+        /// <returns>The decoded <c>Variant</c>.</returns>
+        public static Variant StrToVarWithObjects(string str)
+        {
+            using var godotStr = Marshaling.ConvertStringToNative(str);
+            NativeFuncs.godotsharp_str_to_var(godotStr, godot_bool.True, out godot_variant ret);
             return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
@@ -652,7 +669,8 @@ namespace Godot
 
         /// <summary>
         /// Converts a <see cref="Variant"/> <paramref name="var"/> to a formatted string that
-        /// can later be parsed using <see cref="StrToVar(string)"/>.
+        /// can later be parsed using <see cref="StrToVar(string)"/>, without encoding objects.
+        /// Note: If you need object serialization, see <see cref="VarToStrWithObjects"/>.
         /// </summary>
         /// <example>
         /// <code>
@@ -669,7 +687,21 @@ namespace Godot
         /// <returns>The <see cref="Variant"/> encoded as a string.</returns>
         public static string VarToStr(Variant var)
         {
-            NativeFuncs.godotsharp_var_to_str((godot_variant)var.NativeVar, out godot_string ret);
+            NativeFuncs.godotsharp_var_to_str((godot_variant)var.NativeVar, godot_bool.False, out godot_string ret);
+            using (ret)
+                return Marshaling.ConvertStringToManaged(ret);
+        }
+
+        /// <summary>
+        /// Converts a <see cref="Variant"/> <paramref name="var"/> to a formatted string that
+        /// can later be parsed using <see cref="StrToVarWithObjects(string)"/>.
+        /// Encoding objects is allowed (and can potentially include executable code).
+        /// </summary>
+        /// <param name="var">Variant that will be converted to string.</param>
+        /// <returns>The <see cref="Variant"/> encoded as a string.</returns>
+        public static string VarToStrWithObjects(Variant var)
+        {
+            NativeFuncs.godotsharp_var_to_str((godot_variant)var.NativeVar, godot_bool.True, out godot_string ret);
             using (ret)
                 return Marshaling.ConvertStringToManaged(ret);
         }

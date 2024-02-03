@@ -1872,6 +1872,49 @@ TEST_CASE("[Variant] Writer recursive dictionary on keys") {
 }
 #endif
 
+TEST_CASE("[Variant] Writer and parser object") {
+	Ref<RefCounted> ref_counted;
+	ref_counted.instantiate();
+	ref_counted->set_meta("test", 123);
+	const String expected = "Object(RefCounted,\"script\":null,\"metadata/test\":123)\n";
+	String encoded;
+
+	ERR_PRINT_OFF;
+	VariantWriter::write_to_string(ref_counted, encoded);
+	ERR_PRINT_ON;
+
+	CHECK_EQ(encoded, "null");
+
+	encoded.clear();
+	VariantWriter::write_to_string(ref_counted, encoded, nullptr, nullptr, true);
+
+	CHECK_EQ(encoded, expected);
+
+	VariantParser::StreamString ss;
+	ss.s = expected;
+	Variant parsed;
+	String errs;
+	int line;
+
+	ERR_PRINT_OFF;
+	Error error = VariantParser::parse(&ss, parsed, errs, line);
+	ERR_PRINT_ON;
+
+	CHECK_EQ(error, ERR_UNAUTHORIZED);
+	CHECK_EQ(parsed, Variant());
+
+	ss = VariantParser::StreamString();
+	ss.s = expected;
+
+	error = VariantParser::parse(&ss, parsed, errs, line, nullptr, true);
+
+	CHECK_EQ(error, OK);
+	ref_counted = parsed;
+	CHECK(ref_counted.is_valid());
+	CHECK_EQ(ref_counted->get_class(), RefCounted::get_class_static());
+	CHECK_EQ(ref_counted->get_meta("test"), Variant(123));
+}
+
 TEST_CASE("[Variant] Basic comparison") {
 	CHECK_EQ(Variant(1), Variant(1));
 	CHECK_FALSE(Variant(1) != Variant(1));

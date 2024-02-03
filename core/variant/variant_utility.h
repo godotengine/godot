@@ -142,7 +142,9 @@ struct VariantUtilityFunctions {
 	static void push_error(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static void push_warning(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static String var_to_str(const Variant &p_var);
+	static String var_to_str_with_objects(const Variant &p_var);
 	static Variant str_to_var(const String &p_var);
+	static Variant str_to_var_with_objects(const String &p_var);
 	static PackedByteArray var_to_bytes(const Variant &p_var);
 	static PackedByteArray var_to_bytes_with_objects(const Variant &p_var);
 	static Variant bytes_to_var(const PackedByteArray &p_arr);
