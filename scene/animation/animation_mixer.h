@@ -106,6 +106,13 @@ protected:
 		return ret;
 	}
 
+	// 动画分组信息
+	StringName animationGroup;
+	// 获取动画回调
+	Callable cb_get_animation;
+	Callable cb_begin_animation;
+	Callable cb_end_animation;
+
 	// For caches.
 	uint64_t animation_set_update_pass = 1;
 	void _animation_set_cache_update();
@@ -408,6 +415,32 @@ public:
 	Ref<AnimatedValuesBackup> make_backup();
 	void restore(const Ref<AnimatedValuesBackup> &p_backup);
 	void reset();
+
+	/* ---- Settings ---- */
+	void set_animation_group(StringName group)
+	{
+		animationGroup = group;
+	}
+	StringName get_animation_group()
+	{
+		return animationGroup;
+	}
+	void set_begin_animation_cb(Callable cb)
+	{
+		cb_begin_animation = cb;
+	}
+	void set_end_animation_cb(Callable cb)
+	{
+		cb_end_animation = cb;
+	}
+	void set_get_animation_cb(Callable cb)
+	{
+		cb_get_animation = cb;
+	}
+	void reset_all_animation(const Ref<Animation>& anim);
+	// 这个是动态修改的动画的时候调用
+	void change_animation(const StringName &p_name,const Ref<Animation>& anim);
+	void clear_all_animation();
 
 #ifdef TOOLS_ENABLED
 	Ref<AnimatedValuesBackup> apply_reset(bool p_user_initiated = false);

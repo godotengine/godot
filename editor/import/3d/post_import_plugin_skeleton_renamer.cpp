@@ -57,6 +57,18 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 	{
 		int len = skeleton->get_bone_count();
 		for (int i = 0; i < len; i++) {
+			auto it = p_rename_map.find( skeleton->get_bone_name(i) );
+			if(it == p_rename_map.end()) {
+				//ERR_PRINT("Bone name not found in rename map: " + skeleton->get_bone_name(i));
+				continue;
+			}
+			else
+			{
+				skeleton->set_bone_name(i, it->value);
+				continue;
+			}
+
+			
 			StringName bn = p_rename_map[skeleton->get_bone_name(i)];
 			if (bn) {
 				skeleton->set_bone_name(i, bn);
@@ -77,6 +89,19 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 					if (mesh_skeleton && node == skeleton) {
 						int len = skin->get_bind_count();
 						for (int i = 0; i < len; i++) {
+							
+							auto it = p_rename_map.find(skin->get_bind_name(i));
+							if(it == p_rename_map.end()) {
+								//ERR_PRINT("Bone name not found in rename map: " + skin->get_bind_name(i));
+								continue;
+							}
+							else
+							{
+								skin->set_bind_name(i, it->value);
+								continue;
+							}
+
+
 							StringName bn = p_rename_map[skin->get_bind_name(i)];
 							if (bn) {
 								skin->set_bind_name(i, bn);
@@ -107,6 +132,17 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 					if (node) {
 						Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
 						if (track_skeleton && track_skeleton == skeleton) {
+							auto it = p_rename_map.find(anim->track_get_path(i).get_subname(0));
+							if(it == p_rename_map.end()) {
+								//ERR_PRINT("Bone name not found in rename map: " + anim->track_get_path(i).get_subname(0));
+								continue;
+							}
+							else
+							{
+								anim->track_set_path(i, track_path + ":" + it->value);
+								continue;
+							}
+
 							StringName bn = p_rename_map[anim->track_get_path(i).get_subname(0)];
 							if (bn) {
 								anim->track_set_path(i, track_path + ":" + bn);

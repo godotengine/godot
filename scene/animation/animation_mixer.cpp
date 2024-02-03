@@ -381,6 +381,10 @@ void AnimationMixer::get_animation_list(List<StringName> *p_animations) const {
 
 Ref<Animation> AnimationMixer::get_animation(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: \"%s\".", p_name));
+
+	cb_get_animation.call(this,p_name);
+
+
 	const AnimationData &anim_data = animation_set[p_name];
 	return anim_data.animation;
 }
@@ -396,6 +400,30 @@ StringName AnimationMixer::find_animation(const Ref<Animation> &p_animation) con
 		}
 	}
 	return StringName();
+}
+
+void AnimationMixer::reset_all_animation(const Ref<Animation>& anim)
+{
+	for (KeyValue<StringName, AnimationData> &E : animation_set) {
+		E.value.animation = anim;		
+	}
+}
+
+
+void AnimationMixer::clear_all_animation()
+{
+	_animation_set_cache_update();
+	animation_set.clear();
+}
+
+void AnimationMixer::change_animation(const StringName &p_name,const Ref<Animation>& anim)
+{
+	if(!animation_set.has(p_name))
+	{
+		ERR_FAIL_MSG(vformat("Animation not found: \"%s\".", p_name));
+	}
+	AnimationData &anim_data = animation_set[p_name];
+	anim_data.animation = anim;
 }
 
 /* -------------------------------------------- */
@@ -913,13 +941,23 @@ bool AnimationMixer::_update_caches() {
 /* -------------------------------------------- */
 
 void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
+	
 	_blend_init();
+
+
+	cb_begin_animation.call(this, p_delta, p_update_only);
+
 	if (_blend_pre_process(p_delta, track_count, track_map)) {
 		_blend_calc_total_weight();
 		_blend_process(p_delta, p_update_only);
 		_blend_apply();
 		_blend_post_process();
+
+		cb_end_animation.call(this, p_delta, p_update_only);
 	};
+
+
+
 	clear_animation_instances();
 }
 
