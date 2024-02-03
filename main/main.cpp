@@ -180,6 +180,7 @@ static OS::ProcessID editor_pid = 0;
 static bool found_project = false;
 static bool auto_build_solutions = false;
 static String debug_server_uri;
+static OS::ProcessID kill_previous_editor_pid = 0;
 #ifndef DISABLE_DEPRECATED
 static int converter_max_kb_file = 4 * 1024; // 4MB
 static int converter_max_line_length = 100000;
@@ -526,6 +527,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --gdscript-docs <path>            Rather than dumping the engine API, generate API reference from the inline documentation in the GDScript files found in <path> (used with --doctool).\n");
 #endif
 	OS::get_singleton()->print("  --build-solutions                 Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
+	OS::get_singleton()->print("  --kill-previous-editor-pid <pid>  Kill the process identified by <pid> before initialization. Used internally by 'Reload Current Project' on Windows.\n");
 	OS::get_singleton()->print("  --dump-gdextension-interface      Generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.\n");
 	OS::get_singleton()->print("  --dump-extension-api              Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
 	OS::get_singleton()->print("  --dump-extension-api-with-docs    Generate JSON dump of the Godot API like the previous option, but including documentation.\n");
@@ -1252,6 +1254,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			auto_build_solutions = true;
 			editor = true;
 			cmdline_tool = true;
+		} else if (I->get() == "--kill-previous-editor-pid") {
+			if (I->next()) {
+				kill_previous_editor_pid = I->next()->get().to_int();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing kill-previous-editor-pid PID argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--dump-gdextension-interface") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
@@ -1588,6 +1598,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->print(
 				"Error: Command line arguments implied opening both editor and project manager, which is not possible. Aborting.\n");
 		goto error;
+	}
+#endif
+
+#ifdef TOOLS_ENABLED
+	if (kill_previous_editor_pid) {
+		// Ignore error result. The internal prints are sufficient, and this is
+		// just a best effort for a Windows GDExtension corner case.
+		OS::get_singleton()->kill_previous_editor_and_wait(kill_previous_editor_pid);
 	}
 #endif
 
@@ -4094,7 +4112,8 @@ void Main::cleanup(bool p_force) {
 		//attempt to restart with arguments
 		List<String> args = OS::get_singleton()->get_restart_on_exit_arguments();
 		OS::get_singleton()->create_instance(args);
-		OS::get_singleton()->set_restart_on_exit(false, List<String>()); //clear list (uses memory)
+		// Clear list (uses memory) but leave the boolean true.
+		OS::get_singleton()->set_restart_on_exit(true, List<String>());
 	}
 
 	// Now should be safe to delete MessageQueue (famous last words).
@@ -4110,4 +4129,9 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
+
+	if (OS::get_singleton()->is_restart_responsible_for_exit()) {
+		// Wait for 10 seconds to let the new instance kill the current one.
+		OS::get_singleton()->delay_usec(10 * 1000 * 1000);
+	}
 }

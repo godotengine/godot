@@ -149,6 +149,9 @@ protected:
 	virtual void finalize_core() override;
 	virtual String get_stdin_string() override;
 
+	virtual Error kill_previous_editor_and_wait(const ProcessID &p_pid) override;
+	virtual bool is_restart_responsible_for_exit() const override;
+
 	String _quote_command_line_argument(const String &p_text) const;
 
 	struct ProcessInfo {
@@ -219,6 +222,8 @@ public:
 	virtual String get_user_data_dir() const override;
 
 	virtual String get_unique_id() const override;
+
+	virtual List<String> get_restart_on_exit_arguments() const override;
 
 	virtual Error shell_open(String p_uri) override;
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;

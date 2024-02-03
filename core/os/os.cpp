@@ -542,6 +542,16 @@ List<String> OS::get_restart_on_exit_arguments() const {
 	return restart_commandline;
 }
 
+Error OS::kill_previous_editor_and_wait(const ProcessID &p_pid) {
+	// On most platforms, kill waits for the process to exit. On Windows, it
+	// doesn't, and needs to be overridden for this case specifically.
+	return kill(p_pid);
+}
+
+bool OS::is_restart_responsible_for_exit() const {
+	return false;
+}
+
 PackedStringArray OS::get_connected_midi_inputs() {
 	if (MIDIDriver::get_singleton()) {
 		return MIDIDriver::get_singleton()->get_connected_inputs();
