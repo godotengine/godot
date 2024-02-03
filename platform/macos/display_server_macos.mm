@@ -1637,6 +1637,10 @@ void DisplayServerMacOS::global_menu_set_item_text(const String &p_menu_root, in
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			[menu_item setTitle:[NSString stringWithUTF8String:p_text.utf8().get_data()]];
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu) {
+				[sub_menu setTitle:[NSString stringWithUTF8String:p_text.utf8().get_data()]];
+			}
 		}
 	}
 }
