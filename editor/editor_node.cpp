@@ -896,6 +896,33 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 	}
 }
 
+void EditorNode::_preset_add_export_files(const String &p_path, const Ref<EditorExportPreset> &p_preset) {
+	Ref<DirAccess> dir = DirAccess::open(p_path);
+	if (!dir.is_valid()) { // means p_path is file
+		// add it
+		p_preset->add_export_file(p_path);
+	} else { // means p_path is directory
+		dir->list_dir_begin();
+		String file_name = dir->get_next();
+		while (!file_name.is_empty()) {
+			// XXX: I don't know if this check is good.Other people do so.
+			if (file_name == "." || file_name == "..") {
+				// skip it and continue
+				file_name = dir->get_next();
+				continue;
+			}
+			String full_path = p_path.path_join(file_name);
+
+			if (dir->current_is_dir()) {
+				_preset_add_export_files(full_path, p_preset);
+			} else {
+				p_preset->add_export_file(full_path);
+			}
+			file_name = dir->get_next();
+		}
+	}
+}
+
 void EditorNode::_fs_changed() {
 	for (FileDialog *E : file_dialogs) {
 		E->invalidate();
@@ -922,6 +949,16 @@ void EditorNode::_fs_changed() {
 				break;
 			}
 			export_preset.unref();
+		}
+
+		// Override export files by --export-files
+		if (!export_defer.export_files.is_empty() && export_preset.is_valid()) {
+			String export_files = export_defer.export_files;
+			export_preset->clear_export_files();
+
+			for (String &E : export_files.split(",")) {
+				_preset_add_export_files(E, export_preset);
+			}
 		}
 
 		if (export_preset.is_null()) {
@@ -4694,12 +4731,13 @@ void EditorNode::_begin_first_scan() {
 	requested_first_scan = true;
 }
 
-Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template) {
+Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, const String &p_export_files) {
 	export_defer.preset = p_preset;
 	export_defer.path = p_path;
 	export_defer.debug = p_debug;
 	export_defer.pack_only = p_pack_only;
 	export_defer.android_build_template = p_android_build_template;
+	export_defer.export_files = p_export_files;
 	cmdline_export_mode = true;
 	return OK;
 }

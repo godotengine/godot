@@ -252,6 +252,11 @@ bool EditorExportPreset::has_export_file(const String &p_path) {
 	return selected_files.has(p_path);
 }
 
+void EditorExportPreset::clear_export_files() {
+	selected_files.clear();
+	EditorExport::singleton->save_presets();
+}
+
 void EditorExportPreset::set_file_export_mode(const String &p_path, EditorExportPreset::FileExportMode p_mode) {
 	if (p_mode == FileExportMode::MODE_FILE_NOT_CUSTOMIZED) {
 		customized_files.erase(p_path);

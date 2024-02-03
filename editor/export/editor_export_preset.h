@@ -109,6 +109,7 @@ public:
 	void add_export_file(const String &p_path);
 	void remove_export_file(const String &p_path);
 	bool has_export_file(const String &p_path);
+	void clear_export_files();
 
 	void set_file_export_mode(const String &p_path, FileExportMode p_mode);
 	FileExportMode get_file_export_mode(const String &p_path, FileExportMode p_default = MODE_FILE_NOT_CUSTOMIZED) const;
