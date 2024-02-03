@@ -1229,3 +1229,34 @@ def dump(env):
 
     with open(".scons_env.json", "w") as f:
         dump(env.Dictionary(), f, indent=4, default=non_serializable)
+
+
+def format_defines(text: str) -> str:
+    lines: list[str] = text.splitlines()
+    defines: list[tuple[int, int]] = []
+
+    start_index = -1
+    index = 0
+    for line in lines:
+        if line.endswith("\\"):
+            if start_index == -1:
+                start_index = index
+        elif start_index != -1:
+            defines.append((start_index, index))
+            start_index = -1
+        index += 1
+
+    for define in defines:
+        lengths: list[int] = []
+        max_length = -1
+        for line in lines[define[0] : define[1]]:
+            length = len(line.expandtabs(4))
+            max_length = max(length, max_length)
+            lengths.append(length)
+        max_length += 2  # one to reach actual line offset, two to append a space
+        index = 0
+        for line in lines[define[0] : define[1]]:
+            lines[index + define[0]] = line.removesuffix("\\") + "\\".rjust(max_length - lengths[index])
+            index += 1
+
+    return "\n".join(lines) + "\n"

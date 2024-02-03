@@ -1,9 +1,9 @@
-proto_mod = """
-#define MODBIND$VER($RETTYPE m_name$ARG) \\
-virtual $RETVAL _##m_name($FUNCARGS) $CONST; \\
-_FORCE_INLINE_ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
-    $RETX _##m_name($CALLARGS);\\
-}
+proto_mod = """#define MODBIND$VER($RETTYPEm_name$ARG)\\
+	virtual $RETVAL _##m_name($FUNCARGS) $CONST;\\
+	_FORCE_INLINE_ virtual $RETVAL m_name($FUNCARGS) $CONST override {\\
+		$RETX _##m_name($CALLARGS);\\
+	}
+
 """
 
 
@@ -20,13 +20,13 @@ def generate_mod_version(argcount, const=False, returns=False):
     else:
         s = s.replace("$RETTYPE", "")
         s = s.replace("$RETVAL", "void")
-        s = s.replace("$RETX", "")
+        s = s.replace("$RETX ", "")
 
     if const:
         sproto += "C"
         s = s.replace("$CONST", "const")
     else:
-        s = s.replace("$CONST", "")
+        s = s.replace(" $CONST", "")
 
     s = s.replace("$VER", sproto)
     argtext = ""
@@ -54,14 +54,14 @@ def generate_mod_version(argcount, const=False, returns=False):
     return s
 
 
-proto_ex = """
-#define EXBIND$VER($RETTYPE m_name$ARG) \\
-GDVIRTUAL$VER($RETTYPE_##m_name$ARG)\\
-virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
-    $RETPRE\\
-    GDVIRTUAL_REQUIRED_CALL(_##m_name$CALLARGS$RETREF);\\
-    $RETPOST\\
-}
+proto_ex = """#define EXBIND$VER($RETTYPEm_name$ARG)\\
+	GDVIRTUAL$VER($RETTYPE_##m_name$ARG)\\
+	virtual $RETVAL m_name($FUNCARGS) $CONST override {\\
+		$RETPRE\\
+		GDVIRTUAL_REQUIRED_CALL(_##m_name$CALLARGS$RETREF);\\
+		$RETPOST\\
+	}
+
 """
 
 
@@ -73,20 +73,20 @@ def generate_ex_version(argcount, const=False, returns=False):
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")
         s = s.replace("$RETVAL", "m_ret")
-        s = s.replace("$RETPRE", "m_ret ret; ZeroInitializer<m_ret>::initialize(ret);\\\n")
-        s = s.replace("$RETPOST", "return ret;\\\n")
+        s = s.replace("$RETPRE", "m_ret ret;\\\n\t\tZeroInitializer<m_ret>::initialize(ret);")
+        s = s.replace("$RETPOST", "return ret;")
 
     else:
         s = s.replace("$RETTYPE", "")
         s = s.replace("$RETVAL", "void")
-        s = s.replace("$RETPRE", "")
+        s = s.replace("\t\t$RETPRE\\\n", "")
         s = s.replace("$RETPOST", "return;")
 
     if const:
         sproto += "C"
         s = s.replace("$CONST", "const")
     else:
-        s = s.replace("$CONST", "")
+        s = s.replace("$CONST ", "")
 
     s = s.replace("$VER", sproto)
     argtext = ""
@@ -119,31 +119,34 @@ def generate_ex_version(argcount, const=False, returns=False):
 
 
 def run(target, source, env):
+    from methods import format_defines
+
     max_versions = 12
 
-    txt = """
+    txt = """/* THIS FILE IS GENERATED DO NOT EDIT */
 #ifndef GDEXTENSION_WRAPPERS_GEN_H
 #define GDEXTENSION_WRAPPERS_GEN_H
+
 """
 
     for i in range(max_versions + 1):
-        txt += "\n/* Extension Wrapper " + str(i) + " Arguments */\n"
+        txt += "/* Extension Wrapper " + str(i) + " Arguments */\n\n"
         txt += generate_ex_version(i, False, False)
         txt += generate_ex_version(i, False, True)
         txt += generate_ex_version(i, True, False)
         txt += generate_ex_version(i, True, True)
 
     for i in range(max_versions + 1):
-        txt += "\n/* Module Wrapper " + str(i) + " Arguments */\n"
+        txt += "/* Module Wrapper " + str(i) + " Arguments */\n\n"
         txt += generate_mod_version(i, False, False)
         txt += generate_mod_version(i, False, True)
         txt += generate_mod_version(i, True, False)
         txt += generate_mod_version(i, True, True)
 
-    txt += "\n#endif\n"
+    txt += "#endif // GDEXTENSION_WRAPPERS_GEN_H\n"
 
     with open(target[0], "w") as f:
-        f.write(txt)
+        f.write(format_defines(txt))
 
 
 if __name__ == "__main__":
