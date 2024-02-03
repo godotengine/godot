@@ -153,6 +153,7 @@ private:
 	int split_box_offset_v = 0;
 
 	HashSet<String> favorites;
+	HashMap<String, TreeItem *> path_map;
 
 	Button *button_dock_placement = nullptr;
 
@@ -248,7 +249,9 @@ private:
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
+	void _soft_update_tree();
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
+	void _ensure_select();
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
@@ -257,6 +260,8 @@ private:
 	void _toggle_file_display();
 	void _set_file_display(bool p_active);
 	void _fs_changed();
+	void _setup_tree_item(TreeItem *p_item, const String &p_name, const String &p_path);
+	TreeItem *_get_cached_item_safe(const String &p_path) const;
 
 	void _select_file(const String &p_path, bool p_select_in_favorites = false);
 	void _tree_activate_file();
@@ -270,7 +275,7 @@ private:
 	void _get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Vector<String> &r_files, Vector<String> &r_folders) const;
 	void _find_file_owners(EditorFileSystemDirectory *p_efsd, const HashSet<String> &p_renames, HashSet<String> &r_file_owners) const;
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames);
-	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
+	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path);
 	void _before_move(HashMap<String, ResourceUID::ID> &r_uids, HashSet<String> &r_file_owners) const;
 	void _update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const;
 	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const;
@@ -280,9 +285,11 @@ private:
 
 	void _update_folder_colors_setting();
 
+	void _folder_created(const String &p_path);
 	void _resource_removed(const Ref<Resource> &p_resource);
 	void _file_removed(const String &p_file);
 	void _folder_removed(const String &p_folder);
+	void _fix_current_path();
 
 	void _resource_created();
 	void _make_scene_confirm();
@@ -303,6 +310,8 @@ private:
 
 	void _set_scanning_mode();
 	void _rescan();
+	void _background_rescan();
+	void _sort_item_position(TreeItem *p_item);
 
 	void _change_split_mode();
 	void _split_dragged(int p_offset);

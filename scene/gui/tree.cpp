@@ -1156,6 +1156,28 @@ void TreeItem::move_after(TreeItem *p_item) {
 	validate_cache();
 }
 
+TreeItem *TreeItem::duplicate() {
+	TreeItem *new_item = memnew(TreeItem(nullptr));
+
+	new_item->cells.resize(cells.size());
+	Cell *cells_write = new_item->cells.ptrw();
+	for (int i = 0; i < cells.size(); i++) {
+		Cell new_cell = cells[i];
+		// The buffer needs to be re-created to avoid sharing...
+		new_cell.text_buf.instantiate();
+		new_cell.text_buf->set_text_overrun_behavior(cells[i].text_buf->get_text_overrun_behavior());
+		// ...but this erases the text, so delete the saved information.
+		new_cell.text = "";
+		cells_write[i] = new_cell;
+	}
+
+	new_item->collapsed = collapsed;
+	new_item->visible = visible;
+	new_item->disable_folding = disable_folding;
+	new_item->custom_min_height = custom_min_height;
+	return new_item;
+}
+
 void TreeItem::set_selectable(int p_column, bool p_selectable) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].selectable = p_selectable;
