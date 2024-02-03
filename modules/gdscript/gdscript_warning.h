@@ -90,6 +90,7 @@ public:
 		INFERENCE_ON_VARIANT, // The declaration uses type inference but the value is typed as Variant.
 		NATIVE_METHOD_OVERRIDE, // The script method overrides a native one, this may not work as intended.
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
+		ONINSTANTIATED_WITH_EXPORT, // The `@oninstantiated` annotation will set the value after `@export` which is likely not intended.
 		ONREADY_WITH_EXPORT, // The `@onready` annotation will set the value after `@export` which is likely not intended.
 		WARNING_MAX,
 	};
@@ -139,6 +140,7 @@ public:
 		ERROR, // INFERENCE_ON_VARIANT // Most likely done by accident, usually inference is trying for a particular type.
 		ERROR, // NATIVE_METHOD_OVERRIDE // May not work as expected.
 		ERROR, // GET_NODE_DEFAULT_WITHOUT_ONREADY // May not work as expected.
+		ERROR, // ONINSTANTIATED_WITH_EXPORT // May not work as expected.
 		ERROR, // ONREADY_WITH_EXPORT // May not work as expected.
 	};
 
