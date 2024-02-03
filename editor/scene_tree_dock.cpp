@@ -1800,8 +1800,13 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 // FIXME: This approach causes a significant performance regression, see GH-84910.
 #if 0
 		case Variant::OBJECT: {
-			Resource *resource = Object::cast_to<Resource>(r_variant);
-			if (!resource) {
+			Ref<Resource> resource = Object::cast_to<Resource>(r_variant);
+			if (resource.is_null()) {
+				break;
+			}
+
+			// We can't write to this resource, so skip it.
+			if (EditorNode::get_singleton()->is_resource_read_only(resource)) {
 				break;
 			}
 
@@ -1814,7 +1819,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			resource->get_property_list(&properties);
 
 			for (const PropertyInfo &E : properties) {
-				if (!(E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR))) {
+				if (!(E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) || (E.usage & PROPERTY_USAGE_INTERNAL)) {
 					continue;
 				}
 				String propertyname = E.name;
@@ -1822,8 +1827,8 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 				Variant updated_variant = old_variant;
 				if (_check_node_path_recursive(p_root_node, updated_variant, p_renames, true)) {
 					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-					undo_redo->add_do_property(resource, propertyname, updated_variant);
-					undo_redo->add_undo_property(resource, propertyname, old_variant);
+					undo_redo->add_do_property(resource.ptr(), propertyname, updated_variant);
+					undo_redo->add_undo_property(resource.ptr(), propertyname, old_variant);
 					resource->set(propertyname, updated_variant);
 				}
 			}
@@ -1958,9 +1963,17 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 	p_base->get_property_list(&properties);
 
 	for (const PropertyInfo &E : properties) {
-		if (!(E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR))) {
+		if (!(E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) || (E.usage & PROPERTY_USAGE_INTERNAL)) {
 			continue;
 		}
+
+		// Skip default properties in instanced subscenes.
+		if (p_base != edited_scene && p_base->get_owner() != edited_scene) {
+			if (!EditorPropertyRevert::can_property_revert(p_base, E.name)) {
+				continue;
+			}
+		}
+
 		String propertyname = E.name;
 		Variant old_variant = p_base->get(propertyname);
 		Variant updated_variant = old_variant;
