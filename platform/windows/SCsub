@@ -7,6 +7,8 @@ from pathlib import Path
 from platform_methods import run_in_subprocess
 import platform_windows_builders
 
+sources = []
+
 common_win = [
     "godot_windows.cpp",
     "crash_handler_windows.cpp",
@@ -43,7 +45,8 @@ res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 
-sources = common_win + res_obj
+env.add_source_files(sources, common_win)
+sources += res_obj
 
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 arrange_program_clean(prog)
@@ -65,6 +68,7 @@ if env["windows_subsystem"] == "gui":
     prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
     arrange_program_clean(prog_wrap)
     env_wrap.Depends(prog_wrap, prog)
+    sources += common_win_wrap + res_wrap_obj
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:
@@ -134,3 +138,5 @@ if not os.getenv("VCINSTALLDIR"):
         env.AddPostAction(prog, run_in_subprocess(platform_windows_builders.make_debug_mingw))
         if env["windows_subsystem"] == "gui":
             env.AddPostAction(prog_wrap, run_in_subprocess(platform_windows_builders.make_debug_mingw))
+
+env.platform_sources += sources
