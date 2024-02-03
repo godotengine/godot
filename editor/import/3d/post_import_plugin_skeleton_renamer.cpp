@@ -57,9 +57,9 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 	{
 		int len = skeleton->get_bone_count();
 		for (int i = 0; i < len; i++) {
-			StringName bn = p_rename_map[skeleton->get_bone_name(i)];
-			if (bn) {
-				skeleton->set_bone_name(i, bn);
+			HashMap<String, String>::ConstIterator bn_itr = p_rename_map.find(skeleton->get_bone_name(i));
+			if (bn_itr != p_rename_map.end()) {
+				skeleton->set_bone_name(i, bn_itr->value);
 			}
 		}
 	}
@@ -77,9 +77,9 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 					if (mesh_skeleton && node == skeleton) {
 						int len = skin->get_bind_count();
 						for (int i = 0; i < len; i++) {
-							StringName bn = p_rename_map[skin->get_bind_name(i)];
-							if (bn) {
-								skin->set_bind_name(i, bn);
+							HashMap<String, String>::ConstIterator bn_itr = p_rename_map.find(skin->get_bind_name(i));
+							if (bn_itr != p_rename_map.end()) {
+								skin->set_bind_name(i, bn_itr->value);
 							}
 						}
 					}
@@ -107,9 +107,9 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 					if (node) {
 						Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
 						if (track_skeleton && track_skeleton == skeleton) {
-							StringName bn = p_rename_map[anim->track_get_path(i).get_subname(0)];
-							if (bn) {
-								anim->track_set_path(i, track_path + ":" + bn);
+							HashMap<String, String>::ConstIterator bn_itr = p_rename_map.find(anim->track_get_path(i).get_subname(0));
+							if (bn_itr != p_rename_map.end()) {
+								anim->track_set_path(i, track_path + ":" + bn_itr->value);
 							}
 						}
 					}
