@@ -132,6 +132,10 @@ cppcheck-cppcheck-build-dir/
 *.pydevproject
 *.launch
 
+# Emacs
+\#*\#
+.\#*
+
 # GCOV code coverage
 *.gcda
 *.gcno
