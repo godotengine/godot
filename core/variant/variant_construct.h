@@ -564,7 +564,7 @@ public:
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		Array src_arr = PtrToArg<Array>::convert(p_args[0]);
-		T dst_arr;
+		T dst_arr{};
 
 		int size = src_arr.size();
 		dst_arr.resize(size);

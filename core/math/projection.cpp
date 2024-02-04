@@ -596,8 +596,8 @@ Projection Projection::inverse() const {
 }
 
 void Projection::invert() {
-	int i, j, k;
-	int pvt_i[4], pvt_j[4]; /* Locations of pivot matrix */
+	int i = 0, j = 0, k = 0;
+	int pvt_i[4] = { 0 }, pvt_j[4] = { 0 }; /* Locations of pivot matrix */
 	real_t pvt_val; /* Value of current pivot element */
 	real_t hold; /* Temporary storage */
 	real_t determinant = 1.0f;

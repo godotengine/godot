@@ -122,7 +122,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_32(uint32_t p_in, uint32_t p_see
 static _FORCE_INLINE_ uint32_t hash_murmur3_one_float(float p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
 	union {
 		float f;
-		uint32_t i;
+		uint32_t i = 0;
 	} u;
 
 	// Normalize +/- 0.0 and NaN values so they hash the same.
@@ -145,7 +145,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_64(uint64_t p_in, uint32_t p_see
 static _FORCE_INLINE_ uint32_t hash_murmur3_one_double(double p_in, uint32_t p_seed = HASH_MURMUR3_SEED) {
 	union {
 		double d;
-		uint64_t i;
+		uint64_t i = 0;
 	} u;
 
 	// Normalize +/- 0.0 and NaN values so they hash the same.
@@ -233,7 +233,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_buffer(const void *key, int length, 
 static _FORCE_INLINE_ uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) {
 	union {
 		double d;
-		uint64_t i;
+		uint64_t i = 0;
 	} u;
 
 	// Normalize +/- 0.0 and NaN values so they hash the same.
@@ -252,7 +252,7 @@ template <class T>
 static _FORCE_INLINE_ uint32_t hash_make_uint32_t(T p_in) {
 	union {
 		T t;
-		uint32_t _u32;
+		uint32_t _u32 = 0;
 	} _u;
 	_u._u32 = 0;
 	_u.t = p_in;
@@ -262,7 +262,7 @@ static _FORCE_INLINE_ uint32_t hash_make_uint32_t(T p_in) {
 static _FORCE_INLINE_ uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 5381) {
 	union {
 		double d;
-		uint64_t i;
+		uint64_t i = 0;
 	} u;
 
 	// Normalize +/- 0.0 and NaN values so they hash the same.
@@ -285,7 +285,7 @@ template <class T>
 static _FORCE_INLINE_ uint64_t hash_make_uint64_t(T p_in) {
 	union {
 		T t;
-		uint64_t _u64;
+		uint64_t _u64 = 0;
 	} _u;
 	_u._u64 = 0; // in case p_in is smaller
 

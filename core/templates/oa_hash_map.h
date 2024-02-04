@@ -313,12 +313,12 @@ public:
 		TValue *value = nullptr;
 
 	private:
-		uint32_t pos;
+		uint32_t pos = 0;
 		friend class OAHashMap;
 	};
 
 	Iterator iter() const {
-		Iterator it;
+		Iterator it{};
 
 		it.valid = true;
 		it.pos = 0;
@@ -331,7 +331,7 @@ public:
 			return p_iter;
 		}
 
-		Iterator it;
+		Iterator it{};
 		it.valid = false;
 		it.pos = p_iter.pos;
 		it.key = nullptr;

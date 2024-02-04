@@ -727,7 +727,7 @@ Quaternion Basis::get_quaternion() const {
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
 	real_t trace = m.rows[0][0] + m.rows[1][1] + m.rows[2][2];
-	real_t temp[4];
+	real_t temp[4] = { 0.0f };
 
 	if (trace > 0.0f) {
 		real_t s = Math::sqrt(trace + 1.0f);

@@ -47,7 +47,7 @@ static LocalVector<StringName> variant_setters_getters_names[Variant::VARIANT_MA
 
 template <class T>
 static void register_member(Variant::Type p_type, const StringName &p_member) {
-	VariantSetterGetterInfo sgi;
+	VariantSetterGetterInfo sgi{};
 	sgi.setter = T::set;
 	sgi.validated_setter = T::validated_set;
 	sgi.ptr_setter = T::ptr_set;

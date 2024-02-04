@@ -328,7 +328,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 	bool found_route = false;
 
 	LocalVector<Point *> open_list;
-	SortArray<Point *, SortPoints> sorter;
+	SortArray<Point *, SortPoints> sorter{};
 
 	begin_point->g_score = 0;
 	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
@@ -795,7 +795,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 	bool found_route = false;
 
 	LocalVector<AStar3D::Point *> open_list;
-	SortArray<AStar3D::Point *, AStar3D::SortPoints> sorter;
+	SortArray<AStar3D::Point *, AStar3D::SortPoints> sorter{};
 
 	begin_point->g_score = 0;
 	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);

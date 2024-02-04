@@ -40,7 +40,7 @@ public:
 	struct Stream {
 	private:
 		enum { READAHEAD_SIZE = 2048 };
-		char32_t readahead_buffer[READAHEAD_SIZE];
+		char32_t readahead_buffer[READAHEAD_SIZE] = { 0 };
 		uint32_t readahead_pointer = 0;
 		uint32_t readahead_filled = 0;
 		bool eof = false;

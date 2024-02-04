@@ -127,7 +127,7 @@ public:
 					current->_next = from;
 
 					SelfList<T> *find = from;
-					C less;
+					C less{};
 					while (find && less(*find->_self, *current->_self)) {
 						current->_prev = find;
 						current->_next = find->_next;

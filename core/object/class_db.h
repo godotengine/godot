@@ -61,7 +61,7 @@ MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint3
 template <typename... VarArgs>
 MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 	const char *args[sizeof...(p_args) + 1] = { p_args..., nullptr }; // +1 makes sure zero sized arrays are also supported.
-	const char *const *argptrs[sizeof...(p_args) + 1];
+	const char *const *argptrs[sizeof...(p_args) + 1] = {};
 	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 		argptrs[i] = &args[i];
 	}
@@ -291,7 +291,7 @@ public:
 	template <class N, class M, typename... VarArgs>
 	static MethodBind *bind_method(N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}
@@ -305,7 +305,7 @@ public:
 	template <class N, class M, typename... VarArgs>
 	static MethodBind *bind_static_method(const StringName &p_class, N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}
@@ -320,7 +320,7 @@ public:
 	template <class N, class M, typename... VarArgs>
 	static MethodBind *bind_compatibility_method(N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}
@@ -334,7 +334,7 @@ public:
 	template <class N, class M, typename... VarArgs>
 	static MethodBind *bind_compatibility_static_method(const StringName &p_class, N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}

@@ -205,7 +205,7 @@ public:
 	struct Warning {
 		int start_line = -1, end_line = -1;
 		int leftmost_column = -1, rightmost_column = -1;
-		int code;
+		int code = -1;
 		String string_code;
 		String message;
 	};

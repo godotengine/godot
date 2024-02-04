@@ -664,7 +664,7 @@ public:
 				current->next_ptr = from;
 
 				Element *find = from;
-				C less;
+				C less{};
 				while (find && less(find->value, current->value)) {
 					current->prev_ptr = find;
 					current->next_ptr = find->next_ptr;
