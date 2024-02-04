@@ -55,7 +55,7 @@ public:
 		Element *parent = nullptr;
 		Element *_next = nullptr;
 		Element *_prev = nullptr;
-		T value;
+		T value{};
 		//_Data *data;
 
 	public:

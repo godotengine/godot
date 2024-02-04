@@ -113,10 +113,10 @@ private:
 	};
 
 	struct NTSliceKey {
-		uint32_t layer;
-		uint32_t layers;
-		uint32_t mipmap;
-		uint32_t mipmaps;
+		uint32_t layer = 0;
+		uint32_t layers = 0;
+		uint32_t mipmap = 0;
+		uint32_t mipmaps = 0;
 		RD::TextureView texture_view;
 
 		bool operator==(const NTSliceKey &p_val) const {

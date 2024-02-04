@@ -59,13 +59,13 @@ public:
 		Vector<String> defines;
 		struct Texture {
 			StringName name;
-			ShaderLanguage::DataType type;
-			ShaderLanguage::ShaderNode::Uniform::Hint hint;
+			ShaderLanguage::DataType type = ShaderLanguage::DataType::TYPE_VOID;
+			ShaderLanguage::ShaderNode::Uniform::Hint hint = ShaderLanguage::ShaderNode::Uniform::Hint::HINT_NONE;
 			bool use_color = false;
-			ShaderLanguage::TextureFilter filter;
-			ShaderLanguage::TextureRepeat repeat;
-			bool global;
-			int array_size;
+			ShaderLanguage::TextureFilter filter = ShaderLanguage::TextureFilter::FILTER_DEFAULT;
+			ShaderLanguage::TextureRepeat repeat = ShaderLanguage::TextureRepeat::REPEAT_DEFAULT;
+			bool global = false;
+			int array_size = 0;
 		};
 
 		Vector<Texture> texture_uniforms;

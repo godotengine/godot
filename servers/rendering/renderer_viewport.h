@@ -144,8 +144,8 @@ public:
 		struct CanvasData {
 			CanvasBase *canvas = nullptr;
 			Transform2D transform;
-			int layer;
-			int sublayer;
+			int layer = 0;
+			int sublayer = 0;
 		};
 
 		Transform2D global_transform;

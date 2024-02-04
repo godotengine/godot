@@ -521,12 +521,12 @@ public:
 		SubClassTag block_tag = SubClassTag::TAG_GLOBAL;
 
 		struct Variable {
-			DataType type;
+			DataType type = TYPE_VOID;
 			StringName struct_name;
-			DataPrecision precision;
-			int line; //for completion
-			int array_size;
-			bool is_const;
+			DataPrecision precision = PRECISION_DEFAULT;
+			int line = 0; //for completion
+			int array_size = 0;
+			bool is_const = false;
 			ConstantNode::Value value;
 		};
 
@@ -580,19 +580,19 @@ public:
 
 	struct FunctionNode : public Node {
 		struct Argument {
-			ArgumentQualifier qualifier;
+			ArgumentQualifier qualifier = ARGUMENT_QUALIFIER_IN;
 			StringName name;
-			DataType type;
+			DataType type = TYPE_VOID;
 			StringName type_str;
-			DataPrecision precision;
+			DataPrecision precision = PRECISION_DEFAULT;
 			//for passing textures as arguments
-			bool tex_argument_check;
-			TextureFilter tex_argument_filter;
-			TextureRepeat tex_argument_repeat;
-			bool tex_builtin_check;
+			bool tex_argument_check = false;
+			TextureFilter tex_argument_filter = FILTER_DEFAULT;
+			TextureRepeat tex_argument_repeat = REPEAT_DEFAULT;
+			bool tex_builtin_check = false;
 			StringName tex_builtin;
-			bool is_const;
-			int array_size;
+			bool is_const = false;
+			int array_size = 0;
 
 			HashMap<StringName, HashSet<int>> tex_argument_connect;
 		};
@@ -1059,14 +1059,14 @@ private:
 		int max;
 	};
 
-	CompletionType completion_type;
-	ShaderNode::Uniform::Hint current_uniform_hint = ShaderNode::Uniform::HINT_NONE;
+	CompletionType completion_type = COMPLETION_NONE;
+	ShaderNode::Uniform::Hint current_uniform_hint = ShaderNode::Uniform::Hint::HINT_NONE;
 	TextureFilter current_uniform_filter = FILTER_DEFAULT;
 	TextureRepeat current_uniform_repeat = REPEAT_DEFAULT;
 	bool current_uniform_instance_index_defined = false;
 	int completion_line = 0;
 	BlockNode *completion_block = nullptr;
-	DataType completion_base;
+	DataType completion_base = TYPE_VOID;
 	bool completion_base_array = false;
 	SubClassTag completion_class;
 	StringName completion_function;
@@ -1074,7 +1074,7 @@ private:
 	int completion_argument = 0;
 
 #ifdef DEBUG_ENABLED
-	uint32_t keyword_completion_context;
+	uint32_t keyword_completion_context = 0;
 #endif // DEBUG_ENABLED
 
 	const HashMap<StringName, FunctionInfo> *stages = nullptr;

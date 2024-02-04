@@ -302,12 +302,12 @@ private:
 		};
 
 		void sort_by_key() {
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter;
+			SortArray<GeometryInstanceSurfaceDataCache*, SortByKey> sorter{};
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
 		void sort_by_key_range(uint32_t p_from, uint32_t p_size) {
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter;
+			SortArray<GeometryInstanceSurfaceDataCache*, SortByKey> sorter{};
 			sorter.sort(elements.ptr() + p_from, p_size);
 		}
 
@@ -319,7 +319,7 @@ private:
 
 		void sort_by_depth() { //used for shadows
 
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByDepth> sorter;
+			SortArray<GeometryInstanceSurfaceDataCache*, SortByDepth> sorter{};
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
@@ -331,7 +331,7 @@ private:
 
 		void sort_by_reverse_depth_and_priority() { //used for alpha
 
-			SortArray<GeometryInstanceSurfaceDataCache *, SortByReverseDepthAndPriority> sorter;
+			SortArray<GeometryInstanceSurfaceDataCache*, SortByReverseDepthAndPriority> sorter{};
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
@@ -469,18 +469,18 @@ protected:
 		uint32_t gi_offset_cache = 0; // !BAS! Should rename this to lightmap_offset_cache, in forward clustered this was shared between gi and lightmap
 		RID lightmap_instance;
 		Rect2 lightmap_uv_scale;
-		uint32_t lightmap_slice_index;
+		uint32_t lightmap_slice_index = 0;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
 
 		// culled light info
 		uint32_t reflection_probe_count = 0;
-		RendererRD::ForwardID reflection_probes[MAX_RDL_CULL];
+		RendererRD::ForwardID reflection_probes[MAX_RDL_CULL] = { 0 };
 		uint32_t omni_light_count = 0;
-		RendererRD::ForwardID omni_lights[MAX_RDL_CULL];
+		RendererRD::ForwardID omni_lights[MAX_RDL_CULL] = { 0 };
 		uint32_t spot_light_count = 0;
-		RendererRD::ForwardID spot_lights[MAX_RDL_CULL];
+		RendererRD::ForwardID spot_lights[MAX_RDL_CULL] = { 0 };
 		uint32_t decals_count = 0;
-		RendererRD::ForwardID decals[MAX_RDL_CULL];
+		RendererRD::ForwardID decals[MAX_RDL_CULL] = { 0 };
 
 		GeometryInstanceSurfaceDataCache *surface_caches = nullptr;
 
