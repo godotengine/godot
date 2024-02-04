@@ -5989,8 +5989,13 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 			p_scene_parent = bone_attachment;
 		}
 		if (skeleton->get_parent() == nullptr) {
-			p_scene_parent->add_child(skeleton, true);
-			skeleton->set_owner(p_scene_root);
+			if (p_scene_root) {
+				p_scene_parent->add_child(skeleton, true);
+				skeleton->set_owner(p_scene_root);
+			} else {
+				p_scene_parent = skeleton;
+				p_scene_root = skeleton;
+			}
 		}
 	}
 
@@ -6580,7 +6585,7 @@ float GLTFDocument::get_max_component(const Color &p_color) {
 	return MAX(MAX(r, g), b);
 }
 
-void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state) {
+void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root) {
 	for (GLTFNodeIndex node_i = 0; node_i < p_state->nodes.size(); ++node_i) {
 		Ref<GLTFNode> node = p_state->nodes[node_i];
 
@@ -6605,7 +6610,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state) {
 
 			mi->get_parent()->remove_child(mi);
 			skeleton->add_child(mi, true);
-			mi->set_owner(skeleton->get_owner());
+			mi->set_owner(p_scene_root);
 
 			mi->set_skin(p_state->skins.write[skin_i]->godot_skin);
 			mi->set_skeleton_path(mi->get_path_to(skeleton));
@@ -7455,7 +7460,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, boo
 	Error err = OK;
 	Node *root = _generate_scene_node_tree(p_state);
 	ERR_FAIL_NULL_V(root, nullptr);
-	_process_mesh_instances(p_state);
+	_process_mesh_instances(p_state, root);
 	if (p_state->get_create_animations() && p_state->animations.size()) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		root->add_child(ap, true);
