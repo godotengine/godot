@@ -1749,8 +1749,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.mode = TRANSFORM_NONE;
 					_edit.original = spatial_editor->get_gizmo_transform(); // To prevent to break when flipping with scale.
 
-					bool node_selected = spatial_editor->get_single_selected_node();
-					bool can_select_gizmos = node_selected;
+					bool can_select_gizmos = spatial_editor->get_single_selected_node();
 
 					{
 						int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
@@ -1839,6 +1838,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					clicked = ObjectID();
+
+					bool node_selected = get_selected_count() > 0;
 
 					if (node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
 						begin_transform(TRANSFORM_ROTATE, false);
