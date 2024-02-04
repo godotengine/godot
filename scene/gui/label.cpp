@@ -316,16 +316,17 @@ inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_fo
 	}
 }
 
-inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Color &p_font_shadow_color, const Color &p_font_outline_color, const int &p_shadow_outline_size, const int &p_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
+inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_outline_color, const int &p_outline_size, const Vector2 &p_ofs) {
 	if (p_gl.font_rid != RID()) {
-		if (p_font_shadow_color.a > 0) {
-			TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
-		}
-		if (p_font_shadow_color.a > 0 && p_shadow_outline_size > 0) {
-			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
-		}
-		if (p_font_outline_color.a != 0.0 && p_outline_size > 0) {
-			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_outline_color);
+		TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_outline_color);
+	}
+}
+
+inline void draw_glyph_shadow(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, const int &p_shadow_outline_size, const Vector2 &p_shadow_ofs) {
+	if (p_gl.font_rid != RID()) {
+		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, Vector2(p_gl.x_off, p_gl.y_off) + p_shadow_ofs, p_gl.index, p_font_shadow_color);
+		if (p_shadow_outline_size > 0) {
+			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, Vector2(p_gl.x_off, p_gl.y_off) + p_shadow_ofs, p_gl.index, p_font_shadow_color);
 		}
 	}
 }
@@ -433,7 +434,7 @@ void Label::_notification(int p_what) {
 			bool rtl = (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL);
 			bool rtl_layout = is_layout_rtl();
 
-			style->draw(ci, Rect2(Point2(0, 0), get_size()));
+			style->draw(ci, Rect2(Point2(0, 0), size));
 
 			float total_h = 0.0;
 			int lines_visible = 0;
@@ -441,7 +442,7 @@ void Label::_notification(int p_what) {
 			// Get number of lines to fit to the height.
 			for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
 				total_h += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
-				if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
+				if (total_h > (size.height - style->get_minimum_size().height + line_spacing)) {
 					break;
 				}
 				lines_visible++;
@@ -474,19 +475,19 @@ void Label::_notification(int p_what) {
 						// Nothing.
 					} break;
 					case VERTICAL_ALIGNMENT_CENTER: {
-						vbegin = (size.y - (total_h - line_spacing)) / 2;
+						vbegin = (size.height - (total_h - line_spacing)) / 2;
 						vsep = 0;
 
 					} break;
 					case VERTICAL_ALIGNMENT_BOTTOM: {
-						vbegin = size.y - (total_h - line_spacing);
+						vbegin = size.height - (total_h - line_spacing);
 						vsep = 0;
 
 					} break;
 					case VERTICAL_ALIGNMENT_FILL: {
 						vbegin = 0;
 						if (lines_visible > 1) {
-							vsep = (size.y - (total_h - line_spacing)) / (lines_visible - 1);
+							vsep = (size.height - (total_h - line_spacing)) / (lines_visible - 1);
 						} else {
 							vsep = 0;
 						}
@@ -501,30 +502,19 @@ void Label::_notification(int p_what) {
 				Size2 line_size = TS->shaped_text_get_size(lines_rid[i]);
 				ofs.x = 0;
 				ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
+				int size_width = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
 				switch (horizontal_alignment) {
-					case HORIZONTAL_ALIGNMENT_FILL:
-						if (rtl && autowrap_mode != TextServer::AUTOWRAP_OFF) {
-							ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
-						} else {
-							ofs.x = style->get_offset().x;
-						}
-						break;
+					case HORIZONTAL_ALIGNMENT_FILL: {
+						ofs.x = rtl && autowrap_mode != TextServer::AUTOWRAP_OFF ? size_width : style->get_offset().x;
+					} break;
 					case HORIZONTAL_ALIGNMENT_LEFT: {
-						if (rtl_layout) {
-							ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
-						} else {
-							ofs.x = style->get_offset().x;
-						}
+						ofs.x = rtl_layout ? size_width : style->get_offset().x;
 					} break;
 					case HORIZONTAL_ALIGNMENT_CENTER: {
 						ofs.x = int(size.width - line_size.width) / 2;
 					} break;
 					case HORIZONTAL_ALIGNMENT_RIGHT: {
-						if (rtl_layout) {
-							ofs.x = style->get_offset().x;
-						} else {
-							ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
-						}
+						ofs.x = rtl_layout ? style->get_offset().x : size_width;
 					} break;
 				}
 
@@ -537,26 +527,26 @@ void Label::_notification(int p_what) {
 				const Glyph *ellipsis_glyphs = TS->shaped_text_get_ellipsis_glyphs(lines_rid[i]);
 				int ellipsis_gl_size = TS->shaped_text_get_ellipsis_glyph_count(lines_rid[i]);
 
-				// Draw outline. Note: Do not merge this into the single loop with the main text, to prevent overlaps.
 				int processed_glyphs_ol = processed_glyphs;
-				if ((outline_size > 0 && font_outline_color.a != 0) || (font_shadow_color.a != 0)) {
-					Vector2 offset = ofs;
-					// Draw RTL ellipsis string when necessary.
+				// Draw shadow first.
+				if (font_shadow_color.a != 0.0) {
+					Vector2 shadow_offset = ofs;
+					// Draw RTL ellipsis shadow string when necessary.
 					if (rtl && ellipsis_pos >= 0) {
 						for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
+							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 							for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
-								bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
-								//Draw glyph outlines and shadow.
 								if (!skip) {
-									draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+									draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, shadow_offset + shadow_ofs);
 								}
-								processed_glyphs_ol++;
-								offset.x += ellipsis_glyphs[gl_idx].advance;
+								shadow_offset.x += ellipsis_glyphs[gl_idx].advance;
+								if (outline_size <= 0 || font_outline_color.a == 0.0) {
+									processed_glyphs_ol++;
+								}
 							}
 						}
 					}
-
-					// Draw main text.
+					// Draw main text shadow string.
 					for (int j = 0; j < gl_size; j++) {
 						// Trim when necessary.
 						if (trim_pos >= 0) {
@@ -570,51 +560,100 @@ void Label::_notification(int p_what) {
 								}
 							}
 						}
+						bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 						for (int k = 0; k < glyphs[j].repeat; k++) {
-							bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
-
-							// Draw glyph outlines and shadow.
 							if (!skip) {
-								draw_glyph_outline(glyphs[j], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+								draw_glyph_shadow(glyphs[j], ci, font_shadow_color, shadow_outline_size, shadow_offset + shadow_ofs);
 							}
-							processed_glyphs_ol++;
-							offset.x += glyphs[j].advance;
+							shadow_offset.x += glyphs[j].advance;
+							if (outline_size <= 0 || font_outline_color.a == 0.0) {
+								processed_glyphs_ol++;
+							}
 						}
 					}
-					// Draw LTR ellipsis string when necessary.
+					// Draw LTR ellipsis shadow string when necessary.
 					if (!rtl && ellipsis_pos >= 0) {
 						for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
+							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 							for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
-								bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
-								//Draw glyph outlines and shadow.
 								if (!skip) {
-									draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+									draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, shadow_offset + shadow_ofs);
 								}
-								processed_glyphs_ol++;
-								offset.x += ellipsis_glyphs[gl_idx].advance;
+								shadow_offset.x += ellipsis_glyphs[gl_idx].advance;
+								if (outline_size <= 0 || font_outline_color.a == 0.0) {
+									processed_glyphs_ol++;
+								}
 							}
 						}
 					}
 				}
-
-				// Draw main text. Note: Do not merge this into the single loop with the outline, to prevent overlaps.
-
-				// Draw RTL ellipsis string when necessary.
+				// Draw outlines in another loop to prevent overlapping with shadow!
+				if (outline_size > 0 && font_outline_color.a != 0.0) {
+					Vector2 outline_offset = ofs;
+					// Draw RTL ellipsis outlines string when necessary.
+					if (rtl && ellipsis_pos >= 0) {
+						for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
+							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
+							for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
+								if (!skip) {
+									draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, outline_offset);
+								}
+								outline_offset.x += ellipsis_glyphs[gl_idx].advance;
+								processed_glyphs_ol++;
+							}
+						}
+					}
+					// Draw main text outlines string.
+					for (int j = 0; j < gl_size; j++) {
+						// Trim when necessary.
+						if (trim_pos >= 0) {
+							if (rtl) {
+								if (j < trim_pos) {
+									continue;
+								}
+							} else {
+								if (j >= trim_pos) {
+									break;
+								}
+							}
+						}
+						bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
+						for (int k = 0; k < glyphs[j].repeat; k++) {
+							if (!skip) {
+								draw_glyph_outline(glyphs[j], ci, font_outline_color, outline_size, outline_offset);
+							}
+							outline_offset.x += glyphs[j].advance;
+							processed_glyphs_ol++;
+						}
+					}
+					// Draw LTR ellipsis outline string when necessary.
+					if (!rtl && ellipsis_pos >= 0) {
+						for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
+							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
+							for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
+								if (!skip) {
+									draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, outline_offset);
+								}
+								outline_offset.x += ellipsis_glyphs[gl_idx].advance;
+								processed_glyphs_ol++;
+							}
+						}
+					}
+				}
+				// Draw RTL main ellipsis string when necessary.
 				if (rtl && ellipsis_pos >= 0) {
 					for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
+						bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
 						for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
-							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
-							//Draw glyph outlines and shadow.
 							if (!skip) {
 								draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
 							}
-							processed_glyphs++;
 							ofs.x += ellipsis_glyphs[gl_idx].advance;
+							processed_glyphs++;
 						}
 					}
 				}
-
-				// Draw main text.
+				// Draw main text string.
 				for (int j = 0; j < gl_size; j++) {
 					// Trim when necessary.
 					if (trim_pos >= 0) {
@@ -628,28 +667,25 @@ void Label::_notification(int p_what) {
 							}
 						}
 					}
+					bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
 					for (int k = 0; k < glyphs[j].repeat; k++) {
-						bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
-
-						// Draw glyph outlines and shadow.
 						if (!skip) {
 							draw_glyph(glyphs[j], ci, font_color, ofs);
 						}
-						processed_glyphs++;
 						ofs.x += glyphs[j].advance;
+						processed_glyphs++;
 					}
 				}
-				// Draw LTR ellipsis string when necessary.
+				// Draw LTR main ellipsis string when necessary.
 				if (!rtl && ellipsis_pos >= 0) {
 					for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
+						bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
 						for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
-							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
-							//Draw glyph outlines and shadow.
 							if (!skip) {
 								draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
 							}
-							processed_glyphs++;
 							ofs.x += ellipsis_glyphs[gl_idx].advance;
+							processed_glyphs++;
 						}
 					}
 				}
