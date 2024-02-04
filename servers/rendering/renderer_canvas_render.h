@@ -105,11 +105,12 @@ public:
 			layer_min = 0;
 			layer_max = 0;
 			item_mask = 1;
-			scale = 1.0;
-			energy = 1.0;
+			scale = 1.0f;
+			energy = 1.0f;
 			item_shadow_mask = 1;
 			mode = RS::CANVAS_LIGHT_MODE_POINT;
 			blend_mode = RS::CANVAS_LIGHT_BLEND_MODE_ADD;
+			radius_cache = 0.0f;
 			//			texture_cache = nullptr;
 			next_ptr = nullptr;
 			directional_next_ptr = nullptr;
@@ -187,7 +188,7 @@ public:
 			};
 
 			Command *next = nullptr;
-			Type type;
+			Type type{};
 			virtual ~Command() {}
 		};
 
@@ -212,11 +213,11 @@ public:
 		struct CommandNinePatch : public Command {
 			Rect2 rect;
 			Rect2 source;
-			float margin[4];
-			bool draw_center;
+			float margin[4] = { 0.0f };
+			bool draw_center = false;
 			Color color;
-			RS::NinePatchAxisMode axis_x;
-			RS::NinePatchAxisMode axis_y;
+			RS::NinePatchAxisMode axis_x{};
+			RS::NinePatchAxisMode axis_y{};
 
 			RID texture;
 
@@ -227,7 +228,7 @@ public:
 		};
 
 		struct CommandPolygon : public Command {
-			RS::PrimitiveType primitive;
+			RS::PrimitiveType primitive{};
 			Polygon polygon;
 
 			RID texture;
@@ -238,7 +239,7 @@ public:
 		};
 
 		struct CommandPrimitive : public Command {
-			uint32_t point_count;
+			uint32_t point_count = 0;
 			Vector2 points[4];
 			Vector2 uvs[4];
 			Color colors[4];

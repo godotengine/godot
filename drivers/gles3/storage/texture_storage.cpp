@@ -144,13 +144,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		{
-			unsigned char pixel_data[4 * 4 * 4];
-			for (int i = 0; i < 16; i++) {
-				pixel_data[i * 4 + 0] = 0;
-				pixel_data[i * 4 + 1] = 0;
-				pixel_data[i * 4 + 2] = 0;
-				pixel_data[i * 4 + 3] = 0;
-			}
+			unsigned char pixel_data[64] = { 0 };
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_2D_UINT] = texture_allocate();
 			Texture texture;
@@ -169,10 +163,8 @@ TextureStorage::TextureStorage() {
 			texture.gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 		}
 		{
-			uint16_t pixel_data[4 * 4];
-			for (int i = 0; i < 16; i++) {
-				pixel_data[i] = Math::make_half_float(1.0f);
-			}
+			uint16_t pixel_data[16] = { 0 };
+			std::fill_n(pixel_data, 16, Math::make_half_float(1.0f));
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_DEPTH] = texture_allocate();
 			Texture texture;
@@ -195,11 +187,8 @@ TextureStorage::TextureStorage() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	{ // Atlas Texture initialize.
-		uint8_t pixel_data[4 * 4 * 4];
+		uint8_t pixel_data[4 * 4 * 4] = { 0 };
 		for (int i = 0; i < 16; i++) {
-			pixel_data[i * 4 + 0] = 0;
-			pixel_data[i * 4 + 1] = 0;
-			pixel_data[i * 4 + 2] = 0;
 			pixel_data[i * 4 + 3] = 255;
 		}
 

@@ -413,7 +413,7 @@ public:                                                                         
 		return &_class_name_static;                                                                                                              \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                         \
-		static int ptr;                                                                                                                          \
+		static int ptr = 0;                                                                                                                      \
 		return &ptr;                                                                                                                             \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ String get_class_static() {                                                                                            \
@@ -778,7 +778,7 @@ public:
 	void notify_property_list_changed();
 
 	static void *get_class_ptr_static() {
-		static int ptr;
+		static int ptr = 0;
 		return &ptr;
 	}
 

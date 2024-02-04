@@ -364,21 +364,21 @@ struct ParticlesShaderData : public ShaderData {
 	// All these members are (re)initialized in `set_code`.
 	// Make sure to add the init to `set_code` whenever adding new members.
 
-	bool valid;
+	bool valid = false;
 	RID version;
 
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
-	uint32_t ubo_size;
+	uint32_t ubo_size = 0;
 
 	String code;
 
-	bool uses_collision;
-	bool uses_time;
+	bool uses_collision = false;
+	bool uses_time = false;
 
 	bool userdatas_used[PARTICLES_MAX_USERDATAS] = {};
-	uint32_t userdata_count;
+	uint32_t userdata_count = 0;
 
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;

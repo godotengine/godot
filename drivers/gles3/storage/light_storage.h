@@ -76,11 +76,11 @@ struct LightInstance {
 	struct ShadowTransform {
 		Projection camera;
 		Transform3D transform;
-		float farplane;
-		float split;
-		float bias_scale;
-		float shadow_texel_size;
-		float range_begin;
+		float farplane = 0.0f;
+		float split = 0.0f;
+		float bias_scale = 0.0f;
+		float shadow_texel_size = 0.0f;
+		float range_begin = 0.0f;
 		Rect2 atlas_rect;
 		Vector2 uv_scale;
 	};

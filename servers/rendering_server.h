@@ -147,11 +147,11 @@ public:
 
 	struct TextureInfo {
 		RID texture;
-		uint32_t width;
-		uint32_t height;
-		uint32_t depth;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		uint32_t depth = 0;
 		Image::Format format;
-		int bytes;
+		int bytes = 0;
 		String path;
 	};
 

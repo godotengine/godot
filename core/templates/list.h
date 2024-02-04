@@ -52,7 +52,7 @@ public:
 	private:
 		friend class List<T, A>;
 
-		T value;
+		T value{};
 		Element *next_ptr = nullptr;
 		Element *prev_ptr = nullptr;
 		_Data *data = nullptr;

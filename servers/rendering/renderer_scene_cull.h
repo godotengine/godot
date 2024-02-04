@@ -144,15 +144,15 @@ public:
 			}
 		}
 
-		uint32_t signs[3];
+		uint32_t signs[3] = { 0 };
 	};
 
 	struct Frustum {
 		Vector<Plane> planes;
 		Vector<PlaneSign> plane_signs;
-		const Plane *planes_ptr;
-		const PlaneSign *plane_signs_ptr;
-		uint32_t plane_count;
+		const Plane *planes_ptr = nullptr;
+		const PlaneSign *plane_signs_ptr = nullptr;
+		uint32_t plane_count = 0;
 
 		_ALWAYS_INLINE_ Frustum() {}
 		_ALWAYS_INLINE_ Frustum(const Frustum &p_frustum) {
@@ -189,7 +189,7 @@ public:
 		// Because bounds checking is performed first,
 		// keep it separated from data.
 
-		real_t bounds[6];
+		real_t bounds[6] = { 0 };
 		_ALWAYS_INLINE_ InstanceBounds() {}
 
 		_ALWAYS_INLINE_ InstanceBounds(const AABB &p_aabb) {
@@ -554,6 +554,7 @@ public:
 				update_item(this) {
 			base_type = RS::INSTANCE_NONE;
 			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
+			mirror = false;
 			receive_shadows = true;
 			visible = true;
 			layer_mask = 1;

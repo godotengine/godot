@@ -47,8 +47,8 @@
 class ShaderLanguage {
 public:
 	struct TkPos {
-		int char_idx;
-		int tk_line;
+		int char_idx = 0;
+		int tk_line = 0;
 	};
 
 	enum TokenType {
