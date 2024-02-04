@@ -373,6 +373,7 @@ public:
 
 	EXBIND2RC(int, find_function, const String &, const String &)
 	EXBIND3RC(String, make_function, const String &, const String &, const PackedStringArray &)
+	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)
 	EXBIND0R(bool, overrides_external_editor)
 

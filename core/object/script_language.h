@@ -256,6 +256,7 @@ public:
 	virtual bool can_inherit_from_file() const { return false; }
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;
+	virtual bool can_make_function() const { return true; }
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
 
