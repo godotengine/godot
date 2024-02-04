@@ -221,6 +221,9 @@ def configure(env: "Environment"):
         # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
         if cc_semver >= (3, 1, 42) and cc_semver < (3, 1, 46):
             env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
+        # Workaround https://github.com/emscripten-core/emscripten/issues/16836.
+        if cc_semver >= (3, 1, 47):
+            env.Append(LINKFLAGS=["-Wl,-u,_emscripten_run_callback_on_thread"])
 
     if env["dlink_enabled"]:
         if env["proxy_to_pthread"]:
