@@ -215,6 +215,7 @@ def get_flags():
 
     return [
         ("arch", arch),
+        ("supported", ["mono"]),
     ]
 
 
