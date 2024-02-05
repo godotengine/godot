@@ -1659,7 +1659,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.gizmo = Ref<EditorNode3DGizmo>();
 				}
 
-				if (_edit.mode == TRANSFORM_NONE && b->is_pressed()) {
+				if (b->is_pressed() && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) {
 					if (b->is_alt_pressed()) {
 						if (nav_scheme == NAVIGATION_MAYA) {
 							break;
