@@ -141,8 +141,8 @@
     </request>
 
     <event name="configure">
-      <description summary="suggest a surface change">
-        The configure event asks the client to change its decoration mode. The
+      <description summary="notify a decoration mode change">
+        The configure event configures the effective decoration mode. The
         configured state should not be applied immediately. Clients must send an
         ack_configure in response to this event. See xdg_surface.configure and
         xdg_surface.ack_configure for details.
