@@ -147,7 +147,9 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion
 }
 
 Vector2 PhysicsBody2D::get_gravity() const {
-	return PhysicsServer2D::get_singleton()->body_get_direct_state(get_rid())->get_total_gravity();
+	PhysicsDirectBodyState2D *state = PhysicsServer2D::get_singleton()->body_get_direct_state(get_rid());
+	ERR_FAIL_NULL_V(state, Vector2());
+	return state->get_total_gravity();
 }
 
 TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {

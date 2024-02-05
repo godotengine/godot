@@ -189,7 +189,9 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion
 }
 
 Vector3 PhysicsBody3D::get_gravity() const {
-	return PhysicsServer3D::get_singleton()->body_get_direct_state(get_rid())->get_total_gravity();
+	PhysicsDirectBodyState3D *state = PhysicsServer3D::get_singleton()->body_get_direct_state(get_rid());
+	ERR_FAIL_NULL_V(state, Vector3());
+	return state->get_total_gravity();
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
