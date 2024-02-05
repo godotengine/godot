@@ -4532,7 +4532,7 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);
-	bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
+	bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	selected_files.clear();
 	Dictionary d = p_data;
@@ -4542,15 +4542,15 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
-	if (selected_nodes.size() == 1) {
+	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes[0];
-		target_node = root_node;
-		if (is_ctrl) {
-			target_node = selected_node;
+		target_node = selected_node;
+		if (is_alt) {
+			target_node = root_node;
 		} else if (is_shift && selected_node != root_node) {
 			target_node = selected_node->get_parent();
 		}
-	} else if (selected_nodes.size() == 0) {
+	} else {
 		if (root_node) {
 			target_node = root_node;
 		} else {
@@ -4558,11 +4558,6 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 			SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 			target_node = get_tree()->get_edited_scene_root();
 		}
-	} else {
-		accept->set_text(TTR("Cannot drag and drop into multiple selected nodes."));
-		accept->popup_centered();
-		_remove_preview_node();
-		return;
 	}
 
 	drop_pos = p_point;
@@ -6502,20 +6497,20 @@ void vertex() {
 	// Points are already in world space, so no need for MODEL_MATRIX anymore.
 	vec4 clip_a = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(point_a, 1.0));
 	vec4 clip_b = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(point_b, 1.0));
-	
+
 	vec2 screen_a = VIEWPORT_SIZE * (0.5 * clip_a.xy / clip_a.w + 0.5);
 	vec2 screen_b = VIEWPORT_SIZE * (0.5 * clip_b.xy / clip_b.w + 0.5);
-	
+
 	vec2 x_basis = normalize(screen_b - screen_a);
 	vec2 y_basis = vec2(-x_basis.y, x_basis.x);
-	
+
 	float width = 3.0;
 	vec2 screen_point_a = screen_a + width * (VERTEX.x * x_basis + VERTEX.y * y_basis);
 	vec2 screen_point_b = screen_b + width * (VERTEX.x * x_basis + VERTEX.y * y_basis);
 	vec2 screen_point_final = mix(screen_point_a, screen_point_b, VERTEX.z);
-	
+
 	vec4 clip_final = mix(clip_a, clip_b, VERTEX.z);
-	
+
 	POSITION = vec4(clip_final.w * ((2.0 * screen_point_final) / VIEWPORT_SIZE - 1.0), clip_final.z, clip_final.w);
 	UV = VERTEX.yz * clip_final.w;
 
