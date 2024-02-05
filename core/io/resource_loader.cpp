@@ -36,6 +36,7 @@
 #include "core/object/script_language.h"
 #include "core/os/condition_variable.h"
 #include "core/os/os.h"
+#include "core/os/safe_binary_mutex.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
