@@ -203,7 +203,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			} wpd;
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
-				wpd.vulkan.view_ptr = &wd.window_view;
+				wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
 			}
 #endif
 			Error err = rendering_context->window_create(window_id_counter, &wpd);

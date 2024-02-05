@@ -35,7 +35,7 @@
 
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 
-#import <UIKit/UIKit.h>
+#import <QuartzCore/CAMetalLayer.h>
 
 class RenderingContextDriverVulkanIOS : public RenderingContextDriverVulkan {
 private:
@@ -46,7 +46,7 @@ protected:
 
 public:
 	struct WindowPlatformData {
-		CALayer *const *layer_ptr;
+		CAMetalLayer *const *layer_ptr;
 	};
 
 	RenderingContextDriverVulkanIOS();
