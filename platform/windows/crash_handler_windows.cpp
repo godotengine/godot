@@ -57,7 +57,7 @@ struct module_data {
 	std::string image_name;
 	std::string module_name;
 	void *base_address = nullptr;
-	DWORD load_size;
+	DWORD load_size = 0;
 };
 
 class symbol {
@@ -163,7 +163,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 
 	// Setup stuff:
 	CONTEXT *context = ep->ContextRecord;
-	STACKFRAME64 frame;
+	STACKFRAME64 frame{};
 	bool skip_first = false;
 
 	frame.AddrPC.Mode = AddrModeFlat;

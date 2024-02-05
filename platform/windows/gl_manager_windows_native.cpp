@@ -183,7 +183,7 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	if (profile_status != 0) {
 		print_verbose("NVAPI: Profile not found, creating....");
 
-		NVDRS_PROFILE profile_info;
+		NVDRS_PROFILE profile_info{};
 		profile_info.version = NVDRS_PROFILE_VER;
 		profile_info.isPredefined = 0;
 		memcpy(profile_info.profileName, app_profile_name_u16.get_data(), sizeof(char16_t) * app_profile_name_u16.size());
@@ -196,7 +196,7 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	}
 
 	NvDRSProfileHandle app_profile_handle = 0;
-	NVDRS_APPLICATION_V4 app;
+	NVDRS_APPLICATION_V4 app{};
 	app.version = NVDRS_APPLICATION_VER_V4;
 
 	int app_status = NvAPI_DRS_FindApplicationByName(session_handle, (NvU16 *)(app_executable_name_u16.ptrw()), &app_profile_handle, &app);
@@ -219,7 +219,7 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 		}
 	}
 
-	NVDRS_SETTING setting;
+	NVDRS_SETTING setting{};
 	setting.version = NVDRS_SETTING_VER;
 	setting.settingId = OGL_THREAD_CONTROL_ID;
 	setting.settingType = NVDRS_DWORD_TYPE;

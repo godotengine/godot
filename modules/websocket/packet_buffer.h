@@ -37,7 +37,7 @@ template <class T>
 class PacketBuffer {
 private:
 	typedef struct {
-		uint32_t size;
+		uint32_t size = 0;
 		T info;
 	} _Packet;
 
@@ -55,7 +55,7 @@ public:
 		// If p_info is nullptr, only the payload is written
 		if (p_info) {
 			ERR_FAIL_COND_V(_write_pos > _packets.size(), ERR_OUT_OF_MEMORY);
-			_Packet p;
+			_Packet p{};
 			p.size = p_size;
 			p.info = *p_info;
 			_packets.write[_write_pos] = p;

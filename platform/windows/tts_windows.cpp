@@ -73,7 +73,7 @@ void TTS_Windows::_update_tts() {
 		ISpObjectToken *cpVoiceToken;
 		ULONG ulCount = 0;
 		ULONG stream_number = 0;
-		ISpObjectTokenCategory *cpCategory;
+		ISpObjectTokenCategory *cpCategory = nullptr;
 		HRESULT hr = CoCreateInstance(CLSID_SpObjectTokenCategory, nullptr, CLSCTX_INPROC_SERVER, IID_ISpObjectTokenCategory, (void **)&cpCategory);
 		if (SUCCEEDED(hr)) {
 			hr = cpCategory->SetId(SPCAT_VOICES, false);
@@ -132,7 +132,7 @@ Array TTS_Windows::get_voices() const {
 	ISpObjectToken *cpVoiceToken;
 	ISpDataKey *cpDataKeyAttribs;
 	ULONG ulCount = 0;
-	ISpObjectTokenCategory *cpCategory;
+	ISpObjectTokenCategory *cpCategory = nullptr;
 	HRESULT hr = CoCreateInstance(CLSID_SpObjectTokenCategory, nullptr, CLSCTX_INPROC_SERVER, IID_ISpObjectTokenCategory, (void **)&cpCategory);
 	if (SUCCEEDED(hr)) {
 		hr = cpCategory->SetId(SPCAT_VOICES, false);

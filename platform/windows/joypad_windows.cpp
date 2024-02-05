@@ -139,8 +139,8 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 		return false;
 	}
 	for (unsigned int i = 0; i < dev_list_count; i++) {
-		RID_DEVICE_INFO rdi;
-		char dev_name[128];
+		RID_DEVICE_INFO rdi{};
+		char dev_name[128] = { 0 };
 		UINT rdiSize = sizeof(rdi);
 		UINT nameSize = sizeof(dev_name);
 
@@ -213,8 +213,8 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 void JoypadWindows::setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_joy_id) {
 	if (ob->dwType & DIDFT_AXIS) {
 		HRESULT res;
-		DIPROPRANGE prop_range;
-		DIPROPDWORD dilong;
+		DIPROPRANGE prop_range{};
+		DIPROPDWORD dilong{};
 		LONG ofs;
 		if (ob->guidType == GUID_XAxis) {
 			ofs = DIJOFS_X;
@@ -394,7 +394,7 @@ void JoypadWindows::process_joypads() {
 			continue;
 		}
 
-		DIJOYSTATE2 js;
+		DIJOYSTATE2 js{};
 		hr = joy->di_joy->Poll();
 		if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
 			IDirectInputDevice8_Acquire(joy->di_joy);
@@ -507,7 +507,7 @@ float JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool
 void JoypadWindows::joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {
 	xinput_gamepad &joy = x_joypads[p_device];
 	if (joy.attached) {
-		XINPUT_VIBRATION effect;
+		XINPUT_VIBRATION effect{};
 		effect.wLeftMotorSpeed = (65535 * p_strong_magnitude);
 		effect.wRightMotorSpeed = (65535 * p_weak_magnitude);
 		if (xinput_set_state(p_device, &effect) == ERROR_SUCCESS) {
@@ -521,7 +521,7 @@ void JoypadWindows::joypad_vibration_start_xinput(int p_device, float p_weak_mag
 void JoypadWindows::joypad_vibration_stop_xinput(int p_device, uint64_t p_timestamp) {
 	xinput_gamepad &joy = x_joypads[p_device];
 	if (joy.attached) {
-		XINPUT_VIBRATION effect;
+		XINPUT_VIBRATION effect{};
 		effect.wLeftMotorSpeed = 0;
 		effect.wRightMotorSpeed = 0;
 		if (xinput_set_state(p_device, &effect) == ERROR_SUCCESS) {

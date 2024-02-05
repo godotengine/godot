@@ -365,12 +365,12 @@ class DisplayServerWindows : public DisplayServer {
 	TTS_Windows *tts = nullptr;
 
 	struct WindowData {
-		HWND hWnd;
+		HWND hWnd = 0;
 
 		Vector<Vector2> mpath;
 
 		bool pre_fs_valid = false;
-		RECT pre_fs_rect;
+		RECT pre_fs_rect{};
 		bool maximized = false;
 		bool minimized = false;
 		bool fullscreen = false;
@@ -396,14 +396,14 @@ class DisplayServerWindows : public DisplayServer {
 
 		HANDLE wtctx;
 		LOGCONTEXTW wtlc;
-		int min_pressure;
-		int max_pressure;
-		bool tilt_supported;
+		int min_pressure = 0;
+		int max_pressure = 0;
+		bool tilt_supported = false;
 		bool pen_inverted = false;
 		bool block_mm = false;
 
-		int last_pressure_update;
-		float last_pressure;
+		int last_pressure_update = 0;
+		float last_pressure = 0.0f;
 		Vector2 last_tilt;
 		bool last_pen_inverted = false;
 

@@ -124,7 +124,7 @@ class OS_Windows : public OS {
 	ErrorHandlerList error_handlers;
 #endif
 
-	HWND main_window;
+	HWND main_window = 0;
 
 	IDWriteFactory *dwrite_factory = nullptr;
 	IDWriteFactory2 *dwrite_factory2 = nullptr;
