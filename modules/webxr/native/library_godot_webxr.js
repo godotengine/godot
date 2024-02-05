@@ -647,4 +647,4 @@ const GodotWebXR = {
 };
 
 autoAddDeps(GodotWebXR, '$GodotWebXR');
-mergeInto(LibraryManager.library, GodotWebXR);
+addToLibrary(GodotWebXR);

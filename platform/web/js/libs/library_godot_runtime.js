@@ -131,4 +131,4 @@ const GodotRuntime = {
 	},
 };
 autoAddDeps(GodotRuntime, '$GodotRuntime');
-mergeInto(LibraryManager.library, GodotRuntime);
+addToLibrary(GodotRuntime);

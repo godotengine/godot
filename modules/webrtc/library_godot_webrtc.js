@@ -227,7 +227,7 @@ const GodotRTCDataChannel = {
 };
 
 autoAddDeps(GodotRTCDataChannel, '$GodotRTCDataChannel');
-mergeInto(LibraryManager.library, GodotRTCDataChannel);
+addToLibrary(GodotRTCDataChannel);
 
 const GodotRTCPeerConnection = {
 	$GodotRTCPeerConnection__deps: ['$IDHandler', '$GodotRuntime', '$GodotRTCDataChannel'],
@@ -499,4 +499,4 @@ const GodotRTCPeerConnection = {
 };
 
 autoAddDeps(GodotRTCPeerConnection, '$GodotRTCPeerConnection');
-mergeInto(LibraryManager.library, GodotRTCPeerConnection);
+addToLibrary(GodotRTCPeerConnection);

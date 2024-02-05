@@ -130,7 +130,7 @@ const GodotIME = {
 		},
 	},
 };
-mergeInto(LibraryManager.library, GodotIME);
+addToLibrary(GodotIME);
 
 /*
  * Gamepad API helper.
@@ -261,7 +261,7 @@ const GodotInputGamepads = {
 		},
 	},
 };
-mergeInto(LibraryManager.library, GodotInputGamepads);
+addToLibrary(GodotInputGamepads);
 
 /*
  * Drag and drop helper.
@@ -436,7 +436,7 @@ const GodotInputDragDrop = {
 		},
 	},
 };
-mergeInto(LibraryManager.library, GodotInputDragDrop);
+addToLibrary(GodotInputDragDrop);
 
 /*
  * Godot exposed input functions.
@@ -691,4 +691,4 @@ const GodotInput = {
 };
 
 autoAddDeps(GodotInput, '$GodotInput');
-mergeInto(LibraryManager.library, GodotInput);
+addToLibrary(GodotInput);

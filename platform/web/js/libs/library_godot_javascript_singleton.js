@@ -298,7 +298,7 @@ const GodotJSWrapper = {
 };
 
 autoAddDeps(GodotJSWrapper, '$GodotJSWrapper');
-mergeInto(LibraryManager.library, GodotJSWrapper);
+addToLibrary(GodotJSWrapper);
 
 const GodotEval = {
 	godot_js_eval__deps: ['$GodotRuntime'],
@@ -355,4 +355,4 @@ const GodotEval = {
 	},
 };
 
-mergeInto(LibraryManager.library, GodotEval);
+addToLibrary(GodotEval);

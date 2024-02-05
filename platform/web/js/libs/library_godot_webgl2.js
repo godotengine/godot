@@ -81,4 +81,4 @@ const GodotWebGL2 = {
 };
 
 autoAddDeps(GodotWebGL2, '$GodotWebGL2');
-mergeInto(LibraryManager.library, GodotWebGL2);
+addToLibrary(GodotWebGL2);

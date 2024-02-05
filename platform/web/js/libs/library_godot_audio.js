@@ -213,7 +213,7 @@ const GodotAudio = {
 };
 
 autoAddDeps(GodotAudio, '$GodotAudio');
-mergeInto(LibraryManager.library, GodotAudio);
+addToLibrary(GodotAudio);
 
 /**
  * The AudioWorklet API driver, used when threads are available.
@@ -409,7 +409,7 @@ const GodotAudioWorklet = {
 };
 
 autoAddDeps(GodotAudioWorklet, '$GodotAudioWorklet');
-mergeInto(LibraryManager.library, GodotAudioWorklet);
+addToLibrary(GodotAudioWorklet);
 
 /*
  * The deprecated ScriptProcessorNode API, used when threads are disabled.
@@ -495,4 +495,4 @@ const GodotAudioScript = {
 };
 
 autoAddDeps(GodotAudioScript, '$GodotAudioScript');
-mergeInto(LibraryManager.library, GodotAudioScript);
+addToLibrary(GodotAudioScript);

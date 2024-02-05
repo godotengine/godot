@@ -241,4 +241,4 @@ const GodotFetch = {
 };
 
 autoAddDeps(GodotFetch, '$GodotFetch');
-mergeInto(LibraryManager.library, GodotFetch);
+addToLibrary(GodotFetch);

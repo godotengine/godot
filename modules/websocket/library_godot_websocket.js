@@ -204,4 +204,4 @@ const GodotWebSocket = {
 };
 
 autoAddDeps(GodotWebSocket, '$GodotWebSocket');
-mergeInto(LibraryManager.library, GodotWebSocket);
+addToLibrary(GodotWebSocket);

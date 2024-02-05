@@ -164,7 +164,7 @@ const GodotDisplayVK = {
 		},
 	},
 };
-mergeInto(LibraryManager.library, GodotDisplayVK);
+addToLibrary(GodotDisplayVK);
 
 /*
  * Display server cursor helper.
@@ -216,7 +216,7 @@ const GodotDisplayCursor = {
 		},
 	},
 };
-mergeInto(LibraryManager.library, GodotDisplayCursor);
+addToLibrary(GodotDisplayCursor);
 
 const GodotDisplayScreen = {
 	$GodotDisplayScreen__deps: ['$GodotConfig', '$GodotOS', '$GL', 'emscripten_webgl_get_current_context'],
@@ -325,7 +325,7 @@ const GodotDisplayScreen = {
 		},
 	},
 };
-mergeInto(LibraryManager.library, GodotDisplayScreen);
+addToLibrary(GodotDisplayScreen);
 
 /**
  * Display server interface.
@@ -798,4 +798,4 @@ const GodotDisplay = {
 };
 
 autoAddDeps(GodotDisplay, '$GodotDisplay');
-mergeInto(LibraryManager.library, GodotDisplay);
+addToLibrary(GodotDisplay);

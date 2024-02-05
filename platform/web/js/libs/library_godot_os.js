@@ -50,7 +50,7 @@ const IDHandler = {
 };
 
 autoAddDeps(IDHandler, '$IDHandler');
-mergeInto(LibraryManager.library, IDHandler);
+addToLibrary(IDHandler);
 
 const GodotConfig = {
 	$GodotConfig__postset: 'Module["initConfig"] = GodotConfig.init_config;',
@@ -105,7 +105,7 @@ const GodotConfig = {
 };
 
 autoAddDeps(GodotConfig, '$GodotConfig');
-mergeInto(LibraryManager.library, GodotConfig);
+addToLibrary(GodotConfig);
 
 const GodotFS = {
 	$GodotFS__deps: ['$FS', '$IDBFS', '$GodotRuntime'],
@@ -223,7 +223,7 @@ const GodotFS = {
 		},
 	},
 };
-mergeInto(LibraryManager.library, GodotFS);
+addToLibrary(GodotFS);
 
 const GodotOS = {
 	$GodotOS__deps: ['$GodotRuntime', '$GodotConfig', '$GodotFS'],
@@ -366,7 +366,7 @@ const GodotOS = {
 };
 
 autoAddDeps(GodotOS, '$GodotOS');
-mergeInto(LibraryManager.library, GodotOS);
+addToLibrary(GodotOS);
 
 /*
  * Godot event listeners.
@@ -406,7 +406,7 @@ const GodotEventListeners = {
 		},
 	},
 };
-mergeInto(LibraryManager.library, GodotEventListeners);
+addToLibrary(GodotEventListeners);
 
 const GodotPWA = {
 
@@ -463,4 +463,4 @@ const GodotPWA = {
 };
 
 autoAddDeps(GodotPWA, '$GodotPWA');
-mergeInto(LibraryManager.library, GodotPWA);
+addToLibrary(GodotPWA);

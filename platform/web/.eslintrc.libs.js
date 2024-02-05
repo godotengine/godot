@@ -5,6 +5,7 @@ module.exports = {
 	"globals": {
 		"LibraryManager": true,
 		"mergeInto": true,
+		"addToLibrary": true,
 		"autoAddDeps": true,
 		"HEAP8": true,
 		"HEAPU8": true,
