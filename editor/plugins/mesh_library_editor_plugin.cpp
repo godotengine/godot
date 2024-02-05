@@ -115,6 +115,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		}
 
 		p_library->set_item_mesh(id, mesh);
+		p_library->set_item_render_layers(id, mi->get_layer_mask());
 
 		if (p_apply_xforms) {
 			p_library->set_item_mesh_transform(id, mi->get_transform());

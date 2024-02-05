@@ -69,6 +69,8 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 #endif // DISABLE_DEPRECATED
 		} else if (what == "navigation_layers") {
 			set_item_navigation_layers(idx, p_value);
+		} else if (what == "render_layers") {
+			set_item_render_layers(idx, p_value);
 		} else {
 			return false;
 		}
@@ -105,6 +107,8 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 #endif // DISABLE_DEPRECATED
 	} else if (what == "navigation_layers") {
 		r_ret = get_item_navigation_layers(idx);
+	} else if (what == "render_layers") {
+		r_ret = get_item_render_layers(idx);
 	} else if (what == "preview") {
 		r_ret = get_item_preview(idx);
 	} else {
@@ -120,6 +124,7 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::STRING, prop_name + PNAME("name")));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("render_layers"), PROPERTY_HINT_LAYERS_3D_RENDER));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, prop_name + PNAME("shapes")));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
@@ -179,6 +184,14 @@ void MeshLibrary::set_item_navigation_layers(int p_item, uint32_t p_navigation_l
 	emit_changed();
 }
 
+void MeshLibrary::set_item_render_layers(int p_item, uint32_t p_render_layers) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	item_map[p_item].render_layers = p_render_layers;
+	notify_property_list_changed();
+	notify_change_to_owners();
+	emit_changed();
+}
+
 void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].preview = p_preview;
@@ -218,6 +231,11 @@ Transform3D MeshLibrary::get_item_navigation_mesh_transform(int p_item) const {
 uint32_t MeshLibrary::get_item_navigation_layers(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), 0, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].navigation_layers;
+}
+
+uint32_t MeshLibrary::get_item_render_layers(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), 0, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].render_layers;
 }
 
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
@@ -331,6 +349,7 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_navigation_mesh", "id", "navigation_mesh"), &MeshLibrary::set_item_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("set_item_navigation_mesh_transform", "id", "navigation_mesh"), &MeshLibrary::set_item_navigation_mesh_transform);
 	ClassDB::bind_method(D_METHOD("set_item_navigation_layers", "id", "navigation_layers"), &MeshLibrary::set_item_navigation_layers);
+	ClassDB::bind_method(D_METHOD("set_item_render_layers", "id", "render_layers"), &MeshLibrary::set_item_render_layers);
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
 	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
@@ -339,6 +358,7 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_navigation_mesh", "id"), &MeshLibrary::get_item_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_navigation_mesh_transform", "id"), &MeshLibrary::get_item_navigation_mesh_transform);
 	ClassDB::bind_method(D_METHOD("get_item_navigation_layers", "id"), &MeshLibrary::get_item_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_item_render_layers", "id"), &MeshLibrary::get_item_render_layers);
 	ClassDB::bind_method(D_METHOD("get_item_shapes", "id"), &MeshLibrary::_get_item_shapes);
 	ClassDB::bind_method(D_METHOD("get_item_preview", "id"), &MeshLibrary::get_item_preview);
 	ClassDB::bind_method(D_METHOD("remove_item", "id"), &MeshLibrary::remove_item);

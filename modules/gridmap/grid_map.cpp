@@ -710,6 +710,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 			RID instance = RS::get_singleton()->instance_create();
 			RS::get_singleton()->instance_set_base(instance, mm);
+			RS::get_singleton()->instance_set_layer_mask(instance, mesh_library->get_item_render_layers(E.key));
 
 			if (is_inside_tree()) {
 				RS::get_singleton()->instance_set_scenario(instance, get_world_3d()->get_scenario());
