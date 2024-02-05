@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "file_access.h"
+#include "file_access.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -156,10 +157,10 @@ Ref<FileAccess> FileAccess::open_encrypted_pass(const String &p_path, ModeFlags 
 	return fae;
 }
 
-Ref<FileAccess> FileAccess::open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode) {
+Ref<FileAccess> FileAccess::open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode, int p_block_size) {
 	Ref<FileAccessCompressed> fac;
 	fac.instantiate();
-	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
+	fac->configure("GCPF", (Compression::Mode)p_compress_mode, p_block_size);
 	Error err = fac->open_internal(p_path, p_mode_flags);
 	last_file_open_error = err;
 	if (err) {
@@ -856,7 +857,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open", "path", "flags"), &FileAccess::_open);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key"), &FileAccess::open_encrypted);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted_with_pass", "path", "mode_flags", "pass"), &FileAccess::open_encrypted_pass);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &FileAccess::open_compressed, DEFVAL(0));
+	ClassDB::bind_static_method("FileAccess", D_METHOD("open_compressed", "path", "mode_flags", "compression_mode", "block_size"), &FileAccess::open_compressed, DEFVAL(0), DEFVAL(4096));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_open_error"), &FileAccess::get_open_error);
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_bytes", "path"), &FileAccess::_get_file_as_bytes);

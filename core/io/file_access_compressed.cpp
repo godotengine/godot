@@ -33,6 +33,11 @@
 #include "core/string/print_string.h"
 
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, uint32_t p_block_size) {
+	if (p_block_size == 0) {
+		// Treat a block size of 0 as solid compression (compress entire file as a single block).
+		// Solid compression favors compression ratio at the cost of performance and memory usage.
+		p_block_size = -1;
+	}
 	magic = p_magic.ascii().get_data();
 	magic = (magic + "    ").substr(0, 4);
 

@@ -412,13 +412,13 @@
 			If [code]true[/code], ambient lights will be imported from COLLADA models as [DirectionalLight3D]. If [code]false[/code], ambient lights will be ignored.
 		</member>
 		<member name="compression/formats/gzip/compression_level" type="int" setter="" getter="" default="-1">
-			The default compression level for gzip. Affects compressed scenes and resources. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. [code]-1[/code] uses the default gzip compression level, which is identical to [code]6[/code] but could change in the future due to underlying zlib updates.
+			The default compression level for gzip. Affects compressed scenes, resources, and files written by [method FileAccess.open_compressed]. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. [code]-1[/code] uses the default gzip compression level, which is identical to [code]6[/code] but could change in the future due to underlying zlib updates.
 		</member>
 		<member name="compression/formats/zlib/compression_level" type="int" setter="" getter="" default="-1">
-			The default compression level for Zlib. Affects compressed scenes and resources. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. [code]-1[/code] uses the default gzip compression level, which is identical to [code]6[/code] but could change in the future due to underlying zlib updates.
+			The default compression level for Zlib. Affects compressed scenes, resources, and files written by [method FileAccess.open_compressed]. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. [code]-1[/code] uses the default gzip compression level, which is identical to [code]6[/code] but could change in the future due to underlying zlib updates.
 		</member>
 		<member name="compression/formats/zstd/compression_level" type="int" setter="" getter="" default="3">
-			The default compression level for Zstandard. Affects compressed scenes and resources. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level.
+			The default compression level for Zstandard. Affects compressed scenes, resources, and files written by [method FileAccess.open_compressed]. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level.
 		</member>
 		<member name="compression/formats/zstd/long_distance_matching" type="bool" setter="" getter="" default="false">
 			Enables [url=https://github.com/facebook/zstd/releases/tag/v1.3.2]long-distance matching[/url] in Zstandard.
