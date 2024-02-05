@@ -98,7 +98,6 @@ Added optional arguments. Compatibility method registered.
 
 GH-80852
 --------
-
 Validate extension JSON: API was removed: classes/GDScriptEditorTranslationParserPlugin
 Validate extension JSON: API was removed: classes/GDScriptNativeClass
 Validate extension JSON: API was removed: classes/GodotPhysicsServer2D
@@ -117,7 +116,6 @@ Excluded unexposed classes from extension_api.json.
 
 GH-79311
 --------
-
 Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_color
 Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_count
 Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_height
@@ -287,6 +285,7 @@ Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/shader_ge
 Validate extension JSON: Error: Field 'classes/SurfaceTool/methods/commit/arguments/1': meta changed value in new API, from "uint32" to "uint64".
 
 Surface format was increased to 64 bits from 32 bits. Compatibility methods registered.
+
 
 GH-79527
 --------

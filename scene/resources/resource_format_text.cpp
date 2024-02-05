@@ -275,7 +275,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				String assign;
 				Variant value;
 
-				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &parser);
+				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &parser, false, true);
 
 				if (error) {
 					if (error == ERR_FILE_MISSING_DEPENDENCIES) {
@@ -358,7 +358,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					unbinds,
 					bind_ints);
 
-			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser);
+			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser, false, true);
 
 			if (error) {
 				if (error != ERR_FILE_EOF) {
@@ -381,7 +381,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			packed_scene->get_state()->add_editable_instance(path.simplified());
 
-			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser);
+			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser, false, true);
 
 			if (error) {
 				if (error != ERR_FILE_EOF) {
@@ -476,7 +476,7 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
-		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
+		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp, false, true);
 
 		if (error) {
 			_printerr();
@@ -589,7 +589,7 @@ Error ResourceLoaderText::load() {
 			String assign;
 			Variant value;
 
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
+			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp, false, true);
 
 			if (error) {
 				_printerr();
@@ -702,7 +702,7 @@ Error ResourceLoaderText::load() {
 			String assign;
 			Variant value;
 
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
+			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp, false, true);
 
 			if (error) {
 				if (error != ERR_FILE_EOF) {
@@ -885,7 +885,7 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 
 		p_dependencies->push_back(path);
 
-		Error err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
+		Error err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp, false, true);
 
 		if (err) {
 			print_line(error_text + " - " + itos(lines));
@@ -910,7 +910,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 	uint64_t tag_end = f->get_position();
 
 	while (true) {
-		Error err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
+		Error err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp, false, true);
 
 		if (err != OK) {
 			error = ERR_FILE_CORRUPT;
@@ -1039,7 +1039,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 	resource_current = 0;
 
 	VariantParser::Tag tag;
-	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
+	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag, nullptr, false, true);
 
 	if (err) {
 		error = err;
@@ -1094,7 +1094,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 	}
 
 	if (!p_skip_first_tag) {
-		err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
+		err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp, false, true);
 
 		if (err) {
 			error_text = "Unexpected end of file";
@@ -1205,7 +1205,7 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 		dummy_read.external_resources[dr] = lindex;
 		dummy_read.rev_external_resources[id] = dr;
 
-		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp_new);
+		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp_new, false, true);
 
 		if (error) {
 			_printerr();
@@ -1288,7 +1288,7 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 				String assign;
 				Variant value;
 
-				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new);
+				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new, false, true);
 
 				if (error) {
 					if (main_res && error == ERR_FILE_EOF) {
@@ -1415,7 +1415,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 	rp_new.userdata = &dummy_read;
 
 	while (next_tag.name == "ext_resource") {
-		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp_new);
+		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp_new, false, true);
 
 		if (error) {
 			_printerr();
@@ -1442,7 +1442,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			String assign;
 			Variant value;
 
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new);
+			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new, false, true);
 
 			if (error) {
 				if (error == ERR_FILE_EOF) {
@@ -1490,7 +1490,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			String assign;
 			Variant value;
 
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new);
+			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new, false, true);
 
 			if (error) {
 				if (error == ERR_FILE_MISSING_DEPENDENCIES) {
@@ -1531,7 +1531,7 @@ String ResourceLoaderText::recognize_script_class(Ref<FileAccess> p_f) {
 	ignore_resource_parsing = true;
 
 	VariantParser::Tag tag;
-	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
+	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag, nullptr, false, true);
 
 	if (err) {
 		_printerr();
@@ -1569,7 +1569,7 @@ String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 	ignore_resource_parsing = true;
 
 	VariantParser::Tag tag;
-	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
+	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag, nullptr, false, true);
 
 	if (err) {
 		_printerr();
@@ -1613,7 +1613,7 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 	ignore_resource_parsing = true;
 
 	VariantParser::Tag tag;
-	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
+	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag, nullptr, false, true);
 
 	if (err) {
 		_printerr();
@@ -2194,7 +2194,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				}
 
 				String vars;
-				VariantWriter::write_to_string(value, vars, _write_resources, this);
+				VariantWriter::write_to_string(value, vars, _write_resources, this, true);
 				f->store_string(name.property_name_encode() + " = " + vars + "\n");
 			}
 		}
@@ -2258,14 +2258,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			if (!instance_placeholder.is_empty()) {
 				String vars;
 				f->store_string(" instance_placeholder=");
-				VariantWriter::write_to_string(instance_placeholder, vars, _write_resources, this);
+				VariantWriter::write_to_string(instance_placeholder, vars, _write_resources, this, true);
 				f->store_string(vars);
 			}
 
 			if (instance.is_valid()) {
 				String vars;
 				f->store_string(" instance=");
-				VariantWriter::write_to_string(instance, vars, _write_resources, this);
+				VariantWriter::write_to_string(instance, vars, _write_resources, this, true);
 				f->store_string(vars);
 			}
 
@@ -2273,7 +2273,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 			for (int j = 0; j < state->get_node_property_count(i); j++) {
 				String vars;
-				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this);
+				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this, true);
 
 				f->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
 			}
@@ -2307,7 +2307,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			f->store_string(connstr);
 			if (binds.size()) {
 				String vars;
-				VariantWriter::write_to_string(binds, vars, _write_resources, this);
+				VariantWriter::write_to_string(binds, vars, _write_resources, this, true);
 				f->store_string(" binds= " + vars);
 			}
 

@@ -756,7 +756,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true, true);
 		if (err == ERR_FILE_EOF) {
 			// If we're loading a project.godot from source code, we can operate some
 			// ProjectSettings conversions if need be.
@@ -958,7 +958,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 			}
 
 			String vstr;
-			VariantWriter::write_to_string(value, vstr);
+			VariantWriter::write_to_string(value, vstr, nullptr, nullptr, true);
 			file->store_string(F.property_name_encode() + "=" + vstr + "\n");
 		}
 	}

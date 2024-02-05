@@ -950,7 +950,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 				next_tag.fields.clear();
 				next_tag.name = String();
 
-				err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+				err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true, true);
 				if (err == ERR_FILE_EOF) {
 					break;
 				} else if (err != OK) {

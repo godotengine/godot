@@ -1134,7 +1134,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 				Ref<ConfigFile> config;
 				config.instantiate();
-				err = config->load(path + ".import");
+				err = config->load(path + ".import", true);
 				if (err != OK) {
 					ERR_PRINT("Could not parse: '" + path + "', not exported.");
 					continue;
@@ -1156,7 +1156,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				config->erase_section("deps");
 				config->erase_section("params");
 
-				String import_text = config->encode_to_text();
+				String import_text = config->encode_to_text(true);
 				CharString cs = import_text.utf8();
 				Vector<uint8_t> sarr;
 				sarr.resize(cs.size());
@@ -1176,7 +1176,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				// File is imported and not customized, replace by what it imports.
 				Ref<ConfigFile> config;
 				config.instantiate();
-				err = config->load(path + ".import");
+				err = config->load(path + ".import", true);
 				if (err != OK) {
 					ERR_PRINT("Could not parse: '" + path + "', not exported.");
 					continue;
@@ -1243,7 +1243,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				config->erase_section("deps");
 				config->erase_section("params");
 
-				String import_text = config->encode_to_text();
+				String import_text = config->encode_to_text(true);
 				CharString cs = import_text.utf8();
 				Vector<uint8_t> sarr;
 				sarr.resize(cs.size());

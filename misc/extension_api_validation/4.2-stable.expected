@@ -73,3 +73,17 @@ GH-87668
 Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 8 to 9.
 
 Added optional "baseline_offset" argument. Compatibility method registered.
+
+
+GH-80585
+--------
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/load/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/load_encrypted/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/load_encrypted_pass/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/parse/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save_encrypted/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save_encrypted_pass/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/ConfigFile/methods/encode_to_text': arguments
+
+Added optional argument. Compatibility method registered. Behavior compatibility broken for security and consistency with binary serialization. Object encoding/decoding is now disabled by default.

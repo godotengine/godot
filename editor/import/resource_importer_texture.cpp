@@ -103,7 +103,7 @@ void ResourceImporterTexture::update_imports() {
 			cf.instantiate();
 			String src_path = String(E.key) + ".import";
 
-			Error err = cf->load(src_path);
+			Error err = cf->load(src_path, true);
 			ERR_CONTINUE(err != OK);
 
 			bool changed = false;
@@ -150,7 +150,7 @@ void ResourceImporterTexture::update_imports() {
 			}
 
 			if (changed) {
-				cf->save(src_path);
+				cf->save(src_path, true);
 				to_reimport.push_back(E.key);
 			}
 		}

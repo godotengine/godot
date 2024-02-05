@@ -100,8 +100,11 @@
 		</method>
 		<method name="encode_to_text" qualifiers="const">
 			<return type="String" />
+			<param index="0" name="full_objects" type="bool" default="false" />
 			<description>
-				Obtain the text version of this config file (the same text that would be written to a file).
+				Obtain the text version of this config file (the same text that would be written to a file). If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_str] and [method @GlobalScope.var_to_str_with_objects] methods.
+				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add an usage flag to a property by overriding the [method Object._validate_property] method in your class. In GDScript you can also use the [annotation @GDScript.@export] annotation. See [enum PropertyUsageFlags] for the possible usage flags.
 			</description>
 		</method>
 		<method name="erase_section">
@@ -161,61 +164,74 @@
 			<returns_error number="0"/>
 			<returns_error number="12"/>
 			<param index="0" name="path" type="String" />
+			<param index="1" name="allow_objects" type="bool" default="false" />
 			<description>
-				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
+				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
 				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				Internally, this uses the same decoding mechanism as the [method @GlobalScope.str_to_var] and [method @GlobalScope.str_to_var_with_objects] methods.
+				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
 		<method name="load_encrypted">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="key" type="PackedByteArray" />
+			<param index="2" name="allow_objects" type="bool" default="false" />
 			<description>
 				Loads the encrypted config file specified as a parameter, using the provided [param key] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
-				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				See [method load] for details.
 			</description>
 		</method>
 		<method name="load_encrypted_pass">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="password" type="String" />
+			<param index="2" name="allow_objects" type="bool" default="false" />
 			<description>
 				Loads the encrypted config file specified as a parameter, using the provided [param password] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
-				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				See [method load] for details.
 			</description>
 		</method>
 		<method name="parse">
 			<return type="int" enum="Error" />
 			<param index="0" name="data" type="String" />
+			<param index="1" name="allow_objects" type="bool" default="false" />
 			<description>
-				Parses the passed string as the contents of a config file. The string is parsed and loaded in the ConfigFile object which the method was called on.
+				Parses the passed string as the contents of a config file. The string is parsed and loaded in the ConfigFile object which the method was called on. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
 				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				Internally, this uses the same decoding mechanism as the [method @GlobalScope.str_to_var] and [method @GlobalScope.str_to_var_with_objects] methods.
+				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
 		<method name="save">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
+			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
-				Saves the contents of the [ConfigFile] object to the file specified as a parameter. The output file uses an INI-style structure.
+				Saves the contents of the [ConfigFile] object to the file specified as a parameter. The output file uses an INI-style structure. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
 				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_str] and [method @GlobalScope.var_to_str_with_objects] method.
+				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add an usage flag to a property by overriding the [method Object._validate_property] method in your class. In GDScript you can also use the [annotation @GDScript.@export] annotation. See [enum PropertyUsageFlags] for the possible usage flags.
 			</description>
 		</method>
 		<method name="save_encrypted">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="key" type="PackedByteArray" />
+			<param index="2" name="full_objects" type="bool" default="false" />
 			<description>
 				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param key] to encrypt it. The output file uses an INI-style structure.
-				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				See [method save] for details.
 			</description>
 		</method>
 		<method name="save_encrypted_pass">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="password" type="String" />
+			<param index="2" name="full_objects" type="bool" default="false" />
 			<description>
 				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param password] to encrypt it. The output file uses an INI-style structure.
-				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
+				See [method save] for details.
 			</description>
 		</method>
 		<method name="set_value">

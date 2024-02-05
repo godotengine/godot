@@ -384,7 +384,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	bool missing = false;
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	Error cf_err = cf->load(conf);
+	Error cf_err = cf->load(conf, true);
 
 	int config_version = 0;
 	String project_name = TTR("Unnamed Project");

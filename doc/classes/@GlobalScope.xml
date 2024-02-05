@@ -1340,7 +1340,8 @@
 			<return type="Variant" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Converts a formatted [param string] that was returned by [method var_to_str] to the original [Variant].
+				Converts a formatted [param string] that was returned by [method var_to_str] to the equivalent [Variant], without decoding objects.
+				[b]Note:[/b] If you need object deserialization, see [method str_to_var_with_objects].
 				[codeblocks]
 				[gdscript]
 				var data = '{ "a": 1, "b": 2 }' # data is a String
@@ -1353,6 +1354,14 @@
 				GD.Print(dict["a"]);                              // Prints 1
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="str_to_var_with_objects">
+			<return type="Variant" />
+			<param index="0" name="string" type="String" />
+			<description>
+				Converts a formatted [param string] that was returned by [method var_to_str_with_objects] to the equivalent [Variant]. Decoding objects is allowed.
+				[b]Warning:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="tan">
@@ -1444,7 +1453,8 @@
 			<return type="String" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Converts a [Variant] [param variable] to a formatted [String] that can then be parsed using [method str_to_var].
+				Converts a [Variant] [param variable] to a formatted [String] that can then be parsed using [method str_to_var], without encoding objects.
+				[b]Note:[/b] If you need object serialization, see [method var_to_str_with_objects].
 				[codeblocks]
 				[gdscript]
 				var a = { "a": 1, "b": 2 }
@@ -1463,6 +1473,13 @@
 				}
 				[/codeblock]
 				[b]Note:[/b] Converting [Signal] or [Callable] is not supported and will result in an empty value for these types, regardless of their data.
+			</description>
+		</method>
+		<method name="var_to_str_with_objects">
+			<return type="String" />
+			<param index="0" name="variable" type="Variant" />
+			<description>
+				Converts a [Variant] [param variable] to a formatted [String] that can then be parsed using [method str_to_var_with_objects]. Encoding objects is allowed (and can potentially include executable code).
 			</description>
 		</method>
 		<method name="weakref">

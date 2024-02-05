@@ -1149,7 +1149,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 		if (FileAccess::exists(fpath + ".import")) {
 			Ref<ConfigFile> config;
 			config.instantiate();
-			Error err = config->load(fpath + ".import");
+			Error err = config->load(fpath + ".import", true);
 			if (err == OK) {
 				if (config->has_section_key("remap", "importer")) {
 					String importer = config->get_value("remap", "importer");
@@ -1463,9 +1463,9 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			// Remove uid from .import file to avoid conflict.
 			Ref<ConfigFile> cfg;
 			cfg.instantiate();
-			cfg->load(old_path + ".import");
+			cfg->load(old_path + ".import", true);
 			cfg->erase_section_key("remap", "uid");
-			err = cfg->save(new_path + ".import");
+			err = cfg->save(new_path + ".import", true);
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".import: " + error_names[err] + "\n");
 				return;
@@ -3537,7 +3537,7 @@ void FileSystemDock::_update_import_dock() {
 		const String &fpath = efiles[i];
 		Ref<ConfigFile> cf;
 		cf.instantiate();
-		Error err = cf->load(fpath + ".import");
+		Error err = cf->load(fpath + ".import", true);
 		if (err != OK) {
 			imports.clear();
 			break;

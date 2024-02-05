@@ -793,7 +793,7 @@ void ProjectManager::_apply_project_tags() {
 
 	ConfigFile cfg;
 	const String project_godot = project_list->get_selected_projects()[0].path.path_join("project.godot");
-	Error err = cfg.load(project_godot);
+	Error err = cfg.load(project_godot, true);
 	if (err != OK) {
 		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err));
 		tag_edit_error->show();
@@ -802,7 +802,7 @@ void ProjectManager::_apply_project_tags() {
 	} else {
 		tags.sort();
 		cfg.set_value("application", "config/tags", tags);
-		err = cfg.save(project_godot);
+		err = cfg.save(project_godot, true);
 		if (err != OK) {
 			tag_edit_error->set_text(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err));
 			tag_edit_error->show();

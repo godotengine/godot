@@ -150,7 +150,7 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_sdf_save_path_and_bake(const Strin
 
 		config.instantiate();
 		if (FileAccess::exists(p_path + ".import")) {
-			config->load(p_path + ".import");
+			config->load(p_path + ".import", true);
 		}
 
 		config->set_value("remap", "importer", "3d_texture");
@@ -163,7 +163,7 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_sdf_save_path_and_bake(const Strin
 		config->set_value("params", "slices/horizontal", 1);
 		config->set_value("params", "slices/vertical", bake_img->get_meta("depth"));
 
-		config->save(p_path + ".import");
+		config->save(p_path + ".import", true);
 
 		Error err = bake_img->save_exr(p_path, false);
 		ERR_FAIL_COND(err);
