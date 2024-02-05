@@ -122,6 +122,7 @@
 				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
+				[b]Note:[/b] On Android, system commands such as [code]dumpsys[/code] can only be run on a rooted device.
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
@@ -185,9 +186,11 @@
 				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] or double plus [code]++[/code] argument). These are left untouched by Godot for the user. [code]++[/code] can be used in situations where [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				For example, in the command line below, [code]--fullscreen[/code] will not be returned in [method get_cmdline_user_args] and [code]--level 1[/code] will only be returned in [method get_cmdline_user_args]:
 				[codeblock]
-				godot --fullscreen -- --level 1
-				# Or:
-				godot --fullscreen ++ --level 1
+				# Godot has been executed with the following command:
+				# godot --fullscreen -- --level=2 --hardcore
+
+				OS.get_cmdline_args()      # Returns ["--fullscreen", "--level=2", "--hardcore"]
+				OS.get_cmdline_user_args() # Returns ["--level=2", "--hardcore"]
 				[/codeblock]
 			</description>
 		</method>
