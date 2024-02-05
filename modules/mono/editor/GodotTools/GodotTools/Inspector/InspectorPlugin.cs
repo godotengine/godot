@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using GodotTools.Build;
@@ -23,9 +24,19 @@ namespace GodotTools.Inspector
         {
             foreach (var script in EnumerateScripts(godotObject))
             {
-                if (script is not CSharpScript) continue;
+                if (script is not CSharpScript)
+                    continue;
 
-                if (File.GetLastWriteTime(script.ResourcePath) > BuildManager.LastValidBuildDateTime)
+                string scriptPath = script.ResourcePath;
+                if (scriptPath.StartsWith("csharp://"))
+                {
+                    // This is a virtual path used by generic types, extract the real path.
+                    var scriptPathSpan = scriptPath.AsSpan("csharp://".Length);
+                    scriptPathSpan = scriptPathSpan[..scriptPathSpan.IndexOf(':')];
+                    scriptPath = $"res://{scriptPathSpan}";
+                }
+
+                if (File.GetLastWriteTime(scriptPath) > BuildManager.LastValidBuildDateTime)
                 {
                     AddCustomControl(new InspectorOutOfSyncWarning());
                     break;
