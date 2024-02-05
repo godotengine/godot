@@ -1811,6 +1811,11 @@ void PopupMenu::set_item_submenu(int p_idx, const String &p_submenu) {
 		return;
 	}
 
+	String submenu_name_safe = p_submenu.replace("@", "_"); // Allow special characters for auto-generated names.
+	if (submenu_name_safe.validate_node_name() != submenu_name_safe) {
+		ERR_FAIL_MSG(vformat("Invalid node name '%s' for a submenu, the following characters are not allowed:\n%s", p_submenu, String::get_invalid_node_name_characters(true)));
+	}
+
 	if (!global_menu_name.is_empty()) {
 		if (items[p_idx].submenu_bound) {
 			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(items[p_idx].submenu));
