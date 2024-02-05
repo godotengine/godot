@@ -1986,9 +1986,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
-				// enable region-select if nothing has been selected yet or multi-select (shift key) is active
-				if (selection_in_progress && movement_threshold_passed) {
-					if (get_selected_count() == 0 || clicked_wants_append) {
+				if (selection_in_progress && movement_threshold_passed && clicked.is_valid()) {
+					if (clicked_wants_append || !editor_selection->is_selected(Object::cast_to<Node>(ObjectDB::get_instance(clicked)))) {
 						cursor.region_select = true;
 						cursor.region_begin = _edit.original_mouse_pos;
 						clicked = ObjectID();
