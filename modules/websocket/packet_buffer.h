@@ -37,7 +37,7 @@ template <class T>
 class PacketBuffer {
 private:
 	typedef struct {
-		uint32_t size = 0;
+		uint32_t size;
 		T info;
 	} _Packet;
 

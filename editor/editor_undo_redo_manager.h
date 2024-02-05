@@ -89,7 +89,7 @@ public:
 	template <typename... VarArgs>
 	void add_do_method(Object *p_object, const StringName &p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}
@@ -100,7 +100,7 @@ public:
 	template <typename... VarArgs>
 	void add_undo_method(Object *p_object, const StringName &p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}

@@ -81,7 +81,7 @@ def generate_version(argcount, const=False, returns=False):
         sproto += "R"
         s = s.replace("$RET", "m_ret,")
         s = s.replace("$RVOID", "(void)r_ret;")  # If required, may lead to uninitialized errors
-        s = s.replace("$CALLPTRRETDEF", "PtrToArg<m_ret>::EncodeT ret;")
+        s = s.replace("$CALLPTRRETDEF", "PtrToArg<m_ret>::EncodeT ret{};")
         method_info += "method_info.return_val = GetTypeInfo<m_ret>::get_class_info();\\\n"
         method_info += "\t\tmethod_info.return_val_metadata = GetTypeInfo<m_ret>::METADATA;"
     else:
