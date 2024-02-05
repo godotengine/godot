@@ -2950,21 +2950,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_PHYSICS_PROCESS: {
-			if (!update_preview_node) {
-				return;
-			}
-			if (preview_node->is_inside_tree()) {
-				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos));
-				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
-				preview_node->set_global_transform(preview_gl_transform);
-				if (!preview_node->is_visible()) {
-					preview_node->show();
-				}
-			}
-			update_preview_node = false;
-		} break;
-
 		case NOTIFICATION_ENTER_TREE: {
 			surface->connect("draw", callable_mp(this, &Node3DEditorViewport::_draw));
 			surface->connect("gui_input", callable_mp(this, &Node3DEditorViewport::_sinput));
@@ -4050,15 +4035,34 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	Vector3 world_ray = _get_ray(p_pos);
 	Vector3 world_pos = _get_ray_pos(p_pos);
 
-	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
+	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(world_pos, world_pos + world_ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
 
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
-	ray_params.from = world_pos;
-	ray_params.to = world_pos + world_ray * camera->get_far();
+	VisualInstance3D *target = nullptr;
 
-	PhysicsDirectSpaceState3D::RayResult result;
-	if (ss->intersect_ray(ray_params, result)) {
-		return result.position;
+	if (instances.size() > 0) {
+		TypedArray<Node> nodes = preview_node->get_children();
+
+		for (int i = 0; i < instances.size(); ++i) {
+			Object *instance_object = ObjectDB::get_instance(instances[i]);
+			VisualInstance3D *instance = Object::cast_to<VisualInstance3D>(instance_object);
+
+			if (instance && !nodes.has(instance)) {
+				target = instance;
+				break;
+			}
+		}
+	}
+
+	if (target) {
+		AABB aabb = _calculate_spatial_bounds(target);
+
+		Transform3D xform = target->get_global_transform();
+		aabb = xform.xform(aabb);
+
+		Vector3 intersection;
+		if (aabb.intersects_segment(world_pos, world_pos + world_ray * camera->get_far(), &intersection)) {
+			return intersection;
+		}
 	}
 
 	const bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
@@ -4509,7 +4513,12 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	}
 
 	if (can_instantiate) {
-		update_preview_node = true;
+		preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos));
+		Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
+		preview_node->set_global_transform(preview_gl_transform);
+		if (!preview_node->is_visible()) {
+			preview_node->show();
+		}
 		return true;
 	}
 
