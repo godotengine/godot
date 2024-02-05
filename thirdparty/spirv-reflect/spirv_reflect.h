@@ -22,6 +22,7 @@ VERSION HISTORY
 
 */
 
+// clang-format off
 /*!
 
  @file spirv_reflect.h
@@ -153,6 +154,8 @@ typedef enum SpvReflectDecorationFlagBits {
   SPV_REFLECT_DECORATION_PATCH                  = 0x00000400,
   SPV_REFLECT_DECORATION_PER_VERTEX             = 0x00000800,
   SPV_REFLECT_DECORATION_PER_TASK               = 0x00001000,
+  SPV_REFLECT_DECORATION_WEIGHT_TEXTURE         = 0x00002000,
+  SPV_REFLECT_DECORATION_BLOCK_MATCH_TEXTURE    = 0x00004000,
 } SpvReflectDecorationFlagBits;
 
 typedef uint32_t SpvReflectDecorationFlags;
@@ -217,6 +220,8 @@ typedef enum SpvReflectFormat {
 enum SpvReflectVariableFlagBits{
   SPV_REFLECT_VARIABLE_FLAGS_NONE   = 0x00000000,
   SPV_REFLECT_VARIABLE_FLAGS_UNUSED = 0x00000001,
+  // If variable points to a copy of the PhysicalStorageBuffer struct
+  SPV_REFLECT_VARIABLE_FLAGS_PHYSICAL_POINTER_COPY = 0x00000002,
 };
 
 typedef uint32_t SpvReflectVariableFlags;
@@ -359,6 +364,10 @@ typedef struct SpvReflectTypeDescription {
   // this gives access to the OpTypeStruct
   struct SpvReflectTypeDescription* struct_type_description;
 
+  // Some pointers to SpvReflectTypeDescription are really
+  // just copies of another reference to the same OpType
+  uint32_t                          copied;
+
   // @deprecated use struct_type_description instead
   uint32_t                          member_count;
   // @deprecated use struct_type_description instead
@@ -366,16 +375,18 @@ typedef struct SpvReflectTypeDescription {
 } SpvReflectTypeDescription;
 
 // -- GODOT begin --
-/*! @struct SpvReflectSpecializationConstant
+/*! @enum SpvReflectSpecializationConstantType
 
 */
-
 typedef enum SpvReflectSpecializationConstantType {
   SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL = 0,
   SPV_REFLECT_SPECIALIZATION_CONSTANT_INT = 1,
   SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT = 2,
 } SpvReflectSpecializationConstantType;
 
+/*! @struct SpvReflectSpecializationConstant
+
+*/
 typedef struct SpvReflectSpecializationConstant {
   const char* name;
   uint32_t spirv_id;
@@ -562,10 +573,10 @@ typedef struct SpvReflectShaderModule {
   SpvReflectInterfaceVariable*      interface_variables;                              // Uses value(s) from first entry point
   uint32_t                          push_constant_block_count;                        // Uses value(s) from first entry point
   SpvReflectBlockVariable*          push_constant_blocks;                             // Uses value(s) from first entry point
-  // -- GODOT begin --
+// -- GODOT begin --
   uint32_t                          specialization_constant_count;
   SpvReflectSpecializationConstant* specialization_constants;
-  // -- GODOT end --
+// -- GODOT end --
 
   struct Internal {
     SpvReflectModuleFlags           module_flags;
@@ -856,7 +867,6 @@ SpvReflectResult spvReflectEnumerateInputVariables(
  @return               If successful, returns SPV_REFLECT_RESULT_SUCCESS.
                        Otherwise, the error code indicates the cause of the
                        failure.
-
 */
 SpvReflectResult spvReflectEnumerateSpecializationConstants(
   const SpvReflectShaderModule*      p_module,
@@ -2390,3 +2400,5 @@ inline SpvReflectResult ShaderModule::ChangeOutputVariableLocation(
 } // namespace spv_reflect
 #endif // defined(__cplusplus) && !defined(SPIRV_REFLECT_DISABLE_CPP_WRAPPER)
 #endif // SPIRV_REFLECT_H
+
+// clang-format on
