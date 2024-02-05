@@ -1342,7 +1342,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 			int tx_cnt = get_texture_count(i, sz);
 			for (int k = 0; k < tx_cnt; k++) {
 				p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, prefix_sz + "textures/" + itos(k) + "/offsets", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE));
 			}
 			PackedInt32Array glyphs = get_glyph_list(i, sz);
 			for (int k = 0; k < glyphs.size(); k++) {

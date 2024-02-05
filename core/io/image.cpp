@@ -3300,6 +3300,18 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 	_set_color_at_ofs(data.ptrw(), ofs, p_color);
 }
 
+const uint8_t *Image::ptr() const {
+	return data.ptr();
+}
+
+uint8_t *Image::ptrw() {
+	return data.ptrw();
+}
+
+int64_t Image::data_size() const {
+	return data.size();
+}
+
 void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot adjust_bcs in compressed or custom image formats.");
 
