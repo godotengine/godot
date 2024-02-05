@@ -237,6 +237,11 @@ def configure(env):
 
     # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
+    # Breaking change since emscripten 3.1.51
+    # https://github.com/emscripten-core/emscripten/blob/main/ChangeLog.md#3151---121323
+    if cc_semver >= (3, 1, 51):
+        # Enables the use of *glGetProcAddress()
+        env.Append(LINKFLAGS=["-s", "GL_ENABLE_GET_PROC_ADDRESS=1"])
 
     # Do not call main immediately when the support code is ready.
     env.Append(LINKFLAGS=["-s", "INVOKE_RUN=0"])
