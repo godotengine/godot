@@ -3017,6 +3017,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			// Clear preview material when dropped outside applicable object.
 			if (spatial_editor->get_preview_material().is_valid() && !is_drag_successful()) {
 				_remove_preview_material();
+			} else {
+				_remove_preview_node();
 			}
 		} break;
 	}
