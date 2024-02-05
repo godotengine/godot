@@ -185,12 +185,21 @@ def configure(env: "Environment"):
     env.Prepend(CPPPATH=["#platform/web"])
     env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED"])
 
+    # Get version info for checks below.
+    cc_version = get_compiler_version(env)
+    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
+
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
         # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
         env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
         # Allow use to take control of swapping WebGL buffers.
         env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
+        # Breaking change since emscripten 3.1.51
+        # https://github.com/emscripten-core/emscripten/blob/main/ChangeLog.md#3151---121323
+        if cc_semver >= (3, 1, 51):
+            # Enables the use of *glGetProcAddress()
+            env.Append(LINKFLAGS=["-s", "GL_ENABLE_GET_PROC_ADDRESS=1"])
 
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
@@ -201,10 +210,6 @@ def configure(env: "Environment"):
     env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
     env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
     env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
-
-    # Get version info for checks below.
-    cc_version = get_compiler_version(env)
-    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
 
     if env["lto"] != "none":
         # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
