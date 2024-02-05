@@ -65,6 +65,15 @@ SafeNumeric<uint64_t> Memory::max_usage;
 
 SafeNumeric<uint64_t> Memory::alloc_count;
 
+void* Memory::alloc_aligned_static(size_t p_alignment, size_t p_bytes) {
+	void *mem = _aligned_malloc(p_bytes, p_alignment);
+
+	ERR_FAIL_NULL_V(mem, nullptr);
+	alloc_count.increment();
+
+	return mem;
+}
+
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 #ifdef DEBUG_ENABLED
 	bool prepad = true;
