@@ -67,13 +67,14 @@ def get_mvk_sdk_path():
     if not os.path.exists(dirname):
         return ""
 
+    ver_min = ver_parse("1.3.231.0")
     ver_num = ver_parse("0.0.0.0")
     files = os.listdir(dirname)
     lib_name_out = dirname
     for file in files:
         if os.path.isdir(os.path.join(dirname, file)):
             ver_comp = ver_parse(file)
-            if ver_comp > ver_num:
+            if ver_comp > ver_num and ver_comp >= ver_min:
                 # Try new SDK location.
                 lib_name = os.path.join(
                     os.path.join(dirname, file), "macOS/lib/MoltenVK.xcframework/macos-arm64_x86_64/"
