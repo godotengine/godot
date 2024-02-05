@@ -5836,8 +5836,13 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, Node *p_
 			p_scene_parent = bone_attachment;
 		}
 		if (skeleton->get_parent() == nullptr) {
-			p_scene_parent->add_child(skeleton, true);
-			skeleton->set_owner(p_scene_root);
+			if (p_scene_root) {
+				p_scene_parent->add_child(skeleton, true);
+				skeleton->set_owner(p_scene_root);
+			} else {
+				p_scene_parent = skeleton;
+				p_scene_root = skeleton;
+			}
 		}
 	}
 
@@ -6442,7 +6447,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene
 
 			mi->get_parent()->remove_child(mi);
 			skeleton->add_child(mi, true);
-			mi->set_owner(skeleton->get_owner());
+			mi->set_owner(p_scene_root);
 
 			mi->set_skin(p_state->skins.write[skin_i]->godot_skin);
 			mi->set_skeleton_path(mi->get_path_to(skeleton));
