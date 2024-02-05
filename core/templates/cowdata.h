@@ -233,7 +233,7 @@ void CowData<T>::_unref(void *p_data) {
 	}
 	// clean up
 
-	if (!std::is_trivially_destructible<T>::value) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
 		USize *count = _get_size();
 		T *data = (T *)(count + 1);
 
@@ -269,7 +269,7 @@ typename CowData<T>::USize CowData<T>::_copy_on_write() {
 		T *_data = (T *)(mem_new);
 
 		// initialize new elements
-		if (std::is_trivially_copyable<T>::value) {
+		if constexpr (std::is_trivially_copyable_v<T>) {
 			memcpy(mem_new, _ptr, current_size * sizeof(T));
 
 		} else {
@@ -335,7 +335,7 @@ Error CowData<T>::resize(Size p_size) {
 
 		// construct the newly created elements
 
-		if (!std::is_trivially_constructible<T>::value) {
+		if constexpr (!std::is_trivially_constructible_v<T>) {
 			for (Size i = *_get_size(); i < p_size; i++) {
 				memnew_placement(&_ptr[i], T);
 			}
@@ -346,7 +346,7 @@ Error CowData<T>::resize(Size p_size) {
 		*_get_size() = p_size;
 
 	} else if (p_size < current_size) {
-		if (!std::is_trivially_destructible<T>::value) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
 			// deinitialize no longer needed elements
 			for (USize i = p_size; i < *_get_size(); i++) {
 				T *t = &_ptr[i];
