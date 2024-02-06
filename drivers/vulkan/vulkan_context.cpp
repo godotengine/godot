@@ -129,60 +129,28 @@ VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
 	}
 }
 
-VkObjectType tracked_object_to_vk_object(VkTrackedObjectType type) {
-	switch (type) {
-		case VK_TRACKED_OBJECT_TYPE_INSTANCE:				return VK_OBJECT_TYPE_INSTANCE;
-		case VK_TRACKED_OBJECT_TYPE_PHYSICAL_DEVICE:		return VK_OBJECT_TYPE_PHYSICAL_DEVICE;
-		case VK_TRACKED_OBJECT_TYPE_DEVICE:					return VK_OBJECT_TYPE_DEVICE;
-		case VK_TRACKED_OBJECT_TYPE_QUEUE:					return VK_OBJECT_TYPE_QUEUE;
-		case VK_TRACKED_OBJECT_TYPE_SEMAPHORE:				return VK_OBJECT_TYPE_SEMAPHORE;
-		case VK_TRACKED_OBJECT_TYPE_FENCE:					return VK_OBJECT_TYPE_FENCE;
-		case VK_TRACKED_OBJECT_TYPE_BUFFER:					return VK_OBJECT_TYPE_BUFFER;
-		case VK_TRACKED_OBJECT_TYPE_IMAGE:					return VK_OBJECT_TYPE_IMAGE;
-		case VK_TRACKED_OBJECT_TYPE_QUERY_POOL:				return VK_OBJECT_TYPE_QUERY_POOL;
-		case VK_TRACKED_OBJECT_TYPE_IMAGE_VIEW:				return VK_OBJECT_TYPE_IMAGE_VIEW;
-		case VK_TRACKED_OBJECT_TYPE_BUFFER_VIEW:			return VK_OBJECT_TYPE_BUFFER_VIEW;
-		case VK_TRACKED_OBJECT_TYPE_SHADER:					return VK_OBJECT_TYPE_SHADER_MODULE;
-		case VK_TRACKED_OBJECT_TYPE_PIPELINE_CACHE:			return VK_OBJECT_TYPE_PIPELINE_CACHE;
-		case VK_TRACKED_OBJECT_TYPE_PIPELINE_LAYOUT:		return VK_OBJECT_TYPE_PIPELINE_LAYOUT;
-		case VK_TRACKED_OBJECT_TYPE_RENDER_PASS:			return VK_OBJECT_TYPE_RENDER_PASS;
-		case VK_TRACKED_OBJECT_TYPE_PIPELINE:				return VK_OBJECT_TYPE_PIPELINE;
-		case VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT:	return VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
-		case VK_TRACKED_OBJECT_TYPE_SAMPLER:				return VK_OBJECT_TYPE_SAMPLER;
-		case VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_POOL:		return VK_OBJECT_TYPE_DESCRIPTOR_POOL;
-		case VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET:			return VK_OBJECT_TYPE_DESCRIPTOR_SET;
-		case VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER:			return VK_OBJECT_TYPE_FRAMEBUFFER;
-		case VK_TRACKED_OBJECT_TYPE_COMMAND_POOL:			return VK_OBJECT_TYPE_COMMAND_POOL;
-		case VK_TRACKED_OBJECT_TYPE_COMMAND_BUFFER:			return VK_OBJECT_TYPE_COMMAND_BUFFER;
-		case VK_TRACKED_OBJECT_TYPE_SURFACE:				return VK_OBJECT_TYPE_SURFACE_KHR;
-		case VK_TRACKED_OBJECT_TYPE_SWAPCHAIN:				return VK_OBJECT_TYPE_SWAPCHAIN_KHR;
-		default:
-			return VK_OBJECT_TYPE_UNKNOWN;
-	}
-}
-
 VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type) {
 
 	struct MemHeader {
 		size_t size;
-		VkSystemAllocationScope allocationScope;
+		VkSystemAllocationScope allocation_scope;
 		VkTrackedObjectType type;
 	};
 
-	VkAllocationCallbacks trackingCallbacks = {
+	VkAllocationCallbacks tracking_callbacks = {
 		// Allocation function
 		nullptr,
 		[](
-				void *pUserData,
+				void *p_user_data,
 				size_t size,
 				size_t alignment,
-				VkSystemAllocationScope allocationScope) -> void * {
+				VkSystemAllocationScope allocation_scope) -> void * {
 
 			static constexpr size_t tracking_data_size = 32;
-			VkTrackedObjectType type = static_cast<VkTrackedObjectType>(*reinterpret_cast<VkTrackedObjectType *>(pUserData));
+			VkTrackedObjectType type = static_cast<VkTrackedObjectType>(*reinterpret_cast<VkTrackedObjectType *>(p_user_data));
 
-			driver_memory_tracker[type][allocationScope].add(size);
-			driver_memory_allocation_count[type][allocationScope].increment();
+			driver_memory_tracker[type][allocation_scope].add(size);
+			driver_memory_allocation_count[type][allocation_scope].increment();
 			
 			alignment = MAX(alignment, tracking_data_size);
 
@@ -194,7 +162,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			// Track allocation
 			MemHeader *header = reinterpret_cast<MemHeader *>(ret);
 			header->size = size;
-			header->allocationScope = allocationScope;
+			header->allocation_scope = allocation_scope;
 			header->type = type;
 			*reinterpret_cast<size_t *>(ret + alignment - sizeof(size_t)) = alignment;
 
@@ -204,21 +172,21 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 
 		// Reallocation function
 		[](
-				void *pUserData,
-				void *pOriginal,
+				void *p_user_data,
+				void *p_original,
 				size_t size,
 				size_t alignment,
-				VkSystemAllocationScope allocationScope) -> void * {
+				VkSystemAllocationScope allocation_scope) -> void * {
 
-			uint8_t *mem = reinterpret_cast<uint8_t *>(pOriginal);
+			uint8_t *mem = reinterpret_cast<uint8_t *>(p_original);
 			// Retrieve alignment
 			alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
 			// Retrieve allocation data
 			MemHeader *header = reinterpret_cast<MemHeader *>(mem - alignment);
 
 			// Update allocation size
-			driver_memory_tracker[header->type][header->allocationScope].sub(header->size);
-			driver_memory_tracker[header->type][header->allocationScope].add(size);
+			driver_memory_tracker[header->type][header->allocation_scope].sub(header->size);
+			driver_memory_tracker[header->type][header->allocation_scope].add(size);
 
 			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::realloc_aligned_static(header, size + alignment, header->size + alignment, alignment));
 			if (ret == nullptr) {
@@ -232,53 +200,47 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 
 		// Free function
 		[](
-				void *pUserData,
-				void *pMemory) {
-			if (!pMemory) {
+				void *p_user_data,
+				void *p_memory) {
+			if (!p_memory) {
 				return;
 			}
 
-			static bool first = true;
-
-			uint8_t *mem = reinterpret_cast<uint8_t *>(pMemory);
+			uint8_t *mem = reinterpret_cast<uint8_t *>(p_memory);
 			size_t alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
 			MemHeader *header = reinterpret_cast<MemHeader *>(mem - alignment);
 
-			driver_memory_tracker[header->type][header->allocationScope].sub(header->size);
-			driver_memory_allocation_count[header->type][header->allocationScope].decrement();
+			driver_memory_tracker[header->type][header->allocation_scope].sub(header->size);
+			driver_memory_allocation_count[header->type][header->allocation_scope].decrement();
 
-			if (first) {
-				print_line("First");
-				first = false;
-			}
 			Memory::free_aligned_static(header);
 		},
 		// Internal allocation / deallocation. We don't track them as they cannot really be controlled or optimized by the programmer.
 		[](
-				void *pUserData,
+				void *p_user_data,
 				size_t size,
-				VkInternalAllocationType allocationType,
-				VkSystemAllocationScope allocationScope) {
+				VkInternalAllocationType allocation_type,
+				VkSystemAllocationScope allocation_scope) {
 		},
 		[](
-				void *pUserData,
+				void *p_user_data,
 				size_t size,
-				VkInternalAllocationType allocationType,
-				VkSystemAllocationScope allocationScope) {
+				VkInternalAllocationType allocation_type,
+				VkSystemAllocationScope allocation_scope) {
 		},
 	};
 
 	// Create a callback per object type
-	static VkAllocationCallbacks objectCallbacks[VK_TRACKED_OBJECT_TYPE_COUNT] = {};
-	static uint32_t objectUserData[VK_TRACKED_OBJECT_TYPE_COUNT] = {};
+	static VkAllocationCallbacks object_callbacks[VK_TRACKED_OBJECT_TYPE_COUNT] = {};
+	static uint32_t object_user_data[VK_TRACKED_OBJECT_TYPE_COUNT] = {};
 
 	// Only build the first time
-	if (!objectCallbacks[0].pfnAllocation) {
+	if (!object_callbacks[0].pfnAllocation) {
 
 		for (uint32_t c = 0; c < VK_TRACKED_OBJECT_TYPE_COUNT; ++c) {
-			objectCallbacks[c] = trackingCallbacks;
-			objectUserData[c] = c;
-			objectCallbacks[c].pUserData = &objectUserData[c];
+			object_callbacks[c] = tracking_callbacks;
+			object_user_data[c] = c;
+			object_callbacks[c].pUserData = &object_user_data[c];
 
 			for (uint32_t s = 0; s < VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT; ++s) {
 				driver_memory_tracker[c][s].set(0);
@@ -287,8 +249,8 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 		}
 	}
 
-	uint32_t typeIndex = vk_object_to_tracked_object(type);
-	return &objectCallbacks[typeIndex];
+	uint32_t type_index = vk_object_to_tracked_object(type);
+	return &object_callbacks[type_index];
 }
 
 Vector<VkAttachmentReference> VulkanContext::_convert_VkAttachmentReference2(uint32_t p_count, const VkAttachmentReference2 *p_refs) {

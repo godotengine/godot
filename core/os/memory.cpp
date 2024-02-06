@@ -76,6 +76,9 @@ void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
 }
 
 void *Memory::realloc_aligned_static(void* p_memory, size_t p_bytes, size_t p_prev_bytes, size_t p_alignment) {
+	if (p_memory == NULL)
+		return alloc_aligned_static(p_bytes, p_alignment);
+
 	void *ret = alloc_aligned_static(p_bytes, p_alignment);
 	memcpy(ret, p_memory, p_prev_bytes);
 	free_aligned_static(p_memory);
