@@ -1847,7 +1847,17 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 
 	VkDescriptorPoolCreateInfo descriptor_set_pool_create_info = {};
 	descriptor_set_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	descriptor_set_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // Can't think how somebody may NOT need this flag.
+	// <TF>
+	// @ShadyTF :
+	// descriptor optimizations : linear allocation of descriptor set pools
+	// Was :
+	// descriptor_set_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // Can't think how somebody may NOT need this flag.
+	if (linear_descriptor_pools_enabled) {
+		descriptor_set_pool_create_info.flags = 0;
+	} else {
+		descriptor_set_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // Can't think how somebody may NOT need this flag.
+	}
+	// </TF>
 	descriptor_set_pool_create_info.maxSets = max_descriptor_sets_per_pool;
 	descriptor_set_pool_create_info.poolSizeCount = vk_sizes_count;
 	descriptor_set_pool_create_info.pPoolSizes = vk_sizes;
@@ -2053,6 +2063,19 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 	descriptor_set_allocate_info.pSetLayouts = &shader_info->vk_descriptor_set_layouts[p_set_index];
 
 	VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
+
+	// <TF>
+	// @ShadyTF :
+	// descriptor optimizations : linear allocation of descriptor set pools
+	if (linear_descriptor_pools_enabled) {
+		List<VkDescriptorPool>::Element *element = descriptor_pools_to_reset.find(vk_pool);
+		if (element) {
+			vkResetDescriptorPool(vk_device, vk_pool, 0);
+			element->erase();
+		}
+	}
+	// </TF>
+
 	VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
 	if (res) {
 		_descriptor_set_pool_unreference(pool_sets_it, vk_pool);
@@ -2076,7 +2099,22 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 
 void RenderingDeviceDriverVulkan::uniform_set_free(UniformSetID p_uniform_set) {
 	UniformSetInfo *usi = (UniformSetInfo *)p_uniform_set.id;
-	vkFreeDescriptorSets(vk_device, usi->vk_descriptor_pool, 1, &usi->vk_descriptor_set);
+
+	// <TF>
+	// @ShadyTF :
+	// descriptor optimizations : linear allocation of descriptor set pools
+	// Was :
+	// vkFreeDescriptorSets(vk_device, usi->vk_descriptor_pool, 1, &usi->vk_descriptor_set);
+	if (linear_descriptor_pools_enabled) {
+		List<VkDescriptorPool>::Element* element = descriptor_pools_to_reset.find(usi->vk_descriptor_pool);
+		if (element == nullptr) {
+			descriptor_pools_to_reset.push_back(usi->vk_descriptor_pool);
+		}
+	} else {
+		vkFreeDescriptorSets(vk_device, usi->vk_descriptor_pool, 1, &usi->vk_descriptor_set);
+	}
+	// </TF>
+	
 
 	_descriptor_set_pool_unreference(usi->pool_sets_it, usi->vk_descriptor_pool);
 

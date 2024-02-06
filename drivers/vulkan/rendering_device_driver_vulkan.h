@@ -274,6 +274,13 @@ private:
 	DescriptorSetPools descriptor_set_pools;
 	uint32_t max_descriptor_sets_per_pool = 0;
 
+	// <TF>
+	// @ShadyTF :
+	// descriptor optimizations : linear allocation of descriptor set pools
+	List<VkDescriptorPool> descriptor_pools_to_reset;
+	bool linear_descriptor_pools_enabled = true;
+	// </TF>
+
 	VkDescriptorPool _descriptor_set_pool_find_or_create(const DescriptorSetPoolKey &p_key, DescriptorSetPools::Iterator *r_pool_sets_it);
 	void _descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool);
 
