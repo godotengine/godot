@@ -834,16 +834,22 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_pressed()) {
-		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->matches_event(p_event)) {
+		if (ED_GET_SHORTCUT("animation_editor/duplicate_selected_keys")->matches_event(p_event)) {
 			if (!read_only) {
-				duplicate_selection();
+				duplicate_selected_keys(-1.0);
+			}
+			accept_event();
+		}
+		if (ED_GET_SHORTCUT("animation_editor/copy_selected_keys")->matches_event(p_event)) {
+			if (!read_only) {
+				copy_selected_keys();
 			}
 			accept_event();
 		}
 
-		if (ED_GET_SHORTCUT("animation_editor/delete_selection")->matches_event(p_event)) {
+		if (ED_GET_SHORTCUT("animation_editor/paste_keys")->matches_event(p_event)) {
 			if (!read_only) {
-				delete_selection();
+				paste_keys(-1.0);
 			}
 			accept_event();
 		}
@@ -946,11 +952,21 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (!read_only) {
 				Vector2 popup_pos = get_screen_position() + mb->get_position();
 
+				bool selected = _try_select_at_ui_pos(mb->get_position(), mb->is_shift_pressed(), false);
+
 				menu->clear();
 				menu->add_icon_item(bezier_icon, TTR("Insert Key Here"), MENU_KEY_INSERT);
-				if (selection.size()) {
+				if (selected || selection.size()) {
 					menu->add_separator();
 					menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Duplicate Selected Key(s)"), MENU_KEY_DUPLICATE);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTR("Copy Selected Key(s)"), MENU_KEY_COPY);
+				}
+
+				if (editor->is_key_clipboard_active()) {
+					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionPaste")), TTR("Paste Key(s)"), MENU_KEY_PASTE);
+				}
+
+				if (selected || selection.size()) {
 					menu->add_separator();
 					menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Selected Key(s)"), MENU_KEY_DELETE);
 					menu->add_separator();
@@ -1092,50 +1108,16 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		for (int i = 0; i < edit_points.size(); i++) {
-			//first check point
-			//command makes it ignore the main point, so control point editors can be force-edited
-			//path 2D editing in the 3D and 2D editors works the same way
-			if (!mb->is_command_or_control_pressed()) {
-				if (edit_points[i].point_rect.has_point(mb->get_position())) {
-					IntPair pair = IntPair(edit_points[i].track, edit_points[i].key);
-					if (mb->is_shift_pressed()) {
-						//add to selection
-						if (selection.has(pair)) {
-							selection.erase(pair);
-						} else {
-							selection.insert(pair);
-						}
-						queue_redraw();
-						select_single_attempt = IntPair(-1, -1);
-					} else if (selection.has(pair)) {
-						moving_selection_attempt = true;
-						moving_selection = false;
-						moving_selection_from_key = pair.second;
-						moving_selection_from_track = pair.first;
-						moving_handle_track = pair.first;
-						moving_handle_left = animation->bezier_track_get_key_in_handle(pair.first, pair.second);
-						moving_handle_right = animation->bezier_track_get_key_out_handle(pair.first, pair.second);
-						moving_selection_offset = Vector2();
-						select_single_attempt = pair;
-						queue_redraw();
-					} else {
-						moving_selection_attempt = true;
-						moving_selection = true;
-						moving_selection_from_key = pair.second;
-						moving_selection_from_track = pair.first;
-						moving_selection_offset = Vector2();
-						moving_handle_track = pair.first;
-						moving_handle_left = animation->bezier_track_get_key_in_handle(pair.first, pair.second);
-						moving_handle_right = animation->bezier_track_get_key_out_handle(pair.first, pair.second);
-						selection.clear();
-						selection.insert(pair);
-						set_animation_and_track(animation, pair.first, read_only);
-					}
-					return;
-				}
+		// First, check keyframe.
+		// Command/Control makes it ignore the keyframe, so control point editors can be force-edited.
+		if (!mb->is_command_or_control_pressed()) {
+			if (_try_select_at_ui_pos(mb->get_position(), mb->is_shift_pressed(), true)) {
+				return;
 			}
+		}
 
+		// Second, check handles.
+		for (int i = 0; i < edit_points.size(); i++) {
 			if (!read_only) {
 				if (edit_points[i].in_rect.has_point(mb->get_position())) {
 					moving_handle = -1;
@@ -1494,6 +1476,52 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+bool AnimationBezierTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable) {
+	for (int i = 0; i < edit_points.size(); i++) {
+		// Path 2D editing in the 3D and 2D editors works the same way. (?)
+		if (edit_points[i].point_rect.has_point(p_pos)) {
+			IntPair pair = IntPair(edit_points[i].track, edit_points[i].key);
+			if (p_aggregate) {
+				// Add to selection.
+				if (selection.has(pair)) {
+					if (p_deselectable) {
+						selection.erase(pair);
+					}
+				} else {
+					selection.insert(pair);
+				}
+				queue_redraw();
+				select_single_attempt = IntPair(-1, -1);
+			} else {
+				if (p_deselectable) {
+					moving_selection_attempt = true;
+					moving_selection_from_key = pair.second;
+					moving_selection_from_track = pair.first;
+					moving_selection_offset = Vector2();
+					moving_handle_track = pair.first;
+					moving_handle_left = animation->bezier_track_get_key_in_handle(pair.first, pair.second);
+					moving_handle_right = animation->bezier_track_get_key_out_handle(pair.first, pair.second);
+
+					if (selection.has(pair)) {
+						select_single_attempt = pair;
+						moving_selection = false;
+					} else {
+						moving_selection = true;
+					}
+				}
+
+				set_animation_and_track(animation, pair.first, read_only);
+				if (p_deselectable || !selection.has(pair)) {
+					selection.clear();
+					selection.insert(pair);
+				}
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
 void AnimationBezierTrackEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
@@ -1526,29 +1554,37 @@ void AnimationBezierTrackEdit::_zoom_callback(float p_zoom_factor, Vector2 p_ori
 	queue_redraw();
 }
 
+Array AnimationBezierTrackEdit::make_default_bezier_key(float p_value) {
+	Array new_point;
+	new_point.resize(5);
+
+	new_point[0] = p_value;
+	new_point[1] = -0.25;
+	new_point[2] = 0;
+	new_point[3] = 0.25;
+	new_point[4] = 0;
+
+	return new_point;
+}
+
+float AnimationBezierTrackEdit::get_bezier_key_value(Array p_bezier_key_array) {
+	return p_bezier_key_array[0];
+}
+
 void AnimationBezierTrackEdit::_menu_selected(int p_index) {
+	int limit = timeline->get_name_limit();
+
+	real_t time = ((menu_insert_key.x - limit) / timeline->get_zoom_scale()) + timeline->get_value();
+
+	while (animation->track_find_key(selected_track, time, Animation::FIND_MODE_APPROX) != -1) {
+		time += 0.001;
+	}
+
 	switch (p_index) {
 		case MENU_KEY_INSERT: {
 			if (animation->get_track_count() > 0) {
-				Array new_point;
-				new_point.resize(5);
-
 				float h = (get_size().height / 2.0 - menu_insert_key.y) * timeline_v_zoom + timeline_v_scroll;
-
-				new_point[0] = h;
-				new_point[1] = -0.25;
-				new_point[2] = 0;
-				new_point[3] = 0.25;
-				new_point[4] = 0;
-
-				int limit = timeline->get_name_limit();
-
-				real_t time = ((menu_insert_key.x - limit) / timeline->get_zoom_scale()) + timeline->get_value();
-
-				while (animation->track_find_key(selected_track, time, Animation::FIND_MODE_APPROX) != -1) {
-					time += 0.001;
-				}
-
+				Array new_point = make_default_bezier_key(h);
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add Bezier Point"));
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, time, new_point);
@@ -1558,10 +1594,16 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 			}
 		} break;
 		case MENU_KEY_DUPLICATE: {
-			duplicate_selection();
+			duplicate_selected_keys(time);
 		} break;
 		case MENU_KEY_DELETE: {
 			delete_selection();
+		} break;
+		case MENU_KEY_COPY: {
+			copy_selected_keys();
+		} break;
+		case MENU_KEY_PASTE: {
+			paste_keys(time);
 		} break;
 		case MENU_KEY_SET_HANDLE_FREE: {
 			_change_selected_keys_handle_mode(Animation::HANDLE_MODE_FREE);
@@ -1584,7 +1626,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 	}
 }
 
-void AnimationBezierTrackEdit::duplicate_selection() {
+void AnimationBezierTrackEdit::duplicate_selected_keys(real_t p_ofs) {
 	if (selection.size() == 0) {
 		return;
 	}
@@ -1604,7 +1646,8 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 
 	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 		real_t t = animation->track_get_key_time(E->get().first, E->get().second);
-		real_t dst_time = t + (timeline->get_play_position() - top_time);
+		real_t insert_pos = p_ofs >= 0 ? p_ofs : timeline->get_play_position();
+		real_t dst_time = t + (insert_pos - top_time);
 		int existing_idx = animation->track_find_key(E->get().first, dst_time, Animation::FIND_MODE_APPROX);
 
 		undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->get().first, dst_time, animation->track_get_key_value(E->get().first, E->get().second), animation->track_get_key_transition(E->get().first, E->get().second));
@@ -1620,25 +1663,117 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 		}
 	}
 
-	undo_redo->commit_action();
+	undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+	undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 
-	//reselect duplicated
-
-	selection.clear();
+	// Reselect duplicated.
 	for (const Pair<int, real_t> &E : new_selection_values) {
-		int track = E.first;
-		real_t time = E.second;
-
-		int existing_idx = animation->track_find_key(track, time, Animation::FIND_MODE_APPROX);
-
-		if (existing_idx == -1) {
-			continue;
-		}
-
-		selection.insert(IntPair(track, existing_idx));
+		undo_redo->add_do_method(this, "_select_at_anim", animation, E.first, E.second);
+	}
+	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
+		real_t time = animation->track_get_key_time(E->get().first, E->get().second);
+		undo_redo->add_undo_method(this, "_select_at_anim", animation, E->get().first, time);
 	}
 
-	queue_redraw();
+	undo_redo->add_do_method(this, "queue_redraw");
+	undo_redo->add_undo_method(this, "queue_redraw");
+	undo_redo->commit_action();
+}
+
+void AnimationBezierTrackEdit::copy_selected_keys() {
+	if (selection.is_empty()) {
+		return;
+	}
+
+	float top_time = 1e10;
+	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
+		float t = animation->track_get_key_time(E->get().first, E->get().second);
+		if (t < top_time) {
+			top_time = t;
+		}
+	}
+
+	RBMap<AnimationTrackEditor::SelectedKey, AnimationTrackEditor::KeyInfo> keys;
+	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
+		AnimationTrackEditor::SelectedKey sk;
+		AnimationTrackEditor::KeyInfo ki;
+		sk.track = E->get().first;
+		sk.key = E->get().second;
+		ki.pos = animation->track_get_key_time(E->get().first, E->get().second);
+		keys.insert(sk, ki);
+	}
+	editor->_set_key_clipboard(selected_track, top_time, keys);
+}
+
+void AnimationBezierTrackEdit::paste_keys(real_t p_ofs) {
+	if (editor->is_key_clipboard_active() && animation.is_valid() && (selected_track >= 0 && selected_track < animation->get_track_count())) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Animation Paste Keys"));
+
+		bool same_track = true;
+		bool all_compatible = true;
+
+		for (int i = 0; i < editor->key_clipboard.keys.size(); i++) {
+			const AnimationTrackEditor::KeyClipboard::Key key = editor->key_clipboard.keys[i];
+
+			if (key.track != 0) {
+				same_track = false;
+				break;
+			}
+
+			if (!editor->_is_track_compatible(selected_track, key.value.get_type(), key.track_type)) {
+				all_compatible = false;
+				break;
+			}
+		}
+
+		ERR_FAIL_COND_MSG(!all_compatible, "Paste failed: Not all animation keys were compatible with their target tracks");
+		if (!same_track) {
+			WARN_PRINT("Pasted animation keys from multiple tracks into single Bezier track");
+		}
+
+		List<Pair<int, float>> new_selection_values;
+		for (int i = 0; i < editor->key_clipboard.keys.size(); i++) {
+			const AnimationTrackEditor::KeyClipboard::Key key = editor->key_clipboard.keys[i];
+
+			float insert_pos = p_ofs >= 0 ? p_ofs : timeline->get_play_position();
+			float dst_time = key.time + insert_pos;
+
+			int existing_idx = animation->track_find_key(selected_track, dst_time, Animation::FIND_MODE_APPROX);
+
+			Variant value = key.value;
+			if (key.track_type != Animation::TYPE_BEZIER) {
+				value = make_default_bezier_key(key.value);
+			}
+
+			undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, dst_time, value, key.transition);
+			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, dst_time);
+
+			Pair<int, float> p;
+			p.first = selected_track;
+			p.second = dst_time;
+			new_selection_values.push_back(p);
+
+			if (existing_idx != -1) {
+				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", selected_track, dst_time, animation->track_get_key_value(selected_track, existing_idx), animation->track_get_key_transition(selected_track, existing_idx));
+			}
+		}
+
+		undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+		undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+
+		// Reselect pasted.
+		for (const Pair<int, float> &E : new_selection_values) {
+			undo_redo->add_do_method(this, "_select_at_anim", animation, E.first, E.second);
+		}
+		for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
+			undo_redo->add_undo_method(this, "_select_at_anim", animation, E->get().first, animation->track_get_key_time(E->get().first, E->get().second));
+		}
+
+		undo_redo->commit_action();
+
+		queue_redraw();
+	}
 }
 
 void AnimationBezierTrackEdit::delete_selection() {
