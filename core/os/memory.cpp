@@ -65,13 +65,27 @@ SafeNumeric<uint64_t> Memory::max_usage;
 
 SafeNumeric<uint64_t> Memory::alloc_count;
 
-void* Memory::alloc_aligned_static(size_t p_alignment, size_t p_bytes) {
-	void *mem = _aligned_malloc(p_bytes, p_alignment);
+void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
+	void *p1, *p2;
+	if ((p1 = (void *)malloc(p_bytes + p_alignment - 1 + sizeof(uint32_t))) == NULL)
+		return NULL;
 
-	ERR_FAIL_NULL_V(mem, nullptr);
-	alloc_count.increment();
+	p2 = (void *)(((uintptr_t)p1 + sizeof(uint32_t) + p_alignment - 1) & ~((p_alignment)-1));
+	*((uint32_t *)p2 - 1) = (uint32_t)((uintptr_t)p2 - (uintptr_t)p1);
+	return p2;
+}
 
-	return mem;
+void *Memory::realloc_aligned_static(void* p_memory, size_t p_bytes, size_t p_prev_bytes, size_t p_alignment) {
+	void *ret = alloc_aligned_static(p_bytes, p_alignment);
+	memcpy(ret, p_memory, p_prev_bytes);
+	free_aligned_static(p_memory);
+	return ret;
+}
+
+void Memory::free_aligned_static(void* p_memory) {
+	uint32_t offset = *((uint32_t *)p_memory - 1);
+	void *p = (void *)((uint8_t *)p_memory - offset);
+	free(p);
 }
 
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {

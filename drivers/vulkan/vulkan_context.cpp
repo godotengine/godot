@@ -186,7 +186,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			
 			alignment = MAX(alignment, tracking_data_size);
 
-			uint8_t *ret = reinterpret_cast<uint8_t *>(malloc(size + alignment));
+			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::alloc_aligned_static(size + alignment, alignment));
 			if (ret == nullptr) {
 				return NULL;
 			}
@@ -220,7 +220,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			driver_memory_tracker[header->type][header->allocationScope].sub(header->size);
 			driver_memory_tracker[header->type][header->allocationScope].add(size);
 
-			uint8_t *ret = reinterpret_cast<uint8_t *>(realloc(header, size + alignment));
+			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::realloc_aligned_static(header, size + alignment, header->size + alignment, alignment));
 			if (ret == nullptr) {
 				return NULL;
 			}
@@ -238,6 +238,8 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 				return;
 			}
 
+			static bool first = true;
+
 			uint8_t *mem = reinterpret_cast<uint8_t *>(pMemory);
 			size_t alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
 			MemHeader *header = reinterpret_cast<MemHeader *>(mem - alignment);
@@ -245,7 +247,11 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			driver_memory_tracker[header->type][header->allocationScope].sub(header->size);
 			driver_memory_allocation_count[header->type][header->allocationScope].decrement();
 
-			free(header);
+			if (first) {
+				print_line("First");
+				first = false;
+			}
+			Memory::free_aligned_static(header);
 		},
 		// Internal allocation / deallocation. We don't track them as they cannot really be controlled or optimized by the programmer.
 		[](
