@@ -54,24 +54,32 @@ enum VkTrackedObjectType {
 	VK_TRACKED_OBJECT_TYPE_PHYSICAL_DEVICE,
 	VK_TRACKED_OBJECT_TYPE_DEVICE,
 	VK_TRACKED_OBJECT_TYPE_QUEUE,
+	VK_TRACKED_OBJECT_TYPE_QUERY_POOL,
+
 	VK_TRACKED_OBJECT_TYPE_SEMAPHORE,
 	VK_TRACKED_OBJECT_TYPE_FENCE,
-	VK_TRACKED_OBJECT_TYPE_BUFFER,
+
 	VK_TRACKED_OBJECT_TYPE_IMAGE,
-	VK_TRACKED_OBJECT_TYPE_QUERY_POOL,
 	VK_TRACKED_OBJECT_TYPE_IMAGE_VIEW,
+	VK_TRACKED_OBJECT_TYPE_BUFFER,
 	VK_TRACKED_OBJECT_TYPE_BUFFER_VIEW,
+
 	VK_TRACKED_OBJECT_TYPE_SHADER,
 	VK_TRACKED_OBJECT_TYPE_PIPELINE_CACHE,
 	VK_TRACKED_OBJECT_TYPE_PIPELINE_LAYOUT,
-	VK_TRACKED_OBJECT_TYPE_RENDER_PASS,
 	VK_TRACKED_OBJECT_TYPE_PIPELINE,
-	VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
+
+	VK_TRACKED_OBJECT_TYPE_RENDER_PASS,
 	VK_TRACKED_OBJECT_TYPE_SAMPLER,
+
 	VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_POOL,
 	VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET,
-	VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER,
+	VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
+
 	VK_TRACKED_OBJECT_TYPE_COMMAND_POOL,
+	VK_TRACKED_OBJECT_TYPE_COMMAND_BUFFER,
+
+	VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER,
 	VK_TRACKED_OBJECT_TYPE_SURFACE,
 	VK_TRACKED_OBJECT_TYPE_SWAPCHAIN,
 	VK_TRACKED_OBJECT_TYPE_COUNT
@@ -89,34 +97,67 @@ enum VkTrackedSystemAllocationScope {
 SafeNumeric<size_t> driver_memory_tracker[VK_TRACKED_OBJECT_TYPE_COUNT][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
 SafeNumeric<uint32_t> driver_memory_allocation_count[VK_TRACKED_OBJECT_TYPE_COUNT][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
 
-VkTrackedObjectType GetTrackedObjectType(VkObjectType type) {
+VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
 	switch (type) {
-		case VK_OBJECT_TYPE_INSTANCE: return VK_TRACKED_OBJECT_TYPE_INSTANCE;
-		case VK_OBJECT_TYPE_PHYSICAL_DEVICE: return VK_TRACKED_OBJECT_TYPE_PHYSICAL_DEVICE;
-		case VK_OBJECT_TYPE_DEVICE: return VK_TRACKED_OBJECT_TYPE_DEVICE;
-		case VK_OBJECT_TYPE_QUEUE: return VK_TRACKED_OBJECT_TYPE_QUEUE;
-		case VK_OBJECT_TYPE_SEMAPHORE: return VK_TRACKED_OBJECT_TYPE_SEMAPHORE;
-		case VK_OBJECT_TYPE_FENCE: return VK_TRACKED_OBJECT_TYPE_FENCE;
-		case VK_OBJECT_TYPE_BUFFER: return VK_TRACKED_OBJECT_TYPE_BUFFER;
-		case VK_OBJECT_TYPE_IMAGE: return VK_TRACKED_OBJECT_TYPE_IMAGE;
-		case VK_OBJECT_TYPE_QUERY_POOL: return VK_TRACKED_OBJECT_TYPE_QUERY_POOL;
-		case VK_OBJECT_TYPE_IMAGE_VIEW: return VK_TRACKED_OBJECT_TYPE_IMAGE_VIEW;
-		case VK_OBJECT_TYPE_BUFFER_VIEW: return VK_TRACKED_OBJECT_TYPE_BUFFER_VIEW;
-		case VK_OBJECT_TYPE_SHADER_MODULE: return VK_TRACKED_OBJECT_TYPE_SHADER;
-		case VK_OBJECT_TYPE_PIPELINE_CACHE: return VK_TRACKED_OBJECT_TYPE_PIPELINE_CACHE;
-		case VK_OBJECT_TYPE_PIPELINE_LAYOUT: return VK_TRACKED_OBJECT_TYPE_PIPELINE_LAYOUT;
-		case VK_OBJECT_TYPE_RENDER_PASS: return VK_TRACKED_OBJECT_TYPE_RENDER_PASS;
-		case VK_OBJECT_TYPE_PIPELINE: return VK_TRACKED_OBJECT_TYPE_PIPELINE;
-		case VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT: return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
-		case VK_OBJECT_TYPE_SAMPLER: return VK_TRACKED_OBJECT_TYPE_SAMPLER;
-		case VK_OBJECT_TYPE_DESCRIPTOR_POOL: return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_POOL;
-		case VK_OBJECT_TYPE_DESCRIPTOR_SET: return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET;
-		case VK_OBJECT_TYPE_FRAMEBUFFER: return VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER;
-		case VK_OBJECT_TYPE_COMMAND_POOL: return VK_TRACKED_OBJECT_TYPE_COMMAND_POOL;
-		case VK_OBJECT_TYPE_SURFACE_KHR: return VK_TRACKED_OBJECT_TYPE_SURFACE;
-		case VK_OBJECT_TYPE_SWAPCHAIN_KHR: return VK_TRACKED_OBJECT_TYPE_SWAPCHAIN;
+		case VK_OBJECT_TYPE_INSTANCE:				return VK_TRACKED_OBJECT_TYPE_INSTANCE;
+		case VK_OBJECT_TYPE_PHYSICAL_DEVICE:		return VK_TRACKED_OBJECT_TYPE_PHYSICAL_DEVICE;
+		case VK_OBJECT_TYPE_DEVICE:					return VK_TRACKED_OBJECT_TYPE_DEVICE;
+		case VK_OBJECT_TYPE_QUEUE:					return VK_TRACKED_OBJECT_TYPE_QUEUE;
+		case VK_OBJECT_TYPE_SEMAPHORE:				return VK_TRACKED_OBJECT_TYPE_SEMAPHORE;
+		case VK_OBJECT_TYPE_FENCE:					return VK_TRACKED_OBJECT_TYPE_FENCE;
+		case VK_OBJECT_TYPE_BUFFER:					return VK_TRACKED_OBJECT_TYPE_BUFFER;
+		case VK_OBJECT_TYPE_IMAGE:					return VK_TRACKED_OBJECT_TYPE_IMAGE;
+		case VK_OBJECT_TYPE_QUERY_POOL:				return VK_TRACKED_OBJECT_TYPE_QUERY_POOL;
+		case VK_OBJECT_TYPE_IMAGE_VIEW:				return VK_TRACKED_OBJECT_TYPE_IMAGE_VIEW;
+		case VK_OBJECT_TYPE_BUFFER_VIEW:			return VK_TRACKED_OBJECT_TYPE_BUFFER_VIEW;
+		case VK_OBJECT_TYPE_SHADER_MODULE:			return VK_TRACKED_OBJECT_TYPE_SHADER;
+		case VK_OBJECT_TYPE_PIPELINE_CACHE:			return VK_TRACKED_OBJECT_TYPE_PIPELINE_CACHE;
+		case VK_OBJECT_TYPE_PIPELINE_LAYOUT:		return VK_TRACKED_OBJECT_TYPE_PIPELINE_LAYOUT;
+		case VK_OBJECT_TYPE_RENDER_PASS:			return VK_TRACKED_OBJECT_TYPE_RENDER_PASS;
+		case VK_OBJECT_TYPE_PIPELINE:				return VK_TRACKED_OBJECT_TYPE_PIPELINE;
+		case VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT:	return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
+		case VK_OBJECT_TYPE_SAMPLER:				return VK_TRACKED_OBJECT_TYPE_SAMPLER;
+		case VK_OBJECT_TYPE_DESCRIPTOR_POOL:		return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_POOL;
+		case VK_OBJECT_TYPE_DESCRIPTOR_SET:			return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET;
+		case VK_OBJECT_TYPE_FRAMEBUFFER:			return VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER;
+		case VK_OBJECT_TYPE_COMMAND_POOL:			return VK_TRACKED_OBJECT_TYPE_COMMAND_POOL;
+		case VK_OBJECT_TYPE_COMMAND_BUFFER:			return VK_TRACKED_OBJECT_TYPE_COMMAND_BUFFER;
+		case VK_OBJECT_TYPE_SURFACE_KHR:			return VK_TRACKED_OBJECT_TYPE_SURFACE;
+		case VK_OBJECT_TYPE_SWAPCHAIN_KHR:			return VK_TRACKED_OBJECT_TYPE_SWAPCHAIN;
 		default:
 			return VK_TRACKED_OBJECT_TYPE_UNKNOWN;
+	}
+}
+
+VkObjectType tracked_object_to_vk_object(VkTrackedObjectType type) {
+	switch (type) {
+		case VK_TRACKED_OBJECT_TYPE_INSTANCE:				return VK_OBJECT_TYPE_INSTANCE;
+		case VK_TRACKED_OBJECT_TYPE_PHYSICAL_DEVICE:		return VK_OBJECT_TYPE_PHYSICAL_DEVICE;
+		case VK_TRACKED_OBJECT_TYPE_DEVICE:					return VK_OBJECT_TYPE_DEVICE;
+		case VK_TRACKED_OBJECT_TYPE_QUEUE:					return VK_OBJECT_TYPE_QUEUE;
+		case VK_TRACKED_OBJECT_TYPE_SEMAPHORE:				return VK_OBJECT_TYPE_SEMAPHORE;
+		case VK_TRACKED_OBJECT_TYPE_FENCE:					return VK_OBJECT_TYPE_FENCE;
+		case VK_TRACKED_OBJECT_TYPE_BUFFER:					return VK_OBJECT_TYPE_BUFFER;
+		case VK_TRACKED_OBJECT_TYPE_IMAGE:					return VK_OBJECT_TYPE_IMAGE;
+		case VK_TRACKED_OBJECT_TYPE_QUERY_POOL:				return VK_OBJECT_TYPE_QUERY_POOL;
+		case VK_TRACKED_OBJECT_TYPE_IMAGE_VIEW:				return VK_OBJECT_TYPE_IMAGE_VIEW;
+		case VK_TRACKED_OBJECT_TYPE_BUFFER_VIEW:			return VK_OBJECT_TYPE_BUFFER_VIEW;
+		case VK_TRACKED_OBJECT_TYPE_SHADER:					return VK_OBJECT_TYPE_SHADER_MODULE;
+		case VK_TRACKED_OBJECT_TYPE_PIPELINE_CACHE:			return VK_OBJECT_TYPE_PIPELINE_CACHE;
+		case VK_TRACKED_OBJECT_TYPE_PIPELINE_LAYOUT:		return VK_OBJECT_TYPE_PIPELINE_LAYOUT;
+		case VK_TRACKED_OBJECT_TYPE_RENDER_PASS:			return VK_OBJECT_TYPE_RENDER_PASS;
+		case VK_TRACKED_OBJECT_TYPE_PIPELINE:				return VK_OBJECT_TYPE_PIPELINE;
+		case VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT:	return VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
+		case VK_TRACKED_OBJECT_TYPE_SAMPLER:				return VK_OBJECT_TYPE_SAMPLER;
+		case VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_POOL:		return VK_OBJECT_TYPE_DESCRIPTOR_POOL;
+		case VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET:			return VK_OBJECT_TYPE_DESCRIPTOR_SET;
+		case VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER:			return VK_OBJECT_TYPE_FRAMEBUFFER;
+		case VK_TRACKED_OBJECT_TYPE_COMMAND_POOL:			return VK_OBJECT_TYPE_COMMAND_POOL;
+		case VK_TRACKED_OBJECT_TYPE_COMMAND_BUFFER:			return VK_OBJECT_TYPE_COMMAND_BUFFER;
+		case VK_TRACKED_OBJECT_TYPE_SURFACE:				return VK_OBJECT_TYPE_SURFACE_KHR;
+		case VK_TRACKED_OBJECT_TYPE_SWAPCHAIN:				return VK_OBJECT_TYPE_SWAPCHAIN_KHR;
+		default:
+			return VK_OBJECT_TYPE_UNKNOWN;
 	}
 }
 
@@ -125,7 +166,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 	struct MemHeader {
 		size_t size;
 		VkSystemAllocationScope allocationScope;
-		VkObjectType type;
+		VkTrackedObjectType type;
 	};
 
 	VkAllocationCallbacks trackingCallbacks = {
@@ -138,17 +179,18 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 				VkSystemAllocationScope allocationScope) -> void * {
 
 			static constexpr size_t tracking_data_size = 32;
-			VkObjectType type = static_cast<VkObjectType>(*reinterpret_cast<VkObjectType *>(pUserData));
+			VkTrackedObjectType type = static_cast<VkTrackedObjectType>(*reinterpret_cast<VkTrackedObjectType *>(pUserData));
 
 			driver_memory_tracker[type][allocationScope].add(size);
 			driver_memory_allocation_count[type][allocationScope].increment();
 			
 			alignment = MAX(alignment, tracking_data_size);
 
-			uint8_t *ret = reinterpret_cast<uint8_t *>(_aligned_malloc(size + tracking_data_size, alignment));
+			uint8_t *ret = reinterpret_cast<uint8_t *>(malloc(size + alignment));
 			if (ret == nullptr) {
 				return NULL;
 			}
+
 			// Track allocation
 			MemHeader *header = reinterpret_cast<MemHeader *>(ret);
 			header->size = size;
@@ -168,12 +210,6 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 				size_t alignment,
 				VkSystemAllocationScope allocationScope) -> void * {
 
-			// The user is actually allocating, use the previous callback
-			if (!pOriginal) {
-				VkObjectType type = static_cast<VkObjectType>(*reinterpret_cast<VkObjectType *>(pUserData));
-				return get_allocation_callbacks(type)->pfnAllocation(pUserData, size, alignment, allocationScope);
-			}
-
 			uint8_t *mem = reinterpret_cast<uint8_t *>(pOriginal);
 			// Retrieve alignment
 			alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
@@ -184,7 +220,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			driver_memory_tracker[header->type][header->allocationScope].sub(header->size);
 			driver_memory_tracker[header->type][header->allocationScope].add(size);
 
-			uint8_t *ret = reinterpret_cast<uint8_t *>(_aligned_realloc(header, size + alignment, alignment));
+			uint8_t *ret = reinterpret_cast<uint8_t *>(realloc(header, size + alignment));
 			if (ret == nullptr) {
 				return NULL;
 			}
@@ -209,7 +245,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			driver_memory_tracker[header->type][header->allocationScope].sub(header->size);
 			driver_memory_allocation_count[header->type][header->allocationScope].decrement();
 
-			_aligned_free(header);
+			free(header);
 		},
 		// Internal allocation / deallocation. We don't track them as they cannot really be controlled or optimized by the programmer.
 		[](
@@ -244,8 +280,9 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			}
 		}
 	}
-	uint32_t typeIndex = GetTrackedObjectType(type);
-	return &objectCallbacks[type];
+
+	uint32_t typeIndex = vk_object_to_tracked_object(type);
+	return &objectCallbacks[typeIndex];
 }
 
 Vector<VkAttachmentReference> VulkanContext::_convert_VkAttachmentReference2(uint32_t p_count, const VkAttachmentReference2 *p_refs) {

@@ -3457,7 +3457,7 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 	descriptor_set_pool_create_info.pPoolSizes = vk_sizes;
 
 	VkDescriptorPool vk_pool = VK_NULL_HANDLE;
-	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL), &vk_pool);
+	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, nullptr, &vk_pool);
 	if (res) {
 		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
 	}
