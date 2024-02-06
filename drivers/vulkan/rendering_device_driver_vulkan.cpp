@@ -1258,7 +1258,7 @@ bool RenderingDeviceDriverVulkan::buffer_set_texel_format(BufferID p_buffer, Dat
 	view_create_info.format = RD_TO_VK_FORMAT[p_format];
 	view_create_info.range = buf_info->allocation.size;
 
-	VkResult res = vkCreateBufferView(vk_device, &view_create_info, nullptr, &buf_info->vk_view);
+	VkResult res = vkCreateBufferView(vk_device, &view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW), &buf_info->vk_view);
 	ERR_FAIL_COND_V_MSG(res, false, "Unable to create buffer view, error " + itos(res) + ".");
 
 	return true;
@@ -1267,7 +1267,7 @@ bool RenderingDeviceDriverVulkan::buffer_set_texel_format(BufferID p_buffer, Dat
 void RenderingDeviceDriverVulkan::buffer_free(BufferID p_buffer) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
 	if (buf_info->vk_view) {
-		vkDestroyBufferView(vk_device, buf_info->vk_view, nullptr);
+		vkDestroyBufferView(vk_device, buf_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW));
 	}
 	vmaDestroyBuffer(allocator, buf_info->vk_buffer, buf_info->allocation.handle);
 	VersatileResource::free(resources_allocator, buf_info);
@@ -1487,7 +1487,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	}
 
 	VkImageView vk_image_view = VK_NULL_HANDLE;
-	err = vkCreateImageView(vk_device, &image_view_create_info, nullptr, &vk_image_view);
+	err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
 		vmaDestroyImage(allocator, vk_image, allocation);
 		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
@@ -1529,7 +1529,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 	image_view_create_info.subresourceRange.aspectMask = p_depth_stencil ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
 	VkImageView vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, nullptr, &vk_image_view);
+	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
 		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 	}
@@ -1584,7 +1584,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 	}
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, nullptr, &new_vk_image_view);
+	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 
 	// Bookkeep.
@@ -1637,7 +1637,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 	image_view_create_info.subresourceRange.layerCount = p_layers;
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, nullptr, &new_vk_image_view);
+	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 
 	// Bookkeep.
@@ -1657,7 +1657,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 
 void RenderingDeviceDriverVulkan::texture_free(TextureID p_texture) {
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
-	vkDestroyImageView(vk_device, tex_info->vk_view, nullptr);
+	vkDestroyImageView(vk_device, tex_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
 	if (tex_info->allocation.handle) {
 		vmaDestroyImage(allocator, tex_info->vk_view_create_info.image, tex_info->allocation.handle);
 	}
@@ -1814,14 +1814,14 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 	sampler_create_info.unnormalizedCoordinates = p_state.unnormalized_uvw;
 
 	VkSampler vk_sampler = VK_NULL_HANDLE;
-	VkResult res = vkCreateSampler(vk_device, &sampler_create_info, nullptr, &vk_sampler);
+	VkResult res = vkCreateSampler(vk_device, &sampler_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &vk_sampler);
 	ERR_FAIL_COND_V_MSG(res, SamplerID(), "vkCreateSampler failed with error " + itos(res) + ".");
 
 	return SamplerID(vk_sampler);
 }
 
 void RenderingDeviceDriverVulkan::sampler_free(SamplerID p_sampler) {
-	vkDestroySampler(vk_device, (VkSampler)p_sampler.id, nullptr);
+	vkDestroySampler(vk_device, (VkSampler)p_sampler.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER));
 }
 
 bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_filter) {
@@ -2342,7 +2342,7 @@ RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueue
 	cmd_pool_info.queueFamilyIndex = family_index;
 
 	VkCommandPool vk_command_pool = VK_NULL_HANDLE;
-	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, nullptr, &vk_command_pool);
+	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL), &vk_command_pool);
 	ERR_FAIL_COND_V_MSG(res, CommandPoolID(), "vkCreateCommandPool failed with error " + itos(res) + ".");
 
 	CommandPool *command_pool = memnew(CommandPool);
@@ -2365,7 +2365,7 @@ void RenderingDeviceDriverVulkan::command_pool_free(CommandPoolID p_cmd_pool) {
 	DEV_ASSERT(p_cmd_pool);
 
 	CommandPool *command_pool = (CommandPool *)(p_cmd_pool.id);
-	vkDestroyCommandPool(vk_device, command_pool->vk_command_pool, nullptr);
+	vkDestroyCommandPool(vk_device, command_pool->vk_command_pool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL));
 	memdelete(command_pool);
 }
 
@@ -2857,7 +2857,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 	framebuffer_create_info.layers = 1;
 
 	VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
-	VkResult err = vkCreateFramebuffer(vk_device, &framebuffer_create_info, nullptr, &vk_framebuffer);
+	VkResult err = vkCreateFramebuffer(vk_device, &framebuffer_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &vk_framebuffer);
 	ERR_FAIL_COND_V_MSG(err, FramebufferID(), "vkCreateFramebuffer failed with error " + itos(err) + ".");
 
 #if PRINT_NATIVE_COMMANDS
@@ -2872,7 +2872,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 }
 
 void RenderingDeviceDriverVulkan::framebuffer_free(FramebufferID p_framebuffer) {
-	vkDestroyFramebuffer(vk_device, (VkFramebuffer)p_framebuffer.id, nullptr);
+	vkDestroyFramebuffer(vk_device, (VkFramebuffer)p_framebuffer.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER));
 }
 
 /****************/
@@ -3265,7 +3265,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 		shader_module_create_info.pCode = (const uint32_t *)stages_spirv[i].ptr();
 
 		VkShaderModule vk_module = VK_NULL_HANDLE;
-		VkResult res = vkCreateShaderModule(vk_device, &shader_module_create_info, nullptr, &vk_module);
+		VkResult res = vkCreateShaderModule(vk_device, &shader_module_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE), &vk_module);
 		if (res) {
 			error_text = "Error (" + itos(res) + ") creating shader module for stage: " + String(SHADER_STAGE_NAMES[r_shader_desc.stages[i]]);
 			break;
@@ -3292,7 +3292,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 			layout_create_info.pBindings = vk_set_bindings[i].ptr();
 
 			VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-			VkResult res = vkCreateDescriptorSetLayout(vk_device, &layout_create_info, nullptr, &layout);
+			VkResult res = vkCreateDescriptorSetLayout(vk_device, &layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT), &layout);
 			if (res) {
 				error_text = "Error (" + itos(res) + ") creating descriptor set layout for set " + itos(i);
 				break;
@@ -3319,7 +3319,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 			pipeline_layout_create_info.pPushConstantRanges = push_constant_range;
 		}
 
-		VkResult err = vkCreatePipelineLayout(vk_device, &pipeline_layout_create_info, nullptr, &shader_info.vk_pipeline_layout);
+		VkResult err = vkCreatePipelineLayout(vk_device, &pipeline_layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_LAYOUT), &shader_info.vk_pipeline_layout);
 		if (err) {
 			error_text = "Error (" + itos(err) + ") creating pipeline layout.";
 		}
@@ -3328,10 +3328,10 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 	if (!error_text.is_empty()) {
 		// Clean up if failed.
 		for (uint32_t i = 0; i < shader_info.vk_stages_create_info.size(); i++) {
-			vkDestroyShaderModule(vk_device, shader_info.vk_stages_create_info[i].module, nullptr);
+			vkDestroyShaderModule(vk_device, shader_info.vk_stages_create_info[i].module, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE));
 		}
 		for (uint32_t i = 0; i < binary_data.set_count; i++) {
-			vkDestroyDescriptorSetLayout(vk_device, shader_info.vk_descriptor_set_layouts[i], nullptr);
+			vkDestroyDescriptorSetLayout(vk_device, shader_info.vk_descriptor_set_layouts[i], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT));
 		}
 
 		ERR_FAIL_V_MSG(ShaderID(), error_text);
@@ -3348,13 +3348,13 @@ void RenderingDeviceDriverVulkan::shader_free(ShaderID p_shader) {
 	ShaderInfo *shader_info = (ShaderInfo *)p_shader.id;
 
 	for (uint32_t i = 0; i < shader_info->vk_descriptor_set_layouts.size(); i++) {
-		vkDestroyDescriptorSetLayout(vk_device, shader_info->vk_descriptor_set_layouts[i], nullptr);
+		vkDestroyDescriptorSetLayout(vk_device, shader_info->vk_descriptor_set_layouts[i], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT));
 	}
 
-	vkDestroyPipelineLayout(vk_device, shader_info->vk_pipeline_layout, nullptr);
+	vkDestroyPipelineLayout(vk_device, shader_info->vk_pipeline_layout, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_LAYOUT));
 
 	for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
-		vkDestroyShaderModule(vk_device, shader_info->vk_stages_create_info[i].module, nullptr);
+		vkDestroyShaderModule(vk_device, shader_info->vk_stages_create_info[i].module, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE));
 	}
 
 	VersatileResource::free(resources_allocator, shader_info);
@@ -3457,7 +3457,7 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 	descriptor_set_pool_create_info.pPoolSizes = vk_sizes;
 
 	VkDescriptorPool vk_pool = VK_NULL_HANDLE;
-	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, nullptr, &vk_pool);
+	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL), &vk_pool);
 	if (res) {
 		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
 	}
@@ -3477,7 +3477,7 @@ void RenderingDeviceDriverVulkan::_descriptor_set_pool_unreference(DescriptorSet
 	HashMap<VkDescriptorPool, uint32_t>::Iterator pool_rcs_it = p_pool_sets_it->value.find(p_vk_descriptor_pool);
 	pool_rcs_it->value--;
 	if (pool_rcs_it->value == 0) {
-		vkDestroyDescriptorPool(vk_device, p_vk_descriptor_pool, nullptr);
+		vkDestroyDescriptorPool(vk_device, p_vk_descriptor_pool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
 		p_pool_sets_it->value.erase(p_vk_descriptor_pool);
 		if (p_pool_sets_it->value.is_empty()) {
 			descriptor_set_pools.remove(p_pool_sets_it);
@@ -3822,7 +3822,7 @@ void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID
 /******************/
 
 void RenderingDeviceDriverVulkan::pipeline_free(PipelineID p_pipeline) {
-	vkDestroyPipeline(vk_device, (VkPipeline)p_pipeline.id, nullptr);
+	vkDestroyPipeline(vk_device, (VkPipeline)p_pipeline.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE));
 }
 
 // ----- BINDING -----
@@ -3885,7 +3885,7 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 			cache_info.flags = VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
 		}
 
-		VkResult err = vkCreatePipelineCache(vk_device, &cache_info, nullptr, &pipelines_cache.vk_cache);
+		VkResult err = vkCreatePipelineCache(vk_device, &cache_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_CACHE), &pipelines_cache.vk_cache);
 		if (err != VK_SUCCESS) {
 			WARN_PRINT("vkCreatePipelinecache failed with error " + itos(err) + ".");
 			return false;
@@ -3898,7 +3898,7 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 void RenderingDeviceDriverVulkan::pipeline_cache_free() {
 	DEV_ASSERT(pipelines_cache.vk_cache);
 
-	vkDestroyPipelineCache(vk_device, pipelines_cache.vk_cache, nullptr);
+	vkDestroyPipelineCache(vk_device, pipelines_cache.vk_cache, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_CACHE));
 	pipelines_cache.vk_cache = VK_NULL_HANDLE;
 
 	DEV_ASSERT(caching_instance_count > 0);
@@ -4082,14 +4082,14 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 	}
 
 	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
-	VkResult res = _create_render_pass(vk_device, &create_info, nullptr, &vk_render_pass);
+	VkResult res = _create_render_pass(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &vk_render_pass);
 	ERR_FAIL_COND_V_MSG(res, RenderPassID(), "vkCreateRenderPass2KHR failed with error " + itos(res) + ".");
 
 	return RenderPassID(vk_render_pass);
 }
 
 void RenderingDeviceDriverVulkan::render_pass_free(RenderPassID p_render_pass) {
-	vkDestroyRenderPass(vk_device, (VkRenderPass)p_render_pass.id, nullptr);
+	vkDestroyRenderPass(vk_device, (VkRenderPass)p_render_pass.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS));
 }
 
 // ----- COMMANDS -----
@@ -4589,7 +4589,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	// ---
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
-	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &vk_pipeline);
+	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
 	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
 
 	return PipelineID(vk_pipeline);
@@ -4665,7 +4665,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::compute_pipeline_create(ShaderID p_
 	}
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
-	VkResult err = vkCreateComputePipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &vk_pipeline);
+	VkResult err = vkCreateComputePipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
 	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateComputePipelines failed with error " + itos(err) + ".");
 
 	return PipelineID(vk_pipeline);
@@ -4684,12 +4684,12 @@ RDD::QueryPoolID RenderingDeviceDriverVulkan::timestamp_query_pool_create(uint32
 	query_pool_create_info.queryCount = p_query_count;
 
 	VkQueryPool vk_query_pool = VK_NULL_HANDLE;
-	vkCreateQueryPool(vk_device, &query_pool_create_info, nullptr, &vk_query_pool);
+	vkCreateQueryPool(vk_device, &query_pool_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_QUERY_POOL), &vk_query_pool);
 	return RDD::QueryPoolID(vk_query_pool);
 }
 
 void RenderingDeviceDriverVulkan::timestamp_query_pool_free(QueryPoolID p_pool_id) {
-	vkDestroyQueryPool(vk_device, (VkQueryPool)p_pool_id.id, nullptr);
+	vkDestroyQueryPool(vk_device, (VkQueryPool)p_pool_id.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_QUERY_POOL));
 }
 
 void RenderingDeviceDriverVulkan::timestamp_query_pool_get_results(QueryPoolID p_pool_id, uint32_t p_query_count, uint64_t *r_results) {

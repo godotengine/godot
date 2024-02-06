@@ -120,7 +120,7 @@ VkTrackedObjectType GetTrackedObjectType(VkObjectType type) {
 	}
 }
 
-VkAllocationCallbacks *GetAllocationCallbacks(VkObjectType type) {
+VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type) {
 
 	struct MemHeader {
 		size_t size;
@@ -171,7 +171,7 @@ VkAllocationCallbacks *GetAllocationCallbacks(VkObjectType type) {
 			// The user is actually allocating, use the previous callback
 			if (!pOriginal) {
 				VkObjectType type = static_cast<VkObjectType>(*reinterpret_cast<VkObjectType *>(pUserData));
-				return GetAllocationCallbacks(type)->pfnAllocation(pUserData, size, alignment, allocationScope);
+				return get_allocation_callbacks(type)->pfnAllocation(pUserData, size, alignment, allocationScope);
 			}
 
 			uint8_t *mem = reinterpret_cast<uint8_t *>(pOriginal);
@@ -1282,7 +1282,7 @@ Error VulkanContext::_create_instance() {
 			return ERR_CANT_CREATE;
 		}
 	} else {
-		err = vkCreateInstance(&inst_info, GetAllocationCallbacks(VK_OBJECT_TYPE_INSTANCE), &inst);
+		err = vkCreateInstance(&inst_info, get_allocation_callbacks(VK_OBJECT_TYPE_INSTANCE), &inst);
 		ERR_FAIL_COND_V_MSG(err == VK_ERROR_INCOMPATIBLE_DRIVER, ERR_CANT_CREATE,
 				"Cannot find a compatible Vulkan installable client driver (ICD).\n\n"
 				"vkCreateInstance Failure");
@@ -1831,7 +1831,7 @@ Error VulkanContext::_create_device(VkDevice &r_vk_device) {
 			return ERR_CANT_CREATE;
 		}
 	} else {
-		err = vkCreateDevice(gpu, &sdevice, GetAllocationCallbacks(VK_OBJECT_TYPE_DEVICE), &r_vk_device);
+		err = vkCreateDevice(gpu, &sdevice, get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE), &r_vk_device);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
 
@@ -2002,17 +2002,17 @@ Error VulkanContext::_create_semaphores() {
 		/*flags*/ VK_FENCE_CREATE_SIGNALED_BIT
 	};
 	for (uint32_t i = 0; i < FRAME_LAG; i++) {
-		err = vkCreateFence(device, &fence_ci, nullptr, &fences[i]);
+		err = vkCreateFence(device, &fence_ci, get_allocation_callbacks(VK_OBJECT_TYPE_FENCE), &fences[i]);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-		err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &draw_complete_semaphores[i]);
+		err = vkCreateSemaphore(device, &semaphoreCreateInfo, get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &draw_complete_semaphores[i]);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-		err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &blit_complete_semaphores[i]);
+		err = vkCreateSemaphore(device, &semaphoreCreateInfo, get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &blit_complete_semaphores[i]);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 		if (separate_present_queue) {
-			err = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &image_ownership_semaphores[i]);
+			err = vkCreateSemaphore(device, &semaphoreCreateInfo, get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &image_ownership_semaphores[i]);
 			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 		}
 	}
@@ -2120,7 +2120,7 @@ void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	_clean_up_swap_chain(&windows[p_window_id]);
 
-	vkDestroySurfaceKHR(inst, windows[p_window_id].surface, nullptr);
+	vkDestroySurfaceKHR(inst, windows[p_window_id].surface, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR));
 	windows.erase(p_window_id);
 }
 
@@ -2131,14 +2131,14 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 	vkDeviceWaitIdle(device);
 
 	// This destroys images associated it seems.
-	fpDestroySwapchainKHR(device, window->swapchain, nullptr);
+	fpDestroySwapchainKHR(device, window->swapchain, get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR));
 	window->swapchain = VK_NULL_HANDLE;
-	vkDestroyRenderPass(device, window->render_pass, nullptr);
+	vkDestroyRenderPass(device, window->render_pass, get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS));
 	window->render_pass = VK_NULL_HANDLE;
 	if (window->swapchain_image_resources) {
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {
-			vkDestroyImageView(device, window->swapchain_image_resources[i].view, nullptr);
-			vkDestroyFramebuffer(device, window->swapchain_image_resources[i].framebuffer, nullptr);
+			vkDestroyImageView(device, window->swapchain_image_resources[i].view, get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
+			vkDestroyFramebuffer(device, window->swapchain_image_resources[i].framebuffer, get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER));
 		}
 
 		free(window->swapchain_image_resources);
@@ -2146,7 +2146,7 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 		swapchainImageCount = 0;
 	}
 	if (separate_present_queue) {
-		vkDestroyCommandPool(device, window->present_cmd_pool, nullptr);
+		vkDestroyCommandPool(device, window->present_cmd_pool, get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL));
 	}
 
 	for (uint32_t i = 0; i < FRAME_LAG; i++) {
@@ -2155,7 +2155,7 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 		// (which happens if vkAcquireNextImageKHR returned VK_ERROR_OUT_OF_DATE_KHR or VK_SUBOPTIMAL_KHR)
 		// The only way to reset it would be to present the swapchain... the one we just destroyed.
 		// And the API has no way to "unsignal" the semaphore.
-		vkDestroySemaphore(device, window->image_acquired_semaphores[i], nullptr);
+		vkDestroySemaphore(device, window->image_acquired_semaphores[i], get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 		window->image_acquired_semaphores[i] = 0;
 	}
 
@@ -2356,7 +2356,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		/*oldSwapchain*/ VK_NULL_HANDLE,
 	};
 
-	err = fpCreateSwapchainKHR(device, &swapchain_ci, nullptr, &window->swapchain);
+	err = fpCreateSwapchainKHR(device, &swapchain_ci, get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR), &window->swapchain);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	uint32_t sp_image_count;
@@ -2410,7 +2410,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 		color_image_view.image = window->swapchain_image_resources[i].image;
 
-		err = vkCreateImageView(device, &color_image_view, nullptr, &window->swapchain_image_resources[i].view);
+		err = vkCreateImageView(device, &color_image_view, get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &window->swapchain_image_resources[i].view);
 		if (err) {
 			free(swapchainImages);
 			ERR_FAIL_V(ERR_CANT_CREATE);
@@ -2474,7 +2474,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pCorrelatedViewMasks*/ nullptr,
 		};
 
-		err = vkCreateRenderPass2KHR(device, &pass_info, nullptr, &window->render_pass);
+		err = vkCreateRenderPass2KHR(device, &pass_info, get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &window->render_pass);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {
@@ -2490,7 +2490,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 				/*layers*/ 1,
 			};
 
-			err = vkCreateFramebuffer(device, &fb_info, nullptr, &window->swapchain_image_resources[i].framebuffer);
+			err = vkCreateFramebuffer(device, &fb_info, get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &window->swapchain_image_resources[i].framebuffer);
 			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 		}
 	}
@@ -2504,7 +2504,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*flags*/ 0,
 			/*queueFamilyIndex*/ present_queue_family_index,
 		};
-		err = vkCreateCommandPool(device, &present_cmd_pool_info, nullptr, &window->present_cmd_pool);
+		err = vkCreateCommandPool(device, &present_cmd_pool_info, get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL), &window->present_cmd_pool);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 		const VkCommandBufferAllocateInfo present_cmd_info = {
 			/*sType*/ VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -2557,7 +2557,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	};
 
 	for (uint32_t i = 0; i < FRAME_LAG; i++) {
-		VkResult vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &window->image_acquired_semaphores[i]);
+		VkResult vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &window->image_acquired_semaphores[i]);
 		ERR_FAIL_COND_V(vkerr, ERR_CANT_CREATE);
 	}
 
@@ -3073,7 +3073,7 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 void VulkanContext::local_device_free(RID p_local_device) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	memdelete(ld->driver);
-	vkDestroyDevice(ld->device, nullptr);
+	vkDestroyDevice(ld->device, get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE));
 	local_device_owner.free(p_local_device);
 }
 
@@ -3150,11 +3150,11 @@ VulkanContext::~VulkanContext() {
 	}
 	if (device_initialized) {
 		for (uint32_t i = 0; i < FRAME_LAG; i++) {
-			vkDestroyFence(device, fences[i], nullptr);
-			vkDestroySemaphore(device, draw_complete_semaphores[i], nullptr);
-			vkDestroySemaphore(device, blit_complete_semaphores[i], nullptr);
+			vkDestroyFence(device, fences[i], get_allocation_callbacks(VK_OBJECT_TYPE_FENCE));
+			vkDestroySemaphore(device, draw_complete_semaphores[i], get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
+			vkDestroySemaphore(device, blit_complete_semaphores[i], get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 			if (separate_present_queue) {
-				vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
+				vkDestroySemaphore(device, image_ownership_semaphores[i], get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 			}
 		}
 		if (inst_initialized && is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
@@ -3163,9 +3163,9 @@ VulkanContext::~VulkanContext() {
 		if (inst_initialized && dbg_debug_report != VK_NULL_HANDLE) {
 			DestroyDebugReportCallbackEXT(inst, dbg_debug_report, nullptr);
 		}
-		vkDestroyDevice(device, nullptr);
+		vkDestroyDevice(device, get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE));
 	}
 	if (inst_initialized) {
-		vkDestroyInstance(inst, nullptr);
+		vkDestroyInstance(inst, get_allocation_callbacks(VK_OBJECT_TYPE_INSTANCE));
 	}
 }

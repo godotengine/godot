@@ -161,7 +161,6 @@ private:
 
 private:
 	BufferID breadcrumb_buffer;
-	void *breadcrumb_ptr;
 
 public:
 	/*****************/
@@ -658,5 +657,7 @@ public:
 	RenderingDeviceDriverVulkan(RenderingContextDriverVulkan *p_context_driver);
 	virtual ~RenderingDeviceDriverVulkan();
 };
+
+using VKC = VulkanContext;
 
 #endif // RENDERING_DEVICE_DRIVER_VULKAN_H
