@@ -3285,6 +3285,19 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign) {
+	// x is not int
+	// ^        ^^^ ExpressionNode, TypeNode
+	// ^^^^^^^^^^^^ TypeTestNode
+	// ^^^^^^^^^^^^ UnaryOpNode
+	UnaryOpNode *not_node = nullptr;
+	if (match(GDScriptTokenizer::Token::NOT)) {
+		not_node = alloc_node<UnaryOpNode>();
+		not_node->operation = UnaryOpNode::OP_LOGIC_NOT;
+		not_node->variant_op = Variant::OP_NOT;
+		reset_extents(not_node, p_previous_operand);
+		update_extents(not_node);
+	}
+
 	TypeTestNode *type_test = alloc_node<TypeTestNode>();
 	reset_extents(type_test, p_previous_operand);
 	update_extents(type_test);
@@ -3293,8 +3306,21 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_type_test(ExpressionNode *
 	type_test->test_type = parse_type();
 	complete_extents(type_test);
 
+	if (not_node != nullptr) {
+		not_node->operand = type_test;
+		complete_extents(not_node);
+	}
+
 	if (type_test->test_type == nullptr) {
-		push_error(R"(Expected type specifier after "is".)");
+		if (not_node == nullptr) {
+			push_error(R"(Expected type specifier after "is".)");
+		} else {
+			push_error(R"(Expected type specifier after "is not".)");
+		}
+	}
+
+	if (not_node != nullptr) {
+		return not_node;
 	}
 
 	return type_test;
