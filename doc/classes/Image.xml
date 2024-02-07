@@ -385,6 +385,13 @@
 				img.unlock()
 				img.set_pixel(x, y, color) # Does not have an effect
 				[/codeblock]
+				[b]Note:[/b] Some image methods can leave the image unlocked, making subsequent [method set_pixel] calls fail unless the image is locked again. Methods potentially unlocking the image: [method blend_rect], [method blend_rect_mask], [method blit_rect_mask], [method convert], [method fill], [method fill_rect], [method get_used_rect], and [method rgbe_to_srgb].
+				[codeblock]
+				img.lock()
+				img.set_pixel(x, y, color) # Works
+				img.fill(color) # Unlocks the image
+				img.set_pixel(x, y, color) # Does not have an effect
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_pixelv">
@@ -399,6 +406,13 @@
 				img.lock()
 				img.set_pixelv(Vector2(x, y), color) # Works
 				img.unlock()
+				img.set_pixelv(Vector2(x, y), color) # Does not have an effect
+				[/codeblock]
+				[b]Note:[/b] Some image methods can leave the image unlocked, making subsequent [method set_pixelv] calls fail unless the image is locked again. Methods potentially unlocking the image: [method blend_rect], [method blend_rect_mask], [method blit_rect_mask], [method convert], [method fill], [method fill_rect], [method get_used_rect], and [method rgbe_to_srgb].
+				[codeblock]
+				img.lock()
+				img.set_pixelv(Vector2(x, y), color) # Works
+				img.fill(dcolor) # Unlocks the image
 				img.set_pixelv(Vector2(x, y), color) # Does not have an effect
 				[/codeblock]
 			</description>
