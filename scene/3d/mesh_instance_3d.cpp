@@ -70,7 +70,16 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 
-	if (p_name.string().begins_with("surface_material_override/")) {
+#ifndef DISABLE_DEPRECATED
+	if (p_name.string().begins_with("material/")) {
+		WARN_DEPRECATED_MSG("This mesh uses an old deprecated parameter name. Consider re-saving this scene in order for it to continue working in future versions." +
+				(is_inside_tree() ? vformat(" Path: \"%s\"", get_path()) : (get_name().is_empty() ? String() : vformat(" Name: \"%s\"", get_name()))));
+	}
+	if (p_name.string().begins_with("surface_material_override/") || p_name.string().begins_with("material/"))
+#else
+	if (p_name.string().begins_with("surface_material_override/"))
+#endif
+	{
 		int idx = p_name.string().get_slicec('/', 1).to_int();
 
 		if (idx >= surface_override_materials.size() || idx < 0) {
