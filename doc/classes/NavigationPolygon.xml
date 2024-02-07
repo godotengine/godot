@@ -174,6 +174,16 @@
 		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="10.0">
 			The distance to erode/shrink the walkable surface when baking the navigation mesh.
 		</member>
+		<member name="baking_rect" type="Rect2" setter="set_baking_rect" getter="get_baking_rect" default="Rect2(0, 0, 0, 0)">
+			If the baking [Rect2] has an area the navigation mesh baking will be restricted to its enclosing area.
+		</member>
+		<member name="baking_rect_offset" type="Vector2" setter="set_baking_rect_offset" getter="get_baking_rect_offset" default="Vector2(0, 0)">
+			The position offset applied to the [member baking_rect] [Rect2].
+		</member>
+		<member name="border_size" type="float" setter="set_border_size" getter="get_border_size" default="0.0">
+			The size of the non-navigable border around the bake bounding area defined by the [member baking_rect] [Rect2].
+			In conjunction with the [member baking_rect] the border size can be used to bake tile aligned navigation meshes without the tile edges being shrunk by [member agent_radius].
+		</member>
 		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="1.0">
 			The cell size used to rasterize the navigation mesh vertices. Must match with the cell size on the navigation map.
 		</member>

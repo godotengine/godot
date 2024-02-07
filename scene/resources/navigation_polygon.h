@@ -53,6 +53,10 @@ class NavigationPolygon : public Resource {
 	Ref<NavigationMesh> navigation_mesh;
 
 	real_t cell_size = 1.0f; // Must match ProjectSettings default 2D cell_size.
+	real_t border_size = 0.0f;
+
+	Rect2 baking_rect;
+	Vector2 baking_rect_offset;
 
 protected:
 	static void _bind_methods();
@@ -137,6 +141,15 @@ public:
 
 	void set_cell_size(real_t p_cell_size);
 	real_t get_cell_size() const;
+
+	void set_border_size(real_t p_value);
+	real_t get_border_size() const;
+
+	void set_baking_rect(const Rect2 &p_rect);
+	Rect2 get_baking_rect() const;
+
+	void set_baking_rect_offset(const Vector2 &p_rect_offset);
+	Vector2 get_baking_rect_offset() const;
 
 	void clear();
 
