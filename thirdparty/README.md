@@ -946,7 +946,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.32 (681c33c8547d6aefe24455ba2bffe1c5ae11fee5, 2023)
+- Version: 1.33 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2024)
 - License: MIT
 
 Files extracted from upstream source:
@@ -959,6 +959,8 @@ Files extracted from upstream source:
 - `staging/fractional-scale/fractional-scale-v1.xml`
 - `staging/xdg-activation/README`
 - `staging/xdg-activation/xdg-activation-v1.xml`
+- `unstable/idle-inhibit/README`
+- `unstable/idle-inhibit/idle-inhibit-unstable-v1.xml`
 - `unstable/pointer-constraints/README`
 - `unstable/pointer-constraints/pointer-constraints-unstable-v1.xml`
 - `unstable/pointer-gestures/README`
