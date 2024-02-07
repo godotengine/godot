@@ -93,7 +93,6 @@ public:
 	StringName finished;
 	StringName loop_finished;
 	StringName step_finished;
-	StringName emission_finished;
 	StringName animation_finished;
 	StringName animation_changed;
 	StringName animation_started;
