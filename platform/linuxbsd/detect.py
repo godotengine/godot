@@ -207,8 +207,8 @@ def configure(env: "Environment"):
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
 
     if env["wayland"]:
-        if os.system("wayland-scanner -v") != 0:
-            print("wayland-scanner not found. Disabling wayland support.")
+        if os.system("wayland-scanner -v 2>/dev/null") != 0:
+            print("wayland-scanner not found. Disabling Wayland support.")
             env["wayland"] = False
 
     if env["touch"]:
