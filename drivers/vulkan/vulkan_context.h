@@ -51,6 +51,14 @@
 
 class VulkanContext : public ApiContextRD {
 public:
+	struct DriverMemoryAllocations {
+		size_t command_allocations = 0;
+		size_t object_allocations = 0;
+		size_t cache_allocations = 0;
+		size_t device_allocations = 0;
+		size_t instance_allocations = 0;
+	};
+
 	struct SubgroupCapabilities {
 		uint32_t size;
 		uint32_t min_size;
@@ -249,7 +257,15 @@ private:
 			const char *pMessage,
 			void *pUserData);
 
-	static void VKAPI_CALL memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data);
+	static VKAPI_ATTR void VKAPI_CALL memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data);
+
+	size_t get_device_total_memory();
+	size_t get_device_allocation_count();
+	size_t get_device_memory_by_object_type(VkObjectType type);
+
+	size_t get_driver_total_memory();
+	size_t get_driver_allocation_count();
+	DriverMemoryAllocations get_driver_memory_by_object_type(VkObjectType type);
 
 	Error _create_instance();
 

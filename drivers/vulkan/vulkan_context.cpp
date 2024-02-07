@@ -94,22 +94,31 @@ enum VkTrackedSystemAllocationScope {
 
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
 
+/*************************************************/
+// Driver memory tracking
+/*************************************************/
+Mutex driver_memory_mutex;
+// Total driver memory and allocation amount
+SafeNumeric<size_t> driver_memory_total_memory;
+SafeNumeric<size_t> driver_memory_total_alloc_count;
 // Amount of driver memory for every object type
 SafeNumeric<size_t> driver_memory_tracker[VK_TRACKED_OBJECT_TYPE_COUNT][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
 // Amount of allocations for every object type
 SafeNumeric<uint32_t> driver_memory_allocation_count[VK_TRACKED_OBJECT_TYPE_COUNT][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
 
-// Amount of memory for every object (identified by its memoryObjectId)
-HashMap<uint64_t, size_t> device_memory_report_table;
+/*************************************************/
+// Device memory report
+/*************************************************/
+// Total device memory and allocation amount
+HashMap<uint64_t, size_t> memory_report_table;
+Mutex memory_report_table_mutex;
+// Total memory and allocation amount 
+SafeNumeric<uint64_t> memory_report_total_memory;
+SafeNumeric<uint64_t> memory_report_total_alloc_count;
 // Amount of device memory for every object type
 SafeNumeric<size_t> memory_report_mem_usage[VK_TRACKED_OBJECT_TYPE_COUNT];
 // Amount of device memory allocations for every object type
 SafeNumeric<size_t> memory_report_allocation_count[VK_TRACKED_OBJECT_TYPE_COUNT];
-
-// Total amount of device memory used
-SafeNumeric<uint64_t> memory_report_total_memory;
-// Total amount of device memory allocation
-SafeNumeric<uint64_t> memory_report_total_alloc_count;
 
 VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
 	switch (type) {
@@ -168,6 +177,34 @@ VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
 	}
 }
 
+size_t VulkanContext::get_device_total_memory() {
+	return memory_report_total_memory.get();
+}
+size_t VulkanContext::get_device_allocation_count() {
+	return memory_report_allocation_count->get();
+}
+size_t VulkanContext::get_device_memory_by_object_type(VkObjectType type) {
+	return memory_report_mem_usage[type].get();
+}
+
+size_t VulkanContext::get_driver_total_memory() {
+	return driver_memory_total_memory.get();
+}
+size_t VulkanContext::get_driver_allocation_count() {
+	return driver_memory_total_alloc_count.get();
+}
+VulkanContext::DriverMemoryAllocations VulkanContext::get_driver_memory_by_object_type(VkObjectType type) {
+	MutexLock lock(driver_memory_mutex);
+
+	DriverMemoryAllocations ret = {};
+	ret.cache_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_CACHE].get();
+	ret.command_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COMMAND].get();
+	ret.device_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_DEVICE].get();
+	ret.instance_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_INSTANCE].get();
+	ret.object_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_OBJECT].get();
+
+	return ret;
+}
 
 void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT* p_callback_data, void* p_user_data) {
 
@@ -178,6 +215,8 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 
 		memory_report_total_alloc_count.set(0);
 		memory_report_total_memory.set(0);
+
+		MutexLock lock(memory_report_table_mutex);
 
 		for (uint32_t i = 0; i < VK_TRACKED_OBJECT_TYPE_COUNT; i++) {
 			memory_report_allocation_count[i].set(0);
@@ -194,16 +233,20 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 	if (p_callback_data->type == VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_ALLOCATE_EXT) {
 
 		// Realloc, update size
-		if (device_memory_report_table.has(obj_id)) {
-			memory_report_total_memory.sub(device_memory_report_table[obj_id]);
-			memory_report_mem_usage[obj_type].sub(device_memory_report_table[obj_id]);
+		if (memory_report_table.has(obj_id)) {
+			MutexLock lock(memory_report_table_mutex);
+
+			memory_report_total_memory.sub(memory_report_table[obj_id]);
+			memory_report_mem_usage[obj_type].sub(memory_report_table[obj_id]);
 
 			memory_report_total_memory.add(p_callback_data->size);
 			memory_report_mem_usage[obj_type].add(p_callback_data->size);
 
-			device_memory_report_table[p_callback_data->memoryObjectId] = p_callback_data->size;
+			memory_report_table[p_callback_data->memoryObjectId] = p_callback_data->size;
 		} else {
-			device_memory_report_table[obj_id] = p_callback_data->size;
+			MutexLock lock(memory_report_table_mutex);
+
+			memory_report_table[obj_id] = p_callback_data->size;
 
 			memory_report_total_alloc_count.increment();
 			memory_report_allocation_count[obj_type].increment();
@@ -212,13 +255,15 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 		}
 	} else if (p_callback_data->type == VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_FREE_EXT) {
 
-		if (device_memory_report_table.has(obj_id)) {
+		if (memory_report_table.has(obj_id)) {
+			MutexLock lock(memory_report_table_mutex);
+
 			memory_report_total_alloc_count.decrement();
 			memory_report_allocation_count[obj_type].decrement();
 			memory_report_mem_usage[obj_type].sub(p_callback_data->size);
 			memory_report_total_memory.sub(p_callback_data->size);
 
-			device_memory_report_table.remove(device_memory_report_table.find(obj_id));
+			memory_report_table.remove(memory_report_table.find(obj_id));
 		}
 	}
 }
@@ -243,6 +288,8 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			static constexpr size_t tracking_data_size = 32;
 			VkTrackedObjectType type = static_cast<VkTrackedObjectType>(*reinterpret_cast<VkTrackedObjectType *>(p_user_data));
 
+			driver_memory_total_memory.add(size);
+			driver_memory_total_alloc_count.increment();
 			driver_memory_tracker[type][allocation_scope].add(size);
 			driver_memory_allocation_count[type][allocation_scope].increment();
 			
@@ -279,6 +326,8 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			MemHeader *header = reinterpret_cast<MemHeader *>(mem - alignment);
 
 			// Update allocation size
+			driver_memory_total_memory.sub(header->size);
+			driver_memory_total_memory.add(size);
 			driver_memory_tracker[header->type][header->allocation_scope].sub(header->size);
 			driver_memory_tracker[header->type][header->allocation_scope].add(size);
 
@@ -304,6 +353,8 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			size_t alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
 			MemHeader *header = reinterpret_cast<MemHeader *>(mem - alignment);
 
+			driver_memory_total_alloc_count.decrement();
+			driver_memory_total_memory.sub(header->size);
 			driver_memory_tracker[header->type][header->allocation_scope].sub(header->size);
 			driver_memory_allocation_count[header->type][header->allocation_scope].decrement();
 
@@ -828,6 +879,8 @@ Error VulkanContext::_initialize_device_extensions() {
 		register_requested_device_extension(VK_GOOGLE_DISPLAY_TIMING_EXTENSION_NAME, false);
 	}
 
+	register_requested_device_extension(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME, false);
+
 	// obtain available device extensions
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(gpu, nullptr, &device_extension_count, nullptr);
@@ -1342,6 +1395,8 @@ Error VulkanContext::_create_instance() {
 		_get_preferred_validation_layers(&inst_info.enabledLayerCount, &inst_info.ppEnabledLayerNames);
 	}
 
+	VkBaseInStructure *curr_extension = (VkBaseInStructure *)&inst_info;
+
 	/*
 	 * This is info for a temp callback to use during CreateInstance.
 	 * After the instance is created, we use the instance-based
@@ -1371,7 +1426,21 @@ Error VulkanContext::_create_instance() {
 				VK_DEBUG_REPORT_DEBUG_BIT_EXT;
 		dbg_report_callback_create_info.pfnCallback = _debug_report_callback;
 		dbg_report_callback_create_info.pUserData = this;
-		inst_info.pNext = &dbg_report_callback_create_info;
+
+		curr_extension->pNext = (VkBaseInStructure*)&dbg_report_callback_create_info;
+		curr_extension = (VkBaseInStructure *)curr_extension->pNext;
+	}
+
+	if (is_instance_extension_enabled(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME)) {
+		VkDeviceDeviceMemoryReportCreateInfoEXT memory_report_info = {};
+		memory_report_info.sType = VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
+		memory_report_info.pfnUserCallback = memory_report_callback;
+		memory_report_info.pNext = NULL;
+		memory_report_info.flags = 0;
+		memory_report_info.pUserData = this;
+
+		curr_extension->pNext = (VkBaseInStructure *)&memory_report_info;
+		curr_extension = (VkBaseInStructure *)curr_extension->pNext;
 	}
 
 	VkResult err;
