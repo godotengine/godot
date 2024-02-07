@@ -1116,6 +1116,10 @@ void GodotNavigationServer::bake_from_source_geometry_data_async(const Ref<Navig
 #endif // _3D_DISABLED
 }
 
+bool GodotNavigationServer::is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const {
+	return NavMeshGenerator3D::get_singleton()->is_baking(p_navigation_mesh);
+}
+
 COMMAND_1(free, RID, p_object) {
 	if (map_owner.owns(p_object)) {
 		NavMap *map = map_owner.get_or_null(p_object);

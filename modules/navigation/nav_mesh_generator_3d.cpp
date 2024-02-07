@@ -172,11 +172,10 @@ void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_na
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	if (baking_navmeshes.has(p_navigation_mesh)) {
-		baking_navmesh_mutex.unlock();
+	if (is_baking(p_navigation_mesh)) {
 		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
 	}
+	baking_navmesh_mutex.lock();
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
@@ -208,12 +207,11 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	if (baking_navmeshes.has(p_navigation_mesh)) {
-		baking_navmesh_mutex.unlock();
+	if (is_baking(p_navigation_mesh)) {
 		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
 		return;
 	}
+	baking_navmesh_mutex.lock();
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
@@ -226,6 +224,13 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator3D::generator_thread_bake, generator_task, NavMeshGenerator3D::baking_use_high_priority_threads, SNAME("NavMeshGeneratorBake3D"));
 	generator_tasks.insert(generator_task->thread_task_id, generator_task);
 	generator_task_mutex.unlock();
+}
+
+bool NavMeshGenerator3D::is_baking(Ref<NavigationMesh> p_navigation_mesh) {
+	baking_navmesh_mutex.lock();
+	bool baking = baking_navmeshes.has(p_navigation_mesh);
+	baking_navmesh_mutex.unlock();
+	return baking;
 }
 
 void NavMeshGenerator3D::generator_thread_bake(void *p_arg) {

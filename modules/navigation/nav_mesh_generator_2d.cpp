@@ -157,11 +157,10 @@ void NavMeshGenerator2D::bake_from_source_geometry_data(Ref<NavigationPolygon> p
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	if (baking_navmeshes.has(p_navigation_mesh)) {
-		baking_navmesh_mutex.unlock();
+	if (is_baking(p_navigation_mesh)) {
 		ERR_FAIL_MSG("NavigationPolygon is already baking. Wait for current bake to finish.");
 	}
+	baking_navmesh_mutex.lock();
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
@@ -193,11 +192,10 @@ void NavMeshGenerator2D::bake_from_source_geometry_data_async(Ref<NavigationPoly
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	if (baking_navmeshes.has(p_navigation_mesh)) {
-		baking_navmesh_mutex.unlock();
+	if (is_baking(p_navigation_mesh)) {
 		ERR_FAIL_MSG("NavigationPolygon is already baking. Wait for current bake to finish.");
 	}
+	baking_navmesh_mutex.lock();
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
@@ -210,6 +208,13 @@ void NavMeshGenerator2D::bake_from_source_geometry_data_async(Ref<NavigationPoly
 	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator2D::generator_thread_bake, generator_task, NavMeshGenerator2D::baking_use_high_priority_threads, "NavMeshGeneratorBake2D");
 	generator_tasks.insert(generator_task->thread_task_id, generator_task);
 	generator_task_mutex.unlock();
+}
+
+bool NavMeshGenerator2D::is_baking(Ref<NavigationPolygon> p_navigation_polygon) {
+	baking_navmesh_mutex.lock();
+	bool baking = baking_navmeshes.has(p_navigation_polygon);
+	baking_navmesh_mutex.unlock();
+	return baking;
 }
 
 void NavMeshGenerator2D::generator_thread_bake(void *p_arg) {

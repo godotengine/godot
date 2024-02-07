@@ -117,6 +117,7 @@ public:
 
 	void bake_navigation_polygon(bool p_on_thread);
 	void _bake_finished(Ref<NavigationPolygon> p_navigation_polygon);
+	bool is_baking() const;
 
 	NavigationRegion2D();
 	~NavigationRegion2D();

@@ -303,6 +303,13 @@
 				Returns all created navigation map [RID]s on the NavigationServer. This returns both 2D and 3D created navigation maps as there is technically no distinction between them.
 			</description>
 		</method>
+		<method name="is_baking_navigation_polygon" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="navigation_polygon" type="NavigationPolygon" />
+			<description>
+				Returns [code]true[/code] when the provided navigation polygon is being baked on a background thread.
+			</description>
+		</method>
 		<method name="link_create">
 			<return type="RID" />
 			<description>
