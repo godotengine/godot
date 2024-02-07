@@ -2026,8 +2026,11 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 
 		case FILE_EXPORT_MESH_LIBRARY: {
+			bool merge_with_existing_library = file_export_lib_merge->is_pressed();
+			bool apply_mesh_instance_transforms = file_export_lib_apply_xforms->is_pressed();
+
 			Ref<MeshLibrary> ml;
-			if (file_export_lib_merge->is_pressed() && FileAccess::exists(p_file)) {
+			if (merge_with_existing_library && FileAccess::exists(p_file)) {
 				ml = ResourceLoader::load(p_file, "MeshLibrary");
 
 				if (ml.is_null()) {
@@ -2040,7 +2043,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = Ref<MeshLibrary>(memnew(MeshLibrary));
 			}
 
-			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, true, file_export_lib_apply_xforms->is_pressed());
+			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, merge_with_existing_library, apply_mesh_instance_transforms);
 
 			Error err = ResourceSaver::save(ml, p_file);
 			if (err) {
