@@ -6080,10 +6080,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	if (context_rd) {
 		if (context_rd->initialize() != OK) {
+			ERR_PRINT(vformat("Could not initialize %s", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
 			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG(vformat("Could not initialize %s", context_rd->get_api_name()));
+			return;
 		}
 		driver_found = true;
 	}

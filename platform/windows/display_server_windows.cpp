@@ -4625,10 +4625,11 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			}
 #endif
 			if (context_rd->window_create(id, p_vsync_mode, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top, &wpd) != OK) {
+				ERR_PRINT(vformat("Failed to create %s Window.", context_rd->get_api_name()));
 				memdelete(context_rd);
 				context_rd = nullptr;
 				windows.erase(id);
-				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, vformat("Failed to create %s Window.", context_rd->get_api_name()));
+				return INVALID_WINDOW_ID;
 			}
 			wd.context_created = true;
 		}
