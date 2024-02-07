@@ -249,6 +249,8 @@ private:
 			const char *pMessage,
 			void *pUserData);
 
+	static void VKAPI_CALL memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data);
+
 	Error _create_instance();
 
 	Error _create_physical_device(VkSurfaceKHR p_surface);

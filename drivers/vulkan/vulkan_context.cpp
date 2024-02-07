@@ -46,8 +46,6 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_SHORT_NAME "GodotEngine"
 
-VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
-
 enum VkTrackedObjectType {
 	VK_TRACKED_OBJECT_TYPE_UNKNOWN = 0,
 	VK_TRACKED_OBJECT_TYPE_INSTANCE,
@@ -94,38 +92,134 @@ enum VkTrackedSystemAllocationScope {
 	VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT
 };
 
+VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
+
+// Amount of driver memory for every object type
 SafeNumeric<size_t> driver_memory_tracker[VK_TRACKED_OBJECT_TYPE_COUNT][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
+// Amount of allocations for every object type
 SafeNumeric<uint32_t> driver_memory_allocation_count[VK_TRACKED_OBJECT_TYPE_COUNT][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
+
+// Amount of memory for every object (identified by its memoryObjectId)
+HashMap<uint64_t, size_t> device_memory_report_table;
+// Amount of device memory for every object type
+SafeNumeric<size_t> memory_report_mem_usage[VK_TRACKED_OBJECT_TYPE_COUNT];
+// Amount of device memory allocations for every object type
+SafeNumeric<size_t> memory_report_allocation_count[VK_TRACKED_OBJECT_TYPE_COUNT];
+
+// Total amount of device memory used
+SafeNumeric<uint64_t> memory_report_total_memory;
+// Total amount of device memory allocation
+SafeNumeric<uint64_t> memory_report_total_alloc_count;
 
 VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
 	switch (type) {
-		case VK_OBJECT_TYPE_INSTANCE:				return VK_TRACKED_OBJECT_TYPE_INSTANCE;
-		case VK_OBJECT_TYPE_PHYSICAL_DEVICE:		return VK_TRACKED_OBJECT_TYPE_PHYSICAL_DEVICE;
-		case VK_OBJECT_TYPE_DEVICE:					return VK_TRACKED_OBJECT_TYPE_DEVICE;
-		case VK_OBJECT_TYPE_QUEUE:					return VK_TRACKED_OBJECT_TYPE_QUEUE;
-		case VK_OBJECT_TYPE_SEMAPHORE:				return VK_TRACKED_OBJECT_TYPE_SEMAPHORE;
-		case VK_OBJECT_TYPE_FENCE:					return VK_TRACKED_OBJECT_TYPE_FENCE;
-		case VK_OBJECT_TYPE_BUFFER:					return VK_TRACKED_OBJECT_TYPE_BUFFER;
-		case VK_OBJECT_TYPE_IMAGE:					return VK_TRACKED_OBJECT_TYPE_IMAGE;
-		case VK_OBJECT_TYPE_QUERY_POOL:				return VK_TRACKED_OBJECT_TYPE_QUERY_POOL;
-		case VK_OBJECT_TYPE_IMAGE_VIEW:				return VK_TRACKED_OBJECT_TYPE_IMAGE_VIEW;
-		case VK_OBJECT_TYPE_BUFFER_VIEW:			return VK_TRACKED_OBJECT_TYPE_BUFFER_VIEW;
-		case VK_OBJECT_TYPE_SHADER_MODULE:			return VK_TRACKED_OBJECT_TYPE_SHADER;
-		case VK_OBJECT_TYPE_PIPELINE_CACHE:			return VK_TRACKED_OBJECT_TYPE_PIPELINE_CACHE;
-		case VK_OBJECT_TYPE_PIPELINE_LAYOUT:		return VK_TRACKED_OBJECT_TYPE_PIPELINE_LAYOUT;
-		case VK_OBJECT_TYPE_RENDER_PASS:			return VK_TRACKED_OBJECT_TYPE_RENDER_PASS;
-		case VK_OBJECT_TYPE_PIPELINE:				return VK_TRACKED_OBJECT_TYPE_PIPELINE;
-		case VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT:	return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
-		case VK_OBJECT_TYPE_SAMPLER:				return VK_TRACKED_OBJECT_TYPE_SAMPLER;
-		case VK_OBJECT_TYPE_DESCRIPTOR_POOL:		return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_POOL;
-		case VK_OBJECT_TYPE_DESCRIPTOR_SET:			return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET;
-		case VK_OBJECT_TYPE_FRAMEBUFFER:			return VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER;
-		case VK_OBJECT_TYPE_COMMAND_POOL:			return VK_TRACKED_OBJECT_TYPE_COMMAND_POOL;
-		case VK_OBJECT_TYPE_COMMAND_BUFFER:			return VK_TRACKED_OBJECT_TYPE_COMMAND_BUFFER;
-		case VK_OBJECT_TYPE_SURFACE_KHR:			return VK_TRACKED_OBJECT_TYPE_SURFACE;
-		case VK_OBJECT_TYPE_SWAPCHAIN_KHR:			return VK_TRACKED_OBJECT_TYPE_SWAPCHAIN;
+		case VK_OBJECT_TYPE_INSTANCE:
+			return VK_TRACKED_OBJECT_TYPE_INSTANCE;
+		case VK_OBJECT_TYPE_PHYSICAL_DEVICE:
+			return VK_TRACKED_OBJECT_TYPE_PHYSICAL_DEVICE;
+		case VK_OBJECT_TYPE_DEVICE:
+			return VK_TRACKED_OBJECT_TYPE_DEVICE;
+		case VK_OBJECT_TYPE_QUEUE:
+			return VK_TRACKED_OBJECT_TYPE_QUEUE;
+		case VK_OBJECT_TYPE_SEMAPHORE:
+			return VK_TRACKED_OBJECT_TYPE_SEMAPHORE;
+		case VK_OBJECT_TYPE_FENCE:
+			return VK_TRACKED_OBJECT_TYPE_FENCE;
+		case VK_OBJECT_TYPE_BUFFER:
+			return VK_TRACKED_OBJECT_TYPE_BUFFER;
+		case VK_OBJECT_TYPE_IMAGE:
+			return VK_TRACKED_OBJECT_TYPE_IMAGE;
+		case VK_OBJECT_TYPE_QUERY_POOL:
+			return VK_TRACKED_OBJECT_TYPE_QUERY_POOL;
+		case VK_OBJECT_TYPE_IMAGE_VIEW:
+			return VK_TRACKED_OBJECT_TYPE_IMAGE_VIEW;
+		case VK_OBJECT_TYPE_BUFFER_VIEW:
+			return VK_TRACKED_OBJECT_TYPE_BUFFER_VIEW;
+		case VK_OBJECT_TYPE_SHADER_MODULE:
+			return VK_TRACKED_OBJECT_TYPE_SHADER;
+		case VK_OBJECT_TYPE_PIPELINE_CACHE:
+			return VK_TRACKED_OBJECT_TYPE_PIPELINE_CACHE;
+		case VK_OBJECT_TYPE_PIPELINE_LAYOUT:
+			return VK_TRACKED_OBJECT_TYPE_PIPELINE_LAYOUT;
+		case VK_OBJECT_TYPE_RENDER_PASS:
+			return VK_TRACKED_OBJECT_TYPE_RENDER_PASS;
+		case VK_OBJECT_TYPE_PIPELINE:
+			return VK_TRACKED_OBJECT_TYPE_PIPELINE;
+		case VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT:
+			return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
+		case VK_OBJECT_TYPE_SAMPLER:
+			return VK_TRACKED_OBJECT_TYPE_SAMPLER;
+		case VK_OBJECT_TYPE_DESCRIPTOR_POOL:
+			return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_POOL;
+		case VK_OBJECT_TYPE_DESCRIPTOR_SET:
+			return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET;
+		case VK_OBJECT_TYPE_FRAMEBUFFER:
+			return VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER;
+		case VK_OBJECT_TYPE_COMMAND_POOL:
+			return VK_TRACKED_OBJECT_TYPE_COMMAND_POOL;
+		case VK_OBJECT_TYPE_COMMAND_BUFFER:
+			return VK_TRACKED_OBJECT_TYPE_COMMAND_BUFFER;
+		case VK_OBJECT_TYPE_SURFACE_KHR:
+			return VK_TRACKED_OBJECT_TYPE_SURFACE;
+		case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
+			return VK_TRACKED_OBJECT_TYPE_SWAPCHAIN;
 		default:
 			return VK_TRACKED_OBJECT_TYPE_UNKNOWN;
+	}
+}
+
+
+void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT* p_callback_data, void* p_user_data) {
+
+	// Initialize memory trackers the first time this function is called
+	static bool initialized = false;
+	if (!initialized) {
+		initialized = true;
+
+		memory_report_total_alloc_count.set(0);
+		memory_report_total_memory.set(0);
+
+		for (uint32_t i = 0; i < VK_TRACKED_OBJECT_TYPE_COUNT; i++) {
+			memory_report_allocation_count[i].set(0);
+			memory_report_mem_usage[i].set(0);
+		}
+	}
+
+	if (!p_callback_data) {
+		return;
+	}
+	const VkTrackedObjectType obj_type = vk_object_to_tracked_object(p_callback_data->objectType);
+	uint64_t obj_id = p_callback_data->memoryObjectId;
+
+	if (p_callback_data->type == VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_ALLOCATE_EXT) {
+
+		// Realloc, update size
+		if (device_memory_report_table.has(obj_id)) {
+			memory_report_total_memory.sub(device_memory_report_table[obj_id]);
+			memory_report_mem_usage[obj_type].sub(device_memory_report_table[obj_id]);
+
+			memory_report_total_memory.add(p_callback_data->size);
+			memory_report_mem_usage[obj_type].add(p_callback_data->size);
+
+			device_memory_report_table[p_callback_data->memoryObjectId] = p_callback_data->size;
+		} else {
+			device_memory_report_table[obj_id] = p_callback_data->size;
+
+			memory_report_total_alloc_count.increment();
+			memory_report_allocation_count[obj_type].increment();
+			memory_report_mem_usage[obj_type].add(p_callback_data->size);
+			memory_report_total_memory.add(p_callback_data->size);
+		}
+	} else if (p_callback_data->type == VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_FREE_EXT) {
+
+		if (device_memory_report_table.has(obj_id)) {
+			memory_report_total_alloc_count.decrement();
+			memory_report_allocation_count[obj_type].decrement();
+			memory_report_mem_usage[obj_type].sub(p_callback_data->size);
+			memory_report_total_memory.sub(p_callback_data->size);
+
+			device_memory_report_table.remove(device_memory_report_table.find(obj_id));
+		}
 	}
 }
 
