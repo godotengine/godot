@@ -146,6 +146,10 @@ layout(std140) uniform DirectionalLightData { //ubo:3
 	highp mat4 shadow_matrix3;
 	highp mat4 shadow_matrix4;
 	mediump vec4 shadow_split_offsets;
+
+	mediump float fade_from;
+	mediump float fade_to;
+	mediump vec2 pad;
 };
 
 #endif //ubershader-skip
@@ -842,6 +846,10 @@ layout(std140) uniform DirectionalLightData {
 	highp mat4 shadow_matrix3;
 	highp mat4 shadow_matrix4;
 	mediump vec4 shadow_split_offsets;
+
+	mediump float fade_from;
+	mediump float fade_to;
+	mediump vec2 pad;
 };
 
 uniform highp sampler2DShadow directional_shadow; // texunit:-5
@@ -2142,7 +2150,6 @@ FRAGMENT_SHADER_CODE
 #endif //LIGHT_USE_PSSM4 //ubershader-runtime
 	if (depth_z < value) {
 		vec3 pssm_coord;
-		float pssm_fade = 0.0;
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-skip
 		float pssm_blend;
@@ -2188,7 +2195,6 @@ FRAGMENT_SHADER_CODE
 			} else {
 				highp vec4 splane = (shadow_matrix4 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
-				pssm_fade = smoothstep(shadow_split_offsets.z, shadow_split_offsets.w, depth_z);
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 				use_blend = false;
@@ -2226,7 +2232,6 @@ FRAGMENT_SHADER_CODE
 		} else {
 			highp vec4 splane = (shadow_matrix3 * vec4(vertex, 1.0));
 			pssm_coord = splane.xyz / splane.w;
-			pssm_fade = smoothstep(shadow_split_offsets.y, shadow_split_offsets.z, depth_z);
 
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 			use_blend = false;
@@ -2251,7 +2256,6 @@ FRAGMENT_SHADER_CODE
 		} else {
 			highp vec4 splane = (shadow_matrix2 * vec4(vertex, 1.0));
 			pssm_coord = splane.xyz / splane.w;
-			pssm_fade = smoothstep(shadow_split_offsets.x, shadow_split_offsets.y, depth_z);
 #ifdef LIGHT_USE_PSSM_BLEND //ubershader-runtime
 			use_blend = false;
 
@@ -2288,6 +2292,7 @@ FRAGMENT_SHADER_CODE
 			shadow = min(shadow, contact_shadow);
 		}
 #endif //ubershader-runtime
+		float pssm_fade = smoothstep(fade_from, fade_to, vertex.z);
 		light_attenuation = mix(mix(shadow_color_contact.rgb, vec3(1.0), shadow), vec3(1.0), pssm_fade);
 	}
 

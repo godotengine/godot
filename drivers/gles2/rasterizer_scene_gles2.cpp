@@ -2087,6 +2087,12 @@ void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shado
 				//	state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_CLAMP, light_clamp);
 				state.scene_shader.set_uniform(SceneShaderGLES2::SHADOW_PIXEL_SIZE, Size2(1.0 / directional_shadow.size, 1.0 / directional_shadow.size));
 				state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SPLIT_OFFSETS, split_offsets);
+
+				const float fade_start = light_ptr->param[VS::LIGHT_PARAM_SHADOW_FADE_START];
+				// Using 1.0 would break `smoothstep()` in the shader.
+				state.scene_shader.set_uniform(SceneShaderGLES2::FADE_FROM, -split_offsets[shadow_count - 1] * MIN(fade_start, 0.999));
+				state.scene_shader.set_uniform(SceneShaderGLES2::FADE_TO, -split_offsets[shadow_count - 1]);
+
 				state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SHADOW_MATRIX, matrices[0]);
 				state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SHADOW_MATRIX2, matrices[1]);
 				state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SHADOW_MATRIX3, matrices[2]);

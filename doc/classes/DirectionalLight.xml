@@ -21,6 +21,9 @@
 		<member name="directional_shadow_depth_range" type="int" setter="set_shadow_depth_range" getter="get_shadow_depth_range" enum="DirectionalLight.ShadowDepthRange" default="0">
 			Optimizes shadow rendering for detail versus movement. See [enum ShadowDepthRange].
 		</member>
+		<member name="directional_shadow_fade_start" type="float" setter="set_param" getter="get_param" default="0.8">
+			Proportion of [member directional_shadow_max_distance] at which point the shadow starts to fade. At [member directional_shadow_max_distance], the shadow will disappear. The default value is a balance between smooth fading and distant shadow visibility. If the camera moves fast and the [member directional_shadow_max_distance] is low, consider lowering [member directional_shadow_fade_start] below [code]0.8[/code] to make shadow transitions less noticeable. On the other hand, if you tuned [member directional_shadow_max_distance] to cover the entire scene, you can set [member directional_shadow_fade_start] to [code]1.0[/code] to prevent the shadow from fading in the distance (it will suddenly cut off instead).
+		</member>
 		<member name="directional_shadow_max_distance" type="float" setter="set_param" getter="get_param" default="100.0">
 			The maximum distance for shadow splits. Increasing this value will make directional shadows visible from further away, at the cost of lower overall shadow detail and performance (since more objects need to be included in the directional shadow rendering).
 		</member>

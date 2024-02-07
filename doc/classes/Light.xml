@@ -122,7 +122,10 @@
 		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="Param">
 			Constant for accessing [member DirectionalLight.directional_shadow_bias_split_scale].
 		</constant>
-		<constant name="PARAM_MAX" value="16" enum="Param">
+		<constant name="PARAM_SHADOW_FADE_START" value="16" enum="Param">
+			Constant for accessing [member DirectionalLight.directional_shadow_fade_start].
+		</constant>
+		<constant name="PARAM_MAX" value="17" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
