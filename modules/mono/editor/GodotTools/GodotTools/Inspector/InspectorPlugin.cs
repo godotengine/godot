@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using GodotTools.Build;
 using GodotTools.Utils;
 
 namespace GodotTools.Inspector
@@ -24,7 +25,7 @@ namespace GodotTools.Inspector
             {
                 if (script is not CSharpScript) continue;
 
-                if (File.GetLastWriteTime(script.ResourcePath) > GodotSharpEditor.Instance.LastValidBuildDateTime)
+                if (File.GetLastWriteTime(script.ResourcePath) > BuildManager.LastValidBuildDateTime)
                 {
                     AddCustomControl(new InspectorOutOfSyncWarning());
                     break;
