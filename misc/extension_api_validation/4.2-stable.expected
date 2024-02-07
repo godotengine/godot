@@ -259,3 +259,10 @@ Validate extension JSON: Error: Field 'classes/AStarGrid2D/methods/get_point_pat
 
 Added optional "allow_partial_path" argument to get_id_path and get_point_path methods in AStar classes.
 Compatibility methods registered.
+
+
+GH-88014
+--------
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment
+
+Removed VisualShaderNodeComment, which is replaced by VisualShaderNodeFrame.
