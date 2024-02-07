@@ -767,6 +767,7 @@ void ItemList::_notification(int p_what) {
 		Ref<StyleBox> cursor = has_focus() ? get_stylebox("cursor") : get_stylebox("cursor_unfocused");
 
 		Ref<Font> font = get_font("font");
+		select_font(font);
 		Color guide_color = get_color("guide_color");
 		Color font_color = get_color("font_color");
 		Color font_color_selected = get_color("font_color_selected");

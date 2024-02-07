@@ -279,6 +279,7 @@ void TabContainer::_notification(int p_what) {
 			Ref<Texture> menu = get_icon("menu");
 			Ref<Texture> menu_hl = get_icon("menu_highlight");
 			Ref<Font> font = get_font("font");
+			select_font(font);
 			Color font_color_fg = get_color("font_color_fg");
 			Color font_color_bg = get_color("font_color_bg");
 			Color font_color_disabled = get_color("font_color_disabled");
