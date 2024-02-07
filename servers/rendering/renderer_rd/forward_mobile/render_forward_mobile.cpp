@@ -614,6 +614,9 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 		if (p_render_data->directional_shadows.size()) {
 			//open the pass for directional shadows
 			light_storage->update_directional_shadow_atlas();
+
+			RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE);
+			RD::get_singleton()->draw_list_end();
 		}
 	}
 
@@ -1380,12 +1383,12 @@ void RenderForwardMobile::_render_shadow_process() {
 
 void RenderForwardMobile::_render_shadow_end() {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
-
+	
 	// Render all cascades in the same pass since they render on different regions
 	RID framebuffer = scene_state.shadow_passes[0].framebuffer;
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 	Size2 fb_size = RD::get_singleton()->framebuffer_get_size(framebuffer);
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, Rect2(0, 0, fb_size.x, fb_size.y));
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, Rect2(0, 0, fb_size.x, fb_size.y));
 
 	// 4 = number of shadowmap cascades
 	for (uint32_t i = 0; i<scene_state.shadow_passes.size() / 4; i++) {
