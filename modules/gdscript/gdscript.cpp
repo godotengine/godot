@@ -1146,6 +1146,33 @@ GDScript *GDScript::get_root_script() {
 	return result;
 }
 
+const StructInfo *GDScript::get_struct_info(const String &p_struct_name) const {
+	if (const StructInfo *info = structs.getptr(p_struct_name)) {
+		return info;
+	}
+
+	Vector<String> names = String(p_struct_name).split(".");
+	if (names.size() == 2) {
+		if (const StructInfo *info = ClassDB::get_struct_info(names[0], names[1])) {
+			return info;
+		}
+	}
+	// TODO: this is to handle cases where the name is something like U"res://main.gd.MyStruct" but there should probably be a better solution
+	return structs.getptr(names[names.size() - 1]);
+}
+
+void GDScript::set_struct_info(const StructInfo &p_struct_info) {
+	if (ClassDB::get_struct_info(p_struct_info.name)) {
+		// TODO: warn about shadowing native struct?
+		return;
+	}
+	if (structs.has(p_struct_info.name)) {
+		// TODO: warn about shadowing script struct?
+		return;
+	}
+	structs.insert(p_struct_info.name, p_struct_info);
+}
+
 RBSet<GDScript *> GDScript::get_dependencies() {
 	RBSet<GDScript *> dependencies;
 
@@ -1256,6 +1283,7 @@ GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {
 }
 
 void GDScript::_get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except) {
+	// TODO: Do I need Struct logic here?
 	if (p_dependencies.has(this)) {
 		return;
 	}
@@ -1317,6 +1345,7 @@ GDScript::GDScript() :
 }
 
 void GDScript::_save_orphaned_subclasses(ClearData *p_clear_data) {
+	// TODO: Do I need Struct logic here?
 	struct ClassRefWithName {
 		ObjectID id;
 		String fully_qualified_name;
@@ -2093,6 +2122,8 @@ void GDScriptLanguage::init() {
 		_add_global(n, nc);
 	}
 
+	// TODO: Structs?
+
 	//populate singletons
 
 	List<Engine::Singleton> singletons;
@@ -2533,6 +2564,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"namespace", // Reserved for potential future use.
 		"signal",
 		"static",
+		"struct",
 		"trait", // Reserved for potential future use.
 		"var",
 		// Other keywords.

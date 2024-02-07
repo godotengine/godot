@@ -384,25 +384,25 @@
 		</constant>
 		<constant name="CODE_COMPLETION_KIND_CLASS" value="0" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_FUNCTION" value="1" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_FUNCTION" value="2" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_SIGNAL" value="2" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_SIGNAL" value="3" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_VARIABLE" value="3" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_VARIABLE" value="4" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_MEMBER" value="4" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_MEMBER" value="5" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_ENUM" value="5" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_ENUM" value="6" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_CONSTANT" value="6" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_CONSTANT" value="7" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_NODE_PATH" value="7" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_NODE_PATH" value="8" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_FILE_PATH" value="8" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_FILE_PATH" value="9" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_PLAIN_TEXT" value="9" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_PLAIN_TEXT" value="10" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_MAX" value="10" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_MAX" value="11" enum="CodeCompletionKind">
 		</constant>
 	</constants>
 </class>

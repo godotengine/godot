@@ -374,7 +374,7 @@ TEST_CASE("[Struct] Nesting") {
 }
 
 TEST_CASE("[Struct] ClassDB") {
-	StructInfo *struct_info = ::ClassDB::get_struct_info(SNAME("Object"), SNAME("PropertyInfo"));
+	const StructInfo *struct_info = ::ClassDB::get_struct_info(SNAME("Object"), SNAME("PropertyInfo"));
 	REQUIRE(struct_info);
 	CHECK_EQ(struct_info->count, 6);
 	CHECK_EQ(struct_info->name, "Object.PropertyInfo");

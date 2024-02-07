@@ -74,7 +74,6 @@ public:
 	struct ContinueNode;
 	struct DictionaryNode;
 	struct EnumNode;
-	struct StructNode;
 	struct ExpressionNode;
 	struct ForNode;
 	struct FunctionNode;
@@ -92,6 +91,7 @@ public:
 	struct ReturnNode;
 	struct SelfNode;
 	struct SignalNode;
+	struct StructNode;
 	struct SubscriptNode;
 	struct SuiteNode;
 	struct TernaryOpNode;
@@ -138,7 +138,12 @@ public:
 		Ref<Script> script_type;
 		String script_path;
 		ClassNode *class_type = nullptr;
+		StructNode *struct_type = nullptr;
 
+	private:
+		StructInfo struct_info = StructInfo();
+
+	public:
 		MethodInfo method_info; // For callable/signals.
 		HashMap<StringName, int64_t> enum_values; // For enums.
 
@@ -191,7 +196,8 @@ public:
 
 		GDScriptParser::DataType get_typed_container_type() const;
 
-		const StructInfo *get_struct_info() const;
+		const StructInfo *get_struct_info();
+		void set_struct_info(const StructInfo &p_struct_info) { struct_info = p_struct_info; }
 
 		bool operator==(const DataType &p_other) const {
 			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
@@ -248,6 +254,8 @@ public:
 			method_info = p_other.method_info;
 			enum_values = p_other.enum_values;
 			container_element_types = p_other.container_element_types;
+			struct_type = p_other.struct_type;
+			struct_info = p_other.struct_info;
 		}
 
 		DataType() = default;
@@ -307,7 +315,6 @@ public:
 			CONTINUE,
 			DICTIONARY,
 			ENUM,
-			STRUCT,
 			FOR,
 			FUNCTION,
 			GET_NODE,
@@ -324,6 +331,7 @@ public:
 			RETURN,
 			SELF,
 			SIGNAL,
+			STRUCT,
 			SUBSCRIPT,
 			SUITE,
 			TERNARY_OPERATOR,
@@ -555,22 +563,13 @@ public:
 	};
 
 	struct StructNode : public Node {
-		//		struct Value {
-		//			IdentifierNode *identifier = nullptr;
-		//			ExpressionNode *custom_value = nullptr;
-		//			StructNode *parent_struct = nullptr;
-		//			int index = -1;
-		//			bool resolved = false;
-		//			int line = 0;
-		//			int leftmost_column = 0;
-		//			int rightmost_column = 0;
-		//#ifdef TOOLS_ENABLED
-		//			MemberDocData doc_data;
-		//#endif // TOOLS_ENABLED
-		//		};
-
 		IdentifierNode *identifier = nullptr;
-		StructInfo *struct_info = nullptr;
+		Vector<VariableNode *> members;
+		int index = -1;
+		bool resolved = false;
+		int line = 0;
+		int leftmost_column = 0;
+		int rightmost_column = 0;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -592,6 +591,7 @@ public:
 				ENUM,
 				ENUM_VALUE, // For unnamed enums.
 				GROUP, // For member grouping.
+				STRUCT,
 			};
 
 			Type type = UNDEFINED;
@@ -604,6 +604,7 @@ public:
 				VariableNode *variable;
 				EnumNode *m_enum;
 				AnnotationNode *annotation;
+				StructNode *m_struct;
 			};
 			EnumNode::Value enum_value;
 
@@ -629,6 +630,8 @@ public:
 						return enum_value.identifier->name;
 					case GROUP:
 						return annotation->export_info.name;
+					case STRUCT:
+						return m_struct->identifier->name;
 				}
 				return "";
 			}
@@ -653,6 +656,8 @@ public:
 						return "enum value";
 					case GROUP:
 						return "group";
+					case STRUCT:
+						return "struct";
 				}
 				return "";
 			}
@@ -675,6 +680,8 @@ public:
 						return signal->start_line;
 					case GROUP:
 						return annotation->start_line;
+					case STRUCT:
+						return m_struct->start_line;
 					case UNDEFINED:
 						ERR_FAIL_V_MSG(-1, "Reaching undefined member type.");
 				}
@@ -699,6 +706,8 @@ public:
 						return signal->get_datatype();
 					case GROUP:
 						return DataType();
+					case STRUCT:
+						return m_struct->get_datatype();
 					case UNDEFINED:
 						return DataType();
 				}
@@ -723,6 +732,8 @@ public:
 						return signal;
 					case GROUP:
 						return annotation;
+					case STRUCT:
+						return m_struct;
 					case UNDEFINED:
 						return nullptr;
 				}
@@ -762,6 +773,10 @@ public:
 			Member(AnnotationNode *p_annotation) {
 				type = GROUP;
 				annotation = p_annotation;
+			}
+			Member(StructNode *p_struct) {
+				type = STRUCT;
+				m_struct = p_struct;
 			}
 		};
 
@@ -1396,7 +1411,8 @@ private:
 			FUNCTION = 1 << 5,
 			STATEMENT = 1 << 6,
 			STANDALONE = 1 << 7,
-			CLASS_LEVEL = CLASS | VARIABLE | FUNCTION,
+			STRUCT = 1 << 8,
+			CLASS_LEVEL = CLASS | VARIABLE | FUNCTION | STRUCT,
 		};
 		uint32_t target_kind = 0; // Flags.
 		AnnotationAction apply = nullptr;
@@ -1441,6 +1457,7 @@ private:
 	static ParseRule *get_rule(GDScriptTokenizer::Token::Type p_token_type);
 
 	List<Node *> nodes_in_progress;
+
 	void complete_extents(Node *p_node);
 	void update_extents(Node *p_node);
 	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
@@ -1499,6 +1516,7 @@ private:
 	ParameterNode *parse_parameter();
 	FunctionNode *parse_function(bool p_is_static);
 	void parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type);
+	StructNode *parse_struct(bool p_is_static);
 	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
@@ -1642,6 +1660,7 @@ public:
 		void print_self(SelfNode *p_self);
 		void print_signal(SignalNode *p_signal);
 		void print_statement(Node *p_statement);
+		void print_struct(StructNode *p_struct);
 		void print_subscript(SubscriptNode *p_subscript);
 		void print_suite(SuiteNode *p_suite);
 		void print_ternary_op(TernaryOpNode *p_ternary_op);

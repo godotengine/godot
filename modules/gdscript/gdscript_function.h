@@ -64,14 +64,7 @@ public:
 	Script *script_type = nullptr;
 	Ref<Script> script_type_ref;
 
-	const StructInfo *get_struct_info() const {
-		StructInfo *struct_info = nullptr;
-		Vector<String> names = String(native_type).split("."); // TODO: this splitting logic probably doesn't belong here.
-		if (names.size() == 2) {
-			struct_info = ClassDB::get_struct_info(names[0], names[1]);
-		}
-		return struct_info;
-	};
+	const StructInfo *get_struct_info() const;
 
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
 		if (!has_type) {
@@ -240,6 +233,7 @@ public:
 		OPCODE_CONSTRUCT_VALIDATED, // Only for basic types!
 		OPCODE_CONSTRUCT_ARRAY,
 		OPCODE_CONSTRUCT_TYPED_ARRAY,
+		OPCODE_CONSTRUCT_STRUCT,
 		OPCODE_CONSTRUCT_DICTIONARY,
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
@@ -445,7 +439,8 @@ private:
 	int *_code_ptr = nullptr;
 	const int *_default_arg_ptr = nullptr;
 	mutable Variant *_constants_ptr = nullptr;
-	const StringName *_global_names_ptr = nullptr;
+	const StringName *
+			_global_names_ptr = nullptr;
 	const Variant::ValidatedOperatorEvaluator *_operator_funcs_ptr = nullptr;
 	const Variant::ValidatedSetter *_setters_ptr = nullptr;
 	const Variant::ValidatedGetter *_getters_ptr = nullptr;

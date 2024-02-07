@@ -172,14 +172,14 @@ struct StructInfo {
 	StringName name = StringName();
 	int32_t count = 0;
 
-	const StringName *names = nullptr;
-	const Variant::Type *types = nullptr;
-	const StringName *class_names = nullptr;
-	const StructInfo *const *struct_member_infos = nullptr; // constant array of constant pointers
-	const Variant *default_values = nullptr;
+	Vector<StringName> names;
+	Vector<Variant::Type> types;
+	Vector<StringName> class_names;
+	Vector<const StructInfo *> struct_member_infos;
+	Vector<Variant> default_values;
 
 	StructInfo(){};
-	StructInfo(const StringName &p_name, const int32_t p_count, const StringName *p_names, const Variant::Type *p_types, const StringName *p_class_names, const StructInfo *const *p_struct_member_infos, const Variant *p_default_values) {
+	StructInfo(const StringName &p_name, const int32_t p_count, const Vector<StringName> &p_names, const Vector<Variant::Type> &p_types, const Vector<StringName> &p_class_names, const Vector<const StructInfo *> &p_struct_member_infos, const Vector<Variant> &p_default_values) {
 		name = p_name;
 		count = p_count;
 		names = p_names;
@@ -213,11 +213,11 @@ struct StructLayout {
 		return StructType::get_struct_name();
 	}
 	_FORCE_INLINE_ static const StructInfo &get_struct_info() {
-		static const StringName names[struct_member_count] = { StructMembers::get_name()... };
-		static const Variant::Type types[struct_member_count] = { StructMembers::get_variant_type()... };
-		static const StringName class_names[struct_member_count] = { StructMembers::get_class_name()... };
-		static const StructInfo *const struct_member_infos[struct_member_count] = { StructMembers::get_struct_member_info()... };
-		static const Variant default_values[struct_member_count] = { StructMembers::get_default_value_variant()... };
+		static const Vector<StringName> names = { StructMembers::get_name()... };
+		static const Vector<Variant::Type> types = { StructMembers::get_variant_type()... };
+		static const Vector<StringName> class_names = { StructMembers::get_class_name()... };
+		static const Vector<const StructInfo *> struct_member_infos = { StructMembers::get_struct_member_info()... };
+		static const Vector<Variant> default_values = { StructMembers::get_default_value_variant()... };
 		static const StructInfo info = StructInfo(get_struct_name(), struct_member_count, names, types, class_names, struct_member_infos, default_values);
 		return info;
 	}

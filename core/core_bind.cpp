@@ -1492,7 +1492,7 @@ StringName ClassDB::class_get_integer_constant_enum(const StringName &p_class, c
 }
 
 bool ClassDB::class_has_struct(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance) const {
-	return ::ClassDB::has_struct(p_class, p_struct, p_no_inheritance);
+	return ::ClassDB::get_struct_info(p_class, p_struct, p_no_inheritance) != nullptr;
 }
 
 TypedArray<Dictionary> ClassDB::class_get_struct_list(const StringName &p_class, bool p_no_inheritance) const {
@@ -1515,8 +1515,9 @@ TypedArray<Dictionary> ClassDB::class_get_struct_list(const StringName &p_class,
 }
 
 TypedArray<Dictionary> ClassDB::class_get_struct_members(const StringName &p_class, const StringName &p_struct) const {
+	// TODO: this should return an array of structs if possible without circular reference
 	TypedArray<Dictionary> ret;
-	StructInfo *struct_info = ::ClassDB::get_struct_info(p_class, p_struct);
+	const StructInfo *struct_info = ::ClassDB::get_struct_info(p_class, p_struct);
 	if (!struct_info) {
 		return ret; // TODO: should this be an error?
 	}

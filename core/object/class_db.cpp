@@ -981,33 +981,28 @@ void ClassDB::get_struct_list(const StringName &p_class, List<StructInfo> *r_str
 	}
 }
 
-StructInfo *ClassDB::get_struct_info(const StringName &p_class, const StringName &p_struct) {
+const StructInfo *ClassDB::get_struct_info(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
-	if (!type) {
-		return nullptr;
-	}
-	return type->struct_map.getptr(p_struct);
-}
-
-bool ClassDB::has_struct(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
-	OBJTYPE_RLOCK;
-
-	ClassInfo *type = classes.getptr(p_class);
-
 	while (type) {
-		if (type->struct_map.has(p_name)) {
-			return true;
+		if (const StructInfo *info = type->struct_map.getptr(p_name)) {
+			return info;
 		}
 		if (p_no_inheritance) {
-			return false;
+			return nullptr;
 		}
-
 		type = type->inherits_ptr;
 	}
+	return nullptr;
+}
 
-	return false;
+const StructInfo *ClassDB::get_struct_info(const String &p_qualified_name, bool p_no_inheritance) {
+	Vector<String> names = String(p_qualified_name).split("."); // TODO: what about cases other than size == 2?
+	if (names.size() == 2) {
+		return ClassDB::get_struct_info(names[0], names[1]);
+	}
+	return nullptr;
 }
 
 void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {

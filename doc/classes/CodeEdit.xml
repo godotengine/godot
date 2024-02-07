@@ -592,31 +592,31 @@
 		<constant name="KIND_CLASS" value="0" enum="CodeCompletionKind">
 			Marks the option as a class.
 		</constant>
-		<constant name="KIND_FUNCTION" value="1" enum="CodeCompletionKind">
+		<constant name="KIND_FUNCTION" value="2" enum="CodeCompletionKind">
 			Marks the option as a function.
 		</constant>
-		<constant name="KIND_SIGNAL" value="2" enum="CodeCompletionKind">
+		<constant name="KIND_SIGNAL" value="3" enum="CodeCompletionKind">
 			Marks the option as a Godot signal.
 		</constant>
-		<constant name="KIND_VARIABLE" value="3" enum="CodeCompletionKind">
+		<constant name="KIND_VARIABLE" value="4" enum="CodeCompletionKind">
 			Marks the option as a variable.
 		</constant>
-		<constant name="KIND_MEMBER" value="4" enum="CodeCompletionKind">
+		<constant name="KIND_MEMBER" value="5" enum="CodeCompletionKind">
 			Marks the option as a member.
 		</constant>
-		<constant name="KIND_ENUM" value="5" enum="CodeCompletionKind">
+		<constant name="KIND_ENUM" value="6" enum="CodeCompletionKind">
 			Marks the option as an enum entry.
 		</constant>
-		<constant name="KIND_CONSTANT" value="6" enum="CodeCompletionKind">
+		<constant name="KIND_CONSTANT" value="7" enum="CodeCompletionKind">
 			Marks the option as a constant.
 		</constant>
-		<constant name="KIND_NODE_PATH" value="7" enum="CodeCompletionKind">
+		<constant name="KIND_NODE_PATH" value="8" enum="CodeCompletionKind">
 			Marks the option as a Godot node path.
 		</constant>
-		<constant name="KIND_FILE_PATH" value="8" enum="CodeCompletionKind">
+		<constant name="KIND_FILE_PATH" value="9" enum="CodeCompletionKind">
 			Marks the option as a file path.
 		</constant>
-		<constant name="KIND_PLAIN_TEXT" value="9" enum="CodeCompletionKind">
+		<constant name="KIND_PLAIN_TEXT" value="10" enum="CodeCompletionKind">
 			Marks the option as unclassified or plain text.
 		</constant>
 		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">

@@ -441,8 +441,8 @@ public:
 
 	static void bind_struct(const StringName &p_class, const StructInfo &p_struct_info);
 	static void get_struct_list(const StringName &p_class, List<StructInfo> *r_structs, bool p_no_inheritance = false);
-	static StructInfo *get_struct_info(const StringName &p_class, const StringName &p_struct);
-	static bool has_struct(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance = false);
+	static const StructInfo *get_struct_info(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
+	static const StructInfo *get_struct_info(const String &p_qualified_name, bool p_no_inheritance = false);
 
 	static void set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values);
 	static Vector<Error> get_method_error_return_values(const StringName &p_class, const StringName &p_method);
