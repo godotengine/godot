@@ -72,6 +72,8 @@ future: no idea
 
  */
 
+VARIANT_ENUM_CAST(Spatial::MergingMode);
+
 SpatialGizmo::SpatialGizmo() {
 }
 
@@ -162,6 +164,14 @@ void Spatial::_notification(int p_what) {
 					data.dirty = DIRTY_VECTORS; //global is always dirty upon entering a scene
 				}
 				data.toplevel_active = true;
+			}
+
+			if (data.merging_mode == MERGING_MODE_INHERIT) {
+				bool merging_allowed = true; // Root node default is for merging to be on
+				if (data.parent) {
+					merging_allowed = data.parent->is_merging_allowed();
+				}
+				_propagate_merging_allowed(merging_allowed);
 			}
 
 			data.dirty |= DIRTY_GLOBAL; //global is always dirty upon entering a scene
@@ -671,6 +681,35 @@ void Spatial::_propagate_visibility_changed() {
 	}
 }
 
+void Spatial::_propagate_merging_allowed(bool p_merging_allowed) {
+	switch (data.merging_mode) {
+		case MERGING_MODE_INHERIT:
+			// Keep the parent p_allow_merging.
+			break;
+		case MERGING_MODE_OFF: {
+			p_merging_allowed = false;
+		} break;
+		case MERGING_MODE_ON: {
+			p_merging_allowed = true;
+		} break;
+	}
+
+	// No change? No need to propagate further.
+	if (data.merging_allowed == p_merging_allowed) {
+		return;
+	}
+
+	data.merging_allowed = p_merging_allowed;
+
+	for (List<Spatial *>::Element *E = data.children.front(); E; E = E->next()) {
+		Spatial *c = E->get();
+		if (!c) {
+			continue;
+		}
+		c->_propagate_merging_allowed(p_merging_allowed);
+	}
+}
+
 void Spatial::show() {
 	if (data.visible) {
 		return;
@@ -850,6 +889,32 @@ bool Spatial::is_local_transform_notification_enabled() const {
 	return data.notify_local_transform;
 }
 
+void Spatial::set_merging_mode(MergingMode p_mode) {
+	if (data.merging_mode == p_mode) {
+		return;
+	}
+
+	data.merging_mode = p_mode;
+
+	bool merging_allowed = true; // Default for root node.
+
+	switch (p_mode) {
+		case MERGING_MODE_INHERIT: {
+			if (get_parent_spatial()) {
+				merging_allowed = get_parent_spatial()->is_merging_allowed();
+			}
+		} break;
+		case MERGING_MODE_OFF: {
+			merging_allowed = false;
+		} break;
+		case MERGING_MODE_ON: {
+			merging_allowed = true;
+		} break;
+	}
+
+	_propagate_merging_allowed(merging_allowed);
+}
+
 void Spatial::force_update_transform() {
 	ERR_FAIL_COND(!is_inside_tree());
 	if (!xform_change.in_list()) {
@@ -925,6 +990,9 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("look_at", "target", "up"), &Spatial::look_at);
 	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up"), &Spatial::look_at_from_position);
 
+	ClassDB::bind_method(D_METHOD("set_merging_mode", "mode"), &Spatial::set_merging_mode);
+	ClassDB::bind_method(D_METHOD("get_merging_mode"), &Spatial::get_merging_mode);
+
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Spatial::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Spatial::to_global);
 
@@ -934,6 +1002,10 @@ void Spatial::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_GAMEPLAY);
 	BIND_CONSTANT(NOTIFICATION_EXIT_GAMEPLAY);
+
+	BIND_ENUM_CONSTANT(MERGING_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(MERGING_MODE_OFF);
+	BIND_ENUM_CONSTANT(MERGING_MODE_ON);
 
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_NONE, "", 0), "set_translation", "get_translation");
@@ -951,6 +1023,8 @@ void Spatial::_bind_methods() {
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "SpatialGizmo", 0), "set_gizmo", "get_gizmo");
+	ADD_GROUP("Misc", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "merging_mode", PROPERTY_HINT_ENUM, "Inherit,Off,On"), "set_merging_mode", "get_merging_mode");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("gameplay_entered"));
@@ -971,6 +1045,8 @@ Spatial::Spatial() :
 	data.visible = true;
 	data.disable_scale = false;
 	data.vi_visible = true;
+	data.merging_allowed = true;
+	data.merging_mode = MERGING_MODE_INHERIT;
 
 	data.client_physics_interpolation_data = nullptr;
 

@@ -266,6 +266,11 @@
 		<member name="global_translation" type="Vector3" setter="set_global_translation" getter="get_global_translation">
 			Global position of this node. This is equivalent to [code]global_transform.origin[/code].
 		</member>
+		<member name="merging_mode" type="int" setter="set_merging_mode" getter="get_merging_mode" enum="Spatial.MergingMode" default="0">
+			The merging mode determines whether merging features of the engine ([MergeGroup] and [RoomManager]) will attempt to operate on branches of the scene tree.
+			The default mode inherited from the scene tree root is [constant MERGING_MODE_ON].
+			[b]Note:[/b] Merging mode determines whether the merging is [b]allowed[/b] to be performed. It does not guarantee that merging will occur, which depends on whether there are suitable matching objects.
+		</member>
 		<member name="position" type="Vector3" setter="set_translation" getter="get_translation">
 			Local position of this node. This is a forward-compatible alias for [member translation].
 		</member>
@@ -327,6 +332,15 @@
 		</constant>
 		<constant name="NOTIFICATION_EXIT_GAMEPLAY" value="46">
 			Spatial nodes receives this notification if the portal system gameplay monitor detects they have exited the gameplay area.
+		</constant>
+		<constant name="MERGING_MODE_INHERIT" value="0" enum="MergingMode">
+			Inherits merging mode from the node's parent. For the root node, it is equivalent to [constant MERGING_MODE_ON]. Default.
+		</constant>
+		<constant name="MERGING_MODE_OFF" value="1" enum="MergingMode">
+			Turn off merging in this node and children set to [constant MERGING_MODE_INHERIT].
+		</constant>
+		<constant name="MERGING_MODE_ON" value="2" enum="MergingMode">
+			Turn on merging in this node and children set to [constant MERGING_MODE_INHERIT].
 		</constant>
 	</constants>
 </class>

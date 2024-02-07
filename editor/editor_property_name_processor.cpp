@@ -126,6 +126,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["commentfocus"] = "Comment Focus";
 	capitalize_string_remaps["cpu"] = "CPU";
 	capitalize_string_remaps["csg"] = "CSG";
+	capitalize_string_remaps["csgs"] = "CSGs";
 	capitalize_string_remaps["db"] = "dB";
 	capitalize_string_remaps["defaultfocus"] = "Default Focus";
 	capitalize_string_remaps["defaultframe"] = "Default Frame";

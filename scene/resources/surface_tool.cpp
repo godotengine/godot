@@ -789,6 +789,62 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 	_create_list_from_arrays(arr[shape_idx], &vertex_array, &index_array, format);
 }
 
+// returns number of indices found within the subset
+int SurfaceTool::create_from_subset(const SurfaceTool &p_source, const LocalVector<uint32_t> &p_ids, uint32_t p_subset_id) {
+	clear();
+
+	bool was_indexed = p_source.index_array.size() != 0;
+
+	// expecting deindexed input for now as easier to deal with
+	ERR_FAIL_COND_V(was_indexed, 0);
+
+	// only deals with triangles
+	ERR_FAIL_COND_V(p_source.primitive != Mesh::PRIMITIVE_TRIANGLES, 0);
+	primitive = p_source.primitive;
+
+	uint32_t num_source_tris = p_source.vertex_array.size() / 3;
+	DEV_ASSERT((p_source.vertex_array.size() % 3) == 0);
+
+	ERR_FAIL_COND_V(num_source_tris != p_ids.size(), 0);
+
+	const Vertex *v[3];
+	const Vertex *input = p_source.vertex_array.ptr();
+
+	HashMap<Vertex, int, VertexHasher> indices;
+
+	for (uint32_t t = 0; t < num_source_tris; t++) {
+		v[0] = input++;
+		v[1] = input++;
+		v[2] = input++;
+
+		if (p_ids[t] == p_subset_id) {
+			// we can use this triangle
+			for (int i = 0; i < 3; i++) {
+				const Vertex &vert = *v[i];
+
+				int *idxptr = indices.getptr(vert);
+
+				int idx;
+				if (!idxptr) {
+					idx = indices.size();
+					vertex_array.push_back(vert);
+					indices[vert] = idx;
+				} else {
+					idx = *idxptr;
+				}
+
+				index_array.push_back(idx);
+			} // for i
+		} // bound intersects
+	}
+
+	// steal the format from the source surface tool
+	format = p_source.format;
+	format |= Mesh::ARRAY_FORMAT_INDEX;
+
+	return get_num_draw_vertices();
+}
+
 void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform) {
 	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
 	if (vertex_array.size() == 0) {

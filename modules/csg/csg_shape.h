@@ -39,6 +39,8 @@
 #include "scene/resources/concave_polygon_shape.h"
 #include "thirdparty/misc/mikktspace.h"
 
+class MeshInstance;
+
 class CSGShape : public GeometryInstance {
 	GDCLASS(CSGShape, GeometryInstance);
 
@@ -131,6 +133,8 @@ public:
 
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+
+	bool split_by_surface(Vector<Variant> p_destination_mesh_instances);
 
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;

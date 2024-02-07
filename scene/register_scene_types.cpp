@@ -194,6 +194,7 @@
 #include "scene/3d/label_3d.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
+#include "scene/3d/merge_group.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
@@ -465,6 +466,7 @@ void register_scene_types() {
 	ClassDB::register_class<RoomManager>();
 	ClassDB::register_class<Occluder>();
 	ClassDB::register_class<Portal>();
+	ClassDB::register_class<MergeGroup>();
 
 	ClassDB::register_class<RootMotionView>();
 	ClassDB::set_class_enabled("RootMotionView", false); //disabled by default, enabled by editor

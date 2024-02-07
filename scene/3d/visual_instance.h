@@ -140,7 +140,7 @@ public:
 	ShadowCastingSetting get_cast_shadows_setting() const;
 
 	void set_generate_lightmap(bool p_enabled);
-	bool get_generate_lightmap();
+	bool get_generate_lightmap() const;
 
 	void set_lightmap_scale(LightmapScale p_scale);
 	LightmapScale get_lightmap_scale() const;

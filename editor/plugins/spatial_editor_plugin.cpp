@@ -77,6 +77,8 @@
 #define MIN_FOV 0.01
 #define MAX_FOV 179
 
+bool SpatialEditor::_prevent_gizmo_generation = false;
+
 void ViewportNavigationControl::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		if (!is_connected("mouse_exited", this, "_on_mouse_exited")) {
@@ -6685,6 +6687,10 @@ void SpatialEditor::move_control_to_right_panel(Control *p_control) {
 }
 
 void SpatialEditor::_request_gizmo(Object *p_obj) {
+	if (_prevent_gizmo_generation) {
+		return;
+	}
+
 	Spatial *sp = Object::cast_to<Spatial>(p_obj);
 	if (!sp) {
 		return;
