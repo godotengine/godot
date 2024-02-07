@@ -52,7 +52,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	int menu_options = 0;
 
 	Ref<EditorHTTPServer> server;
-	bool server_quit = false;
+	SafeNumeric<bool> server_quit;
 	Mutex server_lock;
 	Thread server_thread;
 
