@@ -213,7 +213,7 @@ its functionality to IPv4 only.
 ## etcpak
 
 - Upstream: https://github.com/wolfpld/etcpak
-- Version: 1.0 (153f0e04a18b93c277684b577365210adcf8e11c, 2022)
+- Version: git (5380688660a3801aec4b25483366027fe0442d7b, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -224,12 +224,6 @@ Files extracted from upstream source:
   ProcessDxtc.{cpp,hpp} Tables.{cpp,hpp} Vector.hpp
   ```
 - `AUTHORS.txt` and `LICENSE.txt`
-
-Two files (`ProcessRGB.{cpp,hpp}`) have been modified to provide ETC2_R and ETC2_RG compression,
-the changes are based on the existing code.
-
-Two files (`ProcessRgtc.{cpp,hpp}`) have been added to provide RGTC compression implementation,
-based on library's `ProcessDxtc.{cpp,hpp}`.
 
 ## fonts
 
