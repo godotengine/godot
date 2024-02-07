@@ -39,7 +39,9 @@
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/struct.h"
 #include "core/variant/variant.h"
+#include "struct_generator.h"
 
 class ArrayPrivate {
 public:
@@ -47,6 +49,38 @@ public:
 	Vector<Variant> array;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
+
+	int32_t member_count = 0;
+
+	_FORCE_INLINE_ bool is_struct() const {
+		return typed.is_struct();
+	}
+
+	_FORCE_INLINE_ bool is_struct_array() const {
+		return member_count > 0; // TODO: this seems fishy
+	}
+
+	_FORCE_INLINE_ int32_t find_member_index(const StringName &p_member) const {
+		// TODO: is there a better way to do this than linear search?
+		ERR_FAIL_NULL_V_MSG(typed.struct_info, -1, "Can only find member on a Struct");
+		for (int32_t i = 0; i < typed.struct_info->count; i++) {
+			if (p_member == typed.struct_info->names[i]) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	_FORCE_INLINE_ int32_t rfind_member_index(const StringName &p_member) const {
+		// TODO: is there a better way to do this than linear search?
+		ERR_FAIL_NULL_V_MSG(typed.struct_info, -1, "Can only find member on a Struct");
+		for (int32_t i = typed.struct_info->count - 1; i >= 0; i--) {
+			if (p_member == typed.struct_info->names[i]) {
+				return i;
+			}
+		}
+		return -1;
+	}
 };
 
 void Array::_ref(const Array &p_from) const {
@@ -202,7 +236,7 @@ void Array::assign(const Array &p_array) {
 	const ContainerTypeValidate &typed = _p->typed;
 	const ContainerTypeValidate &source_typed = p_array._p->typed;
 
-	if (typed == source_typed || typed.type == Variant::NIL || (source_typed.type == Variant::OBJECT && typed.can_reference(source_typed))) {
+	if (typed.can_reference(source_typed)) {
 		// from same to same or
 		// from anything to variants or
 		// from subclasses to base classes
@@ -218,8 +252,9 @@ void Array::assign(const Array &p_array) {
 		// from base classes to subclasses
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
-			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(element.get_type()), Variant::get_type_name(typed.type)));
+			const Variant::Type type = source[i].get_type();
+			if (type != Variant::NIL && (type != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
+				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(type), Variant::get_type_name(typed.type)));
 			}
 		}
 		_p->array = p_array._p->array;
@@ -232,6 +267,21 @@ void Array::assign(const Array &p_array) {
 	Vector<Variant> array;
 	array.resize(size);
 	Variant *data = array.ptrw();
+
+	if (is_struct()) {
+		if (source_typed.type != Variant::NIL) {
+			ERR_FAIL_COND_MSG(typed != source_typed, "Attempted to assign an array to a struct with incompatible types.");
+			_p->array = p_array._p->array;
+			return;
+		}
+		for (int i = 0; i < size; i++) {
+			ValidatedVariant validated = typed.validate(source[i], "assign", i);
+			ERR_FAIL_COND_MSG(!validated.valid, vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(source[i].get_type()), Variant::get_type_name(typed.type)));
+			array.write[i] = validated.value;
+		}
+		_p->array = array;
+		return;
+	}
 
 	if (source_typed.type == Variant::NIL && typed.type != Variant::OBJECT) {
 		// from variants to primitives
@@ -265,17 +315,21 @@ void Array::assign(const Array &p_array) {
 
 void Array::push_back(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "push_back"));
-	_p->array.push_back(value);
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
+	ValidatedVariant validated = _p->typed.validate(p_value, "push_back");
+	ERR_FAIL_COND(!validated.valid);
+	_p->array.push_back(validated.value);
 }
 
 void Array::append_array(const Array &p_array) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 
 	Vector<Variant> validated_array = p_array._p->array;
 	for (int i = 0; i < validated_array.size(); ++i) {
-		ERR_FAIL_COND(!_p->typed.validate(validated_array.write[i], "append_array"));
+		ValidatedVariant validated = _p->typed.validate(validated_array[i], "append_array");
+		validated_array.write[i] = validated.value;
+		ERR_FAIL_COND(!validated.valid);
 	}
 
 	_p->array.append_array(validated_array);
@@ -283,6 +337,7 @@ void Array::append_array(const Array &p_array) {
 
 Error Array::resize(int p_new_size) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), ERR_LOCKED, "Array is a struct."); // TODO: better error message
 	Variant::Type &variant_type = _p->typed.type;
 	int old_size = _p->array.size();
 	Error err = _p->array.resize_zeroed(p_new_size);
@@ -296,23 +351,26 @@ Error Array::resize(int p_new_size) {
 
 Error Array::insert(int p_pos, const Variant &p_value) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "insert"), ERR_INVALID_PARAMETER);
-	return _p->array.insert(p_pos, value);
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), ERR_LOCKED, "Array is a struct."); // TODO: better error message
+	ValidatedVariant validated = _p->typed.validate(p_value, "insert");
+	ERR_FAIL_COND_V(!validated.valid, ERR_INVALID_PARAMETER);
+	return _p->array.insert(p_pos, validated.value);
 }
 
 void Array::fill(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "fill"));
-	_p->array.fill(value);
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
+	ValidatedVariant validated = _p->typed.validate(p_value, "fill");
+	ERR_FAIL_COND(!validated.valid);
+	_p->array.fill(validated.value);
 }
 
 void Array::erase(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "erase"));
-	_p->array.erase(value);
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
+	ValidatedVariant validated = _p->typed.validate(p_value, "erase");
+	ERR_FAIL_COND(!validated.valid);
+	_p->array.erase(validated.value);
 }
 
 Variant Array::front() const {
@@ -334,8 +392,15 @@ int Array::find(const Variant &p_value, int p_from) const {
 	if (_p->array.size() == 0) {
 		return -1;
 	}
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "find"), -1);
+	if (is_struct()) {
+		ERR_FAIL_COND_V_MSG(!p_value.is_string(), -1, "Can only find a String or StringName in a Struct.");
+		StringName member = p_value;
+		return find_member(member);
+	}
+
+	ValidatedVariant validated = _p->typed.validate(p_value, "find");
+
+	ERR_FAIL_COND_V(!validated.valid, -1);
 
 	int ret = -1;
 
@@ -344,7 +409,7 @@ int Array::find(const Variant &p_value, int p_from) const {
 	}
 
 	for (int i = p_from; i < size(); i++) {
-		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
+		if (StringLikeVariantComparator::compare(_p->array[i], validated.value)) {
 			ret = i;
 			break;
 		}
@@ -357,8 +422,14 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	if (_p->array.size() == 0) {
 		return -1;
 	}
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "rfind"), -1);
+	if (is_struct()) {
+		ERR_FAIL_COND_V_MSG(!p_value.is_string(), -1, "Can only find a String or StringName in a Struct.");
+		StringName member = p_value;
+		return rfind_member(member);
+	}
+
+	ValidatedVariant validated = _p->typed.validate(p_value, "rfind");
+	ERR_FAIL_COND_V(!validated.valid, -1);
 
 	if (p_from < 0) {
 		// Relative offset from the end
@@ -370,7 +441,7 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	}
 
 	for (int i = p_from; i >= 0; i--) {
-		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
+		if (StringLikeVariantComparator::compare(_p->array[i], validated.value)) {
 			return i;
 		}
 	}
@@ -379,15 +450,15 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 }
 
 int Array::count(const Variant &p_value) const {
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "count"), 0);
+	ValidatedVariant validated = _p->typed.validate(p_value, "count");
+	ERR_FAIL_COND_V(!validated.valid, 0);
 	if (_p->array.size() == 0) {
 		return 0;
 	}
 
 	int amount = 0;
 	for (int i = 0; i < _p->array.size(); i++) {
-		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
+		if (StringLikeVariantComparator::compare(_p->array[i], validated.value)) {
 			amount++;
 		}
 	}
@@ -396,27 +467,70 @@ int Array::count(const Variant &p_value) const {
 }
 
 bool Array::has(const Variant &p_value) const {
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "use 'has'"), false);
+	ValidatedVariant validated = _p->typed.validate(p_value, "use 'has'");
+	ERR_FAIL_COND_V(!validated.valid, false);
 
-	return find(value) != -1;
+	return find(validated.value) != -1;
 }
 
 void Array::remove_at(int p_pos) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	_p->array.remove_at(p_pos);
 }
 
 void Array::set(int p_idx, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "set"));
-
-	operator[](p_idx) = value;
+	ERR_FAIL_COND_MSG(_p->is_struct() && (p_idx >= size()), "Array is a struct."); // TODO: better error message
+	ValidatedVariant validated = _p->typed.validate(p_value, "set", is_struct() ? p_idx : -1);
+	ERR_FAIL_COND(!validated.valid); // TODO: wrong error message
+	operator[](p_idx) = validated.value;
 }
 
 const Variant &Array::get(int p_idx) const {
 	return operator[](p_idx);
+}
+
+void Array::set_named(const StringName &p_member, const Variant &p_value) {
+	CRASH_COND_MSG(!_p->is_struct(), "Array is not a struct"); // TODO: should this crash?
+	int32_t index = _p->find_member_index(p_member);
+	CRASH_COND_MSG(index < 0, vformat("member '%s' not found", p_member));
+	set(index, p_value);
+}
+
+Variant &Array::get_named(const StringName &p_member) {
+	CRASH_COND_MSG(!_p->is_struct(), "Array is not a struct"); // TODO: should this crash?
+	int32_t index = _p->find_member_index(p_member);
+	CRASH_COND_MSG(index < 0, vformat("member '%s' not found", p_member));
+	return operator[](index);
+}
+
+const Variant &Array::get_named(const StringName &p_member) const {
+	CRASH_COND_MSG(!_p->is_struct(), "Array is not a struct"); // TODO: should this crash?
+	int32_t index = _p->find_member_index(p_member);
+	CRASH_COND_MSG(index < 0, vformat("member '%s' not found", p_member));
+	return get(index);
+}
+
+const StringName Array::get_member_name(int p_idx) const {
+	// TODO: probably need some error handling here.
+	return _p->typed.struct_info->names[p_idx];
+}
+
+const int Array::find_member(const StringName &p_member) const {
+	return _p->find_member_index(p_member);
+}
+
+const int Array::rfind_member(const StringName &p_member) const {
+	return _p->rfind_member_index(p_member);
+}
+
+const Variant *Array::getptr(const StringName &p_member) const {
+	int index = _p->find_member_index(p_member);
+	if (index < 0) {
+		return nullptr;
+	}
+	return &get(index);
 }
 
 Array Array::duplicate(bool p_deep) const {
@@ -613,16 +727,19 @@ struct _ArrayVariantSort {
 
 void Array::sort() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	_p->array.sort_custom<_ArrayVariantSort>();
 }
 
 void Array::sort_custom(const Callable &p_callable) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	_p->array.sort_custom<CallableComparator, true>(p_callable);
 }
 
 void Array::shuffle() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	const int n = _p->array.size();
 	if (n < 2) {
 		return;
@@ -637,33 +754,36 @@ void Array::shuffle() {
 }
 
 int Array::bsearch(const Variant &p_value, bool p_before) const {
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "binary search"), -1);
+	ValidatedVariant validated = _p->typed.validate(p_value, "binary search");
+	ERR_FAIL_COND_V(!validated.valid, -1);
 	SearchArray<Variant, _ArrayVariantSort> avs;
-	return avs.bisect(_p->array.ptrw(), _p->array.size(), value, p_before);
+	return avs.bisect(_p->array.ptrw(), _p->array.size(), validated.value, p_before);
 }
 
 int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before) const {
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "custom binary search"), -1);
+	ValidatedVariant validated = _p->typed.validate(p_value, "custom binary search");
+	ERR_FAIL_COND_V(!validated.valid, -1);
 
-	return _p->array.bsearch_custom<CallableComparator>(value, p_before, p_callable);
+	return _p->array.bsearch_custom<CallableComparator>(validated.value, p_before, p_callable);
 }
 
 void Array::reverse() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
 	_p->array.reverse();
 }
 
 void Array::push_front(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "push_front"));
-	_p->array.insert(0, value);
+	ERR_FAIL_COND_MSG(_p->is_struct(), "Array is a struct."); // TODO: better error message
+	ValidatedVariant validated = _p->typed.validate(p_value, "push_front");
+	ERR_FAIL_COND(!validated.valid);
+	_p->array.insert(0, validated.value);
 }
 
 Variant Array::pop_back() {
 	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), Variant(), "Array is a struct."); // TODO: better error message
 	if (!_p->array.is_empty()) {
 		const int n = _p->array.size() - 1;
 		const Variant ret = _p->array.get(n);
@@ -675,6 +795,7 @@ Variant Array::pop_back() {
 
 Variant Array::pop_front() {
 	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), Variant(), "Array is a struct."); // TODO: better error message
 	if (!_p->array.is_empty()) {
 		const Variant ret = _p->array.get(0);
 		_p->array.remove_at(0);
@@ -685,6 +806,7 @@ Variant Array::pop_front() {
 
 Variant Array::pop_at(int p_pos) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), Variant(), "Array is a struct."); // TODO: better error message
 	if (_p->array.is_empty()) {
 		// Return `null` without printing an error to mimic `pop_back()` and `pop_front()` behavior.
 		return Variant();
@@ -764,23 +886,43 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 	assign(p_from);
 }
 
+Error Array::validate_set_type() {
+	// TODO: better return values?
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
+	ERR_FAIL_COND_V_MSG(_p->is_struct(), ERR_LOCKED, "Array is a struct."); // TODO: better error message
+	ERR_FAIL_COND_V_MSG(_p->array.size() > 0, ERR_LOCKED, "Type can only be set when array is empty.");
+	ERR_FAIL_COND_V_MSG(_p->refcount.get() > 1, ERR_LOCKED, "Type can only be set when array has no more than one user.");
+	ERR_FAIL_COND_V_MSG(_p->typed.type != Variant::NIL, ERR_LOCKED, "Type can only be set once.");
+	return OK;
+}
+
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
-	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
-	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
-	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
-	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
+	if (validate_set_type() != OK) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(p_class_name != StringName() && !(p_type == Variant::OBJECT || p_type == Variant::ARRAY), "Class names can only be set for type OBJECT or ARRAY");
 	Ref<Script> script = p_script;
 	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
 
-	_p->typed.type = Variant::Type(p_type);
-	_p->typed.class_name = p_class_name;
-	_p->typed.script = script;
-	_p->typed.where = "TypedArray";
+	_p->typed = ContainerTypeValidate(Variant::Type(p_type), p_class_name, script, "TypedArray");
+}
+
+void Array::set_struct(const StructInfo &p_struct_info) {
+	if (validate_set_type() != OK) {
+		return;
+	}
+	const int32_t size = p_struct_info.count;
+	_p->array.resize(size);
+	_p->member_count = size;
+	_p->typed = ContainerTypeValidate(p_struct_info);
 }
 
 bool Array::is_typed() const {
 	return _p->typed.type != Variant::NIL;
+}
+
+bool Array::is_struct() const {
+	return _p->is_struct();
 }
 
 bool Array::is_same_typed(const Array &p_other) const {
@@ -799,6 +941,10 @@ Variant Array::get_typed_script() const {
 	return _p->typed.script;
 }
 
+const StructInfo *Array::get_struct_info() const {
+	return _p->typed.struct_info;
+}
+
 void Array::make_read_only() {
 	if (_p->read_only == nullptr) {
 		_p->read_only = memnew(Variant);
@@ -812,6 +958,42 @@ bool Array::is_read_only() const {
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
+}
+
+Array::Array(const Array &p_from, const StructInfo &p_struct_info) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init(); // TODO: should this be _ref(p_from)?
+
+	set_struct(p_struct_info);
+	assign(p_from);
+}
+
+Array::Array(const Dictionary &p_from, const StructInfo &p_struct_info) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init(); // TODO: should this be _ref(p_from)?
+
+	set_struct(p_struct_info);
+	Variant *pw = _p->array.ptrw();
+	for (int32_t i = 0; i < p_struct_info.count; i++) {
+		pw[i] = p_from.has(p_struct_info.names[i]) ? p_from[p_struct_info.names[i]] : p_struct_info.default_values[i];
+	}
+}
+
+Array::Array(const StructInfo &p_struct_info) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+
+	set_struct(p_struct_info);
+	Variant *pw = _p->array.ptrw();
+	for (int32_t i = 0; i < p_struct_info.count; i++) {
+		pw[i] = p_struct_info.default_values[i];
+	}
+}
+
+Array::Array(const Vector<Variant> &p_vec) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	_p->array = p_vec; // TODO: is this right? Do I need to copy?
 }
 
 Array::Array() {

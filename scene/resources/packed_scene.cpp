@@ -864,13 +864,13 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 	//NodeData &nd = nodes[node_map[p_node]];
 
 	for (const MethodInfo &E : _signals) {
-		List<Node::Connection> conns;
+		List<Connection> conns;
 		p_node->get_signal_connection_list(E.name, &conns);
 
 		conns.sort();
 
-		for (const Node::Connection &F : conns) {
-			const Node::Connection &c = F;
+		for (const Connection &F : conns) {
+			const Connection &c = F;
 
 			if (!(c.flags & CONNECT_PERSIST)) { //only persistent connections get saved
 				continue;

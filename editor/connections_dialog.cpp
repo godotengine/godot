@@ -1000,7 +1000,7 @@ void ConnectionsDock::_tree_item_selected() {
 		connect_button->set_text(TTR("Disconnect"));
 		connect_button->set_icon(get_editor_theme_icon(SNAME("Unlinked")));
 
-		Object::Connection connection = item->get_metadata(0);
+		Connection connection = item->get_metadata(0);
 		connect_button->set_disabled(_is_connection_inherited(connection));
 	} else {
 		connect_button->set_text(TTR("Connect..."));
@@ -1447,10 +1447,10 @@ void ConnectionsDock::update_tree() {
 			signal_item->set_tooltip_text(0, "signal|" + doc_class_name + "|" + String(signal_name) + "|" + signame.trim_prefix(mi.name));
 
 			// List existing connections.
-			List<Object::Connection> existing_connections;
+			List<Connection> existing_connections;
 			selected_node->get_signal_connection_list(signal_name, &existing_connections);
 
-			for (const Object::Connection &F : existing_connections) {
+			for (const Connection &F : existing_connections) {
 				Connection connection = F;
 				if (!(connection.flags & CONNECT_PERSIST)) {
 					continue;

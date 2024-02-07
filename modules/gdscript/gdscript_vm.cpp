@@ -111,28 +111,34 @@ void GDScriptFunction::_profile_native_call(uint64_t p_t_taken, const String &p_
 #endif // DEBUG_ENABLED
 
 Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataType &p_data_type) {
-	if (p_data_type.kind == GDScriptDataType::BUILTIN) {
-		if (p_data_type.builtin_type == Variant::ARRAY) {
-			Array array;
-			// Typed array.
-			if (p_data_type.has_container_element_type(0)) {
-				const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
-				array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+	switch (p_data_type.kind) {
+		case GDScriptDataType::BUILTIN: {
+			switch (p_data_type.builtin_type) {
+				case Variant::ARRAY: {
+					if (const StructInfo *info = p_data_type.get_struct_info()) {
+						return Array(*info);
+					}
+					Array array;
+					// Typed array.
+					if (p_data_type.has_container_element_type(0)) {
+						const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
+						array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+					}
+					return array;
+				}
+				default:
+					Callable::CallError ce;
+					Variant variant;
+					Variant::construct(p_data_type.builtin_type, variant, nullptr, 0, ce);
+
+					ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, Variant());
+
+					return variant;
 			}
-
-			return array;
-		} else {
-			Callable::CallError ce;
-			Variant variant;
-			Variant::construct(p_data_type.builtin_type, variant, nullptr, 0, ce);
-
-			ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, Variant());
-
-			return variant;
 		}
+		default:
+			return Variant();
 	}
-
-	return Variant();
 }
 
 String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const {
@@ -247,6 +253,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CONSTRUCT_VALIDATED,                  \
 		&&OPCODE_CONSTRUCT_ARRAY,                      \
 		&&OPCODE_CONSTRUCT_TYPED_ARRAY,                \
+		&&OPCODE_CONSTRUCT_STRUCT,                     \
 		&&OPCODE_CONSTRUCT_DICTIONARY,                 \
 		&&OPCODE_CALL,                                 \
 		&&OPCODE_CALL_RETURN,                          \
@@ -1642,6 +1649,36 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_CONSTRUCT_STRUCT) {
+				LOAD_INSTRUCTION_ARGS
+				CHECK_SPACE(3 + instr_arg_count);
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+
+				GET_INSTRUCTION_ARG(script_type, argc + 1);
+				const GDScript *gd_script = Object::cast_to<GDScript>(script_type->operator Object *());
+				GD_ERR_BREAK(!gd_script);
+				int struct_name_idx = _code_ptr[ip + 2];
+				GD_ERR_BREAK(struct_name_idx < 0 || struct_name_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[struct_name_idx];
+				const StructInfo *struct_info = gd_script->get_struct_info(native_type);
+				GD_ERR_BREAK(!struct_info);
+				GD_ERR_BREAK(struct_info->count < argc);
+				Array array = Array(*struct_info);
+				for (int i = 0; i < argc; i++) {
+					array[i] = *(instruction_args[i]);
+				}
+
+				GET_INSTRUCTION_ARG(dst, argc);
+				*dst = Variant(); // Clear potential previous struct.
+
+				*dst = Array(array, *struct_info);
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_CONSTRUCT_DICTIONARY) {
 				LOAD_INSTRUCTION_ARGS
 				CHECK_SPACE(2 + instr_arg_count);
@@ -1660,7 +1697,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_INSTRUCTION_ARG(dst, argc * 2);
 
 				*dst = dict;
-
 				ip += 2;
 			}
 			DISPATCH_OPCODE;
@@ -2303,7 +2339,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					retvalue = gdfs;
 
-					Error err = sig.connect(Callable(gdfs.ptr(), "_signal_callback").bind(retvalue), Object::CONNECT_ONE_SHOT);
+					Error err = sig.connect(Callable(gdfs.ptr(), "_signal_callback").bind(retvalue), CONNECT_ONE_SHOT);
 					if (err != OK) {
 						err_text = "Error connecting to signal: " + sig.get_name() + " during await.";
 						OPCODE_BREAK;

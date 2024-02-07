@@ -1,4 +1,4 @@
-static func get_type(property: Dictionary, is_return: bool = false) -> String:
+static func get_type(property, is_return: bool = false) -> String:
 	match property.type:
 		TYPE_NIL:
 			if property.usage & PROPERTY_USAGE_NIL_IS_VARIANT:
@@ -20,7 +20,7 @@ static func get_type(property: Dictionary, is_return: bool = false) -> String:
 	return type_string(property.type)
 
 
-static func get_property_signature(property: Dictionary, is_static: bool = false) -> String:
+static func get_property_signature(property, is_static: bool = false) -> String:
 	var result: String = ""
 	if not (property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE):
 		printerr("Missing `PROPERTY_USAGE_SCRIPT_VARIABLE` flag.")
@@ -31,8 +31,11 @@ static func get_property_signature(property: Dictionary, is_static: bool = false
 	result += "var " + property.name + ": " + get_type(property)
 	return result
 
+static func property_to_string(property) -> String:
+	return "name: {name}, class_name: {class_name}, type: {type}, hint: {hint}, hint_string: {hint_string}, usage: {usage}".format(property)
 
-static func get_property_additional_info(property: Dictionary) -> String:
+
+static func get_property_additional_info(property) -> String:
 	return 'hint=%s hint_string="%s" usage=%s' % [
 		get_property_hint_name(property.hint).trim_prefix("PROPERTY_HINT_"),
 		str(property.hint_string).c_escape(),
@@ -40,19 +43,19 @@ static func get_property_additional_info(property: Dictionary) -> String:
 	]
 
 
-static func get_method_signature(method: Dictionary, is_signal: bool = false) -> String:
+static func get_method_signature(method, is_signal: bool = false) -> String:
 	var result: String = ""
 	if method.flags & METHOD_FLAG_STATIC:
 		result += "static "
 	result += ("signal " if is_signal else "func ") + method.name + "("
 
-	var args: Array[Dictionary] = method.args
+	var args: Array = method.args
 	var default_args: Array = method.default_args
 	var mandatory_argc: int = args.size() - default_args.size()
 	for i in args.size():
 		if i > 0:
 			result += ", "
-		var arg: Dictionary = args[i]
+		var arg = args[i]
 		result += arg.name + ": " + get_type(arg)
 		if i >= mandatory_argc:
 			result += " = " + var_to_str(default_args[i - mandatory_argc])

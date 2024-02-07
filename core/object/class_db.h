@@ -77,6 +77,20 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 
 #endif
 
+// Moved this here so that I don't have to #include struct.h
+//struct StructInfo {
+//	StringName name = StringName();
+//	uint32_t count = 0;
+//
+//	LocalVector<StringName> names;
+//	LocalVector<Variant::Type> types;
+//	LocalVector<StringName> class_names;
+//	LocalVector<Variant> default_values;
+//
+//	StructInfo(const StringName &p_name, uint32_t p_count, const StructMember &(*p_get_member)(uint32_t));
+//	StructInfo(){};
+//};
+
 class ClassDB {
 public:
 	enum APIType {
@@ -113,6 +127,7 @@ public:
 		};
 
 		HashMap<StringName, EnumInfo> enum_map;
+		HashMap<StringName, StructInfo> struct_map;
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
@@ -384,6 +399,7 @@ public:
 	static void add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix = "", int p_indent_depth = 0);
 	static void add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage = PROPERTY_USAGE_DEFAULT);
 	static void add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix);
+	static void add_property_struct(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix);
 	static void add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
 	static void set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default);
 	static void add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property);
@@ -423,6 +439,11 @@ public:
 	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static bool is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
+	static void bind_struct(const StringName &p_class, const StructInfo &p_struct_info);
+	static void get_struct_list(const StringName &p_class, List<StructInfo> *r_structs, bool p_no_inheritance = false);
+	static const StructInfo *get_struct_info(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
+	static const StructInfo *get_struct_info(const String &p_qualified_name, bool p_no_inheritance = false);
+
 	static void set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values);
 	static Vector<Error> get_method_error_return_values(const StringName &p_class, const StringName &p_method);
 	static Variant class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
@@ -460,6 +481,9 @@ public:
 
 #define BIND_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+
+#define BIND_STRUCT(m_struct) \
+	::ClassDB::bind_struct(get_class_static(), m_struct::Layout::get_struct_info());
 
 #ifdef DEBUG_METHODS_ENABLED
 

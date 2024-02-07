@@ -40,6 +40,12 @@ class ArrayPrivate;
 class Object;
 class StringName;
 class Callable;
+template <typename T>
+class Vector;
+struct StructMember;
+struct ContainerTypeValidate;
+struct StructInfo;
+class Dictionary;
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -53,6 +59,14 @@ public:
 
 	void set(int p_idx, const Variant &p_value);
 	const Variant &get(int p_idx) const;
+
+	void set_named(const StringName &p_member, const Variant &p_value);
+	Variant &get_named(const StringName &p_member);
+	const Variant &get_named(const StringName &p_member) const; // TODO: should be & return?
+	const StringName get_member_name(int p_idx) const;
+	const int find_member(const StringName &p_member) const;
+	const int rfind_member(const StringName &p_member) const;
+	const Variant *getptr(const StringName &p_member) const;
 
 	int size() const;
 	bool is_empty() const;
@@ -119,18 +133,26 @@ public:
 
 	const void *id() const;
 
+	Error validate_set_type();
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	void set_struct(const StructInfo &p_struct_info);
 	bool is_typed() const;
+	bool is_struct() const;
 	bool is_same_typed(const Array &p_other) const;
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
+	const StructInfo *get_struct_info() const;
 
 	void make_read_only();
 	bool is_read_only() const;
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
+	Array(const Array &p_from, const StructInfo &p_struct_info);
+	Array(const Dictionary &p_from, const StructInfo &p_struct_info);
+	Array(const StructInfo &p_struct_info);
+	Array(const Vector<Variant> &p_vec);
 	Array();
 	~Array();
 };

@@ -342,7 +342,7 @@ TEST_CASE("[Object] Signals") {
 	}
 
 	SUBCASE("Deleting an object with connected signals should disconnect them") {
-		List<Object::Connection> signal_connections;
+		List<Connection> signal_connections;
 
 		{
 			Object target;
@@ -403,7 +403,7 @@ TEST_CASE("[Object] Signals") {
 	}
 
 	SUBCASE("Connecting and then disconnecting many signals should not leave anything behind") {
-		List<Object::Connection> signal_connections;
+		List<Connection> signal_connections;
 		Object targets[100];
 
 		for (int i = 0; i < 10; i++) {

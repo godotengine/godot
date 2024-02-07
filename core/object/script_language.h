@@ -171,6 +171,7 @@ public:
 
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) {}
 	virtual void get_members(HashSet<StringName> *p_constants) {}
+	virtual const StructInfo *get_struct_info(const String &p_struct_name) const { return ClassDB::get_struct_info(p_struct_name); }
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
@@ -272,6 +273,7 @@ public:
 		CODE_COMPLETION_KIND_NODE_PATH,
 		CODE_COMPLETION_KIND_FILE_PATH,
 		CODE_COMPLETION_KIND_PLAIN_TEXT,
+		CODE_COMPLETION_KIND_STRUCT,
 		CODE_COMPLETION_KIND_MAX
 	};
 

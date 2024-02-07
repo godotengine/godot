@@ -1,5 +1,7 @@
 extends RefCounted # TODO: Fix standalone annotations parsing.
 
+const Utils = preload("../../utils.notest.gd")
+
 # GH-73843
 @export_group("Resource")
 
@@ -14,4 +16,4 @@ func test():
 
 	for property in get_property_list():
 		if property.name in ["prop_1", "prop_2"]:
-			print(property)
+			print(Utils.property_to_string(property))

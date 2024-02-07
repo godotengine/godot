@@ -32,6 +32,10 @@
 
 #include "gdscript.h"
 
+const StructInfo *GDScriptDataType::get_struct_info() const {
+	return script_type->get_struct_info(native_type);
+}
+
 Variant GDScriptFunction::get_constant(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
 	return constants[p_idx];
@@ -261,10 +265,10 @@ void GDScriptFunctionState::_clear_stack() {
 }
 
 void GDScriptFunctionState::_clear_connections() {
-	List<Object::Connection> conns;
+	List<Connection> conns;
 	get_signals_connected_to_this(&conns);
 
-	for (Object::Connection &c : conns) {
+	for (Connection &c : conns) {
 		c.signal.disconnect(c.callable);
 	}
 }

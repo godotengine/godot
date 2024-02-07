@@ -1,5 +1,7 @@
 extends Node
 
+const Utils = preload("../../utils.notest.gd")
+
 @export_enum("A", "B", "C") var a0
 @export_enum("A", "B", "C",) var a1
 
@@ -45,4 +47,4 @@ var a11: int
 func test():
 	for property in get_property_list():
 		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
-			print(property)
+			print(Utils.property_to_string(property))

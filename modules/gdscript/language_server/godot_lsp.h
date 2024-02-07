@@ -1262,6 +1262,9 @@ struct DocumentSymbol {
 			case lsp::SymbolKind::Enum:
 				item.kind = lsp::CompletionItemKind::Enum;
 				break;
+			case lsp::SymbolKind::Struct:
+				item.kind = lsp::CompletionItemKind::Struct;
+				break;
 			case lsp::SymbolKind::Class:
 				item.kind = lsp::CompletionItemKind::Class;
 				break;
@@ -1931,6 +1934,7 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[member ", "`");
 			line = line.replace("[signal ", "`");
 			line = line.replace("[enum ", "`");
+			line = line.replace("[struct ", "`");
 			line = line.replace("[constant ", "`");
 			line = line.replace("[", "`");
 			line = line.replace("]", "`");
