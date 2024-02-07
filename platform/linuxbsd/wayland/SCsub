@@ -19,7 +19,7 @@ if env["use_sowrap"]:
         "WAYLAND_API_CODE": Builder(
             action=Action(
                 "wayland-scanner -c private-code < ${SOURCE} | sed 's:wayland-util\.h:../dynwrappers/wayland-client-core-so_wrap\.h:' > ${TARGET}",
-                'Generating Wayland protocol marshalling code: "${TARGET}"',
+                'Generating Wayland protocol marshaling code: "${TARGET}"',
             ),
             single_source=True,
         ),
@@ -37,7 +37,7 @@ else:
         "WAYLAND_API_CODE": Builder(
             action=Action(
                 "wayland-scanner -c private-code < ${SOURCE} > ${TARGET}",
-                'Generating Wayland protocol marshalling code: "${TARGET}"',
+                'Generating Wayland protocol marshaling code: "${TARGET}"',
             ),
             single_source=True,
         ),
