@@ -104,6 +104,7 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/item_list.h"
@@ -473,6 +474,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(GraphElement);
 	GDREGISTER_CLASS(GraphNode);
+	GDREGISTER_CLASS(GraphFrame);
 	GDREGISTER_CLASS(GraphEdit);
 
 	OS::get_singleton()->yield(); // may take time to init
@@ -649,7 +651,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeGroupBase);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeConstant);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVectorBase);
-	GDREGISTER_CLASS(VisualShaderNodeComment);
+	GDREGISTER_CLASS(VisualShaderNodeFrame);
 	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
 	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
 	GDREGISTER_CLASS(VisualShaderNodeUIntConstant);

@@ -32,6 +32,7 @@
 #define GRAPH_EDIT_H
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
 
 class Button;
@@ -294,6 +295,13 @@ private:
 		float port_hotzone_outer_extent = 0.0;
 	} theme_cache;
 
+	// This separates the children in two layers to ensure the order
+	// of both background nodes (e.g frame nodes) and foreground nodes (connectable nodes).
+	int background_nodes_separator_idx = 0;
+
+	HashMap<StringName, HashSet<StringName>> frame_attached_nodes;
+	HashMap<StringName, StringName> linked_parent_map;
+
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
@@ -304,11 +312,14 @@ private:
 
 	void _graph_element_selected(Node *p_node);
 	void _graph_element_deselected(Node *p_node);
-	void _graph_element_moved_to_front(Node *p_node);
-	void _graph_element_resized(Vector2 p_new_minsize, Node *p_node);
+	void _graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node);
+	void _graph_frame_autoshrink_changed(const Vector2 &p_new_minsize, GraphFrame *p_frame);
 	void _graph_element_moved(Node *p_node);
 	void _graph_node_slot_updated(int p_index, Node *p_node);
 	void _graph_node_rect_changed(GraphNode *p_node);
+
+	void _ensure_node_order_from_root(const StringName &p_node);
+	void _ensure_node_order_from(Node *p_node);
 
 	void _update_scroll();
 	void _update_scroll_offset();
@@ -331,6 +342,10 @@ private:
 	TypedArray<Dictionary> _get_connection_list() const;
 	Dictionary _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Dictionary> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+
+	Rect2 _compute_shrinked_frame_rect(const GraphFrame *p_frame);
+	void _set_drag_frame_attached_nodes(GraphFrame *p_frame, bool p_drag);
+	void _set_position_of_frame_attached_nodes(GraphFrame *p_frame, const Vector2 &p_pos);
 
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);
@@ -377,6 +392,11 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	// This method has to be public (for undo redo).
+	// TODO: Find a better way to do this.
+	void _update_graph_frame(GraphFrame *p_frame);
+
+	// Connection related methods.
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
@@ -396,6 +416,12 @@ public:
 	void add_valid_connection_type(int p_type, int p_with_type);
 	void remove_valid_connection_type(int p_type, int p_with_type);
 	bool is_valid_connection_type(int p_type, int p_with_type) const;
+
+	// GraphFrame related methods.
+	void attach_graph_element_to_frame(const StringName &p_graph_element, const StringName &p_parent_frame);
+	void detach_graph_element_from_frame(const StringName &p_graph_element);
+	GraphFrame *get_element_frame(const StringName &p_attached_graph_element);
+	TypedArray<StringName> get_attached_nodes_of_frame(const StringName &p_graph_frame);
 
 	void set_panning_scheme(PanningScheme p_scheme);
 	PanningScheme get_panning_scheme() const;

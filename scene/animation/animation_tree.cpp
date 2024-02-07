@@ -395,11 +395,11 @@ bool AnimationNode::is_filter_enabled() const {
 	return filter_enabled;
 }
 
-void AnimationNode::set_closable(bool p_closable) {
+void AnimationNode::set_deletable(bool p_closable) {
 	closable = p_closable;
 }
 
-bool AnimationNode::is_closable() const {
+bool AnimationNode::is_deletable() const {
 	return closable;
 }
 

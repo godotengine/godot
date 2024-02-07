@@ -62,9 +62,9 @@ class GraphNode : public GraphElement {
 	};
 
 	struct _MinSizeCache {
-		int min_size;
-		bool will_stretch;
-		int final_size;
+		int min_size = 0;
+		bool will_stretch = false;
+		int final_size = 0;
 	};
 
 	HBoxContainer *titlebar_hbox = nullptr;
