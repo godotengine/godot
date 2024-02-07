@@ -52,8 +52,8 @@ class AudioDriver {
 	uint64_t _last_mix_frames = 0;
 
 #ifdef DEBUG_ENABLED
-	uint64_t prof_ticks = 0;
-	uint64_t prof_time = 0;
+	SafeNumeric<uint64_t> prof_ticks;
+	SafeNumeric<uint64_t> prof_time;
 #endif
 
 protected:
@@ -69,8 +69,8 @@ protected:
 	int _get_configured_mix_rate();
 
 #ifdef DEBUG_ENABLED
-	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
-	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks; }
+	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks.set(OS::get_singleton()->get_ticks_usec()); }
+	_FORCE_INLINE_ void stop_counting_ticks() { prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks.get()); }
 #else
 	_FORCE_INLINE_ void start_counting_ticks() {}
 	_FORCE_INLINE_ void stop_counting_ticks() {}
@@ -125,8 +125,8 @@ public:
 	unsigned int get_input_size() { return input_size; }
 
 #ifdef DEBUG_ENABLED
-	uint64_t get_profiling_time() const { return prof_time; }
-	void reset_profiling_time() { prof_time = 0; }
+	uint64_t get_profiling_time() const { return prof_time.get(); }
+	void reset_profiling_time() { prof_time.set(0); }
 #endif
 
 	AudioDriver() {}
@@ -183,7 +183,7 @@ private:
 	uint64_t mix_count = 0;
 	uint64_t mix_frames = 0;
 #ifdef DEBUG_ENABLED
-	uint64_t prof_time = 0;
+	SafeNumeric<uint64_t> prof_time;
 #endif
 
 	float channel_disable_threshold_db = 0.0f;
