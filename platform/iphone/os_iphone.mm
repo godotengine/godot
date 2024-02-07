@@ -865,4 +865,24 @@ void OSIPhone::on_focus_in() {
 	}
 }
 
+void OSIPhone::on_enter_background() {
+	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
+
+	if (get_main_loop()) {
+		get_main_loop()->notification(MainLoop::NOTIFICATION_APP_PAUSED);
+	}
+
+	on_focus_out();
+}
+
+void OSIPhone::on_exit_background() {
+	if (!is_focused) {
+		on_focus_in();
+
+		if (get_main_loop()) {
+			get_main_loop()->notification(MainLoop::NOTIFICATION_APP_RESUMED);
+		}
+	}
+}
+
 #endif

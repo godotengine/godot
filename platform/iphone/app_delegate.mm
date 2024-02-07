@@ -174,6 +174,14 @@ static ViewController *mainViewController = nil;
 	OSIPhone::get_singleton()->on_focus_in();
 }
 
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+	OSIPhone::get_singleton()->on_enter_background();
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+	OSIPhone::get_singleton()->on_exit_background();
+}
+
 - (void)dealloc {
 	self.window = nil;
 }
