@@ -436,8 +436,8 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 		if (!p_config.dark_theme) {
 			// Darken some colors to be readable on a light background.
 			p_config.success_color = p_config.success_color.lerp(p_config.mono_color, 0.35);
-			p_config.warning_color = p_config.warning_color.lerp(p_config.mono_color, 0.35);
-			p_config.error_color = p_config.error_color.lerp(p_config.mono_color, 0.25);
+			p_config.warning_color = Color(0.82, 0.56, 0.1);
+			p_config.error_color = Color(0.8, 0.22, 0.22);
 		}
 
 		p_theme->set_color("mono_color", EditorStringName(Editor), p_config.mono_color);
@@ -1901,14 +1901,20 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			// When pressed, don't tint the icons with the accent color, just leave them normal.
 			p_theme->set_color("icon_pressed_color", "EditorLogFilterButton", p_config.icon_normal_color);
 			// When unpressed, dim the icons.
-			p_theme->set_color("icon_normal_color", "EditorLogFilterButton", p_config.icon_disabled_color);
+			Color icon_normal_color = Color(p_config.icon_normal_color, (p_config.dark_theme ? 0.4 : 0.8));
+			p_theme->set_color("icon_normal_color", "EditorLogFilterButton", icon_normal_color);
+			Color icon_hover_color = p_config.icon_normal_color * (p_config.dark_theme ? 1.15 : 1.0);
+			icon_hover_color.a = 1.0;
+			p_theme->set_color("icon_hover_color", "EditorLogFilterButton", icon_hover_color);
 
 			// When pressed, add a small bottom border to the buttons to better show their active state,
 			// similar to active tabs.
 			Ref<StyleBoxFlat> editor_log_button_pressed = style_flat_button_pressed->duplicate();
 			editor_log_button_pressed->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
 			editor_log_button_pressed->set_border_color(p_config.accent_color);
-
+			if (!p_config.dark_theme) {
+				editor_log_button_pressed->set_bg_color(flat_pressed_color.lightened(0.5));
+			}
 			p_theme->set_stylebox("normal", "EditorLogFilterButton", style_flat_button);
 			p_theme->set_stylebox("hover", "EditorLogFilterButton", style_flat_button_hover);
 			p_theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
