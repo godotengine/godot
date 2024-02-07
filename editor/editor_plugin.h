@@ -67,6 +67,40 @@ class EditorPlugin : public Node {
 	void _editor_project_settings_changed();
 #endif
 
+public:
+	enum CustomControlContainer {
+		CONTAINER_TOOLBAR,
+		CONTAINER_SPATIAL_EDITOR_MENU,
+		CONTAINER_SPATIAL_EDITOR_SIDE_LEFT,
+		CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT,
+		CONTAINER_SPATIAL_EDITOR_BOTTOM,
+		CONTAINER_CANVAS_EDITOR_MENU,
+		CONTAINER_CANVAS_EDITOR_SIDE_LEFT,
+		CONTAINER_CANVAS_EDITOR_SIDE_RIGHT,
+		CONTAINER_CANVAS_EDITOR_BOTTOM,
+		CONTAINER_INSPECTOR_BOTTOM,
+		CONTAINER_PROJECT_SETTING_TAB_LEFT,
+		CONTAINER_PROJECT_SETTING_TAB_RIGHT,
+	};
+
+	enum DockSlot {
+		DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_MAX
+	};
+
+	enum AfterGUIInput {
+		AFTER_GUI_INPUT_PASS,
+		AFTER_GUI_INPUT_STOP,
+		AFTER_GUI_INPUT_CUSTOM,
+	};
+
 protected:
 	void _notification(int p_what);
 
@@ -101,46 +135,19 @@ protected:
 	GDVIRTUAL0(_enable_plugin)
 	GDVIRTUAL0(_disable_plugin)
 
+#ifndef DISABLE_DEPRECATED
+	Button *_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title);
+	void _add_control_to_dock_compat_88081(DockSlot p_slot, Control *p_control);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
-	enum CustomControlContainer {
-		CONTAINER_TOOLBAR,
-		CONTAINER_SPATIAL_EDITOR_MENU,
-		CONTAINER_SPATIAL_EDITOR_SIDE_LEFT,
-		CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT,
-		CONTAINER_SPATIAL_EDITOR_BOTTOM,
-		CONTAINER_CANVAS_EDITOR_MENU,
-		CONTAINER_CANVAS_EDITOR_SIDE_LEFT,
-		CONTAINER_CANVAS_EDITOR_SIDE_RIGHT,
-		CONTAINER_CANVAS_EDITOR_BOTTOM,
-		CONTAINER_INSPECTOR_BOTTOM,
-		CONTAINER_PROJECT_SETTING_TAB_LEFT,
-		CONTAINER_PROJECT_SETTING_TAB_RIGHT,
-	};
-
-	enum DockSlot {
-		DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX
-	};
-
-	enum AfterGUIInput {
-		AFTER_GUI_INPUT_PASS,
-		AFTER_GUI_INPUT_STOP,
-		AFTER_GUI_INPUT_CUSTOM
-	};
-
 	//TODO: send a resource for editing to the editor node?
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	void remove_control_from_container(CustomControlContainer p_location, Control *p_control);
-	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title);
-	void add_control_to_dock(DockSlot p_slot, Control *p_control);
+	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut = nullptr);
+	void add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut = nullptr);
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
 

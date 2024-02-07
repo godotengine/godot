@@ -38,6 +38,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/main/window.h"
 
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -47,6 +48,8 @@
 #include "editor/window_wrapper.h"
 
 EditorDockManager *EditorDockManager::singleton = nullptr;
+
+static const char *META_TOGGLE_SHORTCUT = "_toggle_shortcut";
 
 void DockSplitContainer::_update_visibility() {
 	if (is_updating) {
@@ -392,7 +395,10 @@ void EditorDockManager::_dock_move_selected_to_bottom() {
 	dock->call("_set_dock_horizontal", true);
 
 	bottom_docks.push_back(dock);
-	EditorNode::get_bottom_panel()->add_item(dock->get_name(), dock, true);
+
+	// Force docks moved to the bottom to appear first in the list, and give them their associated shortcut to toggle their bottom panel.
+	EditorNode::get_bottom_panel()->add_item(dock->get_name(), dock, dock->get_meta(META_TOGGLE_SHORTCUT), true);
+
 	dock_select_popup->hide();
 	update_dock_slots_visibility(true);
 	_edit_current();
@@ -663,7 +669,8 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			node->call("_set_dock_horizontal", true);
 
 			bottom_docks.push_back(node);
-			EditorNode::get_bottom_panel()->add_item(node->get_name(), node, true);
+			// Force docks moved to the bottom to appear first in the list, and give them their associated shortcut to toggle their bottom panel.
+			EditorNode::get_bottom_panel()->add_item(node->get_name(), node, node->get_meta(META_TOGGLE_SHORTCUT), true);
 		}
 	}
 
@@ -730,8 +737,9 @@ void EditorDockManager::close_all_floating_docks() {
 	}
 }
 
-void EditorDockManager::add_control_to_dock(DockSlot p_slot, Control *p_control, const String &p_name) {
+void EditorDockManager::add_control_to_dock(DockSlot p_slot, Control *p_control, const String &p_name, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
+	p_control->set_meta(META_TOGGLE_SHORTCUT, p_shortcut);
 	dock_slot[p_slot]->add_child(p_control);
 	if (!p_name.is_empty()) {
 		dock_slot[p_slot]->set_tab_title(dock_slot[p_slot]->get_tab_idx_from_control(p_control), p_name);
