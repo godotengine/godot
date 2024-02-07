@@ -1037,14 +1037,14 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "file", "ro"), &FileAccess::set_read_only_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "file"), &FileAccess::get_read_only_attribute);
 
-	// Resource paths
+	// Custom paths
 	ClassDB::bind_static_method("FileAccess", D_METHOD("map_path_to_custom_path", "protocol", "path"), &FileAccess::map_path_to_custom_path);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("map_classes_to_custom_path", "protocol", "file_access_class", "dir_access_class"), &FileAccess::map_classes_to_custom_path);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_custom_path", "protocol"), &FileAccess::remove_custom_path);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("is_custom_path", "protocol"), &FileAccess::is_custom_path);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_custom_path_data", "protocol"), &FileAccess::get_custom_path_data);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_custom_paths"), &FileAccess::get_custom_paths);
-	// End resource paths
+	// End custom paths
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
 
