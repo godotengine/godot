@@ -106,6 +106,7 @@
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_curve_3d.h"
 #include "tests/scene/test_gradient.h"
+#include "tests/scene/test_image_texture.h"
 #include "tests/scene/test_navigation_agent_2d.h"
 #include "tests/scene/test_navigation_obstacle_2d.h"
 #include "tests/scene/test_navigation_region_2d.h"
