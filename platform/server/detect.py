@@ -82,9 +82,17 @@ def configure(env):
 
     ## Architecture
 
-    is64 = sys.maxsize > 2**32
+    # Cross-compilation
+    # TODO: Support cross-compilation on architectures other than x86.
+    host_is_64_bit = sys.maxsize > 2**32
     if env["bits"] == "default":
-        env["bits"] = "64" if is64 else "32"
+        env["bits"] = "64" if host_is_64_bit else "32"
+    if host_is_64_bit and (env["bits"] == "32" or env["arch"] == "x86"):
+        env.Append(CCFLAGS=["-m32"])
+        env.Append(LINKFLAGS=["-m32"])
+    elif not host_is_64_bit and (env["bits"] == "64" or env["arch"] == "x86_64"):
+        env.Append(CCFLAGS=["-m64"])
+        env.Append(LINKFLAGS=["-m64"])
 
     if env["arch"] == "" and platform.machine() == "riscv64":
         env["arch"] = "rv64"
@@ -264,10 +272,8 @@ def configure(env):
     if not env["builtin_pcre2"]:
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
-    # Embree is only compatible with x86_64. Yet another unreliable hack that will break
-    # cross-compilation, this will really need to be handle better. Thankfully only affects
-    # people who disable builtin_embree (likely distro packagers).
-    if env["tools"] and not env["builtin_embree"] and (is64 and platform.machine() == "x86_64"):
+    # Embree is only used in tools build on x86_64 and aarch64.
+    if env["tools"] and not env["builtin_embree"] and host_is_64_bit:
         # No pkgconfig file so far, hardcode expected lib name.
         env.Append(LIBS=["embree3"])
 
