@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DirAccessExtension" inherits="DirAccess" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_change_dir" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="dir" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_copy" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<param index="2" name="chmod_flags" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_create_link" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="source" type="String" />
+			<param index="1" name="target" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_current_is_dir" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_current_is_hidden" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_dir_exists" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="dir" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_drives_are_shortcuts" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_erase_contents_recursive" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<description>
+			</description>
+		</method>
+		<method name="_file_exists" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="file" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_fix_path" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_current_dir" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="include_drive" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_current_drive" qualifiers="virtual">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_drive" qualifiers="virtual">
+			<return type="String" />
+			<param index="0" name="drive" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_drive_count" qualifiers="virtual">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_filesystem_type" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_next" qualifiers="virtual">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_space_left" qualifiers="virtual">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_case_sensitive" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_link" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="file" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_readable" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="dir" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_writable" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="dir" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_list_dir_begin" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<description>
+			</description>
+		</method>
+		<method name="_list_dir_end" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_make_dir" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="dir" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_make_dir_recursive" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="dir" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_read_link" qualifiers="virtual">
+			<return type="String" />
+			<param index="0" name="file" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_remove" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="name" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_rename" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

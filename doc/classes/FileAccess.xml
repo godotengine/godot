@@ -43,13 +43,6 @@
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
-		<method name="add_resource_path" qualifiers="static">
-			<return type="void" />
-			<param index="0" name="protocol" type="String" />
-			<param index="1" name="path" type="String" />
-			<description>
-			</description>
-		</method>
 		<method name="close">
 			<return type="void" />
 			<description>
@@ -144,6 +137,17 @@
 				Alice,"I thought you'd reply with ""Hello, world""."
 				[/codeblock]
 				Note how the second line can omit the enclosing quotes as it does not include the delimiter. However it [i]could[/i] very well use quotes, it was only written without for demonstration purposes. The third line must use [code]""[/code] for each quotation mark that needs to be interpreted as such instead of the end of a text value.
+			</description>
+		</method>
+		<method name="get_custom_path_data" qualifiers="static">
+			<return type="Dictionary" />
+			<param index="0" name="protocol" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="get_custom_paths" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
 			</description>
 		</method>
 		<method name="get_double" qualifiers="const">
@@ -260,17 +264,6 @@
 				Returns the next bits from the file as a floating-point number.
 			</description>
 		</method>
-		<method name="get_resource_path" qualifiers="static">
-			<return type="String" />
-			<param index="0" name="protocol" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="get_resource_paths" qualifiers="static">
-			<return type="Dictionary" />
-			<description>
-			</description>
-		</method>
 		<method name="get_sha256" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
@@ -295,15 +288,30 @@
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
+		<method name="is_custom_path" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="protocol" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="is_open" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the file is currently opened.
 			</description>
 		</method>
-		<method name="is_resource_path" qualifiers="static">
-			<return type="bool" />
+		<method name="map_classes_to_custom_path" qualifiers="static">
+			<return type="void" />
 			<param index="0" name="protocol" type="String" />
+			<param index="1" name="file_access_class" type="String" />
+			<param index="2" name="dir_access_class" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="map_path_to_custom_path" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="protocol" type="String" />
+			<param index="1" name="path" type="String" />
 			<description>
 			</description>
 		</method>
@@ -348,7 +356,7 @@
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
-		<method name="remove_resource_path" qualifiers="static">
+		<method name="remove_custom_path" qualifiers="static">
 			<return type="void" />
 			<param index="0" name="protocol" type="String" />
 			<description>
