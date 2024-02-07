@@ -264,6 +264,7 @@ private:
 
 #ifdef TOOLS_ENABLED
 	Vector<StringName> arg_names;
+	Vector<Variant> default_arg_values;
 #endif
 
 	List<StackDebug> stack_debug;
@@ -336,12 +337,16 @@ public:
 		ERR_FAIL_INDEX_V(p_idx, arg_names.size(), StringName());
 		return arg_names[p_idx];
 #else
-		return StringName();
+		return StringName("arg" + itos(p_idx));
 #endif
 	}
-	Variant get_default_argument(int p_idx) const {
-		ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), Variant());
-		return default_arguments[p_idx];
+	Variant get_default_argument_value(int p_idx) const {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_INDEX_V(p_idx, default_arg_values.size(), Variant());
+		return default_arg_values[p_idx];
+#else
+		return Variant();
+#endif
 	}
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = nullptr);
