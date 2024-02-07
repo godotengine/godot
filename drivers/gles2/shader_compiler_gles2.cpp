@@ -229,17 +229,18 @@ void ShaderCompilerGLES2::_dump_function_deps(const SL::ShaderNode *p_node, cons
 
 	ERR_FAIL_COND(fidx == -1);
 
-	for (Set<StringName>::Element *E = p_node->functions[fidx].uses_function.front(); E; E = E->next()) {
-		if (r_added.has(E->get())) {
+	for (int ufidx = 0; ufidx < p_node->functions[fidx].uses_function.size(); ufidx++) {
+		StringName function_name = p_node->functions[fidx].uses_function[ufidx];
+		if (r_added.has(function_name)) {
 			continue;
 		}
 
-		_dump_function_deps(p_node, E->get(), p_func_code, r_to_add, r_added);
+		_dump_function_deps(p_node, function_name, p_func_code, r_to_add, r_added);
 
 		SL::FunctionNode *fnode = nullptr;
 
 		for (int i = 0; i < p_node->functions.size(); i++) {
-			if (p_node->functions[i].name == E->get()) {
+			if (p_node->functions[i].name == function_name) {
 				fnode = p_node->functions[i].function;
 				break;
 			}
@@ -272,9 +273,9 @@ void ShaderCompilerGLES2::_dump_function_deps(const SL::ShaderNode *p_node, cons
 
 		header += ")\n";
 		r_to_add += header.as_string();
-		r_to_add += p_func_code[E->get()];
+		r_to_add += p_func_code[function_name];
 
-		r_added.insert(E->get());
+		r_added.insert(function_name);
 	}
 }
 
