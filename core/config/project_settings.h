@@ -96,6 +96,7 @@ protected:
 
 	RBMap<StringName, VariantContainer> props; // NOTE: Key order is used e.g. in the save_custom method.
 	String resource_path;
+	String main_pack_path;
 	HashMap<StringName, PropertyInfo> custom_prop_info;
 	bool using_datapack = false;
 	bool project_loaded = false;
@@ -176,6 +177,7 @@ public:
 	String get_project_data_dir_name() const;
 	String get_project_data_path() const;
 	String get_resource_path() const;
+	String get_main_pack_path() const;
 	String get_imported_files_path() const;
 
 	static ProjectSettings *get_singleton();

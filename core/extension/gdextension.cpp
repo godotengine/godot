@@ -35,6 +35,7 @@
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 #include "core/version.h"
+#include "gdextension.compat.inc"
 #include "gdextension_manager.h"
 
 extern void gdextension_setup_interface();
@@ -679,7 +680,7 @@ GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(const String
 	return *function;
 }
 
-Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol) {
+Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol, const Vector<String> &p_lookup_paths) {
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	// If running on the editor on Windows, we copy the library and open the copy.
@@ -715,6 +716,22 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 		abs_path = copy_path;
 	}
 #endif
+
+	if (!p_lookup_paths.is_empty() && !FileAccess::exists(abs_path) && !DirAccess::exists(abs_path)) {
+		// Try using custom lookup paths.
+		for (const String &dir : p_lookup_paths) {
+			String lookup_dir = dir;
+			lookup_dir = lookup_dir.begins_with("pck_dir://") ? lookup_dir.replace_first("pck_dir:/", ProjectSettings::get_singleton()->get_main_pack_path()) : lookup_dir;
+			lookup_dir = lookup_dir.begins_with("bundle_dir://") ? lookup_dir.replace_first("bundle_dir:/", OS::get_singleton()->get_bundle_resource_dir()) : lookup_dir;
+			lookup_dir = lookup_dir.begins_with("exe_dir://") ? lookup_dir.replace_first("exe_dir:/", OS::get_singleton()->get_executable_path().get_base_dir()) : lookup_dir;
+			lookup_dir = lookup_dir.path_join(abs_path.get_file());
+			lookup_dir = ProjectSettings::get_singleton()->globalize_path(lookup_dir);
+			if (FileAccess::exists(lookup_dir) || DirAccess::exists(lookup_dir)) {
+				abs_path = lookup_dir;
+				break;
+			}
+		}
+	}
 
 	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &library_path);
 	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, "GDExtension dynamic library not found: " + abs_path);
@@ -801,7 +818,7 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 }
 
 void GDExtension::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol"), &GDExtension::open_library);
+	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol", "lookup_paths"), &GDExtension::open_library, DEFVAL(Vector<String>()));
 	ClassDB::bind_method(D_METHOD("close_library"), &GDExtension::close_library);
 	ClassDB::bind_method(D_METHOD("is_library_open"), &GDExtension::is_library_open);
 
@@ -932,8 +949,9 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 			FileAccess::get_modified_time(p_path),
 			FileAccess::get_modified_time(library_path));
 #endif
+	Vector<String> lookup_paths = config->get_value("configuration", "lookup_paths", Vector<String>());
 
-	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol);
+	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol, lookup_paths);
 	if (err != OK) {
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 		// If the DLL fails to load, make sure that temporary DLL copies are cleaned up.
