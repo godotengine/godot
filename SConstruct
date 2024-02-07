@@ -8,11 +8,23 @@ import atexit
 import glob
 import os
 import pickle
+import platform
 import sys
 import time
 from types import ModuleType
 from collections import OrderedDict
 from importlib.util import spec_from_file_location, module_from_spec
+
+# Enable ANSI escape code support on Windows 10 and later (for colored console output).
+# <https://bugs.python.org/issue29059>
+if platform.system().lower() == "windows":
+    from ctypes import windll, c_int, byref  # type: ignore
+
+    stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
+    mode = c_int(0)
+    windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
+    mode = c_int(mode.value | 4)
+    windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -356,7 +368,7 @@ if env_base["custom_modules"]:
         try:
             module_search_paths.append(methods.convert_custom_modules_path(p))
         except ValueError as e:
-            print(e)
+            methods.print_error(e)
             Exit(255)
 
 for path in module_search_paths:
@@ -531,7 +543,7 @@ if selected_platform in platform_list:
                 for c in dbo:
                     env[c] = dbo[c]
         except:
-            print("Error opening feature build profile: " + env["build_profile"])
+            methods.print_error("Couldn't open feature build profile: " + env["build_profile"])
             Exit(255)
     methods.write_disabled_classes(disabled_classes)
 
@@ -660,14 +672,14 @@ if selected_platform in platform_list:
 
     if methods.using_gcc(env):
         if cc_version_major == -1:
-            print(
+            methods.print_warning(
                 "Couldn't detect compiler version, skipping version checks. "
                 "Build may fail if the compiler doesn't support C++17 fully."
             )
         # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
         # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
         elif cc_version_major == 8 and cc_version_minor < 4:
-            print(
+            methods.print_error(
                 "Detected GCC 8 version < 8.4, which is not supported due to a "
                 "regression in its C++17 guaranteed copy elision support. Use a "
                 'newer GCC version, or Clang 6 or later by passing "use_llvm=yes" '
@@ -675,7 +687,7 @@ if selected_platform in platform_list:
             )
             Exit(255)
         elif cc_version_major < 7:
-            print(
+            methods.print_error(
                 "Detected GCC version older than 7, which does not fully support "
                 "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
                 'version, or Clang 6 or later by passing "use_llvm=yes" to the '
@@ -683,7 +695,7 @@ if selected_platform in platform_list:
             )
             Exit(255)
         elif cc_version_metadata1 == "win32":
-            print(
+            methods.print_error(
                 "Detected mingw version is not using posix threads. Only posix "
                 "version of mingw is supported. "
                 'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
@@ -692,7 +704,7 @@ if selected_platform in platform_list:
             Exit(255)
     elif methods.using_clang(env):
         if cc_version_major == -1:
-            print(
+            methods.print_error(
                 "Couldn't detect compiler version, skipping version checks. "
                 "Build may fail if the compiler doesn't support C++17 fully."
             )
@@ -701,19 +713,19 @@ if selected_platform in platform_list:
         elif env["platform"] == "macos" or env["platform"] == "ios":
             vanilla = methods.is_vanilla_clang(env)
             if vanilla and cc_version_major < 6:
-                print(
+                methods.print_error(
                     "Detected Clang version older than 6, which does not fully support "
                     "C++17. Supported versions are Clang 6 and later."
                 )
                 Exit(255)
             elif not vanilla and cc_version_major < 10:
-                print(
+                methods.print_error(
                     "Detected Apple Clang version older than 10, which does not fully "
                     "support C++17. Supported versions are Apple Clang 10 and later."
                 )
                 Exit(255)
         elif cc_version_major < 6:
-            print(
+            methods.print_error(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
             )
@@ -881,7 +893,7 @@ if selected_platform in platform_list:
 
         # And check if they are met.
         if not env.module_check_dependencies("editor"):
-            print("Not all modules required by editor builds are enabled.")
+            methods.print_error("Not all modules required by editor builds are enabled.")
             Exit(255)
 
     methods.generate_version_header(env.module_version_string)
@@ -907,14 +919,16 @@ if selected_platform in platform_list:
 
     if env["disable_3d"]:
         if env.editor_build:
-            print("Build option 'disable_3d=yes' cannot be used for editor builds, only for export template builds.")
+            methods.print_error(
+                "Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds."
+            )
             Exit(255)
         else:
             env.Append(CPPDEFINES=["_3D_DISABLED"])
     if env["disable_advanced_gui"]:
         if env.editor_build:
-            print(
-                "Build option 'disable_advanced_gui=yes' cannot be used for editor builds, "
+            methods.print_error(
+                "Build option `disable_advanced_gui=yes` cannot be used for editor builds, "
                 "only for export template builds."
             )
             Exit(255)
@@ -963,7 +977,9 @@ if selected_platform in platform_list:
         scons_ver = env._get_major_minor_revision(scons_raw_version)
 
         if scons_ver < (4, 0, 0):
-            print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+            methods.print_error(
+                "The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version
+            )
             Exit(255)
 
         env.Tool("compilation_db")
@@ -1008,7 +1024,7 @@ elif selected_platform != "":
     if selected_platform == "list":
         print("The following platforms are available:\n")
     else:
-        print('Invalid target platform "' + selected_platform + '".')
+        methods.print_error('Invalid target platform "' + selected_platform + '".')
         print("The following platforms were detected:\n")
 
     for x in platform_list:
@@ -1032,9 +1048,16 @@ if "env" in locals():
 
 
 def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 3)
-    time_ms = round((elapsed_time_sec % 1) * 1000)
-    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
+    elapsed_time_sec = round(time.time() - time_at_start, 2)
+    time_centiseconds = round((elapsed_time_sec % 1) * 100)
+    print(
+        "{}[Time elapsed: {}.{:02}]{}".format(
+            methods.colors["gray"],
+            time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)),
+            time_centiseconds,
+            methods.colors["reset"],
+        )
+    )
 
 
 atexit.register(print_elapsed_time)

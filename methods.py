@@ -16,6 +16,29 @@ base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
 # for SCU in scu_builders.py
 _scu_folders = set()
 
+colors = {}
+# Colors are disabled in non-TTY environments such as pipes. This means
+# that if output is redirected to a file, it won't contain color codes.
+# Colors are always enabled on continuous integration.
+if sys.stdout.isatty() or os.environ.get("CI"):
+    colors["gray"] = "\033[90m"
+    colors["regular_blue"] = "\033[0;94m"
+    colors["bold_red"] = "\033[1;91m"
+    colors["bold_yellow"] = "\033[1;93m"
+    colors["bold_blue"] = "\033[1;94m"
+    colors["bold"] = "\033[1m"
+    colors["regular"] = "\033[22m"
+    colors["reset"] = "\033[0m"
+else:
+    colors["gray"] = ""
+    colors["regular_blue"] = ""
+    colors["bold_red"] = ""
+    colors["bold_yellow"] = ""
+    colors["bold_blue"] = ""
+    colors["bold"] = ""
+    colors["regular"] = ""
+    colors["reset"] = ""
+
 
 def set_scu_folders(scu_folders):
     global _scu_folders
@@ -311,6 +334,27 @@ def get_cmdline_bool(option, default):
         return default
 
 
+def print_info(message):
+    """
+    Prints an informational message with formatting.
+    """
+    print(f"{colors['bold']}INFO:{colors['regular']} {message}{colors['reset']}")
+
+
+def print_warning(message):
+    """
+    Prints a warning message with formatting.
+    """
+    print(f"{colors['bold_yellow']}WARNING:{colors['regular']} {message}{colors['reset']}")
+
+
+def print_error(message):
+    """
+    Prints an error message with formatting.
+    """
+    print(f"{colors['bold_red']}ERROR:{colors['regular']} {message}{colors['reset']}")
+
+
 def detect_modules(search_path, recursive=False):
     """Detects and collects a list of C++ modules at specified path
 
@@ -569,44 +613,31 @@ def use_windows_spawn_fix(self, platform=None):
 
 
 def no_verbose(sys, env):
-    colors = {}
-
-    # Colors are disabled in non-TTY environments such as pipes. This means
-    # that if output is redirected to a file, it will not contain color codes
-    if sys.stdout.isatty():
-        colors["blue"] = "\033[0;94m"
-        colors["bold_blue"] = "\033[1;94m"
-        colors["reset"] = "\033[0m"
-    else:
-        colors["blue"] = ""
-        colors["bold_blue"] = ""
-        colors["reset"] = ""
-
     # There is a space before "..." to ensure that source file names can be
     # Ctrl + clicked in the VS Code terminal.
     compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+        colors["regular_blue"], colors["bold_blue"], colors["regular_blue"], colors["reset"]
     )
     java_compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+        colors["regular_blue"], colors["bold_blue"], colors["regular_blue"], colors["reset"]
     )
     compile_shared_source_message = "{}Compiling shared {}$SOURCE{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+        colors["regular_blue"], colors["bold_blue"], colors["regular_blue"], colors["reset"]
     )
     link_program_message = "{}Linking Program {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+        colors["regular_blue"], colors["bold_blue"], colors["regular_blue"], colors["reset"]
     )
     link_library_message = "{}Linking Static Library {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+        colors["regular_blue"], colors["bold_blue"], colors["regular_blue"], colors["reset"]
     )
     ranlib_library_message = "{}Ranlib Library {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+        colors["regular_blue"], colors["bold_blue"], colors["regular_blue"], colors["reset"]
     )
     link_shared_library_message = "{}Linking Shared Library {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+        colors["regular_blue"], colors["bold_blue"], colors["regular_blue"], colors["reset"]
     )
     java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+        colors["regular_blue"], colors["bold_blue"], colors["regular_blue"], colors["reset"]
     )
     compiled_resource_message = "{}Creating Compiled Resource {}$TARGET{} ...{}".format(
         colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
@@ -961,9 +992,9 @@ def show_progress(env):
     from SCons.Script import Progress, Command, AlwaysBuild
 
     screen = sys.stdout
-    # Progress reporting is not available in non-TTY environments since it
-    # messes with the output (for example, when writing to a file)
-    show_progress = env["progress"] and sys.stdout.isatty()
+    # Progress reporting is not available in non-TTY environments unless it's continuous integration,
+    # since it messes with the output (for example, when writing to a file).
+    show_progress = env["progress"] and (sys.stdout.isatty() or os.environ.get("CI"))
     node_count = 0
     node_count_max = 0
     node_count_interval = 1
