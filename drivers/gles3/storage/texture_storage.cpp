@@ -77,19 +77,24 @@ TextureStorage::TextureStorage() {
 			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE] = texture_allocate();
 			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE], images, RS::TEXTURE_LAYERED_2D_ARRAY);
 
-			for (int i = 0; i < 3; i++) {
-				images.push_back(image);
-			}
-
-			default_gl_textures[DEFAULT_GL_TEXTURE_3D_WHITE] = texture_allocate();
-			texture_3d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_3D_WHITE], image->get_format(), 4, 4, 4, false, images);
-
-			for (int i = 0; i < 2; i++) {
+			for (int i = 0; i < 5; i++) {
 				images.push_back(image);
 			}
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_WHITE] = texture_allocate();
 			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_WHITE], images, RS::TEXTURE_LAYERED_CUBEMAP);
+		}
+
+		{
+			Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
+			image->fill(Color(1, 1, 1, 1));
+
+			Vector<Ref<Image>> images;
+			for (int i = 0; i < 4; i++) {
+				images.push_back(image);
+			}
+			default_gl_textures[DEFAULT_GL_TEXTURE_3D_WHITE] = texture_allocate();
+			texture_3d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_3D_WHITE], image->get_format(), 4, 4, 4, false, images);
 		}
 
 		{ // black
@@ -101,19 +106,23 @@ TextureStorage::TextureStorage() {
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_BLACK], image);
 
 			Vector<Ref<Image>> images;
-
-			for (int i = 0; i < 4; i++) {
-				images.push_back(image);
-			}
-
-			default_gl_textures[DEFAULT_GL_TEXTURE_3D_BLACK] = texture_allocate();
-			texture_3d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_3D_BLACK], image->get_format(), 4, 4, 4, false, images);
-
-			for (int i = 0; i < 2; i++) {
+			for (int i = 0; i < 6; i++) {
 				images.push_back(image);
 			}
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK] = texture_allocate();
 			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK], images, RS::TEXTURE_LAYERED_CUBEMAP);
+		}
+
+		{
+			Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
+			image->fill(Color());
+
+			Vector<Ref<Image>> images;
+			for (int i = 0; i < 4; i++) {
+				images.push_back(image);
+			}
+			default_gl_textures[DEFAULT_GL_TEXTURE_3D_BLACK] = texture_allocate();
+			texture_3d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_3D_BLACK], image->get_format(), 4, 4, 4, false, images);
 		}
 
 		{ // transparent black
@@ -812,8 +821,42 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	}
 }
 
-void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
-	texture_owner.initialize_rid(p_texture, Texture());
+void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+
+	Image::Image3DValidateError verr = Image::validate_3d_image(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
+	ERR_FAIL_COND_MSG(verr != Image::VALIDATE_3D_OK, Image::get_3d_image_validation_error_text(verr));
+
+	Ref<Image> image = p_data[0];
+	int mipmap_count = 0;
+	{
+		Size2i prev_size;
+		for (int i = 0; i < p_data.size(); i++) {
+			Size2i img_size(p_data[i]->get_width(), p_data[i]->get_height());
+			if (img_size != prev_size) {
+				mipmap_count++;
+			}
+			prev_size = img_size;
+		}
+	}
+
+	Texture texture;
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.depth = p_depth;
+	texture.alloc_width = texture.width;
+	texture.alloc_height = texture.height;
+	texture.mipmaps = mipmap_count;
+	texture.format = image->get_format();
+	texture.type = Texture::TYPE_3D;
+	texture.target = GL_TEXTURE_3D;
+	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
+	texture.total_data_size = p_data[0]->get_image_data_size(texture.width, texture.height, texture.format, texture.mipmaps) * texture.depth;
+	texture.active = true;
+	glGenTextures(1, &texture.tex_id);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture 3D");
+	texture_owner.initialize_rid(p_texture, texture);
+	_texture_set_3d_data(p_texture, p_data, true);
 }
 
 // Called internally when texture_proxy_create(p_base) is called.
@@ -870,6 +913,19 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 #ifdef TOOLS_ENABLED
 	tex->image_cache_2d.unref();
 #endif
+}
+
+void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(tex);
+	ERR_FAIL_COND(tex->type != Texture::TYPE_3D);
+
+	Image::Image3DValidateError verr = Image::validate_3d_image(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps > 1, p_data);
+	ERR_FAIL_COND_MSG(verr != Image::VALIDATE_3D_OK, Image::get_3d_image_validation_error_text(verr));
+
+	_texture_set_3d_data(p_texture, p_data, false);
+
+	GLES3::Utilities::get_singleton()->texture_resize_data(tex->tex_id, tex->total_data_size);
 }
 
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
@@ -984,7 +1040,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 		data.resize(data_size);
 
-		ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 		image = Image::create_from_data(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
 		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 		if (texture->format != texture->real_format) {
@@ -1040,7 +1096,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 		data.resize(data_size);
 
-		ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 		image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
 		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 
@@ -1061,6 +1117,165 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 #endif
 
 	return image;
+}
+
+Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) const {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL_V(texture, Ref<Image>());
+
+	Vector<uint8_t> data;
+
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
+
+	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
+	uint8_t *w = data.ptrw();
+
+	GLuint temp_framebuffer;
+	glGenFramebuffers(1, &temp_framebuffer);
+
+	GLuint temp_color_texture;
+	glGenTextures(1, &temp_color_texture);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
+
+	glBindTexture(GL_TEXTURE_2D, temp_color_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, temp_color_texture, 0);
+
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDepthFunc(GL_LEQUAL);
+	glColorMask(1, 1, 1, 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, texture->tex_id);
+
+	glViewport(0, 0, texture->alloc_width, texture->alloc_height);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	CopyEffects::get_singleton()->copy_to_rect_3d(Rect2i(0, 0, 1, 1), p_layer, Texture::TYPE_LAYERED);
+
+	glReadPixels(0, 0, texture->alloc_width, texture->alloc_height, GL_RGBA, GL_UNSIGNED_BYTE, &w[0]);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteTextures(1, &temp_color_texture);
+	glDeleteFramebuffers(1, &temp_framebuffer);
+
+	data.resize(data_size);
+
+	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
+	Ref<Image> image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
+	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+
+	if (texture->format != Image::FORMAT_RGBA8) {
+		image->convert(texture->format);
+	}
+
+	if (texture->mipmaps > 1) {
+		image->generate_mipmaps();
+	}
+
+	return image;
+}
+
+Vector<Ref<Image>> TextureStorage::_texture_3d_read_framebuffer(Texture *p_texture) const {
+	ERR_FAIL_NULL_V(p_texture, Vector<Ref<Image>>());
+
+	Vector<Ref<Image>> ret;
+	Vector<uint8_t> data;
+
+	int width = p_texture->width;
+	int height = p_texture->height;
+	int depth = p_texture->depth;
+
+	for (int mipmap_level = 0; mipmap_level < p_texture->mipmaps; mipmap_level++) {
+		int data_size = Image::get_image_data_size(width, height, Image::FORMAT_RGBA8, false);
+		glViewport(0, 0, width, height);
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		for (int layer = 0; layer < depth; layer++) {
+			data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
+			uint8_t *w = data.ptrw();
+
+			float layer_f = layer / float(depth);
+			CopyEffects::get_singleton()->copy_to_rect_3d(Rect2i(0, 0, 1, 1), layer_f, Texture::TYPE_3D, mipmap_level);
+			glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, &w[0]);
+
+			data.resize(data_size);
+			ERR_FAIL_COND_V(data.is_empty(), Vector<Ref<Image>>());
+
+			Ref<Image> img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, data);
+			ERR_FAIL_COND_V(img->is_empty(), Vector<Ref<Image>>());
+
+			if (p_texture->format != Image::FORMAT_RGBA8) {
+				img->convert(p_texture->format);
+			}
+
+			ret.push_back(img);
+		}
+
+		width = MAX(1, width >> 1);
+		height = MAX(1, height >> 1);
+		depth = MAX(1, depth >> 1);
+	}
+
+	return ret;
+}
+
+Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL_V(texture, Vector<Ref<Image>>());
+	ERR_FAIL_COND_V(texture->type != Texture::TYPE_3D, Vector<Ref<Image>>());
+
+#ifdef TOOLS_ENABLED
+	if (!texture->image_cache_3d.is_empty() && !texture->is_render_target) {
+		return texture->image_cache_3d;
+	}
+#endif
+
+	GLuint temp_framebuffer;
+	glGenFramebuffers(1, &temp_framebuffer);
+
+	GLuint temp_color_texture;
+	glGenTextures(1, &temp_color_texture);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
+
+	glBindTexture(GL_TEXTURE_2D, temp_color_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, temp_color_texture, 0);
+
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDepthFunc(GL_LEQUAL);
+	glColorMask(1, 1, 1, 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_3D, texture->tex_id);
+
+	Vector<Ref<Image>> ret = _texture_3d_read_framebuffer(texture);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteTextures(1, &temp_color_texture);
+	glDeleteFramebuffers(1, &temp_framebuffer);
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && !texture->is_render_target) {
+		texture->image_cache_3d = ret;
+	}
+#endif
+
+	return ret;
 }
 
 void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
@@ -1218,7 +1433,7 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 	_texture_set_data(p_texture, p_image, p_layer, false);
 }
 
-void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer, bool initialize) {
+void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_initialize) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
 	ERR_FAIL_NULL(texture);
@@ -1259,56 +1474,7 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
-
-#ifndef WEB_ENABLED
-	switch (texture->format) {
-		case Image::FORMAT_L8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-			} else {
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
-			}
-		} break;
-		case Image::FORMAT_LA8: {
-			if (RasterizerGLES3::is_gles_over_gl()) {
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
-			} else {
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
-			}
-		} break;
-		case Image::FORMAT_ETC2_RA_AS_RG:
-		case Image::FORMAT_DXT5_RA_AS_RG: {
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
-			if (texture->format == real_format) {
-				// Swizzle RA from compressed texture into RG
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_ALPHA);
-			} else {
-				// Converted textures are already in RG, leave as-is
-				glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-			}
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
-		} break;
-		default: {
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
-			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
-		} break;
-	}
-#endif // WEB_ENABLED
+	_texture_set_swizzle(texture, real_format);
 
 	int mipmaps = img->has_mipmaps() ? img->get_mipmap_count() + 1 : 1;
 
@@ -1340,7 +1506,7 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			if (texture->target == GL_TEXTURE_2D_ARRAY) {
-				if (initialize) {
+				if (p_initialize) {
 					glTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0, format, type, nullptr);
 				}
 				glTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 1, format, type, &read[ofs]);
@@ -1360,6 +1526,140 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 	texture->stored_cube_sides |= (1 << p_layer);
 
 	texture->mipmaps = mipmaps;
+}
+
+void TextureStorage::_texture_set_3d_data(RID p_texture, const Vector<Ref<Image>> &p_data, bool p_initialize) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+
+	ERR_FAIL_NULL(texture);
+	ERR_FAIL_COND(!texture->active);
+	ERR_FAIL_COND(texture->is_render_target);
+	ERR_FAIL_COND(texture->target != GL_TEXTURE_3D);
+	ERR_FAIL_COND(p_data.is_empty());
+
+	GLenum type;
+	GLenum format;
+	GLenum internal_format;
+	bool compressed = false;
+
+	Image::Format real_format;
+	Ref<Image> img = _get_gl_image_and_format(p_data[0], p_data[0]->get_format(), real_format, format, internal_format, type, compressed, texture->resize_to_po2);
+	ERR_FAIL_COND(img.is_null());
+
+	ERR_FAIL_COND_MSG(compressed, "Compressed 3D textures are not supported in the GL Compatibility backend.");
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(texture->target, texture->tex_id);
+	_texture_set_swizzle(texture, texture->real_format);
+
+	// Set filtering and repeat state to default.
+	if (texture->mipmaps > 1) {
+		texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	} else {
+		texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	}
+
+	texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+
+	Vector<Ref<Image>> images;
+	images.resize(p_data.size());
+	for (int i = 0; i < p_data.size(); i++) {
+		Ref<Image> image = p_data[i];
+		if (image->get_format() != texture->format) {
+			image = image->duplicate();
+			image->convert(texture->format);
+		}
+		images.write[i] = image;
+	}
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	int all_data_size = 0;
+	int mipmap_level = 0;
+	int layer = 0;
+	int depth = texture->depth;
+	Size2i prev_size(images[0]->get_width(), images[0]->get_height());
+	for (int i = 0; i < images.size(); i++) {
+		Ref<Image> image = images[i];
+		Size2i img_size(image->get_width(), image->get_height());
+
+		if (img_size != prev_size) {
+			mipmap_level++;
+			depth = MAX(1, depth >> 1);
+			layer = 0;
+		}
+		prev_size = img_size;
+		all_data_size += image->get_data().size();
+
+		if (layer == 0 && p_initialize) {
+			glTexImage3D(GL_TEXTURE_3D, mipmap_level, internal_format, img_size.width, img_size.height, depth, 0, format, type, nullptr);
+		}
+
+		glTexSubImage3D(GL_TEXTURE_3D, mipmap_level, 0, 0, layer, img_size.width, img_size.height, 1, format, type, image->get_data().ptr());
+
+		layer++;
+	}
+
+	texture->total_data_size = all_data_size;
+	texture->mipmaps = mipmap_level + 1;
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && !texture->is_render_target) {
+		texture->image_cache_3d = images;
+	}
+#endif
+}
+
+void TextureStorage::_texture_set_swizzle(Texture *p_texture, Image::Format p_real_format) {
+#ifndef WEB_ENABLED
+	switch (p_texture->format) {
+		case Image::FORMAT_L8: {
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+			} else {
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+			}
+		} break;
+		case Image::FORMAT_LA8: {
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+			} else {
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+			}
+		} break;
+		case Image::FORMAT_ETC2_RA_AS_RG:
+		case Image::FORMAT_DXT5_RA_AS_RG: {
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+			if (p_texture->format == p_real_format) {
+				// Swizzle RA from compressed texture into RG.
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_ALPHA);
+			} else {
+				// Converted textures are already in RG, leave as-is.
+				glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+			}
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+		} break;
+		default: {
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
+			glTexParameteri(p_texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+		} break;
+	}
+#endif // WEB_ENABLED
 }
 
 Image::Format TextureStorage::texture_get_format(RID p_texture) const {

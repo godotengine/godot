@@ -4,6 +4,8 @@
 mode_default = #define MODE_SIMPLE_COPY
 mode_copy_section = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY
 mode_copy_section_source = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define MODE_COPY_FROM
+mode_copy_section_3d = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define USE_TEXTURE_3D
+mode_copy_section_2d_array = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define USE_TEXTURE_2D_ARRAY
 mode_gaussian_blur = #define MODE_GAUSSIAN_BLUR
 mode_mipmap = #define MODE_MIPMAP
 mode_simple_color = #define MODE_SIMPLE_COLOR \n#define USE_COPY_SECTION
@@ -44,6 +46,11 @@ void main() {
 
 in vec2 uv_interp;
 /* clang-format on */
+#if defined(USE_TEXTURE_3D) || defined(USE_TEXTURE_2D_ARRAY)
+uniform float layer;
+uniform float lod;
+#endif
+
 #ifdef MODE_SIMPLE_COLOR
 uniform vec4 color_in;
 #endif
@@ -70,7 +77,14 @@ uniform lowp float mip_level;
 uniform samplerCube source_cube; // texunit:0
 
 #else // ~(defined(CUBE_TO_OCTAHEDRAL) || defined(CUBE_TO_PANORAMA))
+
+#if defined(USE_TEXTURE_3D)
+uniform sampler3D source_3d; // texunit:0
+#elif defined(USE_TEXTURE_2D_ARRAY)
+uniform sampler2DArray source_2d_array; // texunit:0
+#else
 uniform sampler2D source; // texunit:0
+#endif
 
 #endif // !(defined(CUBE_TO_OCTAHEDRAL) || defined(CUBE_TO_PANORAMA))
 
@@ -84,7 +98,15 @@ vec3 srgb_to_linear(vec3 color) {
 
 void main() {
 #ifdef MODE_SIMPLE_COPY
+
+#ifdef USE_TEXTURE_3D
+	vec4 color = textureLod(source_3d, vec3(uv_interp, layer), lod);
+#elif defined(USE_TEXTURE_2D_ARRAY)
+	vec4 color = textureLod(source_2d_array, vec3(uv_interp, layer), lod);
+#else
 	vec4 color = texture(source, uv_interp);
+#endif
+
 	frag_color = color;
 #endif
 
