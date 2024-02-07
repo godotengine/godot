@@ -130,6 +130,7 @@ void PortalTracer::trace(PortalRenderer &p_portal_renderer, const Vector3 &p_pos
 
 		TraceParams params;
 		params.use_pvs = p_portal_renderer.get_pvs().is_loaded();
+		params.start_room_id = p_start_room_id;
 
 		// create bitfield
 		if (params.use_pvs) {
@@ -345,16 +346,16 @@ void PortalTracer::trace_pvs(int p_source_room_id, const LocalVector<Plane> &p_p
 }
 
 void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int p_room_id, const LocalVector<Plane> &p_planes, int p_from_external_room_id) {
-	// prevent too much depth
+	// Prevent too much depth.
 	if (p_depth > _depth_limit) {
 		WARN_PRINT_ONCE("Portal Depth Limit reached (seeing through too many portals)");
 		return;
 	}
 
-	// get the room
+	// Get the room.
 	const VSRoom &room = _portal_renderer->get_room(p_room_id);
 
-	// set up the occlusion culler as a one off
+	// Set up the occlusion culler as a one off.
 	_occlusion_culler.prepare(*_portal_renderer, room, _trace_start_point, p_planes, &_near_and_far_planes[0]);
 
 	cull_statics(room, p_planes);
@@ -365,13 +366,13 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 	for (int p = 0; p < num_portals; p++) {
 		const VSPortal &portal = _portal_renderer->get_portal(room._portal_ids[p]);
 
-		// portals can be switched on and off at runtime, like opening and closing a door
+		// Portals can be switched on and off at runtime, like opening and closing a door.
 		if (!portal._active) {
 			continue;
 		}
 
-		// everything depends on whether the portal is incoming or outgoing.
-		// if incoming we reverse the logic.
+		// Everything depends on whether the portal is incoming or outgoing.
+		// If incoming we reverse the logic.
 		int outgoing = 1;
 
 		int room_a_id = portal._linkedroom_ID[0];
@@ -380,67 +381,83 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 			DEV_ASSERT(portal._linkedroom_ID[1] == p_room_id);
 		}
 
-		// trace through this portal to the next room
+		// Trace through this portal to the next room.
 		int linked_room_id = portal._linkedroom_ID[outgoing];
 
-		// cull by PVS
+		// Cull by PVS.
 		if (p_params.use_pvs && (!p_params.decompressed_room_pvs[linked_room_id])) {
 			continue;
 		}
 
-		// cull by portal angle to camera.
+		// Cull by portal angle to camera.
 
-		// much better way of culling portals by direction to camera...
+		// Much better way of culling portals by direction to camera...
 		// instead of using dot product with a varying view direction, we simply find which side of the portal
-		// plane the camera is on! If it is behind, the portal can be seen through, if in front, it can't
+		// plane the camera is on! If it is behind, the portal can be seen through, if in front, it can't.
+
+		// There is one exception to this, for the first source room. If we are in front of any portal in the first
+		// source room, we will render EVERYTHING through it into the next room. This can happen due
+		// to precision errors, or inaccuracy in setting up the portal planes relative to the room bounds -
+		// in which case we can end up IN FRONT of a portal in the same room.
+
+		bool start_room_in_front_portal_exception = false;
+
+		/////////////////////////////////////////////
 		real_t dist_cam = portal._plane.distance_to(_trace_start_point);
 
 		if (!outgoing) {
 			dist_cam = -dist_cam;
 		}
 
+		// If the camera is IN FRONT of the portal plane...
 		if (dist_cam >= 0.0) {
-			continue;
+			if ((p_room_id != p_params.start_room_id) || portal._internal) {
+				continue;
+			} else {
+				start_room_in_front_portal_exception = true;
+			}
 		}
+		/////////////////////////////////////////////
 
-		// is it culled by the planes?
-		VSPortal::ClipResult overall_res = VSPortal::ClipResult::CLIP_INSIDE;
-
-		// while clipping to the planes we maintain a list of partial planes, so we can add them to the
-		// recursive next iteration of planes to check
+		// While clipping to the planes we maintain a list of partial planes, so we can add them to the
+		// recursive next iteration of planes to check.
 		static LocalVector<int> partial_planes;
 		partial_planes.clear();
 
-		// for portals, we want to ignore the near clipping plane, as we might be right on the edge of a doorway
-		// and still want to look through the portal.
-		// so earlier we have set it that the first plane (ASSUMING that plane zero is the near clipping plane)
-		// starts from the camera position, and NOT the actual near clipping plane.
-		// if we need quite a distant near plane, we may need a different strategy.
-		for (uint32_t l = 0; l < p_planes.size(); l++) {
-			VSPortal::ClipResult res = portal.clip_with_plane(p_planes[l]);
+		// Is it culled by the planes?
+		VSPortal::ClipResult overall_res = VSPortal::ClipResult::CLIP_INSIDE;
+		if (!start_room_in_front_portal_exception) {
+			// For portals, we want to ignore the near clipping plane, as we might be right on the edge of a doorway
+			// and still want to look through the portal.
+			// So earlier we have set it that the first plane (ASSUMING that plane zero is the near clipping plane)
+			// starts from the camera position, and NOT the actual near clipping plane.
+			// If we need quite a distant near plane, we may need a different strategy.
+			for (uint32_t l = 0; l < p_planes.size(); l++) {
+				VSPortal::ClipResult res = portal.clip_with_plane(p_planes[l]);
 
-			switch (res) {
-				case VSPortal::ClipResult::CLIP_OUTSIDE: {
-					overall_res = res;
-				} break;
-				case VSPortal::ClipResult::CLIP_PARTIAL: {
-					// if the portal intersects one of the planes, we should take this plane into account
-					// in the next call of this recursive trace, because it can be used to cull out more objects
-					overall_res = res;
-					partial_planes.push_back(l);
-				} break;
-				default: // suppress warning
+				switch (res) {
+					case VSPortal::ClipResult::CLIP_OUTSIDE: {
+						overall_res = res;
+					} break;
+					case VSPortal::ClipResult::CLIP_PARTIAL: {
+						// If the portal intersects one of the planes, we should take this plane into account
+						// in the next call of this recursive trace, because it can be used to cull out more objects.
+						overall_res = res;
+						partial_planes.push_back(l);
+					} break;
+					default: // Suppress warning.
+						break;
+				}
+
+				// If the portal was totally outside the 'frustum' then we can ignore it.
+				if (overall_res == VSPortal::ClipResult::CLIP_OUTSIDE)
 					break;
 			}
 
-			// if the portal was totally outside the 'frustum' then we can ignore it
-			if (overall_res == VSPortal::ClipResult::CLIP_OUTSIDE)
-				break;
-		}
-
-		// this portal is culled
-		if (overall_res == VSPortal::ClipResult::CLIP_OUTSIDE) {
-			continue;
+			// This portal is culled.
+			if (overall_res == VSPortal::ClipResult::CLIP_OUTSIDE) {
+				continue;
+			}
 		}
 
 		// Don't allow portals from internal to external room to be followed
@@ -467,64 +484,70 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 			}
 		}
 
-		// occlusion culling of portals
+		// Occlusion culling of portals.
 		if (_occlusion_culler.cull_sphere(portal._pt_center, portal._bounding_sphere_radius)) {
 			continue;
 		}
 
-		// hopefully the portal actually leads somewhere...
+		// Hopefully the portal actually leads somewhere...
 		if (linked_room_id != -1) {
-			// we need some new planes
+			// We need some new planes.
 			unsigned int pool_mem = _planes_pool.request();
 
-			// if the planes pool is not empty, we got some planes, and can recurse
+			// If the planes pool is not empty, we got some planes, and can recurse.
 			if (pool_mem != (unsigned int)-1) {
-				// get a new vector of planes from the pool
+				// Get a new vector of planes from the pool.
 				LocalVector<Plane> &new_planes = _planes_pool.get(pool_mem);
 
-				// makes sure there are none left over (as the pool may not clear them)
+				// Makes sure there are none left over (as the pool may not clear them).
 				new_planes.clear();
 
-				// if portal is totally inside the planes, don't copy the old planes ..
-				// i.e. we can now cull using the portal and forget about the rest of the frustum (yay)
-				// note that this loses the far clipping plane .. but that shouldn't be important usually?
-				// (maybe we might need to account for this in future .. look for issues)
-				if (overall_res != VSPortal::ClipResult::CLIP_INSIDE) {
-					// if it WASN'T totally inside the existing frustum, we also need to add any existing planes
-					// that cut the portal.
-					for (uint32_t n = 0; n < partial_planes.size(); n++) {
-						new_planes.push_back(p_planes[partial_planes[n]]);
+				if (!start_room_in_front_portal_exception) {
+					// If portal is totally inside the planes, don't copy the old planes ..
+					// i.e. we can now cull using the portal and forget about the rest of the frustum (yay).
+					// Note that this loses the far clipping plane .. but that shouldn't be important usually?
+					// (maybe we might need to account for this in future .. look for issues)
+					if (overall_res != VSPortal::ClipResult::CLIP_INSIDE) {
+						// If it WASN'T totally inside the existing frustum, we also need to add any existing planes
+						// that cut the portal.
+						for (uint32_t n = 0; n < partial_planes.size(); n++) {
+							new_planes.push_back(p_planes[partial_planes[n]]);
+						}
 					}
+
+					// We will always add the portals planes. This could probably be optimized, as some
+					// portal planes may be culled out by partial planes... NYI
+					portal.add_planes(_trace_start_point, new_planes, outgoing != 0);
+
+					// Always add the far plane. It is likely the portal is inside the far plane,
+					// but it is still needed in future for culling portals and objects.
+					// Note that there is a small possibility of far plane being added twice here
+					// in some situations, but I don't think it should be a problem.
+					// The fake near plane BTW is almost never added (otherwise it would prematurely
+					// break traversal through the portals), so near clipping must be done
+					// explicitly on objects.
+					new_planes.push_back(_near_and_far_planes[1]);
+				} else {
+					// start_room_in_front_portal_exception
+					// Copy the existing planes and reuse when tracing into the next room.
+					new_planes = p_planes;
 				}
 
-				// we will always add the portals planes. This could probably be optimized, as some
-				// portal planes may be culled out by partial planes... NYI
-				portal.add_planes(_trace_start_point, new_planes, outgoing != 0);
-
-				// always add the far plane. It is likely the portal is inside the far plane,
-				// but it is still needed in future for culling portals and objects.
-				// note that there is a small possibility of far plane being added twice here
-				// in some situations, but I don't think it should be a problem.
-				// The fake near plane BTW is almost never added (otherwise it would prematurely
-				// break traversal through the portals), so near clipping must be done
-				// explicitly on objects.
-				new_planes.push_back(_near_and_far_planes[1]);
-
-				// go and do the whole lot again in the next room
+				// Go and do the whole lot again in the next room...
 				trace_recursive(p_params, p_depth + 1, linked_room_id, new_planes, p_from_external_room_id);
 
-				// no longer need these planes, return them to the pool
+				// We no longer need these planes, return them to the pool.
 				_planes_pool.free(pool_mem);
 
 			} // pool mem allocated
 			else {
-				// planes pool is empty!
-				// This will happen if the view goes through shedloads of portals
+				// Planes pool is empty!
+				// This will happen if the view goes through shedloads of portals.
 				// The solution is either to increase the plane pool size, or not build levels
 				// with views through multiple portals. Looking through multiple portals is likely to be
 				// slow anyway because of the number of planes to test.
 				WARN_PRINT_ONCE("planes pool is empty");
-				// note we also have a depth check at the top of this function. Which will probably get hit
+				// Note we also have a depth check at the top of this function. Which will probably get hit
 				// before the pool gets empty.
 			}
 
