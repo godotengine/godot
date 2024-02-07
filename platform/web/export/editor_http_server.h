@@ -51,17 +51,24 @@ private:
 	uint8_t req_buf[4096];
 	int req_pos = 0;
 
+	SafeNumeric<bool> server_quit;
+	Mutex server_lock;
+	Thread server_thread;
+
 	void _clear_client();
 	void _set_internal_certs(Ref<Crypto> p_crypto);
 	void _send_response();
+	void _poll();
+
+	static void _server_thread_poll(void *data);
 
 public:
 	EditorHTTPServer();
+	~EditorHTTPServer();
 
 	void stop();
 	Error listen(int p_port, IPAddress p_address, bool p_use_tls, String p_tls_key, String p_tls_cert);
 	bool is_listening() const;
-	void poll();
 };
 
 #endif // WEB_EDITOR_HTTP_SERVER_H

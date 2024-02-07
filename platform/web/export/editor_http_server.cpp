@@ -30,6 +30,17 @@
 
 #include "editor_http_server.h"
 
+void EditorHTTPServer::_server_thread_poll(void *data) {
+	EditorHTTPServer *web_server = static_cast<EditorHTTPServer *>(data);
+	while (!web_server->server_quit.get()) {
+		OS::get_singleton()->delay_usec(6900);
+		{
+			MutexLock lock(web_server->server_lock);
+			web_server->_poll();
+		}
+	}
+}
+
 void EditorHTTPServer::_clear_client() {
 	peer = Ref<StreamPeer>();
 	tls = Ref<StreamPeerTLS>();
@@ -117,37 +128,7 @@ void EditorHTTPServer::_send_response() {
 	}
 }
 
-void EditorHTTPServer::stop() {
-	server->stop();
-	_clear_client();
-}
-
-Error EditorHTTPServer::listen(int p_port, IPAddress p_address, bool p_use_tls, String p_tls_key, String p_tls_cert) {
-	use_tls = p_use_tls;
-	if (use_tls) {
-		Ref<Crypto> crypto = Crypto::create();
-		if (crypto.is_null()) {
-			return ERR_UNAVAILABLE;
-		}
-		if (!p_tls_key.is_empty() && !p_tls_cert.is_empty()) {
-			key = Ref<CryptoKey>(CryptoKey::create());
-			Error err = key->load(p_tls_key);
-			ERR_FAIL_COND_V(err != OK, err);
-			cert = Ref<X509Certificate>(X509Certificate::create());
-			err = cert->load(p_tls_cert);
-			ERR_FAIL_COND_V(err != OK, err);
-		} else {
-			_set_internal_certs(crypto);
-		}
-	}
-	return server->listen(p_port, p_address);
-}
-
-bool EditorHTTPServer::is_listening() const {
-	return server->is_listening();
-}
-
-void EditorHTTPServer::poll() {
+void EditorHTTPServer::_poll() {
 	if (!server->is_listening()) {
 		return;
 	}
@@ -211,6 +192,52 @@ void EditorHTTPServer::poll() {
 	}
 }
 
+void EditorHTTPServer::stop() {
+	server_quit.set(true);
+	if (server_thread.is_started()) {
+		server_thread.wait_to_finish();
+	}
+	if (server.is_valid()) {
+		server->stop();
+	}
+	_clear_client();
+}
+
+Error EditorHTTPServer::listen(int p_port, IPAddress p_address, bool p_use_tls, String p_tls_key, String p_tls_cert) {
+	MutexLock lock(server_lock);
+	if (server->is_listening()) {
+		return ERR_ALREADY_IN_USE;
+	}
+	use_tls = p_use_tls;
+	if (use_tls) {
+		Ref<Crypto> crypto = Crypto::create();
+		if (crypto.is_null()) {
+			return ERR_UNAVAILABLE;
+		}
+		if (!p_tls_key.is_empty() && !p_tls_cert.is_empty()) {
+			key = Ref<CryptoKey>(CryptoKey::create());
+			Error err = key->load(p_tls_key);
+			ERR_FAIL_COND_V(err != OK, err);
+			cert = Ref<X509Certificate>(X509Certificate::create());
+			err = cert->load(p_tls_cert);
+			ERR_FAIL_COND_V(err != OK, err);
+		} else {
+			_set_internal_certs(crypto);
+		}
+	}
+	Error err = server->listen(p_port, p_address);
+	if (err == OK) {
+		server_quit.set(false);
+		server_thread.start(_server_thread_poll, this);
+	}
+	return err;
+}
+
+bool EditorHTTPServer::is_listening() const {
+	MutexLock lock(server_lock);
+	return server->is_listening();
+}
+
 EditorHTTPServer::EditorHTTPServer() {
 	mimes["html"] = "text/html";
 	mimes["js"] = "application/javascript";
@@ -220,5 +247,9 @@ EditorHTTPServer::EditorHTTPServer() {
 	mimes["svg"] = "image/svg";
 	mimes["wasm"] = "application/wasm";
 	server.instantiate();
+	stop();
+}
+
+EditorHTTPServer::~EditorHTTPServer() {
 	stop();
 }
