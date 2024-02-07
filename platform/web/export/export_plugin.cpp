@@ -676,7 +676,7 @@ Ref<Texture2D> EditorExportPlatformWeb::get_run_icon() const {
 
 void EditorExportPlatformWeb::_server_thread_poll(void *data) {
 	EditorExportPlatformWeb *ej = static_cast<EditorExportPlatformWeb *>(data);
-	while (!ej->server_quit) {
+	while (!ej->server_quit.get()) {
 		OS::get_singleton()->delay_usec(6900);
 		{
 			MutexLock lock(ej->server_lock);
@@ -714,7 +714,7 @@ EditorExportPlatformWeb::~EditorExportPlatformWeb() {
 	if (server.is_valid()) {
 		server->stop();
 	}
-	server_quit = true;
+	server_quit.set(true);
 	if (server_thread.is_started()) {
 		server_thread.wait_to_finish();
 	}
