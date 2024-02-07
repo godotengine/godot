@@ -31,6 +31,7 @@
 #include "visual_server.h"
 
 #include "core/engine.h"
+#include "core/math/vertex_cache_optimizer.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/project_settings.h"
 
@@ -768,6 +769,14 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 				ERR_FAIL_COND_V(indices.size() == 0, ERR_INVALID_PARAMETER);
 				ERR_FAIL_COND_V(indices.size() != p_index_array_len, ERR_INVALID_PARAMETER);
 
+				// Vertex cache optimization?
+				if (p_format & ARRAY_FLAG_USE_VERTEX_CACHE_OPTIMIZATION) {
+					// Expecting triangles.
+					ERR_FAIL_COND_V((indices.size() % 3) != 0, ERR_INVALID_PARAMETER);
+					VertexCacheOptimizer opt;
+					opt.reorder_indices_pool(indices, indices.size() / 3, p_vertex_array_len);
+				}
+
 				/* determine whether using 16 or 32 bits indices */
 
 				PoolVector<int>::Read read = indices.read();
@@ -1275,6 +1284,11 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	// validation
 	int index_array_len = 0;
 	int array_len = 0;
+
+	// Only implemented for triangles.
+	if (p_primitive != PrimitiveType::PRIMITIVE_TRIANGLES) {
+		p_compress_format &= ~ARRAY_FLAG_USE_VERTEX_CACHE_OPTIMIZATION;
+	}
 
 	bool res = _mesh_find_format(p_primitive, p_arrays, p_blend_shapes, p_compress_format, use_split_stream, offsets, attributes_base_offset, attributes_stride, positions_stride, format, index_array_len, array_len);
 	ERR_FAIL_COND(!res);
