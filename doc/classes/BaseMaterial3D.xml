@@ -814,6 +814,9 @@
 			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes (flipbook animation). Enables [code]particles_anim_*[/code] properties.
 			The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.
 		</constant>
+		<constant name="BILLBOARD_Y_PARTICLES" value="4" enum="BillboardMode">
+			Behaves the same as Particle Billboard, but the billboards Y-axis remains fixed. Intended to be used with [member CPUParticles3D.particle_flag_align_y].
+		</constant>
 		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">
 			Used to read from the red channel of a texture.
 		</constant>

@@ -1057,7 +1057,7 @@ uniform float metallic : hint_range(0.0, 1.0, 0.01);
 		code += "uniform sampler2D texture_orm : hint_roughness_g, " + texfilter_str + ";\n";
 	}
 
-	if (billboard_mode == BILLBOARD_PARTICLES) {
+	if (billboard_mode == BILLBOARD_PARTICLES || billboard_mode == BILLBOARD_Y_PARTICLES) {
 		code += R"(
 uniform int particles_anim_h_frames : hint_range(1, 128);
 uniform int particles_anim_v_frames : hint_range(1, 128);
@@ -1325,10 +1325,31 @@ void vertex() {)";
 			vec4(0.0, 0.0, 1.0, 0.0),
 			vec4(0.0, 0.0, 0.0, 1.0));
 )";
-			// Set modelview.
-			code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat_world;\n";
-			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += R"(
+		} break;
+		case BILLBOARD_Y_PARTICLES: {
+			code += R"(
+	// Billboard Mode: Particles Y
+	mat4 mat_world = mat4(
+			vec4(normalize(cross(MODEL_MATRIX[1].xyz, INV_VIEW_MATRIX[2].xyz)), 0.0),
+			MODEL_MATRIX[1],
+			vec4(normalize(cross(INV_VIEW_MATRIX[0].xyz, MODEL_MATRIX[1].xyz)), 0.0),
+			MODEL_MATRIX[3]);
+	mat_world = mat_world * mat4(
+			vec4(cos(INSTANCE_CUSTOM.x), -sin(INSTANCE_CUSTOM.x), 0.0, 0.0),
+			vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0),
+			vec4(0.0, 0.0, 1.0, 0.0),
+			vec4(0.0, 0.0, 0.0, 1.0));
+)";
+		} break;
+		case BILLBOARD_MAX:
+			break; // Internal value, skip.
+	}
+
+	if (billboard_mode == BILLBOARD_PARTICLES || billboard_mode == BILLBOARD_Y_PARTICLES) {
+		// Set modelview.
+		code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat_world;\n";
+		if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+			code += R"(
 	// Billboard Keep Scale: Enabled
 	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(
 			vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),
@@ -1336,9 +1357,9 @@ void vertex() {)";
 			vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0),
 			vec4(0.0, 0.0, 0.0, 1.0));
 )";
-			}
-			// Set modelview normal and handle animation.
-			code += R"(
+		}
+		// Set modelview normal and handle animation.
+		code += R"(
 	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
 
 	float h_frames = float(particles_anim_h_frames);
@@ -1353,9 +1374,6 @@ void vertex() {)";
 	UV /= vec2(h_frames, v_frames);
 	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);
 )";
-		} break;
-		case BILLBOARD_MAX:
-			break; // Internal value, skip.
 	}
 
 	if (flags[FLAG_FIXED_SIZE]) {
@@ -2582,7 +2600,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
+	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES && billboard_mode != BILLBOARD_Y_PARTICLES) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -3741,7 +3759,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "shadow_to_opacity"), "set_flag", "get_flag", FLAG_USE_SHADOW_TO_OPACITY);
 
 	ADD_GROUP("Billboard", "billboard_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard,Particle Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 
 	ADD_GROUP("Particles Anim", "particles_anim_");
@@ -3904,6 +3922,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BILLBOARD_ENABLED);
 	BIND_ENUM_CONSTANT(BILLBOARD_FIXED_Y);
 	BIND_ENUM_CONSTANT(BILLBOARD_PARTICLES);
+	BIND_ENUM_CONSTANT(BILLBOARD_Y_PARTICLES);
 
 	BIND_ENUM_CONSTANT(TEXTURE_CHANNEL_RED);
 	BIND_ENUM_CONSTANT(TEXTURE_CHANNEL_GREEN);
