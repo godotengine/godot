@@ -3464,6 +3464,16 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
+				OS::get_singleton()->benchmark_begin_measure("Startup", "Load global variables");
+				HashMap<StringName, ProjectSettings::GlobalVariableInfo> global_variables = ProjectSettings::get_singleton()->get_global_variable_list();
+				for (const KeyValue<StringName, ProjectSettings::GlobalVariableInfo> &E : global_variables) {
+					const ProjectSettings::GlobalVariableInfo &info = E.value;
+					for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+						ScriptServer::get_language(i)->add_named_global_variable(info.name);
+					}
+				}
+				OS::get_singleton()->benchmark_end_measure("Startup", "Load global variables");
+
 				//autoload
 				OS::get_singleton()->benchmark_begin_measure("Startup", "Load Autoloads");
 				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();

@@ -3350,7 +3350,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(global_idx < 0 || global_idx >= GDScriptLanguage::get_singleton()->get_global_array_size());
 
 				GET_VARIANT_PTR(dst, 0);
-				*dst = GDScriptLanguage::get_singleton()->get_global_array()[global_idx];
+				*dst = GDScriptLanguage::get_singleton()->get_global_array()[global_idx].value;
 
 				ip += 3;
 			}
@@ -3364,7 +3364,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!GDScriptLanguage::get_singleton()->get_named_globals_map().has(*globalname));
 
 				GET_VARIANT_PTR(dst, 0);
-				*dst = GDScriptLanguage::get_singleton()->get_named_globals_map()[*globalname];
+				*dst = GDScriptLanguage::get_singleton()->get_named_globals_map()[*globalname].value;
 
 				ip += 3;
 			}

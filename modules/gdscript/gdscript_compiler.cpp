@@ -425,8 +425,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							return global;
 						} else {
 							int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
-							Variant global = GDScriptLanguage::get_singleton()->get_global_array()[idx];
-							return codegen.add_constant(global);
+							GlobalVariable gv = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+							return codegen.add_constant(gv.value);
 						}
 					}
 
@@ -2653,7 +2653,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	GDScriptDataType base_type = _gdtype_from_datatype(p_class->base_type, p_script, false);
 
 	int native_idx = GDScriptLanguage::get_singleton()->get_global_map()[base_type.native_type];
-	p_script->native = GDScriptLanguage::get_singleton()->get_global_array()[native_idx];
+	p_script->native = GDScriptLanguage::get_singleton()->get_global_array()[native_idx].value;
 	ERR_FAIL_COND_V(p_script->native.is_null(), ERR_BUG);
 
 	// Inheritance

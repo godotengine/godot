@@ -380,7 +380,7 @@ ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 
 void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	const HashMap<StringName, int> &name_idx = GDScriptLanguage::get_singleton()->get_global_map();
-	const Variant *gl_array = GDScriptLanguage::get_singleton()->get_global_array();
+	const GlobalVariable *gl_array = GDScriptLanguage::get_singleton()->get_global_array();
 
 	List<Pair<String, Variant>> cinfo;
 	get_public_constants(&cinfo);
@@ -401,7 +401,7 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 			continue;
 		}
 
-		const Variant &var = gl_array[E.value];
+		const Variant &var = gl_array[E.value].value;
 		if (Object *obj = var) {
 			if (Object::cast_to<GDScriptNativeClass>(obj)) {
 				continue;
@@ -1768,7 +1768,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 										if (!which.is_empty()) {
 											// Try singletons first
 											if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(which)) {
-												r_type = _type_from_variant(GDScriptLanguage::get_singleton()->get_named_globals_map()[which], p_context);
+												r_type = _type_from_variant(GDScriptLanguage::get_singleton()->get_named_globals_map()[which].value, p_context);
 												found = true;
 											} else {
 												for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
@@ -2265,7 +2265,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 
 	// Check global variables (including autoloads).
 	if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(p_identifier->name)) {
-		r_type = _type_from_variant(GDScriptLanguage::get_singleton()->get_named_globals_map()[p_identifier->name], p_context);
+		r_type = _type_from_variant(GDScriptLanguage::get_singleton()->get_named_globals_map()[p_identifier->name].value, p_context);
 		return true;
 	}
 
@@ -3799,7 +3799,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				// Global.
 				HashMap<StringName, int> classes = GDScriptLanguage::get_singleton()->get_global_map();
 				if (classes.has(p_symbol)) {
-					Variant value = GDScriptLanguage::get_singleton()->get_global_array()[classes[p_symbol]];
+					Variant value = GDScriptLanguage::get_singleton()->get_global_array()[classes[p_symbol]].value;
 					if (value.get_type() == Variant::OBJECT) {
 						Object *obj = value;
 						if (obj) {

@@ -2060,13 +2060,15 @@ String GDScriptLanguage::get_name() const {
 /* LANGUAGE FUNCTIONS */
 
 void GDScriptLanguage::_add_global(const StringName &p_name, const Variant &p_value) {
+	GlobalVariable new_global_variable;
+	new_global_variable.value = p_value;
 	if (globals.has(p_name)) {
 		//overwrite existing
-		global_array.write[globals[p_name]] = p_value;
+		global_array.write[globals[p_name]] = new_global_variable;
 		return;
 	}
 	globals[p_name] = global_array.size();
-	global_array.push_back(p_value);
+	global_array.push_back(new_global_variable);
 	_global_array = global_array.ptrw();
 }
 
@@ -2074,21 +2076,27 @@ void GDScriptLanguage::add_global_constant(const StringName &p_variable, const V
 	_add_global(p_variable, p_value);
 }
 
-void GDScriptLanguage::add_named_global_constant(const StringName &p_name, const Variant &p_value) {
-	named_globals[p_name] = p_value;
+void GDScriptLanguage::add_named_global_variable(const StringName &p_name) {
+	GlobalVariable named_global_variable;
+	named_globals[p_name] = named_global_variable;
 }
 
-Variant GDScriptLanguage::get_any_global_constant(const StringName &p_name) {
+void GDScriptLanguage::set_named_global_variable_value(const StringName &p_name, const Variant &p_value) {
+	ERR_FAIL_COND_MSG(!named_globals.has(p_name), vformat("Could not find any global constant with name: %s.", p_name));
+	named_globals[p_name].value = p_value;
+}
+
+GlobalVariable GDScriptLanguage::get_any_global_variable(const StringName &p_name) {
 	if (named_globals.has(p_name)) {
 		return named_globals[p_name];
 	}
 	if (globals.has(p_name)) {
 		return _global_array[globals[p_name]];
 	}
-	ERR_FAIL_V_MSG(Variant(), vformat("Could not find any global constant with name: %s.", p_name));
+	ERR_FAIL_V_MSG(GlobalVariable(), vformat("Could not find any global constant with name: %s.", p_name));
 }
 
-void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
+void GDScriptLanguage::remove_named_global_variable(const StringName &p_name) {
 	ERR_FAIL_COND(!named_globals.has(p_name));
 	named_globals.erase(p_name);
 }

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_autoload_settings.h                                            */
+/*  editor_global_variables_settings.h                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_AUTOLOAD_SETTINGS_H
-#define EDITOR_AUTOLOAD_SETTINGS_H
+#ifndef EDITOR_GLOBAL_VARIABLES_SETTINGS_H
+#define EDITOR_GLOBAL_VARIABLES_SETTINGS_H
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -37,77 +37,55 @@
 
 class EditorFileDialog;
 
-class EditorAutoloadSettings : public VBoxContainer {
-	GDCLASS(EditorAutoloadSettings, VBoxContainer);
+class EditorGlobalVariablesSettings : public VBoxContainer {
+	GDCLASS(EditorGlobalVariablesSettings, VBoxContainer);
 
 	enum {
-		BUTTON_OPEN,
-		BUTTON_MOVE_UP,
-		BUTTON_MOVE_DOWN,
 		BUTTON_DELETE
 	};
 
 	String path = "res://";
-	String autoload_changed = "autoload_changed";
+	String global_variables_changed = "global_variables_changed";
 
-	struct AutoloadInfo {
+	struct GlobalVariableInfo {
 		String name;
-		String path;
-		bool is_singleton = false;
-		bool in_editor = false;
-		int order = 0;
-		Node *node = nullptr;
 
-		bool operator==(const AutoloadInfo &p_info) const {
-			return order == p_info.order;
+		bool operator<(const GlobalVariableInfo &p_arg) const {
+			return name < p_arg.name;
 		}
 	};
 
-	List<AutoloadInfo> autoload_cache;
+	List<GlobalVariableInfo> global_variables_cache; // ????
 
-	bool updating_autoload = false;
-	String selected_autoload;
+	bool updating_global_variables = false;
+	String selected_global_variable;
 
 	Tree *tree = nullptr;
-	LineEdit *autoload_add_name = nullptr;
-	Button *add_autoload = nullptr;
-	LineEdit *autoload_add_path = nullptr;
+	LineEdit *global_variable_add_name = nullptr;
+	Button *add_global_variable = nullptr;
 	Label *error_message = nullptr;
-	Button *browse_button = nullptr;
-	EditorFileDialog *file_dialog = nullptr;
 
-	void _autoload_add();
-	void _autoload_selected();
-	void _autoload_edited();
-	void _autoload_button_pressed(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
-	void _autoload_activated();
-	void _autoload_path_text_changed(const String p_path);
-	void _autoload_text_submitted(const String p_name);
-	void _autoload_text_changed(const String p_name);
-	void _autoload_open(const String &fpath);
-	void _autoload_file_callback(const String &p_path);
-	Node *_create_autoload(const String &p_path);
-
-	void _script_created(Ref<Script> p_script);
-
-	Variant get_drag_data_fw(const Point2 &p_point, Control *p_control);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const;
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control);
-
-	void _set_autoload_add_path(const String &p_text);
-	void _browse_autoload_add_path();
+	void _global_variable_add();
+	void _global_variable_selected();
+	void _global_variable_edited();
+	void _global_variable_button_pressed(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
+	void _global_variable_text_submitted(const String p_name);
+	void _global_variable_text_changed(const String p_name);
+	void _global_variable_file_callback(const String &p_path);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void update_autoload();
-	bool autoload_add(const String &p_name, const String &p_path);
-	void autoload_remove(const String &p_name);
+	static bool global_variable_name_is_valid(const String &p_name, String *r_error = nullptr);
 
-	EditorAutoloadSettings();
-	~EditorAutoloadSettings();
+	void update_global_variables();
+	bool global_variable_add(const String &p_name);
+	void global_variable_remove(const String &p_name);
+
+	EditorGlobalVariablesSettings();
+	~EditorGlobalVariablesSettings();
 };
 
-#endif // EDITOR_AUTOLOAD_SETTINGS_H
+#endif // EDITOR_GLOBAL_VARIABLES_SETTINGS_H

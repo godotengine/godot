@@ -342,8 +342,9 @@ public:
 
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
-	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}
-	virtual void remove_named_global_constant(const StringName &p_name) {}
+	virtual void add_named_global_variable(const StringName &p_name) {}
+	virtual void set_named_global_variable_value(const StringName &p_name, const Variant &p_value) {}
+	virtual void remove_named_global_variable(const StringName &p_name) {}
 
 	/* MULTITHREAD FUNCTIONS */
 

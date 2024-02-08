@@ -457,8 +457,9 @@ public:
 		p_code = ret;
 	}
 	EXBIND2(add_global_constant, const StringName &, const Variant &)
-	EXBIND2(add_named_global_constant, const StringName &, const Variant &)
-	EXBIND1(remove_named_global_constant, const StringName &)
+	EXBIND1(add_named_global_variable, const StringName &)
+	EXBIND2(set_named_global_variable_value, const StringName &, const Variant &)
+	EXBIND1(remove_named_global_variable, const StringName &)
 
 	/* MULTITHREAD FUNCTIONS */
 

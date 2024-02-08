@@ -14,10 +14,9 @@
 			<description>
 			</description>
 		</method>
-		<method name="_add_named_global_constant" qualifiers="virtual">
+		<method name="_add_named_global_variable" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>
