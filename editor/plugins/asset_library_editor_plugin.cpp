@@ -384,6 +384,10 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		} break;
 	}
 
+	// Make the progress bar invisible but don't reflow other Controls around it.
+	progress->set_modulate(Color(0, 0, 0, 0));
+	progress->set_indeterminate(false);
+
 	if (!error_text.is_empty()) {
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
 		download_error->popup_centered();
@@ -394,8 +398,6 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 
 	install_button->set_disabled(false);
 	status->set_text(TTR("Ready to install!"));
-	// Make the progress bar invisible but don't reflow other Controls around it.
-	progress->set_modulate(Color(0, 0, 0, 0));
 
 	set_process(false);
 
@@ -436,13 +438,13 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
 			if (cstatus == HTTPClient::STATUS_BODY) {
 				if (download->get_body_size() > 0) {
+					progress->set_indeterminate(false);
 					status->set_text(vformat(
 							TTR("Downloading (%s / %s)..."),
 							String::humanize_size(download->get_downloaded_bytes()),
 							String::humanize_size(download->get_body_size())));
 				} else {
-					// Total file size is unknown, so it cannot be displayed.
-					progress->set_modulate(Color(0, 0, 0, 0));
+					progress->set_indeterminate(true);
 					status->set_text(vformat(
 							TTR("Downloading...") + " (%s)",
 							String::humanize_size(download->get_downloaded_bytes())));
@@ -508,6 +510,7 @@ void EditorAssetLibraryItemDownload::_make_request() {
 	if (err != OK) {
 		status->set_text(TTR("Error making request"));
 	} else {
+		progress->set_indeterminate(true);
 		set_process(true);
 	}
 }
@@ -548,6 +551,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	status = memnew(Label(TTR("Idle")));
 	vb->add_child(status);
 	progress = memnew(ProgressBar);
+	progress->set_editor_preview_indeterminate(true);
 	vb->add_child(progress);
 
 	HBoxContainer *hb2 = memnew(HBoxContainer);
