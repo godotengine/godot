@@ -1779,6 +1779,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	} else {
 		//the file exists and it was updated, and was not added in this step.
 		//this means we must force upon next restart to scan it again, to get proper type and dependencies
+		MutexLock lock(late_update_files_mutex);
 		late_update_files.insert(p_file);
 		_save_late_updated_files(); //files need to be updated in the re-scan
 	}
