@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  debugger_editor_plugin.h                                              */
+/*  run_instances_dialog.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUGGER_EDITOR_PLUGIN_H
-#define DEBUGGER_EDITOR_PLUGIN_H
+#ifndef RUN_INSTANCES_DIALOG_H
+#define RUN_INSTANCES_DIALOG_H
 
-#include "editor/editor_plugin.h"
+#include "scene/gui/dialogs.h"
 
-class EditorFileServer;
-class MenuButton;
-class PopupMenu;
-class RunInstancesDialog;
+class CheckBox;
+class LineEdit;
+class SpinBox;
+class Timer;
+class VBoxContainer;
 
-class DebuggerEditorPlugin : public EditorPlugin {
-	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
+class RunInstancesDialog : public AcceptDialog {
+	GDCLASS(RunInstancesDialog, AcceptDialog);
 
 private:
-	PopupMenu *debug_menu = nullptr;
-	EditorFileServer *file_server = nullptr;
-	RunInstancesDialog *run_instances_dialog = nullptr;
+	static RunInstancesDialog *singleton;
 
-	enum MenuOptions {
-		RUN_FILE_SERVER,
-		RUN_LIVE_DEBUG,
-		RUN_DEBUG_COLLISIONS,
-		RUN_DEBUG_PATHS,
-		RUN_DEBUG_NAVIGATION,
-		RUN_DEBUG_AVOIDANCE,
-		RUN_DEBUG_CANVAS_REDRAW,
-		RUN_DEPLOY_REMOTE_DEBUG,
-		RUN_RELOAD_SCRIPTS,
-		SERVER_KEEP_OPEN,
-		RUN_MULTIPLE_INSTANCES,
-	};
+	Timer *main_apply_timer = nullptr;
+	Timer *instance_apply_timer = nullptr;
 
-	void _update_debug_options();
-	void _notification(int p_what);
-	void _menu_option(int p_option);
+	LineEdit *main_args_edit = nullptr;
+	SpinBox *instance_count = nullptr;
+	CheckBox *enable_multiple_instances_checkbox = nullptr;
+	VBoxContainer *argument_container = nullptr;
+
+	Array override_list;
+	PackedStringArray argument_list;
+
+	void _fetch_main_args();
+	// These 2 methods are necessary due to callable_mp() not supporting default arguments.
+	void _start_main_timer();
+	void _start_instance_timer();
+
+	void _refresh_argument_count();
+	void _save_main_args();
+	void _save_arguments();
+	// Separates command line arguments without splitting up quoted strings.
+	Vector<String> _split_cmdline_args(const String &p_arg_string) const;
 
 public:
-	virtual String get_name() const override { return "Debugger"; }
-	bool has_main_screen() const override { return false; }
+	int get_instance_count() const;
+	void get_argument_list_for_instance(int p_idx, List<String> &r_list) const;
 
-	DebuggerEditorPlugin(PopupMenu *p_menu);
-	~DebuggerEditorPlugin();
+	static RunInstancesDialog *get_singleton() { return singleton; }
+	RunInstancesDialog();
 };
 
-#endif // DEBUGGER_EDITOR_PLUGIN_H
+#endif // RUN_INSTANCES_DIALOG_H
