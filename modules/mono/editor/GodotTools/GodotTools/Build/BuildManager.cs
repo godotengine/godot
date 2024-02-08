@@ -24,6 +24,20 @@ namespace GodotTools.Build
         public static event Action<string> StdOutputReceived;
         public static event Action<string> StdErrorReceived;
 
+        public static DateTime LastValidBuildDateTime { get; private set; }
+
+        static BuildManager()
+        {
+            UpdateLastValidBuildDateTime();
+        }
+
+        public static void UpdateLastValidBuildDateTime()
+        {
+            var dllName = $"{GodotSharpDirs.ProjectAssemblyName}.dll";
+            var path = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, "Debug", dllName);
+            LastValidBuildDateTime = File.GetLastWriteTime(path);
+        }
+
         private static void RemoveOldIssuesFile(BuildInfo buildInfo)
         {
             string issuesFile = GetIssuesFilePath(buildInfo);

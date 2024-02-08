@@ -54,8 +54,6 @@ namespace GodotTools
 
         public bool SkipBuildBeforePlaying { get; set; } = false;
 
-        public DateTime LastValidBuildDateTime { get; private set; }
-
         [UsedImplicitly]
         private bool CreateProjectSolutionIfNeeded()
         {
@@ -441,21 +439,6 @@ namespace GodotTools
             }
         }
 
-        private void UpdateLastValidBuildDateTime()
-        {
-            var dllName = $"{GodotSharpDirs.ProjectAssemblyName}.dll";
-            var path = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, "Debug", dllName);
-            LastValidBuildDateTime = File.GetLastWriteTime(path);
-        }
-
-        private void BuildFinished(BuildResult buildResult)
-        {
-            if (buildResult == BuildResult.Success)
-            {
-                UpdateLastValidBuildDateTime();
-            }
-        }
-
         private void BuildStateChanged()
         {
             if (_bottomPanelBtn != null)
@@ -465,8 +448,6 @@ namespace GodotTools
         public override void _EnablePlugin()
         {
             base._EnablePlugin();
-
-            UpdateLastValidBuildDateTime();
 
             ProjectSettings.SettingsChanged += GodotSharpDirs.DetermineProjectLocation;
 
@@ -640,7 +621,6 @@ namespace GodotTools
             var inspectorPlugin = new InspectorPlugin();
             AddInspectorPlugin(inspectorPlugin);
             _inspectorPluginWeak = WeakRef(inspectorPlugin);
-            BuildManager.BuildFinished += BuildFinished;
 
             BuildManager.Initialize();
             RiderPathManager.Initialize();
@@ -657,7 +637,6 @@ namespace GodotTools
 
             // Custom signals aren't automatically disconnected currently.
             MSBuildPanel.BuildStateChanged -= BuildStateChanged;
-            BuildManager.BuildFinished -= BuildFinished;
         }
 
         public override void _ExitTree()
