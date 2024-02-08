@@ -63,7 +63,7 @@ using namespace tvg;
 #define TVG_CLASS_ID_RADIAL    5
 #define TVG_CLASS_ID_TEXT      6
 
-enum class FileType { Tvg = 0, Svg, Ttf, Lottie, Raw, Png, Jpg, Webp, Gif, Unknown };
+enum class FileType { Png = 0, Jpg, Webp, Tvg, Svg, Lottie, Ttf, Raw, Gif, Unknown };
 
 using Size = Point;
 
