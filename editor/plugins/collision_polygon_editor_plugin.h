@@ -56,8 +56,8 @@ class Polygon3DEditor : public HBoxContainer {
 	ToolButton *button_create;
 	ToolButton *button_edit;
 
-	Ref<SpatialMaterial> line_material;
-	Ref<SpatialMaterial> handle_material;
+	Ref<Material3D> line_material;
+	Ref<Material3D> handle_material;
 
 	EditorNode *editor;
 	Panel *panel;

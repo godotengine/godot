@@ -158,7 +158,7 @@ private:
 	float line_spacing = 0.f;
 
 	RID base_material;
-	SpatialMaterial::BillboardMode billboard_mode = SpatialMaterial::BILLBOARD_DISABLED;
+	Material3D::BillboardMode billboard_mode = Material3D::BILLBOARD_DISABLED;
 
 	bool pending_update = false;
 
@@ -232,8 +232,8 @@ public:
 	void set_alpha_scissor_threshold(float p_threshold);
 	float get_alpha_scissor_threshold() const;
 
-	void set_billboard_mode(SpatialMaterial::BillboardMode p_mode);
-	SpatialMaterial::BillboardMode get_billboard_mode() const;
+	void set_billboard_mode(Material3D::BillboardMode p_mode);
+	Material3D::BillboardMode get_billboard_mode() const;
 
 	virtual AABB get_aabb() const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;

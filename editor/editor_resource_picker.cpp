@@ -518,7 +518,7 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *
 		}
 
 		if (p_with_convert) {
-			if (base == "SpatialMaterial") {
+			if (base == "SpatialMaterial" || base == "ORMSpatialMaterial") {
 				p_vector->insert("Texture");
 			} else if (base == "ShaderMaterial") {
 				p_vector->insert("Shader");
@@ -643,11 +643,22 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 				if (at == "SpatialMaterial" && ClassDB::is_parent_class(dropped_resource->get_class(), "Texture")) {
 					// Use existing resource if possible and only replace its data.
-					Ref<SpatialMaterial> mat = edited_resource;
+					Ref<Material3D> mat = edited_resource;
 					if (mat.is_null()) {
 						mat.instance();
 					}
-					mat->set_texture(SpatialMaterial::TextureParam::TEXTURE_ALBEDO, dropped_resource);
+					mat->set_texture(Material3D::TextureParam::TEXTURE_ALBEDO, dropped_resource);
+					dropped_resource = mat;
+					break;
+				}
+
+				if (at == "ORMSpatialMaterial" && ClassDB::is_parent_class(dropped_resource->get_class(), "Texture")) {
+					// Use existing resource if possible and only replace its data.
+					Ref<ORMSpatialMaterial> mat = edited_resource;
+					if (mat.is_null()) {
+						mat.instance();
+					}
+					mat->set_texture(Material3D::TextureParam::TEXTURE_ALBEDO, dropped_resource);
 					dropped_resource = mat;
 					break;
 				}

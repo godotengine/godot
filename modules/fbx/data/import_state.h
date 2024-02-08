@@ -67,7 +67,7 @@ struct ImportState {
 	bool is_blender_fbx = false;
 
 	Map<StringName, Ref<Texture>> cached_image_searches;
-	Map<uint64_t, Ref<SpatialMaterial>> cached_materials;
+	Map<uint64_t, Ref<Material3D>> cached_materials;
 
 	String path = String();
 	Spatial *root_owner = nullptr;

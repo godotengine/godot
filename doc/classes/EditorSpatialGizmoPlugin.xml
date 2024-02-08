@@ -14,7 +14,7 @@
 		<method name="add_material">
 			<return type="void" />
 			<argument index="0" name="name" type="String" />
-			<argument index="1" name="material" type="SpatialMaterial" />
+			<argument index="1" name="material" type="Material3D" />
 			<description>
 				Adds a new material to the internal material list for the plugin. It can then be accessed with [method get_material]. Should not be overridden.
 			</description>
@@ -90,7 +90,7 @@
 			</description>
 		</method>
 		<method name="get_material">
-			<return type="SpatialMaterial" />
+			<return type="Material3D" />
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="gizmo" type="EditorSpatialGizmo" default="null" />
 			<description>

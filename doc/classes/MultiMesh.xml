@@ -81,7 +81,7 @@
 			<argument index="1" name="color" type="Color" />
 			<description>
 				Sets the color of a specific instance by [i]multiplying[/i] the mesh's existing vertex colors.
-				For the color to take effect, ensure that [member color_format] is non-[code]null[/code] on the [MultiMesh] and [member SpatialMaterial.vertex_color_use_as_albedo] is [code]true[/code] on the material. If the color doesn't look as expected, make sure the material's albedo color is set to pure white ([code]Color(1, 1, 1)[/code]).
+				For the color to take effect, ensure that [member color_format] is non-[code]null[/code] on the [MultiMesh] and [member Material3D.vertex_color_use_as_albedo] is [code]true[/code] on the material. If the color doesn't look as expected, make sure the material's albedo color is set to pure white ([code]Color(1, 1, 1)[/code]).
 			</description>
 		</method>
 		<method name="set_instance_custom_data">

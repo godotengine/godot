@@ -184,7 +184,7 @@ FBXMaterial::MaterialInfo FBXMaterial::extract_material_info(const FBXDocParser:
 
 		const String texture_name = absoulte_fbx_file_path.get_file();
 		print_verbose("Getting FBX mapping mode for " + String(fbx_mapping_name.c_str()));
-		const SpatialMaterial::TextureParam mapping_mode = fbx_texture_mapping_desc.at(fbx_mapping_name);
+		const Material3D::TextureParam mapping_mode = fbx_texture_mapping_desc.at(fbx_mapping_name);
 		print_verbose("Set FBX mapping mode to " + get_texture_param_name(mapping_mode));
 		TextureFileMapping file_mapping;
 		file_mapping.map_mode = mapping_mode;
@@ -194,42 +194,43 @@ FBXMaterial::MaterialInfo FBXMaterial::extract_material_info(const FBXDocParser:
 
 		// Make sure to active the various features.
 		switch (mapping_mode) {
-			case SpatialMaterial::TextureParam::TEXTURE_ALBEDO:
-			case SpatialMaterial::TextureParam::TEXTURE_METALLIC:
-			case SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS:
-			case SpatialMaterial::TextureParam::TEXTURE_FLOWMAP:
-			case SpatialMaterial::TextureParam::TEXTURE_REFRACTION:
-			case SpatialMaterial::TextureParam::TEXTURE_MAX:
+			case Material3D::TextureParam::TEXTURE_ALBEDO:
+			case Material3D::TextureParam::TEXTURE_METALLIC:
+			case Material3D::TextureParam::TEXTURE_ROUGHNESS:
+			case Material3D::TextureParam::TEXTURE_ORM:
+			case Material3D::TextureParam::TEXTURE_FLOWMAP:
+			case Material3D::TextureParam::TEXTURE_REFRACTION:
+			case Material3D::TextureParam::TEXTURE_MAX:
 				// No features required.
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_EMISSION:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_EMISSION);
+			case Material3D::TextureParam::TEXTURE_EMISSION:
+				mat_info.features.push_back(Material3D::Feature::FEATURE_EMISSION);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_NORMAL:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING);
+			case Material3D::TextureParam::TEXTURE_NORMAL:
+				mat_info.features.push_back(Material3D::Feature::FEATURE_NORMAL_MAPPING);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_RIM:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_RIM);
+			case Material3D::TextureParam::TEXTURE_RIM:
+				mat_info.features.push_back(Material3D::Feature::FEATURE_RIM);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_CLEARCOAT:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+			case Material3D::TextureParam::TEXTURE_CLEARCOAT:
+				mat_info.features.push_back(Material3D::Feature::FEATURE_CLEARCOAT);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_AMBIENT_OCCLUSION:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_AMBIENT_OCCLUSION);
+			case Material3D::TextureParam::TEXTURE_AMBIENT_OCCLUSION:
+				mat_info.features.push_back(Material3D::Feature::FEATURE_AMBIENT_OCCLUSION);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_DEPTH:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_DEPTH_MAPPING);
+			case Material3D::TextureParam::TEXTURE_DEPTH:
+				mat_info.features.push_back(Material3D::Feature::FEATURE_DEPTH_MAPPING);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_SUBSURFACE_SCATTERING:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_SUBSURACE_SCATTERING);
+			case Material3D::TextureParam::TEXTURE_SUBSURFACE_SCATTERING:
+				mat_info.features.push_back(Material3D::Feature::FEATURE_SUBSURACE_SCATTERING);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_TRANSMISSION:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_TRANSMISSION);
+			case Material3D::TextureParam::TEXTURE_TRANSMISSION:
+				mat_info.features.push_back(Material3D::Feature::FEATURE_TRANSMISSION);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_DETAIL_ALBEDO:
-			case SpatialMaterial::TextureParam::TEXTURE_DETAIL_MASK:
-			case SpatialMaterial::TextureParam::TEXTURE_DETAIL_NORMAL:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_DETAIL);
+			case Material3D::TextureParam::TEXTURE_DETAIL_ALBEDO:
+			case Material3D::TextureParam::TEXTURE_DETAIL_MASK:
+			case Material3D::TextureParam::TEXTURE_DETAIL_NORMAL:
+				mat_info.features.push_back(Material3D::Feature::FEATURE_DETAIL);
 				break;
 		}
 	}
@@ -247,12 +248,12 @@ T extract_from_prop(FBXDocParser::PropertyPtr prop, const T &p_default, const st
 	return val->Value();
 }
 
-Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
+Ref<Material3D> FBXMaterial::import_material(ImportState &state) {
 	ERR_FAIL_COND_V(material == nullptr, nullptr);
 
 	const String p_fbx_current_directory = state.path;
 
-	Ref<SpatialMaterial> spatial_material;
+	Ref<Material3D> spatial_material;
 
 	// read the material file
 	// is material two sided
@@ -364,8 +365,8 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 						Color c = spatial_material->get_albedo();
 						c.a = opacity;
 						spatial_material->set_albedo(c);
-						material_info.features.push_back(SpatialMaterial::Feature::FEATURE_TRANSPARENT);
-						spatial_material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+						material_info.features.push_back(Material3D::Feature::FEATURE_TRANSPARENT);
+						spatial_material->set_depth_draw_mode(Material3D::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
 					}
 				} else if (vector_value) {
 					print_error("unsupported transparent desc type vector!");
@@ -410,7 +411,7 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 			} break;
 			case PROPERTY_DESC_COAT: {
 				if (real_value) {
-					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+					material_info.features.push_back(Material3D::Feature::FEATURE_CLEARCOAT);
 					print_verbose("clearcoat real value: " + rtos(real_value->Value()));
 					spatial_material->set_clearcoat(MIN(1.0f, real_value->Value()));
 				} else {
@@ -423,7 +424,7 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 					print_verbose("clearcoat real value: " + rtos(real_value->Value()));
 					spatial_material->set_clearcoat_gloss(1.0 - real_value->Value());
 
-					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+					material_info.features.push_back(Material3D::Feature::FEATURE_CLEARCOAT);
 				} else {
 					print_error("unsupported value type for clearcoat gloss");
 				}
@@ -432,7 +433,7 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 				if (real_value && Math::is_equal_approx(real_value->Value(), 0.0f)) {
 					print_verbose("Emissive real value: " + rtos(real_value->Value()));
 					spatial_material->set_emission_energy(real_value->Value());
-					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_EMISSION);
+					material_info.features.push_back(Material3D::Feature::FEATURE_EMISSION);
 				} else if (vector_value && !vector_value->Value().is_equal_approx(Vector3(0, 0, 0))) {
 					const Vector3 &color = vector_value->Value();
 					Color c;
@@ -440,7 +441,7 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 					c[1] = color[1];
 					c[2] = color[2];
 					spatial_material->set_emission(c);
-					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_EMISSION);
+					material_info.features.push_back(Material3D::Feature::FEATURE_EMISSION);
 				}
 			} break;
 			case PROPERTY_DESC_EMISSIVE_COLOR: {
@@ -548,31 +549,31 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 		}
 
 		switch (mapping.map_mode) {
-			case SpatialMaterial::TextureParam::TEXTURE_METALLIC:
+			case Material3D::TextureParam::TEXTURE_METALLIC:
 				if (mapping.name.to_lower().find("ser") >= 0) {
 					// SER shader.
-					spatial_material->set_metallic_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_RED);
+					spatial_material->set_metallic_texture_channel(Material3D::TextureChannel::TEXTURE_CHANNEL_RED);
 				} else {
 					// Use grayscale as default.
-					spatial_material->set_metallic_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
+					spatial_material->set_metallic_texture_channel(Material3D::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
 				}
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS:
+			case Material3D::TextureParam::TEXTURE_ROUGHNESS:
 				if (mapping.name.to_lower().find("ser") >= 0) {
 					// SER shader.
-					spatial_material->set_roughness_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_BLUE);
+					spatial_material->set_roughness_texture_channel(Material3D::TextureChannel::TEXTURE_CHANNEL_BLUE);
 				} else {
 					// Use grayscale as default.
-					spatial_material->set_roughness_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
+					spatial_material->set_roughness_texture_channel(Material3D::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
 				}
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_AMBIENT_OCCLUSION:
+			case Material3D::TextureParam::TEXTURE_AMBIENT_OCCLUSION:
 				// Use grayscale as default.
-				spatial_material->set_ao_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
+				spatial_material->set_ao_texture_channel(Material3D::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_REFRACTION:
+			case Material3D::TextureParam::TEXTURE_REFRACTION:
 				// Use grayscale as default.
-				spatial_material->set_refraction_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
+				spatial_material->set_refraction_texture_channel(Material3D::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
 				break;
 			default:
 				// Nothing to do.

@@ -451,7 +451,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 
 void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightmapper::MeshData &r_mesh_data, Vector<Ref<Texture>> &r_albedo_textures, Vector<Ref<Texture>> &r_emission_textures) {
 	for (int i = 0; i < p_found_mesh.mesh->get_surface_count(); ++i) {
-		Ref<SpatialMaterial> mat = p_found_mesh.overrides[i];
+		Ref<Material3D> mat = p_found_mesh.overrides[i];
 
 		if (mat.is_null()) {
 			mat = p_found_mesh.mesh->surface_get_material(i);
@@ -466,7 +466,7 @@ void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightm
 		Color emission_mul = Color(1, 1, 1, 1);
 
 		if (mat.is_valid()) {
-			albedo_texture = mat->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
+			albedo_texture = mat->get_texture(Material3D::TEXTURE_ALBEDO);
 
 			if (albedo_texture.is_valid()) {
 				albedo_mul = mat->get_albedo();
@@ -475,11 +475,11 @@ void BakedLightmap::_get_material_images(const MeshesFound &p_found_mesh, Lightm
 				albedo_add = mat->get_albedo();
 			}
 
-			emission_texture = mat->get_texture(SpatialMaterial::TEXTURE_EMISSION);
+			emission_texture = mat->get_texture(Material3D::TEXTURE_EMISSION);
 			Color emission_color = mat->get_emission();
 			float emission_energy = mat->get_emission_energy();
 
-			if (mat->get_emission_operator() == SpatialMaterial::EMISSION_OP_ADD) {
+			if (mat->get_emission_operator() == Material3D::EMISSION_OP_ADD) {
 				emission_mul = Color(1, 1, 1) * emission_energy;
 				emission_add = emission_color * emission_energy;
 			} else {

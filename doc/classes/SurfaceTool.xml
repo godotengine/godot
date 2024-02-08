@@ -34,7 +34,7 @@
 			<argument index="0" name="color" type="Color" />
 			<description>
 				Specifies a [Color] to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
-				[b]Note:[/b] The material must have [member SpatialMaterial.vertex_color_use_as_albedo] enabled for the vertex color to be visible.
+				[b]Note:[/b] The material must have [member Material3D.vertex_color_use_as_albedo] enabled for the vertex color to be visible.
 			</description>
 		</method>
 		<method name="add_index">

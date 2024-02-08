@@ -257,8 +257,8 @@ String Particles::get_configuration_warning() const {
 			meshes_found = true;
 			for (int j = 0; j < draw_passes[i]->get_surface_count(); j++) {
 				anim_material_found = Object::cast_to<ShaderMaterial>(draw_passes[i]->surface_get_material(j).ptr()) != nullptr;
-				SpatialMaterial *spat = Object::cast_to<SpatialMaterial>(draw_passes[i]->surface_get_material(j).ptr());
-				anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
+				Material3D *spat = Object::cast_to<Material3D>(draw_passes[i]->surface_get_material(j).ptr());
+				anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == Material3D::BILLBOARD_PARTICLES);
 			}
 			if (anim_material_found) {
 				break;
@@ -267,8 +267,8 @@ String Particles::get_configuration_warning() const {
 	}
 
 	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != nullptr;
-	SpatialMaterial *spat = Object::cast_to<SpatialMaterial>(get_material_override().ptr());
-	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
+	Material3D *spat = Object::cast_to<Material3D>(get_material_override().ptr());
+	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == Material3D::BILLBOARD_PARTICLES);
 
 	if (!meshes_found) {
 		if (warnings != String()) {

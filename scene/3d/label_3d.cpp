@@ -539,7 +539,7 @@ float Label3D::_generate_glyph_surfaces(const Ref<Font> &p_font, CharType p_char
 	if (!surfaces.has(key)) {
 		SurfaceData surf;
 		surf.material = RID_PRIME(VisualServer::get_singleton()->material_create());
-		// Set defaults for material, names need to match up those in SpatialMaterial
+		// Set defaults for material, names need to match up those in Material3D
 		VS::get_singleton()->material_set_param(surf.material, "albedo", Color(1, 1, 1, 1));
 		VS::get_singleton()->material_set_param(surf.material, "specular", 0.5);
 		VS::get_singleton()->material_set_param(surf.material, "metallic", 0.0);
@@ -550,7 +550,7 @@ float Label3D::_generate_glyph_surfaces(const Ref<Font> &p_font, CharType p_char
 		VS::get_singleton()->material_set_param(surf.material, "uv2_scale", Vector3(1, 1, 1));
 		VS::get_singleton()->material_set_param(surf.material, "alpha_scissor_threshold", alpha_scissor_threshold);
 
-		RID shader_rid = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), true, get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), p_font->is_distance_field_hint());
+		RID shader_rid = Material3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), true, get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == Material3D::BILLBOARD_ENABLED, get_billboard_mode() == Material3D::BILLBOARD_FIXED_Y, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), p_font->is_distance_field_hint());
 
 		VS::get_singleton()->material_set_shader(surf.material, VS::get_singleton()->material_get_shader(shader_rid));
 		VS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
@@ -1003,7 +1003,7 @@ bool Label3D::get_draw_flag(DrawFlags p_flag) const {
 	return flags[p_flag];
 }
 
-void Label3D::set_billboard_mode(SpatialMaterial::BillboardMode p_mode) {
+void Label3D::set_billboard_mode(Material3D::BillboardMode p_mode) {
 	ERR_FAIL_INDEX(p_mode, 3);
 	if (billboard_mode != p_mode) {
 		billboard_mode = p_mode;
@@ -1011,7 +1011,7 @@ void Label3D::set_billboard_mode(SpatialMaterial::BillboardMode p_mode) {
 	}
 }
 
-SpatialMaterial::BillboardMode Label3D::get_billboard_mode() const {
+Material3D::BillboardMode Label3D::get_billboard_mode() const {
 	return billboard_mode;
 }
 

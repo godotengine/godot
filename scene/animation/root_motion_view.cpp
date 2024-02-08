@@ -77,7 +77,7 @@ bool RootMotionView::get_zero_y() const {
 
 void RootMotionView::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		VS::get_singleton()->immediate_set_material(immediate, SpatialMaterial::get_material_rid_for_2d(false, true, false, false, false));
+		VS::get_singleton()->immediate_set_material(immediate, Material3D::get_material_rid_for_2d(false, true, false, false, false));
 		first = true;
 	}
 
