@@ -1,4 +1,4 @@
-// Copyright 2015-2023 The Khronos Group Inc.
+// Copyright 2015-2024 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
@@ -14,7 +14,9 @@
 #  define VULKAN_HPP_CPLUSPLUS __cplusplus
 #endif
 
-#if 201703L < VULKAN_HPP_CPLUSPLUS
+#if 202002L < VULKAN_HPP_CPLUSPLUS
+#  define VULKAN_HPP_CPP_VERSION 23
+#elif 201703L < VULKAN_HPP_CPLUSPLUS
 #  define VULKAN_HPP_CPP_VERSION 20
 #elif 201402L < VULKAN_HPP_CPLUSPLUS
 #  define VULKAN_HPP_CPP_VERSION 17
@@ -24,6 +26,13 @@
 #  define VULKAN_HPP_CPP_VERSION 11
 #else
 #  error "vulkan.hpp needs at least c++ standard version 11"
+#endif
+
+// include headers holding feature-test macros
+#if 20 <= VULKAN_HPP_CPP_VERSION
+#  include <version>
+#else
+#  include <ciso646>
 #endif
 
 #if defined( VULKAN_HPP_DISABLE_ENHANCED_MODE )
@@ -239,6 +248,7 @@ namespace VULKAN_HPP_NAMESPACE
       {                                                                                                    \
         VULKAN_HPP_STORAGE_API ::VULKAN_HPP_NAMESPACE::DispatchLoaderDynamic defaultDispatchLoaderDynamic; \
       }
+
 namespace VULKAN_HPP_NAMESPACE
 {
   extern VULKAN_HPP_STORAGE_API VULKAN_HPP_NAMESPACE::DispatchLoaderDynamic defaultDispatchLoaderDynamic;
@@ -265,6 +275,23 @@ namespace VULKAN_HPP_NAMESPACE
 #  define VULKAN_HPP_DEFAULT_ARGUMENT_ASSIGNMENT         = {}
 #  define VULKAN_HPP_DEFAULT_ARGUMENT_NULLPTR_ASSIGNMENT = nullptr
 #  define VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT       = VULKAN_HPP_DEFAULT_DISPATCHER
+#endif
+
+#if !defined( VULKAN_HPP_EXPECTED ) && ( 23 <= VULKAN_HPP_CPP_VERSION ) && defined( __cpp_lib_expected )
+#  include <expected>
+#  define VULKAN_HPP_EXPECTED   std::expected
+#  define VULKAN_HPP_UNEXPECTED std::unexpected
+#endif
+
+#if !defined( VULKAN_HPP_RAII_NAMESPACE )
+#  define VULKAN_HPP_RAII_NAMESPACE raii
+#endif
+
+#if defined( VULKAN_HPP_NO_EXCEPTIONS ) && defined( VULKAN_HPP_EXPECTED )
+#  define VULKAN_HPP_RAII_NO_EXCEPTIONS
+#  define VULKAN_HPP_RAII_CREATE_NOEXCEPT noexcept
+#else
+#  define VULKAN_HPP_RAII_CREATE_NOEXCEPT
 #endif
 
 #endif
