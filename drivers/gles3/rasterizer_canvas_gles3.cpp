@@ -627,6 +627,11 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 
 			state.canvas_instance_batches[state.current_batch_index].material = material;
 			state.canvas_instance_batches[state.current_batch_index].material_data = material_data;
+			if (shader_data_cache) {
+				state.canvas_instance_batches[state.current_batch_index].vertex_input_mask = shader_data_cache->vertex_input_mask;
+			} else {
+				state.canvas_instance_batches[state.current_batch_index].vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_COLOR | RS::ARRAY_TEX_UV;
+			}
 		}
 
 		GLES3::CanvasShaderData::BlendMode blend_mode = shader_data_cache ? shader_data_cache->blend_mode : GLES3::CanvasShaderData::BLEND_MODE_MIX;
@@ -1413,11 +1418,12 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 				GLuint vertex_array_gl = 0;
 				GLuint index_array_gl = 0;
 
-				uint64_t input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_COLOR | RS::ARRAY_FORMAT_TEX_UV; // 2D meshes always use the same vertex format.
+				uint64_t vertex_input_mask = state.canvas_instance_batches[p_index].vertex_input_mask;
+
 				if (mesh_instance.is_valid()) {
-					mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, vertex_array_gl);
+					mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, vertex_input_mask, vertex_array_gl);
 				} else {
-					mesh_storage->mesh_surface_get_vertex_arrays_and_format(surface, input_mask, vertex_array_gl);
+					mesh_storage->mesh_surface_get_vertex_arrays_and_format(surface, vertex_input_mask, vertex_array_gl);
 				}
 
 				index_array_gl = mesh_storage->mesh_surface_get_index_buffer(surface, 0);
@@ -1473,9 +1479,9 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 				if (use_instancing) {
 					glDisableVertexAttribArray(5);
-					glDisableVertexAttribArray(6);
-					glDisableVertexAttribArray(7);
 					glDisableVertexAttribArray(8);
+					glDisableVertexAttribArray(9);
+					glDisableVertexAttribArray(10);
 				}
 				if (r_render_info) {
 					// Meshes, Particles, and MultiMesh are always just one object with one draw call.
@@ -1540,15 +1546,15 @@ void RasterizerCanvasGLES3::_new_batch(bool &r_batch_broken) {
 }
 
 void RasterizerCanvasGLES3::_enable_attributes(uint32_t p_start, bool p_primitive, uint32_t p_rate) {
-	uint32_t split = p_primitive ? 11 : 12;
-	for (uint32_t i = 6; i < split; i++) {
+	uint32_t split = p_primitive ? 13 : 14;
+	for (uint32_t i = 8; i < split; i++) {
 		glEnableVertexAttribArray(i);
-		glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData), CAST_INT_TO_UCHAR_PTR(p_start + (i - 6) * 4 * sizeof(float)));
+		glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData), CAST_INT_TO_UCHAR_PTR(p_start + (i - 8) * 4 * sizeof(float)));
 		glVertexAttribDivisor(i, p_rate);
 	}
-	for (uint32_t i = split; i <= 13; i++) {
+	for (uint32_t i = split; i <= 15; i++) {
 		glEnableVertexAttribArray(i);
-		glVertexAttribIPointer(i, 4, GL_UNSIGNED_INT, sizeof(InstanceData), CAST_INT_TO_UCHAR_PTR(p_start + (i - 6) * 4 * sizeof(float)));
+		glVertexAttribIPointer(i, 4, GL_UNSIGNED_INT, sizeof(InstanceData), CAST_INT_TO_UCHAR_PTR(p_start + (i - 8) * 4 * sizeof(float)));
 		glVertexAttribDivisor(i, p_rate);
 	}
 }

@@ -1160,6 +1160,9 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["INSTANCE_ID"] = "gl_InstanceID";
 		actions.renames["VERTEX_ID"] = "gl_VertexID";
 
+		actions.renames["CUSTOM0"] = "custom0";
+		actions.renames["CUSTOM1"] = "custom1";
+
 		actions.renames["LIGHT_POSITION"] = "light_position";
 		actions.renames["LIGHT_DIRECTION"] = "light_direction";
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
@@ -1179,6 +1182,8 @@ MaterialStorage::MaterialStorage() {
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
 		actions.usage_defines["SPECULAR_SHININESS"] = "#define SPECULAR_SHININESS_USED\n";
+		actions.usage_defines["CUSTOM0"] = "#define CUSTOM0_USED\n";
+		actions.usage_defines["CUSTOM1"] = "#define CUSTOM1_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
@@ -2537,6 +2542,8 @@ void CanvasShaderData::set_code(const String &p_code) {
 	uses_screen_texture_mipmaps = false;
 	uses_sdf = false;
 	uses_time = false;
+	uses_custom0 = false;
+	uses_custom1 = false;
 
 	if (code.is_empty()) {
 		return; // Just invalid, but no error.
@@ -2561,6 +2568,8 @@ void CanvasShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
+	actions.usage_flag_pointers["CUSTOM0"] = &uses_custom0;
+	actions.usage_flag_pointers["CUSTOM1"] = &uses_custom1;
 
 	actions.uniforms = &uniforms;
 	Error err = MaterialStorage::get_singleton()->shaders.compiler_canvas.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
@@ -2596,6 +2605,10 @@ void CanvasShaderData::set_code(const String &p_code) {
 
 	MaterialStorage::get_singleton()->shaders.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
 	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.canvas_shader.version_is_valid(version));
+
+	vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_COLOR | RS::ARRAY_TEX_UV;
+	vertex_input_mask |= uses_custom0 << RS::ARRAY_CUSTOM0;
+	vertex_input_mask |= uses_custom1 << RS::ARRAY_CUSTOM1;
 
 	ubo_size = gen_code.uniform_total_size;
 	ubo_offsets = gen_code.uniform_offsets;
