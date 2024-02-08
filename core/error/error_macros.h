@@ -730,6 +730,16 @@ void _err_flush_stdout();
 	} else                                                                                        \
 		((void)0)
 
+/**
+ * Warns about `m_msg` only when verbose mode is enabled.
+ */
+#define WARN_VERBOSE(m_msg)               \
+	{                                     \
+		if (is_print_verbose_enabled()) { \
+			WARN_PRINT(m_msg);            \
+		}                                 \
+	}
+
 // Print deprecated warning message macros.
 
 /**
