@@ -67,6 +67,10 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
+String ProjectSettings::get_main_pack_path() const {
+	return main_pack_path;
+}
+
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().path_join("imported");
 }
@@ -475,6 +479,10 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 
 	if (!ok) {
 		return false;
+	}
+
+	if (main_pack_path.is_empty()) {
+		main_pack_path = p_pack.get_base_dir();
 	}
 
 	//if data.pck is found, all directory access will be from here

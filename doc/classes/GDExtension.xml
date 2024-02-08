@@ -43,6 +43,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="entry_symbol" type="String" />
+			<param index="2" name="lookup_paths" type="PackedStringArray" default="PackedStringArray()" />
 			<description>
 				Opens the library at the specified [param path].
 				[b]Note:[/b] You normally should not call this method directly. This is handled automatically by [method GDExtensionManager.load_extension].
