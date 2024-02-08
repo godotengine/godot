@@ -865,7 +865,7 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform sampler2D texture_orm : hint_roughness_g," + texfilter_str + ";\n";
 	}
 
-	if (billboard_mode == BILLBOARD_PARTICLES) {
+	if (billboard_mode == BILLBOARD_PARTICLES || billboard_mode == BILLBOARD_PARTICLES_Y) {
 		code += "uniform int particles_anim_h_frames;\n";
 		code += "uniform int particles_anim_v_frames;\n";
 		code += "uniform bool particles_anim_loop;\n";
@@ -1018,22 +1018,34 @@ void BaseMaterial3D::_update_shader() {
 			}
 			//set modelview normal
 			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
-
-			//handle animation
-			code += "	float h_frames = float(particles_anim_h_frames);\n";
-			code += "	float v_frames = float(particles_anim_v_frames);\n";
-			code += "	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
-			code += "	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
-			code += "	if (!particles_anim_loop) {\n";
-			code += "		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
-			code += "	} else {\n";
-			code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
-			code += "	}\n";
-			code += "	UV /= vec2(h_frames, v_frames);\n";
-			code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
+		} break;
+		case BILLBOARD_PARTICLES_Y: {
+			code += "	mat4 mat_world = mat4(vec4(normalize(cross(MODEL_MATRIX[1].xyz, INV_VIEW_MATRIX[2].xyz)), 0.0), MODEL_MATRIX[1], vec4(normalize(cross(INV_VIEW_MATRIX[0].xyz, MODEL_MATRIX[1].xyz)), 0.0), MODEL_MATRIX[3]);\n";
+			code += "	mat_world = mat_world * mat4(vec4(cos(INSTANCE_CUSTOM.x), -sin(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat_world;\n";
+			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			}
+			//set modelview normal
+			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 		} break;
 		case BILLBOARD_MAX:
 			break; // Internal value, skip.
+	}
+
+	if (billboard_mode == BILLBOARD_PARTICLES || billboard_mode == BILLBOARD_PARTICLES_Y) {
+		//handle animation
+		code += "	float h_frames = float(particles_anim_h_frames);\n";
+		code += "	float v_frames = float(particles_anim_v_frames);\n";
+		code += "	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
+		code += "	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
+		code += "	if (!particles_anim_loop) {\n";
+		code += "		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
+		code += "	} else {\n";
+		code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
+		code += "	}\n";
+		code += "	UV /= vec2(h_frames, v_frames);\n";
+		code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
 	}
 
 	if (flags[FLAG_FIXED_SIZE]) {
@@ -1989,7 +2001,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
+	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES && billboard_mode != BILLBOARD_PARTICLES_Y) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -2872,7 +2884,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "shadow_to_opacity"), "set_flag", "get_flag", FLAG_USE_SHADOW_TO_OPACITY);
 
 	ADD_GROUP("Billboard", "billboard_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard,Particle Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 
 	ADD_GROUP("Particles Anim", "particles_anim_");
