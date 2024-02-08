@@ -66,6 +66,8 @@ uint64_t HASH_KEY(const char* data, uint64_t size)
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
+ColorSpace ImageLoader::cs = ColorSpace::ARGB8888;
+
 static Key key;
 static Inlist<LoadModule> _activeLoaders;
 
@@ -73,6 +75,24 @@ static Inlist<LoadModule> _activeLoaders;
 static LoadModule* _find(FileType type)
 {
     switch(type) {
+        case FileType::Png: {
+#ifdef THORVG_PNG_LOADER_SUPPORT
+            return new PngLoader;
+#endif
+            break;
+        }
+        case FileType::Jpg: {
+#ifdef THORVG_JPG_LOADER_SUPPORT
+            return new JpgLoader;
+#endif
+            break;
+        }
+        case FileType::Webp: {
+#ifdef THORVG_WEBP_LOADER_SUPPORT
+            return new WebpLoader;
+#endif
+            break;
+        }
         case FileType::Tvg: {
 #ifdef THORVG_TVG_LOADER_SUPPORT
             return new TvgLoader;
@@ -99,24 +119,6 @@ static LoadModule* _find(FileType type)
         }
         case FileType::Raw: {
             return new RawLoader;
-            break;
-        }
-        case FileType::Png: {
-#ifdef THORVG_PNG_LOADER_SUPPORT
-            return new PngLoader;
-#endif
-            break;
-        }
-        case FileType::Jpg: {
-#ifdef THORVG_JPG_LOADER_SUPPORT
-            return new JpgLoader;
-#endif
-            break;
-        }
-        case FileType::Webp: {
-#ifdef THORVG_WEBP_LOADER_SUPPORT
-            return new WebpLoader;
-#endif
             break;
         }
         default: {
@@ -305,8 +307,22 @@ LoadModule* LoaderMgr::loader(const string& path, bool* invalid)
             return loader;
         }
         delete(loader);
-        *invalid = true;
     }
+    //Unkown MimeType. Try with the candidates in the order
+    for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
+        if (auto loader = _find(static_cast<FileType>(i))) {
+            if (loader->open(path)) {
+                loader->hashpath = strdup(path.c_str());
+                {
+                    ScopedLock lock(key);
+                    _activeLoaders.back(loader);
+                }
+                return loader;
+            }
+            delete(loader);
+        }
+    }
+    *invalid = true;
     return nullptr;
 }
 
@@ -349,21 +365,20 @@ LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const string& mim
                 delete(loader);
             }
         }
+    }
     //Unkown MimeType. Try with the candidates in the order
-    } else {
-        for (int i = 0; i < static_cast<int>(FileType::Unknown); i++) {
-            auto loader = _find(static_cast<FileType>(i));
-            if (loader) {
-                if (loader->open(data, size, copy)) {
-                    loader->hashkey = HASH_KEY(data, size);
-                    {
-                        ScopedLock lock(key);
-                        _activeLoaders.back(loader);
-                    }
-                    return loader;
+    for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
+        auto loader = _find(static_cast<FileType>(i));
+        if (loader) {
+            if (loader->open(data, size, copy)) {
+                loader->hashkey = HASH_KEY(data, size);
+                {
+                    ScopedLock lock(key);
+                    _activeLoaders.back(loader);
                 }
-                delete(loader);
+                return loader;
             }
+            delete(loader);
         }
     }
     return nullptr;

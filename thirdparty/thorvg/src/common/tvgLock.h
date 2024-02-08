@@ -38,10 +38,10 @@ namespace tvg {
     {
         Key* key = nullptr;
 
-        ScopedLock(Key& p_key)
+        ScopedLock(Key& k)
         {
-            p_key.mtx.lock();
-            key = &p_key;
+            k.mtx.lock();
+            key = &k;
         }
 
         ~ScopedLock()
