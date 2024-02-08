@@ -263,11 +263,11 @@ String SpatialMaterialConversionPlugin::converts_to() const {
 	return "ShaderMaterial";
 }
 bool SpatialMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-	Ref<SpatialMaterial> mat = p_resource;
+	Ref<Material3D> mat = p_resource;
 	return mat.is_valid();
 }
 Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<SpatialMaterial> mat = p_resource;
+	Ref<Material3D> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;

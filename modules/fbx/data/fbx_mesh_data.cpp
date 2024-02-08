@@ -110,7 +110,7 @@ struct SurfaceData {
 	Ref<SurfaceTool> surface_tool;
 	OrderedHashMap<Vertex, int> lookup_table; // proposed fix is to replace lookup_table[vertex_id] to give the position of the vertices_map[int] index.
 	LocalVector<Vertex> vertices_map; // this must be ordered the same as insertion <-- slow to do find() operation.
-	Ref<SpatialMaterial> material;
+	Ref<Material3D> material;
 	HashMap<PolygonId, Vector<DataIndex>> surface_polygon_vertex;
 	Array morphs;
 };

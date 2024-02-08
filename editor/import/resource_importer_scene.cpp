@@ -315,18 +315,18 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		if (m.is_valid()) {
 			for (int i = 0; i < m->get_surface_count(); i++) {
-				Ref<SpatialMaterial> mat = m->surface_get_material(i);
+				Ref<Material3D> mat = m->surface_get_material(i);
 				if (!mat.is_valid()) {
 					continue;
 				}
 
 				if (_teststr(mat->get_name(), "alpha")) {
-					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+					mat->set_feature(Material3D::FEATURE_TRANSPARENT, true);
 					mat->set_name(_fixstr(mat->get_name(), "alpha"));
 				}
 				if (_teststr(mat->get_name(), "vcol")) {
-					mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+					mat->set_flag(Material3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					mat->set_flag(Material3D::FLAG_SRGB_VERTEX_COLOR, true);
 					mat->set_name(_fixstr(mat->get_name(), "vcol"));
 				}
 			}

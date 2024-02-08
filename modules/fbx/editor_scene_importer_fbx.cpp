@@ -530,7 +530,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 			material.instance();
 			material->set_imported_material(mat);
 
-			Ref<SpatialMaterial> godot_material = material->import_material(state);
+			Ref<Material3D> godot_material = material->import_material(state);
 
 			state.cached_materials.insert(material_id, godot_material);
 		}

@@ -104,8 +104,8 @@ public:
 	~ShaderMaterial();
 };
 
-class SpatialMaterial : public Material {
-	GDCLASS(SpatialMaterial, Material);
+class Material3D : public Material {
+	GDCLASS(Material3D, Material);
 
 public:
 	enum TextureParam {
@@ -125,6 +125,7 @@ public:
 		TEXTURE_DETAIL_MASK,
 		TEXTURE_DETAIL_ALBEDO,
 		TEXTURE_DETAIL_NORMAL,
+		TEXTURE_ORM,
 		TEXTURE_MAX
 
 	};
@@ -364,15 +365,16 @@ private:
 	};
 
 	static Mutex material_mutex;
-	static SelfList<SpatialMaterial>::List *dirty_materials;
+	static SelfList<Material3D>::List *dirty_materials;
 	static ShaderNames *shader_names;
 
-	SelfList<SpatialMaterial> element;
+	SelfList<Material3D> element;
 
 	void _update_shader();
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
+	bool orm;
 	bool is_initialized = false;
 	Color albedo;
 	float specular;
@@ -447,7 +449,7 @@ private:
 
 	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
 
-	static HashMap<uint64_t, Ref<SpatialMaterial>> materials_for_2d; //used by Sprite3D and other stuff
+	static HashMap<uint64_t, Ref<Material3D>> materials_for_2d; //used by Sprite3D and other stuff
 
 	void _validate_high_end(const String &text, PropertyInfo &property) const;
 
@@ -641,24 +643,38 @@ public:
 
 	virtual Shader::Mode get_shader_mode() const;
 
-	SpatialMaterial();
-	virtual ~SpatialMaterial();
+	Material3D(bool p_orm = false);
+	virtual ~Material3D();
 };
 
-VARIANT_ENUM_CAST(SpatialMaterial::TextureParam)
-VARIANT_ENUM_CAST(SpatialMaterial::DetailUV)
-VARIANT_ENUM_CAST(SpatialMaterial::Feature)
-VARIANT_ENUM_CAST(SpatialMaterial::BlendMode)
-VARIANT_ENUM_CAST(SpatialMaterial::DepthDrawMode)
-VARIANT_ENUM_CAST(SpatialMaterial::CullMode)
-VARIANT_ENUM_CAST(SpatialMaterial::Flags)
-VARIANT_ENUM_CAST(SpatialMaterial::DiffuseMode)
-VARIANT_ENUM_CAST(SpatialMaterial::SpecularMode)
-VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)
-VARIANT_ENUM_CAST(SpatialMaterial::TextureChannel)
-VARIANT_ENUM_CAST(SpatialMaterial::EmissionOperator)
-VARIANT_ENUM_CAST(SpatialMaterial::DistanceFadeMode)
-VARIANT_ENUM_CAST(SpatialMaterial::AsyncMode)
+class SpatialMaterial : public Material3D {
+	GDCLASS(SpatialMaterial, Material3D)
+public:
+	SpatialMaterial() :
+			Material3D(false) {}
+};
+
+class ORMSpatialMaterial : public Material3D {
+	GDCLASS(ORMSpatialMaterial, Material3D)
+public:
+	ORMSpatialMaterial() :
+			Material3D(true) {}
+};
+
+VARIANT_ENUM_CAST(Material3D::TextureParam)
+VARIANT_ENUM_CAST(Material3D::DetailUV)
+VARIANT_ENUM_CAST(Material3D::Feature)
+VARIANT_ENUM_CAST(Material3D::BlendMode)
+VARIANT_ENUM_CAST(Material3D::DepthDrawMode)
+VARIANT_ENUM_CAST(Material3D::CullMode)
+VARIANT_ENUM_CAST(Material3D::Flags)
+VARIANT_ENUM_CAST(Material3D::DiffuseMode)
+VARIANT_ENUM_CAST(Material3D::SpecularMode)
+VARIANT_ENUM_CAST(Material3D::BillboardMode)
+VARIANT_ENUM_CAST(Material3D::TextureChannel)
+VARIANT_ENUM_CAST(Material3D::EmissionOperator)
+VARIANT_ENUM_CAST(Material3D::DistanceFadeMode)
+VARIANT_ENUM_CAST(Material3D::AsyncMode)
 
 //////////////////////
 

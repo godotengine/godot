@@ -231,7 +231,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture> p_texture, Rect2 p_dst_rect, R
 	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
 	set_aabb(aabb);
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE));
+	RID mat = Material3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == Material3D::BILLBOARD_ENABLED, get_billboard_mode() == Material3D::BILLBOARD_FIXED_Y, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE));
 	VS::get_singleton()->material_set_shader(get_material(), VS::get_singleton()->material_get_shader(mat));
 	VS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
 	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
@@ -428,13 +428,13 @@ SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const {
 	return alpha_cut;
 }
 
-void SpriteBase3D::set_billboard_mode(SpatialMaterial::BillboardMode p_mode) {
+void SpriteBase3D::set_billboard_mode(Material3D::BillboardMode p_mode) {
 	ERR_FAIL_INDEX(p_mode, 3);
 	billboard_mode = p_mode;
 	_queue_update();
 }
 
-SpatialMaterial::BillboardMode SpriteBase3D::get_billboard_mode() const {
+Material3D::BillboardMode SpriteBase3D::get_billboard_mode() const {
 	return billboard_mode;
 }
 
@@ -524,7 +524,7 @@ SpriteBase3D::SpriteBase3D() {
 	}
 
 	alpha_cut = ALPHA_CUT_DISABLED;
-	billboard_mode = SpatialMaterial::BILLBOARD_DISABLED;
+	billboard_mode = Material3D::BILLBOARD_DISABLED;
 	axis = Vector3::AXIS_Z;
 	pixel_size = 0.01;
 	modulate = Color(1, 1, 1, 1);

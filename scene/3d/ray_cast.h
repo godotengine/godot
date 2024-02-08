@@ -98,7 +98,7 @@ public:
 	const Vector<Vector3> &get_debug_shape_vertices() const;
 	const Vector<Vector3> &get_debug_line_vertices() const;
 
-	Ref<SpatialMaterial> get_debug_material();
+	Ref<Material3D> get_debug_material();
 
 	int get_debug_shape_thickness() const;
 	void set_debug_shape_thickness(const int p_debug_thickness);

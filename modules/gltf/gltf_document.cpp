@@ -2587,7 +2587,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 			if (surface_i < instance_materials.size()) {
 				v = instance_materials.get(surface_i);
 			}
-			Ref<SpatialMaterial> mat = v;
+			Ref<Material3D> mat = v;
 			if (!mat.is_valid()) {
 				mat = import_mesh->surface_get_material(surface_i);
 			}
@@ -2919,20 +2919,20 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 			//just add it
 
-			Ref<SpatialMaterial> mat;
+			Ref<Material3D> mat;
 			if (p.has("material")) {
 				const int material = p["material"];
 				ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
-				Ref<SpatialMaterial> mat3d = p_state->materials[material];
+				Ref<Material3D> mat3d = p_state->materials[material];
 				if (has_vertex_color) {
-					mat3d->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					mat3d->set_flag(Material3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 				}
 				mat = mat3d;
 
 			} else if (has_vertex_color) {
-				Ref<SpatialMaterial> mat3d;
+				Ref<Material3D> mat3d;
 				mat3d.instance();
-				mat3d->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				mat3d->set_flag(Material3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 				mat = mat3d;
 			}
 			int32_t mat_idx = import_mesh->get_surface_count();
@@ -3377,7 +3377,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 	for (int32_t i = 0; i < p_state->materials.size(); i++) {
 		Dictionary d;
 
-		Ref<SpatialMaterial> material = p_state->materials[i];
+		Ref<Material3D> material = p_state->materials[i];
 		if (material.is_null()) {
 			materials.push_back(d);
 			continue;
@@ -3398,7 +3398,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			}
 			{
 				Dictionary bct;
-				Ref<Texture> albedo_texture = material->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
+				Ref<Texture> albedo_texture = material->get_texture(Material3D::TEXTURE_ALBEDO);
 				GLTFTextureIndex gltf_texture_index = -1;
 
 				if (albedo_texture.is_valid() && albedo_texture->get_data().is_valid()) {
@@ -3418,17 +3418,17 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 
 			mr["metallicFactor"] = material->get_metallic();
 			mr["roughnessFactor"] = material->get_roughness();
-			bool has_roughness = material->get_texture(SpatialMaterial::TEXTURE_ROUGHNESS).is_valid() && material->get_texture(SpatialMaterial::TEXTURE_ROUGHNESS)->get_data().is_valid();
-			bool has_ao = material->get_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION) && material->get_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION).is_valid();
-			bool has_metalness = material->get_texture(SpatialMaterial::TEXTURE_METALLIC).is_valid() && material->get_texture(SpatialMaterial::TEXTURE_METALLIC)->get_data().is_valid();
+			bool has_roughness = material->get_texture(Material3D::TEXTURE_ROUGHNESS).is_valid() && material->get_texture(Material3D::TEXTURE_ROUGHNESS)->get_data().is_valid();
+			bool has_ao = material->get_feature(Material3D::FEATURE_AMBIENT_OCCLUSION) && material->get_texture(Material3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
+			bool has_metalness = material->get_texture(Material3D::TEXTURE_METALLIC).is_valid() && material->get_texture(Material3D::TEXTURE_METALLIC)->get_data().is_valid();
 			if (has_ao || has_roughness || has_metalness) {
 				Dictionary mrt;
-				Ref<Texture> roughness_texture = material->get_texture(SpatialMaterial::TEXTURE_ROUGHNESS);
-				SpatialMaterial::TextureChannel roughness_channel = material->get_roughness_texture_channel();
-				Ref<Texture> metallic_texture = material->get_texture(SpatialMaterial::TEXTURE_METALLIC);
-				SpatialMaterial::TextureChannel metalness_channel = material->get_metallic_texture_channel();
-				Ref<Texture> ao_texture = material->get_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION);
-				SpatialMaterial::TextureChannel ao_channel = material->get_ao_texture_channel();
+				Ref<Texture> roughness_texture = material->get_texture(Material3D::TEXTURE_ROUGHNESS);
+				Material3D::TextureChannel roughness_channel = material->get_roughness_texture_channel();
+				Ref<Texture> metallic_texture = material->get_texture(Material3D::TEXTURE_METALLIC);
+				Material3D::TextureChannel metalness_channel = material->get_metallic_texture_channel();
+				Ref<Texture> ao_texture = material->get_texture(Material3D::TEXTURE_AMBIENT_OCCLUSION);
+				Material3D::TextureChannel ao_channel = material->get_ao_texture_channel();
 				Ref<ImageTexture> orm_texture;
 				orm_texture.instance();
 				Ref<Image> orm_image;
@@ -3474,7 +3474,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 						metallness_image->decompress();
 					}
 				}
-				Ref<Texture> albedo_texture = material->get_texture(SpatialMaterial::TEXTURE_ALBEDO);
+				Ref<Texture> albedo_texture = material->get_texture(Material3D::TEXTURE_ALBEDO);
 				if (albedo_texture.is_valid() && albedo_texture->get_data().is_valid()) {
 					height = albedo_texture->get_height();
 					width = albedo_texture->get_width();
@@ -3495,39 +3495,39 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 						Color c = Color(1.0f, 1.0f, 1.0f);
 						if (has_ao) {
 							ao_image->lock();
-							if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
+							if (Material3D::TextureChannel::TEXTURE_CHANNEL_RED == ao_channel) {
 								c.r = ao_image->get_pixel(w, h).r;
-							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
+							} else if (Material3D::TextureChannel::TEXTURE_CHANNEL_GREEN == ao_channel) {
 								c.r = ao_image->get_pixel(w, h).g;
-							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
+							} else if (Material3D::TextureChannel::TEXTURE_CHANNEL_BLUE == ao_channel) {
 								c.r = ao_image->get_pixel(w, h).b;
-							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
+							} else if (Material3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == ao_channel) {
 								c.r = ao_image->get_pixel(w, h).a;
 							}
 							ao_image->lock();
 						}
 						if (has_roughness) {
 							roughness_image->lock();
-							if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
+							if (Material3D::TextureChannel::TEXTURE_CHANNEL_RED == roughness_channel) {
 								c.g = roughness_image->get_pixel(w, h).r;
-							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
+							} else if (Material3D::TextureChannel::TEXTURE_CHANNEL_GREEN == roughness_channel) {
 								c.g = roughness_image->get_pixel(w, h).g;
-							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
+							} else if (Material3D::TextureChannel::TEXTURE_CHANNEL_BLUE == roughness_channel) {
 								c.g = roughness_image->get_pixel(w, h).b;
-							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
+							} else if (Material3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == roughness_channel) {
 								c.g = roughness_image->get_pixel(w, h).a;
 							}
 							roughness_image->unlock();
 						}
 						if (has_metalness) {
 							metallness_image->lock();
-							if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
+							if (Material3D::TextureChannel::TEXTURE_CHANNEL_RED == metalness_channel) {
 								c.b = metallness_image->get_pixel(w, h).r;
-							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
+							} else if (Material3D::TextureChannel::TEXTURE_CHANNEL_GREEN == metalness_channel) {
 								c.b = metallness_image->get_pixel(w, h).g;
-							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
+							} else if (Material3D::TextureChannel::TEXTURE_CHANNEL_BLUE == metalness_channel) {
 								c.b = metallness_image->get_pixel(w, h).b;
-							} else if (SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
+							} else if (Material3D::TextureChannel::TEXTURE_CHANNEL_ALPHA == metalness_channel) {
 								c.b = metallness_image->get_pixel(w, h).a;
 							}
 							metallness_image->unlock();
@@ -3561,12 +3561,12 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			d["pbrMetallicRoughness"] = mr;
 		}
 
-		if (material->get_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING)) {
+		if (material->get_feature(Material3D::FEATURE_NORMAL_MAPPING)) {
 			Dictionary nt;
 			Ref<ImageTexture> tex;
 			tex.instance();
 			{
-				Ref<Texture> normal_texture = material->get_texture(SpatialMaterial::TEXTURE_NORMAL);
+				Ref<Texture> normal_texture = material->get_texture(Material3D::TEXTURE_NORMAL);
 				if (normal_texture.is_valid()) {
 					// Code for uncompressing RG normal maps
 					Ref<Image> img = normal_texture->get_data();
@@ -3606,7 +3606,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			}
 		}
 
-		if (material->get_feature(SpatialMaterial::FEATURE_EMISSION)) {
+		if (material->get_feature(Material3D::FEATURE_EMISSION)) {
 			const Color c = material->get_emission().to_srgb();
 			Array arr;
 			arr.push_back(c.r);
@@ -3614,9 +3614,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			arr.push_back(c.b);
 			d["emissiveFactor"] = arr;
 		}
-		if (material->get_feature(SpatialMaterial::FEATURE_EMISSION)) {
+		if (material->get_feature(Material3D::FEATURE_EMISSION)) {
 			Dictionary et;
-			Ref<Texture> emission_texture = material->get_texture(SpatialMaterial::TEXTURE_EMISSION);
+			Ref<Texture> emission_texture = material->get_texture(Material3D::TEXTURE_EMISSION);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (emission_texture.is_valid() && emission_texture->get_data().is_valid()) {
 				emission_texture->set_name(material->get_name() + "_emission");
@@ -3628,12 +3628,12 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				d["emissiveTexture"] = et;
 			}
 		}
-		const bool ds = material->get_cull_mode() == SpatialMaterial::CULL_DISABLED;
+		const bool ds = material->get_cull_mode() == Material3D::CULL_DISABLED;
 		if (ds) {
 			d["doubleSided"] = ds;
 		}
-		if (material->get_feature(SpatialMaterial::FEATURE_TRANSPARENT)) {
-			if (material->get_flag(SpatialMaterial::FLAG_USE_ALPHA_SCISSOR)) {
+		if (material->get_feature(Material3D::FEATURE_TRANSPARENT)) {
+			if (material->get_flag(Material3D::FLAG_USE_ALPHA_SCISSOR)) {
 				d["alphaMode"] = "MASK";
 				d["alphaCutoff"] = material->get_alpha_scissor_threshold();
 			} else {
@@ -3642,7 +3642,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 		}
 
 		Dictionary extensions;
-		if (material->get_flag(SpatialMaterial::FLAG_UNSHADED)) {
+		if (material->get_flag(Material3D::FLAG_UNSHADED)) {
 			Dictionary mat_unlit;
 			extensions["KHR_materials_unlit"] = mat_unlit;
 			p_state->add_used_extension("KHR_materials_unlit");
@@ -3669,7 +3669,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 	for (GLTFMaterialIndex i = 0; i < materials.size(); i++) {
 		const Dictionary &d = materials[i];
 
-		Ref<SpatialMaterial> material;
+		Ref<Material3D> material;
 		material.instance();
 		if (d.has("name") && !String(d["name"]).empty()) {
 			material->set_name(d["name"]);
@@ -3677,14 +3677,14 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			material->set_name(vformat("material_%s", itos(i)));
 		}
 
-		material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		material->set_flag(Material3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		Dictionary pbr_spec_gloss_extensions;
 		if (d.has("extensions")) {
 			pbr_spec_gloss_extensions = d["extensions"];
 		}
 
 		if (pbr_spec_gloss_extensions.has("KHR_materials_unlit")) {
-			material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+			material->set_flag(Material3D::FLAG_UNSHADED, true);
 		}
 
 		if (pbr_spec_gloss_extensions.has("KHR_materials_pbrSpecularGlossiness")) {
@@ -3699,7 +3699,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 					Ref<Texture> diffuse_texture = _get_texture(p_state, diffuse_texture_dict["index"]);
 					if (diffuse_texture.is_valid()) {
 						spec_gloss->diffuse_img = diffuse_texture->get_data();
-						material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, diffuse_texture);
+						material->set_texture(Material3D::TEXTURE_ALBEDO, diffuse_texture);
 					}
 				}
 			}
@@ -3744,7 +3744,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (mr.has("baseColorTexture")) {
 				const Dictionary &bct = mr["baseColorTexture"];
 				if (bct.has("index")) {
-					material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"]));
+					material->set_texture(Material3D::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"]));
 				}
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
@@ -3768,10 +3768,10 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 				const Dictionary &bct = mr["metallicRoughnessTexture"];
 				if (bct.has("index")) {
 					const Ref<Texture> t = _get_texture(p_state, bct["index"]);
-					material->set_texture(SpatialMaterial::TEXTURE_METALLIC, t);
-					material->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_BLUE);
-					material->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, t);
-					material->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GREEN);
+					material->set_texture(Material3D::TEXTURE_METALLIC, t);
+					material->set_metallic_texture_channel(Material3D::TEXTURE_CHANNEL_BLUE);
+					material->set_texture(Material3D::TEXTURE_ROUGHNESS, t);
+					material->set_roughness_texture_channel(Material3D::TEXTURE_CHANNEL_GREEN);
 					if (!mr.has("metallicFactor")) {
 						material->set_metallic(1);
 					}
@@ -3785,8 +3785,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("normalTexture")) {
 			const Dictionary &bct = d["normalTexture"];
 			if (bct.has("index")) {
-				material->set_texture(SpatialMaterial::TEXTURE_NORMAL, _get_texture(p_state, bct["index"]));
-				material->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);
+				material->set_texture(Material3D::TEXTURE_NORMAL, _get_texture(p_state, bct["index"]));
+				material->set_feature(Material3D::FEATURE_NORMAL_MAPPING, true);
 			}
 			if (bct.has("scale")) {
 				material->set_normal_scale(bct["scale"]);
@@ -3795,9 +3795,9 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("occlusionTexture")) {
 			const Dictionary &bct = d["occlusionTexture"];
 			if (bct.has("index")) {
-				material->set_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"]));
-				material->set_ao_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_RED);
-				material->set_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION, true);
+				material->set_texture(Material3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"]));
+				material->set_ao_texture_channel(Material3D::TEXTURE_CHANNEL_RED);
+				material->set_feature(Material3D::FEATURE_AMBIENT_OCCLUSION, true);
 			}
 		}
 
@@ -3805,7 +3805,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			const Array &arr = d["emissiveFactor"];
 			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
 			const Color c = Color(arr[0], arr[1], arr[2]).to_srgb();
-			material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
+			material->set_feature(Material3D::FEATURE_EMISSION, true);
 
 			material->set_emission(c);
 		}
@@ -3813,8 +3813,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("emissiveTexture")) {
 			const Dictionary &bct = d["emissiveTexture"];
 			if (bct.has("index")) {
-				material->set_texture(SpatialMaterial::TEXTURE_EMISSION, _get_texture(p_state, bct["index"]));
-				material->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
+				material->set_texture(Material3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"]));
+				material->set_feature(Material3D::FEATURE_EMISSION, true);
 				material->set_emission(Color(0, 0, 0));
 			}
 		}
@@ -3822,17 +3822,17 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("doubleSided")) {
 			const bool ds = d["doubleSided"];
 			if (ds) {
-				material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+				material->set_cull_mode(Material3D::CULL_DISABLED);
 			}
 		}
 
 		if (d.has("alphaMode")) {
 			const String &am = d["alphaMode"];
 			if (am == "BLEND") {
-				material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-				material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+				material->set_feature(Material3D::FEATURE_TRANSPARENT, true);
+				material->set_depth_draw_mode(Material3D::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
 			} else if (am == "MASK") {
-				material->set_flag(SpatialMaterial::FLAG_USE_ALPHA_SCISSOR, true);
+				material->set_flag(Material3D::FLAG_USE_ALPHA_SCISSOR, true);
 				if (d.has("alphaCutoff")) {
 					material->set_alpha_scissor_threshold(d["alphaCutoff"]);
 				} else {
@@ -3848,7 +3848,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-void GLTFDocument::_set_texture_transform_uv1(const Dictionary &p_dict, Ref<SpatialMaterial> p_material) {
+void GLTFDocument::_set_texture_transform_uv1(const Dictionary &p_dict, Ref<Material3D> p_material) {
 	if (p_dict.has("extensions")) {
 		const Dictionary &extensions = p_dict["extensions"];
 		if (extensions.has("KHR_texture_transform")) {
@@ -3868,7 +3868,7 @@ void GLTFDocument::_set_texture_transform_uv1(const Dictionary &p_dict, Ref<Spat
 	}
 }
 
-void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Ref<SpatialMaterial> p_material) {
+void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Ref<Material3D> p_material) {
 	if (r_spec_gloss->spec_gloss_img.is_null()) {
 		return;
 	}
@@ -3922,18 +3922,18 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 	Ref<ImageTexture> diffuse_image_texture;
 	diffuse_image_texture.instance();
 	diffuse_image_texture->create_from_image(r_spec_gloss->diffuse_img);
-	p_material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, diffuse_image_texture);
+	p_material->set_texture(Material3D::TEXTURE_ALBEDO, diffuse_image_texture);
 	Ref<ImageTexture> rm_image_texture;
 	rm_image_texture.instance();
 	rm_image_texture->create_from_image(rm_img);
 	if (has_roughness) {
-		p_material->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, rm_image_texture);
-		p_material->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GREEN);
+		p_material->set_texture(Material3D::TEXTURE_ROUGHNESS, rm_image_texture);
+		p_material->set_roughness_texture_channel(Material3D::TEXTURE_CHANNEL_GREEN);
 	}
 
 	if (has_metal) {
-		p_material->set_texture(SpatialMaterial::TEXTURE_METALLIC, rm_image_texture);
-		p_material->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_BLUE);
+		p_material->set_texture(Material3D::TEXTURE_METALLIC, rm_image_texture);
+		p_material->set_metallic_texture_channel(Material3D::TEXTURE_CHANNEL_BLUE);
 	}
 }
 
@@ -6859,7 +6859,7 @@ Dictionary _serialize_texture_transform_uv(Vector2 p_offset, Vector2 p_scale) {
 	return extension;
 }
 
-Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<SpatialMaterial> p_material) {
+Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<Material3D> p_material) {
 	if (p_material.is_valid()) {
 		Vector3 offset = p_material->get_uv1_offset();
 		Vector3 scale = p_material->get_uv1_scale();
@@ -6868,7 +6868,7 @@ Dictionary GLTFDocument::_serialize_texture_transform_uv1(Ref<SpatialMaterial> p
 	return Dictionary();
 }
 
-Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<SpatialMaterial> p_material) {
+Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<Material3D> p_material) {
 	if (p_material.is_valid()) {
 		Vector3 offset = p_material->get_uv2_offset();
 		Vector3 scale = p_material->get_uv2_scale();

@@ -2713,7 +2713,7 @@
 			<return type="void" />
 			<argument index="0" name="forbidden" type="bool" />
 			<description>
-				If asynchronous shader compilation is enabled, this controls whether [constant SpatialMaterial.ASYNC_MODE_HIDDEN] is obeyed.
+				If asynchronous shader compilation is enabled, this controls whether [constant Material3D.ASYNC_MODE_HIDDEN] is obeyed.
 				For instance, you may want to enable this temporarily before taking a screenshot. This ensures everything is visible even if shaders with async mode [i]hidden[/i] are not ready yet.
 				Reflection probes use this internally to ensure they capture everything regardless the shaders are ready or not.
 			</description>

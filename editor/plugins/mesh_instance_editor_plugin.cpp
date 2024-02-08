@@ -462,7 +462,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Outline Mesh..."), MENU_OPTION_CREATE_OUTLINE_MESH);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the SpatialMaterial Grow property when using that property isn't possible."));
+	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the Material3D Grow property when using that property isn't possible."));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
 	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);

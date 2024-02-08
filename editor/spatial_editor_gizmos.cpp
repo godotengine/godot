@@ -1644,11 +1644,11 @@ Position3DSpatialGizmoPlugin::Position3DSpatialGizmoPlugin() {
 	cursor_colors.push_back(color_z.linear_interpolate(Color(0, 0, 0), 0.75));
 	cursor_colors.push_back(color_z.linear_interpolate(Color(0, 0, 0), 0.75));
 
-	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
-	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	Ref<Material3D> mat = memnew(SpatialMaterial);
+	mat->set_flag(Material3D::FLAG_UNSHADED, true);
+	mat->set_flag(Material3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	mat->set_flag(Material3D::FLAG_SRGB_VERTEX_COLOR, true);
+	mat->set_feature(Material3D::FEATURE_TRANSPARENT, true);
 	mat->set_line_width(3);
 	Array d;
 	d.resize(VS::ARRAY_MAX);
@@ -1990,7 +1990,7 @@ void RayCastSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	const Ref<SpatialMaterial> material = raycast->is_enabled() ? raycast->get_debug_material() : get_material("shape_material_disabled");
+	const Ref<Material3D> material = raycast->is_enabled() ? raycast->get_debug_material() : get_material("shape_material_disabled");
 
 	p_gizmo->add_lines(raycast->get_debug_line_vertices(), material);
 
@@ -2028,7 +2028,7 @@ void ShapeCastGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	const Ref<SpatialMaterial> material = shapecast->is_enabled() ? shapecast->get_debug_material() : get_material("shape_material_disabled");
+	const Ref<Material3D> material = shapecast->is_enabled() ? shapecast->get_debug_material() : get_material("shape_material_disabled");
 
 	p_gizmo->add_lines(shapecast->get_debug_line_vertices(), material);
 
@@ -2051,7 +2051,7 @@ void SpringArmSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	lines.push_back(Vector3());
 	lines.push_back(Vector3(0, 0, 1.0) * spring_arm->get_length());
 
-	Ref<SpatialMaterial> material = get_material("shape_material", p_gizmo);
+	Ref<Material3D> material = get_material("shape_material", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);

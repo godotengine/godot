@@ -104,7 +104,7 @@ void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	if (mesh.is_valid()) {
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("%s/%d", PNAME("material"), i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("%s/%d", PNAME("material"), i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial,ORMSpatialMaterial"));
 		}
 	}
 }
@@ -277,11 +277,11 @@ void MeshInstance::_initialize_skinning(bool p_force_reset, bool p_call_attach_s
 
 						Ref<Material> mat = get_active_material(surface_index);
 						if (mat.is_valid()) {
-							Ref<SpatialMaterial> spatial_mat = mat;
+							Ref<Material3D> spatial_mat = mat;
 							if (spatial_mat.is_valid()) {
 								// Spatial material, check from material settings.
-								surface_data.transform_tangents = spatial_mat->get_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING);
-								surface_data.ensure_correct_normals = spatial_mat->get_flag(SpatialMaterial::FLAG_ENSURE_CORRECT_NORMALS);
+								surface_data.transform_tangents = spatial_mat->get_feature(Material3D::FEATURE_NORMAL_MAPPING);
+								surface_data.ensure_correct_normals = spatial_mat->get_flag(Material3D::FLAG_ENSURE_CORRECT_NORMALS);
 							} else {
 								// Custom shader, must check for compiled flags.
 								surface_data.transform_tangents = VSG::storage->material_uses_tangents(mat->get_rid());
@@ -822,12 +822,12 @@ void MeshInstance::create_debug_tangents() {
 	}
 
 	if (lines.size()) {
-		Ref<SpatialMaterial> sm;
+		Ref<Material3D> sm;
 		sm.instance();
 
-		sm->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		sm->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-		sm->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		sm->set_flag(Material3D::FLAG_UNSHADED, true);
+		sm->set_flag(Material3D::FLAG_SRGB_VERTEX_COLOR, true);
+		sm->set_flag(Material3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 		Ref<ArrayMesh> am;
 		am.instance();

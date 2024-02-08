@@ -516,7 +516,7 @@ void ShapeCast::set_debug_shape_custom_color(const Color &p_color) {
 	}
 }
 
-Ref<SpatialMaterial> ShapeCast::get_debug_material() {
+Ref<Material3D> ShapeCast::get_debug_material() {
 	_update_debug_shape_material();
 	return debug_material;
 }
@@ -539,13 +539,13 @@ void ShapeCast::_create_debug_shape() {
 
 void ShapeCast::_update_debug_shape_material(bool p_check_collision) {
 	if (!debug_material.is_valid()) {
-		Ref<SpatialMaterial> material = memnew(SpatialMaterial);
+		Ref<Material3D> material = memnew(Material3D);
 		debug_material = material;
 
-		material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+		material->set_flag(Material3D::FLAG_UNSHADED, true);
+		material->set_feature(Material3D::FEATURE_TRANSPARENT, true);
 		// Use double-sided rendering so that the RayCast can be seen if the camera is inside.
-		material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+		material->set_cull_mode(Material3D::CULL_DISABLED);
 	}
 
 	Color color = debug_shape_custom_color;
@@ -564,7 +564,7 @@ void ShapeCast::_update_debug_shape_material(bool p_check_collision) {
 		}
 	}
 
-	Ref<SpatialMaterial> material = static_cast<Ref<SpatialMaterial>>(debug_material);
+	Ref<Material3D> material = static_cast<Ref<Material3D>>(debug_material);
 	material->set_albedo(color);
 }
 

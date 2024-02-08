@@ -41,7 +41,7 @@ uint32_t EditorOBJImporter::get_import_flags() const {
 	return IMPORT_SCENE;
 }
 
-static Error _parse_material_library(const String &p_path, Map<String, Ref<SpatialMaterial>> &material_map, List<String> *r_missing_deps) {
+static Error _parse_material_library(const String &p_path, Map<String, Ref<Material3D>> &material_map, List<String> *r_missing_deps) {
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open MTL file '%s', it may not exist or not be readable.", p_path));
 
@@ -99,7 +99,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			c.a = d;
 			current->set_albedo(c);
 			if (c.a < 0.99) {
-				current->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+				current->set_feature(Material3D::FEATURE_TRANSPARENT, true);
 			}
 		} else if (l.begins_with("Tr ")) {
 			//normal
@@ -111,7 +111,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			c.a = 1.0 - d;
 			current->set_albedo(c);
 			if (c.a < 0.99) {
-				current->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+				current->set_feature(Material3D::FEATURE_TRANSPARENT, true);
 			}
 
 		} else if (l.begins_with("map_Ka ")) {
@@ -133,7 +133,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			Ref<Texture> texture = ResourceLoader::load(path);
 
 			if (texture.is_valid()) {
-				current->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
+				current->set_texture(Material3D::TEXTURE_ALBEDO, texture);
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
@@ -153,7 +153,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			Ref<Texture> texture = ResourceLoader::load(path);
 
 			if (texture.is_valid()) {
-				current->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
+				current->set_texture(Material3D::TEXTURE_METALLIC, texture);
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
@@ -173,7 +173,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			Ref<Texture> texture = ResourceLoader::load(path);
 
 			if (texture.is_valid()) {
-				current->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, texture);
+				current->set_texture(Material3D::TEXTURE_ROUGHNESS, texture);
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
@@ -187,8 +187,8 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			Ref<Texture> texture = ResourceLoader::load(path);
 
 			if (texture.is_valid()) {
-				current->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);
-				current->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
+				current->set_feature(Material3D::FEATURE_NORMAL_MAPPING, true);
+				current->set_texture(Material3D::TEXTURE_NORMAL, texture);
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
@@ -217,7 +217,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	Vector<Color> colors;
 	String name;
 
-	Map<String, Map<String, Ref<SpatialMaterial>>> material_map;
+	Map<String, Map<String, Ref<Material3D>>> material_map;
 
 	Ref<SurfaceTool> surf_tool = memnew(SurfaceTool);
 	surf_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
@@ -361,7 +361,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				print_verbose("OBJ: Current material " + current_material + " has " + itos(material_map.has(current_material_library) && material_map[current_material_library].has(current_material)));
 
 				if (material_map.has(current_material_library) && material_map[current_material_library].has(current_material)) {
-					Ref<SpatialMaterial> &material = material_map[current_material_library][current_material];
+					Ref<Material3D> &material = material_map[current_material_library][current_material];
 					if (!colors.empty()) {
 						material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 					}
@@ -411,7 +411,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 			current_material_library = l.replace("mtllib", "").strip_edges();
 			if (!material_map.has(current_material_library)) {
-				Map<String, Ref<SpatialMaterial>> lib;
+				Map<String, Ref<Material3D>> lib;
 				String lib_path = current_material_library;
 				if (lib_path.is_rel_path()) {
 					lib_path = p_path.get_base_dir().plus_file(current_material_library);

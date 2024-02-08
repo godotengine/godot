@@ -41,8 +41,8 @@
 		<member name="autowrap" type="bool" setter="set_autowrap" getter="get_autowrap" default="false">
 			If [code]true[/code], wraps the text to the [member width].
 		</member>
-		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="SpatialMaterial.BillboardMode" default="0">
-			The billboard mode to use for the label. See [enum SpatialMaterial.BillboardMode] for possible values.
+		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="Material3D.BillboardMode" default="0">
+			The billboard mode to use for the label. See [enum Material3D.BillboardMode] for possible values.
 		</member>
 		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], text can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind.

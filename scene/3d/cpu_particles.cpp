@@ -209,14 +209,14 @@ String CPUParticles::get_configuration_warning() const {
 		mesh_found = true;
 		for (int j = 0; j < get_mesh()->get_surface_count(); j++) {
 			anim_material_found = Object::cast_to<ShaderMaterial>(get_mesh()->surface_get_material(j).ptr()) != nullptr;
-			SpatialMaterial *spat = Object::cast_to<SpatialMaterial>(get_mesh()->surface_get_material(j).ptr());
-			anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
+			Material3D *spat = Object::cast_to<Material3D>(get_mesh()->surface_get_material(j).ptr());
+			anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == Material3D::BILLBOARD_PARTICLES);
 		}
 	}
 
 	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != nullptr;
-	SpatialMaterial *spat = Object::cast_to<SpatialMaterial>(get_material_override().ptr());
-	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
+	Material3D *spat = Object::cast_to<Material3D>(get_material_override().ptr());
+	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == Material3D::BILLBOARD_PARTICLES);
 
 	if (!mesh_found) {
 		if (warnings != String()) {
