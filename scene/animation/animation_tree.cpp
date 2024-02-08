@@ -505,6 +505,10 @@ void AnimationRootNode::_animation_node_removed(const ObjectID &p_oid, const Str
 	emit_signal(SNAME("animation_node_removed"), p_oid, p_node);
 }
 
+PackedStringArray AnimationRootNode::get_configuration_warnings() const {
+	return PackedStringArray();
+}
+
 ////////////////////
 
 void AnimationTree::set_root_animation_node(const Ref<AnimationRootNode> &p_animation_node) {
@@ -512,6 +516,7 @@ void AnimationTree::set_root_animation_node(const Ref<AnimationRootNode> &p_anim
 		root_animation_node->disconnect(SNAME("tree_changed"), callable_mp(this, &AnimationTree::_tree_changed));
 		root_animation_node->disconnect(SNAME("animation_node_renamed"), callable_mp(this, &AnimationTree::_animation_node_renamed));
 		root_animation_node->disconnect(SNAME("animation_node_removed"), callable_mp(this, &AnimationTree::_animation_node_removed));
+		root_animation_node->disconnect_changed(callable_mp((Node *)this, &Node::update_configuration_warnings));
 	}
 
 	root_animation_node = p_animation_node;
@@ -520,6 +525,7 @@ void AnimationTree::set_root_animation_node(const Ref<AnimationRootNode> &p_anim
 		root_animation_node->connect(SNAME("tree_changed"), callable_mp(this, &AnimationTree::_tree_changed));
 		root_animation_node->connect(SNAME("animation_node_renamed"), callable_mp(this, &AnimationTree::_animation_node_renamed));
 		root_animation_node->connect(SNAME("animation_node_removed"), callable_mp(this, &AnimationTree::_animation_node_removed));
+		root_animation_node->connect_changed(callable_mp((Node *)this, &Node::update_configuration_warnings));
 	}
 
 	properties_dirty = true;
@@ -608,7 +614,9 @@ uint64_t AnimationTree::get_last_process_pass() const {
 
 PackedStringArray AnimationTree::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
-	if (!root_animation_node.is_valid()) {
+	if (root_animation_node.is_valid()) {
+		warnings.append_array(root_animation_node->get_configuration_warnings());
+	} else {
 		warnings.push_back(RTR("No root AnimationNode for the graph is set."));
 	}
 	return warnings;

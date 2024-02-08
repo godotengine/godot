@@ -72,6 +72,8 @@ StringName AnimationNodeStateMachineTransition::get_advance_condition_name() con
 void AnimationNodeStateMachineTransition::set_advance_expression(const String &p_expression) {
 	advance_expression = p_expression;
 
+	emit_changed();
+
 	String advance_expression_stripped = advance_expression.strip_edges();
 	if (advance_expression_stripped == String()) {
 		expression.unref();
@@ -82,7 +84,15 @@ void AnimationNodeStateMachineTransition::set_advance_expression(const String &p
 		expression.instantiate();
 	}
 
+#ifdef TOOLS_ENABLED
+	Error err = expression->parse(advance_expression_stripped);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		// This error is already shown in the scene tree editor.
+		ERR_FAIL_COND_MSG(err != OK, "Failed to parse advance expression '" + advance_expression_stripped + "': " + expression->get_error_text());
+	}
+#else
 	expression->parse(advance_expression_stripped);
+#endif
 }
 
 String AnimationNodeStateMachineTransition::get_advance_expression() const {
@@ -123,6 +133,27 @@ void AnimationNodeStateMachineTransition::set_priority(int p_priority) {
 
 int AnimationNodeStateMachineTransition::get_priority() const {
 	return priority;
+}
+
+PackedStringArray AnimationNodeStateMachineTransition::get_configuration_warnings() const {
+	PackedStringArray warnings;
+
+	String advance_expression_stripped = advance_expression.strip_edges();
+	if (!advance_expression_stripped.is_empty()) {
+		// We can't use this transition's expression as it may have already
+		// been executed, clearing its error.
+		Expression test_expression;
+		if (test_expression.parse(advance_expression_stripped) != OK) {
+			String error_text = test_expression.get_error_text();
+			if (error_text == "Expected '='") {
+				warnings.push_back("Invalid advance expression '" + advance_expression_stripped + "': " + test_expression.get_error_text() + " (maybe '=' should be '=='?)");
+			} else {
+				warnings.push_back("Invalid advance expression '" + advance_expression_stripped + "': " + test_expression.get_error_text());
+			}
+		}
+	}
+
+	return warnings;
 }
 
 void AnimationNodeStateMachineTransition::_bind_methods() {
@@ -1140,7 +1171,11 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 		if (expression_base) {
 			Ref<Expression> exp = transition->expression;
 			bool ret = exp->execute(Array(), expression_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
-			if (exp->has_execute_failed() || !ret) {
+			if (exp->has_execute_failed()) {
+				ERR_PRINT("Failed to execute transition advance expression '" + transition->advance_expression + "': " + exp->get_error_text());
+				return false;
+			}
+			if (!ret) {
 				return false;
 			}
 		} else {
@@ -1547,6 +1582,7 @@ void AnimationNodeStateMachine::add_transition(const StringName &p_from, const S
 	tr.transition = p_transition;
 
 	tr.transition->connect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed), CONNECT_REFERENCE_COUNTED);
+	tr.transition->connect_changed(callable_mp((Resource *)this, &Resource::emit_changed), CONNECT_REFERENCE_COUNTED);
 
 	transitions.push_back(tr);
 
@@ -1595,6 +1631,7 @@ void AnimationNodeStateMachine::remove_transition_by_index(const int p_transitio
 	ERR_FAIL_INDEX(p_transition, transitions.size());
 	Transition tr = transitions[p_transition];
 	transitions.write[p_transition].transition->disconnect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
+	transitions.write[p_transition].transition->disconnect_changed(callable_mp((Resource *)this, &Resource::emit_changed));
 	transitions.remove_at(p_transition);
 
 	Vector<String> path_from = String(tr.from).split("/");
@@ -1791,6 +1828,22 @@ void AnimationNodeStateMachine::_animation_node_renamed(const ObjectID &p_oid, c
 
 void AnimationNodeStateMachine::_animation_node_removed(const ObjectID &p_oid, const StringName &p_node) {
 	AnimationRootNode::_animation_node_removed(p_oid, p_node);
+}
+
+PackedStringArray AnimationNodeStateMachine::get_configuration_warnings() const {
+	PackedStringArray warnings;
+
+	for (int i = 0; i < transitions.size(); i++) {
+		PackedStringArray transition_warnings = transitions[i].transition->get_configuration_warnings();
+		String from = transitions[i].from;
+		String to = transitions[i].to;
+		for (int j = 0; j < transition_warnings.size(); j++) {
+			// Prefix each warning with the transition for easy identification.
+			warnings.append(from + " -> " + to + ": " + transition_warnings[j]);
+		}
+	}
+
+	return warnings;
 }
 
 void AnimationNodeStateMachine::_bind_methods() {
