@@ -48,6 +48,8 @@ class EditorSettings;
 class FileSystemDock;
 class Mesh;
 class Node;
+class PropertySelector;
+class SceneTreeDialog;
 class ScriptEditor;
 class SubViewport;
 class Texture2D;
@@ -59,6 +61,17 @@ class EditorInterface : public Object {
 	GDCLASS(EditorInterface, Object);
 
 	static EditorInterface *singleton;
+
+	// Editor dialogs.
+
+	PropertySelector *property_selector = nullptr;
+	SceneTreeDialog *node_selector = nullptr;
+
+	void _node_selected(const NodePath &p_node_paths, const Callable &p_callback);
+	void _node_selection_canceled(const Callable &p_callback);
+	void _property_selected(const String &p_property_name, const Callable &p_callback);
+	void _property_selection_canceled(const Callable &p_callback);
+	void _call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context);
 
 	// Editor tools.
 
@@ -110,6 +123,12 @@ public:
 
 	String get_current_feature_profile() const;
 	void set_current_feature_profile(const String &p_profile_name);
+
+	// Editor dialogs.
+
+	void popup_node_selector(const Callable &p_callback, const TypedArray<StringName> &p_valid_types = TypedArray<StringName>());
+	// Must use Vector<int> because exposing Vector<Variant::Type> is not supported.
+	void popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter = PackedInt32Array());
 
 	// Editor docks.
 
