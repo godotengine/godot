@@ -3328,9 +3328,17 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						opt = opt.substr(1);
 					}
 
-					// The path needs quotes if it's not a valid identifier (with an exception
-					// for "/" as path separator, which also doesn't require quotes).
-					if (!opt.replace("/", "_").is_valid_identifier()) {
+					// The path needs quotes if at least one of its components (excluding `/` separations)
+					// is not a valid identifier.
+					bool path_needs_quote = false;
+					for (const String &part : opt.split("/")) {
+						if (!part.is_valid_identifier()) {
+							path_needs_quote = true;
+							break;
+						}
+					}
+
+					if (path_needs_quote) {
 						// Ignore quote_style and just use double quotes for paths with apostrophes.
 						// Double quotes don't need to be checked because they're not valid in node and property names.
 						opt = opt.quote(opt.contains("'") ? "\"" : quote_style); // Handle user preference.
