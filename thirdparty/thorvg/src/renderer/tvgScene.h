@@ -128,6 +128,7 @@ struct Scene::Impl
     bool render(RenderMethod* renderer)
     {
         Compositor* cmp = nullptr;
+        auto ret = true;
 
         if (needComp) {
             cmp = renderer->target(bounds(renderer), renderer->colorSpace());
@@ -136,12 +137,12 @@ struct Scene::Impl
         }
 
         for (auto paint : paints) {
-            if (!paint->pImpl->render(renderer)) return false;
+            ret &= paint->pImpl->render(renderer);
         }
 
         if (cmp) renderer->endComposite(cmp);
 
-        return true;
+        return ret;
     }
 
     RenderRegion bounds(RenderMethod* renderer) const

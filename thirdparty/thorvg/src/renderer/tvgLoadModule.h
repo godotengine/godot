@@ -68,6 +68,8 @@ struct LoadModule
 
 struct ImageLoader : LoadModule
 {
+    static ColorSpace cs;                           //desired value
+
     float w = 0, h = 0;                             //default image size
     Surface surface;
 

@@ -257,15 +257,15 @@ static uint32_t _interpUpScaler(const uint32_t *img, TVG_UNUSED uint32_t stride,
     auto ry2 = ry + 1;
     if (ry2 >= h) ry2 = h - 1;
 
-    auto dx = static_cast<uint8_t>((sx - rx) * 255.0f);
-    auto dy = static_cast<uint8_t>((sy - ry) * 255.0f);
+    auto dx = (sx > 0.0f) ? static_cast<uint8_t>((sx - rx) * 255.0f) : 0;
+    auto dy = (sy > 0.0f) ? static_cast<uint8_t>((sy - ry) * 255.0f) : 0;
 
     auto c1 = img[rx + ry * w];
     auto c2 = img[rx2 + ry * w];
-    auto c3 = img[rx2 + ry2 * w];
-    auto c4 = img[rx + ry2 * w];
+    auto c3 = img[rx + ry2 * w];
+    auto c4 = img[rx2 + ry2 * w];
 
-    return INTERPOLATE(INTERPOLATE(c3, c4, dx), INTERPOLATE(c2, c1, dx), dy);
+    return INTERPOLATE(INTERPOLATE(c4, c3, dx), INTERPOLATE(c2, c1, dx), dy);
 }
 
 
@@ -671,10 +671,10 @@ static bool _rasterRle(SwSurface* surface, SwRleData* rle, uint8_t r, uint8_t g,
 /************************************************************************/
 
 #define SCALED_IMAGE_RANGE_Y(y) \
-    auto sy = (y) * itransform->e22 + itransform->e23; \
-    auto my = (int32_t)round(sy); \
-    if (my < 0 || (uint32_t)sy >= image->h) continue; \
+    auto sy = (y) * itransform->e22 + itransform->e23 - 0.49f; \
+    if (sy <= -0.5f || (uint32_t)(sy + 0.5f) >= image->h) continue; \
     if (scaleMethod == _interpDownScaler) { \
+        auto my = (int32_t)round(sy); \
         miny = my - (int32_t)sampleSize; \
         if (miny < 0) miny = 0; \
         maxy = my + (int32_t)sampleSize; \
@@ -682,8 +682,8 @@ static bool _rasterRle(SwSurface* surface, SwRleData* rle, uint8_t r, uint8_t g,
     }
 
 #define SCALED_IMAGE_RANGE_X \
-    auto sx = x * itransform->e11 + itransform->e13; \
-    if ((int32_t)round(sx) < 0 || (uint32_t) sx >= image->w) continue;
+    auto sx = (x) * itransform->e11 + itransform->e13 - 0.49f; \
+    if (sx <= -0.5f || (uint32_t)(sx + 0.5f) >= image->w) continue; \
 
 
 #if 0 //Enable it when GRAYSCALE image is supported
@@ -1928,8 +1928,8 @@ bool rasterStroke(SwSurface* surface, SwShape* shape, uint8_t r, uint8_t g, uint
 
 bool rasterImage(SwSurface* surface, SwImage* image, const RenderMesh* mesh, const Matrix* transform, const SwBBox& bbox, uint8_t opacity)
 {
-    //Verify Boundary
-    if (bbox.max.x < 0 || bbox.max.y < 0 || bbox.min.x >= static_cast<SwCoord>(surface->w) || bbox.min.y >= static_cast<SwCoord>(surface->h)) return false;
+    //Outside of the viewport, skip the rendering
+    if (bbox.max.x < 0 || bbox.max.y < 0 || bbox.min.x >= static_cast<SwCoord>(surface->w) || bbox.min.y >= static_cast<SwCoord>(surface->h)) return true;
 
     if (mesh && mesh->triangleCnt > 0) return _rasterTexmapPolygonMesh(surface, image, mesh, transform, &bbox, opacity);
     else return _rasterImage(surface, image, transform, bbox, opacity);

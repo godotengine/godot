@@ -35,6 +35,8 @@ void PngLoader::run(unsigned tid)
     auto width = static_cast<unsigned>(w);
     auto height = static_cast<unsigned>(h);
 
+    state.info_raw.colortype = LCT_RGBA;   //request this image format
+
     if (lodepng_decode(&surface.buf8, &width, &height, &state, data, size)) {
         TVGERR("PNG", "Failed to decode image");
     }
@@ -43,8 +45,11 @@ void PngLoader::run(unsigned tid)
     surface.stride = width;
     surface.w = width;
     surface.h = height;
+    surface.cs = ColorSpace::ABGR8888;
     surface.channelSize = sizeof(uint32_t);
-    surface.premultiplied = false;
+
+    if (state.info_png.color.colortype == LCT_RGBA) surface.premultiplied = false;
+    else surface.premultiplied = true;
 }
 
 
@@ -93,9 +98,6 @@ bool PngLoader::open(const string& path)
     w = static_cast<float>(width);
     h = static_cast<float>(height);
 
-    if (state.info_png.color.colortype == LCT_RGBA) surface.cs = ColorSpace::ABGR8888;
-    else surface.cs = ColorSpace::ARGB8888;
-
     ret = true;
 
     goto finalize;
@@ -124,8 +126,6 @@ bool PngLoader::open(const char* data, uint32_t size, bool copy)
     w = static_cast<float>(width);
     h = static_cast<float>(height);
     this->size = size;
-
-    surface.cs = ColorSpace::ABGR8888;
 
     return true;
 }
