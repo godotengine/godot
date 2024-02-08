@@ -34,6 +34,7 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
+#include "editor/editor_properties.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -3444,7 +3445,13 @@ void EditorInspector::update_tree() {
 
 				ep->set_doc_path(doc_path);
 				ep->set_internal(p.usage & PROPERTY_USAGE_INTERNAL);
-
+				// This is for when displaying read only floats that are not finite.
+				if (ep->get_edited_property_value().get_type() == Variant::FLOAT && ep->is_read_only()) {
+					double value = ep->get_edited_property_value();
+					if (!Math::is_finite(value)) {
+						Object::cast_to<EditorPropertyFloat>(ep)->set_allow_non_finite(true);
+					}
+				}
 				ep->update_property();
 				ep->_update_pin_flags();
 				ep->update_editor_property_status();

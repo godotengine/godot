@@ -1446,6 +1446,10 @@ void EditorPropertyFloat::_set_read_only(bool p_read_only) {
 	spin->set_read_only(p_read_only);
 }
 
+void EditorPropertyFloat::set_allow_non_finite(bool allow) {
+	spin->allow_non_finite = allow;
+}
+
 void EditorPropertyFloat::_value_changed(double val) {
 	if (radians_as_degrees) {
 		val = Math::deg_to_rad(val);

@@ -100,6 +100,8 @@ public:
 	void set_allow_lesser(bool p_allow);
 	bool is_lesser_allowed() const;
 
+	bool allow_non_finite = false;
+
 	void share(Range *p_range);
 	void unshare();
 

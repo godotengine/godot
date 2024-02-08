@@ -407,6 +407,7 @@ protected:
 
 public:
 	virtual void update_property() override;
+	void set_allow_non_finite(bool allow);
 	void setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix = String(), bool p_radians_as_degrees = false);
 	EditorPropertyFloat();
 };

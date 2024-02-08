@@ -86,9 +86,6 @@ void Range::Shared::redraw_owners() {
 
 void Range::set_value(double p_val) {
 	double prev_val = shared->val;
-	if (!Math::is_finite(p_val)) {
-		return;
-	}
 	_set_value_no_signal(p_val);
 
 	if (shared->val != prev_val) {
@@ -98,7 +95,9 @@ void Range::set_value(double p_val) {
 
 void Range::_set_value_no_signal(double p_val) {
 	if (!Math::is_finite(p_val)) {
-		shared->val = p_val;
+		if (allow_non_finite) {
+			shared->val = p_val;
+		}
 		return;
 	}
 
