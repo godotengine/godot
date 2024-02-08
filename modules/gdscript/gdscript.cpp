@@ -35,7 +35,10 @@
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
 #include "gdscript_rpc_callable.h"
+
+#ifdef DEBUG_ENABLED
 #include "gdscript_warning.h"
+#endif
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
