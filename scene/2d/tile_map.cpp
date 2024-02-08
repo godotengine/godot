@@ -387,6 +387,7 @@ void TileMap::add_layer(int p_to_pos) {
 	TileMapLayer *new_layer = memnew(TileMapLayer);
 	layers.insert(p_to_pos, new_layer);
 	add_child(new_layer);
+	new_layer->force_parent_owned();
 	new_layer->set_name(vformat("Layer%d", p_to_pos));
 	move_child(new_layer, p_to_pos);
 	for (uint32_t i = 0; i < layers.size(); i++) {
@@ -719,6 +720,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 			if (layers.size() == 0) {
 				TileMapLayer *new_layer = memnew(TileMapLayer);
 				add_child(new_layer);
+				new_layer->force_parent_owned();
 				new_layer->set_name("Layer0");
 				new_layer->set_layer_index_in_tile_map_node(0);
 				layers.push_back(new_layer);
@@ -743,6 +745,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 			while (index >= (int)layers.size()) {
 				TileMapLayer *new_layer = memnew(TileMapLayer);
 				add_child(new_layer);
+				new_layer->force_parent_owned();
 				new_layer->set_name(vformat("Layer%d", index));
 				new_layer->set_layer_index_in_tile_map_node(index);
 				layers.push_back(new_layer);
