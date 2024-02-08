@@ -53,6 +53,8 @@ public:
 	virtual RS::InstanceType get_base_type(RID p_rid) const override {
 		if (RendererDummy::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
 			return RS::INSTANCE_MESH;
+		} else if (RendererDummy::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
+			return RS::INSTANCE_MULTIMESH;
 		}
 		return RS::INSTANCE_NONE;
 	}
