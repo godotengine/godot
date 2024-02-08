@@ -449,11 +449,6 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
 
-	// scene unique id
-	ClassDB::bind_static_method("Resource", D_METHOD("generate_scene_unique_id"), &Resource::generate_scene_unique_id);
-	ClassDB::bind_method(D_METHOD("set_scene_unique_id", "id"), &Resource::set_scene_unique_id);
-	ClassDB::bind_method(D_METHOD("get_scene_unique_id"), &Resource::get_scene_unique_id);
-	
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
