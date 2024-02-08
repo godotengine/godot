@@ -177,6 +177,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		return instance;
 	}
 
+	MutexLock initializer_lock(GDScriptLanguage::singleton->mutex);
 	initializer = _super_constructor(this);
 	if (initializer != nullptr) {
 		initializer->call(instance, p_args, p_argcount, r_error);
@@ -185,7 +186,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 			instance->script = Ref<GDScript>();
 			instance->owner->set_script_instance(nullptr);
 			{
-				MutexLock lock(GDScriptLanguage::singleton->mutex);
 				instances.erase(p_owner);
 			}
 			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
