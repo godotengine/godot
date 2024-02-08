@@ -3416,6 +3416,9 @@ void EditorInspector::update_tree() {
 			current_vbox->add_child(editors[i].property_editor);
 
 			if (ep) {
+				// Maybe move all this to a function so minimal modifications can be made to the EditorInspector base class.
+				// Then EditorDebuggerInspector could override the function and add the neccarry changes to handle non finite floats.
+
 				// Eventually, set other properties/signals after the property editor got added to the tree.
 				bool update_all = (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
 				ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(update_all));
