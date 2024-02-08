@@ -584,7 +584,6 @@ bool EditorExportPlatformWeb::poll_export() {
 	menu_options = preset.is_valid();
 	if (server->is_listening()) {
 		if (menu_options == 0) {
-			MutexLock lock(server_lock);
 			server->stop();
 		} else {
 			menu_options += 1;
@@ -603,7 +602,6 @@ int EditorExportPlatformWeb::get_options_count() const {
 
 Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) {
 	if (p_option == 1) {
-		MutexLock lock(server_lock);
 		server->stop();
 		return OK;
 	}
@@ -653,12 +651,8 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 	const String tls_cert = EDITOR_GET("export/web/tls_certificate");
 
 	// Restart server.
-	{
-		MutexLock lock(server_lock);
-
-		server->stop();
-		err = server->listen(bind_port, bind_ip, use_tls, tls_key, tls_cert);
-	}
+	server->stop();
+	err = server->listen(bind_port, bind_ip, use_tls, tls_key, tls_cert);
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Error starting HTTP server: %d."), err));
 		return err;
@@ -674,21 +668,9 @@ Ref<Texture2D> EditorExportPlatformWeb::get_run_icon() const {
 	return run_icon;
 }
 
-void EditorExportPlatformWeb::_server_thread_poll(void *data) {
-	EditorExportPlatformWeb *ej = static_cast<EditorExportPlatformWeb *>(data);
-	while (!ej->server_quit.get()) {
-		OS::get_singleton()->delay_usec(6900);
-		{
-			MutexLock lock(ej->server_lock);
-			ej->server->poll();
-		}
-	}
-}
-
 EditorExportPlatformWeb::EditorExportPlatformWeb() {
 	if (EditorNode::get_singleton()) {
 		server.instantiate();
-		server_thread.start(_server_thread_poll, this);
 
 #ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
@@ -711,11 +693,4 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 }
 
 EditorExportPlatformWeb::~EditorExportPlatformWeb() {
-	if (server.is_valid()) {
-		server->stop();
-	}
-	server_quit.set(true);
-	if (server_thread.is_started()) {
-		server_thread.wait_to_finish();
-	}
 }
