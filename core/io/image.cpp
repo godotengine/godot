@@ -2781,7 +2781,7 @@ void Image::_get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2
 }
 
 void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blit_rect an image: invalid source Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
@@ -2823,8 +2823,8 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const P
 }
 
 void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
-	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blit_rect_mask an image: invalid source Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "Cannot blit_rect_mask an image: invalid mask Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();
@@ -2873,7 +2873,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 }
 
 void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blend_rect an image: invalid source Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
@@ -2908,8 +2908,8 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const 
 }
 
 void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
-	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blend_rect_mask an image: invalid source Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "Cannot blend_rect_mask an image: invalid mask Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();

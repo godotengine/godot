@@ -262,14 +262,15 @@ class EditorAssetLibrary : public PanelContainer {
 		String image_url;
 		HTTPRequest *request = nullptr;
 		ObjectID target;
+		int asset_id = -1;
 	};
 
 	int last_queue_id;
 	HashMap<int, ImageQueue> image_queue;
 
-	void _image_update(bool use_cache, bool final, const PackedByteArray &p_data, int p_queue_id);
+	void _image_update(bool p_use_cache, bool p_final, const PackedByteArray &p_data, int p_queue_id);
 	void _image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id);
-	void _request_image(ObjectID p_for, String p_image_url, ImageType p_type, int p_image_index);
+	void _request_image(ObjectID p_for, int p_asset_id, String p_image_url, ImageType p_type, int p_image_index);
 	void _update_image_queue();
 
 	HBoxContainer *_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items);
