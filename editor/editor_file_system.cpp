@@ -1183,7 +1183,7 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 		sp.low = 0;
 		efs->_scan_fs_changes(efs->filesystem, sp);
 	}
-	efs->scanning_changes_done = true;
+	efs->scanning_changes_done.set();
 }
 
 void EditorFileSystem::scan_changes() {
@@ -1197,7 +1197,7 @@ void EditorFileSystem::scan_changes() {
 	_update_extensions();
 	sources_changed.clear();
 	scanning_changes = true;
-	scanning_changes_done = false;
+	scanning_changes_done.clear();
 
 	if (!use_threads) {
 		if (filesystem) {
@@ -1216,7 +1216,7 @@ void EditorFileSystem::scan_changes() {
 			}
 		}
 		scanning_changes = false;
-		scanning_changes_done = true;
+		scanning_changes_done.set();
 		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 	} else {
 		ERR_FAIL_COND(thread_sources.is_started());
@@ -1269,7 +1269,7 @@ void EditorFileSystem::_notification(int p_what) {
 				bool done_importing = false;
 
 				if (scanning_changes) {
-					if (scanning_changes_done) {
+					if (scanning_changes_done.is_set()) {
 						set_process(false);
 
 						if (thread_sources.is_started()) {
