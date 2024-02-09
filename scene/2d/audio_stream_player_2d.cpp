@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "audio_stream_player_2d.h"
+#include "audio_stream_player_2d.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "scene/2d/area_2d.h"
@@ -251,7 +252,7 @@ void AudioStreamPlayer2D::set_autoplay(bool p_enable) {
 	internal->autoplay = p_enable;
 }
 
-bool AudioStreamPlayer2D::is_autoplay_enabled() {
+bool AudioStreamPlayer2D::is_autoplay_enabled() const {
 	return internal->autoplay;
 }
 

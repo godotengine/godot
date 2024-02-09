@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "gltf_buffer_view.h"
+#include "gltf_buffer_view.compat.inc"
 
 #include "../gltf_state.h"
 
@@ -53,7 +54,7 @@ void GLTFBufferView::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indices"), "set_indices", "get_indices"); // bool
 }
 
-GLTFBufferIndex GLTFBufferView::get_buffer() {
+GLTFBufferIndex GLTFBufferView::get_buffer() const {
 	return buffer;
 }
 
@@ -61,7 +62,7 @@ void GLTFBufferView::set_buffer(GLTFBufferIndex p_buffer) {
 	buffer = p_buffer;
 }
 
-int GLTFBufferView::get_byte_offset() {
+int GLTFBufferView::get_byte_offset() const {
 	return byte_offset;
 }
 
@@ -69,7 +70,7 @@ void GLTFBufferView::set_byte_offset(int p_byte_offset) {
 	byte_offset = p_byte_offset;
 }
 
-int GLTFBufferView::get_byte_length() {
+int GLTFBufferView::get_byte_length() const {
 	return byte_length;
 }
 
@@ -77,7 +78,7 @@ void GLTFBufferView::set_byte_length(int p_byte_length) {
 	byte_length = p_byte_length;
 }
 
-int GLTFBufferView::get_byte_stride() {
+int GLTFBufferView::get_byte_stride() const {
 	return byte_stride;
 }
 
@@ -85,7 +86,7 @@ void GLTFBufferView::set_byte_stride(int p_byte_stride) {
 	byte_stride = p_byte_stride;
 }
 
-bool GLTFBufferView::get_indices() {
+bool GLTFBufferView::get_indices() const {
 	return indices;
 }
 
