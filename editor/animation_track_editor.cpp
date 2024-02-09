@@ -2862,7 +2862,21 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 						if (editor->is_key_selected(track, key_idx)) {
 							emit_signal(SNAME("deselect_key"), key_idx);
 						} else {
-							emit_signal(SNAME("select_key"), key_idx, false);
+							if (mb->is_shift_pressed()) {
+								if (last_idx != -1) {
+									if (last_idx < key_idx) {
+										for (int i = last_idx + 1; i <= key_idx; i++) {
+											emit_signal(SNAME("select_key"), i, false);
+										}
+									} else {
+										for (int i = last_idx - 1; i >= key_idx; i--) {
+											emit_signal(SNAME("select_key"), i, false);
+										}
+									}
+								}
+							} else {
+								emit_signal(SNAME("select_key"), key_idx, false);
+							}
 							moving_selection_attempt = true;
 							select_single_attempt = -1;
 							moving_selection_from_ofs = (mb->get_position().x - limit) / timeline->get_zoom_scale();
@@ -2870,6 +2884,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					} else {
 						if (!editor->is_key_selected(track, key_idx)) {
 							emit_signal(SNAME("select_key"), key_idx, true);
+							last_idx = key_idx;
 							select_single_attempt = -1;
 						} else {
 							select_single_attempt = key_idx;
