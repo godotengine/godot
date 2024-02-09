@@ -32,7 +32,7 @@
 
 void EditorHTTPServer::_server_thread_poll(void *data) {
 	EditorHTTPServer *web_server = static_cast<EditorHTTPServer *>(data);
-	while (!web_server->server_quit.get()) {
+	while (!web_server->server_quit.is_set()) {
 		OS::get_singleton()->delay_usec(6900);
 		{
 			MutexLock lock(web_server->server_lock);
@@ -193,7 +193,7 @@ void EditorHTTPServer::_poll() {
 }
 
 void EditorHTTPServer::stop() {
-	server_quit.set(true);
+	server_quit.set();
 	if (server_thread.is_started()) {
 		server_thread.wait_to_finish();
 	}
@@ -227,7 +227,7 @@ Error EditorHTTPServer::listen(int p_port, IPAddress p_address, bool p_use_tls, 
 	}
 	Error err = server->listen(p_port, p_address);
 	if (err == OK) {
-		server_quit.set(false);
+		server_quit.clear();
 		server_thread.start(_server_thread_poll, this);
 	}
 	return err;
