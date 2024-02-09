@@ -1002,20 +1002,131 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 			}
 		}
 
-		Ref<Font> font = p_overlay->get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = p_overlay->get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-		Point2 msgpos = Point2(20 * EDSCALE, p_overlay->get_size().y - 20 * EDSCALE);
-
-		String text = tile_map->local_to_map(tile_map->get_local_mouse_position());
-		if (drag_type == DRAG_TYPE_RECT) {
-			Vector2i size = tile_map->local_to_map(tile_map->get_local_mouse_position()) - tile_map->local_to_map(drag_start_mouse_pos);
-			text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), ABS(size.x) + 1, ABS(size.y) + 1);
-		}
-
-		p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		p_overlay->draw_string(font, msgpos + Point2(-1, -1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		p_overlay->draw_string(font, msgpos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
+		draw_tile_tooltip(tile_map, tile_set, p_overlay, EDSCALE, drag_type == DRAG_TYPE_RECT, drag_start_mouse_pos);
 	}
+}
+
+void TileMapSubEditorPlugin::draw_tile_tooltip(TileMap *p_tile_map, Ref<TileSet> tile_set, Control *p_overlay, float p_scale, bool p_rect_drag_type, Vector2 p_drag_start_mouse_pos) {
+	static const int icon_size = 18;
+	static const float icon_alpha = 0.6f;
+	static const Color _clear_color = Color(0, 0, 0, 0);
+	static const Color _back_color = Color(0, 0, 0, icon_alpha);
+	static const Color _fore_color = Color(1, 1, 1, icon_alpha);
+	static const Color _grid_color = Color(icon_alpha, icon_alpha, icon_alpha, icon_alpha);
+	static const Color _text_color = Color(1, 1, 1, 1);
+	static const Color _text_shadow_color = Color(0, 0, 0, 0.8f);
+
+	Ref<Font> font = p_overlay->get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = p_overlay->get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	int line_height = font->get_height(font_size);
+	Size2 overlay_size = p_overlay->get_size();
+	Point2 msgpos = Point2(line_height * p_scale, overlay_size.y - line_height * p_scale);
+	Point2 msgpos_terrain = Point2(line_height * p_scale, overlay_size.y - (line_height * 2 + icon_size) * p_scale);
+	Vector2i tile_pos = p_tile_map->local_to_map(p_tile_map->get_local_mouse_position());
+
+	String text = tile_pos;
+	if (p_rect_drag_type) {
+		Vector2i size = tile_pos - p_tile_map->local_to_map(p_drag_start_mouse_pos);
+		text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), ABS(size.x) + 1, ABS(size.y) + 1);
+	}
+
+	int layer = p_tile_map->get_selected_layer();
+	TileMapCell cell = p_tile_map->get_cell(layer, tile_pos);
+	if (cell.source_id == TileSet::INVALID_SOURCE) {
+		return;
+	}
+
+	Ref<TileSetSource> source = p_tile_map->get_tileset()->get_source(cell.source_id);
+	Ref<TileSetAtlasSource> atlas_source = source;
+	TileData *cell_data = p_tile_map->get_cell_tile_data(layer, tile_pos);
+	String name = atlas_source->get_name();
+	int16_t alternate_id = cell.alternative_tile;
+	int16_t alternate_id_only = alternate_id & ~(TileSetAtlasSource::TRANSFORM_FLIP_H | TileSetAtlasSource::TRANSFORM_FLIP_V | TileSetAtlasSource::TRANSFORM_TRANSPOSE);
+	text += " [" + String::num(cell.source_id) + (name.is_empty() ? "" : ":" + name) + "] " + cell.get_atlas_coords() + (alternate_id_only == 0 ? "" : " {" + String::num(alternate_id) + "}");
+	if (alternate_id_only != alternate_id) {
+		bool transpose = alternate_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
+		bool flip_h = alternate_id & TileSetAtlasSource::TRANSFORM_FLIP_H;
+		bool flip_v = alternate_id & TileSetAtlasSource::TRANSFORM_FLIP_V;
+		text += (transpose ? " " + TTR("Transpose") : "") + (flip_h ? " " + TTR("Flip H") : "") + (flip_v ? " " + TTR("Flip V") : "");
+	} else {
+		text += (cell_data->get_transpose() ? " " + TTR("Transpose") : "") + (cell_data->get_flip_h() ? " " + TTR("Flip H") : "") + (cell_data->get_flip_v() ? " " + TTR("Flip V") : "");
+	}
+	p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, _text_shadow_color);
+	p_overlay->draw_string(font, msgpos + Point2(-1, -1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, _text_shadow_color);
+	p_overlay->draw_string(font, msgpos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, _text_color);
+
+	int terrain_set = cell_data->get_terrain_set();
+	if (terrain_set == -1 || cell_data->get_terrain() == -1) {
+		return;
+	}
+
+	TileSet::TerrainMode mode = tile_set->get_terrain_set_mode(terrain_set);
+	Ref<Image> custom_image = Image::create_empty(3, 3, false, Image::FORMAT_RGBA8);
+	custom_image->fill(_back_color);
+	custom_image->set_pixel(1, 1, _fore_color);
+	if (mode == TileSet::TerrainMode::TERRAIN_MODE_MATCH_CORNERS) {
+		custom_image->set_pixel(0, 1, _clear_color);
+		custom_image->set_pixel(2, 1, _clear_color);
+		custom_image->set_pixel(1, 0, _clear_color);
+		custom_image->set_pixel(1, 2, _clear_color);
+	} else if (mode == TileSet::TerrainMode::TERRAIN_MODE_MATCH_SIDES) {
+		custom_image->set_pixel(0, 0, _clear_color);
+		custom_image->set_pixel(2, 0, _clear_color);
+		custom_image->set_pixel(0, 2, _clear_color);
+		custom_image->set_pixel(2, 2, _clear_color);
+	}
+	static const Vector<TileSet::CellNeighbor> sorted_trimmed = {
+		TileSet::CELL_NEIGHBOR_LEFT_SIDE,
+		TileSet::CELL_NEIGHBOR_RIGHT_SIDE,
+		TileSet::CELL_NEIGHBOR_TOP_SIDE,
+		TileSet::CELL_NEIGHBOR_BOTTOM_SIDE,
+		TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER,
+		TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER,
+		TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER,
+		TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER,
+	};
+	for (int i = 0; i < sorted_trimmed.size(); i++) {
+		TileSet::CellNeighbor bit = sorted_trimmed[i];
+		if (cell_data->is_valid_terrain_peering_bit(bit) && cell_data->get_terrain_peering_bit(bit) != -1) {
+			switch (bit) {
+				case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
+					custom_image->set_pixel(0, 1, _fore_color);
+					break;
+				case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
+					custom_image->set_pixel(2, 1, _fore_color);
+					break;
+				case TileSet::CELL_NEIGHBOR_TOP_SIDE:
+					custom_image->set_pixel(1, 0, _fore_color);
+					break;
+				case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
+					custom_image->set_pixel(1, 2, _fore_color);
+					break;
+				case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
+					custom_image->set_pixel(0, 0, _fore_color);
+					break;
+				case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
+					custom_image->set_pixel(2, 0, _fore_color);
+					break;
+				case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
+					custom_image->set_pixel(0, 2, _fore_color);
+					break;
+				case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
+					custom_image->set_pixel(2, 2, _fore_color);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	custom_image->resize(icon_size, icon_size, Image::INTERPOLATE_NEAREST);
+	for (int i = 0; i < icon_size; i++) {
+		custom_image->set_pixel(i, 5, _grid_color);
+		custom_image->set_pixel(i, 11, _grid_color);
+		custom_image->set_pixel(5, i, _grid_color);
+		custom_image->set_pixel(11, i, _grid_color);
+	}
+	_peering_bits_icon = ImageTexture::create_from_image(custom_image);
+	p_overlay->draw_texture(_peering_bits_icon, msgpos_terrain);
 }
 
 void TileMapEditorTilesPlugin::_mouse_exited_viewport() {
@@ -3296,6 +3407,8 @@ void TileMapEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control *p_o
 				}
 			}
 		}
+
+		draw_tile_tooltip(tile_map, tile_set, p_overlay, EDSCALE, drag_type == DRAG_TYPE_RECT, drag_start_mouse_pos);
 	}
 }
 

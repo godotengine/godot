@@ -65,6 +65,10 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay){};
 	virtual void tile_set_changed(){};
 	virtual void edit(ObjectID p_tile_map_id, int p_tile_map_layer){};
+
+protected:
+	Ref<ImageTexture> _peering_bits_icon;
+	void draw_tile_tooltip(TileMap *p_tile_map, Ref<TileSet> tile_set, Control *p_overlay, float p_scale, bool p_rect_drag_type, Vector2 p_drag_start_mouse_pos);
 };
 
 class TileMapEditorTilesPlugin : public TileMapSubEditorPlugin {
