@@ -191,7 +191,7 @@ void ExtendGDScriptParser::update_symbols() {
 void ExtendGDScriptParser::update_document_links(const String &p_code) {
 	document_links.clear();
 
-	GDScriptTokenizer scr_tokenizer;
+	GDScriptTokenizerText scr_tokenizer;
 	Ref<FileAccess> fs = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 	scr_tokenizer.set_source_code(p_code);
 	while (true) {

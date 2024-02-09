@@ -210,7 +210,7 @@ bool GDScriptLanguage::supports_documentation() const {
 }
 
 int GDScriptLanguage::find_function(const String &p_function, const String &p_code) const {
-	GDScriptTokenizer tokenizer;
+	GDScriptTokenizerText tokenizer;
 	tokenizer.set_source_code(p_code);
 	int indent = 0;
 	GDScriptTokenizer::Token current = tokenizer.scan();
