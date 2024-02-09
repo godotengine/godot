@@ -1511,89 +1511,87 @@ void ImporterMesh::generate_tangents() {
 		new_surface_mesh_array[Mesh::ARRAY_CUSTOM1] = custom1_array;
 		new_surface_mesh_array[Mesh::ARRAY_CUSTOM2] = custom2_array;
 		new_surface_mesh_array[Mesh::ARRAY_CUSTOM3] = custom3_array;
-		TypedArray<Array> new_blend_shape_meshes;
-		int current_blend_shape_count = current_mesh->get_surface_blend_shape_count(surface_i);
-		new_blend_shape_meshes.resize(current_blend_shape_count);
-		int first_blend_shape_index = 0;
-		int surface_blend_shape_count = current_mesh->get_surface_blend_shape_count(surface_i);
-		for (int32_t blend_surface_i = 0; blend_surface_i <= surface_i; blend_surface_i++) {
-			first_blend_shape_index += current_mesh->get_surface_blend_shape_count(blend_surface_i);
-		}
-		for (int blend_shape_i = first_blend_shape_index; blend_shape_i < first_blend_shape_index + surface_blend_shape_count; blend_shape_i++) {
-			add_blend_shape(current_mesh->get_blend_shape_name(blend_shape_i));
-		}
-		new_blend_shape_meshes.resize(surface_blend_shape_count);
-		for (int blend_shape_i = 0; blend_shape_i < surface_blend_shape_count; blend_shape_i++) {
-			if (generate_tangents) {
-				Array blend_shape_array = current_mesh->get_surface_blend_shape_arrays(surface_i, blend_shape_i);
-				Vector<Vector3> vertex_array = blend_shape_array[Mesh::ARRAY_VERTEX];
-				Vector<Vector3> normal_array = blend_shape_array[Mesh::ARRAY_NORMAL];
-				Vector<Vector3> tangent_array = blend_shape_array[Mesh::ARRAY_TANGENT];
-				Vector<Color> color_array = blend_shape_array[Mesh::ARRAY_COLOR];
-				Vector<Vector2> uv_array = blend_shape_array[Mesh::ARRAY_TEX_UV];
-				Vector<Vector2> uv2_array = blend_shape_array[Mesh::ARRAY_TEX_UV2];
-				Vector<int> bones_array = blend_shape_array[Mesh::ARRAY_BONES];
-				Vector<float> weights_array = blend_shape_array[Mesh::ARRAY_WEIGHTS];
-				Vector<Variant> custom0_array = blend_shape_array[Mesh::ARRAY_CUSTOM0];
-				Vector<Variant> custom1_array = blend_shape_array[Mesh::ARRAY_CUSTOM1];
-				Vector<Variant> custom2_array = blend_shape_array[Mesh::ARRAY_CUSTOM2];
-				Vector<Variant> custom3_array = blend_shape_array[Mesh::ARRAY_CUSTOM3];
-				for (int32_t j = 0; j < vertex_array.size(); j++) {
-					TangentGenerationContextUserData::Vertex vertex;
-					vertex.vertex = vertex_array[j];
-					vertex.normal = normal_array[j];
-					vertex.tangent = tangent_array[j];
-					vertex.color = color_array[j];
-					vertex.uv = uv_array[j];
-					vertex.uv2 = uv2_array[j];
+		// TypedArray<Array> new_blend_shape_meshes;
+		// int first_blend_shape_index = 0;
+		// int surface_blend_shape_count = current_mesh->get_surface_blend_shape_count(surface_i);
+		// for (int32_t blend_surface_i = 0; blend_surface_i <= surface_i; blend_surface_i++) {
+		// 	first_blend_shape_index += current_mesh->get_surface_blend_shape_count(blend_surface_i);
+		// }
+		// for (int blend_shape_i = first_blend_shape_index; blend_shape_i < first_blend_shape_index + surface_blend_shape_count; blend_shape_i++) {
+		// 	add_blend_shape(current_mesh->get_blend_shape_name(blend_shape_i));
+		// }
+		// new_blend_shape_meshes.resize(surface_blend_shape_count);
+		// for (int blend_shape_i = 0; blend_shape_i < surface_blend_shape_count; blend_shape_i++) {
+		// 	if (generate_tangents) {
+		// 		Array blend_shape_array = current_mesh->get_surface_blend_shape_arrays(surface_i, blend_shape_i);
+		// 		Vector<Vector3> vertex_array = blend_shape_array[Mesh::ARRAY_VERTEX];
+		// 		Vector<Vector3> normal_array = blend_shape_array[Mesh::ARRAY_NORMAL];
+		// 		Vector<Vector3> tangent_array = blend_shape_array[Mesh::ARRAY_TANGENT];
+		// 		Vector<Color> color_array = blend_shape_array[Mesh::ARRAY_COLOR];
+		// 		Vector<Vector2> uv_array = blend_shape_array[Mesh::ARRAY_TEX_UV];
+		// 		Vector<Vector2> uv2_array = blend_shape_array[Mesh::ARRAY_TEX_UV2];
+		// 		Vector<int> bones_array = blend_shape_array[Mesh::ARRAY_BONES];
+		// 		Vector<float> weights_array = blend_shape_array[Mesh::ARRAY_WEIGHTS];
+		// 		Vector<Variant> custom0_array = blend_shape_array[Mesh::ARRAY_CUSTOM0];
+		// 		Vector<Variant> custom1_array = blend_shape_array[Mesh::ARRAY_CUSTOM1];
+		// 		Vector<Variant> custom2_array = blend_shape_array[Mesh::ARRAY_CUSTOM2];
+		// 		Vector<Variant> custom3_array = blend_shape_array[Mesh::ARRAY_CUSTOM3];
+		// 		for (int32_t j = 0; j < vertex_array.size(); j++) {
+		// 			TangentGenerationContextUserData::Vertex vertex;
+		// 			vertex.vertex = vertex_array[j];
+		// 			vertex.normal = normal_array[j];
+		// 			vertex.tangent = tangent_array[j];
+		// 			vertex.color = color_array[j];
+		// 			vertex.uv = uv_array[j];
+		// 			vertex.uv2 = uv2_array[j];
 
-					for (int k = 0; k < MIN(has_8_weights ? 8 : 4, bones_array.size()); ++k) {
-						vertex.bones.push_back(bones_array[k]);
-						vertex.weights.push_back(weights_array[k]);
-					}
+		// 			for (int k = 0; k < MIN(has_8_weights ? 8 : 4, bones_array.size()); ++k) {
+		// 				vertex.bones.push_back(bones_array[k]);
+		// 				vertex.weights.push_back(weights_array[k]);
+		// 			}
 
-					for (int k = 0; k < RS::ARRAY_CUSTOM_COUNT; ++k) {
-						if (k == 0) {
-							vertex.custom[k] = custom0_array[j];
-						} else if (k == 1) {
-							vertex.custom[k] = custom1_array[j];
-						} else if (k == 2) {
-							vertex.custom[k] = custom2_array[j];
-						} else if (k == 3) {
-							vertex.custom[k] = custom3_array[j];
-						}
-					}
+		// 			for (int k = 0; k < RS::ARRAY_CUSTOM_COUNT; ++k) {
+		// 				if (k == 0) {
+		// 					vertex.custom[k] = custom0_array[j];
+		// 				} else if (k == 1) {
+		// 					vertex.custom[k] = custom1_array[j];
+		// 				} else if (k == 2) {
+		// 					vertex.custom[k] = custom2_array[j];
+		// 				} else if (k == 3) {
+		// 					vertex.custom[k] = custom3_array[j];
+		// 				}
+		// 			}
 
-					msc.m_pUserData = &vertex;
-					bool res = genTangSpaceDefault(&msc);
-					ERR_FAIL_COND(!res);
+		// 			msc.m_pUserData = &vertex;
+		// 			bool res = genTangSpaceDefault(&msc);
+		// 			ERR_FAIL_COND(!res);
 
-					vertex_data.push_back(vertex);
-				}
+		// 			vertex_data.push_back(vertex);
+		// 		}
 
-				Array array_mesh;
-				array_mesh.resize(Mesh::ARRAY_MAX);
+		// 		Array array_mesh;
+		// 		array_mesh.resize(Mesh::ARRAY_MAX);
 
-				array_mesh[Mesh::ARRAY_VERTEX] = vertex_array;
-				array_mesh[Mesh::ARRAY_NORMAL] = normal_array;
-				array_mesh[Mesh::ARRAY_TANGENT] = tangent_array;
-				array_mesh[Mesh::ARRAY_COLOR] = color_array;
-				array_mesh[Mesh::ARRAY_TEX_UV] = uv_array;
-				array_mesh[Mesh::ARRAY_TEX_UV2] = uv2_array;
-				array_mesh[Mesh::ARRAY_BONES] = bones_array;
-				array_mesh[Mesh::ARRAY_WEIGHTS] = weights_array;
-				array_mesh[Mesh::ARRAY_CUSTOM0] = custom0_array;
-				array_mesh[Mesh::ARRAY_CUSTOM1] = custom1_array;
-				array_mesh[Mesh::ARRAY_CUSTOM2] = custom2_array;
-				array_mesh[Mesh::ARRAY_CUSTOM3] = custom3_array;
+		// 		array_mesh[Mesh::ARRAY_VERTEX] = vertex_array;
+		// 		array_mesh[Mesh::ARRAY_NORMAL] = normal_array;
+		// 		array_mesh[Mesh::ARRAY_TANGENT] = tangent_array;
+		// 		array_mesh[Mesh::ARRAY_COLOR] = color_array;
+		// 		array_mesh[Mesh::ARRAY_TEX_UV] = uv_array;
+		// 		array_mesh[Mesh::ARRAY_TEX_UV2] = uv2_array;
+		// 		array_mesh[Mesh::ARRAY_BONES] = bones_array;
+		// 		array_mesh[Mesh::ARRAY_WEIGHTS] = weights_array;
+		// 		array_mesh[Mesh::ARRAY_CUSTOM0] = custom0_array;
+		// 		array_mesh[Mesh::ARRAY_CUSTOM1] = custom1_array;
+		// 		array_mesh[Mesh::ARRAY_CUSTOM2] = custom2_array;
+		// 		array_mesh[Mesh::ARRAY_CUSTOM3] = custom3_array;
 
-				new_blend_shape_meshes[blend_shape_i] = array_mesh;
-			} else {
-				new_blend_shape_meshes[blend_shape_i] = current_mesh->get_surface_blend_shape_arrays(surface_i, blend_shape_i);
-			}
-		}
+		// 		new_blend_shape_meshes[blend_shape_i] = array_mesh;
+		// 	} else {
+		// 		new_blend_shape_meshes[blend_shape_i] = current_mesh->get_surface_blend_shape_arrays(surface_i, blend_shape_i);
+		// 	}
+		// }
 		uint64_t surface_format = current_mesh->get_surface_format(surface_i) | Mesh::ARRAY_FORMAT_TANGENT;
-		add_surface(primitive_type, generate_tangents ? new_surface_mesh_array : surface_mesh_array, new_blend_shape_meshes, Dictionary(), current_mesh->get_surface_material(surface_i), current_mesh->get_surface_name(surface_i), surface_format);
+		add_surface(primitive_type, generate_tangents ? new_surface_mesh_array : surface_mesh_array, Array(), Dictionary(), current_mesh->get_surface_material(surface_i), current_mesh->get_surface_name(surface_i), surface_format);
 	}
 }
 
