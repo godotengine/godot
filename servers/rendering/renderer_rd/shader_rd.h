@@ -85,7 +85,7 @@ private:
 		int group = 0;
 	};
 
-	void _compile_variant(uint32_t p_variant, const CompileData *p_data);
+	bool _compile_variant(uint32_t p_variant, const CompileData *p_data);
 
 	void _initialize_version(Version *p_version);
 	void _clear_version(Version *p_version);

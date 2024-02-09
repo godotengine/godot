@@ -220,11 +220,11 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 	}
 }
 
-void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
+bool ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 	uint32_t variant = group_to_variant_map[p_data->group][p_variant];
 
 	if (!variants_enabled[variant]) {
-		return; // Variant is disabled, return.
+		return true; // Variant is disabled, return.
 	}
 
 	Vector<RD::ShaderStageSPIRVData> stages;
@@ -296,12 +296,12 @@ void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 #ifdef DEBUG_ENABLED
 		ERR_PRINT("code:\n" + current_source.get_with_code_lines());
 #endif
-		return;
+		return false;
 	}
 
 	Vector<uint8_t> shader_data = RD::get_singleton()->shader_compile_binary_from_spirv(stages, name + ":" + itos(variant));
 
-	ERR_FAIL_COND(shader_data.size() == 0);
+	ERR_FAIL_COND_V(shader_data.size() == 0, false);
 
 	{
 		MutexLock lock(variant_set_mutex);
@@ -309,6 +309,8 @@ void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 		p_data->version->variants[variant] = RD::get_singleton()->shader_create_from_bytecode(shader_data, p_data->version->variants[variant]);
 		p_data->version->variant_data[variant] = shader_data;
 	}
+
+	return true;
 }
 
 RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
@@ -514,19 +516,34 @@ void ShaderRD::_compile_version(Version *p_version, int p_group) {
 	compile_data.version = p_version;
 	compile_data.group = p_group;
 
+	uint32_t map_size = group_to_variant_map[p_group].size();
 #if 1
-	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_compile_variant, &compile_data, group_to_variant_map[p_group].size(), -1, true, SNAME("ShaderCompilation"));
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (map_size > 0) {
+			bool last_result = _compile_variant(map_size - 1, &compile_data);
+			if (last_result) {
+				if (group_to_variant_map[p_group].size() > 1) {
+					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_compile_variant, &compile_data, map_size - 1, -1, true, SNAME("ShaderCompilation"));
+					WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+				}
+			} else {
+				ERR_PRINT("Stop shader compilation because the first variant failed to compile.");
+			}
+		}
+	} else {
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_compile_variant, &compile_data, map_size, -1, true, SNAME("ShaderCompilation"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	}
 
 #else
-	for (uint32_t i = 0; i < group_to_variant_map[p_group].size(); i++) {
+	for (uint32_t i = 0; i < map_size; i++) {
 		_compile_variant(i, &compile_data);
 	}
 #endif
 
 	bool all_valid = true;
 
-	for (uint32_t i = 0; i < group_to_variant_map[p_group].size(); i++) {
+	for (uint32_t i = 0; i < map_size; i++) {
 		int variant_id = group_to_variant_map[p_group][i];
 		if (!variants_enabled[variant_id]) {
 			continue; // Disabled.
