@@ -146,7 +146,7 @@ String RenderingDevice::shader_get_spirv_cache_key() const {
 
 RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
 	Vector<uint8_t> bytecode = shader_compile_binary_from_spirv(p_spirv, p_shader_name);
-	ERR_FAIL_COND_V(bytecode.size() == 0, RID());
+	ERR_FAIL_COND_V(bytecode.is_empty(), RID());
 	return shader_create_from_bytecode(bytecode);
 }
 
@@ -2464,12 +2464,12 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(p_uniforms.size() == 0, RID());
+	ERR_FAIL_COND_V(p_uniforms.is_empty(), RID());
 
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_NULL_V(shader, RID());
 
-	ERR_FAIL_COND_V_MSG(p_shader_set >= (uint32_t)shader->uniform_sets.size() || shader->uniform_sets[p_shader_set].size() == 0, RID(),
+	ERR_FAIL_COND_V_MSG(p_shader_set >= (uint32_t)shader->uniform_sets.size() || shader->uniform_sets[p_shader_set].is_empty(), RID(),
 			"Desired set (" + itos(p_shader_set) + ") not used by shader.");
 	// See that all sets in shader are satisfied.
 

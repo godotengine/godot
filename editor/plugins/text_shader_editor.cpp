@@ -473,7 +473,7 @@ void ShaderTextEditor::_validate_script() {
 
 	if (last_compile_result != OK) {
 		//preprocessor error
-		ERR_FAIL_COND(err_positions.size() == 0);
+		ERR_FAIL_COND(err_positions.is_empty());
 
 		String err_text = error_pp;
 		int err_line = err_positions.front()->get().line;

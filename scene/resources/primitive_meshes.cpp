@@ -52,7 +52,7 @@ void PrimitiveMesh::_update() const {
 
 	Vector<Vector3> points = arr[RS::ARRAY_VERTEX];
 
-	ERR_FAIL_COND_MSG(points.size() == 0, "_create_mesh_array must return at least a vertex array.");
+	ERR_FAIL_COND_MSG(points.is_empty(), "_create_mesh_array must return at least a vertex array.");
 
 	aabb = AABB();
 

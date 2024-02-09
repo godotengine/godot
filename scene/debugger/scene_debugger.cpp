@@ -100,22 +100,22 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		EngineDebugger::get_singleton()->send_message("filesystem:update_file", { arr });
 
 	} else if (p_msg == "inspect_object") { // Object Inspect
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		ObjectID id = p_args[0];
 		_send_object_id(id);
 
 	} else if (p_msg == "override_camera_2D:set") { // Camera
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		bool enforce = p_args[0];
 		scene_tree->get_root()->enable_canvas_transform_override(enforce);
 
 	} else if (p_msg == "override_camera_2D:transform") {
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		Transform2D transform = p_args[0];
 		scene_tree->get_root()->set_canvas_transform_override(transform);
 #ifndef _3D_DISABLED
 	} else if (p_msg == "override_camera_3D:set") {
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		bool enable = p_args[0];
 		scene_tree->get_root()->enable_camera_3d_override(enable);
 
@@ -200,7 +200,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		live_editor->_instance_node_func(p_args[0], p_args[1], p_args[2]);
 
 	} else if (p_msg == "live_remove_node") {
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		live_editor->_remove_node_func(p_args[0]);
 
 	} else if (p_msg == "live_remove_and_keep_node") {

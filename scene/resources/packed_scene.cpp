@@ -1192,7 +1192,7 @@ void SceneState::update_instance_resource(String p_path, Ref<PackedScene> p_pack
 }
 
 int SceneState::find_node_by_path(const NodePath &p_node) const {
-	ERR_FAIL_COND_V_MSG(node_path_cache.size() == 0, -1, "This operation requires the node cache to have been built.");
+	ERR_FAIL_COND_V_MSG(node_path_cache.is_empty(), -1, "This operation requires the node cache to have been built.");
 
 	if (!node_path_cache.has(p_node)) {
 		if (get_base_scene_state().is_valid()) {

@@ -3892,7 +3892,7 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 }
 
 void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing) {
-	ERR_FAIL_COND(p_paths.size() == 0 || p_values.size() == 0);
+	ERR_FAIL_COND(p_paths.is_empty() || p_values.is_empty());
 	ERR_FAIL_COND(p_paths.size() != p_values.size());
 	String names;
 	for (int i = 0; i < p_paths.size(); i++) {

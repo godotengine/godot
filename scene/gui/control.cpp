@@ -82,7 +82,7 @@ Dictionary Control::_edit_get_state() const {
 }
 
 void Control::_edit_set_state(const Dictionary &p_state) {
-	ERR_FAIL_COND((p_state.size() <= 0) ||
+	ERR_FAIL_COND(p_state.is_empty() ||
 			!p_state.has("rotation") || !p_state.has("scale") ||
 			!p_state.has("pivot") || !p_state.has("anchors") || !p_state.has("offsets") ||
 			!p_state.has("layout_mode") || !p_state.has("anchors_layout_preset"));

@@ -147,7 +147,7 @@ void ImmediateMesh::surface_add_vertex_2d(const Vector2 &p_vertex) {
 
 void ImmediateMesh::surface_end() {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
-	ERR_FAIL_COND_MSG(!vertices.size(), "No vertices were added, surface can't be created.");
+	ERR_FAIL_COND_MSG(vertices.is_empty(), "No vertices were added, surface can't be created.");
 
 	uint64_t format = ARRAY_FORMAT_VERTEX | ARRAY_FLAG_FORMAT_CURRENT_VERSION;
 
