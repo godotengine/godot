@@ -33,6 +33,7 @@
 
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/text_paragraph.h"
 
 class ItemList : public Control {
@@ -82,7 +83,12 @@ private:
 		Item() {
 			text_buf.instantiate();
 		}
+
+		Item(bool p_dummy) {}
 	};
+
+	static PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	int current = -1;
 	int hovered = -1;
@@ -157,6 +163,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 	static void _bind_methods();
 
 public:
