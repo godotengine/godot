@@ -229,6 +229,10 @@ bool EditorExportPlugin::supports_platform(const Ref<EditorExportPlatform> &p_ex
 	return ret;
 }
 
+PackedStringArray EditorExportPlugin::get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const {
+	return _get_export_features(p_export_platform, p_debug);
+}
+
 PackedStringArray EditorExportPlugin::get_android_dependencies(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const {
 	PackedStringArray ret;
 	GDVIRTUAL_CALL(_get_android_dependencies, p_export_platform, p_debug, ret);

@@ -2381,19 +2381,6 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 #ifdef MODULE_MONO_ENABLED
 	// Android export is still a work in progress, keep a message as a warning.
 	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
-
-	bool unsupported_arch = false;
-	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
-	for (ABI abi : enabled_abis) {
-		if (abi.arch != "arm64" && abi.arch != "x86_64") {
-			err += vformat(TTR("Android architecture %s not supported in C# projects."), abi.arch) + "\n";
-			unsupported_arch = true;
-		}
-	}
-	if (unsupported_arch) {
-		r_error = err;
-		return false;
-	}
 #endif
 
 	// Look for export templates (first official, and if defined custom templates).
@@ -3201,6 +3188,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		PluginConfigAndroid::get_plugins_custom_maven_repos(enabled_plugins, android_dependencies_maven_repos);
 #endif // DISABLE_DEPRECATED
 
+		bool has_dotnet_project = false;
 		Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 		for (int i = 0; i < export_plugins.size(); i++) {
 			if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
@@ -3218,6 +3206,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				PackedStringArray export_plugin_android_dependencies_maven_repos = export_plugins[i]->get_android_dependencies_maven_repos(Ref<EditorExportPlatform>(this), p_debug);
 				android_dependencies_maven_repos.append_array(export_plugin_android_dependencies_maven_repos);
 			}
+
+			PackedStringArray features = export_plugins[i]->get_export_features(Ref<EditorExportPlatform>(this), p_debug);
+			if (features.has("dotnet")) {
+				has_dotnet_project = true;
+			}
 		}
 
 		bool clean_build_required = _is_clean_build_required(p_preset);
@@ -3231,12 +3224,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			cmdline.push_back("clean");
 		}
 
+		String edition = has_dotnet_project ? "Mono" : "Standard";
 		String build_type = p_debug ? "Debug" : "Release";
 		if (export_format == EXPORT_FORMAT_AAB) {
 			String bundle_build_command = vformat("bundle%s", build_type);
 			cmdline.push_back(bundle_build_command);
 		} else if (export_format == EXPORT_FORMAT_APK) {
-			String apk_build_command = vformat("assemble%s", build_type);
+			String apk_build_command = vformat("assemble%s%s", edition, build_type);
 			cmdline.push_back(apk_build_command);
 		}
 
@@ -3318,6 +3312,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		copy_args.push_back("-p"); // argument to specify the start directory.
 		copy_args.push_back(build_path); // start directory.
+
+		copy_args.push_back("-Pexport_edition=" + edition.to_lower());
 
 		copy_args.push_back("-Pexport_build_type=" + build_type.to_lower());
 
