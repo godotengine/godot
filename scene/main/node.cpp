@@ -1794,6 +1794,68 @@ Node *Node::find_parent(const String &p_pattern) const {
 	return nullptr;
 }
 
+Node *Node::query_child(const Callable &p_callable, bool p_recursive, bool p_owned) const {
+	ERR_THREAD_GUARD_V(nullptr);
+	_update_children_cache();
+	Node *const *cptr = data.children_cache.ptr();
+	int ccount = data.children_cache.size();
+	for (int i = 0; i < ccount; i++) {
+		if (p_owned && !cptr[i]->data.owner) {
+			continue;
+		}
+		if (p_callable.call(cptr[i])) {
+			return cptr[i];
+		}
+
+		if (!p_recursive) {
+			continue;
+		}
+
+		Node *ret = cptr[i]->query_child(p_callable, p_recursive, p_owned);
+		if (ret) {
+			return ret;
+		}
+	}
+	return nullptr;
+}
+
+TypedArray<Node> Node::query_children(const Callable &p_callable, bool p_recursive, bool p_owned) const {
+	ERR_THREAD_GUARD_V(TypedArray<Node>());
+	TypedArray<Node> ret;
+	_update_children_cache();
+	Node *const *cptr = data.children_cache.ptr();
+	int ccount = data.children_cache.size();
+	for (int i = 0; i < ccount; i++) {
+		if (p_owned && !cptr[i]->data.owner) {
+			continue;
+		}
+		if (p_callable.call(cptr[i])) {
+			ret.append(cptr[i]);
+		}
+
+		if (!p_recursive) {
+			continue;
+		}
+
+		ret.append_array(cptr[i]->query_children(p_callable, p_recursive, p_owned));
+	}
+	return ret;
+}
+
+Node *Node::query_parent(const Callable &p_callable) const {
+	ERR_THREAD_GUARD_V(nullptr);
+	Node *p = data.parent;
+	while (p) {
+		if (p_callable.call(p)) {
+			return p;
+		}
+		p = p->data.parent;
+	}
+
+	return nullptr;
+}
+
+
 Window *Node::get_window() const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Viewport *vp = get_viewport();
@@ -3426,6 +3488,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_parent", "pattern"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
+	ClassDB::bind_method(D_METHOD("query_child", "callable", "recursive", "owned"), &Node::query_child, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("query_children", "callable", "recursive", "owned"), &Node::query_children, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("query_parent", "callable"), &Node::query_parent);
 
 	ClassDB::bind_method(D_METHOD("is_inside_tree"), &Node::is_inside_tree);
 	ClassDB::bind_method(D_METHOD("is_ancestor_of", "node"), &Node::is_ancestor_of);

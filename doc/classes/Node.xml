@@ -722,6 +722,49 @@
 				Calls [method Object.notification] with [param what] on this node and all of its children, recursively.
 			</description>
 		</method>
+		<method name="query_child" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="callable" type="Callable" />
+			<param index="1" name="recursive" type="bool" default="true" />
+			<param index="2" name="owned" type="bool" default="true" />
+			<description>
+				Returns the child node based on the return value of the given callable. The callable must return a boolean value. If the callable returns [code]true[/code], the child node is returned. If the callable returns [code]false[/code], the next child node is checked. If no child node is found, [code]null[/code] is returned.
+				[param callable] is a function that takes a single parameter, the child node to check against.
+				[param recursive] is used to determine whether to search only the direct children of the node, or all of its descendants.
+				If [param owned] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				[codeblock]
+				var child = query_child(func(node): return node.name == "Player")
+				print(child) # Player
+				[/codeblock]
+			</description>
+		</method>
+		<method name="query_children" qualifiers="const">
+			<return type="Node[]" />
+			<param index="0" name="callable" type="Callable" />
+			<param index="1" name="recursive" type="bool" default="true" />
+			<param index="2" name="owned" type="bool" default="true" />
+			<description>
+				Returns an array of child nodes based on the return value of the given callable. The callable must return a boolean value. If the callable returns [code]true[/code], the child node is added to the array. If the callable returns [code]false[/code], the next child node is checked. If no child node is found, an empty array is returned.
+				[param callable] is a function that takes a single parameter, the child node to check against.
+				[param recursive] is used to determine whether to search only the direct children of the node, or all of its descendants.
+				If [param owned] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				[codeblock]
+				var children = query_children(func(node): return node.name.begins_with("Enemy") and node.health &lt; 50)
+				print(children) # [Enemy, Enemy2, Enemy3]
+				[/codeblock]
+			</description>
+		</method>
+		<method name="query_parent" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Returns the parent node based on the return value of the given callable. The callable must return a boolean value. If the callable returns [code]true[/code], the parent node is returned. If the callable returns [code]false[/code], the next parent node is checked. If no parent node is found, [code]null[/code] is returned.
+				[codeblock]
+				var parent = query_parent(func(node): return node.name == "Player")
+				print(parent) # Player
+				[/codeblock]
+			</description>
+		</method>
 		<method name="queue_free">
 			<return type="void" />
 			<description>

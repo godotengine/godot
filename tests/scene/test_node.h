@@ -199,6 +199,10 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a very simple scene tr
 	memdelete(node);
 }
 
+bool _callable(Node *p_node) {
+	return p_node->get_name() == "NestedNode1_1";
+}
+
 TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple scene tree") {
 	Node *node1 = memnew(Node);
 	Node *node2 = memnew(Node);
@@ -471,6 +475,25 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 
 		memdelete(duplicate1_1);
 		memdelete(duplicate1);
+	}
+
+	SUBCASE("Nodes should be accessible via a callable") {
+		Window *window = SceneTree::get_singleton()->get_root();
+		node1_1->set_name("NestedNode1_1");
+
+		// auto lambda = [](Node *p_node) { return p_node->get_name() == "NestedNode1_1"; };
+		StringName s = "func lambda(p_node): return p_node.get_name() == \"NestedNode1_1\"";
+		GDScript script = GDScript();
+		ScriptInstance *script_instance = script.instance_create(node1);
+		// ScriptInstance script = Script::instance_create(node1);
+		// node1->set_script("func lambda(p_node): return p_node.get_name() == \"NestedNode1_1\"");
+		node1->set_script_and_instance(s, script_instance);
+		Callable callable = Callable(node1, "lambda");
+		// callable.bind(lambda);
+		// callable->bind(lambda);
+
+		Node *child = window->query_child(callable);
+		CHECK_EQ(child, node1_1);
 	}
 
 	memdelete(node1_1);
