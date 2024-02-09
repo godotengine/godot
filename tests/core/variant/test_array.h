@@ -97,7 +97,7 @@ TEST_CASE("[Array] append_array()") {
 	CHECK(int(arr1[1]) == 2);
 }
 
-TEST_CASE("[Array] append_array(), erase(), and insert()") {
+TEST_CASE("[Array] append_array(), remove_at(), and insert()") {
 	Array arr1;
 	Array arr2;
 	arr1.push_back(1);
@@ -109,7 +109,7 @@ TEST_CASE("[Array] append_array(), erase(), and insert()") {
 	CHECK(arr1.size() == 4);
 	CHECK(int(arr1[2]) == 3);
 	CHECK(int(arr1[3]) == 4);
-	arr1.erase(2);
+	arr1.remove_at(2);
 	CHECK(arr1.size() == 3);
 	CHECK(int(arr1[1]) == 2);
 	CHECK(int(arr1[2]) == 4);
