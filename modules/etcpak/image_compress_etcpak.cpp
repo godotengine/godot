@@ -30,6 +30,8 @@
 
 #include "image_compress_etcpak.h"
 
+#ifdef TOOLS_ENABLED
+
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
@@ -303,3 +305,4 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 
 	print_verbose(vformat("etcpak: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
+#endif // TOOLS_ENABLED
