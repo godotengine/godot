@@ -30,6 +30,7 @@
 
 #include "input_event.h"
 
+#include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
@@ -951,7 +952,11 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 	mm->set_global_position(get_global_position());
 
 	mm->set_button_mask(get_button_mask());
-	mm->set_relative(p_xform.basis_xform(get_relative()));
+	if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+		mm->set_relative(get_relative());
+	} else {
+		mm->set_relative(p_xform.basis_xform(get_relative()));
+	}
 	mm->set_velocity(p_xform.basis_xform(get_velocity()));
 
 	return mm;
