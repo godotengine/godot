@@ -225,6 +225,7 @@ Array ImporterMesh::get_surface_blend_shape_arrays(int p_surface, int p_blend_sh
 	ERR_FAIL_INDEX_V(p_blend_shape, surfaces[p_surface].blend_shape_data.size(), Array());
 	return surfaces[p_surface].blend_shape_data[p_blend_shape].arrays;
 }
+
 int ImporterMesh::get_surface_lod_count(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), 0);
 	return surfaces[p_surface].lods.size();
@@ -1382,6 +1383,7 @@ void ImporterMesh::_bind_methods() {
 void ImporterMesh::generate_tangents() {
 	Ref<ImporterMesh> current_mesh = duplicate(true);
 	clear();
+	set_blend_shape_mode(current_mesh->get_blend_shape_mode());
 	for (int32_t surface_i = 0; surface_i < current_mesh->get_surface_count(); surface_i++) {
 		Mesh::PrimitiveType primitive_type = current_mesh->get_surface_primitive_type(surface_i);
 		ERR_FAIL_COND(primitive_type != Mesh::PRIMITIVE_TRIANGLES);
@@ -1509,15 +1511,19 @@ void ImporterMesh::generate_tangents() {
 		new_surface_mesh_array[Mesh::ARRAY_CUSTOM1] = custom1_array;
 		new_surface_mesh_array[Mesh::ARRAY_CUSTOM2] = custom2_array;
 		new_surface_mesh_array[Mesh::ARRAY_CUSTOM3] = custom3_array;
-
-		set_blend_shape_mode(current_mesh->get_blend_shape_mode());
-		int blend_shape_count = current_mesh->get_blend_shape_count();
-		for (int blend_shape_i = 0; blend_shape_i < blend_shape_count; ++blend_shape_i) {
+		TypedArray<Array> new_blend_shape_meshes;
+		int current_blend_shape_count = current_mesh->get_surface_blend_shape_count(surface_i);
+		new_blend_shape_meshes.resize(current_blend_shape_count);
+		int first_blend_shape_index = 0;
+		int surface_blend_shape_count = current_mesh->get_surface_blend_shape_count(surface_i);
+		for (int32_t blend_surface_i = 0; blend_surface_i <= surface_i; blend_surface_i++) {
+			first_blend_shape_index += current_mesh->get_surface_blend_shape_count(blend_surface_i);
+		}
+		for (int blend_shape_i = first_blend_shape_index; blend_shape_i < first_blend_shape_index + surface_blend_shape_count; blend_shape_i++) {
 			add_blend_shape(current_mesh->get_blend_shape_name(blend_shape_i));
 		}
-		TypedArray<Array> new_blend_shape_meshes;
-		new_blend_shape_meshes.resize(blend_shape_count);
-		for (int blend_shape_i = 0; blend_shape_i < blend_shape_count; ++blend_shape_i) {
+		new_blend_shape_meshes.resize(surface_blend_shape_count);
+		for (int blend_shape_i = 0; blend_shape_i < surface_blend_shape_count; blend_shape_i++) {
 			if (generate_tangents) {
 				Array blend_shape_array = current_mesh->get_surface_blend_shape_arrays(surface_i, blend_shape_i);
 				Vector<Vector3> vertex_array = blend_shape_array[Mesh::ARRAY_VERTEX];
@@ -1589,4 +1595,9 @@ void ImporterMesh::generate_tangents() {
 		uint64_t surface_format = current_mesh->get_surface_format(surface_i) | Mesh::ARRAY_FORMAT_TANGENT;
 		add_surface(primitive_type, generate_tangents ? new_surface_mesh_array : surface_mesh_array, new_blend_shape_meshes, Dictionary(), current_mesh->get_surface_material(surface_i), current_mesh->get_surface_name(surface_i), surface_format);
 	}
+}
+
+int ImporterMesh::get_surface_blend_shape_count(int p_surface) const {
+	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), -1);
+	return surfaces[p_surface].blend_shape_data.size();
 }

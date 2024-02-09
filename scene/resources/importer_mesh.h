@@ -201,6 +201,7 @@ public:
 	void generate_tangents();
 	void add_blend_shape(const String &p_name);
 	int get_blend_shape_count() const;
+	int get_surface_blend_shape_count(int p_surface) const;
 	String get_blend_shape_name(int p_blend_shape) const;
 
 	void add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), const Ref<Material> &p_material = Ref<Material>(), const String &p_name = String(), const uint64_t p_flags = 0);
