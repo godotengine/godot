@@ -60,12 +60,7 @@ void FileAccessWindows::check_errors() const {
 
 bool FileAccessWindows::is_path_invalid(const String &p_path) {
 	// Check for invalid operating system file.
-	String fname = p_path;
-	int dot = fname.find(".");
-	if (dot != -1) {
-		fname = fname.substr(0, dot);
-	}
-	fname = fname.to_lower();
+	String fname = p_path.get_file().get_basename().to_lower();
 	return invalid_files.has(fname);
 }
 
