@@ -178,7 +178,6 @@ source_files = [
     "display_server_wayland.cpp",
     "wayland_thread.cpp",
     "key_mapping_xkb.cpp",
-    "detect_prime_egl.cpp",
 ]
 
 if env["use_sowrap"]:

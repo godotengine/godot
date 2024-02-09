@@ -1155,6 +1155,16 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 	return f->get_as_text();
 }
 
+#ifdef GLES3_ENABLED
+int OS_LinuxBSD::gpu_vendor_get_priority(String vendor) const {
+	if (gpu_vendor_priority_map.has(vendor)) {
+		return gpu_vendor_priority_map[vendor];
+	}
+
+	return 0;
+}
+#endif
+
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
 
@@ -1206,6 +1216,16 @@ OS_LinuxBSD::OS_LinuxBSD() {
 		}
 	}
 #endif // FONTCONFIG_ENABLED
+
+#ifdef GLES3_ENABLED
+	gpu_vendor_priority_map["Advanced Micro Devices, Inc."] = 30;
+	gpu_vendor_priority_map["AMD"] = 30;
+	gpu_vendor_priority_map["NVIDIA Corporation"] = 30;
+	gpu_vendor_priority_map["X.Org"] = 30;
+	gpu_vendor_priority_map["Intel Open Source Technology Center"] = 20;
+	gpu_vendor_priority_map["Intel"] = 20;
+	gpu_vendor_priority_map["nouveau"] = 10;
+#endif
 }
 
 OS_LinuxBSD::~OS_LinuxBSD() {

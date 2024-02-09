@@ -65,6 +65,10 @@ private:
 		EGLSurface egl_surface = EGL_NO_SURFACE;
 	};
 
+	Vector<EGLDeviceEXT> devices;
+
+	EGLDeviceEXT explicit_device = EGL_NO_DEVICE_EXT;
+
 	LocalVector<GLDisplay> displays;
 	LocalVector<GLWindow> windows;
 
@@ -90,6 +94,14 @@ private:
 	Error _gldisplay_create_context(GLDisplay &p_gldisplay);
 
 public:
+	struct DeviceInfo {
+		String vendor = "Unknown";
+		String renderer = "Unknown";
+		// TODO: use DRM/SW extensions to add a DeviceType enum.
+	};
+
+	DeviceInfo egl_device_get_info(EGLDeviceEXT p_device);
+
 	int display_get_native_visual_id(void *p_display);
 
 	Error open_display(void *p_display);
@@ -109,6 +121,9 @@ public:
 	EGLContext get_context(DisplayServer::WindowID p_window_id);
 
 	Error initialize();
+
+	Vector<EGLDeviceEXT> get_device_list() const;
+	void set_explicit_device(EGLDeviceEXT p_device);
 
 	EGLManager();
 	virtual ~EGLManager();

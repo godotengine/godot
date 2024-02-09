@@ -54,12 +54,27 @@ int EGLManager::_get_gldisplay_id(void *p_display) {
 	new_gldisplay.display = p_display;
 
 	if (GLAD_EGL_VERSION_1_5) {
-		Vector<EGLAttrib> attribs = _get_platform_display_attributes();
-		new_gldisplay.egl_display = eglGetPlatformDisplay(_get_platform_extension_enum(), new_gldisplay.display, (attribs.size() > 0) ? attribs.ptr() : nullptr);
+		if (explicit_device != EGL_NO_DEVICE_EXT) {
+			EGLAttrib attribs[] = {
+				EGL_DEVICE_EXT,
+				(EGLAttrib)explicit_device,
+				EGL_NONE,
+			};
+
+			print_verbose(vformat("Selected device [0x%x]", (uint64_t)explicit_device));
+
+			new_gldisplay.egl_display = eglGetPlatformDisplay(_get_platform_extension_enum(), new_gldisplay.display, attribs);
+			EGLint gpd_err = eglGetError();
+			ERR_FAIL_COND_V_MSG(gpd_err != EGL_SUCCESS, -1, vformat("Couldn't get platform display. Error: %x", gpd_err));
+		} else {
+			Vector<EGLAttrib> attribs = _get_platform_display_attributes();
+			new_gldisplay.egl_display = eglGetPlatformDisplay(_get_platform_extension_enum(), new_gldisplay.display, (attribs.size() > 0) ? attribs.ptr() : nullptr);
+		}
 	} else {
 		NativeDisplayType *native_display_type = (NativeDisplayType *)new_gldisplay.display;
 		new_gldisplay.egl_display = eglGetDisplay(*native_display_type);
 	}
+
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, -1);
 
 	ERR_FAIL_COND_V_MSG(new_gldisplay.egl_display == EGL_NO_DISPLAY, -1, "Can't create an EGL display.");
@@ -67,6 +82,13 @@ int EGLManager::_get_gldisplay_id(void *p_display) {
 	if (!eglInitialize(new_gldisplay.egl_display, nullptr, nullptr)) {
 		ERR_FAIL_V_MSG(-1, "Can't initialize an EGL display.");
 	}
+
+	EGLDeviceEXT actual_device = EGL_NO_DEVICE_EXT;
+	if (eglQueryDisplayAttribEXT(new_gldisplay.egl_display, EGL_DEVICE_EXT, (EGLAttrib *)&actual_device)) {
+		print_verbose(vformat("Display actually uses [0x%x]", (uint64_t)actual_device));
+	}
+	EGLint qda_err = eglGetError();
+	ERR_FAIL_COND_V_MSG(qda_err != EGL_SUCCESS, -1, vformat("Couldn't get attribute. Error: %x", qda_err));
 
 	if (!eglBindAPI(_get_platform_api_enum())) {
 		ERR_FAIL_V_MSG(-1, "OpenGL not supported.");
@@ -170,6 +192,8 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	p_gldisplay.egl_context = eglCreateContext(p_gldisplay.egl_display, p_gldisplay.egl_config, EGL_NO_CONTEXT, (context_attribs.size() > 0) ? context_attribs.ptr() : nullptr);
 	ERR_FAIL_COND_V_MSG(p_gldisplay.egl_context == EGL_NO_CONTEXT, ERR_CANT_CREATE, vformat("Can't create an EGL context. Error code: %d", eglGetError()));
 
+	eglMakeCurrent(p_gldisplay.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
 	return OK;
 }
 
@@ -182,6 +206,81 @@ Error EGLManager::open_display(void *p_display) {
 	}
 }
 
+EGLManager::DeviceInfo EGLManager::egl_device_get_info(EGLDeviceEXT p_device) {
+	DeviceInfo info = {};
+
+	// We're going to be messing around with current contexts and whatnot. This
+	// method should be called in a new thread or with a clear context.
+	ERR_FAIL_COND_V(eglGetCurrentContext() != EGL_NO_CONTEXT, info);
+
+	EGLDisplay eglDpy = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, p_device, NULL);
+	if (eglDpy == EGL_NO_DISPLAY) {
+		print_verbose(vformat("Failed to get EGL display for device %x.\n", p_device));
+		return info;
+	}
+
+	if (!eglInitialize(eglDpy, NULL, NULL)) {
+		print_verbose(vformat("Failed to initialize EGL for device %x.\n", (uint64_t)p_device));
+		return info;
+	}
+
+	EGLint configAttribs[] = {
+		EGL_SURFACE_TYPE,
+		EGL_PBUFFER_BIT,
+		EGL_RENDERABLE_TYPE,
+		EGL_OPENGL_BIT,
+		EGL_NONE,
+	};
+
+	EGLConfig eglCfg;
+	EGLint numConfigs;
+	if (!eglChooseConfig(eglDpy, configAttribs, &eglCfg, 1, &numConfigs)) {
+		EGLint eglError = eglGetError();
+		print_verbose(vformat("Failed to choose EGL config for device %x. EGL Error: %x\n", (uint64_t)p_device, eglError));
+		return info;
+	}
+
+	if (!eglBindAPI(EGL_OPENGL_API)) {
+		EGLint eglError = eglGetError();
+		print_verbose(vformat("Failed to bind OpenGL API for device %x. EGL Error: %x\n", (uint64_t)p_device, eglError));
+		return info;
+	}
+
+	const EGLint contextAttribs[] = {
+		EGL_CONTEXT_MAJOR_VERSION,
+		3,
+		EGL_CONTEXT_MINOR_VERSION,
+		3,
+		EGL_NONE,
+	};
+
+	EGLContext eglCtx = eglCreateContext(eglDpy, eglCfg, EGL_NO_CONTEXT, contextAttribs);
+
+	if (eglCtx == EGL_NO_CONTEXT) {
+		EGLint eglError = eglGetError();
+		print_verbose(vformat("Failed to create EGL context for device %x. EGL Error: %x\n", (uint64_t)p_device, eglError));
+		eglTerminate(eglDpy);
+		return info;
+	}
+
+	if (!eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, eglCtx)) {
+		print_verbose(vformat("Failed to make EGL context current for device %x.\n", (uint64_t)p_device));
+		eglDestroyContext(eglDpy, eglCtx);
+		eglTerminate(eglDpy);
+		return info;
+	}
+
+	PFNGLGETSTRINGPROC gl_get_string_proc = (PFNGLGETSTRINGPROC)eglGetProcAddress("glGetString");
+	ERR_FAIL_NULL_V_MSG(gl_get_string_proc, info, "OpenGL glGetString method not found.");
+	info.vendor = (const char *)gl_get_string_proc(GL_VENDOR);
+	info.renderer = (const char *)gl_get_string_proc(GL_RENDERER);
+
+	eglMakeCurrent(eglDpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	eglDestroyContext(eglDpy, eglCtx);
+	eglTerminate(eglDpy);
+
+	return info;
+}
 int EGLManager::display_get_native_visual_id(void *p_display) {
 	int gldisplay_id = _get_gldisplay_id(p_display);
 	ERR_FAIL_COND_V(gldisplay_id < 0, ERR_CANT_CREATE);
@@ -398,11 +497,37 @@ Error EGLManager::initialize() {
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
 
 	const char *platform = _get_platform_extension_name();
-	if (extensions_string.split(" ").find(platform) < 0) {
-		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
+	bool platform_found = false;
+
+	for (const String &extension : extensions_string.split(" ")) {
+		if (extension == platform) {
+			platform_found = true;
+		}
+
+		if (extension == "EGL_EXT_explicit_device") {
+			print_verbose("EGL supports explicit device extension, populating device list.");
+			EGLint num_devices;
+
+			eglQueryDevicesEXT(0, NULL, &num_devices);
+			ERR_FAIL_COND_V_MSG(eglGetError() != EGL_SUCCESS, FAILED, "Could not get EGL device count.");
+
+			devices.resize(num_devices);
+			eglQueryDevicesEXT(num_devices, devices.ptrw(), &num_devices);
+			ERR_FAIL_COND_V_MSG(eglGetError() != EGL_SUCCESS, FAILED, "Could not query EGL devices.");
+		}
 	}
 
+	ERR_FAIL_COND_V_MSG(!platform_found, ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
+
 	return OK;
+}
+
+Vector<EGLDeviceEXT> EGLManager::get_device_list() const {
+	return devices;
+}
+
+void EGLManager::set_explicit_device(EGLDeviceEXT p_device) {
+	explicit_device = p_device;
 }
 
 EGLManager::EGLManager() {

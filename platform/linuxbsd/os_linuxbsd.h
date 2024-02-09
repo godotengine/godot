@@ -77,6 +77,10 @@ class OS_LinuxBSD : public OS_Unix {
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
 
+#ifdef GLES3_ENABLED
+	HashMap<String, int> gpu_vendor_priority_map;
+#endif
+
 	CrashHandler crash_handler;
 
 	MainLoop *main_loop = nullptr;
@@ -137,6 +141,10 @@ public:
 	virtual Error move_to_trash(const String &p_path) override;
 
 	virtual String get_system_ca_certificates() override;
+
+#ifdef GLES3_ENABLED
+	int gpu_vendor_get_priority(String vendor) const;
+#endif
 
 	OS_LinuxBSD();
 	~OS_LinuxBSD();
