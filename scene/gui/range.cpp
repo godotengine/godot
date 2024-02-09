@@ -93,7 +93,6 @@ void Range::set_value(double p_val) {
 	}
 }
 
-// This work exactly the same as before by default so it shouldn't break anything.
 void Range::_set_value_no_signal(double p_val) {
 	if (!Math::is_finite(p_val)) {
 		if (allow_non_finite) {

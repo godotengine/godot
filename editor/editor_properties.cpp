@@ -1446,7 +1446,6 @@ void EditorPropertyFloat::_set_read_only(bool p_read_only) {
 	spin->set_read_only(p_read_only);
 }
 
-// This is just so spin doesn't need to be made public.
 void EditorPropertyFloat::set_allow_non_finite(bool allow) {
 	spin->allow_non_finite = allow;
 }
