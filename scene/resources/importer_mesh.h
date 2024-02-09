@@ -38,11 +38,37 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 
+#include "thirdparty/misc/mikktspace.h"
 #include <cstdint>
 
 // The following classes are used by importers instead of ArrayMesh and MeshInstance3D
 // so the data is not registered (hence, quality loss), importing happens faster and
 // its easier to modify before saving
+
+//mikktspace callbacks
+namespace {
+struct TangentGenerationContextUserData {
+	struct Vertex {
+		Vector3 vertex;
+		Color color;
+		Vector3 normal; // normal, binormal, tangent
+		Vector3 binormal;
+		Vector3 tangent;
+		Vector2 uv;
+		Vector2 uv2;
+		Vector<int> bones;
+		Vector<float> weights;
+		Color custom[RS::ARRAY_CUSTOM_COUNT];
+		uint32_t smooth_group = 0;
+
+		bool operator==(const Vertex &p_vertex) const;
+
+		Vertex() {}
+	};
+	LocalVector<Vertex> *vertices;
+	LocalVector<int> *indices;
+};
+} // namespace
 
 class ImporterMesh : public Resource {
 	GDCLASS(ImporterMesh, Resource)
@@ -89,6 +115,90 @@ protected:
 	static void _bind_methods();
 
 public:
+	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
+		TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+
+		if (triangle_data.indices->size() > 0) {
+			return triangle_data.indices->size() / 3;
+		} else {
+			return triangle_data.vertices->size() / 3;
+		}
+	}
+
+	static int mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
+		return 3; //always 3
+	}
+
+	static void mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
+		TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+		Vector3 v;
+		if (triangle_data.indices->size() > 0) {
+			uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
+			if (index < triangle_data.vertices->size()) {
+				v = triangle_data.vertices->operator[](index).vertex;
+			}
+		} else {
+			v = triangle_data.vertices->operator[](iFace * 3 + iVert).vertex;
+		}
+
+		fvPosOut[0] = v.x;
+		fvPosOut[1] = v.y;
+		fvPosOut[2] = v.z;
+	}
+
+	static void mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
+		TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+		Vector3 v;
+		if (triangle_data.indices->size() > 0) {
+			uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
+			if (index < triangle_data.vertices->size()) {
+				v = triangle_data.vertices->operator[](index).normal;
+			}
+		} else {
+			v = triangle_data.vertices->operator[](iFace * 3 + iVert).normal;
+		}
+
+		fvNormOut[0] = v.x;
+		fvNormOut[1] = v.y;
+		fvNormOut[2] = v.z;
+	}
+
+	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
+		TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+		Vector2 v;
+		if (triangle_data.indices->size() > 0) {
+			uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
+			if (index < triangle_data.vertices->size()) {
+				v = triangle_data.vertices->operator[](index).uv;
+			}
+		} else {
+			v = triangle_data.vertices->operator[](iFace * 3 + iVert).uv;
+		}
+
+		fvTexcOut[0] = v.x;
+		fvTexcOut[1] = v.y;
+	}
+
+	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
+			const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
+		TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+		TangentGenerationContextUserData::Vertex *vtx = nullptr;
+		if (triangle_data.indices->size() > 0) {
+			uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
+			if (index < triangle_data.vertices->size()) {
+				vtx = &triangle_data.vertices->operator[](index);
+			}
+		} else {
+			vtx = &triangle_data.vertices->operator[](iFace * 3 + iVert);
+		}
+
+		if (vtx != nullptr) {
+			vtx->tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
+			vtx->binormal = Vector3(-fvBiTangent[0], -fvBiTangent[1], -fvBiTangent[2]); // for some reason these are reversed, something with the coordinate system in Godot
+		}
+	}
+
+	void generate_tangents();
 	void add_blend_shape(const String &p_name);
 	int get_blend_shape_count() const;
 	String get_blend_shape_name(int p_blend_shape) const;

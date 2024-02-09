@@ -36,6 +36,7 @@
 #include "core/math/static_raycaster.h"
 #include "scene/resources/surface_tool.h"
 
+#include "thirdparty/misc/mikktspace.h"
 #include <cstdint>
 
 void ImporterMesh::Surface::split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals) {
@@ -1375,4 +1376,81 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &ImporterMesh::get_lightmap_size_hint);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
+}
+
+void ImporterMesh::generate_tangents() {
+	for (Surface &surface : surfaces) {
+		ERR_FAIL_COND(surface.primitive != Mesh::PRIMITIVE_TRIANGLES);
+		ERR_FAIL_COND(!(surface.flags & Mesh::ARRAY_FORMAT_TEX_UV));
+		ERR_FAIL_COND(!(surface.flags & Mesh::ARRAY_FORMAT_NORMAL));
+		ERR_FAIL_COND(!(surface.flags & Mesh::ARRAY_FORMAT_INDEX));
+
+		SMikkTSpaceInterface mkif;
+		mkif.m_getNormal = mikktGetNormal;
+		mkif.m_getNumFaces = mikktGetNumFaces;
+		mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
+		mkif.m_getPosition = mikktGetPosition;
+		mkif.m_getTexCoord = mikktGetTexCoord;
+		mkif.m_setTSpace = mikktSetTSpaceDefault;
+		mkif.m_setTSpaceBasic = nullptr;
+
+		SMikkTSpaceContext msc;
+		msc.m_pInterface = &mkif;
+
+		LocalVector<TangentGenerationContextUserData::Vertex> vertexData;
+		Vector<Vector3> vertex_array = surface.arrays[Mesh::ARRAY_VERTEX];
+		Vector<Vector3> normal_array = surface.arrays[Mesh::ARRAY_NORMAL];
+		Vector<Vector2> uv_array = surface.arrays[Mesh::ARRAY_TEX_UV];
+
+
+		for (int i = 0; i < vertex_array.size(); ++i) {
+			TangentGenerationContextUserData::Vertex vertex;
+
+			vertex.vertex = vertex_array[i];
+			vertex.normal = normal_array[i];
+			vertex.uv = uv_array[i];
+
+			vertexData.push_back(vertex);
+		}
+
+		TangentGenerationContextUserData triangle_data{};
+		triangle_data.vertices = &vertexData;
+		Vector<int32_t> index_array = surface.arrays[Mesh::ARRAY_INDEX];
+		LocalVector<int32_t> vertex_indices;
+		vertex_indices.resize(index_array.size());
+		for (int32_t i = 0; i < index_array.size(); i++) {
+			vertex_indices[i] = index_array[i];
+		}
+		triangle_data.indices = &vertex_indices;
+		msc.m_pUserData = &triangle_data;
+
+		msc.m_FastPosition = reinterpret_cast<char *>(vertex_array.ptrw());
+		msc.m_FastPositionStride = sizeof(Vector3);
+		msc.m_FastPositionIndex = index_array.ptr();
+
+		msc.m_FastNormal = reinterpret_cast<char *>(normal_array.ptrw());
+		msc.m_FastNormalStride = sizeof(Vector3);
+		msc.m_FastNormalIndex = index_array.ptr();
+
+		msc.m_FastUV = reinterpret_cast<char *>(uv_array.ptrw());
+		msc.m_FastUVStride = sizeof(Vector2);
+		msc.m_FastUVIndex = index_array.ptr();
+
+		for (Vector3 &vertex : vertex_array) {
+			vertex = Vector3();
+		}
+
+		for (Vector3 &normal : normal_array) {
+			normal = Vector3();
+		}
+
+		for (Vector2 &uv : uv_array) {
+			uv = Vector2();
+		}
+
+		bool res = genTangSpaceDefault(&msc);
+
+		ERR_FAIL_COND(!res);
+		surface.flags |= Mesh::ARRAY_FORMAT_TANGENT;
+	}
 }
