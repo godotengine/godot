@@ -2278,8 +2278,8 @@ void LineEdit::_emit_text_change() {
 	emit_signal(SNAME("text_changed"), text);
 	text_changed_dirty = false;
 }
-PackedStringArray LineEdit::get_configuration_warnings() const {
-	PackedStringArray warnings = Control::get_configuration_warnings();
+Array LineEdit::get_configuration_warnings() const {
+	Array warnings = Control::get_configuration_warnings();
 	if (secret_character.length() > 1) {
 		warnings.push_back("Secret Character property supports only one character. Extra characters will be ignored.");
 	}

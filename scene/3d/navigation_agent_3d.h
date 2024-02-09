@@ -221,7 +221,7 @@ public:
 
 	void _avoidance_done(Vector3 p_new_velocity);
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	void set_avoidance_layers(uint32_t p_layers);
 	uint32_t get_avoidance_layers() const;

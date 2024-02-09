@@ -105,7 +105,7 @@ public:
 	void set_as_sdf_collision(bool p_enable);
 	bool is_set_as_sdf_collision() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	LightOccluder2D();
 	~LightOccluder2D();

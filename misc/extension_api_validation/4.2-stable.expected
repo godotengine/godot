@@ -82,3 +82,10 @@ Validate extension JSON: Error: Field 'classes/GPUParticles3D/properties/process
 Validate extension JSON: Error: Field 'classes/Sky/properties/sky_material': type changed value in new API, from "ShaderMaterial,PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial" to "PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial,ShaderMaterial".
 
 Property hints reordered to improve editor usability. The types allowed are still the same as before. No adjustments should be necessary.
+
+
+GH-68420
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/_get_configuration_warnings/return_value': type changed value in new API, from "PackedStringArray" to "Array".
+
+Allow configuration warnings to refer to a property. Compatibility method registered.

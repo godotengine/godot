@@ -189,8 +189,8 @@ void Container::_notification(int p_what) {
 	}
 }
 
-PackedStringArray Container::get_configuration_warnings() const {
-	PackedStringArray warnings = Control::get_configuration_warnings();
+Array Container::get_configuration_warnings() const {
+	Array warnings = Control::get_configuration_warnings();
 
 	if (get_class() == "Container" && get_script().is_null()) {
 		warnings.push_back(RTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));

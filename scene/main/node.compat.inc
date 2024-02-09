@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  canvas_modulate.h                                                     */
+/*  node.compat.inc                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CANVAS_MODULATE_H
-#define CANVAS_MODULATE_H
+#ifndef DISABLE_DEPRECATED
 
-#include "scene/2d/node_2d.h"
+PackedStringArray Node::get_configuration_warnings_bind_compat_68420() const {
+	return PackedStringArray(get_configuration_warnings());
+}
 
-class CanvasModulate : public Node2D {
-	GDCLASS(CanvasModulate, Node2D);
+void Node::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_configuration_warnings"), &Node::get_configuration_warnings_bind_compat_68420);
+}
 
-	Color color = Color(1, 1, 1, 1);
-
-	// CanvasModulate is in canvas-specific modulate group when both in canvas and visible in tree.
-	// Exactly one CanvasModulate in each such non-empty group is active.
-	bool is_in_canvas = false;
-	bool was_visible_in_tree = false; // Relevant only when in canvas.
-	bool is_active = false;
-
-	void _on_in_canvas_visibility_changed(bool p_new_visibility);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void set_color(const Color &p_color);
-	Color get_color() const;
-
-	Array get_configuration_warnings() const override;
-
-	CanvasModulate();
-	~CanvasModulate();
-};
-
-#endif // CANVAS_MODULATE_H
+#endif // DISABLE_DEPRECATED

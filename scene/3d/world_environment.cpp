@@ -135,8 +135,8 @@ Ref<CameraAttributes> WorldEnvironment::get_camera_attributes() const {
 	return camera_attributes;
 }
 
-PackedStringArray WorldEnvironment::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array WorldEnvironment::get_configuration_warnings() const {
+	Array warnings = Node::get_configuration_warnings();
 
 	if (!environment.is_valid() && !camera_attributes.is_valid()) {
 		warnings.push_back(RTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Attributes\" property to contain a CameraAttributes resource, or both."));

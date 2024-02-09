@@ -106,7 +106,7 @@ public:
 	void set_cubic_interpolation_enabled(bool p_enabled);
 	bool is_cubic_interpolation_enabled() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	PathFollow2D() {}
 };

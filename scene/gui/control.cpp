@@ -228,9 +228,9 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 	}
 }
 
-PackedStringArray Control::get_configuration_warnings() const {
-	ERR_READ_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array Control::get_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(Array());
+	Array warnings = Node::get_configuration_warnings();
 
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
