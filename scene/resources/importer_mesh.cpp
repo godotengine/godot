@@ -1508,8 +1508,10 @@ void ImporterMesh::generate_tangents() {
 		new_surface_mesh_array[Mesh::ARRAY_CUSTOM2] = custom2_array;
 		new_surface_mesh_array[Mesh::ARRAY_CUSTOM3] = custom3_array;
 
-		int blend_shape_count = get_blend_shape_count();
-
+		int blend_shape_count = current_mesh->get_blend_shape_count();
+		for (int blend_shape_i = 0; blend_shape_i < blend_shape_count; ++blend_shape_i) {
+			add_blend_shape(current_mesh->get_blend_shape_name(blend_shape_i));
+		}
 		Array new_blend_shape_meshes;
 		new_blend_shape_meshes.resize(blend_shape_count);
 
