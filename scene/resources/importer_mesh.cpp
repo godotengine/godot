@@ -34,6 +34,7 @@
 #include "core/math/convex_hull.h"
 #include "core/math/random_pcg.h"
 #include "core/math/static_raycaster.h"
+#include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
 #include "thirdparty/misc/mikktspace.h"
@@ -1402,7 +1403,6 @@ void ImporterMesh::generate_tangents() {
 		Vector<Vector3> normal_array = surface.arrays[Mesh::ARRAY_NORMAL];
 		Vector<Vector2> uv_array = surface.arrays[Mesh::ARRAY_TEX_UV];
 
-
 		for (int i = 0; i < vertex_array.size(); ++i) {
 			TangentGenerationContextUserData::Vertex vertex;
 
@@ -1451,6 +1451,33 @@ void ImporterMesh::generate_tangents() {
 		bool res = genTangSpaceDefault(&msc);
 
 		ERR_FAIL_COND(!res);
+
+		Vector<ImporterMesh::Surface::BlendShape> blend_shape_data;
+		for (int i = 0; i < surface.blend_shape_data.size(); ++i) {
+			TangentGenerationContextUserData::Vertex vertex;
+			Vector<Vector3> vertex_array = surface.blend_shape_data[i].arrays[Mesh::ARRAY_VERTEX];
+			Vector<Vector3> normal_array = surface.blend_shape_data[i].arrays[Mesh::ARRAY_NORMAL];
+			Vector<Vector2> uv_array = surface.blend_shape_data[i].arrays[Mesh::ARRAY_TEX_UV];
+			for (int32_t j = 0; j < vertex_array.size(); j++) {
+				vertex.vertex = vertex_array[j];
+				vertex.normal = normal_array[j];
+				vertex.uv = uv_array[j];
+			}
+			msc.m_pUserData = &vertex;
+			bool res = genTangSpaceDefault(&msc);
+			ERR_FAIL_COND(!res);
+			Array array_mesh;
+			array_mesh.resize(Mesh::ARRAY_MAX);
+			array_mesh[Mesh::ARRAY_VERTEX];
+			array_mesh[Mesh::ARRAY_NORMAL];
+			array_mesh[Mesh::ARRAY_TANGENT];
+			array_mesh[Mesh::ARRAY_TEX_UV];
+			ImporterMesh::Surface::BlendShape blend_shape;
+			blend_shape.arrays = array_mesh;
+			blend_shape_data.push_back(blend_shape);
+		}
+		surface.blend_shape_data = blend_shape_data;
+
 		surface.flags |= Mesh::ARRAY_FORMAT_TANGENT;
 	}
 }

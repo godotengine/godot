@@ -2834,10 +2834,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				mesh_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 			}
 			mesh_surface_tool->index();
-			if (generate_tangents && a.has("TEXCOORD_0")) {
-				//must generate mikktspace tangents.. ergh..
-				mesh_surface_tool->generate_tangents();
-			}
 			array = mesh_surface_tool->commit_to_arrays();
 
 			Array morphs;
@@ -2958,9 +2954,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 						blend_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 					}
 					blend_surface_tool->index();
-					if (generate_tangents) {
-						blend_surface_tool->generate_tangents();
-					}
 					array_copy = blend_surface_tool->commit_to_arrays();
 
 					// Enforce blend shape mask array format
@@ -3003,7 +2996,10 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			import_mesh->add_surface(primitive, array, morphs,
 					Dictionary(), mat, mat_name, flags);
 		}
-
+		bool generate_tangents = p_state->force_generate_tangents; // TODO: && (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("NORMAL"));
+		if (generate_tangents) {
+			import_mesh->generate_tangents();
+		}
 		Vector<float> blend_weights;
 		blend_weights.resize(import_mesh->get_blend_shape_count());
 		for (int32_t weight_i = 0; weight_i < blend_weights.size(); weight_i++) {
