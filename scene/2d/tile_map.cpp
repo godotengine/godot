@@ -409,7 +409,7 @@ void TileMap::move_layer(int p_layer, int p_to_pos) {
 	layers.insert(p_to_pos, layer);
 	layers.remove_at(p_to_pos < p_layer ? p_layer + 1 : p_layer);
 	for (uint32_t i = 0; i < layers.size(); i++) {
-		move_child(layer, i);
+		move_child(layers[i], i);
 		layers[i]->set_layer_index_in_tile_map_node(i);
 	}
 	queue_internal_update();
