@@ -52,6 +52,7 @@ constexpr int MINIMAP_PADDING = 5;
 constexpr int MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION = 20;
 constexpr int MAX_CONNECTION_LINE_CURVE_TESSELATION_STAGES = 5;
 constexpr int GRID_MINOR_STEPS_PER_MAJOR_LINE = 10;
+constexpr int GRID_MINOR_STEPS_PER_MAJOR_DOT = 5;
 constexpr int GRID_MIN_SNAPPING_DISTANCE = 2;
 constexpr int GRID_MAX_SNAPPING_DISTANCE = 100;
 
@@ -1349,13 +1350,13 @@ void GraphEdit::_draw_grid() {
 		} break;
 		case GRID_PATTERN_DOTS: {
 			Color transparent_grid_minor = theme_cache.grid_minor;
-			transparent_grid_minor.a *= CLAMP(2 * (zoom - 0.4), 0, 1);
+			transparent_grid_minor.a *= CLAMP(1.0 * (zoom - 0.4), 0, 1);
 
 			for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
 				for (int j = from_pos.y; j < from_pos.y + len.y; j++) {
 					Color color = transparent_grid_minor;
 
-					if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0 && ABS(j) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+					if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0 && ABS(j) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0) {
 						color = theme_cache.grid_major;
 					}
 
