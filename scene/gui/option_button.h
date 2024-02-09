@@ -44,6 +44,8 @@ class OptionButton : public Button {
 	Vector2 _cached_size;
 	bool cache_refresh_pending = false;
 	bool allow_reselect = false;
+	bool initialized = false;
+	int queued_current = -1;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal;
