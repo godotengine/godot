@@ -1380,11 +1380,15 @@ void ImporterMesh::_bind_methods() {
 }
 
 void ImporterMesh::generate_tangents() {
-	for (Surface &surface : surfaces) {
-		ERR_FAIL_COND(surface.primitive != Mesh::PRIMITIVE_TRIANGLES);
-		ERR_FAIL_COND(!(surface.flags & Mesh::ARRAY_FORMAT_TEX_UV));
-		ERR_FAIL_COND(!(surface.flags & Mesh::ARRAY_FORMAT_NORMAL));
-		ERR_FAIL_COND(!(surface.flags & Mesh::ARRAY_FORMAT_INDEX));
+	Ref<ImporterMesh> current_mesh = duplicate(true);
+	clear();
+	for (int32_t surface_i = 0; surface_i < current_mesh->get_surface_count(); surface_i++) {
+		Mesh::PrimitiveType primitive_type = current_mesh->get_surface_primitive_type(surface_i);
+		ERR_FAIL_COND(primitive_type != Mesh::PRIMITIVE_TRIANGLES);
+		ERR_FAIL_COND(!(current_mesh->get_surface_format(surface_i) & Mesh::ARRAY_FORMAT_TEX_UV));
+		ERR_FAIL_COND(!(current_mesh->get_surface_format(surface_i) & Mesh::ARRAY_FORMAT_NORMAL));
+		ERR_FAIL_COND(!(current_mesh->get_surface_format(surface_i) & Mesh::ARRAY_FORMAT_INDEX));
+		Array surface_mesh_array = current_mesh->get_surface_arrays(surface_i);
 
 		SMikkTSpaceInterface mkif;
 		mkif.m_getNormal = mikktGetNormal;
@@ -1398,24 +1402,62 @@ void ImporterMesh::generate_tangents() {
 		SMikkTSpaceContext msc;
 		msc.m_pInterface = &mkif;
 
-		LocalVector<TangentGenerationContextUserData::Vertex> vertexData;
-		Vector<Vector3> vertex_array = surface.arrays[Mesh::ARRAY_VERTEX];
-		Vector<Vector3> normal_array = surface.arrays[Mesh::ARRAY_NORMAL];
-		Vector<Vector2> uv_array = surface.arrays[Mesh::ARRAY_TEX_UV];
+		LocalVector<TangentGenerationContextUserData::Vertex> vertex_data;
+		Vector<Vector3> vertex_array = surface_mesh_array[Mesh::ARRAY_VERTEX];
+		Vector<Vector3> normal_array = surface_mesh_array[Mesh::ARRAY_NORMAL];
+		Vector<Vector3> tangent_array = surface_mesh_array[Mesh::ARRAY_TANGENT];
+		Vector<Color> color_array = surface_mesh_array[Mesh::ARRAY_COLOR];
+		Vector<Vector2> uv_array = surface_mesh_array[Mesh::ARRAY_TEX_UV];
+		Vector<Vector2> uv2_array = surface_mesh_array[Mesh::ARRAY_TEX_UV2];
+		Vector<int> bones_array = surface_mesh_array[Mesh::ARRAY_BONES];
+		Vector<float> weights_array = surface_mesh_array[Mesh::ARRAY_WEIGHTS];
+		Vector<Variant> custom0_array = surface_mesh_array[Mesh::ARRAY_CUSTOM0];
+		Vector<Variant> custom1_array = surface_mesh_array[Mesh::ARRAY_CUSTOM1];
+		Vector<Variant> custom2_array = surface_mesh_array[Mesh::ARRAY_CUSTOM2];
+		Vector<Variant> custom3_array = surface_mesh_array[Mesh::ARRAY_CUSTOM3];
 
-		for (int i = 0; i < vertex_array.size(); ++i) {
-			TangentGenerationContextUserData::Vertex vertex;
+		uint64_t format = current_mesh->get_surface_format(surface_i);
 
-			vertex.vertex = vertex_array[i];
-			vertex.normal = normal_array[i];
-			vertex.uv = uv_array[i];
+		bool has_bones = format & Mesh::ARRAY_FORMAT_BONES;
+		bool has_weights = format & Mesh::ARRAY_FORMAT_WEIGHTS;
+		bool has_8_weights = format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+		if (has_bones && has_weights) {
+			Vector<int> bones_array = surface_mesh_array[Mesh::ARRAY_BONES];
+			Vector<float> weights_array = surface_mesh_array[Mesh::ARRAY_WEIGHTS];
 
-			vertexData.push_back(vertex);
+			for (int i = 0; i < vertex_array.size(); ++i) {
+				TangentGenerationContextUserData::Vertex vertex;
+
+				vertex.vertex = vertex_array[i];
+				vertex.normal = normal_array[i];
+				vertex.tangent = tangent_array[i];
+				vertex.color = color_array[i];
+				vertex.uv = uv_array[i];
+				vertex.uv2 = uv2_array[i];
+
+				for (int j = 0; j < MIN(has_8_weights ? 8 : 4, bones_array.size()); ++j) {
+					vertex.bones.push_back(bones_array[j]);
+					vertex.weights.push_back(weights_array[j]);
+				}
+
+				for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; ++j) {
+					if (j == 0) {
+						vertex.custom[j] = custom0_array[i];
+					} else if (j == 1) {
+						vertex.custom[j] = custom1_array[i];
+					} else if (j == 2) {
+						vertex.custom[j] = custom2_array[i];
+					} else if (j == 3) {
+						vertex.custom[j] = custom3_array[i];
+					}
+				}
+				vertex_data.push_back(vertex);
+			}
 		}
 
 		TangentGenerationContextUserData triangle_data{};
-		triangle_data.vertices = &vertexData;
-		Vector<int32_t> index_array = surface.arrays[Mesh::ARRAY_INDEX];
+		triangle_data.vertices = &vertex_data;
+		Vector<int32_t> index_array = surface_mesh_array[Mesh::ARRAY_INDEX];
 		LocalVector<int32_t> vertex_indices;
 		vertex_indices.resize(index_array.size());
 		for (int32_t i = 0; i < index_array.size(); i++) {
@@ -1449,35 +1491,97 @@ void ImporterMesh::generate_tangents() {
 		}
 
 		bool res = genTangSpaceDefault(&msc);
-
 		ERR_FAIL_COND(!res);
+		Array new_surface_mesh_array;
+		new_surface_mesh_array.resize(Mesh::ARRAY_MAX);
 
-		Vector<ImporterMesh::Surface::BlendShape> blend_shape_data;
-		for (int i = 0; i < surface.blend_shape_data.size(); ++i) {
-			TangentGenerationContextUserData::Vertex vertex;
-			Vector<Vector3> vertex_array = surface.blend_shape_data[i].arrays[Mesh::ARRAY_VERTEX];
-			Vector<Vector3> normal_array = surface.blend_shape_data[i].arrays[Mesh::ARRAY_NORMAL];
-			Vector<Vector2> uv_array = surface.blend_shape_data[i].arrays[Mesh::ARRAY_TEX_UV];
+		new_surface_mesh_array[Mesh::ARRAY_VERTEX] = vertex_array;
+		new_surface_mesh_array[Mesh::ARRAY_NORMAL] = normal_array;
+		new_surface_mesh_array[Mesh::ARRAY_TANGENT] = tangent_array;
+		new_surface_mesh_array[Mesh::ARRAY_COLOR] = color_array;
+		new_surface_mesh_array[Mesh::ARRAY_TEX_UV] = uv_array;
+		new_surface_mesh_array[Mesh::ARRAY_TEX_UV2] = uv2_array;
+		new_surface_mesh_array[Mesh::ARRAY_BONES] = bones_array;
+		new_surface_mesh_array[Mesh::ARRAY_WEIGHTS] = weights_array;
+		new_surface_mesh_array[Mesh::ARRAY_CUSTOM0] = custom0_array;
+		new_surface_mesh_array[Mesh::ARRAY_CUSTOM1] = custom1_array;
+		new_surface_mesh_array[Mesh::ARRAY_CUSTOM2] = custom2_array;
+		new_surface_mesh_array[Mesh::ARRAY_CUSTOM3] = custom3_array;
+
+		int blend_shape_count = get_blend_shape_count();
+
+		Array new_blend_shape_meshes;
+		new_blend_shape_meshes.resize(blend_shape_count);
+
+		for (int blend_shape_i = 0; blend_shape_i < blend_shape_count; ++blend_shape_i) {
+			Array blend_shape_array = get_surface_blend_shape_arrays(surface_i, blend_shape_i);
+
+			Vector<Vector3> vertex_array = blend_shape_array[Mesh::ARRAY_VERTEX];
+			Vector<Vector3> normal_array = blend_shape_array[Mesh::ARRAY_NORMAL];
+			Vector<Vector3> tangent_array = blend_shape_array[Mesh::ARRAY_TANGENT];
+			Vector<Color> color_array = blend_shape_array[Mesh::ARRAY_COLOR];
+			Vector<Vector2> uv_array = blend_shape_array[Mesh::ARRAY_TEX_UV];
+			Vector<Vector2> uv2_array = blend_shape_array[Mesh::ARRAY_TEX_UV2];
+			Vector<int> bones_array = blend_shape_array[Mesh::ARRAY_BONES];
+			Vector<float> weights_array = blend_shape_array[Mesh::ARRAY_WEIGHTS];
+			Vector<Variant> custom0_array = blend_shape_array[Mesh::ARRAY_CUSTOM0];
+			Vector<Variant> custom1_array = blend_shape_array[Mesh::ARRAY_CUSTOM1];
+			Vector<Variant> custom2_array = blend_shape_array[Mesh::ARRAY_CUSTOM2];
+			Vector<Variant> custom3_array = blend_shape_array[Mesh::ARRAY_CUSTOM3];
+
 			for (int32_t j = 0; j < vertex_array.size(); j++) {
+				TangentGenerationContextUserData::Vertex vertex;
 				vertex.vertex = vertex_array[j];
 				vertex.normal = normal_array[j];
+				vertex.tangent = tangent_array[j];
+				vertex.color = color_array[j];
 				vertex.uv = uv_array[j];
+				vertex.uv2 = uv2_array[j];
+
+				for (int k = 0; k < MIN(has_8_weights ? 8 : 4, bones_array.size()); ++k) {
+					vertex.bones.push_back(bones_array[k]);
+					vertex.weights.push_back(weights_array[k]);
+				}
+
+				for (int k = 0; k < RS::ARRAY_CUSTOM_COUNT; ++k) {
+					if (k == 0) {
+						vertex.custom[k] = custom0_array[j];
+					} else if (k == 1) {
+						vertex.custom[k] = custom1_array[j];
+					} else if (k == 2) {
+						vertex.custom[k] = custom2_array[j];
+					} else if (k == 3) {
+						vertex.custom[k] = custom3_array[j];
+					}
+				}
+
+				msc.m_pUserData = &vertex;
+				bool res = genTangSpaceDefault(&msc);
+				ERR_FAIL_COND(!res);
+
+				vertex_data.push_back(vertex);
 			}
-			msc.m_pUserData = &vertex;
-			bool res = genTangSpaceDefault(&msc);
-			ERR_FAIL_COND(!res);
+
 			Array array_mesh;
 			array_mesh.resize(Mesh::ARRAY_MAX);
-			array_mesh[Mesh::ARRAY_VERTEX];
-			array_mesh[Mesh::ARRAY_NORMAL];
-			array_mesh[Mesh::ARRAY_TANGENT];
-			array_mesh[Mesh::ARRAY_TEX_UV];
-			ImporterMesh::Surface::BlendShape blend_shape;
-			blend_shape.arrays = array_mesh;
-			blend_shape_data.push_back(blend_shape);
-		}
-		surface.blend_shape_data = blend_shape_data;
 
-		surface.flags |= Mesh::ARRAY_FORMAT_TANGENT;
+			array_mesh[Mesh::ARRAY_VERTEX] = vertex_array;
+			array_mesh[Mesh::ARRAY_NORMAL] = normal_array;
+			array_mesh[Mesh::ARRAY_TANGENT] = tangent_array;
+			array_mesh[Mesh::ARRAY_COLOR] = color_array;
+			array_mesh[Mesh::ARRAY_TEX_UV] = uv_array;
+			array_mesh[Mesh::ARRAY_TEX_UV2] = uv2_array;
+			array_mesh[Mesh::ARRAY_BONES] = bones_array;
+			array_mesh[Mesh::ARRAY_WEIGHTS] = weights_array;
+			array_mesh[Mesh::ARRAY_CUSTOM0] = custom0_array;
+			array_mesh[Mesh::ARRAY_CUSTOM1] = custom1_array;
+			array_mesh[Mesh::ARRAY_CUSTOM2] = custom2_array;
+			array_mesh[Mesh::ARRAY_CUSTOM3] = custom3_array;
+
+			new_blend_shape_meshes[blend_shape_i] = array_mesh;
+		}
+
+		uint64_t surface_format = get_surface_format(surface_i) | Mesh::ARRAY_FORMAT_TANGENT;
+		add_surface(primitive_type, new_surface_mesh_array, new_blend_shape_meshes, Dictionary(), current_mesh->get_surface_material(surface_i), current_mesh->get_surface_name(surface_i), surface_format);
 	}
 }
