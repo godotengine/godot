@@ -1514,6 +1514,8 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 			mm->set_relative(pd.position - old_pd.position);
 			mm->set_velocity((Vector2)pos_delta / time_delta);
 		}
+		mm->set_relative_screen_position(mm->get_relative());
+		mm->set_screen_velocity(mm->get_velocity());
 
 		Ref<InputEventMessage> msg;
 		msg.instantiate();
@@ -2411,11 +2413,13 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		mm->set_pen_inverted(td.is_eraser);
 
 		mm->set_relative(td.position - old_td.position);
+		mm->set_relative_screen_position(mm->get_relative());
 
 		// FIXME: Stop doing this to calculate speed.
 		// FIXME2: It has been done, port this from the pointer logic once this works again.
 		Input::get_singleton()->set_mouse_position(td.position);
 		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+		mm->set_screen_velocity(mm->get_velocity());
 
 		Ref<InputEventMessage> inputev_msg;
 		inputev_msg.instantiate();

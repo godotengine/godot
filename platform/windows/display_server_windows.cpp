@@ -2913,6 +2913,7 @@ void DisplayServerWindows::_drag_event(WindowID p_window, float p_x, float p_y, 
 	event->set_index(idx);
 	event->set_position(Vector2(p_x, p_y));
 	event->set_relative(Vector2(p_x, p_y) - curr->get());
+	event->set_relative_screen_position(event->get_relative());
 
 	Input::get_singleton()->parse_input_event(event);
 
@@ -3425,6 +3426,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm->set_position(c);
 				mm->set_global_position(c);
 				mm->set_velocity(Vector2(0, 0));
+				mm->set_screen_velocity(Vector2(0, 0));
 
 				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
 					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
@@ -3449,6 +3451,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					old_x = coords.x;
 					old_y = coords.y;
 				}
+				mm->set_relative_screen_position(mm->get_relative());
 
 				if ((windows[window_id].window_has_focus || windows[window_id].is_popup) && mm->get_relative() != Vector2()) {
 					Input::get_singleton()->parse_input_event(mm);
@@ -3536,6 +3539,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+					mm->set_screen_velocity(mm->get_velocity());
 
 					if (old_invalid) {
 						old_x = mm->get_position().x;
@@ -3544,6 +3548,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+					mm->set_relative_screen_position(mm->get_relative());
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
 					if (windows[window_id].window_has_focus || window_get_active_popup() == window_id) {
@@ -3683,6 +3688,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+			mm->set_screen_velocity(mm->get_velocity());
 
 			if (old_invalid) {
 				old_x = mm->get_position().x;
@@ -3691,6 +3697,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+			mm->set_relative_screen_position(mm->get_relative());
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 			if (windows[window_id].window_has_focus || window_get_active_popup() == window_id) {
@@ -3802,6 +3809,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+			mm->set_screen_velocity(mm->get_velocity());
 
 			if (old_invalid) {
 				old_x = mm->get_position().x;
@@ -3810,6 +3818,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+			mm->set_relative_screen_position(mm->get_relative());
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 

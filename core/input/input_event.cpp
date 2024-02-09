@@ -927,12 +927,28 @@ Vector2 InputEventMouseMotion::get_relative() const {
 	return relative;
 }
 
+void InputEventMouseMotion::set_relative_screen_position(const Vector2 &p_relative) {
+	screen_relative = p_relative;
+}
+
+Vector2 InputEventMouseMotion::get_relative_screen_position() const {
+	return screen_relative;
+}
+
 void InputEventMouseMotion::set_velocity(const Vector2 &p_velocity) {
 	velocity = p_velocity;
 }
 
 Vector2 InputEventMouseMotion::get_velocity() const {
 	return velocity;
+}
+
+void InputEventMouseMotion::set_screen_velocity(const Vector2 &p_velocity) {
+	screen_velocity = p_velocity;
+}
+
+Vector2 InputEventMouseMotion::get_screen_velocity() const {
+	return screen_velocity;
 }
 
 Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -952,7 +968,9 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 
 	mm->set_button_mask(get_button_mask());
 	mm->set_relative(p_xform.basis_xform(get_relative()));
+	mm->set_relative_screen_position(get_relative_screen_position());
 	mm->set_velocity(p_xform.basis_xform(get_velocity()));
+	mm->set_screen_velocity(get_screen_velocity());
 
 	return mm;
 }
@@ -1027,7 +1045,9 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 	set_position(motion->get_position());
 	set_global_position(motion->get_global_position());
 	set_velocity(motion->get_velocity());
+	set_screen_velocity(motion->get_screen_velocity());
 	relative += motion->get_relative();
+	screen_relative += motion->get_relative_screen_position();
 
 	return true;
 }
@@ -1045,14 +1065,22 @@ void InputEventMouseMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventMouseMotion::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventMouseMotion::get_relative);
 
+	ClassDB::bind_method(D_METHOD("set_screen_relative", "relative"), &InputEventMouseMotion::set_relative_screen_position);
+	ClassDB::bind_method(D_METHOD("get_screen_relative"), &InputEventMouseMotion::get_relative_screen_position);
+
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventMouseMotion::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventMouseMotion::get_velocity);
+
+	ClassDB::bind_method(D_METHOD("set_screen_velocity", "velocity"), &InputEventMouseMotion::set_screen_velocity);
+	ClassDB::bind_method(D_METHOD("get_screen_velocity"), &InputEventMouseMotion::get_screen_velocity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "screen_relative", PROPERTY_HINT_NONE, "suffix:px"), "set_screen_relative", "get_screen_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "screen_velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_screen_velocity", "get_screen_velocity");
 }
 
 ///////////////////////////////////
@@ -1422,12 +1450,28 @@ Vector2 InputEventScreenDrag::get_relative() const {
 	return relative;
 }
 
+void InputEventScreenDrag::set_relative_screen_position(const Vector2 &p_relative) {
+	screen_relative = p_relative;
+}
+
+Vector2 InputEventScreenDrag::get_relative_screen_position() const {
+	return screen_relative;
+}
+
 void InputEventScreenDrag::set_velocity(const Vector2 &p_velocity) {
 	velocity = p_velocity;
 }
 
 Vector2 InputEventScreenDrag::get_velocity() const {
 	return velocity;
+}
+
+void InputEventScreenDrag::set_screen_velocity(const Vector2 &p_velocity) {
+	screen_velocity = p_velocity;
+}
+
+Vector2 InputEventScreenDrag::get_screen_velocity() const {
+	return screen_velocity;
 }
 
 Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -1444,7 +1488,9 @@ Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, con
 	sd->set_tilt(get_tilt());
 	sd->set_position(p_xform.xform(pos + p_local_ofs));
 	sd->set_relative(p_xform.basis_xform(relative));
+	sd->set_relative_screen_position(get_relative_screen_position());
 	sd->set_velocity(p_xform.basis_xform(velocity));
+	sd->set_screen_velocity(get_screen_velocity());
 
 	return sd;
 }
@@ -1469,7 +1515,9 @@ bool InputEventScreenDrag::accumulate(const Ref<InputEvent> &p_event) {
 
 	set_position(drag->get_position());
 	set_velocity(drag->get_velocity());
+	set_screen_velocity(drag->get_screen_velocity());
 	relative += drag->get_relative();
+	screen_relative += drag->get_relative_screen_position();
 
 	return true;
 }
@@ -1493,8 +1541,14 @@ void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventScreenDrag::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventScreenDrag::get_relative);
 
+	ClassDB::bind_method(D_METHOD("set_screen_relative", "relative"), &InputEventScreenDrag::set_relative_screen_position);
+	ClassDB::bind_method(D_METHOD("get_screen_relative"), &InputEventScreenDrag::get_relative_screen_position);
+
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventScreenDrag::set_velocity);
 	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventScreenDrag::get_velocity);
+
+	ClassDB::bind_method(D_METHOD("set_screen_velocity", "velocity"), &InputEventScreenDrag::set_screen_velocity);
+	ClassDB::bind_method(D_METHOD("get_screen_velocity"), &InputEventScreenDrag::get_screen_velocity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
@@ -1502,7 +1556,9 @@ void InputEventScreenDrag::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "screen_relative", PROPERTY_HINT_NONE, "suffix:px"), "set_screen_relative", "get_screen_relative");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "screen_velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_screen_velocity", "get_screen_velocity");
 }
 
 ///////////////////////////////////

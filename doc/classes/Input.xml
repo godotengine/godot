@@ -156,6 +156,12 @@
 				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
 			</description>
 		</method>
+		<method name="get_last_mouse_screen_velocity">
+			<return type="Vector2" />
+			<description>
+				Returns the last mouse velocity in screen coordinates. To provide a precise and jitter-free velocity, mouse velocity is only calculated every 0.1s. Therefore, mouse velocity will lag mouse movements.
+			</description>
+		</method>
 		<method name="get_last_mouse_velocity">
 			<return type="Vector2" />
 			<description>

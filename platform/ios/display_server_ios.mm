@@ -236,6 +236,7 @@ void DisplayServerIOS::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x
 	ev->set_tilt(p_tilt);
 	ev->set_position(Vector2(p_x, p_y));
 	ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
+	ev->set_relative_screen_position(ev->get_relative());
 	perform_event(ev);
 }
 
