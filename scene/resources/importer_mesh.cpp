@@ -1517,23 +1517,21 @@ void ImporterMesh::generate_tangents() {
 		}
 		TypedArray<Array> new_blend_shape_meshes;
 		new_blend_shape_meshes.resize(blend_shape_count);
-
 		for (int blend_shape_i = 0; blend_shape_i < blend_shape_count; ++blend_shape_i) {
-			Array blend_shape_array = current_mesh->get_surface_blend_shape_arrays(surface_i, blend_shape_i);
-
-			Vector<Vector3> vertex_array = blend_shape_array[Mesh::ARRAY_VERTEX];
-			Vector<Vector3> normal_array = blend_shape_array[Mesh::ARRAY_NORMAL];
-			Vector<Vector3> tangent_array = blend_shape_array[Mesh::ARRAY_TANGENT];
-			Vector<Color> color_array = blend_shape_array[Mesh::ARRAY_COLOR];
-			Vector<Vector2> uv_array = blend_shape_array[Mesh::ARRAY_TEX_UV];
-			Vector<Vector2> uv2_array = blend_shape_array[Mesh::ARRAY_TEX_UV2];
-			Vector<int> bones_array = blend_shape_array[Mesh::ARRAY_BONES];
-			Vector<float> weights_array = blend_shape_array[Mesh::ARRAY_WEIGHTS];
-			Vector<Variant> custom0_array = blend_shape_array[Mesh::ARRAY_CUSTOM0];
-			Vector<Variant> custom1_array = blend_shape_array[Mesh::ARRAY_CUSTOM1];
-			Vector<Variant> custom2_array = blend_shape_array[Mesh::ARRAY_CUSTOM2];
-			Vector<Variant> custom3_array = blend_shape_array[Mesh::ARRAY_CUSTOM3];
 			if (generate_tangents) {
+				Array blend_shape_array = current_mesh->get_surface_blend_shape_arrays(surface_i, blend_shape_i);
+				Vector<Vector3> vertex_array = blend_shape_array[Mesh::ARRAY_VERTEX];
+				Vector<Vector3> normal_array = blend_shape_array[Mesh::ARRAY_NORMAL];
+				Vector<Vector3> tangent_array = blend_shape_array[Mesh::ARRAY_TANGENT];
+				Vector<Color> color_array = blend_shape_array[Mesh::ARRAY_COLOR];
+				Vector<Vector2> uv_array = blend_shape_array[Mesh::ARRAY_TEX_UV];
+				Vector<Vector2> uv2_array = blend_shape_array[Mesh::ARRAY_TEX_UV2];
+				Vector<int> bones_array = blend_shape_array[Mesh::ARRAY_BONES];
+				Vector<float> weights_array = blend_shape_array[Mesh::ARRAY_WEIGHTS];
+				Vector<Variant> custom0_array = blend_shape_array[Mesh::ARRAY_CUSTOM0];
+				Vector<Variant> custom1_array = blend_shape_array[Mesh::ARRAY_CUSTOM1];
+				Vector<Variant> custom2_array = blend_shape_array[Mesh::ARRAY_CUSTOM2];
+				Vector<Variant> custom3_array = blend_shape_array[Mesh::ARRAY_CUSTOM3];
 				for (int32_t j = 0; j < vertex_array.size(); j++) {
 					TangentGenerationContextUserData::Vertex vertex;
 					vertex.vertex = vertex_array[j];
@@ -1588,7 +1586,6 @@ void ImporterMesh::generate_tangents() {
 				new_blend_shape_meshes[blend_shape_i] = current_mesh->get_surface_blend_shape_arrays(surface_i, blend_shape_i);
 			}
 		}
-
 		uint64_t surface_format = current_mesh->get_surface_format(surface_i) | Mesh::ARRAY_FORMAT_TANGENT;
 		add_surface(primitive_type, generate_tangents ? new_surface_mesh_array : surface_mesh_array, new_blend_shape_meshes, Dictionary(), current_mesh->get_surface_material(surface_i), current_mesh->get_surface_name(surface_i), surface_format);
 	}
