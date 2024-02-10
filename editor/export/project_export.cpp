@@ -386,6 +386,11 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	int script_export_mode = current->get_script_export_mode();
 	script_mode->select(script_export_mode);
 
+	String shebang_value = current->get_shebang();
+	if (!updating_shebang) {
+		shebang->set_text(shebang_value);
+	}
+
 	updating = false;
 }
 
@@ -596,6 +601,21 @@ void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
 	current->set_script_export_mode(p_mode);
 
 	_update_current_preset();
+}
+
+void ProjectExportDialog::_shebang_changed(const String &p_text) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_shebang(p_text);
+
+	updating_shebang = true;
+	_update_current_preset();
+	updating_shebang = false;
 }
 
 void ProjectExportDialog::_duplicate_preset() {
@@ -1331,6 +1351,12 @@ ProjectExportDialog::ProjectExportDialog() {
 			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			exclude_filters);
 	exclude_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
+
+	shebang = memnew(LineEdit);
+	resources_vb->add_margin_child(
+			TTR("Add sheband to the exported PCK file\n(e.g: \"#!/usr/bin/env godot4 --main-pack\")"),
+			shebang);
+	shebang->connect("text_changed", callable_mp(this, &ProjectExportDialog::_shebang_changed));
 
 	// Feature tags.
 

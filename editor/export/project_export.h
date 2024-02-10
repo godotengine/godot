@@ -161,6 +161,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	LineEdit *enc_ex_filters = nullptr;
 
 	OptionButton *script_mode = nullptr;
+	LineEdit *shebang = nullptr;
 
 	void _open_export_template_manager();
 
@@ -179,6 +180,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	bool updating_script_key = false;
 	bool updating_enc_filters = false;
+	bool updating_shebang = false;
 	void _enc_pck_changed(bool p_pressed);
 	void _enc_directory_changed(bool p_pressed);
 	void _enc_filters_changed(const String &p_text);
@@ -186,6 +188,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	bool _validate_script_encryption_key(const String &p_key);
 
 	void _script_export_mode_changed(int p_mode);
+	void _shebang_changed(const String &p_text);
 
 	void _open_key_help_link();
 

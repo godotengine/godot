@@ -91,6 +91,7 @@ private:
 
 	String script_key;
 	int script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
+	String shebang;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -161,6 +162,9 @@ public:
 
 	void set_script_export_mode(int p_mode);
 	int get_script_export_mode() const;
+
+	void set_shebang(const String &p_shebang);
+	String get_shebang() const;
 
 	Variant get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid = nullptr) const;
 
