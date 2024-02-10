@@ -199,6 +199,11 @@ Comment: D3D12 Memory Allocator
 Copyright: 2019-2022 Advanced Micro Devices, Inc.
 License: Expat
 
+Files: ./thirdparty/dxil_mach
+Comment: Mach Siegbert Vogt DX Code Signing Algorithm from Mach engine.
+Copyright: 2021, Hexops Contributors.
+License: Expat
+
 Files: ./thirdparty/directx_headers/
 Comment: DirectX Headers
 Copyright: Microsoft Corporation

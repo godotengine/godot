@@ -58,6 +58,7 @@
 extern "C" {
 #include "dxil_spirv_nir.h"
 }
+#include "MachSiegbertVogtDXCSA.h"
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
@@ -2081,8 +2082,16 @@ dxil_validator *RenderingDeviceDriverD3D12::_get_dxil_validator_for_current_thre
 	print_verbose("Creating DXIL validator for worker thread index " + itos(thread_idx));
 #endif
 
-	dxil_validator *dxil_validator = dxil_create_validator(nullptr);
-	CRASH_COND(!dxil_validator);
+	dxil_validator *dxil_validator = nullptr;
+#if defined(_GAMING_XBOX_SCARLETT) || defined(_GAMING_XBOX)
+	dxil_validator = dxil_create_validator(nullptr);
+#else
+	String exec_path = OS::get_singleton()->get_executable_path().get_base_dir();
+	String exec_arch_path = exec_path.path_join(Engine::get_singleton()->get_architecture_name());
+	if (FileAccess::exists(exec_path.path_join("dxil.dll")) || FileAccess::exists(exec_arch_path.path_join("dxil.dll"))) {
+		dxil_validator = dxil_create_validator(nullptr);
+	}
+#endif
 
 	dxil_validators.insert(thread_idx, dxil_validator);
 	return dxil_validator;
@@ -2220,15 +2229,20 @@ bool RenderingDeviceDriverD3D12::_shader_apply_specialization_constants(
 
 bool RenderingDeviceDriverD3D12::_shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob) {
 	dxil_validator *validator = _get_dxil_validator_for_current_thread();
-
-	char *err = nullptr;
-	bool res = dxil_validate_module(validator, r_dxil_blob.ptrw(), r_dxil_blob.size(), &err);
-	if (!res) {
-		if (err) {
-			ERR_FAIL_COND_V_MSG(!res, false, "Shader signing invocation at stage " + String(SHADER_STAGE_NAMES[p_stage]) + " failed:\n" + String(err));
-		} else {
-			ERR_FAIL_COND_V_MSG(!res, false, "Shader signing invocation at stage " + String(SHADER_STAGE_NAMES[p_stage]) + " failed.");
+	if (validator) {
+		char *err = nullptr;
+		bool res = dxil_validate_module(validator, r_dxil_blob.ptrw(), r_dxil_blob.size(), &err);
+		if (!res) {
+			if (err) {
+				ERR_FAIL_COND_V_MSG(!res, false, "Shader signing invocation at stage " + String(SHADER_STAGE_NAMES[p_stage]) + " failed:\n" + String(err));
+			} else {
+				ERR_FAIL_COND_V_MSG(!res, false, "Shader signing invocation at stage " + String(SHADER_STAGE_NAMES[p_stage]) + " failed.");
+			}
 		}
+	} else {
+		uint32_t secret[4] = {};
+		machSiegbertVogtDXCSA(r_dxil_blob.ptrw(), r_dxil_blob.size(), secret);
+		memcpy(r_dxil_blob.ptrw() + 4, secret, 16);
 	}
 
 	return true;
@@ -2506,7 +2520,12 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 			nir_to_dxil_options nir_to_dxil_options = {};
 			nir_to_dxil_options.environment = DXIL_ENVIRONMENT_VULKAN;
 			nir_to_dxil_options.shader_model_max = shader_model_d3d_to_dxil(context->get_shader_capabilities().shader_model);
-			nir_to_dxil_options.validator_version_max = dxil_get_validator_version(_get_dxil_validator_for_current_thread());
+			dxil_validator *validator = _get_dxil_validator_for_current_thread();
+			if (validator) {
+				nir_to_dxil_options.validator_version_max = dxil_get_validator_version(validator);
+			} else {
+				nir_to_dxil_options.validator_version_max = (dxil_validator_version)0x10006; // No validator found, set to DXIL_VALIDATOR_1_6.
+			}
 			nir_to_dxil_options.godot_nir_callbacks = &godot_nir_callbacks;
 
 			dxil_logger logger = {};
@@ -5508,7 +5527,9 @@ RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
 	{
 		MutexLock lock(dxil_mutex);
 		for (const KeyValue<int, dxil_validator *> &E : dxil_validators) {
-			dxil_destroy_validator(E.value);
+			if (E.value) {
+				dxil_destroy_validator(E.value);
+			}
 		}
 	}
 

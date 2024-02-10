@@ -137,6 +137,19 @@ They are marked with `/* GODOT start */` and `/* GODOT end */`
 comments.
 
 
+## dxil_mach
+
+- Upstream: https://github.com/hexops/DirectXShaderCompiler
+- Version: git (7a0138d6eab5ce712e6dc70d3dc200eb2193574f, 2023)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `MachSiegbertVogtDXCSA.h`
+- `MachSiegbertVogtDXCSA.cpp`
+- `LICENSE`
+
+
 ## directx_headers
 
 - Upstream: https://github.com/microsoft/DirectX-Headers

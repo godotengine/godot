@@ -13,6 +13,7 @@ thirdparty_obj = []
 # DirectX Headers (must take precedence over Windows SDK's).
 
 env.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
+env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/dxil_mach"])
 env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
 env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/dxguids"])
 
@@ -155,6 +156,7 @@ env.drivers_sources += thirdparty_obj
 
 driver_obj = []
 env_d3d12_rdd.add_source_files(driver_obj, "*.cpp")
+env_d3d12_rdd.add_source_files(driver_obj, "#thirdparty/dxil_mach/MachSiegbertVogtDXCSA.cpp")
 env.drivers_sources += driver_obj
 
 # Needed to force rebuilding the driver files when the thirdparty code is updated.
