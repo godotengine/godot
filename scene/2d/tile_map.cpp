@@ -2254,7 +2254,7 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPat
 			Vector2i coords_in_pattern = coords_in_pattern_array[i];
 			p_pattern->set_cell(0, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords));
 		}
-		//p_pattern->set_size(max - min);
+		p_pattern->set_size(max - min);
 		print_line(p_pattern->get_size());
 	}
 
@@ -3551,8 +3551,8 @@ Ref<TileMapPattern> TileMap::get_pattern(TypedArray<Vector2i> p_coords_array, in
 		return output;
 	}
 
-	// If the pattern is single layer as indicated by p_layer being something other than -1. This is determined when get_pattern is called in tile_map_editor.cpp based on the multi_layer_selection_mode flag. 
-	if (p_layer != -1) {
+	// If the pattern is single layer as indicated by p_layer being something other than -1.
+	if (p_layer < 0) {
 		print_line("get_pattern single layer called");
 		output->set_is_single_layer(true);
 		output->set_number_of_layers(1);

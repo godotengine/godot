@@ -247,7 +247,6 @@ private:
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control);
 	
-
 	void _pattern_clicked(int p_item_index, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _delete_pattern_menu_id_pressed(int p_id);
 	void _rename_pattern(int p_item_index);

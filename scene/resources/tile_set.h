@@ -115,11 +115,12 @@ union TileMapCell {
 
 class TileMapPattern : public Resource {
 	GDCLASS(TileMapPattern, Resource);
+	bool is_single_layer = true;
 	int pattern_set_index;
 	int number_of_layers = 1;
-	bool is_single_layer = true;
+	Size2i size = Vector2i(1, 1);
 	Vector2i pattern_start_position;
-	Size2i size;
+	
 
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
 	Vector<int> _get_tile_data(int p_layer) const;
@@ -167,7 +168,8 @@ public:
 	void clear();
 	void clear_layer(int p_layer);
 
-	TileMapPattern() : Resource() {
+	TileMapPattern() :
+			Resource() {
 		pattern.resize(1);
 	}
 };
