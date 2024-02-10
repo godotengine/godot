@@ -41,6 +41,7 @@
 	</members>
 	<signals>
 		<signal name="animation_playback_node_changed">
+			<param index="0" name="node_name" type="StringName" />
 			<description>
 				Emitted when the animation node is changed in the state machine playback.
 			</description>
