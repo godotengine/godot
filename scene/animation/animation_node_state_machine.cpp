@@ -195,6 +195,8 @@ AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
 
 void AnimationNodeStateMachinePlayback::_set_current(AnimationNodeStateMachine *p_state_machine, const StringName &p_state) {
 	current = p_state;
+	p_state_machine->process_state->tree->emit_signal("animation_playback_node_changed", p_state);
+
 	if (current == StringName()) {
 		group_start_transition = Ref<AnimationNodeStateMachineTransition>();
 		group_end_transition = Ref<AnimationNodeStateMachineTransition>();
@@ -957,7 +959,6 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 
 		// Update current status.
 		_set_current(p_state_machine, next.node);
-		p_tree->emit_signal("animation_playback_node_changed", next.node);
 		current_curve = next.curve;
 
 		_reset_request_for_fading_from = reset_request; // To avoid processing doubly, it must be reset in the fading process within _process().
