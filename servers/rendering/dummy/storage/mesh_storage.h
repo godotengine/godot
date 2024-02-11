@@ -87,6 +87,12 @@ public:
 		s->index_count = p_surface.index_count;
 		s->aabb = p_surface.aabb;
 		s->skin_data = p_surface.skin_data;
+		s->lods = p_surface.lods;
+		s->bone_aabbs = p_surface.bone_aabbs;
+		s->mesh_to_skeleton_xform = p_surface.mesh_to_skeleton_xform;
+		s->blend_shape_data = p_surface.blend_shape_data;
+		s->uv_scale = p_surface.uv_scale;
+		s->material = p_surface.material;
 	}
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override { return 0; }
