@@ -365,6 +365,17 @@ bool AnimationNode::is_path_filtered(const NodePath &p_path) const {
 	return filter.has(p_path);
 }
 
+void AnimationTree::set_active_inside_editor(bool p_active) {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		active_inside_editor = p_active;
+		_set_process(p_active);
+	}
+}
+
+bool AnimationTree::is_active_inside_editor() const {
+	return active_inside_editor;
+}
+
 bool AnimationNode::has_filter() const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_has_filter, ret);
@@ -726,7 +737,9 @@ void AnimationTree::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_setup_animation_player();
-			if (active) {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				_set_process(active_inside_editor);
+			} else if (active) {
 				_set_process(true);
 			}
 		} break;
@@ -885,6 +898,10 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_animation_player", "path"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
+	ClassDB::bind_method(D_METHOD("set_active_inside_editor", "active"), &AnimationTree::set_active_inside_editor);
+	ClassDB::bind_method(D_METHOD("is_active_inside_editor"), &AnimationTree::is_active_inside_editor);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active_inside_editor"), "set_active_inside_editor", "is_active_inside_editor");
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");

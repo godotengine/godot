@@ -192,6 +192,8 @@ public:
 	};
 #endif // DISABLE_DEPRECATED
 
+protected:
+	bool active_inside_editor = true;
 private:
 	Ref<AnimationRootNode> root_animation_node;
 	NodePath advance_expression_base_node = NodePath(String("."));
@@ -252,6 +254,9 @@ private:
 #endif // DISABLE_DEPRECATED
 
 public:
+	void set_active_inside_editor(bool p_active);
+	bool is_active_inside_editor() const;
+
 	void set_animation_player(const NodePath &p_path);
 	NodePath get_animation_player() const;
 

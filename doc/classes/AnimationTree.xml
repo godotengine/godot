@@ -37,6 +37,9 @@
 		<member name="tree_root" type="AnimationRootNode" setter="set_tree_root" getter="get_tree_root">
 			The root animation node of this [AnimationTree]. See [AnimationRootNode].
 		</member>
+		<member name="active_inside_editor" type="bool" setter="set_active_inside_editor" getter="is_active_inside_editor">
+			If [code]true[/code], the [AnimationMixer] will be processing inside the editor. (Editor only)
+		</member>
 	</members>
 	<signals>
 		<signal name="animation_player_changed">
