@@ -42,7 +42,7 @@
 
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
-int Mesh::surface_get_face_count(int p_idx) const {
+int Mesh::surface_get_triangle_count(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, get_surface_count(), 0);
 
 	switch (surface_get_primitive_type(p_idx)) {
@@ -50,14 +50,14 @@ int Mesh::surface_get_face_count(int p_idx) const {
 			int len = (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(p_idx) : surface_get_array_len(p_idx);
 			// Don't error if zero, it's valid (we'll just skip it later).
 			ERR_FAIL_COND_V_MSG((len % 3) != 0, 0, vformat("Ignoring surface %d, incorrect %s count: %d (for PRIMITIVE_TRIANGLES).", p_idx, (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len));
-			return len;
+			return len / 3;
 		} break;
 		case PRIMITIVE_TRIANGLE_FAN:
 		case PRIMITIVE_TRIANGLE_STRIP: {
 			int len = (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(p_idx) : surface_get_array_len(p_idx);
 			// Don't error if zero, it's valid (we'll just skip it later).
 			ERR_FAIL_COND_V_MSG(len != 0 && len < 3, 0, vformat("Ignoring surface %d, incorrect %s count: %d (for %s).", p_idx, (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? "index" : "vertex", len, (surface_get_primitive_type(p_idx) == PRIMITIVE_TRIANGLE_FAN) ? "PRIMITIVE_TRIANGLE_FAN" : "PRIMITIVE_TRIANGLE_STRIP"));
-			return (len == 0) ? 0 : (len - 2) * 3;
+			return (len == 0) ? 0 : (len - 2);
 		} break;
 		default: {
 		} break;
@@ -66,14 +66,14 @@ int Mesh::surface_get_face_count(int p_idx) const {
 	return 0;
 }
 
-int Mesh::get_face_count() const {
-	int faces_size = 0;
+int Mesh::get_triangle_count() const {
+	int triangle_count = 0;
 
 	for (int i = 0; i < get_surface_count(); i++) {
-		faces_size += surface_get_face_count(i);
+		triangle_count += surface_get_triangle_count(i);
 	}
 
-	return faces_size;
+	return triangle_count;
 }
 
 Ref<TriangleMesh> Mesh::generate_triangle_mesh_from_aabb() const {
@@ -151,14 +151,14 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		return triangle_mesh;
 	}
 
-	int faces_size = get_face_count();
+	int faces_vertex_count = get_triangle_count() * 3;
 
-	if (faces_size == 0) {
+	if (faces_vertex_count == 0) {
 		return triangle_mesh;
 	}
 
 	PoolVector<Vector3> faces;
-	faces.resize(faces_size);
+	faces.resize(faces_vertex_count);
 	PoolVector<Vector3>::Write facesw = faces.write();
 
 	int widx = 0;

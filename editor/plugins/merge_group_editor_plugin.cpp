@@ -324,7 +324,7 @@ void MergeGroupEditorPlugin::_remove_queue_deleted_nodes_recursive(Node *p_node)
 uint32_t MergeGroupEditorPlugin::_get_mesh_poly_count(const MeshInstance &p_mi) const {
 	Ref<Mesh> rmesh = p_mi.get_mesh();
 	if (rmesh.is_valid()) {
-		return rmesh->get_face_count();
+		return rmesh->get_triangle_count();
 	}
 
 	return 0;
