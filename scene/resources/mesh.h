@@ -126,6 +126,14 @@ public:
 		STORAGE_MODE_CPU_AND_GPU,
 	};
 
+	struct CachedStats {
+		bool dirty = true;
+		uint32_t triangle_count = 0;
+		uint32_t vertex_count = 0;
+		uint32_t index_count = 0;
+		uint32_t array_format = 0;
+	};
+
 	virtual int get_surface_count() const = 0;
 	virtual int surface_get_array_len(int p_idx) const = 0;
 	virtual int surface_get_array_index_len(int p_idx) const = 0;
@@ -138,11 +146,15 @@ public:
 	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
 	virtual int get_blend_shape_count() const = 0;
 	int surface_get_triangle_count(int p_idx) const;
+	int surface_get_index_count(int p_idx) const;
 	virtual StringName get_blend_shape_name(int p_index) const = 0;
 	virtual void set_blend_shape_name(int p_index, const StringName &p_name) = 0;
 
 	int get_triangle_count() const;
 	PoolVector<Face3> get_faces() const;
+#ifdef TOOLS_ENABLED
+	const CachedStats &get_cached_stats() const;
+#endif
 	Ref<TriangleMesh> generate_triangle_mesh() const;
 	Ref<TriangleMesh> generate_triangle_mesh_from_aabb() const;
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
@@ -167,6 +179,13 @@ public:
 	Vector<Ref<Shape>> convex_decompose(int p_max_convex_hulls = -1) const;
 
 	Mesh();
+
+private:
+#ifdef TOOLS_ENABLED
+	// Only for use in the editor.
+	// No need to bloat exports.
+	mutable CachedStats _cached_stats;
+#endif
 };
 
 class ArrayMesh : public Mesh {
