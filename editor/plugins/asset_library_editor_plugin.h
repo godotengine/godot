@@ -60,7 +60,6 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *title = nullptr;
 	LinkButton *category = nullptr;
 	LinkButton *author = nullptr;
-	TextureRect *stars[5];
 	Label *price = nullptr;
 
 	int asset_id = 0;
@@ -82,7 +81,7 @@ public:
 
 	void clamp_width(int p_max_width);
 
-	EditorAssetLibraryItem();
+	EditorAssetLibraryItem(bool p_clickable = false);
 };
 
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
@@ -90,6 +89,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 
 	EditorAssetLibraryItem *item = nullptr;
 	RichTextLabel *description = nullptr;
+	VBoxContainer *previews_vbox = nullptr;
 	ScrollContainer *previews = nullptr;
 	HBoxContainer *preview_hb = nullptr;
 	PanelContainer *previews_bg = nullptr;
@@ -294,7 +294,7 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _install_asset();
 
-	void _select_author(int p_id);
+	void _select_author(const String &p_author);
 	void _select_category(int p_id);
 	void _select_asset(int p_id);
 
