@@ -87,17 +87,19 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 
 	if (context_rd) {
 		if (context_rd->initialize() != OK) {
+			ERR_PRINT(vformat("Failed to initialize %s context", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
-			ERR_FAIL_MSG(vformat("Failed to initialize %s context", context_rd->get_api_name()));
+			return;
 		}
 
 		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
 		if (context_rd->window_create(MAIN_WINDOW_ID, p_vsync_mode, size.width, size.height, &wpd) != OK) {
+			ERR_PRINT(vformat("Failed to create %s window.", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
 			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG(vformat("Failed to create %s window.", context_rd->get_api_name()));
+			return;
 		}
 
 		rendering_device = memnew(RenderingDevice);
@@ -234,6 +236,7 @@ void DisplayServerIOS::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x
 	ev->set_tilt(p_tilt);
 	ev->set_position(Vector2(p_x, p_y));
 	ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
+	ev->set_relative_screen_position(ev->get_relative());
 	perform_event(ev);
 }
 

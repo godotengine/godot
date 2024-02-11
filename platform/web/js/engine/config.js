@@ -19,7 +19,7 @@ const EngineConfig = {}; // eslint-disable-line no-unused-vars
 const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-vars
 	const cfg = /** @lends {InternalConfig.prototype} */ {
 		/**
-		 * Whether the unload the engine automatically after the instance is initialized.
+		 * Whether to unload the engine automatically after the instance is initialized.
 		 *
 		 * @memberof EngineConfig
 		 * @default

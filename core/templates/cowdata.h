@@ -46,7 +46,7 @@ class CharString;
 template <class T, class V>
 class VMap;
 
-SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint64_t)
+static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 
 // Silence a false positive warning (see GH-52119).
 #if defined(__GNUC__) && !defined(__clang__)
@@ -89,18 +89,39 @@ private:
 		return ++x;
 	}
 
-	static constexpr USize ALLOC_PAD = sizeof(USize) * 2; // For size and atomic refcount.
+	// Alignment:  ↓ max_align_t           ↓ USize          ↓ max_align_t
+	//             ┌────────────────────┬──┬─────────────┬──┬───────────...
+	//             │ SafeNumeric<USize> │░░│ USize       │░░│ T[]
+	//             │ ref. count         │░░│ data size   │░░│ data
+	//             └────────────────────┴──┴─────────────┴──┴───────────...
+	// Offset:     ↑ REF_COUNT_OFFSET      ↑ SIZE_OFFSET    ↑ DATA_OFFSET
+
+	static constexpr size_t REF_COUNT_OFFSET = 0;
+	static constexpr size_t SIZE_OFFSET = ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize) == 0) ? (REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) : ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) + alignof(USize) - ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize)));
+	static constexpr size_t DATA_OFFSET = ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t) == 0) ? (SIZE_OFFSET + sizeof(USize)) : ((SIZE_OFFSET + sizeof(USize)) + alignof(max_align_t) - ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t)));
 
 	mutable T *_ptr = nullptr;
 
 	// internal helpers
+
+	static _FORCE_INLINE_ SafeNumeric<USize> *_get_refcount_ptr(uint8_t *p_ptr) {
+		return (SafeNumeric<USize> *)(p_ptr + REF_COUNT_OFFSET);
+	}
+
+	static _FORCE_INLINE_ USize *_get_size_ptr(uint8_t *p_ptr) {
+		return (USize *)(p_ptr + SIZE_OFFSET);
+	}
+
+	static _FORCE_INLINE_ T *_get_data_ptr(uint8_t *p_ptr) {
+		return (T *)(p_ptr + DATA_OFFSET);
+	}
 
 	_FORCE_INLINE_ SafeNumeric<USize> *_get_refcount() const {
 		if (!_ptr) {
 			return nullptr;
 		}
 
-		return reinterpret_cast<SafeNumeric<USize> *>(_ptr) - 2;
+		return (SafeNumeric<USize> *)((uint8_t *)_ptr - DATA_OFFSET + REF_COUNT_OFFSET);
 	}
 
 	_FORCE_INLINE_ USize *_get_size() const {
@@ -108,7 +129,7 @@ private:
 			return nullptr;
 		}
 
-		return reinterpret_cast<USize *>(_ptr) - 1;
+		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + SIZE_OFFSET);
 	}
 
 	_FORCE_INLINE_ USize _get_alloc_size(USize p_elements) const {
@@ -233,7 +254,7 @@ void CowData<T>::_unref(void *p_data) {
 	}
 	// clean up
 
-	if (!std::is_trivially_destructible<T>::value) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
 		USize *count = _get_size();
 		T *data = (T *)(count + 1);
 
@@ -244,7 +265,7 @@ void CowData<T>::_unref(void *p_data) {
 	}
 
 	// free mem
-	Memory::free_static(((uint8_t *)p_data) - ALLOC_PAD, false);
+	Memory::free_static(((uint8_t *)p_data) - DATA_OFFSET, false);
 }
 
 template <class T>
@@ -260,26 +281,27 @@ typename CowData<T>::USize CowData<T>::_copy_on_write() {
 		/* in use by more than me */
 		USize current_size = *_get_size();
 
-		USize *mem_new = (USize *)Memory::alloc_static(_get_alloc_size(current_size) + ALLOC_PAD, false);
-		mem_new += 2;
+		uint8_t *mem_new = (uint8_t *)Memory::alloc_static(_get_alloc_size(current_size) + DATA_OFFSET, false);
+		ERR_FAIL_NULL_V(mem_new, 0);
 
-		new (mem_new - 2) SafeNumeric<USize>(1); //refcount
-		*(mem_new - 1) = current_size; //size
+		SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+		USize *_size_ptr = _get_size_ptr(mem_new);
+		T *_data_ptr = _get_data_ptr(mem_new);
 
-		T *_data = (T *)(mem_new);
+		new (_refc_ptr) SafeNumeric<USize>(1); //refcount
+		*(_size_ptr) = current_size; //size
 
 		// initialize new elements
-		if (std::is_trivially_copyable<T>::value) {
-			memcpy(mem_new, _ptr, current_size * sizeof(T));
-
+		if constexpr (std::is_trivially_copyable_v<T>) {
+			memcpy((uint8_t *)_data_ptr, _ptr, current_size * sizeof(T));
 		} else {
 			for (USize i = 0; i < current_size; i++) {
-				memnew_placement(&_data[i], T(_ptr[i]));
+				memnew_placement(&_data_ptr[i], T(_ptr[i]));
 			}
 		}
 
 		_unref(_ptr);
-		_ptr = _data;
+		_ptr = _data_ptr;
 
 		rc = 1;
 	}
@@ -315,27 +337,34 @@ Error CowData<T>::resize(Size p_size) {
 		if (alloc_size != current_alloc_size) {
 			if (current_size == 0) {
 				// alloc from scratch
-				USize *ptr = (USize *)Memory::alloc_static(alloc_size + ALLOC_PAD, false);
-				ptr += 2;
-				ERR_FAIL_NULL_V(ptr, ERR_OUT_OF_MEMORY);
-				*(ptr - 1) = 0; //size, currently none
-				new (ptr - 2) SafeNumeric<USize>(1); //refcount
+				uint8_t *mem_new = (uint8_t *)Memory::alloc_static(alloc_size + DATA_OFFSET, false);
+				ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
-				_ptr = (T *)ptr;
+				SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+				USize *_size_ptr = _get_size_ptr(mem_new);
+				T *_data_ptr = _get_data_ptr(mem_new);
+
+				new (_refc_ptr) SafeNumeric<USize>(1); //refcount
+				*(_size_ptr) = 0; //size, currently none
+
+				_ptr = _data_ptr;
 
 			} else {
-				USize *_ptrnew = (USize *)Memory::realloc_static(((uint8_t *)_ptr) - ALLOC_PAD, alloc_size + ALLOC_PAD, false);
-				ERR_FAIL_NULL_V(_ptrnew, ERR_OUT_OF_MEMORY);
-				_ptrnew += 2;
-				new (_ptrnew - 2) SafeNumeric<USize>(rc); //refcount
+				uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, alloc_size + DATA_OFFSET, false);
+				ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
-				_ptr = (T *)(_ptrnew);
+				SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+				T *_data_ptr = _get_data_ptr(mem_new);
+
+				new (_refc_ptr) SafeNumeric<USize>(rc); //refcount
+
+				_ptr = _data_ptr;
 			}
 		}
 
 		// construct the newly created elements
 
-		if (!std::is_trivially_constructible<T>::value) {
+		if constexpr (!std::is_trivially_constructible_v<T>) {
 			for (Size i = *_get_size(); i < p_size; i++) {
 				memnew_placement(&_ptr[i], T);
 			}
@@ -346,7 +375,7 @@ Error CowData<T>::resize(Size p_size) {
 		*_get_size() = p_size;
 
 	} else if (p_size < current_size) {
-		if (!std::is_trivially_destructible<T>::value) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
 			// deinitialize no longer needed elements
 			for (USize i = p_size; i < *_get_size(); i++) {
 				T *t = &_ptr[i];
@@ -355,12 +384,15 @@ Error CowData<T>::resize(Size p_size) {
 		}
 
 		if (alloc_size != current_alloc_size) {
-			USize *_ptrnew = (USize *)Memory::realloc_static(((uint8_t *)_ptr) - ALLOC_PAD, alloc_size + ALLOC_PAD, false);
-			ERR_FAIL_NULL_V(_ptrnew, ERR_OUT_OF_MEMORY);
-			_ptrnew += 2;
-			new (_ptrnew - 2) SafeNumeric<USize>(rc); //refcount
+			uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, alloc_size + DATA_OFFSET, false);
+			ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
-			_ptr = (T *)(_ptrnew);
+			SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+			T *_data_ptr = _get_data_ptr(mem_new);
+
+			new (_refc_ptr) SafeNumeric<USize>(rc); //refcount
+
+			_ptr = _data_ptr;
 		}
 
 		*_get_size() = p_size;

@@ -352,6 +352,7 @@ public:
     void addLocalVariable(std::unique_ptr<Instruction> inst);
     Id getReturnType() const { return functionInstruction.getTypeId(); }
     Id getFuncId() const { return functionInstruction.getResultId(); }
+    Id getFuncTypeId() const { return functionInstruction.getIdOperand(1); }
     void setReturnPrecision(Decoration precision)
     {
         if (precision == DecorationRelaxedPrecision)

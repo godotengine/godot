@@ -639,7 +639,7 @@ uint8_t RenderingLightCuller::Data::LUT_entries[LUT_SIZE][8] = {
 void RenderingLightCuller::create_LUT() {
 	// Each pair of planes that are opposite can have an edge.
 	for (int plane_0 = 0; plane_0 < PLANE_TOTAL; plane_0++) {
-		// For each neighbour of the plane.
+		// For each neighbor of the plane.
 		PlaneOrder neighs[4];
 		get_neighbouring_planes((PlaneOrder)plane_0, neighs);
 
@@ -864,7 +864,7 @@ void RenderingLightCuller::compact_LUT_entry(uint32_t p_entry_id) {
 }
 
 void RenderingLightCuller::get_neighbouring_planes(PlaneOrder p_plane, PlaneOrder r_neigh_planes[4]) const {
-	// Table of neighbouring planes to each.
+	// Table of neighboring planes to each.
 	static const PlaneOrder neigh_table[PLANE_TOTAL][4] = {
 		{ // LSM_FP_NEAR
 				PLANE_LEFT,

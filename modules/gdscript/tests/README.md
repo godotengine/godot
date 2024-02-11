@@ -32,9 +32,9 @@ Tests will only test against entries in `[output]` that were specified.
 
 ## Writing autocompletion tests
 
-To avoid failing edge cases a certain behaviour needs to be tested multiple times. Some things that tests should account for:
+To avoid failing edge cases a certain behavior needs to be tested multiple times. Some things that tests should account for:
 
-- All possible types: Test with all possible types that apply to the tested behaviour. (For the last points testing against `SCRIPT` and `CLASS` should suffice. `CLASS` can be obtained through C#, `SCRIPT` through GDScript. Relying on autoloads to be of type `SCRIPT` is not good, since this might change in the future.)
+- All possible types: Test with all possible types that apply to the tested behavior. (For the last points testing against `SCRIPT` and `CLASS` should suffice. `CLASS` can be obtained through C#, `SCRIPT` through GDScript. Relying on autoloads to be of type `SCRIPT` is not good, since this might change in the future.)
 
   - `BUILTIN`
   - `NATIVE`

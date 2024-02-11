@@ -80,6 +80,7 @@ public:
 protected:
 	float cell_size = 0.25f; // Must match ProjectSettings default 3D cell_size and NavigationServer NavMap cell_size.
 	float cell_height = 0.25f; // Must match ProjectSettings default 3D cell_height and NavigationServer NavMap cell_height.
+	float border_size = 0.0f;
 	float agent_height = 1.5f;
 	float agent_radius = 0.5f;
 	float agent_max_climb = 0.25f;
@@ -130,6 +131,9 @@ public:
 
 	void set_cell_height(float p_value);
 	float get_cell_height() const;
+
+	void set_border_size(float p_value);
+	float get_border_size() const;
 
 	void set_agent_height(float p_value);
 	float get_agent_height() const;

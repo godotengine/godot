@@ -266,8 +266,12 @@ void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_navigation_mesh) {
 	emit_signal(SNAME("bake_finished"));
 }
 
-PackedStringArray NavigationRegion3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+bool NavigationRegion3D::is_baking() const {
+	return NavigationServer3D::get_singleton()->is_baking_navigation_mesh(navigation_mesh);
+}
+
+Array NavigationRegion3D::get_configuration_warnings() const {
+	Array warnings = Node::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!navigation_mesh.is_valid()) {
@@ -308,6 +312,7 @@ void NavigationRegion3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationRegion3D::get_travel_cost);
 
 	ClassDB::bind_method(D_METHOD("bake_navigation_mesh", "on_thread"), &NavigationRegion3D::bake_navigation_mesh, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_baking"), &NavigationRegion3D::is_baking);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_mesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");

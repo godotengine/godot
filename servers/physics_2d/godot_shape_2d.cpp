@@ -584,7 +584,7 @@ void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 
 	if (p_data.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
 		Vector<Vector2> arr = p_data;
-		ERR_FAIL_COND(arr.size() == 0);
+		ERR_FAIL_COND(arr.is_empty());
 		point_count = arr.size();
 		points = memnew_arr(Point, point_count);
 		const Vector2 *r = arr.ptr();

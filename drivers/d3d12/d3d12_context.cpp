@@ -329,7 +329,7 @@ Error D3D12Context::_select_adapter(int &r_index) {
 		adapters.push_back(curr_adapter);
 	}
 
-	ERR_FAIL_COND_V_MSG(adapters.size() == 0, ERR_CANT_CREATE, "Adapters enumeration reported zero accessible devices.");
+	ERR_FAIL_COND_V_MSG(adapters.is_empty(), ERR_CANT_CREATE, "Adapters enumeration reported zero accessible devices.");
 
 	// The device should really be a preference, but for now choosing a discrete GPU over the
 	// integrated one is better than the default.

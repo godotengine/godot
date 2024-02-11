@@ -316,17 +316,17 @@ void Array::erase(const Variant &p_value) {
 }
 
 Variant Array::front() const {
-	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](0);
 }
 
 Variant Array::back() const {
-	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](_p->array.size() - 1);
 }
 
 Variant Array::pick_random() const {
-	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](Math::rand() % _p->array.size());
 }
 

@@ -90,7 +90,7 @@ int ENetPacketPeer::get_available_packet_count() const {
 
 Error ENetPacketPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	ERR_FAIL_NULL_V(peer, ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V(!packet_queue.size(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(packet_queue.is_empty(), ERR_UNAVAILABLE);
 	if (last_packet) {
 		enet_packet_destroy(last_packet);
 		last_packet = nullptr;

@@ -37,7 +37,7 @@
 #include "editor/themes/editor_scale.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
-	if (grabber->is_visible()) {
+	if (!read_only && grabber->is_visible()) {
 		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
 		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
 	}
@@ -390,13 +390,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
-			bool display_grabber = (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
 			if (grabber->is_visible() != display_grabber) {
-				if (display_grabber) {
-					grabber->show();
-				} else {
-					grabber->hide();
-				}
+				grabber->set_visible(display_grabber);
 			}
 
 			if (display_grabber) {

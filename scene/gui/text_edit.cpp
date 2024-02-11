@@ -3927,7 +3927,7 @@ void TextEdit::end_complex_operation() {
 	if (complex_operation_count > 0) {
 		return;
 	}
-	ERR_FAIL_COND(undo_stack.size() == 0);
+	ERR_FAIL_COND(undo_stack.is_empty());
 
 	undo_stack.back()->get().end_carets = carets;
 	if (undo_stack.back()->get().chain_forward) {
@@ -7333,7 +7333,7 @@ void TextEdit::_update_scrollbars() {
 
 	int visible_rows = get_visible_line_count();
 	int total_rows = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_total_visible_line_count();
-	if (scroll_past_end_of_file_enabled) {
+	if (scroll_past_end_of_file_enabled && !fit_content_height) {
 		total_rows += visible_rows - 1;
 	}
 

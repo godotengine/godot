@@ -269,7 +269,7 @@ void TileSetScenesCollectionSourceEditor::_scene_file_selected(const String &p_p
 
 void TileSetScenesCollectionSourceEditor::_source_delete_pressed() {
 	Vector<int> selected_indices = scene_tiles_list->get_selected_items();
-	ERR_FAIL_COND(selected_indices.size() <= 0);
+	ERR_FAIL_COND(selected_indices.is_empty());
 	int scene_id = scene_tiles_list->get_item_metadata(selected_indices[0]);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();

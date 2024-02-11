@@ -629,6 +629,11 @@
 			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
 			Specific to the macOS platform.
 		</member>
+		<member name="interface/editor/vsync_mode" type="int" setter="" getter="">
+			Sets the V-Sync mode for the editor. Does not affect the project when run from the editor (this is controlled by [member ProjectSettings.display/window/vsync/vsync_mode]).
+			Depending on the platform and used renderer, the engine will fall back to [b]Enabled[/b] if the desired mode is not supported.
+			[b]Note:[/b] V-Sync modes other than [b]Enabled[/b] are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+		</member>
 		<member name="interface/inspector/float_drag_speed" type="float" setter="" getter="">
 			Base speed for increasing/decreasing float values by dragging them in the inspector.
 		</member>
@@ -888,7 +893,7 @@
 			[b]Note:[/b] You can hold down [kbd]Alt[/kbd] while using the mouse wheel to temporarily scroll 5 times faster.
 		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
-			If [code]true[/code], adds static typing hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key.
+			If [code]true[/code], adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key. If [code]true[/code], newly created scripts will also automatically have type hints added to their method parameters and return types.
 		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
 			If [code]true[/code], automatically completes braces when making use of code completion.

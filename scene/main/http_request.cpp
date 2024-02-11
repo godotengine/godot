@@ -50,12 +50,14 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 
 	String scheme;
 	Error err = p_url.parse_url(scheme, url, port, request_string);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing URL: " + p_url + ".");
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error parsing URL: '%s'.", p_url));
+
 	if (scheme == "https://") {
 		use_tls = true;
 	} else if (scheme != "http://") {
-		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Invalid URL scheme: " + scheme + ".");
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Invalid URL scheme: '%s'.", scheme));
 	}
+
 	if (port == 0) {
 		port = use_tls ? 443 : 80;
 	}

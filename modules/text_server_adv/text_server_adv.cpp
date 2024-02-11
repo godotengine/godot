@@ -3274,7 +3274,7 @@ TypedArray<Vector2i> TextServerAdvanced::_font_get_kerning_list(const RID &p_fon
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), TypedArray<Vector2i>());
 
 	TypedArray<Vector2i> ret;
-	for (const KeyValue<Vector2i, FontForSizeAdvanced *> &E : fd->cache) {
+	for (const KeyValue<Vector2i, Vector2> &E : fd->cache[size]->kerning_map) {
 		ret.push_back(E.key);
 	}
 	return ret;

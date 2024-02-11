@@ -73,3 +73,34 @@ GH-87668
 Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 8 to 9.
 
 Added optional "baseline_offset" argument. Compatibility method registered.
+
+
+GH-81996
+--------
+Validate extension JSON: Error: Field 'classes/GPUParticles2D/properties/process_material': type changed value in new API, from "ShaderMaterial,ParticleProcessMaterial" to "ParticleProcessMaterial,ShaderMaterial".
+Validate extension JSON: Error: Field 'classes/GPUParticles3D/properties/process_material': type changed value in new API, from "ShaderMaterial,ParticleProcessMaterial" to "ParticleProcessMaterial,ShaderMaterial".
+Validate extension JSON: Error: Field 'classes/Sky/properties/sky_material': type changed value in new API, from "ShaderMaterial,PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial" to "PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial,ShaderMaterial".
+
+Property hints reordered to improve editor usability. The types allowed are still the same as before. No adjustments should be necessary.
+
+
+GH-68420
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/_get_configuration_warnings/return_value': type changed value in new API, from "PackedStringArray" to "Array".
+
+Allow configuration warnings to refer to a property. Compatibility method registered.
+
+
+GH-86907
+--------
+
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_buffer': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_length': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_offset': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_stride': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_indices': is_const changed value in new API, from false to true.
+
+Change AudioStreamPlayer* is_autoplay_enabled and GLTFBufferView getters to be const.

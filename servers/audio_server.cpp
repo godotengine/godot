@@ -316,7 +316,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 	}
 
 #ifdef DEBUG_ENABLED
-	prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks;
+	prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks);
 #endif
 }
 
@@ -1400,7 +1400,7 @@ void AudioServer::update() {
 		// Driver time includes server time + effects times
 		// Server time includes effects times
 		uint64_t driver_time = AudioDriver::get_singleton()->get_profiling_time();
-		uint64_t server_time = prof_time;
+		uint64_t server_time = prof_time.get();
 
 		// Subtract the server time from the driver time
 		if (driver_time > server_time) {
@@ -1459,7 +1459,7 @@ void AudioServer::update() {
 	}
 
 	AudioDriver::get_singleton()->reset_profiling_time();
-	prof_time = 0;
+	prof_time.set(0);
 #endif
 
 	for (CallbackItem *ci : update_callback_list) {
@@ -1589,7 +1589,7 @@ void AudioServer::remove_listener_changed_callback(AudioCallback p_callback, voi
 }
 
 void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
-	ERR_FAIL_COND(p_bus_layout.is_null() || p_bus_layout->buses.size() == 0);
+	ERR_FAIL_COND(p_bus_layout.is_null() || p_bus_layout->buses.is_empty());
 
 	lock();
 	for (int i = 0; i < buses.size(); i++) {

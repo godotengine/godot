@@ -4866,7 +4866,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 							p.offset = data_tracks[i].data.size();
 							time_tracks[i].packets.push_back(p);
 						} else {
-							ERR_FAIL_COND(time_tracks[i].packets.size() == 0);
+							ERR_FAIL_COND(time_tracks[i].packets.is_empty());
 							time_tracks[i].packets[time_tracks[i].packets.size() - 1].count++;
 						}
 					}
@@ -4953,7 +4953,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 			p.offset = data_tracks[comp_track].data.size();
 			time_tracks[comp_track].packets.push_back(p);
 		} else {
-			ERR_CONTINUE(time_tracks[comp_track].packets.size() == 0);
+			ERR_CONTINUE(time_tracks[comp_track].packets.is_empty());
 			time_tracks[comp_track].packets[time_tracks[comp_track].packets.size() - 1].count++;
 		}
 	}

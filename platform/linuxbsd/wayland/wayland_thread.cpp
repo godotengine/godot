@@ -986,6 +986,14 @@ void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surfa
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Window left output %x.\n", (size_t)wl_output));
 }
 
+// TODO: Add support to this event.
+void WaylandThread::_wl_surface_on_preferred_buffer_scale(void *data, struct wl_surface *wl_surface, int32_t factor) {
+}
+
+// TODO: Add support to this event.
+void WaylandThread::_wl_surface_on_preferred_buffer_transform(void *data, struct wl_surface *wl_surface, uint32_t transform) {
+}
+
 void WaylandThread::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
 	ScreenState *ss = (ScreenState *)data;
 	ERR_FAIL_NULL(ss);
@@ -1506,6 +1514,8 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 			mm->set_relative(pd.position - old_pd.position);
 			mm->set_velocity((Vector2)pos_delta / time_delta);
 		}
+		mm->set_relative_screen_position(mm->get_relative());
+		mm->set_screen_velocity(mm->get_velocity());
 
 		Ref<InputEventMessage> msg;
 		msg.instantiate();
@@ -1697,6 +1707,10 @@ void WaylandThread::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *
 
 // TODO: Add support to this event.
 void WaylandThread::_wl_pointer_on_axis_value120(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t value120) {
+}
+
+// TODO: Add support to this event.
+void WaylandThread::_wl_pointer_on_axis_relative_direction(void *data, struct wl_pointer *wl_pointer, uint32_t axis, uint32_t direction) {
 }
 
 void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
@@ -2399,11 +2413,13 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		mm->set_pen_inverted(td.is_eraser);
 
 		mm->set_relative(td.position - old_td.position);
+		mm->set_relative_screen_position(mm->get_relative());
 
 		// FIXME: Stop doing this to calculate speed.
 		// FIXME2: It has been done, port this from the pointer logic once this works again.
 		Input::get_singleton()->set_mouse_position(td.position);
 		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+		mm->set_screen_velocity(mm->get_velocity());
 
 		Ref<InputEventMessage> inputev_msg;
 		inputev_msg.instantiate();

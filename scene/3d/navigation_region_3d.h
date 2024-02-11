@@ -105,8 +105,9 @@ public:
 	/// sets the new navigation mesh and emits a signal
 	void bake_navigation_mesh(bool p_on_thread);
 	void _bake_finished(Ref<NavigationMesh> p_navigation_mesh);
+	bool is_baking() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	NavigationRegion3D();
 	~NavigationRegion3D();

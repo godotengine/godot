@@ -35,6 +35,7 @@
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
 #include "gdscript_rpc_callable.h"
+#include "gdscript_tokenizer_buffer.h"
 #include "gdscript_warning.h"
 
 #ifdef TOOLS_ENABLED
@@ -162,13 +163,14 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 
 	_super_implicit_constructor(this, instance, r_error);
 	if (r_error.error != Callable::CallError::CALL_OK) {
+		String error_text = Variant::get_call_error_text(instance->owner, "@implicit_new", nullptr, 0, r_error);
 		instance->script = Ref<GDScript>();
 		instance->owner->set_script_instance(nullptr);
 		{
 			MutexLock lock(GDScriptLanguage::singleton->mutex);
 			instances.erase(p_owner);
 		}
-		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
+		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 	}
 
 	if (p_argcount < 0) {
@@ -179,13 +181,14 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	if (initializer != nullptr) {
 		initializer->call(instance, p_args, p_argcount, r_error);
 		if (r_error.error != Callable::CallError::CALL_OK) {
+			String error_text = Variant::get_call_error_text(instance->owner, "_init", p_args, p_argcount, r_error);
 			instance->script = Ref<GDScript>();
 			instance->owner->set_script_instance(nullptr);
 			{
 				MutexLock lock(GDScriptLanguage::singleton->mutex);
 				instances.erase(p_owner);
 			}
-			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
+			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 		}
 	}
 	//@TODO make thread safe
@@ -738,7 +741,12 @@ Error GDScript::reload(bool p_keep_state) {
 
 	valid = false;
 	GDScriptParser parser;
-	Error err = parser.parse(source, path, false);
+	Error err;
+	if (!binary_tokens.is_empty()) {
+		err = parser.parse_binary(binary_tokens, path);
+	} else {
+		err = parser.parse(source, path, false);
+	}
 	if (err) {
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
@@ -1046,6 +1054,19 @@ Error GDScript::load_source_code(const String &p_path) {
 	set_last_modified_time(FileAccess::get_modified_time(path));
 #endif // TOOLS_ENABLED
 	return OK;
+}
+
+void GDScript::set_binary_tokens_source(const Vector<uint8_t> &p_binary_tokens) {
+	binary_tokens = p_binary_tokens;
+}
+
+const Vector<uint8_t> &GDScript::get_binary_tokens_source() const {
+	return binary_tokens;
+}
+
+Vector<uint8_t> GDScript::get_as_binary_tokens() const {
+	GDScriptTokenizerBuffer tokenizer;
+	return tokenizer.parse_code_string(source, GDScriptTokenizerBuffer::COMPRESS_NONE);
 }
 
 const HashMap<StringName, GDScriptFunction *> &GDScript::debug_get_member_functions() const {
@@ -2803,6 +2824,7 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 
 void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("gd");
+	p_extensions->push_back("gdc");
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
@@ -2811,7 +2833,7 @@ bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "gd") {
+	if (el == "gd" || el == "gdc") {
 		return "GDScript";
 	}
 	return "";

@@ -35,6 +35,8 @@
 #include "core/string/translation.h"
 #include "scene/theme/theme_db.h"
 
+PropertyListHelper ItemList::base_property_helper;
+
 void ItemList::_shape_text(int p_idx) {
 	Item &item = items.write[p_idx];
 
@@ -1678,23 +1680,10 @@ TextServer::OverrunBehavior ItemList::get_text_overrun_behavior() const {
 }
 
 bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
-		int item_index = components[0].trim_prefix("item_").to_int();
-		if (components[1] == "text") {
-			set_item_text(item_index, p_value);
-			return true;
-		} else if (components[1] == "icon") {
-			set_item_icon(item_index, p_value);
-			return true;
-		} else if (components[1] == "disabled") {
-			set_item_disabled(item_index, p_value);
-			return true;
-		} else if (components[1] == "selectable") {
-			set_item_selectable(item_index, p_value);
-			return true;
-		}
+	if (property_helper.property_set_value(p_name, p_value)) {
+		return true;
 	}
+
 #ifndef DISABLE_DEPRECATED
 	// Compatibility.
 	if (p_name == "items") {
@@ -1717,42 +1706,19 @@ bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool ItemList::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
-		int item_index = components[0].trim_prefix("item_").to_int();
-		if (components[1] == "text") {
-			r_ret = get_item_text(item_index);
-			return true;
-		} else if (components[1] == "icon") {
-			r_ret = get_item_icon(item_index);
-			return true;
-		} else if (components[1] == "disabled") {
-			r_ret = is_item_disabled(item_index);
-			return true;
-		} else if (components[1] == "selectable") {
-			r_ret = is_item_selectable(item_index);
-			return true;
-		}
-	}
-	return false;
+	return property_helper.property_get_value(p_name, r_ret);
 }
 
 void ItemList::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < items.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
+	property_helper.get_property_list(p_list, items.size());
+}
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
-		pi.usage &= ~(get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
+bool ItemList::_property_can_revert(const StringName &p_name) const {
+	return property_helper.property_can_revert(p_name);
+}
 
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/selectable", i));
-		pi.usage &= ~(is_item_selectable(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/disabled", i));
-		pi.usage &= ~(!is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-	}
+bool ItemList::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	return property_helper.property_get_revert(p_name, r_property);
 }
 
 void ItemList::_bind_methods() {
@@ -1919,6 +1885,14 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_style, "cursor_unfocused");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_focus_style, "cursor");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, guide_color);
+
+	Item defaults(true);
+
+	base_property_helper.set_prefix("item_");
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, "set_item_text", "get_item_text");
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, "set_item_icon", "get_item_icon");
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "selectable"), defaults.selectable, "set_item_selectable", "is_item_selectable");
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, "set_item_disabled", "is_item_disabled");
 }
 
 ItemList::ItemList() {
@@ -1930,6 +1904,8 @@ ItemList::ItemList() {
 
 	set_focus_mode(FOCUS_ALL);
 	set_clip_contents(true);
+
+	property_helper.setup_for_instance(base_property_helper, this);
 }
 
 ItemList::~ItemList() {

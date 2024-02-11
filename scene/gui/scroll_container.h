@@ -119,7 +119,7 @@ public:
 	VScrollBar *get_v_scroll_bar();
 	void ensure_control_visible(Control *p_control);
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	ScrollContainer();
 };

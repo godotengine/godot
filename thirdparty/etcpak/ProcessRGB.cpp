@@ -3266,16 +3266,21 @@ etcpak_force_inline static int16x8_t WidenMultiplier_EAC_NEON( int16x8_t multipl
 
 #endif
 
+template<bool checkSolid = true>
 static etcpak_force_inline uint64_t ProcessAlpha_ETC2( const uint8_t* src )
 {
 #if defined __SSE4_1__
-    // Check solid
     __m128i s = _mm_loadu_si128( (__m128i*)src );
-    __m128i solidCmp = _mm_set1_epi8( src[0] );
-    __m128i cmpRes = _mm_cmpeq_epi8( s, solidCmp );
-    if( _mm_testc_si128( cmpRes, _mm_set1_epi32( -1 ) ) )
+
+    if( checkSolid )
     {
-        return src[0];
+        // Check solid
+        __m128i solidCmp = _mm_set1_epi8( src[0] );
+        __m128i cmpRes = _mm_cmpeq_epi8( s, solidCmp );
+        if( _mm_testc_si128( cmpRes, _mm_set1_epi32( -1 ) ) )
+        {
+            return src[0];
+        }
     }
 
     // Calculate min, max
@@ -3684,12 +3689,15 @@ static etcpak_force_inline uint64_t ProcessAlpha_ETC2( const uint8_t* src )
     int srcMid;
     uint8x16_t srcAlphaBlock = vld1q_u8( src );
     {
-        uint8_t ref = src[0];
-        uint8x16_t a0 = vdupq_n_u8( ref );
-        uint8x16_t r = vceqq_u8( srcAlphaBlock, a0 );
-        int64x2_t m = vreinterpretq_s64_u8( r );
-        if( m[0] == -1 && m[1] == -1 )
-            return ref;
+        if( checkSolid )
+        {
+            uint8_t ref = src[0];
+            uint8x16_t a0 = vdupq_n_u8( ref );
+            uint8x16_t r = vceqq_u8( srcAlphaBlock, a0 );
+            int64x2_t m = vreinterpretq_s64_u8( r );
+            if( m[0] == -1 && m[1] == -1 )
+                return ref;
+        }
 
         // srcRange
 #ifdef __aarch64__
@@ -3759,6 +3767,7 @@ static etcpak_force_inline uint64_t ProcessAlpha_ETC2( const uint8_t* src )
 #undef EAC_RECONSTRUCT_VALUE
 
 #else
+    if( checkSolid )
     {
         bool solid = true;
         const uint8_t* ptr = src + 1;
@@ -3848,7 +3857,6 @@ static etcpak_force_inline uint64_t ProcessAlpha_ETC2( const uint8_t* src )
     return _bswap64( d );
 #endif
 }
-
 
 void CompressEtc1Alpha( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
 {
@@ -4176,14 +4184,13 @@ void CompressEtc2Rgba( const uint32_t* src, uint64_t* dst, uint32_t blocks, size
             src += width * 3;
             w = 0;
         }
-        *dst++ = ProcessAlpha_ETC2( alpha );
+        *dst++ = ProcessAlpha_ETC2<true>( alpha );
         *dst++ = ProcessRGB_ETC2( (uint8_t*)rgba, useHeuristics );
     }
     while( --blocks );
 }
 
-// -- GODOT start --
-void CompressEtc2R8( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+void CompressEacR( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
 {
     int w = 0;
     uint8_t r[4*4];
@@ -4239,12 +4246,12 @@ void CompressEtc2R8( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t
             src += width * 3;
             w = 0;
         }
-        *dst++ = ProcessAlpha_ETC2( r );
+        *dst++ = ProcessAlpha_ETC2<false>( r );
     }
     while( --blocks );
 }
 
-void CompressEtc2RG8( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+void CompressEacRg( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
 {
     int w = 0;
     uint8_t rg[4*4*2];
@@ -4300,15 +4307,15 @@ void CompressEtc2RG8( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_
             src += width;
             v = *src;
             *ptrr++ = (v & 0xff0000) >> 16;
-			*ptrg++ = (v & 0xff00) >> 8;
+            *ptrg++ = (v & 0xff00) >> 8;
             src += width;
             v = *src;
             *ptrr++ = (v & 0xff0000) >> 16;
-			*ptrg++ = (v & 0xff00) >> 8;
+            *ptrg++ = (v & 0xff00) >> 8;
             src += width;
             v = *src;
             *ptrr++ = (v & 0xff0000) >> 16;
-			*ptrg++ = (v & 0xff00) >> 8;
+            *ptrg++ = (v & 0xff00) >> 8;
             src -= width * 3 - 1;
         }
 #endif
@@ -4317,9 +4324,8 @@ void CompressEtc2RG8( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_
             src += width * 3;
             w = 0;
         }
-        *dst++ = ProcessAlpha_ETC2( rg );
-        *dst++ = ProcessAlpha_ETC2( &rg[16] );
+        *dst++ = ProcessAlpha_ETC2<false>( rg );
+        *dst++ = ProcessAlpha_ETC2<false>( &rg[16] );
     }
     while( --blocks );
 }
-// -- GODOT end --

@@ -138,7 +138,7 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 
 RID ShaderRD::version_create() {
 	//initialize() was never called
-	ERR_FAIL_COND_V(group_to_variant_map.size() == 0, RID());
+	ERR_FAIL_COND_V(group_to_variant_map.is_empty(), RID());
 
 	Version version;
 	version.dirty = true;
@@ -301,7 +301,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 
 	Vector<uint8_t> shader_data = RD::get_singleton()->shader_compile_binary_from_spirv(stages, name + ":" + itos(variant));
 
-	ERR_FAIL_COND(shader_data.size() == 0);
+	ERR_FAIL_COND(shader_data.is_empty());
 
 	{
 		MutexLock lock(variant_set_mutex);
@@ -714,7 +714,7 @@ ShaderRD::ShaderRD() {
 
 void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines) {
 	ERR_FAIL_COND(variant_defines.size());
-	ERR_FAIL_COND(p_variant_defines.size() == 0);
+	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
 
@@ -776,7 +776,7 @@ void ShaderRD::_initialize_cache() {
 // Same as above, but allows specifying shader compilation groups.
 void ShaderRD::initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines) {
 	ERR_FAIL_COND(variant_defines.size());
-	ERR_FAIL_COND(p_variant_defines.size() == 0);
+	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
 

@@ -996,7 +996,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 		const String &file = p_files[i];
 		folders_set.insert(da->dir_exists(file) ? file : file.get_base_dir());
 	}
-	ERR_FAIL_COND(folders_set.size() == 0); // This can't really happen, we consume every dropped file path above.
+	ERR_FAIL_COND(folders_set.is_empty()); // This can't really happen, we consume every dropped file path above.
 
 	PackedStringArray folders;
 	for (const String &E : folders_set) {

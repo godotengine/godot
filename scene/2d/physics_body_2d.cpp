@@ -35,6 +35,7 @@
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_gravity"), &PhysicsBody2D::get_gravity);
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
@@ -143,6 +144,12 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion
 	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+}
+
+Vector2 PhysicsBody2D::get_gravity() const {
+	PhysicsDirectBodyState2D *state = PhysicsServer2D::get_singleton()->body_get_direct_state(get_rid());
+	ERR_FAIL_NULL_V(state, Vector2());
+	return state->get_total_gravity();
 }
 
 TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
@@ -921,10 +928,10 @@ void RigidBody2D::_notification(int p_what) {
 #endif
 }
 
-PackedStringArray RigidBody2D::get_configuration_warnings() const {
+Array RigidBody2D::get_configuration_warnings() const {
 	Transform2D t = get_transform();
 
-	PackedStringArray warnings = CollisionObject2D::get_configuration_warnings();
+	Array warnings = CollisionObject2D::get_configuration_warnings();
 
 	if (ABS(t.columns[0].length() - 1.0) > 0.05 || ABS(t.columns[1].length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));

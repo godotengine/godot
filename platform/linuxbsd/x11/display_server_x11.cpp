@@ -4524,6 +4524,7 @@ void DisplayServerX11::process_events() {
 							sd->set_index(index);
 							sd->set_position(pos);
 							sd->set_relative(pos - curr_pos_elem->value);
+							sd->set_relative_screen_position(sd->get_relative());
 							Input::get_singleton()->parse_input_event(sd);
 
 							curr_pos_elem->value = pos;
@@ -4945,8 +4946,10 @@ void DisplayServerX11::process_events() {
 				mm->set_position(pos);
 				mm->set_global_position(pos);
 				mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+				mm->set_screen_velocity(mm->get_velocity());
 
 				mm->set_relative(rel);
+				mm->set_relative_screen_position(rel);
 
 				last_mouse_pos = pos;
 
@@ -6080,10 +6083,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	if (context_rd) {
 		if (context_rd->initialize() != OK) {
+			ERR_PRINT(vformat("Could not initialize %s", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
 			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG(vformat("Could not initialize %s", context_rd->get_api_name()));
+			return;
 		}
 		driver_found = true;
 	}

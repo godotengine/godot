@@ -306,7 +306,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			Vector<String> face[3];
 			face[0] = v[1].split("/");
 			face[1] = v[2].split("/");
-			ERR_FAIL_COND_V(face[0].size() == 0, ERR_FILE_CORRUPT);
+			ERR_FAIL_COND_V(face[0].is_empty(), ERR_FILE_CORRUPT);
 
 			ERR_FAIL_COND_V(face[0].size() != face[1].size(), ERR_FILE_CORRUPT);
 			for (int i = 2; i < v.size() - 1; i++) {

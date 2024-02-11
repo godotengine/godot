@@ -431,7 +431,7 @@ public:
 	void set_as_black();
 
 	void copy_internals_from(const Ref<Image> &p_image) {
-		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
+		ERR_FAIL_COND_MSG(p_image.is_null(), "Cannot copy image internals: invalid Image object.");
 		format = p_image->format;
 		width = p_image->width;
 		height = p_image->height;

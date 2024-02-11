@@ -342,6 +342,13 @@
 				Returns information about the current state of the NavigationServer. See [enum ProcessInfo] for a list of available states.
 			</description>
 		</method>
+		<method name="is_baking_navigation_mesh" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<description>
+				Returns [code]true[/code] when the provided navigation mesh is being baked on a background thread.
+			</description>
+		</method>
 		<method name="link_create">
 			<return type="RID" />
 			<description>

@@ -35,7 +35,6 @@
 
 #include <ProcessDxtc.hpp>
 #include <ProcessRGB.hpp>
-#include <ProcessRgtc.hpp>
 
 EtcpakType _determine_etc_type(Image::UsedChannels p_channels) {
 	switch (p_channels) {
@@ -246,11 +245,11 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_ETC2_R:
-				CompressEtc2R8(src_mip_read, dest_mip_write, blocks, mip_w);
+				CompressEacR(src_mip_read, dest_mip_write, blocks, mip_w);
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_ETC2_RG:
-				CompressEtc2RG8(src_mip_read, dest_mip_write, blocks, mip_w);
+				CompressEacRg(src_mip_read, dest_mip_write, blocks, mip_w);
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_DXT1:
@@ -263,11 +262,11 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_RGTC_R:
-				CompressRgtcR(src_mip_read, dest_mip_write, blocks, mip_w);
+				CompressBc4(src_mip_read, dest_mip_write, blocks, mip_w);
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_RGTC_RG:
-				CompressRgtcRG(src_mip_read, dest_mip_write, blocks, mip_w);
+				CompressBc5(src_mip_read, dest_mip_write, blocks, mip_w);
 				break;
 
 			default:

@@ -49,6 +49,12 @@
 				Returns the [RID] of this region on the [NavigationServer3D]. Combined with [method NavigationServer3D.map_get_closest_point_owner] can be used to identify the [NavigationRegion3D] closest to a point on the merged navigation map.
 			</description>
 		</method>
+		<method name="is_baking" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] when the [NavigationMesh] is being baked on a background thread.
+			</description>
+		</method>
 		<method name="set_navigation_layer_value">
 			<return type="void" />
 			<param index="0" name="layer_number" type="int" />

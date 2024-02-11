@@ -1371,7 +1371,17 @@ void EditorHelp::_update_doc() {
 		}
 
 		// Enums
-		if (enums.size()) {
+		bool has_enums = enums.size() && !cd.is_script_doc;
+		if (enums.size() && !has_enums) {
+			for (KeyValue<String, DocData::EnumDoc> &E : cd.enums) {
+				if (E.key.begins_with("_") && E.value.description.strip_edges().is_empty()) {
+					continue;
+				}
+				has_enums = true;
+				break;
+			}
+		}
+		if (has_enums) {
 			section_line.push_back(Pair<String, int>(TTR("Enumerations"), class_desc->get_paragraph_count() - 2));
 			_push_title_font();
 			class_desc->add_text(TTR("Enumerations"));
@@ -1381,8 +1391,17 @@ void EditorHelp::_update_doc() {
 			class_desc->add_newline();
 
 			for (KeyValue<String, Vector<DocData::ConstantDoc>> &E : enums) {
-				enum_line[E.key] = class_desc->get_paragraph_count() - 2;
+				String key = E.key;
+				if ((key.get_slice_count(".") > 1) && (key.get_slice(".", 0) == edited_class)) {
+					key = key.get_slice(".", 1);
+				}
+				if (cd.enums.has(key)) {
+					if (cd.is_script_doc && cd.enums[key].description.strip_edges().is_empty() && E.key.begins_with("_")) {
+						continue;
+					}
+				}
 
+				enum_line[E.key] = class_desc->get_paragraph_count() - 2;
 				_push_code_font();
 
 				class_desc->push_color(theme_cache.title_color);
@@ -1393,27 +1412,19 @@ void EditorHelp::_update_doc() {
 				}
 				class_desc->pop();
 
-				String e = E.key;
-				if ((e.get_slice_count(".") > 1) && (e.get_slice(".", 0) == edited_class)) {
-					e = e.get_slice(".", 1);
-				}
-
 				class_desc->push_color(theme_cache.headline_color);
-				class_desc->add_text(e);
+				class_desc->add_text(key);
 				class_desc->pop();
 
 				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text(":");
 				class_desc->pop();
 
-				if (cd.enums.has(e)) {
-					if (cd.enums[e].is_deprecated) {
-						DEPRECATED_DOC_TAG;
-					}
-
-					if (cd.enums[e].is_experimental) {
-						EXPERIMENTAL_DOC_TAG;
-					}
+				if (cd.enums[key].is_deprecated) {
+					DEPRECATED_DOC_TAG;
+				}
+				if (cd.enums[key].is_experimental) {
+					EXPERIMENTAL_DOC_TAG;
 				}
 
 				_pop_code_font();
@@ -1422,11 +1433,11 @@ void EditorHelp::_update_doc() {
 				class_desc->add_newline();
 
 				// Enum description.
-				if (e != "@unnamed_enums" && cd.enums.has(e) && !cd.enums[e].description.strip_edges().is_empty()) {
+				if (key != "@unnamed_enums" && cd.enums.has(key) && !cd.enums[key].description.strip_edges().is_empty()) {
 					class_desc->push_color(theme_cache.text_color);
 					_push_normal_font();
 					class_desc->push_indent(1);
-					_add_text(cd.enums[e].description);
+					_add_text(cd.enums[key].description);
 					class_desc->pop();
 					_pop_normal_font();
 					class_desc->pop();

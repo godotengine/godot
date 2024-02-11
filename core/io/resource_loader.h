@@ -39,6 +39,9 @@
 
 class ConditionVariable;
 
+template <int Tag>
+class SafeBinaryMutex;
+
 class ResourceFormatLoader : public RefCounted {
 	GDCLASS(ResourceFormatLoader, RefCounted);
 

@@ -82,7 +82,7 @@ Dictionary Control::_edit_get_state() const {
 }
 
 void Control::_edit_set_state(const Dictionary &p_state) {
-	ERR_FAIL_COND((p_state.size() <= 0) ||
+	ERR_FAIL_COND(p_state.is_empty() ||
 			!p_state.has("rotation") || !p_state.has("scale") ||
 			!p_state.has("pivot") || !p_state.has("anchors") || !p_state.has("offsets") ||
 			!p_state.has("layout_mode") || !p_state.has("anchors_layout_preset"));
@@ -228,9 +228,9 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 	}
 }
 
-PackedStringArray Control::get_configuration_warnings() const {
-	ERR_READ_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array Control::get_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(Array());
+	Array warnings = Node::get_configuration_warnings();
 
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));

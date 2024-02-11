@@ -404,21 +404,21 @@ public:
 	operator Dictionary() const;
 	operator Array() const;
 
-	operator Vector<uint8_t>() const;
-	operator Vector<int32_t>() const;
-	operator Vector<int64_t>() const;
-	operator Vector<float>() const;
-	operator Vector<double>() const;
-	operator Vector<String>() const;
-	operator Vector<Vector3>() const;
-	operator Vector<Color>() const;
+	operator PackedByteArray() const;
+	operator PackedInt32Array() const;
+	operator PackedInt64Array() const;
+	operator PackedFloat32Array() const;
+	operator PackedFloat64Array() const;
+	operator PackedStringArray() const;
+	operator PackedVector3Array() const;
+	operator PackedVector2Array() const;
+	operator PackedColorArray() const;
+
+	operator Vector<::RID>() const;
 	operator Vector<Plane>() const;
 	operator Vector<Face3>() const;
-
 	operator Vector<Variant>() const;
 	operator Vector<StringName>() const;
-	operator Vector<::RID>() const;
-	operator Vector<Vector2>() const;
 
 	// some core type enums to convert to
 	operator Side() const;
@@ -473,21 +473,21 @@ public:
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);
-	Variant(const Vector<Plane> &p_array); // helper
-	Variant(const Vector<uint8_t> &p_byte_array);
-	Variant(const Vector<int32_t> &p_int32_array);
-	Variant(const Vector<int64_t> &p_int64_array);
-	Variant(const Vector<float> &p_float32_array);
-	Variant(const Vector<double> &p_float64_array);
-	Variant(const Vector<String> &p_string_array);
-	Variant(const Vector<Vector3> &p_vector3_array);
-	Variant(const Vector<Color> &p_color_array);
-	Variant(const Vector<Face3> &p_face_array);
+	Variant(const PackedByteArray &p_byte_array);
+	Variant(const PackedInt32Array &p_int32_array);
+	Variant(const PackedInt64Array &p_int64_array);
+	Variant(const PackedFloat32Array &p_float32_array);
+	Variant(const PackedFloat64Array &p_float64_array);
+	Variant(const PackedStringArray &p_string_array);
+	Variant(const PackedVector2Array &p_vector2_array);
+	Variant(const PackedVector3Array &p_vector3_array);
+	Variant(const PackedColorArray &p_color_array);
 
+	Variant(const Vector<::RID> &p_array); // helper
+	Variant(const Vector<Plane> &p_array); // helper
+	Variant(const Vector<Face3> &p_face_array);
 	Variant(const Vector<Variant> &p_array);
 	Variant(const Vector<StringName> &p_array);
-	Variant(const Vector<::RID> &p_array); // helper
-	Variant(const Vector<Vector2> &p_array); // helper
 
 	Variant(const IPAddress &p_address);
 

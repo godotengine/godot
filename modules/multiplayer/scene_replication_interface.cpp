@@ -783,7 +783,7 @@ Error SceneReplicationInterface::on_delta_receive(int p_from, const uint8_t *p_b
 			ERR_CONTINUE_MSG(true, "Ignoring delta for non-authority or invalid synchronizer.");
 		}
 		List<NodePath> props = sync->get_delta_properties(indexes);
-		ERR_FAIL_COND_V(props.size() == 0, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(props.is_empty(), ERR_INVALID_DATA);
 		Vector<Variant> vars;
 		vars.resize(props.size());
 		int consumed = 0;

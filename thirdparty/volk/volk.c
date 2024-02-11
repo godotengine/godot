@@ -17,6 +17,10 @@
 #	include <dlfcn.h>
 #endif
 
+#ifdef __APPLE__
+#	include <stdlib.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,8 +28,10 @@ extern "C" {
 #ifdef _WIN32
 __declspec(dllimport) HMODULE __stdcall LoadLibraryA(LPCSTR);
 __declspec(dllimport) FARPROC __stdcall GetProcAddress(HMODULE, LPCSTR);
+__declspec(dllimport) int __stdcall FreeLibrary(HMODULE);
 #endif
 
+static void* loadedModule = NULL;
 static VkInstance loadedInstance = VK_NULL_HANDLE;
 static VkDevice loadedDevice = VK_NULL_HANDLE;
 
@@ -44,6 +50,13 @@ static PFN_vkVoidFunction vkGetDeviceProcAddrStub(void* context, const char* nam
 	return vkGetDeviceProcAddr((VkDevice)context, name);
 }
 
+static PFN_vkVoidFunction nullProcAddrStub(void* context, const char* name)
+{
+	(void)context;
+	(void)name;
+	return NULL;
+}
+
 VkResult volkInitialize(void)
 {
 #if defined(_WIN32)
@@ -59,6 +72,10 @@ VkResult volkInitialize(void)
 		module = dlopen("libvulkan.1.dylib", RTLD_NOW | RTLD_LOCAL);
 	if (!module)
 		module = dlopen("libMoltenVK.dylib", RTLD_NOW | RTLD_LOCAL);
+	// modern versions of macOS don't search /usr/local/lib automatically contrary to what man dlopen says
+	// Vulkan SDK uses this as the system-wide installation location, so we're going to fallback to this if all else fails
+	if (!module && getenv("DYLD_FALLBACK_LIBRARY_PATH") == NULL)
+		module = dlopen("/usr/local/lib/libvulkan.dylib", RTLD_NOW | RTLD_LOCAL);
 	if (!module)
 		return VK_ERROR_INITIALIZATION_FAILED;
 
@@ -73,6 +90,7 @@ VkResult volkInitialize(void)
 	vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)dlsym(module, "vkGetInstanceProcAddr");
 #endif
 
+	loadedModule = module;
 	volkGenLoadLoader(NULL, vkGetInstanceProcAddrStub);
 
 	return VK_SUCCESS;
@@ -82,7 +100,29 @@ void volkInitializeCustom(PFN_vkGetInstanceProcAddr handler)
 {
 	vkGetInstanceProcAddr = handler;
 
+	loadedModule = NULL;
 	volkGenLoadLoader(NULL, vkGetInstanceProcAddrStub);
+}
+
+void volkFinalize(void)
+{
+	if (loadedModule)
+	{
+#if defined(_WIN32)
+		FreeLibrary((HMODULE)loadedModule);
+#else
+		dlclose(loadedModule);
+#endif
+	}
+
+	vkGetInstanceProcAddr = NULL;
+	volkGenLoadLoader(NULL, nullProcAddrStub);
+	volkGenLoadInstance(NULL, nullProcAddrStub);
+	volkGenLoadDevice(NULL, nullProcAddrStub);
+
+	loadedModule = NULL;
+	loadedInstance = VK_NULL_HANDLE;
+	loadedDevice = VK_NULL_HANDLE;
 }
 
 uint32_t volkGetInstanceVersion(void)
@@ -108,8 +148,8 @@ void volkLoadInstance(VkInstance instance)
 
 void volkLoadInstanceOnly(VkInstance instance)
 {
-    loadedInstance = instance;
-    volkGenLoadInstance(instance, vkGetInstanceProcAddrStub);
+	loadedInstance = instance;
+	volkGenLoadInstance(instance, vkGetInstanceProcAddrStub);
 }
 
 VkInstance volkGetLoadedInstance(void)
@@ -244,6 +284,9 @@ static void volkGenLoadInstance(void* context, PFN_vkVoidFunction (*load)(void*,
 #if defined(VK_KHR_android_surface)
 	vkCreateAndroidSurfaceKHR = (PFN_vkCreateAndroidSurfaceKHR)load(context, "vkCreateAndroidSurfaceKHR");
 #endif /* defined(VK_KHR_android_surface) */
+#if defined(VK_KHR_calibrated_timestamps)
+	vkGetPhysicalDeviceCalibrateableTimeDomainsKHR = (PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR)load(context, "vkGetPhysicalDeviceCalibrateableTimeDomainsKHR");
+#endif /* defined(VK_KHR_calibrated_timestamps) */
 #if defined(VK_KHR_cooperative_matrix)
 	vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR = (PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR)load(context, "vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR");
 #endif /* defined(VK_KHR_cooperative_matrix) */
@@ -801,6 +844,9 @@ static void volkGenLoadDevice(void* context, PFN_vkVoidFunction (*load)(void*, c
 	vkGetBufferOpaqueCaptureAddressKHR = (PFN_vkGetBufferOpaqueCaptureAddressKHR)load(context, "vkGetBufferOpaqueCaptureAddressKHR");
 	vkGetDeviceMemoryOpaqueCaptureAddressKHR = (PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR)load(context, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
 #endif /* defined(VK_KHR_buffer_device_address) */
+#if defined(VK_KHR_calibrated_timestamps)
+	vkGetCalibratedTimestampsKHR = (PFN_vkGetCalibratedTimestampsKHR)load(context, "vkGetCalibratedTimestampsKHR");
+#endif /* defined(VK_KHR_calibrated_timestamps) */
 #if defined(VK_KHR_copy_commands2)
 	vkCmdBlitImage2KHR = (PFN_vkCmdBlitImage2KHR)load(context, "vkCmdBlitImage2KHR");
 	vkCmdCopyBuffer2KHR = (PFN_vkCmdCopyBuffer2KHR)load(context, "vkCmdCopyBuffer2KHR");
@@ -892,6 +938,18 @@ static void volkGenLoadDevice(void* context, PFN_vkVoidFunction (*load)(void*, c
 	vkGetImageSubresourceLayout2KHR = (PFN_vkGetImageSubresourceLayout2KHR)load(context, "vkGetImageSubresourceLayout2KHR");
 	vkGetRenderingAreaGranularityKHR = (PFN_vkGetRenderingAreaGranularityKHR)load(context, "vkGetRenderingAreaGranularityKHR");
 #endif /* defined(VK_KHR_maintenance5) */
+#if defined(VK_KHR_maintenance6)
+	vkCmdBindDescriptorSets2KHR = (PFN_vkCmdBindDescriptorSets2KHR)load(context, "vkCmdBindDescriptorSets2KHR");
+	vkCmdPushConstants2KHR = (PFN_vkCmdPushConstants2KHR)load(context, "vkCmdPushConstants2KHR");
+#endif /* defined(VK_KHR_maintenance6) */
+#if defined(VK_KHR_maintenance6) && defined(VK_KHR_push_descriptor)
+	vkCmdPushDescriptorSet2KHR = (PFN_vkCmdPushDescriptorSet2KHR)load(context, "vkCmdPushDescriptorSet2KHR");
+	vkCmdPushDescriptorSetWithTemplate2KHR = (PFN_vkCmdPushDescriptorSetWithTemplate2KHR)load(context, "vkCmdPushDescriptorSetWithTemplate2KHR");
+#endif /* defined(VK_KHR_maintenance6) && defined(VK_KHR_push_descriptor) */
+#if defined(VK_KHR_maintenance6) && defined(VK_EXT_descriptor_buffer)
+	vkCmdBindDescriptorBufferEmbeddedSamplers2EXT = (PFN_vkCmdBindDescriptorBufferEmbeddedSamplers2EXT)load(context, "vkCmdBindDescriptorBufferEmbeddedSamplers2EXT");
+	vkCmdSetDescriptorBufferOffsets2EXT = (PFN_vkCmdSetDescriptorBufferOffsets2EXT)load(context, "vkCmdSetDescriptorBufferOffsets2EXT");
+#endif /* defined(VK_KHR_maintenance6) && defined(VK_EXT_descriptor_buffer) */
 #if defined(VK_KHR_map_memory2)
 	vkMapMemory2KHR = (PFN_vkMapMemory2KHR)load(context, "vkMapMemory2KHR");
 	vkUnmapMemory2KHR = (PFN_vkUnmapMemory2KHR)load(context, "vkUnmapMemory2KHR");
@@ -993,6 +1051,14 @@ static void volkGenLoadDevice(void* context, PFN_vkVoidFunction (*load)(void*, c
 	vkCmdCopyMemoryIndirectNV = (PFN_vkCmdCopyMemoryIndirectNV)load(context, "vkCmdCopyMemoryIndirectNV");
 	vkCmdCopyMemoryToImageIndirectNV = (PFN_vkCmdCopyMemoryToImageIndirectNV)load(context, "vkCmdCopyMemoryToImageIndirectNV");
 #endif /* defined(VK_NV_copy_memory_indirect) */
+#if defined(VK_NV_cuda_kernel_launch)
+	vkCmdCudaLaunchKernelNV = (PFN_vkCmdCudaLaunchKernelNV)load(context, "vkCmdCudaLaunchKernelNV");
+	vkCreateCudaFunctionNV = (PFN_vkCreateCudaFunctionNV)load(context, "vkCreateCudaFunctionNV");
+	vkCreateCudaModuleNV = (PFN_vkCreateCudaModuleNV)load(context, "vkCreateCudaModuleNV");
+	vkDestroyCudaFunctionNV = (PFN_vkDestroyCudaFunctionNV)load(context, "vkDestroyCudaFunctionNV");
+	vkDestroyCudaModuleNV = (PFN_vkDestroyCudaModuleNV)load(context, "vkDestroyCudaModuleNV");
+	vkGetCudaModuleCacheNV = (PFN_vkGetCudaModuleCacheNV)load(context, "vkGetCudaModuleCacheNV");
+#endif /* defined(VK_NV_cuda_kernel_launch) */
 #if defined(VK_NV_device_diagnostic_checkpoints)
 	vkCmdSetCheckpointNV = (PFN_vkCmdSetCheckpointNV)load(context, "vkCmdSetCheckpointNV");
 	vkGetQueueCheckpointDataNV = (PFN_vkGetQueueCheckpointDataNV)load(context, "vkGetQueueCheckpointDataNV");
@@ -1609,6 +1675,9 @@ static void volkGenLoadDeviceTable(struct VolkDeviceTable* table, void* context,
 	table->vkGetBufferOpaqueCaptureAddressKHR = (PFN_vkGetBufferOpaqueCaptureAddressKHR)load(context, "vkGetBufferOpaqueCaptureAddressKHR");
 	table->vkGetDeviceMemoryOpaqueCaptureAddressKHR = (PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR)load(context, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
 #endif /* defined(VK_KHR_buffer_device_address) */
+#if defined(VK_KHR_calibrated_timestamps)
+	table->vkGetCalibratedTimestampsKHR = (PFN_vkGetCalibratedTimestampsKHR)load(context, "vkGetCalibratedTimestampsKHR");
+#endif /* defined(VK_KHR_calibrated_timestamps) */
 #if defined(VK_KHR_copy_commands2)
 	table->vkCmdBlitImage2KHR = (PFN_vkCmdBlitImage2KHR)load(context, "vkCmdBlitImage2KHR");
 	table->vkCmdCopyBuffer2KHR = (PFN_vkCmdCopyBuffer2KHR)load(context, "vkCmdCopyBuffer2KHR");
@@ -1700,6 +1769,18 @@ static void volkGenLoadDeviceTable(struct VolkDeviceTable* table, void* context,
 	table->vkGetImageSubresourceLayout2KHR = (PFN_vkGetImageSubresourceLayout2KHR)load(context, "vkGetImageSubresourceLayout2KHR");
 	table->vkGetRenderingAreaGranularityKHR = (PFN_vkGetRenderingAreaGranularityKHR)load(context, "vkGetRenderingAreaGranularityKHR");
 #endif /* defined(VK_KHR_maintenance5) */
+#if defined(VK_KHR_maintenance6)
+	table->vkCmdBindDescriptorSets2KHR = (PFN_vkCmdBindDescriptorSets2KHR)load(context, "vkCmdBindDescriptorSets2KHR");
+	table->vkCmdPushConstants2KHR = (PFN_vkCmdPushConstants2KHR)load(context, "vkCmdPushConstants2KHR");
+#endif /* defined(VK_KHR_maintenance6) */
+#if defined(VK_KHR_maintenance6) && defined(VK_KHR_push_descriptor)
+	table->vkCmdPushDescriptorSet2KHR = (PFN_vkCmdPushDescriptorSet2KHR)load(context, "vkCmdPushDescriptorSet2KHR");
+	table->vkCmdPushDescriptorSetWithTemplate2KHR = (PFN_vkCmdPushDescriptorSetWithTemplate2KHR)load(context, "vkCmdPushDescriptorSetWithTemplate2KHR");
+#endif /* defined(VK_KHR_maintenance6) && defined(VK_KHR_push_descriptor) */
+#if defined(VK_KHR_maintenance6) && defined(VK_EXT_descriptor_buffer)
+	table->vkCmdBindDescriptorBufferEmbeddedSamplers2EXT = (PFN_vkCmdBindDescriptorBufferEmbeddedSamplers2EXT)load(context, "vkCmdBindDescriptorBufferEmbeddedSamplers2EXT");
+	table->vkCmdSetDescriptorBufferOffsets2EXT = (PFN_vkCmdSetDescriptorBufferOffsets2EXT)load(context, "vkCmdSetDescriptorBufferOffsets2EXT");
+#endif /* defined(VK_KHR_maintenance6) && defined(VK_EXT_descriptor_buffer) */
 #if defined(VK_KHR_map_memory2)
 	table->vkMapMemory2KHR = (PFN_vkMapMemory2KHR)load(context, "vkMapMemory2KHR");
 	table->vkUnmapMemory2KHR = (PFN_vkUnmapMemory2KHR)load(context, "vkUnmapMemory2KHR");
@@ -1801,6 +1882,14 @@ static void volkGenLoadDeviceTable(struct VolkDeviceTable* table, void* context,
 	table->vkCmdCopyMemoryIndirectNV = (PFN_vkCmdCopyMemoryIndirectNV)load(context, "vkCmdCopyMemoryIndirectNV");
 	table->vkCmdCopyMemoryToImageIndirectNV = (PFN_vkCmdCopyMemoryToImageIndirectNV)load(context, "vkCmdCopyMemoryToImageIndirectNV");
 #endif /* defined(VK_NV_copy_memory_indirect) */
+#if defined(VK_NV_cuda_kernel_launch)
+	table->vkCmdCudaLaunchKernelNV = (PFN_vkCmdCudaLaunchKernelNV)load(context, "vkCmdCudaLaunchKernelNV");
+	table->vkCreateCudaFunctionNV = (PFN_vkCreateCudaFunctionNV)load(context, "vkCreateCudaFunctionNV");
+	table->vkCreateCudaModuleNV = (PFN_vkCreateCudaModuleNV)load(context, "vkCreateCudaModuleNV");
+	table->vkDestroyCudaFunctionNV = (PFN_vkDestroyCudaFunctionNV)load(context, "vkDestroyCudaFunctionNV");
+	table->vkDestroyCudaModuleNV = (PFN_vkDestroyCudaModuleNV)load(context, "vkDestroyCudaModuleNV");
+	table->vkGetCudaModuleCacheNV = (PFN_vkGetCudaModuleCacheNV)load(context, "vkGetCudaModuleCacheNV");
+#endif /* defined(VK_NV_cuda_kernel_launch) */
 #if defined(VK_NV_device_diagnostic_checkpoints)
 	table->vkCmdSetCheckpointNV = (PFN_vkCmdSetCheckpointNV)load(context, "vkCmdSetCheckpointNV");
 	table->vkGetQueueCheckpointDataNV = (PFN_vkGetQueueCheckpointDataNV)load(context, "vkGetQueueCheckpointDataNV");
@@ -2510,6 +2599,10 @@ PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR;
 PFN_vkGetBufferOpaqueCaptureAddressKHR vkGetBufferOpaqueCaptureAddressKHR;
 PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR vkGetDeviceMemoryOpaqueCaptureAddressKHR;
 #endif /* defined(VK_KHR_buffer_device_address) */
+#if defined(VK_KHR_calibrated_timestamps)
+PFN_vkGetCalibratedTimestampsKHR vkGetCalibratedTimestampsKHR;
+PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR vkGetPhysicalDeviceCalibrateableTimeDomainsKHR;
+#endif /* defined(VK_KHR_calibrated_timestamps) */
 #if defined(VK_KHR_cooperative_matrix)
 PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR;
 #endif /* defined(VK_KHR_cooperative_matrix) */
@@ -2645,6 +2738,18 @@ PFN_vkGetDeviceImageSubresourceLayoutKHR vkGetDeviceImageSubresourceLayoutKHR;
 PFN_vkGetImageSubresourceLayout2KHR vkGetImageSubresourceLayout2KHR;
 PFN_vkGetRenderingAreaGranularityKHR vkGetRenderingAreaGranularityKHR;
 #endif /* defined(VK_KHR_maintenance5) */
+#if defined(VK_KHR_maintenance6)
+PFN_vkCmdBindDescriptorSets2KHR vkCmdBindDescriptorSets2KHR;
+PFN_vkCmdPushConstants2KHR vkCmdPushConstants2KHR;
+#endif /* defined(VK_KHR_maintenance6) */
+#if defined(VK_KHR_maintenance6) && defined(VK_KHR_push_descriptor)
+PFN_vkCmdPushDescriptorSet2KHR vkCmdPushDescriptorSet2KHR;
+PFN_vkCmdPushDescriptorSetWithTemplate2KHR vkCmdPushDescriptorSetWithTemplate2KHR;
+#endif /* defined(VK_KHR_maintenance6) && defined(VK_KHR_push_descriptor) */
+#if defined(VK_KHR_maintenance6) && defined(VK_EXT_descriptor_buffer)
+PFN_vkCmdBindDescriptorBufferEmbeddedSamplers2EXT vkCmdBindDescriptorBufferEmbeddedSamplers2EXT;
+PFN_vkCmdSetDescriptorBufferOffsets2EXT vkCmdSetDescriptorBufferOffsets2EXT;
+#endif /* defined(VK_KHR_maintenance6) && defined(VK_EXT_descriptor_buffer) */
 #if defined(VK_KHR_map_memory2)
 PFN_vkMapMemory2KHR vkMapMemory2KHR;
 PFN_vkUnmapMemory2KHR vkUnmapMemory2KHR;
@@ -2793,6 +2898,14 @@ PFN_vkCmdCopyMemoryToImageIndirectNV vkCmdCopyMemoryToImageIndirectNV;
 #if defined(VK_NV_coverage_reduction_mode)
 PFN_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV;
 #endif /* defined(VK_NV_coverage_reduction_mode) */
+#if defined(VK_NV_cuda_kernel_launch)
+PFN_vkCmdCudaLaunchKernelNV vkCmdCudaLaunchKernelNV;
+PFN_vkCreateCudaFunctionNV vkCreateCudaFunctionNV;
+PFN_vkCreateCudaModuleNV vkCreateCudaModuleNV;
+PFN_vkDestroyCudaFunctionNV vkDestroyCudaFunctionNV;
+PFN_vkDestroyCudaModuleNV vkDestroyCudaModuleNV;
+PFN_vkGetCudaModuleCacheNV vkGetCudaModuleCacheNV;
+#endif /* defined(VK_NV_cuda_kernel_launch) */
 #if defined(VK_NV_device_diagnostic_checkpoints)
 PFN_vkCmdSetCheckpointNV vkCmdSetCheckpointNV;
 PFN_vkGetQueueCheckpointDataNV vkGetQueueCheckpointDataNV;

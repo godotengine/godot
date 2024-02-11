@@ -85,6 +85,7 @@ void EditorExport::_save() {
 		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
 		config->set_value(section, "encrypt_pck", preset->get_enc_pck());
 		config->set_value(section, "encrypt_directory", preset->get_enc_directory());
+		config->set_value(section, "script_export_mode", preset->get_script_export_mode());
 		credentials->set_value(section, "script_encryption_key", preset->get_script_encryption_key());
 
 		String option_section = "preset." + itos(i) + ".options";
@@ -269,6 +270,7 @@ void EditorExport::load_config() {
 		preset->set_include_filter(config->get_value(section, "include_filter"));
 		preset->set_exclude_filter(config->get_value(section, "exclude_filter"));
 		preset->set_export_path(config->get_value(section, "export_path", ""));
+		preset->set_script_export_mode(config->get_value(section, "script_export_mode", EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED));
 
 		if (config->has_section_key(section, "encrypt_pck")) {
 			preset->set_enc_pck(config->get_value(section, "encrypt_pck"));

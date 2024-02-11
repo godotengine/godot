@@ -118,8 +118,8 @@ void CollisionShape3D::resource_changed(Ref<Resource> res) {
 }
 #endif
 
-PackedStringArray CollisionShape3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array CollisionShape3D::get_configuration_warnings() const {
+	Array warnings = Node::get_configuration_warnings();
 
 	CollisionObject3D *col_object = Object::cast_to<CollisionObject3D>(get_parent());
 	if (col_object == nullptr) {

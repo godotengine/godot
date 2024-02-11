@@ -538,9 +538,10 @@ void DisplayServerAndroid::reset_window() {
 #endif
 
 		if (context_rd->window_create(MAIN_WINDOW_ID, last_vsync_mode, display_size.width, display_size.height, &wpd) != OK) {
+			ERR_PRINT(vformat("Failed to reset %s window.", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
-			ERR_FAIL_MSG(vformat("Failed to reset %s window.", context_rd->get_api_name()));
+			return;
 		}
 	}
 #endif
@@ -575,9 +576,10 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	if (context_rd) {
 		if (context_rd->initialize() != OK) {
+			ERR_PRINT(vformat("Failed to initialize %s context", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
-			ERR_FAIL_MSG(vformat("Failed to initialize %s context", context_rd->get_api_name()));
+			return;
 		}
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
@@ -596,9 +598,10 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 #endif
 
 		if (context_rd->window_create(MAIN_WINDOW_ID, p_vsync_mode, display_size.width, display_size.height, &wpd) != OK) {
+			ERR_PRINT(vformat("Failed to create %s window.", context_rd->get_api_name()));
 			memdelete(context_rd);
 			context_rd = nullptr;
-			ERR_FAIL_MSG(vformat("Failed to create %s window.", context_rd->get_api_name()));
+			return;
 		}
 
 		rendering_device = memnew(RenderingDevice);

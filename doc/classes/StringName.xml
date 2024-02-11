@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[StringName]s are immutable strings designed for general-purpose representation of unique names (also called "string interning"). Two [StringName]s with the same value are the same object. Comparing them is extremely fast compared to regular [String]s.
-		You will usually just pass a [String] to methods expecting a [StringName] and it will be automatically converted, but you may occasionally want to construct a [StringName] ahead of time with the [StringName] constructor or, in GDScript, the literal syntax [code]&amp;"example"[/code].
+		You will usually pass a [String] to methods expecting a [StringName] and it will be automatically converted (often at compile time), but in rare cases you can construct a [StringName] ahead of time with the [StringName] constructor or, in GDScript, the literal syntax [code]&amp;"example"[/code]. Manually constructing a [StringName] allows you to control when the conversion from [String] occurs or to use the literal and prevent conversions entirely.
 		See also [NodePath], which is a similar concept specifically designed to store pre-parsed scene tree paths.
 		All of [String]'s methods are available in this class too. They convert the [StringName] into a string, and they also return a string. This is highly inefficient and should only be used if the string is desired.
 		[b]Note:[/b] In C#, an explicit conversion to [code]System.String[/code] is required to use the methods listed on this page. Use the [code]ToString()[/code] method to cast a [StringName] to a string, and then use the equivalent methods in [code]System.String[/code] or [code]StringExtensions[/code].

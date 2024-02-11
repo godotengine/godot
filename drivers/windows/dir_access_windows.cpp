@@ -31,6 +31,7 @@
 #if defined(WINDOWS_ENABLED)
 
 #include "dir_access_windows.h"
+#include "file_access_windows.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/memory.h"
@@ -175,6 +176,13 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	if (p_dir.is_relative_path()) {
 		p_dir = current_dir.path_join(p_dir);
 		p_dir = fix_path(p_dir);
+	}
+
+	if (FileAccessWindows::is_path_invalid(p_dir)) {
+#ifdef DEBUG_ENABLED
+		WARN_PRINT("The path :" + p_dir + " is a reserved Windows system pipe, so it can't be used for creating directories.");
+#endif
+		return ERR_INVALID_PARAMETER;
 	}
 
 	p_dir = p_dir.simplify_path().replace("/", "\\");

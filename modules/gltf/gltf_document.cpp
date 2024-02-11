@@ -250,7 +250,7 @@ Error GLTFDocument::_serialize_gltf_extensions(Ref<GLTFState> p_state) const {
 }
 
 Error GLTFDocument::_serialize_scenes(Ref<GLTFState> p_state) {
-	ERR_FAIL_COND_V_MSG(p_state->root_nodes.size() == 0, ERR_INVALID_DATA, "GLTF export: The scene must have at least one root node.");
+	ERR_FAIL_COND_V_MSG(p_state->root_nodes.is_empty(), ERR_INVALID_DATA, "GLTF export: The scene must have at least one root node.");
 	// Godot only supports one scene per glTF file.
 	Array scenes;
 	Dictionary scene_dict;
@@ -430,20 +430,22 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 		}
 		if (gltf_node->skeleton != -1 && gltf_node->skin < 0) {
 		}
-		if (gltf_node->xform != Transform3D()) {
-			node["matrix"] = _xform_to_array(gltf_node->xform);
-		}
-
-		if (!gltf_node->rotation.is_equal_approx(Quaternion())) {
-			node["rotation"] = _quaternion_to_array(gltf_node->rotation);
-		}
-
-		if (!gltf_node->scale.is_equal_approx(Vector3(1.0f, 1.0f, 1.0f))) {
-			node["scale"] = _vec3_to_arr(gltf_node->scale);
-		}
-
-		if (!gltf_node->position.is_zero_approx()) {
-			node["translation"] = _vec3_to_arr(gltf_node->position);
+		if (gltf_node->transform.basis.is_orthogonal()) {
+			// An orthogonal transform is decomposable into TRS, so prefer that.
+			const Vector3 position = gltf_node->get_position();
+			if (!position.is_zero_approx()) {
+				node["translation"] = _vec3_to_arr(position);
+			}
+			const Quaternion rotation = gltf_node->get_rotation();
+			if (!rotation.is_equal_approx(Quaternion())) {
+				node["rotation"] = _quaternion_to_array(rotation);
+			}
+			const Vector3 scale = gltf_node->get_scale();
+			if (!scale.is_equal_approx(Vector3(1.0f, 1.0f, 1.0f))) {
+				node["scale"] = _vec3_to_arr(scale);
+			}
+		} else {
+			node["matrix"] = _xform_to_array(gltf_node->transform);
 		}
 		if (gltf_node->children.size()) {
 			Array children;
@@ -609,20 +611,17 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 			node->skin = n["skin"];
 		}
 		if (n.has("matrix")) {
-			node->xform = _arr_to_xform(n["matrix"]);
+			node->transform = _arr_to_xform(n["matrix"]);
 		} else {
 			if (n.has("translation")) {
-				node->position = _arr_to_vec3(n["translation"]);
+				node->set_position(_arr_to_vec3(n["translation"]));
 			}
 			if (n.has("rotation")) {
-				node->rotation = _arr_to_quaternion(n["rotation"]);
+				node->set_rotation(_arr_to_quaternion(n["rotation"]));
 			}
 			if (n.has("scale")) {
-				node->scale = _arr_to_vec3(n["scale"]);
+				node->set_scale(_arr_to_vec3(n["scale"]));
 			}
-
-			node->xform.basis.set_quaternion_scale(node->rotation, node->scale);
-			node->xform.origin = node->position;
 		}
 
 		if (n.has("extensions")) {
@@ -807,7 +806,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 					uri = uri.uri_decode();
 					uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
 					buffer_data = FileAccess::get_file_as_bytes(uri);
-					ERR_FAIL_COND_V_MSG(buffer.size() == 0, ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
+					ERR_FAIL_COND_V_MSG(buffer.is_empty(), ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
 				}
 
 				ERR_FAIL_COND_V(!buffer.has("byteLength"), ERR_PARSE_ERROR);
@@ -1545,7 +1544,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state,
 		}
 	}
 
-	ERR_FAIL_COND_V(attribs.size() == 0, -1);
+	ERR_FAIL_COND_V(attribs.is_empty(), -1);
 
 	Ref<GLTFAccessor> accessor;
 	accessor.instantiate();
@@ -1904,7 +1903,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_stat
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
 
-	ERR_FAIL_COND_V(!attribs.size(), -1);
+	ERR_FAIL_COND_V(attribs.is_empty(), -1);
 
 	Ref<GLTFAccessor> accessor;
 	accessor.instantiate();
@@ -2222,7 +2221,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 			Dictionary attributes;
 			{
 				Vector<Vector3> a = array[Mesh::ARRAY_VERTEX];
-				ERR_FAIL_COND_V(!a.size(), ERR_INVALID_DATA);
+				ERR_FAIL_COND_V(a.is_empty(), ERR_INVALID_DATA);
 				attributes["POSITION"] = _encode_accessor_as_vec3(p_state, a, true);
 				vertex_num = a.size();
 			}
@@ -2789,7 +2788,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			} else if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
 				//generate indices because they need to be swapped for CW/CCW
 				const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
-				ERR_FAIL_COND_V(vertices.size() == 0, ERR_PARSE_ERROR);
+				ERR_FAIL_COND_V(vertices.is_empty(), ERR_PARSE_ERROR);
 				Vector<int> indices;
 				const int vs = vertices.size();
 				indices.resize(vs);
@@ -2920,7 +2919,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					if (t.has("TANGENT")) {
 						const Vector<Vector3> tangents_v3 = _decode_accessor_as_vec3(p_state, t["TANGENT"], true);
 						const Vector<float> src_tangents = array[Mesh::ARRAY_TANGENT];
-						ERR_FAIL_COND_V(src_tangents.size() == 0, ERR_PARSE_ERROR);
+						ERR_FAIL_COND_V(src_tangents.is_empty(), ERR_PARSE_ERROR);
 
 						Vector<float> tangents_v4;
 
@@ -4415,7 +4414,7 @@ Error GLTFDocument::_verify_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin) {
 
 	out_roots.sort();
 
-	ERR_FAIL_COND_V(out_roots.size() == 0, FAILED);
+	ERR_FAIL_COND_V(out_roots.is_empty(), FAILED);
 
 	// Make sure the roots are the exact same (they better be)
 	ERR_FAIL_COND_V(out_roots.size() != p_skin->roots.size(), FAILED);
@@ -4801,10 +4800,10 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> p_state) {
 			node->set_name(_gen_unique_bone_name(p_state, skel_i, node->get_name()));
 
 			skeleton->add_bone(node->get_name());
-			skeleton->set_bone_rest(bone_index, node->xform);
-			skeleton->set_bone_pose_position(bone_index, node->position);
-			skeleton->set_bone_pose_rotation(bone_index, node->rotation.normalized());
-			skeleton->set_bone_pose_scale(bone_index, node->scale);
+			skeleton->set_bone_rest(bone_index, node->transform);
+			skeleton->set_bone_pose_position(bone_index, node->get_position());
+			skeleton->set_bone_pose_rotation(bone_index, node->get_rotation());
+			skeleton->set_bone_pose_scale(bone_index, node->get_scale());
 
 			if (node->parent >= 0 && p_state->nodes[node->parent]->skeleton == skel_i) {
 				const int bone_parent = skeleton->find_bone(p_state->nodes[node->parent]->get_name());
@@ -5413,14 +5412,13 @@ BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> p_state
 
 GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshInstance3D *p_mesh_instance) {
 	ERR_FAIL_NULL_V(p_mesh_instance, -1);
-	if (p_mesh_instance->get_mesh().is_null()) {
-		return -1;
-	}
+	ERR_FAIL_COND_V_MSG(p_mesh_instance->get_mesh().is_null(), -1, "glTF: Tried to export a MeshInstance3D node named " + p_mesh_instance->get_name() + ", but it has no mesh. This node will be exported without a mesh.");
+	Ref<Mesh> mesh_resource = p_mesh_instance->get_mesh();
+	ERR_FAIL_COND_V_MSG(mesh_resource->get_surface_count() == 0, -1, "glTF: Tried to export a MeshInstance3D node named " + p_mesh_instance->get_name() + ", but its mesh has no surfaces. This node will be exported without a mesh.");
 
-	Ref<Mesh> import_mesh = p_mesh_instance->get_mesh();
-	Ref<ImporterMesh> current_mesh = _mesh_to_importer_mesh(import_mesh);
+	Ref<ImporterMesh> current_mesh = _mesh_to_importer_mesh(mesh_resource);
 	Vector<float> blend_weights;
-	int32_t blend_count = import_mesh->get_blend_shape_count();
+	int32_t blend_count = mesh_resource->get_blend_shape_count();
 	blend_weights.resize(blend_count);
 	for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
 		blend_weights.write[blend_i] = 0.0f;
@@ -5510,10 +5508,7 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> p_state, Light3D *p_l
 }
 
 void GLTFDocument::_convert_spatial(Ref<GLTFState> p_state, Node3D *p_spatial, Ref<GLTFNode> p_node) {
-	Transform3D xform = p_spatial->get_transform();
-	p_node->scale = xform.basis.get_scale();
-	p_node->rotation = xform.basis.get_rotation_quaternion();
-	p_node->position = xform.origin;
+	p_node->transform = p_spatial->get_transform();
 }
 
 Node3D *GLTFDocument::_generate_spatial(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index) {
@@ -5531,6 +5526,12 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 	if (retflag) {
 		return;
 	}
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && p_gltf_root != -1 && p_current->get_owner() == nullptr) {
+		WARN_VERBOSE("glTF export warning: Node '" + p_current->get_name() + "' has no owner. This is likely a temporary node generated by a @tool script. This would not be saved when saving the Godot scene, therefore it will not be exported to glTF.");
+		return;
+	}
+#endif // TOOLS_ENABLED
 	Ref<GLTFNode> gltf_node;
 	gltf_node.instantiate();
 	gltf_node->set_name(_gen_unique_name(p_state, p_current->get_name()));
@@ -5627,7 +5628,7 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	GLTFMeshIndex mesh_i = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
 	p_gltf_node->mesh = mesh_i;
-	p_gltf_node->xform = csg->get_meshes()[0];
+	p_gltf_node->transform = csg->get_meshes()[0];
 	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
 }
 #endif // MODULE_CSG_ENABLED
@@ -5703,7 +5704,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		gltf_mesh->set_mesh(_mesh_to_importer_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		new_gltf_node->mesh = p_state->meshes.size();
 		p_state->meshes.push_back(gltf_mesh);
-		new_gltf_node->xform = cell_xform * p_grid_map->get_transform();
+		new_gltf_node->transform = cell_xform * p_grid_map->get_transform();
 		new_gltf_node->set_name(_gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell)));
 	}
 }
@@ -5771,7 +5772,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 		Ref<GLTFNode> new_gltf_node;
 		new_gltf_node.instantiate();
 		new_gltf_node->mesh = mesh_index;
-		new_gltf_node->xform = transform;
+		new_gltf_node->transform = transform;
 		new_gltf_node->set_name(_gen_unique_name(p_state, p_multi_mesh_instance->get_name()));
 		p_gltf_node->children.push_back(p_state->nodes.size());
 		p_state->nodes.push_back(new_gltf_node);
@@ -5796,10 +5797,7 @@ void GLTFDocument::_convert_skeleton_to_gltf(Skeleton3D *p_skeleton3d, Ref<GLTFS
 		// Note that we cannot use _gen_unique_bone_name here, because glTF spec requires all node
 		// names to be unique regardless of whether or not they are used as joints.
 		joint_node->set_name(_gen_unique_name(p_state, skeleton->get_bone_name(bone_i)));
-		Transform3D xform = skeleton->get_bone_pose(bone_i);
-		joint_node->scale = xform.basis.get_scale();
-		joint_node->rotation = xform.basis.get_rotation_quaternion();
-		joint_node->position = xform.origin;
+		joint_node->transform = skeleton->get_bone_pose(bone_i);
 		joint_node->joint = true;
 		GLTFNodeIndex current_node_i = p_state->nodes.size();
 		p_state->scene_nodes.insert(current_node_i, skeleton);
@@ -5948,7 +5946,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 		Array args;
 		args.append(p_scene_root);
 		current_node->propagate_call(StringName("set_owner"), args);
-		current_node->set_transform(gltf_node->xform);
+		current_node->set_transform(gltf_node->transform);
 	}
 
 	p_state->scene_nodes.insert(p_node_index, current_node);
@@ -5982,8 +5980,13 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 			p_scene_parent = bone_attachment;
 		}
 		if (skeleton->get_parent() == nullptr) {
-			p_scene_parent->add_child(skeleton, true);
-			skeleton->set_owner(p_scene_root);
+			if (p_scene_root) {
+				p_scene_parent->add_child(skeleton, true);
+				skeleton->set_owner(p_scene_root);
+			} else {
+				p_scene_parent = skeleton;
+				p_scene_root = skeleton;
+			}
 		}
 	}
 
@@ -6101,7 +6104,7 @@ struct SceneFormatImporterGLTFInterpolate<Quaternion> {
 
 template <class T>
 T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp) {
-	ERR_FAIL_COND_V(!p_values.size(), T());
+	ERR_FAIL_COND_V(p_values.is_empty(), T());
 	if (p_times.size() != (p_values.size() / (p_interp == GLTFAnimation::INTERP_CUBIC_SPLINE ? 3 : 1))) {
 		ERR_PRINT_ONCE("The interpolated values are not corresponding to its times.");
 		return p_values[0];
@@ -6275,7 +6278,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			if (track.position_track.values.size()) {
 				bool is_default = true; //discard the track if all it contains is default values
 				if (p_remove_immutable_tracks) {
-					Vector3 base_pos = p_state->nodes[track_i.key]->position;
+					Vector3 base_pos = gltf_node->get_position();
 					for (int i = 0; i < track.position_track.times.size(); i++) {
 						int value_index = track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i;
 						ERR_FAIL_COND_MSG(value_index >= track.position_track.values.size(), "Animation sampler output accessor with 'CUBICSPLINE' interpolation doesn't have enough elements.");
@@ -6300,7 +6303,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			if (track.rotation_track.values.size()) {
 				bool is_default = true; //discard the track if all it contains is default values
 				if (p_remove_immutable_tracks) {
-					Quaternion base_rot = p_state->nodes[track_i.key]->rotation.normalized();
+					Quaternion base_rot = gltf_node->get_rotation();
 					for (int i = 0; i < track.rotation_track.times.size(); i++) {
 						int value_index = track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i;
 						ERR_FAIL_COND_MSG(value_index >= track.rotation_track.values.size(), "Animation sampler output accessor with 'CUBICSPLINE' interpolation doesn't have enough elements.");
@@ -6325,7 +6328,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			if (track.scale_track.values.size()) {
 				bool is_default = true; //discard the track if all it contains is default values
 				if (p_remove_immutable_tracks) {
-					Vector3 base_scale = p_state->nodes[track_i.key]->scale;
+					Vector3 base_scale = gltf_node->get_scale();
 					for (int i = 0; i < track.scale_track.times.size(); i++) {
 						int value_index = track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i;
 						ERR_FAIL_COND_MSG(value_index >= track.scale_track.values.size(), "Animation sampler output accessor with 'CUBICSPLINE' interpolation doesn't have enough elements.");
@@ -6356,15 +6359,15 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			Vector3 base_scale = Vector3(1, 1, 1);
 
 			if (rotation_idx == -1) {
-				base_rot = p_state->nodes[track_i.key]->rotation.normalized();
+				base_rot = gltf_node->get_rotation();
 			}
 
 			if (position_idx == -1) {
-				base_pos = p_state->nodes[track_i.key]->position;
+				base_pos = gltf_node->get_position();
 			}
 
 			if (scale_idx == -1) {
-				base_scale = p_state->nodes[track_i.key]->scale;
+				base_scale = gltf_node->get_scale();
 			}
 
 			bool last = false;
@@ -6471,10 +6474,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 		if (!mi) {
 			continue;
 		}
-		Transform3D mi_xform = mi->get_transform();
-		node->scale = mi_xform.basis.get_scale();
-		node->rotation = mi_xform.basis.get_rotation_quaternion();
-		node->position = mi_xform.origin;
+		node->transform = mi->get_transform();
 
 		Node *skel_node = mi->get_node_or_null(mi->get_skeleton_path());
 		Skeleton3D *godot_skeleton = Object::cast_to<Skeleton3D>(skel_node);
@@ -6582,7 +6582,7 @@ float GLTFDocument::get_max_component(const Color &p_color) {
 	return MAX(MAX(r, g), b);
 }
 
-void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state) {
+void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root) {
 	for (GLTFNodeIndex node_i = 0; node_i < p_state->nodes.size(); ++node_i) {
 		Ref<GLTFNode> node = p_state->nodes[node_i];
 
@@ -6607,7 +6607,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state) {
 
 			mi->get_parent()->remove_child(mi);
 			skeleton->add_child(mi, true);
-			mi->set_owner(skeleton->get_owner());
+			mi->set_owner(p_scene_root);
 
 			mi->set_skin(p_state->skins.write[skin_i]->godot_skin);
 			mi->set_skeleton_path(mi->get_path_to(skeleton));
@@ -7461,7 +7461,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, boo
 	Error err = OK;
 	Node *root = _generate_scene_node_tree(p_state);
 	ERR_FAIL_NULL_V(root, nullptr);
-	_process_mesh_instances(p_state);
+	_process_mesh_instances(p_state, root);
 	if (p_state->get_create_animations() && p_state->animations.size()) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		root->add_child(ap, true);

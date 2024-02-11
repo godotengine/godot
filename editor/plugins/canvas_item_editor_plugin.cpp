@@ -5661,7 +5661,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		if (texture != nullptr || scene != nullptr) {
 			bool root_node_selected = EditorNode::get_singleton()->get_editor_selection()->is_selected(EditorNode::get_singleton()->get_edited_scene());
-			String desc = TTR("Drag and drop to add as child of current scene's root node.") + "\n" + vformat(TTR("Hold %s when dropping to add as child of selected node."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
+			String desc = TTR("Drag and drop to add as child of selected node.") + "\n" + TTR("Hold Alt when dropping to add as child of root node.");
 			if (!root_node_selected) {
 				desc += "\n" + TTR("Hold Shift when dropping to add as sibling of selected node.");
 			}
@@ -5672,7 +5672,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 				preview_node->add_child(sprite);
 				label->show();
 				label_desc->show();
-				desc += "\n" + TTR("Hold Alt when dropping to add as a different node type.");
+				desc += "\n" + TTR("Hold Alt + Shift when dropping to add as a different node type.");
 				label_desc->set_text(desc);
 			} else {
 				if (scene.is_valid()) {
@@ -5965,7 +5965,6 @@ bool CanvasItemEditorViewport::_only_packed_scenes_selected() const {
 
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);
-	bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 	bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	selected_files.clear();
@@ -5981,9 +5980,9 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes[0];
-		target_node = root_node;
-		if (is_ctrl) {
-			target_node = selected_node;
+		target_node = selected_node;
+		if (is_alt) {
+			target_node = root_node;
 		} else if (is_shift && selected_node != root_node) {
 			target_node = selected_node->get_parent();
 		}
@@ -5997,7 +5996,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 
 	drop_pos = p_point;
 
-	if (is_alt && !_only_packed_scenes_selected()) {
+	if (is_alt && is_shift && !_only_packed_scenes_selected()) {
 		_show_resource_type_selector();
 	} else {
 		_perform_drop_data();
@@ -6029,6 +6028,10 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			_remove_preview();
 		} break;
 	}
 }

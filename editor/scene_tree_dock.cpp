@@ -1824,7 +1824,6 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 					undo_redo->add_do_property(resource, propertyname, updated_variant);
 					undo_redo->add_undo_property(resource, propertyname, old_variant);
-					resource->set(propertyname, updated_variant);
 				}
 			}
 			break;
@@ -1968,7 +1967,6 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->add_do_property(p_base, propertyname, updated_variant);
 			undo_redo->add_undo_property(p_base, propertyname, old_variant);
-			p_base->set(propertyname, updated_variant);
 		}
 	}
 
@@ -2662,7 +2660,7 @@ void SceneTreeDock::_create() {
 
 	} else if (current_option == TOOL_REPLACE) {
 		List<Node *> selection = editor_selection->get_selected_node_list();
-		ERR_FAIL_COND(selection.size() <= 0);
+		ERR_FAIL_COND(selection.is_empty());
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, selection.front()->get());
@@ -2681,7 +2679,7 @@ void SceneTreeDock::_create() {
 		ur->commit_action(false);
 	} else if (current_option == TOOL_REPARENT_TO_NEW_NODE) {
 		List<Node *> selection = editor_selection->get_selected_node_list();
-		ERR_FAIL_COND(selection.size() <= 0);
+		ERR_FAIL_COND(selection.is_empty());
 
 		// Find top level node in selection
 		bool only_one_top_node = true;
@@ -2849,7 +2847,6 @@ void SceneTreeDock::perform_node_replace(Node *p_base, Node *p_node, Node *p_by_
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->add_do_property(p_base, propertyname, updated_variant);
 			undo_redo->add_undo_property(p_base, propertyname, old_variant);
-			p_base->set(propertyname, updated_variant);
 			if (!warn_message.is_empty()) {
 				String node_path = (String(edited_scene->get_name()) + "/" + String(edited_scene->get_path_to(p_base))).trim_suffix("/.");
 				WARN_PRINT(warn_message + vformat("Removing the node from variable \"%s\" on node \"%s\".", propertyname, node_path));

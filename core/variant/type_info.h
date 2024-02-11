@@ -43,14 +43,10 @@ struct EnableIf<false, T> {
 };
 
 template <typename, typename>
-struct TypesAreSame {
-	static bool const value = false;
-};
+inline constexpr bool types_are_same_v = false;
 
-template <typename A>
-struct TypesAreSame<A, A> {
-	static bool const value = true;
-};
+template <typename T>
+inline constexpr bool types_are_same_v<T, T> = true;
 
 template <typename B, typename D>
 struct TypeInherits {
@@ -60,7 +56,7 @@ struct TypeInherits {
 	static char (&test(...))[2];
 
 	static bool const value = sizeof(test(get_d())) == sizeof(char) &&
-			!TypesAreSame<B volatile const, void volatile const>::value;
+			!types_are_same_v<B volatile const, void volatile const>;
 };
 
 namespace GodotTypeInfo {

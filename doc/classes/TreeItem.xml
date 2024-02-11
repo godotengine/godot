@@ -779,6 +779,7 @@
 		<method name="uncollapse_tree">
 			<return type="void" />
 			<description>
+				Uncollapses all [TreeItem]s necessary to reveal this [TreeItem], i.e. all ancestor [TreeItem]s.
 			</description>
 		</method>
 	</methods>

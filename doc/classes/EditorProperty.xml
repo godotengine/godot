@@ -72,6 +72,9 @@
 		<member name="checked" type="bool" setter="set_checked" getter="is_checked" default="false">
 			Used by the inspector, set to [code]true[/code] when the property is checked.
 		</member>
+		<member name="configuration_warning" type="String" setter="set_configuration_warning" getter="get_configuration_warning" default="&quot;&quot;">
+			Used by the inspector, set to show a configuration warning on the property.
+		</member>
 		<member name="deletable" type="bool" setter="set_deletable" getter="is_deletable" default="false">
 			Used by the inspector, set to [code]true[/code] when the property can be deleted by the user.
 		</member>

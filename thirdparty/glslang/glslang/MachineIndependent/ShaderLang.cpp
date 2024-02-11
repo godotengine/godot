@@ -58,7 +58,6 @@
 #endif
 
 #include "../Include/ShHandle.h"
-#include "../../OGLCompilersDLL/InitializeDll.h"
 
 #include "preprocessor/PpContext.h"
 
@@ -1311,9 +1310,6 @@ bool CompileDeferred(
 //
 int ShInitialize()
 {
-    if (! InitProcess())
-        return 0;
-
     const std::lock_guard<std::mutex> lock(init_lock);
     ++NumberOfClients;
 
@@ -1333,31 +1329,22 @@ int ShInitialize()
 // objects.
 //
 
-ShHandle ShConstructCompiler(const EShLanguage language, int debugOptions)
+ShHandle ShConstructCompiler(const EShLanguage language, int /*debugOptions unused*/)
 {
-    if (!InitThread())
-        return nullptr;
-
-    TShHandleBase* base = static_cast<TShHandleBase*>(ConstructCompiler(language, debugOptions));
+    TShHandleBase* base = static_cast<TShHandleBase*>(ConstructCompiler(language, 0));
 
     return reinterpret_cast<void*>(base);
 }
 
-ShHandle ShConstructLinker(const EShExecutable executable, int debugOptions)
+ShHandle ShConstructLinker(const EShExecutable executable, int /*debugOptions unused*/)
 {
-    if (!InitThread())
-        return nullptr;
-
-    TShHandleBase* base = static_cast<TShHandleBase*>(ConstructLinker(executable, debugOptions));
+    TShHandleBase* base = static_cast<TShHandleBase*>(ConstructLinker(executable, 0));
 
     return reinterpret_cast<void*>(base);
 }
 
 ShHandle ShConstructUniformMap()
 {
-    if (!InitThread())
-        return nullptr;
-
     TShHandleBase* base = static_cast<TShHandleBase*>(ConstructUniformMap());
 
     return reinterpret_cast<void*>(base);
@@ -1871,8 +1858,6 @@ void TShader::setFlattenUniformArrays(bool flatten)     { intermediate->setFlatt
 bool TShader::parse(const TBuiltInResource* builtInResources, int defaultVersion, EProfile defaultProfile, bool forceDefaultVersionAndProfile,
                     bool forwardCompatible, EShMessages messages, Includer& includer)
 {
-    if (! InitThread())
-        return false;
     SetThreadPoolAllocator(pool);
 
     if (! preamble)
@@ -1897,8 +1882,6 @@ bool TShader::preprocess(const TBuiltInResource* builtInResources,
                          std::string* output_string,
                          Includer& includer)
 {
-    if (! InitThread())
-        return false;
     SetThreadPoolAllocator(pool);
 
     if (! preamble)

@@ -448,8 +448,10 @@
 	}
 	mm->set_global_position(wd.mouse_pos);
 	mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+	mm->set_screen_velocity(mm->get_velocity());
 	const Vector2i relativeMotion = Vector2i(delta.x, delta.y) * ds->screen_get_max_scale();
 	mm->set_relative(relativeMotion);
+	mm->set_relative_screen_position(relativeMotion);
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
 	Input::get_singleton()->parse_input_event(mm);

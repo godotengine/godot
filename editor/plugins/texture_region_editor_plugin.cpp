@@ -226,8 +226,8 @@ void TextureRegionEditor::_texture_overlay_draw() {
 		hscroll->set_value((hscroll->get_min() + hscroll->get_max() - hscroll->get_page()) / 2);
 		vscroll->set_value((vscroll->get_min() + vscroll->get_max() - vscroll->get_page()) / 2);
 		// This ensures that the view is updated correctly.
-		callable_mp(this, &TextureRegionEditor::_pan_callback).bind(Vector2(1, 0)).call_deferred();
-		callable_mp(this, &TextureRegionEditor::_scroll_changed).bind(0.0).call_deferred();
+		callable_mp(this, &TextureRegionEditor::_pan_callback).call_deferred(Vector2(1, 0), Ref<InputEvent>());
+		callable_mp(this, &TextureRegionEditor::_scroll_changed).call_deferred(0.0);
 		request_center = false;
 	}
 
