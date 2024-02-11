@@ -88,8 +88,8 @@ protected:
 	GDVIRTUAL0(_setup_local_to_scene);
 
 public:
-	static Node *(*_get_local_scene_func)(); //used by editor
-	static void (*_update_configuration_warning)(); //used by editor
+	static Node *(*_get_local_scene_func)(); // Used by editor.
+	static void (*_update_configuration_warning)(); // Used by editor.
 
 	void update_configuration_warning();
 	virtual bool editor_can_reload_from_file();
@@ -123,6 +123,8 @@ public:
 
 	Node *get_local_scene() const;
 
+	virtual void _finish_loading() {}
+
 #ifdef TOOLS_ENABLED
 
 	uint32_t hash_edited_version() const;
@@ -150,6 +152,14 @@ public:
 
 	Resource();
 	~Resource();
+};
+
+class LoadHooksResource : public Resource {
+	GDCLASS(LoadHooksResource, Resource);
+
+public:
+	virtual void _start_load() = 0;
+	virtual void _finish_load() = 0;
 };
 
 class ResourceCache {

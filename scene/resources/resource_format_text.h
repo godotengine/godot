@@ -115,6 +115,8 @@ class ResourceLoaderText {
 
 	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
 
+	Error _parse_resource_properties(Ref<Resource> res, bool do_assign, bool missing_resource);
+
 public:
 	Ref<Resource> get_resource();
 	Error load();

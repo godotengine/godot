@@ -261,6 +261,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		found = true;
 		res = loader[i]->load(p_path, !p_original_path.is_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
 		if (!res.is_null()) {
+			res->_finish_loading();
 			break;
 		}
 	}

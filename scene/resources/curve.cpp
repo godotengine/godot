@@ -308,11 +308,11 @@ void Curve::update_auto_tangents(int p_index) {
 #define MIN_Y_RANGE 0.01
 
 void Curve::set_min_value(real_t p_min) {
-	if (_minmax_set_once & 0b11 && p_min > _max_value - MIN_Y_RANGE) {
-		_min_value = _max_value - MIN_Y_RANGE;
-	} else {
-		_minmax_set_once |= 0b10; // first bit is "min set"
+	// Bypass min < max when loading Curve since stored values may conflict with default values.
+	if (p_min <= _max_value - MIN_Y_RANGE || _is_loading) {
 		_min_value = p_min;
+	} else {
+		_min_value = _max_value - MIN_Y_RANGE;
 	}
 	// Note: min and max are indicative values,
 	// it's still possible that existing points are out of range at this point.
@@ -320,11 +320,10 @@ void Curve::set_min_value(real_t p_min) {
 }
 
 void Curve::set_max_value(real_t p_max) {
-	if (_minmax_set_once & 0b11 && p_max < _min_value + MIN_Y_RANGE) {
-		_max_value = _min_value + MIN_Y_RANGE;
-	} else {
-		_minmax_set_once |= 0b01; // second bit is "max set"
+	if (p_max >= _min_value + MIN_Y_RANGE || _is_loading) {
 		_max_value = p_max;
+	} else {
+		_max_value = _min_value + MIN_Y_RANGE;
 	}
 	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
 }

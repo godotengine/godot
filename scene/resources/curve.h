@@ -34,8 +34,8 @@
 #include "core/io/resource.h"
 
 // y(x) curve
-class Curve : public Resource {
-	GDCLASS(Curve, Resource);
+class Curve : public LoadHooksResource {
+	GDCLASS(Curve, LoadHooksResource);
 
 public:
 	static const int MIN_X = 0.f;
@@ -138,10 +138,15 @@ public:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual void _start_load() override { _is_loading = true; }
+	virtual void _finish_load() override { _is_loading = false; }
+
 protected:
 	static void _bind_methods();
 
 private:
+	bool _is_loading = false; // Used to bypass min < max setter restrictions during deserialization.
+
 	void mark_dirty();
 	int _add_point(Vector2 p_position,
 			real_t left_tangent = 0,
@@ -156,7 +161,6 @@ private:
 	int _bake_resolution = 100;
 	real_t _min_value = 0.0;
 	real_t _max_value = 1.0;
-	int _minmax_set_once = 0b00; // Encodes whether min and max have been set a first time, first bit for min and second for max.
 };
 
 VARIANT_ENUM_CAST(Curve::TangentMode)

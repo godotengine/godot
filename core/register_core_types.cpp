@@ -166,6 +166,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(RefCounted);
 	GDREGISTER_CLASS(WeakRef);
 	GDREGISTER_CLASS(Resource);
+	GDREGISTER_ABSTRACT_CLASS(LoadHooksResource);
 	GDREGISTER_VIRTUAL_CLASS(MissingResource);
 	GDREGISTER_CLASS(Image);
 

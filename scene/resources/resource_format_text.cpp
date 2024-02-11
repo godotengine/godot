@@ -407,11 +407,89 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 	}
 }
 
+Error ResourceLoaderText::_parse_resource_properties(Ref<Resource> res, bool do_assign, bool missing_resource) {
+	Dictionary missing_resource_properties;
+
+	while (true) {
+		String assign;
+		Variant value;
+
+		error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
+
+		if (error) {
+			// The main resource is done parsing when the end of file is reached.
+			if (res == resource && error == ERR_FILE_EOF) {
+				error = OK;
+				break;
+			}
+			return error;
+		}
+
+		if (!assign.is_empty()) {
+			// Main resource always does assignment, sub resources depend on do_assign.
+			if (do_assign || res == resource) {
+				bool set_valid = true;
+
+				if (value.get_type() == Variant::OBJECT && missing_resource) {
+					// If the property being set is a missing resource (and the parent is not),
+					// then setting it will most likely not work.
+					// Instead, save it as metadata.
+
+					Ref<MissingResource> mr = value;
+					if (mr.is_valid()) {
+						missing_resource_properties[assign] = mr;
+						set_valid = false;
+					}
+				}
+
+				if (value.get_type() == Variant::ARRAY) {
+					Array set_array = value;
+					bool is_get_valid = false;
+					Variant get_value = res->get(assign, &is_get_valid);
+					if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
+						Array get_array = get_value;
+						if (!set_array.is_same_typed(get_array)) {
+							value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+						}
+					}
+				}
+
+				if (set_valid) {
+					res->set(assign, value);
+				}
+			}
+		} else { // No more assignments found.
+			// Main resource should not have any further tags after it.
+			if (res == resource && !next_tag.name.is_empty()) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "Extra tag found when parsing main resource file";
+				_printerr();
+				return error;
+			} else if (res != resource && next_tag.name.is_empty()) { // Parsing sub resource.
+				// Sub resource must have at least one more tag after it.
+				error = ERR_FILE_CORRUPT;
+				error_text = "Premature end of file while parsing [sub_resource]";
+				_printerr();
+				return error;
+			} else { // Done parsing this resource.
+				break;
+			}
+		}
+	}
+
+	if (!missing_resource_properties.is_empty()) {
+		res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
+	}
+
+	return error;
+}
+
 Error ResourceLoaderText::load() {
 	if (error != OK) {
 		return error;
 	}
 
+	// Load external resources.
 	while (true) {
 		if (next_tag.name != "ext_resource") {
 			break;
@@ -461,7 +539,7 @@ Error ResourceLoaderText::load() {
 		}
 
 		if (!path.contains("://") && path.is_relative_path()) {
-			// path is relative to file being loaded, so convert to a resource path
+			// Path is relative to file being loaded, so convert to a resource path.
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().path_join(path));
 		}
 
@@ -493,7 +571,7 @@ Error ResourceLoaderText::load() {
 		resource_current++;
 	}
 
-	//these are the ones that count
+	// Load sub resources.
 	resources_total -= resource_current;
 	resource_current = 0;
 
@@ -504,14 +582,14 @@ Error ResourceLoaderText::load() {
 
 		if (!next_tag.fields.has("type")) {
 			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'type' in external resource tag";
+			error_text = "Missing 'type' in sub resource tag";
 			_printerr();
 			return error;
 		}
 
 		if (!next_tag.fields.has("id")) {
 			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'id' in external resource tag";
+			error_text = "Missing 'id' in sub resource tag";
 			_printerr();
 			return error;
 		}
@@ -521,31 +599,28 @@ Error ResourceLoaderText::load() {
 
 		String path = local_path + "::" + id;
 
-		//bool exists=ResourceCache::has(path);
-
-		Ref<Resource> res;
+		Ref<Resource> subres;
 		bool do_assign = false;
 
 		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
-			//reuse existing
+			// Reuse existing.
 			Ref<Resource> cache = ResourceCache::get_ref(path);
 			if (cache.is_valid() && cache->get_class() == type) {
-				res = cache;
-				res->reset_state();
+				subres = cache;
+				subres->reset_state();
 				do_assign = true;
 			}
 		}
 
 		MissingResource *missing_resource = nullptr;
 
-		if (res.is_null()) { //not reuse
+		if (subres.is_null()) { // Don't reuse.
 			Ref<Resource> cache = ResourceCache::get_ref(path);
-			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && cache.is_valid()) { //only if it doesn't exist
-				//cached, do not assign
-				res = cache;
+			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && cache.is_valid()) { // Only if it doesn't exist.
+				// Cached, do not assign.
+				subres = cache;
 			} else {
-				//create
-
+				// Create sub resource.
 				Object *obj = ClassDB::instantiate(type);
 				if (!obj) {
 					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
@@ -569,7 +644,12 @@ Error ResourceLoaderText::load() {
 					return error;
 				}
 
-				res = Ref<Resource>(r);
+				subres = Ref<Resource>(r);
+				Ref<LoadHooksResource> lhres = subres;
+				if (lhres.is_valid()) {
+					lhres->_start_load();
+				}
+
 				do_assign = true;
 			}
 		}
@@ -580,82 +660,33 @@ Error ResourceLoaderText::load() {
 			*progress = resource_current / float(resources_total);
 		}
 
-		int_resources[id] = res; // Always assign int resources.
+		int_resources[id] = subres; // Always assign internal resources.
 		if (do_assign) {
 			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-				res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+				subres->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
 			} else if (!path.is_resource_file()) {
-				res->set_path_cache(path);
+				subres->set_path_cache(path);
 			}
-			res->set_scene_unique_id(id);
+			subres->set_scene_unique_id(id);
 		}
 
-		Dictionary missing_resource_properties;
+		// Load sub resource properties.
+		Error err = _parse_resource_properties(subres, do_assign, missing_resource != nullptr);
+		if (err) {
+			return err;
+		}
 
-		while (true) {
-			String assign;
-			Variant value;
-
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
-
-			if (error) {
-				_printerr();
-				return error;
-			}
-
-			if (!assign.is_empty()) {
-				if (do_assign) {
-					bool set_valid = true;
-
-					if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
-						// If the property being set is a missing resource (and the parent is not),
-						// then setting it will most likely not work.
-						// Instead, save it as metadata.
-
-						Ref<MissingResource> mr = value;
-						if (mr.is_valid()) {
-							missing_resource_properties[assign] = mr;
-							set_valid = false;
-						}
-					}
-
-					if (value.get_type() == Variant::ARRAY) {
-						Array set_array = value;
-						bool is_get_valid = false;
-						Variant get_value = res->get(assign, &is_get_valid);
-						if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
-							Array get_array = get_value;
-							if (!set_array.is_same_typed(get_array)) {
-								value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
-							}
-						}
-					}
-
-					if (set_valid) {
-						res->set(assign, value);
-					}
-				}
-				//it's assignment
-			} else if (!next_tag.name.is_empty()) {
-				error = OK;
-				break;
-			} else {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Premature end of file while parsing [sub_resource]";
-				_printerr();
-				return error;
-			}
+		Ref<LoadHooksResource> lhres = subres;
+		if (lhres.is_valid()) {
+			lhres->_finish_load();
 		}
 
 		if (missing_resource) {
 			missing_resource->set_recording_properties(false);
 		}
-
-		if (!missing_resource_properties.is_empty()) {
-			res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
-		}
 	}
 
+	// Load main resource.
 	while (true) {
 		if (next_tag.name != "resource") {
 			break;
@@ -685,7 +716,7 @@ Error ResourceLoaderText::load() {
 					missing_resource->set_recording_properties(true);
 					obj = missing_resource;
 				} else {
-					error_text += "Can't create sub resource of type: " + res_type;
+					error_text += "Can't create main resource of type: " + res_type;
 					_printerr();
 					error = ERR_FILE_CORRUPT;
 					return error;
@@ -694,77 +725,35 @@ Error ResourceLoaderText::load() {
 
 			Resource *r = Object::cast_to<Resource>(obj);
 			if (!r) {
-				error_text += "Can't create sub resource of type, because not a resource: " + res_type;
+				error_text += "Can't create main resource of type, because not a resource: " + res_type;
 				_printerr();
 				error = ERR_FILE_CORRUPT;
 				return error;
 			}
 
 			resource = Ref<Resource>(r);
+			Ref<LoadHooksResource> lhres = resource;
+			if (lhres.is_valid()) {
+				lhres->_start_load();
+			}
 		}
 
-		Dictionary missing_resource_properties;
+		// Load main resource properties.
+		Error err = _parse_resource_properties(resource, false, missing_resource != nullptr);
+		if (err) {
+			return err;
+		}
 
-		while (true) {
-			String assign;
-			Variant value;
-
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
-
-			if (error) {
-				if (error != ERR_FILE_EOF) {
-					_printerr();
-				} else {
-					error = OK;
-					if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-						if (!ResourceCache::has(res_path)) {
-							resource->set_path(res_path);
-						}
-						resource->set_as_translation_remapped(translation_remapped);
-					}
-				}
-				return error;
+		if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			if (!ResourceCache::has(res_path)) {
+				resource->set_path(res_path);
 			}
+			resource->set_as_translation_remapped(translation_remapped);
+		}
 
-			if (!assign.is_empty()) {
-				bool set_valid = true;
-
-				if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
-					// If the property being set is a missing resource (and the parent is not),
-					// then setting it will most likely not work.
-					// Instead, save it as metadata.
-
-					Ref<MissingResource> mr = value;
-					if (mr.is_valid()) {
-						missing_resource_properties[assign] = mr;
-						set_valid = false;
-					}
-				}
-
-				if (value.get_type() == Variant::ARRAY) {
-					Array set_array = value;
-					bool is_get_valid = false;
-					Variant get_value = resource->get(assign, &is_get_valid);
-					if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
-						Array get_array = get_value;
-						if (!set_array.is_same_typed(get_array)) {
-							value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
-						}
-					}
-				}
-
-				if (set_valid) {
-					resource->set(assign, value);
-				}
-				//it's assignment
-			} else if (!next_tag.name.is_empty()) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Extra tag found when parsing main resource file";
-				_printerr();
-				return error;
-			} else {
-				break;
-			}
+		Ref<LoadHooksResource> lhres = resource;
+		if (lhres.is_valid()) {
+			lhres->_finish_load();
 		}
 
 		resource_current++;
@@ -777,16 +766,12 @@ Error ResourceLoaderText::load() {
 			missing_resource->set_recording_properties(false);
 		}
 
-		if (!missing_resource_properties.is_empty()) {
-			resource->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
-		}
-
 		error = OK;
 
 		return error;
 	}
 
-	//for scene files
+	// For scene files.
 
 	if (next_tag.name == "node") {
 		if (!is_scene) {
