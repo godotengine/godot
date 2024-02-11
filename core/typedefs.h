@@ -317,4 +317,35 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
+template <bool B, typename T = void>
+struct EnableIf {
+	typedef T type;
+};
+
+template <typename T>
+struct EnableIf<false, T> {};
+
+template <bool B, typename T = void>
+using enable_if_t = typename EnableIf<B, T>::type;
+
+template <typename, typename>
+inline constexpr bool types_are_same_v = false;
+
+template <typename T>
+inline constexpr bool types_are_same_v<T, T> = true;
+
+template <typename B, typename D>
+struct TypeInherits {
+	static D *get_d();
+
+	static char (&test(B *))[1];
+	static char (&test(...))[2];
+
+	static bool const value = sizeof(test(get_d())) == sizeof(char) &&
+			!types_are_same_v<B volatile const, void volatile const>;
+};
+
+template <typename B, typename D>
+inline constexpr bool type_inherits_v = TypeInherits<B, D>::value;
+
 #endif // TYPEDEFS_H

@@ -33,32 +33,6 @@
 
 #include "core/typedefs.h"
 
-template <bool C, typename T = void>
-struct EnableIf {
-	typedef T type;
-};
-
-template <typename T>
-struct EnableIf<false, T> {
-};
-
-template <typename, typename>
-inline constexpr bool types_are_same_v = false;
-
-template <typename T>
-inline constexpr bool types_are_same_v<T, T> = true;
-
-template <typename B, typename D>
-struct TypeInherits {
-	static D *get_d();
-
-	static char (&test(B *))[1];
-	static char (&test(...))[2];
-
-	static bool const value = sizeof(test(get_d())) == sizeof(char) &&
-			!types_are_same_v<B volatile const, void volatile const>;
-};
-
 namespace GodotTypeInfo {
 enum Metadata {
 	METADATA_NONE,
@@ -223,7 +197,7 @@ MAKE_TEMPLATE_TYPE_INFO(Vector, Face3, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TEMPLATE_TYPE_INFO(Vector, StringName, Variant::PACKED_STRING_ARRAY)
 
 template <typename T>
-struct GetTypeInfo<T *, typename EnableIf<TypeInherits<Object, T>::value>::type> {
+struct GetTypeInfo<T *, enable_if_t<type_inherits_v<Object, T>>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
@@ -232,7 +206,7 @@ struct GetTypeInfo<T *, typename EnableIf<TypeInherits<Object, T>::value>::type>
 };
 
 template <typename T>
-struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>::type> {
+struct GetTypeInfo<const T *, enable_if_t<type_inherits_v<Object, T>>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
