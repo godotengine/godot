@@ -310,6 +310,10 @@ bool AnimationPlayer::_blend_pre_process(double p_delta, int p_track_count, cons
 	return true;
 }
 
+void AnimationPlayer::_blend_capture(double p_delta) {
+	blend_capture(p_delta * Math::abs(speed_scale));
+}
+
 void AnimationPlayer::_blend_post_process() {
 	if (end_reached) {
 		// If the method track changes current animation, the animation is not finished.
@@ -366,12 +370,72 @@ void AnimationPlayer::play_backwards(const StringName &p_name, double p_custom_b
 	play(p_name, p_custom_blend, -1, true);
 }
 
+void AnimationPlayer::play_with_capture(const StringName &p_name, double p_duration, double p_custom_blend, float p_custom_scale, bool p_from_end, Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type) {
+	StringName name = p_name;
+	if (name == StringName()) {
+		name = playback.assigned;
+	}
+
+	if (signbit(p_duration)) {
+		double max_dur = 0;
+		Ref<Animation> anim = get_animation(name);
+		if (anim.is_valid()) {
+			double current_pos = playback.current.pos;
+			if (playback.assigned != name) {
+				current_pos = p_from_end ? anim->get_length() : 0;
+			}
+			for (int i = 0; i < anim->get_track_count(); i++) {
+				if (anim->track_get_type(i) != Animation::TYPE_VALUE) {
+					continue;
+				}
+				if (anim->value_track_get_update_mode(i) != Animation::UPDATE_CAPTURE) {
+					continue;
+				}
+				if (anim->track_get_key_count(i) == 0) {
+					continue;
+				}
+				max_dur = MAX(max_dur, p_from_end ? current_pos - anim->track_get_key_time(i, anim->track_get_key_count(i) - 1) : anim->track_get_key_time(i, 0) - current_pos);
+			}
+		}
+		p_duration = max_dur;
+	}
+
+	capture(name, p_duration, p_trans_type, p_ease_type);
+	play(name, p_custom_blend, p_custom_scale, p_from_end);
+}
+
 void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, float p_custom_scale, bool p_from_end) {
 	StringName name = p_name;
 
-	if (String(name) == "") {
+	if (name == StringName()) {
 		name = playback.assigned;
 	}
+
+#ifdef TOOLS_ENABLED
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		bool warn_enabled = false;
+		if (capture_cache.animation.is_null()) {
+			Ref<Animation> anim = get_animation(name);
+			if (anim.is_valid()) {
+				for (int i = 0; i < anim->get_track_count(); i++) {
+					if (anim->track_get_type(i) != Animation::TYPE_VALUE) {
+						continue;
+					}
+					if (anim->value_track_get_update_mode(i) != Animation::UPDATE_CAPTURE) {
+						continue;
+					}
+					if (anim->track_get_key_count(i) == 0) {
+						continue;
+					}
+					warn_enabled = true;
+				}
+			}
+		}
+		if (warn_enabled) {
+			WARN_PRINT_ONCE_ED("Capture track found. If you want to interpolate animation with captured frame, you can use play_with_capture() instead of play().");
+		}
+	}
+#endif
 
 	ERR_FAIL_COND_MSG(!animation_set.has(name), vformat("Animation not found: %s.", name));
 
@@ -417,7 +481,7 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	}
 
 	if (get_current_animation() != p_name) {
-		_clear_caches();
+		_clear_playing_caches();
 	}
 
 	c.current.from = &animation_set[name];
@@ -751,6 +815,7 @@ void AnimationPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(""), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("play_with_capture", "name", "duration", "custom_blend", "custom_speed", "from_end", "trans_type", "ease_type"), &AnimationPlayer::play_with_capture, DEFVAL(-1.0), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false), DEFVAL(Tween::TRANS_LINEAR), DEFVAL(Tween::EASE_IN));
 	ClassDB::bind_method(D_METHOD("pause"), &AnimationPlayer::pause);
 	ClassDB::bind_method(D_METHOD("stop", "keep_state"), &AnimationPlayer::stop, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
