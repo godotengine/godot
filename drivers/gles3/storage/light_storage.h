@@ -142,18 +142,17 @@ struct ReflectionAtlas {
 
 	int mipmap_count = 1; // number of mips, including original
 	int mipmap_size[8];
-	GLuint reflection = 0;
 	GLuint depth = 0;
 
 	struct Reflection {
 		RID owner;
-		int layer_offset;
-		GLuint fbos[8][6];
+		GLuint color = 0;
+		GLuint radiance = 0;
+		GLuint fbos[7];
 	};
+	Vector<Reflection> reflections;
 
 	Ref<RenderSceneBuffersGLES3> render_buffers; // Further render buffers used.
-
-	Vector<Reflection> reflections;
 };
 
 /* REFLECTION PROBE INSTANCE */
@@ -165,10 +164,8 @@ struct ReflectionProbeInstance {
 
 	bool dirty = true;
 	bool rendering = false;
-	int processing_layer = 1;
-	int processing_side = 0;
+	int processing_layer = 0;
 
-	uint32_t render_step = 0;
 	uint64_t last_pass = 0;
 	uint32_t cull_mask = 0;
 
@@ -653,12 +650,6 @@ public:
 	virtual int reflection_atlas_get_size(RID p_ref_atlas) const override;
 	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override;
 
-	_FORCE_INLINE_ GLuint reflection_atlas_get_texture(RID p_ref_atlas) {
-		ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_ref_atlas);
-		ERR_FAIL_NULL_V(atlas, 0);
-		return atlas->reflection;
-	}
-
 	/* REFLECTION PROBE INSTANCE */
 
 	bool owns_reflection_probe_instance(RID p_rid) { return reflection_probe_instance_owner.owns(p_rid); }
@@ -674,6 +665,25 @@ public:
 	virtual Ref<RenderSceneBuffers> reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) override;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override;
 
+	_FORCE_INLINE_ RID reflection_probe_instance_get_probe(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+		ERR_FAIL_NULL_V(rpi, RID());
+
+		return rpi->probe;
+	}
+	_FORCE_INLINE_ RID reflection_probe_instance_get_atlas(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+		ERR_FAIL_NULL_V(rpi, RID());
+
+		return rpi->atlas;
+	}
+	Transform3D reflection_probe_instance_get_transform(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+		ERR_FAIL_NULL_V(rpi, Transform3D());
+
+		return rpi->transform;
+	}
+	GLuint reflection_probe_instance_get_texture(RID p_instance);
 	GLuint reflection_probe_instance_get_framebuffer(RID p_instance, int p_index);
 
 	/* LIGHTMAP CAPTURE */

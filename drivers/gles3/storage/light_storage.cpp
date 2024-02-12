@@ -661,17 +661,21 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 	ra->size = p_reflection_size;
 	ra->count = p_reflection_count;
 
-	if (ra->reflection != 0) {
+	if (ra->depth != 0) {
 		//clear and invalidate everything
 		for (int i = 0; i < ra->reflections.size(); i++) {
-			for (int mip = 0; mip < ra->mipmap_count; mip++) {
-				for (int side = 0; side < 6; side++) {
-					if (ra->reflections[i].fbos[mip][side] != 0) {
-						glDeleteFramebuffers(1, &ra->reflections[i].fbos[mip][side]);
-						ra->reflections.write[i].fbos[mip][side] = 0;
-					}
+			for (int j = 0; j < 7; j++) {
+				if (ra->reflections[i].fbos[j] != 0) {
+					glDeleteFramebuffers(1, &ra->reflections[i].fbos[j]);
+					ra->reflections.write[i].fbos[j] = 0;
 				}
 			}
+
+			GLES3::Utilities::get_singleton()->texture_free_data(ra->reflections[i].color);
+			ra->reflections.write[i].color = 0;
+
+			GLES3::Utilities::get_singleton()->texture_free_data(ra->reflections[i].radiance);
+			ra->reflections.write[i].radiance = 0;
 
 			if (ra->reflections[i].owner.is_null()) {
 				continue;
@@ -681,9 +685,6 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 		}
 
 		ra->reflections.clear();
-
-		GLES3::Utilities::get_singleton()->texture_free_data(ra->reflection);
-		ra->reflection = 0;
 
 		GLES3::Utilities::get_singleton()->texture_free_data(ra->depth);
 		ra->depth = 0;
@@ -704,7 +705,6 @@ RID LightStorage::reflection_probe_instance_create(RID p_probe) {
 }
 
 void LightStorage::reflection_probe_instance_free(RID p_instance) {
-	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	reflection_probe_release_atlas_index(p_instance);
 	reflection_probe_instance_owner.free(p_instance);
 }
@@ -718,7 +718,14 @@ void LightStorage::reflection_probe_instance_set_transform(RID p_instance, const
 }
 
 bool LightStorage::reflection_probe_has_atlas_index(RID p_instance) {
-	return false;
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+
+	if (rpi->atlas.is_null()) {
+		return false;
+	}
+
+	return rpi->atlas_index >= 0;
 }
 
 void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
@@ -733,6 +740,13 @@ void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 
 	ERR_FAIL_INDEX(rpi->atlas_index, atlas->reflections.size());
 	atlas->reflections.write[rpi->atlas_index].owner = RID();
+
+	if (rpi->rendering) {
+		// We were cancelled mid rendering, trigger refresh.
+		rpi->rendering = false;
+		rpi->dirty = true;
+		rpi->processing_layer = 0;
+	}
 
 	rpi->atlas_index = -1;
 	rpi->atlas = RID();
@@ -783,87 +797,125 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	// Not making an exception for update_mode = REFLECTION_PROBE_UPDATE_ALWAYS, we are using
 	// the same render techniques regardless of realtime or update once (for now).
 
-	if (atlas->reflection == 0) {
+	if (atlas->depth == 0) {
 		// We need to create our textures
 		atlas->mipmap_count = Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1;
 		atlas->mipmap_count = MIN(atlas->mipmap_count, 8); // No more than 8 please..
 
-		{
-			glGenTextures(1, &atlas->reflection);
-			glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, atlas->reflection);
-
-			int size = atlas->size;
-
-#ifdef GL_API_ENABLED
-			if (RasterizerGLES3::is_gles_over_gl()) {
-				glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_RGB10_A2, size, size, 6 * atlas->count, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, nullptr);
-				glGenerateMipmap(GL_TEXTURE_CUBE_MAP_ARRAY);
-			}
-#endif
-#ifdef GLES_API_ENABLED
-			if (!RasterizerGLES3::is_gles_over_gl()) {
-				glTexStorage3D(GL_TEXTURE_CUBE_MAP_ARRAY, atlas->mipmap_count, GL_RGB10_A2, size, size, 6 * atlas->count);
-			}
-#endif // GLES_API_ENABLED
-
-			// Setup sizes and calculate how much memory we're using.
-			uint32_t data_size = 0;
-			for (int m = 0; m < atlas->mipmap_count; m++) {
-				atlas->mipmap_size[m] = size;
-				data_size += size * size * 6 * atlas->count * 4;
-				size = MAX(size >> 1, 1);
-			}
-
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAX_LEVEL, atlas->mipmap_count - 1);
-
-			GLES3::Utilities::get_singleton()->texture_allocated_data(atlas->reflection, data_size, "Reflection probe atlas (color)");
-		}
+		glActiveTexture(GL_TEXTURE0);
 
 		{
+			// We create one set of 6 layers for depth, we can reuse this when rendering.
 			glGenTextures(1, &atlas->depth);
 			glBindTexture(GL_TEXTURE_2D_ARRAY, atlas->depth);
 
-			glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, atlas->size, atlas->size, 6 * atlas->count, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+			glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, atlas->size, atlas->size, 6, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
 
-			GLES3::Utilities::get_singleton()->texture_allocated_data(atlas->depth, atlas->size * atlas->size * 6 * atlas->count * 3, "Reflection probe atlas (depth)");
+			GLES3::Utilities::get_singleton()->texture_allocated_data(atlas->depth, atlas->size * atlas->size * 6 * 3, "Reflection probe atlas (depth)");
 		}
 
 		// Make room for our atlas entries
 		atlas->reflections.resize(atlas->count);
 
-		int layer = 0;
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].layer_offset = layer;
-			for (int side = 0; side < 6; side++) {
-				for (int m = 0; m < atlas->mipmap_count; m++) {
-					GLuint fbo = 0;
-					glGenFramebuffers(1, &fbo);
-					glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+			// Create a cube map for this atlas entry
+			GLuint color = 0;
+			glGenTextures(1, &color);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, color);
+			atlas->reflections.write[i].color = color;
 
-					glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, atlas->reflection, m, layer);
-					if (m == 0) {
-						glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, atlas->depth, 0, layer);
-					}
-
-					// TODO validate framebuffer
-					GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-					if (status != GL_FRAMEBUFFER_COMPLETE) {
-						WARN_PRINT("Could not create reflections framebuffer, status: " + texture_storage->get_framebuffer_error(status));
-					}
-
-					atlas->reflections.write[i].fbos[m][side] = fbo;
+#ifdef GL_API_ENABLED
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				for (int s = 0; s < 6; s++) {
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + s, 0, GL_RGB10_A2, atlas->size, atlas->size, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, nullptr);
 				}
-				layer++;
+				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			}
+#endif
+#ifdef GLES_API_ENABLED
+			if (!RasterizerGLES3::is_gles_over_gl()) {
+				glTexStorage2D(GL_TEXTURE_CUBE_MAP, atlas->mipmap_count, GL_RGB10_A2, atlas->size, atlas->size);
+			}
+#endif // GLES_API_ENABLED
+
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, atlas->mipmap_count - 1);
+
+			// Setup sizes and calculate how much memory we're using.
+			int mipmap_size = atlas->size;
+			uint32_t data_size = 0;
+			for (int m = 0; m < atlas->mipmap_count; m++) {
+				atlas->mipmap_size[m] = mipmap_size;
+				data_size += mipmap_size * mipmap_size * 6 * 4;
+				mipmap_size = MAX(mipmap_size >> 1, 1);
+			}
+
+			GLES3::Utilities::get_singleton()->texture_allocated_data(color, data_size, String("Reflection probe atlas (") + String::num_int64(i) + String(", color)"));
+
+			// Create a radiance map for this atlas entry
+			GLuint radiance = 0;
+			glGenTextures(1, &radiance);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, radiance);
+			atlas->reflections.write[i].radiance = radiance;
+
+#ifdef GL_API_ENABLED
+			if (RasterizerGLES3::is_gles_over_gl()) {
+				for (int s = 0; s < 6; s++) {
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + s, 0, GL_RGB10_A2, atlas->size, atlas->size, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, nullptr);
+				}
+				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			}
+#endif
+#ifdef GLES_API_ENABLED
+			if (!RasterizerGLES3::is_gles_over_gl()) {
+				glTexStorage2D(GL_TEXTURE_CUBE_MAP, atlas->mipmap_count, GL_RGB10_A2, atlas->size, atlas->size);
+			}
+#endif // GLES_API_ENABLED
+
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, atlas->mipmap_count - 1);
+
+			// Same data size as our color buffer
+			GLES3::Utilities::get_singleton()->texture_allocated_data(radiance, data_size, String("Reflection probe atlas (") + String::num_int64(i) + String(", radiance)"));
+
+			// Create our framebuffers so we can draw to all sides
+			for (int side = 0; side < 6; side++) {
+				GLuint fbo = 0;
+				glGenFramebuffers(1, &fbo);
+				glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+				glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color, 0, side);
+				glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, atlas->depth, 0, side);
+
+				// Validate framebuffer
+				GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+				if (status != GL_FRAMEBUFFER_COMPLETE) {
+					WARN_PRINT("Could not create reflections framebuffer, status: " + texture_storage->get_framebuffer_error(status));
+				}
+
+				atlas->reflections.write[i].fbos[side] = fbo;
+			}
+
+			// Create an extra framebuffer for building our radiance
+			{
+				GLuint fbo = 0;
+				glGenFramebuffers(1, &fbo);
+				glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+				atlas->reflections.write[i].fbos[6] = fbo;
 			}
 		}
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 	}
 
@@ -898,8 +950,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	rpi->atlas = p_reflection_atlas;
 	rpi->rendering = true;
 	rpi->dirty = false;
-	rpi->processing_layer = 1;
-	rpi->processing_side = 0;
+	rpi->processing_layer = 0;
 
 	return true;
 }
@@ -912,6 +963,7 @@ Ref<RenderSceneBuffers> LightStorage::reflection_probe_atlas_get_render_buffers(
 }
 
 bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
+	GLES3::CubemapFilter *cubemap_filter = GLES3::CubemapFilter::get_singleton();
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 	ERR_FAIL_COND_V(!rpi->rendering, false);
@@ -921,48 +973,43 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 	if (!atlas || rpi->atlas_index == -1) {
 		//does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering)
 		rpi->rendering = false;
+		rpi->processing_layer = 0;
 		return false;
 	}
-
-	// atlas->reflections.write[i].fbos[m][side] = fbo;
 
 	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
 		// Using real time reflections, all roughness is done in one step
 		for (int m = 0; m < atlas->mipmap_count - 1; m++) {
-			for (int s = 0; s < 6; s++) {
-				glBindFramebuffer(GL_READ_FRAMEBUFFER, atlas->reflections[rpi->atlas_index].fbos[m][s]);
-				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, atlas->reflections[rpi->atlas_index].fbos[m + 1][s]);
-
-				glBlitFramebuffer(0, 0, atlas->mipmap_size[m], atlas->mipmap_size[m], 0, 0, atlas->mipmap_size[m + 1], atlas->mipmap_size[m + 1], GL_COLOR_BUFFER_BIT, GL_LINEAR);
-			}
+			const GLES3::ReflectionAtlas::Reflection &reflection = atlas->reflections[rpi->atlas_index];
+			cubemap_filter->filter_radiance(reflection.color, reflection.radiance, reflection.fbos[6], atlas->size, atlas->mipmap_count, m);
 		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		rpi->rendering = false;
-		rpi->processing_side = 0;
-		rpi->processing_layer = 1;
+		rpi->processing_layer = 0;
 		return true;
 	} else {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, atlas->reflections[rpi->atlas_index].fbos[rpi->processing_layer][rpi->processing_side]);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, atlas->reflections[rpi->atlas_index].fbos[rpi->processing_layer + 1][rpi->processing_side]);
+		const GLES3::ReflectionAtlas::Reflection &reflection = atlas->reflections[rpi->atlas_index];
+		cubemap_filter->filter_radiance(reflection.color, reflection.radiance, reflection.fbos[6], atlas->size, atlas->mipmap_count, rpi->processing_layer);
 
-		glBlitFramebuffer(0, 0, atlas->mipmap_size[rpi->processing_layer], atlas->mipmap_size[rpi->processing_layer], 0, 0, atlas->mipmap_size[rpi->processing_layer + 1], atlas->mipmap_size[rpi->processing_layer + 1], GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
-
-	rpi->processing_side++;
-	if (rpi->processing_side == 6) {
-		rpi->processing_side = 0;
 		rpi->processing_layer++;
-		if (rpi->processing_layer == atlas->mipmap_count - 1) {
+		if (rpi->processing_layer == atlas->mipmap_count) {
 			rpi->rendering = false;
-			rpi->processing_layer = 1;
+			rpi->processing_layer = 0;
 			return true;
 		}
 	}
 
 	return false;
+}
+
+GLuint LightStorage::reflection_probe_instance_get_texture(RID p_instance) {
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, 0);
+
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
+	ERR_FAIL_NULL_V(atlas, 0);
+
+	return atlas->reflections[rpi->atlas_index].color;
 }
 
 GLuint LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, int p_index) {
@@ -972,7 +1019,7 @@ GLuint LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, i
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, 0);
-	return atlas->reflections[rpi->atlas_index].fbos[0][p_index];
+	return atlas->reflections[rpi->atlas_index].fbos[p_index];
 }
 
 /* LIGHTMAP CAPTURE */

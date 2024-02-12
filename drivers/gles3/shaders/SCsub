@@ -18,7 +18,6 @@ if "GLES3_GLSL" in env["BUILDERS"]:
     env.GLES3_GLSL("canvas.glsl")
     env.GLES3_GLSL("scene.glsl")
     env.GLES3_GLSL("sky.glsl")
-    env.GLES3_GLSL("cubemap_filter.glsl")
     env.GLES3_GLSL("canvas_occlusion.glsl")
     env.GLES3_GLSL("canvas_sdf.glsl")
     env.GLES3_GLSL("particles.glsl")
