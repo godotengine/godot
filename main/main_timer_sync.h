@@ -37,9 +37,9 @@
 // #define GODOT_DEBUG_DELTA_SMOOTHER
 
 struct MainFrameTime {
-	double process_step; // delta time to advance during process()
-	int physics_steps; // number of times to iterate the physics engine
-	double interpolation_fraction; // fraction through the current physics tick
+	double process_step = 0.0f; // delta time to advance during process()
+	int physics_steps = 0; // number of times to iterate the physics engine
+	double interpolation_fraction = 0.0f; // fraction through the current physics tick
 
 	void clamp_process_step(double min_process_step, double max_process_step);
 };

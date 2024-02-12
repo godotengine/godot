@@ -551,7 +551,7 @@ private:
 		RDD::CommandPoolID command_pool;
 		RDD::RenderPassID render_pass;
 		RDD::FramebufferID framebuffer;
-		WorkerThreadPool::TaskID task;
+		WorkerThreadPool::TaskID task = 0;
 	};
 
 	struct Frame {

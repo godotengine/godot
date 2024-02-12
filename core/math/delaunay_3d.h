@@ -54,7 +54,7 @@ class Delaunay3D {
 	};
 
 	struct Simplex {
-		uint32_t points[4];
+		uint32_t points[4] = { 0 };
 		R128 circum_center_x;
 		R128 circum_center_y;
 		R128 circum_center_z;
@@ -72,7 +72,7 @@ class Delaunay3D {
 	};
 
 	struct Triangle {
-		uint32_t triangle[3];
+		uint32_t triangle[3] = { 0 };
 		bool bad = false;
 		_FORCE_INLINE_ bool operator==(const Triangle &p_triangle) const {
 			return triangle[0] == p_triangle.triangle[0] && triangle[1] == p_triangle.triangle[1] && triangle[2] == p_triangle.triangle[2];

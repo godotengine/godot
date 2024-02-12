@@ -111,7 +111,7 @@ public:
 	template <typename... VarArgs>
 	Error push_call(ObjectID p_id, const StringName &p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}
@@ -125,7 +125,7 @@ public:
 	template <typename... VarArgs>
 	Error push_callable(const Callable &p_callable, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}
@@ -136,7 +136,7 @@ public:
 	template <typename... VarArgs>
 	Error push_call(Object *p_object, const StringName &p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}

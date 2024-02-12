@@ -517,7 +517,7 @@ private:
 			FinalAction final_color_action;
 			InitialAction initial_depth_action;
 			FinalAction final_depth_action;
-			uint32_t view_count;
+			uint32_t view_count = 0;
 
 			bool operator<(const VersionKey &p_key) const {
 				if (initial_color_action == p_key.initial_color_action) {
@@ -975,10 +975,10 @@ private:
 		// Cached values for validation.
 #ifdef DEBUG_ENABLED
 		struct Validation {
-			FramebufferFormatID framebuffer_format;
+			FramebufferFormatID framebuffer_format = 0;
 			uint32_t render_pass = 0;
 			uint32_t dynamic_state = 0;
-			VertexFormatID vertex_format;
+			VertexFormatID vertex_format = 0;
 			bool uses_restart_indices = false;
 			uint32_t primitive_minimum = 0;
 			uint32_t primitive_divisor = 0;

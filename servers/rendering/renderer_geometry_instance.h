@@ -112,7 +112,7 @@ public:
 	struct Data {
 		//data used less often goes into regular heap
 		RID base;
-		RS::InstanceType base_type;
+		RS::InstanceType base_type = RS::InstanceType::INSTANCE_NONE;
 
 		RID skeleton;
 		Vector<RID> surface_materials;

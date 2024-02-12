@@ -2190,7 +2190,7 @@ Variant::operator Signal() const {
 
 template <class DA, class SA>
 inline DA _convert_array(const SA &p_array) {
-	DA da;
+	DA da{};
 	da.resize(p_array.size());
 
 	for (int i = 0; i < p_array.size(); i++) {

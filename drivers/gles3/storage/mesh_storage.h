@@ -49,13 +49,13 @@ struct MeshInstance;
 struct Mesh {
 	struct Surface {
 		struct Attrib {
-			bool enabled;
-			bool integer;
-			GLint size;
-			GLenum type;
-			GLboolean normalized;
-			GLsizei stride;
-			uint32_t offset;
+			bool enabled = false;
+			bool integer = false;
+			GLint size = 0;
+			GLenum type = 0;
+			GLboolean normalized = 0;
+			GLsizei stride = 0;
+			uint32_t offset = 0;
 		};
 		RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
 		uint64_t format = 0;

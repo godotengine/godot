@@ -2029,7 +2029,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 		//rotate it
 		Basis rot = lightmap->transform.basis.orthonormalized();
 		for (int i = 0; i < 3; i++) {
-			real_t csh[9];
+			real_t csh[9] = { 0.0f };
 			for (int j = 0; j < 9; j++) {
 				csh[j] = sh[j][i];
 			}
@@ -2109,7 +2109,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			break;
 	}
 
-	real_t distances[5];
+	real_t distances[5] = { 0.0 };
 
 	distances[0] = min_distance;
 	for (int i = 0; i < splits; i++) {
@@ -2342,7 +2342,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 						}
 					};
 
-					CullConvex cull_convex;
+					CullConvex cull_convex{};
 					cull_convex.result = &instance_shadow_cull_result;
 
 					p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
@@ -2424,7 +2424,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 						}
 					};
 
-					CullConvex cull_convex;
+					CullConvex cull_convex{};
 					cull_convex.result = &instance_shadow_cull_result;
 
 					p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
@@ -2491,7 +2491,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 			};
 
-			CullConvex cull_convex;
+			CullConvex cull_convex{};
 			cull_convex.result = &instance_shadow_cull_result;
 
 			p_scenario->indexers[Scenario::INDEXER_GEOMETRY].convex_query(planes.ptr(), planes.size(), points.ptr(), points.size(), cull_convex);
@@ -3785,7 +3785,7 @@ void RendererSceneCull::render_particle_colliders() {
 				}
 			};
 
-			CullAABB cull_aabb;
+			CullAABB cull_aabb{};
 			cull_aabb.result = &instance_cull_result;
 			hfpc->scenario->indexers[Scenario::INDEXER_GEOMETRY].aabb_query(hfpc->transformed_aabb, cull_aabb);
 			hfpc->scenario->indexers[Scenario::INDEXER_VOLUMES].aabb_query(hfpc->transformed_aabb, cull_aabb);

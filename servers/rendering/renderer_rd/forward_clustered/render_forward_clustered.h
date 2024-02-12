@@ -453,7 +453,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		// lightmap
 		RID lightmap_instance;
 		Rect2 lightmap_uv_scale;
-		uint32_t lightmap_slice_index;
+		uint32_t lightmap_slice_index = 0;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
 
 		//used during rendering

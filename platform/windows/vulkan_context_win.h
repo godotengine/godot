@@ -43,8 +43,8 @@ class VulkanContextWindows : public VulkanContext {
 
 public:
 	struct WindowPlatformData {
-		HWND window;
-		HINSTANCE instance;
+		HWND window = 0;
+		HINSTANCE instance = 0;
 	};
 	virtual Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) override final;
 

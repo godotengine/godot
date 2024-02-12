@@ -470,7 +470,7 @@ def build_gles3_header(
             + str(defspec)
             + """) {  _FU
 
-            GLfloat matrix[16];
+            GLfloat matrix[16] = { 0 };
 
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {

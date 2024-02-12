@@ -58,7 +58,7 @@ Error ZIPPacker::close() {
 Error ZIPPacker::start_file(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
-	zip_fileinfo zipfi;
+	zip_fileinfo zipfi{};
 
 	OS::DateTime time = OS::get_singleton()->get_datetime();
 

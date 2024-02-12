@@ -55,7 +55,7 @@ public:
 		Element *parent = nullptr;
 		Element *_next = nullptr;
 		Element *_prev = nullptr;
-		T value;
+		T value{};
 		//_Data *data;
 
 	public:
@@ -285,7 +285,7 @@ private:
 
 	Element *_find(const T &p_value) const {
 		Element *node = _data._root->left;
-		C less;
+		C less{};
 
 		while (node != _data._nil) {
 			if (less(p_value, node->value)) {
@@ -303,7 +303,7 @@ private:
 	Element *_lower_bound(const T &p_value) const {
 		Element *node = _data._root->left;
 		Element *prev = nullptr;
-		C less;
+		C less{};
 
 		while (node != _data._nil) {
 			prev = node;
@@ -379,7 +379,7 @@ private:
 	Element *_insert(const T &p_value) {
 		Element *new_parent = _data._root;
 		Element *node = _data._root->left;
-		C less;
+		C less{};
 
 		while (node != _data._nil) {
 			new_parent = node;

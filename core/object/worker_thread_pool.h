@@ -159,9 +159,9 @@ private:
 
 	template <class C, class M, class U>
 	struct TaskUserData : public BaseTemplateUserdata {
-		C *instance;
-		M method;
-		U userdata;
+		C *instance = nullptr;
+		M method{};
+		U userdata{};
 		virtual void callback() override {
 			(instance->*method)(userdata);
 		}
@@ -169,9 +169,9 @@ private:
 
 	template <class C, class M, class U>
 	struct GroupUserData : public BaseTemplateUserdata {
-		C *instance;
-		M method;
-		U userdata;
+		C *instance = nullptr;
+		M method{};
+		U userdata{};
 		virtual void callback_indexed(uint32_t p_index) override {
 			(instance->*method)(p_index, userdata);
 		}

@@ -311,7 +311,7 @@ private:
 
 		RID lightmap_instance;
 		Rect2 lightmap_uv_scale;
-		uint32_t lightmap_slice_index;
+		uint32_t lightmap_slice_index = 0;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
 
 		// Used during setup.
@@ -619,7 +619,7 @@ protected:
 		GLuint raw_radiance = 0;
 
 		RID material;
-		GLuint uniform_buffer;
+		GLuint uniform_buffer = 0;
 
 		int radiance_size = 256;
 		int mipmap_count = 1;

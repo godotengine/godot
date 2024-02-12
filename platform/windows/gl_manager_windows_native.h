@@ -50,8 +50,8 @@ private:
 		bool use_vsync = false;
 
 		// windows specific
-		HDC hDC;
-		HWND hwnd;
+		HDC hDC = 0;
+		HWND hwnd = 0;
 
 		int gldisplay_id = 0;
 	};

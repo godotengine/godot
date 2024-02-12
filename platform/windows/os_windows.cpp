@@ -292,7 +292,7 @@ void debug_dynamic_library_check_dependencies(const String &p_root_path, const S
 	}
 	r_checked.insert(p_path);
 
-	LOADED_IMAGE loaded_image;
+	LOADED_IMAGE loaded_image{};
 	HANDLE file = CreateFileW((LPCWSTR)p_path.utf16().get_data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (file != INVALID_HANDLE_VALUE) {
 		HANDLE file_mapping = CreateFileMappingW(file, nullptr, PAGE_READONLY | SEC_COMMIT, 0, 0, nullptr);
@@ -328,7 +328,7 @@ void debug_dynamic_library_check_dependencies(const String &p_root_path, const S
 					const IMAGE_IMPORT_DESCRIPTOR *import_desc = (const IMAGE_IMPORT_DESCRIPTOR *)ImageDirectoryEntryToData((HMODULE)loaded_image.MappedAddress, false, IMAGE_DIRECTORY_ENTRY_IMPORT, &size);
 					if (import_desc) {
 						for (; import_desc->Name && import_desc->FirstThunk; import_desc++) {
-							char16_t full_name_wc[MAX_PATH];
+							char16_t full_name_wc[MAX_PATH] = { 0 };
 							const char *name_cs = (const char *)ImageRvaToVa(loaded_image.FileHeader, loaded_image.MappedAddress, import_desc->Name, 0);
 							String name = String(name_cs);
 							if (name.begins_with("api-ms-win-")) {
@@ -565,7 +565,7 @@ OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 		is_daylight = true;
 	}
 
-	DateTime dt;
+	DateTime dt{};
 	dt.year = systemtime.wYear;
 	dt.month = Month(systemtime.wMonth);
 	dt.day = systemtime.wDay;
@@ -626,7 +626,7 @@ void OS_Windows::delay_usec(uint32_t p_usec) const {
 }
 
 uint64_t OS_Windows::get_ticks_usec() const {
-	uint64_t ticks;
+	uint64_t ticks = 0;
 
 	// This is the number of clock ticks since start
 	QueryPerformanceCounter((LARGE_INTEGER *)&ticks);
@@ -698,7 +698,7 @@ Dictionary OS_Windows::get_memory_info() const {
 	meminfo["available"] = -1;
 	meminfo["stack"] = -1;
 
-	PERFORMANCE_INFORMATION pref_info;
+	PERFORMANCE_INFORMATION pref_info{};
 	pref_info.cb = sizeof(pref_info);
 	GetPerformanceInfo(&pref_info, sizeof(pref_info));
 
@@ -734,7 +734,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		command += " " + _quote_command_line_argument(E);
 	}
 
-	ProcessInfo pi;
+	ProcessInfo pi{};
 	ZeroMemory(&pi.si, sizeof(pi.si));
 	pi.si.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
@@ -744,7 +744,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	HANDLE pipe[2] = { nullptr, nullptr };
 	if (r_pipe) {
 		// Create pipe for StdOut and StdErr.
-		SECURITY_ATTRIBUTES sa;
+		SECURITY_ATTRIBUTES sa{};
 		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 		sa.bInheritHandle = true;
 		sa.lpSecurityDescriptor = nullptr;
@@ -836,7 +836,7 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 		command += " " + _quote_command_line_argument(E);
 	}
 
-	ProcessInfo pi;
+	ProcessInfo pi{};
 	ZeroMemory(&pi.si, sizeof(pi.si));
 	pi.si.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
@@ -1180,7 +1180,7 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 			continue;
 		}
 
-		WCHAR file_path[MAX_PATH];
+		WCHAR file_path[MAX_PATH] = { 0 };
 		hr = loader->GetFilePathFromKey(reference_key, reference_key_size, &file_path[0], MAX_PATH);
 		if (FAILED(hr)) {
 			continue;
@@ -1259,7 +1259,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 			continue;
 		}
 
-		WCHAR file_path[MAX_PATH];
+		WCHAR file_path[MAX_PATH] = { 0 };
 		hr = loader->GetFilePathFromKey(reference_key, reference_key_size, &file_path[0], MAX_PATH);
 		if (FAILED(hr)) {
 			continue;
@@ -1324,7 +1324,7 @@ void OS_Windows::unset_environment(const String &p_var) const {
 }
 
 String OS_Windows::get_stdin_string() {
-	WCHAR buff[1024];
+	WCHAR buff[1024] = { 0 };
 	DWORD count = 0;
 	if (ReadConsoleW(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
 		return String::utf16((const char16_t *)buff, count);
@@ -1452,7 +1452,7 @@ String OS_Windows::get_processor_name() const {
 		ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
 	}
 
-	WCHAR buffer[256];
+	WCHAR buffer[256] = { 0 };
 	DWORD buffer_len = 256;
 	DWORD vtype = REG_SZ;
 	if (RegQueryValueExW(hkey, L"ProcessorNameString", NULL, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS) {
@@ -1651,7 +1651,7 @@ bool OS_Windows::is_disable_crash_handler() const {
 }
 
 Error OS_Windows::move_to_trash(const String &p_path) {
-	SHFILEOPSTRUCTW sf;
+	SHFILEOPSTRUCTW sf{};
 
 	Char16String utf16 = p_path.utf16();
 	WCHAR *from = new WCHAR[utf16.length() + 2];

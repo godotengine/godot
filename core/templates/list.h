@@ -52,7 +52,7 @@ public:
 	private:
 		friend class List<T, A>;
 
-		T value;
+		T value{};
 		Element *next_ptr = nullptr;
 		Element *prev_ptr = nullptr;
 		_Data *data = nullptr;
@@ -664,7 +664,7 @@ public:
 				current->next_ptr = from;
 
 				Element *find = from;
-				C less;
+				C less{};
 				while (find && less(find->value, current->value)) {
 					current->prev_ptr = find;
 					current->next_ptr = find->next_ptr;

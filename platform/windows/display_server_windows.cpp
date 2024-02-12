@@ -74,7 +74,7 @@ static String format_error_message(DWORD id) {
 }
 
 static void track_mouse_leave_event(HWND hWnd) {
-	TRACKMOUSEEVENT tme;
+	TRACKMOUSEEVENT tme{};
 	tme.cbSize = sizeof(TRACKMOUSEEVENT);
 	tme.dwFlags = TME_LEAVE;
 	tme.hwndTrack = hWnd;
@@ -624,7 +624,7 @@ void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
 		old_x = p_position.x;
 		old_y = p_position.y;
 	} else {
-		POINT p;
+		POINT p{};
 		p.x = p_position.x;
 		p.y = p_position.y;
 		ClientToScreen(windows[window_id].hWnd, &p);
@@ -634,7 +634,7 @@ void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
 }
 
 Point2i DisplayServerWindows::mouse_get_position() const {
-	POINT p;
+	POINT p{};
 	GetCursorPos(&p);
 	return Point2i(p.x, p.y) - _get_screens_origin();
 }
@@ -1069,7 +1069,7 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 	Point2i pos = p_position + _get_screens_origin();
 
-	POINT p;
+	POINT p{};
 	p.x = pos.x;
 	p.y = pos.y;
 	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
@@ -1105,11 +1105,11 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 	Point2i pos = screen_get_position(p_screen) + _get_screens_origin();
 	Size2i size = screen_get_size(p_screen);
 
-	POINT p1;
+	POINT p1{};
 	p1.x = pos.x;
 	p1.y = pos.y;
 
-	POINT p2;
+	POINT p2{};
 	p2.x = pos.x + size.x;
 	p2.y = pos.y + size.y;
 	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
@@ -1187,7 +1187,7 @@ void DisplayServerWindows::screen_set_keep_on(bool p_enable) {
 		const String reason = "Godot Engine running with display/window/energy_saving/keep_screen_on = true";
 		Char16String reason_utf16 = reason.utf16();
 
-		REASON_CONTEXT context;
+		REASON_CONTEXT context{};
 		context.Version = POWER_REQUEST_CONTEXT_VERSION;
 		context.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
 		context.Reason.SimpleReasonString = (LPWSTR)(reason_utf16.ptrw());
@@ -1230,7 +1230,7 @@ Vector<DisplayServer::WindowID> DisplayServerWindows::get_window_list() const {
 
 DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(const Point2i &p_position) const {
 	Point2i offset = _get_screens_origin();
-	POINT p;
+	POINT p{};
 	p.x = p_position.x + offset.x;
 	p.y = p_position.y + offset.y;
 	HWND hwnd = WindowFromPoint(p);
@@ -1491,7 +1491,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 
 		ReleaseDC(wd.hWnd, hdc);
 	}
-	RECT rect;
+	RECT rect{};
 	if (DwmGetWindowAttribute(wd.hWnd, DWMWA_CAPTION_BUTTON_BOUNDS, &rect, sizeof(RECT)) == S_OK) {
 		if (rect.right - rect.left > 0) {
 			ClientToScreen(wd.hWnd, (POINT *)&rect.left);
@@ -1592,7 +1592,7 @@ Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
 		return wd.last_pos;
 	}
 
-	POINT point;
+	POINT point{};
 	point.x = 0;
 	point.y = 0;
 
@@ -1645,7 +1645,7 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 
 	Point2i offset = _get_screens_origin();
 
-	RECT rc;
+	RECT rc{};
 	rc.left = p_position.x + offset.x;
 	rc.right = p_position.x + wd.width + offset.x;
 	rc.bottom = p_position.y + wd.height + offset.y;
@@ -2128,7 +2128,7 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	const WindowData &wd = windows[p_window];
 
-	FLASHWINFO info;
+	FLASHWINFO info{};
 	info.cbSize = sizeof(FLASHWINFO);
 	info.hwnd = wd.hWnd;
 	info.dwFlags = FLASHW_ALL;
@@ -2264,7 +2264,7 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 		return;
 	}
 
-	COMPOSITIONFORM cps;
+	COMPOSITIONFORM cps{};
 	cps.dwStyle = CFS_POINT;
 	cps.ptCurrentPos.x = wd.im_position.x;
 	cps.ptCurrentPos.y = wd.im_position.y;
@@ -2414,7 +2414,7 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		if (fully_transparent) {
 			cursors[p_shape] = nullptr;
 		} else {
-			ICONINFO iconinfo;
+			ICONINFO iconinfo{};
 			iconinfo.fIcon = FALSE;
 			iconinfo.xHotspot = p_hotspot.x;
 			iconinfo.yHotspot = p_hotspot.y;
@@ -3363,7 +3363,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			UINT dwSize;
+			UINT dwSize = 0;
 
 			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
 			LPBYTE lpb = new BYTE[dwSize];
@@ -3386,7 +3386,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							// A Shift is released, but another Shift is still held
 							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
-							KeyEvent ke;
+							KeyEvent ke{};
 							ke.shift = false;
 							ke.alt = alt_mem;
 							ke.control = control_mem;
@@ -3440,7 +3440,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							(double(raw->data.mouse.lLastX) - 65536.0 / (nScreenWidth)) * nScreenWidth / 65536.0 + nScreenLeft,
 							(double(raw->data.mouse.lLastY) - 65536.0 / (nScreenHeight)) * nScreenHeight / 65536.0 + nScreenTop);
 
-					POINT coords; // Client coords.
+					POINT coords{}; // Client coords.
 					coords.x = abs_pos.x;
 					coords.y = abs_pos.y;
 
@@ -3461,12 +3461,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WT_CSRCHANGE:
 		case WT_PROXIMITY: {
 			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
-				AXIS pressure;
+				AXIS pressure{};
 				if (wintab_WTInfo(WTI_DEVICES + windows[window_id].wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 					windows[window_id].min_pressure = int(pressure.axMin);
 					windows[window_id].max_pressure = int(pressure.axMax);
 				}
-				AXIS orientation[3];
+				AXIS orientation[3] = { 0 };
 				if (wintab_WTInfo(WTI_DEVICES + windows[window_id].wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
 					windows[window_id].tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
 				}
@@ -3475,7 +3475,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WT_PACKET: {
 			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
-				PACKET packet;
+				PACKET packet{};
 				if (wintab_WTPacket(windows[window_id].wtctx, wParam, &packet)) {
 					POINT coords;
 					GetCursorPos(&coords);
@@ -3660,7 +3660,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			mm->set_button_mask(last_button_state);
 
-			POINT coords; // Client coords.
+			POINT coords{}; // Client coords.
 			coords.x = GET_X_LPARAM(lParam);
 			coords.y = GET_Y_LPARAM(lParam);
 
@@ -3985,7 +3985,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			} else {
 				// For reasons unknown to humanity, wheel comes in screen coordinates.
-				POINT coords;
+				POINT coords{};
 				coords.x = mb->get_position().x;
 				coords.y = mb->get_position().y;
 
@@ -4142,7 +4142,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
 			// Make sure we don't include modifiers for the modifier key itself.
-			KeyEvent ke;
+			KeyEvent ke{};
 			ke.shift = (wParam != VK_SHIFT) ? shift_mem : false;
 			ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? alt_mem : false;
 			ke.control = (wParam != VK_CONTROL) ? control_mem : false;
@@ -4163,7 +4163,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_IME_COMPOSITION: {
-			CANDIDATEFORM cf;
+			CANDIDATEFORM cf{};
 			cf.dwIndex = 0;
 
 			cf.dwStyle = CFS_CANDIDATEPOS;
@@ -4504,12 +4504,12 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 			wd.wtctx = wintab_WTOpen(wd.hWnd, &wd.wtlc, false);
 			if (wd.wtctx) {
 				wintab_WTEnable(wd.wtctx, true);
-				AXIS pressure;
+				AXIS pressure{};
 				if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 					wd.min_pressure = int(pressure.axMin);
 					wd.max_pressure = int(pressure.axMax);
 				}
-				AXIS orientation[3];
+				AXIS orientation[3] = { 0 };
 				if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
 					wd.tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
 				}
@@ -4527,7 +4527,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), dwStyle, dwExStyle);
 
-	RECT WindowRect;
+	RECT WindowRect{};
 
 	WindowRect.left = p_rect.position.x;
 	WindowRect.right = p_rect.position.x + p_rect.size.x;
@@ -4620,7 +4620,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 #ifdef D3D12_ENABLED
 				D3D12Context::WindowPlatformData d3d12;
 #endif
-			} wpd;
+			} wpd = { 0 };
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
 				wpd.vulkan.window = wd.hWnd;
@@ -4681,12 +4681,12 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			wd.wtctx = wintab_WTOpen(wd.hWnd, &wd.wtlc, false);
 			if (wd.wtctx) {
 				wintab_WTEnable(wd.wtctx, true);
-				AXIS pressure;
+				AXIS pressure{};
 				if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 					wd.min_pressure = int(pressure.axMin);
 					wd.max_pressure = int(pressure.axMax);
 				}
-				AXIS orientation[3];
+				AXIS orientation[3] = { 0 };
 				if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
 					wd.tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
 				}

@@ -487,7 +487,7 @@ Array Array::filter(const Callable &p_callable) const {
 	new_arr._p->typed = _p->typed;
 	int accepted_count = 0;
 
-	const Variant *argptrs[1];
+	const Variant *argptrs[1] = { 0 };
 	for (int i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
@@ -513,7 +513,7 @@ Array Array::map(const Callable &p_callable) const {
 	Array new_arr;
 	new_arr.resize(size());
 
-	const Variant *argptrs[1];
+	const Variant *argptrs[1] = { 0 };
 	for (int i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
@@ -538,7 +538,7 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 		start = 1;
 	}
 
-	const Variant *argptrs[2];
+	const Variant *argptrs[2] = { 0 };
 	for (int i = start; i < size(); i++) {
 		argptrs[0] = &ret;
 		argptrs[1] = &get(i);
@@ -556,7 +556,7 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 }
 
 bool Array::any(const Callable &p_callable) const {
-	const Variant *argptrs[1];
+	const Variant *argptrs[1] = { 0 };
 	for (int i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
@@ -578,7 +578,7 @@ bool Array::any(const Callable &p_callable) const {
 }
 
 bool Array::all(const Callable &p_callable) const {
-	const Variant *argptrs[1];
+	const Variant *argptrs[1] = { 0 };
 	for (int i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 

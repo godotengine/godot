@@ -500,7 +500,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	double new_phase = Math::fmod(p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, 1.0);
 
 	//update current frame
-	ParticlesFrameParams frame_params;
+	ParticlesFrameParams frame_params{};
 
 	if (p_particles->clear) {
 		p_particles->cycle_number = 0;

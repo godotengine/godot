@@ -108,14 +108,14 @@ private:
 	typedef DWORD(WINAPI *XInputSetState_t)(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
 
 	HWND *hWnd = nullptr;
-	HANDLE xinput_dll;
-	LPDIRECTINPUT8 dinput;
+	HANDLE xinput_dll = 0;
+	LPDIRECTINPUT8 dinput{};
 	Input *input = nullptr;
 
-	int id_to_change;
-	int slider_count;
-	int joypad_count;
-	bool attached_joypads[JOYPADS_MAX];
+	int id_to_change = 0;
+	int slider_count = 0;
+	int joypad_count = 0;
+	bool attached_joypads[JOYPADS_MAX] = { false };
 	dinput_gamepad d_joypads[JOYPADS_MAX];
 	xinput_gamepad x_joypads[XUSER_MAX_COUNT];
 
@@ -136,8 +136,8 @@ private:
 	void joypad_vibration_stop_xinput(int p_device, uint64_t p_timestamp);
 
 	float axis_correct(int p_val, bool p_xinput = false, bool p_trigger = false, bool p_negate = false) const;
-	XInputGetState_t xinput_get_state;
-	XInputSetState_t xinput_set_state;
+	XInputGetState_t xinput_get_state = 0;
+	XInputSetState_t xinput_set_state = 0;
 };
 
 #endif // JOYPAD_WINDOWS_H

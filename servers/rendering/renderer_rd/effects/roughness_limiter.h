@@ -44,13 +44,13 @@ namespace RendererRD {
 class RoughnessLimiter {
 private:
 	struct RoughnessLimiterPushConstant {
-		int32_t screen_size[2];
-		float curve;
-		uint32_t pad;
+		int32_t screen_size[2] = { 0 };
+		float curve = 0.0f;
+		uint32_t pad = 0;
 	};
 
-	RoughnessLimiterPushConstant push_constant;
-	RoughnessLimiterShaderRD shader;
+	RoughnessLimiterPushConstant push_constant{};
+	RoughnessLimiterShaderRD shader{};
 	RID shader_version;
 	RID pipeline;
 

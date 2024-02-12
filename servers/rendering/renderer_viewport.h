@@ -83,7 +83,7 @@ public:
 
 		DisplayServer::WindowID viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
-		bool viewport_render_direct_to_screen;
+		bool viewport_render_direct_to_screen = false;
 
 		bool disable_2d = false;
 		RS::ViewportEnvironmentMode disable_environment = RS::VIEWPORT_ENVIRONMENT_INHERIT;
@@ -144,8 +144,8 @@ public:
 		struct CanvasData {
 			CanvasBase *canvas = nullptr;
 			Transform2D transform;
-			int layer;
-			int sublayer;
+			int layer = 0;
+			int sublayer = 0;
 		};
 
 		Transform2D global_transform;

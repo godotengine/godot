@@ -58,7 +58,7 @@ class SortArray {
 	};
 
 public:
-	Comparator compare;
+	Comparator compare{};
 
 	inline const T &median_of_3(const T &a, const T &b, const T &c) const {
 		if (compare(a, b)) {

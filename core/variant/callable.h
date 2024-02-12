@@ -78,7 +78,7 @@ public:
 	template <typename... VarArgs>
 	void call_deferred(VarArgs... p_args) const {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., 0 }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
+		const Variant *argptrs[sizeof...(p_args) + 1] = {};
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}
