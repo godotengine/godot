@@ -977,6 +977,8 @@ public:
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;
 
+	static bool is_in_developer_mode();
+
 private:
 	/*********************/
 	/**** BOOKKEEPING ****/

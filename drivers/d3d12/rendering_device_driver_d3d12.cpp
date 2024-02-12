@@ -1585,6 +1585,8 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared_from_slice(Text
 			uav_desc.Texture2DArray.FirstArraySlice = p_layer;
 			uav_desc.Texture2DArray.ArraySize = p_layers;
 		} break;
+		default:
+			break;
 	}
 
 	// Bookkeep.
@@ -2253,7 +2255,11 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		texture_info.owner_info.states.subresource_states.push_back(D3D12_RESOURCE_STATE_PRESENT);
 		texture_info.states_ptr = &texture_info.owner_info.states;
 		texture_info.format = swap_chain->data_format;
+#if defined(_MSC_VER) || !defined(_WIN32)
 		texture_info.desc = CD3DX12_RESOURCE_DESC(render_target->GetDesc());
+#else
+		render_target->GetDesc(&texture_info.desc);
+#endif
 		texture_info.layers = 1;
 		texture_info.mipmaps = 1;
 		texture_info.resource = render_target;
@@ -2520,8 +2526,6 @@ dxil_validator *RenderingDeviceDriverD3D12::_get_dxil_validator_for_current_thre
 #endif
 
 	dxil_validator *dxil_validator = dxil_create_validator(nullptr);
-	CRASH_COND(!dxil_validator);
-
 	dxil_validators.insert(thread_idx, dxil_validator);
 	return dxil_validator;
 }
@@ -2658,6 +2662,14 @@ bool RenderingDeviceDriverD3D12::_shader_apply_specialization_constants(
 
 bool RenderingDeviceDriverD3D12::_shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob) {
 	dxil_validator *validator = _get_dxil_validator_for_current_thread();
+	if (!validator) {
+		if (is_in_developer_mode()) {
+			return true;
+		} else {
+			OS::get_singleton()->alert("Shader validation failed: DXIL.dll was not found, and developer mode is disabled.\n\nClick OK to exit.");
+			CRASH_NOW();
+		}
+	}
 
 	char *err = nullptr;
 	bool res = dxil_validate_module(validator, r_dxil_blob.ptrw(), r_dxil_blob.size(), &err);
@@ -2673,7 +2685,7 @@ bool RenderingDeviceDriverD3D12::_shader_sign_dxil_bytecode(ShaderStage p_stage,
 }
 
 String RenderingDeviceDriverD3D12::shader_get_binary_cache_key() {
-	return "D3D12-SV" + uitos(ShaderBinary::VERSION) + "-" + itos(shader_capabilities.shader_model);
+	return "D3D12-SV" + uitos(ShaderBinary::VERSION) + "-" + itos(shader_capabilities.shader_model) + (is_in_developer_mode() ? "dev" : "");
 }
 
 Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) {
@@ -2944,7 +2956,10 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 			nir_to_dxil_options nir_to_dxil_options = {};
 			nir_to_dxil_options.environment = DXIL_ENVIRONMENT_VULKAN;
 			nir_to_dxil_options.shader_model_max = shader_model_d3d_to_dxil(shader_capabilities.shader_model);
-			nir_to_dxil_options.validator_version_max = dxil_get_validator_version(_get_dxil_validator_for_current_thread());
+			dxil_validator *validator = _get_dxil_validator_for_current_thread();
+			if (validator) {
+				nir_to_dxil_options.validator_version_max = dxil_get_validator_version(validator);
+			}
 			nir_to_dxil_options.godot_nir_callbacks = &godot_nir_callbacks;
 
 			dxil_logger logger = {};
@@ -5652,7 +5667,7 @@ void RenderingDeviceDriverD3D12::begin_segment(uint32_t p_frame_index, uint32_t 
 	frames[frame_idx].desc_heap_walkers.aux.rewind();
 	frames[frame_idx].desc_heap_walkers.rtv.rewind();
 	frames[frame_idx].desc_heaps_exhausted_reported = {};
-	frames[frame_idx].null_rtv_handle = {};
+	frames[frame_idx].null_rtv_handle = CD3DX12_CPU_DESCRIPTOR_HANDLE{};
 	frames[frame_idx].segment_serial = segment_serial;
 
 	segment_begun = true;
@@ -5878,15 +5893,42 @@ RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
 	{
 		MutexLock lock(dxil_mutex);
 		for (const KeyValue<int, dxil_validator *> &E : dxil_validators) {
-			dxil_destroy_validator(E.value);
+			if (E.value) {
+				dxil_destroy_validator(E.value);
+			}
 		}
 	}
 
 	glsl_type_singleton_decref();
 }
 
+bool RenderingDeviceDriverD3D12::is_in_developer_mode() {
+	HKEY hkey = NULL;
+	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", 0, KEY_READ, &hkey);
+	if (result != ERROR_SUCCESS) {
+		return false;
+	}
+
+	DWORD value = 0;
+	DWORD dword_size = sizeof(DWORD);
+	result = RegQueryValueExW(hkey, L"AllowDevelopmentWithoutDevLicense", nullptr, nullptr, (PBYTE)&value, &dword_size);
+	RegCloseKey(hkey);
+
+	if (result != ERROR_SUCCESS) {
+		return false;
+	}
+
+	return (value != 0);
+}
+
 Error RenderingDeviceDriverD3D12::_initialize_device() {
 	HRESULT res;
+
+	if (is_in_developer_mode()) {
+		UUID experimental_features[] = { D3D12ExperimentalShaderModels };
+		D3D12EnableExperimentalFeatures(1, experimental_features, nullptr, nullptr);
+	}
+
 	ID3D12DeviceFactory *device_factory = context_driver->device_factory_get();
 	if (device_factory != nullptr) {
 		res = device_factory->CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(device.GetAddressOf()));
