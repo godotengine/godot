@@ -351,6 +351,7 @@ class AnimationBezierTrackEdit;
 class AnimationTrackEditGroup : public Control {
 	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture2D> icon;
+	Vector2 icon_size;
 	String node_name;
 	NodePath node;
 	Node *root = nullptr;

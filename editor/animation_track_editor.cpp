@@ -1963,13 +1963,14 @@ void AnimationTrackEdit::_notification(int p_what) {
 					text_color.a *= 0.7;
 				} else if (node) {
 					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+					const Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
-					draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
+					draw_texture_rect(icon, Rect2(Point2(ofs, int(get_size().height - icon_size.y) / 2), icon_size));
 					icon_cache = icon;
 
 					text = String() + node->get_name() + ":" + anim_path.get_concatenated_subnames();
 					ofs += hsep;
-					ofs += icon->get_width();
+					ofs += icon_size.x;
 
 				} else {
 					icon_cache = key_type_icon;
@@ -3045,6 +3046,7 @@ Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
 	tb->set_flat(true);
 	tb->set_text(path_cache);
 	tb->set_icon(icon_cache);
+	tb->add_theme_constant_override("icon_max_width", get_theme_constant("class_icon_size", EditorStringName(Editor)));
 	set_drag_preview(tb);
 
 	clicking_on_name = false;
@@ -3271,6 +3273,10 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 
 void AnimationTrackEditGroup::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
@@ -3295,8 +3301,8 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), linecolor, Math::round(EDSCALE));
 
 			int ofs = 0;
-			draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
-			ofs += separation + icon->get_width();
+			draw_texture_rect(icon, Rect2(Point2(ofs, int(get_size().height - icon_size.y) / 2), icon_size));
+			ofs += separation + icon_size.x;
 			draw_string(font, Point2(ofs, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, font_size, color);
 
 			int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
@@ -3338,7 +3344,7 @@ Size2 AnimationTrackEditGroup::get_minimum_size() const {
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
-	return Vector2(0, MAX(font->get_height(font_size), icon->get_height()) + separation);
+	return Vector2(0, MAX(font->get_height(font_size), icon_size.y) + separation);
 }
 
 void AnimationTrackEditGroup::set_timeline(AnimationTimelineEdit *p_timeline) {
