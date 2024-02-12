@@ -99,7 +99,7 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	}
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		dest_offset = dest_offset.floor();
+		dest_offset = dest_offset.round();
 	}
 
 	r_dst_rect = Rect2(dest_offset, frame_size);
@@ -402,7 +402,7 @@ Rect2 Sprite2D::get_rect() const {
 	}
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		ofs = ofs.floor();
+		ofs = ofs.round();
 	}
 
 	if (s == Size2(0, 0)) {
