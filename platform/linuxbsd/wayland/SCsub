@@ -195,7 +195,7 @@ if env["use_sowrap"]:
 
 
 if env["vulkan"]:
-    source_files.append("vulkan_context_wayland.cpp")
+    source_files.append("rendering_context_driver_vulkan_wayland.cpp")
 
 if env["opengl3"]:
     source_files.append("egl_manager_wayland.cpp")

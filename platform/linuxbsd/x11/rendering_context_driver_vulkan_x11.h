@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_wayland.cpp                                            */
+/*  rendering_context_driver_vulkan_x11.h                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "vulkan_context_wayland.h"
+#ifndef RENDERING_CONTEXT_DRIVER_VULKAN_X11_H
+#define RENDERING_CONTEXT_DRIVER_VULKAN_X11_H
 
 #ifdef VULKAN_ENABLED
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 
-const char *VulkanContextWayland::_get_platform_surface_extension() const {
-	return VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
-}
+#include <X11/Xlib.h>
 
-Error VulkanContextWayland::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)p_platform_data;
+class RenderingContextDriverVulkanX11 : public RenderingContextDriverVulkan {
+private:
+	virtual const char *_get_platform_surface_extension() const override final;
 
-	VkWaylandSurfaceCreateInfoKHR createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-	createInfo.display = wpd->display;
-	createInfo.surface = wpd->surface;
+protected:
+	SurfaceID surface_create(const void *p_platform_data) override final;
 
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateWaylandSurfaceKHR(get_instance(), &createInfo, nullptr, &surface);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
-}
+public:
+	struct WindowPlatformData {
+		::Window window;
+		Display *display;
+	};
+
+	RenderingContextDriverVulkanX11();
+	~RenderingContextDriverVulkanX11();
+};
 
 #endif // VULKAN_ENABLED
+
+#endif // RENDERING_CONTEXT_DRIVER_VULKAN_X11_H

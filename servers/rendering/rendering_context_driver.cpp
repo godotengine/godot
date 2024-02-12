@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_macos.mm                                               */
+/*  rendering_context_driver.cpp                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "vulkan_context_macos.h"
+#include "rendering_context_driver.h"
 
-#ifdef VULKAN_ENABLED
-
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
-
-const char *VulkanContextMacOS::_get_platform_surface_extension() const {
-	return VK_MVK_MACOS_SURFACE_EXTENSION_NAME;
+RenderingContextDriver::~RenderingContextDriver() {
 }
 
-Error VulkanContextMacOS::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)p_platform_data;
-
-	VkMacOSSurfaceCreateInfoMVK createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
-	createInfo.pView = (__bridge const void *)(*wpd->view_ptr);
-
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateMacOSSurfaceMVK(get_instance(), &createInfo, nullptr, &surface);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
+RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_window(DisplayServer::WindowID p_window) const {
+	HashMap<DisplayServer::WindowID, SurfaceID>::ConstIterator it = window_surface_map.find(p_window);
+	if (it != window_surface_map.end()) {
+		return it->value;
+	} else {
+		return SurfaceID();
+	}
 }
 
-VulkanContextMacOS::VulkanContextMacOS() {
+Error RenderingContextDriver::window_create(DisplayServer::WindowID p_window, const void *p_platform_data) {
+	SurfaceID surface = surface_create(p_platform_data);
+	if (surface != 0) {
+		window_surface_map[p_window] = surface;
+		return OK;
+	} else {
+		return ERR_CANT_CREATE;
+	}
 }
 
-VulkanContextMacOS::~VulkanContextMacOS() {
+void RenderingContextDriver::window_set_size(DisplayServer::WindowID p_window, uint32_t p_width, uint32_t p_height) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		surface_set_size(surface, p_width, p_height);
+	}
 }
 
-#endif // VULKAN_ENABLED
+void RenderingContextDriver::window_set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_vsync_mode) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		surface_set_vsync_mode(surface, p_vsync_mode);
+	}
+}
+
+DisplayServer::VSyncMode RenderingContextDriver::window_get_vsync_mode(DisplayServer::WindowID p_window) const {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		return surface_get_vsync_mode(surface);
+	} else {
+		return DisplayServer::VSYNC_DISABLED;
+	}
+}
+
+void RenderingContextDriver::window_destroy(DisplayServer::WindowID p_window) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		surface_destroy(surface);
+	}
+
+	window_surface_map.erase(p_window);
+}

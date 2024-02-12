@@ -54,13 +54,6 @@
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
-
-#if defined(VULKAN_ENABLED)
-#include "vulkan_context_win.h"
-#endif
-#if defined(D3D12_ENABLED)
-#include "drivers/d3d12/d3d12_context.h"
-#endif
 #endif
 
 #if defined(GLES3_ENABLED)
@@ -349,7 +342,7 @@ class DisplayServerWindows : public DisplayServer {
 #endif
 
 #if defined(RD_ENABLED)
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 

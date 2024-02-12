@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_wayland.h                                              */
+/*  rendering_context_driver_vulkan_wayland.cpp                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,25 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VULKAN_CONTEXT_WAYLAND_H
-#define VULKAN_CONTEXT_WAYLAND_H
-
 #ifdef VULKAN_ENABLED
 
-#include "drivers/vulkan/vulkan_context.h"
+#include "rendering_context_driver_vulkan_wayland.h"
 
-class VulkanContextWayland : public VulkanContext {
-	const char *_get_platform_surface_extension() const override final;
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
-public:
-	struct WindowPlatformData {
-		struct wl_display *display;
-		struct wl_surface *surface;
-	};
+const char *RenderingContextDriverVulkanWayland::_get_platform_surface_extension() const {
+	return VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
+}
 
-	Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) override final;
-};
+RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWayland::surface_create(const void *p_platform_data) {
+	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+
+	VkWaylandSurfaceCreateInfoKHR create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+	create_info.display = wpd->display;
+	create_info.surface = wpd->surface;
+
+	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
+	VkResult err = vkCreateWaylandSurfaceKHR(instance_get(), &create_info, nullptr, &vk_surface);
+	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
+
+	Surface *surface = memnew(Surface);
+	surface->vk_surface = vk_surface;
+	return SurfaceID(surface);
+}
+
+RenderingContextDriverVulkanWayland::RenderingContextDriverVulkanWayland() {
+	// Does nothing.
+}
+
+RenderingContextDriverVulkanWayland::~RenderingContextDriverVulkanWayland() {
+	// Does nothing.
+}
 
 #endif // VULKAN_ENABLED
-
-#endif // VULKAN_CONTEXT_WAYLAND_H

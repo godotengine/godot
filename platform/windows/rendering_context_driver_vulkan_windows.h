@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_x11.h                                                  */
+/*  rendering_context_driver_vulkan_windows.h                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,29 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VULKAN_CONTEXT_X11_H
-#define VULKAN_CONTEXT_X11_H
+#ifndef RENDERING_CONTEXT_DRIVER_VULKAN_WINDOWS_H
+#define RENDERING_CONTEXT_DRIVER_VULKAN_WINDOWS_H
 
 #ifdef VULKAN_ENABLED
 
-#include "drivers/vulkan/vulkan_context.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 
-#include <X11/Xlib.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
-class VulkanContextX11 : public VulkanContext {
-	virtual const char *_get_platform_surface_extension() const override final;
+class RenderingContextDriverVulkanWindows : public RenderingContextDriverVulkan {
+private:
+	const char *_get_platform_surface_extension() const override final;
+
+protected:
+	SurfaceID surface_create(const void *p_platform_data) override final;
 
 public:
 	struct WindowPlatformData {
-		::Window window;
-		Display *display;
+		HWND window;
+		HINSTANCE instance;
 	};
-	virtual Error window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) override final;
 
-	VulkanContextX11();
-	~VulkanContextX11();
+	RenderingContextDriverVulkanWindows();
+	~RenderingContextDriverVulkanWindows() override final;
 };
 
 #endif // VULKAN_ENABLED
 
-#endif // VULKAN_CONTEXT_X11_H
+#endif // RENDERING_CONTEXT_DRIVER_VULKAN_WINDOWS_H

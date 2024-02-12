@@ -36,7 +36,6 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/version.h"
 #include "renderer_compositor_rd.h"
-#include "servers/rendering/renderer_rd/api_context_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "thirdparty/misc/smolv.h"
 
@@ -398,7 +397,7 @@ static const uint32_t cache_file_version = 3;
 
 String ShaderRD::_get_cache_file_path(Version *p_version, int p_group) {
 	const String &sha1 = _version_get_sha1(p_version);
-	const String &api_safe_name = String(RD::get_singleton()->get_context()->get_api_name()).validate_filename().to_lower();
+	const String &api_safe_name = String(RD::get_singleton()->get_device_api_name()).validate_filename().to_lower();
 	const String &path = shader_cache_dir.path_join(name).path_join(group_sha256[p_group]).path_join(sha1) + "." + api_safe_name + ".cache";
 	return path;
 }

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  vulkan_context_ios.mm                                                 */
+/*  rendering_context_driver_vulkan_ios.h                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "vulkan_context_ios.h"
+#ifndef RENDERING_CONTEXT_DRIVER_VULKAN_IOS_H
+#define RENDERING_CONTEXT_DRIVER_VULKAN_IOS_H
 
 #ifdef VULKAN_ENABLED
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 
-const char *VulkanContextIOS::_get_platform_surface_extension() const {
-	return VK_MVK_IOS_SURFACE_EXTENSION_NAME;
-}
+#import <UIKit/UIKit.h>
 
-Error VulkanContextIOS::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, int p_width, int p_height, const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)p_platform_data;
+class RenderingContextDriverVulkanIOS : public RenderingContextDriverVulkan {
+private:
+	virtual const char *_get_platform_surface_extension() const override final;
 
-	VkIOSSurfaceCreateInfoMVK createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK;
-	createInfo.pView = (__bridge const void *)(*wpd->layer_ptr);
+protected:
+	SurfaceID surface_create(const void *p_platform_data) override final;
 
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateIOSSurfaceMVK(get_instance(), &createInfo, nullptr, &surface);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+public:
+	struct WindowPlatformData {
+		CALayer *const *layer_ptr;
+	};
 
-	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
-}
-
-VulkanContextIOS::VulkanContextIOS() {}
-
-VulkanContextIOS::~VulkanContextIOS() {}
+	RenderingContextDriverVulkanIOS();
+	~RenderingContextDriverVulkanIOS();
+};
 
 #endif // VULKAN_ENABLED
+
+#endif // RENDERING_CONTEXT_DRIVER_VULKAN_IOS_H

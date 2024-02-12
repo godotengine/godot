@@ -1670,7 +1670,11 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, V
 			window_set_flag(WindowFlags(i), true, id);
 		}
 	}
-
+#ifdef RD_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_create(id);
+	}
+#endif
 	return id;
 }
 
@@ -1719,8 +1723,12 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->window_destroy(p_id);
+	if (rendering_device) {
+		rendering_device->screen_free(p_id);
+	}
+
+	if (rendering_context) {
+		rendering_context->window_destroy(p_id);
 	}
 #endif
 #ifdef GLES3_ENABLED
@@ -2245,8 +2253,8 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 
 	// Keep rendering context window size in sync
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->window_resize(p_window, xwa.width, xwa.height);
+	if (rendering_context) {
+		rendering_context->window_set_size(p_window, xwa.width, xwa.height);
 	}
 #endif
 #if defined(GLES3_ENABLED)
@@ -3970,8 +3978,8 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	wd.size = new_rect.size;
 
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->window_resize(window_id, wd.size.width, wd.size.height);
+	if (rendering_context) {
+		rendering_context->window_set_size(window_id, wd.size.width, wd.size.height);
 	}
 #endif
 #if defined(GLES3_ENABLED)
@@ -5300,8 +5308,8 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->set_vsync_mode(p_window, p_vsync_mode);
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 
@@ -5318,8 +5326,8 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		return context_rd->get_vsync_mode(p_window);
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
 #if defined(GLES3_ENABLED)
@@ -5662,10 +5670,10 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		_update_size_hints(id);
 
 #if defined(RD_ENABLED)
-		if (context_rd) {
+		if (rendering_context) {
 			union {
 #ifdef VULKAN_ENABLED
-				VulkanContextX11::WindowPlatformData vulkan;
+				RenderingContextDriverVulkanX11::WindowPlatformData vulkan;
 #endif
 			} wpd;
 #ifdef VULKAN_ENABLED
@@ -5674,8 +5682,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 				wpd.vulkan.display = x11_display;
 			}
 #endif
-			Error err = context_rd->window_create(id, p_vsync_mode, win_rect.size.width, win_rect.size.height, &wpd);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s window", context_rd->get_api_name()));
+			Error err = rendering_context->window_create(id, &wpd);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s window", rendering_driver));
+
+			rendering_context->window_set_size(id, win_rect.size.width, win_rect.size.height);
+			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
 		}
 #endif
 #ifdef GLES3_ENABLED
@@ -6077,15 +6088,15 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		context_rd = memnew(VulkanContextX11);
+		rendering_context = memnew(RenderingContextDriverVulkanX11);
 	}
 #endif
 
-	if (context_rd) {
-		if (context_rd->initialize() != OK) {
-			ERR_PRINT(vformat("Could not initialize %s", context_rd->get_api_name()));
-			memdelete(context_rd);
-			context_rd = nullptr;
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			ERR_PRINT(vformat("Could not initialize %s", rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
 			r_error = ERR_CANT_CREATE;
 			return;
 		}
@@ -6197,9 +6208,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	show_window(main_window);
 
 #if defined(RD_ENABLED)
-	if (context_rd) {
+	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(context_rd);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -6374,8 +6386,12 @@ DisplayServerX11::~DisplayServerX11() {
 	//destroy all windows
 	for (KeyValue<WindowID, WindowData> &E : windows) {
 #if defined(RD_ENABLED)
-		if (context_rd) {
-			context_rd->window_destroy(E.key);
+		if (rendering_device) {
+			rendering_device->screen_free(E.key);
+		}
+
+		if (rendering_context) {
+			rendering_context->window_destroy(E.key);
 		}
 #endif
 #ifdef GLES3_ENABLED
@@ -6419,14 +6435,13 @@ DisplayServerX11::~DisplayServerX11() {
 	//destroy drivers
 #if defined(RD_ENABLED)
 	if (rendering_device) {
-		rendering_device->finalize();
 		memdelete(rendering_device);
 		rendering_device = nullptr;
 	}
 
-	if (context_rd) {
-		memdelete(context_rd);
-		context_rd = nullptr;
+	if (rendering_context) {
+		memdelete(rendering_context);
+		rendering_context = nullptr;
 	}
 #endif
 

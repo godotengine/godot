@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  api_context_rd.cpp                                                    */
+/*  rendering_context_driver_vulkan_wayland.h                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,6 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "api_context_rd.h"
+#ifndef RENDERING_CONTEXT_DRIVER_VULKAN_WAYLAND_H
+#define RENDERING_CONTEXT_DRIVER_VULKAN_WAYLAND_H
 
-ApiContextRD::~ApiContextRD() {}
+#ifdef VULKAN_ENABLED
+
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+
+class RenderingContextDriverVulkanWayland : public RenderingContextDriverVulkan {
+private:
+	virtual const char *_get_platform_surface_extension() const override final;
+
+protected:
+	SurfaceID surface_create(const void *p_platform_data) override final;
+
+public:
+	struct WindowPlatformData {
+		struct wl_display *display;
+		struct wl_surface *surface;
+	};
+
+	RenderingContextDriverVulkanWayland();
+	~RenderingContextDriverVulkanWayland();
+};
+
+#endif // VULKAN_ENABLED
+
+#endif // RENDERING_CONTEXT_DRIVER_VULKAN_WAYLAND_H

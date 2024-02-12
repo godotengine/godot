@@ -39,7 +39,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #ifdef VULKAN_ENABLED
-#include "wayland/vulkan_context_wayland.h"
+#include "wayland/rendering_context_driver_vulkan_wayland.h"
 #endif
 
 #endif //RD_ENABLED
@@ -123,7 +123,7 @@ class DisplayServerWayland : public DisplayServer {
 	String rendering_driver;
 
 #ifdef RD_ENABLED
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 

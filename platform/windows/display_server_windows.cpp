@@ -39,6 +39,12 @@
 #include "main/main.h"
 #include "scene/resources/atlas_texture.h"
 
+#if defined(VULKAN_ENABLED)
+#include "rendering_context_driver_vulkan_windows.h"
+#endif
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
@@ -1290,6 +1296,11 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (mainwindow_icon) {
 		SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
 	}
+#ifdef RD_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_create(window_id);
+	}
+#endif
 	return window_id;
 }
 
@@ -1344,8 +1355,12 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 
 #ifdef RD_ENABLED
-	if (context_rd) {
-		context_rd->window_destroy(p_window);
+	if (rendering_device) {
+		rendering_device->screen_free(p_window);
+	}
+
+	if (rendering_context) {
+		rendering_context->window_destroy(p_window);
 	}
 #endif
 #ifdef GLES3_ENABLED
@@ -1776,8 +1791,8 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	wd.height = h;
 
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->window_resize(p_window, w, h);
+	if (rendering_context) {
+		rendering_context->window_set_size(p_window, w, h);
 	}
 #endif
 #if defined(GLES3_ENABLED)
@@ -2830,8 +2845,8 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->set_vsync_mode(p_window, p_vsync_mode);
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 
@@ -2848,8 +2863,8 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		return context_rd->get_vsync_mode(p_window);
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
 
@@ -4054,9 +4069,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					rect_changed = true;
 				}
 #if defined(RD_ENABLED)
-				if (context_rd && window.context_created) {
+				if (rendering_context && window.context_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
-					context_rd->window_resize(window_id, window.width, window.height);
+					rendering_context->window_set_size(window_id, window.width, window.height);
 				}
 #endif
 			}
@@ -4612,13 +4627,13 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 
 #ifdef RD_ENABLED
-		if (context_rd) {
+		if (rendering_context) {
 			union {
 #ifdef VULKAN_ENABLED
-				VulkanContextWindows::WindowPlatformData vulkan;
+				RenderingContextDriverVulkanWindows::WindowPlatformData vulkan;
 #endif
 #ifdef D3D12_ENABLED
-				D3D12Context::WindowPlatformData d3d12;
+				RenderingContextDriverD3D12::WindowPlatformData d3d12;
 #endif
 			} wpd;
 #ifdef VULKAN_ENABLED
@@ -4632,13 +4647,16 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				wpd.d3d12.window = wd.hWnd;
 			}
 #endif
-			if (context_rd->window_create(id, p_vsync_mode, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top, &wpd) != OK) {
-				ERR_PRINT(vformat("Failed to create %s Window.", context_rd->get_api_name()));
-				memdelete(context_rd);
-				context_rd = nullptr;
+			if (rendering_context->window_create(id, &wpd) != OK) {
+				ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
+				memdelete(rendering_context);
+				rendering_context = nullptr;
 				windows.erase(id);
 				return INVALID_WINDOW_ID;
 			}
+
+			rendering_context->window_set_size(id, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
+			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
 			wd.context_created = true;
 		}
 #endif
@@ -4949,19 +4967,19 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		context_rd = memnew(VulkanContextWindows);
+		rendering_context = memnew(RenderingContextDriverVulkanWindows);
 	}
 #endif
 #if defined(D3D12_ENABLED)
 	if (rendering_driver == "d3d12") {
-		context_rd = memnew(D3D12Context);
+		rendering_context = memnew(RenderingContextDriverD3D12);
 	}
 #endif
 
-	if (context_rd) {
-		if (context_rd->initialize() != OK) {
-			memdelete(context_rd);
-			context_rd = nullptr;
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			memdelete(rendering_context);
+			rendering_context = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
@@ -5051,9 +5069,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	show_window(MAIN_WINDOW_ID);
 
 #if defined(RD_ENABLED)
-	if (context_rd) {
+	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(context_rd);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -5165,8 +5184,12 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	if (windows.has(MAIN_WINDOW_ID)) {
 #ifdef RD_ENABLED
-		if (context_rd) {
-			context_rd->window_destroy(MAIN_WINDOW_ID);
+		if (rendering_device) {
+			rendering_device->screen_free(MAIN_WINDOW_ID);
+		}
+
+		if (rendering_context) {
+			rendering_context->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
 		if (wintab_available && windows[MAIN_WINDOW_ID].wtctx) {
@@ -5178,14 +5201,13 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 #ifdef RD_ENABLED
 	if (rendering_device) {
-		rendering_device->finalize();
 		memdelete(rendering_device);
 		rendering_device = nullptr;
 	}
 
-	if (context_rd) {
-		memdelete(context_rd);
-		context_rd = nullptr;
+	if (rendering_context) {
+		memdelete(rendering_context);
+		rendering_context = nullptr;
 	}
 #endif
 

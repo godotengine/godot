@@ -824,9 +824,6 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	RENDER_TIMESTAMP("< Render Viewports");
 
 	if (p_swap_buffers && !blit_to_screen_list.is_empty()) {
-		// This needs to be called to make screen swapping more efficient.
-		RSG::rasterizer->prepare_for_blitting_render_targets();
-
 		for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {
 			RSG::rasterizer->blit_render_targets_to_screen(E.key, E.value.ptr(), E.value.size());
 		}

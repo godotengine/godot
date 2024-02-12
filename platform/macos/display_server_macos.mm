@@ -195,10 +195,10 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		}
 
 #if defined(RD_ENABLED)
-		if (context_rd) {
+		if (rendering_context) {
 			union {
 #ifdef VULKAN_ENABLED
-				VulkanContextMacOS::WindowPlatformData vulkan;
+				RenderingContextDriverVulkanMacOS::WindowPlatformData vulkan;
 #endif
 			} wpd;
 #ifdef VULKAN_ENABLED
@@ -206,8 +206,11 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 				wpd.vulkan.view_ptr = &wd.window_view;
 			}
 #endif
-			Error err = context_rd->window_create(window_id_counter, p_vsync_mode, p_rect.size.width, p_rect.size.height, &wpd);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s context", context_rd->get_api_name()));
+			Error err = rendering_context->window_create(window_id_counter, &wpd);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s context", rendering_driver));
+
+			rendering_context->window_set_size(window_id_counter, p_rect.size.width, p_rect.size.height);
+			rendering_context->window_set_vsync_mode(window_id_counter, p_vsync_mode);
 		}
 #endif
 #if defined(GLES3_ENABLED)
@@ -255,11 +258,6 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 	}
 	if (gl_manager_angle) {
 		gl_manager_angle->window_resize(id, wd.size.width, wd.size.height);
-	}
-#endif
-#if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
 
@@ -791,8 +789,12 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 	}
 #endif
 #ifdef RD_ENABLED
-	if (context_rd) {
-		context_rd->window_destroy(p_window);
+	if (rendering_device) {
+		rendering_device->screen_free(p_window);
+	}
+
+	if (rendering_context) {
+		rendering_context->window_destroy(p_window);
 	}
 #endif
 	windows.erase(p_window);
@@ -800,17 +802,17 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 }
 
 void DisplayServerMacOS::window_resize(WindowID p_window, int p_width, int p_height) {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_size(p_window, p_width, p_height);
+	}
+#endif
 #if defined(GLES3_ENABLED)
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_resize(p_window, p_width, p_height);
 	}
 	if (gl_manager_angle) {
 		gl_manager_angle->window_resize(p_window, p_width, p_height);
-	}
-#endif
-#if defined(VULKAN_ENABLED)
-	if (context_rd) {
-		context_rd->window_resize(p_window, p_width, p_height);
 	}
 #endif
 }
@@ -2850,7 +2852,11 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 			window_set_flag(WindowFlags(i), true, id);
 		}
 	}
-
+#ifdef RD_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_create(id);
+	}
+#endif
 	return id;
 }
 
@@ -3811,8 +3817,8 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (context_rd) {
-		context_rd->set_vsync_mode(p_window, p_vsync_mode);
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 }
@@ -3828,8 +3834,8 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (context_rd) {
-		return context_rd->get_vsync_mode(p_window);
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
@@ -4632,16 +4638,16 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		context_rd = memnew(VulkanContextMacOS);
+		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}
 #endif
 
-	if (context_rd) {
-		if (context_rd->initialize() != OK) {
-			memdelete(context_rd);
-			context_rd = nullptr;
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			memdelete(rendering_context);
+			rendering_context = nullptr;
 			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG("Could not initialize Vulkan");
+			ERR_FAIL_MSG("Could not initialize " + rendering_driver);
 		}
 	}
 #endif
@@ -4676,9 +4682,10 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 #endif
 #if defined(RD_ENABLED)
-	if (context_rd) {
+	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(context_rd);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -4714,14 +4721,13 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 #endif
 #if defined(RD_ENABLED)
 	if (rendering_device) {
-		rendering_device->finalize();
 		memdelete(rendering_device);
 		rendering_device = nullptr;
 	}
 
-	if (context_rd) {
-		memdelete(context_rd);
-		context_rd = nullptr;
+	if (rendering_context) {
+		memdelete(rendering_context);
+		rendering_context = nullptr;
 	}
 #endif
 

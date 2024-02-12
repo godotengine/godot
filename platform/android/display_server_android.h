@@ -34,7 +34,7 @@
 #include "servers/display_server.h"
 
 #if defined(RD_ENABLED)
-class ApiContextRD;
+class RenderingContextDriver;
 class RenderingDevice;
 #endif
 
@@ -73,7 +73,7 @@ class DisplayServerAndroid : public DisplayServer {
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
 #if defined(RD_ENABLED)
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 

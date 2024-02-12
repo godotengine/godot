@@ -39,7 +39,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "vulkan_context_ios.h"
+#import "rendering_context_driver_vulkan_ios.h"
 
 #ifdef USE_VOLK
 #include <volk.h>
@@ -62,7 +62,7 @@ class DisplayServerIOS : public DisplayServer {
 	_THREAD_SAFE_CLASS_
 
 #if defined(RD_ENABLED)
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 

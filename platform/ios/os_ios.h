@@ -45,7 +45,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "vulkan_context_ios.h"
+#import "rendering_context_driver_vulkan_ios.h"
 #endif
 #endif
 

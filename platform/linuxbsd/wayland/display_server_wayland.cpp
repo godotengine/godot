@@ -100,8 +100,8 @@ void DisplayServerWayland::_resize_window(const Size2i &p_size) {
 	wd.rect.size = p_size;
 
 #ifdef RD_ENABLED
-	if (wd.visible && context_rd) {
-		context_rd->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
+	if (wd.visible && rendering_context) {
+		rendering_context->window_set_size(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
 	}
 #endif
 
@@ -140,10 +140,10 @@ void DisplayServerWayland::_show_window() {
 		// the only acceptable way of implementing window showing is to move the
 		// graphics context window creation logic here.
 #ifdef RD_ENABLED
-		if (context_rd) {
+		if (rendering_context) {
 			union {
 #ifdef VULKAN_ENABLED
-				VulkanContextWayland::WindowPlatformData vulkan;
+				RenderingContextDriverVulkanWayland::WindowPlatformData vulkan;
 #endif
 			} wpd;
 #ifdef VULKAN_ENABLED
@@ -152,14 +152,17 @@ void DisplayServerWayland::_show_window() {
 				wpd.vulkan.display = wayland_thread.get_wl_display();
 			}
 #endif
-			Error err = context_rd->window_create(wd.id, wd.vsync_mode, wd.rect.size.width, wd.rect.size.height, &wpd);
-			ERR_FAIL_COND_MSG(err != OK, vformat("Can't create a %s window", context_rd->get_api_name()));
+			Error err = rendering_context->window_create(wd.id, &wpd);
+			ERR_FAIL_COND_MSG(err != OK, vformat("Can't create a %s window", rendering_driver));
 
-			emulate_vsync = (context_rd->get_vsync_mode(wd.id) == DisplayServer::VSYNC_ENABLED);
+			rendering_context->window_set_size(wd.id, wd.rect.size.width, wd.rect.size.height);
+			rendering_context->window_set_vsync_mode(wd.id, wd.vsync_mode);
+
+			emulate_vsync = (rendering_context->window_get_vsync_mode(wd.id) == DisplayServer::VSYNC_ENABLED);
 
 			if (emulate_vsync) {
 				print_verbose("VSYNC: manually throttling frames using MAILBOX.");
-				context_rd->set_vsync_mode(wd.id, DisplayServer::VSYNC_MAILBOX);
+				rendering_context->window_set_vsync_mode(wd.id, DisplayServer::VSYNC_MAILBOX);
 			}
 		}
 #endif
@@ -885,14 +888,14 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 #ifdef RD_ENABLED
-	if (context_rd) {
-		context_rd->set_vsync_mode(p_window_id, p_vsync_mode);
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window_id, p_vsync_mode);
 
-		emulate_vsync = (context_rd->get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
+		emulate_vsync = (rendering_context->window_get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
 
 		if (emulate_vsync) {
 			print_verbose("VSYNC: manually throttling frames using MAILBOX.");
-			context_rd->set_vsync_mode(p_window_id, DisplayServer::VSYNC_MAILBOX);
+			rendering_context->window_set_vsync_mode(p_window_id, DisplayServer::VSYNC_MAILBOX);
 		}
 	}
 #endif // VULKAN_ENABLED
@@ -917,8 +920,8 @@ DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServ
 	}
 
 #ifdef VULKAN_ENABLED
-	if (context_rd) {
-		return context_rd->get_vsync_mode(p_window_id);
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window_id);
 	}
 #endif // VULKAN_ENABLED
 
@@ -1236,15 +1239,15 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #ifdef RD_ENABLED
 #ifdef VULKAN_ENABLED
 	if (p_rendering_driver == "vulkan") {
-		context_rd = memnew(VulkanContextWayland);
+		rendering_context = memnew(RenderingContextDriverVulkanWayland);
 	}
 #endif
 
-	if (context_rd) {
-		if (context_rd->initialize() != OK) {
-			ERR_PRINT(vformat("Could not initialize %s", context_rd->get_api_name()));
-			memdelete(context_rd);
-			context_rd = nullptr;
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			ERR_PRINT(vformat("Could not initialize %s", p_rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
 			r_error = ERR_CANT_CREATE;
 			return;
 		}
@@ -1329,9 +1332,10 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	_show_window();
 
 #ifdef RD_ENABLED
-	if (context_rd) {
+	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(context_rd);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -1351,8 +1355,12 @@ DisplayServerWayland::~DisplayServerWayland() {
 	// TODO: Multiwindow support.
 	if (main_window.visible) {
 #ifdef VULKAN_ENABLED
-		if (context_rd) {
-			context_rd->window_destroy(MAIN_WINDOW_ID);
+		if (rendering_device) {
+			rendering_device->screen_free(MAIN_WINDOW_ID);
+		}
+
+		if (rendering_context) {
+			rendering_context->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
 
@@ -1374,12 +1382,11 @@ DisplayServerWayland::~DisplayServerWayland() {
 	// Destroy all drivers.
 #ifdef RD_ENABLED
 	if (rendering_device) {
-		rendering_device->finalize();
 		memdelete(rendering_device);
 	}
 
-	if (context_rd) {
-		memdelete(context_rd);
+	if (rendering_context) {
+		memdelete(rendering_context);
 	}
 #endif
 
