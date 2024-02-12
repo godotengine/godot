@@ -430,6 +430,7 @@
 			<param index="0" name="data" type="Variant" />
 			<description>
 				Adds a meta tag to the tag stack. Similar to the BBCode [code skip-lint][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+				[b]Note:[/b] Meta tags do nothing by default when clicked. To assign behavior when clicked, connect [signal meta_clicked] to a function that is called when the meta tag is clicked.
 			</description>
 		</method>
 		<method name="push_mono">
@@ -616,7 +617,7 @@
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
-			If [code]true[/code], the label underlines meta tags such as [code skip-lint][url]{text}[/url][/code].
+			If [code]true[/code], the label underlines meta tags such as [code skip-lint][url]{text}[/url][/code]. These tags can call a function when clicked if [signal meta_clicked] is connected to a function.
 		</member>
 		<member name="progress_bar_delay" type="int" setter="set_progress_bar_delay" getter="get_progress_bar_delay" default="1000">
 			The delay after which the loading progress bar is displayed, in milliseconds. Set to [code]-1[/code] to disable progress bar entirely.
@@ -674,7 +675,17 @@
 		<signal name="meta_clicked">
 			<param index="0" name="meta" type="Variant" />
 			<description>
-				Triggered when the user clicks on content between meta tags. If the meta is defined in text, e.g. [code skip-lint][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
+				Triggered when the user clicks on content between meta (URL) tags. If the meta is defined in BBCode, e.g. [code skip-lint][url={"key": "value"}]Text[/url][/code], then the parameter for this signal will always be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack. Alternatively, you can convert the [String] input to the desired type based on its contents (such as calling [method JSON.parse] on it).
+				For example, the following method can be connected to [signal meta_clicked] to open clicked URLs using the user's default web browser:
+				[codeblocks]
+				[gdscript]
+				# This assumes RichTextLabel's `meta_clicked` signal was connected to
+				# the function below using the signal connection dialog.
+				func _richtextlabel_on_meta_clicked(meta):
+				    # `meta` is of Variant type, so convert it to a String to avoid script errors at run-time.
+				    OS.shell_open(str(meta))
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</signal>
 		<signal name="meta_hover_ended">
