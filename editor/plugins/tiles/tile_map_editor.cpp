@@ -900,6 +900,7 @@ void TileMapEditorTilesPlugin::_update_theme() {
 }
 
 bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
+
 	//print_line("Forward canvas GUI input called");
 	if (!(tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree())) {
 		// If the bottom editor is not visible, we ignore inputs.
@@ -935,7 +936,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 			for (const Vector2i &E : tile_map_selection) {
 				coords_array.push_back(E);
 			}
-			tile_map_clipboard = tile_map->get_pattern(coords_array, tile_map_layer);
+			tile_map_clipboard = tile_map->get_pattern(-1, coords_array);
 		}
 
 		if (ED_IS_SHORTCUT("tiles_editor/cut", p_event)) {
@@ -1839,7 +1840,6 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			}
 			undo_redo->add_do_method(this, "_set_tile_map_selection", _get_tile_map_selection());
 			undo_redo->commit_action(false);
-
 			_update_selection_pattern_from_tilemap_selection();
 			_update_tileset_selection_from_selection_pattern();
 		} break;
@@ -1968,13 +1968,13 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 				print_line("DRAG_TYPE_PICK singlelayer used");
 				selection_pattern->set_is_single_layer(true);
 				selection_pattern->set_number_of_layers(1);
-				selection_pattern = tile_map->get_pattern(coords_array, -1);
+				selection_pattern = tile_map->get_pattern(-1, coords_array);
 			}
 			else if (multi_layer_selection_mode == true) {
 				print_line("DRAG_TYPE_PICK multilayer used");
 				selection_pattern->set_is_single_layer(false);
 				selection_pattern->set_number_of_layers(tile_map->get_layers_count());
-				selection_pattern = tile_map->get_pattern(coords_array, tile_map_layer);
+				selection_pattern = tile_map->get_pattern(tile_map_layer, coords_array);
 			}
 
 			if (!new_selection_pattern->is_empty()) {
@@ -2252,12 +2252,12 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tilemap_selection(
 	selection_pattern.instantiate();
 
 	TypedArray<Vector2i> coords_array;
-	
 	for (const Vector2i &E : tile_map_selection) {
 		coords_array.push_back(E);
 	}
 	//CHANGE 20
-	selection_pattern = tile_map->get_pattern(coords_array, tile_map_layer);
+	selection_pattern = tile_map->get_pattern(-1, coords_array);
+	
 	_update_transform_buttons();
 }
 
@@ -2363,9 +2363,11 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_se
 }
 
 void TileMapEditorTilesPlugin::_update_tileset_selection_from_selection_pattern() {
+	
 	tile_set_selection.clear();
 	TypedArray<Vector2i> used_cells = selection_pattern->get_used_cells();
 	for (int i = 0; i < used_cells.size(); i++) {
+		
 		Vector2i coords = used_cells[i];
 		//CHANGE 23
 		if (selection_pattern->get_cell_source_id(0, coords) != TileSet::INVALID_SOURCE) {

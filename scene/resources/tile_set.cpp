@@ -210,9 +210,11 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells_on_layer(int p_layer) const 
 
 TypedArray<Vector2i> TileMapPattern::get_used_cells() {
 	TypedArray<Vector2i> used_cells;
-	used_cells.resize(pattern.size());
+	
+	
 	int i = 0;
 	if (get_is_single_layer() == true) {
+		used_cells.resize(pattern[0].pattern_layer.size()); 
 		for (const KeyValue<Vector2i, TileMapCell> &E : pattern[0].pattern_layer) {
 			Vector2i p(E.key.x, E.key.y);
 			used_cells[i++] = p;
@@ -221,6 +223,11 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells() {
 	}
 
 	else if (get_is_single_layer() == false) {
+		int maximum_size = 0;
+		for (int pattern_layer = 0; pattern_layer < pattern.size(); pattern_layer++) {
+			maximum_size += pattern[pattern_layer].pattern_layer.size();
+		}
+		used_cells.resize(maximum_size); 
 		for (int pattern_layer = 0; pattern_layer < pattern.size(); pattern_layer++) {
 			for (const KeyValue<Vector2i, TileMapCell> &E : pattern[pattern_layer].pattern_layer) {
 				Vector2i p(E.key.x, E.key.y);
@@ -228,9 +235,10 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells() {
 					continue;
 				}
 				used_cells[i++] = p;
+				
+				//CRASH_NOW_MSG("multi_layer_called_on_single_layer_mode.");
+				ERR_FAIL_V_EDMSG(get_is_single_layer(), "the multilayer mode in get_used_cells is");
 				print_line(get_is_single_layer());
-				CRASH_NOW_MSG("get_used_cells: The pattern is neither single or multi_layer, this should not happen.");
-				//ERR_FAIL_V_EDMSG(get_is_single_layer(), "the multilayer mode is the preceding boolean");
 			}
 		}
 		return used_cells;
@@ -259,19 +267,20 @@ Size2i TileMapPattern::get_size() const {
 }
 
 void TileMapPattern::set_size(const Size2i &p_size) {
-	for (int level = 0; level < number_of_layers; level++) {
 		TypedArray<Vector2i> coords;
-		
+	for (int level = 0; level < number_of_layers; level++) {
 		for (const KeyValue<Vector2i, TileMapCell> &E : pattern[level].pattern_layer) {
 			coords.push_back(E.key);
-			
-			}
-		for (int coord = 0; coord < coords.size(); coord++) {
-			Vector2i coordinate = coords[coord];
-			if (p_size.x <= coordinate.x || p_size.y <= coordinate.y) {
-				ERR_FAIL_MSG(vformat("Cannot set pattern size to %s, it contains a tile at %s. Size can only be increased.", p_size, coords));
-			};
 		}
+	}
+		
+	for (int coord = 0; coord < coords.size(); coord++) {
+		Vector2i coordinate = coords[coord];
+		//CHECK ME: This is plus 1 because it causes errors otherwise. Maybe the old program set the size to size+1?
+		if (p_size.x + 1 <= coordinate.x || p_size.y + 1 <= coordinate.y) {
+			ERR_FAIL_MSG(vformat("Cannot set pattern size to %s, it contains a tile at %s. Size can only be increased.", p_size, coordinate));
+		};
+		
 	}
 	size = p_size;
 	emit_changed();
@@ -689,6 +698,7 @@ bool TileSet::has_source(int p_source_id) const {
 }
 
 Ref<TileSetSource> TileSet::get_source(int p_source_id) const {
+	print_line("Tileset Atlas Source ID in get_source is", p_source_id);
 	ERR_FAIL_COND_V_MSG(!sources.has(p_source_id), nullptr, vformat("No TileSet atlas source with id %d.", p_source_id));
 
 	return sources[p_source_id];

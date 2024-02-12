@@ -3543,7 +3543,7 @@ TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, boo
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, nullptr, get_cell_tile_data, p_coords, p_use_proxies);
 }
 
-Ref<TileMapPattern> TileMap::get_pattern(TypedArray<Vector2i> p_coords_array, int p_layer) {
+Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
 	print_line("get_pattern");
 	Ref<TileMapPattern> output;
 	output.instantiate();
