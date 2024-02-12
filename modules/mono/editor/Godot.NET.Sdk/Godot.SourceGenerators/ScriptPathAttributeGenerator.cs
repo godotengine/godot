@@ -54,9 +54,7 @@ namespace Godot.SourceGenerators
                 )
                 .Where(x =>
                     // Ignore classes whose name is not the same as the file name
-                    Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name &&
-                    // Ignore generic classes
-                    !x.symbol.IsGenericType)
+                    Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name)
                 .GroupBy(x => x.symbol)
                 .ToDictionary(g => g.Key, g => g.Select(x => x.cds));
 
@@ -160,6 +158,8 @@ namespace Godot.SourceGenerators
                 first = false;
                 sourceBuilder.Append("typeof(");
                 sourceBuilder.Append(qualifiedName);
+                if (godotClass.Key.IsGenericType)
+                    sourceBuilder.Append($"<{new string(',', godotClass.Key.TypeParameters.Count() - 1)}>");
                 sourceBuilder.Append(")");
             }
 
