@@ -778,18 +778,24 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 					const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(par->initializer);
 					if (call->is_constant && call->reduced) {
 						def_val = call->function_name.operator String() + call->reduced_value.operator String();
+					} else {
+						def_val = call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
 					}
 				} break;
 				case GDScriptParser::Node::ARRAY: {
 					const GDScriptParser::ArrayNode *arr = static_cast<const GDScriptParser::ArrayNode *>(par->initializer);
 					if (arr->is_constant && arr->reduced) {
 						def_val = arr->reduced_value.operator String();
+					} else {
+						def_val = arr->elements.is_empty() ? "[]" : "[...]";
 					}
 				} break;
 				case GDScriptParser::Node::DICTIONARY: {
 					const GDScriptParser::DictionaryNode *dict = static_cast<const GDScriptParser::DictionaryNode *>(par->initializer);
 					if (dict->is_constant && dict->reduced) {
 						def_val = dict->reduced_value.operator String();
+					} else {
+						def_val = dict->elements.is_empty() ? "{}" : "{...}";
 					}
 				} break;
 				case GDScriptParser::Node::SUBSCRIPT: {
