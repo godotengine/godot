@@ -55,6 +55,10 @@
 		<member name="progressive_web_app/enabled" type="bool" setter="" getter="">
 			If [code]true[/code], turns this web build into a [url=https://en.wikipedia.org/wiki/Progressive_web_app]progressive web application[/url] (PWA).
 		</member>
+		<member name="progressive_web_app/ensure_cross_origin_isolation_headers" type="bool" setter="" getter="">
+			When enabled, the progressive web app will make sure that each request has cross-origin isolation headers (COEP/COOP).
+			This can simplify the setup to serve the exported game.
+		</member>
 		<member name="progressive_web_app/icon_144x144" type="String" setter="" getter="">
 			File path to the smallest icon for this web application. If not defined, defaults to the project icon.
 			[b]Note:[/b] If the icon is not 144x144, it will be automatically resized for the final build.
