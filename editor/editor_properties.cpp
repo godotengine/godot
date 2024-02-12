@@ -1447,7 +1447,7 @@ void EditorPropertyFloat::_set_read_only(bool p_read_only) {
 }
 
 void EditorPropertyFloat::set_allow_non_finite(bool allow) {
-	spin->allow_non_finite = allow;
+	spin->set_allow_non_finite(allow);
 }
 
 void EditorPropertyFloat::_value_changed(double val) {

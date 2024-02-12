@@ -376,6 +376,14 @@ bool Range::is_lesser_allowed() const {
 	return shared->allow_lesser;
 }
 
+void Range::set_allow_non_finite(bool p_allow) {
+	allow_non_finite = p_allow;
+}
+
+bool Range::is_non_finite_allowed() const {
+	return allow_non_finite;
+}
+
 Range::Range() {
 	shared = memnew(Shared);
 	shared->owners.insert(this);

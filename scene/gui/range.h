@@ -53,6 +53,8 @@ class Range : public Control {
 
 	Shared *shared = nullptr;
 
+	bool allow_non_finite = false;
+
 	void _ref_shared(Shared *p_shared);
 	void _unref_shared();
 
@@ -100,7 +102,8 @@ public:
 	void set_allow_lesser(bool p_allow);
 	bool is_lesser_allowed() const;
 
-	bool allow_non_finite = false;
+	void set_allow_non_finite(bool p_allow);
+	bool is_non_finite_allowed() const;
 
 	void share(Range *p_range);
 	void unshare();
