@@ -59,6 +59,7 @@ private:
 	void _update_debug_mesh();
 	void _update_debug_edge_connections_mesh();
 	void _navigation_map_changed(RID p_map);
+	void _navigation_debug_changed();
 #endif // DEBUG_ENABLED
 
 protected:

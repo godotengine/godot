@@ -361,6 +361,15 @@ void NavigationRegion3D::_navigation_map_changed(RID p_map) {
 }
 #endif // DEBUG_ENABLED
 
+#ifdef DEBUG_ENABLED
+void NavigationRegion3D::_navigation_debug_changed() {
+	if (is_inside_tree()) {
+		_update_debug_mesh();
+		_update_debug_edge_connections_mesh();
+	}
+}
+#endif // DEBUG_ENABLED
+
 void NavigationRegion3D::_region_enter_navigation_map() {
 	if (!is_inside_tree()) {
 		return;
@@ -426,8 +435,7 @@ NavigationRegion3D::NavigationRegion3D() {
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->connect(SNAME("map_changed"), callable_mp(this, &NavigationRegion3D::_navigation_map_changed));
-	NavigationServer3D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_update_debug_mesh));
-	NavigationServer3D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_update_debug_edge_connections_mesh));
+	NavigationServer3D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_navigation_debug_changed));
 #endif // DEBUG_ENABLED
 }
 
@@ -440,8 +448,7 @@ NavigationRegion3D::~NavigationRegion3D() {
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion3D::_navigation_map_changed));
-	NavigationServer3D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_update_debug_mesh));
-	NavigationServer3D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_update_debug_edge_connections_mesh));
+	NavigationServer3D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_navigation_debug_changed));
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
