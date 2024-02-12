@@ -51,7 +51,7 @@ private:
 	uint8_t req_buf[4096];
 	int req_pos = 0;
 
-	SafeNumeric<bool> server_quit;
+	SafeFlag server_quit;
 	Mutex server_lock;
 	Thread server_thread;
 
