@@ -452,8 +452,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 #ifdef DEV_ENABLED
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Enabled),Enabled,Disabled")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_update_spinner", 0, "Auto (Enabled),Enabled,Disabled")
 #else
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Disabled),Enabled,Disabled")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_update_spinner", 0, "Auto (Disabled),Enabled,Disabled")
 #endif
 
 	// Inspector
