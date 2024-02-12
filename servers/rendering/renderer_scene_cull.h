@@ -189,7 +189,7 @@ public:
 		// Because bounds checking is performed first,
 		// keep it separated from data.
 
-		real_t bounds[6] = { 0 };
+		real_t bounds[6] = { 0.0 };
 		_ALWAYS_INLINE_ InstanceBounds() {}
 
 		_ALWAYS_INLINE_ InstanceBounds(const AABB &p_aabb) {

@@ -97,7 +97,7 @@ public:
 	union {
 		int64_t data_int;
 		bool data_bool;
-		double data_real = 0.0f;
+		double data_real;
 	};
 
 	PList::PLNodeType get_type() const;

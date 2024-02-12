@@ -208,12 +208,13 @@
 #define ARG(N) p##N
 #define PARAM(N) P##N p##N
 #define TYPE_PARAM(N) class P##N
-#define PARAM_DECL(N) typename GetSimpleTypeT<P##N>::type_t p##N{}
+#define PARAM_DECL(N) \
+	typename GetSimpleTypeT<P##N>::type_t p##N {}
 
 #define DECL_CMD(N)                                                    \
 	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
 	struct Command##N : public CommandBase {                           \
-		T *instance{};                                                 \
+		T *instance = nullptr;                                         \
 		M method{};                                                    \
 		SEMIC_SEP_LIST(PARAM_DECL, N);                                 \
 		virtual void call() override {                                 \
@@ -224,8 +225,8 @@
 #define DECL_CMD_RET(N)                                                         \
 	template <class T, class M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) class R> \
 	struct CommandRet##N : public SyncCommand {                                 \
-		R *ret{};                                                               \
-		T *instance{};                                                          \
+		R *ret = nullptr;                                                       \
+		T *instance = nullptr;                                                  \
 		M method{};                                                             \
 		SEMIC_SEP_LIST(PARAM_DECL, N);                                          \
 		virtual void call() override {                                          \
@@ -236,7 +237,7 @@
 #define DECL_CMD_SYNC(N)                                               \
 	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
 	struct CommandSync##N : public SyncCommand {                       \
-		T *instance{};                                                 \
+		T *instance = nullptr;                                         \
 		M method{};                                                    \
 		SEMIC_SEP_LIST(PARAM_DECL, N);                                 \
 		virtual void call() override {                                 \

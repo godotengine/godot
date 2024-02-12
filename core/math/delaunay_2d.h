@@ -39,7 +39,7 @@ public:
 	struct Triangle {
 		int points[3] = { 0 };
 		Vector2 circum_center;
-		real_t circum_radius_squared = 0.0f;
+		real_t circum_radius_squared = 0.0;
 		Triangle() {}
 		Triangle(int p_a, int p_b, int p_c) {
 			points[0] = p_a;

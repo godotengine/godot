@@ -622,7 +622,7 @@ public:
 
 	static _ALWAYS_INLINE_ double absd(double g) {
 		union {
-			double d = 0.0f;
+			double d = 0.0;
 			uint64_t i;
 		} u;
 		u.d = g;

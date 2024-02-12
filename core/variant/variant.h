@@ -141,18 +141,18 @@ private:
 			BucketSmall() {}
 			~BucketSmall() {}
 			Transform2D _transform2d;
-			::AABB _aabb = {};
+			::AABB _aabb;
 		};
 		union BucketMedium {
 			BucketMedium() {}
 			~BucketMedium() {}
-			Basis _basis = {};
+			Basis _basis;
 			Transform3D _transform3d;
 		};
 		union BucketLarge {
 			BucketLarge() {}
 			~BucketLarge() {}
-			Projection _projection = {};
+			Projection _projection;
 		};
 
 		static PagedAllocator<BucketSmall, true> _bucket_small;

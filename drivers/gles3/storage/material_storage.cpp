@@ -579,7 +579,7 @@ Variant ShaderData::get_default_parameter(const StringName &p_parameter) const {
 }
 
 void ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
-	SortArray<Pair<StringName, int>, ShaderLanguage::UniformOrderComparator> sorter{};
+	SortArray<Pair<StringName, int>, ShaderLanguage::UniformOrderComparator> sorter;
 	LocalVector<Pair<StringName, int>> filtered_uniforms;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {

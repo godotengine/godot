@@ -487,7 +487,7 @@ Array Array::filter(const Callable &p_callable) const {
 	new_arr._p->typed = _p->typed;
 	int accepted_count = 0;
 
-	const Variant* argptrs[1] = { 0 };
+	const Variant *argptrs[1] = { 0 };
 	for (int i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
@@ -639,7 +639,7 @@ void Array::shuffle() {
 int Array::bsearch(const Variant &p_value, bool p_before) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "binary search"), -1);
-	SearchArray<Variant, _ArrayVariantSort> avs{};
+	SearchArray<Variant, _ArrayVariantSort> avs;
 	return avs.bisect(_p->array.ptrw(), _p->array.size(), value, p_before);
 }
 

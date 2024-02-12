@@ -494,12 +494,12 @@ private:
 		};
 
 		void sort_by_key() {
-			SortArray<GeometryInstanceSurface *, SortByKey> sorter{};
+			SortArray<GeometryInstanceSurface *, SortByKey> sorter;
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
 		void sort_by_key_range(uint32_t p_from, uint32_t p_size) {
-			SortArray<GeometryInstanceSurface *, SortByKey> sorter{};
+			SortArray<GeometryInstanceSurface *, SortByKey> sorter;
 			sorter.sort(elements.ptr() + p_from, p_size);
 		}
 
@@ -511,7 +511,7 @@ private:
 
 		void sort_by_depth() { //used for shadows
 
-			SortArray<GeometryInstanceSurface*, SortByDepth> sorter{};
+			SortArray<GeometryInstanceSurface *, SortByDepth> sorter;
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
@@ -523,7 +523,7 @@ private:
 
 		void sort_by_reverse_depth_and_priority() { //used for alpha
 
-			SortArray<GeometryInstanceSurface*, SortByReverseDepthAndPriority> sorter{};
+			SortArray<GeometryInstanceSurface *, SortByReverseDepthAndPriority> sorter;
 			sorter.sort(elements.ptr(), elements.size());
 		}
 

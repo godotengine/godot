@@ -159,7 +159,7 @@ private:
 
 	template <class C, class M, class U>
 	struct TaskUserData : public BaseTemplateUserdata {
-		C* instance{};
+		C *instance = nullptr;
 		M method{};
 		U userdata{};
 		virtual void callback() override {
@@ -169,7 +169,7 @@ private:
 
 	template <class C, class M, class U>
 	struct GroupUserData : public BaseTemplateUserdata {
-		C* instance{};
+		C *instance = nullptr;
 		M method{};
 		U userdata{};
 		virtual void callback_indexed(uint32_t p_index) override {

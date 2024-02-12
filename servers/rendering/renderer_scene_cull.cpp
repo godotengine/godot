@@ -2109,7 +2109,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			break;
 	}
 
-	real_t distances[5] = { 0.0f };
+	real_t distances[5] = { 0.0 };
 
 	distances[0] = min_distance;
 	for (int i = 0; i < splits; i++) {

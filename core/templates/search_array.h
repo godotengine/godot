@@ -36,7 +36,7 @@
 template <class T, class Comparator = _DefaultComparator<T>>
 class SearchArray {
 public:
-	Comparator compare;
+	Comparator compare{};
 
 	inline int bisect(const T *p_array, int p_len, const T &p_value, bool p_before) const {
 		int lo = 0;
