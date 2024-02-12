@@ -896,7 +896,7 @@ void Viewport::_process_picking() {
 			if (camera_3d) {
 				Vector3 from = camera_3d->project_ray_origin(pos);
 				Vector3 dir = camera_3d->project_ray_normal(pos);
-				real_t far = camera_3d->far;
+				real_t far = camera_3d->get_far();
 
 				PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
 				if (space) {
