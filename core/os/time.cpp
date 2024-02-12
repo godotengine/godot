@@ -189,9 +189,6 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 Time *Time::singleton = nullptr;
 
 Time *Time::get_singleton() {
-	if (!singleton) {
-		memnew(Time);
-	}
 	return singleton;
 }
 
