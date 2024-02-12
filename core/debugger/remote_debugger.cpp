@@ -665,7 +665,7 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 	// Performance Profiler
 	Object *perf = Engine::get_singleton()->get_singleton_object("Performance");
 	if (perf) {
-		performance_profiler = Ref<PerformanceProfiler>(memnew(PerformanceProfiler(perf)));
+		performance_profiler.instantiate(perf);
 		performance_profiler->bind("performance");
 		profiler_enable("performance", true);
 	}
