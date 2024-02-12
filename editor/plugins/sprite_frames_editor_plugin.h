@@ -167,6 +167,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	bool frames_need_sort = false;
 	int last_frame_selected = 0;
 
+	Size2i previous_texture_size;
+
 	float scale_ratio;
 	int thumbnail_default_size;
 	float thumbnail_zoom;
