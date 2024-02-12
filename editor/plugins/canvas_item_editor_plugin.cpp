@@ -5781,7 +5781,11 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 
 	// there's nothing to be used as source position so snapping will work as absolute if enabled
 	target_position = canvas_item_editor->snap_point(target_position);
-	undo_redo->add_do_method(child, "set_global_position", target_position);
+
+	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(parent);
+	Point2 local_target_pos = parent_ci ? parent_ci->get_global_transform().xform_inv(target_position) : target_position;
+
+	undo_redo->add_do_method(child, "set_position", local_target_pos);
 }
 
 bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
