@@ -180,6 +180,20 @@ real_t GodotNavigationServer::map_get_cell_height(RID p_map) const {
 	return map->get_cell_height();
 }
 
+COMMAND_2(map_set_merge_rasterizer_cell_scale, RID, p_map, float, p_value) {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL(map);
+
+	map->set_merge_rasterizer_cell_scale(p_value);
+}
+
+float GodotNavigationServer::map_get_merge_rasterizer_cell_scale(RID p_map) const {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL_V(map, false);
+
+	return map->get_merge_rasterizer_cell_scale();
+}
+
 COMMAND_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled) {
 	NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL(map);

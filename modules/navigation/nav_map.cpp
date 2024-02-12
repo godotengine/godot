@@ -67,6 +67,7 @@ void NavMap::set_cell_size(real_t p_cell_size) {
 		return;
 	}
 	cell_size = p_cell_size;
+	_update_merge_rasterizer_cell_dimensions();
 	regenerate_polygons = true;
 }
 
@@ -75,6 +76,16 @@ void NavMap::set_cell_height(real_t p_cell_height) {
 		return;
 	}
 	cell_height = p_cell_height;
+	_update_merge_rasterizer_cell_dimensions();
+	regenerate_polygons = true;
+}
+
+void NavMap::set_merge_rasterizer_cell_scale(float p_value) {
+	if (merge_rasterizer_cell_scale == p_value) {
+		return;
+	}
+	merge_rasterizer_cell_scale = p_value;
+	_update_merge_rasterizer_cell_dimensions();
 	regenerate_polygons = true;
 }
 
@@ -103,9 +114,9 @@ void NavMap::set_link_connection_radius(real_t p_link_connection_radius) {
 }
 
 gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
-	const int x = static_cast<int>(Math::floor(p_pos.x / cell_size));
-	const int y = static_cast<int>(Math::floor(p_pos.y / cell_height));
-	const int z = static_cast<int>(Math::floor(p_pos.z / cell_size));
+	const int x = static_cast<int>(Math::floor(p_pos.x / merge_rasterizer_cell_size));
+	const int y = static_cast<int>(Math::floor(p_pos.y / merge_rasterizer_cell_height));
+	const int z = static_cast<int>(Math::floor(p_pos.z / merge_rasterizer_cell_size));
 
 	gd::PointKey p;
 	p.key = 0;
@@ -946,7 +957,7 @@ void NavMap::sync() {
 					connections[ek].push_back(new_connection);
 				} else {
 					// The edge is already connected with another edge, skip.
-					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'.");
+					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'. If you're certain none of above is the case, change 'navigation/3d/merge_rasterizer_cell_scale' to 0.001.");
 				}
 			}
 		}
@@ -1386,6 +1397,11 @@ void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys
 			}
 		}
 	}
+}
+
+void NavMap::_update_merge_rasterizer_cell_dimensions() {
+	merge_rasterizer_cell_size = cell_size * merge_rasterizer_cell_scale;
+	merge_rasterizer_cell_height = cell_height * merge_rasterizer_cell_scale;
 }
 
 NavMap::NavMap() {
