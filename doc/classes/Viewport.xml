@@ -307,6 +307,11 @@
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 			[b]Note:[/b] The number of simultaneously pickable objects is limited to 64 and they are selected in a non-deterministic order, which can be different in each picking process.
 		</member>
+		<member name="physics_object_picking_first_only" type="bool" setter="set_physics_object_picking_first_only" getter="get_physics_object_picking_first_only" default="false">
+			If [code]true[/code], the input_event signal will only be sent to one physics object in the mouse picking process. If you want to get the top object only, you must also enable [member physics_object_picking_sort].
+			If [code]false[/code], an input_event signal will be sent to all physics objects in the mouse picking process.
+			This applies to 2D CanvasItem object picking only.
+		</member>
 		<member name="physics_object_picking_sort" type="bool" setter="set_physics_object_picking_sort" getter="get_physics_object_picking_sort" default="false">
 			If [code]true[/code], objects receive mouse picking events sorted primarily by their [member CanvasItem.z_index] and secondarily by their position in the scene tree. If [code]false[/code], the order is undetermined.
 			[b]Note:[/b] This setting is disabled by default because of its potential expensive computational cost.
