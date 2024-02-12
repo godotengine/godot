@@ -274,13 +274,17 @@ public:
 		String description;
 		Vector<Pair<String, String>> tutorials;
 		bool is_deprecated = false;
+		String deprecated_message;
 		bool is_experimental = false;
+		String experimental_message;
 	};
 
 	struct MemberDocData {
 		String description;
 		bool is_deprecated = false;
+		String deprecated_message;
 		bool is_experimental = false;
+		String experimental_message;
 	};
 #endif // TOOLS_ENABLED
 

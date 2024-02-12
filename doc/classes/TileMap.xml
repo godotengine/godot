@@ -76,11 +76,10 @@
 				Clears cells that do not exist in the tileset.
 			</description>
 		</method>
-		<method name="force_update" is_deprecated="true">
+		<method name="force_update" deprecated="Use [method notify_runtime_tile_data_update] and/or [method update_internals] instead.">
 			<return type="void" />
 			<param index="0" name="layer" type="int" default="-1" />
 			<description>
-				[i]Deprecated.[/i] See [method notify_runtime_tile_data_update] and [method update_internals].
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
@@ -196,7 +195,7 @@
 				Returns the number of layers in the TileMap.
 			</description>
 		</method>
-		<method name="get_navigation_map" qualifiers="const" is_deprecated="true">
+		<method name="get_navigation_map" qualifiers="const" deprecated="">
 			<return type="RID" />
 			<param index="0" name="layer" type="int" />
 			<description>
@@ -445,7 +444,7 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
-		<method name="set_navigation_map" is_deprecated="true">
+		<method name="set_navigation_map" deprecated="">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="map" type="RID" />

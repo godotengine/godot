@@ -179,8 +179,8 @@ class EditorHelp : public VBoxContainer {
 
 	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
-	void _update_method_list(const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
-	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
+	void _update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
+	void _update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
 	void _update_doc();
 
 	void _request_help(const String &p_string);
@@ -259,8 +259,8 @@ class EditorHelpBit : public MarginContainer {
 	inline static HashMap<StringName, HashMap<StringName, String>> doc_theme_item_cache;
 
 	RichTextLabel *rich_text = nullptr;
-	void _go_to_help(String p_what);
-	void _meta_clicked(String p_select);
+	void _go_to_help(const String &p_what);
+	void _meta_clicked(const String &p_select);
 
 	String text;
 

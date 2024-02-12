@@ -357,11 +357,10 @@
 				Centers a native window on the current screen and an embedded window on its embedder [Viewport].
 			</description>
 		</method>
-		<method name="move_to_foreground" is_deprecated="true">
+		<method name="move_to_foreground" deprecated="Use [method Window.grab_focus] instead.">
 			<return type="void" />
 			<description>
 				Moves the [Window] on top of other windows and focuses it.
-				[i]Deprecated.[/i] Use [method Window.grab_focus] instead.
 			</description>
 		</method>
 		<method name="popup">
