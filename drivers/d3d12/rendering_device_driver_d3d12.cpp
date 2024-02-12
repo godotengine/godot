@@ -1786,7 +1786,16 @@ RDD::CommandPoolID RenderingDeviceDriverD3D12::command_pool_create(CommandBuffer
 }
 
 void RenderingDeviceDriverD3D12::command_pool_free(CommandPoolID p_cmd_pool) {
-	pools_command_buffers.erase(p_cmd_pool);
+	RBMap<CommandPoolID, LocalVector<CommandBufferInfo *>>::Element *elem = pools_command_buffers.find(p_cmd_pool);
+	if (elem != nullptr) {
+		for (LocalVector<CommandBufferInfo *>::Iterator it = elem->value().begin(); it != elem->value().end(); ++it) {
+			(*it)->cmd_allocator.Reset();
+			(*it)->cmd_list.Reset();
+		}
+		elem->value().clear();
+
+		pools_command_buffers.erase(elem);
+	}
 }
 
 // ----- BUFFER -----
@@ -1819,8 +1828,16 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandBu
 	// Bookkeep
 
 	CommandBufferInfo *cmd_buf_info = VersatileResource::allocate<CommandBufferInfo>(resources_allocator);
-	cmd_buf_info->cmd_allocator = cmd_allocator;
-	cmd_buf_info->cmd_list = cmd_list;
+	cmd_buf_info->cmd_allocator.Attach(cmd_allocator);
+	cmd_buf_info->cmd_list.Attach(cmd_list);
+
+	RBMap<CommandPoolID, LocalVector<CommandBufferInfo *>>::Element *elem = pools_command_buffers.find(p_cmd_pool);
+	if (elem != nullptr) {
+		elem->value().push_back(cmd_buf_info);
+	} else {
+		LocalVector<CommandBufferInfo *> command_buffer_infos({ cmd_buf_info });
+		pools_command_buffers.insert(p_cmd_pool, command_buffer_infos);
+	}
 
 	return CommandBufferID(cmd_buf_info);
 }
@@ -5475,14 +5492,14 @@ RenderingDeviceDriverD3D12::RenderingDeviceDriverD3D12(D3D12Context *p_context, 
 
 				CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 
-				ID3D12Resource *resource = nullptr;
+				ComPtr<ID3D12Resource> resource;
 				res = allocator->CreateResource(
 						&allocation_desc,
 						&resource_desc,
 						D3D12_RESOURCE_STATE_COMMON,
 						nullptr,
 						&frames[frame_idx].aux_resource,
-						IID_PPV_ARGS(&resource));
+						IID_PPV_ARGS(resource.GetAddressOf()));
 				ERR_FAIL_COND_MSG(!SUCCEEDED(res), "D3D12MA::CreateResource failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 			}
 		}
@@ -5517,4 +5534,8 @@ RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
 	}
 
 	glsl_type_singleton_decref();
+
+	DEV_ASSERT(pools_command_buffers.is_empty());
+
+	resources_allocator.reset(true);
 }
