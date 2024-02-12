@@ -332,7 +332,7 @@
 				Returns the script associated with a typed array tied to a class name.
 			</description>
 		</method>
-		<method name="has" qualifiers="const">
+		<method name="has" qualifiers="const" keywords="includes, contains">
 			<return type="bool" />
 			<param index="0" name="value" type="Variant" />
 			<description>

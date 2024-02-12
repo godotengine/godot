@@ -88,6 +88,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 
 		c.is_deprecated = cf.is_deprecated;
 		c.is_experimental = cf.is_experimental;
+		c.keywords = cf.keywords;
 
 		c.description = cf.description;
 		c.brief_description = cf.brief_description;
@@ -156,6 +157,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 				m.description = mf.description;
 				m.is_deprecated = mf.is_deprecated;
 				m.is_experimental = mf.is_experimental;
+				m.keywords = mf.keywords;
 				break;
 			}
 		}
@@ -172,6 +174,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 				m.description = mf.description;
 				m.is_deprecated = mf.is_deprecated;
 				m.is_experimental = mf.is_experimental;
+				m.keywords = mf.keywords;
 				break;
 			}
 		}
@@ -188,6 +191,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 				m.description = mf.description;
 				m.is_deprecated = mf.is_deprecated;
 				m.is_experimental = mf.is_experimental;
+				m.keywords = mf.keywords;
 				break;
 			}
 		}
@@ -204,6 +208,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 				m.description = mf.description;
 				m.is_deprecated = mf.is_deprecated;
 				m.is_experimental = mf.is_experimental;
+				m.keywords = mf.keywords;
 				break;
 			}
 		}
@@ -220,6 +225,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 				p.description = pf.description;
 				p.is_deprecated = pf.is_deprecated;
 				p.is_experimental = pf.is_experimental;
+				p.keywords = pf.keywords;
 				break;
 			}
 		}
@@ -234,6 +240,7 @@ void DocTools::merge_from(const DocTools &p_data) {
 				const DocData::ThemeItemDoc &pf = cf.theme_properties[j];
 
 				ti.description = pf.description;
+				ti.keywords = pf.keywords;
 				break;
 			}
 		}
@@ -1067,6 +1074,9 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 				if (parser->has_attribute("is_experimental")) {
 					method.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
 				}
+				if (parser->has_attribute("keywords")) {
+					method.keywords = parser->get_named_attribute_value("keywords");
+				}
 
 				while (parser->read() == OK) {
 					if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
@@ -1214,6 +1224,10 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 			c.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
 		}
 
+		if (parser->has_attribute("keywords")) {
+			c.keywords = parser->get_named_attribute_value("keywords");
+		}
+
 		while (parser->read() == OK) {
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
 				String name2 = parser->get_node_name();
@@ -1296,6 +1310,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								if (parser->has_attribute("is_experimental")) {
 									prop2.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
 								}
+								if (parser->has_attribute("keywords")) {
+									prop2.keywords = parser->get_named_attribute_value("keywords");
+								}
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1326,6 +1343,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								prop2.type = parser->get_named_attribute_value("type");
 								ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
 								prop2.data_type = parser->get_named_attribute_value("data_type");
+								if (parser->has_attribute("keywords")) {
+									prop2.keywords = parser->get_named_attribute_value("keywords");
+								}
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1365,6 +1385,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								}
 								if (parser->has_attribute("is_experimental")) {
 									constant2.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
+								}
+								if (parser->has_attribute("keywords")) {
+									constant2.keywords = parser->get_named_attribute_value("keywords");
 								}
 								if (!parser->is_empty()) {
 									parser->read();
@@ -1410,20 +1433,21 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 		for (int i = 0; i < p_method_docs.size(); i++) {
 			const DocData::MethodDoc &m = p_method_docs[i];
 
-			String qualifiers;
-			if (!m.qualifiers.is_empty()) {
-				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
-			}
-
 			String additional_attributes;
+			if (!m.qualifiers.is_empty()) {
+				additional_attributes += " qualifiers=\"" + m.qualifiers.xml_escape(true) + "\"";
+			}
 			if (m.is_deprecated) {
 				additional_attributes += " is_deprecated=\"true\"";
 			}
 			if (m.is_experimental) {
 				additional_attributes += " is_experimental=\"true\"";
 			}
+			if (!m.keywords.is_empty()) {
+				additional_attributes += String(" keywords=\"") + m.keywords.xml_escape(true) + "\"";
+			}
 
-			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + additional_attributes + ">");
+			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + additional_attributes + ">");
 
 			if (!m.return_type.is_empty()) {
 				String enum_text;
@@ -1499,6 +1523,9 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				header += " is_experimental=\"true\"";
 			}
 		}
+		if (!c.keywords.is_empty()) {
+			header += String(" keywords=\"") + c.keywords.xml_escape(true) + "\"";
+		}
 		if (p_include_xml_schema) {
 			// Reference the XML schema so editors can provide error checking.
 			// Modules are nested deep, so change the path to reference the same schema everywhere.
@@ -1552,6 +1579,9 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				if (c.properties[i].is_experimental) {
 					additional_attributes += " is_experimental=\"true\"";
 				}
+				if (!c.properties[i].keywords.is_empty()) {
+					additional_attributes += String(" keywords=\"") + c.properties[i].keywords.xml_escape(true) + "\"";
+				}
 
 				const DocData::PropertyDoc &p = c.properties[i];
 
@@ -1579,6 +1609,9 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				}
 				if (c.constants[i].is_experimental) {
 					additional_attributes += " is_experimental=\"true\"";
+				}
+				if (!c.constants[i].keywords.is_empty()) {
+					additional_attributes += String(" keywords=\"") + c.constants[i].keywords.xml_escape(true) + "\"";
 				}
 
 				if (k.is_value_valid) {
@@ -1614,11 +1647,15 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 			for (int i = 0; i < c.theme_properties.size(); i++) {
 				const DocData::ThemeItemDoc &ti = c.theme_properties[i];
 
+				String additional_attributes;
 				if (!ti.default_value.is_empty()) {
-					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\" default=\"" + ti.default_value.xml_escape(true) + "\">");
-				} else {
-					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\">");
+					additional_attributes += String(" default=\"") + ti.default_value.xml_escape(true) + "\"";
 				}
+				if (!ti.keywords.is_empty()) {
+					additional_attributes += String(" keywords=\"") + ti.keywords.xml_escape(true) + "\"";
+				}
+
+				_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\"" + additional_attributes + ">");
 
 				_write_string(f, 3, _translate_doc_string(ti.description).strip_edges().xml_escape());
 

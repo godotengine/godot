@@ -166,6 +166,10 @@ class State:
         if desc is not None and desc.text:
             class_def.description = desc.text
 
+        keywords = class_root.get("keywords")
+        if keywords is not None:
+            class_def.keywords = keywords
+
         properties = class_root.find("members")
         if properties is not None:
             for property in properties:
@@ -564,6 +568,7 @@ class ClassDef(DefinitionBase):
         self.brief_description: Optional[str] = None
         self.description: Optional[str] = None
         self.tutorials: List[Tuple[str, str]] = []
+        self.keywords: Optional[str] = None
 
         # Used to match the class with XML source for output filtering purposes.
         self.filepath: str = ""
@@ -865,6 +870,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
     # Remove the "Edit on Github" button from the online docs page.
     f.write(":github_url: hide\n\n")
+
+    # Add keywords metadata.
+    if class_def.keywords is not None and class_def.keywords != "":
+        f.write(f".. meta::\n\t:keywords: {class_def.keywords}\n\n")
 
     # Warn contributors not to edit this file directly.
     # Also provide links to the source files for reference.
