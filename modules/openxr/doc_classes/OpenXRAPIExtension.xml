@@ -78,7 +78,7 @@
 		<method name="is_environment_blend_mode_alpha_supported">
 			<return type="int" enum="OpenXRAPIExtension.OpenXRAlphaBlendModeSupport" />
 			<description>
-				Returns [enum OpenXRAPIExtension.OpenXRAlphaBlendModeSupport] denoting if [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is really support, emulated or not supported at all.
+				Returns [enum OpenXRAPIExtension.OpenXRAlphaBlendModeSupport] denoting if [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is really supported, emulated or not supported at all.
 			</description>
 		</method>
 		<method name="is_initialized">
