@@ -370,7 +370,7 @@ EditorPropertyLocale::EditorPropertyLocale() {
 	add_child(locale_hb);
 	locale = memnew(LineEdit);
 	locale_hb->add_child(locale);
-	locale->connect("text_submitted", this, "_locale_selected");
+	locale->connect("text_entered", this, "_locale_selected");
 	locale->connect("focus_exited", this, "_locale_focus_exited");
 	locale->set_h_size_flags(SIZE_EXPAND_FILL);
 
