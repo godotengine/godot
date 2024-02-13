@@ -69,6 +69,10 @@ public:
 	GDVIRTUAL2R(uint64_t, _set_hand_joint_locations_and_get_next_pointer, int, GDExtensionPtr<void>);
 	GDVIRTUAL0R(uint64_t, _get_composition_layer);
 
+	virtual PackedStringArray get_suggested_tracker_names() override;
+
+	GDVIRTUAL0R(PackedStringArray, _get_suggested_tracker_names);
+
 	virtual void on_register_metadata() override;
 	virtual void on_before_instance_created() override;
 	virtual void on_instance_created(const XrInstance p_instance) override;
