@@ -56,6 +56,15 @@
 				[b]Note:[/b] This method is only implemented on Linux (X11/Wayland).
 			</description>
 		</method>
+		<method name="create_status_indicator">
+			<return type="int" />
+			<param index="0" name="icon" type="Image" />
+			<param index="1" name="tooltip" type="String" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Creates a new application status indicator with the specified icon, tooltip, and activation callback.
+			</description>
+		</method>
 		<method name="cursor_get_shape" qualifiers="const">
 			<return type="int" enum="DisplayServer.CursorShape" />
 			<description>
@@ -76,6 +85,13 @@
 			<param index="0" name="shape" type="int" enum="DisplayServer.CursorShape" />
 			<description>
 				Sets the default mouse cursor shape. The cursor's appearance will vary depending on the user's operating system and mouse cursor theme. See also [method cursor_get_shape] and [method cursor_set_custom_image].
+			</description>
+		</method>
+		<method name="delete_status_indicator">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Removes the application status indicator.
 			</description>
 		</method>
 		<method name="dialog_input_text">
@@ -1120,6 +1136,30 @@
 				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. The file at [param filename] must be in [code].ico[/code] format on Windows or [code].icns[/code] on macOS. By using specially crafted [code].ico[/code] or [code].icns[/code] icons, [method set_native_icon] allows specifying different icons depending on the size the icon is displayed at. This size is determined by the operating system and user preferences (including the display scale factor). To use icons in other formats, use [method set_icon] instead.
 			</description>
 		</method>
+		<method name="status_indicator_set_callback">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the application status indicator activation callback.
+			</description>
+		</method>
+		<method name="status_indicator_set_icon">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="icon" type="Image" />
+			<description>
+				Sets the application status indicator icon.
+			</description>
+		</method>
+		<method name="status_indicator_set_tooltip">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets the application status indicator tooltip.
+			</description>
+		</method>
 		<method name="tablet_get_current_driver" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -1748,6 +1788,9 @@
 		<constant name="FEATURE_SCREEN_CAPTURE" value="21" enum="Feature">
 			Display server supports reading screen pixels. See [method screen_get_pixel].
 		</constant>
+		<constant name="FEATURE_STATUS_INDICATOR" value="22" enum="Feature">
+			Display server supports application status indicators.
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -1785,6 +1828,9 @@
 		</constant>
 		<constant name="INVALID_WINDOW_ID" value="-1">
 			The ID that refers to a nonexistent window. This is returned by some [DisplayServer] methods if no window matches the requested result.
+		</constant>
+		<constant name="INVALID_INDICATOR_ID" value="-1">
+			The ID that refers to a nonexistent application status indicator.
 		</constant>
 		<constant name="SCREEN_LANDSCAPE" value="0" enum="ScreenOrientation">
 			Default landscape orientation.

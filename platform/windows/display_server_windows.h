@@ -447,6 +447,13 @@ class DisplayServerWindows : public DisplayServer {
 
 	WNDPROC user_proc = nullptr;
 
+	struct IndicatorData {
+		Callable callback;
+	};
+
+	IndicatorID indicator_id_counter = 0;
+	HashMap<IndicatorID, IndicatorData> indicators;
+
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
 	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
@@ -654,6 +661,12 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
+
+	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) override;
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual void delete_status_indicator(IndicatorID p_id) override;
 
 	virtual void set_context(Context p_context) override;
 
