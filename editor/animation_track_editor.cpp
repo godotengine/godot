@@ -6610,7 +6610,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bezier_edit->set_timeline(timeline);
 	bezier_edit->hide();
 	bezier_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	bezier_edit->connect("close_request", callable_mp(this, &AnimationTrackEditor::_cancel_bezier_edit));
 
 	timeline_vbox->set_custom_minimum_size(Size2(0, 150) * EDSCALE);
 
