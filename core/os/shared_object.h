@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_export_shared_object.h                                         */
+/*  shared_object.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPORT_SHARED_OBJECT_H
-#define EDITOR_EXPORT_SHARED_OBJECT_H
+#ifndef SHARED_OBJECT_H
+#define SHARED_OBJECT_H
 
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
@@ -48,4 +48,4 @@ struct SharedObject {
 	SharedObject() {}
 };
 
-#endif // EDITOR_EXPORT_SHARED_OBJECT_H
+#endif // SHARED_OBJECT_H
