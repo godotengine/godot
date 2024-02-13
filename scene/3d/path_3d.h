@@ -72,10 +72,6 @@ public:
 		ROTATION_ORIENTED
 	};
 
-	bool use_model_front = false;
-
-	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
-
 private:
 	Path3D *path = nullptr;
 	real_t progress = 0.0;
@@ -84,14 +80,16 @@ private:
 	bool cubic = true;
 	bool loop = true;
 	bool tilt_enabled = true;
+	bool transform_dirty = true;
+	bool use_model_front = false;
 	RotationMode rotation_mode = ROTATION_XYZ;
-
-	void _update_transform(bool p_update_xyz_rot = true);
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
+	void _update_transform();
+
 	static void _bind_methods();
 
 public:
@@ -123,6 +121,10 @@ public:
 	bool is_cubic_interpolation_enabled() const;
 
 	Array get_configuration_warnings() const override;
+
+	void update_transform(bool p_immediate = false);
+
+	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
 
 	PathFollow3D() {}
 };
