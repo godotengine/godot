@@ -58,6 +58,7 @@
 		</member>
 		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
 			The billboard mode to use for the sprite. See [enum BaseMaterial3D.BillboardMode] for possible values.
+			[b]Note:[/b] When billboarding is enabled and the material also casts shadows, billboards will face [b]the[/b] camera in the scene when rendering shadows. In scenes with multiple cameras, the intended shadow cannot be determined and this will result in undefined behavior. See [url=https://github.com/godotengine/godot/pull/72638]GitHub Pull Request #72638[/url] for details.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture will be centered.

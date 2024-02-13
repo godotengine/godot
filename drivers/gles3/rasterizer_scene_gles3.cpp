@@ -1555,6 +1555,7 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	GLES3::MaterialStorage::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
 	GLES3::MaterialStorage::store_transform(p_render_data->cam_transform, scene_state.ubo.inv_view_matrix);
 	GLES3::MaterialStorage::store_transform(p_render_data->inv_cam_transform, scene_state.ubo.view_matrix);
+	GLES3::MaterialStorage::store_transform(p_render_data->main_cam_transform, scene_state.ubo.main_cam_inv_view_matrix);
 	scene_state.ubo.camera_visible_layers = p_render_data->camera_visible_layers;
 
 	if (p_render_data->view_count > 1) {
@@ -2095,20 +2096,20 @@ void RasterizerSceneGLES3::_render_shadows(const RenderDataGLES3 *p_render_data,
 
 		// Render cubemap shadows.
 		for (const int &index : cube_shadows) {
-			_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info, p_viewport_size);
+			_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info, p_viewport_size, p_render_data->cam_transform);
 		}
 		// Render directional shadows.
 		for (uint32_t i = 0; i < directional_shadows.size(); i++) {
-			_render_shadow_pass(p_render_data->render_shadows[directional_shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[directional_shadows[i]].pass, p_render_data->render_shadows[directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info, p_viewport_size);
+			_render_shadow_pass(p_render_data->render_shadows[directional_shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[directional_shadows[i]].pass, p_render_data->render_shadows[directional_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info, p_viewport_size, p_render_data->cam_transform);
 		}
 		// Render positional shadows (Spotlight and Omnilight with dual-paraboloid).
 		for (uint32_t i = 0; i < shadows.size(); i++) {
-			_render_shadow_pass(p_render_data->render_shadows[shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[shadows[i]].pass, p_render_data->render_shadows[shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info, p_viewport_size);
+			_render_shadow_pass(p_render_data->render_shadows[shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[shadows[i]].pass, p_render_data->render_shadows[shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, p_render_data->render_info, p_viewport_size, p_render_data->cam_transform);
 		}
 	}
 }
 
-void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, RenderingMethod::RenderInfo *p_render_info, const Size2i &p_viewport_size) {
+void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, RenderingMethod::RenderInfo *p_render_info, const Size2i &p_viewport_size, const Transform3D &p_main_cam_transform) {
 	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
 
 	ERR_FAIL_COND(!light_storage->owns_light_instance(p_light));
@@ -2242,6 +2243,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	render_data.z_far = zfar; // Only used by OmniLights.
 	render_data.z_near = 0.0;
 	render_data.lod_distance_multiplier = p_lod_distance_multiplier;
+	render_data.main_cam_transform = p_main_cam_transform;
 
 	render_data.instances = &p_instances;
 	render_data.render_info = p_render_info;
@@ -2330,6 +2332,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.cam_projection = p_camera_data->main_projection;
 		render_data.cam_orthogonal = p_camera_data->is_orthogonal;
 		render_data.camera_visible_layers = p_camera_data->visible_layers;
+		render_data.main_cam_transform = p_camera_data->main_transform;
 
 		render_data.view_count = p_camera_data->view_count;
 		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
@@ -3448,6 +3451,7 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 	render_data.cam_orthogonal = true;
 	render_data.z_near = 0.0;
 	render_data.z_far = cm.get_z_far();
+	render_data.main_cam_transform = cam_xform;
 
 	render_data.instances = &p_instances;
 

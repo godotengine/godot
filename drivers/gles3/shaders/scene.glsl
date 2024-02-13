@@ -155,6 +155,9 @@ layout(std140) uniform SceneData { // ubo:2
 	highp mat4 inv_view_matrix;
 	highp mat4 view_matrix;
 
+	// Used for billboards to cast correct shadows.
+	highp mat4 main_cam_inv_view_matrix;
+
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
 
@@ -636,6 +639,9 @@ layout(std140) uniform SceneData { // ubo:2
 	highp mat4 inv_projection_matrix;
 	highp mat4 inv_view_matrix;
 	highp mat4 view_matrix;
+
+	// Used for billboards to cast correct shadows.
+	highp mat4 main_cam_inv_view_matrix;
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
