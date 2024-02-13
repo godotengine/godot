@@ -943,13 +943,13 @@ void Node3DEditorViewport::_select_region() {
 		}
 	}
 
-	Plane near(-_get_camera_normal(), cam_pos);
-	near.d -= get_znear();
-	frustum.push_back(near);
+	Plane near_plane = Plane(-_get_camera_normal(), cam_pos);
+	near_plane.d -= get_znear();
+	frustum.push_back(near_plane);
 
-	Plane far = -near;
-	far.d += get_zfar();
-	frustum.push_back(far);
+	Plane far_plane = -near_plane;
+	far_plane.d += get_zfar();
+	frustum.push_back(far_plane);
 
 	if (spatial_editor->get_single_selected_node()) {
 		Node3D *single_selected = spatial_editor->get_single_selected_node();
