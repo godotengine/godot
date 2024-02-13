@@ -37,13 +37,21 @@
 			A list of additional command line arguments, exported project will receive when started.
 		</member>
 		<member name="custom_template/debug" type="String" setter="" getter="">
-			Path to the custom export template. If left empty, default template is used.
+			Path to an APK file to use as a custom export template for debug exports. If left empty, default template is used.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is disabled.
 		</member>
 		<member name="custom_template/release" type="String" setter="" getter="">
-			Path to the custom export template. If left empty, default template is used.
+			Path to an APK file to use as a custom export template for release exports. If left empty, default template is used.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is disabled.
+		</member>
+		<member name="gradle_build/android_source_template" type="String" setter="" getter="">
+			Path to a ZIP file holding the source for the export template used in a Gradle build. If left empty, the default template is used.
 		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Export format for Gradle build.
+		</member>
+		<member name="gradle_build/gradle_build_directory" type="String" setter="" getter="">
+			Path to the Gradle build directory. If left empty, then [code]res://android[/code] will be used.
 		</member>
 		<member name="gradle_build/min_sdk" type="String" setter="" getter="">
 			Minimal Android SDK version for Gradle build.

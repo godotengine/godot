@@ -90,6 +90,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 #endif // DISABLE_DEPRECATED
 	String last_plugin_names;
 	uint64_t last_gradle_build_time = 0;
+	String last_gradle_build_dir;
 
 	Vector<Device> devices;
 	SafeFlag devices_changed;
@@ -174,10 +175,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background);
 
-	void store_image(const LauncherIcon launcher_icon, const Vector<uint8_t> &data);
-
-	void store_image(const String &export_path, const Vector<uint8_t> &data);
-
 	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
 			const String &processed_splash_config_xml,
 			const Ref<Image> &splash_image,
@@ -197,6 +194,8 @@ public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
+
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
@@ -248,9 +247,9 @@ public:
 
 	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep);
 
-	void _clear_assets_directory();
+	void _clear_assets_directory(const Ref<EditorExportPreset> &p_preset);
 
-	void _remove_copied_libs();
+	void _remove_copied_libs(String p_gdextension_libs_path);
 
 	static String join_list(const List<String> &p_parts, const String &p_separator);
 	static String join_abis(const Vector<ABI> &p_parts, const String &p_separator, bool p_use_arch);
