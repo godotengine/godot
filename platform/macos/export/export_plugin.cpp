@@ -354,6 +354,9 @@ List<String> EditorExportPlatformMacOS::get_binary_extensions(const Ref<EditorEx
 			list.push_back("dmg");
 #endif
 			list.push_back("zip");
+#ifndef WINDOWS_ENABLED
+			list.push_back("app");
+#endif
 		} else if (dist_type == 2) {
 #ifdef MACOS_ENABLED
 			list.push_back("pkg");
@@ -1941,6 +1944,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			err = _code_sign(p_preset, tmp_app_path_name, ent_path);
 		}
 
+		String noto_path = p_path;
+		bool noto_enabled = (p_preset->get("notarization/notarization").operator int() > 0);
 		if (export_format == "dmg") {
 			// Create a DMG.
 			if (err == OK) {
@@ -1982,17 +1987,36 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 				zipClose(zip, nullptr);
 			}
+		} else if (export_format == "app" && noto_enabled) {
+			// Create temporary ZIP.
+			if (err == OK) {
+				noto_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + ".zip");
+
+				if (ep.step(TTR("Making ZIP"), 3)) {
+					return ERR_SKIP;
+				}
+				if (FileAccess::exists(noto_path)) {
+					OS::get_singleton()->move_to_trash(noto_path);
+				}
+
+				Ref<FileAccess> io_fa_dst;
+				zlib_filefunc_def io_dst = zipio_create_io(&io_fa_dst);
+				zipFile zip = zipOpen2(noto_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
+
+				zip_folder_recursive(zip, tmp_base_path_name, tmp_app_dir_name, pkg_name);
+
+				zipClose(zip, nullptr);
+			}
 		}
 
-		bool noto_enabled = (p_preset->get("notarization/notarization").operator int() > 0);
 		if (err == OK && noto_enabled) {
-			if (export_format == "app" || export_format == "pkg") {
+			if (export_format == "pkg") {
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("Notarization requires the app to be archived first, select the DMG or ZIP export format instead."));
 			} else {
 				if (ep.step(TTR("Sending archive for notarization"), 4)) {
 					return ERR_SKIP;
 				}
-				err = _notarize(p_preset, p_path);
+				err = _notarize(p_preset, noto_path);
 			}
 		}
 
@@ -2010,6 +2034,10 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				tmp_app_dir->erase_contents_recursive();
 				tmp_app_dir->change_dir("..");
 				tmp_app_dir->remove(pkg_name);
+			}
+		} else if (noto_path != p_path) {
+			if (FileAccess::exists(noto_path)) {
+				DirAccess::remove_file_or_error(noto_path);
 			}
 		}
 	}
