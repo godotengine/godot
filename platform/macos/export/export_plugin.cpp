@@ -1106,9 +1106,72 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 		add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Relative symlinks are not supported, exported \"%s\" might be broken!"), p_src_path.get_file()));
 #endif
 		print_verbose("export framework: " + p_src_path + " -> " + p_in_app_path);
+
+		bool plist_misssing = false;
+		Ref<PList> plist;
+		plist.instantiate();
+		plist->load_file(p_src_path.path_join("Resources").path_join("Info.plist"));
+
+		Ref<PListNode> root_node = plist->get_root();
+		if (root_node.is_null()) {
+			plist_misssing = true;
+		} else {
+			Dictionary root = root_node->get_value();
+			if (!root.has("CFBundleExecutable") || !root.has("CFBundleIdentifier") || !root.has("CFBundlePackageType") || !root.has("CFBundleInfoDictionaryVersion") || !root.has("CFBundleName") || !root.has("CFBundleSupportedPlatforms")) {
+				plist_misssing = true;
+			}
+		}
+
 		err = dir_access->make_dir_recursive(p_in_app_path);
 		if (err == OK) {
 			err = dir_access->copy_dir(p_src_path, p_in_app_path, -1, true);
+		}
+		if (err == OK && plist_misssing) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\": Info.plist missing or invalid, new Info.plist generated."), p_src_path.get_file()));
+			// Generate Info.plist
+			String lib_name = p_src_path.get_basename().get_file();
+			String lib_id = p_preset->get("application/bundle_identifier");
+			String lib_clean_name = lib_name;
+			for (int i = 0; i < lib_clean_name.length(); i++) {
+				if (!is_ascii_alphanumeric_char(lib_clean_name[i]) && lib_clean_name[i] != '.' && lib_clean_name[i] != '-') {
+					lib_clean_name[i] = '-';
+				}
+			}
+
+			String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+									   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+									   "<plist version=\"1.0\">\n"
+									   "  <dict>\n"
+									   "    <key>CFBundleExecutable</key>\n"
+									   "    <string>$name</string>\n"
+									   "    <key>CFBundleIdentifier</key>\n"
+									   "    <string>$id.framework.$cl_name</string>\n"
+									   "    <key>CFBundleInfoDictionaryVersion</key>\n"
+									   "    <string>6.0</string>\n"
+									   "    <key>CFBundleName</key>\n"
+									   "    <string>$name</string>\n"
+									   "    <key>CFBundlePackageType</key>\n"
+									   "    <string>FMWK</string>\n"
+									   "    <key>CFBundleShortVersionString</key>\n"
+									   "    <string>1.0.0</string>\n"
+									   "    <key>CFBundleSupportedPlatforms</key>\n"
+									   "    <array>\n"
+									   "      <string>MacOSX</string>\n"
+									   "    </array>\n"
+									   "    <key>CFBundleVersion</key>\n"
+									   "    <string>1.0.0</string>\n"
+									   "    <key>LSMinimumSystemVersion</key>\n"
+									   "    <string>10.12</string>\n"
+									   "  </dict>\n"
+									   "</plist>";
+
+			String info_plist = info_plist_format.replace("$id", lib_id).replace("$name", lib_name).replace("$cl_name", lib_clean_name);
+
+			err = dir_access->make_dir_recursive(p_in_app_path.path_join("Resources"));
+			Ref<FileAccess> f = FileAccess::open(p_in_app_path.path_join("Resources").path_join("Info.plist"), FileAccess::WRITE);
+			if (f.is_valid()) {
+				f->store_string(info_plist);
+			}
 		}
 	} else {
 		print_verbose("export dylib: " + p_src_path + " -> " + p_in_app_path);

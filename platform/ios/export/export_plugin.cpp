@@ -1007,6 +1007,12 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 
 		// Creating Info.plist
 		{
+			String lib_clean_name = file_name;
+			for (int i = 0; i < lib_clean_name.length(); i++) {
+				if (!is_ascii_alphanumeric_char(lib_clean_name[i]) && lib_clean_name[i] != '.' && lib_clean_name[i] != '-') {
+					lib_clean_name[i] = '-';
+				}
+			}
 			String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 									   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
 									   "<plist version=\"1.0\">\n"
@@ -1014,7 +1020,7 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 									   "    <key>CFBundleShortVersionString</key>\n"
 									   "    <string>1.0</string>\n"
 									   "    <key>CFBundleIdentifier</key>\n"
-									   "    <string>$id.framework.$name</string>\n"
+									   "    <string>$id.framework.$cl_name</string>\n"
 									   "    <key>CFBundleName</key>\n"
 									   "    <string>$name</string>\n"
 									   "    <key>CFBundleExecutable</key>\n"
@@ -1032,7 +1038,7 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 									   "  </dict>\n"
 									   "</plist>";
 
-			String info_plist = info_plist_format.replace("$id", p_id).replace("$name", file_name);
+			String info_plist = info_plist_format.replace("$id", p_id).replace("$name", file_name).replace("$cl_name", lib_clean_name);
 
 			Ref<FileAccess> f = FileAccess::open(p_destination.path_join("Info.plist"), FileAccess::WRITE);
 			if (f.is_valid()) {
