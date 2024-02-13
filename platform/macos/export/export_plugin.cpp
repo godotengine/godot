@@ -497,65 +497,49 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, 
 	int src_len = p_size * p_size;
 
 	Vector<uint8_t> result;
-	result.resize(src_len * 1.25); //temp vector for rle encoded data, make it 25% larger for worst case scenario
-	int res_size = 0;
-
-	uint8_t buf[128];
-	int buf_size = 0;
 
 	int i = 0;
+	const uint8_t *src = p_source.ptr();
 	while (i < src_len) {
-		uint8_t cur = p_source.ptr()[i * 4 + p_ch];
+		Vector<uint8_t> seq;
 
-		if (i < src_len - 2) {
-			if ((p_source.ptr()[(i + 1) * 4 + p_ch] == cur) && (p_source.ptr()[(i + 2) * 4 + p_ch] == cur)) {
-				if (buf_size > 0) {
-					result.write[res_size++] = (uint8_t)(buf_size - 1);
-					memcpy(&result.write[res_size], &buf, buf_size);
-					res_size += buf_size;
-					buf_size = 0;
-				}
-
-				uint8_t lim = i + 130 >= src_len ? src_len - i - 1 : 130;
-				bool hit_lim = true;
-
-				for (int j = 3; j <= lim; j++) {
-					if (p_source.ptr()[(i + j) * 4 + p_ch] != cur) {
-						hit_lim = false;
-						i = i + j - 1;
-						result.write[res_size++] = (uint8_t)(j - 3 + 0x80);
-						result.write[res_size++] = cur;
-						break;
-					}
-				}
-				if (hit_lim) {
-					result.write[res_size++] = (uint8_t)(lim - 3 + 0x80);
-					result.write[res_size++] = cur;
-					i = i + lim;
-				}
-			} else {
-				buf[buf_size++] = cur;
-				if (buf_size == 128) {
-					result.write[res_size++] = (uint8_t)(buf_size - 1);
-					memcpy(&result.write[res_size], &buf, buf_size);
-					res_size += buf_size;
-					buf_size = 0;
-				}
+		uint8_t count = 0;
+		while (count <= 0x7f && i < src_len) {
+			if (i + 2 < src_len && src[i * 4 + p_ch] == src[(i + 1) * 4 + p_ch] && src[i] == src[(i + 2) * 4 + p_ch]) {
+				break;
 			}
-		} else {
-			buf[buf_size++] = cur;
-			result.write[res_size++] = (uint8_t)(buf_size - 1);
-			memcpy(&result.write[res_size], &buf, buf_size);
-			res_size += buf_size;
-			buf_size = 0;
+			seq.push_back(src[i * 4 + p_ch]);
+			i++;
+			count++;
+		}
+		if (!seq.is_empty()) {
+			result.push_back(count - 1);
+			result.append_array(seq);
+		}
+		if (i >= src_len) {
+			break;
 		}
 
-		i++;
+		uint8_t rep = src[i * 4 + p_ch];
+		count = 0;
+		while (count <= 0x7f && i < src_len && src[i * 4 + p_ch] == rep) {
+			i++;
+			count++;
+		}
+		if (count >= 3) {
+			result.push_back(0x80 + count - 3);
+			result.push_back(rep);
+		} else {
+			result.push_back(count - 1);
+			for (int j = 0; j < count; j++) {
+				result.push_back(rep);
+			}
+		}
 	}
 
 	int ofs = p_dest.size();
-	p_dest.resize(p_dest.size() + res_size);
-	memcpy(&p_dest.write[ofs], result.ptr(), res_size);
+	p_dest.resize(p_dest.size() + result.size());
+	memcpy(&p_dest.write[ofs], result.ptr(), result.size());
 }
 
 void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
@@ -617,6 +601,9 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 				_rgba8_to_packbits_encode(0, icon_infos[i].size, src_data, data); // Encode R.
 				_rgba8_to_packbits_encode(1, icon_infos[i].size, src_data, data); // Encode G.
 				_rgba8_to_packbits_encode(2, icon_infos[i].size, src_data, data); // Encode B.
+
+				// Note: workaround for macOS icon decoder bug corrupting last RLE encoded value.
+				data.push_back(0x00);
 
 				int len = data.size() - ofs;
 				len = BSWAP32(len);
