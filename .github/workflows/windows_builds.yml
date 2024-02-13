@@ -8,6 +8,8 @@ env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
   SCONS_CACHE_MSVC_CONFIG: true
 
 concurrency:
@@ -37,6 +39,22 @@ jobs:
             tests: false
             sconsflags: debug_symbols=no
 
+          - name: Editor w/ Mono (target=editor, tests=yes)
+            cache-name: windows-editor-mono
+            target: editor
+            tests: true
+            # Skip debug symbols, they're way too big with MSVC.
+            sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console  module_mono_enabled=yes
+            bin: "./bin/godot.windows.editor.x86_64.mono.exe"
+            build-mono: true
+
+          - name: Template w/ Mono (target=template_release)
+            cache-name: windows-template-mono
+            build-mono: false
+            target: template_release
+            tests: false
+            sconsflags: debug_symbols=no module_mono_enabled=yes
+
     steps:
       - uses: actions/checkout@v4
 
@@ -48,6 +66,12 @@ jobs:
 
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
+
+      - name: Set up .NET Sdk
+        uses: actions/setup-dotnet@v3
+        if: ${{ matrix.build-mono }}
+        with:
+          dotnet-version: '6.0.x'
 
       - name: Download Direct3D 12 SDK components
         run: python ./misc/scripts/install_d3d12_sdk_windows.py
@@ -62,6 +86,15 @@ jobs:
           platform: windows
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
+
+      - name: Generate C# glue
+        if: ${{ matrix.build-mono }}
+        run: |
+          ${{ matrix.bin }} --headless --generate-mono-glue ./modules/mono/glue
+
+      - name: Build .NET solutions
+        if: ${{ matrix.build-mono }}
+        run: python ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=windows
 
       - name: Prepare artifact
         run: |
@@ -79,3 +112,8 @@ jobs:
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
           ${{ matrix.bin }} --test --force-colors
+
+      - name: .NET source generators tests
+        if: ${{ matrix.build-mono }}
+        run: |
+          dotnet test modules/mono/editor/Godot.NET.Sdk/Godot.SourceGenerators.Tests
