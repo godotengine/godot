@@ -962,7 +962,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *(_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 
