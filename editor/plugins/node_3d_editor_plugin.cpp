@@ -4364,7 +4364,16 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
-		undo_redo->add_do_method(instantiated_scene, "set_transform", node3d->get_transform());
+		Transform3D parent_tf;
+		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
+		if (parent_node3d) {
+			parent_tf = parent_node3d->get_global_gizmo_transform();
+		}
+
+		Transform3D new_tf = node3d->get_transform();
+		new_tf.origin = parent_tf.xform_inv(preview_node_pos);
+
+		undo_redo->add_do_method(instantiated_scene, "set_transform", new_tf);
 	}
 
 	return true;
