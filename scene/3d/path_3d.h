@@ -72,8 +72,6 @@ public:
 		ROTATION_ORIENTED
 	};
 
-	bool use_model_front = false;
-
 	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
 
 private:
@@ -84,6 +82,8 @@ private:
 	bool cubic = true;
 	bool loop = true;
 	bool tilt_enabled = true;
+	bool use_model_front = false;
+
 	RotationMode rotation_mode = ROTATION_XYZ;
 
 	void _update_transform(bool p_update_xyz_rot = true);

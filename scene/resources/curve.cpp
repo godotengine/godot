@@ -1534,7 +1534,7 @@ void Curve3D::_bake_segment3d_even_length(RBMap<real_t, Vector3> &r_bake, real_t
 }
 
 Vector3 Curve3D::_calculate_tangent(const Vector3 &p_begin, const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) {
-	// Handle corner cases.
+	// Handle degenerate cases.
 	if (Math::is_zero_approx(p_t - 0.0f) && p_control_1.is_equal_approx(p_begin)) {
 		return (p_end - p_begin).normalized();
 	}
@@ -1544,6 +1544,19 @@ Vector3 Curve3D::_calculate_tangent(const Vector3 &p_begin, const Vector3 &p_con
 	}
 
 	return p_begin.bezier_derivative(p_control_1, p_control_2, p_end, p_t).normalized();
+}
+
+// Static function to avoid code repetition. Internal to this file.
+static inline Vector3 _ensure_valid_up_vector(const Vector3 &p_forward, const Vector3 &p_up_one, const Vector3 &p_up_another) {
+	Basis frame;
+	const Vector3 c = p_forward.cross(p_up_one);
+	if (c.length_squared() < 0.1) {
+		frame = Basis::looking_at(p_forward, p_up_another);
+	} else {
+		frame = Basis::looking_at(p_forward, p_up_one);
+	}
+
+	return frame.get_column(1);
 }
 
 void Curve3D::_bake() const {
@@ -1654,33 +1667,20 @@ void Curve3D::_bake() const {
 	}
 
 	// Step 2: Calculate the up vectors and the whole local reference frame
-	//
-	// See Dougan, Carl. "The parallel transport frame." Game Programming Gems 2 (2001): 215-219.
-	// for an example discussing about why not the Frenet frame.
-	{
-		int point_count = baked_point_cache.size();
+	int point_count = baked_point_cache.size();
+	baked_up_vector_cache.resize(point_count);
+	Vector3 *up_write = baked_up_vector_cache.ptrw();
+	const Vector3 *forward_ptr = baked_forward_vector_cache.ptr();
+	const Vector3 *points_ptr = baked_point_cache.ptr();
 
-		baked_up_vector_cache.resize(point_count);
-		Vector3 *up_write = baked_up_vector_cache.ptrw();
-
-		const Vector3 *forward_ptr = baked_forward_vector_cache.ptr();
-		const Vector3 *points_ptr = baked_point_cache.ptr();
-
-		Basis frame; // X-right, Y-up, -Z-forward.
-		Basis frame_prev;
+	if (bake_mode == BAKE_PARALLEL_TRANSPORT) {
+		// See Dougan, Carl. "The parallel transport frame." Game Programming Gems 2 (2001): 215-219. for a discussing about its difference with Frenet frame.
 
 		// Set the initial frame based on Y-up rule.
-		{
-			Vector3 forward = forward_ptr[0];
+		up_write[0] = _ensure_valid_up_vector(forward_ptr[0], Vector3(0, 1, 0), Vector3(1, 0, 0));
 
-			if (abs(forward.dot(Vector3(0, 1, 0))) > 1.0 - UNIT_EPSILON) {
-				frame_prev = Basis::looking_at(forward, Vector3(1, 0, 0));
-			} else {
-				frame_prev = Basis::looking_at(forward, Vector3(0, 1, 0));
-			}
-
-			up_write[0] = frame_prev.get_column(1);
-		}
+		Basis frame; // X-right, Y-up, -Z-forward.
+		Basis frame_prev = Basis::looking_at(forward_ptr[0], up_write[0]);
 
 		// Calculate the Parallel Transport Frame.
 		for (int idx = 1; idx < point_count; idx++) {
@@ -1689,14 +1689,48 @@ void Curve3D::_bake() const {
 			Basis rotate;
 			rotate.rotate_to_align(-frame_prev.get_column(2), forward);
 			frame = rotate * frame_prev;
-			frame.orthonormalize(); // guard against float error accumulation
+			frame.orthonormalize(); // Guard against float error accumulation.
 
 			up_write[idx] = frame.get_column(1);
 			frame_prev = frame;
 		}
+	} else if (bake_mode == BAKE_FRENET) {
+		// See also Dougan, Carl. "The parallel transport frame." Game Programming Gems 2 (2001): 215-219.
 
+		// Calculate up(binormal) vector.
+		{
+			Vector3 forward;
+			Vector3 side;
+			for (int idx = 0; idx < point_count; idx++) {
+				forward = forward_ptr[idx];
+				if (idx != 0) {
+					side = forward - forward_ptr[idx - 1];
+				} else {
+					side = forward_ptr[idx + 1] - forward;
+				}
+
+				if (side.is_zero_approx()) {
+					up_write[idx] = _ensure_valid_up_vector(forward_ptr[idx], Vector3(0, 1, 0), Vector3(1, 0, 0));
+				} else {
+					const Vector3 up = forward.cross(side).normalized();
+					up_write[idx] = up;
+				}
+			}
+		}
+	} else if (bake_mode == BAKE_PLANAR) {
+		// Simplified case, works great for racing tracks or roads. Not suitable for roller coasters :).
+		for (int idx = 0; idx < point_count; idx++) {
+			Vector3 forward = forward_ptr[idx];
+			Basis frame = Basis::looking_at(forward);
+			up_write[idx] = frame.get_column(1);
+		}
+	} else {
+		ERR_FAIL_MSG("Invalid bake mode.");
+	}
+
+	// Step 3: Smooth rotation for loops, where two ends of a curve share position and tangent.
+	{
 		bool is_loop = true;
-		// Loop smoothing only applies when the curve is a loop, which means two ends meet, and share forward directions.
 		{
 			if (!points_ptr[0].is_equal_approx(points_ptr[point_count - 1])) {
 				is_loop = false;
@@ -2089,6 +2123,15 @@ bool Curve3D::is_up_vector_enabled() const {
 	return up_vector_enabled;
 }
 
+void Curve3D::set_bake_mode(Curve3D::BakeMode p_mode) {
+	bake_mode = p_mode;
+	mark_dirty();
+}
+
+Curve3D::BakeMode Curve3D::get_bake_mode() const {
+	return bake_mode;
+}
+
 Dictionary Curve3D::_get_data() const {
 	Dictionary dc;
 
@@ -2309,6 +2352,8 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bake_interval"), &Curve3D::get_bake_interval);
 	ClassDB::bind_method(D_METHOD("set_up_vector_enabled", "enable"), &Curve3D::set_up_vector_enabled);
 	ClassDB::bind_method(D_METHOD("is_up_vector_enabled"), &Curve3D::is_up_vector_enabled);
+	ClassDB::bind_method(D_METHOD("set_bake_mode", "mode"), &Curve3D::set_bake_mode);
+	ClassDB::bind_method(D_METHOD("get_bake_mode"), &Curve3D::get_bake_mode);
 
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve3D::get_baked_length);
 	ClassDB::bind_method(D_METHOD("sample_baked", "offset", "cubic"), &Curve3D::sample_baked, DEFVAL(0.0), DEFVAL(false));
@@ -2331,6 +2376,11 @@ void Curve3D::_bind_methods() {
 
 	ADD_GROUP("Up Vector", "up_vector_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "up_vector_bake_mode", PROPERTY_HINT_ENUM, "Parallel Transport,Frenet,Planar"), "set_bake_mode", "get_bake_mode");
+
+	BIND_ENUM_CONSTANT(BAKE_PARALLEL_TRANSPORT);
+	BIND_ENUM_CONSTANT(BAKE_FRENET);
+	BIND_ENUM_CONSTANT(BAKE_PLANAR);
 }
 
 Curve3D::Curve3D() {}

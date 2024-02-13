@@ -145,6 +145,34 @@ TEST_CASE("[Curve3D] Baked") {
 			CHECK(curve->get_baked_up_vectors().size() == 0);
 		}
 	}
+
+	SUBCASE("S-shaped Curve") {
+		Vector3 p0(0, 0, 0);
+		Vector3 p1(0, 0, 50);
+		Vector3 p2(0, 0, 100);
+
+		curve->add_point(p0, Vector3(), Vector3(30, 0, 0));
+		curve->add_point(p1, Vector3(30, 0, 0), Vector3(-30, 0, 0));
+		curve->add_point(p2, Vector3(-30, 0, 0), Vector3());
+
+		real_t n_points = curve->get_baked_points().size();
+
+		SUBCASE("Frenet frame") {
+			curve->set_bake_mode(Curve3D::BAKE_FRENET);
+
+			// Frenet frame should have reversed up vectors around saddle point.
+			CHECK(curve->get_baked_up_vectors().get(5).is_equal_approx(Vector3(0, -1, 0)));
+			CHECK(curve->get_baked_up_vectors().get(n_points - 5).is_equal_approx(Vector3(0, 1, 0)));
+		}
+
+		SUBCASE("Planar frame") {
+			curve->set_bake_mode(Curve3D::BAKE_PLANAR);
+
+			// Planar frame should have the same up vectors around saddle point.
+			CHECK(curve->get_baked_up_vectors().get(5).is_equal_approx(Vector3(0, 1, 0)));
+			CHECK(curve->get_baked_up_vectors().get(n_points - 5).is_equal_approx(Vector3(0, 1, 0)));
+		}
+	}
 }
 
 TEST_CASE("[Curve3D] Sampling") {
