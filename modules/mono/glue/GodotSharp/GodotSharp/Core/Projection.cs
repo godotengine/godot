@@ -254,7 +254,7 @@ namespace Godot
         /// <param name="near">The near clipping distance.</param>
         /// <param name="far">The far clipping distance.</param>
         /// <returns>The created projection.</returns>
-        public static Projection CreateFrustum(real_t left, real_t right, real_t bottom, real_t top, real_t near, real_t far)
+        public static Projection CreateFrustum(real_t left, real_t right, real_t bottom, real_t top, real_t depth_near, real_t depth_far)
         {
             if (right <= left)
             {
@@ -264,18 +264,18 @@ namespace Godot
             {
                 throw new ArgumentException("top is less or equal to bottom.");
             }
-            if (far <= near)
+            if (depth_far <= depth_near)
             {
                 throw new ArgumentException("far is less or equal to near.");
             }
 
-            real_t x = 2 * near / (right - left);
-            real_t y = 2 * near / (top - bottom);
+            real_t x = 2 * depth_near / (right - left);
+            real_t y = 2 * depth_near / (top - bottom);
 
             real_t a = (right + left) / (right - left);
             real_t b = (top + bottom) / (top - bottom);
-            real_t c = -(far + near) / (far - near);
-            real_t d = -2 * far * near / (far - near);
+            real_t c = -(depth_far + depth_near) / (depth_far - depth_near);
+            real_t d = -2 * depth_far * depth_near / (depth_far - depth_near);
 
             return new Projection(
                 new Vector4(x, 0, 0, 0),
@@ -297,13 +297,13 @@ namespace Godot
         /// <param name="far">The far clipping distance.</param>
         /// <param name="flipFov">If the field of view is flipped over the projection's diagonal.</param>
         /// <returns>The created projection.</returns>
-        public static Projection CreateFrustumAspect(real_t size, real_t aspect, Vector2 offset, real_t near, real_t far, bool flipFov)
+        public static Projection CreateFrustumAspect(real_t size, real_t aspect, Vector2 offset, real_t depth_near, real_t depth_far, bool flipFov)
         {
             if (!flipFov)
             {
                 size *= aspect;
             }
-            return CreateFrustum(-size / 2 + offset.X, +size / 2 + offset.X, -size / aspect / 2 + offset.Y, +size / aspect / 2 + offset.Y, near, far);
+            return CreateFrustum(-size / 2 + offset.X, +size / 2 + offset.X, -size / aspect / 2 + offset.Y, +size / aspect / 2 + offset.Y, depth_near, depth_far);
         }
 
         /// <summary>
