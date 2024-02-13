@@ -35,8 +35,6 @@
 #include "core/string/translation.h"
 #include "scene/theme/theme_db.h"
 
-PropertyListHelper ItemList::base_property_helper;
-
 void ItemList::_shape_text(int p_idx) {
 	Item &item = items.write[p_idx];
 
@@ -1705,22 +1703,6 @@ bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
 	return false;
 }
 
-bool ItemList::_get(const StringName &p_name, Variant &r_ret) const {
-	return property_helper.property_get_value(p_name, r_ret);
-}
-
-void ItemList::_get_property_list(List<PropertyInfo> *p_list) const {
-	property_helper.get_property_list(p_list, items.size());
-}
-
-bool ItemList::_property_can_revert(const StringName &p_name) const {
-	return property_helper.property_can_revert(p_name);
-}
-
-bool ItemList::_property_get_revert(const StringName &p_name, Variant &r_property) const {
-	return property_helper.property_get_revert(p_name, r_property);
-}
-
 void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_item", "text", "icon", "selectable"), &ItemList::add_item, DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "icon", "selectable"), &ItemList::add_icon_item, DEFVAL(true));
@@ -1889,10 +1871,10 @@ void ItemList::_bind_methods() {
 	Item defaults(true);
 
 	base_property_helper.set_prefix("item_");
-	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, "set_item_text", "get_item_text");
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, "set_item_icon", "get_item_icon");
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "selectable"), defaults.selectable, "set_item_selectable", "is_item_selectable");
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, "set_item_disabled", "is_item_disabled");
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &ItemList::set_item_text, &ItemList::get_item_text);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &ItemList::set_item_icon, &ItemList::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "selectable"), defaults.selectable, &ItemList::set_item_selectable, &ItemList::is_item_selectable);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &ItemList::set_item_disabled, &ItemList::is_item_disabled);
 }
 
 ItemList::ItemList() {

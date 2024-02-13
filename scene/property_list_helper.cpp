@@ -47,35 +47,28 @@ const PropertyListHelper::Property *PropertyListHelper::_get_property(const Stri
 	return property_list.getptr(components[1]);
 }
 
-void PropertyListHelper::_bind_property(const Property &p_property, const Object *p_object) {
-	Property property = p_property;
-	property.info = p_property.info;
-	property.default_value = p_property.default_value;
-	property.setter = Callable(p_object, p_property.setter_name);
-	property.getter = Callable(p_object, p_property.getter_name);
+void PropertyListHelper::_call_setter(const MethodBind *p_setter, int p_index, const Variant &p_value) const {
+	Variant args[] = { p_index, p_value };
+	const Variant *argptrs[] = { &args[0], &args[1] };
+	Callable::CallError ce;
+	p_setter->call(object, argptrs, 2, ce);
+}
 
-	property_list[property.info.name] = property;
+Variant PropertyListHelper::_call_getter(const MethodBind *p_getter, int p_index) const {
+	Callable::CallError ce;
+	Variant args[] = { p_index };
+	const Variant *argptrs[] = { &args[0] };
+	return p_getter->call(object, argptrs, 1, ce);
 }
 
 void PropertyListHelper::set_prefix(const String &p_prefix) {
 	prefix = p_prefix;
 }
 
-void PropertyListHelper::register_property(const PropertyInfo &p_info, const Variant &p_default, const StringName &p_setter, const StringName &p_getter) {
-	Property property;
-	property.info = p_info;
-	property.default_value = p_default;
-	property.setter_name = p_setter;
-	property.getter_name = p_getter;
-
-	property_list[p_info.name] = property;
-}
-
-void PropertyListHelper::setup_for_instance(const PropertyListHelper &p_base, const Object *p_object) {
+void PropertyListHelper::setup_for_instance(const PropertyListHelper &p_base, Object *p_object) {
 	prefix = p_base.prefix;
-	for (const KeyValue<String, Property> &E : p_base.property_list) {
-		_bind_property(E.value, p_object);
-	}
+	property_list = p_base.property_list;
+	object = p_object;
 }
 
 void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list, int p_count) const {
@@ -84,7 +77,7 @@ void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list, int p_cou
 			const Property &property = E.value;
 
 			PropertyInfo info = property.info;
-			if (property.getter.call(i) == property.default_value) {
+			if (_call_getter(property.getter, i) == property.default_value) {
 				info.usage &= (~PROPERTY_USAGE_STORAGE);
 			}
 
@@ -99,7 +92,7 @@ bool PropertyListHelper::property_get_value(const String &p_property, Variant &r
 	const Property *property = _get_property(p_property, &index);
 
 	if (property) {
-		r_ret = property->getter.call(index);
+		r_ret = _call_getter(property->getter, index);
 		return true;
 	}
 	return false;
@@ -110,7 +103,7 @@ bool PropertyListHelper::property_set_value(const String &p_property, const Vari
 	const Property *property = _get_property(p_property, &index);
 
 	if (property) {
-		property->setter.call(index, p_value);
+		_call_setter(property->setter, index, p_value);
 		return true;
 	}
 	return false;
@@ -121,7 +114,7 @@ bool PropertyListHelper::property_can_revert(const String &p_property) const {
 	const Property *property = _get_property(p_property, &index);
 
 	if (property) {
-		return property->getter.call(index) != property->default_value;
+		return _call_getter(property->getter, index) != property->default_value;
 	}
 	return false;
 }
@@ -135,4 +128,14 @@ bool PropertyListHelper::property_get_revert(const String &p_property, Variant &
 		return true;
 	}
 	return false;
+}
+
+PropertyListHelper::~PropertyListHelper() {
+	// No object = it's the main helper. Do a cleanup.
+	if (!object) {
+		for (const KeyValue<String, Property> &E : property_list) {
+			memdelete(E.value.setter);
+			memdelete(E.value.getter);
+		}
+	}
 }

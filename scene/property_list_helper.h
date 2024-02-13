@@ -31,34 +31,48 @@
 #ifndef PROPERTY_LIST_HELPER_H
 #define PROPERTY_LIST_HELPER_H
 
+#include "core/object/method_bind.h"
 #include "core/object/object.h"
 
 class PropertyListHelper {
 	struct Property {
 		PropertyInfo info;
 		Variant default_value;
-		StringName setter_name;
-		StringName getter_name;
-		Callable setter;
-		Callable getter;
+		MethodBind *setter = nullptr;
+		MethodBind *getter = nullptr;
 	};
 
 	String prefix;
 	HashMap<String, Property> property_list;
+	Object *object = nullptr;
 
 	const Property *_get_property(const String &p_property, int *r_index) const;
-	void _bind_property(const Property &p_property, const Object *p_object);
+	void _call_setter(const MethodBind *p_setter, int p_index, const Variant &p_value) const;
+	Variant _call_getter(const MethodBind *p_getter, int p_index) const;
 
 public:
 	void set_prefix(const String &p_prefix);
-	void register_property(const PropertyInfo &p_info, const Variant &p_default, const StringName &p_setter, const StringName &p_getter);
-	void setup_for_instance(const PropertyListHelper &p_base, const Object *p_object);
+
+	template <typename S, typename G>
+	void register_property(const PropertyInfo &p_info, const Variant &p_default, S p_setter, G p_getter) {
+		Property property;
+		property.info = p_info;
+		property.default_value = p_default;
+		property.setter = create_method_bind(p_setter);
+		property.getter = create_method_bind(p_getter);
+
+		property_list[p_info.name] = property;
+	}
+
+	void setup_for_instance(const PropertyListHelper &p_base, Object *p_object);
 
 	void get_property_list(List<PropertyInfo> *p_list, int p_count) const;
 	bool property_get_value(const String &p_property, Variant &r_ret) const;
 	bool property_set_value(const String &p_property, const Variant &p_value) const;
 	bool property_can_revert(const String &p_property) const;
 	bool property_get_revert(const String &p_property, Variant &r_value) const;
+
+	~PropertyListHelper();
 };
 
 #endif // PROPERTY_LIST_HELPER_H
