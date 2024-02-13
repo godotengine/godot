@@ -38,6 +38,8 @@ namespace GodotTools.ProjectEditor
             if (sanitizedName != name)
                 mainGroup.AddProperty("RootNamespace", sanitizedName);
 
+            var import = root.AddImport(@"$(MSBuildProjectDirectory)\**\Directory.Build.props");
+
             return root;
         }
 
