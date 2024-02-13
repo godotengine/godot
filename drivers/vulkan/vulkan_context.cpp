@@ -46,65 +46,18 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_SHORT_NAME "GodotEngine"
 
-enum VkTrackedObjectType {
-	VK_TRACKED_OBJECT_TYPE_UNKNOWN = 0,
-	VK_TRACKED_OBJECT_TYPE_INSTANCE,
-	VK_TRACKED_OBJECT_TYPE_PHYSICAL_DEVICE,
-	VK_TRACKED_OBJECT_TYPE_DEVICE,
-	VK_TRACKED_OBJECT_TYPE_QUEUE,
-	VK_TRACKED_OBJECT_TYPE_QUERY_POOL,
-
-	VK_TRACKED_OBJECT_TYPE_SEMAPHORE,
-	VK_TRACKED_OBJECT_TYPE_FENCE,
-
-	VK_TRACKED_OBJECT_TYPE_IMAGE,
-	VK_TRACKED_OBJECT_TYPE_IMAGE_VIEW,
-	VK_TRACKED_OBJECT_TYPE_BUFFER,
-	VK_TRACKED_OBJECT_TYPE_BUFFER_VIEW,
-
-	VK_TRACKED_OBJECT_TYPE_SHADER,
-	VK_TRACKED_OBJECT_TYPE_PIPELINE_CACHE,
-	VK_TRACKED_OBJECT_TYPE_PIPELINE_LAYOUT,
-	VK_TRACKED_OBJECT_TYPE_PIPELINE,
-
-	VK_TRACKED_OBJECT_TYPE_RENDER_PASS,
-	VK_TRACKED_OBJECT_TYPE_SAMPLER,
-
-	VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_POOL,
-	VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET,
-	VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
-
-	VK_TRACKED_OBJECT_TYPE_COMMAND_POOL,
-	VK_TRACKED_OBJECT_TYPE_COMMAND_BUFFER,
-
-	VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER,
-	VK_TRACKED_OBJECT_TYPE_SURFACE,
-	VK_TRACKED_OBJECT_TYPE_SWAPCHAIN,
-	VK_TRACKED_OBJECT_TYPE_COUNT
-};
-
-enum VkTrackedSystemAllocationScope {
-	VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COMMAND = 0,
-	VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_OBJECT,
-	VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_CACHE,
-	VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_DEVICE,
-	VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_INSTANCE,
-	VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT
-};
-
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
 
 /*************************************************/
 // Driver memory tracking
 /*************************************************/
-Mutex driver_memory_mutex;
 // Total driver memory and allocation amount
 SafeNumeric<size_t> driver_memory_total_memory;
 SafeNumeric<size_t> driver_memory_total_alloc_count;
 // Amount of driver memory for every object type
-SafeNumeric<size_t> driver_memory_tracker[VK_TRACKED_OBJECT_TYPE_COUNT][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
+SafeNumeric<size_t> driver_memory_tracker[VulkanContext::VK_TRACKED_OBJECT_TYPE_COUNT][VulkanContext::VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
 // Amount of allocations for every object type
-SafeNumeric<uint32_t> driver_memory_allocation_count[VK_TRACKED_OBJECT_TYPE_COUNT][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
+SafeNumeric<uint32_t> driver_memory_allocation_count[VulkanContext::VK_TRACKED_OBJECT_TYPE_COUNT][VulkanContext::VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
 
 /*************************************************/
 // Device memory report
@@ -116,65 +69,26 @@ Mutex memory_report_table_mutex;
 SafeNumeric<uint64_t> memory_report_total_memory;
 SafeNumeric<uint64_t> memory_report_total_alloc_count;
 // Amount of device memory for every object type
-SafeNumeric<size_t> memory_report_mem_usage[VK_TRACKED_OBJECT_TYPE_COUNT];
+SafeNumeric<size_t> memory_report_mem_usage[VulkanContext::VK_TRACKED_OBJECT_TYPE_COUNT];
 // Amount of device memory allocations for every object type
-SafeNumeric<size_t> memory_report_allocation_count[VK_TRACKED_OBJECT_TYPE_COUNT];
+SafeNumeric<size_t> memory_report_allocation_count[VulkanContext::VK_TRACKED_OBJECT_TYPE_COUNT];
 
-VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
-	switch (type) {
-		case VK_OBJECT_TYPE_INSTANCE:
-			return VK_TRACKED_OBJECT_TYPE_INSTANCE;
-		case VK_OBJECT_TYPE_PHYSICAL_DEVICE:
-			return VK_TRACKED_OBJECT_TYPE_PHYSICAL_DEVICE;
-		case VK_OBJECT_TYPE_DEVICE:
-			return VK_TRACKED_OBJECT_TYPE_DEVICE;
-		case VK_OBJECT_TYPE_QUEUE:
-			return VK_TRACKED_OBJECT_TYPE_QUEUE;
-		case VK_OBJECT_TYPE_SEMAPHORE:
-			return VK_TRACKED_OBJECT_TYPE_SEMAPHORE;
-		case VK_OBJECT_TYPE_FENCE:
-			return VK_TRACKED_OBJECT_TYPE_FENCE;
-		case VK_OBJECT_TYPE_BUFFER:
-			return VK_TRACKED_OBJECT_TYPE_BUFFER;
-		case VK_OBJECT_TYPE_IMAGE:
-			return VK_TRACKED_OBJECT_TYPE_IMAGE;
-		case VK_OBJECT_TYPE_QUERY_POOL:
-			return VK_TRACKED_OBJECT_TYPE_QUERY_POOL;
-		case VK_OBJECT_TYPE_IMAGE_VIEW:
-			return VK_TRACKED_OBJECT_TYPE_IMAGE_VIEW;
-		case VK_OBJECT_TYPE_BUFFER_VIEW:
-			return VK_TRACKED_OBJECT_TYPE_BUFFER_VIEW;
-		case VK_OBJECT_TYPE_SHADER_MODULE:
-			return VK_TRACKED_OBJECT_TYPE_SHADER;
-		case VK_OBJECT_TYPE_PIPELINE_CACHE:
-			return VK_TRACKED_OBJECT_TYPE_PIPELINE_CACHE;
-		case VK_OBJECT_TYPE_PIPELINE_LAYOUT:
-			return VK_TRACKED_OBJECT_TYPE_PIPELINE_LAYOUT;
-		case VK_OBJECT_TYPE_RENDER_PASS:
-			return VK_TRACKED_OBJECT_TYPE_RENDER_PASS;
-		case VK_OBJECT_TYPE_PIPELINE:
-			return VK_TRACKED_OBJECT_TYPE_PIPELINE;
-		case VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT:
-			return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
-		case VK_OBJECT_TYPE_SAMPLER:
-			return VK_TRACKED_OBJECT_TYPE_SAMPLER;
-		case VK_OBJECT_TYPE_DESCRIPTOR_POOL:
-			return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_POOL;
-		case VK_OBJECT_TYPE_DESCRIPTOR_SET:
-			return VK_TRACKED_OBJECT_TYPE_DESCRIPTOR_SET;
-		case VK_OBJECT_TYPE_FRAMEBUFFER:
-			return VK_TRACKED_OBJECT_TYPE_FRAMEBUFFER;
-		case VK_OBJECT_TYPE_COMMAND_POOL:
-			return VK_TRACKED_OBJECT_TYPE_COMMAND_POOL;
-		case VK_OBJECT_TYPE_COMMAND_BUFFER:
-			return VK_TRACKED_OBJECT_TYPE_COMMAND_BUFFER;
-		case VK_OBJECT_TYPE_SURFACE_KHR:
-			return VK_TRACKED_OBJECT_TYPE_SURFACE;
-		case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
-			return VK_TRACKED_OBJECT_TYPE_SWAPCHAIN;
-		default:
-			return VK_TRACKED_OBJECT_TYPE_UNKNOWN;
+VulkanContext::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
+	if (type > VK_OBJECT_TYPE_COMMAND_POOL && type != (VkObjectType)VulkanContext::VK_TRACKED_OBJECT_TYPE_VMA) {
+		switch (type) {
+			case VK_OBJECT_TYPE_SURFACE_KHR:
+				return VulkanContext::VK_TRACKED_OBJECT_TYPE_SURFACE;
+			case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
+				return VulkanContext::VK_TRACKED_OBJECT_TYPE_SWAPCHAIN;
+			default:
+				DEV_ASSERT("Unknown VkObjectType enum value %d. Please add it to VkTrackedObjectType, switch statement in "
+						"util_to_tracked_object_type.",
+						(int)type);
+				return (VulkanContext::VkTrackedObjectType)VK_OBJECT_TYPE_UNKNOWN;
+		}
 	}
+
+	return (VulkanContext::VkTrackedObjectType)type;
 }
 
 size_t VulkanContext::get_device_total_memory() {
@@ -194,14 +108,12 @@ size_t VulkanContext::get_driver_allocation_count() {
 	return driver_memory_total_alloc_count.get();
 }
 VulkanContext::DriverMemoryAllocations VulkanContext::get_driver_memory_by_object_type(VkObjectType type) {
-	MutexLock lock(driver_memory_mutex);
-
 	DriverMemoryAllocations ret = {};
-	ret.cache_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_CACHE].get();
-	ret.command_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COMMAND].get();
-	ret.device_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_DEVICE].get();
-	ret.instance_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_INSTANCE].get();
-	ret.object_allocations = driver_memory_tracker[type][VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_OBJECT].get();
+	ret.cache_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_CACHE].get();
+	ret.command_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_COMMAND].get();
+	ret.device_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_DEVICE].get();
+	ret.instance_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE].get();
+	ret.object_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_OBJECT].get();
 
 	return ret;
 }

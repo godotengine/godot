@@ -51,6 +51,17 @@
 
 class VulkanContext : public ApiContextRD {
 public:
+	enum VkTrackedObjectType {
+		VK_TRACKED_OBJECT_TYPE_SURFACE = VK_OBJECT_TYPE_COMMAND_POOL + 1,
+		VK_TRACKED_OBJECT_TYPE_SWAPCHAIN,
+		VK_TRACKED_OBJECT_TYPE_VMA,
+		VK_TRACKED_OBJECT_TYPE_COUNT
+	};
+
+	enum VkTrackedSystemAllocationScope {
+		VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT = VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE + 1
+	};
+
 	struct DriverMemoryAllocations {
 		size_t command_allocations = 0;
 		size_t object_allocations = 0;

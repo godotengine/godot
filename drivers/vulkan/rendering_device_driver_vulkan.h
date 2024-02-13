@@ -154,7 +154,7 @@ private:
 	/**** MEMORY ****/
 	/****************/
 
-	VmaAllocator allocator = nullptr;
+	VmaAllocator* allocators = NULL;
 	HashMap<uint32_t, VmaPool> small_allocs_pools;
 
 	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
