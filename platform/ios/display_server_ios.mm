@@ -387,6 +387,16 @@ bool DisplayServerIOS::is_dark_mode() const {
 	}
 }
 
+void DisplayServerIOS::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
+}
+
+void DisplayServerIOS::emit_system_theme_changed() {
+	if (system_theme_changed.is_valid()) {
+		system_theme_changed.call();
+	}
+}
+
 Rect2i DisplayServerIOS::get_display_safe_area() const {
 	UIEdgeInsets insets = UIEdgeInsetsZero;
 	UIView *view = AppDelegate.viewController.godotView;

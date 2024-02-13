@@ -77,6 +77,8 @@ class DisplayServerIOS : public DisplayServer {
 	Callable input_event_callback;
 	Callable input_text_callback;
 
+	Callable system_theme_changed;
+
 	int virtual_keyboard_height = 0;
 
 	void perform_event(const Ref<InputEvent> &p_event);
@@ -108,6 +110,8 @@ public:
 	void send_input_text(const String &p_text) const;
 	void send_window_event(DisplayServer::WindowEvent p_event) const;
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
+
+	void emit_system_theme_changed();
 
 	// MARK: - Input
 
@@ -145,6 +149,7 @@ public:
 
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Rect2i get_display_safe_area() const override;
 
@@ -159,8 +164,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID
-	get_window_at_screen_position(const Point2i &p_position) const override;
+	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 

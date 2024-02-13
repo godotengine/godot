@@ -227,7 +227,9 @@ public:
 
 	virtual bool is_dark_mode_supported() const { return false; };
 	virtual bool is_dark_mode() const { return false; };
-	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); };
+	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); }
+	virtual Color get_base_color() const { return Color(0, 0, 0, 0); }
+	virtual void set_system_theme_change_callback(const Callable &p_callable) {}
 
 private:
 	static bool window_early_clear_override_enabled;

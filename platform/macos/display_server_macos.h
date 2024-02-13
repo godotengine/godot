@@ -220,6 +220,8 @@ private:
 	};
 	List<MenuCall> deferred_menu_calls;
 
+	Callable system_theme_changed;
+
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);
 	bool _is_menu_opened(NSMenu *p_menu) const;
@@ -253,6 +255,8 @@ public:
 	void menu_callback(id p_sender);
 	void menu_open(NSMenu *p_menu);
 	void menu_close(NSMenu *p_menu);
+
+	void emit_system_theme_changed();
 
 	bool has_window(WindowID p_window) const;
 	WindowData &get_window(WindowID p_window);
@@ -358,6 +362,8 @@ public:
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
 	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;

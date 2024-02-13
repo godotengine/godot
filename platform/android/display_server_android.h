@@ -84,6 +84,8 @@ class DisplayServerAndroid : public DisplayServer {
 	Callable input_text_callback;
 	Callable rect_changed_callback;
 
+	Callable system_theme_changed;
+
 	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
@@ -103,8 +105,11 @@ public:
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
 
+	void emit_system_theme_changed();
+
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
