@@ -3298,7 +3298,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				}
 
 				Node3D *parent = sp->get_parent_node_3d();
-				Transform3D local_xform = parent ? parent->get_global_transform().inverse_xform(xform) : xform;
+				Transform3D local_xform = parent ? parent->get_global_transform().affine_inverse() * xform : xform;
 				undo_redo->add_do_method(sp, "set_transform", local_xform);
 				undo_redo->add_undo_method(sp, "set_transform", sp->get_local_gizmo_transform());
 			}
@@ -4371,7 +4371,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		}
 
 		Transform3D new_tf = node3d->get_transform();
-		new_tf.origin = parent_tf.xform_inv(preview_node_pos);
+		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos);
 
 		undo_redo->add_do_method(instantiated_scene, "set_transform", new_tf);
 	}
@@ -6166,7 +6166,7 @@ void Node3DEditor::_xform_dialog_action() {
 		}
 
 		Node3D *parent = sp->get_parent_node_3d();
-		Transform3D local_tr = parent ? parent->get_global_transform().inverse_xform(tr) : tr;
+		Transform3D local_tr = parent ? parent->get_global_transform().affine_inverse() * tr : tr;
 		undo_redo->add_do_method(sp, "set_transform", local_tr);
 		undo_redo->add_undo_method(sp, "set_transform", sp->get_transform());
 	}
@@ -7517,7 +7517,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 					new_transform.origin = new_transform.origin - position_offset;
 
 					Node3D *parent = sp->get_parent_node_3d();
-					Transform3D new_local_xform = parent ? parent->get_global_transform().inverse_xform(new_transform) : new_transform;
+					Transform3D new_local_xform = parent ? parent->get_global_transform().affine_inverse() * new_transform : new_transform;
 					undo_redo->add_do_method(sp, "set_transform", new_local_xform);
 					undo_redo->add_undo_method(sp, "set_transform", sp->get_transform());
 				}

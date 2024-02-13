@@ -5783,7 +5783,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	target_position = canvas_item_editor->snap_point(target_position);
 
 	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(parent);
-	Point2 local_target_pos = parent_ci ? parent_ci->get_global_transform().xform_inv(target_position) : target_position;
+	Point2 local_target_pos = parent_ci ? parent_ci->get_global_transform().affine_inverse().xform(target_position) : target_position;
 
 	undo_redo->add_do_method(child, "set_position", local_target_pos);
 }
