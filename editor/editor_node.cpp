@@ -2250,19 +2250,13 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 		hide_unused_editors();
 		return;
 	}
-
-	ObjectID id = p_object->get_instance_id();
-	if (id != editor_history.get_current()) {
-		if (p_inspector_only) {
-			editor_history.add_object(id, String(), true);
-		} else if (p_property.is_empty()) {
-			editor_history.add_object(id);
-		} else {
-			editor_history.add_object(id, p_property);
-		}
-	}
-
+	_add_to_history(p_object, p_property, p_inspector_only);
 	_edit_current();
+}
+
+void EditorNode::push_item_no_inspector(Object *p_object) {
+	_add_to_history(p_object, "", false);
+	_edit_current(false, true);
 }
 
 void EditorNode::save_default_environment() {
@@ -2328,7 +2322,20 @@ static bool overrides_external_editor(Object *p_object) {
 	return script->get_language()->overrides_external_editor();
 }
 
-void EditorNode::_edit_current(bool p_skip_foreign) {
+void EditorNode::_add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only) {
+	ObjectID id = p_object->get_instance_id();
+	if (id != editor_history.get_current()) {
+		if (p_inspector_only) {
+			editor_history.add_object(id, String(), true);
+		} else if (p_property.is_empty()) {
+			editor_history.add_object(id);
+		} else {
+			editor_history.add_object(id, p_property);
+		}
+	}
+}
+
+void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update) {
 	ObjectID current_id = editor_history.get_current();
 	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 
@@ -2377,11 +2384,13 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
 		ERR_FAIL_NULL(current_res);
 
-		InspectorDock::get_inspector_singleton()->edit(current_res);
-		SceneTreeDock::get_singleton()->set_selected(nullptr);
-		NodeDock::get_singleton()->set_node(nullptr);
-		InspectorDock::get_singleton()->update(nullptr);
-		ImportDock::get_singleton()->set_edit_path(current_res->get_path());
+		if (!p_skip_inspector_update) {
+			InspectorDock::get_inspector_singleton()->edit(current_res);
+			SceneTreeDock::get_singleton()->set_selected(nullptr);
+			NodeDock::get_singleton()->set_node(nullptr);
+			InspectorDock::get_singleton()->update(nullptr);
+			ImportDock::get_singleton()->set_edit_path(current_res->get_path());
+		}
 
 		int subr_idx = current_res->get_path().find("::");
 		if (subr_idx != -1) {
