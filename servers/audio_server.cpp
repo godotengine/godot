@@ -285,13 +285,13 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
 				for (int j = 0; j < to_copy; j++) {
-					float l = CLAMP(buf[from + j].l, -1.0, 1.0);
+					float l = CLAMP(buf[from + j].left, -1.0, 1.0);
 					int32_t vl = l * ((1 << 20) - 1);
 					int32_t vl2 = (vl < 0 ? -1 : 1) * (ABS(vl) << 11);
 					*dest = vl2;
 					dest++;
 
-					float r = CLAMP(buf[from + j].r, -1.0, 1.0);
+					float r = CLAMP(buf[from + j].right, -1.0, 1.0);
 					int32_t vr = r * ((1 << 20) - 1);
 					int32_t vr2 = (vr < 0 ? -1 : 1) * (ABS(vr) << 11);
 					*dest = vr2;
@@ -588,22 +588,22 @@ void AudioServer::_mix_step() {
 			for (uint32_t j = 0; j < buffer_size; j++) {
 				buf[j] *= volume;
 
-				float l = ABS(buf[j].l);
-				if (l > peak.l) {
-					peak.l = l;
+				float l = ABS(buf[j].left);
+				if (l > peak.left) {
+					peak.left = l;
 				}
-				float r = ABS(buf[j].r);
-				if (r > peak.r) {
-					peak.r = r;
+				float r = ABS(buf[j].right);
+				if (r > peak.right) {
+					peak.right = r;
 				}
 			}
 
-			bus->channels.write[k].peak_volume = AudioFrame(Math::linear_to_db(peak.l + AUDIO_PEAK_OFFSET), Math::linear_to_db(peak.r + AUDIO_PEAK_OFFSET));
+			bus->channels.write[k].peak_volume = AudioFrame(Math::linear_to_db(peak.left + AUDIO_PEAK_OFFSET), Math::linear_to_db(peak.right + AUDIO_PEAK_OFFSET));
 
 			if (!bus->channels[k].used) {
 				//see if any audio is contained, because channel was not used
 
-				if (MAX(peak.r, peak.l) > Math::db_to_linear(channel_disable_threshold_db)) {
+				if (MAX(peak.right, peak.left) > Math::db_to_linear(channel_disable_threshold_db)) {
 					bus->channels.write[k].last_mix_with_audio = mix_frames;
 				} else if (mix_frames - bus->channels[k].last_mix_with_audio > channel_disable_frames) {
 					bus->channels.write[k].active = false;
@@ -639,7 +639,7 @@ void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_sou
 		ERR_FAIL_NULL(p_processor_l);
 		ERR_FAIL_NULL(p_processor_r);
 
-		bool is_just_started = p_vol_start.l == 0 && p_vol_start.r == 0;
+		bool is_just_started = p_vol_start.left == 0 && p_vol_start.right == 0;
 		p_processor_l->set_filter(&filter, /* clear_history= */ is_just_started);
 		p_processor_l->update_coeffs(buffer_size);
 		p_processor_r->set_filter(&filter, /* clear_history= */ is_just_started);
@@ -650,8 +650,8 @@ void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_sou
 			float lerp_param = (float)frame_idx / buffer_size;
 			AudioFrame vol = p_vol_final * lerp_param + (1 - lerp_param) * p_vol_start;
 			AudioFrame mixed = vol * p_source_buf[frame_idx];
-			p_processor_l->process_one_interp(mixed.l);
-			p_processor_r->process_one_interp(mixed.r);
+			p_processor_l->process_one_interp(mixed.left);
+			p_processor_r->process_one_interp(mixed.right);
 			p_out_buf[frame_idx] += mixed;
 		}
 
@@ -1107,14 +1107,14 @@ float AudioServer::get_bus_peak_volume_left_db(int p_bus, int p_channel) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	ERR_FAIL_INDEX_V(p_channel, buses[p_bus]->channels.size(), 0);
 
-	return buses[p_bus]->channels[p_channel].peak_volume.l;
+	return buses[p_bus]->channels[p_channel].peak_volume.left;
 }
 
 float AudioServer::get_bus_peak_volume_right_db(int p_bus, int p_channel) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	ERR_FAIL_INDEX_V(p_channel, buses[p_bus]->channels.size(), 0);
 
-	return buses[p_bus]->channels[p_channel].peak_volume.r;
+	return buses[p_bus]->channels[p_channel].peak_volume.right;
 }
 
 bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {

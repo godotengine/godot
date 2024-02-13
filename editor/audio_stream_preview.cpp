@@ -143,11 +143,11 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 			}
 
 			for (int j = from; j < to; j++) {
-				max = MAX(max, mix_chunk[j].l);
-				max = MAX(max, mix_chunk[j].r);
+				max = MAX(max, mix_chunk[j].left);
+				max = MAX(max, mix_chunk[j].right);
 
-				min = MIN(min, mix_chunk[j].l);
-				min = MIN(min, mix_chunk[j].r);
+				min = MIN(min, mix_chunk[j].left);
+				min = MIN(min, mix_chunk[j].right);
 			}
 
 			uint8_t pfrom = CLAMP((min * 0.5 + 0.5) * 255, 0, 255);

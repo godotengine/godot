@@ -87,8 +87,8 @@ void AudioEffectRecordInstance::_io_store_buffer() {
 
 	while (to_read) {
 		AudioFrame buffered_frame = rb_buf[ring_buffer_read_pos & ring_buffer_mask];
-		recording_data.push_back(buffered_frame.l);
-		recording_data.push_back(buffered_frame.r);
+		recording_data.push_back(buffered_frame.left);
+		recording_data.push_back(buffered_frame.right);
 
 		ring_buffer_read_pos++;
 		to_read--;
