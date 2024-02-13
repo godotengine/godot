@@ -41,9 +41,6 @@
 #include "scene/gui/menu_button.h"
 #include "scene/resources/curve.h"
 
-// A flag to indicate if the camera is top view.
-bool is_top_view = false;
-
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
