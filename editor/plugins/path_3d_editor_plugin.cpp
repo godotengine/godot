@@ -151,8 +151,8 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 	const float TOLERANCE = 0.00001;
 	// Check if the camera is facing directly down or up and set the is_top_view flag.
 	const bool is_camera_in_top_view = Math::abs(dir.x) < TOLERANCE &&
-					Math::abs(dir.y) > (1.0 - TOLERANCE) &&
-					Math::abs(dir.z) < TOLERANCE;
+			Math::abs(dir.y) > (1.0 - TOLERANCE) &&
+			Math::abs(dir.z) < TOLERANCE;
 	set_is_top_view(is_camera_in_top_view);
 
 	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
