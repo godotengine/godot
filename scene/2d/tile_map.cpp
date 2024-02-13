@@ -306,7 +306,7 @@ void TileMapLayer::_rendering_update() {
 					CellData &cell_data = *cell_data_quadrant_list_element->self();
 
 					TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(*tile_set->get_source(cell_data.cell.source_id));
-
+					
 					// Get the tile data.
 					const TileData *tile_data;
 					if (cell_data.runtime_tile_data_cache) {
@@ -580,7 +580,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 	TileSetSource *source;
 	if (tile_set->has_source(r_cell_data.cell.source_id)) {
 		source = *tile_set->get_source(r_cell_data.cell.source_id);
-
+	
 		if (source->has_tile(r_cell_data.cell.get_atlas_coords()) && source->has_alternative_tile(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)) {
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {
@@ -1318,7 +1318,6 @@ void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vecto
 	TileSetSource *source;
 	if (tile_set->has_source(c.source_id)) {
 		source = *tile_set->get_source(c.source_id);
-
 		if (!source->has_tile(c.get_atlas_coords()) || !source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
 			return;
 		}
@@ -1388,7 +1387,6 @@ void TileMapLayer::_build_runtime_update_tile_data_for_cell(CellData &r_cell_dat
 	TileSetSource *source;
 	if (tile_set->has_source(c.source_id)) {
 		source = *tile_set->get_source(c.source_id);
-
 		if (source->has_tile(c.get_atlas_coords()) && source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
 			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 			if (atlas_source) {

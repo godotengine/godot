@@ -1218,12 +1218,13 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 				}
 			}
 		} else if (drag_type == DRAG_TYPE_SELECT) {
-			print_line("forward_canvas_draw DRAG_TYPE_SELECT called");
+			
 			// Draw the area being selected.
 			Rect2i rect = Rect2i(tile_map->local_to_map(drag_start_mouse_pos), tile_map->local_to_map(mpos) - tile_map->local_to_map(drag_start_mouse_pos)).abs();
 			rect.size += Vector2i(1, 1);
 			RBSet<Vector2i> to_draw;
 			if (multi_layer_selection_mode == false) {
+				print_line("forward_canvas_draw DRAG_TYPE_SELECT singlelayer called");
 				for (int x = rect.position.x; x < rect.get_end().x; x++) {
 					for (int y = rect.position.y; y < rect.get_end().y; y++) {
 						Vector2i coords = Vector2i(x, y);
@@ -2257,7 +2258,6 @@ void TileMapEditorTilesPlugin::_update_selection_pattern_from_tilemap_selection(
 	}
 	//CHANGE 20
 	selection_pattern = tile_map->get_pattern(-1, coords_array);
-	
 	_update_transform_buttons();
 }
 

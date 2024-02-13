@@ -698,7 +698,7 @@ bool TileSet::has_source(int p_source_id) const {
 }
 
 Ref<TileSetSource> TileSet::get_source(int p_source_id) const {
-	print_line("Tileset Atlas Source ID in get_source is", p_source_id);
+	//print_line("Tileset Atlas Source ID in get_source is", p_source_id);
 	ERR_FAIL_COND_V_MSG(!sources.has(p_source_id), nullptr, vformat("No TileSet atlas source with id %d.", p_source_id));
 
 	return sources[p_source_id];
