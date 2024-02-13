@@ -66,14 +66,6 @@ String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 		return get_handle_name(get_modified_p_id(_secondary_handles_info[p_id].type, p_id), true);
 	}
 
-	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
-	if (is_top_view && _secondary_handles_info[p_id].type == HandleType::HANDLE_TYPE_TILT) {
-		// handle in has id-2 and handle out has id-1
-		// if p_id is 2 it means that it's a beginning of the curve, so we will use handle out instead.
-		const int modified_p_id = p_id == 2 ? p_id - 1 : p_id - 2;
-		return get_handle_name(modified_p_id, true);
-	}
-
 	// Secondary handles: in, out, tilt.
 	const HandleInfo info = _secondary_handles_info[p_id];
 	switch (info.type) {
