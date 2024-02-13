@@ -75,7 +75,7 @@ public:
 	virtual void redraw() override;
 	Path3DGizmo(Path3D *p_path = nullptr, float p_disk_size = 0.8);
 
-    void set_is_top_view(bool value) { is_top_view = value; }
+	void set_is_top_view(bool value) { is_top_view = value; }
 };
 
 class Path3DGizmoPlugin : public EditorNode3DGizmoPlugin {
