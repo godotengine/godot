@@ -70,6 +70,7 @@ public:
 	virtual Variant get_handle_value(int p_id, bool p_secondary) const override;
 	virtual void set_handle(int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) override;
 	virtual void commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
+	virtual int get_modified_p_id(int secondary_handle_type, int p_id) const;
 
 	virtual void redraw() override;
 	Path3DGizmo(Path3D *p_path = nullptr, float p_disk_size = 0.8);

@@ -41,6 +41,16 @@
 #include "scene/gui/menu_button.h"
 #include "scene/resources/curve.h"
 
+int Path3DGizmo::get_modified_p_id(int secondary_handle_type, int p_id) const {
+	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead
+	if (is_top_view && secondary_handle_type == HandleType::HANDLE_TYPE_TILT) {
+		// handle in has id-2 and handle out has id-1
+		// if p_id is 2 it means that it's a beginning of the curve, so we will use handle out instead.
+		return p_id == 2 ? p_id - 1 : p_id - 2;
+	}
+	return 0;
+}
+
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
@@ -50,6 +60,10 @@ String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	// Primary handles: position.
 	if (!p_secondary) {
 		return TTR("Curve Point #") + itos(p_id);
+	}
+
+	if (get_modified_p_id(_secondary_handles_info[p_id].type, p_id) != 0) {
+		return get_handle_name(get_modified_p_id(_secondary_handles_info[p_id].type, p_id), true);
 	}
 
 	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
@@ -86,12 +100,8 @@ Variant Path3DGizmo::get_handle_value(int p_id, bool p_secondary) const {
 		return original;
 	}
 
-	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
-	if (is_top_view && _secondary_handles_info[p_id].type == HandleType::HANDLE_TYPE_TILT) {
-		// handle in has id-2 and handle out has id-1
-		// if p_id is 2 it means that it's a beginning of the curve, so we will use handle out instead.
-		const int modified_p_id = p_id == 2 ? p_id - 1 : p_id - 2;
-		return get_handle_value(modified_p_id, true);
+	if (get_modified_p_id(_secondary_handles_info[p_id].type, p_id) != 0) {
+		return get_handle_value(get_modified_p_id(_secondary_handles_info[p_id].type, p_id), true);
 	}
 
 	// Secondary handles: in, out, tilt.
@@ -152,12 +162,8 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 			Math::abs(dir.z) < TOLERANCE;
 	set_is_top_view(is_camera_in_top_view);
 
-	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
-	if (is_top_view && _secondary_handles_info[p_id].type == HandleType::HANDLE_TYPE_TILT) {
-		// handle in has id-2 and handle out has id-1
-		// if p_id is 2 it means that it's a beginning of the curve, so we will use handle out instead.
-		const int modified_p_id = p_id == 2 ? p_id - 1 : p_id - 2;
-		return set_handle(modified_p_id, true, p_camera, p_point);
+	if (get_modified_p_id(_secondary_handles_info[p_id].type, p_id) != 0) {
+		return set_handle(get_modified_p_id(_secondary_handles_info[p_id].type, p_id), true, p_camera, p_point);
 	}
 
 	// Secondary handles: in, out, tilt.
@@ -250,12 +256,8 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 		return;
 	}
 
-	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
-	if (is_top_view && _secondary_handles_info[p_id].type == HandleType::HANDLE_TYPE_TILT) {
-		// handle in has id-2 and handle out has id-1
-		// if p_id is 2 it means that it's a beginning of the curve, so we will use handle out instead.
-		const int modified_p_id = p_id == 2 ? p_id - 1 : p_id - 2;
-		return commit_handle(modified_p_id, true, p_restore, p_cancel);
+	if (get_modified_p_id(_secondary_handles_info[p_id].type, p_id) != 0) {
+		return commit_handle(get_modified_p_id(_secondary_handles_info[p_id].type, p_id), true, p_restore, p_cancel);
 	}
 
 	// Secondary handles: in, out, tilt.
