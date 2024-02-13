@@ -2720,6 +2720,10 @@ String EditorHelpBit::get_class_description(const StringName &p_class_name) cons
 }
 
 String EditorHelpBit::get_property_description(const StringName &p_class_name, const StringName &p_property_name) const {
+	if (!custom_description.is_empty()) {
+		return custom_description;
+	}
+
 	if (doc_property_cache.has(p_class_name) && doc_property_cache[p_class_name].has(p_property_name)) {
 		return doc_property_cache[p_class_name][p_property_name];
 	}
@@ -2975,8 +2979,9 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 	set_text(formatted_text);
 }
 
-EditorHelpTooltip::EditorHelpTooltip(const String &p_text) {
+EditorHelpTooltip::EditorHelpTooltip(const String &p_text, const String &p_custom_description) {
 	tooltip_text = p_text;
+	custom_description = p_custom_description;
 
 	get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 0));
 }

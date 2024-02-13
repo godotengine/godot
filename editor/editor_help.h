@@ -265,6 +265,8 @@ class EditorHelpBit : public MarginContainer {
 	String text;
 
 protected:
+	String custom_description;
+
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -292,7 +294,7 @@ protected:
 public:
 	void parse_tooltip(const String &p_text);
 
-	EditorHelpTooltip(const String &p_text = String());
+	EditorHelpTooltip(const String &p_text = String(), const String &p_custom_description = String());
 };
 
 #endif // EDITOR_HELP_H
