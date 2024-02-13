@@ -35,22 +35,22 @@
 #ifdef USE_VOLK
 #include <volk.h>
 #else
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_metal.h>
 #endif
 
 const char *RenderingContextDriverVulkanMacOS::_get_platform_surface_extension() const {
-	return VK_MVK_MACOS_SURFACE_EXTENSION_NAME;
+	return VK_EXT_METAL_SURFACE_EXTENSION_NAME;
 }
 
 RenderingContextDriver::SurfaceID RenderingContextDriverVulkanMacOS::surface_create(const void *p_platform_data) {
 	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
 
-	VkMacOSSurfaceCreateInfoMVK create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
-	create_info.pView = (__bridge const void *)(*wpd->view_ptr);
+	VkMetalSurfaceCreateInfoEXT create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
+	create_info.pLayer = *wpd->layer_ptr;
 
 	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateMacOSSurfaceMVK(instance_get(), &create_info, nullptr, &vk_surface);
+	VkResult err = vkCreateMetalSurfaceEXT(instance_get(), &create_info, nullptr, &vk_surface);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
 
 	Surface *surface = memnew(Surface);
