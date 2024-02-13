@@ -101,6 +101,12 @@
 				Adjust the viewport so the caret is visible.
 			</description>
 		</method>
+		<method name="apply_ime">
+			<return type="void" />
+			<description>
+				Applies text from the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) to each caret and closes the IME if it is open.
+			</description>
+		</method>
 		<method name="backspace">
 			<return type="void" />
 			<param index="0" name="caret_index" type="int" default="-1" />
@@ -112,6 +118,12 @@
 			<return type="void" />
 			<description>
 				Starts a multipart edit. All edits will be treated as one action until [method end_complex_operation] is called.
+			</description>
+		</method>
+		<method name="cancel_ime">
+			<return type="void" />
+			<description>
+				Closes the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) if it is open. Any text in the IME will be lost.
 			</description>
 		</method>
 		<method name="center_viewport_to_caret">
@@ -611,7 +623,7 @@
 		<method name="has_ime_text" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns if the user has IME text.
+				Returns [code]true[/code] if the user has text in the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME).
 			</description>
 		</method>
 		<method name="has_redo" qualifiers="const">

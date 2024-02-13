@@ -253,8 +253,9 @@ void CodeEdit::_notification(int p_what) {
 void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
 	if (mb.is_valid()) {
-		/* Ignore mouse clicks in IME input mode. */
+		// Ignore mouse clicks in IME input mode, let TextEdit handle it.
 		if (has_ime_text()) {
+			TextEdit::gui_input(p_gui_input);
 			return;
 		}
 
