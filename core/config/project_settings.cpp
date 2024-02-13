@@ -1372,6 +1372,19 @@ ProjectSettings::ProjectSettings() {
 	CRASH_COND_MSG(singleton != nullptr, "Instantiating a new ProjectSettings singleton is not supported.");
 	singleton = this;
 
+#ifdef TOOLS_ENABLED
+	// Available only at runtime in editor builds. Needs to be processed before anything else to work properly.
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		String editor_features = OS::get_singleton()->get_environment("GODOT_EDITOR_CUSTOM_FEATURES");
+		if (!editor_features.is_empty()) {
+			PackedStringArray feature_list = editor_features.split(",");
+			for (const String &s : feature_list) {
+				custom_features.insert(s);
+			}
+		}
+	}
+#endif
+
 	GLOBAL_DEF_BASIC("application/config/name", "");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
