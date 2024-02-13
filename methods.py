@@ -1367,7 +1367,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 vsconf = f'{target}|{a["platform"]}'
                 break
 
-        condition = "'$(Configuration)|$(Platform)'=='" + vsconf + "'"
+        condition = "'$(GodotConfiguration)|$(GodotPlatform)'=='" + vsconf + "'"
         properties.append("<ActiveProjectItemList>;" + ";".join(activeItems) + ";</ActiveProjectItemList>")
         output = f'bin\\godot{env["PROGSUFFIX"]}'
 
@@ -1482,12 +1482,26 @@ def generate_vs_project(env, original_args, project_name="godot"):
                     "</ProjectConfiguration>",
                 ]
 
+                properties += [
+                    f"<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='{godot_target}|{proj_plat}'\">",
+                    f"  <GodotConfiguration>{godot_target}</GodotConfiguration>",
+                    f"  <GodotPlatform>{proj_plat}</GodotPlatform>",
+                    "</PropertyGroup>",
+                ]
+
                 if godot_platform != "windows":
                     configurations += [
                         f'<ProjectConfiguration Include="editor|{proj_plat}">',
                         f"  <Configuration>editor</Configuration>",
                         f"  <Platform>{proj_plat}</Platform>",
                         "</ProjectConfiguration>",
+                    ]
+
+                    properties += [
+                        f"<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='editor|{proj_plat}'\">",
+                        f"  <GodotConfiguration>editor</GodotConfiguration>",
+                        f"  <GodotPlatform>{proj_plat}</GodotPlatform>",
+                        "</PropertyGroup>",
                     ]
 
                 p = f"{project_name}.{godot_platform}.{godot_target}.{godot_arch}.generated.props"
@@ -1502,6 +1516,10 @@ def generate_vs_project(env, original_args, project_name="godot"):
                     f"{{{proj_uuid}}}.{godot_target}|{sln_plat}.Build.0 = {godot_target}|{proj_plat}",
                 ]
 
+    # Add an extra import for a local user props file at the end, so users can add more overrides.
+    imports += [
+        f'<Import Project="$(MSBuildProjectDirectory)\\{project_name}.vs.user.props" Condition="Exists(\'$(MSBuildProjectDirectory)\\{project_name}.vs.user.props\')"/>'
+    ]
     section1 = sorted(section1)
     section2 = sorted(section2)
 
