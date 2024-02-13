@@ -71,7 +71,7 @@ static const float earth_gravity = 9.80665;
 
 	CALayer<DisplayLayer> *layer;
 
-	if ([driverName isEqualToString:@"vulkan"]) {
+	if ([driverName isEqualToString:@"vulkan"] || [driverName isEqualToString:@"opengl3_angle"]) {
 #if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
 		if (@available(iOS 13, *)) {
 			layer = [GodotMetalLayer layer];

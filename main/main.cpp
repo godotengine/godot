@@ -1888,13 +1888,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints_egl), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints_angle), default_driver);
 
 		GLOBAL_DEF_RST("rendering/gl_compatibility/nvidia_disable_threaded_optimization", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_angle", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_native", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_gles", true);
+
+		GLOBAL_DEF_RST_NOVAL("rendering/gl_compatibility/angle_backend", "default");
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/angle_backend.windows", PROPERTY_HINT_ENUM, "dx11,opengl"), "dx11");
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/angle_backend.ios", PROPERTY_HINT_ENUM, "metal,opengl"), "metal");
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/angle_backend.macos", PROPERTY_HINT_ENUM, "metal,opengl"), "metal");
 
 		Array device_blocklist;
 

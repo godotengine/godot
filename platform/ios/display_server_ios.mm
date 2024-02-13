@@ -62,11 +62,11 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		tts = [[TTS_IOS alloc] init];
 	}
 
+	CALayer *layer = nullptr;
+
 #if defined(RD_ENABLED)
 	rendering_context = nullptr;
 	rendering_device = nullptr;
-
-	CALayer *layer = nullptr;
 
 	union {
 #ifdef VULKAN_ENABLED
@@ -114,16 +114,44 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 #endif
 
 #if defined(GLES3_ENABLED)
+#if defined(EGL_ENABLED)
+	if (rendering_driver == "opengl3_angle") {
+		layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"opengl3_angle"];
+		if (!layer) {
+			ERR_FAIL_MSG("Failed to create iOS OpenGLES/ANGLE rendering layer.");
+		}
+		gl_manager_angle = memnew(GLManagerANGLE_IOS);
+		if (gl_manager_angle->initialize() != OK || gl_manager_angle->open_display(nullptr) != OK) {
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
+			if (fallback) {
+				WARN_PRINT("Your video card drivers seem not to support the required Metal version, switching to native OpenGL.");
+				rendering_driver = "opengl3";
+			} else {
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
+			}
+		} else {
+			Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
+			Error err = gl_manager_angle->window_create(MAIN_WINDOW_ID, nullptr, (__bridge void *)layer, size.width, size.height);
+			ERR_FAIL_COND_MSG(err != OK, "Can't create an OpenGL context.");
+		}
+	}
+#endif // EGL_ENABLED
+
 	if (rendering_driver == "opengl3") {
-		CALayer *layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"opengl3"];
+		layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"opengl3"];
 
 		if (!layer) {
 			ERR_FAIL_MSG("Failed to create iOS OpenGLES rendering layer.");
 		}
-
-		RasterizerGLES3::make_current(false);
 	}
-#endif
+
+	if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle") {
+		RasterizerGLES3::make_current(false, rendering_driver == "opengl3_angle");
+	}
+#endif // GLES3_ENABLED
 
 	bool keep_screen_on = bool(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 	screen_set_keep_on(keep_screen_on);
@@ -147,6 +175,13 @@ DisplayServerIOS::~DisplayServerIOS() {
 		rendering_context = nullptr;
 	}
 #endif
+#if defined(GLES3_ENABLED) && defined(EGL_ENABLED)
+	if (gl_manager_angle) {
+		gl_manager_angle->window_destroy(MAIN_WINDOW_ID);
+		memdelete(gl_manager_angle);
+		gl_manager_angle = nullptr;
+	}
+#endif
 }
 
 DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
@@ -161,6 +196,7 @@ Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
 #endif
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
+	drivers.push_back("opengl3_angle");
 #endif
 
 	return drivers;
@@ -496,6 +532,14 @@ int64_t DisplayServerIOS::window_get_native_handle(HandleType p_handle_type, Win
 		case WINDOW_VIEW: {
 			return (int64_t)AppDelegate.viewController.godotView;
 		}
+#if defined(GLES3_ENABLED) && defined(EGL_ENABLED)
+		case OPENGL_CONTEXT: {
+			if (gl_manager_angle) {
+				return (int64_t)gl_manager_angle->get_context(p_window);
+			}
+			return 0;
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -722,7 +766,11 @@ void DisplayServerIOS::resize_window(CGSize viewSize) {
 		rendering_context->window_set_size(MAIN_WINDOW_ID, size.x, size.y);
 	}
 #endif
-
+#if defined(GLES3_ENABLED) && defined(EGL_ENABLED)
+	if (gl_manager_angle) {
+		gl_manager_angle->window_resize(MAIN_WINDOW_ID, size.x, size.y);
+	}
+#endif
 	Variant resize_rect = Rect2i(Point2i(), size);
 	_window_callback(window_resize_callback, resize_rect);
 }
@@ -734,6 +782,11 @@ void DisplayServerIOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
+#if defined(GLES3_ENABLED) && defined(EGL_ENABLED)
+	if (gl_manager_angle) {
+		gl_manager_angle->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
+	}
+#endif
 }
 
 DisplayServer::VSyncMode DisplayServerIOS::window_get_vsync_mode(WindowID p_window) const {
@@ -741,6 +794,11 @@ DisplayServer::VSyncMode DisplayServerIOS::window_get_vsync_mode(WindowID p_wind
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window);
+	}
+#endif
+#if defined(GLES3_ENABLED) && defined(EGL_ENABLED)
+	if (gl_manager_angle) {
+		return (gl_manager_angle->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;

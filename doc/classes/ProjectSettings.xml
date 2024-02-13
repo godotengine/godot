@@ -2409,6 +2409,18 @@
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
 		</member>
+		<member name="rendering/gl_compatibility/angle_backend" type="String" setter="" getter="">
+			Angle render backend.
+		</member>
+		<member name="rendering/gl_compatibility/angle_backend.ios" type="String" setter="" getter="">
+			iOS override for [member rendering/gl_compatibility/angle_backend].
+		</member>
+		<member name="rendering/gl_compatibility/angle_backend.macos" type="String" setter="" getter="">
+			macOS override for [member rendering/gl_compatibility/angle_backend].
+		</member>
+		<member name="rendering/gl_compatibility/angle_backend.windows" type="String" setter="" getter="">
+			Windows override for [member rendering/gl_compatibility/angle_backend].
+		</member>
 		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="">
 			Sets the driver to be used by the renderer when using the Compatibility renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
 		</member>

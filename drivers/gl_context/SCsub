@@ -2,7 +2,7 @@
 
 Import("env")
 
-if env["platform"] in ["macos", "windows", "linuxbsd"]:
+if env["platform"] in ["ios", "macos", "windows", "linuxbsd"]:
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = ["gl.c"]

@@ -787,6 +787,9 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_destroy(p_window);
 	}
+	if (gl_manager_angle) {
+		gl_manager_angle->window_destroy(p_window);
+	}
 #endif
 #ifdef RD_ENABLED
 	if (rendering_device) {

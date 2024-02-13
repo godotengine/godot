@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gl_manager_windows_angle.cpp                                          */
+/*  gl_manager_ios_angle.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,51 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/config/project_settings.h"
+#ifndef GL_MANAGER_IOS_ANGLE_H
+#define GL_MANAGER_IOS_ANGLE_H
 
-#include "gl_manager_windows_angle.h"
+#if defined(IOS_ENABLED) && defined(GLES3_ENABLED) && defined(EGL_ENABLED)
 
-#if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
+#include "core/error/error_list.h"
+#include "core/os/os.h"
+#include "core/templates/local_vector.h"
+#include "drivers/egl/egl_manager.h"
+#include "servers/display_server.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <CoreVideo/CoreVideo.h>
 
-#include <EGL/eglext_angle.h>
+class GLManagerANGLE_IOS : public EGLManager {
+private:
+	virtual const char *_get_platform_extension_name() const override;
+	virtual EGLenum _get_platform_extension_enum() const override;
+	virtual EGLenum _get_platform_api_enum() const override;
+	virtual Vector<EGLAttrib> _get_platform_display_attributes() const override;
+	virtual Vector<EGLint> _get_platform_context_attribs() const override;
 
-const char *GLManagerANGLE_Windows::_get_platform_extension_name() const {
-	return "EGL_ANGLE_platform_angle";
-}
+public:
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
 
-EGLenum GLManagerANGLE_Windows::_get_platform_extension_enum() const {
-	return EGL_PLATFORM_ANGLE_ANGLE;
-}
+	GLManagerANGLE_IOS() {}
+	~GLManagerANGLE_IOS() {}
+};
 
-Vector<EGLAttrib> GLManagerANGLE_Windows::_get_platform_display_attributes() const {
-	const String &backend = GLOBAL_GET("rendering/gl_compatibility/angle_backend");
+#endif // IOS_ENABLED && GLES3_ENABLED && EGL_ENABLED
 
-	Vector<EGLAttrib> ret;
-	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
-	if (backend.to_lower() == "dx11" || backend.to_lower() == "default") {
-		ret.push_back(EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE);
-	} else {
-		ret.push_back(EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE);
-	}
-	ret.push_back(EGL_NONE);
-
-	return ret;
-}
-
-EGLenum GLManagerANGLE_Windows::_get_platform_api_enum() const {
-	return EGL_OPENGL_ES_API;
-}
-
-Vector<EGLint> GLManagerANGLE_Windows::_get_platform_context_attribs() const {
-	Vector<EGLint> ret;
-	ret.push_back(EGL_CONTEXT_CLIENT_VERSION);
-	ret.push_back(3);
-	ret.push_back(EGL_NONE);
-
-	return ret;
-}
-
-#endif // WINDOWS_ENABLED && GLES3_ENABLED
+#endif // GL_MANAGER_IOS_ANGLE_H

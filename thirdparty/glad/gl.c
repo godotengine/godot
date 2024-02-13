@@ -2663,7 +2663,7 @@ static void* _glad_GL_loader_handle = NULL;
 static void* glad_gles2_dlopen_handle(void) {
 #if GLAD_PLATFORM_EMSCRIPTEN
 #elif GLAD_PLATFORM_APPLE
-    static const char *NAMES[] = {"libGLESv2.dylib"};
+    static const char *NAMES[] = {"/System/Library/Frameworks/OpenGLES.framework/OpenGLES", "libGLESv2.dylib"};
 #elif GLAD_PLATFORM_WIN32
     static const char *NAMES[] = {"GLESv2.dll", "libGLESv2.dll"};
 #else
@@ -2708,10 +2708,6 @@ int gladLoaderLoadGLES2(void) {
     userptr.get_proc_address_ptr = emscripten_GetProcAddress;
     version = gladLoadGLES2UserPtr(glad_gles2_get_proc, &userptr);
 #else
-    if (eglGetProcAddress == NULL) {
-        return 0;
-    }
-
     did_load = _glad_GL_loader_handle == NULL;
     handle = glad_gles2_dlopen_handle();
     if (handle != NULL) {
