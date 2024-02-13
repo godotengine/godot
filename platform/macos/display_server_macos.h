@@ -211,6 +211,9 @@ private:
 
 	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
 
+	Callable help_search_callback;
+	Callable help_action_callback;
+
 	struct MenuCall {
 		Variant tag;
 		Callable callback;
@@ -281,6 +284,10 @@ public:
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+
+	virtual void help_set_search_callbacks(const Callable &p_search_callback = Callable(), const Callable &p_action_callback = Callable()) override;
+	Callable _help_get_search_callback() const;
+	Callable _help_get_action_callback() const;
 
 	virtual void global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callback = Callable(), const Callable &p_close_callback = Callable()) override;
 

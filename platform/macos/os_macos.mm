@@ -830,6 +830,7 @@ OS_MacOS::OS_MacOS() {
 	id delegate = [[GodotApplicationDelegate alloc] init];
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
+	[NSApp registerUserInterfaceItemSearchHandler:delegate];
 
 	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
 	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);

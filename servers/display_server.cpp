@@ -47,6 +47,10 @@ DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[Displa
 
 int DisplayServer::server_create_count = 1;
 
+void DisplayServer::help_set_search_callbacks(const Callable &p_search_callback, const Callable &p_action_callback) {
+	WARN_PRINT("Native help is not supported by this display server.");
+}
+
 int DisplayServer::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
 	return -1;
@@ -633,6 +637,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
 
+	ClassDB::bind_method(D_METHOD("help_set_search_callbacks", "search_callback", "action_callback"), &DisplayServer::help_set_search_callbacks);
+
 	ClassDB::bind_method(D_METHOD("global_menu_set_popup_callbacks", "menu_root", "open_callback", "close_callback"), &DisplayServer::global_menu_set_popup_callbacks);
 	ClassDB::bind_method(D_METHOD("global_menu_add_submenu_item", "menu_root", "label", "submenu", "index"), &DisplayServer::global_menu_add_submenu_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("global_menu_add_item", "menu_root", "label", "callback", "key_callback", "tag", "accelerator", "index"), &DisplayServer::global_menu_add_item, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Variant()), DEFVAL(Key::NONE), DEFVAL(-1));
@@ -879,6 +885,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(FEATURE_SCREEN_CAPTURE);
 	BIND_ENUM_CONSTANT(FEATURE_STATUS_INDICATOR);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_HELP);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);

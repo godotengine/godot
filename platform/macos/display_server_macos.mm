@@ -840,6 +840,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_EXTEND_TO_TITLE:
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
+		case FEATURE_NATIVE_HELP:
 			return true;
 		default: {
 		}
@@ -849,6 +850,19 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 
 String DisplayServerMacOS::get_name() const {
 	return "macOS";
+}
+
+void DisplayServerMacOS::help_set_search_callbacks(const Callable &p_search_callback, const Callable &p_action_callback) {
+	help_search_callback = p_search_callback;
+	help_action_callback = p_action_callback;
+}
+
+Callable DisplayServerMacOS::_help_get_search_callback() const {
+	return help_search_callback;
+}
+
+Callable DisplayServerMacOS::_help_get_action_callback() const {
+	return help_action_callback;
 }
 
 bool DisplayServerMacOS::_is_menu_opened(NSMenu *p_menu) const {
