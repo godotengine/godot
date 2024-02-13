@@ -458,6 +458,8 @@ protected:
 	void _validate_property(PropertyInfo &property) const;
 	virtual bool _can_do_next_pass() const { return true; }
 
+	Material3D(bool p_orm = false);
+
 public:
 	void set_albedo(const Color &p_albedo);
 	Color get_albedo() const;
@@ -643,7 +645,6 @@ public:
 
 	virtual Shader::Mode get_shader_mode() const;
 
-	Material3D(bool p_orm = false);
 	virtual ~Material3D();
 };
 

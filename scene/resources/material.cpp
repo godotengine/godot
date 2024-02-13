@@ -1826,7 +1826,7 @@ RID Material3D::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool 
 		return materials_for_2d[hash]->get_rid();
 	}
 
-	Ref<Material3D> material;
+	Ref<SpatialMaterial> material;
 	material.instance();
 
 	material->set_flag(FLAG_UNSHADED, !p_shaded);

@@ -1507,7 +1507,7 @@ Ref<MultiMesh> VoxelLightBaker::create_debug_multimesh(DebugMode p_mode) {
 	}
 
 	{
-		Ref<Material3D> fsm;
+		Ref<SpatialMaterial> fsm;
 		fsm.instance();
 		fsm->set_flag(Material3D::FLAG_SRGB_VERTEX_COLOR, true);
 		fsm->set_flag(Material3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);

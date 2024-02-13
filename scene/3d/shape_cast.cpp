@@ -539,7 +539,7 @@ void ShapeCast::_create_debug_shape() {
 
 void ShapeCast::_update_debug_shape_material(bool p_check_collision) {
 	if (!debug_material.is_valid()) {
-		Ref<Material3D> material = memnew(Material3D);
+		Ref<SpatialMaterial> material = memnew(SpatialMaterial);
 		debug_material = material;
 
 		material->set_flag(Material3D::FLAG_UNSHADED, true);

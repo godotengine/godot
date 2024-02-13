@@ -643,7 +643,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 				if (at == "SpatialMaterial" && ClassDB::is_parent_class(dropped_resource->get_class(), "Texture")) {
 					// Use existing resource if possible and only replace its data.
-					Ref<Material3D> mat = edited_resource;
+					Ref<SpatialMaterial> mat = edited_resource;
 					if (mat.is_null()) {
 						mat.instance();
 					}

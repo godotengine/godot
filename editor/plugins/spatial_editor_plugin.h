@@ -637,9 +637,8 @@ private:
 	RID indicators_instance;
 	RID cursor_mesh;
 	RID cursor_instance;
-	Ref<Material3D> indicator_mat;
+	Ref<SpatialMaterial> indicator_mat;
 	Ref<ShaderMaterial> grid_mat[3];
-	Ref<Material3D> cursor_material;
 
 	// Scene drag and drop support
 	Spatial *preview_node;
