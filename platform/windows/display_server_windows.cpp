@@ -53,6 +53,7 @@
 #include <dwmapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
+#include <wbemcli.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -4972,6 +4973,68 @@ GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
 LogicalToPhysicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_LogicalToPhysicalPointForPerMonitorDPI = nullptr;
 PhysicalToLogicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_PhysicalToLogicalPointForPerMonitorDPI = nullptr;
 
+Vector2i _get_device_ids(const String &p_device_name) {
+	if (p_device_name.is_empty()) {
+		return Vector2i();
+	}
+
+	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
+	REFIID uuid = IID_IWbemLocator; // Interface UUID
+	IWbemLocator *wbemLocator = NULL; // to get the services
+	IWbemServices *wbemServices = NULL; // to get the class
+	IEnumWbemClassObject *iter = NULL;
+	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
+
+	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
+	if (hr != S_OK) {
+		return Vector2i();
+	}
+	BSTR resource_name = SysAllocString(L"root\\CIMV2");
+	hr = wbemLocator->ConnectServer(resource_name, NULL, NULL, NULL, 0, NULL, NULL, &wbemServices);
+	SysFreeString(resource_name);
+
+	SAFE_RELEASE(wbemLocator) // from now on, use `wbemServices`
+	if (hr != S_OK) {
+		SAFE_RELEASE(wbemServices)
+		return Vector2i();
+	}
+
+	Vector2i ids;
+
+	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", p_device_name);
+	BSTR query = SysAllocString((const WCHAR *)gpu_device_class_query.utf16().get_data());
+	BSTR query_lang = SysAllocString(L"WQL");
+	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, NULL, &iter);
+	SysFreeString(query_lang);
+	SysFreeString(query);
+	if (hr == S_OK) {
+		ULONG resultCount;
+		hr = iter->Next(5000, 1, pnpSDriverObject, &resultCount); // Get exactly 1. Wait max 5 seconds.
+
+		if (hr == S_OK && resultCount > 0) {
+			VARIANT did;
+			VariantInit(&did);
+			BSTR object_name = SysAllocString(L"DeviceID");
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &did, NULL, NULL);
+			SysFreeString(object_name);
+			if (hr == S_OK) {
+				String device_id = String(V_BSTR(&did));
+				ids.x = device_id.get_slice("&", 0).lstrip("PCI\\VEN_").hex_to_int();
+				ids.y = device_id.get_slice("&", 1).lstrip("DEV_").hex_to_int();
+			}
+
+			for (ULONG i = 0; i < resultCount; i++) {
+				SAFE_RELEASE(pnpSDriverObject[i])
+			}
+		}
+	}
+
+	SAFE_RELEASE(wbemServices)
+	SAFE_RELEASE(iter)
+
+	return ids;
+}
+
 typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_DPI_UNAWARE = 0,
 	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
@@ -5193,12 +5256,22 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 		bool force_angle = false;
 
+		Vector2i device_id = _get_device_ids(gl_info["name"]);
 		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
 		for (int i = 0; i < device_list.size(); i++) {
 			const Dictionary &device = device_list[i];
-			if (device.has("vendor") && device.has("name") && gl_info["vendor"].operator String().to_upper().contains(device["vendor"].operator String().to_upper()) && (device["name"] == "*" || gl_info["name"].operator String().to_upper().contains(device["name"].operator String().to_upper()))) {
-				force_angle = true;
-				break;
+			if (device.has("vendor") && device.has("name")) {
+				const String &vendor = device["vendor"];
+				const String &name = device["name"];
+				if (device_id != Vector2i() && vendor.begins_with("0x") && name.begins_with("0x") && device_id.x == vendor.lstrip("0x").hex_to_int() && device_id.y == name.lstrip("0x").hex_to_int()) {
+					// Check vendor/device IDs.
+					force_angle = true;
+					break;
+				} else if (gl_info["vendor"].operator String().to_upper().contains(vendor.to_upper()) && (name == "*" || gl_info["name"].operator String().to_upper().contains(name.to_upper()))) {
+					// Check vendor/device names.
+					force_angle = true;
+					break;
+				}
 			}
 		}
 

@@ -1949,6 +1949,33 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("ATI", "Radeon (TM) R9 M3");
 		BLOCK_DEVICE("AMD", "Radeon (TM) R9 M3");
 
+		// Intel GPUs.
+		BLOCK_DEVICE("0x8086", "0x0042"); // HD Graphics, Gen5, Clarkdale
+		BLOCK_DEVICE("0x8086", "0x0046"); // HD Graphics, Gen5, Arrandale
+		BLOCK_DEVICE("0x8086", "0x010A"); // HD Graphics, Gen6, Sandy Bridge
+		BLOCK_DEVICE("Intel", "Intel HD Graphics 2000");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2000");
+		BLOCK_DEVICE("0x8086", "0x0102"); // HD Graphics 2000, Gen6, Sandy Bridge
+		BLOCK_DEVICE("0x8086", "0x0116"); // HD Graphics 3000, Gen6, Sandy Bridge
+		BLOCK_DEVICE("Intel", "Intel HD Graphics 3000");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 3000");
+		BLOCK_DEVICE("0x8086", "0x0126"); // HD Graphics 3000, Gen6, Sandy Bridge
+		BLOCK_DEVICE("Intel", "Intel HD Graphics P3000");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P3000");
+		BLOCK_DEVICE("0x8086", "0x0112"); // HD Graphics P3000, Gen6, Sandy Bridge
+		BLOCK_DEVICE("0x8086", "0x0122"); // HD Graphics P3000, Gen6, Sandy Bridge
+		BLOCK_DEVICE("0x8086", "0x015A"); // HD Graphics, Gen7, Ivy Bridge
+		BLOCK_DEVICE("Intel", "Intel HD Graphics 2500");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2500");
+		BLOCK_DEVICE("0x8086", "0x0152"); // HD Graphics 2500, Gen7, Ivy Bridge
+		BLOCK_DEVICE("Intel", "Intel HD Graphics 4000");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4000");
+		BLOCK_DEVICE("0x8086", "0x0162"); // HD Graphics 4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("0x8086", "0x0166"); // HD Graphics 4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("Intel", "Intel HD Graphics P4000");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4000");
+		BLOCK_DEVICE("0x8086", "0x016A"); // HD Graphics P4000, Gen7, Ivy Bridge
+
 #undef BLOCK_DEVICE
 
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), device_blocklist);
