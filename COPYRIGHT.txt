@@ -340,7 +340,7 @@ License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnP Project
-Copyright: 2005-2023, Thomas Bernard
+Copyright: 2005-2024, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/

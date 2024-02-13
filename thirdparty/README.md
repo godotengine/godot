@@ -553,14 +553,14 @@ to solve some MSVC warnings. See the patches in the `patches` directory.
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
-- Version: 2.2.5 (58837ef586278d18cbebee50be758835ed4be79a, 2023)
+- Version: 2.2.6 (faad29d7300f1bfa9dc7795031993c04c5191f59, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
 - Copy `miniupnpc/src` and `miniupnpc/include` to `thirdparty/miniupnpc`
 - Remove the following test or sample files:
-  `listdevices.c minihttptestserver.c miniupnpcmodule.c upnpc.c upnperrors.* test*`
+  `listdevices.c,minihttptestserver.c,miniupnpcmodule.c,upnpc.c,upnperrors.*,test*`
 - `LICENSE`
 
 The only modified file is `src/miniupnpcstrings.h`, which was created for Godot
