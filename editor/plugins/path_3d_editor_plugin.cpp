@@ -41,6 +41,9 @@
 #include "scene/gui/menu_button.h"
 #include "scene/resources/curve.h"
 
+// A flag to indicate if the camera is top view.
+bool is_top_view = false;
+
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
@@ -50,6 +53,14 @@ String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	// Primary handles: position.
 	if (!p_secondary) {
 		return TTR("Curve Point #") + itos(p_id);
+	}
+
+	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
+	if (is_top_view && _secondary_handles_info[p_id].type == HandleType::HANDLE_TYPE_TILT) {
+		// handle in has id-2 and handle out has id-1
+		// if p_id is 2 it means that it's a beginning of the curve, so we will use handle out instead.
+		const int modified_p_id = p_id == 2 ? p_id - 1 : p_id - 2;
+		return get_handle_name(modified_p_id, true);
 	}
 
 	// Secondary handles: in, out, tilt.
@@ -76,6 +87,14 @@ Variant Path3DGizmo::get_handle_value(int p_id, bool p_secondary) const {
 	if (!p_secondary) {
 		original = c->get_point_position(p_id);
 		return original;
+	}
+
+	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
+	if (is_top_view && _secondary_handles_info[p_id].type == HandleType::HANDLE_TYPE_TILT) {
+		// handle in has id-2 and handle out has id-1
+		// if p_id is 2 it means that it's a beginning of the curve, so we will use handle out instead.
+		const int modified_p_id = p_id == 2 ? p_id - 1 : p_id - 2;
+		return get_handle_value(modified_p_id, true);
 	}
 
 	// Secondary handles: in, out, tilt.
@@ -124,6 +143,23 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		}
 
 		return;
+	}
+
+	// Get the camera's direction vector.
+	const Vector3 dir = p_camera->get_transform().basis.get_column(2);
+	// Define a tolerance - sometimes the camera's direction vector is not exactly (0, 1, 0) or (1, 0, 0).
+	const float TOLERANCE = 0.00001;
+	// Check if the camera is facing directly down or up and set the is_top_view flag.
+	is_top_view = Math::abs(dir.x) < TOLERANCE &&
+					Math::abs(dir.y) > (1.0 - TOLERANCE) &&
+					Math::abs(dir.z) < TOLERANCE;
+
+	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
+	if (is_top_view && _secondary_handles_info[p_id].type == HandleType::HANDLE_TYPE_TILT) {
+		// handle in has id-2 and handle out has id-1
+		// if p_id is 2 it means that it's a beginning of the curve, so we will use handle out instead.
+		const int modified_p_id = p_id == 2 ? p_id - 1 : p_id - 2;
+		return set_handle(modified_p_id, true, p_camera, p_point);
 	}
 
 	// Secondary handles: in, out, tilt.
