@@ -162,7 +162,39 @@ Vector<String> OS_Android::get_granted_permissions() const {
 	return godot_java->get_granted_permissions();
 }
 
-Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path, bool p_generate_temp_files) {
+bool OS_Android::copy_dynamic_library(const String &p_library_path, const String &p_target_dir, String *r_copy_path) {
+	if (!FileAccess::exists(p_library_path)) {
+		return false;
+	}
+
+	Ref<DirAccess> da_ref = DirAccess::create_for_path(p_library_path);
+	if (!da_ref.is_valid()) {
+		return false;
+	}
+
+	String copy_path = p_target_dir.path_join(p_library_path.get_file());
+	bool copy_exists = FileAccess::exists(copy_path);
+	if (copy_exists) {
+		print_verbose("Deleting existing library copy " + copy_path);
+		if (da_ref->remove(copy_path) != OK) {
+			print_verbose("Unable to delete " + copy_path);
+		}
+	}
+
+	print_verbose("Copying " + p_library_path + " to " + p_target_dir);
+	Error create_dir_result = da_ref->make_dir_recursive(p_target_dir);
+	if (create_dir_result == OK || create_dir_result == ERR_ALREADY_EXISTS) {
+		copy_exists = da_ref->copy(p_library_path, copy_path) == OK;
+	}
+
+	if (copy_exists && r_copy_path != nullptr) {
+		*r_copy_path = copy_path;
+	}
+
+	return copy_exists;
+}
+
+Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path, bool p_generate_temp_files, PackedStringArray *p_library_dependencies) {
 	String path = p_path;
 	bool so_file_exists = true;
 	if (!FileAccess::exists(path)) {
@@ -172,24 +204,32 @@ Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_ha
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	if (!p_library_handle && so_file_exists) {
-		// The library may be on the sdcard and thus inaccessible. Try to copy it to the internal
-		// directory.
-		uint64_t so_modified_time = FileAccess::get_modified_time(p_path);
-		String dynamic_library_path = get_dynamic_libraries_path().path_join(String::num_uint64(so_modified_time));
-		String internal_path = dynamic_library_path.path_join(p_path.get_file());
+		// The library (and its dependencies) may be on the sdcard and thus inaccessible.
+		// Try to copy to the internal directory for access.
+		const String dynamic_library_path = get_dynamic_libraries_path();
 
-		bool internal_so_file_exists = FileAccess::exists(internal_path);
-		if (!internal_so_file_exists) {
-			Ref<DirAccess> da_ref = DirAccess::create_for_path(p_path);
-			if (da_ref.is_valid()) {
-				Error create_dir_result = da_ref->make_dir_recursive(dynamic_library_path);
-				if (create_dir_result == OK || create_dir_result == ERR_ALREADY_EXISTS) {
-					internal_so_file_exists = da_ref->copy(path, internal_path) == OK;
+		if (p_library_dependencies != nullptr && !p_library_dependencies->is_empty()) {
+			// Copy the library dependencies
+			print_verbose("Copying library dependencies..");
+			for (const String &library_dependency_path : *p_data->library_dependencies) {
+				String internal_library_dependency_path;
+				if (!copy_dynamic_library(library_dependency_path, dynamic_library_path.path_join(library_dependency_path.get_base_dir()), &internal_library_dependency_path)) {
+					ERR_PRINT(vformat("Unable to copy library dependency %s", library_dependency_path));
+				} else {
+					void *lib_dependency_handle = dlopen(internal_library_dependency_path.utf8().get_data(), RTLD_NOW);
+					if (!lib_dependency_handle) {
+						ERR_PRINT(vformat("Can't open dynamic library dependency: %s. Error: %s.", internal_library_dependency_path, dlerror()));
+					}
 				}
 			}
 		}
 
+		String internal_path;
+		print_verbose("Copying library " + p_path);
+		const bool internal_so_file_exists = copy_dynamic_library(p_path, dynamic_library_path.path_join(p_path.get_base_dir()), &internal_path);
+
 		if (internal_so_file_exists) {
+			print_verbose("Opening library " + internal_path);
 			p_library_handle = dlopen(internal_path.utf8().get_data(), RTLD_NOW);
 			if (p_library_handle) {
 				path = internal_path;
