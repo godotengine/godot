@@ -129,34 +129,9 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 			ERR_FAIL_MSG(vformat("No suitable library found for GDExtension: %s. Possible feature flags for your platform: %s", p_path, String(", ").join(features_vector)));
 		}
 
-		List<String> dependencies;
-		if (config->has_section("dependencies")) {
-			config->get_section_keys("dependencies", &dependencies);
-		}
-
-		for (const String &E : dependencies) {
-			Vector<String> dependency_tags = E.split(".");
-			bool all_tags_met = true;
-			for (int i = 0; i < dependency_tags.size(); i++) {
-				String tag = dependency_tags[i].strip_edges();
-				if (!p_features.has(tag)) {
-					all_tags_met = false;
-					break;
-				}
-			}
-
-			if (all_tags_met) {
-				Dictionary dependency = config->get_value("dependencies", E);
-				for (const Variant *key = dependency.next(nullptr); key; key = dependency.next(key)) {
-					String dependency_path = *key;
-					String target_path = dependency[*key];
-					if (dependency_path.is_relative_path()) {
-						dependency_path = p_path.get_base_dir().path_join(dependency_path);
-					}
-					add_shared_object(dependency_path, dependency_tags, target_path);
-				}
-				break;
-			}
+		Vector<SharedObject> dependencies_shared_objects = GDExtension::find_extension_dependencies(p_path, config, [p_features](String p_feature) { return p_features.has(p_feature); });
+		for (const SharedObject &shared_object : dependencies_shared_objects) {
+			_add_shared_object(shared_object);
 		}
 	}
 }
