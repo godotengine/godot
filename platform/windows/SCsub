@@ -134,7 +134,7 @@ if env["d3d12"]:
         )
 
 if not os.getenv("VCINSTALLDIR"):
-    if env["debug_symbols"] and env["separate_debug_symbols"]:
+    if env["debug_symbols"]:
         env.AddPostAction(prog, run_in_subprocess(platform_windows_builders.make_debug_mingw))
         if env["windows_subsystem"] == "gui":
             env.AddPostAction(prog_wrap, run_in_subprocess(platform_windows_builders.make_debug_mingw))
