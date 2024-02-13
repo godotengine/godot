@@ -1,7 +1,7 @@
 import os
 import sys
 from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang
-from platform_methods import detect_arch
+from platform_methods import detect_arch, detect_mvk
 
 from typing import TYPE_CHECKING
 
@@ -33,6 +33,12 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
+        (
+            "bundle_sign_identity",
+            "The 'Full Name', 'Common Name' or SHA-1 hash of the signing identity used to sign editor .app bundle.",
+            "-",
+        ),
+        BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
 
 
@@ -51,47 +57,6 @@ def get_flags():
         ("arch", detect_arch()),
         ("use_volk", False),
     ]
-
-
-def get_mvk_sdk_path():
-    def int_or_zero(i):
-        try:
-            return int(i)
-        except:
-            return 0
-
-    def ver_parse(a):
-        return [int_or_zero(i) for i in a.split(".")]
-
-    dirname = os.path.expanduser("~/VulkanSDK")
-    if not os.path.exists(dirname):
-        return ""
-
-    ver_min = ver_parse("1.3.231.0")
-    ver_num = ver_parse("0.0.0.0")
-    files = os.listdir(dirname)
-    lib_name_out = dirname
-    for file in files:
-        if os.path.isdir(os.path.join(dirname, file)):
-            ver_comp = ver_parse(file)
-            if ver_comp > ver_num and ver_comp >= ver_min:
-                # Try new SDK location.
-                lib_name = os.path.join(
-                    os.path.join(dirname, file), "macOS/lib/MoltenVK.xcframework/macos-arm64_x86_64/"
-                )
-                if os.path.isfile(os.path.join(lib_name, "libMoltenVK.a")):
-                    ver_num = ver_comp
-                    lib_name_out = lib_name
-                else:
-                    # Try old SDK location.
-                    lib_name = os.path.join(
-                        os.path.join(dirname, file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    )
-                    if os.path.isfile(os.path.join(lib_name, "libMoltenVK.a")):
-                        ver_num = ver_comp
-                        lib_name_out = lib_name
-
-    return lib_name_out
 
 
 def configure(env: "Environment"):
@@ -274,32 +239,11 @@ def configure(env: "Environment"):
         env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
-            mvk_found = False
+            mvk_path = detect_mvk(env, "macos-arm64_x86_64")
 
-            mvk_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
-            if env["vulkan_sdk_path"] != "":
-                mvk_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
-                mvk_list.insert(
-                    0,
-                    os.path.join(
-                        os.path.expanduser(env["vulkan_sdk_path"]), "macOS/lib/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    ),
-                )
-                mvk_list.insert(
-                    0,
-                    os.path.join(
-                        os.path.expanduser(env["vulkan_sdk_path"]), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    ),
-                )
-
-            for mvk_path in mvk_list:
-                if mvk_path and os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
-                    mvk_found = True
-                    print("MoltenVK found at: " + mvk_path)
-                    env.Append(LINKFLAGS=["-L" + mvk_path])
-                    break
-
-            if not mvk_found:
+            if mvk_path != "":
+                env.Append(LINKFLAGS=["-L" + os.path.join(mvk_path, "macos-arm64_x86_64")])
+            else:
                 print(
                     "MoltenVK SDK installation directory not found, use 'vulkan_sdk_path' SCons parameter to specify SDK path."
                 )
