@@ -4208,6 +4208,10 @@ void DisplayServerMacOS::force_process_and_drop_events() {
 	drop_events = false;
 }
 
+void DisplayServerMacOS::release_rendering_resources() {
+	cursors_cache.clear();
+}
+
 void DisplayServerMacOS::release_rendering_thread() {
 }
 
@@ -4699,6 +4703,8 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		IOPMAssertionRelease(screen_keep_on_assertion);
 		screen_keep_on_assertion = kIOPMNullAssertionID;
 	}
+
+	ERR_FAIL_COND_MSG(!cursors_cache.is_empty(), "Cursor cache not cleared, call release_rendering_resources before destroying the related RenderingServer.");
 
 	// Destroy all windows.
 	for (HashMap<WindowID, WindowData>::Iterator E = windows.begin(); E;) {

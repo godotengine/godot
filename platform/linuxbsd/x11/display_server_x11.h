@@ -523,6 +523,7 @@ public:
 
 	virtual void process_events() override;
 
+	virtual void release_rendering_resources() override;
 	virtual void release_rendering_thread() override;
 	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;

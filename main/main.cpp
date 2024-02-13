@@ -323,6 +323,8 @@ void finalize_physics() {
 }
 
 void finalize_display() {
+	display_server->release_rendering_resources();
+
 	rendering_server->finish();
 	memdelete(rendering_server);
 
