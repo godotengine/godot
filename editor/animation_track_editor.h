@@ -134,7 +134,8 @@ class AnimationTimelineEdit : public Range {
 	friend class AnimationBezierTrackEdit;
 	friend class AnimationTrackEditor;
 
-	static constexpr float SCROLL_ZOOM_FACTOR = 1.02f; // Zoom factor per mouse scroll in the animation editor. The closer to 1.0, the finer the control.
+	static constexpr float SCROLL_ZOOM_FACTOR_IN = 1.02f; // Zoom factor per mouse scroll in the animation editor when zooming in. The closer to 1.0, the finer the control.
+	static constexpr float SCROLL_ZOOM_FACTOR_OUT = 0.98f; // Zoom factor when zooming out. Similar to SCROLL_ZOOM_FACTOR_IN but less than 1.0.
 
 	Ref<Animation> animation;
 	bool read_only = false;
