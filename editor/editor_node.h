@@ -518,7 +518,8 @@ private:
 
 	void _dialog_action(String p_file);
 
-	void _edit_current(bool p_skip_foreign = false);
+	void _add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only);
+	void _edit_current(bool p_skip_foreign = false, bool p_skip_inspector_update = false);
 	void _dialog_display_save_error(String p_file, Error p_error);
 	void _dialog_display_load_error(String p_file, Error p_error);
 
@@ -752,6 +753,7 @@ public:
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
+	void push_item_no_inspector(Object *p_object);
 	void edit_item(Object *p_object, Object *p_editing_owner);
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
