@@ -325,7 +325,7 @@ void TileMapLayer::_rendering_update() {
 							rs->canvas_item_set_material(ci, mat->get_rid());
 						}
 						rs->canvas_item_set_parent(ci, get_canvas_item());
-						rs->canvas_item_set_use_parent_material(ci, true);
+						rs->canvas_item_set_use_parent_material(ci, !mat.is_valid());
 
 						Transform2D xform(0, rendering_quadrant->canvas_items_position);
 						rs->canvas_item_set_transform(ci, xform);
