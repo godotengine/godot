@@ -6795,8 +6795,8 @@ EditorNode::EditorNode() {
 	export_as_menu->connect("index_pressed", callable_mp(this, &EditorNode::_export_as_menu_option));
 
 	file_menu->add_separator();
-	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO, true, true);
-	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO, true, true);
+	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO, false, true);
+	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), EDIT_REDO, false, true);
 
 	file_menu->add_separator();
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTR("Reload Saved Scene")), EDIT_RELOAD_SAVED_SCENE);
