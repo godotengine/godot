@@ -150,9 +150,10 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 	// Define a tolerance - sometimes the camera's direction vector is not exactly (0, 1, 0) or (1, 0, 0).
 	const float TOLERANCE = 0.00001;
 	// Check if the camera is facing directly down or up and set the is_top_view flag.
-	is_top_view = Math::abs(dir.x) < TOLERANCE &&
+	const bool is_camera_in_top_view = Math::abs(dir.x) < TOLERANCE &&
 					Math::abs(dir.y) > (1.0 - TOLERANCE) &&
 					Math::abs(dir.z) < TOLERANCE;
+	set_is_top_view(is_camera_in_top_view);
 
 	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
 	if (is_top_view && _secondary_handles_info[p_id].type == HandleType::HANDLE_TYPE_TILT) {
@@ -250,6 +251,14 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 		ur->commit_action();
 
 		return;
+	}
+
+	// If the handle clicked is a tilt handle and the camera is in top view, we will use handle in/out instead.
+	if (is_top_view && _secondary_handles_info[p_id].type == HandleType::HANDLE_TYPE_TILT) {
+		// handle in has id-2 and handle out has id-1
+		// if p_id is 2 it means that it's a beginning of the curve, so we will use handle out instead.
+		const int modified_p_id = p_id == 2 ? p_id - 1 : p_id - 2;
+		return commit_handle(modified_p_id, true, p_restore, p_cancel);
 	}
 
 	// Secondary handles: in, out, tilt.

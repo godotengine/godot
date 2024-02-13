@@ -63,6 +63,8 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	// Cache information of secondary handles.
 	Vector<HandleInfo> _secondary_handles_info;
 
+	bool is_top_view = false;
+
 public:
 	virtual String get_handle_name(int p_id, bool p_secondary) const override;
 	virtual Variant get_handle_value(int p_id, bool p_secondary) const override;
@@ -71,6 +73,8 @@ public:
 
 	virtual void redraw() override;
 	Path3DGizmo(Path3D *p_path = nullptr, float p_disk_size = 0.8);
+
+    void set_is_top_view(bool value) { is_top_view = value;}
 };
 
 class Path3DGizmoPlugin : public EditorNode3DGizmoPlugin {
