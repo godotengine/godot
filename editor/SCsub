@@ -45,6 +45,11 @@ if env.editor_build:
 
     methods.write_file_if_needed("register_exporters.gen.cpp", reg_exporters_inc + reg_exporters)
 
+    for e in env.platform_exporters:
+        scsub_path = os.path.join(Dir("#platform/%s/editor" % e).abspath, "SCsub")
+        if os.path.exists(scsub_path):
+            SConscript(scsub_path)
+
     # Core API documentation.
     docs = []
     docs += Glob("#doc/classes/*.xml")
