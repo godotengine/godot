@@ -220,6 +220,9 @@
 		<member name="docks/scene_tree/auto_expand_to_selected" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will automatically unfold nodes when a node that has folded parents is selected.
 		</member>
+		<member name="docks/scene_tree/show_editable_children_by_default" type="bool" setter="" getter="">
+			If [code]true[/code], instantiated nodes will automatically have Editable Children set to true in the scene tree dock.
+		</member>
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
 		</member>

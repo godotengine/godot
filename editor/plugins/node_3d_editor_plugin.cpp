@@ -4356,6 +4356,13 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 	undo_redo->add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
 	undo_redo->add_do_reference(instantiated_scene);
 	undo_redo->add_undo_method(parent, "remove_child", instantiated_scene);
+	if (EDITOR_GET("docks/scene_tree/show_editable_children_by_default")) {
+		undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", instantiated_scene, true);
+		undo_redo->add_do_method(instantiated_scene, "set_display_folded", true);
+		// To force redraw of scene tree.
+		undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+		undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	}
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();

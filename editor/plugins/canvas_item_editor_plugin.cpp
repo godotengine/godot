@@ -5735,6 +5735,13 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		undo_redo->add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
 		undo_redo->add_do_reference(child);
 		undo_redo->add_undo_method(parent, "remove_child", child);
+		if (EDITOR_GET("docks/scene_tree/show_editable_children_by_default")) {
+			undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", child, true);
+			undo_redo->add_do_method(child, "set_display_folded", true);
+			// To force redraw of scene tree.
+			undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+			undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+		}
 	} else { // If no parent is selected, set as root node of the scene.
 		undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", child);
 		undo_redo->add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
