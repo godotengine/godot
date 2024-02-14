@@ -3521,7 +3521,6 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_UNSHADED,
 				Viewport::DEBUG_DRAW_LIGHTING,
 				Viewport::DEBUG_DRAW_NORMAL_BUFFER,
-				Viewport::DEBUG_DRAW_DEPTH_BUFFER,
 				Viewport::DEBUG_DRAW_SHADOW_ATLAS,
 				Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 				Viewport::DEBUG_DRAW_VOXEL_GI_ALBEDO,
@@ -3543,6 +3542,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_OCCLUDERS,
 				Viewport::DEBUG_DRAW_MOTION_VECTORS,
 				Viewport::DEBUG_DRAW_INTERNAL_BUFFER,
+				Viewport::DEBUG_DRAW_DEPTH_BUFFER,
 			};
 
 			for (int idx = 0; display_options[idx] != VIEW_MAX; idx++) {
