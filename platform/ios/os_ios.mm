@@ -601,6 +601,10 @@ void OS_IOS::on_focus_out() {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 		}
 
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+		}
+
 		[AppDelegate.viewController.godotView stopRendering];
 
 		audio_driver.stop();
@@ -615,9 +619,33 @@ void OS_IOS::on_focus_in() {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 		}
 
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+		}
+
 		[AppDelegate.viewController.godotView startRendering];
 
 		audio_driver.start();
+	}
+}
+
+void OS_IOS::on_enter_background() {
+	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
+	}
+
+	on_focus_out();
+}
+
+void OS_IOS::on_exit_background() {
+	if (!is_focused) {
+		on_focus_in();
+
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
+		}
 	}
 }
 
