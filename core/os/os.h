@@ -334,6 +334,9 @@ public:
 
 	OS();
 	virtual ~OS();
+
+protected:
+	static String system_dir_to_string(SystemDir p_dir);
 };
 
 #endif // OS_H
