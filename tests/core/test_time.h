@@ -46,6 +46,154 @@
 
 namespace TestTime {
 
+TEST_CASE("[Time] Datetime dictionary conversion to datetime string") {
+	const Time *time = Time::get_singleton();
+
+	Dictionary datetime;
+	datetime[YEAR_KEY] = 1234;
+	datetime[MONTH_KEY] = 5;
+	datetime[DAY_KEY] = 6;
+	datetime[HOUR_KEY] = 7;
+	datetime[MINUTE_KEY] = 8;
+	datetime[SECOND_KEY] = 9;
+
+	Dictionary unix_epoch;
+	unix_epoch[YEAR_KEY] = 1970;
+	unix_epoch[MONTH_KEY] = 1;
+	unix_epoch[DAY_KEY] = 1;
+	unix_epoch[HOUR_KEY] = 0;
+	unix_epoch[MINUTE_KEY] = 0;
+	unix_epoch[SECOND_KEY] = 0;
+
+	Dictionary dict;
+	Dictionary dict_empty = Dictionary();
+
+	dict = datetime.duplicate();
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(dict) == "1234-05-06T07:08:09", "Time get_datetime_string_from_datetime_dict: full dictionary.");
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(dict, true) == "1234-05-06 07:08:09", "Time get_datetime_string_from_datetime_dict: full dictionary, space delimiter requested.");
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(dict_empty) == "", "Time get_datetime_string_from_datetime_dict: empty dictionary.");
+
+	dict.erase(YEAR_KEY);
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(dict) == vformat("%04d-05-06T07:08:09", unix_epoch[YEAR_KEY]), "Time get_datetime_string_from_datetime_dict: default YEAR_KEY.");
+	dict[YEAR_KEY] = datetime[YEAR_KEY];
+
+	dict.erase(MONTH_KEY);
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(dict) == vformat("1234-%02d-06T07:08:09", unix_epoch[MONTH_KEY]), "Time get_datetime_string_from_datetime_dict: default MONTH_KEY.");
+	dict[MONTH_KEY] = datetime[MONTH_KEY];
+
+	dict.erase(DAY_KEY);
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(dict) == vformat("1234-05-%02dT07:08:09", unix_epoch[DAY_KEY]), "Time get_datetime_string_from_datetime_dict: default DAY_KEY.");
+	dict[DAY_KEY] = datetime[DAY_KEY];
+
+	dict.erase(HOUR_KEY);
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(dict) == vformat("1234-05-06T%02d:08:09", unix_epoch[HOUR_KEY]), "Time get_datetime_string_from_datetime_dict: default HOUR_KEY.");
+	dict[HOUR_KEY] = datetime[HOUR_KEY];
+
+	dict.erase(MINUTE_KEY);
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(dict) == vformat("1234-05-06T07:%02d:09", unix_epoch[MINUTE_KEY]), "Time get_datetime_string_from_datetime_dict: default MINUTE_KEY.");
+	dict[MINUTE_KEY] = datetime[MINUTE_KEY];
+
+	dict.erase(SECOND_KEY);
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(dict) == vformat("1234-05-06T07:08:%02d", unix_epoch[SECOND_KEY]), "Time get_datetime_string_from_datetime_dict: default SECOND_KEY.");
+	dict[SECOND_KEY] = datetime[SECOND_KEY];
+}
+
+TEST_CASE("[Time] Datetime string conversion to datetime dictionary") {
+	const Time *time = Time::get_singleton();
+
+	Dictionary datetime;
+	datetime[YEAR_KEY] = 1234;
+	datetime[MONTH_KEY] = 5;
+	datetime[DAY_KEY] = 6;
+	datetime[HOUR_KEY] = 7;
+	datetime[MINUTE_KEY] = 8;
+	datetime[SECOND_KEY] = 9;
+
+	Dictionary unix_epoch;
+	unix_epoch[YEAR_KEY] = 1970;
+	unix_epoch[MONTH_KEY] = 1;
+	unix_epoch[DAY_KEY] = 1;
+	unix_epoch[HOUR_KEY] = 0;
+	unix_epoch[MINUTE_KEY] = 0;
+	unix_epoch[SECOND_KEY] = 0;
+
+	Dictionary dict;
+	Dictionary dict_empty = Dictionary();
+
+	// date
+	dict = unix_epoch.duplicate();
+	dict[YEAR_KEY] = datetime[YEAR_KEY];
+	dict[MONTH_KEY] = datetime[MONTH_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MM.");
+
+	dict[DAY_KEY] = datetime[DAY_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05-06", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MM-DD.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("12340506", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYYMMDD.");
+
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("12-3405-06", false) == dict_empty, "Time get_datetime_dict_from_datetime_string: XX-XXXX-XX.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05-05-06", false) == dict_empty, "Time get_datetime_dict_from_datetime_string: XXXX-XX-XX-XX.");
+
+	// time
+	dict = unix_epoch.duplicate();
+	dict[HOUR_KEY] = datetime[HOUR_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("T07", false) == dict, "Time get_datetime_dict_from_datetime_string: Thh.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("07", false) == dict, "Time get_datetime_dict_from_datetime_string: hh.");
+
+	dict[MINUTE_KEY] = datetime[MINUTE_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("T07:08", false) == dict, "Time get_datetime_dict_from_datetime_string: Thh:mm.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("07:08", false) == dict, "Time get_datetime_dict_from_datetime_string: hh:mm.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("T0708", false) == dict, "Time get_datetime_dict_from_datetime_string: Thhmm.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("0708", false) == dict, "Time get_datetime_dict_from_datetime_string: hhmm.");
+
+	dict[SECOND_KEY] = datetime[SECOND_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("T07:08:09", false) == dict, "Time get_datetime_dict_from_datetime_string: Thh:mm:ss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("07:08:09", false) == dict, "Time get_datetime_dict_from_datetime_string: hh:mm:ss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("T070809", false) == dict, "Time get_datetime_dict_from_datetime_string: Thhmmss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("070809", false) == dict, "Time get_datetime_dict_from_datetime_string: hhmmss.");
+
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("T07:0808:09", false) == dict_empty, "Time get_datetime_dict_from_datetime_string: Txx:xxxx:xx.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("T07:08:08:09", false) == dict_empty, "Time get_datetime_dict_from_datetime_string: Txx:xx:xx:xx.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("T789", false) == dict_empty, "Time get_datetime_dict_from_datetime_string: Txxx.");
+
+	// date & time
+	dict = unix_epoch.duplicate();
+	dict[YEAR_KEY] = datetime[YEAR_KEY];
+	dict[MONTH_KEY] = datetime[MONTH_KEY];
+	dict[HOUR_KEY] = datetime[HOUR_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05T07", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MMThh.");
+
+	dict[MINUTE_KEY] = datetime[MINUTE_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05T07:08", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MMThh:mm.");
+
+	dict[DAY_KEY] = datetime[DAY_KEY];
+	dict[MINUTE_KEY] = unix_epoch[MINUTE_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05-06T07", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MM-DDThh.");
+
+	dict[MINUTE_KEY] = datetime[MINUTE_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05-06T07:08", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MM-DDThh:mm.");
+
+	dict[SECOND_KEY] = datetime[SECOND_KEY];
+	dict[DAY_KEY] = unix_epoch[DAY_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05T07:08:09", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MMThh:mm:ss.");
+
+	dict[DAY_KEY] = datetime[DAY_KEY];
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05-06T07:08:09", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MM-DDThh:mm:ss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05-06 07:08:09", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MM-DD hh:mm:ss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05-06T070809", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MM-DDThhmmss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05-06 070809", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MM-DD hhmmss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("12340506T07:08:09", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYYMMDDThh:mm:ss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("12340506 07:08:09", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYYMMDD hh:mm:ss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("12340506T070809", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYYMMDDThhmmss.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("12340506 070809", false) == dict, "Time get_datetime_dict_from_datetime_string: YYYYMMDD hhmmss.");
+
+	CHECK_MESSAGE(!time->get_datetime_dict_from_datetime_string("1234-05-06T07:08:09", false).has(WEEKDAY_KEY), "Time get_datetime_dict_from_datetime_string: YYYY-MM-DDThh:mm:ss, WEEKDAY_KEY is not requested.");
+	dict[WEEKDAY_KEY] = WEEKDAY_SATURDAY;
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05-06T07:08:09") == dict, "Time get_datetime_dict_from_datetime_string: YYYY-MM-DDThh:mm:ss, WEEKDAY_KEY is requested.");
+
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05 1234-05-06 07:08:09", false) == dict_empty, "Time get_datetime_dict_from_datetime_string: <?> <?> <?>.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("1234-05T1234-05-06T07:08:09", false) == dict_empty, "Time get_datetime_dict_from_datetime_string: <?>T<?>T<?>.");
+}
+
 TEST_CASE("[Time] Unix time conversion to/from datetime string") {
 	const Time *time = Time::get_singleton();
 
@@ -84,7 +232,7 @@ TEST_CASE("[Time] Unix time conversion to/from datetime string") {
 	CHECK_MESSAGE(time->get_offset_string_from_offset_minutes(345) == "+05:45", "Time get_offset_string_from_offset_minutes: The offset string is as expected.");
 }
 
-TEST_CASE("[Time] Datetime dictionary conversion methods") {
+TEST_CASE("[Time] Unix time conversion to/from datetime dictionary") {
 	const Time *time = Time::get_singleton();
 
 	Dictionary datetime;
@@ -117,12 +265,6 @@ TEST_CASE("[Time] Datetime dictionary conversion methods") {
 
 	CHECK_MESSAGE((Weekday)(int)time->get_datetime_dict_from_unix_time(0)[WEEKDAY_KEY] == Weekday::WEEKDAY_THURSDAY, "Time get_datetime_dict_from_unix_time: The weekday for the Unix epoch is a Thursday as expected.");
 	CHECK_MESSAGE((Weekday)(int)time->get_datetime_dict_from_unix_time(1391983830)[WEEKDAY_KEY] == Weekday::WEEKDAY_SUNDAY, "Time get_datetime_dict_from_unix_time: The weekday for GODOT IS OPEN SOURCE is a Sunday as expected.");
-
-	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30").hash() == datetime.hash(), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE works as expected.");
-	CHECK_MESSAGE(!time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30", false).has(WEEKDAY_KEY), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE without weekday doesn't contain the weekday key as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(datetime) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The string from dictionary for GODOT IS OPEN SOURCE works as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30")) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string GODOT IS OPEN SOURCE works as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(time->get_datetime_dict_from_datetime_string("2014-02-09 22:10:30"), true) == "2014-02-09 22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string GODOT IS OPEN SOURCE with spaces works as expected.");
 }
 
 TEST_CASE("[Time] System time methods") {
