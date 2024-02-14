@@ -3632,6 +3632,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians_as_degrees);
 
+				if (p_usage.has_flag(PROPERTY_USAGE_DEBUG)) {
+					editor->set_allow_non_finite(true);
+				}
+
 				return editor;
 			}
 		} break;

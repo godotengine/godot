@@ -3444,7 +3444,12 @@ void EditorInspector::update_tree() {
 
 				ep->set_doc_path(doc_path);
 				ep->set_internal(p.usage & PROPERTY_USAGE_INTERNAL);
-				_update_ep(ep);
+
+				ep->update_property();
+				ep->_update_pin_flags();
+				ep->update_editor_property_status();
+				ep->update_cache();
+
 				if (current_selected && ep->property == current_selected) {
 					ep->select(current_focusable);
 				}
@@ -3489,13 +3494,6 @@ void EditorInspector::update_property(const String &p_prop) {
 		E->update_editor_property_status();
 		E->update_cache();
 	}
-}
-
-void EditorInspector::_update_ep(EditorProperty *ep) {
-	ep->update_property();
-	ep->_update_pin_flags();
-	ep->update_editor_property_status();
-	ep->update_cache();
 }
 
 void EditorInspector::_clear(bool p_hide_plugins) {

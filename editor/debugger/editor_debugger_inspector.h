@@ -79,8 +79,6 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _update_ep(EditorProperty *ep) override;
-
 public:
 	EditorDebuggerInspector();
 	~EditorDebuggerInspector();

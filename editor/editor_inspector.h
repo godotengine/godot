@@ -578,9 +578,6 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	// The reason this is a function is so EditorDebuggerInspector can override it.
-	virtual void _update_ep(EditorProperty *ep);
-
 public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);

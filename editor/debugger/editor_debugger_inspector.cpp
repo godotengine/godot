@@ -33,7 +33,6 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
 #include "editor/editor_node.h"
-#include "editor/editor_properties.h"
 #include "scene/debugger/scene_debugger.h"
 
 bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p_value) {
@@ -258,6 +257,7 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
 	pinfo.type = v.get_type();
 	pinfo.hint = h;
 	pinfo.hint_string = hs;
+	pinfo.usage = PROPERTY_USAGE_DEBUG | PROPERTY_USAGE_DEFAULT;
 
 	variables->prop_list.push_back(pinfo);
 	variables->prop_values[type + n] = v;
@@ -285,14 +285,4 @@ String EditorDebuggerInspector::get_stack_variable(const String &p_var) {
 		}
 	}
 	return String();
-}
-
-void EditorDebuggerInspector::_update_ep(EditorProperty *ep) {
-	if (ep->get_edited_property_value().get_type() == Variant::FLOAT && ep->is_read_only()) {
-		double value = ep->get_edited_property_value();
-		if (!Math::is_finite(value)) {
-			Object::cast_to<EditorPropertyFloat>(ep)->set_allow_non_finite(true);
-		}
-	}
-	EditorInspector::_update_ep(ep);
 }

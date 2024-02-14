@@ -95,10 +95,14 @@ void Range::set_value(double p_val) {
 
 void Range::_set_value_no_signal(double p_val) {
 	if (!Math::is_finite(p_val)) {
-		if (allow_non_finite) {
-			shared->val = p_val;
+		if (shared->allow_non_finite) {
+			if (Math::is_nan(p_val)) {
+				shared->val = p_val;
+				return;
+			}
+		} else {
+			return;
 		}
-		return;
 	}
 
 	if (shared->step > 0) {
@@ -377,11 +381,11 @@ bool Range::is_lesser_allowed() const {
 }
 
 void Range::set_allow_non_finite(bool p_allow) {
-	allow_non_finite = p_allow;
+	shared->allow_non_finite = p_allow;
 }
 
 bool Range::is_non_finite_allowed() const {
-	return allow_non_finite;
+	return shared->allow_non_finite;
 }
 
 Range::Range() {
