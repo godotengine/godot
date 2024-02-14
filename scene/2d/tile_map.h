@@ -32,6 +32,7 @@
 #define TILE_MAP_H
 
 #include "scene/2d/tile_map_layer_group.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/2d/tile_set.h"
 
 class Control;
@@ -72,7 +73,9 @@ private:
 
 	// Layers.
 	LocalVector<TileMapLayer *> layers;
-	TileMapLayer *default_layer; // Dummy layer to fetch default values.
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	// Transforms for collision_animatable.
 	Transform2D last_valid_transform;
@@ -80,12 +83,15 @@ private:
 
 	void _emit_changed();
 
+	void _set_layer_tile_data(int p_layer, const PackedInt32Array &p_data);
+	PackedInt32Array _get_layer_tile_data(int p_layer) const;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	bool _property_can_revert(const StringName &p_name) const;
-	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -219,7 +225,6 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	TileMap();
-	~TileMap();
 };
 
 VARIANT_ENUM_CAST(TileMap::VisibilityMode);

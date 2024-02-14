@@ -97,6 +97,10 @@ class PopupMenu : public Popup {
 	static inline PropertyListHelper base_property_helper;
 	PropertyListHelper property_helper;
 
+	// To make Item available.
+	friend class OptionButton;
+	friend class MenuButton;
+
 	String global_menu_name;
 	String system_menu_name;
 
