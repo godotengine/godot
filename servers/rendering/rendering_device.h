@@ -952,7 +952,13 @@ private:
 	RID_Owner<UniformSet> uniform_set_owner;
 
 public:
-	RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
+	// <TF>
+	// @ShadyTF :
+	// descriptor optimizations : allow the option to have linearly allocated uniform set pools for frame allocated uniform sets
+	// Was:
+	//RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
+	RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool = false);
+	// <TF>
 	bool uniform_set_is_valid(RID p_uniform_set);
 	void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
 

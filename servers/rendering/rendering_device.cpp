@@ -2460,8 +2460,13 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 #endif
 	return id;
 }
-
-RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
+// <TF>
+// @ShadyTF :
+// descriptor optimizations : allow the option to have linearly allocated uniform set pools for frame allocated uniform sets
+// Was:
+//RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
+RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool) {
+// </TF>
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_uniforms.size() == 0, RID());
@@ -2808,7 +2813,13 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 		}
 	}
 
-	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set);
+// <TF>
+// @ShadyTF :
+// descriptor optimizations : allow the option to have linearly allocated uniform set pools for frame allocated uniform sets
+// Was:
+//	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set);
+	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set, p_linear_pool);
+// </TF>
 	ERR_FAIL_COND_V(!driver_uniform_set, RID());
 
 	UniformSet uniform_set;
