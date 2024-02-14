@@ -243,7 +243,7 @@ namespace Godot.NativeInterop
         public static godot_variant CreateFromSystemArrayOfRid(Span<Rid> from)
             => CreateFromArray(new Collections.Array(from));
 
-        public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
+        public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject?[]? from)
         {
             if (from == null)
                 return default; // Nil
