@@ -832,7 +832,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("panel", "ItemList", make_flat_stylebox(style_normal_color));
 	theme->set_stylebox("focus", "ItemList", focus);
 	theme->set_constant("h_separation", "ItemList", Math::round(4 * scale));
-	theme->set_constant("v_separation", "ItemList", Math::round(2 * scale));
+	theme->set_constant("v_separation", "ItemList", Math::round(4 * scale));
 	theme->set_constant("icon_margin", "ItemList", Math::round(4 * scale));
 	theme->set_constant("line_separation", "ItemList", Math::round(2 * scale));
 
