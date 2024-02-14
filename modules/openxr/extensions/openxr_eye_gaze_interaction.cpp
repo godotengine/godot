@@ -69,6 +69,11 @@ void *OpenXREyeGazeInteractionExtension::set_system_properties_and_get_next_poin
 	return &properties;
 }
 
+PackedStringArray OpenXREyeGazeInteractionExtension::get_suggested_tracker_names() {
+	PackedStringArray arr = { "/user/eyes_ext" };
+	return arr;
+}
+
 bool OpenXREyeGazeInteractionExtension::is_available() {
 	return available;
 }

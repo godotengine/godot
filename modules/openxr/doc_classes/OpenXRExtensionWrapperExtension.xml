@@ -23,6 +23,12 @@
 				- If the [code]bool *[/code] points to a boolean, the boolean will be updated to [code]true[/code] if the extension is enabled.
 			</description>
 		</method>
+		<method name="_get_suggested_tracker_names" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a [PackedStringArray] of positional tracker names that are used within the extension wrapper.
+			</description>
+		</method>
 		<method name="_on_before_instance_created" qualifiers="virtual">
 			<return type="void" />
 			<description>
