@@ -118,8 +118,8 @@ VulkanContext::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type
 			case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
 				return VulkanContext::VK_TRACKED_OBJECT_TYPE_SWAPCHAIN;
 			default:
-				DEV_ASSERT("Unknown VkObjectType enum value %d. Please add it to VkTrackedObjectType, switch statement in "
-						"util_to_tracked_object_type.",
+				_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Unknown VkObjectType enum value " + itos((uint32_t)type) + ".Please add it to VkTrackedObjectType, switch statement in "
+						"vk_object_to_tracked_object and get_tracked_object_name.",
 						(int)type);
 				return (VulkanContext::VkTrackedObjectType)VK_OBJECT_TYPE_UNKNOWN;
 		}
