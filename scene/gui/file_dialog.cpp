@@ -1255,52 +1255,6 @@ int FileDialog::get_option_count() const {
 	return options.size();
 }
 
-bool FileDialog::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0].begins_with("option_") && components[0].trim_prefix("option_").is_valid_int()) {
-		int item_index = components[0].trim_prefix("option_").to_int();
-		String property = components[1];
-		if (property == "name") {
-			set_option_name(item_index, p_value);
-			return true;
-		} else if (property == "values") {
-			set_option_values(item_index, p_value);
-			return true;
-		} else if (property == "default") {
-			set_option_default(item_index, p_value);
-			return true;
-		}
-	}
-	return false;
-}
-
-bool FileDialog::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0].begins_with("option_") && components[0].trim_prefix("option_").is_valid_int()) {
-		int item_index = components[0].trim_prefix("option_").to_int();
-		String property = components[1];
-		if (property == "name") {
-			r_ret = get_option_name(item_index);
-			return true;
-		} else if (property == "values") {
-			r_ret = get_option_values(item_index);
-			return true;
-		} else if (property == "default") {
-			r_ret = get_option_default(item_index);
-			return true;
-		}
-	}
-	return false;
-}
-
-void FileDialog::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < options.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("option_%d/name", i)));
-		p_list->push_back(PropertyInfo(Variant::PACKED_STRING_ARRAY, vformat("option_%d/values", i)));
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("option_%d/default", i)));
-	}
-}
-
 void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &FileDialog::_cancel_pressed);
 
@@ -1386,6 +1340,13 @@ void FileDialog::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_hover_color, "font_hover_color", "Button");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_focus_color, "font_focus_color", "Button");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_pressed_color, "font_pressed_color", "Button");
+
+	Option defaults;
+
+	base_property_helper.set_prefix("option_");
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults.name, &FileDialog::set_option_name, &FileDialog::get_option_name);
+	base_property_helper.register_property(PropertyInfo(Variant::PACKED_STRING_ARRAY, "values"), defaults.values, &FileDialog::set_option_values, &FileDialog::get_option_values);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "default"), defaults.default_idx, &FileDialog::set_option_default, &FileDialog::get_option_default);
 }
 
 void FileDialog::set_show_hidden_files(bool p_show) {
@@ -1563,6 +1524,8 @@ FileDialog::FileDialog() {
 	if (register_func) {
 		register_func(this);
 	}
+
+	property_helper.setup_for_instance(base_property_helper, this);
 }
 
 FileDialog::~FileDialog() {

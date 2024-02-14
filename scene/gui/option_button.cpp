@@ -154,23 +154,20 @@ void OptionButton::_notification(int p_what) {
 }
 
 bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0] == "popup") {
-		const String &property = components[2];
-		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
-			return false;
-		}
+	int index;
+	const String sname = p_name;
 
+	if (property_helper.is_property_valid(sname, &index)) {
 		bool valid;
-		popup->set(String(p_name).trim_prefix("popup/"), p_value, &valid);
+		popup->set(sname.trim_prefix("popup/"), p_value, &valid);
 
-		int idx = components[1].get_slice("_", 1).to_int();
-		if (idx == current) {
+		if (index == current) {
 			// Force refreshing currently displayed item.
 			current = NONE_SELECTED;
-			_select(idx, false);
+			_select(index, false);
 		}
 
+		const String property = sname.get_slice("/", 2);
 		if (property == "text" || property == "icon") {
 			_queue_update_size_cache();
 		}
@@ -178,42 +175,6 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 		return valid;
 	}
 	return false;
-}
-
-bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0] == "popup") {
-		const String &property = components[2];
-		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
-			return false;
-		}
-
-		bool valid;
-		r_ret = popup->get(String(p_name).trim_prefix("popup/"), &valid);
-		return valid;
-	}
-	return false;
-}
-
-void OptionButton::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < popup->get_item_count(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("popup/item_%d/text", i)));
-
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
-		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/disabled", i));
-		pi.usage &= ~(!popup->is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/separator", i));
-		pi.usage &= ~(!popup->is_item_separator(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-	}
 }
 
 void OptionButton::_focused(int p_which) {
@@ -606,6 +567,15 @@ void OptionButton::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, arrow_icon, "arrow");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, arrow_margin);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, modulate_arrow);
+
+	PopupMenu::Item defaults(true);
+
+	base_property_helper.set_prefix("popup/item_");
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &OptionButton::_dummy_setter, &OptionButton::get_item_text);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &OptionButton::_dummy_setter, &OptionButton::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), defaults.id, &OptionButton::_dummy_setter, &OptionButton::get_item_id);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &OptionButton::_dummy_setter, &OptionButton::is_item_disabled);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &OptionButton::_dummy_setter, &OptionButton::is_item_separator);
 }
 
 void OptionButton::set_disable_shortcuts(bool p_disabled) {
@@ -625,6 +595,8 @@ OptionButton::OptionButton(const String &p_text) :
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed).bind(false));
+
+	property_helper.setup_for_instance(base_property_helper, this);
 }
 
 OptionButton::~OptionButton() {
