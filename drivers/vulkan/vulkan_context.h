@@ -62,14 +62,6 @@ public:
 		VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT = VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE + 1
 	};
 
-	struct DriverMemoryAllocations {
-		size_t command_allocations = 0;
-		size_t object_allocations = 0;
-		size_t cache_allocations = 0;
-		size_t device_allocations = 0;
-		size_t instance_allocations = 0;
-	};
-
 	struct SubgroupCapabilities {
 		uint32_t size;
 		uint32_t min_size;
@@ -274,10 +266,6 @@ private:
 	size_t get_device_allocation_count();
 	size_t get_device_memory_by_object_type(VkObjectType type);
 
-	size_t get_driver_total_memory();
-	size_t get_driver_allocation_count();
-	DriverMemoryAllocations get_driver_memory_by_object_type(VkObjectType type);
-
 	Error _create_instance();
 
 	Error _create_physical_device(VkSurfaceKHR p_surface);
@@ -379,6 +367,15 @@ public:
 
 	virtual RenderingDeviceDriver *get_driver(RID p_local_device = RID()) override final;
 	virtual bool is_debug_utils_enabled() const override final;
+
+#if defined(VK_TRACK_DRIVER_MEMORY)
+	static const char *get_tracked_object_name(uint32_t typeIndex);
+	static uint64_t get_driver_object_type_count();
+	static uint64_t get_driver_total_memory();
+	static uint64_t get_driver_allocation_count();
+	static uint64_t get_driver_memory_by_object_type(uint32_t type);
+	static uint64_t get_driver_allocs_by_object_type(uint32_t type);
+#endif
 
 	VulkanContext();
 	virtual ~VulkanContext();

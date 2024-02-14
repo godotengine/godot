@@ -72,6 +72,44 @@ SafeNumeric<size_t> memory_report_mem_usage[VulkanContext::VK_TRACKED_OBJECT_TYP
 // Amount of device memory allocations for every object type
 SafeNumeric<size_t> memory_report_allocation_count[VulkanContext::VK_TRACKED_OBJECT_TYPE_COUNT];
 
+const char *VulkanContext::get_tracked_object_name(uint32_t typeIndex) {
+	static constexpr const char *vkTrackedObjectTypeNames[] = { "UNKNOWN",
+		"INSTANCE",
+		"PHYSICAL_DEVICE",
+		"DEVICE",
+		"QUEUE",
+		"SEMAPHORE",
+		"COMMAND_BUFFER",
+		"FENCE",
+		"DEVICE_MEMORY",
+		"BUFFER",
+		"IMAGE",
+		"EVENT",
+		"QUERY_POOL",
+		"BUFFER_VIEW",
+		"IMAGE_VIEW",
+		"SHADER_MODULE",
+		"PIPELINE_CACHE",
+		"PIPELINE_LAYOUT",
+		"RENDER_PASS",
+		"PIPELINE",
+		"DESCRIPTOR_SET_LAYOUT",
+		"SAMPLER",
+		"DESCRIPTOR_POOL",
+		"DESCRIPTOR_SET",
+		"FRAMEBUFFER",
+		"COMMAND_POOL",
+		"DESCRIPTOR_UPDATE_TEMPLATE_KHR",
+		"SURFACE_KHR",
+		"SWAPCHAIN_KHR",
+		"DEBUG_UTILS_MESSENGER_EXT",
+		"DEBUG_REPORT_CALLBACK_EXT",
+		"ACCELERATION_STRUCTURE",
+		"VMA_BUFFER_OR_IMAGE" };
+
+	return vkTrackedObjectTypeNames[typeIndex];
+}
+
 VulkanContext::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
 	if (type > VK_OBJECT_TYPE_COMMAND_POOL && type != (VkObjectType)VulkanContext::VK_TRACKED_OBJECT_TYPE_VMA) {
 		switch (type) {
@@ -100,19 +138,28 @@ size_t VulkanContext::get_device_memory_by_object_type(VkObjectType type) {
 	return memory_report_mem_usage[type].get();
 }
 
-size_t VulkanContext::get_driver_total_memory() {
+uint64_t VulkanContext::get_driver_object_type_count() {
+	return VK_TRACKED_OBJECT_TYPE_COUNT;
+}
+uint64_t VulkanContext::get_driver_total_memory() {
 	return driver_memory_total_memory.get();
 }
-size_t VulkanContext::get_driver_allocation_count() {
+uint64_t VulkanContext::get_driver_allocation_count() {
 	return driver_memory_total_alloc_count.get();
 }
-VulkanContext::DriverMemoryAllocations VulkanContext::get_driver_memory_by_object_type(VkObjectType type) {
-	DriverMemoryAllocations ret = {};
-	ret.cache_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_CACHE].get();
-	ret.command_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_COMMAND].get();
-	ret.device_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_DEVICE].get();
-	ret.instance_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE].get();
-	ret.object_allocations = driver_memory_tracker[type][VK_SYSTEM_ALLOCATION_SCOPE_OBJECT].get();
+uint64_t VulkanContext::get_driver_memory_by_object_type(uint32_t type) {
+	uint64_t ret = 0;
+	for (uint32_t i = 0; i < VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT; i++) {
+		ret += driver_memory_tracker[type][i].get();
+	}
+
+	return ret;
+}
+uint64_t VulkanContext::get_driver_allocs_by_object_type(uint32_t type) {
+	uint64_t ret = 0;
+	for (uint32_t i = 0; i < VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT; i++) {
+		ret += driver_memory_allocation_count[type][i].get();
+	}
 
 	return ret;
 }
@@ -359,6 +406,11 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			object_callbacks[c] = tracking_callbacks;
 			object_user_data[c] = c;
 			object_callbacks[c].pUserData = &object_user_data[c];
+
+			for (uint32_t i = 0; i < VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT; i++) {
+				driver_memory_tracker[c][i].set(0);
+				driver_memory_allocation_count[c][i].set(0);
+			}
 		}
 	}
 
