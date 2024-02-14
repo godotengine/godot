@@ -117,7 +117,7 @@ AABB AABB::intersection(const AABB &p_aabb) const {
 	return AABB(min, max - min);
 }
 
-bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip, Vector3 *r_normal) const {
+bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_intersection_point, Vector3 *r_normal) const {
 
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
