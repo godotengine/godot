@@ -502,6 +502,8 @@ void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
 
 	inverse_inertia_tensor = p_state->get_inverse_inertia_tensor();
 
+	contact_count = p_state->get_contact_count();
+
 	if (sleeping != p_state->is_sleeping()) {
 		sleeping = p_state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
@@ -877,9 +879,7 @@ int RigidBody3D::get_max_contacts_reported() const {
 }
 
 int RigidBody3D::get_contact_count() const {
-	PhysicsDirectBodyState3D *bs = PhysicsServer3D::get_singleton()->body_get_direct_state(get_rid());
-	ERR_FAIL_NULL_V(bs, 0);
-	return bs->get_contact_count();
+	return contact_count;
 }
 
 void RigidBody3D::apply_central_impulse(const Vector3 &p_impulse) {

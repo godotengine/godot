@@ -164,6 +164,7 @@ private:
 	bool sleeping = false;
 
 	int max_contacts_reported = 0;
+	int contact_count = 0;
 
 	bool custom_integrator = false;
 
