@@ -32,6 +32,7 @@
 #define TAB_BAR_H
 
 #include "scene/gui/control.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
 
 class TabBar : public Control {
@@ -77,7 +78,12 @@ private:
 		Tab() {
 			text_buf.instantiate();
 		}
+
+		Tab(bool p_dummy) {}
 	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	int offset = 0;
 	int max_drawn_tab = 0;
@@ -163,9 +169,11 @@ private:
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, tabs.size()); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	void _notification(int p_what);
 	static void _bind_methods();
 
