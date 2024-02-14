@@ -108,7 +108,7 @@ public:
 	virtual void set_debug_generate_wireframes(bool p_generate) override {}
 
 	virtual bool has_os_feature(const String &p_feature) const override {
-		return p_feature == "rgtc" || p_feature == "bptc" || p_feature == "s3tc" || p_feature == "etc" || p_feature == "etc2";
+		return p_feature == "rgtc" || p_feature == "bptc" || p_feature == "s3tc" || p_feature == "etc2";
 	}
 
 	virtual void update_memory_info() override {}

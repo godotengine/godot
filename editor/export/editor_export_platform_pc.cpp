@@ -40,9 +40,6 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 	if (p_preset->get("texture_format/s3tc")) {
 		r_features->push_back("s3tc");
 	}
-	if (p_preset->get("texture_format/etc")) {
-		r_features->push_back("etc");
-	}
 	if (p_preset->get("texture_format/etc2")) {
 		r_features->push_back("etc2");
 	}
@@ -62,7 +59,6 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/bptc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 }
 

@@ -126,9 +126,6 @@
 		<member name="texture_format/bptc" type="bool" setter="" getter="">
 			If [code]true[/code], project textures are exported in the BPTC format.
 		</member>
-		<member name="texture_format/etc" type="bool" setter="" getter="">
-			If [code]true[/code], project textures are exported in the ETC format.
-		</member>
 		<member name="texture_format/etc2" type="bool" setter="" getter="">
 			If [code]true[/code], project textures are exported in the ETC2 format.
 		</member>
