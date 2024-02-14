@@ -35,74 +35,44 @@
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
-template <class T>
-struct PtrToArg {};
+template <class T, typename = void>
+struct PtrToArg;
 
-#define MAKE_PTRARG(m_type)                                              \
-	template <>                                                          \
-	struct PtrToArg<m_type> {                                            \
-		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) { \
-			return *reinterpret_cast<const m_type *>(p_ptr);             \
-		}                                                                \
-		typedef m_type EncodeT;                                          \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {   \
-			*((m_type *)p_ptr) = p_val;                                  \
-		}                                                                \
-	};                                                                   \
-	template <>                                                          \
-	struct PtrToArg<const m_type &> {                                    \
-		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) { \
-			return *reinterpret_cast<const m_type *>(p_ptr);             \
-		}                                                                \
-		typedef m_type EncodeT;                                          \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {   \
-			*((m_type *)p_ptr) = p_val;                                  \
-		}                                                                \
+#define MAKE_PTRARG(m_type)                                                                \
+	template <typename T>                                                                  \
+	struct PtrToArg<T, EnableIf_t<types_are_same_v<m_type, RemoveRefPointerConst_t<T>>>> { \
+		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) {                   \
+			return *reinterpret_cast<const m_type *>(p_ptr);                               \
+		}                                                                                  \
+		typedef m_type EncodeT;                                                            \
+		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {                     \
+			*((m_type *)p_ptr) = p_val;                                                    \
+		}                                                                                  \
 	}
 
-#define MAKE_PTRARGCONV(m_type, m_conv)                                           \
-	template <>                                                                   \
-	struct PtrToArg<m_type> {                                                     \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                 \
-			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
-		}                                                                         \
-		typedef m_conv EncodeT;                                                   \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
-			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
-		}                                                                         \
-	};                                                                            \
-	template <>                                                                   \
-	struct PtrToArg<const m_type &> {                                             \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                 \
-			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
-		}                                                                         \
-		typedef m_conv EncodeT;                                                   \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
-			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
-		}                                                                         \
-	}
+#define MAKE_PTRARGCONV(m_type, m_conv)                                                    \
+	template <typename T>                                                                  \
+	struct PtrToArg<T, EnableIf_t<types_are_same_v<m_type, RemoveRefPointerConst_t<T>>>> { \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                          \
+			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr));          \
+		}                                                                                  \
+		typedef m_conv EncodeT;                                                            \
+		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {                     \
+			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                               \
+		}                                                                                  \
+	};
 
-#define MAKE_PTRARG_BY_REFERENCE(m_type)                                      \
-	template <>                                                               \
-	struct PtrToArg<m_type> {                                                 \
-		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) {      \
-			return *reinterpret_cast<const m_type *>(p_ptr);                  \
-		}                                                                     \
-		typedef m_type EncodeT;                                               \
-		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                       \
-		}                                                                     \
-	};                                                                        \
-	template <>                                                               \
-	struct PtrToArg<const m_type &> {                                         \
-		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) {      \
-			return *reinterpret_cast<const m_type *>(p_ptr);                  \
-		}                                                                     \
-		typedef m_type EncodeT;                                               \
-		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                       \
-		}                                                                     \
-	}
+#define MAKE_PTRARG_BY_REFERENCE(m_type)                                                   \
+	template <typename T>                                                                  \
+	struct PtrToArg<T, EnableIf_t<types_are_same_v<m_type, RemoveRefPointerConst_t<T>>>> { \
+		_FORCE_INLINE_ static const m_type &convert(const void *p_ptr) {                   \
+			return *reinterpret_cast<const m_type *>(p_ptr);                               \
+		}                                                                                  \
+		typedef m_type EncodeT;                                                            \
+		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) {              \
+			*((m_type *)p_ptr) = p_val;                                                    \
+		}                                                                                  \
+	};
 
 MAKE_PTRARGCONV(bool, uint8_t);
 // Integer types.
@@ -157,30 +127,17 @@ MAKE_PTRARG_BY_REFERENCE(Variant);
 // This is for Object.
 
 template <class T>
-struct PtrToArg<T *> {
-	_FORCE_INLINE_ static T *convert(const void *p_ptr) {
+struct PtrToArg<T, EnableIf_t<std::is_pointer_v<T>>> {
+	typedef RemoveRefPointerConst_t<T> TStripped;
+	_FORCE_INLINE_ static T convert(const void *p_ptr) {
 		if (p_ptr == nullptr) {
 			return nullptr;
 		}
-		return const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr));
+		return static_or_reinterpret_cast<T>(p_ptr);
 	}
-	typedef Object *EncodeT;
-	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
-		*((T **)p_ptr) = p_var;
-	}
-};
-
-template <class T>
-struct PtrToArg<const T *> {
-	_FORCE_INLINE_ static const T *convert(const void *p_ptr) {
-		if (p_ptr == nullptr) {
-			return nullptr;
-		}
-		return *reinterpret_cast<T *const *>(p_ptr);
-	}
-	typedef const Object *EncodeT;
-	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
-		*((T **)p_ptr) = p_var;
+	typedef T EncodeT;
+	_FORCE_INLINE_ static void encode(TStripped *p_var, void *p_ptr) {
+		*((TStripped **)p_ptr) = p_var;
 	}
 };
 
@@ -188,7 +145,7 @@ struct PtrToArg<const T *> {
 
 template <>
 struct PtrToArg<ObjectID> {
-	_FORCE_INLINE_ static const ObjectID convert(const void *p_ptr) {
+	_FORCE_INLINE_ static ObjectID convert(const void *p_ptr) {
 		return ObjectID(*reinterpret_cast<const uint64_t *>(p_ptr));
 	}
 	typedef uint64_t EncodeT;
@@ -200,217 +157,148 @@ struct PtrToArg<ObjectID> {
 // This is for the special cases used by Variant.
 
 // No EncodeT because direct pointer conversion not possible.
-#define MAKE_VECARG(m_type)                                                              \
-	template <>                                                                          \
-	struct PtrToArg<Vector<m_type>> {                                                    \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {                \
-			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr); \
-			Vector<m_type> ret;                                                          \
-			int len = dvs->size();                                                       \
-			ret.resize(len);                                                             \
-			{                                                                            \
-				const m_type *r = dvs->ptr();                                            \
-				for (int i = 0; i < len; i++) {                                          \
-					ret.write[i] = r[i];                                                 \
-				}                                                                        \
-			}                                                                            \
-			return ret;                                                                  \
-		}                                                                                \
-		_FORCE_INLINE_ static void encode(const Vector<m_type> &p_vec, void *p_ptr) {    \
-			Vector<m_type> *dv = reinterpret_cast<Vector<m_type> *>(p_ptr);              \
-			int len = p_vec.size();                                                      \
-			dv->resize(len);                                                             \
-			{                                                                            \
-				m_type *w = dv->ptrw();                                                  \
-				for (int i = 0; i < len; i++) {                                          \
-					w[i] = p_vec[i];                                                     \
-				}                                                                        \
-			}                                                                            \
-		}                                                                                \
-	};                                                                                   \
-	template <>                                                                          \
-	struct PtrToArg<const Vector<m_type> &> {                                            \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {                \
-			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr); \
-			Vector<m_type> ret;                                                          \
-			int len = dvs->size();                                                       \
-			ret.resize(len);                                                             \
-			{                                                                            \
-				const m_type *r = dvs->ptr();                                            \
-				for (int i = 0; i < len; i++) {                                          \
-					ret.write[i] = r[i];                                                 \
-				}                                                                        \
-			}                                                                            \
-			return ret;                                                                  \
-		}                                                                                \
-	}
+#define MAKE_VECARG(m_type)                                                                                \
+	template <typename T>                                                                                  \
+	struct PtrToArg<T, EnableIf_t<types_are_same_v<Vector<m_type>, Vector<RemoveRefPointerConst_t<T>>>>> { \
+		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {                                  \
+			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr);                   \
+			Vector<m_type> ret;                                                                            \
+			int len = dvs->size();                                                                         \
+			ret.resize(len);                                                                               \
+			{                                                                                              \
+				const m_type *r = dvs->ptr();                                                              \
+				for (int i = 0; i < len; i++) {                                                            \
+					ret.write[i] = r[i];                                                                   \
+				}                                                                                          \
+			}                                                                                              \
+			return ret;                                                                                    \
+		}                                                                                                  \
+		_FORCE_INLINE_ static void encode(const Vector<m_type> &p_vec, void *p_ptr) {                      \
+			Vector<m_type> *dv = reinterpret_cast<Vector<m_type> *>(p_ptr);                                \
+			int len = p_vec.size();                                                                        \
+			dv->resize(len);                                                                               \
+			{                                                                                              \
+				m_type *w = dv->ptrw();                                                                    \
+				for (int i = 0; i < len; i++) {                                                            \
+					w[i] = p_vec[i];                                                                       \
+				}                                                                                          \
+			}                                                                                              \
+		}                                                                                                  \
+	};
 
 // No EncodeT because direct pointer conversion not possible.
-#define MAKE_VECARG_ALT(m_type, m_type_alt)                                               \
-	template <>                                                                           \
-	struct PtrToArg<Vector<m_type_alt>> {                                                 \
-		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {             \
-			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr);  \
-			Vector<m_type_alt> ret;                                                       \
-			int len = dvs->size();                                                        \
-			ret.resize(len);                                                              \
-			{                                                                             \
-				const m_type *r = dvs->ptr();                                             \
-				for (int i = 0; i < len; i++) {                                           \
-					ret.write[i] = r[i];                                                  \
-				}                                                                         \
-			}                                                                             \
-			return ret;                                                                   \
-		}                                                                                 \
-		_FORCE_INLINE_ static void encode(const Vector<m_type_alt> &p_vec, void *p_ptr) { \
-			Vector<m_type> *dv = reinterpret_cast<Vector<m_type> *>(p_ptr);               \
-			int len = p_vec.size();                                                       \
-			dv->resize(len);                                                              \
-			{                                                                             \
-				m_type *w = dv->ptrw();                                                   \
-				for (int i = 0; i < len; i++) {                                           \
-					w[i] = p_vec[i];                                                      \
-				}                                                                         \
-			}                                                                             \
-		}                                                                                 \
-	};                                                                                    \
-	template <>                                                                           \
-	struct PtrToArg<const Vector<m_type_alt> &> {                                         \
-		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {             \
-			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr);  \
-			Vector<m_type_alt> ret;                                                       \
-			int len = dvs->size();                                                        \
-			ret.resize(len);                                                              \
-			{                                                                             \
-				const m_type *r = dvs->ptr();                                             \
-				for (int i = 0; i < len; i++) {                                           \
-					ret.write[i] = r[i];                                                  \
-				}                                                                         \
-			}                                                                             \
-			return ret;                                                                   \
-		}                                                                                 \
-	}
+#define MAKE_VECARG_ALT(m_type, m_type_alt)                                                            \
+	template <typename T>                                                                              \
+	struct PtrToArg<T, EnableIf_t<types_are_same_v<Vector<m_type_alt>, RemoveRefPointerConst_t<T>>>> { \
+		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {                          \
+			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr);               \
+			Vector<m_type_alt> ret;                                                                    \
+			int len = dvs->size();                                                                     \
+			ret.resize(len);                                                                           \
+			{                                                                                          \
+				const m_type *r = dvs->ptr();                                                          \
+				for (int i = 0; i < len; i++) {                                                        \
+					ret.write[i] = r[i];                                                               \
+				}                                                                                      \
+			}                                                                                          \
+			return ret;                                                                                \
+		}                                                                                              \
+		_FORCE_INLINE_ static void encode(const Vector<m_type_alt> &p_vec, void *p_ptr) {              \
+			Vector<m_type> *dv = reinterpret_cast<Vector<m_type> *>(p_ptr);                            \
+			int len = p_vec.size();                                                                    \
+			dv->resize(len);                                                                           \
+			{                                                                                          \
+				m_type *w = dv->ptrw();                                                                \
+				for (int i = 0; i < len; i++) {                                                        \
+					w[i] = p_vec[i];                                                                   \
+				}                                                                                      \
+			}                                                                                          \
+		}                                                                                              \
+	};
 
 MAKE_VECARG_ALT(String, StringName);
 
 // For stuff that gets converted to Array vectors.
 
 // No EncodeT because direct pointer conversion not possible.
-#define MAKE_VECARR(m_type)                                                           \
-	template <>                                                                       \
-	struct PtrToArg<Vector<m_type>> {                                                 \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {             \
-			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                \
-			Vector<m_type> ret;                                                       \
-			int len = arr->size();                                                    \
-			ret.resize(len);                                                          \
-			for (int i = 0; i < len; i++) {                                           \
-				ret.write[i] = (*arr)[i];                                             \
-			}                                                                         \
-			return ret;                                                               \
-		}                                                                             \
-		_FORCE_INLINE_ static void encode(const Vector<m_type> &p_vec, void *p_ptr) { \
-			Array *arr = reinterpret_cast<Array *>(p_ptr);                            \
-			int len = p_vec.size();                                                   \
-			arr->resize(len);                                                         \
-			for (int i = 0; i < len; i++) {                                           \
-				(*arr)[i] = p_vec[i];                                                 \
-			}                                                                         \
-		}                                                                             \
-	};                                                                                \
-	template <>                                                                       \
-	struct PtrToArg<const Vector<m_type> &> {                                         \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {             \
-			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                \
-			Vector<m_type> ret;                                                       \
-			int len = arr->size();                                                    \
-			ret.resize(len);                                                          \
-			for (int i = 0; i < len; i++) {                                           \
-				ret.write[i] = (*arr)[i];                                             \
-			}                                                                         \
-			return ret;                                                               \
-		}                                                                             \
-	}
+#define MAKE_VECARR(m_type)                                                                        \
+	template <typename T>                                                                          \
+	struct PtrToArg<T, EnableIf_t<types_are_same_v<Vector<m_type>, RemoveRefPointerConst_t<T>>>> { \
+		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {                          \
+			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                             \
+			Vector<m_type> ret;                                                                    \
+			int len = arr->size();                                                                 \
+			ret.resize(len);                                                                       \
+			for (int i = 0; i < len; i++) {                                                        \
+				ret.write[i] = (*arr)[i];                                                          \
+			}                                                                                      \
+			return ret;                                                                            \
+		}                                                                                          \
+		_FORCE_INLINE_ static void encode(const Vector<m_type> &p_vec, void *p_ptr) {              \
+			Array *arr = reinterpret_cast<Array *>(p_ptr);                                         \
+			int len = p_vec.size();                                                                \
+			arr->resize(len);                                                                      \
+			for (int i = 0; i < len; i++) {                                                        \
+				(*arr)[i] = p_vec[i];                                                              \
+			}                                                                                      \
+		}                                                                                          \
+	};
 
 MAKE_VECARR(Variant);
 MAKE_VECARR(RID);
 MAKE_VECARR(Plane);
 
 // No EncodeT because direct pointer conversion not possible.
-#define MAKE_DVECARR(m_type)                                                          \
-	template <>                                                                       \
-	struct PtrToArg<Vector<m_type>> {                                                 \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {             \
-			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                \
-			Vector<m_type> ret;                                                       \
-			int len = arr->size();                                                    \
-			ret.resize(len);                                                          \
-			{                                                                         \
-				m_type *w = ret.ptrw();                                               \
-				for (int i = 0; i < len; i++) {                                       \
-					w[i] = (*arr)[i];                                                 \
-				}                                                                     \
-			}                                                                         \
-			return ret;                                                               \
-		}                                                                             \
-		_FORCE_INLINE_ static void encode(const Vector<m_type> &p_vec, void *p_ptr) { \
-			Array *arr = reinterpret_cast<Array *>(p_ptr);                            \
-			int len = p_vec.size();                                                   \
-			arr->resize(len);                                                         \
-			{                                                                         \
-				const m_type *r = p_vec.ptr();                                        \
-				for (int i = 0; i < len; i++) {                                       \
-					(*arr)[i] = r[i];                                                 \
-				}                                                                     \
-			}                                                                         \
-		}                                                                             \
-	};                                                                                \
-	template <>                                                                       \
-	struct PtrToArg<const Vector<m_type> &> {                                         \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {             \
-			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                \
-			Vector<m_type> ret;                                                       \
-			int len = arr->size();                                                    \
-			ret.resize(len);                                                          \
-			{                                                                         \
-				m_type *w = ret.ptrw();                                               \
-				for (int i = 0; i < len; i++) {                                       \
-					w[i] = (*arr)[i];                                                 \
-				}                                                                     \
-			}                                                                         \
-			return ret;                                                               \
-		}                                                                             \
-	}
+#define MAKE_DVECARR(m_type)                                                                       \
+	template <typename T>                                                                          \
+	struct PtrToArg<T, EnableIf_t<types_are_same_v<Vector<m_type>, RemoveRefPointerConst_t<T>>>> { \
+		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {                          \
+			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                             \
+			Vector<m_type> ret;                                                                    \
+			int len = arr->size();                                                                 \
+			ret.resize(len);                                                                       \
+			{                                                                                      \
+				m_type *w = ret.ptrw();                                                            \
+				for (int i = 0; i < len; i++) {                                                    \
+					w[i] = (*arr)[i];                                                              \
+				}                                                                                  \
+			}                                                                                      \
+			return ret;                                                                            \
+		}                                                                                          \
+		_FORCE_INLINE_ static void encode(const Vector<m_type> &p_vec, void *p_ptr) {              \
+			Array *arr = reinterpret_cast<Array *>(p_ptr);                                         \
+			int len = p_vec.size();                                                                \
+			arr->resize(len);                                                                      \
+			{                                                                                      \
+				const m_type *r = p_vec.ptr();                                                     \
+				for (int i = 0; i < len; i++) {                                                    \
+					(*arr)[i] = r[i];                                                              \
+				}                                                                                  \
+			}                                                                                      \
+		}                                                                                          \
+	};
 
 // Special case for IPAddress.
 
 // No EncodeT because direct pointer conversion not possible.
-#define MAKE_STRINGCONV_BY_REFERENCE(m_type)                                  \
-	template <>                                                               \
-	struct PtrToArg<m_type> {                                                 \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
-			m_type s = *reinterpret_cast<const String *>(p_ptr);              \
-			return s;                                                         \
-		}                                                                     \
-		_FORCE_INLINE_ static void encode(const m_type &p_vec, void *p_ptr) { \
-			String *arr = reinterpret_cast<String *>(p_ptr);                  \
-			*arr = p_vec;                                                     \
-		}                                                                     \
-	};                                                                        \
-                                                                              \
-	template <>                                                               \
-	struct PtrToArg<const m_type &> {                                         \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
-			m_type s = *reinterpret_cast<const String *>(p_ptr);              \
-			return s;                                                         \
-		}                                                                     \
-	}
+#define MAKE_STRINGCONV_BY_REFERENCE(m_type)                                               \
+	template <typename T>                                                                  \
+	struct PtrToArg<T, EnableIf_t<types_are_same_v<m_type, RemoveRefPointerConst_t<T>>>> { \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                          \
+			m_type s = *reinterpret_cast<const String *>(p_ptr);                           \
+			return s;                                                                      \
+		}                                                                                  \
+		_FORCE_INLINE_ static void encode(const m_type &p_vec, void *p_ptr) {              \
+			String *arr = reinterpret_cast<String *>(p_ptr);                               \
+			*arr = p_vec;                                                                  \
+		}                                                                                  \
+	};
 
 MAKE_STRINGCONV_BY_REFERENCE(IPAddress);
 
 // No EncodeT because direct pointer conversion not possible.
-template <>
-struct PtrToArg<Vector<Face3>> {
+template <typename T>
+struct PtrToArg<T, EnableIf_t<types_are_same_v<Vector<Face3>, RemoveRefPointerConst_t<T>>>> {
 	_FORCE_INLINE_ static Vector<Face3> convert(const void *p_ptr) {
 		const Vector<Vector3> *dvs = reinterpret_cast<const Vector<Vector3> *>(p_ptr);
 		Vector<Face3> ret;
@@ -440,27 +328,6 @@ struct PtrToArg<Vector<Face3>> {
 				w[i * 3 + 2] = r[i].vertex[2];
 			}
 		}
-	}
-};
-
-// No EncodeT because direct pointer conversion not possible.
-template <>
-struct PtrToArg<const Vector<Face3> &> {
-	_FORCE_INLINE_ static Vector<Face3> convert(const void *p_ptr) {
-		const Vector<Vector3> *dvs = reinterpret_cast<const Vector<Vector3> *>(p_ptr);
-		Vector<Face3> ret;
-		int len = dvs->size() / 3;
-		ret.resize(len);
-		{
-			const Vector3 *r = dvs->ptr();
-			Face3 *w = ret.ptrw();
-			for (int i = 0; i < len; i++) {
-				w[i].vertex[0] = r[i * 3 + 0];
-				w[i].vertex[1] = r[i * 3 + 1];
-				w[i].vertex[2] = r[i * 3 + 2];
-			}
-		}
-		return ret;
 	}
 };
 

@@ -31,7 +31,7 @@
 #ifndef VARIANT_INTERNAL_H
 #define VARIANT_INTERNAL_H
 
-#include "variant.h"
+#include "core/variant/variant.h"
 
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
@@ -797,9 +797,8 @@ struct VariantGetInternalPtr<PackedColorArray> {
 	static const PackedColorArray *get_ptr(const Variant *v) { return VariantInternal::get_color_array(v); }
 };
 
-template <class T>
-struct VariantInternalAccessor {
-};
+template <class T, typename = void>
+struct VariantInternalAccessor;
 
 template <>
 struct VariantInternalAccessor<bool> {
@@ -831,15 +830,10 @@ struct VariantInternalAccessor<ObjectID> {
 };
 
 template <class T>
-struct VariantInternalAccessor<T *> {
-	static _FORCE_INLINE_ T *get(const Variant *v) { return const_cast<T *>(static_cast<const T *>(*VariantInternal::get_object(v))); }
-	static _FORCE_INLINE_ void set(Variant *v, const T *p_value) { VariantInternal::object_assign(v, p_value); }
-};
-
-template <class T>
-struct VariantInternalAccessor<const T *> {
-	static _FORCE_INLINE_ const T *get(const Variant *v) { return static_cast<const T *>(*VariantInternal::get_object(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, const T *p_value) { VariantInternal::object_assign(v, p_value); }
+struct VariantInternalAccessor<T, EnableIf_t<std::is_pointer_v<T>>> {
+	typedef RemoveRefPointerConst_t<T> TStripped;
+	static _FORCE_INLINE_ T get(const Variant *v) { return static_or_reinterpret_cast<T>(*VariantInternal::get_object(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const TStripped *p_value) { VariantInternal::object_assign(v, p_value); }
 };
 
 template <>

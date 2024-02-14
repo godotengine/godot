@@ -37,9 +37,6 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"
 
-template <typename T>
-class TypedArray;
-
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_

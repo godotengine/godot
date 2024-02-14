@@ -303,6 +303,106 @@ struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
 template <size_t... Is>
 struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 
+template <bool C, typename T = void>
+struct EnableIf {
+	typedef T type;
+};
+
+template <typename T>
+struct EnableIf<false, T> {
+};
+
+template <bool C, typename T = void>
+using EnableIf_t = typename EnableIf<C, T>::type;
+
+template <typename, typename>
+inline constexpr bool types_are_same_v = false;
+
+template <typename T>
+inline constexpr bool types_are_same_v<T, T> = true;
+
+// Check if the type is a pointer to const, like: const int*, const int*&, const int**, const int**&, etc.
+// Base case, is not a const pointer.
+template <typename T>
+inline constexpr bool is_ptr_to_const_v = false;
+
+// Can still be const, remove the trailing * and try again.
+template <typename T>
+inline constexpr bool is_ptr_to_const_v<T *> = is_ptr_to_const_v<T>;
+
+// Can still be const, remove the trailing & and try again.
+template <typename T>
+inline constexpr bool is_ptr_to_const_v<T &> = is_ptr_to_const_v<T>;
+
+// Found a pointer to const with exactly one *.
+template <typename T>
+inline constexpr bool is_ptr_to_const_v<const T *> = true;
+
+// Found a pointer to const with exactly one *&.
+template <typename T>
+inline constexpr bool is_ptr_to_const_v<const T *&> = true;
+
+template <typename B, typename D>
+struct TypeInherits {
+	static D *get_d();
+
+	static char (&test(B *))[1];
+	static char (&test(...))[2];
+
+	static bool const value = sizeof(test(get_d())) == sizeof(char) &&
+			!types_are_same_v<B volatile const, void volatile const>;
+};
+
+template <typename B, typename D>
+constexpr bool TypeInherits_v = TypeInherits<B, D>::value;
+
+// Recursively remove pointer-to-const, reference, and pointer from type.
+template <typename T>
+struct RemoveRefPointerConst { using Type = T; };
+template <typename T>
+struct RemoveRefPointerConst<T *> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<T &> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<T *&> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<const T *> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<const T &> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<const T *&> { using Type = typename RemoveRefPointerConst<T>::Type; };
+
+template <typename T>
+using RemoveRefPointerConst_t = typename RemoveRefPointerConst<T>::Type;
+
+// Returns true when the type is void, or points to void, like: void, void*, const void*, etc.
+template <typename T, typename U = RemoveRefPointerConst_t<T>>
+inline constexpr bool is_void_v = false;
+
+template <typename T>
+inline constexpr bool is_void_v<T, void> = true;
+
+// Cast to type T (can be const) with the appropriate cast function.
+template <typename T, typename U, EnableIf_t<(is_ptr_to_const_v<T> || !is_ptr_to_const_v<U>)&&is_void_v<U>, bool> = true>
+T static_or_reinterpret_cast(U p_ptr) {
+	return reinterpret_cast<T>(p_ptr);
+}
+
+template <typename T, typename U, EnableIf_t<(is_ptr_to_const_v<T> || !is_ptr_to_const_v<U>)&&!is_void_v<U>, bool> = true>
+T static_or_reinterpret_cast(U p_ptr) {
+	return static_cast<T>(p_ptr);
+}
+
+template <typename T, typename U, EnableIf_t<!is_ptr_to_const_v<T> && is_ptr_to_const_v<U> && is_void_v<U>, bool> = true>
+T static_or_reinterpret_cast(U p_ptr) {
+	return reinterpret_cast<T>(const_cast<void *>(p_ptr));
+}
+
+template <typename T, typename U, EnableIf_t<!is_ptr_to_const_v<T> && !is_void_v<U>, bool> = true>
+T static_or_reinterpret_cast(const U *p_ptr) {
+	return static_cast<T>(const_cast<U *>(p_ptr));
+}
+
 // Limit the depth of recursive algorithms when dealing with Array/Dictionary
 #define MAX_RECURSION 100
 

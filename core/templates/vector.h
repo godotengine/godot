@@ -61,6 +61,7 @@ class Vector {
 
 public:
 	VectorWriteProxy<T> write;
+	typedef T Type;
 	typedef typename CowData<T>::Size Size;
 
 private:
