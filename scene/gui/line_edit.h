@@ -111,9 +111,9 @@ private:
 	bool drag_and_drop_selection_enabled = true;
 
 	bool context_menu_enabled = true;
-	PopupMenu *menu = nullptr;
-	PopupMenu *menu_dir = nullptr;
-	PopupMenu *menu_ctl = nullptr;
+	ObjectID menu_id;
+	ObjectID menu_dir_id;
+	ObjectID menu_ctl_id;
 
 	bool caret_mid_grapheme_enabled = false;
 

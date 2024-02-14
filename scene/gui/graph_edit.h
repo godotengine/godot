@@ -169,16 +169,16 @@ private:
 		}
 	};
 
-	Label *zoom_label = nullptr;
-	Button *zoom_minus_button = nullptr;
-	Button *zoom_reset_button = nullptr;
-	Button *zoom_plus_button = nullptr;
+	ObjectID zoom_label_id;
+	ObjectID zoom_minus_button_id;
+	ObjectID zoom_reset_button_id;
+	ObjectID zoom_plus_button_id;
 
-	Button *toggle_snapping_button = nullptr;
-	SpinBox *snapping_distance_spinbox = nullptr;
-	Button *toggle_grid_button = nullptr;
-	Button *minimap_button = nullptr;
-	Button *arrange_button = nullptr;
+	ObjectID toggle_snapping_button_id;
+	ObjectID snapping_distance_spinbox_id;
+	ObjectID toggle_grid_button_id;
+	ObjectID minimap_button_id;
+	ObjectID arrange_button_id;
 
 	HScrollBar *h_scrollbar = nullptr;
 	VScrollBar *v_scrollbar = nullptr;
@@ -247,7 +247,7 @@ private:
 	bool lines_antialiased = true;
 
 	PanelContainer *menu_panel = nullptr;
-	HBoxContainer *menu_hbox = nullptr;
+	ObjectID menu_hbox_id;
 	Control *connections_layer = nullptr;
 
 	GraphEditFilter *top_connection_layer = nullptr; // Draws a dragged connection. Necessary since the connection line shader can't be applied to the whole top layer.

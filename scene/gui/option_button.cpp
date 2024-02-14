@@ -43,6 +43,9 @@ void OptionButton::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	if (p_event->is_pressed() && !p_event->is_echo() && !is_disabled() && is_visible_in_tree() && popup->activate_item_by_event(p_event, false)) {
 		accept_event();
 		return;
@@ -129,6 +132,9 @@ void OptionButton::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+			ERR_FAIL_NULL(popup);
+
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 			[[fallthrough]];
 		}
@@ -147,6 +153,9 @@ void OptionButton::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
+				PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+				ERR_FAIL_NULL(popup);
+
 				popup->hide();
 			}
 		} break;
@@ -158,6 +167,9 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 	const String sname = p_name;
 
 	if (property_helper.is_property_valid(sname, &index)) {
+		PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+		ERR_FAIL_NULL_V(popup, false);
+
 		bool valid;
 		popup->set(sname.trim_prefix("popup/"), p_value, &valid);
 
@@ -186,6 +198,9 @@ void OptionButton::_selected(int p_which) {
 }
 
 void OptionButton::pressed() {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	if (popup->is_visible()) {
 		popup->hide();
 		return;
@@ -195,6 +210,9 @@ void OptionButton::pressed() {
 }
 
 void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	bool first_selectable = !has_selectable_items();
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
 	if (first_selectable) {
@@ -204,6 +222,9 @@ void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_l
 }
 
 void OptionButton::add_item(const String &p_label, int p_id) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	bool first_selectable = !has_selectable_items();
 	popup->add_radio_check_item(p_label, p_id);
 	if (first_selectable) {
@@ -213,6 +234,9 @@ void OptionButton::add_item(const String &p_label, int p_id) {
 }
 
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	popup->set_item_text(p_idx, p_text);
 
 	if (current == p_idx) {
@@ -222,6 +246,9 @@ void OptionButton::set_item_text(int p_idx, const String &p_text) {
 }
 
 void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	popup->set_item_icon(p_idx, p_icon);
 
 	if (current == p_idx) {
@@ -231,30 +258,51 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 }
 
 void OptionButton::set_item_id(int p_idx, int p_id) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	popup->set_item_id(p_idx, p_id);
 }
 
 void OptionButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	popup->set_item_metadata(p_idx, p_metadata);
 }
 
 void OptionButton::set_item_tooltip(int p_idx, const String &p_tooltip) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	popup->set_item_tooltip(p_idx, p_tooltip);
 }
 
 void OptionButton::set_item_disabled(int p_idx, bool p_disabled) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	popup->set_item_disabled(p_idx, p_disabled);
 }
 
 String OptionButton::get_item_text(int p_idx) const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, String());
+
 	return popup->get_item_text(p_idx);
 }
 
 Ref<Texture2D> OptionButton::get_item_icon(int p_idx) const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, Ref<Texture2D>());
+
 	return popup->get_item_icon(p_idx);
 }
 
 int OptionButton::get_item_id(int p_idx) const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, NONE_SELECTED);
+
 	if (p_idx == NONE_SELECTED) {
 		return NONE_SELECTED;
 	}
@@ -263,25 +311,43 @@ int OptionButton::get_item_id(int p_idx) const {
 }
 
 int OptionButton::get_item_index(int p_id) const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, 0);
+
 	return popup->get_item_index(p_id);
 }
 
 Variant OptionButton::get_item_metadata(int p_idx) const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, Variant());
+
 	return popup->get_item_metadata(p_idx);
 }
 
 String OptionButton::get_item_tooltip(int p_idx) const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, String());
+
 	return popup->get_item_tooltip(p_idx);
 }
 
 bool OptionButton::is_item_disabled(int p_idx) const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, false);
+
 	return popup->is_item_disabled(p_idx);
 }
 
 bool OptionButton::is_item_separator(int p_idx) const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, false);
+
 	return popup->is_item_separator(p_idx);
 }
 void OptionButton::set_item_count(int p_count) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	ERR_FAIL_COND(p_count < 0);
 
 	int count_old = get_item_count();
@@ -334,6 +400,9 @@ int OptionButton::get_selectable_item(bool p_from_last) const {
 }
 
 int OptionButton::get_item_count() const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, 0);
+
 	return popup->get_item_count();
 }
 
@@ -359,10 +428,16 @@ bool OptionButton::get_allow_reselect() const {
 }
 
 void OptionButton::add_separator(const String &p_text) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	popup->add_separator(p_text);
 }
 
 void OptionButton::clear() {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	popup->clear();
 	set_text("");
 	current = NONE_SELECTED;
@@ -370,6 +445,9 @@ void OptionButton::clear() {
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	if (p_which == current && !allow_reselect) {
 		return;
 	}
@@ -400,6 +478,9 @@ void OptionButton::_select(int p_which, bool p_emit) {
 }
 
 void OptionButton::_select_int(int p_which) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	if (p_which < NONE_SELECTED) {
 		return;
 	}
@@ -413,6 +494,9 @@ void OptionButton::_select_int(int p_which) {
 }
 
 void OptionButton::_refresh_size_cache() {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	cache_refresh_pending = false;
 
 	if (fit_to_longest_item) {
@@ -454,6 +538,9 @@ Variant OptionButton::get_selected_metadata() const {
 }
 
 void OptionButton::remove_item(int p_idx) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	popup->remove_item(p_idx);
 	if (current == p_idx) {
 		_select(NONE_SELECTED);
@@ -462,6 +549,9 @@ void OptionButton::remove_item(int p_idx) {
 }
 
 PopupMenu *OptionButton::get_popup() const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, nullptr);
+
 	return popup;
 }
 
@@ -469,6 +559,9 @@ void OptionButton::show_popup() {
 	if (!get_viewport()) {
 		return;
 	}
+
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
 
 	Rect2 rect = get_screen_rect();
 	rect.position.y += rect.size.height;
@@ -591,7 +684,7 @@ OptionButton::OptionButton(const String &p_text) :
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
-	popup = memnew(PopupMenu);
+	PopupMenu *popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
@@ -599,6 +692,7 @@ OptionButton::OptionButton(const String &p_text) :
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed).bind(false));
 
 	property_helper.setup_for_instance(base_property_helper, this);
+	popup_id = popup->get_instance_id();
 }
 
 OptionButton::~OptionButton() {
