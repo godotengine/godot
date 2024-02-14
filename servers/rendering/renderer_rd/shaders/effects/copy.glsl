@@ -260,7 +260,7 @@ void main() {
 
 	vec4 color = vec4(depth_linear_normalized, depth_linear_normalized, depth_linear_normalized, 1.0);
 
-	if(depth >= z_far - 0.01) {
+	if (depth >= z_far - 0.01) {
 		color = vec4(0.0, 0.2705, 0.5490, 1.0);
 	}
 
