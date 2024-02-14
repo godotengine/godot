@@ -2189,9 +2189,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 						}
 					}
 
-					Variant default_value = ClassDB::class_get_default_property_value(E->get_class(), F.name);
-
-					if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
+					if (!E->is_property_value_saved(F.name, p.value)) {
 						continue;
 					}
 

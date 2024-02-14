@@ -20,6 +20,20 @@
 				Override this method to return a custom [RID] when [method get_rid] is called.
 			</description>
 		</method>
+		<method name="_is_inherited_state_property_value_saved" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_setup_inherits_state" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="resource" type="Resource" />
+			<description>
+				This function is called when resource state inheritance is being set up. The new base resource is notified via [b]resource[/b] while the existing one can still be obtained via the [member resource_inherits_state] property.
+			</description>
+		</method>
 		<method name="_setup_local_to_scene" qualifiers="virtual">
 			<return type="void" />
 			<description>
@@ -71,6 +85,13 @@
 				Returns the [RID] of this resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], and so on) are high-level abstractions of resources stored in a specialized server ([DisplayServer], [RenderingServer], etc.), so this function will return the original [RID].
 			</description>
 		</method>
+		<method name="is_property_value_saved" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
 		<method name="setup_local_to_scene" is_deprecated="true">
 			<return type="void" />
 			<description>
@@ -87,6 +108,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="resource_inherits_state" type="Resource" setter="set_inherits_state" getter="get_inherits_state">
+			Resource that this resource inherits state from. It must be the same type as this one. When resource state inheritance is used, this resource will inherit the state of properties from the base one and only local notifications vs the base ones will be saved.
+		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" default="false">
 			If [code]true[/code], the resource is duplicated for each instance of all scenes using it. At run-time, the resource can be modified in one scene without affecting other instances (see [method PackedScene.instantiate]).
 			[b]Note:[/b] Changing this property at run-time has no effect on already created duplicate resources.

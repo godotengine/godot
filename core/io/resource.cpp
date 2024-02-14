@@ -505,6 +505,98 @@ String Resource::get_id_for_path(const String &p_path) const {
 }
 #endif
 
+bool Resource::_property_can_revert(const StringName &p_name) const {
+	if (!inherits_state.is_valid()) {
+		return false;
+	}
+	bool value_valid;
+	Variant value = get(p_name, &value_valid);
+	if (!value_valid) {
+		return false;
+	}
+	Variant inherits_value = inherits_state->get(p_name, &value_valid);
+	if (!value_valid) {
+		return false;
+	}
+	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL, value, inherits_value));
+}
+
+bool Resource::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (!inherits_state.is_valid()) {
+		return false;
+	}
+
+	bool value_valid;
+	Variant inherits_value = inherits_state->get(p_name, &value_valid);
+	if (value_valid) {
+		r_property = inherits_value;
+	}
+	return value_valid;
+}
+
+void Resource::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "resource_inherits") {
+		p_property.hint_string = get_class();
+	}
+}
+
+bool Resource::setup_inherits_state(const Ref<Resource> &p_resource) {
+	bool ret;
+	if (GDVIRTUAL_CALL(_setup_inherits_state, p_resource, ret)) {
+		return ret;
+	}
+
+	ERR_FAIL_COND_V_MSG(p_resource.is_valid() && !is_class(p_resource->get_class_name()), false, "Resources must be of (or class inherit) the same class when setting up state inheritance");
+
+	if (p_resource.is_valid()) {
+		copy_from(p_resource);
+	}
+	return true;
+}
+
+void Resource::set_inherits_state(const Ref<Resource> &p_resource) {
+	if (setup_inherits_state(p_resource)) {
+		inherits_state = p_resource;
+	}
+}
+
+Ref<Resource> Resource::get_inherits_state() const {
+	return inherits_state;
+}
+
+bool Resource::is_inherited_state_property_value_saved(const StringName &p_name, const Variant &p_value) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_is_inherited_state_property_value_saved, p_name, p_value, ret)) {
+		return ret;
+	}
+
+	bool default_value_valid;
+	Variant default_value = inherits_state->get(p_name, &default_value_valid);
+	if (!default_value_valid) {
+		return true; // Not a default value, so save.
+	}
+
+	if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p_value, default_value))) {
+		return false;
+	}
+
+	return true;
+}
+
+bool Resource::is_property_value_saved(const StringName &p_property, const Variant &p_value) const {
+	if (!inherits_state.is_valid()) {
+		Variant default_value = ClassDB::class_get_default_property_value(get_class(), p_property);
+
+		if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p_value, default_value))) {
+			return false;
+		}
+
+		return true;
+	} else {
+		return is_inherited_state_property_value_saved(p_property, p_value);
+	}
+}
+
 void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
 	ClassDB::bind_method(D_METHOD("take_over_path", "path"), &Resource::_take_over_path);
@@ -516,6 +608,9 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_local_to_scene"), &Resource::is_local_to_scene);
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
+	ClassDB::bind_method(D_METHOD("set_inherits_state", "base"), &Resource::set_inherits_state);
+	ClassDB::bind_method(D_METHOD("get_inherits_state"), &Resource::get_inherits_state);
+	ClassDB::bind_method(D_METHOD("is_property_value_saved", "property", "value"), &Resource::is_property_value_saved);
 
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
@@ -527,12 +622,15 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "resource_inherits_state", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), "set_inherits_state", "get_inherits_state");
 
 	MethodInfo get_rid_bind("_get_rid");
 	get_rid_bind.return_val.type = Variant::RID;
 
 	::ClassDB::add_virtual_method(get_class_static(), get_rid_bind, true, Vector<String>(), true);
 	GDVIRTUAL_BIND(_setup_local_to_scene);
+	GDVIRTUAL_BIND(_setup_inherits_state, "resource");
+	GDVIRTUAL_BIND(_is_inherited_state_property_value_saved, "property", "value");
 }
 
 Resource::Resource() :
