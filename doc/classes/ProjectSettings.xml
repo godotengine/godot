@@ -353,6 +353,10 @@
 			This setting can be overridden using the [code]--max-fps &lt;fps&gt;[/code] command line argument (including with a value of [code]0[/code] for unlimited framerate).
 			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.max_fps] instead.
 		</member>
+		<member name="application/run/enable_alt_space_menu" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], allows the [kbd]Alt + Space[/kbd] keys to display the window menu.
+			[b]Note:[/b] This setting is implemented only on Windows.
+		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
@@ -806,10 +810,6 @@
 		<member name="display/window/size/borderless" type="bool" setter="" getter="" default="false">
 			Forces the main window to be borderless.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
-		</member>
-		<member name="display/window/size/enable_alt_space_menu" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows the [kbd]Alt + Space[/kbd] keys to display the window menu.
-			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="display/window/size/extend_to_title" type="bool" setter="" getter="" default="false">
 			Main window content is expanded to the full size of the window. Unlike a borderless window, the frame is left intact and can be used to resize the window, and the title bar is transparent, but has minimize/maximize/close buttons.
