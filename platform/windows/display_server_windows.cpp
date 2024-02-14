@@ -1866,7 +1866,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 	}
 
 	if (p_fullscreen || p_borderless) {
-		r_style |= WS_POPUP; // p_borderless was WS_EX_TOOLWINDOW in the past.
+		r_style |= WS_POPUP | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX; // p_borderless was WS_EX_TOOLWINDOW in the past.
 		if ((p_fullscreen && p_multiwindow_fs) || p_maximized) {
 			r_style |= WS_BORDER; // Allows child windows to be displayed on top of full screen.
 		}
@@ -3468,6 +3468,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (windows[window_id].max_size != Size2()) {
 					min_max_info->ptMaxTrackSize.x = windows[window_id].max_size.x + decor.x;
 					min_max_info->ptMaxTrackSize.y = windows[window_id].max_size.y + decor.y;
+				}
+				if (windows[window_id].borderless) {
+					Rect2i screen_rect = screen_get_usable_rect(window_get_current_screen(window_id));
+					min_max_info->ptMaxPosition.x = screen_rect.position.x;
+					min_max_info->ptMaxPosition.y = screen_rect.position.y;
+					min_max_info->ptMaxSize.x = screen_rect.size.x;
+					min_max_info->ptMaxSize.y = screen_rect.size.y;
 				}
 				return 0;
 			}
