@@ -155,13 +155,18 @@
 # Xabi GOITY <xabigoity@gmail.com>, 2023.
 # Roskai <angel.du.2558@gmail.com>, 2023.
 # Clément <clement.vaugoyeau@gmail.com>, 2023.
+# RagisaSensei <erenosfu@gmail.com>, 2023.
+# peperoni <peperoni@users.noreply.hosted.weblate.org>, 2024.
+# Clement Vanderkelen <clementvdk11@gmail.com>, 2024.
+# Varga <vancouver_cliparf@simplelogin.com>, 2024.
+# Leo Belda <leo.belda@wanadoo.fr>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-06 04:32+0000\n"
-"Last-Translator: Rertsyd <rertsyd@outlook.com>\n"
+"PO-Revision-Date: 2024-01-21 20:50+0000\n"
+"Last-Translator: Leo Belda <leo.belda@wanadoo.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -169,7 +174,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread principal"
@@ -1982,7 +1987,7 @@ msgid "Errors loading!"
 msgstr "Erreurs de chargement !"
 
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Supprimer de manière permanente %d objet(s) ? (Annulation impossible!)"
+msgstr "Supprimer de manière permanente %d objet(s) ? (Annulation impossible !)"
 
 msgid "Show Dependencies"
 msgstr "Afficher les dépendances"
@@ -3718,6 +3723,15 @@ msgstr ""
 "Impossible d'écrire dans le fichier '%s', le fichier est peut-être utilisé, "
 "verrouillé ou vous n'avez pas les permissions en écriture."
 
+msgid "Forward+"
+msgstr "Forward+"
+
+msgid "Mobile"
+msgstr "Mobile"
+
+msgid "Compatibility"
+msgstr "Compatibilité"
+
 msgid "Pan View"
 msgstr "Déplacer la vue"
 
@@ -3814,6 +3828,9 @@ msgstr "Outils"
 msgid "Orphan Resource Explorer..."
 msgstr "Explorateur de ressources orphelines..."
 
+msgid "Upgrade Mesh Surfaces..."
+msgstr "Mettre a jour le Maillage de Surfaces..."
+
 msgid "Reload Current Project"
 msgstr "Recharger le projet actuel"
 
@@ -3893,21 +3910,6 @@ msgstr "À propos de Godot"
 
 msgid "Support Godot Development"
 msgstr "Soutenir le développement de Godot"
-
-msgid "Choose a renderer."
-msgstr "Choisir un moteur de rendu."
-
-msgid "Forward+"
-msgstr "Forward+"
-
-msgid "Mobile"
-msgstr "Mobile"
-
-msgid "Compatibility"
-msgstr "Compatibilité"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "Changer de moteur de rendu nécessite le redémarrage de l'éditeur."
 
 msgid "Update Continuously"
 msgstr "Mise à jour continue"
@@ -4708,6 +4710,9 @@ msgstr "Supprimer le préréglage « %s » ?"
 msgid "Resources to exclude:"
 msgstr "Ressources à exclure :"
 
+msgid "Resources to override export behavior:"
+msgstr "Ressources pour contourner la méthode d'exportation :"
+
 msgid "Resources to export:"
 msgstr "Ressources à exporter :"
 
@@ -5163,6 +5168,9 @@ msgstr "Aller au dossier/fichier suivant."
 
 msgid "Re-Scan Filesystem"
 msgstr "Analyser à nouveau le système de fichiers"
+
+msgid "Change Split Mode"
+msgstr "Changer le mode scindé"
 
 msgid "Filter Files"
 msgstr "Filtrer les fichiers"
@@ -6797,6 +6805,9 @@ msgstr "[Échelle Globale] (créer)"
 
 msgid "Duplicated Animation Name:"
 msgstr "Nom de l'animation dupliquée :"
+
+msgid "Onion skinning requires a RESET animation."
+msgstr "La pelure d'oignon (onion skinning) nécessite une animation RESET."
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr ""
@@ -9488,6 +9499,9 @@ msgstr ": Rotation"
 msgid "Shift: Move All"
 msgstr "Maj : Tout déplacer"
 
+msgid "Shift: Scale"
+msgstr "Maj : Mettre à l'échelle"
+
 msgid "Move Polygon"
 msgstr "Déplacer le polygone"
 
@@ -10105,6 +10119,12 @@ msgstr "Créer un LightOccluder2D"
 
 msgid "LightOccluder2D Preview"
 msgstr "Prévisualisation du LightOccluder2D"
+
+msgid "Can't convert a sprite from a foreign scene."
+msgstr "Impossible de convertir un sprite à partir d'une scène inconnue."
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "Impossible de convertir un sprite Vide en maille (MESH)."
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -10753,6 +10773,9 @@ msgstr "Définir un Objet Couleur dans le Thème"
 msgid "Set Constant Item in Theme"
 msgstr "Définir un Objet Constant dans le Thème"
 
+msgid "Set Stylebox Item in Theme"
+msgstr "S"
+
 msgid "Set Variation Base Type"
 msgstr "Définir le type parent de la variation"
 
@@ -11010,6 +11033,9 @@ msgid "Can't rotate patterns when using non-square tile grid."
 msgstr ""
 "Les motifs ne peuvent pas être tournés quand une grille de tuile non-carrée "
 "est utilisée."
+
+msgid "No Texture Atlas Source (ID: %d)"
+msgstr "Aucune source d'atlas de texture (ID : %d)"
 
 msgid "Scene Collection Source (ID: %d)"
 msgstr "Source de collection de la scène (ID  : %d)"
@@ -12900,7 +12926,7 @@ msgid "Project Installation Path:"
 msgstr "Chemin d'installation du projet :"
 
 msgid "Renderer:"
-msgstr "Moteur de rendu :"
+msgstr "Moteur de rendu :"
 
 msgid "Version Control Metadata:"
 msgstr "Métadonnées du contrôle de version :"
@@ -13137,14 +13163,6 @@ msgstr ""
 "La langue a été modifiée.\n"
 "L'interface utilisateur sera mise à jour au prochain démarrage de l'éditeur "
 "ou du gestionnaire de projets."
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Êtes vous certain de vouloir scanner %s dossiers à la recherche de projets "
-"Godot existants ?\n"
-"Cela pourrait prendre un moment."
 
 msgctxt "Application"
 msgid "Project Manager"
@@ -14309,13 +14327,6 @@ msgstr ""
 
 msgid "The package must have at least one '.' separator."
 msgstr "Le paquet doit comporter au moins un séparateur « . »."
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr ""
-"Le nom du projet ne répond pas aux exigences relatives au format du nom du "
-"paquet. Veuillez spécifier explicitement le nom du paquet."
 
 msgid "Invalid public key for APK expansion."
 msgstr "Clé publique invalide pour l'expansion APK."
@@ -15558,6 +15569,37 @@ msgstr ""
 "occluders en haut de la fenêtre de l'éditeur 3D."
 
 msgid ""
+"The occluder mesh has less than 3 vertices, so no occlusion culling will be "
+"performed using this OccluderInstance3D.\n"
+"To generate a proper occluder mesh, select the OccluderInstance3D then use "
+"the Bake Occluders button at the top of the 3D editor viewport."
+msgstr ""
+"Le maillage d'occlusion comporte moins de 3 sommets, aucun élagage "
+"d'occlusion ne sera effectuée avec cet OccluderInstance3D.\n"
+"Pour générer un maillage d'occlusion approprié, sélectionnez "
+"l'OccluderInstance3D, puis utilisez le bouton Précalculer les Occlusions en "
+"haut de la vue 3D de l'éditeur."
+
+msgid ""
+"The polygon occluder has less than 3 vertices, so no occlusion culling will "
+"be performed using this OccluderInstance3D.\n"
+"Vertices can be added in the inspector or using the polygon editing tools at "
+"the top of the 3D editor viewport."
+msgstr ""
+"Le polygone d'occlusion comporte moins de 3 sommets, aucun élagage "
+"d'occlusion ne sera effectuée avec cet OccluderInstance3D.\n"
+"Vous pouvez ajouter des sommets dans l'inspecteur ou en utilisant les outils "
+"d'édition de polygones en haut de la vue 3D de l'éditeur."
+
+msgid ""
+"ReflectionProbes are not supported when using the GL Compatibility backend "
+"yet. Support will be added in a future release."
+msgstr ""
+"Les ReflectionProbes ne sont pas prises en charge lors de l'utilisation du "
+"backend GL Compatibility. La prise en charge sera ajoutée dans une version "
+"future."
+
+msgid ""
 "This node cannot interact with other objects unless a Shape3D is assigned."
 msgstr ""
 "Ce nœud ne peut pas interagir avec d'autres objets, sauf si une Shape3D est "
@@ -15580,6 +15622,14 @@ msgstr ""
 "Une ressource de type SpriteFrames doit être créée ou définie dans la "
 "propriété « Frames » afin qu'une AnimatedSprite3D fonctionne."
 
+msgid ""
+"VisibleOnScreenNotifier3D nodes are not supported when using the GL "
+"Compatibility backend yet. Support will be added in a future release."
+msgstr ""
+"Les nœuds VisibleOnScreenNotifier3D ne sont pas pris en charge lors de "
+"l'utilisation du backend GL Compatibility. La prise en charge sera ajoutée "
+"dans une version future."
+
 msgid "Plotting Meshes"
 msgstr "Tracer les maillages"
 
@@ -15592,6 +15642,13 @@ msgid ""
 msgstr ""
 "Ce nœud est désactivé car il ne contient aucune donnée VoxelGI. Précalculer "
 "des objets statiques pour l'activer."
+
+msgid ""
+"XR is not enabled in rendering project settings. Stereoscopic output is not "
+"supported unless this is enabled."
+msgstr ""
+"XR n'est pas activé dans les paramètres de rendu du projet. La sortie "
+"stéréoscopic n'est pas supportée tant qu'il ne ce pas activé."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "Sur le nœud BlendTree « %s », animation introuvable : « %s »"
@@ -15888,17 +15945,66 @@ msgstr "Répéter"
 msgid "Invalid comparison function for that type."
 msgstr "Fonction de comparaison invalide pour ce type."
 
+msgid ""
+"Invalid number of arguments when calling stage function '%s', which expects "
+"%d arguments."
+msgstr ""
+"Nombre d'argument invalides lors de l'appel à la fonction d'étape '%s', qui "
+"attend %d arguments."
+
+msgid ""
+"Invalid argument type when calling stage function '%s', type expected is '%s'."
+msgstr ""
+"Argument de type invalide lors de la fonction d'appel '%s', le type attendu "
+"est '%s'."
+
+msgid "Expected integer constant within [%d..%d] range."
+msgstr "Constante entière attendue dans la plage de [%d..%d]."
+
+msgid "A constant value cannot be passed for the '%s' parameter."
+msgstr "Une valeur constante ne peut être passée pour la paramètre '%s'."
+
+msgid ""
+"Argument %d of function '%s' can only take a local variable, array, or member."
+msgstr ""
+"L'argument %d de la fonction '%s' peut seulement être une variable locale, un "
+"tableau ou un membre."
+
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "Arguments invalides pour la fonction intégrée : \"%s(%s)\"."
 
 msgid "Recursion is not allowed."
 msgstr "La récursivité n'est pas autorisée."
 
+msgid "Function '%s' can't be called from source code."
+msgstr "La fonction '%s' ne peut être appelée depuis le code source."
+
+msgid ""
+"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
+msgstr ""
+"Argument invalide pour la fonction \"%s(%s)\" : l'argument %d devrait être %s "
+"mais c'est %s."
+
+msgid ""
+"Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
+msgstr ""
+"Trop peux d'argument pour l'appel \"%s(%s)\". Au moins %d est attendu mais %d "
+"a été reçu."
+
+msgid ""
+"Too many arguments for \"%s(%s)\" call. Expected at most %d but received %d."
+msgstr ""
+"Trop d'arguments pour l'appel \"%s(%s)\". Est attendu au moins %d mais %d "
+"reçu."
+
 msgid "Invalid assignment of '%s' to '%s'."
 msgstr "Assignation invalide de '%s' à '%s'."
 
 msgid "Expected constant expression."
 msgstr "Expression constante attendue."
+
+msgid "Expected ',' or ')' after argument."
+msgstr "Attendu ',' ou ')' après l'argument."
 
 msgid "Varying may not be assigned in the '%s' function."
 msgstr "Varying ne peut pas être assigné dans la fonction '%s'."
@@ -15918,8 +16024,20 @@ msgstr "La taille du tableau est déjà définie."
 msgid "Unknown array size is forbidden in that context."
 msgstr "Une taille de tableau inconnue est interdite dans ce contexte."
 
+msgid "Array size expressions are not supported."
+msgstr "L'expression de la taille d'un tableau n'est pas supportée."
+
+msgid "Expected a positive integer constant."
+msgstr "Une constante positive entière est attendue."
+
+msgid "Invalid data type for the array."
+msgstr "Type de données invalide pour le tableau."
+
 msgid "Array size mismatch."
 msgstr "La taille du tableau ne correspond pas."
+
+msgid "Expected array initialization."
+msgstr "L'initialisation du tableau est attendue."
 
 msgid "Cannot convert from '%s' to '%s'."
 msgstr "Impossible de convertir '%s' en '%s'."
@@ -15930,6 +16048,9 @@ msgstr "')' attendu dans l'expression."
 msgid "Void value not allowed in expression."
 msgstr "Valeur nulle non admise dans l'expression."
 
+msgid "Expected '(' after the type name."
+msgstr "Une '(' est attendue après le nom du type."
+
 msgid "No matching constructor found for: '%s'."
 msgstr "Pas de constructeur correspondant trouvé pour : '%s'."
 
@@ -15939,6 +16060,9 @@ msgstr "Pas de fonction correspondante trouvée pour : '%s'."
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "La varying '%s' ne peut pas être passé pour le paramètre'%s' dans ce contexte."
+
+msgid "Unknown identifier in expression: '%s'."
+msgstr "Identifiant inconnu dans l'expression : '%s'."
 
 msgid "Index [%d] out of range [%d..%d]."
 msgstr "L'index [%d] est en dehors de l'intervalle [%d..%d]."

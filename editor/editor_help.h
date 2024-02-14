@@ -113,6 +113,7 @@ class EditorHelp : public VBoxContainer {
 	RichTextLabel *class_desc = nullptr;
 	HSplitContainer *h_split = nullptr;
 	static DocTools *doc;
+	static DocTools *ext_doc;
 
 	ConfirmationDialog *search_dialog = nullptr;
 	LineEdit *search = nullptr;
@@ -133,6 +134,7 @@ class EditorHelp : public VBoxContainer {
 		Color value_color;
 		Color qualifier_color;
 		Color type_color;
+		Color override_color;
 
 		Ref<Font> doc_font;
 		Ref<Font> doc_bold_font;
@@ -197,6 +199,16 @@ class EditorHelp : public VBoxContainer {
 	static void _gen_extensions_docs();
 	static void _compute_doc_version_hash();
 
+	struct PropertyCompare {
+		_FORCE_INLINE_ bool operator()(const DocData::PropertyDoc &p_l, const DocData::PropertyDoc &p_r) const {
+			// Sort overridden properties above all else.
+			if (p_l.overridden == p_r.overridden) {
+				return p_l.name.naturalcasecmp_to(p_r.name) < 0;
+			}
+			return p_l.overridden;
+		}
+	};
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
@@ -208,6 +220,9 @@ public:
 	static DocTools *get_doc_data();
 	static void cleanup_doc();
 	static String get_cache_full_path();
+
+	static void load_xml_buffer(const uint8_t *p_buffer, int p_size);
+	static void remove_class(const String &p_class);
 
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class);
@@ -227,6 +242,8 @@ public:
 	void set_scroll(int p_scroll);
 
 	void update_toggle_scripts_button();
+
+	static void init_gdext_pointers();
 
 	EditorHelp();
 	~EditorHelp();
@@ -248,6 +265,8 @@ class EditorHelpBit : public MarginContainer {
 	String text;
 
 protected:
+	String custom_description;
+
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -275,7 +294,7 @@ protected:
 public:
 	void parse_tooltip(const String &p_text);
 
-	EditorHelpTooltip(const String &p_text = String());
+	EditorHelpTooltip(const String &p_text = String(), const String &p_custom_description = String());
 };
 
 #endif // EDITOR_HELP_H

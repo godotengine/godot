@@ -179,6 +179,14 @@ Vector<real_t> HeightMapShape3D::get_map_data() const {
 	return map_data;
 }
 
+real_t HeightMapShape3D::get_min_height() const {
+	return min_height;
+}
+
+real_t HeightMapShape3D::get_max_height() const {
+	return max_height;
+}
+
 void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_width", "width"), &HeightMapShape3D::set_map_width);
 	ClassDB::bind_method(D_METHOD("get_map_width"), &HeightMapShape3D::get_map_width);
@@ -186,6 +194,8 @@ void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_map_depth"), &HeightMapShape3D::get_map_depth);
 	ClassDB::bind_method(D_METHOD("set_map_data", "data"), &HeightMapShape3D::set_map_data);
 	ClassDB::bind_method(D_METHOD("get_map_data"), &HeightMapShape3D::get_map_data);
+	ClassDB::bind_method(D_METHOD("get_min_height"), &HeightMapShape3D::get_min_height);
+	ClassDB::bind_method(D_METHOD("get_max_height"), &HeightMapShape3D::get_max_height);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_width", "get_map_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_depth", "get_map_depth");

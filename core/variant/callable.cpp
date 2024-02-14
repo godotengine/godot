@@ -31,13 +31,12 @@
 #include "callable.h"
 
 #include "callable_bind.h"
-#include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 
 void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const {
-	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount);
+	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount, true);
 }
 
 void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {

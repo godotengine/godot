@@ -31,6 +31,18 @@ runs:
           SCONS_CACHE_LIMIT: ${{ inputs.scons-cache-limit }}
       run: |
         echo "Building with flags:" platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }}
-        if [ "${{ inputs.target }}" != "editor" ]; then rm -rf editor; fi  # Ensure we don't include editor code.
+
+        if [ "${{ inputs.target }}" != "editor" ]; then
+          # Ensure we don't include editor code in export template builds.
+          rm -rf editor
+        fi
+
+        if [ "${{ github.event.number }}" != "" ]; then
+          # Set build identifier with pull request number if available. This is displayed throughout the editor.
+          export BUILD_NAME="gh-${{ github.event.number }}"
+        else
+          export BUILD_NAME="gh"
+        fi
+
         scons platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }}
         ls -l bin/

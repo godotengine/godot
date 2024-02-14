@@ -30,12 +30,13 @@
 
 #include "bone_map_editor_plugin.h"
 
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "editor/import/post_import_plugin_skeleton_renamer.h"
-#include "editor/import/post_import_plugin_skeleton_rest_fixer.h"
-#include "editor/import/post_import_plugin_skeleton_track_organizer.h"
-#include "editor/import/scene_import_settings.h"
+#include "editor/import/3d/post_import_plugin_skeleton_renamer.h"
+#include "editor/import/3d/post_import_plugin_skeleton_rest_fixer.h"
+#include "editor/import/3d/post_import_plugin_skeleton_track_organizer.h"
+#include "editor/import/3d/scene_import_settings.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
@@ -52,7 +53,7 @@ void BoneMapperButton::fetch_textures() {
 	set_offset(SIDE_BOTTOM, 0);
 
 	// Hack to avoid handle color darkening...
-	set_modulate(EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25));
+	set_modulate(EditorThemeManager::is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25));
 
 	circle = memnew(TextureRect);
 	circle->set_texture(get_editor_theme_icon(SNAME("BoneMapperHandleCircle")));
@@ -95,7 +96,7 @@ void BoneMapperButton::_notification(int p_what) {
 	}
 }
 
-BoneMapperButton::BoneMapperButton(const StringName p_profile_bone_name, bool p_require, bool p_selected) {
+BoneMapperButton::BoneMapperButton(const StringName &p_profile_bone_name, bool p_require, bool p_selected) {
 	profile_bone_name = p_profile_bone_name;
 	require = p_require;
 	selected = p_selected;
@@ -1347,7 +1348,7 @@ void BoneMapEditor::create_editors() {
 void BoneMapEditor::fetch_objects() {
 	skeleton = nullptr;
 	// Hackey... but it may be the easiest way to get a selected object from "ImporterScene".
-	SceneImportSettings *si = SceneImportSettings::get_singleton();
+	SceneImportSettingsDialog *si = SceneImportSettingsDialog::get_singleton();
 	if (!si) {
 		return;
 	}

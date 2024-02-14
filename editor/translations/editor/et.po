@@ -2363,6 +2363,15 @@ msgid ""
 msgstr ""
 "Faili '%s' ei saa kirjutada, fail on kasutusel, lukus või puuduvad õigused."
 
+msgid "Forward+"
+msgstr "Edasi+"
+
+msgid "Mobile"
+msgstr "Mobiil"
+
+msgid "Compatibility"
+msgstr "Ühilduvus"
+
 msgid "Pan View"
 msgstr "Nihuta Vaadet"
 
@@ -2518,21 +2527,6 @@ msgstr "Teave Godot'ist"
 
 msgid "Support Godot Development"
 msgstr "Toeta Godot'i Arendamist"
-
-msgid "Choose a renderer."
-msgstr "Valige renderdaja."
-
-msgid "Forward+"
-msgstr "Edasi+"
-
-msgid "Mobile"
-msgstr "Mobiil"
-
-msgid "Compatibility"
-msgstr "Ühilduvus"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "Renderdaja muutmiseks tuleb Redaktor taaskäivitada."
 
 msgid "Update Continuously"
 msgstr "Värskenda Pidevalt"

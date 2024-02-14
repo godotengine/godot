@@ -389,10 +389,10 @@ namespace GodotTools.Export
                 if (filterDir(dir))
                 {
                     addEntry(dir, false);
-                }
-                else if (recurseDir(dir))
-                {
-                    RecursePublishContents(dir, filterDir, filterFile, recurseDir, addEntry);
+                    if (recurseDir(dir))
+                    {
+                        RecursePublishContents(dir, filterDir, filterFile, recurseDir, addEntry);
+                    }
                 }
             }
         }

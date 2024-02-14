@@ -129,6 +129,7 @@ public:
 	enum RenderingDriver {
 		RENDERING_DRIVER_VULKAN,
 		RENDERING_DRIVER_OPENGL3,
+		RENDERING_DRIVER_D3D12,
 	};
 
 	virtual PackedStringArray get_connected_midi_inputs();
@@ -336,6 +337,7 @@ public:
 	Vector<Vector3> segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const TypedArray<Plane> &p_planes);
 
 	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
+	Vector<int32_t> tetrahedralize_delaunay(const Vector<Vector3> &p_points);
 
 	Geometry3D() { singleton = this; }
 };
@@ -433,17 +435,17 @@ public:
 	bool can_instantiate(const StringName &p_class) const;
 	Variant instantiate(const StringName &p_class) const;
 
-	bool class_has_signal(StringName p_class, StringName p_signal) const;
-	Dictionary class_get_signal(StringName p_class, StringName p_signal) const;
-	TypedArray<Dictionary> class_get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
+	bool class_has_signal(const StringName &p_class, const StringName &p_signal) const;
+	Dictionary class_get_signal(const StringName &p_class, const StringName &p_signal) const;
+	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> class_get_property_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
-	bool class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
+	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> class_get_method_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool class_has_integer_constant(const StringName &p_class, const StringName &p_name) const;
@@ -454,7 +456,7 @@ public:
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
-	bool is_class_enabled(StringName p_class) const;
+	bool is_class_enabled(const StringName &p_class) const;
 
 	ClassDB() {}
 	~ClassDB() {}
@@ -525,6 +527,8 @@ public:
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
+
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	Engine() { singleton = this; }
 };

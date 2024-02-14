@@ -32,11 +32,11 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel.h"
@@ -165,7 +165,7 @@ void EditorSceneTabs::_update_context_menu() {
 
 	if (tab_id >= 0) {
 		scene_tabs_context_menu->add_separator();
-		scene_tabs_context_menu->add_item(TTR("Show in FileSystem"), EditorNode::FILE_SHOW_IN_FILESYSTEM);
+		scene_tabs_context_menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTR("Show in FileSystem"), EditorNode::FILE_SHOW_IN_FILESYSTEM);
 		_disable_menu_option_if(EditorNode::FILE_SHOW_IN_FILESYSTEM, !ResourceLoader::exists(EditorNode::get_editor_data().get_scene_path(tab_id)));
 		scene_tabs_context_menu->add_item(TTR("Play This Scene"), EditorNode::FILE_RUN_SCENE);
 		_disable_menu_option_if(EditorNode::FILE_RUN_SCENE, no_root_node);
@@ -190,15 +190,39 @@ void EditorSceneTabs::_disable_menu_option_if(int p_option, bool p_condition) {
 	}
 }
 
-// TODO: This REALLY should be done in a better way than replacing all tabs after almost EVERY action.
 void EditorSceneTabs::update_scene_tabs() {
+	static bool menu_initialized = false;
 	tab_preview_panel->hide();
 
-	bool show_rb = EDITOR_GET("interface/scene_tabs/show_script_button");
+	if (menu_initialized && scene_tabs->get_tab_count() == EditorNode::get_editor_data().get_edited_scene_count()) {
+		_update_tab_titles();
+		return;
+	}
+	menu_initialized = true;
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
 		DisplayServer::get_singleton()->global_menu_clear("_dock");
 	}
+
+	scene_tabs->set_block_signals(true);
+	scene_tabs->set_tab_count(EditorNode::get_editor_data().get_edited_scene_count());
+	scene_tabs->set_block_signals(false);
+
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+		for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
+			int global_menu_index = DisplayServer::get_singleton()->global_menu_add_item("_dock", EditorNode::get_editor_data().get_scene_title(i), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
+			scene_tabs->set_tab_metadata(i, global_menu_index);
+		}
+
+		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
+		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
+	}
+
+	_update_tab_titles();
+}
+
+void EditorSceneTabs::_update_tab_titles() {
+	bool show_rb = EDITOR_GET("interface/scene_tabs/show_script_button");
 
 	// Get all scene names, which may be ambiguous.
 	Vector<String> disambiguated_scene_names;
@@ -207,13 +231,8 @@ void EditorSceneTabs::update_scene_tabs() {
 		disambiguated_scene_names.append(EditorNode::get_editor_data().get_scene_title(i));
 		full_path_names.append(EditorNode::get_editor_data().get_scene_path(i));
 	}
-
 	EditorNode::disambiguate_filenames(full_path_names, disambiguated_scene_names);
 
-	// Workaround to ignore the tab_changed signal from the first added tab.
-	scene_tabs->disconnect("tab_changed", callable_mp(this, &EditorSceneTabs::_scene_tab_changed));
-
-	scene_tabs->clear_tabs();
 	Ref<Texture2D> script_icon = get_editor_theme_icon(SNAME("Script"));
 	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
 		Node *type_node = EditorNode::get_editor_data().get_edited_scene_root(i);
@@ -221,28 +240,35 @@ void EditorSceneTabs::update_scene_tabs() {
 		if (type_node) {
 			icon = EditorNode::get_singleton()->get_object_icon(type_node, "Node");
 		}
+		scene_tabs->set_tab_icon(i, icon);
 
 		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorNode::get_editor_data().get_scene_history_id(i));
-		scene_tabs->add_tab(disambiguated_scene_names[i] + (unsaved ? "(*)" : ""), icon);
+		scene_tabs->set_tab_title(i, disambiguated_scene_names[i] + (unsaved ? "(*)" : ""));
 
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-			DisplayServer::get_singleton()->global_menu_add_item("_dock", EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
+			int global_menu_index = scene_tabs->get_tab_metadata(i);
+			DisplayServer::get_singleton()->global_menu_set_item_text("_dock", global_menu_index, EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""));
+			DisplayServer::get_singleton()->global_menu_set_item_tag("_dock", global_menu_index, i);
 		}
 
 		if (show_rb && EditorNode::get_editor_data().get_scene_root_script(i).is_valid()) {
 			scene_tabs->set_tab_button_icon(i, script_icon);
+		} else {
+			scene_tabs->set_tab_button_icon(i, nullptr);
 		}
 	}
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
-		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
+	int current_tab = EditorNode::get_editor_data().get_edited_scene();
+	if (scene_tabs->get_tab_count() > 0 && scene_tabs->get_current_tab() != current_tab) {
+		scene_tabs->set_block_signals(true);
+		scene_tabs->set_current_tab(current_tab);
+		scene_tabs->set_block_signals(false);
 	}
 
-	if (scene_tabs->get_tab_count() > 0) {
-		scene_tabs->set_current_tab(EditorNode::get_editor_data().get_edited_scene());
-	}
+	_scene_tabs_resized();
+}
 
+void EditorSceneTabs::_scene_tabs_resized() {
 	const Size2 add_button_size = Size2(scene_tab_add->get_size().x, scene_tabs->get_size().y);
 	if (scene_tabs->get_offset_buttons_visible()) {
 		// Move the add button to a fixed position.
@@ -271,9 +297,6 @@ void EditorSceneTabs::update_scene_tabs() {
 			scene_tab_add->set_rect(Rect2(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y), add_button_size));
 		}
 	}
-
-	// Reconnect after everything is done.
-	scene_tabs->connect("tab_changed", callable_mp(this, &EditorSceneTabs::_scene_tab_changed));
 }
 
 void EditorSceneTabs::_tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
@@ -365,7 +388,7 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tabs->connect("mouse_exited", callable_mp(this, &EditorSceneTabs::_scene_tab_exit));
 	scene_tabs->connect("gui_input", callable_mp(this, &EditorSceneTabs::_scene_tab_input));
 	scene_tabs->connect("active_tab_rearranged", callable_mp(this, &EditorSceneTabs::_reposition_active_tab));
-	scene_tabs->connect("resized", callable_mp(this, &EditorSceneTabs::update_scene_tabs));
+	scene_tabs->connect("resized", callable_mp(this, &EditorSceneTabs::_scene_tabs_resized));
 
 	scene_tabs_context_menu = memnew(PopupMenu);
 	tabbar_container->add_child(scene_tabs_context_menu);

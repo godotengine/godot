@@ -30,22 +30,18 @@
 
 #include "editor_dir_dialog.h"
 
-#include "core/io/dir_access.h"
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "editor/directory_create_dialog.h"
 #include "editor/editor_file_system.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
-#include "scene/gui/check_box.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/tree.h"
 #include "servers/display_server.h"
 
 void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 	updating = true;
 
-	String path = p_dir->get_path();
+	const String path = p_dir->get_path();
 
-	p_item->set_metadata(0, p_dir->get_path());
+	p_item->set_metadata(0, path);
 	p_item->set_icon(0, tree->get_editor_theme_icon(SNAME("Folder")));
 	p_item->set_icon_modulate(0, tree->get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
 
@@ -59,10 +55,30 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 		p_item->set_text(0, p_dir->get_name());
 	}
 
+	if (path == new_dir_path || !p_item->get_parent()) {
+		p_item->select(0);
+	}
+
 	updating = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		TreeItem *ti = tree->create_item(p_item);
 		_update_dir(ti, p_dir->get_subdir(i));
+	}
+}
+
+void EditorDirDialog::config(const Vector<String> &p_paths) {
+	ERR_FAIL_COND(p_paths.is_empty());
+
+	if (p_paths.size() == 1) {
+		String path = p_paths[0];
+		if (path.ends_with("/")) {
+			path = path.substr(0, path.length() - 1);
+		}
+		// TRANSLATORS: %s is the file name that will be moved or duplicated.
+		set_title(vformat(TTR("Move/Duplicate: %s"), path.get_file()));
+	} else {
+		// TRANSLATORS: %d is the number of files that will be moved or duplicated.
+		set_title(vformat(TTRN("Move/Duplicate %d Item", "Move/Duplicate %d Items", p_paths.size()), p_paths.size()));
 	}
 }
 
@@ -76,11 +92,8 @@ void EditorDirDialog::reload(const String &p_path) {
 	TreeItem *root = tree->create_item();
 	_update_dir(root, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
 	_item_collapsed(root);
+	new_dir_path.clear();
 	must_reload = false;
-}
-
-bool EditorDirDialog::is_copy_pressed() const {
-	return copy->is_pressed();
 }
 
 void EditorDirDialog::_notification(int p_what) {
@@ -112,14 +125,6 @@ void EditorDirDialog::_notification(int p_what) {
 	}
 }
 
-void EditorDirDialog::_copy_toggled(bool p_pressed) {
-	if (p_pressed) {
-		set_ok_button_text(TTR("Copy"));
-	} else {
-		set_ok_button_text(TTR("Move"));
-	}
-}
-
 void EditorDirDialog::_item_collapsed(Object *p_item) {
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 
@@ -135,100 +140,83 @@ void EditorDirDialog::_item_collapsed(Object *p_item) {
 }
 
 void EditorDirDialog::_item_activated() {
-	_ok_pressed(); // From AcceptDialog.
+	TreeItem *ti = tree->get_selected();
+	ERR_FAIL_NULL(ti);
+	if (ti->get_child_count() > 0) {
+		ti->set_collapsed(!ti->is_collapsed());
+	}
+}
+
+void EditorDirDialog::_copy_pressed() {
+	TreeItem *ti = tree->get_selected();
+	ERR_FAIL_NULL(ti);
+
+	hide();
+	emit_signal(SNAME("copy_pressed"), ti->get_metadata(0));
 }
 
 void EditorDirDialog::ok_pressed() {
 	TreeItem *ti = tree->get_selected();
-	if (!ti) {
-		return;
-	}
+	ERR_FAIL_NULL(ti);
 
-	String dir = ti->get_metadata(0);
-	emit_signal(SNAME("dir_selected"), dir);
 	hide();
+	emit_signal(SNAME("move_pressed"), ti->get_metadata(0));
 }
 
 void EditorDirDialog::_make_dir() {
 	TreeItem *ti = tree->get_selected();
-	if (!ti) {
-		mkdirerr->set_text(TTR("Please select a base directory first."));
-		mkdirerr->popup_centered();
-		return;
-	}
-
-	makedialog->popup_centered(Size2(250, 80));
-	makedirname->grab_focus();
+	ERR_FAIL_NULL(ti);
+	makedialog->config(ti->get_metadata(0));
+	makedialog->popup_centered();
 }
 
-void EditorDirDialog::_make_dir_confirm() {
-	TreeItem *ti = tree->get_selected();
-	if (!ti) {
-		return;
+void EditorDirDialog::_make_dir_confirm(const String &p_path) {
+	// Multiple level of directories can be created at once.
+	String base_dir = p_path.get_base_dir();
+	while (true) {
+		opened_paths.insert(base_dir + "/");
+		if (base_dir == "res://") {
+			break;
+		}
+		base_dir = base_dir.get_base_dir();
 	}
 
-	String dir = ti->get_metadata(0);
-
-	Ref<DirAccess> d = DirAccess::open(dir);
-	ERR_FAIL_COND_MSG(d.is_null(), "Cannot open directory '" + dir + "'.");
-
-	const String stripped_dirname = makedirname->get_text().strip_edges();
-
-	if (d->dir_exists(stripped_dirname)) {
-		mkdirerr->set_text(TTR("Could not create folder. File with that name already exists."));
-		mkdirerr->popup_centered();
-		return;
-	}
-
-	Error err = d->make_dir(stripped_dirname);
-	if (err != OK) {
-		mkdirerr->popup_centered(Size2(250, 80) * EDSCALE);
-	} else {
-		opened_paths.insert(dir);
-		EditorFileSystem::get_singleton()->scan_changes(); // We created a dir, so rescan changes.
-	}
-	makedirname->set_text(""); // reset label
+	new_dir_path = p_path + "/";
+	EditorFileSystem::get_singleton()->scan_changes(); // We created a dir, so rescan changes.
 }
 
 void EditorDirDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("dir_selected", PropertyInfo(Variant::STRING, "dir")));
+	ADD_SIGNAL(MethodInfo("copy_pressed", PropertyInfo(Variant::STRING, "dir")));
+	ADD_SIGNAL(MethodInfo("move_pressed", PropertyInfo(Variant::STRING, "dir")));
 }
 
 EditorDirDialog::EditorDirDialog() {
-	set_title(TTR("Choose a Directory"));
 	set_hide_on_ok(false);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
+
+	HBoxContainer *hb = memnew(HBoxContainer);
+	vb->add_child(hb);
+
+	hb->add_child(memnew(Label(TTR("Choose target directory:"))));
+	hb->add_spacer();
+
+	makedir = memnew(Button(TTR("Create Folder")));
+	hb->add_child(makedir);
+	makedir->connect("pressed", callable_mp(this, &EditorDirDialog::_make_dir));
 
 	tree = memnew(Tree);
 	vb->add_child(tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->connect("item_activated", callable_mp(this, &EditorDirDialog::_item_activated));
 
-	copy = memnew(CheckBox);
-	vb->add_child(copy);
-	copy->set_text(TTR("Copy File(s)"));
-	copy->connect("toggled", callable_mp(this, &EditorDirDialog::_copy_toggled));
-
-	makedir = add_button(TTR("Create Folder"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "makedir");
-	makedir->connect("pressed", callable_mp(this, &EditorDirDialog::_make_dir));
-
-	makedialog = memnew(ConfirmationDialog);
-	makedialog->set_title(TTR("Create Folder"));
-	add_child(makedialog);
-
-	VBoxContainer *makevb = memnew(VBoxContainer);
-	makedialog->add_child(makevb);
-
-	makedirname = memnew(LineEdit);
-	makevb->add_margin_child(TTR("Name:"), makedirname);
-	makedialog->register_text_enter(makedirname);
-	makedialog->connect("confirmed", callable_mp(this, &EditorDirDialog::_make_dir_confirm));
-
-	mkdirerr = memnew(AcceptDialog);
-	mkdirerr->set_text(TTR("Could not create folder."));
-	add_child(mkdirerr);
-
 	set_ok_button_text(TTR("Move"));
+
+	copy = add_button(TTR("Copy"), !DisplayServer::get_singleton()->get_swap_cancel_ok());
+	copy->connect("pressed", callable_mp(this, &EditorDirDialog::_copy_pressed));
+
+	makedialog = memnew(DirectoryCreateDialog);
+	add_child(makedialog);
+	makedialog->connect("dir_created", callable_mp(this, &EditorDirDialog::_make_dir_confirm));
 }

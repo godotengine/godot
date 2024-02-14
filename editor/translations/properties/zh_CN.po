@@ -58,7 +58,7 @@
 # idleman <1524328475@qq.com>, 2019.
 # king <wangding1992@126.com>, 2019.
 # silentbird <silentbird520@outlook.com>, 2019.
-# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020, 2021, 2022, 2023.
+# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020, 2021, 2022, 2023, 2024.
 # Revan Ji <jiruifancr@gmail.com>, 2020.
 # nieyuanhong <15625988003@163.com>, 2020.
 # binotaliu <binota@protonmail.ch>, 2020.
@@ -76,7 +76,7 @@
 # twoBornottwoB <305766341@qq.com>, 2021.
 # Magian <magian1127@gmail.com>, 2021.
 # Weiduo Xie <xwditfr@gmail.com>, 2021.
-# suplife <2634557184@qq.com>, 2021, 2022.
+# suplife <2634557184@qq.com>, 2021, 2022, 2023.
 # luoji <564144019@qq.com>, 2021.
 # zeng haochen <m18621006730@163.com>, 2021.
 # Sam Sun <oppositenormal@outlook.com>, 2021.
@@ -97,7 +97,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-11-12 10:25+0000\n"
+"PO-Revision-Date: 2024-01-17 23:13+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -106,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "应用"
@@ -3723,7 +3723,7 @@ msgstr "卸载时保留数据"
 msgid "Exclude From Recents"
 msgstr "从最近列表中排除"
 
-msgid "Show in Android Tv"
+msgid "Show in Android TV"
 msgstr "显示在 Android TV 中"
 
 msgid "Show in App Library"
@@ -4420,7 +4420,7 @@ msgid "Left"
 msgstr "左"
 
 msgid "Top"
-msgstr "顶部"
+msgstr "顶"
 
 msgid "Right"
 msgstr "右"
@@ -5668,7 +5668,7 @@ msgid "Fade Start"
 msgstr "淡化起点"
 
 msgid "Pancake Size"
-msgstr "Pancake 大小"
+msgstr "压平区大小"
 
 msgid "Sky Mode"
 msgstr "天空模式"
@@ -6721,10 +6721,10 @@ msgid "Mid Grapheme"
 msgstr "字素内部"
 
 msgid "Secret"
-msgstr "秘密"
+msgstr "密码"
 
 msgid "Secret Character"
-msgstr "秘密字符"
+msgstr "密码字符"
 
 msgid "Underline"
 msgstr "下划线"

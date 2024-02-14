@@ -351,6 +351,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 	s->aabb = new_surface.aabb;
 	s->bone_aabbs = new_surface.bone_aabbs; //only really useful for returning them.
+	s->mesh_to_skeleton_xform = p_surface.mesh_to_skeleton_xform;
 
 	s->uv_scale = new_surface.uv_scale;
 
@@ -470,7 +471,7 @@ void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, i
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.size() == 0);
+	ERR_FAIL_COND(p_data.is_empty());
 
 	uint64_t data_size = p_data.size();
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->vertex_buffer_size);
@@ -485,7 +486,7 @@ void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.size() == 0);
+	ERR_FAIL_COND(p_data.is_empty());
 
 	uint64_t data_size = p_data.size();
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->attribute_buffer_size);
@@ -500,7 +501,7 @@ void MeshStorage::mesh_surface_update_skin_region(RID p_mesh, int p_surface, int
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.size() == 0);
+	ERR_FAIL_COND(p_data.is_empty());
 
 	uint64_t data_size = p_data.size();
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->skin_buffer_size);
@@ -572,6 +573,7 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	}
 
 	sd.bone_aabbs = s.bone_aabbs;
+	sd.mesh_to_skeleton_xform = s.mesh_to_skeleton_xform;
 
 	if (mesh->blend_shape_count) {
 		sd.blend_shape_data = Vector<uint8_t>();
@@ -625,15 +627,16 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 	for (uint32_t i = 0; i < mesh->surface_count; i++) {
 		AABB laabb;
-		if ((mesh->surfaces[i]->format & RS::ARRAY_FORMAT_BONES) && mesh->surfaces[i]->bone_aabbs.size()) {
-			int bs = mesh->surfaces[i]->bone_aabbs.size();
-			const AABB *skbones = mesh->surfaces[i]->bone_aabbs.ptr();
+		const Mesh::Surface &surface = *mesh->surfaces[i];
+		if ((surface.format & RS::ARRAY_FORMAT_BONES) && surface.bone_aabbs.size()) {
+			int bs = surface.bone_aabbs.size();
+			const AABB *skbones = surface.bone_aabbs.ptr();
 
 			int sbs = skeleton->size;
 			ERR_CONTINUE(bs > sbs);
 			const float *baseptr = skeleton->data.ptr();
 
-			bool first = true;
+			bool found_bone_aabb = false;
 
 			if (skeleton->use_2d) {
 				for (int j = 0; j < bs; j++) {
@@ -653,11 +656,13 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 					mtx.basis.rows[1][1] = dataptr[5];
 					mtx.origin.y = dataptr[7];
 
-					AABB baabb = mtx.xform(skbones[j]);
+					// Transform bounds to skeleton's space before applying animation data.
+					AABB baabb = surface.mesh_to_skeleton_xform.xform(skbones[j]);
+					baabb = mtx.xform(baabb);
 
-					if (first) {
+					if (!found_bone_aabb) {
 						laabb = baabb;
-						first = false;
+						found_bone_aabb = true;
 					} else {
 						laabb.merge_with(baabb);
 					}
@@ -685,21 +690,29 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 					mtx.basis.rows[2][2] = dataptr[10];
 					mtx.origin.z = dataptr[11];
 
-					AABB baabb = mtx.xform(skbones[j]);
-					if (first) {
+					// Transform bounds to skeleton's space before applying animation data.
+					AABB baabb = surface.mesh_to_skeleton_xform.xform(skbones[j]);
+					baabb = mtx.xform(baabb);
+
+					if (!found_bone_aabb) {
 						laabb = baabb;
-						first = false;
+						found_bone_aabb = true;
 					} else {
 						laabb.merge_with(baabb);
 					}
 				}
 			}
 
+			if (found_bone_aabb) {
+				// Transform skeleton bounds back to mesh's space if any animated AABB applied.
+				laabb = surface.mesh_to_skeleton_xform.affine_inverse().xform(laabb);
+			}
+
 			if (laabb.size == Vector3()) {
-				laabb = mesh->surfaces[i]->aabb;
+				laabb = surface.aabb;
 			}
 		} else {
-			laabb = mesh->surfaces[i]->aabb;
+			laabb = surface.aabb;
 		}
 
 		if (i == 0) {
@@ -712,6 +725,20 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 	mesh->aabb = aabb;
 	mesh->skeleton_aabb_version = skeleton->version;
 	return aabb;
+}
+
+void MeshStorage::mesh_set_path(RID p_mesh, const String &p_path) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+
+	mesh->path = p_path;
+}
+
+String MeshStorage::mesh_get_path(RID p_mesh) const {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL_V(mesh, String());
+
+	return mesh->path;
 }
 
 void MeshStorage::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
@@ -1525,7 +1552,7 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 			memset(w, 0, (size_t)multimesh->instances * multimesh->stride_cache * sizeof(float));
 		}
 	}
-	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 	multimesh->data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
 	for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
 		multimesh->data_cache_dirty_regions[i] = false;
@@ -1536,7 +1563,7 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 void MeshStorage::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb) {
 	uint32_t region_index = p_index / MULTIMESH_DIRTY_REGION_SIZE;
 #ifdef DEBUG_ENABLED
-	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 	ERR_FAIL_UNSIGNED_INDEX(region_index, data_cache_dirty_region_count); //bug
 #endif
 	if (!multimesh->data_cache_dirty_regions[region_index]) {
@@ -1557,7 +1584,7 @@ void MeshStorage::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool 
 
 void MeshStorage::_multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb) {
 	if (p_data) {
-		uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+		uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 
 		for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
 			if (!multimesh->data_cache_dirty_regions[i]) {
@@ -1904,7 +1931,7 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 		multimesh->data_cache = multimesh->data_cache;
 		{
 			//clear dirty since nothing will be dirty anymore
-			uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+			uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 			for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
 				multimesh->data_cache_dirty_regions[i] = false;
 			}
@@ -2031,8 +2058,8 @@ void MeshStorage::_update_dirty_multimeshes() {
 			uint32_t visible_instances = multimesh->visible_instances >= 0 ? multimesh->visible_instances : multimesh->instances;
 
 			if (multimesh->data_cache_used_dirty_regions) {
-				uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
-				uint32_t visible_region_count = visible_instances == 0 ? 0 : (visible_instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+				uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, (int)MULTIMESH_DIRTY_REGION_SIZE);
+				uint32_t visible_region_count = visible_instances == 0 ? 0 : Math::division_round_up(visible_instances, (uint32_t)MULTIMESH_DIRTY_REGION_SIZE);
 
 				GLint region_size = multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * sizeof(float);
 

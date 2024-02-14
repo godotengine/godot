@@ -224,6 +224,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	//capitalize_string_remaps["msec"] = "(msec)"; // Unit.
 	capitalize_string_remaps["navmesh"] = "NavMesh";
 	capitalize_string_remaps["nfc"] = "NFC";
+	capitalize_string_remaps["oidn"] = "OIDN";
 	capitalize_string_remaps["ok"] = "OK";
 	capitalize_string_remaps["opengl"] = "OpenGL";
 	capitalize_string_remaps["opentype"] = "OpenType";
@@ -265,6 +266,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["tcp"] = "TCP";
 	capitalize_string_remaps["textfile"] = "TextFile";
 	capitalize_string_remaps["tls"] = "TLS";
+	capitalize_string_remaps["tv"] = "TV";
 	capitalize_string_remaps["ui"] = "UI";
 	capitalize_string_remaps["uri"] = "URI";
 	capitalize_string_remaps["url"] = "URL";

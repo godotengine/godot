@@ -164,7 +164,7 @@ TEST_CASE("[RegEx] Uninitialized use") {
 	ERR_PRINT_ON
 }
 
-TEST_CASE("[RegEx] Empty Pattern") {
+TEST_CASE("[RegEx] Empty pattern") {
 	const String s = "Godot";
 
 	RegEx re;
@@ -222,6 +222,143 @@ TEST_CASE("[RegEx] Match start and end positions") {
 	CHECK(match->get_start("vowel") == 2);
 	CHECK(match->get_end("vowel") == 3);
 }
+
+TEST_CASE("[RegEx] Asterisk search all") {
+	const String s = "Godot Engine";
+
+	RegEx re("o*");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match;
+	const Array all_results = re.search_all(s);
+	CHECK(all_results.size() == 13);
+
+	match = all_results[0];
+	CHECK(match->get_string(0) == "");
+	match = all_results[1];
+	CHECK(match->get_string(0) == "o");
+	match = all_results[2];
+	CHECK(match->get_string(0) == "");
+	match = all_results[3];
+	CHECK(match->get_string(0) == "o");
+
+	for (int i = 4; i < 13; i++) {
+		match = all_results[i];
+		CHECK(match->get_string(0) == "");
+	}
+}
+
+TEST_CASE("[RegEx] Simple lookahead") {
+	const String s = "Godot Engine";
+
+	RegEx re("o(?=t)");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match = re.search(s);
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 3);
+	CHECK(match->get_end(0) == 4);
+}
+
+TEST_CASE("[RegEx] Lookahead groups empty matches") {
+	const String s = "12";
+
+	RegEx re("(?=(\\d+))");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match = re.search(s);
+	CHECK(match->get_string(0) == "");
+	CHECK(match->get_string(1) == "12");
+
+	const Array all_results = re.search_all(s);
+	CHECK(all_results.size() == 2);
+
+	match = all_results[0];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("12"));
+
+	match = all_results[1];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("2"));
+}
+
+TEST_CASE("[RegEx] Simple lookbehind") {
+	const String s = "Godot Engine";
+
+	RegEx re("(?<=d)o");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match = re.search(s);
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 3);
+	CHECK(match->get_end(0) == 4);
+}
+
+TEST_CASE("[RegEx] Simple lookbehind search all") {
+	const String s = "ababbaabab";
+
+	RegEx re("(?<=a)b");
+	REQUIRE(re.is_valid());
+	const Array all_results = re.search_all(s);
+	CHECK(all_results.size() == 4);
+
+	Ref<RegExMatch> match = all_results[0];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 1);
+	CHECK(match->get_end(0) == 2);
+
+	match = all_results[1];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 3);
+	CHECK(match->get_end(0) == 4);
+
+	match = all_results[2];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 7);
+	CHECK(match->get_end(0) == 8);
+
+	match = all_results[3];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 9);
+	CHECK(match->get_end(0) == 10);
+}
+
+TEST_CASE("[RegEx] Lookbehind groups empty matches") {
+	const String s = "abaaabab";
+
+	RegEx re("(?<=(b))");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match;
+
+	const Array all_results = re.search_all(s);
+	CHECK(all_results.size() == 3);
+
+	match = all_results[0];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 2);
+	CHECK(match->get_end(0) == 2);
+	CHECK(match->get_start(1) == 1);
+	CHECK(match->get_end(1) == 2);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("b"));
+
+	match = all_results[1];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 6);
+	CHECK(match->get_end(0) == 6);
+	CHECK(match->get_start(1) == 5);
+	CHECK(match->get_end(1) == 6);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("b"));
+
+	match = all_results[2];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 8);
+	CHECK(match->get_end(0) == 8);
+	CHECK(match->get_start(1) == 7);
+	CHECK(match->get_end(1) == 8);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("b"));
+}
+
 } // namespace TestRegEx
 
 #endif // TEST_REGEX_H

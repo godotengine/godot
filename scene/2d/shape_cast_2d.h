@@ -118,7 +118,7 @@ public:
 	void remove_exception(const CollisionObject2D *p_node);
 	void clear_exceptions();
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	ShapeCast2D();
 };

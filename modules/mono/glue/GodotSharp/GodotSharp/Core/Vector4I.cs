@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -143,6 +146,29 @@ namespace Godot
                 Mathf.Clamp(Z, min.Z, max.Z),
                 Mathf.Clamp(W, min.W, max.W)
             );
+        }
+
+        /// <summary>
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
+        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
+        /// you need to compare vectors or need the squared distance for some formula.
+        /// </summary>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The squared distance between the two vectors.</returns>
+        public readonly int DistanceSquaredTo(Vector4I to)
+        {
+            return (to - this).LengthSquared();
+        }
+
+        /// <summary>
+        /// Returns the distance between this vector and <paramref name="to"/>.
+        /// </summary>
+        /// <seealso cref="DistanceSquaredTo(Vector4I)"/>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The distance between the two vectors.</returns>
+        public readonly real_t DistanceTo(Vector4I to)
+        {
+            return (to - this).Length();
         }
 
         /// <summary>
@@ -611,7 +637,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Vector4I other && Equals(other);
         }
@@ -648,7 +674,7 @@ namespace Godot
         /// Converts this <see cref="Vector4I"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
             return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}), {W.ToString(format)})";
         }

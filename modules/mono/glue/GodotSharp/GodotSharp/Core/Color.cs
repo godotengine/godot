@@ -1,6 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Godot.NativeInterop;
+
+#nullable enable
 
 namespace Godot
 {
@@ -1274,7 +1277,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the color and the other object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Color other && Equals(other);
         }
@@ -1324,7 +1327,7 @@ namespace Godot
         /// Converts this <see cref="Color"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this color.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
             return $"({R.ToString(format)}, {G.ToString(format)}, {B.ToString(format)}, {A.ToString(format)})";
         }

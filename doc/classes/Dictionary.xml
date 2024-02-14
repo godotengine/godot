@@ -194,6 +194,14 @@
 				Returns the corresponding value for the given [param key] in the dictionary. If the [param key] does not exist, returns [param default], or [code]null[/code] if the parameter is omitted.
 			</description>
 		</method>
+		<method name="get_or_add">
+			<return type="Variant" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="default" type="Variant" default="null" />
+			<description>
+				Gets a value and ensures the key is set. If the [param key] exists in the dictionary, this behaves like [method get]. Otherwise, the [param default] value is inserted into the dictionary and returned.
+			</description>
+		</method>
 		<method name="has" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="key" type="Variant" />

@@ -43,9 +43,17 @@ public:
 		OPENXR_MAX_TRACKED_HANDS
 	};
 
+	enum HandTrackedSource {
+		OPENXR_SOURCE_UNKNOWN,
+		OPENXR_SOURCE_UNOBSTRUCTED,
+		OPENXR_SOURCE_CONTROLLER,
+		OPENXR_SOURCE_MAX
+	};
+
 	struct HandTracker {
 		bool is_initialized = false;
 		XrHandJointsMotionRangeEXT motion_range = XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT;
+		HandTrackedSource source = OPENXR_SOURCE_UNKNOWN;
 
 		XrHandTrackerEXT hand_tracker = XR_NULL_HANDLE;
 		XrHandJointLocationEXT joint_locations[XR_HAND_JOINT_COUNT_EXT];
@@ -53,6 +61,7 @@ public:
 
 		XrHandJointVelocitiesEXT velocities;
 		XrHandJointLocationsEXT locations;
+		XrHandTrackingDataSourceStateEXT data_source;
 	};
 
 	static OpenXRHandTrackingExtension *get_singleton();
@@ -77,6 +86,8 @@ public:
 	XrHandJointsMotionRangeEXT get_motion_range(HandTrackedHands p_hand) const;
 	void set_motion_range(HandTrackedHands p_hand, XrHandJointsMotionRangeEXT p_motion_range);
 
+	HandTrackedSource get_hand_tracking_source(HandTrackedHands p_hand) const;
+
 	XrSpaceLocationFlags get_hand_joint_location_flags(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
 	Quaternion get_hand_joint_rotation(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
 	Vector3 get_hand_joint_position(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
@@ -96,6 +107,7 @@ private:
 	// related extensions
 	bool hand_tracking_ext = false;
 	bool hand_motion_range_ext = false;
+	bool hand_tracking_source_ext = false;
 
 	// functions
 	void cleanup_hand_tracking();

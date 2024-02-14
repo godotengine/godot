@@ -140,11 +140,17 @@ layout(location = 10) out flat uint instance_index_interp;
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
+ivec3 multiview_uv(ivec2 uv) {
+	return ivec3(uv, int(ViewIndex));
+}
 layout(location = 11) out vec4 combined_projected;
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
+ivec2 multiview_uv(ivec2 uv) {
 	return uv;
 }
 #endif //USE_MULTIVIEW
@@ -704,11 +710,17 @@ layout(location = 10) in flat uint instance_index_interp;
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
+ivec3 multiview_uv(ivec2 uv) {
+	return ivec3(uv, int(ViewIndex));
+}
 layout(location = 11) in vec4 combined_projected;
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
+ivec2 multiview_uv(ivec2 uv) {
 	return uv;
 }
 #endif //USE_MULTIVIEW
@@ -802,7 +814,7 @@ vec4 volumetric_fog_process(vec2 screen_uv, float z) {
 		fog_pos.z = pow(fog_pos.z, implementation_data.volumetric_fog_detail_spread);
 	}
 
-	return texture(sampler3D(volumetric_fog_texture, DEFAULT_SAMPLER_LINEAR_CLAMP), fog_pos);
+	return texture(sampler3D(volumetric_fog_texture, SAMPLER_LINEAR_CLAMP), fog_pos);
 }
 
 vec4 fog_process(vec3 vertex) {
@@ -867,6 +879,28 @@ uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 }
 
 #endif //!MODE_RENDER DEPTH
+
+#if defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_MATERIAL)
+// https://advances.realtimerendering.com/s2010/Kaplanyan-CryEngine3(SIGGRAPH%202010%20Advanced%20RealTime%20Rendering%20Course).pdf
+vec3 encode24(vec3 v) {
+	// Unsigned normal (handles most symmetry)
+	vec3 vNormalUns = abs(v);
+	// Get the major axis for our collapsed cubemap lookup
+	float maxNAbs = max(vNormalUns.z, max(vNormalUns.x, vNormalUns.y));
+	// Get the collapsed cubemap texture coordinates
+	vec2 vTexCoord = vNormalUns.z < maxNAbs ? (vNormalUns.y < maxNAbs ? vNormalUns.yz : vNormalUns.xz) : vNormalUns.xy;
+	vTexCoord /= maxNAbs;
+	vTexCoord = vTexCoord.x < vTexCoord.y ? vTexCoord.yx : vTexCoord.xy;
+	// Stretch:
+	vTexCoord.y /= vTexCoord.x;
+	float fFittingScale = texture(sampler2D(best_fit_normal_texture, SAMPLER_NEAREST_CLAMP), vTexCoord).r;
+	// Make vector touch unit cube
+	vec3 result = v / maxNAbs;
+	// scale the normal to get the best fit
+	result *= fFittingScale;
+	return result;
+}
+#endif // MODE_RENDER_NORMAL_ROUGHNESS
 
 void fragment_shader(in SceneData scene_data) {
 	uint instance_index = instance_index_interp;
@@ -1379,10 +1413,10 @@ void fragment_shader(in SceneData scene_data) {
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
-			vec3 lm_light_l0 = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 0.0), 0.0).rgb;
-			vec3 lm_light_l1n1 = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb;
-			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
-			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
+			vec3 lm_light_l0 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 0.0), 0.0).rgb;
+			vec3 lm_light_l1n1 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb;
+			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
+			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
 
 			vec3 n = normalize(lightmaps.data[ofs].normal_xform * normal);
 			float en = lightmaps.data[ofs].exposure_normalization;
@@ -1399,7 +1433,7 @@ void fragment_shader(in SceneData scene_data) {
 			}
 
 		} else {
-			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], DEFAULT_SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
+			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
 		}
 	}
 #else
@@ -1519,18 +1553,18 @@ void fragment_shader(in SceneData scene_data) {
 			vec2 base_coord = screen_uv;
 			vec2 closest_coord = base_coord;
 #ifdef USE_MULTIVIEW
-			float closest_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(base_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+			float closest_ang = dot(normal, normalize(textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(base_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0));
 #else // USE_MULTIVIEW
-			float closest_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), base_coord, 0.0).xyz * 2.0 - 1.0);
+			float closest_ang = dot(normal, normalize(textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), base_coord, 0.0).xyz * 2.0 - 1.0));
 #endif // USE_MULTIVIEW
 
 			for (int i = 0; i < 4; i++) {
 				const vec2 neighbors[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
 				vec2 neighbour_coord = base_coord + neighbors[i] * scene_data.screen_pixel_size;
 #ifdef USE_MULTIVIEW
-				float neighbour_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+				float neighbour_ang = dot(normal, normalize(textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0));
 #else // USE_MULTIVIEW
-				float neighbour_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), neighbour_coord, 0.0).xyz * 2.0 - 1.0);
+				float neighbour_ang = dot(normal, normalize(textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), neighbour_coord, 0.0).xyz * 2.0 - 1.0));
 #endif // USE_MULTIVIEW
 				if (neighbour_ang > closest_ang) {
 					closest_ang = neighbour_ang;
@@ -1545,11 +1579,11 @@ void fragment_shader(in SceneData scene_data) {
 		}
 
 #ifdef USE_MULTIVIEW
-		vec4 buffer_ambient = textureLod(sampler2DArray(ambient_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
-		vec4 buffer_reflection = textureLod(sampler2DArray(reflection_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
+		vec4 buffer_ambient = textureLod(sampler2DArray(ambient_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
+		vec4 buffer_reflection = textureLod(sampler2DArray(reflection_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
 #else // USE_MULTIVIEW
-		vec4 buffer_ambient = textureLod(sampler2D(ambient_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), coord, 0.0);
-		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), coord, 0.0);
+		vec4 buffer_ambient = textureLod(sampler2D(ambient_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
+		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
 #endif // USE_MULTIVIEW
 
 		ambient_light = mix(ambient_light, buffer_ambient.rgb, buffer_ambient.a);
@@ -1559,9 +1593,9 @@ void fragment_shader(in SceneData scene_data) {
 
 	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO)) {
 #ifdef USE_MULTIVIEW
-		float ssao = texture(sampler2DArray(ao_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(screen_uv, ViewIndex)).r;
+		float ssao = texture(sampler2DArray(ao_buffer, SAMPLER_LINEAR_CLAMP), vec3(screen_uv, ViewIndex)).r;
 #else
-		float ssao = texture(sampler2D(ao_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), screen_uv).r;
+		float ssao = texture(sampler2D(ao_buffer, SAMPLER_LINEAR_CLAMP), screen_uv).r;
 #endif
 		ao = min(ao, ssao);
 		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, implementation_data.ssao_light_affect), implementation_data.ssao_ao_affect);
@@ -1646,9 +1680,9 @@ void fragment_shader(in SceneData scene_data) {
 
 		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
 #ifdef USE_MULTIVIEW
-			vec4 ssil = textureLod(sampler2DArray(ssil_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), vec3(screen_uv, ViewIndex), 0.0);
+			vec4 ssil = textureLod(sampler2DArray(ssil_buffer, SAMPLER_LINEAR_CLAMP), vec3(screen_uv, ViewIndex), 0.0);
 #else
-			vec4 ssil = textureLod(sampler2D(ssil_buffer, DEFAULT_SAMPLER_LINEAR_CLAMP), screen_uv, 0.0);
+			vec4 ssil = textureLod(sampler2D(ssil_buffer, SAMPLER_LINEAR_CLAMP), screen_uv, 0.0);
 #endif // USE_MULTIVIEW
 			ambient_light *= 1.0 - ssil.a;
 			ambient_light += ssil.rgb * albedo.rgb;
@@ -1860,7 +1894,7 @@ void fragment_shader(in SceneData scene_data) {
 
 					pssm_coord /= pssm_coord.w;
 
-					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * blur_factor, pssm_coord);
+					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor + (1.0 - blur_factor) * float(directional_lights.data[i].blend_splits)), pssm_coord);
 
 					if (directional_lights.data[i].blend_splits) {
 						float pssm_blend;
@@ -1870,21 +1904,21 @@ void fragment_shader(in SceneData scene_data) {
 							vec4 v = vec4(vertex, 1.0);
 							BIAS_FUNC(v, 1)
 							pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
-							pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
+							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x - directional_lights.data[i].shadow_split_offsets.x * 0.1, directional_lights.data[i].shadow_split_offsets.x, depth_z);
 							// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
 							blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.y;
 						} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
 							vec4 v = vec4(vertex, 1.0);
 							BIAS_FUNC(v, 2)
 							pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
-							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
+							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y - directional_lights.data[i].shadow_split_offsets.y * 0.1, directional_lights.data[i].shadow_split_offsets.y, depth_z);
 							// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
 							blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.z;
 						} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 							vec4 v = vec4(vertex, 1.0);
 							BIAS_FUNC(v, 3)
 							pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
-							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
+							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.z - directional_lights.data[i].shadow_split_offsets.z * 0.1, directional_lights.data[i].shadow_split_offsets.z, depth_z);
 							// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
 							blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.w;
 						} else {
@@ -1894,7 +1928,7 @@ void fragment_shader(in SceneData scene_data) {
 
 						pssm_coord /= pssm_coord.w;
 
-						float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * blur_factor2, pssm_coord);
+						float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor2 + (1.0 - blur_factor2) * float(directional_lights.data[i].blend_splits)), pssm_coord);
 						shadow = mix(shadow, shadow2, pssm_blend);
 					}
 				}
@@ -1932,7 +1966,7 @@ void fragment_shader(in SceneData scene_data) {
 					vec4 trans_coord = directional_lights.data[i].shadow_matrix1 * trans_vertex;
 					trans_coord /= trans_coord.w;
 
-					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, DEFAULT_SAMPLER_LINEAR_CLAMP), trans_coord.xy, 0.0).r;
+					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, SAMPLER_LINEAR_CLAMP), trans_coord.xy, 0.0).r;
 					shadow_z *= directional_lights.data[i].shadow_z_range.x;
 					float z = trans_coord.z * directional_lights.data[i].shadow_z_range.x;
 
@@ -1942,7 +1976,7 @@ void fragment_shader(in SceneData scene_data) {
 					vec4 trans_coord = directional_lights.data[i].shadow_matrix2 * trans_vertex;
 					trans_coord /= trans_coord.w;
 
-					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, DEFAULT_SAMPLER_LINEAR_CLAMP), trans_coord.xy, 0.0).r;
+					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, SAMPLER_LINEAR_CLAMP), trans_coord.xy, 0.0).r;
 					shadow_z *= directional_lights.data[i].shadow_z_range.y;
 					float z = trans_coord.z * directional_lights.data[i].shadow_z_range.y;
 
@@ -1952,7 +1986,7 @@ void fragment_shader(in SceneData scene_data) {
 					vec4 trans_coord = directional_lights.data[i].shadow_matrix3 * trans_vertex;
 					trans_coord /= trans_coord.w;
 
-					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, DEFAULT_SAMPLER_LINEAR_CLAMP), trans_coord.xy, 0.0).r;
+					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, SAMPLER_LINEAR_CLAMP), trans_coord.xy, 0.0).r;
 					shadow_z *= directional_lights.data[i].shadow_z_range.z;
 					float z = trans_coord.z * directional_lights.data[i].shadow_z_range.z;
 
@@ -1963,7 +1997,7 @@ void fragment_shader(in SceneData scene_data) {
 					vec4 trans_coord = directional_lights.data[i].shadow_matrix4 * trans_vertex;
 					trans_coord /= trans_coord.w;
 
-					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, DEFAULT_SAMPLER_LINEAR_CLAMP), trans_coord.xy, 0.0).r;
+					float shadow_z = textureLod(sampler2D(directional_shadow_atlas, SAMPLER_LINEAR_CLAMP), trans_coord.xy, 0.0).r;
 					shadow_z *= directional_lights.data[i].shadow_z_range.w;
 					float z = trans_coord.z * directional_lights.data[i].shadow_z_range.w;
 
@@ -2302,7 +2336,7 @@ void fragment_shader(in SceneData scene_data) {
 	albedo_output_buffer.rgb = albedo;
 	albedo_output_buffer.a = alpha;
 
-	normal_output_buffer.rgb = normal * 0.5 + 0.5;
+	normal_output_buffer.rgb = encode24(normal) * 0.5 + 0.5;
 	normal_output_buffer.a = 0.0;
 	depth_output_buffer.r = -vertex.z;
 
@@ -2316,7 +2350,15 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifdef MODE_RENDER_NORMAL_ROUGHNESS
-	normal_roughness_output_buffer = vec4(normal * 0.5 + 0.5, roughness);
+	normal_roughness_output_buffer = vec4(encode24(normal) * 0.5 + 0.5, roughness);
+
+	// We encode the dynamic static into roughness.
+	// Values over 0.5 are dynamic, under 0.5 are static.
+	normal_roughness_output_buffer.w = normal_roughness_output_buffer.w * (127.0 / 255.0);
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_DYNAMIC)) {
+		normal_roughness_output_buffer.w = 1.0 - normal_roughness_output_buffer.w;
+	}
+	normal_roughness_output_buffer.w = normal_roughness_output_buffer.w;
 
 #ifdef MODE_RENDER_VOXEL_GI
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances

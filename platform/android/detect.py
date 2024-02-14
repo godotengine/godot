@@ -28,6 +28,7 @@ def get_opts():
             "android-" + str(get_min_target_api()),
         ),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
+        BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False),
     ]
 
 
@@ -200,7 +201,7 @@ def configure(env: "Environment"):
     env.Append(LIBS=["OpenSLES", "EGL", "android", "log", "z", "dl"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
 

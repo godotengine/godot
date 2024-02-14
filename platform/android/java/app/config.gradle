@@ -1,25 +1,18 @@
 ext.versions = [
-    androidGradlePlugin: '7.2.1',
-    compileSdk         : 33,
+    androidGradlePlugin: '8.2.0',
+    compileSdk         : 34,
     // Also update 'platform/android/export/export_plugin.cpp#OPENGL_MIN_SDK_VERSION'
     minSdk             : 21,
     // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
-    targetSdk          : 33,
-    buildTools         : '33.0.2',
-    kotlinVersion      : '1.7.0',
-    fragmentVersion    : '1.3.6',
-    nexusPublishVersion: '1.1.0',
-    javaVersion        : 17,
+    targetSdk          : 34,
+    buildTools         : '34.0.0',
+    kotlinVersion      : '1.9.20',
+    fragmentVersion    : '1.6.2',
+    nexusPublishVersion: '1.3.0',
+    javaVersion        : JavaVersion.VERSION_17,
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
     ndkVersion         : '23.2.8568313'
 
-]
-
-ext.libraries = [
-    androidGradlePlugin: "com.android.tools.build:gradle:$versions.androidGradlePlugin",
-    kotlinGradlePlugin : "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlinVersion",
-    kotlinStdLib       : "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlinVersion",
-    androidxFragment   : "androidx.fragment:fragment:$versions.fragmentVersion",
 ]
 
 ext.getExportPackageName = { ->

@@ -340,7 +340,6 @@ public:
 class EditorPropertyInteger : public EditorProperty {
 	GDCLASS(EditorPropertyInteger, EditorProperty);
 	EditorSpinSlider *spin = nullptr;
-	bool setting = false;
 	void _value_changed(int64_t p_val);
 
 protected:
@@ -399,7 +398,6 @@ public:
 class EditorPropertyFloat : public EditorProperty {
 	GDCLASS(EditorPropertyFloat, EditorProperty);
 	EditorSpinSlider *spin = nullptr;
-	bool setting = false;
 	bool radians_as_degrees = false;
 	void _value_changed(double p_val);
 
@@ -418,7 +416,6 @@ class EditorPropertyEasing : public EditorProperty {
 	Control *easing_draw = nullptr;
 	PopupMenu *preset = nullptr;
 	EditorSpinSlider *spin = nullptr;
-	bool setting = false;
 
 	bool dragging = false;
 	bool full = false;
@@ -459,7 +456,6 @@ public:
 class EditorPropertyRect2 : public EditorProperty {
 	GDCLASS(EditorPropertyRect2, EditorProperty);
 	EditorSpinSlider *spin[4];
-	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -476,7 +472,6 @@ public:
 class EditorPropertyRect2i : public EditorProperty {
 	GDCLASS(EditorPropertyRect2i, EditorProperty);
 	EditorSpinSlider *spin[4];
-	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -493,7 +488,6 @@ public:
 class EditorPropertyPlane : public EditorProperty {
 	GDCLASS(EditorPropertyPlane, EditorProperty);
 	EditorSpinSlider *spin[4];
-	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -511,7 +505,6 @@ class EditorPropertyQuaternion : public EditorProperty {
 	GDCLASS(EditorPropertyQuaternion, EditorProperty);
 	BoxContainer *default_layout = nullptr;
 	EditorSpinSlider *spin[4];
-	bool setting = false;
 
 	Button *warning = nullptr;
 	AcceptDialog *warning_dialog = nullptr;
@@ -544,7 +537,6 @@ public:
 class EditorPropertyAABB : public EditorProperty {
 	GDCLASS(EditorPropertyAABB, EditorProperty);
 	EditorSpinSlider *spin[6];
-	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -561,7 +553,6 @@ public:
 class EditorPropertyTransform2D : public EditorProperty {
 	GDCLASS(EditorPropertyTransform2D, EditorProperty);
 	EditorSpinSlider *spin[6];
-	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -578,7 +569,6 @@ public:
 class EditorPropertyBasis : public EditorProperty {
 	GDCLASS(EditorPropertyBasis, EditorProperty);
 	EditorSpinSlider *spin[9];
-	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -595,7 +585,6 @@ public:
 class EditorPropertyTransform3D : public EditorProperty {
 	GDCLASS(EditorPropertyTransform3D, EditorProperty);
 	EditorSpinSlider *spin[12];
-	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
@@ -613,7 +602,6 @@ public:
 class EditorPropertyProjection : public EditorProperty {
 	GDCLASS(EditorPropertyProjection, EditorProperty);
 	EditorSpinSlider *spin[16];
-	bool setting = false;
 	void _value_changed(double p_val, const String &p_name);
 
 protected:

@@ -31,18 +31,19 @@
 #include "editor_help.h"
 
 #include "core/core_constants.h"
+#include "core/extension/gdextension.h"
 #include "core/input/input.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
-#include "doc_data_compressed.gen.h"
+#include "editor/doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 
 #define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
@@ -83,6 +84,7 @@ const Vector<String> classes_with_csharp_differences = {
 // TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
 // Might this be a problem?
 DocTools *EditorHelp::doc = nullptr;
+DocTools *EditorHelp::ext_doc = nullptr;
 
 static bool _attempt_doc_load(const String &p_class) {
 	// Docgen always happens in the outer-most class: it also generates docs for inner classes.
@@ -144,6 +146,7 @@ void EditorHelp::_update_theme_item_cache() {
 	theme_cache.value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
 	theme_cache.qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
 	theme_cache.type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
+	theme_cache.override_color = get_theme_color(SNAME("override_color"), SNAME("EditorHelp"));
 
 	theme_cache.doc_font = get_theme_font(SNAME("doc"), EditorStringName(EditorFonts));
 	theme_cache.doc_bold_font = get_theme_font(SNAME("doc_bold"), EditorStringName(EditorFonts));
@@ -218,31 +221,31 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 
 		if (tag == "method") {
 			topic = "class_method";
-			table = &this->method_line;
+			table = &method_line;
 		} else if (tag == "constructor") {
 			topic = "class_method";
-			table = &this->method_line;
+			table = &method_line;
 		} else if (tag == "operator") {
 			topic = "class_method";
-			table = &this->method_line;
+			table = &method_line;
 		} else if (tag == "member") {
 			topic = "class_property";
-			table = &this->property_line;
+			table = &property_line;
 		} else if (tag == "enum") {
 			topic = "class_enum";
-			table = &this->enum_line;
+			table = &enum_line;
 		} else if (tag == "signal") {
 			topic = "class_signal";
-			table = &this->signal_line;
+			table = &signal_line;
 		} else if (tag == "constant") {
 			topic = "class_constant";
-			table = &this->constant_line;
+			table = &constant_line;
 		} else if (tag == "annotation") {
 			topic = "class_annotation";
-			table = &this->annotation_line;
+			table = &annotation_line;
 		} else if (tag == "theme_item") {
 			topic = "theme_item";
-			table = &this->theme_property_line;
+			table = &theme_property_line;
 		} else {
 			return;
 		}
@@ -812,35 +815,25 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
-	// Descendents
-	if (cd.is_script_doc || ClassDB::class_exists(cd.name)) {
-		bool found = false;
-		bool prev = false;
-
+	// Descendants
+	if ((cd.is_script_doc || ClassDB::class_exists(cd.name)) && doc->inheriting.has(cd.name)) {
 		_push_normal_font();
-		for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
-			if (E.value.inherits == cd.name) {
-				if (!found) {
-					class_desc->push_color(theme_cache.title_color);
-					class_desc->add_text(TTR("Inherited by:") + " ");
-					found = true;
-				}
+		class_desc->push_color(theme_cache.title_color);
+		class_desc->add_text(TTR("Inherited by:") + " ");
 
-				if (prev) {
-					class_desc->add_text(" , ");
-				}
-				_add_type_icon(E.value.name, theme_cache.doc_font_size, "ArrowRight");
-				class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
-				_add_type(E.value.name);
-				prev = true;
+		for (RBSet<String, NaturalNoCaseComparator>::Element *itr = doc->inheriting[cd.name].front(); itr; itr = itr->next()) {
+			if (itr->prev()) {
+				class_desc->add_text(" , ");
 			}
+
+			_add_type_icon(itr->get(), theme_cache.doc_font_size, "ArrowRight");
+			class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
+			_add_type(itr->get());
 		}
 		_pop_normal_font();
 
-		if (found) {
-			class_desc->pop();
-			class_desc->add_newline();
-		}
+		class_desc->pop();
+		class_desc->add_newline();
 	}
 
 	// Note if deprecated.
@@ -1003,10 +996,29 @@ void EditorHelp::_update_doc() {
 		class_desc->push_table(4);
 		class_desc->set_table_column_expand(1, true);
 
+		cd.properties.sort_custom<PropertyCompare>();
+
+		bool is_generating_overridden_properties = true; // Set to false as soon as we encounter a non-overridden property.
+		bool overridden_property_exists = false;
+
 		for (int i = 0; i < cd.properties.size(); i++) {
 			// Ignore undocumented private.
 			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
 				continue;
+			}
+			if (is_generating_overridden_properties && !cd.properties[i].overridden) {
+				is_generating_overridden_properties = false;
+				// No need for the extra spacing when there's no overridden property.
+				if (overridden_property_exists) {
+					class_desc->push_cell();
+					class_desc->pop();
+					class_desc->push_cell();
+					class_desc->pop();
+					class_desc->push_cell();
+					class_desc->pop();
+					class_desc->push_cell();
+					class_desc->pop();
+				}
 			}
 			property_line[cd.properties[i].name] = class_desc->get_paragraph_count() - 2; //gets overridden if description
 
@@ -1062,25 +1074,27 @@ void EditorHelp::_update_doc() {
 			_push_code_font();
 
 			if (!cd.properties[i].default_value.is_empty()) {
-				class_desc->push_color(theme_cache.symbol_color);
 				if (cd.properties[i].overridden) {
+					class_desc->push_color(theme_cache.override_color);
 					class_desc->add_text(" [");
 					class_desc->push_meta("@member " + cd.properties[i].overrides + "." + cd.properties[i].name);
 					_add_text(vformat(TTR("overrides %s:"), cd.properties[i].overrides));
 					class_desc->pop();
-					class_desc->add_text(" ");
+					class_desc->add_text(" " + _fix_constant(cd.properties[i].default_value) + "]");
+					overridden_property_exists = true;
 				} else {
+					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(" [" + TTR("default:") + " ");
+
+					class_desc->push_color(theme_cache.value_color);
+					class_desc->add_text(_fix_constant(cd.properties[i].default_value));
+					class_desc->pop();
+
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text("]");
+					class_desc->pop();
 				}
-				class_desc->pop();
-
-				class_desc->push_color(theme_cache.value_color);
-				class_desc->add_text(_fix_constant(cd.properties[i].default_value));
-				class_desc->pop();
-
-				class_desc->push_color(theme_cache.symbol_color);
-				class_desc->add_text("]");
-				class_desc->pop();
+				class_desc->pop(); // color
 			}
 
 			if (cd.properties[i].is_deprecated) {
@@ -1379,7 +1393,17 @@ void EditorHelp::_update_doc() {
 		}
 
 		// Enums
-		if (enums.size()) {
+		bool has_enums = enums.size() && !cd.is_script_doc;
+		if (enums.size() && !has_enums) {
+			for (KeyValue<String, DocData::EnumDoc> &E : cd.enums) {
+				if (E.key.begins_with("_") && E.value.description.strip_edges().is_empty()) {
+					continue;
+				}
+				has_enums = true;
+				break;
+			}
+		}
+		if (has_enums) {
 			section_line.push_back(Pair<String, int>(TTR("Enumerations"), class_desc->get_paragraph_count() - 2));
 			_push_title_font();
 			class_desc->add_text(TTR("Enumerations"));
@@ -1389,8 +1413,17 @@ void EditorHelp::_update_doc() {
 			class_desc->add_newline();
 
 			for (KeyValue<String, Vector<DocData::ConstantDoc>> &E : enums) {
-				enum_line[E.key] = class_desc->get_paragraph_count() - 2;
+				String key = E.key;
+				if ((key.get_slice_count(".") > 1) && (key.get_slice(".", 0) == edited_class)) {
+					key = key.get_slice(".", 1);
+				}
+				if (cd.enums.has(key)) {
+					if (cd.is_script_doc && cd.enums[key].description.strip_edges().is_empty() && E.key.begins_with("_")) {
+						continue;
+					}
+				}
 
+				enum_line[E.key] = class_desc->get_paragraph_count() - 2;
 				_push_code_font();
 
 				class_desc->push_color(theme_cache.title_color);
@@ -1401,27 +1434,19 @@ void EditorHelp::_update_doc() {
 				}
 				class_desc->pop();
 
-				String e = E.key;
-				if ((e.get_slice_count(".") > 1) && (e.get_slice(".", 0) == edited_class)) {
-					e = e.get_slice(".", 1);
-				}
-
 				class_desc->push_color(theme_cache.headline_color);
-				class_desc->add_text(e);
+				class_desc->add_text(key);
 				class_desc->pop();
 
 				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text(":");
 				class_desc->pop();
 
-				if (cd.enums.has(e)) {
-					if (cd.enums[e].is_deprecated) {
-						DEPRECATED_DOC_TAG;
-					}
-
-					if (cd.enums[e].is_experimental) {
-						EXPERIMENTAL_DOC_TAG;
-					}
+				if (cd.enums[key].is_deprecated) {
+					DEPRECATED_DOC_TAG;
+				}
+				if (cd.enums[key].is_experimental) {
+					EXPERIMENTAL_DOC_TAG;
 				}
 
 				_pop_code_font();
@@ -1430,11 +1455,11 @@ void EditorHelp::_update_doc() {
 				class_desc->add_newline();
 
 				// Enum description.
-				if (e != "@unnamed_enums" && cd.enums.has(e) && !cd.enums[e].description.strip_edges().is_empty()) {
+				if (key != "@unnamed_enums" && cd.enums.has(key) && !cd.enums[key].description.strip_edges().is_empty()) {
 					class_desc->push_color(theme_cache.text_color);
 					_push_normal_font();
 					class_desc->push_indent(1);
-					_add_text(cd.enums[e].description);
+					_add_text(cd.enums[key].description);
 					class_desc->pop();
 					_pop_normal_font();
 					class_desc->pop();
@@ -1966,7 +1991,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 
 	if (class_desc->is_ready()) {
-		class_desc->call_deferred(SNAME("scroll_to_paragraph"), line);
+		callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).call_deferred(line);
 	} else {
 		scroll_to = line;
 	}
@@ -2379,6 +2404,28 @@ String EditorHelp::get_cache_full_path() {
 	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor_doc_cache.res");
 }
 
+void EditorHelp::load_xml_buffer(const uint8_t *p_buffer, int p_size) {
+	if (!ext_doc) {
+		ext_doc = memnew(DocTools);
+	}
+
+	ext_doc->load_xml(p_buffer, p_size);
+
+	if (doc) {
+		doc->load_xml(p_buffer, p_size);
+	}
+}
+
+void EditorHelp::remove_class(const String &p_class) {
+	if (ext_doc && ext_doc->has_doc(p_class)) {
+		ext_doc->remove_doc(p_class);
+	}
+
+	if (doc && doc->has_doc(p_class)) {
+		doc->remove_doc(p_class);
+	}
+}
+
 void EditorHelp::_load_doc_thread(void *p_udata) {
 	Ref<Resource> cache_res = ResourceLoader::load(get_cache_full_path());
 	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == doc_version_hash) {
@@ -2426,6 +2473,11 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 
 void EditorHelp::_gen_extensions_docs() {
 	doc->generate((DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES | DocTools::GENERATE_FLAG_EXTENSION_CLASSES_ONLY));
+
+	// Append extra doc data, as it gets overridden by the generation step.
+	if (ext_doc) {
+		doc->merge_from(*ext_doc);
+	}
 }
 
 void EditorHelp::generate_doc(bool p_use_cache) {
@@ -2564,6 +2616,11 @@ void EditorHelp::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 }
 
+void EditorHelp::init_gdext_pointers() {
+	GDExtensionEditorHelp::editor_help_load_xml_buffer = &EditorHelp::load_xml_buffer;
+	GDExtensionEditorHelp::editor_help_remove_class = &EditorHelp::remove_class;
+}
+
 EditorHelp::EditorHelp() {
 	set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 
@@ -2663,6 +2720,10 @@ String EditorHelpBit::get_class_description(const StringName &p_class_name) cons
 }
 
 String EditorHelpBit::get_property_description(const StringName &p_class_name, const StringName &p_property_name) const {
+	if (!custom_description.is_empty()) {
+		return custom_description;
+	}
+
 	if (doc_property_cache.has(p_class_name) && doc_property_cache[p_class_name].has(p_property_name)) {
 		return doc_property_cache[p_class_name][p_property_name];
 	}
@@ -2867,14 +2928,22 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 	PackedStringArray slices = p_text.split("|", true, 3);
 	ERR_FAIL_COND_MSG(slices.size() < 4, "Invalid tooltip formatting. The expect string should be formatted as 'type|class|property|args'.");
 
-	String type = slices[0];
-	String class_name = slices[1];
-	String property_name = slices[2];
-	String property_args = slices[3];
+	const String &type = slices[0];
+	const String &class_name = slices[1];
+	const String &property_name = slices[2];
+	const String &property_args = slices[3];
+
+	String formatted_text;
+
+	// Exclude internal properties, they are not documented.
+	if (type == "internal_property") {
+		formatted_text = "[i]" + TTR("This property can only be set in the Inspector.") + "[/i]";
+		set_text(formatted_text);
+		return;
+	}
 
 	String title;
 	String description;
-	String formatted_text;
 
 	if (type == "class") {
 		title = class_name;
@@ -2910,8 +2979,9 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 	set_text(formatted_text);
 }
 
-EditorHelpTooltip::EditorHelpTooltip(const String &p_text) {
+EditorHelpTooltip::EditorHelpTooltip(const String &p_text, const String &p_custom_description) {
 	tooltip_text = p_text;
+	custom_description = p_custom_description;
 
 	get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 0));
 }

@@ -468,8 +468,8 @@ void SkeletonModification2DTwoBoneIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joint_two_bone_idx"), &SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_minimum_distance", PROPERTY_HINT_RANGE, "0,100000000,0.01,suffix:m"), "set_target_minimum_distance", "get_target_minimum_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_maximum_distance", PROPERTY_HINT_NONE, "0,100000000,0.01,suffix:m"), "set_target_maximum_distance", "get_target_maximum_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_minimum_distance", PROPERTY_HINT_RANGE, "0,100000000,0.01,suffix:px"), "set_target_minimum_distance", "get_target_minimum_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_maximum_distance", PROPERTY_HINT_NONE, "0,100000000,0.01,suffix:px"), "set_target_maximum_distance", "get_target_maximum_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_bend_direction", PROPERTY_HINT_NONE, ""), "set_flip_bend_direction", "get_flip_bend_direction");
 	ADD_GROUP("", "");
 }

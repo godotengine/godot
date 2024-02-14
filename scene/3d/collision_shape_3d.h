@@ -64,7 +64,7 @@ public:
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	CollisionShape3D();
 	~CollisionShape3D();

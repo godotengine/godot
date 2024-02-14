@@ -116,6 +116,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_spacing, "font_rid", "spacing", "value");
 	GDVIRTUAL_BIND(_font_get_spacing, "font_rid", "spacing");
 
+	GDVIRTUAL_BIND(_font_set_baseline_offset, "font_rid", "baseline_offset");
+	GDVIRTUAL_BIND(_font_get_baseline_offset, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_transform, "font_rid", "transform");
 	GDVIRTUAL_BIND(_font_get_transform, "font_rid");
 
@@ -235,6 +238,9 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_set_custom_punctuation, "shaped", "punct");
 	GDVIRTUAL_BIND(_shaped_text_get_custom_punctuation, "shaped");
+
+	GDVIRTUAL_BIND(_shaped_text_set_custom_ellipsis, "shaped", "char");
+	GDVIRTUAL_BIND(_shaped_text_get_custom_ellipsis, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_text_set_orientation, "shaped", "orientation");
 	GDVIRTUAL_BIND(_shaped_text_get_orientation, "shaped");
@@ -629,6 +635,16 @@ void TextServerExtension::font_set_spacing(const RID &p_font_rid, SpacingType p_
 int64_t TextServerExtension::font_get_spacing(const RID &p_font_rid, SpacingType p_spacing) const {
 	int64_t ret = 0;
 	GDVIRTUAL_CALL(_font_get_spacing, p_font_rid, p_spacing, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) {
+	GDVIRTUAL_CALL(_font_set_baseline_offset, p_font_rid, p_baseline_offset);
+}
+
+float TextServerExtension::font_get_baseline_offset(const RID &p_font_rid) const {
+	float ret = 0.0;
+	GDVIRTUAL_CALL(_font_get_baseline_offset, p_font_rid, ret);
 	return ret;
 }
 
@@ -1055,6 +1071,16 @@ void TextServerExtension::shaped_text_set_custom_punctuation(const RID &p_shaped
 String TextServerExtension::shaped_text_get_custom_punctuation(const RID &p_shaped) const {
 	String ret;
 	GDVIRTUAL_CALL(_shaped_text_get_custom_punctuation, p_shaped, ret);
+	return ret;
+}
+
+void TextServerExtension::shaped_text_set_custom_ellipsis(const RID &p_shaped, int64_t p_char) {
+	GDVIRTUAL_CALL(_shaped_text_set_custom_ellipsis, p_shaped, p_char);
+}
+
+int64_t TextServerExtension::shaped_text_get_custom_ellipsis(const RID &p_shaped) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_shaped_text_get_custom_ellipsis, p_shaped, ret);
 	return ret;
 }
 

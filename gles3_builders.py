@@ -199,7 +199,7 @@ def build_gles3_header(
     filename: str,
     include: str,
     class_suffix: str,
-    optional_output_filename: str = None,
+    optional_output_filename: Optional[str] = None,
     header_data: Optional[GLES3HeaderStruct] = None,
 ):
     header_data = header_data or GLES3HeaderStruct()

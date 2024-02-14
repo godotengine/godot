@@ -4,7 +4,7 @@
 		Array of 2-dimensional textures, optionally compressed.
 	</brief_description>
 	<description>
-		A texture array that is loaded from a [code].ctexarray[/code] file. This file format is internal to Godot; it is created by importing other image formats with the import system. [CompressedTexture2DArray] can use one of 4 compresson methods:
+		A texture array that is loaded from a [code].ctexarray[/code] file. This file format is internal to Godot; it is created by importing other image formats with the import system. [CompressedTexture2DArray] can use one of 4 compression methods:
 		- Lossless (WebP or PNG, uncompressed on the GPU)
 		- Lossy (WebP, uncompressed on the GPU)
 		- VRAM Compressed (compressed on the GPU)

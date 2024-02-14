@@ -326,28 +326,38 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 }
 
 void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, const Color &p_modulate, int p_priority, int p_outline_size) {
-	for (int j = 0; j < p_glyph.repeat; j++) {
-		Vector2 gl_of;
-		Vector2 gl_sz;
-		Rect2 gl_uv;
-		Size2 texs;
-		RID tex;
+	if (p_glyph.index == 0) {
+		r_offset.x += p_glyph.advance * pixel_size * p_glyph.repeat; // Non visual character, skip.
+		return;
+	}
 
-		if (p_glyph.font_rid != RID()) {
-			tex = TS->font_get_glyph_texture_rid(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
-			if (tex != RID()) {
-				gl_of = (TS->font_get_glyph_offset(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) + Vector2(p_glyph.x_off, p_glyph.y_off)) * pixel_size;
-				gl_sz = TS->font_get_glyph_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) * pixel_size;
-				gl_uv = TS->font_get_glyph_uv_rect(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
-				texs = TS->font_get_glyph_texture_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
-			}
-		} else {
-			gl_sz = TS->get_hex_code_box_size(p_glyph.font_size, p_glyph.index) * pixel_size;
-			gl_of = Vector2(0, -gl_sz.y);
+	Vector2 gl_of;
+	Vector2 gl_sz;
+	Rect2 gl_uv;
+	Size2 texs;
+	RID tex;
+
+	if (p_glyph.font_rid.is_valid()) {
+		tex = TS->font_get_glyph_texture_rid(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
+		if (tex.is_valid()) {
+			gl_of = (TS->font_get_glyph_offset(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) + Vector2(p_glyph.x_off, p_glyph.y_off)) * pixel_size;
+			gl_sz = TS->font_get_glyph_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) * pixel_size;
+			gl_uv = TS->font_get_glyph_uv_rect(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
+			texs = TS->font_get_glyph_texture_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
 		}
+	} else {
+		gl_sz = TS->get_hex_code_box_size(p_glyph.font_size, p_glyph.index) * pixel_size;
+		gl_of = Vector2(0, -gl_sz.y);
+	}
 
-		bool msdf = TS->font_is_multichannel_signed_distance_field(p_glyph.font_rid);
+	if (gl_uv.size.x <= 2 || gl_uv.size.y <= 2) {
+		r_offset.x += p_glyph.advance * pixel_size * p_glyph.repeat; // Nothing to draw.
+		return;
+	}
 
+	bool msdf = TS->font_is_multichannel_signed_distance_field(p_glyph.font_rid);
+
+	for (int j = 0; j < p_glyph.repeat; j++) {
 		SurfaceKey key = SurfaceKey(tex.get_id(), p_priority, p_outline_size);
 		if (!surfaces.has(key)) {
 			SurfaceData surf;
@@ -420,7 +430,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			}
 		}
 
-		if (tex != RID()) {
+		if (tex.is_valid()) {
 			s.mesh_uvs.write[(s.offset * 4) + 3] = Vector2(gl_uv.position.x / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
 			s.mesh_uvs.write[(s.offset * 4) + 2] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
 			s.mesh_uvs.write[(s.offset * 4) + 1] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, gl_uv.position.y / texs.y);

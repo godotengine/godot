@@ -162,7 +162,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 	singleton_script_debugger->set_skip_breakpoints(p_skip_breakpoints);
 
 	for (int i = 0; i < p_breakpoints.size(); i++) {
-		String bp = p_breakpoints[i];
+		const String &bp = p_breakpoints[i];
 		int sp = bp.rfind(":");
 		ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
 

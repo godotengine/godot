@@ -209,7 +209,9 @@ protected:
 				_compile_specialization(s, p_variant, version, p_specialization);
 				version->variants[p_variant].insert(p_specialization, s);
 				spec = version->variants[p_variant].lookup_ptr(p_specialization);
-				_save_to_cache(version);
+				if (shader_cache_dir_valid) {
+					_save_to_cache(version);
+				}
 			}
 		} else if (spec->build_queued) {
 			// Still queued, wait

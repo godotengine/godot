@@ -101,6 +101,7 @@
 									<xs:attribute type="xs:string" name="qualifiers" use="optional" />
 									<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
 									<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+									<xs:attribute type="xs:string" name="keywords" use="optional" />
 								</xs:complexType>
 							</xs:element>
 						</xs:sequence>
@@ -123,6 +124,7 @@
 											<xs:attribute type="xs:string" name="default" use="optional" />
 											<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
 											<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+											<xs:attribute type="xs:string" name="keywords" use="optional" />
 										</xs:extension>
 									</xs:simpleContent>
 								</xs:complexType>
@@ -144,6 +146,7 @@
 												<xs:attribute type="xs:byte" name="index" />
 												<xs:attribute type="xs:string" name="name" />
 												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="keywords" use="optional" />
 											</xs:complexType>
 										</xs:element>
 										<xs:element type="xs:string" name="description" />
@@ -169,6 +172,7 @@
 											<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
 											<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
 											<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+											<xs:attribute type="xs:string" name="keywords" use="optional" />
 										</xs:extension>
 									</xs:simpleContent>
 								</xs:complexType>
@@ -209,6 +213,7 @@
 									</xs:sequence>
 									<xs:attribute type="xs:string" name="name" use="optional" />
 									<xs:attribute type="xs:string" name="qualifiers" use="optional" />
+									<xs:attribute type="xs:string" name="keywords" use="optional" />
 								</xs:complexType>
 							</xs:element>
 						</xs:sequence>
@@ -225,6 +230,7 @@
 											<xs:attribute type="xs:string" name="data_type" />
 											<xs:attribute type="xs:string" name="type" />
 											<xs:attribute type="xs:string" name="default" use="optional" />
+											<xs:attribute type="xs:string" name="keywords" use="optional" />
 										</xs:extension>
 									</xs:simpleContent>
 								</xs:complexType>
@@ -275,6 +281,7 @@
 			<xs:attribute type="xs:string" name="inherits" />
 			<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
 			<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+			<xs:attribute type="xs:string" name="keywords" use="optional" />
 		</xs:complexType>
 	</xs:element>
 </xs:schema>

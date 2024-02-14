@@ -79,8 +79,8 @@ void VisibleOnScreenNotifier3D::_notification(int p_what) {
 	}
 }
 
-PackedStringArray VisibleOnScreenNotifier3D::get_configuration_warnings() const {
-	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
+Array VisibleOnScreenNotifier3D::get_configuration_warnings() const {
+	Array warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("VisibleOnScreenNotifier3D nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));

@@ -33,8 +33,8 @@
 #include "core/io/config_file.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 
@@ -114,6 +114,7 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	add_child(makevb);
 
 	layout_names = memnew(ItemList);
+	layout_names->set_auto_translate(false);
 	layout_names->set_auto_height(true);
 	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
 	layout_names->set_visible(true);

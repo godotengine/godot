@@ -31,6 +31,7 @@
 #ifndef RENDERER_CANVAS_RENDER_H
 #define RENDERER_CANVAS_RENDER_H
 
+#include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
 
 class RendererCanvasRender {
@@ -479,7 +480,7 @@ public:
 		}
 	};
 
-	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) = 0;
+	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
 
 	struct LightOccluderInstance {
 		bool enabled;

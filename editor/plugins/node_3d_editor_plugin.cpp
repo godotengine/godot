@@ -943,13 +943,13 @@ void Node3DEditorViewport::_select_region() {
 		}
 	}
 
-	Plane near(-_get_camera_normal(), cam_pos);
-	near.d -= get_znear();
-	frustum.push_back(near);
+	Plane near_plane = Plane(-_get_camera_normal(), cam_pos);
+	near_plane.d -= get_znear();
+	frustum.push_back(near_plane);
 
-	Plane far = -near;
-	far.d += get_zfar();
-	frustum.push_back(far);
+	Plane far_plane = -near_plane;
+	far_plane.d += get_zfar();
+	frustum.push_back(far_plane);
 
 	if (spatial_editor->get_single_selected_node()) {
 		Node3D *single_selected = spatial_editor->get_single_selected_node();
@@ -1839,17 +1839,19 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					clicked = ObjectID();
 
-					if ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
+					bool node_selected = get_selected_count() > 0;
+
+					if (node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
 						begin_transform(TRANSFORM_ROTATE, false);
 						break;
 					}
 
-					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+					if (node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
 						begin_transform(TRANSFORM_TRANSLATE, false);
 						break;
 					}
 
-					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
+					if (node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
 						begin_transform(TRANSFORM_SCALE, false);
 						break;
 					}
@@ -1984,9 +1986,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
-				// enable region-select if nothing has been selected yet or multi-select (shift key) is active
-				if (selection_in_progress && movement_threshold_passed) {
-					if (get_selected_count() == 0 || clicked_wants_append) {
+				if (selection_in_progress && movement_threshold_passed && clicked.is_valid()) {
+					if (clicked_wants_append || !editor_selection->is_selected(Object::cast_to<Node>(ObjectDB::get_instance(clicked)))) {
 						cursor.region_select = true;
 						cursor.region_begin = _edit.original_mouse_pos;
 						clicked = ObjectID();
@@ -2734,11 +2735,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 			} else {
 				set_freelook_active(false);
 			}
-			call_deferred(SNAME("update_transform_gizmo_view"));
+			callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view).call_deferred();
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			call_deferred(SNAME("update_transform_gizmo_view"));
+			callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view).call_deferred();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -2789,8 +2790,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				}
 
 				Transform3D t = sp->get_global_gizmo_transform();
-				VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(sp);
-				AABB new_aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp);
+				AABB new_aabb = _calculate_spatial_bounds(sp);
 
 				exist = true;
 				if (se->last_xform == t && se->aabb == new_aabb && !se->last_xform_dirty) {
@@ -2836,7 +2836,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 					last_message = message;
 				}
 
-				message_time -= get_physics_process_delta_time();
+				message_time -= get_process_delta_time();
 				if (message_time < 0) {
 					surface->queue_redraw();
 				}
@@ -3017,6 +3017,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			// Clear preview material when dropped outside applicable object.
 			if (spatial_editor->get_preview_material().is_valid() && !is_drag_successful()) {
 				_remove_preview_material();
+			} else {
+				_remove_preview_node();
 			}
 		} break;
 	}
@@ -3295,8 +3297,10 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					xform.basis.rotate_local(Vector3(1, 0, 0), Math_TAU * 0.25);
 				}
 
-				undo_redo->add_do_method(sp, "set_global_transform", xform);
-				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
+				Node3D *parent = sp->get_parent_node_3d();
+				Transform3D local_xform = parent ? parent->get_global_transform().affine_inverse() * xform : xform;
+				undo_redo->add_do_method(sp, "set_transform", local_xform);
+				undo_redo->add_undo_method(sp, "set_transform", sp->get_local_gizmo_transform());
 			}
 			undo_redo->commit_action();
 
@@ -3355,7 +3359,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL), false);
 			orthogonal = false;
 			auto_orthogonal = false;
-			call_deferred(SNAME("update_transform_gizmo_view"));
+			callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view).call_deferred();
 			_update_camera(0);
 			_update_name();
 
@@ -3365,7 +3369,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL), true);
 			orthogonal = true;
 			auto_orthogonal = false;
-			call_deferred(SNAME("update_transform_gizmo_view"));
+			callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view).call_deferred();
 			_update_camera(0);
 			_update_name();
 		} break;
@@ -3985,8 +3989,6 @@ Dictionary Node3DEditorViewport::get_state() const {
 }
 
 void Node3DEditorViewport::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &Node3DEditorViewport::update_transform_gizmo_view); // Used by call_deferred.
-
 	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
 	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
 }
@@ -4088,33 +4090,33 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	return world_pos + world_ray * FALLBACK_DISTANCE;
 }
 
-AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, bool p_exclude_top_level_transform) {
+AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, const Node3D *p_top_level_parent) {
 	AABB bounds;
+
+	if (!p_top_level_parent) {
+		p_top_level_parent = p_parent;
+	}
+
+	if (!p_parent) {
+		return AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
+	}
+
+	Transform3D xform_to_top_level_parent_space = p_top_level_parent->get_global_transform().affine_inverse() * p_parent->get_global_transform();
 
 	const VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(p_parent);
 	if (visual_instance) {
 		bounds = visual_instance->get_aabb();
+	} else {
+		bounds = AABB();
 	}
+	bounds = xform_to_top_level_parent_space.xform(bounds);
 
 	for (int i = 0; i < p_parent->get_child_count(); i++) {
 		Node3D *child = Object::cast_to<Node3D>(p_parent->get_child(i));
 		if (child) {
-			AABB child_bounds = _calculate_spatial_bounds(child, false);
-
-			if (bounds.size == Vector3() && p_parent) {
-				bounds = child_bounds;
-			} else {
-				bounds.merge_with(child_bounds);
-			}
+			AABB child_bounds = _calculate_spatial_bounds(child, p_top_level_parent);
+			bounds.merge_with(child_bounds);
 		}
-	}
-
-	if (bounds.size == Vector3() && !p_parent) {
-		bounds = AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
-	}
-
-	if (!p_exclude_top_level_transform) {
-		bounds = p_parent->get_transform().xform(bounds);
 	}
 
 	return bounds;
@@ -4154,8 +4156,7 @@ Node *Node3DEditorViewport::_sanitize_preview_node(Node *p_node) const {
 void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) const {
 	bool add_preview = false;
 	for (int i = 0; i < files.size(); i++) {
-		String path = files[i];
-		Ref<Resource> res = ResourceLoader::load(path);
+		Ref<Resource> res = ResourceLoader::load(files[i]);
 		ERR_CONTINUE(res.is_null());
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
@@ -4248,17 +4249,16 @@ bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Poin
 			return false;
 		}
 
-		if (spatial_editor->get_preview_material() != mesh_instance->get_surface_override_material(closest_surface)) {
-			spatial_editor->set_preview_material_surface(closest_surface);
-			spatial_editor->set_preview_reset_material(mesh_instance->get_surface_override_material(closest_surface));
-			mesh_instance->set_surface_override_material(closest_surface, spatial_editor->get_preview_material());
-		}
+		spatial_editor->set_preview_material_surface(closest_surface);
+		spatial_editor->set_preview_reset_material(mesh_instance->get_surface_override_material(closest_surface));
+		mesh_instance->set_surface_override_material(closest_surface, spatial_editor->get_preview_material());
 
 		return true;
 	}
 
 	GeometryInstance3D *geometry_instance = Object::cast_to<GeometryInstance3D>(target_inst);
-	if (geometry_instance && spatial_editor->get_preview_material() != geometry_instance->get_material_override()) {
+	if (geometry_instance) {
+		spatial_editor->set_preview_material_surface(-1);
 		spatial_editor->set_preview_reset_material(geometry_instance->get_material_override());
 		geometry_instance->set_material_override(spatial_editor->get_preview_material());
 		return true;
@@ -4278,7 +4278,6 @@ void Node3DEditorViewport::_reset_preview_material() const {
 	GeometryInstance3D *geometry_instance = Object::cast_to<GeometryInstance3D>(last_target_inst);
 	if (mesh_instance && spatial_editor->get_preview_material_surface() != -1) {
 		mesh_instance->set_surface_override_material(spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
-		spatial_editor->set_preview_material_surface(-1);
 	} else if (geometry_instance) {
 		geometry_instance->set_material_override(spatial_editor->get_preview_reset_material());
 	}
@@ -4365,16 +4364,17 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
-		Transform3D gl_transform;
+		Transform3D parent_tf;
 		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
 		if (parent_node3d) {
-			gl_transform = parent_node3d->get_global_gizmo_transform();
+			parent_tf = parent_node3d->get_global_gizmo_transform();
 		}
 
-		gl_transform.origin = preview_node_pos;
-		gl_transform.basis *= node3d->get_transform().basis;
+		Transform3D new_tf = node3d->get_transform();
+		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + node3d->get_position());
+		new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
 
-		undo_redo->add_do_method(instantiated_scene, "set_global_transform", gl_transform);
+		undo_redo->add_do_method(instantiated_scene, "set_transform", new_tf);
 	}
 
 	return true;
@@ -4535,7 +4535,7 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);
-	bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
+	bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	selected_files.clear();
 	Dictionary d = p_data;
@@ -4545,15 +4545,15 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
-	if (selected_nodes.size() == 1) {
+	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes[0];
-		target_node = root_node;
-		if (is_ctrl) {
-			target_node = selected_node;
+		target_node = selected_node;
+		if (is_alt) {
+			target_node = root_node;
 		} else if (is_shift && selected_node != root_node) {
 			target_node = selected_node->get_parent();
 		}
-	} else if (selected_nodes.size() == 0) {
+	} else {
 		if (root_node) {
 			target_node = root_node;
 		} else {
@@ -4561,11 +4561,6 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 			SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 			target_node = get_tree()->get_edited_scene_root();
 		}
-	} else {
-		accept->set_text(TTR("Cannot drag and drop into multiple selected nodes."));
-		accept->popup_centered();
-		_remove_preview_node();
-		return;
 	}
 
 	drop_pos = p_point;
@@ -4610,8 +4605,8 @@ void Node3DEditorViewport::commit_transform() {
 			continue;
 		}
 
-		undo_redo->add_do_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
-		undo_redo->add_undo_method(sp, "set_global_transform", se->original);
+		undo_redo->add_do_method(sp, "set_transform", sp->get_local_gizmo_transform());
+		undo_redo->add_undo_method(sp, "set_transform", se->original_local);
 	}
 	undo_redo->commit_action();
 
@@ -6171,8 +6166,10 @@ void Node3DEditor::_xform_dialog_action() {
 			tr.origin += t.origin;
 		}
 
-		undo_redo->add_do_method(sp, "set_global_transform", tr);
-		undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
+		Node3D *parent = sp->get_parent_node_3d();
+		Transform3D local_tr = parent ? parent->get_global_transform().affine_inverse() * tr : tr;
+		undo_redo->add_do_method(sp, "set_transform", local_tr);
+		undo_redo->add_undo_method(sp, "set_transform", sp->get_transform());
 	}
 	undo_redo->commit_action();
 }
@@ -6490,25 +6487,91 @@ void Node3DEditor::_init_indicators() {
 		origin_enabled = true;
 		grid_enabled = true;
 
-		indicator_mat.instantiate();
-		indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-		indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-		indicator_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-		indicator_mat->set_transparency(StandardMaterial3D::Transparency::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
+		Ref<Shader> origin_shader = memnew(Shader);
+		origin_shader->set_code(R"(
+// 3D editor origin line shader.
 
-		Vector<Color> origin_colors;
+shader_type spatial;
+render_mode blend_mix, cull_disabled, unshaded, fog_disabled;
+
+void vertex() {
+	vec3 point_a = MODEL_MATRIX[3].xyz;
+	// Encoded in scale.
+	vec3 point_b = vec3(MODEL_MATRIX[0].x, MODEL_MATRIX[1].y, MODEL_MATRIX[2].z);
+
+	// Points are already in world space, so no need for MODEL_MATRIX anymore.
+	vec4 clip_a = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(point_a, 1.0));
+	vec4 clip_b = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(point_b, 1.0));
+
+	vec2 screen_a = VIEWPORT_SIZE * (0.5 * clip_a.xy / clip_a.w + 0.5);
+	vec2 screen_b = VIEWPORT_SIZE * (0.5 * clip_b.xy / clip_b.w + 0.5);
+
+	vec2 x_basis = normalize(screen_b - screen_a);
+	vec2 y_basis = vec2(-x_basis.y, x_basis.x);
+
+	float width = 3.0;
+	vec2 screen_point_a = screen_a + width * (VERTEX.x * x_basis + VERTEX.y * y_basis);
+	vec2 screen_point_b = screen_b + width * (VERTEX.x * x_basis + VERTEX.y * y_basis);
+	vec2 screen_point_final = mix(screen_point_a, screen_point_b, VERTEX.z);
+
+	vec4 clip_final = mix(clip_a, clip_b, VERTEX.z);
+
+	POSITION = vec4(clip_final.w * ((2.0 * screen_point_final) / VIEWPORT_SIZE - 1.0), clip_final.z, clip_final.w);
+	UV = VERTEX.yz * clip_final.w;
+
+	if (!OUTPUT_IS_SRGB) {
+		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb, vec3(0.04045)));
+	}
+}
+
+void fragment() {
+	// Multiply by 0.5 since UV is actually UV is [-1, 1].
+	float line_width = fwidth(UV.x * 0.5);
+	float line_uv = abs(UV.x * 0.5);
+	float line = smoothstep(line_width * 1.0, line_width * 0.25, line_uv);
+
+	ALBEDO = COLOR.rgb;
+	ALPHA *= COLOR.a * line;
+}
+)");
+
+		origin_mat.instantiate();
+		origin_mat->set_shader(origin_shader);
+
 		Vector<Vector3> origin_points;
+		origin_points.resize(6);
 
-		const int count_of_elements = 3 * 6;
-		origin_colors.resize(count_of_elements);
-		origin_points.resize(count_of_elements);
+		origin_points.set(0, Vector3(0.0, -0.5, 0.0));
+		origin_points.set(1, Vector3(0.0, -0.5, 1.0));
+		origin_points.set(2, Vector3(0.0, 0.5, 1.0));
 
-		int x = 0;
+		origin_points.set(3, Vector3(0.0, -0.5, 0.0));
+		origin_points.set(4, Vector3(0.0, 0.5, 1.0));
+		origin_points.set(5, Vector3(0.0, 0.5, 0.0));
+
+		Array d;
+		d.resize(RS::ARRAY_MAX);
+		d[RenderingServer::ARRAY_VERTEX] = origin_points;
+
+		origin_mesh = RenderingServer::get_singleton()->mesh_create();
+
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin_mesh, RenderingServer::PRIMITIVE_TRIANGLES, d);
+		RenderingServer::get_singleton()->mesh_surface_set_material(origin_mesh, 0, origin_mat->get_rid());
+
+		origin_multimesh = RenderingServer::get_singleton()->multimesh_create();
+		RenderingServer::get_singleton()->multimesh_set_mesh(origin_multimesh, origin_mesh);
+		RenderingServer::get_singleton()->multimesh_allocate_data(origin_multimesh, 12, RS::MultimeshTransformFormat::MULTIMESH_TRANSFORM_3D, true, false);
+		RenderingServer::get_singleton()->multimesh_set_visible_instances(origin_multimesh, -1);
+
+		LocalVector<float> distances;
+		distances.resize(5);
+		distances[0] = -1000000.0;
+		distances[1] = -1000.0;
+		distances[2] = 0.0;
+		distances[3] = 1000.0;
+		distances[4] = 1000000.0;
 
 		for (int i = 0; i < 3; i++) {
-			Vector3 axis;
-			axis[i] = 1;
 			Color origin_color;
 			switch (i) {
 				case 0:
@@ -6525,26 +6588,24 @@ void Node3DEditor::_init_indicators() {
 					break;
 			}
 
-			grid_enable[i] = false;
-			grid_visible[i] = false;
+			Vector3 axis;
+			axis[i] = 1;
 
-			origin_colors.set(x, origin_color);
-			origin_colors.set(x + 1, origin_color);
-			origin_colors.set(x + 2, origin_color);
-			origin_colors.set(x + 3, origin_color);
-			origin_colors.set(x + 4, origin_color);
-			origin_colors.set(x + 5, origin_color);
-			// To both allow having a large origin size and avoid jitter
-			// at small scales, we should segment the line into pieces.
-			// 3 pieces seems to do the trick, and let's use powers of 2.
-			origin_points.set(x, axis * 1048576);
-			origin_points.set(x + 1, axis * 1024);
-			origin_points.set(x + 2, axis * 1024);
-			origin_points.set(x + 3, axis * -1024);
-			origin_points.set(x + 4, axis * -1024);
-			origin_points.set(x + 5, axis * -1048576);
-			x += 6;
+			for (int j = 0; j < 4; j++) {
+				Transform3D t = Transform3D();
+				t = t.scaled(axis * distances[j + 1]);
+				t = t.translated(axis * distances[j]);
+				RenderingServer::get_singleton()->multimesh_instance_set_transform(origin_multimesh, i * 4 + j, t);
+				RenderingServer::get_singleton()->multimesh_instance_set_color(origin_multimesh, i * 4 + j, origin_color);
+			}
 		}
+
+		origin_instance = RenderingServer::get_singleton()->instance_create2(origin_multimesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
+		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+
+		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RS::SHADOW_CASTING_SETTING_OFF);
 
 		Ref<Shader> grid_shader = memnew(Shader);
 		grid_shader->set_code(R"(
@@ -6594,22 +6655,6 @@ void fragment() {
 		grid_visible[2] = grid_enable[2];
 
 		_init_grid();
-
-		origin = RenderingServer::get_singleton()->mesh_create();
-		Array d;
-		d.resize(RS::ARRAY_MAX);
-		d[RenderingServer::ARRAY_VERTEX] = origin_points;
-		d[RenderingServer::ARRAY_COLOR] = origin_colors;
-
-		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin, RenderingServer::PRIMITIVE_LINES, d);
-		RenderingServer::get_singleton()->mesh_surface_set_material(origin, 0, indicator_mat->get_rid());
-
-		origin_instance = RenderingServer::get_singleton()->instance_create2(origin, get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_layer_mask(origin_instance, 1 << Node3DEditorViewport::GIZMO_GRID_LAYER);
-		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(origin_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-
-		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, RS::SHADOW_CASTING_SETTING_OFF);
 	}
 
 	{
@@ -7227,7 +7272,8 @@ void Node3DEditor::_init_grid() {
 
 void Node3DEditor::_finish_indicators() {
 	RenderingServer::get_singleton()->free(origin_instance);
-	RenderingServer::get_singleton()->free(origin);
+	RenderingServer::get_singleton()->free(origin_multimesh);
+	RenderingServer::get_singleton()->free(origin_mesh);
 
 	_finish_grid();
 }
@@ -7471,8 +7517,10 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 					new_transform.origin.y = result.position.y;
 					new_transform.origin = new_transform.origin - position_offset;
 
-					undo_redo->add_do_method(sp, "set_global_transform", new_transform);
-					undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_transform());
+					Node3D *parent = sp->get_parent_node_3d();
+					Transform3D new_local_xform = parent ? parent->get_global_transform().affine_inverse() * new_transform : new_transform;
+					undo_redo->add_do_method(sp, "set_transform", new_local_xform);
+					undo_redo->add_undo_method(sp, "set_transform", sp->get_transform());
 				}
 			}
 
@@ -8014,6 +8062,8 @@ void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("_clear_subgizmo_selection", &Node3DEditor::_clear_subgizmo_selection);
 	ClassDB::bind_method("_refresh_menu_icons", &Node3DEditor::_refresh_menu_icons);
 
+	ClassDB::bind_method("update_all_gizmos", &Node3DEditor::update_all_gizmos);
+
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
@@ -8301,7 +8351,7 @@ Node3DEditor::Node3DEditor() {
 	main_menu_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
 	tool_button[TOOL_GROUP_SELECTED]->set_theme_type_variation("FlatButton");
 	tool_button[TOOL_GROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_GROUP_SELECTED));
-	tool_button[TOOL_GROUP_SELECTED]->set_tooltip_text(TTR("Make selected node's children not selectable."));
+	tool_button[TOOL_GROUP_SELECTED]->set_tooltip_text(TTR("Groups the selected node with its children. This selects the parent when any child node is clicked in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_GROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::G));
 
@@ -8309,7 +8359,7 @@ Node3DEditor::Node3DEditor() {
 	main_menu_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_theme_type_variation("FlatButton");
 	tool_button[TOOL_UNGROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNGROUP_SELECTED));
-	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip_text(TTR("Make selected node's children selectable."));
+	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip_text(TTR("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::G));
 
@@ -8529,7 +8579,8 @@ Node3DEditor::Node3DEditor() {
 	settings_fov->set_step(0.1);
 	settings_fov->set_value(EDITOR_GET("editors/3d/default_fov"));
 	settings_fov->set_select_all_on_focus(true);
-	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"), settings_fov);
+	settings_fov->set_tooltip_text(TTR("FOV is defined as a vertical value, as the editor camera always uses the Keep Height aspect mode."));
+	settings_vbc->add_margin_child(TTR("Perspective VFOV (deg.):"), settings_fov);
 
 	settings_znear = memnew(SpinBox);
 	settings_znear->set_max(MAX_Z);

@@ -111,7 +111,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-29 20:25+0000\n"
+"PO-Revision-Date: 2023-12-11 09:59+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -3508,6 +3508,15 @@ msgstr ""
 "Daha fazla hatayı önlemek için '%s' eklentisi devre dışı bırakılıyor."
 
 msgid ""
+"Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."
+msgstr ""
+"Eklenti betiği '%s' yolundan yüklenemedi. Bunun temel tipi "
+"'EditorPlugin' (düzenleyici eklentisi) değil."
+
+msgid "Unable to load addon script from path: '%s'. Script is not in tool mode."
+msgstr "Eklenti betiği '%s' yolundan yüklenemedi. Betik, araç kipinde değil."
+
+msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
@@ -3613,6 +3622,15 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 "'%s' dosyasına yazılamıyor; dosya kullanımda, kilitli veya izinler eksik."
+
+msgid "Forward+"
+msgstr "İleri+"
+
+msgid "Mobile"
+msgstr "Mobil"
+
+msgid "Compatibility"
+msgstr "Uyumluluk"
 
 msgid "Pan View"
 msgstr "Görünümü Kaydır"
@@ -3790,22 +3808,6 @@ msgstr "Godot Hakkında"
 
 msgid "Support Godot Development"
 msgstr "Godot'yu Geliştirmeye Destek Olun"
-
-msgid "Choose a renderer."
-msgstr "Bir işleyici seçin."
-
-msgid "Forward+"
-msgstr "İleri+"
-
-msgid "Mobile"
-msgstr "Mobil"
-
-msgid "Compatibility"
-msgstr "Uyumluluk"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr ""
-"İşleyicinin değiştirilmesi, düzenleyicinin yeniden başlatılmasını gerektirir."
 
 msgid "Update Continuously"
 msgstr "Sürekli Güncelle"
@@ -13204,14 +13206,6 @@ msgstr ""
 "Değişiklik, düzenleyici veya proje yöneticisi yeniden başladığında etkili "
 "olacak."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Var olan Godot projeleri bulmak için, %s klasör taraması yapmak istediğinize "
-"emin misiniz?\n"
-"Bu biraz zaman alabilir."
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "Proje Yöneticisi"
@@ -14763,13 +14757,6 @@ msgstr "Bir paket segmentindeki ilk karakter '%s' karakteri olamaz."
 
 msgid "The package must have at least one '.' separator."
 msgstr "Paket en azından bir tane '.' ayıracına sahip olmalıdır."
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr ""
-"Proje ismi, paket ismi biçimi için gereksinimi karşılamıyor. Lütfen paket "
-"adını açık olarak belirtin."
 
 msgid "Invalid public key for APK expansion."
 msgstr "APK genişletmesi için geçersiz ortak anahtar."

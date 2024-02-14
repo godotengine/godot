@@ -80,6 +80,9 @@ class AnimationLibraryEditor : public AcceptDialog {
 	StringName file_dialog_animation;
 	StringName file_dialog_library;
 
+	Button *new_library_button = nullptr;
+	Button *load_library_button = nullptr;
+
 	AcceptDialog *error_dialog = nullptr;
 	bool adding_animation = false;
 	StringName adding_animation_to_library;
@@ -98,6 +101,7 @@ class AnimationLibraryEditor : public AcceptDialog {
 	void _add_library_confirm();
 	void _load_library();
 	void _load_file(String p_path);
+	void _load_files(const PackedStringArray &p_paths);
 
 	void _item_renamed();
 	void _button_pressed(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
@@ -107,6 +111,7 @@ class AnimationLibraryEditor : public AcceptDialog {
 	bool updating = false;
 
 protected:
+	void _notification(int p_what);
 	void _update_editor(Object *p_mixer);
 	static void _bind_methods();
 

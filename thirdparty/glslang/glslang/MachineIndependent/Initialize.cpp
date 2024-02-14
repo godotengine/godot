@@ -51,7 +51,6 @@
 //                                                including identifying what extensions are needed if a version does not allow a symbol
 //
 
-#include "../Include/intermediate.h"
 #include "Initialize.h"
 
 namespace glslang {
@@ -60,10 +59,6 @@ namespace glslang {
 const bool ARBCompatibility = true;
 
 const bool ForwardCompatibility = false;
-
-// change this back to false if depending on textual spellings of texturing calls when consuming the AST
-// Using PureOperatorBuiltins=false is deprecated.
-bool PureOperatorBuiltins = true;
 
 namespace {
 
@@ -149,10 +144,10 @@ EProfile EDesktopProfile = static_cast<EProfile>(ENoProfile | ECoreProfile | ECo
                                                   { EBadProfile } };
     const Versioning* Es300Desktop130 = &Es300Desktop130Version[0];
 
-    const Versioning Es310Desktop420Version[] = { { EEsProfile,      0, 310, 0, nullptr },
-                                                  { EDesktopProfile, 0, 420, 0, nullptr },
+    const Versioning Es310Desktop400Version[] = { { EEsProfile,      0, 310, 0, nullptr },
+                                                  { EDesktopProfile, 0, 400, 0, nullptr },
                                                   { EBadProfile } };
-    const Versioning* Es310Desktop420 = &Es310Desktop420Version[0];
+    const Versioning* Es310Desktop400 = &Es310Desktop400Version[0];
 
     const Versioning Es310Desktop450Version[] = { { EEsProfile,      0, 310, 0, nullptr },
                                                   { EDesktopProfile, 0, 450, 0, nullptr },
@@ -251,14 +246,14 @@ const BuiltInFunction BaseFunctions[] = {
     { EOpGreaterThanEqual, "greaterThanEqual", 2,   TypeU,     ClassBNS,     Es300Desktop130 },
     { EOpVectorEqual,      "equal",            2,   TypeU,     ClassBNS,     Es300Desktop130 },
     { EOpVectorNotEqual,   "notEqual",         2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpAtomicAdd,        "atomicAdd",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicMin,        "atomicMin",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicMax,        "atomicMax",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicAnd,        "atomicAnd",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicOr,         "atomicOr",         2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicXor,        "atomicXor",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicExchange,   "atomicExchange",   2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicCompSwap,   "atomicCompSwap",   3,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
+    { EOpAtomicAdd,        "atomicAdd",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop400 },
+    { EOpAtomicMin,        "atomicMin",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop400 },
+    { EOpAtomicMax,        "atomicMax",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop400 },
+    { EOpAtomicAnd,        "atomicAnd",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop400 },
+    { EOpAtomicOr,         "atomicOr",         2,   TypeIU,    ClassV1FIOCV, Es310Desktop400 },
+    { EOpAtomicXor,        "atomicXor",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop400 },
+    { EOpAtomicExchange,   "atomicExchange",   2,   TypeIU,    ClassV1FIOCV, Es310Desktop400 },
+    { EOpAtomicCompSwap,   "atomicCompSwap",   3,   TypeIU,    ClassV1FIOCV, Es310Desktop400 },
     { EOpMix,              "mix",              3,   TypeB,     ClassRegular, Es310Desktop450 },
     { EOpMix,              "mix",              3,   TypeIU,    ClassLB,      Es310Desktop450 },
 
@@ -1731,6 +1726,16 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 shadow2DRect(sampler2DRectShadow, vec3);"     // GL_ARB_texture_rectangle, caught by keyword check
                 "vec4 shadow2DRectProj(sampler2DRectShadow, vec4);" // GL_ARB_texture_rectangle, caught by keyword check
 
+                "vec4 texture1DArray(sampler1DArray, vec2);"      // GL_EXT_texture_array
+                "vec4 texture2DArray(sampler2DArray, vec3);"      // GL_EXT_texture_array
+                "vec4 shadow1DArray(sampler1DArrayShadow, vec3);" // GL_EXT_texture_array
+                "vec4 shadow2DArray(sampler2DArrayShadow, vec4);" // GL_EXT_texture_array
+                "vec4 texture1DArray(sampler1DArray, vec2, float);"                // GL_EXT_texture_array
+                "vec4 texture2DArray(sampler2DArray, vec3, float);"                // GL_EXT_texture_array
+                "vec4 shadow1DArray(sampler1DArrayShadow, vec3, float);"           // GL_EXT_texture_array
+                "vec4 texture1DArrayLod(sampler1DArray, vec2, float);"      // GL_EXT_texture_array
+                "vec4 texture2DArrayLod(sampler2DArray, vec3, float);"      // GL_EXT_texture_array
+                "vec4 shadow1DArrayLod(sampler1DArrayShadow, vec3, float);" // GL_EXT_texture_array
                 "\n");
         }
     }
@@ -4113,6 +4118,19 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
+    // Builtins for GL_EXT_texture_shadow_lod
+    if ((profile == EEsProfile && version >= 300) || ((profile != EEsProfile && version >= 130))) { 
+        commonBuiltins.append(
+            "float texture(sampler2DArrayShadow, vec4, float);"
+            "float texture(samplerCubeArrayShadow, vec4, float, float);"
+            "float textureLod(sampler2DArrayShadow, vec4, float);"
+            "float textureLod(samplerCubeShadow, vec4, float);"
+            "float textureLod(samplerCubeArrayShadow, vec4, float, float);"
+            "float textureLodOffset(sampler2DArrayShadow, vec4, float, ivec2);"
+            "float textureOffset(sampler2DArrayShadow, vec4 , ivec2, float);"
+            "\n");
+    }
+
     if (profile != EEsProfile && version >= 450) {
         stageBuiltins[EShLangFragment].append(derivativesAndControl64bits);
         stageBuiltins[EShLangFragment].append(
@@ -4133,6 +4151,18 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
             "\n");
 
+    }
+
+    // QCOM_image_processing
+    if ((profile == EEsProfile && version >= 310) ||
+         (profile != EEsProfile && version >= 140)) {
+        commonBuiltins.append(
+           "vec4 textureWeightedQCOM(sampler2D, vec2, sampler2DArray);"
+           "vec4 textureWeightedQCOM(sampler2D, vec2, sampler1DArray);"
+           "vec4 textureBoxFilterQCOM(sampler2D, vec2, vec2);"
+           "vec4 textureBlockMatchSADQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "vec4 textureBlockMatchSSDQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "\n");
     }
 
     //============================================================================
@@ -4624,7 +4654,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "uvec4 fragmentFetchAMD(usubpassInputMS, uint);"
 
             "\n");
-        }
+    }
 
     // Builtins for GL_NV_ray_tracing/GL_NV_ray_tracing_motion_blur/GL_EXT_ray_tracing/GL_EXT_ray_query/
     // GL_NV_shader_invocation_reorder/GL_KHR_ray_tracing_position_Fetch
@@ -4694,6 +4724,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "void reorderThreadNV(uint, uint);"
             "void reorderThreadNV(hitObjectNV);"
             "void reorderThreadNV(hitObjectNV, uint, uint);"
+            "vec3 fetchMicroTriangleVertexPositionNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "vec2 fetchMicroTriangleVertexBarycentricNV(accelerationStructureEXT, int, int, int, ivec2);"
             "\n");
         stageBuiltins[EShLangIntersect].append(
             "bool reportIntersectionNV(float, uint);"
@@ -4811,6 +4843,20 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "void SetMeshOutputsEXT(uint, uint);"
             "\n");
     }
+    // Builtins for GL_NV_displacement_micromap
+    if ((profile != EEsProfile && version >= 460) || (profile == EEsProfile && version >= 320)) {
+        stageBuiltins[EShLangMesh].append(
+            "vec3 fetchMicroTriangleVertexPositionNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "vec2 fetchMicroTriangleVertexBarycentricNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "\n");
+
+        stageBuiltins[EShLangCompute].append(
+            "vec3 fetchMicroTriangleVertexPositionNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "vec2 fetchMicroTriangleVertexBarycentricNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "\n");
+
+    }
+
 
     //============================================================================
     //
@@ -5210,7 +5256,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             stageBuiltins[EShLangVertex].append(
                 "int gl_VertexID;"            // needs qualifier fixed later
                 );
-        if (version >= 140 && spvVersion.vulkan == 0)
+        if (spvVersion.vulkan == 0)
             stageBuiltins[EShLangVertex].append(
                 "int gl_InstanceID;"          // needs qualifier fixed later
                 );
@@ -5265,6 +5311,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             stageBuiltins[EShLangVertex].append(
                 "highp   vec4  gl_Position;"  // needs qualifier fixed later
                 "mediump float gl_PointSize;" // needs qualifier fixed later
+                "highp int gl_InstanceID;" // needs qualifier fixed later
                 );
         } else {
             if (spvVersion.vulkan == 0 || spvVersion.vulkanRelaxed)
@@ -5993,6 +6040,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "const uint gl_RayFlagsForceOpacityMicromap2StateEXT = 1024U;"
             "const uint gl_HitKindFrontFacingTriangleEXT = 254U;"
             "const uint gl_HitKindBackFacingTriangleEXT = 255U;"
+            "in    uint gl_HitKindFrontFacingMicroTriangleNV;"
+            "in    uint gl_HitKindBackFacingMicroTriangleNV;"
             "\n";
 
         const char *constRayQueryIntersection =
@@ -6081,7 +6130,10 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "in    float  gl_CurrentRayTimeNV;"
             "in    uint   gl_CullMaskEXT;"
             "in    vec3   gl_HitTriangleVertexPositionsEXT[3];"
+            "in    vec3   gl_HitMicroTriangleVertexPositionsNV[3];"
+            "in    vec2   gl_HitMicroTriangleVertexBarycentricsNV[3];"
             "\n";
+
         const char *missDecls =
             "in    uvec3  gl_LaunchIDNV;"
             "in    uvec3  gl_LaunchIDEXT;"
@@ -7810,6 +7862,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         if (spvVersion.vulkan == 0) {
             SpecialQualifier("gl_VertexID",   EvqVertexId,   EbvVertexId,   symbolTable);
             SpecialQualifier("gl_InstanceID", EvqInstanceId, EbvInstanceId, symbolTable);
+            if (version < 140)
+                symbolTable.setVariableExtensions("gl_InstanceID", 1, &E_GL_EXT_draw_instanced);
         }
 
         if (spvVersion.vulkan > 0 && spvVersion.vulkanRelaxed) {
@@ -7961,6 +8015,18 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("shadow2DEXT",        1, &E_GL_EXT_shadow_samplers);
             symbolTable.setFunctionExtensions("shadow2DProjEXT",    1, &E_GL_EXT_shadow_samplers);
         }
+
+        // E_GL_EXT_texture_array
+        if (profile != EEsProfile && spvVersion.spv == 0) {
+            symbolTable.setFunctionExtensions("texture1DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("texture2DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow1DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow2DArray", 1, &E_GL_EXT_texture_array);
+
+            symbolTable.setFunctionExtensions("texture1DArrayLod", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("texture2DArrayLod", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow1DArrayLod", 1, &E_GL_EXT_texture_array);
+        }
         // Fall through
 
     case EShLangTessControl:
@@ -8095,7 +8161,7 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_ViewIndex", EbvViewIndex, symbolTable);
         }
 
-	if (profile != EEsProfile) {
+        if (profile != EEsProfile) {
             BuiltInVariable("gl_SubGroupInvocationARB", EbvSubGroupInvocation, symbolTable);
             BuiltInVariable("gl_SubGroupEqMaskARB",     EbvSubGroupEqMask,     symbolTable);
             BuiltInVariable("gl_SubGroupGeMaskARB",     EbvSubGroupGeMask,     symbolTable);
@@ -8725,6 +8791,14 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         symbolTable.setFunctionExtensions("stencilAttachmentReadEXT", 1, &E_GL_EXT_shader_tile_image);
         symbolTable.setFunctionExtensions("depthAttachmentReadEXT", 1, &E_GL_EXT_shader_tile_image);
         symbolTable.setFunctionExtensions("colorAttachmentReadEXT", 1, &E_GL_EXT_shader_tile_image);
+
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 140)) {
+            symbolTable.setFunctionExtensions("textureWeightedQCOM",      1, &E_GL_QCOM_image_processing);
+            symbolTable.setFunctionExtensions("textureBoxFilterQCOM",     1, &E_GL_QCOM_image_processing);
+            symbolTable.setFunctionExtensions("textureBlockMatchSADQCOM", 1, &E_GL_QCOM_image_processing);
+            symbolTable.setFunctionExtensions("textureBlockMatchSSDQCOM", 1, &E_GL_QCOM_image_processing);
+        }
         break;
 
     case EShLangCompute:
@@ -8885,6 +8959,11 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
             symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
         }
+
+        if ((profile != EEsProfile && version >= 460)) {
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexPositionNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexBarycentricNV", 1, &E_GL_NV_displacement_micromap);
+        }
         break;
 
     case EShLangRayGen:
@@ -8931,6 +9010,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_IncomingRayFlagsEXT", 1, &E_GL_EXT_ray_tracing);
             symbolTable.setVariableExtensions("gl_CurrentRayTimeNV", 1, &E_GL_NV_ray_tracing_motion_blur);
             symbolTable.setVariableExtensions("gl_HitTriangleVertexPositionsEXT", 1, &E_GL_EXT_ray_tracing_position_fetch);
+            symbolTable.setVariableExtensions("gl_HitMicroTriangleVertexPositionsNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setVariableExtensions("gl_HitMicroTriangleVertexBarycentricsNV", 1, &E_GL_NV_displacement_micromap);
 
             symbolTable.setVariableExtensions("gl_DeviceIndex", 1, &E_GL_EXT_device_group);
 
@@ -8976,6 +9057,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("hitObjectGetShaderBindingTableRecordIndexNV", 1, &E_GL_NV_shader_invocation_reorder);
             symbolTable.setFunctionExtensions("hitObjectGetShaderRecordBufferHandleNV", 1, &E_GL_NV_shader_invocation_reorder);
             symbolTable.setFunctionExtensions("reorderThreadNV", 1, &E_GL_NV_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexPositionNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexBarycentricNV", 1, &E_GL_NV_displacement_micromap);
 
 
             BuiltInVariable("gl_LaunchIDNV",             EbvLaunchId,           symbolTable);
@@ -9015,6 +9098,10 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_DeviceIndex",            EbvDeviceIndex,        symbolTable);
             BuiltInVariable("gl_CurrentRayTimeNV",       EbvCurrentRayTimeNV,   symbolTable);
             BuiltInVariable("gl_HitTriangleVertexPositionsEXT", EbvPositionFetch, symbolTable);
+            BuiltInVariable("gl_HitMicroTriangleVertexPositionsNV", EbvMicroTrianglePositionNV, symbolTable);
+            BuiltInVariable("gl_HitMicroTriangleVertexBarycentricsNV", EbvMicroTriangleBaryNV, symbolTable);
+            BuiltInVariable("gl_HitKindFrontFacingMicroTriangleNV", EbvHitKindFrontFacingMicroTriangleNV, symbolTable);
+            BuiltInVariable("gl_HitKindBackFacingMicroTriangleNV", EbvHitKindBackFacingMicroTriangleNV, symbolTable);
 
             // GL_ARB_shader_ballot
             symbolTable.setVariableExtensions("gl_SubGroupSizeARB",       1, &E_GL_ARB_shader_ballot);
@@ -9316,6 +9403,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
             symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
         }
+
+        // Builtins for GL_NV_displacment_micromap
+        if ((profile != EEsProfile && version >= 460)) {
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexPositionNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setFunctionExtensions("fetchMicroTriangleVertexBarycentricNV", 1, &E_GL_NV_displacement_micromap);
+        }
+
         break;
 
     case EShLangTask:
@@ -9890,6 +9984,25 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("shadow2DEXT",              EOpTexture);
             symbolTable.relateToOperator("shadow2DProjEXT",          EOpTextureProj);
         }
+
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 140)) {
+            symbolTable.relateToOperator("textureWeightedQCOM",      EOpImageSampleWeightedQCOM);
+            symbolTable.relateToOperator("textureBoxFilterQCOM",     EOpImageBoxFilterQCOM);
+            symbolTable.relateToOperator("textureBlockMatchSADQCOM", EOpImageBlockMatchSADQCOM);
+            symbolTable.relateToOperator("textureBlockMatchSSDQCOM", EOpImageBlockMatchSSDQCOM);
+        }
+
+        if (profile != EEsProfile && spvVersion.spv == 0) {
+            symbolTable.relateToOperator("texture1DArray", EOpTexture);
+            symbolTable.relateToOperator("texture2DArray", EOpTexture);
+            symbolTable.relateToOperator("shadow1DArray", EOpTexture);
+            symbolTable.relateToOperator("shadow2DArray", EOpTexture);
+
+            symbolTable.relateToOperator("texture1DArrayLod", EOpTextureLod);
+            symbolTable.relateToOperator("texture2DArrayLod", EOpTextureLod);
+            symbolTable.relateToOperator("shadow1DArrayLod", EOpTextureLod);
+        }
     }
 
     switch(language) {
@@ -9981,9 +10094,18 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         symbolTable.relateToOperator("coopMatLoad",                EOpCooperativeMatrixLoad);
         symbolTable.relateToOperator("coopMatStore",               EOpCooperativeMatrixStore);
         symbolTable.relateToOperator("coopMatMulAdd",              EOpCooperativeMatrixMulAdd);
+
+        if (profile != EEsProfile && version >= 460) {
+            symbolTable.relateToOperator("fetchMicroTriangleVertexPositionNV", EOpFetchMicroTriangleVertexPositionNV);
+            symbolTable.relateToOperator("fetchMicroTriangleVertexBarycentricNV", EOpFetchMicroTriangleVertexBarycentricNV);
+        }
         break;
 
     case EShLangRayGen:
+        if (profile != EEsProfile && version >= 460) {
+            symbolTable.relateToOperator("fetchMicroTriangleVertexPositionNV", EOpFetchMicroTriangleVertexPositionNV);
+            symbolTable.relateToOperator("fetchMicroTriangleVertexBarycentricNV", EOpFetchMicroTriangleVertexBarycentricNV);
+        } // fallthrough
     case EShLangClosestHit:
     case EShLangMiss:
         if (profile != EEsProfile && version >= 460) {
@@ -10030,7 +10152,7 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         if (profile != EEsProfile && version >= 460) {
             symbolTable.relateToOperator("reportIntersectionNV", EOpReportIntersection);
             symbolTable.relateToOperator("reportIntersectionEXT", EOpReportIntersection);
-	}
+        }
         break;
     case EShLangAnyHit:
         if (profile != EEsProfile && version >= 460) {
@@ -10054,6 +10176,12 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
 
         if (profile != EEsProfile && version >= 450) {
             symbolTable.relateToOperator("SetMeshOutputsEXT", EOpSetMeshOutputsEXT);
+        }
+
+        if (profile != EEsProfile && version >= 460) {
+            // Builtins for GL_NV_displacement_micromap.
+            symbolTable.relateToOperator("fetchMicroTriangleVertexPositionNV", EOpFetchMicroTriangleVertexPositionNV);
+            symbolTable.relateToOperator("fetchMicroTriangleVertexBarycentricNV", EOpFetchMicroTriangleVertexBarycentricNV);
         }
         break;
     case EShLangTask:

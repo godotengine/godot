@@ -265,7 +265,7 @@ public:
 
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_built_in_templates, StringName)
 
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override {
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_built_in_templates, p_object, ret);
 		Vector<ScriptTemplate> stret;
@@ -562,6 +562,7 @@ public:
 	}
 
 	EXBIND0(reload_all_scripts)
+	EXBIND2(reload_scripts, const Array &, bool)
 	EXBIND2(reload_tool_script, const Ref<Script> &, bool)
 	/* LOADER FUNCTIONS */
 
@@ -607,6 +608,7 @@ public:
 
 	EXBIND0(profiling_start)
 	EXBIND0(profiling_stop)
+	EXBIND1(profiling_set_save_native_calls, bool)
 
 	GDVIRTUAL2R(int, _profiling_get_accumulated_data, GDExtensionPtr<ScriptLanguageExtensionProfilingInfo>, int)
 

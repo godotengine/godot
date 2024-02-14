@@ -71,7 +71,7 @@ class EditorExportPlugin : public RefCounted {
 		skipped = false;
 	}
 
-	_FORCE_INLINE_ void _export_end() {
+	_FORCE_INLINE_ void _export_end_clear() {
 		ios_frameworks.clear();
 		ios_embedded_frameworks.clear();
 		ios_bundle_files.clear();
@@ -108,6 +108,7 @@ protected:
 
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features);
 	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags);
+	virtual void _export_end();
 
 	static void _bind_methods();
 

@@ -294,6 +294,7 @@ protected:
 
 	static void _bind_methods();
 	static String _get_name_num_separator();
+	static StringName get_configuration_warning_icon(int p_count);
 
 	friend class SceneState;
 
@@ -320,7 +321,7 @@ protected:
 	GDVIRTUAL0(_enter_tree)
 	GDVIRTUAL0(_exit_tree)
 	GDVIRTUAL0(_ready)
-	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
+	GDVIRTUAL0RC(Array, _get_configuration_warnings)
 
 	GDVIRTUAL1(_input, Ref<InputEvent>)
 	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
@@ -558,7 +559,9 @@ public:
 	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
 			// No thread processing.
-			return is_current_thread_safe_for_nodes();
+			// Only accessible if node is outside the scene tree
+			// or access will happen from a node-safe thread.
+			return !data.inside_tree || is_current_thread_safe_for_nodes();
 		} else {
 			// Thread processing.
 			return true;
@@ -612,6 +615,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);
+	String prevalidate_child_name(Node *p_child, StringName p_name);
 #endif
 	static String adjust_name_casing(const String &p_name);
 
@@ -633,8 +637,11 @@ public:
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
-	virtual PackedStringArray get_configuration_warnings() const;
-	String get_configuration_warnings_as_string() const;
+	virtual Array get_configuration_warnings() const;
+	Dictionary configuration_warning_to_dict(const Variant &p_warning) const;
+	Vector<Dictionary> get_configuration_warnings_as_dicts() const;
+	Vector<Dictionary> get_configuration_warnings_of_property(const String &p_property = String()) const;
+	PackedStringArray get_configuration_warnings_as_strings(bool p_wrap_lines, const String &p_property = String()) const;
 
 	void update_configuration_warnings();
 

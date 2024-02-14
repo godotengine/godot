@@ -92,6 +92,7 @@ public:
 	static void parse_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data_async(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, const Callable &p_callback = Callable());
+	static bool is_baking(Ref<NavigationPolygon> p_navigation_polygon);
 
 	NavMeshGenerator2D();
 	~NavMeshGenerator2D();

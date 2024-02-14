@@ -103,7 +103,7 @@ PackedInt64Array RenderingServer::_instances_cull_convex_bind(const TypedArray<P
 	}
 	Vector<Plane> planes;
 	for (int i = 0; i < p_convex.size(); ++i) {
-		Variant v = p_convex[i];
+		const Variant &v = p_convex[i];
 		ERR_FAIL_COND_V(v.get_type() != Variant::PLANE, PackedInt64Array());
 		planes.push_back(v);
 	}
@@ -901,7 +901,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT32_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<int> indices = p_arrays[ai];
-				ERR_FAIL_COND_V(indices.size() == 0, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(indices.is_empty(), ERR_INVALID_PARAMETER);
 				ERR_FAIL_COND_V(indices.size() != p_index_array_len, ERR_INVALID_PARAMETER);
 
 				/* determine whether using 16 or 32 bits indices */
@@ -1326,7 +1326,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			float distance = E;
 			ERR_CONTINUE(distance <= 0.0);
 			Vector<int> indices = p_lods[E];
-			ERR_CONTINUE(indices.size() == 0);
+			ERR_CONTINUE(indices.is_empty());
 			uint32_t index_count = indices.size();
 			ERR_CONTINUE(index_count >= (uint32_t)index_array_len); // Should be smaller..
 
@@ -1781,7 +1781,7 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 	Vector<uint8_t> attrib_data = p_data.attribute_data;
 	Vector<uint8_t> skin_data = p_data.skin_data;
 
-	ERR_FAIL_COND_V(vertex_data.size() == 0 && (p_data.format & RS::ARRAY_FORMAT_VERTEX), Array());
+	ERR_FAIL_COND_V(vertex_data.is_empty() && (p_data.format & RS::ARRAY_FORMAT_VERTEX), Array());
 	int vertex_len = p_data.vertex_count;
 
 	Vector<uint8_t> index_data = p_data.index_data;
@@ -1801,6 +1801,14 @@ Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_su
 	return arr;
 }
 #endif
+
+Rect2 RenderingServer::debug_canvas_item_get_rect(RID p_item) {
+#ifdef TOOLS_ENABLED
+	return _debug_canvas_item_get_rect(p_item);
+#else
+	return Rect2();
+#endif
+}
 
 int RenderingServer::global_shader_uniform_type_get_shader_datatype(GlobalShaderParameterType p_type) {
 	switch (p_type) {
@@ -2196,6 +2204,25 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 }
 #endif
 
+#ifdef TOOLS_ENABLED
+void RenderingServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "global_shader_parameter_set" || pf == "global_shader_parameter_set_override" ||
+				pf == "global_shader_parameter_get" || pf == "global_shader_parameter_get_type" || pf == "global_shader_parameter_remove") {
+			for (StringName E : global_shader_parameter_get_list()) {
+				r_options->push_back(E.operator String().quote());
+			}
+		} else if (pf == "has_os_feature") {
+			for (String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"" }) {
+				r_options->push_back(E);
+			}
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void RenderingServer::_bind_methods() {
 	BIND_CONSTANT(NO_INDEX_ARRAY);
 	BIND_CONSTANT(ARRAY_WEIGHTS_SIZE);
@@ -2524,6 +2551,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_enable_box_projection", "probe", "enable"), &RenderingServer::reflection_probe_set_enable_box_projection);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_enable_shadows", "probe", "enable"), &RenderingServer::reflection_probe_set_enable_shadows);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_cull_mask", "probe", "layers"), &RenderingServer::reflection_probe_set_cull_mask);
+	ClassDB::bind_method(D_METHOD("reflection_probe_set_reflection_mask", "probe", "layers"), &RenderingServer::reflection_probe_set_reflection_mask);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_resolution", "probe", "resolution"), &RenderingServer::reflection_probe_set_resolution);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_mesh_lod_threshold", "probe", "pixels"), &RenderingServer::reflection_probe_set_mesh_lod_threshold);
 
@@ -2848,6 +2876,7 @@ void RenderingServer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_VISIBLE);
 	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_SHADOW);
+	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_CANVAS);
 	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DISABLED);
@@ -3188,6 +3217,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_visibility_notifier", "item", "enable", "area", "enter_callable", "exit_callable"), &RenderingServer::canvas_item_set_visibility_notifier);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_canvas_group_mode", "item", "mode", "clear_margin", "fit_empty", "fit_margin", "blur_mipmaps"), &RenderingServer::canvas_item_set_canvas_group_mode, DEFVAL(5.0), DEFVAL(false), DEFVAL(0.0), DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("debug_canvas_item_get_rect", "item"), &RenderingServer::debug_canvas_item_get_rect);
+
 	BIND_ENUM_CONSTANT(NINE_PATCH_STRETCH);
 	BIND_ENUM_CONSTANT(NINE_PATCH_TILE);
 	BIND_ENUM_CONSTANT(NINE_PATCH_TILE_FIT);
@@ -3332,7 +3363,6 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_clear_color"), &RenderingServer::get_default_clear_color);
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &RenderingServer::set_default_clear_color);
 
-	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingServer::has_feature);
 	ClassDB::bind_method(D_METHOD("has_os_feature", "feature"), &RenderingServer::has_os_feature);
 	ClassDB::bind_method(D_METHOD("set_debug_generate_wireframes", "generate"), &RenderingServer::set_debug_generate_wireframes);
 
@@ -3350,9 +3380,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RENDERING_INFO_BUFFER_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDERING_INFO_VIDEO_MEM_USED);
 
-	BIND_ENUM_CONSTANT(FEATURE_SHADERS);
-	BIND_ENUM_CONSTANT(FEATURE_MULTITHREADED);
-
 	ADD_SIGNAL(MethodInfo("frame_pre_draw"));
 	ADD_SIGNAL(MethodInfo("frame_post_draw"));
 
@@ -3362,6 +3389,13 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_local_rendering_device"), &RenderingServer::create_local_rendering_device);
 
 	ClassDB::bind_method(D_METHOD("call_on_render_thread", "callable"), &RenderingServer::call_on_render_thread);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingServer::has_feature);
+
+	BIND_ENUM_CONSTANT(FEATURE_SHADERS);
+	BIND_ENUM_CONSTANT(FEATURE_MULTITHREADED);
+#endif
 }
 
 void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry3D::MeshData &p_mesh_data) {
@@ -3460,15 +3494,15 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug", false);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug.release", true);
 
-	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/roughness_layers", 8); // Assumes a 256x256 cubemap
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/reflections/sky_reflections/roughness_layers", PROPERTY_HINT_RANGE, "1,32,1"), 8); // Assumes a 256x256 cubemap
 	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections.mobile", false);
-	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/ggx_samples", 32);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 16);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/reflections/sky_reflections/ggx_samples", PROPERTY_HINT_RANGE, "0,256,1"), 32);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/sky_reflections/ggx_samples.mobile", PROPERTY_HINT_RANGE, "0,128,1"), 16);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/fast_filter_high_quality", false);
-	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size", 256);
-	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size.mobile", 128);
-	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_count", 64);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_size", PROPERTY_HINT_RANGE, "0,4096,1"), 256);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_size.mobile", PROPERTY_HINT_RANGE, "0,2048,1"), 128);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_count", PROPERTY_HINT_RANGE, "0,256,1"), 64);
 
 	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
 
@@ -3515,7 +3549,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), DECAL_FILTER_LINEAR_MIPMAPS);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
 
-	GLOBAL_DEF_RST("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/occlusion_culling/occlusion_rays_per_thread", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), 512);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"), 1);
 	GLOBAL_DEF("rendering/environment/glow/upscale_mode.mobile", 0);
@@ -3526,7 +3560,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"), 0.05);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"), 0.01);
 
-	GLOBAL_DEF("rendering/limits/global_shader_variables/buffer_size", 65536);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/limits/global_shader_variables/buffer_size", PROPERTY_HINT_RANGE, "1,1048576,1"), 65536);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"), 15);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/primitive_meshes/texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2);
@@ -3541,7 +3575,6 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/update_iterations_per_frame", PROPERTY_HINT_RANGE, "0,1024,1"), 10);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"), 1000);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"), 500);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"), 512);
 

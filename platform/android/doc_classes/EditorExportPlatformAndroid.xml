@@ -119,7 +119,10 @@
 			If [code]true[/code], package signing is enabled.
 		</member>
 		<member name="package/unique_name" type="String" setter="" getter="">
-			Unique application identifier in a reverse-DNS format, can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+			Unique application identifier in a reverse-DNS format. The reverse DNS format should preferably match a domain name you control, but this is not strictly required. For instance, if you own [code]example.com[/code], your package unique name should preferably be of the form [code]com.example.mygame[/code]. This identifier can only contain lowercase alphanumeric characters ([code]a-z[/code], and [code]0-9[/code]), underscores ([code]_[/code]), and periods ([code].[/code]). Each component of the reverse DNS format must start with a letter: for instance, [code]com.example.8game[/code] is not valid.
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name converted to lowercase. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]noname[/code].
+			[b]Note:[/b] Changing the package name will cause the package to be considered as a new package, with its own installation and data paths. The new package won't be usable to update existing installations.
+			[b]Note:[/b] When publishing to Google Play, the package name must be [i]globally[/i] unique. This means no other apps published on Google Play must be using the same package name as yours. Otherwise, you'll be prevented from publishing your app on Google Play.
 		</member>
 		<member name="permissions/access_checkin_properties" type="bool" setter="" getter="">
 			Allows read/write access to the "properties" table in the checkin database. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_CHECKIN_PROPERTIES]ACCESS_CHECKIN_PROPERTIES[/url].

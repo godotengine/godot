@@ -191,7 +191,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		MissingNode *missing_node = nullptr;
 
 		if (i == 0 && base_scene_idx >= 0) {
-			//scene inheritance on root node
+			// Scene inheritance on root node.
 			Ref<PackedScene> sdata = props[base_scene_idx];
 			ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
 			node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
@@ -201,14 +201,22 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			}
 
 		} else if (n.instance >= 0) {
-			//instance a scene into this node
+			// Instance a scene into this node.
 			if (n.instance & FLAG_INSTANCE_IS_PLACEHOLDER) {
-				String scene_path = props[n.instance & FLAG_MASK];
+				const String scene_path = props[n.instance & FLAG_MASK];
 				if (disable_placeholders) {
 					Ref<PackedScene> sdata = ResourceLoader::load(scene_path, "PackedScene");
-					ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
-					node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
-					ERR_FAIL_NULL_V(node, nullptr);
+					if (sdata.is_valid()) {
+						node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
+						ERR_FAIL_NULL_V(node, nullptr);
+					} else if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+						missing_node = memnew(MissingNode);
+						missing_node->set_original_scene(scene_path);
+						missing_node->set_recording_properties(true);
+						node = missing_node;
+					} else {
+						ERR_FAIL_V_MSG(nullptr, "Placeholder scene is missing.");
+					}
 				} else {
 					InstancePlaceholder *ip = memnew(InstancePlaceholder);
 					ip->set_instance_path(scene_path);
@@ -216,14 +224,27 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				}
 				node->set_scene_instance_load_placeholder(true);
 			} else {
-				Ref<PackedScene> sdata = props[n.instance & FLAG_MASK];
-				ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
-				node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
-				ERR_FAIL_NULL_V_MSG(node, nullptr, vformat("Failed to load scene dependency: \"%s\". Make sure the required scene is valid.", sdata->get_path()));
+				Ref<Resource> res = props[n.instance & FLAG_MASK];
+				Ref<PackedScene> sdata = res;
+				if (sdata.is_valid()) {
+					node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
+					ERR_FAIL_NULL_V_MSG(node, nullptr, vformat("Failed to load scene dependency: \"%s\". Make sure the required scene is valid.", sdata->get_path()));
+				} else if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+					missing_node = memnew(MissingNode);
+#ifdef TOOLS_ENABLED
+					if (res.is_valid()) {
+						missing_node->set_original_scene(res->get_meta("__load_path__", ""));
+					}
+#endif
+					missing_node->set_recording_properties(true);
+					node = missing_node;
+				} else {
+					ERR_FAIL_V_MSG(nullptr, "Scene instance is missing.");
+				}
 			}
 
 		} else if (n.type == TYPE_INSTANTIATED) {
-			//get the node from somewhere, it likely already exists from another instance
+			// Get the node from somewhere, it likely already exists from another instance.
 			if (parent) {
 				node = parent->_get_child_by_name(snames[n.name]);
 #ifdef DEBUG_ENABLED
@@ -233,7 +254,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 #endif
 			}
 		} else {
-			//node belongs to this scene and must be created
+			// Node belongs to this scene and must be created.
 			Object *obj = ClassDB::instantiate(snames[n.type]);
 
 			node = Object::cast_to<Node>(obj);
@@ -1192,7 +1213,7 @@ void SceneState::update_instance_resource(String p_path, Ref<PackedScene> p_pack
 }
 
 int SceneState::find_node_by_path(const NodePath &p_node) const {
-	ERR_FAIL_COND_V_MSG(node_path_cache.size() == 0, -1, "This operation requires the node cache to have been built.");
+	ERR_FAIL_COND_V_MSG(node_path_cache.is_empty(), -1, "This operation requires the node cache to have been built.");
 
 	if (!node_path_cache.has(p_node)) {
 		if (get_base_scene_state().is_valid()) {
@@ -1847,6 +1868,44 @@ void SceneState::add_connection(int p_from, int p_to, int p_signal, int p_method
 
 void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
+}
+
+bool SceneState::remove_group_references(const StringName &p_name) {
+	bool edited = false;
+	for (NodeData &node : nodes) {
+		for (const int &group : node.groups) {
+			if (names[group] == p_name) {
+				node.groups.erase(group);
+				edited = true;
+				break;
+			}
+		}
+	}
+	return edited;
+}
+
+bool SceneState::rename_group_references(const StringName &p_old_name, const StringName &p_new_name) {
+	bool edited = false;
+	for (const NodeData &node : nodes) {
+		for (const int &group : node.groups) {
+			if (names[group] == p_old_name) {
+				names.write[group] = p_new_name;
+				edited = true;
+				break;
+			}
+		}
+	}
+	return edited;
+}
+
+HashSet<StringName> SceneState::get_all_groups() {
+	HashSet<StringName> ret;
+	for (const NodeData &node : nodes) {
+		for (const int &group : node.groups) {
+			ret.insert(names[group]);
+		}
+	}
+	return ret;
 }
 
 Vector<String> SceneState::_get_node_groups(int p_idx) const {

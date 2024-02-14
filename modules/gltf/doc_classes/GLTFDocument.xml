@@ -84,7 +84,7 @@
 			<param index="1" name="path" type="String" />
 			<description>
 				Takes a [GLTFState] object through the [param state] parameter and writes a glTF file to the filesystem.
-				[b]Note:[/b] The extension of the glTF file determines if it is a .glb binary file or a .gltf file.
+				[b]Note:[/b] The extension of the glTF file determines if it is a .glb binary file or a .gltf text file.
 			</description>
 		</method>
 	</methods>

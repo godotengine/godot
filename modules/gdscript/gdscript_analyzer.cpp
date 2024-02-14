@@ -31,6 +31,7 @@
 #include "gdscript_analyzer.h"
 
 #include "gdscript.h"
+#include "gdscript_utility_callable.h"
 #include "gdscript_utility_functions.h"
 
 #include "core/config/engine.h"
@@ -845,7 +846,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	return result;
 }
 
-void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, StringName p_name, const GDScriptParser::Node *p_source) {
+void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, const StringName &p_name, const GDScriptParser::Node *p_source) {
 	ERR_FAIL_COND(!p_class->has_member(p_name));
 	resolve_class_member(p_class, p_class->members_indices[p_name], p_source);
 }
@@ -3410,8 +3411,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		if (!found && (is_self || (base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::BUILTIN))) {
 			String base_name = is_self && !p_call->is_super ? "self" : base_type.to_string();
 #ifdef SUGGEST_GODOT4_RENAMES
-			String rename_hint = String();
-			if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+			String rename_hint;
+			if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
 				const char *renamed_function_name = check_for_renamed_identifier(p_call->function_name, p_call->type);
 				if (renamed_function_name) {
 					rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", String(renamed_function_name) + "()");
@@ -3620,8 +3621,8 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				p_identifier->set_datatype(type_from_variant(result, p_identifier));
 			} else if (base.is_hard_type()) {
 #ifdef SUGGEST_GODOT4_RENAMES
-				String rename_hint = String();
-				if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+				String rename_hint;
+				if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
 					const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 					if (renamed_identifier_name) {
 						rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
@@ -3636,7 +3637,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			switch (base.builtin_type) {
 				case Variant::NIL: {
 					if (base.is_hard_type()) {
-						push_error(vformat(R"(Invalid get index "%s" on base Nil)", name), p_identifier);
+						push_error(vformat(R"(Cannot get property "%s" on a null object.)", name), p_identifier);
 					}
 					return;
 				}
@@ -3658,10 +3659,14 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 							return;
 						}
 					}
+					if (Variant::has_builtin_method(base.builtin_type, name)) {
+						p_identifier->set_datatype(make_callable_type(Variant::get_builtin_method_info(base.builtin_type, name)));
+						return;
+					}
 					if (base.is_hard_type()) {
 #ifdef SUGGEST_GODOT4_RENAMES
-						String rename_hint = String();
-						if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+						String rename_hint;
+						if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
 							const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 							if (renamed_identifier_name) {
 								rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
@@ -3774,6 +3779,60 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			if (!is_base && p_base != nullptr) {
 				break;
 			}
+		}
+	}
+
+	// Check non-GDScript scripts.
+	Ref<Script> script_type = base.script_type;
+
+	if (base_class == nullptr && script_type.is_valid()) {
+		List<PropertyInfo> property_list;
+		script_type->get_script_property_list(&property_list);
+
+		for (const PropertyInfo &property_info : property_list) {
+			if (property_info.name != p_identifier->name) {
+				continue;
+			}
+
+			const GDScriptParser::DataType property_type = GDScriptAnalyzer::type_from_property(property_info, false, false);
+
+			p_identifier->set_datatype(property_type);
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
+			return;
+		}
+
+		MethodInfo method_info = script_type->get_method_info(p_identifier->name);
+
+		if (method_info.name == p_identifier->name) {
+			p_identifier->set_datatype(make_callable_type(method_info));
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_FUNCTION;
+			return;
+		}
+
+		List<MethodInfo> signal_list;
+		script_type->get_script_signal_list(&signal_list);
+
+		for (const MethodInfo &signal_info : signal_list) {
+			if (signal_info.name != p_identifier->name) {
+				continue;
+			}
+
+			const GDScriptParser::DataType signal_type = make_signal_type(signal_info);
+
+			p_identifier->set_datatype(signal_type);
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
+			return;
+		}
+
+		HashMap<StringName, Variant> constant_map;
+		script_type->get_constants(&constant_map);
+
+		if (constant_map.has(p_identifier->name)) {
+			Variant constant = constant_map.get(p_identifier->name);
+
+			p_identifier->set_datatype(make_builtin_meta_type(constant.get_type()));
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+			return;
 		}
 	}
 
@@ -4059,6 +4118,19 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		return;
 	}
 
+	if (Variant::has_utility_function(name) || GDScriptUtilityFunctions::function_exists(name)) {
+		p_identifier->is_constant = true;
+		p_identifier->reduced_value = Callable(memnew(GDScriptUtilityCallable(name)));
+		MethodInfo method_info;
+		if (GDScriptUtilityFunctions::function_exists(name)) {
+			method_info = GDScriptUtilityFunctions::get_function_info(name);
+		} else {
+			method_info = Variant::get_utility_function_info(name);
+		}
+		p_identifier->set_datatype(make_callable_type(method_info));
+		return;
+	}
+
 	// Allow "Variant" here since it might be used for nested enums.
 	if (can_be_builtin && name == SNAME("Variant")) {
 		GDScriptParser::DataType variant;
@@ -4071,23 +4143,18 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 	// Not found.
-	// Check if it's a builtin function.
-	if (GDScriptUtilityFunctions::function_exists(name)) {
-		push_error(vformat(R"(Built-in function "%s" cannot be used as an identifier.)", name), p_identifier);
-	} else {
 #ifdef SUGGEST_GODOT4_RENAMES
-		String rename_hint = String();
-		if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::Code::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
-			const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
-			if (renamed_identifier_name) {
-				rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
-			}
+	String rename_hint;
+	if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+		const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
+		if (renamed_identifier_name) {
+			rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
 		}
-		push_error(vformat(R"(Identifier "%s" not declared in the current scope.%s)", name, rename_hint), p_identifier);
-#else
-		push_error(vformat(R"(Identifier "%s" not declared in the current scope.)", name), p_identifier);
-#endif // SUGGEST_GODOT4_RENAMES
 	}
+	push_error(vformat(R"(Identifier "%s" not declared in the current scope.%s)", name, rename_hint), p_identifier);
+#else
+	push_error(vformat(R"(Identifier "%s" not declared in the current scope.)", name), p_identifier);
+#endif // SUGGEST_GODOT4_RENAMES
 	GDScriptParser::DataType dummy;
 	dummy.kind = GDScriptParser::DataType::VARIANT;
 	p_identifier->set_datatype(dummy); // Just so type is set to something.
@@ -4850,8 +4917,19 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	}
 	result.builtin_type = p_property.type;
 	if (p_property.type == Variant::OBJECT) {
-		result.kind = GDScriptParser::DataType::NATIVE;
-		result.native_type = p_property.class_name == StringName() ? SNAME("Object") : p_property.class_name;
+		if (ScriptServer::is_global_class(p_property.class_name)) {
+			result.kind = GDScriptParser::DataType::SCRIPT;
+			result.script_path = ScriptServer::get_global_class_path(p_property.class_name);
+			result.native_type = ScriptServer::get_global_class_native_base(p_property.class_name);
+
+			Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(p_property.class_name));
+			if (scr.is_valid()) {
+				result.script_type = scr;
+			}
+		} else {
+			result.kind = GDScriptParser::DataType::NATIVE;
+			result.native_type = p_property.class_name == StringName() ? "Object" : p_property.class_name;
+		}
 	} else {
 		result.kind = GDScriptParser::DataType::BUILTIN;
 		result.builtin_type = p_property.type;
@@ -5257,8 +5335,21 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 	return result;
 }
 
-// TODO: Add safe/unsafe return variable (for variant cases)
 bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node) {
+#ifdef DEBUG_ENABLED
+	if (p_source_node) {
+		if (p_target.kind == GDScriptParser::DataType::ENUM) {
+			if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
+				parser->push_warning(p_source_node, GDScriptWarning::INT_AS_ENUM_WITHOUT_CAST);
+			}
+		}
+	}
+#endif
+	return check_type_compatibility(p_target, p_source, p_allow_implicit_conversion, p_source_node);
+}
+
+// TODO: Add safe/unsafe return variable (for variant cases)
+bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node) {
 	// These return "true" so it doesn't affect users negatively.
 	ERR_FAIL_COND_V_MSG(!p_target.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset target type");
 	ERR_FAIL_COND_V_MSG(!p_source.is_set(), true, "Parser bug (please report): Trying to check compatibility of unset value type");
@@ -5293,11 +5384,6 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 
 	if (p_target.kind == GDScriptParser::DataType::ENUM) {
 		if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
-#ifdef DEBUG_ENABLED
-			if (p_source_node) {
-				parser->push_warning(p_source_node, GDScriptWarning::INT_AS_ENUM_WITHOUT_CAST);
-			}
-#endif
 			return true;
 		}
 		if (p_source.kind == GDScriptParser::DataType::ENUM) {

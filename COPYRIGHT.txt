@@ -194,6 +194,16 @@ Copyright: 2018, Eric Lasota
  2018, Microsoft Corp.
 License: Expat
 
+Files: ./thirdparty/d3d12ma/
+Comment: D3D12 Memory Allocator
+Copyright: 2019-2022 Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/directx_headers/
+Comment: DirectX Headers
+Copyright: Microsoft Corporation
+License: Expat
+
 Files: ./thirdparty/doctest/
 Comment: doctest
 Copyright: 2016-2023, Viktor Kirilov
@@ -325,7 +335,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/meshoptimizer/
 Comment: meshoptimizer
-Copyright: 2016-2022, Arseny Kapoulkine
+Copyright: 2016-2023, Arseny Kapoulkine
 License: Expat
 
 Files: ./thirdparty/mingw-std-threads/
@@ -340,7 +350,7 @@ License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnP Project
-Copyright: 2005-2023, Thomas Bernard
+Copyright: 2005-2024, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
@@ -473,7 +483,7 @@ License: Expat
 
 Files: ./thirdparty/thorvg/
 Comment: ThorVG
-Copyright: 2020-2023, The ThorVG Project
+Copyright: 2020-2024, The ThorVG Project
 License: Expat
 
 Files: ./thirdparty/tinyexr/
@@ -490,20 +500,39 @@ License: BSD-3-clause
 
 Files: ./thirdparty/volk/
 Comment: volk
-Copyright: 2018-2023, Arseny Kapoulkine
+Copyright: 2018-2024, Arseny Kapoulkine
 License: Expat
 
 Files: ./thirdparty/vulkan/
 Comment: Vulkan Headers
-Copyright: 2014-2023, The Khronos Group Inc.
+Copyright: 2014-2024, The Khronos Group Inc.
   2014-2023, Valve Corporation
   2014-2023, LunarG, Inc.
-  2015-2023, Google Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2021, Advanced Micro Devices, Inc.
+Copyright: 2017-2024, Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/wayland/
+Comment: Wayland core protocol
+Copyright: 2008-2012, Kristian Høgsberg
+  2010-2012, Intel Corporation
+  2011, Benjamin Franzke
+  2012, Collabora, Ltd.
+License: Expat
+
+Files: ./thirdparty/wayland-protocols/
+Comment: Wayland protocols that add functionality not available in the core protocol
+Copyright: 2008-2013, Kristian Høgsberg
+  2010-2013, Intel Corporation
+  2013,      Rafael Antognolli
+  2013,      Jasper St. Pierre
+  2014,      Jonas Ådahl
+  2014,      Jason Ekstrand
+  2014-2015, Collabora, Ltd.
+  2015,      Red Hat Inc.
 License: Expat
 
 Files: ./thirdparty/wslay/
@@ -520,7 +549,7 @@ License: Expat
 
 Files: ./thirdparty/zlib/
 Comment: zlib
-Copyright: 1995-2023, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2024, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: ./thirdparty/zstd/

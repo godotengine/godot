@@ -678,7 +678,10 @@ bool DebugAdapterProtocol::process_message(const String &p_text) {
 		if (!response.is_empty()) {
 			_current_peer->res_queue.push_front(response);
 		} else {
-			completed = false;
+			// Launch request needs to be deferred until we receive a configurationDone request.
+			if (command != "req_launch") {
+				completed = false;
+			}
 		}
 	}
 

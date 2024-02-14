@@ -45,9 +45,9 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
@@ -255,7 +255,7 @@ static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/instal
 
 static const int OPENGL_MIN_SDK_VERSION = 21; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
 static const int VULKAN_MIN_SDK_VERSION = 24;
-static const int DEFAULT_TARGET_SDK_VERSION = 33; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
+static const int DEFAULT_TARGET_SDK_VERSION = 34; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
 
 #ifndef ANDROID_ENABLED
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
@@ -1111,7 +1111,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						}
 
 						for (int i = 0; i < feature_names.size(); i++) {
-							String feature_name = feature_names[i];
+							const String &feature_name = feature_names[i];
 							bool feature_required = feature_required_list[i];
 							int feature_version = feature_versions[i];
 							bool has_version_attribute = feature_version != -1;
@@ -1605,7 +1605,11 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	print_verbose("Loading regular icon from " + path);
 	if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
 		print_verbose("- falling back to project icon: " + project_icon_path);
-		ImageLoader::load_image(project_icon_path, icon);
+		if (!project_icon_path.is_empty()) {
+			ImageLoader::load_image(project_icon_path, icon);
+		} else {
+			ERR_PRINT("No project icon specified. Please specify one in the Project Settings under Application -> Config -> Icon");
+		}
 	}
 
 	// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
@@ -1823,10 +1827,10 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/debug", PROPERTY_HINT_GLOBAL_FILE, "*.keystore,*.jks", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/debug_user", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/debug_password", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/debug_password", PROPERTY_HINT_PASSWORD, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release", PROPERTY_HINT_GLOBAL_FILE, "*.keystore,*.jks", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_user", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_password", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_password", PROPERTY_HINT_PASSWORD, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
@@ -2111,8 +2115,17 @@ Ref<Texture2D> EditorExportPlatformAndroid::get_run_icon() const {
 	return run_icon;
 }
 
+String EditorExportPlatformAndroid::get_java_path() {
+	String exe_ext;
+	if (OS::get_singleton()->get_name() == "Windows") {
+		exe_ext = ".exe";
+	}
+	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
+	return java_sdk_path.path_join("bin/java" + exe_ext);
+}
+
 String EditorExportPlatformAndroid::get_adb_path() {
-	String exe_ext = "";
+	String exe_ext;
 	if (OS::get_singleton()->get_name() == "Windows") {
 		exe_ext = ".exe";
 	}
@@ -2124,13 +2137,13 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 	if (p_target_sdk == -1) {
 		p_target_sdk = DEFAULT_TARGET_SDK_VERSION;
 	}
-	String exe_ext = "";
+	String exe_ext;
 	if (OS::get_singleton()->get_name() == "Windows") {
 		exe_ext = ".bat";
 	}
 	String apksigner_command_name = "apksigner" + exe_ext;
 	String sdk_path = EDITOR_GET("export/android/android_sdk_path");
-	String apksigner_path = "";
+	String apksigner_path;
 
 	Error errn;
 	String build_tools_dir = sdk_path.path_join("build-tools");
@@ -2227,6 +2240,54 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 	}
 
 	return apksigner_path;
+}
+
+static bool has_valid_keystore_credentials(String &r_error_str, const String &p_keystore, const String &p_username, const String &p_password, const String &p_type) {
+	String output;
+	List<String> args;
+	args.push_back("-list");
+	args.push_back("-keystore");
+	args.push_back(p_keystore);
+	args.push_back("-storepass");
+	args.push_back(p_password);
+	args.push_back("-alias");
+	args.push_back(p_username);
+	Error error = OS::get_singleton()->execute("keytool", args, &output, nullptr, true);
+	String keytool_error = "keytool error:";
+	bool valid = output.substr(0, keytool_error.length()) != keytool_error;
+
+	if (error != OK) {
+		r_error_str = TTR("Error: There was a problem validating the keystore username and password");
+		return false;
+	}
+	if (!valid) {
+		r_error_str = TTR(p_type + " Username and/or Password is invalid for the given " + p_type + " Keystore");
+		return false;
+	}
+	r_error_str = "";
+	return true;
+}
+
+bool EditorExportPlatformAndroid::has_valid_username_and_password(const Ref<EditorExportPreset> &p_preset, String &r_error) {
+	String dk = p_preset->get_or_env("keystore/debug", ENV_ANDROID_KEYSTORE_DEBUG_PATH);
+	String dk_user = p_preset->get_or_env("keystore/debug_user", ENV_ANDROID_KEYSTORE_DEBUG_USER);
+	String dk_password = p_preset->get_or_env("keystore/debug_password", ENV_ANDROID_KEYSTORE_DEBUG_PASS);
+	String rk = p_preset->get_or_env("keystore/release", ENV_ANDROID_KEYSTORE_RELEASE_PATH);
+	String rk_user = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
+	String rk_password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
+
+	bool valid = true;
+	if (!dk.is_empty() && !dk_user.is_empty() && !dk_password.is_empty()) {
+		String err = "";
+		valid = has_valid_keystore_credentials(err, dk, dk_user, dk_password, "Debug");
+		r_error += err;
+	}
+	if (!rk.is_empty() && !rk_user.is_empty() && !rk_password.is_empty()) {
+		String err = "";
+		valid = has_valid_keystore_credentials(err, rk, rk_user, rk_password, "Release");
+		r_error += err;
+	}
+	return valid;
 }
 
 bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
@@ -2327,6 +2388,32 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 	if (!p_debug && !rk.is_empty() && !FileAccess::exists(rk)) {
 		valid = false;
 		err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
+	}
+
+	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
+	if (java_sdk_path.is_empty()) {
+		err += TTR("A valid Java SDK path is required in Editor Settings.") + "\n";
+		valid = false;
+	} else {
+		// Validate the given path by checking that `java` is present under the `bin` directory.
+		Error errn;
+		// Check for the bin directory.
+		Ref<DirAccess> da = DirAccess::open(java_sdk_path.path_join("bin"), &errn);
+		if (errn != OK) {
+			err += TTR("Invalid Java SDK path in Editor Settings.");
+			err += TTR("Missing 'bin' directory!");
+			err += "\n";
+			valid = false;
+		} else {
+			// Check for the `java` command.
+			String java_path = get_java_path();
+			if (!FileAccess::exists(java_path)) {
+				err += TTR("Unable to find 'java' command using the Java SDK path.");
+				err += TTR("Please check the Java SDK directory specified in Editor Settings.");
+				err += "\n";
+				valid = false;
+			}
+		}
 	}
 
 	String sdk_path = EDITOR_GET("export/android/android_sdk_path");
@@ -2842,6 +2929,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unsupported export format!"));
 		return ERR_UNCONFIGURED;
 	}
+	String err_string;
+	if (!has_valid_username_and_password(p_preset, err_string)) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR(err_string));
+		return ERR_UNCONFIGURED;
+	}
 
 	if (use_gradle_build) {
 		print_verbose("Starting gradle build...");
@@ -2861,6 +2953,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 		}
 		const String assets_directory = get_assets_directory(p_preset, export_format);
+		String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
+		if (java_sdk_path.is_empty()) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Java SDK path must be configured in Editor Settings at 'export/android/java_sdk_path'."));
+			return ERR_UNCONFIGURED;
+		}
+		print_verbose("Java sdk path: " + java_sdk_path);
+
 		String sdk_path = EDITOR_GET("export/android/android_sdk_path");
 		if (sdk_path.is_empty()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'."));
@@ -2911,8 +3010,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		print_verbose("Storing command line flags...");
 		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
+		print_verbose("Updating JAVA_HOME environment to " + java_sdk_path);
+		OS::get_singleton()->set_environment("JAVA_HOME", java_sdk_path);
+
 		print_verbose("Updating ANDROID_HOME environment to " + sdk_path);
-		OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path); //set and overwrite if required
+		OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path);
 		String build_command;
 
 #ifdef WINDOWS_ENABLED
@@ -2975,6 +3077,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String combined_android_dependencies_maven_repos = String("|").join(android_dependencies_maven_repos);
 
 		List<String> cmdline;
+		cmdline.push_back("validateJavaVersion");
 		if (clean_build_required) {
 			cmdline.push_back("clean");
 		}

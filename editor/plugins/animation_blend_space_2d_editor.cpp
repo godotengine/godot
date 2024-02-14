@@ -36,11 +36,11 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/button.h"
@@ -1083,6 +1083,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	animations_menu = memnew(PopupMenu);
 	menu->add_child(animations_menu);
 	animations_menu->set_name("AddAnimations");
+	animations_menu->set_auto_translate(false);
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_animation_type));
 
 	open_file = memnew(EditorFileDialog);

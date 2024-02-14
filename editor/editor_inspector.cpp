@@ -35,14 +35,14 @@
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
+#include "editor/multi_node_edit.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "multi_node_edit.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
@@ -149,6 +149,9 @@ void EditorProperty::_notification(int p_what) {
 					if (c->is_set_as_top_level()) {
 						continue;
 					}
+					if (!c->is_visible()) {
+						continue;
+					}
 					if (c == bottom_editor) {
 						continue;
 					}
@@ -209,6 +212,22 @@ void EditorProperty::_notification(int p_what) {
 
 					if (no_children) {
 						text_size -= close->get_width() + 4 * EDSCALE;
+					}
+				}
+
+				if (!configuration_warning.is_empty() && !read_only) {
+					Ref<Texture2D> warning;
+
+					warning = get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons"));
+
+					rect.size.x -= warning->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+
+					if (is_layout_rtl()) {
+						rect.position.x += warning->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+					}
+
+					if (no_children) {
+						text_size -= warning->get_width() + 4 * EDSCALE;
 					}
 				}
 			}
@@ -396,6 +415,38 @@ void EditorProperty::_notification(int p_what) {
 			} else {
 				delete_rect = Rect2();
 			}
+
+			if (!configuration_warning.is_empty() && !read_only) {
+				Ref<Texture2D> warning;
+
+				StringName warning_icon;
+				Node *node = Object::cast_to<Node>(object);
+				if (node) {
+					const int warning_num = node->get_configuration_warnings_of_property(property_path).size();
+					warning_icon = Node::get_configuration_warning_icon(warning_num);
+				} else {
+					// This shouldn't happen, but let's not crash over an icon.
+					warning_icon = "NodeWarning";
+				}
+				warning = get_theme_icon(warning_icon, SNAME("EditorIcons"));
+
+				ofs -= warning->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+
+				Color color2(1, 1, 1);
+				if (configuration_warning_hover) {
+					color2.r *= 1.2;
+					color2.g *= 1.2;
+					color2.b *= 1.2;
+				}
+				configuration_warning_rect = Rect2(ofs, ((size.height - warning->get_height()) / 2), warning->get_width(), warning->get_height());
+				if (rtl) {
+					draw_texture(warning, Vector2(size.width - configuration_warning_rect.position.x - warning->get_width(), configuration_warning_rect.position.y), color2);
+				} else {
+					draw_texture(warning, configuration_warning_rect.position, color2);
+				}
+			} else {
+				configuration_warning_rect = Rect2();
+			}
 		} break;
 	}
 }
@@ -431,6 +482,10 @@ EditorInspector *EditorProperty::get_parent_inspector() const {
 
 void EditorProperty::set_doc_path(const String &p_doc_path) {
 	doc_path = p_doc_path;
+}
+
+void EditorProperty::set_internal(bool p_internal) {
+	internal = p_internal;
 }
 
 void EditorProperty::update_property() {
@@ -667,6 +722,12 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			check_hover = new_check_hover;
 			queue_redraw();
 		}
+
+		bool new_configuration_warning_hover = configuration_warning_rect.has_point(mpos) && !button_left;
+		if (new_configuration_warning_hover != configuration_warning_hover) {
+			configuration_warning_hover = new_configuration_warning_hover;
+			queue_redraw();
+		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -692,15 +753,14 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 						new_coords.y++;
 					}
 					if (new_coords.x < int64_t(object->get("hframes")) && new_coords.y < int64_t(object->get("vframes"))) {
-						call_deferred(SNAME("emit_changed"), property, new_coords, "", false);
+						callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, new_coords, "", false);
 					}
 				} else {
 					if (int64_t(object->get(property)) + 1 < (int64_t(object->get("hframes")) * int64_t(object->get("vframes")))) {
-						call_deferred(SNAME("emit_changed"), property, object->get(property).operator int64_t() + 1, "", false);
+						callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, object->get(property).operator int64_t() + 1, "", false);
 					}
 				}
-
-				call_deferred(SNAME("update_property"));
+				callable_mp(this, &EditorProperty::update_property).call_deferred();
 			}
 		}
 		if (delete_rect.has_point(mpos)) {
@@ -724,6 +784,16 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 			emit_signal(SNAME("property_checked"), property, checked);
 		}
+
+		if (configuration_warning_rect.has_point(mpos)) {
+			if (warning_dialog == nullptr) {
+				warning_dialog = memnew(AcceptDialog);
+				add_child(warning_dialog);
+				warning_dialog->set_title(TTR("Node Configuration Warning!"));
+			}
+			warning_dialog->set_text(configuration_warning);
+			warning_dialog->popup_centered();
+		}
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
 		_update_popup();
@@ -746,10 +816,10 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("property_editor/copy_value", p_event)) {
 			menu_option(MENU_COPY_VALUE);
 			accept_event();
-		} else if (ED_IS_SHORTCUT("property_editor/paste_value", p_event) && !is_read_only()) {
+		} else if (!is_read_only() && ED_IS_SHORTCUT("property_editor/paste_value", p_event)) {
 			menu_option(MENU_PASTE_VALUE);
 			accept_event();
-		} else if (ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
+		} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
 			menu_option(MENU_COPY_PROPERTY_PATH);
 			accept_event();
 		}
@@ -849,6 +919,16 @@ float EditorProperty::get_name_split_ratio() const {
 	return split_ratio;
 }
 
+void EditorProperty::set_configuration_warning(const String &p_configuration_warning) {
+	configuration_warning = p_configuration_warning;
+	queue_redraw();
+	queue_sort();
+}
+
+String EditorProperty::get_configuration_warning() const {
+	return configuration_warning;
+}
+
 void EditorProperty::set_object_and_property(Object *p_object, const StringName &p_property) {
 	object = p_object;
 	property = p_property;
@@ -905,11 +985,26 @@ void EditorProperty::_update_pin_flags() {
 	}
 }
 
+void EditorProperty::_update_configuration_warnings() {
+	Node *node = Object::cast_to<Node>(object);
+	if (node) {
+		const PackedStringArray warnings = node->get_configuration_warnings_as_strings(true, property_path);
+		const String warning_lines = String("\n").join(warnings);
+		set_configuration_warning(warning_lines);
+	}
+}
+
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	EditorHelpBit *tooltip = nullptr;
 
 	if (has_doc_tooltip) {
-		tooltip = memnew(EditorHelpTooltip(p_text));
+		String custom_description;
+
+		const EditorInspector *inspector = get_parent_inspector();
+		if (inspector) {
+			custom_description = inspector->get_custom_property_description(p_text);
+		}
+		tooltip = memnew(EditorHelpTooltip(p_text, custom_description));
 	}
 
 	if (object->has_method("_get_property_warning")) {
@@ -974,6 +1069,9 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_deletable", "deletable"), &EditorProperty::set_deletable);
 	ClassDB::bind_method(D_METHOD("is_deletable"), &EditorProperty::is_deletable);
 
+	ClassDB::bind_method(D_METHOD("set_configuration_warning", "configuration_warning"), &EditorProperty::set_configuration_warning);
+	ClassDB::bind_method(D_METHOD("get_configuration_warning"), &EditorProperty::get_configuration_warning);
+
 	ClassDB::bind_method(D_METHOD("get_edited_property"), &EditorProperty::get_edited_property);
 	ClassDB::bind_method(D_METHOD("get_edited_object"), &EditorProperty::get_edited_object);
 
@@ -991,6 +1089,7 @@ void EditorProperty::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_warning"), "set_draw_warning", "is_draw_warning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keying"), "set_keying", "is_keying");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deletable"), "set_deletable", "is_deletable");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "configuration_warning"), "set_configuration_warning", "get_configuration_warning");
 
 	ADD_SIGNAL(MethodInfo("property_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::STRING_NAME, "field"), PropertyInfo(Variant::BOOL, "changing")));
 	ADD_SIGNAL(MethodInfo("multiple_properties_changed", PropertyInfo(Variant::PACKED_STRING_ARRAY, "properties"), PropertyInfo(Variant::ARRAY, "value")));
@@ -1034,6 +1133,8 @@ void EditorProperty::_update_popup() {
 	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
 	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("CopyNodePath")), ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
 	menu->set_item_disabled(MENU_PASTE_VALUE, is_read_only());
+	menu->set_item_disabled(MENU_COPY_PROPERTY_PATH, internal);
+
 	if (!pin_hidden) {
 		menu->add_separator();
 		if (can_pin) {
@@ -1355,7 +1456,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 					Ref<Font> light_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
 					int light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
-					Color light_font_color = get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor));
+					Color light_font_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 					// Can we fit the long version of the revertable count text?
 					num_revertable_str = vformat(TTRN("(%d change)", "(%d changes)", revertable_properties.size()), revertable_properties.size());
@@ -2791,7 +2892,9 @@ void EditorInspector::update_tree() {
 						(!filter.is_empty() || !restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 					break;
 				}
-				if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
+				// Treat custom categories as second-level ones. Do not skip a normal category if it is followed by a custom one.
+				// Skip in the other 3 cases (normal -> normal, custom -> custom, custom -> normal).
+				if ((N->get().usage & PROPERTY_USAGE_CATEGORY) && (p.hint_string.is_empty() || !N->get().hint_string.is_empty())) {
 					valid = false;
 					break;
 				}
@@ -2808,53 +2911,53 @@ void EditorInspector::update_tree() {
 
 			// `hint_script` should contain a native class name or a script path.
 			// Otherwise the category was probably added via `@export_category` or `_get_property_list()`.
+			// Do not add an icon, do not change the current class (`doc_name`) for custom categories.
 			if (p.hint_string.is_empty()) {
 				category->label = p.name;
 				category->set_tooltip_text(p.name);
-				continue; // Do not add an icon, do not change the current class (`doc_name`).
-			}
+			} else {
+				String type = p.name;
+				String label = p.name;
+				doc_name = p.name;
 
-			String type = p.name;
-			String label = p.name;
-			doc_name = p.name;
+				// Use category's owner script to update some of its information.
+				if (!EditorNode::get_editor_data().is_type_recognized(type) && ResourceLoader::exists(p.hint_string)) {
+					Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
+					if (scr.is_valid()) {
+						StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
 
-			// Use category's owner script to update some of its information.
-			if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && ResourceLoader::exists(p.hint_string)) {
-				Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
-				if (scr.is_valid()) {
-					StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
+						// Update the docs reference and the label based on the script.
+						Vector<DocData::ClassDoc> docs = scr->get_documentation();
+						if (!docs.is_empty()) {
+							// The documentation of a GDScript's main class is at the end of the array.
+							// Hacky because this isn't necessarily always guaranteed.
+							doc_name = docs[docs.size() - 1].name;
+						}
+						if (script_name != StringName()) {
+							label = script_name;
+						}
 
-					// Update the docs reference and the label based on the script.
-					Vector<DocData::ClassDoc> docs = scr->get_documentation();
-					if (!docs.is_empty()) {
-						// The documentation of a GDScript's main class is at the end of the array.
-						// Hacky because this isn't necessarily always guaranteed.
-						doc_name = docs[docs.size() - 1].name;
-					}
-					if (script_name != StringName()) {
-						label = script_name;
-					}
-
-					// Find the icon corresponding to the script.
-					if (script_name != StringName()) {
-						category->icon = EditorNode::get_singleton()->get_class_icon(script_name);
-					} else {
-						category->icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
+						// Find the icon corresponding to the script.
+						if (script_name != StringName()) {
+							category->icon = EditorNode::get_singleton()->get_class_icon(script_name);
+						} else {
+							category->icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
+						}
 					}
 				}
-			}
 
-			if (category->icon.is_null() && !type.is_empty()) {
-				category->icon = EditorNode::get_singleton()->get_class_icon(type);
-			}
+				if (category->icon.is_null() && !type.is_empty()) {
+					category->icon = EditorNode::get_singleton()->get_class_icon(type);
+				}
 
-			// Set the category label.
-			category->label = label;
-			category->doc_class_name = doc_name;
+				// Set the category label.
+				category->label = label;
+				category->doc_class_name = doc_name;
 
-			if (use_doc_hints) {
-				// `|` separator used in `EditorHelpTooltip` for formatting.
-				category->set_tooltip_text("class|" + doc_name + "||");
+				if (use_doc_hints) {
+					// `|` separator used in `EditorHelpTooltip` for formatting.
+					category->set_tooltip_text("class|" + doc_name + "||");
+				}
 			}
 
 			// Add editors at the start of a category.
@@ -3018,7 +3121,7 @@ void EditorInspector::update_tree() {
 
 		Vector<String> components = path.split("/");
 		for (int i = 0; i < components.size(); i++) {
-			String component = components[i];
+			const String &component = components[i];
 			acc_path += (i > 0) ? "/" + component : component;
 
 			if (!vbox_per_path[root_vbox].has(acc_path)) {
@@ -3306,6 +3409,7 @@ void EditorInspector::update_tree() {
 				ep->set_keying(keying);
 				ep->set_read_only(property_read_only || all_read_only);
 				ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
+				ep->_update_configuration_warnings();
 			}
 
 			current_vbox->add_child(editors[i].property_editor);
@@ -3327,7 +3431,11 @@ void EditorInspector::update_tree() {
 				if (use_doc_hints) {
 					// `|` separator used in `EditorHelpTooltip` for formatting.
 					if (theme_item_name.is_empty()) {
-						ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name + "|");
+						if (p.usage & PROPERTY_USAGE_INTERNAL) {
+							ep->set_tooltip_text("internal_property|" + classname + "|" + property_prefix + p.name + "|");
+						} else {
+							ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name + "|");
+						}
 					} else {
 						ep->set_tooltip_text("theme_item|" + classname + "|" + theme_item_name + "|");
 					}
@@ -3335,6 +3443,8 @@ void EditorInspector::update_tree() {
 				}
 
 				ep->set_doc_path(doc_path);
+				ep->set_internal(p.usage & PROPERTY_USAGE_INTERNAL);
+
 				ep->update_property();
 				ep->_update_pin_flags();
 				ep->update_editor_property_status();
@@ -3424,6 +3534,9 @@ void EditorInspector::edit(Object *p_object) {
 	per_array_page.clear();
 
 	object = p_object;
+
+	property_configuration_warnings.clear();
+	_update_configuration_warnings();
 
 	if (object) {
 		update_scroll_request = 0; //reset
@@ -3775,13 +3888,13 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	// The "changing" variable must be true for properties that trigger events as typing occurs,
 	// like "text_changed" signal. E.g. text property of Label, Button, RichTextLabel, etc.
 	if (p_changing) {
-		this->changing++;
+		changing++;
 	}
 
 	_edit_set(p_path, p_value, p_update_all, p_name);
 
 	if (p_changing) {
-		this->changing--;
+		changing--;
 	}
 
 	if (restart_request_props.has(p_path)) {
@@ -3790,7 +3903,7 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 }
 
 void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing) {
-	ERR_FAIL_COND(p_paths.size() == 0 || p_values.size() == 0);
+	ERR_FAIL_COND(p_paths.is_empty() || p_values.is_empty());
 	ERR_FAIL_COND(p_paths.size() != p_values.size());
 	String names;
 	for (int i = 0; i < p_paths.size(); i++) {
@@ -3946,6 +4059,52 @@ void EditorInspector::_node_removed(Node *p_node) {
 	}
 }
 
+void EditorInspector::_warning_changed(Node *p_node) {
+	if (p_node == object) {
+		// Only update the tree if the list of configuration warnings has changed.
+		if (_update_configuration_warnings()) {
+			update_tree_pending = true;
+		}
+	}
+}
+
+bool EditorInspector::_update_configuration_warnings() {
+	Node *node = Object::cast_to<Node>(object);
+	if (!node) {
+		return false;
+	}
+
+	bool changed = false;
+	LocalVector<int> found_warning_indices;
+
+	// New and changed warnings.
+	Vector<Dictionary> warnings = node->get_configuration_warnings_as_dicts();
+	for (const Dictionary &warning : warnings) {
+		if (!warning.has("property")) {
+			continue;
+		}
+
+		int found_warning_index = property_configuration_warnings.find(warning);
+		if (found_warning_index < 0) {
+			found_warning_index = property_configuration_warnings.size();
+			property_configuration_warnings.push_back(warning);
+			changed = true;
+		}
+		found_warning_indices.push_back(found_warning_index);
+	}
+
+	// Removed warnings.
+	for (uint32_t i = 0; i < property_configuration_warnings.size(); i++) {
+		if (found_warning_indices.find(i) < 0) {
+			property_configuration_warnings.remove_at(i);
+			i--;
+			changed = true;
+		}
+	}
+
+	return changed;
+}
+
 void EditorInspector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -3957,6 +4116,7 @@ void EditorInspector::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (!sub_inspector) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
+				get_tree()->connect("node_configuration_warning_changed", callable_mp(this, &EditorInspector::_warning_changed));
 			}
 		} break;
 
@@ -3967,6 +4127,7 @@ void EditorInspector::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (!sub_inspector) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
+				get_tree()->disconnect("node_configuration_warning_changed", callable_mp(this, &EditorInspector::_warning_changed));
 			}
 			edit(nullptr);
 		} break;
@@ -3977,7 +4138,7 @@ void EditorInspector::_notification(int p_what) {
 
 		case NOTIFICATION_PROCESS: {
 			if (update_scroll_request >= 0) {
-				get_v_scroll_bar()->call_deferred(SNAME("set_value"), update_scroll_request);
+				callable_mp((Range *)get_v_scroll_bar(), &Range::set_value).call_deferred(update_scroll_request);
 				update_scroll_request = -1;
 			}
 			if (update_tree_pending) {
@@ -4068,6 +4229,19 @@ void EditorInspector::set_property_prefix(const String &p_prefix) {
 
 String EditorInspector::get_property_prefix() const {
 	return property_prefix;
+}
+
+void EditorInspector::add_custom_property_description(const String &p_class, const String &p_property, const String &p_description) {
+	const String key = vformat("property|%s|%s|", p_class, p_property);
+	custom_property_descriptions[key] = p_description;
+}
+
+String EditorInspector::get_custom_property_description(const String &p_property) const {
+	HashMap<String, String>::ConstIterator E = custom_property_descriptions.find(p_property);
+	if (E) {
+		return E->value;
+	}
+	return "";
 }
 
 void EditorInspector::set_object_class(const String &p_class) {
@@ -4206,6 +4380,7 @@ EditorInspector::EditorInspector() {
 	main_vbox->add_theme_constant_override("separation", 0);
 	add_child(main_vbox);
 	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
+	set_follow_focus(true);
 
 	changing = 0;
 	search_box = nullptr;

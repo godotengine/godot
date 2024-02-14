@@ -95,6 +95,7 @@ private:
 	void _clear_intermediate_buffers();
 	void _clear_back_buffers();
 
+	void _rt_attach_textures(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count);
 	GLuint _rt_get_cached_fbo(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count);
 
 public:
@@ -107,7 +108,7 @@ public:
 
 	void free_render_buffer_data();
 
-	void check_backbuffer(bool p_need_color, bool p_need_depth); // check if we need to initialise our backbuffer
+	void check_backbuffer(bool p_need_color, bool p_need_depth); // Check if we need to initialize our backbuffer.
 
 	GLuint get_render_fbo();
 	GLuint get_msaa3d_fbo() const { return msaa3d.fbo; }

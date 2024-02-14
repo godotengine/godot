@@ -76,6 +76,8 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 		ubo.eye_offset[v][3] = 0.0;
 	}
 
+	RendererRD::MaterialStorage::store_transform(main_cam_transform, ubo.main_cam_inv_view_matrix);
+
 	ubo.taa_jitter[0] = taa_jitter.x;
 	ubo.taa_jitter[1] = taa_jitter.y;
 
@@ -252,7 +254,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	}
 
 	uniform_buffer = p_uniform_buffer;
-	RD::get_singleton()->buffer_update(uniform_buffer, 0, sizeof(UBODATA), &ubo, RD::BARRIER_MASK_RASTER);
+	RD::get_singleton()->buffer_update(uniform_buffer, 0, sizeof(UBODATA), &ubo);
 }
 
 RID RenderSceneDataRD::get_uniform_buffer() {

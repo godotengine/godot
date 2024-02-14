@@ -35,9 +35,9 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_searched(const String &p_path) {
@@ -398,6 +398,7 @@ DependencyEditorOwners::DependencyEditorOwners() {
 	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
+	owners->set_auto_translate(false);
 	owners->set_select_mode(ItemList::SELECT_MULTI);
 	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));

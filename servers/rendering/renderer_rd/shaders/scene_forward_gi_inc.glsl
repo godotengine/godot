@@ -176,7 +176,7 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 			}
 
 			occ_pos *= sdfgi.occlusion_renormalize;
-			float occlusion = dot(textureLod(sampler3D(sdfgi_occlusion_cascades, DEFAULT_SAMPLER_LINEAR_CLAMP), occ_pos, 0.0), occ_mask);
+			float occlusion = dot(textureLod(sampler3D(sdfgi_occlusion_cascades, SAMPLER_LINEAR_CLAMP), occ_pos, 0.0), occ_mask);
 
 			weight *= max(occlusion, 0.01);
 		}
@@ -187,7 +187,7 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 		vec3 pos_uvw = diffuse_posf;
 		pos_uvw.xy += vec2(offset.xy) * sdfgi.lightprobe_uv_offset.xy;
 		pos_uvw.x += float(offset.z) * sdfgi.lightprobe_uv_offset.z;
-		diffuse = textureLod(sampler2DArray(sdfgi_lightprobe_texture, DEFAULT_SAMPLER_LINEAR_CLAMP), pos_uvw, 0.0).rgb;
+		diffuse = textureLod(sampler2DArray(sdfgi_lightprobe_texture, SAMPLER_LINEAR_CLAMP), pos_uvw, 0.0).rgb;
 
 		diffuse_accum += vec4(diffuse * weight * sdfgi.cascades[cascade].exposure_normalization, weight);
 
@@ -197,10 +197,10 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 			pos_uvw.xy += vec2(offset.xy) * sdfgi.lightprobe_uv_offset.xy;
 			pos_uvw.x += float(offset.z) * sdfgi.lightprobe_uv_offset.z;
 			if (roughness < 0.99) {
-				specular = textureLod(sampler2DArray(sdfgi_lightprobe_texture, DEFAULT_SAMPLER_LINEAR_CLAMP), pos_uvw + vec3(0, 0, float(sdfgi.max_cascades)), 0.0).rgb;
+				specular = textureLod(sampler2DArray(sdfgi_lightprobe_texture, SAMPLER_LINEAR_CLAMP), pos_uvw + vec3(0, 0, float(sdfgi.max_cascades)), 0.0).rgb;
 			}
 			if (roughness > 0.5) {
-				specular = mix(specular, textureLod(sampler2DArray(sdfgi_lightprobe_texture, DEFAULT_SAMPLER_LINEAR_CLAMP), pos_uvw, 0.0).rgb, (roughness - 0.5) * 2.0);
+				specular = mix(specular, textureLod(sampler2DArray(sdfgi_lightprobe_texture, SAMPLER_LINEAR_CLAMP), pos_uvw, 0.0).rgb, (roughness - 0.5) * 2.0);
 			}
 
 			specular_accum += specular * weight * sdfgi.cascades[cascade].exposure_normalization;

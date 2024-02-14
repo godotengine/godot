@@ -728,7 +728,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 			r_error.expected = 0;
 			return Variant();
 		}
-		if (Object::cast_to<RefCounted>(this)) {
+		if (is_ref_counted()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
 		}
@@ -1347,12 +1347,10 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		s = &signal_map[p_signal];
 	}
 
-	Callable target = p_callable;
-
 	//compare with the base callable, so binds can be ignored
-	if (s->slot_map.has(*target.get_base_comparator())) {
+	if (s->slot_map.has(*p_callable.get_base_comparator())) {
 		if (p_flags & CONNECT_REFERENCE_COUNTED) {
-			s->slot_map[*target.get_base_comparator()].reference_count++;
+			s->slot_map[*p_callable.get_base_comparator()].reference_count++;
 			return OK;
 		} else {
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Signal '" + p_signal + "' is already connected to given callable '" + p_callable + "' in that object.");
@@ -1364,7 +1362,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	SignalData::Slot slot;
 
 	Connection conn;
-	conn.callable = target;
+	conn.callable = p_callable;
 	conn.signal = ::Signal(this, p_signal);
 	conn.flags = p_flags;
 	slot.conn = conn;
@@ -1376,7 +1374,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	}
 
 	//use callable version as key, so binds can be ignored
-	s->slot_map[*target.get_base_comparator()] = slot;
+	s->slot_map[*p_callable.get_base_comparator()] = slot;
 
 	return OK;
 }
@@ -1397,9 +1395,7 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 		ERR_FAIL_V_MSG(false, "Nonexistent signal: " + p_signal + ".");
 	}
 
-	Callable target = p_callable;
-
-	return s->slot_map.has(*target.get_base_comparator());
+	return s->slot_map.has(*p_callable.get_base_comparator());
 }
 
 void Object::disconnect(const StringName &p_signal, const Callable &p_callable) {
@@ -1687,6 +1683,7 @@ void Object::_bind_methods() {
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);
+	BIND_CONSTANT(NOTIFICATION_EXTENSION_RELOADED);
 
 	BIND_ENUM_CONSTANT(CONNECT_DEFERRED);
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);

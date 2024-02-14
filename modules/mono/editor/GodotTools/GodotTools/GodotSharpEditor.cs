@@ -9,6 +9,7 @@ using System.Linq;
 using GodotTools.Build;
 using GodotTools.Ides;
 using GodotTools.Ides.Rider;
+using GodotTools.Inspector;
 using GodotTools.Internals;
 using GodotTools.ProjectEditor;
 using JetBrains.Annotations;
@@ -45,6 +46,7 @@ namespace GodotTools
 
         // TODO Use WeakReference once we have proper serialization.
         private WeakRef _exportPluginWeak;
+        private WeakRef _inspectorPluginWeak;
 
         public GodotIdeManager GodotIdeManager { get; private set; }
 
@@ -615,6 +617,11 @@ namespace GodotTools
             AddExportPlugin(exportPlugin);
             _exportPluginWeak = WeakRef(exportPlugin);
 
+            // Inspector plugin
+            var inspectorPlugin = new InspectorPlugin();
+            AddInspectorPlugin(inspectorPlugin);
+            _inspectorPluginWeak = WeakRef(inspectorPlugin);
+
             BuildManager.Initialize();
             RiderPathManager.Initialize();
 
@@ -627,6 +634,9 @@ namespace GodotTools
             base._DisablePlugin();
 
             _editorSettings.SettingsChanged -= OnSettingsChanged;
+
+            // Custom signals aren't automatically disconnected currently.
+            MSBuildPanel.BuildStateChanged -= BuildStateChanged;
         }
 
         public override void _ExitTree()
@@ -659,6 +669,13 @@ namespace GodotTools
                     (_exportPluginWeak.GetRef().AsGodotObject() as ExportPlugin)?.Dispose();
 
                     _exportPluginWeak.Dispose();
+                }
+
+                if (IsInstanceValid(_inspectorPluginWeak))
+                {
+                    (_inspectorPluginWeak.GetRef().AsGodotObject() as InspectorPlugin)?.Dispose();
+
+                    _inspectorPluginWeak.Dispose();
                 }
 
                 GodotIdeManager?.Dispose();

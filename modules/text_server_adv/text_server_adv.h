@@ -78,7 +78,7 @@
 
 using namespace godot;
 
-#else
+#elif defined(GODOT_MODULE)
 // Headers for building as built-in module.
 
 #include "core/extension/ext_wrappers.gen.inc"
@@ -297,6 +297,7 @@ class TextServerAdvanced : public TextServerExtension {
 	struct FontAdvancedLinkedVariation {
 		RID base_font;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
+		float baseline_offset = 0.0;
 	};
 
 	struct FontAdvanced {
@@ -324,6 +325,7 @@ class TextServerAdvanced : public TextServerExtension {
 		int weight = 400;
 		int stretch = 100;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
+		float baseline_offset = 0.0;
 
 		HashMap<Vector2i, FontForSizeAdvanced *, VariantHasher, VariantComparator> cache;
 
@@ -502,6 +504,7 @@ class TextServerAdvanced : public TextServerExtension {
 		double upos = 0.0;
 		double uthk = 0.0;
 
+		char32_t el_char = 0x2026;
 		TrimData overrun_trim_data;
 		bool fit_width_minimum_reached = false;
 
@@ -573,9 +576,10 @@ class TextServerAdvanced : public TextServerExtension {
 		double embolden = 0.0;
 		Transform2D transform;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
+		float baseline_offset = 0.0;
 
 		bool operator==(const SystemFontKey &p_b) const {
-			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]);
+			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
 		}
 
 		SystemFontKey(const String &p_font_name, bool p_italic, int p_weight, int p_stretch, RID p_font, const TextServerAdvanced *p_fb) {
@@ -600,6 +604,7 @@ class TextServerAdvanced : public TextServerExtension {
 			extra_spacing[SPACING_BOTTOM] = p_fb->_font_get_spacing(p_font, SPACING_BOTTOM);
 			extra_spacing[SPACING_SPACE] = p_fb->_font_get_spacing(p_font, SPACING_SPACE);
 			extra_spacing[SPACING_GLYPH] = p_fb->_font_get_spacing(p_font, SPACING_GLYPH);
+			baseline_offset = p_fb->_font_get_baseline_offset(p_font);
 		}
 	};
 
@@ -632,7 +637,7 @@ class TextServerAdvanced : public TextServerExtension {
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_BOTTOM], hash);
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_SPACE], hash);
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_GLYPH], hash);
-
+			hash = hash_murmur3_one_double(p_a.baseline_offset, hash);
 			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12), hash));
 		}
 	};
@@ -647,6 +652,7 @@ class TextServerAdvanced : public TextServerExtension {
 	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_length) const;
 	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
+	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
 	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
@@ -779,6 +785,9 @@ public:
 	MODBIND3(font_set_spacing, const RID &, SpacingType, int64_t);
 	MODBIND2RC(int64_t, font_get_spacing, const RID &, SpacingType);
 
+	MODBIND2(font_set_baseline_offset, const RID &, float);
+	MODBIND1RC(float, font_get_baseline_offset, const RID &);
+
 	MODBIND2(font_set_transform, const RID &, const Transform2D &);
 	MODBIND1RC(Transform2D, font_get_transform, const RID &);
 
@@ -898,6 +907,9 @@ public:
 
 	MODBIND2(shaped_text_set_custom_punctuation, const RID &, const String &);
 	MODBIND1RC(String, shaped_text_get_custom_punctuation, const RID &);
+
+	MODBIND2(shaped_text_set_custom_ellipsis, const RID &, int64_t);
+	MODBIND1RC(int64_t, shaped_text_get_custom_ellipsis, const RID &);
 
 	MODBIND2(shaped_text_set_orientation, const RID &, Orientation);
 	MODBIND1RC(Orientation, shaped_text_get_orientation, const RID &);

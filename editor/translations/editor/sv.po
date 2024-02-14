@@ -14,7 +14,7 @@
 # Mattias Münster <mattiasmun@gmail.com>, 2019.
 # Anonymous <noreply@weblate.org>, 2020.
 # Joakim Lundberg <joakim@joakimlundberg.com>, 2020.
-# Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020, 2021, 2022, 2023.
+# Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020, 2021, 2022, 2023, 2024.
 # Jonas Robertsson <jonas.robertsson@posteo.net>, 2020, 2021.
 # André Andersson <andre.eric.andersson@gmail.com>, 2020.
 # Andreas Westrell <andreas.westrell@gmail.com>, 2020.
@@ -33,12 +33,13 @@
 # Flashbox <kalle.frosta@gmail.com>, 2023.
 # Emil Åsberg <02asb01@gmail.com>, 2023.
 # Erik Högberg <erik.hogberg.93@gmail.com>, 2023.
+# TheeStickmahn <ljhbengtsson@icloud.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-06 04:32+0000\n"
+"PO-Revision-Date: 2024-01-20 05:55+0000\n"
 "Last-Translator: Kristoffer Grundström <swedishsailfishosuser@tutanota.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
@@ -47,7 +48,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Huvudtråd"
@@ -957,6 +958,10 @@ msgstr ""
 "Anpassade Spår\", sedan importera om.\n"
 "Alternativt, använd en importförinställning som importerar animationer till "
 "separata filer."
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr ""
+"Animationsspelaren är inaktiv. Uppspelningen kommer inte att återupptas."
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Välj en AnimationsSpelar-nod för att skapa och redigera animationer."
@@ -2872,8 +2877,14 @@ msgstr "Välj existerande layout:"
 msgid "Or enter new layout name"
 msgstr "Eller skriv ett nytt layoutnamn"
 
+msgid "Changed Locale Filter Mode"
+msgstr "Ändrade Språkfilter Läge"
+
 msgid "[Default]"
 msgstr "[Standard]"
+
+msgid "Show All Locales"
+msgstr "Visa alla språk"
 
 msgid "Edit Filters"
 msgstr "Redigera Filter"
@@ -3283,6 +3294,28 @@ msgstr "Ta bort Layout"
 msgid "Default"
 msgstr "Standard"
 
+msgid "%d second ago"
+msgid_plural "%d seconds ago"
+msgstr[0] "%d sekund sedan"
+msgstr[1] "%d sekunder sedan"
+
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] "%d minut sedan"
+msgstr[1] "%d minuter sedan"
+
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] "%d timme sedan"
+msgstr[1] "%d timmar sedan"
+
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"Last saved: %s."
+msgstr ""
+"Scenen \"%s\" har osparade ändringar.\n"
+"Senast sparad: %s."
+
 msgid "Save & Close"
 msgstr "Spara & Stäng"
 
@@ -3302,6 +3335,15 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 "Kan ej skriva till fil '%s', filen används, är låst eller behörighet saknas."
+
+msgid "Forward+"
+msgstr "Framåt+"
+
+msgid "Mobile"
+msgstr "Mobil"
+
+msgid "Compatibility"
+msgstr "Kompabilitet"
 
 msgid "Dock Position"
 msgstr "Panelposition"
@@ -3408,6 +3450,9 @@ msgstr "Kommando palett..."
 msgid "Take Screenshot"
 msgstr "Ta Skärmdump"
 
+msgid "Screenshots are stored in the Editor Data/Settings Folder."
+msgstr "Skärmdumpar är sparade i editorns Data/Settings katalog."
+
 msgid "Toggle Fullscreen"
 msgstr "Växla Fullskärm"
 
@@ -3459,23 +3504,14 @@ msgstr "Om Godot"
 msgid "Support Godot Development"
 msgstr "Supporta utvecklingen av Godot"
 
-msgid "Choose a renderer."
-msgstr "Välj en renderare."
-
-msgid "Forward+"
-msgstr "Framåt+"
-
-msgid "Mobile"
-msgstr "Mobil"
-
-msgid "Compatibility"
-msgstr "Kompabilitet"
-
 msgid "Update Continuously"
 msgstr "Uppdatera kontinuerligt"
 
 msgid "Update When Changed"
 msgstr "Uppdatera vid ändring"
+
+msgid "Hide Update Spinner"
+msgstr "Göm Uppdaterings-snurren"
 
 msgid "FileSystem"
 msgstr "FilSystem"
@@ -3506,6 +3542,16 @@ msgstr "Hantera Mallar"
 
 msgid "Install from file"
 msgstr "Installera från fil"
+
+msgid ""
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"res://android/build\" directory manually before attempting this "
+"operation again."
+msgstr ""
+"Android-byggmallen är redan installerad innuti projektet och kommer inte bli "
+"överskriven.\n"
+"Radera \"res://android/build\", innan du försöker igen."
 
 msgid "Import Templates From ZIP File"
 msgstr "Importera Mall från ZIP fil"
@@ -3550,6 +3596,15 @@ msgstr "Öppna 3D Redigeraren"
 msgid "Open Script Editor"
 msgstr "Öppna Skript-Redigerare"
 
+msgid "Open the next Editor"
+msgstr "Öppna nästa Redigerare"
+
+msgid "Open the previous Editor"
+msgstr "Öppna föregående Redigerare"
+
+msgid "Ok"
+msgstr "Ok"
+
 msgid "Warning!"
 msgstr "Varning!"
 
@@ -3580,6 +3635,9 @@ msgstr "Inget namn har angetts."
 msgid "Name contains invalid characters."
 msgstr "Namnet innehåller ogiltiga tecken."
 
+msgid "Bit %d, value %d"
+msgstr "Bit %d, värde %d"
+
 msgid "Rename"
 msgstr "Byt namn"
 
@@ -3589,11 +3647,33 @@ msgstr "Lager %d"
 msgid "Assign..."
 msgstr "Tilldela..."
 
+msgid "(Nil) %s"
+msgstr "(Nil) %s"
+
+msgid "%s (size %s)"
+msgstr "%s (storlek %s)"
+
 msgid "Size:"
 msgstr "Storlek:"
 
+msgid "Remove Item"
+msgstr "Radera Artikel"
+
+msgid "Add Key/Value Pair"
+msgstr "Skapa Nyckel/Valuta Par"
+
 msgid "Localizable String (size %d)"
 msgstr "Lokaliserbar sträng (storlek %d)"
+
+msgid ""
+"The selected resource (%s) does not match any type expected for this property "
+"(%s)."
+msgstr ""
+"Valda resursen (%s) matchar inte någon förväntad typ för den här egenskapen "
+"(%s)."
+
+msgid "Quick Load"
+msgstr "Snabbladda"
 
 msgid "Make Unique"
 msgstr "Gör Unik"
@@ -3619,6 +3699,18 @@ msgstr "Ny shader"
 msgid "Remote Debug"
 msgstr "Fjärrdebuggning"
 
+msgid ""
+"No runnable export preset found for this platform.\n"
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
+msgstr ""
+"Ingen körbar export-mall hittad för denna plattform.\n"
+"Snälla lägg till en export-mall innuti Export menyn eller definera en redan "
+"gjord mall som körbar."
+
+msgid "Project Run"
+msgstr "Kör Projekt"
+
 msgid "Write your logic in the _run() method."
 msgstr "Skriv din logik i _run() metoden."
 
@@ -3631,14 +3723,44 @@ msgstr "Editera genväg: %s"
 msgid "General"
 msgstr "Allmänt"
 
+msgid "The editor must be restarted for changes to take effect."
+msgstr "Editorn måste startas om för att ändringarna ska träda i kraft."
+
 msgid "Shortcuts"
 msgstr "Genvägar"
+
+msgid "Left Stick Left, Joystick 0 Left"
+msgstr "Vänster Joystick Vänster, Joystick 0 Vänster"
+
+msgid "Left Stick Right, Joystick 0 Right"
+msgstr "Vänster Joystick Höger, Joystick 0 Höger"
+
+msgid "Left Stick Down, Joystick 0 Down"
+msgstr "Vänster Joystick Ner, Joystick 0 Ner"
+
+msgid "Right Stick Left, Joystick 1 Left"
+msgstr "Höger Joystick Vänster, Joystick 1 Vänster"
+
+msgid "Right Stick Right, Joystick 1 Right"
+msgstr "Höger Joystick Höger, Joystick 1 Höger"
+
+msgid "Right Stick Up, Joystick 1 Up"
+msgstr "Höger Joystick Uppåt, Joystick 1 Uppåt"
+
+msgid "Right Stick Down, Joystick 1 Down"
+msgstr "Höger Joystick Ner, Joystick 1 Ner"
 
 msgid "Joystick 2 Left"
 msgstr "Joystick 2 vänster"
 
+msgid "Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"
+msgstr "Vänster Avtryckare, Sony L2, Xbox LT, Joystick 2 Höger"
+
 msgid "Joystick 2 Up"
 msgstr "Joystick 2 upp"
+
+msgid "Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"
+msgstr "Höger Avtryckare, Sony R2, Xbox RT, Joystick 2 Ner"
 
 msgid "Joystick 3 Left"
 msgstr "Joystick 3 vänster"
@@ -3667,11 +3789,17 @@ msgstr "Joystick 4 ner"
 msgid "Unicode"
 msgstr "Unicode"
 
+msgid "Joypad Axis %d %s (%s)"
+msgstr "Joypad Axis %d%s (%s)"
+
 msgid "All Devices"
 msgstr "Alla Enheter"
 
 msgid "Device"
 msgstr "Enhet"
+
+msgid "Listening for input..."
+msgstr "Väntar för inmatning..."
 
 msgid "Project export for platform:"
 msgstr "Projektexport för plattformen:"
@@ -3735,6 +3863,15 @@ msgstr "PCK Inbäddning"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Den inbäddade PCK får inte vara större än 4 GiB på 32 bitars exporter."
+
+msgid "Plugin \"%s\" is not supported on \"%s\""
+msgstr "Plugin \"%s\" stöds inte på \"%s\""
+
+msgid "Open the folder containing these templates."
+msgstr "Öppna katalogen som innehåller dessa mallar."
+
+msgid "Uninstall these templates."
+msgstr "Avinstallera dessa mallar."
 
 msgid "There are no mirrors available."
 msgstr "Det finns inga tillgängliga speglar."
@@ -3817,6 +3954,9 @@ msgstr "Extraherar export mallar"
 msgid "Importing:"
 msgstr "Importerar:"
 
+msgid "Export Template Manager"
+msgstr "Exportera Mall-hanterare"
+
 msgid "Current Version:"
 msgstr "Nuvarande Version:"
 
@@ -3882,6 +4022,9 @@ msgstr ""
 msgid "Runnable"
 msgstr "Körbar"
 
+msgid "Delete preset '%s'?"
+msgstr "Radera mall \"%s\"?"
+
 msgid "Resources to export:"
 msgstr "Resurser att exportera:"
 
@@ -3893,6 +4036,9 @@ msgstr "%s Exportera"
 
 msgid "Release"
 msgstr "Släpp"
+
+msgid "Presets"
+msgstr "Mallar"
 
 msgid "Add..."
 msgstr "Lägg till..."
@@ -3924,6 +4070,29 @@ msgstr "Exporteringsläge:"
 msgid "Keep"
 msgstr "Behåll"
 
+msgid ""
+"Filters to export non-resource files/folders\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
+msgstr ""
+"Filter för att exportera icke resurs-filer/kataloger\n"
+"(komma separerat, ex: *.json, *.txt, docs/*)"
+
+msgid ""
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
+msgstr ""
+"Filter för att exkludera filer/kataloger från projekt\n"
+"(komma separerat, ex: *.json, *.txt, docs/*)"
+
+msgid "Custom (comma-separated):"
+msgstr "Anpassad (kommaseparerad):"
+
+msgid "Feature List:"
+msgstr "Funktionslista:"
+
+msgid "Encrypt Exported PCK"
+msgstr "Kryptera Exporterad PCK"
+
 msgid "More Info..."
 msgstr "Mer information..."
 
@@ -3942,6 +4111,34 @@ msgstr "Exportera allt..."
 msgid "ZIP File"
 msgstr "ZIP fil"
 
+msgid "Export templates for this platform are missing:"
+msgstr "Exportmallar för denna platform saknas:"
+
+msgid "Manage Export Templates"
+msgstr "Hantera exportmallar"
+
+msgid "Export With Debug"
+msgstr "Export med debug"
+
+msgid "Path to FBX2glTF executable is empty."
+msgstr "Sökväg till FBX2glTF programmet är tom."
+
+msgid "Path to FBX2glTF executable is invalid."
+msgstr "Sökväg till FBX2glTF programmet är ogiltig."
+
+msgid "Configure FBX Importer"
+msgstr "Konfigurera FBX importerare"
+
+msgid ""
+"FBX2glTF is required for importing FBX files.\n"
+"Please download it and provide a valid path to the binary:"
+msgstr ""
+"FBX2glTF krävs för att importera FBX filer.\n"
+"Var vänlig och ladda ner detta och sätt en giltig sökväg till programmet:"
+
+msgid "Click this link to download FBX2glTF"
+msgstr "Klicka denna länk för att ladda ner FBX2glTF"
+
 msgid "Browse"
 msgstr "Bläddra"
 
@@ -3953,6 +4150,11 @@ msgstr "sortera objekt som ett rutnät av bilder."
 
 msgid "View items as a list."
 msgstr "Visa objekt som lista."
+
+msgid "Status: Import of file failed. Please fix file and reimport manually."
+msgstr ""
+"Status: Import av fil misslyckades. Åtgärda filen och importera om den "
+"manuellt."
 
 msgid "Cannot move a folder into itself."
 msgstr "Det går inte att flytta en mapp in i sig själv."
@@ -4032,6 +4234,18 @@ msgstr "Nytt Skript..."
 msgid "New Resource..."
 msgstr "Ny resurs..."
 
+msgid "Sort by Name (Ascending)"
+msgstr "Sortera på namn (stigande)"
+
+msgid "Sort by Name (Descending)"
+msgstr "Sortera på namn (fallande)"
+
+msgid "Sort by Type (Ascending)"
+msgstr "Sortera på typ (stigande)"
+
+msgid "Sort by Type (Descending)"
+msgstr "Sortera på typ (fallande)"
+
 msgid "Copy Path"
 msgstr "Kopiera Sökväg"
 
@@ -4043,6 +4257,27 @@ msgstr "Byt namn..."
 
 msgid "Open in External Program"
 msgstr "Öppna i externt program"
+
+msgid "Yellow"
+msgstr "Gul"
+
+msgid "Green"
+msgstr "Grön"
+
+msgid "Teal"
+msgstr "Grönblå"
+
+msgid "Blue"
+msgstr "Blå"
+
+msgid "Purple"
+msgstr "Violett"
+
+msgid "Pink"
+msgstr "Rosa"
+
+msgid "Gray"
+msgstr "Grå"
 
 msgid "Go to previous selected folder/file."
 msgstr "Gå till föregående vald mapp/fil."
@@ -4300,6 +4535,12 @@ msgstr "Kör projektet"
 msgid "Run Current Scene"
 msgstr "Spela nuvarande scen"
 
+msgid "Run a specific scene."
+msgstr "Spela en specifik scen."
+
+msgid "Run Specific Scene"
+msgstr "Spela specifik scen"
+
 msgid "Play This Scene"
 msgstr "Spela denna scen"
 
@@ -4362,8 +4603,20 @@ msgstr ""
 "Nod är låst.\n"
 "Klicka för att låsa upp."
 
+msgid "\"%s\" is not a known filter."
+msgstr "\"%s\" är inte ett känt filter."
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "Ogiltigt nodnamn, följande tecken är inte tillåtna:"
+
+msgid "Another node already uses this unique name in the scene."
+msgstr "En annan nod använder redan detta unika namn i scenen."
+
 msgid "Scene Tree (Nodes):"
 msgstr "Scenträd (Noder):"
+
+msgid "Node Configuration Warning!"
+msgstr "Nodkonfigurationsvarning!"
 
 msgid "Select a Node"
 msgstr "Välj en Node"
@@ -4382,6 +4635,9 @@ msgstr "Slå på slinga."
 
 msgid "Loop:"
 msgstr "Slinga:"
+
+msgid "BPM:"
+msgstr "BPM:"
 
 msgid "Beat Count:"
 msgstr "Taktslagsräknare:"
@@ -6502,13 +6758,6 @@ msgstr ""
 "Språk ändrat.\n"
 "Användargränssnittet kommer att ändras efter att editor eller "
 "projekthanteraren startats om."
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Är du säker på att söka i %s mappar för existerande Godot projekt?\n"
-"Detta kan ta en stund."
 
 msgctxt "Application"
 msgid "Project Manager"

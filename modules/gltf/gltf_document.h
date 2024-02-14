@@ -86,6 +86,7 @@ public:
 	static void register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority = false);
 	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
 	static void unregister_all_gltf_document_extensions();
+	static Vector<Ref<GLTFDocumentExtension>> get_all_gltf_document_extensions();
 
 	void set_naming_version(int p_version);
 	int get_naming_version() const;
@@ -325,7 +326,7 @@ public:
 	Error _parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path);
 	Error _parse_asset_header(Ref<GLTFState> p_state);
 	Error _parse_gltf_extensions(Ref<GLTFState> p_state);
-	void _process_mesh_instances(Ref<GLTFState> p_state);
+	void _process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root);
 	Node *_generate_scene_node_tree(Ref<GLTFState> p_state);
 	void _generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _generate_skeleton_bone_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);

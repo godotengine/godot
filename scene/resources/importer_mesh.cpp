@@ -186,7 +186,7 @@ void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_a
 		Surface::LOD lod;
 		lod.distance = E;
 		lod.indices = p_lods[E];
-		ERR_CONTINUE(lod.indices.size() == 0);
+		ERR_CONTINUE(lod.indices.is_empty());
 		s.lods.push_back(lod);
 	}
 
@@ -418,11 +418,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 		}
 
-		LocalVector<float> normal_weights;
-		normal_weights.resize(merged_vertex_count);
-		for (unsigned int j = 0; j < merged_vertex_count; j++) {
-			normal_weights[j] = 2.0; // Give some weight to normal preservation, may be worth exposing as an import setting
-		}
+		const float normal_weights[3] = {
+			// Give some weight to normal preservation, may be worth exposing as an import setting
+			2.0f, 2.0f, 2.0f
+		};
 
 		Vector<float> merged_vertices_f32 = vector3_to_float32_array(merged_vertices_ptr, merged_vertex_count);
 		float scale = SurfaceTool::simplify_scale_func(merged_vertices_f32.ptr(), merged_vertex_count, sizeof(float) * 3);
@@ -460,12 +459,13 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					(const uint32_t *)merged_indices_ptr, index_count,
 					merged_vertices_f32.ptr(), merged_vertex_count,
 					sizeof(float) * 3, // Vertex stride
+					merged_normals_f32.ptr(),
+					sizeof(float) * 3, // Attribute stride
+					normal_weights, 3,
 					index_target,
 					max_mesh_error,
 					simplify_options,
-					&mesh_error,
-					merged_normals_f32.ptr(),
-					normal_weights.ptr(), 3);
+					&mesh_error);
 
 			if (new_index_count < last_index_count * 1.5f) {
 				index_target = index_target * 1.5f;
@@ -684,7 +684,7 @@ bool ImporterMesh::has_mesh() const {
 }
 
 Ref<ArrayMesh> ImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
-	ERR_FAIL_COND_V(surfaces.size() == 0, Ref<ArrayMesh>());
+	ERR_FAIL_COND_V(surfaces.is_empty(), Ref<ArrayMesh>());
 
 	if (mesh.is_null()) {
 		if (p_base.is_valid()) {

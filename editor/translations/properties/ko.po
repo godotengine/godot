@@ -50,13 +50,15 @@
 # rethinking21 <rethinking21@gmail.com>, 2023.
 # TQQQBuffett <tqqqbuffett@gmail.com>, 2023.
 # Kyjel Blue <kyjelblue@daum.net>, 2023.
+# nulta <un5450@outlook.com>, 2024.
+# Sovlus Haesaun <josuke4832@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-04 01:29+0000\n"
-"Last-Translator: nulta <un5450@naver.com>\n"
+"PO-Revision-Date: 2024-01-22 23:01+0000\n"
+"Last-Translator: Sovlus Haesaun <josuke4832@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -64,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -197,6 +199,9 @@ msgstr "3D 패닝 강도"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Session Category"
+msgstr "세션 카테고리"
 
 msgid "Editor"
 msgstr "에디터"
@@ -1441,10 +1446,10 @@ msgid "Bone IK Color"
 msgstr "본 IK 색상"
 
 msgid "Bone Outline Color"
-msgstr "뼈 윤곽선 색상"
+msgstr "본 윤곽선 색상"
 
 msgid "Bone Outline Size"
-msgstr "뼈 윤곽선 크기"
+msgstr "본 윤곽선 크기"
 
 msgid "Viewport Border Color"
 msgstr "표시 영역 테두리 색상"
@@ -1840,7 +1845,7 @@ msgid "Retarget"
 msgstr "리타겟"
 
 msgid "Bone Renamer"
-msgstr "본 리네이머"
+msgstr "본 이름 변경기"
 
 msgid "Rename Bones"
 msgstr "본 이름 바꾸기"
@@ -6976,7 +6981,7 @@ msgid "B"
 msgstr "B"
 
 msgid "Bone"
-msgstr "뼈"
+msgstr "본"
 
 msgid "Sky Material"
 msgstr "하늘 머티리얼"
@@ -7225,7 +7230,7 @@ msgid "Custom Font"
 msgstr "커스텀 글꼴"
 
 msgid "Default Font Antialiasing"
-msgstr "기본 글꼴 안티앨리어신"
+msgstr "기본 글꼴 안티앨리어싱"
 
 msgid "Default Font Hinting"
 msgstr "기본 글꼴 힌팅"

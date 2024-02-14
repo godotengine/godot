@@ -35,12 +35,12 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/item_list.h"
@@ -383,6 +383,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		script_key_error->hide();
 	}
 
+	int script_export_mode = current->get_script_export_mode();
+	script_mode->select(script_export_mode);
+
 	updating = false;
 }
 
@@ -580,6 +583,19 @@ bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
 		is_valid = true;
 	}
 	return is_valid;
+}
+
+void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_script_export_mode(p_mode);
+
+	_update_current_preset();
 }
 
 void ProjectExportDialog::_duplicate_preset() {
@@ -824,7 +840,7 @@ void ProjectExportDialog::_setup_item_for_file_mode(TreeItem *p_item, EditorExpo
 		p_item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
 		p_item->set_editable(1, false);
 		p_item->set_selectable(1, false);
-		p_item->set_custom_color(1, get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		p_item->set_custom_color(1, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	} else {
 		p_item->set_checked(0, true);
 		p_item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
@@ -1191,6 +1207,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(mc);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
+	presets->set_auto_translate(false);
 	SET_DRAG_FORWARDING_GCD(presets, ProjectExportDialog);
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
@@ -1276,6 +1293,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	server_strip_message = memnew(Label);
 	server_strip_message->set_visible(false);
 	server_strip_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	server_strip_message->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	resources_vb->add_child(server_strip_message);
 
 	{
@@ -1283,7 +1301,7 @@ ProjectExportDialog::ProjectExportDialog() {
 		ClassDB::get_inheriters_from_class("Resource", &resource_names);
 
 		PackedStringArray strippable;
-		for (StringName resource_name : resource_names) {
+		for (const StringName &resource_name : resource_names) {
 			if (ClassDB::has_method(resource_name, "create_placeholder", true)) {
 				strippable.push_back(resource_name);
 			}
@@ -1326,7 +1344,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	feature_vb->add_margin_child(TTR("Feature List:"), custom_feature_display, true);
 	sections->add_child(feature_vb);
 
-	// Script export parameters.
+	// Encryption export parameters.
 
 	VBoxContainer *sec_vb = memnew(VBoxContainer);
 	sec_vb->set_name(TTR("Encryption"));
@@ -1371,6 +1389,20 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_more_info->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_key_help_link));
 	sec_vb->add_child(sec_more_info);
 
+	// Script export parameters.
+
+	VBoxContainer *script_vb = memnew(VBoxContainer);
+	script_vb->set_name(TTR("Scripts"));
+
+	script_mode = memnew(OptionButton);
+	script_vb->add_margin_child(TTR("GDScript Export Mode:"), script_mode);
+	script_mode->add_item(TTR("Text (easier debugging)"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
+	script_mode->add_item(TTR("Binary tokens (faster loading)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS);
+	script_mode->add_item(TTR("Compressed binary tokens (smaller files)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
+	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
+
+	sections->add_child(script_vb);
+
 	sections->connect("tab_changed", callable_mp(this, &ProjectExportDialog::_tab_changed));
 
 	// Disable by default.
@@ -1394,12 +1426,14 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	set_cancel_button_text(TTR("Close"));
 	set_ok_button_text(TTR("Export PCK/ZIP..."));
+	get_ok_button()->set_tooltip_text(TTR("Export the project resources as a PCK or ZIP package. This is not a playable build, only the project data without a Godot executable."));
 	get_ok_button()->set_disabled(true);
 #ifdef ANDROID_ENABLED
 	export_button = memnew(Button);
 	export_button->hide();
 #else
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
+	export_button->set_tooltip_text(TTR("Export the project as a playable build (Godot executable and project data) for the selected preset."));
 #endif
 	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset

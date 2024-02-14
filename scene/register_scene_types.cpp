@@ -78,7 +78,6 @@
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
-#include "scene/animation/root_motion_view.h"
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/debugger/scene_debugger.h"
@@ -137,6 +136,7 @@
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/status_indicator.h"
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -273,6 +273,7 @@
 #include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
 #include "scene/3d/xr_nodes.h"
+#include "scene/animation/root_motion_view.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/fog_material.h"
 #include "scene/resources/importer_mesh.h"
@@ -351,6 +352,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CanvasModulate);
 	GDREGISTER_CLASS(ResourcePreloader);
 	GDREGISTER_CLASS(Window);
+
+	GDREGISTER_CLASS(StatusIndicator);
 
 	/* REGISTER GUI */
 
@@ -455,6 +458,10 @@ void register_scene_types() {
 	}
 	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok);
 #endif
+
+	int root_dir = GLOBAL_GET("internationalization/rendering/root_node_layout_direction");
+	Control::set_root_layout_direction(root_dir);
+	Window::set_root_layout_direction(root_dir);
 
 	/* REGISTER ANIMATION */
 	GDREGISTER_CLASS(Tween);
@@ -779,6 +786,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TileMapPattern);
 	GDREGISTER_CLASS(TileData);
 	GDREGISTER_CLASS(TileMap);
+	GDREGISTER_ABSTRACT_CLASS(TileMapLayerGroup);
 	GDREGISTER_CLASS(ParallaxBackground);
 	GDREGISTER_CLASS(ParallaxLayer);
 	GDREGISTER_CLASS(TouchScreenButton);
@@ -1180,7 +1188,9 @@ void register_scene_types() {
 	}
 
 	if (RenderingServer::get_singleton()) {
-		ColorPicker::init_shaders(); // RenderingServer needs to exist for this to succeed.
+		// RenderingServer needs to exist for this to succeed.
+		ColorPicker::init_shaders();
+		GraphEdit::init_shaders();
 	}
 
 	SceneDebugger::initialize();
@@ -1232,6 +1242,7 @@ void unregister_scene_types() {
 	ParticleProcessMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
 	ColorPicker::finish_shaders();
+	GraphEdit::finish_shaders();
 	SceneStringNames::free();
 
 	OS::get_singleton()->benchmark_end_measure("Scene", "Unregister Types");

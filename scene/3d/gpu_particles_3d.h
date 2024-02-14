@@ -95,6 +95,7 @@ private:
 	double emission_time = 0.0;
 	double active_time = 0.0;
 	float interp_to_end_factor = 0;
+	Vector3 previous_velocity;
 	Vector3 previous_position;
 
 	void _attach_sub_emitter();
@@ -163,7 +164,7 @@ public:
 	void set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_draw_pass_mesh(int p_pass) const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;

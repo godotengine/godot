@@ -41,6 +41,8 @@ class Animation : public Resource {
 	RES_BASE_EXTENSION("anim");
 
 public:
+	typedef uint32_t TypeHash;
+
 	enum TrackType {
 		TYPE_VALUE, ///< Set a value in a property, can be interpolated.
 		TYPE_POSITION_3D, ///< Position 3D track
@@ -104,7 +106,8 @@ private:
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
 		bool loop_wrap = true;
-		NodePath path; // path to something
+		NodePath path; // Path to something.
+		TypeHash thash = 0; // Hash by Path + SubPath + TrackType.
 		bool imported = false;
 		bool enabled = true;
 		Track() {}
@@ -268,6 +271,8 @@ private:
 	real_t step = 0.1;
 	LoopMode loop_mode = LOOP_NONE;
 
+	void _track_update_hash(int p_track);
+
 	/* Animation compression page format (version 1):
 	 *
 	 * Animation uses bitwidth based compression separated into small pages. The intention is that pages fit easily in the cache, so decoding is cache efficient.
@@ -386,6 +391,8 @@ public:
 	NodePath track_get_path(int p_track) const;
 	int find_track(const NodePath &p_path, const TrackType p_type) const;
 
+	TypeHash track_get_type_hash(int p_track) const;
+
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
 	void track_move_to(int p_track, int p_to_index);
@@ -502,6 +509,9 @@ public:
 	static Variant subtract_variant(const Variant &a, const Variant &b);
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
 	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
+	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
+
+	static TrackType get_cache_type(TrackType p_type);
 
 	Animation();
 	~Animation();

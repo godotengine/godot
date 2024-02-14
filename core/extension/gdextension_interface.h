@@ -364,13 +364,18 @@ typedef struct {
 	GDExtensionClassMethodPtrCall ptrcall_func;
 	uint32_t method_flags; // Bitfield of `GDExtensionClassMethodFlags`.
 
-	/* If `has_return_value` is false, `return_value_info` and `return_value_metadata` are ignored. */
+	/* If `has_return_value` is false, `return_value_info` and `return_value_metadata` are ignored.
+	 *
+	 * @todo Consider dropping `has_return_value` and making the other two properties match `GDExtensionMethodInfo` and `GDExtensionClassVirtualMethod` for consistency in future version of this struct.
+	 */
 	GDExtensionBool has_return_value;
 	GDExtensionPropertyInfo *return_value_info;
 	GDExtensionClassMethodArgumentMetadata return_value_metadata;
 
 	/* Arguments: `arguments_info` and `arguments_metadata` are array of size `argument_count`.
 	 * Name and hint information for the argument can be omitted in release builds. Class name should always be present if it applies.
+	 *
+	 * @todo Consider renaming `arguments_info` to `arguments` for consistency in future version of this struct.
 	 */
 	uint32_t argument_count;
 	GDExtensionPropertyInfo *arguments_info;
@@ -380,6 +385,18 @@ typedef struct {
 	uint32_t default_argument_count;
 	GDExtensionVariantPtr *default_arguments;
 } GDExtensionClassMethodInfo;
+
+typedef struct {
+	GDExtensionStringNamePtr name;
+	uint32_t method_flags; // Bitfield of `GDExtensionClassMethodFlags`.
+
+	GDExtensionPropertyInfo return_value;
+	GDExtensionClassMethodArgumentMetadata return_value_metadata;
+
+	uint32_t argument_count;
+	GDExtensionPropertyInfo *arguments;
+	GDExtensionClassMethodArgumentMetadata *arguments_metadata;
+} GDExtensionClassVirtualMethodInfo;
 
 typedef void (*GDExtensionCallableCustomCall)(void *callable_userdata, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error);
 typedef GDExtensionBool (*GDExtensionCallableCustomIsValid)(void *callable_userdata);
@@ -2268,6 +2285,34 @@ typedef GDExtensionObjectPtr (*GDExtensionInterfaceObjectGetInstanceFromId)(GDOb
  */
 typedef GDObjectInstanceID (*GDExtensionInterfaceObjectGetInstanceId)(GDExtensionConstObjectPtr p_object);
 
+/**
+ * @name object_has_script_method
+ * @since 4.3
+ *
+ * Checks if this object has a script with the given method.
+ *
+ * @param p_object A pointer to the Object.
+ * @param p_method A pointer to a StringName identifying the method.
+ *
+ * @returns true if the object has a script and that script has a method with the given name. Returns false if the object has no script.
+ */
+typedef GDExtensionBool (*GDExtensionInterfaceObjectHasScriptMethod)(GDExtensionConstObjectPtr p_object, GDExtensionConstStringNamePtr p_method);
+
+/**
+ * @name object_call_script_method
+ * @since 4.3
+ *
+ * Call the given script method on this object.
+ *
+ * @param p_object A pointer to the Object.
+ * @param p_method A pointer to a StringName identifying the method.
+ * @param p_args A pointer to a C array of Variant.
+ * @param p_argument_count The number of arguments.
+ * @param r_return A pointer a Variant which will be assigned the return value.
+ * @param r_error A pointer the structure which will hold error information.
+ */
+typedef void (*GDExtensionInterfaceObjectCallScriptMethod)(GDExtensionObjectPtr p_object, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error);
+
 /* INTERFACE: Reference */
 
 /**
@@ -2484,6 +2529,20 @@ typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClass2)(GDExtensionCl
 typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassMethod)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassMethodInfo *p_method_info);
 
 /**
+ * @name classdb_register_extension_class_virtual_method
+ * @since 4.3
+ *
+ * Registers a virtual method on an extension class in ClassDB, that can be implemented by scripts or other extensions.
+ *
+ * Provided struct can be safely freed once the function returns.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_class_name A pointer to a StringName with the class name.
+ * @param p_method_info A pointer to a GDExtensionClassMethodInfo struct.
+ */
+typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassVirtualMethod)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassVirtualMethodInfo *p_method_info);
+
+/**
  * @name classdb_register_extension_class_integer_constant
  * @since 4.1
  *
@@ -2616,6 +2675,31 @@ typedef void (*GDExtensionInterfaceEditorAddPlugin)(GDExtensionConstStringNamePt
  * @param p_class_name A pointer to a StringName with the name of a class that was previously added as an editor plugin.
  */
 typedef void (*GDExtensionInterfaceEditorRemovePlugin)(GDExtensionConstStringNamePtr p_class_name);
+
+/**
+ * @name editor_help_load_xml_from_utf8_chars
+ * @since 4.3
+ *
+ * Loads new XML-formatted documentation data in the editor.
+ *
+ * The provided pointer can be immediately freed once the function returns.
+ *
+ * @param p_data A pointer to an UTF-8 encoded C string (null terminated).
+ */
+typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8Chars)(const char *p_data);
+
+/**
+ * @name editor_help_load_xml_from_utf8_chars_and_len
+ * @since 4.3
+ *
+ * Loads new XML-formatted documentation data in the editor.
+ *
+ * The provided pointer can be immediately freed once the function returns.
+ *
+ * @param p_data A pointer to an UTF-8 encoded C string.
+ * @param p_size The number of bytes (not code units).
+ */
+typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen)(const char *p_data, GDExtensionInt p_size);
 
 #ifdef __cplusplus
 }

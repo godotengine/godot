@@ -70,19 +70,27 @@ void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Si
 }
 
 void TreeItem::_changed_notify(int p_cell) {
-	tree->item_changed(p_cell, this);
+	if (tree) {
+		tree->item_changed(p_cell, this);
+	}
 }
 
 void TreeItem::_changed_notify() {
-	tree->item_changed(-1, this);
+	if (tree) {
+		tree->item_changed(-1, this);
+	}
 }
 
 void TreeItem::_cell_selected(int p_cell) {
-	tree->item_selected(p_cell, this);
+	if (tree) {
+		tree->item_selected(p_cell, this);
+	}
 }
 
 void TreeItem::_cell_deselected(int p_cell) {
-	tree->item_deselected(p_cell, this);
+	if (tree) {
+		tree->item_deselected(p_cell, this);
+	}
 }
 
 void TreeItem::_change_tree(Tree *p_tree) {
@@ -576,12 +584,30 @@ Variant TreeItem::get_metadata(int p_column) const {
 	return cells[p_column].meta;
 }
 
+#ifndef DISABLE_DEPRECATED
 void TreeItem::set_custom_draw(int p_column, Object *p_object, const StringName &p_callback) {
+	WARN_DEPRECATED_MSG(R"*(The "set_custom_draw()" method is deprecated, use "set_custom_draw_callback()" instead.)*");
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_NULL(p_object);
 
-	cells.write[p_column].custom_draw_obj = p_object->get_instance_id();
+	cells.write[p_column].custom_draw_callback = Callable(p_object, p_callback);
+
+	_changed_notify(p_column);
+}
+#endif // DISABLE_DEPRECATED
+
+void TreeItem::set_custom_draw_callback(int p_column, const Callable &p_callback) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
 	cells.write[p_column].custom_draw_callback = p_callback;
+
+	_changed_notify(p_column);
+}
+
+Callable TreeItem::get_custom_draw_callback(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Callable());
+
+	return cells[p_column].custom_draw_callback;
 }
 
 void TreeItem::set_collapsed(bool p_collapsed) {
@@ -842,7 +868,7 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 		} else if (!current) {
 			if (p_wrap) {
 				current = this;
-				TreeItem *temp = this->get_next_visible();
+				TreeItem *temp = get_next_visible();
 				while (temp) {
 					current = temp;
 					temp = temp->get_next_visible();
@@ -868,7 +894,7 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 
 TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *prev_item = this->_get_prev_in_tree(p_wrap);
+	TreeItem *prev_item = _get_prev_in_tree(p_wrap);
 	while (prev_item && !prev_item->is_visible()) {
 		prev_item = prev_item->_get_prev_in_tree(p_wrap);
 		if (prev_item == loop) {
@@ -909,7 +935,7 @@ TreeItem *TreeItem::_get_next_in_tree(bool p_wrap, bool p_include_invisible) {
 
 TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *next_item = this->_get_next_in_tree(p_wrap);
+	TreeItem *next_item = _get_next_in_tree(p_wrap);
 	while (next_item && !next_item->is_visible()) {
 		next_item = next_item->_get_next_in_tree(p_wrap);
 		if (next_item == loop) {
@@ -922,12 +948,12 @@ TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 }
 
 TreeItem *TreeItem::get_prev_in_tree(bool p_wrap) {
-	TreeItem *prev_item = this->_get_prev_in_tree(p_wrap, true);
+	TreeItem *prev_item = _get_prev_in_tree(p_wrap, true);
 	return prev_item;
 }
 
 TreeItem *TreeItem::get_next_in_tree(bool p_wrap) {
-	TreeItem *next_item = this->_get_next_in_tree(p_wrap, true);
+	TreeItem *next_item = _get_next_in_tree(p_wrap, true);
 	return next_item;
 }
 
@@ -1196,6 +1222,12 @@ int TreeItem::get_button_by_id(int p_column, int p_id) const {
 	return -1;
 }
 
+Color TreeItem::get_button_color(int p_column, int p_index) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Color());
+	ERR_FAIL_INDEX_V(p_index, cells[p_column].buttons.size(), Color());
+	return cells[p_column].buttons[p_index].color;
+}
+
 void TreeItem::set_button_tooltip_text(int p_column, int p_index, const String &p_tooltip) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
@@ -1298,8 +1330,14 @@ void TreeItem::clear_custom_color(int p_column) {
 void TreeItem::set_custom_font(int p_column, const Ref<Font> &p_font) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
+	if (cells[p_column].custom_font == p_font) {
+		return;
+	}
+
 	cells.write[p_column].custom_font = p_font;
 	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
 }
 
 Ref<Font> TreeItem::get_custom_font(int p_column) const {
@@ -1310,8 +1348,14 @@ Ref<Font> TreeItem::get_custom_font(int p_column) const {
 void TreeItem::set_custom_font_size(int p_column, int p_font_size) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
+	if (cells[p_column].custom_font_size == p_font_size) {
+		return;
+	}
+
 	cells.write[p_column].custom_font_size = p_font_size;
 	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
 }
 
 int TreeItem::get_custom_font_size(int p_column) const {
@@ -1360,8 +1404,14 @@ Color TreeItem::get_custom_bg_color(int p_column) const {
 void TreeItem::set_custom_as_button(int p_column, bool p_button) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
+	if (cells[p_column].custom_button == p_button) {
+		return;
+	}
+
 	cells.write[p_column].custom_button = p_button;
 	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
 }
 
 bool TreeItem::is_custom_set_as_button(int p_column) const {
@@ -1566,7 +1616,11 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_metadata", "column", "meta"), &TreeItem::set_metadata);
 	ClassDB::bind_method(D_METHOD("get_metadata", "column"), &TreeItem::get_metadata);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_custom_draw", "column", "object", "callback"), &TreeItem::set_custom_draw);
+#endif // DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_custom_draw_callback", "column", "callback"), &TreeItem::set_custom_draw_callback);
+	ClassDB::bind_method(D_METHOD("get_custom_draw_callback", "column"), &TreeItem::get_custom_draw_callback);
 
 	ClassDB::bind_method(D_METHOD("set_collapsed", "enable"), &TreeItem::set_collapsed);
 	ClassDB::bind_method(D_METHOD("is_collapsed"), &TreeItem::is_collapsed);
@@ -1614,6 +1668,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button_tooltip_text", "column", "button_index"), &TreeItem::get_button_tooltip_text);
 	ClassDB::bind_method(D_METHOD("get_button_id", "column", "button_index"), &TreeItem::get_button_id);
 	ClassDB::bind_method(D_METHOD("get_button_by_id", "column", "id"), &TreeItem::get_button_by_id);
+	ClassDB::bind_method(D_METHOD("get_button_color", "column", "id"), &TreeItem::get_button_color);
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_index"), &TreeItem::get_button);
 	ClassDB::bind_method(D_METHOD("set_button_tooltip_text", "column", "button_index", "tooltip"), &TreeItem::set_button_tooltip_text);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_index", "button"), &TreeItem::set_button);
@@ -2187,26 +2242,37 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					draw_item_rect(p_item->cells.write[i], item_rect, cell_color, icon_col, outline_size, font_outline_color);
 				} break;
 				case TreeItem::CELL_MODE_CHECK: {
-					Ref<Texture2D> checked = theme_cache.checked;
-					Ref<Texture2D> unchecked = theme_cache.unchecked;
-					Ref<Texture2D> indeterminate = theme_cache.indeterminate;
 					Point2i check_ofs = item_rect.position;
-					check_ofs.y += Math::floor((real_t)(item_rect.size.y - checked->get_height()) / 2);
+					check_ofs.y += Math::floor((real_t)(item_rect.size.y - theme_cache.checked->get_height()) / 2);
 
-					if (p_item->cells[i].indeterminate) {
-						indeterminate->draw(ci, check_ofs);
-					} else if (p_item->cells[i].checked) {
-						checked->draw(ci, check_ofs);
+					if (p_item->cells[i].editable) {
+						if (p_item->cells[i].indeterminate) {
+							theme_cache.indeterminate->draw(ci, check_ofs);
+						} else if (p_item->cells[i].checked) {
+							theme_cache.checked->draw(ci, check_ofs);
+						} else {
+							theme_cache.unchecked->draw(ci, check_ofs);
+						}
 					} else {
-						unchecked->draw(ci, check_ofs);
+						if (p_item->cells[i].indeterminate) {
+							theme_cache.indeterminate_disabled->draw(ci, check_ofs);
+						} else if (p_item->cells[i].checked) {
+							theme_cache.checked_disabled->draw(ci, check_ofs);
+						} else {
+							theme_cache.unchecked_disabled->draw(ci, check_ofs);
+						}
 					}
 
-					int check_w = checked->get_width() + theme_cache.h_separation;
+					int check_w = theme_cache.checked->get_width() + theme_cache.h_separation;
 
 					text_pos.x += check_w;
 
 					item_rect.size.x -= check_w;
 					item_rect.position.x += check_w;
+
+					if (!p_item->cells[i].editable) {
+						cell_color = theme_cache.font_disabled_color;
+					}
 
 					draw_item_rect(p_item->cells.write[i], item_rect, cell_color, icon_col, outline_size, font_outline_color);
 
@@ -2278,10 +2344,15 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				} break;
 				case TreeItem::CELL_MODE_CUSTOM: {
-					if (p_item->cells[i].custom_draw_obj.is_valid()) {
-						Object *cdo = ObjectDB::get_instance(p_item->cells[i].custom_draw_obj);
-						if (cdo) {
-							cdo->call(p_item->cells[i].custom_draw_callback, p_item, Rect2(item_rect));
+					if (p_item->cells[i].custom_draw_callback.is_valid()) {
+						Variant args[] = { p_item, Rect2(item_rect) };
+						const Variant *argptrs[] = { &args[0], &args[1] };
+
+						Callable::CallError ce;
+						Variant ret;
+						p_item->cells[i].custom_draw_callback.callp(argptrs, 2, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT("Error calling custom draw method: " + Variant::get_callable_error_text(p_item->cells[i].custom_draw_callback, argptrs, 2, ce) + ".");
 						}
 					}
 
@@ -2516,12 +2587,8 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 		}
 	}
 
-	if (p_from->get_first_child()) {
-		count += _count_selected_items(p_from->get_first_child());
-	}
-
-	if (p_from->get_next()) {
-		count += _count_selected_items(p_from->get_next());
+	for (TreeItem *c = p_from->get_first_child(); c; c = c->get_next()) {
+		count += _count_selected_items(c);
 	}
 
 	return count;
@@ -3225,8 +3292,8 @@ void Tree::_go_up() {
 		if (!prev) {
 			return;
 		}
-		selected_item = prev;
-		emit_signal(SNAME("cell_selected"));
+
+		select_single_item(prev, get_root(), selected_col);
 		queue_redraw();
 	} else {
 		int col = selected_col < 0 ? 0 : selected_col;
@@ -3258,8 +3325,7 @@ void Tree::_go_down() {
 			return;
 		}
 
-		selected_item = next;
-		emit_signal(SNAME("cell_selected"));
+		select_single_item(next, get_root(), selected_col);
 		queue_redraw();
 	} else {
 		int col = selected_col < 0 ? 0 : selected_col;
@@ -3328,7 +3394,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	bool is_command = k.is_valid() && k->is_command_or_control_pressed();
-	if (p_event->is_action("ui_right", true) && p_event->is_pressed()) {
+	if (p_event->is_action("ui_right") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3336,17 +3402,12 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		if (!selected_item || select_mode == SELECT_ROW || selected_col > (columns.size() - 1)) {
 			return;
 		}
-		if (k.is_valid() && k->is_alt_pressed()) {
-			selected_item->set_collapsed(false);
-			TreeItem *next = selected_item->get_first_child();
-			while (next && next != selected_item->next) {
-				next->set_collapsed(false);
-				next = next->get_next_visible();
-			}
+		if (k.is_valid() && k->is_shift_pressed()) {
+			selected_item->set_collapsed_recursive(false);
 		} else {
 			_go_right();
 		}
-	} else if (p_event->is_action("ui_left", true) && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3355,32 +3416,27 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (k.is_valid() && k->is_alt_pressed()) {
-			selected_item->set_collapsed(true);
-			TreeItem *next = selected_item->get_first_child();
-			while (next && next != selected_item->next) {
-				next->set_collapsed(true);
-				next = next->get_next_visible();
-			}
+		if (k.is_valid() && k->is_shift_pressed()) {
+			selected_item->set_collapsed_recursive(true);
 		} else {
 			_go_left();
 		}
 
-	} else if (p_event->is_action("ui_up", true) && p_event->is_pressed() && !is_command) {
+	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
 
 		_go_up();
 
-	} else if (p_event->is_action("ui_down", true) && p_event->is_pressed() && !is_command) {
+	} else if (p_event->is_action("ui_down") && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
 
 		_go_down();
 
-	} else if (p_event->is_action("ui_page_down", true) && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_page_down") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3418,7 +3474,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		ensure_cursor_is_visible();
-	} else if (p_event->is_action("ui_page_up", true) && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_page_up") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3455,7 +3511,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			prev->select(selected_col);
 		}
 		ensure_cursor_is_visible();
-	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
 		if (selected_item) {
 			//bring up editor if possible
 			if (!edit_selected()) {
@@ -3464,7 +3520,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 		accept_event();
-	} else if (p_event->is_action("ui_select", true) && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_select") && p_event->is_pressed()) {
 		if (select_mode == SELECT_MULTI) {
 			if (!selected_item) {
 				return;
@@ -4766,7 +4822,7 @@ void Tree::ensure_cursor_is_visible() {
 		if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
 			v_scroll->set_value(y_offset);
 		} else if (y_offset + cell_h > v_scroll->get_value() + screen_h) {
-			v_scroll->call_deferred(SNAME("set_value"), y_offset - screen_h + cell_h);
+			callable_mp((Range *)v_scroll, &Range::set_value).call_deferred(y_offset - screen_h + cell_h);
 		} else if (y_offset < v_scroll->get_value()) {
 			v_scroll->set_value(y_offset);
 		}
@@ -4784,7 +4840,7 @@ void Tree::ensure_cursor_is_visible() {
 		if (cell_w > screen_w) {
 			h_scroll->set_value(x_offset);
 		} else if (x_offset + cell_w > h_scroll->get_value() + screen_w) {
-			h_scroll->call_deferred(SNAME("set_value"), x_offset - screen_w + cell_w);
+			callable_mp((Range *)h_scroll, &Range::set_value).call_deferred(x_offset - screen_w + cell_w);
 		} else if (x_offset < h_scroll->get_value()) {
 			h_scroll->set_value(x_offset);
 		}
@@ -5527,7 +5583,10 @@ void Tree::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, checked);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, unchecked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, checked_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, unchecked_disabled);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, indeterminate);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, indeterminate_disabled);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, arrow);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, arrow_collapsed);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, arrow_collapsed_mirrored);
@@ -5541,6 +5600,7 @@ void Tree::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_disabled_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, drop_position_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, v_separation);

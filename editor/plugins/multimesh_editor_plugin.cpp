@@ -154,7 +154,7 @@ void MultiMeshEditor::_populate() {
 		area_accum += area;
 	}
 
-	ERR_FAIL_COND_MSG(triangle_area_map.size() == 0, "Couldn't map area.");
+	ERR_FAIL_COND_MSG(triangle_area_map.is_empty(), "Couldn't map area.");
 	ERR_FAIL_COND_MSG(area_accum == 0, "Couldn't map area.");
 
 	Ref<MultiMesh> multimesh = memnew(MultiMesh);

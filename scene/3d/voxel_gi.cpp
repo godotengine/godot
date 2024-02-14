@@ -79,7 +79,7 @@ Dictionary VoxelGIData::_get_data() const {
 	if (otsize != Vector3i()) {
 		Ref<Image> img = Image::create_from_data(otsize.x * otsize.y, otsize.z, false, Image::FORMAT_L8, get_distance_field());
 		Vector<uint8_t> df_png = img->save_png_to_buffer();
-		ERR_FAIL_COND_V(df_png.size() == 0, Dictionary());
+		ERR_FAIL_COND_V(df_png.is_empty(), Dictionary());
 		d["octree_df_png"] = df_png;
 	} else {
 		d["octree_df"] = Vector<uint8_t>();
@@ -518,8 +518,8 @@ AABB VoxelGI::get_aabb() const {
 	return AABB(-size / 2, size);
 }
 
-PackedStringArray VoxelGI::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array VoxelGI::get_configuration_warnings() const {
+	Array warnings = Node::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("VoxelGI nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));

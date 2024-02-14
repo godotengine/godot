@@ -69,7 +69,7 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
-	virtual PackedStringArray get_configuration_warnings() const override;
+	virtual Array get_configuration_warnings() const override;
 
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;

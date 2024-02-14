@@ -49,7 +49,7 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 	String text;
 
 	for (int i = 0; i < lines.size(); i++) {
-		String l = lines[i];
+		const String &l = lines[i];
 		bool push_chunk = false;
 
 		StageTemplate::Chunk chunk;
@@ -213,6 +213,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 		builder.append("precision highp sampler2D;\n");
 		builder.append("precision highp samplerCube;\n");
 		builder.append("precision highp sampler2DArray;\n");
+		builder.append("precision highp sampler3D;\n");
 	}
 
 	const StageTemplate &stage_template = stage_templates[p_stage_type];
@@ -561,7 +562,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	}
 
 	int cache_variant_count = static_cast<int>(f->get_32());
-	ERR_FAIL_COND_V_MSG(cache_variant_count != this->variant_count, false, "shader cache variant count mismatch, expected " + itos(this->variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
+	ERR_FAIL_COND_V_MSG(cache_variant_count != variant_count, false, "shader cache variant count mismatch, expected " + itos(variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
 
 	LocalVector<OAHashMap<uint64_t, Version::Specialization>> variants;
 	for (int i = 0; i < cache_variant_count; i++) {
@@ -611,6 +612,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 #ifdef WEB_ENABLED // not supported in webgl
 	return;
 #else
+	ERR_FAIL_COND(!shader_cache_dir_valid);
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
 	if (RasterizerGLES3::is_gles_over_gl() && (glGetProgramBinary == NULL)) { // ARB_get_program_binary extension not available.
 		return;

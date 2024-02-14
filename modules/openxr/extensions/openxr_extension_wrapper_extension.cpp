@@ -38,6 +38,9 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_instance_create_info_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_session_create_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_swapchain_create_info_and_get_next_pointer, "next_pointer");
+	GDVIRTUAL_BIND(_set_hand_joint_locations_and_get_next_pointer, "hand_index", "next_pointer");
+	GDVIRTUAL_BIND(_get_composition_layer);
+	GDVIRTUAL_BIND(_get_suggested_tracker_names);
 	GDVIRTUAL_BIND(_on_register_metadata);
 	GDVIRTUAL_BIND(_on_before_instance_created);
 	GDVIRTUAL_BIND(_on_instance_created, "instance");
@@ -112,6 +115,36 @@ void *OpenXRExtensionWrapperExtension::set_swapchain_create_info_and_get_next_po
 
 	if (GDVIRTUAL_CALL(_set_swapchain_create_info_and_get_next_pointer, GDExtensionPtr<void>(p_next_pointer), pointer)) {
 		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
+void *OpenXRExtensionWrapperExtension::set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer) {
+	uint64_t pointer;
+
+	if (GDVIRTUAL_CALL(_set_hand_joint_locations_and_get_next_pointer, p_hand_index, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
+PackedStringArray OpenXRExtensionWrapperExtension::get_suggested_tracker_names() {
+	PackedStringArray ret;
+
+	if (GDVIRTUAL_CALL(_get_suggested_tracker_names, ret)) {
+		return ret;
+	}
+
+	return PackedStringArray();
+}
+
+XrCompositionLayerBaseHeader *OpenXRExtensionWrapperExtension::get_composition_layer() {
+	uint64_t pointer;
+
+	if (GDVIRTUAL_CALL(_get_composition_layer, pointer)) {
+		return reinterpret_cast<XrCompositionLayerBaseHeader *>(pointer);
 	}
 
 	return nullptr;

@@ -300,7 +300,8 @@ public:
 
 	void update_live_edit_root();
 
-	void reload_scripts();
+	void reload_all_scripts();
+	void reload_scripts(const Vector<String> &p_script_paths);
 
 	bool is_skip_breakpoints();
 

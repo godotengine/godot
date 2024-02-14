@@ -99,6 +99,7 @@ public:
 	static void parse_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data_async(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback = Callable());
+	static bool is_baking(Ref<NavigationMesh> p_navigation_mesh);
 
 	NavMeshGenerator3D();
 	~NavMeshGenerator3D();

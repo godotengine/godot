@@ -371,7 +371,7 @@ Ref<Script> CSharpLanguage::make_template(const String &p_template, const String
 	return scr;
 }
 
-Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(StringName p_object) {
+Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(const StringName &p_object) {
 	Vector<ScriptLanguage::ScriptTemplate> templates;
 #ifdef TOOLS_ENABLED
 	for (int i = 0; i < TEMPLATES_ARRAY_SIZE; i++) {
@@ -558,42 +558,9 @@ bool CSharpLanguage::handles_global_class_type(const String &p_type) const {
 }
 
 String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
-	Ref<CSharpScript> scr = ResourceLoader::load(p_path, get_type());
-	// Always assign r_base_type and r_icon_path, even if the script
-	// is not a global one. In the case that it is not a global script,
-	// return an empty string AFTER assigning the return parameters.
-	// See GDScriptLanguage::get_global_class_name() in modules/gdscript/gdscript.cpp
-
-	if (!scr.is_valid() || !scr->valid) {
-		// Invalid script.
-		return String();
-	}
-
-	if (r_icon_path) {
-		if (scr->icon_path.is_empty() || scr->icon_path.is_absolute_path()) {
-			*r_icon_path = scr->icon_path.simplify_path();
-		} else if (scr->icon_path.is_relative_path()) {
-			*r_icon_path = p_path.get_base_dir().path_join(scr->icon_path).simplify_path();
-		}
-	}
-	if (r_base_type) {
-		bool found_global_base_script = false;
-		const CSharpScript *top = scr->base_script.ptr();
-		while (top != nullptr) {
-			if (top->global_class) {
-				*r_base_type = top->class_name;
-				found_global_base_script = true;
-				break;
-			}
-
-			top = top->base_script.ptr();
-		}
-		if (!found_global_base_script) {
-			*r_base_type = scr->get_instance_base_type();
-		}
-	}
-
-	return scr->global_class ? scr->class_name : String();
+	String class_name;
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetGlobalClassName(&p_path, r_base_type, r_icon_path, &class_name);
+	return class_name;
 }
 
 String CSharpLanguage::debug_get_error() const {
@@ -720,9 +687,15 @@ void CSharpLanguage::reload_all_scripts() {
 #endif
 }
 
-void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
-	(void)p_script; // UNUSED
+void CSharpLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
+#ifdef GD_MONO_HOT_RELOAD
+	if (is_assembly_reloading_needed()) {
+		reload_assemblies(p_soft_reload);
+	}
+#endif
+}
 
+void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
 	CRASH_COND(!Engine::get_singleton()->is_editor_hint());
 
 #ifdef TOOLS_ENABLED
@@ -925,7 +898,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			obj->set_script(Ref<RefCounted>()); // Remove script and existing script instances (placeholder are not removed before domain reload)
 		}
 
-		scr->was_tool_before_reload = scr->tool;
+		scr->was_tool_before_reload = scr->type_info.is_tool;
 		scr->_clear();
 	}
 
@@ -985,7 +958,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		scr->exports_invalidated = true;
 #endif
 
-		if (!scr->get_path().is_empty()) {
+		if (!scr->get_path().is_empty() && !scr->get_path().begins_with("csharp://")) {
 			scr->reload(p_soft_reload);
 
 			if (!scr->valid) {
@@ -1074,7 +1047,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				}
 				// The script instance could not be instantiated or wasn't in the list of placeholders to replace.
 				obj->set_script(scr);
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 				// If we reached here, the instantiated script must be a placeholder.
 				CRASH_COND(!obj->get_script_instance()->is_placeholder());
 #endif
@@ -1827,6 +1800,7 @@ bool CSharpInstance::_internal_new_managed() {
 
 	ERR_FAIL_NULL_V(owner, false);
 	ERR_FAIL_COND_V(script.is_null(), false);
+	ERR_FAIL_COND_V(!script->can_instantiate(), false);
 
 	bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance(
 			script.ptr(), owner, nullptr, 0);
@@ -2149,7 +2123,7 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 
 #ifdef TOOLS_ENABLED
 	p_script->exported_members_cache.push_back(PropertyInfo(
-			Variant::NIL, *p_current_class_name, PROPERTY_HINT_NONE,
+			Variant::NIL, p_script->type_info.class_name, PROPERTY_HINT_NONE,
 			p_script->get_path(), PROPERTY_USAGE_CATEGORY));
 #endif
 
@@ -2246,6 +2220,17 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 			} else {
 				p_instance_to_update->update(propnames, values);
 			}
+		} else if (placeholders.size()) {
+			uint64_t script_modified_time = FileAccess::get_modified_time(get_path());
+			uint64_t last_valid_build_time = GDMono::get_singleton()->get_project_assembly_modified_time();
+			if (script_modified_time > last_valid_build_time) {
+				for (PlaceHolderScriptInstance *instance : placeholders) {
+					Object *owner = instance->get_owner();
+					if (owner->get_script_instance() == instance) {
+						owner->notify_property_list_changed();
+					}
+				}
+			}
 		}
 	}
 #endif
@@ -2299,7 +2284,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 
 	p_script->_update_exports();
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	// If the EditorFileSystem singleton is available, update the file;
 	// otherwise, the file will be updated when the singleton becomes available.
 	EditorFileSystem *efs = EditorFileSystem::get_singleton();
@@ -2311,9 +2296,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
-	bool tool = false;
-	bool global_class = false;
-	bool abstract_class = false;
+	TypeInfo type_info;
 
 	// TODO: Use GDExtension godot_dictionary
 	Array methods_array;
@@ -2323,18 +2306,12 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	Dictionary signals_dict;
 	signals_dict.~Dictionary();
 
-	String class_name;
-	String icon_path;
 	Ref<CSharpScript> base_script;
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptClassInfo(
-			p_script.ptr(), &class_name, &tool, &global_class, &abstract_class, &icon_path,
+			p_script.ptr(), &type_info,
 			&methods_array, &rpc_functions_dict, &signals_dict, &base_script);
 
-	p_script->class_name = class_name;
-	p_script->tool = tool;
-	p_script->global_class = global_class;
-	p_script->abstract_class = abstract_class;
-	p_script->icon_path = icon_path;
+	p_script->type_info = type_info;
 
 	p_script->rpc_config.clear();
 	p_script->rpc_config = rpc_functions_dict;
@@ -2353,6 +2330,8 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 
 		MethodInfo mi;
 		mi.name = name;
+
+		mi.return_val = PropertyInfo::from_dict(method_info_dict["return_val"]);
 
 		Array params = method_info_dict["params"];
 
@@ -2411,7 +2390,7 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 
 bool CSharpScript::can_instantiate() const {
 #ifdef TOOLS_ENABLED
-	bool extra_cond = tool || ScriptServer::is_scripting_enabled();
+	bool extra_cond = type_info.is_tool || ScriptServer::is_scripting_enabled();
 #else
 	bool extra_cond = true;
 #endif
@@ -2420,10 +2399,10 @@ bool CSharpScript::can_instantiate() const {
 	// For tool scripts, this will never fire if the class is not found. That's because we
 	// don't know if it's a tool script if we can't find the class to access the attributes.
 	if (extra_cond && !valid) {
-		ERR_FAIL_V_MSG(false, "Cannot instance script because the associated class could not be found. Script: '" + get_path() + "'. Make sure the script exists and contains a class definition with a name that matches the filename of the script exactly (it's case-sensitive).");
+		ERR_FAIL_V_MSG(false, "Cannot instantiate C# script because the associated class could not be found. Script: '" + get_path() + "'. Make sure the script exists and contains a class definition with a name that matches the filename of the script exactly (it's case-sensitive).");
 	}
 
-	return valid && !abstract_class && extra_cond;
+	return valid && type_info.can_instantiate() && extra_cond;
 }
 
 StringName CSharpScript::get_instance_base_type() const {
@@ -2433,6 +2412,8 @@ StringName CSharpScript::get_instance_base_type() const {
 }
 
 CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error) {
+	ERR_FAIL_COND_V_MSG(!type_info.can_instantiate(), nullptr, "Cannot instantiate C# script. Script: '" + get_path() + "'.");
+
 	/* STEP 1, CREATE */
 
 	Ref<RefCounted> ref;
@@ -2653,7 +2634,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 		_update_exports();
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 		// If the EditorFileSystem singleton is available, update the file;
 		// otherwise, the file will be updated when the singleton becomes available.
 		EditorFileSystem *efs = EditorFileSystem::get_singleton();
@@ -2747,11 +2728,11 @@ bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
 }
 
 Ref<Script> CSharpScript::get_base_script() const {
-	return base_script.is_valid() && !base_script->get_path().is_empty() ? base_script : nullptr;
+	return base_script;
 }
 
 StringName CSharpScript::get_global_name() const {
-	return global_class ? StringName(class_name) : StringName();
+	return type_info.is_global_class ? StringName(type_info.class_name) : StringName();
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
@@ -2808,7 +2789,7 @@ Error CSharpScript::load_source_code(const String &p_path) {
 }
 
 void CSharpScript::_clear() {
-	tool = false;
+	type_info = TypeInfo();
 	valid = false;
 	reload_invalidated = true;
 }
@@ -2819,15 +2800,17 @@ CSharpScript::CSharpScript() {
 #ifdef DEBUG_ENABLED
 	{
 		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-		CSharpLanguage::get_singleton()->script_list.add(&this->script_list);
+		CSharpLanguage::get_singleton()->script_list.add(&script_list);
 	}
 #endif
 }
 
 CSharpScript::~CSharpScript() {
 #ifdef DEBUG_ENABLED
-	MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-	CSharpLanguage::get_singleton()->script_list.remove(&this->script_list);
+	{
+		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
+		CSharpLanguage::get_singleton()->script_list.remove(&script_list);
+	}
 #endif
 
 	if (GDMonoCache::godot_api_cache_updated) {
@@ -2854,21 +2837,32 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 
 	// TODO ignore anything inside bin/ and obj/ in tools builds?
 
+	String real_path = p_path;
+	if (p_path.begins_with("csharp://")) {
+		// This is a virtual path used by generic types, extract the real path.
+		real_path = "res://" + p_path.trim_prefix("csharp://");
+		real_path = real_path.substr(0, real_path.rfind(":"));
+	}
+
 	Ref<CSharpScript> scr;
 
 	if (GDMonoCache::godot_api_cache_updated) {
 		GDMonoCache::managed_callbacks.ScriptManagerBridge_GetOrCreateScriptBridgeForPath(&p_path, &scr);
+		ERR_FAIL_NULL_V_MSG(scr, Ref<Resource>(), "Could not create C# script '" + real_path + "'.");
 	} else {
 		scr = Ref<CSharpScript>(memnew(CSharpScript));
 	}
 
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
-	Error err = scr->load_source_code(p_path);
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load C# script file '" + p_path + "'.");
+	Error err = scr->load_source_code(real_path);
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load C# script file '" + real_path + "'.");
 #endif
 
-	scr->set_path(p_original_path);
+	// Only one instance of a C# script is allowed to exist.
+	ERR_FAIL_COND_V_MSG(!scr->get_path().is_empty() && scr->get_path() != p_original_path, Ref<Resource>(),
+			"The C# script path is different from the path it was registered in the C# dictionary.");
 
+	scr->set_path(p_original_path, true);
 	scr->reload();
 
 	if (r_error) {

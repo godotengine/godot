@@ -31,6 +31,7 @@
 #ifndef WORKER_THREAD_POOL_H
 #define WORKER_THREAD_POOL_H
 
+#include "core/os/condition_variable.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
@@ -39,6 +40,8 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
+
+class CommandQueueMT;
 
 class WorkerThreadPool : public Object {
 	GDCLASS(WorkerThreadPool, Object)
@@ -60,7 +63,7 @@ private:
 	};
 
 	struct Group {
-		GroupID self;
+		GroupID self = -1;
 		SafeNumeric<uint32_t> index;
 		SafeNumeric<uint32_t> completed_index;
 		uint32_t max = 0;
@@ -68,23 +71,23 @@ private:
 		SafeFlag completed;
 		SafeNumeric<uint32_t> finished;
 		uint32_t tasks_used = 0;
-		TightLocalVector<Task *> low_priority_native_tasks;
 	};
 
 	struct Task {
+		TaskID self = -1;
 		Callable callable;
 		void (*native_func)(void *) = nullptr;
 		void (*native_group_func)(void *, uint32_t) = nullptr;
 		void *native_func_userdata = nullptr;
 		String description;
-		Semaphore done_semaphore;
+		Semaphore done_semaphore; // For user threads awaiting.
 		bool completed = false;
 		Group *group = nullptr;
 		SelfList<Task> task_elem;
-		uint32_t waiting = 0;
+		uint32_t waiting_pool = 0;
+		uint32_t waiting_user = 0;
 		bool low_priority = false;
 		BaseTemplateUserdata *template_userdata = nullptr;
-		Thread *low_priority_thread = nullptr;
 		int pool_thread_index = -1;
 
 		void free_template_userdata();
@@ -92,50 +95,64 @@ private:
 				task_elem(this) {}
 	};
 
-	PagedAllocator<Task> task_allocator;
-	PagedAllocator<Group> group_allocator;
-	PagedAllocator<Thread> native_thread_allocator;
+	static const uint32_t TASKS_PAGE_SIZE = 1024;
+	static const uint32_t GROUPS_PAGE_SIZE = 256;
+
+	PagedAllocator<Task, false, TASKS_PAGE_SIZE> task_allocator;
+	PagedAllocator<Group, false, GROUPS_PAGE_SIZE> group_allocator;
 
 	SelfList<Task>::List low_priority_task_queue;
 	SelfList<Task>::List task_queue;
 
-	Mutex task_mutex;
-	Semaphore task_available_semaphore;
+	BinaryMutex task_mutex;
 
 	struct ThreadData {
-		uint32_t index;
+		uint32_t index = 0;
 		Thread thread;
-		Task *current_low_prio_task = nullptr;
 		bool ready_for_scripting = false;
+		bool signaled = false;
+		Task *current_task = nullptr;
+		Task *awaited_task = nullptr; // Null if not awaiting the condition variable. Special value for idle-waiting.
+		ConditionVariable cond_var;
 	};
 
 	TightLocalVector<ThreadData> threads;
 	bool exit_threads = false;
 
 	HashMap<Thread::ID, int> thread_ids;
-	HashMap<TaskID, Task *> tasks;
-	HashMap<GroupID, Group *> groups;
+	HashMap<
+			TaskID,
+			Task *,
+			HashMapHasherDefault,
+			HashMapComparatorDefault<TaskID>,
+			PagedAllocator<HashMapElement<TaskID, Task *>, false, TASKS_PAGE_SIZE>>
+			tasks;
+	HashMap<
+			GroupID,
+			Group *,
+			HashMapHasherDefault,
+			HashMapComparatorDefault<GroupID>,
+			PagedAllocator<HashMapElement<GroupID, Group *>, false, GROUPS_PAGE_SIZE>>
+			groups;
 
-	bool use_native_low_priority_threads = false;
 	uint32_t max_low_priority_threads = 0;
 	uint32_t low_priority_threads_used = 0;
-	uint32_t low_priority_tasks_running = 0;
-	uint32_t low_priority_tasks_awaiting_others = 0;
+	uint32_t notify_index = 0; // For rotating across threads, no help distributing load.
 
 	uint64_t last_task = 1;
 
 	static void _thread_function(void *p_user);
-	static void _native_low_priority_thread_function(void *p_user);
 
-	void _process_task_queue();
 	void _process_task(Task *task);
 
-	void _post_task(Task *p_task, bool p_high_priority);
+	void _post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, bool p_high_priority);
+	void _notify_threads(const ThreadData *p_current_thread_data, uint32_t p_process_count, uint32_t p_promote_count);
 
 	bool _try_promote_low_priority_task();
-	void _prevent_low_prio_saturation_deadlock();
 
 	static WorkerThreadPool *singleton;
+
+	static thread_local CommandQueueMT *flushing_cmd_queue;
 
 	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description);
 	GroupID _add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description);
@@ -197,7 +214,12 @@ public:
 	_FORCE_INLINE_ int get_thread_count() const { return threads.size(); }
 
 	static WorkerThreadPool *get_singleton() { return singleton; }
-	void init(int p_thread_count = -1, bool p_use_native_threads_low_priority = true, float p_low_priority_task_ratio = 0.3);
+	static int get_thread_index();
+
+	static void thread_enter_command_queue_mt_flush(CommandQueueMT *p_queue);
+	static void thread_exit_command_queue_mt_flush();
+
+	void init(int p_thread_count = -1, float p_low_priority_task_ratio = 0.3);
 	void finish();
 	WorkerThreadPool();
 	~WorkerThreadPool();

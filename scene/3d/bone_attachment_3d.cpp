@@ -87,8 +87,8 @@ void BoneAttachment3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-PackedStringArray BoneAttachment3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node3D::get_configuration_warnings();
+Array BoneAttachment3D::get_configuration_warnings() const {
+	Array warnings = Node3D::get_configuration_warnings();
 
 	if (use_external_skeleton) {
 		if (external_skeleton_node_cache.is_null()) {
@@ -150,7 +150,7 @@ void BoneAttachment3D::_check_bind() {
 		if (bone_idx != -1) {
 			sk->connect(SNAME("bone_pose_changed"), callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
 			bound = true;
-			call_deferred(SNAME("on_bone_pose_update"), bone_idx);
+			callable_mp(this, &BoneAttachment3D::on_bone_pose_update).call_deferred(bone_idx);
 		}
 	}
 }

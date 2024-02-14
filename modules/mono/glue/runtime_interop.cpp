@@ -316,7 +316,7 @@ void godotsharp_internal_new_csharp_script(Ref<CSharpScript> *r_dest) {
 }
 
 void godotsharp_internal_editor_file_system_update_file(const String *p_script_path) {
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	// If the EditorFileSystem singleton is available, update the file;
 	// otherwise, the file will be updated when the singleton becomes available.
 	EditorFileSystem *efs = EditorFileSystem::get_singleton();

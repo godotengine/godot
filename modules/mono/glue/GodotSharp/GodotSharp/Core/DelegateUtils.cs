@@ -414,7 +414,7 @@ namespace Godot
                     {
                         ulong objectId = reader.ReadUInt64();
                         // ReSharper disable once RedundantNameQualifier
-                        GodotObject godotObject = GodotObject.InstanceFromId(objectId);
+                        GodotObject? godotObject = GodotObject.InstanceFromId(objectId);
                         if (godotObject == null)
                             return false;
 

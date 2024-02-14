@@ -328,6 +328,10 @@ public:
 		Vector<LOD> lods;
 		Vector<AABB> bone_aabbs;
 
+		// Transforms used in runtime bone AABBs compute.
+		// Since bone AABBs is saved in Mesh space, but bones is in Skeleton space.
+		Transform3D mesh_to_skeleton_xform;
+
 		Vector<uint8_t> blend_shape_data;
 
 		Vector4 uv_scale;
@@ -380,6 +384,9 @@ public:
 
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) = 0;
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
+
+	virtual void mesh_set_path(RID p_mesh, const String &p_path) = 0;
+	virtual String mesh_get_path(RID p_mesh) const = 0;
 
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) = 0;
 
@@ -568,6 +575,7 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
+	virtual void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_pixels) = 0;
 
@@ -961,6 +969,7 @@ public:
 	enum ViewportRenderInfoType {
 		VIEWPORT_RENDER_INFO_TYPE_VISIBLE,
 		VIEWPORT_RENDER_INFO_TYPE_SHADOW,
+		VIEWPORT_RENDER_INFO_TYPE_CANVAS,
 		VIEWPORT_RENDER_INFO_TYPE_MAX
 	};
 
@@ -1491,6 +1500,9 @@ public:
 
 	virtual void canvas_set_shadow_texture_size(int p_size) = 0;
 
+	Rect2 debug_canvas_item_get_rect(RID p_item);
+	virtual Rect2 _debug_canvas_item_get_rect(RID p_item) = 0;
+
 	/* GLOBAL SHADER UNIFORMS */
 
 	enum GlobalShaderParameterType {
@@ -1604,13 +1616,14 @@ public:
 	virtual Color get_default_clear_color() = 0;
 	virtual void set_default_clear_color(const Color &p_color) = 0;
 
+#ifndef DISABLE_DEPRECATED
+	// Never actually used, should be removed when we can break compatibility.
 	enum Features {
 		FEATURE_SHADERS,
 		FEATURE_MULTITHREADED,
 	};
-
 	virtual bool has_feature(Features p_feature) const = 0;
-
+#endif
 	virtual bool has_os_feature(const String &p_feature) const = 0;
 
 	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
@@ -1630,6 +1643,10 @@ public:
 	void set_render_loop_enabled(bool p_enabled);
 
 	virtual void call_on_render_thread(const Callable &p_callable) = 0;
+
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	RenderingServer();
 	virtual ~RenderingServer();
@@ -1736,9 +1753,12 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
-VARIANT_ENUM_CAST(RenderingServer::Features);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST(RenderingServer::BakeChannels);
+
+#ifndef DISABLE_DEPRECATED
+VARIANT_ENUM_CAST(RenderingServer::Features);
+#endif
 
 // Alias to make it easier to use.
 #define RS RenderingServer

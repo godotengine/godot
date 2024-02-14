@@ -117,6 +117,7 @@ private:
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
 	mutable Size2i max_size;
+	mutable Size2i old_size = size;
 	mutable Vector<Vector2> mpath;
 	mutable Mode mode = MODE_WINDOWED;
 	mutable bool flags[FLAG_MAX] = {};
@@ -126,6 +127,7 @@ private:
 
 	bool use_font_oversampling = false;
 	bool transient = false;
+	bool transient_to_focused = false;
 	bool exclusive = false;
 	bool wrap_controls = false;
 	bool updating_child_controls = false;
@@ -234,11 +236,14 @@ private:
 
 	Ref<Shortcut> debugger_stop_shortcut;
 
+	static int root_layout_direction;
+
 protected:
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
 
 	virtual void _update_theme_item_cache();
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) {}
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -259,6 +264,8 @@ public:
 		NOTIFICATION_POST_POPUP = 31,
 		NOTIFICATION_THEME_CHANGED = 32
 	};
+
+	static void set_root_layout_direction(int p_root_dir);
 
 	void set_title(const String &p_title);
 	String get_title() const;
@@ -295,7 +302,9 @@ public:
 	bool is_maximize_allowed() const;
 
 	void request_attention();
+#ifndef DISABLE_DEPRECATED
 	void move_to_foreground();
+#endif // DISABLE_DEPRECATED
 
 	virtual void set_visible(bool p_visible);
 	bool is_visible() const;
@@ -307,6 +316,9 @@ public:
 
 	void set_transient(bool p_transient);
 	bool is_transient() const;
+
+	void set_transient_to_focused(bool p_transient_to_focused);
+	bool is_transient_to_focused() const;
 
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
