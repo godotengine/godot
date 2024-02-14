@@ -808,7 +808,7 @@
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
 		</member>
 		<member name="display/window/size/enable_alt_space_menu" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows the Alt+Space keys to display the window menu.
+			If [code]true[/code], allows the [kbd]Alt + Space[/kbd] keys to display the window menu.
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="display/window/size/extend_to_title" type="bool" setter="" getter="" default="false">
