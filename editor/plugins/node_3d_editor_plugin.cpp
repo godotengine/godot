@@ -4371,7 +4371,8 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		}
 
 		Transform3D new_tf = node3d->get_transform();
-		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos);
+		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + node3d->get_position());
+		new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
 
 		undo_redo->add_do_method(instantiated_scene, "set_transform", new_tf);
 	}
