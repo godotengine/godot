@@ -32,7 +32,10 @@
 #define TEST_CRYPTO_H
 
 #include "core/crypto/crypto.h"
+#include "core/os/os.h"
+
 #include "tests/test_macros.h"
+#include "tests/test_utils.h"
 
 namespace TestCrypto {
 
@@ -68,6 +71,39 @@ TEST_CASE("[Crypto] PackedByteArray constant time compare") {
 	equal = crypto.constant_time_compare(p1, p2);
 	CHECK(!equal);
 }
-} // namespace TestCrypto
+
+TEST_CASE("[Crypto] Load and Save Key") {
+	// Create an instance of CryptoKey.
+	Ref<CryptoKey> key = CryptoKey::create();
+
+	// Load the key from file.
+	Error load_error = key->load(TestUtils::get_data_path("crypto/test_key.key"), false);
+
+	// Check that the key loaded successfully.
+	CHECK(load_error == OK);
+
+	// Verify that the loaded key looks like a key.
+	String key_data = key->save_to_string();
+	CHECK(key_data.begins_with("-----BEGIN RSA PRIVATE KEY-----"));
+
+	// Save the key to another temporary file.
+	const String save_path = OS::get_singleton()->get_cache_path().path_join("saved_key.key");
+	Error save_error = key->save(save_path, false);
+
+	// Check that the key saved successfully.
+	CHECK(save_error == OK);
+
+	// Load the key from the saved file.
+	Ref<CryptoKey> saved_key = CryptoKey::create();
+	Error load_saved_error = saved_key->load(save_path, false);
+
+	// Check that the saved key loaded successfully.
+	CHECK(load_saved_error == OK);
+
+	// Verify that the re-loaded key also looks like a key.
+	String saved_key_data = saved_key->save_to_string();
+	CHECK(saved_key_data.begins_with("-----BEGIN RSA PRIVATE KEY-----"));
+}
+} //namespace TestCrypto
 
 #endif // TEST_CRYPTO_H
