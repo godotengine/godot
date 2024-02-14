@@ -1438,6 +1438,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
 	GLOBAL_DEF("application/run/print_header", true);
+	GLOBAL_DEF("application/run/enable_alt_space_menu", false);
 	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
