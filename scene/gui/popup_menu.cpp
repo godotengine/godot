@@ -598,7 +598,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if ((b.is_valid() && b->is_pressed()) || (!mouse_is_pressed && drag_to_press)) {
+	if ((b.is_valid() && !b->is_pressed()) || (!mouse_is_pressed && drag_to_press)) {
 		if (b.is_valid()) {
 			MouseButton button_idx = b->get_button_index();
 			if (button_idx != MouseButton::LEFT && button_idx != MouseButton::RIGHT) {
