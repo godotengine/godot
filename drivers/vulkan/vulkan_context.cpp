@@ -64,7 +64,6 @@ SafeNumeric<uint32_t> driver_memory_allocation_count[VulkanContext::VK_TRACKED_O
 /*************************************************/
 // Total device memory and allocation amount
 HashMap<uint64_t, size_t> memory_report_table;
-Mutex memory_report_table_mutex;
 // Total memory and allocation amount 
 SafeNumeric<uint64_t> memory_report_total_memory;
 SafeNumeric<uint64_t> memory_report_total_alloc_count;
@@ -120,22 +119,6 @@ VulkanContext::DriverMemoryAllocations VulkanContext::get_driver_memory_by_objec
 
 void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT* p_callback_data, void* p_user_data) {
 
-	// Initialize memory trackers the first time this function is called
-	static bool initialized = false;
-	if (!initialized) {
-		initialized = true;
-
-		memory_report_total_alloc_count.set(0);
-		memory_report_total_memory.set(0);
-
-		MutexLock lock(memory_report_table_mutex);
-
-		for (uint32_t i = 0; i < VK_TRACKED_OBJECT_TYPE_COUNT; i++) {
-			memory_report_allocation_count[i].set(0);
-			memory_report_mem_usage[i].set(0);
-		}
-	}
-
 	if (!p_callback_data) {
 		return;
 	}
@@ -146,8 +129,6 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 
 		// Realloc, update size
 		if (memory_report_table.has(obj_id)) {
-			MutexLock lock(memory_report_table_mutex);
-
 			memory_report_total_memory.sub(memory_report_table[obj_id]);
 			memory_report_mem_usage[obj_type].sub(memory_report_table[obj_id]);
 
@@ -156,8 +137,6 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 
 			memory_report_table[p_callback_data->memoryObjectId] = p_callback_data->size;
 		} else {
-			MutexLock lock(memory_report_table_mutex);
-
 			memory_report_table[obj_id] = p_callback_data->size;
 
 			memory_report_total_alloc_count.increment();
@@ -168,8 +147,6 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 	} else if (p_callback_data->type == VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_FREE_EXT) {
 
 		if (memory_report_table.has(obj_id)) {
-			MutexLock lock(memory_report_table_mutex);
-
 			memory_report_total_alloc_count.decrement();
 			memory_report_allocation_count[obj_type].decrement();
 			memory_report_mem_usage[obj_type].sub(p_callback_data->size);
@@ -182,12 +159,96 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 
 VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type) {
 
+#if !defined(VK_TRACK_DRIVER_MEMORY)
 	struct MemHeader {
+		size_t size;
+	};
+
+	static VkAllocationCallbacks standard_callbacks = {
+		// Allocation function
+		nullptr,
+		[](
+				void *p_user_data,
+				size_t size,
+				size_t alignment,
+				VkSystemAllocationScope allocation_scope) -> void * {
+			static constexpr size_t tracking_data_size = 16;
+			alignment = MAX(alignment, tracking_data_size);
+
+			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::alloc_aligned_static(size + alignment, alignment));
+			if (ret == nullptr) {
+				return NULL;
+			}
+
+			// Track allocation
+			MemHeader *header = reinterpret_cast<MemHeader *>(ret);
+			header->size = size;
+			*reinterpret_cast<size_t *>(ret + alignment - sizeof(size_t)) = alignment;
+
+			// Return first available chunk of memory
+			return ret + alignment;
+		},
+
+		// Reallocation function
+		[](
+				void *p_user_data,
+				void *p_original,
+				size_t size,
+				size_t alignment,
+				VkSystemAllocationScope allocation_scope) -> void * {
+			uint8_t *mem = reinterpret_cast<uint8_t *>(p_original);
+			// Retrieve alignment
+			alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
+			// Retrieve allocation data
+			MemHeader *header = reinterpret_cast<MemHeader *>(mem - alignment);
+
+			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::realloc_aligned_static(header, size + alignment, header->size + alignment, alignment));
+			if (ret == nullptr) {
+				return NULL;
+			}
+			// Update tracker
+			header = reinterpret_cast<MemHeader *>(ret);
+			header->size = size;
+			return ret + alignment;
+		},
+
+		// Free function
+		[](
+				void *p_user_data,
+				void *p_memory) {
+			if (!p_memory) {
+				return;
+			}
+
+			uint8_t *mem = reinterpret_cast<uint8_t *>(p_memory);
+			size_t alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
+			MemHeader *header = reinterpret_cast<MemHeader *>(mem - alignment);
+
+			Memory::free_aligned_static(header);
+		},
+		// Internal allocation / deallocation. We don't track them as they cannot really be controlled or optimized by the programmer.
+		[](
+				void *p_user_data,
+				size_t size,
+				VkInternalAllocationType allocation_type,
+				VkSystemAllocationScope allocation_scope) {
+		},
+		[](
+				void *p_user_data,
+				size_t size,
+				VkInternalAllocationType allocation_type,
+				VkSystemAllocationScope allocation_scope) {
+		},
+	};
+
+	return &standard_callbacks;
+#else
+
+	struct TrackedMemHeader {
 		size_t size;
 		VkSystemAllocationScope allocation_scope;
 		VkTrackedObjectType type;
 	};
-
 	VkAllocationCallbacks tracking_callbacks = {
 		// Allocation function
 		nullptr,
@@ -213,7 +274,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			}
 
 			// Track allocation
-			MemHeader *header = reinterpret_cast<MemHeader *>(ret);
+			TrackedMemHeader *header = reinterpret_cast<TrackedMemHeader *>(ret);
 			header->size = size;
 			header->allocation_scope = allocation_scope;
 			header->type = type;
@@ -235,7 +296,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			// Retrieve alignment
 			alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
 			// Retrieve allocation data
-			MemHeader *header = reinterpret_cast<MemHeader *>(mem - alignment);
+			TrackedMemHeader *header = reinterpret_cast<TrackedMemHeader *>(mem - alignment);
 
 			// Update allocation size
 			driver_memory_total_memory.sub(header->size);
@@ -248,7 +309,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 				return NULL;
 			}
 			// Update tracker
-			header = reinterpret_cast<MemHeader *>(ret);
+			header = reinterpret_cast<TrackedMemHeader *>(ret);
 			header->size = size;
 			return ret + alignment;
 		},
@@ -263,7 +324,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 
 			uint8_t *mem = reinterpret_cast<uint8_t *>(p_memory);
 			size_t alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
-			MemHeader *header = reinterpret_cast<MemHeader *>(mem - alignment);
+			TrackedMemHeader *header = reinterpret_cast<TrackedMemHeader *>(mem - alignment);
 
 			driver_memory_total_alloc_count.decrement();
 			driver_memory_total_memory.sub(header->size);
@@ -298,16 +359,12 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			object_callbacks[c] = tracking_callbacks;
 			object_user_data[c] = c;
 			object_callbacks[c].pUserData = &object_user_data[c];
-
-			for (uint32_t s = 0; s < VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT; ++s) {
-				driver_memory_tracker[c][s].set(0);
-				driver_memory_allocation_count[c][s].set(0);
-			}
 		}
 	}
 
 	uint32_t type_index = vk_object_to_tracked_object(type);
 	return &object_callbacks[type_index];
+#endif
 }
 
 Vector<VkAttachmentReference> VulkanContext::_convert_VkAttachmentReference2(uint32_t p_count, const VkAttachmentReference2 *p_refs) {
@@ -1343,7 +1400,7 @@ Error VulkanContext::_create_instance() {
 		curr_extension = (VkBaseInStructure *)curr_extension->pNext;
 	}
 
-	if (is_instance_extension_enabled(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME)) {
+	if (is_device_extension_enabled(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME)) {
 		VkDeviceDeviceMemoryReportCreateInfoEXT memory_report_info = {};
 		memory_report_info.sType = VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
 		memory_report_info.pfnUserCallback = memory_report_callback;
@@ -1353,7 +1410,7 @@ Error VulkanContext::_create_instance() {
 
 		curr_extension->pNext = (VkBaseInStructure *)&memory_report_info;
 		curr_extension = (VkBaseInStructure *)curr_extension->pNext;
-	}
+	} 
 
 	VkResult err;
 

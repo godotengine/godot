@@ -36,6 +36,11 @@
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
 
+#if defined(VULKAN_ENABLED) && (defined(DEBUG_ENABLED) || defined(DEV_ENABLED))
+#define	VK_TRACK_DRIVER_MEMORY
+#endif
+
+
 template <typename T>
 class TypedArray;
 
