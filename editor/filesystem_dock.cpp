@@ -979,6 +979,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			}
 		}
 	} else {
+		if (!directory.begins_with("res://")) {
+			directory = "res://" + directory;
+		}
 		// Get infos on the directory + file.
 		if (directory.ends_with("/") && directory != "res://") {
 			directory = directory.substr(0, directory.length() - 1);
