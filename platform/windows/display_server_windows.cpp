@@ -3520,7 +3520,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				case SC_MONITORPOWER: // Monitor trying to enter powersave?
 					return 0; // Prevent from happening.
 				case SC_KEYMENU:
-					if (!Engine::get_singleton()->is_editor_hint() && !GLOBAL_GET("application/run/enable_alt_space_menu") && ((lParam >> 16) <= 0)) {
+					Engine *engine = Engine::get_singleton();
+					if (!engine->is_project_manager_hint() && !engine->is_editor_hint() && !GLOBAL_GET("application/run/enable_alt_space_menu") && ((lParam >> 16) <= 0)) {
 						return 0;
 					}
 			}
