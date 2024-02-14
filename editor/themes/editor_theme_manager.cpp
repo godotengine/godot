@@ -252,6 +252,29 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 	// Handle main theme preset.
 	{
+		const bool follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
+		const bool use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
+		DisplayServer *display_server = DisplayServer::get_singleton();
+		Color system_base_color = display_server->get_base_color();
+		Color system_accent_color = display_server->get_accent_color();
+
+		if (follow_system_theme) {
+			String dark_theme = "Default";
+			String light_theme = "Light";
+
+			config.preset = light_theme; // Assume light theme if we can't detect system theme attributes.
+
+			if (system_base_color == Color(0, 0, 0, 0)) {
+				if (display_server->is_dark_mode_supported() && display_server->is_dark_mode()) {
+					config.preset = dark_theme;
+				}
+			} else {
+				if (system_base_color.get_luminance() < 0.5) {
+					config.preset = dark_theme;
+				}
+			}
+		}
+
 		if (config.preset != "Custom") {
 			Color preset_accent_color;
 			Color preset_base_color;
@@ -306,6 +329,16 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", config.base_color);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
+		}
+
+		if (follow_system_theme && system_base_color != Color(0, 0, 0, 0)) {
+			config.base_color = system_base_color;
+			config.preset = "Custom";
+		}
+
+		if (use_system_accent_color && system_accent_color != Color(0, 0, 0, 0)) {
+			config.accent_color = system_accent_color;
+			config.preset = "Custom";
 		}
 
 		// Enforce values in case they were adjusted or overridden.

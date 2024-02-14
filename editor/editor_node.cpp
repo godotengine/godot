@@ -665,6 +665,8 @@ void EditorNode::_notification(int p_what) {
 
 			callable_mp(this, &EditorNode::_begin_first_scan).call_deferred();
 
+			DisplayServer::get_singleton()->set_system_theme_change_callback(callable_mp(this, &EditorNode::_update_theme));
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
@@ -767,6 +769,9 @@ void EditorNode::_notification(int p_what) {
 			FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 			EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 			EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+
+			follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
+			use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
 
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				_update_theme();
@@ -3069,6 +3074,35 @@ void EditorNode::_save_screenshot(NodePath p_path) {
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
+}
+
+void EditorNode::_check_system_theme_changed() {
+	DisplayServer *display_server = DisplayServer::get_singleton();
+
+	bool system_theme_changed = false;
+
+	if (follow_system_theme) {
+		if (display_server->get_base_color() != last_system_base_color) {
+			system_theme_changed = true;
+			last_system_base_color = display_server->get_base_color();
+		}
+
+		if (display_server->is_dark_mode_supported() && display_server->is_dark_mode() != last_dark_mode_state) {
+			system_theme_changed = true;
+			last_dark_mode_state = display_server->is_dark_mode();
+		}
+	}
+
+	if (use_system_accent_color) {
+		if (display_server->get_accent_color() != last_system_accent_color) {
+			system_theme_changed = true;
+			last_system_accent_color = display_server->get_accent_color();
+		}
+	}
+
+	if (system_theme_changed) {
+		_update_theme();
+	}
 }
 
 void EditorNode::_tool_menu_option(int p_idx) {
@@ -7527,6 +7561,15 @@ EditorNode::EditorNode() {
 	String exec = OS::get_singleton()->get_executable_path();
 	// Save editor executable path for third-party tools.
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec);
+
+	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
+	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
+	system_theme_timer = memnew(Timer);
+	system_theme_timer->set_wait_time(1.0);
+	system_theme_timer->connect("timeout", callable_mp(this, &EditorNode::_check_system_theme_changed));
+	add_child(system_theme_timer);
+	system_theme_timer->set_owner(get_owner());
+	system_theme_timer->set_autostart(true);
 }
 
 EditorNode::~EditorNode() {
