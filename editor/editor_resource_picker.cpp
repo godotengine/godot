@@ -578,9 +578,9 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	return res_type;
 }
 
-static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_vector) {
-	if (p_vector->has(p_type)) {
-		// Already added
+static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vector) {
+	if (p_vector->find(p_type)) {
+		// Already added.
 		return;
 	}
 
@@ -588,7 +588,7 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 		// Engine class,
 
 		if (!ClassDB::is_virtual(p_type)) {
-			p_vector->insert(p_type);
+			p_vector->push_back(p_type);
 		}
 
 		List<StringName> inheriters;
@@ -598,7 +598,7 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 		}
 	} else {
 		// Script class.
-		p_vector->insert(p_type);
+		p_vector->push_back(p_type);
 	}
 
 	List<StringName> inheriters;
@@ -613,12 +613,22 @@ void EditorResourcePicker::_ensure_allowed_types() const {
 		return;
 	}
 
+	List<StringName> final_allowed;
+
 	Vector<String> allowed_types = base_type.split(",");
 	int size = allowed_types.size();
 
-	for (int i = 0; i < size; i++) {
-		const String base = allowed_types[i].strip_edges();
-		_add_allowed_type(base, &allowed_types_without_convert);
+	for (const String &S : allowed_types) {
+		const String base = S.strip_edges();
+		if (base.begins_with("-")) {
+			final_allowed.erase(base.right(-1));
+			continue;
+		}
+		_add_allowed_type(base, &final_allowed);
+	}
+
+	for (const StringName &SN : final_allowed) {
+		allowed_types_without_convert.insert(SN);
 	}
 
 	allowed_types_with_convert = HashSet<StringName>(allowed_types_without_convert);

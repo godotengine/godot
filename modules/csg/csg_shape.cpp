@@ -1207,7 +1207,8 @@ void CSGMesh3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGMesh3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGMesh3D::get_material);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	// Hide PrimitiveMeshes that are always non-manifold and therefore can't be used as CSG meshes.
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh,-PlaneMesh,-PointMesh,-QuadMesh,-RibbonTrailMesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
