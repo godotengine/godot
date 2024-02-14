@@ -34,14 +34,11 @@ layout(push_constant, std430) uniform Params {
 	// DOF.
 	float camera_z_far;
 	float camera_z_near;
-	uint pad2[2];
+	float camera_z_far_scale;
+	uint pad2;
 
 	// Color
 	vec4 set_color;
-
-	// Depth.
-	bool inverse_depth;
-	uint pad3[3];
 }
 params;
 
@@ -250,12 +247,21 @@ void main() {
 #ifdef MODE_LINEARIZE_DEPTH_COPY
 
 	float depth = texelFetch(source_color, pos + params.section.xy, 0).r;
-	depth = 2.0 * params.camera_z_near * params.camera_z_far /
-			(params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
+	float z_near = params.camera_z_near;
+	float z_far = params.camera_z_far * params.camera_z_far_scale;
 
-	vec4 color = vec4(depth / params.camera_z_far);
-	if (params.inverse_depth) {
-		color = 1.0 - color;
+	depth = depth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+	depth = ((depth + (z_far + z_near) / (z_far - z_near)) * (z_far - z_near)) / 2.0;
+#else
+	depth = 2.0 * z_near * z_far / (z_far + z_near - depth * (z_far - z_near));
+#endif
+	float depth_linear_normalized = depth / z_far;
+
+	vec4 color = vec4(depth_linear_normalized, depth_linear_normalized, depth_linear_normalized, 1.0);
+
+	if(depth >= z_far - 0.01) {
+		color = vec4(0.0, 0.2705, 0.5490, 1.0);
 	}
 
 	if (bool(params.flags & FLAG_FLIP_Y)) {

@@ -457,7 +457,7 @@ void CopyEffects::copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_texture
 	RD::get_singleton()->compute_list_end();
 }
 
-void CopyEffects::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far) {
+void CopyEffects::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far, float p_z_far_scale) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -476,7 +476,7 @@ void CopyEffects::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID 
 	copy.push_constant.target[1] = p_rect.position.y;
 	copy.push_constant.camera_z_far = p_z_far;
 	copy.push_constant.camera_z_near = p_z_near;
-	copy.push_constant.inverse_depth = p_inverse_depth;
+	copy.push_constant.camera_z_far_scale = p_z_far_scale;
 
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
