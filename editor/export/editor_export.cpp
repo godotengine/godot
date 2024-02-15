@@ -168,6 +168,53 @@ Vector<Ref<EditorExportPlugin>> EditorExport::get_export_plugins() {
 	return export_plugins;
 }
 
+HashSet<String> EditorExport::get_available_features() {
+	HashSet<String> presets;
+
+	presets.insert("bptc");
+	presets.insert("s3tc");
+	presets.insert("etc");
+	presets.insert("etc2");
+	presets.insert("editor");
+	presets.insert("template_debug");
+	presets.insert("template_release");
+	presets.insert("debug");
+	presets.insert("release");
+	presets.insert("template");
+	presets.insert("double");
+	presets.insert("single");
+	presets.insert("32");
+	presets.insert("64");
+	presets.insert("movie");
+
+	for (int i = 0; i < get_export_platform_count(); i++) {
+		List<String> p;
+		get_export_platform(i)->get_platform_features(&p);
+		for (const String &E : p) {
+			presets.insert(E);
+		}
+	}
+
+	for (int i = 0; i < get_export_preset_count(); i++) {
+		List<String> p;
+		get_export_preset(i)->get_platform()->get_preset_features(get_export_preset(i), &p);
+		for (const String &E : p) {
+			presets.insert(E);
+		}
+
+		String custom = get_export_preset(i)->get_custom_features();
+		Vector<String> custom_list = custom.split(",");
+		for (int j = 0; j < custom_list.size(); j++) {
+			String f = custom_list[j].strip_edges();
+			if (!f.is_empty()) {
+				presets.insert(f);
+			}
+		}
+	}
+
+	return presets;
+}
+
 void EditorExport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

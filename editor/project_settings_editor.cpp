@@ -276,50 +276,7 @@ String ProjectSettingsEditor::_get_setting_name() const {
 }
 
 void ProjectSettingsEditor::_add_feature_overrides() {
-	HashSet<String> presets;
-
-	presets.insert("bptc");
-	presets.insert("s3tc");
-	presets.insert("etc");
-	presets.insert("etc2");
-	presets.insert("editor");
-	presets.insert("template_debug");
-	presets.insert("template_release");
-	presets.insert("debug");
-	presets.insert("release");
-	presets.insert("template");
-	presets.insert("double");
-	presets.insert("single");
-	presets.insert("32");
-	presets.insert("64");
-	presets.insert("movie");
-
-	EditorExport *ee = EditorExport::get_singleton();
-
-	for (int i = 0; i < ee->get_export_platform_count(); i++) {
-		List<String> p;
-		ee->get_export_platform(i)->get_platform_features(&p);
-		for (const String &E : p) {
-			presets.insert(E);
-		}
-	}
-
-	for (int i = 0; i < ee->get_export_preset_count(); i++) {
-		List<String> p;
-		ee->get_export_preset(i)->get_platform()->get_preset_features(ee->get_export_preset(i), &p);
-		for (const String &E : p) {
-			presets.insert(E);
-		}
-
-		String custom = ee->get_export_preset(i)->get_custom_features();
-		Vector<String> custom_list = custom.split(",");
-		for (int j = 0; j < custom_list.size(); j++) {
-			String f = custom_list[j].strip_edges();
-			if (!f.is_empty()) {
-				presets.insert(f);
-			}
-		}
-	}
+	HashSet<String> presets = EditorExport::get_singleton()->get_available_features();
 
 	feature_box->clear();
 	feature_box->add_item(TTR("(All)"), 0); // So it is always on top.

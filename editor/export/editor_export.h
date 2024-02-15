@@ -74,6 +74,8 @@ public:
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin);
 	Vector<Ref<EditorExportPlugin>> get_export_plugins();
 
+	HashSet<String> get_available_features();
+
 	void load_config();
 	void update_export_presets();
 	bool poll_export_platforms();
