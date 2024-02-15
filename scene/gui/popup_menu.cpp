@@ -587,15 +587,16 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (m.is_valid() && drag_to_press) {
-		BitField<MouseButtonMask> initial_button_mask = m->get_button_mask();
-		if (!initial_button_mask.has_flag(mouse_button_to_mask(MouseButton::LEFT)) && !initial_button_mask.has_flag(mouse_button_to_mask(MouseButton::RIGHT))) {
-			mouse_is_pressed = false;
-		}
+	Rect2 item_clickable_area_global = scroll_container->get_global_rect();
 
-		if (!item_clickable_area.has_point(m->get_position()) && !mouse_is_pressed) {
-			drag_to_press = false;
-		}
+	DisplayServer *ds = DisplayServer::get_singleton();
+
+	if (!ds->mouse_get_button_state().has_flag(mouse_button_to_mask(MouseButton::LEFT)) && !ds->mouse_get_button_state().has_flag(mouse_button_to_mask(MouseButton::RIGHT))) {
+		mouse_is_pressed = false;
+	}
+
+	if (item_clickable_area_global.has_point(ds->mouse_get_position()) && !mouse_is_pressed) {
+		drag_to_press = false;
 	}
 
 	if ((b.is_valid() && !b->is_pressed()) || (!mouse_is_pressed && drag_to_press)) {
