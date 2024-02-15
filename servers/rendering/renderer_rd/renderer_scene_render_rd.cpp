@@ -784,14 +784,15 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		RID debug_depth_texture = rb->has_texture(RB_SCOPE_FORWARD_CLUSTERED, SNAME("debug_depth")) ? rb->get_texture(RB_SCOPE_FORWARD_CLUSTERED, SNAME("debug_depth")) : rb->create_texture(RB_SCOPE_FORWARD_CLUSTERED, SNAME("debug_depth"), format, usage_bits, texture_samples);
-
+		double z_near = p_render_data->scene_data->cam_projection.get_z_near();
+		double z_far = p_render_data->scene_data->cam_projection.get_z_far();
 		copy_effects->copy_depth_to_rect_and_linearize(
 				_render_buffers_get_depth_texture(rb),
 				debug_depth_texture,
 				Rect2(Vector2(), rtsize),
 				false,
-				0.05,
-				10.0,
+				z_near,
+				z_far,
 				1.0);
 		copy_effects->copy_to_fb_rect(
 				debug_depth_texture,
