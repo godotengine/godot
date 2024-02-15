@@ -31,7 +31,7 @@ Patches in the `patches` directory should be re-applied after updates.
 ## libdecor
 
 - Upstream: https://gitlab.freedesktop.org/libdecor/libdecor/
-- Version: 0.1.1
+- Version: 0.2.2
 - License: MIT
 
 
