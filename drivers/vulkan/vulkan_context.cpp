@@ -64,7 +64,7 @@ SafeNumeric<uint32_t> driver_memory_allocation_count[VulkanContext::VK_TRACKED_O
 /*************************************************/
 // Total device memory and allocation amount
 HashMap<uint64_t, size_t> memory_report_table;
-// Total memory and allocation amount 
+// Total memory and allocation amount
 SafeNumeric<uint64_t> memory_report_total_memory;
 SafeNumeric<uint64_t> memory_report_total_alloc_count;
 // Amount of device memory for every object type
@@ -124,7 +124,7 @@ VulkanContext::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type
 				return VulkanContext::VK_TRACKED_OBJECT_TYPE_SWAPCHAIN;
 			default:
 				_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Unknown VkObjectType enum value " + itos((uint32_t)type) + ".Please add it to VkTrackedObjectType, switch statement in "
-						"vk_object_to_tracked_object and get_tracked_object_name.",
+																															   "vk_object_to_tracked_object and get_tracked_object_name.",
 						(int)type);
 				return (VulkanContext::VkTrackedObjectType)VK_OBJECT_TYPE_UNKNOWN;
 		}
@@ -138,7 +138,7 @@ uint64_t VulkanContext::get_device_total_memory() {
 	return memory_report_total_memory.get();
 }
 uint64_t VulkanContext::get_device_allocation_count() {
-	return memory_report_allocation_count->get();
+	return memory_report_total_alloc_count.get();
 }
 uint64_t VulkanContext::get_device_memory_by_object_type(uint32_t type) {
 	return memory_report_mem_usage[type].get();
@@ -173,8 +173,7 @@ uint64_t VulkanContext::get_driver_allocs_by_object_type(uint32_t type) {
 }
 #endif
 
-void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT* p_callback_data, void* p_user_data) {
-
+void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data) {
 	if (!p_callback_data) {
 		return;
 	}
@@ -182,7 +181,6 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 	uint64_t obj_id = p_callback_data->memoryObjectId;
 
 	if (p_callback_data->type == VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_ALLOCATE_EXT) {
-
 		// Realloc, update size
 		if (memory_report_table.has(obj_id)) {
 			memory_report_total_memory.sub(memory_report_table[obj_id]);
@@ -201,7 +199,6 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 			memory_report_total_memory.add(p_callback_data->size);
 		}
 	} else if (p_callback_data->type == VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_FREE_EXT) {
-
 		if (memory_report_table.has(obj_id)) {
 			memory_report_total_alloc_count.decrement();
 			memory_report_allocation_count[obj_type].decrement();
@@ -214,7 +211,6 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 }
 
 VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type) {
-
 #if !defined(VK_TRACK_DRIVER_MEMORY)
 	struct MemHeader {
 		size_t size;
@@ -313,7 +309,6 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 				size_t size,
 				size_t alignment,
 				VkSystemAllocationScope allocation_scope) -> void * {
-
 			static constexpr size_t tracking_data_size = 32;
 			VkTrackedObjectType type = static_cast<VkTrackedObjectType>(*reinterpret_cast<VkTrackedObjectType *>(p_user_data));
 
@@ -321,7 +316,7 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 			driver_memory_total_alloc_count.increment();
 			driver_memory_tracker[type][allocation_scope].add(size);
 			driver_memory_allocation_count[type][allocation_scope].increment();
-			
+
 			alignment = MAX(alignment, tracking_data_size);
 
 			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::alloc_aligned_static(size + alignment, alignment));
@@ -347,7 +342,6 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 				size_t size,
 				size_t alignment,
 				VkSystemAllocationScope allocation_scope) -> void * {
-
 			uint8_t *mem = reinterpret_cast<uint8_t *>(p_original);
 			// Retrieve alignment
 			alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
@@ -410,7 +404,6 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 
 	// Only build the first time
 	if (!object_callbacks[0].pfnAllocation) {
-
 		for (uint32_t c = 0; c < VK_TRACKED_OBJECT_TYPE_COUNT; ++c) {
 			object_callbacks[c] = tracking_callbacks;
 			object_user_data[c] = c;
@@ -1457,21 +1450,9 @@ Error VulkanContext::_create_instance() {
 		dbg_report_callback_create_info.pfnCallback = _debug_report_callback;
 		dbg_report_callback_create_info.pUserData = this;
 
-		curr_extension->pNext = (VkBaseInStructure*)&dbg_report_callback_create_info;
+		curr_extension->pNext = (VkBaseInStructure *)&dbg_report_callback_create_info;
 		curr_extension = (VkBaseInStructure *)curr_extension->pNext;
 	}
-
-	if (is_device_extension_enabled(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME)) {
-		VkDeviceDeviceMemoryReportCreateInfoEXT memory_report_info = {};
-		memory_report_info.sType = VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
-		memory_report_info.pfnUserCallback = memory_report_callback;
-		memory_report_info.pNext = NULL;
-		memory_report_info.flags = 0;
-		memory_report_info.pUserData = this;
-
-		curr_extension->pNext = (VkBaseInStructure *)&memory_report_info;
-		curr_extension = (VkBaseInStructure *)curr_extension->pNext;
-	} 
 
 	VkResult err;
 
@@ -1957,6 +1938,8 @@ Error VulkanContext::_create_device(VkDevice &r_vk_device) {
 	VkPhysicalDeviceVulkan11Features vulkan11features = {};
 	VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 	VkPhysicalDeviceMultiviewFeatures multiview_features = {};
+	VkDeviceDeviceMemoryReportCreateInfoEXT memory_report_info = {};
+
 	if (device_api_version >= VK_API_VERSION_1_2) {
 		// In Vulkan 1.2 and newer we use a newer struct to enable various features.
 
@@ -1993,6 +1976,16 @@ Error VulkanContext::_create_device(VkDevice &r_vk_device) {
 			multiview_features.multiviewTessellationShader = multiview_capabilities.tessellation_shader_is_supported;
 			nextptr = &multiview_features;
 		}
+	}
+
+	if (is_device_extension_enabled(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME)) {
+		memory_report_info.sType = VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
+		memory_report_info.pfnUserCallback = memory_report_callback;
+		memory_report_info.pNext = nextptr;
+		memory_report_info.flags = 0;
+		memory_report_info.pUserData = this;
+
+		nextptr = &memory_report_info;
 	}
 
 	uint32_t enabled_extension_count = 0;
@@ -2914,7 +2907,7 @@ Error VulkanContext::prepare_buffers(RDD::CommandBufferID p_command_buffer, bool
 			err =
 					fpAcquireNextImageKHR(device, w->swapchain, UINT64_MAX,
 							w->image_acquired_semaphores[frame_index], VK_NULL_HANDLE, &w->current_buffer);
-			
+
 			if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 				// Swapchain is out of date (e.g. the window was resized) and
 				// must be recreated.
