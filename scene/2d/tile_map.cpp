@@ -213,7 +213,7 @@ void TileMap::add_layer(int p_to_pos) {
 	// Must clear before adding the layer.
 	TileMapLayer *new_layer = memnew(TileMapLayer);
 	layers.insert(p_to_pos, new_layer);
-	add_child(new_layer);
+	add_child(new_layer, false, INTERNAL_MODE_FRONT);
 	new_layer->force_parent_owned();
 	new_layer->set_name(vformat("Layer%d", p_to_pos));
 	move_child(new_layer, p_to_pos);
@@ -538,7 +538,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		if (p_value.is_array()) {
 			if (layers.size() == 0) {
 				TileMapLayer *new_layer = memnew(TileMapLayer);
-				add_child(new_layer);
+				add_child(new_layer, false, INTERNAL_MODE_FRONT);
 				new_layer->force_parent_owned();
 				new_layer->set_name("Layer0");
 				new_layer->set_layer_index_in_tile_map_node(0);
@@ -564,7 +564,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		if (index >= (int)layers.size()) {
 			while (index >= (int)layers.size()) {
 				TileMapLayer *new_layer = memnew(TileMapLayer);
-				add_child(new_layer);
+				add_child(new_layer, false, INTERNAL_MODE_FRONT);
 				new_layer->force_parent_owned();
 				new_layer->set_name(vformat("Layer%d", index));
 				new_layer->set_layer_index_in_tile_map_node(index);
@@ -1002,7 +1002,7 @@ void TileMap::_bind_methods() {
 
 TileMap::TileMap() {
 	TileMapLayer *new_layer = memnew(TileMapLayer);
-	add_child(new_layer);
+	add_child(new_layer, false, INTERNAL_MODE_FRONT);
 	new_layer->set_name("Layer0");
 	new_layer->set_layer_index_in_tile_map_node(0);
 	new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
