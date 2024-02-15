@@ -694,7 +694,7 @@ Node *SceneImportSettingsDialog::get_selected_node() {
 	return node_map[selected_id].node;
 }
 
-void SceneImportSettingsDialog::_select(Tree *p_from, String p_type, String p_id) {
+void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, const String &p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
 

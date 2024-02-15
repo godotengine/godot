@@ -132,8 +132,8 @@ protected:
 
 	HashSet<String> get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
 
-	bool exists_export_template(String template_file_name, String *err) const;
-	String find_export_template(String template_file_name, String *err = nullptr) const;
+	bool exists_export_template(const String &template_file_name, String *err) const;
+	String find_export_template(const String &template_file_name, String *err = nullptr) const;
 	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
 

@@ -80,7 +80,7 @@ Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
 	return FileSystemDock::get_singleton()->create_tooltip_for_path(get_item_metadata(idx));
 }
 
-void FileSystemList::_line_editor_submit(String p_text) {
+void FileSystemList::_line_editor_submit(const String &p_text) {
 	popup_editor->hide();
 
 	emit_signal(SNAME("item_edited"));
@@ -173,7 +173,7 @@ FileSystemList::FileSystemList() {
 
 FileSystemDock *FileSystemDock::singleton = nullptr;
 
-Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_file_type) {
+Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String &p_file_type) {
 	Ref<Texture2D> file_icon;
 	if (!p_is_valid) {
 		file_icon = get_editor_theme_icon(SNAME("ImportFail"));
@@ -1678,7 +1678,7 @@ void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
 	emit_signal(SNAME("resource_removed"), p_resource);
 }
 
-void FileSystemDock::_file_removed(String p_file) {
+void FileSystemDock::_file_removed(const String &p_file) {
 	emit_signal(SNAME("file_removed"), p_file);
 
 	// Find the closest parent directory available, in case multiple items were deleted along the same path.
@@ -1691,7 +1691,7 @@ void FileSystemDock::_file_removed(String p_file) {
 	current_path_line_edit->set_text(current_path);
 }
 
-void FileSystemDock::_folder_removed(String p_folder) {
+void FileSystemDock::_folder_removed(const String &p_folder) {
 	emit_signal(SNAME("folder_removed"), p_folder);
 
 	// Find the closest parent directory available, in case multiple items were deleted along the same path.
@@ -2986,7 +2986,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 	_update_file_list(true);
 }
 
-void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options) {
+void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options) {
 	// Add options for files and folders.
 	ERR_FAIL_COND_MSG(p_paths.is_empty(), "Path cannot be empty.");
 

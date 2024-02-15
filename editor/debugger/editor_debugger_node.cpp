@@ -557,7 +557,7 @@ void EditorDebuggerNode::_paused() {
 	});
 }
 
-void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, String p_message, bool p_has_stackdump, int p_debugger) {
+void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_debugger) {
 	if (get_current_debugger() != get_debugger(p_debugger)) {
 		if (!p_breaked) {
 			return;
@@ -582,7 +582,7 @@ void EditorDebuggerNode::set_breakpoint(const String &p_path, int p_line, bool p
 	emit_signal(SNAME("breakpoint_toggled"), p_path, p_line, p_enabled);
 }
 
-void EditorDebuggerNode::set_breakpoints(const String &p_path, Array p_lines) {
+void EditorDebuggerNode::set_breakpoints(const String &p_path, const Array &p_lines) {
 	for (int i = 0; i < p_lines.size(); i++) {
 		set_breakpoint(p_path, p_lines[i], true);
 	}

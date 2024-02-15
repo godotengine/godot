@@ -64,7 +64,7 @@ class FileSystemList : public ItemList {
 	LineEdit *line_editor = nullptr;
 
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
-	void _line_editor_submit(String p_text);
+	void _line_editor_submit(const String &p_text);
 	void _text_editor_popup_modal_close();
 
 protected:
@@ -245,7 +245,7 @@ private:
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
-	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
+	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
@@ -281,8 +281,8 @@ private:
 	void _update_folder_colors_setting();
 
 	void _resource_removed(const Ref<Resource> &p_resource);
-	void _file_removed(String p_file);
-	void _folder_removed(String p_folder);
+	void _file_removed(const String &p_file);
+	void _folder_removed(const String &p_folder);
 
 	void _resource_created();
 	void _make_scene_confirm();
@@ -313,7 +313,7 @@ private:
 	void _file_sort_popup(int p_id);
 
 	void _folder_color_index_pressed(int p_index, PopupMenu *p_menu);
-	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
+	void _file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options = true);
 	void _tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);

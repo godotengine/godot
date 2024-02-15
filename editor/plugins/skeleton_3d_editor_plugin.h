@@ -75,7 +75,7 @@ class BoneTransformEditor : public VBoxContainer {
 
 	void create_editors();
 
-	void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
+	void _value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing);
 
 	void _property_keyed(const String &p_path, bool p_advance);
 

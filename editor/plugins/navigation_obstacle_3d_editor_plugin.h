@@ -82,7 +82,7 @@ class NavigationObstacle3DEditor : public HBoxContainer {
 	void _menu_option(int p_option);
 
 	PackedVector2Array _get_polygon();
-	void _set_polygon(PackedVector2Array p_poly);
+	void _set_polygon(const PackedVector2Array &p_poly);
 
 protected:
 	void _notification(int p_what);

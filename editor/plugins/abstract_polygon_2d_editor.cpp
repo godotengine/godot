@@ -233,7 +233,7 @@ void AbstractPolygon2DEditor::_wip_close() {
 	selected_point = Vertex();
 }
 
-void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, String p_reason) {
+void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, const String &p_reason) {
 	_polygon_editing_enabled = !p_disable;
 
 	button_create->set_disabled(p_disable);
@@ -766,7 +766,7 @@ void AbstractPolygon2DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, String p_class) :
+AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, const String &p_class) :
 		polygon_editor(p_polygon_editor),
 		klass(p_class) {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);

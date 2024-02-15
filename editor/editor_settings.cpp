@@ -934,7 +934,7 @@ void EditorSettings::_load_default_visual_shader_editor_theme() {
 	_initial_set("editors/visual_editors/category_colors/particle_color", Color(0.12, 0.358, 0.8));
 }
 
-bool EditorSettings::_save_text_editor_theme(String p_file) {
+bool EditorSettings::_save_text_editor_theme(const String &p_file) {
 	String theme_section = "color_theme";
 	Ref<ConfigFile> cf = memnew(ConfigFile); // hex is better?
 
@@ -957,7 +957,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	return err == OK;
 }
 
-bool EditorSettings::_is_default_text_editor_theme(String p_theme_name) {
+bool EditorSettings::_is_default_text_editor_theme(const String &p_theme_name) {
 	return p_theme_name == "default" || p_theme_name == "godot 2" || p_theme_name == "custom";
 }
 
@@ -1251,7 +1251,7 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 
 // Metadata
 
-void EditorSettings::set_project_metadata(const String &p_section, const String &p_key, Variant p_data) {
+void EditorSettings::set_project_metadata(const String &p_section, const String &p_key, const Variant &p_data) {
 	const String path = _get_project_metadata_path();
 
 	if (project_metadata.is_null()) {
@@ -1268,7 +1268,7 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 	ERR_FAIL_COND_MSG(err != OK, "Cannot save project metadata to file '" + path + "'.");
 }
 
-Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const {
+Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const {
 	if (project_metadata.is_null()) {
 		project_metadata.instantiate();
 
@@ -1409,7 +1409,7 @@ void EditorSettings::load_text_editor_theme() {
 	// if it doesn't load just use what is currently loaded
 }
 
-bool EditorSettings::import_text_editor_theme(String p_file) {
+bool EditorSettings::import_text_editor_theme(const String &p_file) {
 	if (!p_file.ends_with(".tet")) {
 		return false;
 	} else {

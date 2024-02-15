@@ -118,8 +118,8 @@ private:
 	EditorFileDialog *scene_select_dialog = nullptr;
 
 	void _tile_set_scenes_collection_source_changed();
-	void _scenes_collection_source_proxy_object_changed(String p_what);
-	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud);
+	void _scenes_collection_source_proxy_object_changed(const String &p_what);
+	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud);
 	void _scenes_list_item_activated(int p_index);
 
 	void _source_add_pressed();

@@ -140,7 +140,7 @@ void TextEditor::enable_editor(Control *p_shortcut_context) {
 	}
 }
 
-void TextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
+void TextEditor::add_callback(const String &p_function, const PackedStringArray &p_args) {
 }
 
 void TextEditor::set_debugger_active(bool p_active) {
