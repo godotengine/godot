@@ -128,6 +128,7 @@ protected:
 
 	GDVIRTUAL2RC(PackedStringArray, _get_export_features, const Ref<EditorExportPlatform> &, bool);
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_export_options, const Ref<EditorExportPlatform> &);
+	GDVIRTUAL1RC(Dictionary, _get_export_options_overrides, const Ref<EditorExportPlatform> &);
 	GDVIRTUAL1RC(bool, _should_update_export_options, const Ref<EditorExportPlatform> &);
 	GDVIRTUAL2RC(String, _get_export_option_warning, const Ref<EditorExportPlatform> &, String);
 
@@ -155,6 +156,7 @@ protected:
 
 	virtual PackedStringArray _get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual void _get_export_options(const Ref<EditorExportPlatform> &p_export_platform, List<EditorExportPlatform::ExportOption> *r_options) const;
+	virtual Dictionary _get_export_options_overrides(const Ref<EditorExportPlatform> &p_export_platform) const;
 	virtual bool _should_update_export_options(const Ref<EditorExportPlatform> &p_export_platform) const;
 	virtual String _get_export_option_warning(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const;
 

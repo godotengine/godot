@@ -955,6 +955,7 @@ void EditorNode::_fs_changed() {
 				err = FAILED;
 				export_error = vformat("Export preset \"%s\" doesn't have a matching platform.", preset_name);
 			} else {
+				export_preset->update_value_overrides();
 				if (export_defer.pack_only) { // Only export .pck or .zip data pack.
 					if (export_path.ends_with(".zip")) {
 						err = platform->export_zip(export_preset, export_defer.debug, export_path);
