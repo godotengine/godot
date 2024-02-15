@@ -401,6 +401,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display_scale", 0, display_scale_hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/ui_layout_direction", 0, "Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/ui_dpi_scaling", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	String ed_screen_hints = "Screen With Mouse Pointer:-4,Screen With Keyboard Focus:-3,Primary Screen:-2"; // Note: Main Window Screen:-1 is not used for the main window.
 	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
@@ -1432,15 +1433,15 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
-#ifdef LINUXBSD_ENABLED
-	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
-		return DisplayServer::get_singleton()->screen_get_max_scale();
-	}
-#endif
-
-#if defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
+#if defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
+
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_DPI_SCALING)) {
+		// Auto DPI scaling is supported.
+		return 1.0;
+	}
+
 	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
 
 	if (DisplayServer::get_singleton()->screen_get_size(screen) == Vector2i()) {
@@ -1449,7 +1450,7 @@ float EditorSettings::get_auto_display_scale() const {
 	}
 
 	// Use the smallest dimension to use a correct display scale on portrait displays.
-	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size(screen).x, DisplayServer::get_singleton()->screen_get_size(screen).y);
+	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size_in_pixels(screen).x, DisplayServer::get_singleton()->screen_get_size_in_pixels(screen).y);
 	if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {
 		// hiDPI display.
 		return 2.0;

@@ -438,7 +438,8 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			export_profile->set_current_file(_get_selected_profile() + ".profile");
 		} break;
 		case PROFILE_NEW: {
-			new_profile_dialog->popup_centered(Size2(240, 60) * EDSCALE);
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(240 * EDSCALE, 60 * EDSCALE));
+			new_profile_dialog->popup_centered(popup_size);
 			new_profile_name->clear();
 			new_profile_name->grab_focus();
 		} break;
@@ -446,8 +447,9 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			String selected = _get_selected_profile();
 			ERR_FAIL_COND(selected.is_empty());
 
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(240 * EDSCALE, 60 * EDSCALE));
 			erase_profile_dialog->set_text(vformat(TTR("Remove currently selected profile, '%s'? Cannot be undone."), selected));
-			erase_profile_dialog->popup_centered(Size2(240, 60) * EDSCALE);
+			erase_profile_dialog->popup_centered(popup_size);
 		} break;
 	}
 }

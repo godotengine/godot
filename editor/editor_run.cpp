@@ -124,6 +124,8 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 	Rect2 screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
 
+	//TODO XXXX
+
 	int window_placement = EDITOR_GET("run/window_placement/rect");
 	if (screen_rect != Rect2()) {
 		Size2 window_size;
@@ -140,6 +142,8 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
 			bool hidpi_proj = GLOBAL_GET("display/window/dpi/allow_hidpi");
 			int display_scale = 1;
+
+			//TODO XXXX
 
 			if (OS::get_singleton()->is_hidpi_allowed()) {
 				if (hidpi_proj) {

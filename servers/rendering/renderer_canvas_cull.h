@@ -55,6 +55,7 @@ public:
 		int ysort_index;
 		int ysort_parent_abs_z_index; // Absolute Z index of parent. Only populated and used when y-sorting.
 		uint32_t visibility_layer = 0xffffffff;
+		float oversampling_factor = 1.f;
 
 		Vector<Item *> child_items;
 
@@ -167,7 +168,7 @@ public:
 	};
 
 	mutable RID_Owner<Canvas, true> canvas_owner;
-	RID_Owner<Item, true> canvas_item_owner;
+	mutable RID_Owner<Item, true> canvas_item_owner;
 	RID_Owner<RendererCanvasRender::Light, true> canvas_light_owner;
 
 	template <class T>
@@ -269,6 +270,9 @@ public:
 
 	void canvas_item_set_debug_redraw(bool p_enabled);
 	bool canvas_item_get_debug_redraw() const;
+
+	void canvas_item_set_oversampling_factor(RID p_item, float p_oversampling);
+	float canvas_item_get_oversampling_factor(RID p_item) const;
 
 	RID canvas_light_allocate();
 	void canvas_light_initialize(RID p_rid);

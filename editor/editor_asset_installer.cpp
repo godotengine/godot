@@ -162,7 +162,8 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 	_rebuild_source_tree();
 	_rebuild_destination_tree();
 
-	popup_centered_clamped(Size2(620, 640) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(620 * EDSCALE, 640 * EDSCALE));
+	popup_centered_clamped(popup_size);
 }
 
 void EditorAssetInstaller::_update_file_mappings() {

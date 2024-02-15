@@ -384,7 +384,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	if (p_first) {
-		Size2i win_size = DisplayServer::get_singleton()->window_get_size();
+		Size2i win_size = DisplayServer::get_singleton()->window_get_size_in_pixels();
 		if (p_screen_rect.position != Vector2() || p_screen_rect.size != rt->size) {
 			// Viewport doesn't cover entire window so clear window to black before blitting.
 			glViewport(0, 0, win_size.width, win_size.height);
@@ -421,7 +421,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 		return;
 	}
 
-	Size2i win_size = DisplayServer::get_singleton()->window_get_size();
+	Size2i win_size = DisplayServer::get_singleton()->window_get_size_in_pixels();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, win_size.width, win_size.height);

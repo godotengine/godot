@@ -176,7 +176,8 @@ void EditorPropertyMultilineText::_open_big_text() {
 		add_child(big_text_dialog);
 	}
 
-	big_text_dialog->popup_centered_clamped(Size2(1000, 900) * EDSCALE, 0.8);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(1000 * EDSCALE, 900 * EDSCALE));
+	big_text_dialog->popup_centered_clamped(popup_size, 0.8);
 	big_text->set_text(text->get_text());
 	big_text->grab_focus();
 }
@@ -819,7 +820,8 @@ void EditorPropertyLayersGrid::_rename_pressed(int p_menu) {
 	rename_dialog->set_title(vformat(TTR("Renaming layer %d:"), renamed_layer_index + 1));
 	rename_dialog_text->set_text(name);
 	rename_dialog_text->select(0, name.length());
-	rename_dialog->popup_centered(Size2(300, 80) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(300 * EDSCALE, 80 * EDSCALE));
+	rename_dialog->popup_centered(popup_size);
 	rename_dialog_text->grab_focus();
 }
 
@@ -971,7 +973,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		if (hovered_index != INT32_MAX) {
 			renamed_layer_index = hovered_index;
-			layer_rename->set_position(get_screen_position() + mb->get_position());
+			layer_rename->set_position(get_final_transform().xform(mb->get_position()));
 			layer_rename->reset_size();
 			layer_rename->popup();
 		}
@@ -1249,10 +1251,9 @@ void EditorPropertyLayers::_button_pressed() {
 	layers->add_separator();
 	layers->add_icon_item(get_editor_theme_icon("Edit"), TTR("Edit Layer Names"), grid->layer_count);
 
-	Rect2 gp = button->get_screen_rect();
+	Vector2 gp = button->get_final_transform().xform(Vector2i(-layers->get_contents_minimum_size().x, 0));
 	layers->reset_size();
-	Vector2 popup_pos = gp.position - Vector2(layers->get_contents_minimum_size().x, 0);
-	layers->set_position(popup_pos);
+	layers->set_position(gp);
 	layers->popup();
 }
 
@@ -1501,7 +1502,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
-			preset->set_position(easing_draw->get_screen_position() + mb->get_position());
+			preset->set_position(easing_draw->get_final_transform().xform(mb->get_position()));
 			preset->reset_size();
 			preset->popup();
 

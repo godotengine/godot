@@ -135,8 +135,9 @@ void DirectoryCreateDialog::_bind_methods() {
 }
 
 DirectoryCreateDialog::DirectoryCreateDialog() {
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(480 * EDSCALE, 0));
 	set_title(TTR("Create Folder"));
-	set_min_size(Size2i(480, 0) * EDSCALE);
+	set_min_size(popup_size);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);

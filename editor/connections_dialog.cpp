@@ -673,7 +673,8 @@ void ConnectDialog::_advanced_pressed() {
 }
 
 ConnectDialog::ConnectDialog() {
-	set_min_size(Size2(0, 500) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(0, 500 * EDSCALE));
+	set_min_size(popup_size);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
 	add_child(main_hb);
@@ -724,7 +725,8 @@ ConnectDialog::ConnectDialog() {
 
 	method_popup = memnew(AcceptDialog);
 	method_popup->set_title(TTR("Select Method"));
-	method_popup->set_min_size(Vector2(400, 600) * EDSCALE);
+	popup_size = get_final_transform().basis_xform(Vector2i(400 * EDSCALE, 600 * EDSCALE));
+	method_popup->set_min_size(popup_size);
 	add_child(method_popup);
 
 	VBoxContainer *method_vbc = memnew(VBoxContainer);
@@ -1263,7 +1265,7 @@ void ConnectionsDock::_tree_gui_input(const Ref<InputEvent> &p_event) {
 			tree->set_selected(item);
 		}
 
-		Vector2 screen_position = tree->get_screen_position() + mb_event->get_position();
+		Vector2 screen_position = tree->get_final_transform().xform(mb_event->get_position());
 
 		switch (_get_item_type(*item)) {
 			case TREE_ITEM_TYPE_ROOT:

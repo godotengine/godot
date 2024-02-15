@@ -92,7 +92,7 @@ void GradientEdit::_show_color_picker() {
 	bool show_above = get_global_position().y + get_size().y + minsize.y > viewport_height && get_global_position().y * 2 + get_size().y > viewport_height;
 
 	float v_offset = show_above ? -minsize.y : get_size().y;
-	popup->set_position(get_screen_position() + Vector2(0, v_offset));
+	popup->set_position(get_final_transform().xform(Vector2(0, v_offset)));
 	popup->popup();
 }
 

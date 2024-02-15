@@ -394,7 +394,8 @@ void ScreenSelect::_notification(int p_what) {
 			popup_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
 
 			const real_t popup_height = real_t(get_theme_font_size("font_size")) * 2.0;
-			popup->set_min_size(Size2(0, popup_height * 3));
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(0, popup_height * 3));
+			popup->set_min_size(popup_size);
 		} break;
 	}
 }
@@ -415,7 +416,7 @@ void ScreenSelect::_show_popup() {
 		return;
 	}
 
-	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
+	Size2 size = get_final_transform().basis_xform(get_size());
 
 	popup->set_size(Size2(size.width, 0));
 	Point2 gp = get_screen_position();

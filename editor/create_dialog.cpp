@@ -73,7 +73,8 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
-		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+		Size2i popup_size = get_final_transform().basis_xform(Vector2i(900 * EDSCALE, 700 * EDSCALE));
+		popup_centered_clamped(popup_size, 0.8);
 	}
 }
 
