@@ -118,14 +118,12 @@ AABB AABB::intersection(const AABB &p_aabb) const {
 }
 
 bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_intersection_point, Vector3 *r_normal) const {
-
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
 	}
 #endif
 	Vector3 end = position + size;
-
 	real_t depth_near = 0;
 	real_t depth_far = 1e20;
 	int axis = 0;
