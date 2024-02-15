@@ -2244,19 +2244,31 @@ Error RenderingDeviceDriverVulkan::command_queue_present(CommandQueueID p_cmd_qu
 	for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
 		SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
 		swap_chain->image_index = UINT_MAX;
-		if (results[i] == VK_ERROR_OUT_OF_DATE_KHR || results[i] == VK_SUBOPTIMAL_KHR) {
+		if (results[i] == VK_ERROR_OUT_OF_DATE_KHR) {
 			context_driver->surface_set_needs_resize(swap_chain->surface, true);
 			any_result_is_out_of_date = true;
 		}
 	}
 
-	if (any_result_is_out_of_date || err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
+	if (any_result_is_out_of_date || err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// It is possible for presentation to fail with out of date while acquire might've succeeded previously. This case
 		// will be considered a silent failure as it can be triggered easily by resizing a window in the OS natively.
 		return FAILED;
 	}
 
-	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+	// Handling VK_SUBOPTIMAL_KHR the same as VK_SUCCESS is completely intentional.
+	//
+	// Godot does not currently support native rotation in Android when creating the swap chain. It intentionally uses
+	// VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR instead of the current transform bits available in the surface capabilities.
+	// Choosing the transform that leads to optimal presentation leads to distortion that makes the application unusable,
+	// as the rotation of all the content is not handled at the moment.
+	//
+	// VK_SUBOPTIMAL_KHR is accepted as a successful case even if it's not the most efficient solution to work around this
+	// problem. This behavior should not be changed unless the swap chain recreation uses the current transform bits, as
+	// it'll lead to very low performance in Android by entering an endless loop where it'll always resize the swap chain
+	// every frame.
+
+	ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR, FAILED);
 
 	return OK;
 }
@@ -2581,6 +2593,8 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	}
 
 	// Prefer identity transform if it's supported, use the current transform otherwise.
+	// This behavior is intended as Godot does not supported native rotation in platforms that use these bits.
+	// Refer to the comment in command_queue_present() for more details.
 	VkSurfaceTransformFlagBitsKHR surface_transform_bits;
 	if (surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
 		surface_transform_bits = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
@@ -2718,18 +2732,17 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 	swap_chain->command_queues_acquired_semaphores.push_back(semaphore_index);
 
 	err = device_functions.AcquireNextImageKHR(vk_device, swap_chain->vk_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &swap_chain->image_index);
-	if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
-		// We choose to treat out of date and suboptimal as the same case, as they both need to be recreated and
-		// we don't get much use out of presenting a suboptimal image anyway. Either case leaves the semaphore in
-		// a signaled state that will never finish, so it's necessary to recreate it.
+	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
+		// Out of date leaves the semaphore in a signaled state that will never finish, so it's necessary to recreate it.
 		bool semaphore_recreated = _recreate_image_semaphore(command_queue, semaphore_index, true);
 		ERR_FAIL_COND_V(!semaphore_recreated, FramebufferID());
 
 		// Swap chain is out of date and must be recreated.
 		r_resize_required = true;
 		return FramebufferID();
-	} else if (err != VK_SUCCESS) {
+	} else if (err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR) {
 		// Swap chain failed to present but the reason is unknown.
+		// Refer to the comment in command_queue_present() as to why VK_SUBOPTIMAL_KHR is handled the same as VK_SUCCESS.
 		return FramebufferID();
 	}
 
