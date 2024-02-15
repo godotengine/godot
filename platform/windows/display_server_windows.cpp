@@ -3471,10 +3471,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 				if (windows[window_id].borderless) {
 					Rect2i screen_rect = screen_get_usable_rect(window_get_current_screen(window_id));
-					min_max_info->ptMaxPosition.x = screen_rect.position.x;
-					min_max_info->ptMaxPosition.y = screen_rect.position.y;
-					min_max_info->ptMaxSize.x = screen_rect.size.x;
-					min_max_info->ptMaxSize.y = screen_rect.size.y;
+					int border = ((screen_get_size(window_get_current_screen(window_id)) == screen_rect.size) ? 1 : 0);
+					min_max_info->ptMaxPosition.x = screen_rect.position.x + border;
+					min_max_info->ptMaxPosition.y = screen_rect.position.y + border;
+					min_max_info->ptMaxSize.x = screen_rect.size.x - border * 2;
+					min_max_info->ptMaxSize.y = screen_rect.size.y - border * 2;
 				}
 				return 0;
 			}
