@@ -1405,6 +1405,18 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 }
 #endif
 
+bool GDScript::is_equal_gdscript_paths(const String &p_path_a, const String &p_path_b) {
+	String path_a = p_path_a;
+	if (path_a.get_extension() == "gdc") {
+		path_a = path_a.get_basename() + ".gd";
+	}
+	String path_b = p_path_b;
+	if (path_b.get_extension() == "gdc") {
+		path_b = path_b.get_basename() + ".gd";
+	}
+	return path_a == path_b;
+}
+
 GDScript::UpdatableFuncPtr::UpdatableFuncPtr(GDScriptFunction *p_function) {
 	if (p_function == nullptr) {
 		return;

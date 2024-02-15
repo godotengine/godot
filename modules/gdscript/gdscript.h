@@ -230,6 +230,8 @@ public:
 	static String debug_get_script_name(const Ref<Script> &p_script);
 #endif
 
+	static bool is_equal_gdscript_paths(const String &p_path_a, const String &p_path_b);
+
 	_FORCE_INLINE_ StringName get_local_name() const { return local_name; }
 
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
