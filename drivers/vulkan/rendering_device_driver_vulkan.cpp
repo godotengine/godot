@@ -1928,6 +1928,9 @@ void RenderingDeviceDriverVulkan::_descriptor_set_pool_unreference(DescriptorSet
 // Was:
 //RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) {
 RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
+	if (!linear_descriptor_pools_enabled) {
+		p_linear_pool_index = -1;
+	}
 // </TF>
 	DescriptorSetPoolKey pool_key;
 
