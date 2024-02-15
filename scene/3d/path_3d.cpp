@@ -50,6 +50,10 @@ Path3D::~Path3D() {
 	}
 }
 
+void Path3D::set_update_callback(Callable p_callback) {
+	update_callback = p_callback;
+}
+
 void Path3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -67,8 +71,12 @@ void Path3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (is_inside_tree() && debug_instance.is_valid()) {
-				RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
+			if (is_inside_tree()) {
+				if (debug_instance.is_valid()) {
+					RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
+				}
+
+				update_callback.call();
 			}
 		} break;
 	}
