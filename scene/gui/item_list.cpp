@@ -1495,6 +1495,13 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 	for (int i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;
+
+		// Grow the detection rectangle to match the grown selection indicator.
+		rc.position.y -= theme_cache.v_separation / 2;
+		rc.size.y += theme_cache.v_separation;
+		rc.position.x -= theme_cache.h_separation / 2;
+		rc.size.x += theme_cache.h_separation;
+
 		if (i % current_columns == current_columns - 1) {
 			rc.size.width = get_size().width - rc.position.x; // Make sure you can still select the last item when clicking past the column.
 		}
