@@ -41,7 +41,6 @@
 #define VK_TRACK_DEVICE_MEMORY
 #endif
 
-
 template <typename T>
 class TypedArray;
 
