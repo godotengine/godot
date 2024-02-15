@@ -34,6 +34,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_can_make_function" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_complete_code" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<param index="0" name="code" type="String" />

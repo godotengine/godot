@@ -134,6 +134,7 @@ private:
 	CheckButton *advanced = nullptr;
 	Vector<Control *> bind_controls;
 
+	Label *warning_label = nullptr;
 	Label *error_label = nullptr;
 
 	void ok_pressed() override;
@@ -155,6 +156,7 @@ private:
 	void _remove_bind();
 	void _advanced_pressed();
 	void _update_ok_enabled();
+	void _update_warning_label();
 
 protected:
 	void _notification(int p_what);
