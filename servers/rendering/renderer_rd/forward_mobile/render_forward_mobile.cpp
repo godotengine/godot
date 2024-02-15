@@ -1724,7 +1724,7 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 }
 
 RID RenderForwardMobile::_render_buffers_get_depth_texture(Ref<RenderSceneBuffersRD> p_render_buffers) {
-	return RID();
+	return p_render_buffers->get_depth_texture();
 }
 
 _FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
