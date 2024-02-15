@@ -36,7 +36,7 @@
 
 static HashMap<String, Vector<uint8_t>> *files = nullptr;
 
-void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
+void FileAccessMemory::register_file(const String &p_name, const Vector<uint8_t> &p_data) {
 	if (!files) {
 		files = memnew((HashMap<String, Vector<uint8_t>>));
 	}

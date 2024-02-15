@@ -53,7 +53,7 @@ protected:
 
 public:
 	void set_value(const String &p_section, const String &p_key, const Variant &p_value);
-	Variant get_value(const String &p_section, const String &p_key, Variant p_default = Variant()) const;
+	Variant get_value(const String &p_section, const String &p_key, const Variant &p_default = Variant()) const;
 
 	bool has_section(const String &p_section) const;
 	bool has_section_key(const String &p_section, const String &p_key) const;

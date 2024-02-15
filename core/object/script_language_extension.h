@@ -229,7 +229,7 @@ public:
 			p_words->push_back(ret[i]);
 		}
 	}
-	EXBIND1RC(bool, is_control_flow_keyword, String)
+	EXBIND1RC(bool, is_control_flow_keyword, const String &)
 
 	GDVIRTUAL0RC(Vector<String>, _get_comment_delimiters)
 

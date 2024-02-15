@@ -1676,7 +1676,7 @@ Variant::operator String() const {
 	return stringify(0);
 }
 
-String stringify_variant_clean(const Variant p_variant, int recursion_count) {
+String stringify_variant_clean(const Variant &p_variant, int recursion_count) {
 	String s = p_variant.stringify(recursion_count);
 
 	// Wrap strings in quotes to avoid ambiguity.
