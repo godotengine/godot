@@ -1607,13 +1607,16 @@ uint64_t Engine::get_process_frames() const {
 	return ::Engine::get_singleton()->get_process_frames();
 }
 
-#if defined(VK_TRACK_DRIVER_MEMORY)
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 String Engine::get_tracked_object_name(uint32_t typeIndex) const {
 	return VulkanContext::get_tracked_object_name(typeIndex);
 }
-uint64_t Engine::get_driver_object_type_count() const {
-	return VulkanContext::get_driver_object_type_count();
+uint64_t Engine::get_tracked_object_type_count() const {
+	return VulkanContext::get_tracked_object_type_count();
 }
+#endif
+
+#if defined(VK_TRACK_DRIVER_MEMORY)
 uint64_t Engine::get_driver_total_memory() const {
 	return VulkanContext::get_driver_total_memory();
 }
@@ -1625,6 +1628,21 @@ uint64_t Engine::get_driver_memory_by_object_type(uint32_t type) const {
 }
 uint64_t Engine::get_driver_allocs_by_object_type(uint32_t type) const {
 	return VulkanContext::get_driver_allocs_by_object_type(type);
+}
+#endif
+
+#if defined(VK_TRACK_DEVICE_MEMORY)
+uint64_t Engine::get_device_total_memory() const {
+	return VulkanContext::get_device_total_memory();
+}
+uint64_t Engine::get_device_allocation_count() const {
+	return VulkanContext::get_device_allocation_count();
+}
+uint64_t Engine::get_device_memory_by_object_type(uint32_t type) const {
+	return VulkanContext::get_device_memory_by_object_type(type);
+}
+uint64_t Engine::get_device_allocs_by_object_type(uint32_t type) const {
+	return VulkanContext::get_device_allocs_by_object_type(type);
 }
 #endif
 
@@ -1777,13 +1795,23 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physics_frames"), &Engine::get_physics_frames);
 	ClassDB::bind_method(D_METHOD("get_process_frames"), &Engine::get_process_frames);
 
-#if defined(VK_TRACK_DRIVER_MEMORY)
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 	ClassDB::bind_method(D_METHOD("get_tracked_object_name"), &Engine::get_tracked_object_name);
-	ClassDB::bind_method(D_METHOD("get_driver_object_type_count"), &Engine::get_driver_object_type_count);
+	ClassDB::bind_method(D_METHOD("get_tracked_object_type_count"), &Engine::get_tracked_object_type_count);
+#endif
+
+#if defined(VK_TRACK_DRIVER_MEMORY)
 	ClassDB::bind_method(D_METHOD("get_driver_total_memory"), &Engine::get_driver_total_memory);
 	ClassDB::bind_method(D_METHOD("get_driver_allocation_count"), &Engine::get_driver_allocation_count);
 	ClassDB::bind_method(D_METHOD("get_driver_memory_by_object_type"), &Engine::get_driver_memory_by_object_type);
 	ClassDB::bind_method(D_METHOD("get_driver_allocs_by_object_type"), &Engine::get_driver_allocs_by_object_type);
+#endif
+
+#if defined(VK_TRACK_DEVICE_MEMORY)
+	ClassDB::bind_method(D_METHOD("get_device_total_memory"), &Engine::get_device_total_memory);
+	ClassDB::bind_method(D_METHOD("get_device_allocation_count"), &Engine::get_device_allocation_count);
+	ClassDB::bind_method(D_METHOD("get_device_memory_by_object_type"), &Engine::get_device_memory_by_object_type);
+	ClassDB::bind_method(D_METHOD("get_device_allocs_by_object_type"), &Engine::get_device_allocs_by_object_type);
 #endif
 
 	ClassDB::bind_method(D_METHOD("get_main_loop"), &Engine::get_main_loop);

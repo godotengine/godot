@@ -262,10 +262,6 @@ private:
 
 	static VKAPI_ATTR void VKAPI_CALL memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data);
 
-	size_t get_device_total_memory();
-	size_t get_device_allocation_count();
-	size_t get_device_memory_by_object_type(VkObjectType type);
-
 	Error _create_instance();
 
 	Error _create_physical_device(VkSurfaceKHR p_surface);
@@ -368,13 +364,23 @@ public:
 	virtual RenderingDeviceDriver *get_driver(RID p_local_device = RID()) override final;
 	virtual bool is_debug_utils_enabled() const override final;
 
-#if defined(VK_TRACK_DRIVER_MEMORY)
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 	static const char *get_tracked_object_name(uint32_t typeIndex);
-	static uint64_t get_driver_object_type_count();
+	static uint64_t get_tracked_object_type_count();
+#endif
+
+#if defined(VK_TRACK_DRIVER_MEMORY)
 	static uint64_t get_driver_total_memory();
 	static uint64_t get_driver_allocation_count();
 	static uint64_t get_driver_memory_by_object_type(uint32_t type);
 	static uint64_t get_driver_allocs_by_object_type(uint32_t type);
+#endif
+
+#if defined(VK_TRACK_DEVICE_MEMORY)
+	static uint64_t get_device_total_memory();
+	static uint64_t get_device_allocation_count();
+	static uint64_t get_device_memory_by_object_type(uint32_t type);
+	static uint64_t get_device_allocs_by_object_type(uint32_t type);
 #endif
 
 	VulkanContext();

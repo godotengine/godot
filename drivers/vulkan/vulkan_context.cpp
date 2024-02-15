@@ -72,6 +72,7 @@ SafeNumeric<size_t> memory_report_mem_usage[VulkanContext::VK_TRACKED_OBJECT_TYP
 // Amount of device memory allocations for every object type
 SafeNumeric<size_t> memory_report_allocation_count[VulkanContext::VK_TRACKED_OBJECT_TYPE_COUNT];
 
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 const char *VulkanContext::get_tracked_object_name(uint32_t typeIndex) {
 	static constexpr const char *vkTrackedObjectTypeNames[] = { "UNKNOWN",
 		"INSTANCE",
@@ -109,6 +110,10 @@ const char *VulkanContext::get_tracked_object_name(uint32_t typeIndex) {
 
 	return vkTrackedObjectTypeNames[typeIndex];
 }
+uint64_t VulkanContext::get_tracked_object_type_count() {
+	return VK_TRACKED_OBJECT_TYPE_COUNT;
+}
+#endif
 
 VulkanContext::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
 	if (type > VK_OBJECT_TYPE_COMMAND_POOL && type != (VkObjectType)VulkanContext::VK_TRACKED_OBJECT_TYPE_VMA) {
@@ -128,19 +133,22 @@ VulkanContext::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type
 	return (VulkanContext::VkTrackedObjectType)type;
 }
 
-size_t VulkanContext::get_device_total_memory() {
+#if defined(VK_TRACK_DEVICE_MEMORY)
+uint64_t VulkanContext::get_device_total_memory() {
 	return memory_report_total_memory.get();
 }
-size_t VulkanContext::get_device_allocation_count() {
+uint64_t VulkanContext::get_device_allocation_count() {
 	return memory_report_allocation_count->get();
 }
-size_t VulkanContext::get_device_memory_by_object_type(VkObjectType type) {
+uint64_t VulkanContext::get_device_memory_by_object_type(uint32_t type) {
 	return memory_report_mem_usage[type].get();
 }
-
-uint64_t VulkanContext::get_driver_object_type_count() {
-	return VK_TRACKED_OBJECT_TYPE_COUNT;
+uint64_t VulkanContext::get_device_allocs_by_object_type(uint32_t type) {
+	return memory_report_allocation_count[type].get();
 }
+#endif
+
+#if defined(VK_TRACK_DRIVER_MEMORY)
 uint64_t VulkanContext::get_driver_total_memory() {
 	return driver_memory_total_memory.get();
 }
@@ -163,6 +171,7 @@ uint64_t VulkanContext::get_driver_allocs_by_object_type(uint32_t type) {
 
 	return ret;
 }
+#endif
 
 void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT* p_callback_data, void* p_user_data) {
 

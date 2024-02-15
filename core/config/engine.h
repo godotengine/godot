@@ -38,6 +38,7 @@
 
 #if defined(VULKAN_ENABLED) && (defined(DEBUG_ENABLED) || defined(DEV_ENABLED))
 #define	VK_TRACK_DRIVER_MEMORY
+#define VK_TRACK_DEVICE_MEMORY
 #endif
 
 

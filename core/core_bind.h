@@ -490,13 +490,23 @@ public:
 	uint64_t get_physics_frames() const;
 	uint64_t get_process_frames() const;
 
-#if defined(VK_TRACK_DRIVER_MEMORY)
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 	String get_tracked_object_name(uint32_t typeIndex) const;
-	uint64_t get_driver_object_type_count() const;
+	uint64_t get_tracked_object_type_count() const;
+#endif
+
+#if defined(VK_TRACK_DRIVER_MEMORY)
 	uint64_t get_driver_total_memory() const;
 	uint64_t get_driver_allocation_count() const;
 	uint64_t get_driver_memory_by_object_type(uint32_t type) const;
 	uint64_t get_driver_allocs_by_object_type(uint32_t type) const;
+#endif
+
+#if defined(VK_TRACK_DEVICE_MEMORY)
+	uint64_t get_device_total_memory() const;
+	uint64_t get_device_allocation_count() const;
+	uint64_t get_device_memory_by_object_type(uint32_t type) const;
+	uint64_t get_device_allocs_by_object_type(uint32_t type) const;
 #endif
 
 	int get_frames_drawn();
