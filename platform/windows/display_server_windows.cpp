@@ -1866,9 +1866,12 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 	}
 
 	if (p_fullscreen || p_borderless) {
-		r_style |= WS_POPUP | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX; // p_borderless was WS_EX_TOOLWINDOW in the past.
+		r_style |= WS_POPUP; // p_borderless was WS_EX_TOOLWINDOW in the past.
 		if (p_maximized) {
 			r_style |= WS_MAXIMIZE;
+		}
+		if (!p_fullscreen) {
+			r_style |= WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
 		}
 		if ((p_fullscreen && p_multiwindow_fs)) {
 			r_style |= WS_BORDER; // Allows child windows to be displayed on top of full screen.
