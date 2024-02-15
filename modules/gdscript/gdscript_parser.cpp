@@ -3609,11 +3609,17 @@ GDScriptParser::MemberDocData GDScriptParser::parse_doc_comment(int p_line, bool
 
 		if (state == DOC_LINE_NORMAL) {
 			String stripped_line = doc_line.strip_edges();
-			if (stripped_line.begins_with("@deprecated")) {
+			if (stripped_line == "@deprecated" || stripped_line.begins_with("@deprecated:")) {
 				result.is_deprecated = true;
+				if (stripped_line.begins_with("@deprecated:")) {
+					result.deprecated_message = stripped_line.trim_prefix("@deprecated:").strip_edges();
+				}
 				continue;
-			} else if (stripped_line.begins_with("@experimental")) {
+			} else if (stripped_line == "@experimental" || stripped_line.begins_with("@experimental:")) {
 				result.is_experimental = true;
+				if (stripped_line.begins_with("@experimental:")) {
+					result.experimental_message = stripped_line.trim_prefix("@experimental:").strip_edges();
+				}
 				continue;
 			}
 		}
@@ -3712,11 +3718,17 @@ GDScriptParser::ClassDocData GDScriptParser::parse_class_doc_comment(int p_line,
 
 				result.tutorials.append(Pair<String, String>(title, link));
 				continue;
-			} else if (stripped_line.begins_with("@deprecated")) {
+			} else if (stripped_line == "@deprecated" || stripped_line.begins_with("@deprecated:")) {
 				result.is_deprecated = true;
+				if (stripped_line.begins_with("@deprecated:")) {
+					result.deprecated_message = stripped_line.trim_prefix("@deprecated:").strip_edges();
+				}
 				continue;
-			} else if (stripped_line.begins_with("@experimental")) {
+			} else if (stripped_line == "@experimental" || stripped_line.begins_with("@experimental:")) {
 				result.is_experimental = true;
+				if (stripped_line.begins_with("@experimental:")) {
+					result.experimental_message = stripped_line.trim_prefix("@experimental:").strip_edges();
+				}
 				continue;
 			}
 		}
