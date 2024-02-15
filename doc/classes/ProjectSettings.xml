@@ -353,6 +353,9 @@
 			This setting can be overridden using the [code]--max-fps &lt;fps&gt;[/code] command line argument (including with a value of [code]0[/code] for unlimited framerate).
 			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.max_fps] instead.
 		</member>
+		<member name="application/run/print_header" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the engine header is printed in the console on startup. This header describes the current version of the engine, as well as the renderer being used. This behavior can also be disabled on the command line with the [code]--no-header[/code] option.
+		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>

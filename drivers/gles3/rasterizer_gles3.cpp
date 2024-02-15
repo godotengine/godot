@@ -193,7 +193,7 @@ typedef void(GLAPIENTRY *DEBUGPROCARB)(GLenum source,
 typedef void(GLAPIENTRY *DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
 void RasterizerGLES3::initialize() {
-	print_line(vformat("OpenGL API %s - Compatibility - Using Device: %s - %s", RS::get_singleton()->get_video_adapter_api_version(), RS::get_singleton()->get_video_adapter_vendor(), RS::get_singleton()->get_video_adapter_name()));
+	Engine::get_singleton()->print_header(vformat("OpenGL API %s - Compatibility - Using Device: %s - %s", RS::get_singleton()->get_video_adapter_api_version(), RS::get_singleton()->get_video_adapter_vendor(), RS::get_singleton()->get_video_adapter_name()));
 }
 
 void RasterizerGLES3::finalize() {
