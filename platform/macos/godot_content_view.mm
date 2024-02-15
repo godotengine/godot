@@ -435,7 +435,11 @@
 	Ref<InputEventMouseMotion> mm;
 	mm.instantiate();
 
-	mm->set_window_id(window_id);
+	DisplayServer::WindowID receiving_window_id = ds->_get_focused_window_or_popup();
+	if (receiving_window_id == DisplayServer::INVALID_WINDOW_ID) {
+		receiving_window_id = window_id;
+	}
+	mm->set_window_id(receiving_window_id);
 	mm->set_button_mask(ds->mouse_get_button_state());
 	ds->update_mouse_pos(wd, mpos);
 	mm->set_position(wd.mouse_pos);
@@ -457,6 +461,12 @@
 	mm->set_relative(relativeMotion);
 	mm->set_relative_screen_position(relativeMotion);
 	ds->get_key_modifier_state([event modifierFlags], mm);
+
+	if (receiving_window_id != window_id) {
+		// Adjust event position relative to window distance when event is sent to a different window.
+		mm->set_position(mm->get_position() - ds->window_get_position(receiving_window_id) + ds->window_get_position(window_id));
+		mm->set_global_position(mm->get_position());
+	}
 
 	Input::get_singleton()->parse_input_event(mm);
 }

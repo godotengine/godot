@@ -4944,7 +4944,11 @@ void DisplayServerX11::process_events() {
 				Ref<InputEventMouseMotion> mm;
 				mm.instantiate();
 
-				mm->set_window_id(window_id);
+				DisplayServer::WindowID receiving_window_id = _get_focused_window_or_popup();
+				if (receiving_window_id == INVALID_WINDOW_ID) {
+					receiving_window_id = window_id;
+				}
+				mm->set_window_id(receiving_window_id);
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
@@ -4964,6 +4968,12 @@ void DisplayServerX11::process_events() {
 				mm->set_relative_screen_position(rel);
 
 				last_mouse_pos = pos;
+
+				if (receiving_window_id != window_id) {
+					// Adjust event position relative to window distance when event is sent to a different window.
+					mm->set_position(mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id));
+					mm->set_global_position(mm->get_position());
+				}
 
 				// printf("rel: %d,%d\n", rel.x, rel.y );
 				// Don't propagate the motion event unless we have focus
