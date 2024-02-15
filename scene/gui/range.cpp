@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "range.h"
+#include <climits>
 
 PackedStringArray Range::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
@@ -95,7 +96,14 @@ void Range::set_value(double p_val) {
 
 void Range::_set_value_no_signal(double p_val) {
 	if (!Math::is_finite(p_val)) {
-		return;
+		if (shared->allow_non_finite) {
+			if (Math::is_nan(p_val)) {
+				shared->val = p_val;
+				return;
+			}
+		} else {
+			return;
+		}
 	}
 
 	if (shared->step > 0) {
@@ -371,6 +379,14 @@ void Range::set_allow_lesser(bool p_allow) {
 
 bool Range::is_lesser_allowed() const {
 	return shared->allow_lesser;
+}
+
+void Range::set_allow_non_finite(bool p_allow) {
+	shared->allow_non_finite = p_allow;
+}
+
+bool Range::is_non_finited_allow() const {
+	return shared->allow_non_finite;
 }
 
 Range::Range() {

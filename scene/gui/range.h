@@ -45,6 +45,7 @@ class Range : public Control {
 		bool exp_ratio = false;
 		bool allow_greater = false;
 		bool allow_lesser = false;
+		bool allow_non_finite = false;
 		HashSet<Range *> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what = "");
@@ -99,6 +100,9 @@ public:
 
 	void set_allow_lesser(bool p_allow);
 	bool is_lesser_allowed() const;
+
+	void set_allow_non_finite(bool p_allow);
+	bool is_non_finited_allow() const;
 
 	void share(Range *p_range);
 	void unshare();
