@@ -385,7 +385,7 @@ void Range::set_allow_non_finite(bool p_allow) {
 	shared->allow_non_finite = p_allow;
 }
 
-bool Range::is_non_finited_allow() const {
+bool Range::is_non_finited_allowed() const {
 	return shared->allow_non_finite;
 }
 

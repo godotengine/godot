@@ -102,7 +102,7 @@ public:
 	bool is_lesser_allowed() const;
 
 	void set_allow_non_finite(bool p_allow);
-	bool is_non_finited_allow() const;
+	bool is_non_finited_allowed() const;
 
 	void share(Range *p_range);
 	void unshare();
