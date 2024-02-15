@@ -30,9 +30,11 @@
 
 #include "gpu_particles_3d_editor_plugin.h"
 
+#include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/cpu_particles_3d.h"
@@ -197,6 +199,31 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 	emission_dialog->popup_centered(Size2(300, 130));
 }
 
+void GPUParticles3DEditorBase::_resource_selected(const String &p_path) {
+	Ref<Resource> loaded_resource = ResourceLoader::load(p_path);
+	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + p_path + "'.");
+
+	geometry = Object::cast_to<ArrayMesh>(*loaded_resource)->get_faces();
+
+	if (geometry.size() == 0) {
+		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), p_path));
+		return;
+	}
+
+	Transform3D geom_xform = base_node->get_global_transform();
+
+	int gc = geometry.size();
+	Face3 *w = geometry.ptrw();
+
+	for (int i = 0; i < gc; i++) {
+		for (int j = 0; j < 3; j++) {
+			w[i].vertex[j] = geom_xform.xform(w[i].vertex[j]);
+		}
+	}
+
+	emission_dialog->popup_centered(Size2(300, 130));
+}
+
 void GPUParticles3DEditorBase::_bind_methods() {
 }
 
@@ -228,6 +255,13 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_tree_dialog->set_valid_types(valid_types);
 	add_child(emission_tree_dialog);
 	emission_tree_dialog->connect("selected", callable_mp(this, &GPUParticles3DEditorBase::_node_selected));
+
+	emission_file_dialog = memnew(EditorFileDialog);
+	emission_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	Vector<String> filters = { "*.tres", "*.res", "*.mesh", "*.obj" };
+	emission_file_dialog->set_filters(filters);
+	add_child(emission_file_dialog);
+	emission_file_dialog->connect("file_selected", callable_mp(this, &GPUParticles3DEditorBase::_resource_selected));
 }
 
 void GPUParticles3DEditor::_node_removed(Node *p_node) {
@@ -259,6 +293,16 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 				// Generate the visibility AABB immediately.
 				_generate_aabb();
 			}
+		} break;
+		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
+			Ref<ParticleProcessMaterial> mat = node->get_process_material();
+			if (mat.is_null()) {
+				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticleProcessMaterial' is required."));
+				return;
+			}
+
+			emission_file_dialog->popup_file_dialog();
+
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
 			Ref<ParticleProcessMaterial> mat = node->get_process_material();
@@ -416,6 +460,7 @@ GPUParticles3DEditor::GPUParticles3DEditor() {
 	options->set_text(TTR("GPUParticles3D"));
 	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
 	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
+	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_item(TTR("Convert to CPUParticles3D"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
 

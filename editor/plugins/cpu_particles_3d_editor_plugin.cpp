@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
@@ -54,6 +55,10 @@ void CPUParticles3DEditor::_notification(int p_notification) {
 
 void CPUParticles3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
+		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
+			emission_file_dialog->popup_file_dialog();
+
+		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
 			emission_tree_dialog->popup_scenetree_dialog();
 
@@ -117,6 +122,7 @@ CPUParticles3DEditor::CPUParticles3DEditor() {
 
 	options->set_text(TTR("CPUParticles3D"));
 	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
+	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_item(TTR("Convert to GPUParticles3D"), MENU_OPTION_CONVERT_TO_GPU_PARTICLES);
 	options->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles3DEditor::_menu_option));

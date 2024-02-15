@@ -40,6 +40,7 @@ class HBoxContainer;
 class MenuButton;
 class OptionButton;
 class SceneTreeDialog;
+class EditorFileDialog;
 
 class GPUParticles3DEditorBase : public Control {
 	GDCLASS(GPUParticles3DEditorBase, Control);
@@ -51,6 +52,7 @@ protected:
 	HBoxContainer *particles_editor_hb = nullptr;
 
 	SceneTreeDialog *emission_tree_dialog = nullptr;
+	EditorFileDialog *emission_file_dialog = nullptr;
 
 	ConfirmationDialog *emission_dialog = nullptr;
 	SpinBox *emission_amount = nullptr;
@@ -61,6 +63,7 @@ protected:
 	bool _generate(Vector<Vector3> &points, Vector<Vector3> &normals);
 	virtual void _generate_emission_points(){};
 	void _node_selected(const NodePath &p_path);
+	void _resource_selected(const String &p_path);
 
 	static void _bind_methods();
 
@@ -78,6 +81,7 @@ class GPUParticles3DEditor : public GPUParticles3DEditorBase {
 	enum Menu {
 		MENU_OPTION_GENERATE_AABB,
 		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
+		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH,
 		MENU_OPTION_CLEAR_EMISSION_VOLUME,
 		MENU_OPTION_CONVERT_TO_CPU_PARTICLES,
 		MENU_OPTION_RESTART,
