@@ -3630,7 +3630,9 @@ bool TextServerFallback::_shaped_text_update_breaks(const RID &p_shaped) {
 			}
 			if (is_whitespace(c) && !is_linebreak(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
-				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+				if (c != 0x00A0 && c != 0x202F && c != 0x2060 && c != 0x2007) { // Skip for non-breaking space variants.
+					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+				}
 			}
 			if (is_linebreak(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
