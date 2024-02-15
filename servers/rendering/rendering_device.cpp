@@ -2818,7 +2818,7 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 // descriptor optimizations : allow the option to have linearly allocated uniform set pools for frame allocated uniform sets
 // Was:
 //	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set);
-	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set, p_linear_pool);
+	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set, p_linear_pool ? frame : -1 );
 // </TF>
 	ERR_FAIL_COND_V(!driver_uniform_set, RID());
 
@@ -4586,6 +4586,7 @@ void RenderingDevice::_finalize_command_buffers(bool p_postpare) {
 }
 
 void RenderingDevice::_begin_frame() {
+	driver->linear_uniform_set_pools_reset(frame);
 	draw_graph.begin();
 
 	// Erase pending resources.
