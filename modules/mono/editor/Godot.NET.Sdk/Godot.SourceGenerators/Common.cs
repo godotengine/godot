@@ -65,6 +65,16 @@ namespace Godot.SourceGenerators
                 outerTypeDeclSyntax.SyntaxTree.FilePath));
         }
 
+        public static readonly DiagnosticDescriptor MultipleClassesInGodotScriptRule =
+            new DiagnosticDescriptor(id: "GD0003",
+                title: "Found multiple classes with the same name in the same script file",
+                messageFormat: "Found multiple classes with the name '{0}' in the same script file",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "Found multiple classes with the same name in the same script file. A script file must only contain one class with a name that matches the file name.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0003"));
+
         public static readonly DiagnosticDescriptor ExportedMemberIsStaticRule =
             new DiagnosticDescriptor(id: "GD0101",
                 title: "The exported member is static",
