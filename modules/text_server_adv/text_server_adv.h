@@ -206,8 +206,7 @@ class TextServerAdvanced : public TextServerExtension {
 		int32_t texture_w = 1024;
 		int32_t texture_h = 1024;
 
-		Image::Format format;
-		PackedByteArray imgdata;
+		Ref<Image> image;
 		Ref<ImageTexture> texture;
 		bool dirty = true;
 
