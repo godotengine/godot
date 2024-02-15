@@ -78,6 +78,7 @@ private:
 
 	HashMap<StringName, PropertyInfo> properties;
 	HashMap<StringName, Variant> values;
+	HashMap<StringName, Variant> value_overrides;
 	HashMap<StringName, bool> update_visibility;
 
 	String name;
@@ -107,6 +108,7 @@ public:
 	bool has(const StringName &p_property) const { return values.has(p_property); }
 
 	void update_files();
+	void update_value_overrides();
 
 	Vector<String> get_files_to_export() const;
 	Dictionary get_customized_files() const;

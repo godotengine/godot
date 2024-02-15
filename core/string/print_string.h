@@ -46,19 +46,19 @@ struct PrintHandlerList {
 	PrintHandlerList() {}
 };
 
-String stringify_variants(Variant p_var);
+String stringify_variants(const Variant &p_var);
 
 template <typename... Args>
-String stringify_variants(Variant p_var, Args... p_args) {
+String stringify_variants(const Variant &p_var, Args... p_args) {
 	return p_var.operator String() + " " + stringify_variants(p_args...);
 }
 
 void add_print_handler(PrintHandlerList *p_handler);
 void remove_print_handler(const PrintHandlerList *p_handler);
 
-extern void __print_line(String p_string);
-extern void __print_line_rich(String p_string);
-extern void print_error(String p_string);
+extern void __print_line(const String &p_string);
+extern void __print_line_rich(const String &p_string);
+extern void print_error(const String &p_string);
 extern bool is_print_verbose_enabled();
 
 // This version avoids processing the text to be printed until it actually has to be printed, saving some CPU usage.
@@ -69,21 +69,21 @@ extern bool is_print_verbose_enabled();
 		}                                 \
 	}
 
-inline void print_line(Variant v) {
+inline void print_line(const Variant &v) {
 	__print_line(stringify_variants(v));
 }
 
-inline void print_line_rich(Variant v) {
+inline void print_line_rich(const Variant &v) {
 	__print_line_rich(stringify_variants(v));
 }
 
 template <typename... Args>
-void print_line(Variant p_var, Args... p_args) {
+void print_line(const Variant &p_var, Args... p_args) {
 	__print_line(stringify_variants(p_var, p_args...));
 }
 
 template <typename... Args>
-void print_line_rich(Variant p_var, Args... p_args) {
+void print_line_rich(const Variant &p_var, Args... p_args) {
 	__print_line_rich(stringify_variants(p_var, p_args...));
 }
 

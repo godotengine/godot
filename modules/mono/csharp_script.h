@@ -493,7 +493,7 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	void get_reserved_words(List<String> *p_words) const override;
-	bool is_control_flow_keyword(String p_keyword) const override;
+	bool is_control_flow_keyword(const String &p_keyword) const override;
 	void get_comment_delimiters(List<String> *p_delimiters) const override;
 	void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
 	void get_string_delimiters(List<String> *p_delimiters) const override;
@@ -514,6 +514,7 @@ public:
 		return -1;
 	}
 	String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
+	virtual bool can_make_function() const override { return false; }
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}

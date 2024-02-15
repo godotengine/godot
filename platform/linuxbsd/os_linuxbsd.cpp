@@ -486,7 +486,7 @@ Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_
 	return values;
 }
 
-Error OS_LinuxBSD::shell_open(String p_uri) {
+Error OS_LinuxBSD::shell_open(const String &p_uri) {
 	Error ok;
 	int err_code;
 	List<String> args;

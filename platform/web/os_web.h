@@ -89,7 +89,7 @@ public:
 	int get_default_thread_pool_size() const override { return 1; }
 
 	String get_executable_path() const override;
-	Error shell_open(String p_uri) override;
+	Error shell_open(const String &p_uri) override;
 	String get_name() const override;
 
 	// Override default OS implementation which would block the main thread with delay_usec.
@@ -107,7 +107,7 @@ public:
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 
 	void resume_audio();
 

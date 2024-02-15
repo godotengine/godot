@@ -549,7 +549,7 @@ public:
 	}
 
 	// Create a "wrap" that encloses the given geometry.
-	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = nullptr);
+	static Vector<Face3> wrap_geometry(const Vector<Face3> &p_array, real_t *p_error = nullptr);
 
 	struct MeshData {
 		struct Face {

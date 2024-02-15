@@ -57,12 +57,11 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="convert" is_deprecated="true">
+		<method name="convert" deprecated="Use [method @GlobalScope.type_convert] instead.">
 			<return type="Variant" />
 			<param index="0" name="what" type="Variant" />
 			<param index="1" name="type" type="int" />
 			<description>
-				[i]Deprecated.[/i] Use [method @GlobalScope.type_convert] instead.
 				Converts [param what] to [param type] in the best way possible. The [param type] uses the [enum Variant.Type] values.
 				[codeblock]
 				var a = [4, 2.5, 1.2]

@@ -1159,12 +1159,12 @@
 			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
 			See also [constant NOTIFICATION_MOUSE_EXIT_SELF].
 		</constant>
-		<constant name="NOTIFICATION_MOUSE_ENTER_SELF" value="60" is_experimental="true">
+		<constant name="NOTIFICATION_MOUSE_ENTER_SELF" value="60" experimental="">
 			Sent when the mouse cursor enters the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
 			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
 			See also [constant NOTIFICATION_MOUSE_ENTER].
 		</constant>
-		<constant name="NOTIFICATION_MOUSE_EXIT_SELF" value="61" is_experimental="true">
+		<constant name="NOTIFICATION_MOUSE_EXIT_SELF" value="61" experimental="">
 			Sent when the mouse cursor leaves the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
 			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
 			See also [constant NOTIFICATION_MOUSE_EXIT].

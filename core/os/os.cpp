@@ -298,7 +298,7 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
-Error OS::shell_open(String p_uri) {
+Error OS::shell_open(const String &p_uri) {
 	return ERR_UNAVAILABLE;
 }
 

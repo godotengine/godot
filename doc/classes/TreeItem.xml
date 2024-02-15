@@ -568,7 +568,7 @@
 				Sets the given column's custom color.
 			</description>
 		</method>
-		<method name="set_custom_draw" is_deprecated="true">
+		<method name="set_custom_draw" deprecated="Use [method TreeItem.set_custom_draw_callback] instead.">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="object" type="Object" />
@@ -576,7 +576,6 @@
 			<description>
 				Sets the given column's custom draw callback to [param callback] method on [param object].
 				The [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
-				[i]Deprecated.[/i] Use [method TreeItem.set_custom_draw_callback] instead.
 			</description>
 		</method>
 		<method name="set_custom_draw_callback">

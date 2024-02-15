@@ -92,7 +92,7 @@ public:
 	}
 };
 
-Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
+Error RemoteDebugger::_put_msg(const String &p_message, const Array &p_data) {
 	Array msg;
 	msg.push_back(p_message);
 	msg.push_back(Thread::get_caller_id());

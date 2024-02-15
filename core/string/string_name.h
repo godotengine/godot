@@ -71,11 +71,6 @@ class StringName {
 
 	_Data *_data = nullptr;
 
-	union _HashUnion {
-		_Data *ptr = nullptr;
-		uint32_t hash;
-	};
-
 	void unref();
 	friend void register_core_types();
 	friend void unregister_core_types();

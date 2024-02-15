@@ -150,7 +150,7 @@ String OS_Web::get_executable_path() const {
 	return OS::get_executable_path();
 }
 
-Error OS_Web::shell_open(String p_uri) {
+Error OS_Web::shell_open(const String &p_uri) {
 	// Open URI in a new tab, browser will deal with it by protocol.
 	godot_js_os_shell_open(p_uri.utf8().get_data());
 	return OK;
@@ -239,7 +239,7 @@ bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
 }
 
-Error OS_Web::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.get_file();
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));

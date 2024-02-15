@@ -229,7 +229,7 @@ public:
 			p_words->push_back(ret[i]);
 		}
 	}
-	EXBIND1RC(bool, is_control_flow_keyword, String)
+	EXBIND1RC(bool, is_control_flow_keyword, const String &)
 
 	GDVIRTUAL0RC(Vector<String>, _get_comment_delimiters)
 
@@ -373,6 +373,7 @@ public:
 
 	EXBIND2RC(int, find_function, const String &, const String &)
 	EXBIND3RC(String, make_function, const String &, const String &, const PackedStringArray &)
+	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)
 	EXBIND0R(bool, overrides_external_editor)
 

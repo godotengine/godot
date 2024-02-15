@@ -361,7 +361,7 @@ public:
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 
-	String join(Vector<String> parts) const;
+	String join(const Vector<String> &parts) const;
 
 	static char32_t char_uppercase(char32_t p_char);
 	static char32_t char_lowercase(char32_t p_char);

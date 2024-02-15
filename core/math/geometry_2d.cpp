@@ -37,7 +37,7 @@
 
 #define SCALE_FACTOR 100000.0 // Based on CMP_EPSILON.
 
-Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> polygon) {
+Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Point2> &polygon) {
 	Vector<Vector<Vector2>> decomp;
 	List<TPPLPoly> in_poly, out_poly;
 

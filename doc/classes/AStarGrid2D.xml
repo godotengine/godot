@@ -182,9 +182,8 @@
 		<member name="region" type="Rect2i" setter="set_region" getter="get_region" default="Rect2i(0, 0, 0, 0)">
 			The region of grid cells available for pathfinding. If changed, [method update] needs to be called before finding the next path.
 		</member>
-		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)" is_deprecated="true">
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)" deprecated="Use [member region] instead.">
 			The size of the grid (number of cells of size [member cell_size] on each axis). If changed, [method update] needs to be called before finding the next path.
-			[i]Deprecated.[/i] Use [member region] instead.
 		</member>
 	</members>
 	<constants>

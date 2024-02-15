@@ -113,7 +113,7 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title) override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
@@ -134,7 +134,7 @@ public:
 	void set_native_window(ANativeWindow *p_native_window);
 	ANativeWindow *get_native_window() const;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
 
 	virtual Vector<String> get_system_fonts() const override;
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;

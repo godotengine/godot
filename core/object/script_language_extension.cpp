@@ -109,6 +109,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_can_inherit_from_file);
 	GDVIRTUAL_BIND(_find_function, "function", "code");
 	GDVIRTUAL_BIND(_make_function, "class_name", "function_name", "function_args");
+	GDVIRTUAL_BIND(_can_make_function);
 	GDVIRTUAL_BIND(_open_in_external_editor, "script", "line", "column");
 	GDVIRTUAL_BIND(_overrides_external_editor);
 

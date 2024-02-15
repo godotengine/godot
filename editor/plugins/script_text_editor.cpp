@@ -345,14 +345,19 @@ void ScriptTextEditor::reload_text() {
 }
 
 void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
+	ScriptLanguage *language = script->get_language();
+	if (!language->can_make_function()) {
+		return;
+	}
+
 	String code = code_editor->get_text_editor()->get_text();
-	int pos = script->get_language()->find_function(p_function, code);
+	int pos = language->find_function(p_function, code);
 	code_editor->get_text_editor()->remove_secondary_carets();
 	if (pos == -1) {
 		//does not exist
 		code_editor->get_text_editor()->deselect();
 		pos = code_editor->get_text_editor()->get_line_count() + 2;
-		String func = script->get_language()->make_function("", p_function, p_args);
+		String func = language->make_function("", p_function, p_args);
 		//code=code+func;
 		code_editor->get_text_editor()->set_caret_line(pos + 1);
 		code_editor->get_text_editor()->set_caret_column(1000000); //none shall be that big

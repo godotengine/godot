@@ -2726,6 +2726,10 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 	Ref<Script> scr = p_obj->get_script();
 	ERR_FAIL_COND(!scr.is_valid());
 
+	if (!scr->get_language()->can_make_function()) {
+		return;
+	}
+
 	EditorNode::get_singleton()->push_item(scr.ptr());
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {

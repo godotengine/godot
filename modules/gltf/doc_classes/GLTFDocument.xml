@@ -10,7 +10,7 @@
 	</description>
 	<tutorials>
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
-		<link title="glTF 'What the duck?' guide">https://www.khronos.org/files/gltf20-reference-guide.pdf</link>
+		<link title="glTF &apos;What the duck?&apos; guide">https://www.khronos.org/files/gltf20-reference-guide.pdf</link>
 		<link title="Khronos glTF specification">https://registry.khronos.org/glTF/</link>
 	</tutorials>
 	<methods>

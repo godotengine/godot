@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationRegion3D" inherits="Node3D" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationRegion3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A traversable 3D region that [NavigationAgent3D]s can use for pathfinding.
 	</brief_description>
@@ -36,11 +36,10 @@
 				Returns the current navigation map [RID] used by this region.
 			</description>
 		</method>
-		<method name="get_region_rid" qualifiers="const" is_deprecated="true">
+		<method name="get_region_rid" qualifiers="const" deprecated="Use [method get_rid] instead.">
 			<return type="RID" />
 			<description>
 				Returns the [RID] of this region on the [NavigationServer3D].
-				[i]Deprecated.[/i] Use [method get_rid] instead.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">

@@ -483,6 +483,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--version", "Display the version string.\n");
 	print_help_option("-v, --verbose", "Use verbose stdout mode.\n");
 	print_help_option("--quiet", "Quiet mode, silences stdout messages. Errors are still displayed.\n");
+	print_help_option("--no-header", "Do not print engine version and rendering method header on startup.\n");
 
 	print_help_title("Run options");
 	print_help_option("--, ++", "Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
@@ -1012,6 +1013,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-q" || I->get() == "--quiet") { // quieter output
 
 			quiet_stdout = true;
+
+		} else if (I->get() == "--no-header") {
+			Engine::get_singleton()->_print_header = false;
 
 		} else if (I->get() == "--audio-driver") { // audio driver
 
@@ -1833,6 +1837,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (bool(GLOBAL_GET("application/run/disable_stderr"))) {
 		CoreGlobals::print_error_enabled = false;
 	}
+	if (!bool(GLOBAL_GET("application/run/print_header"))) {
+		// --no-header option for project settings.
+		Engine::get_singleton()->_print_header = false;
+	}
 
 	if (quiet_stdout) {
 		CoreGlobals::print_line_enabled = false;
@@ -2449,7 +2457,7 @@ Error Main::setup2() {
 	set_current_thread_safe_for_nodes(true);
 
 	// Print engine name and version
-	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	Engine::get_singleton()->print_header(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {
@@ -2742,8 +2750,6 @@ Error Main::setup2() {
 
 		AudioDriverManager::initialize(audio_driver_idx);
 
-		print_line(" "); // Add a blank line for readability.
-
 		// Right moment to create and initialize the audio server.
 		audio_server = memnew(AudioServer);
 		audio_server->init();
@@ -2762,6 +2768,9 @@ Error Main::setup2() {
 	}
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Servers");
+
+	// Add a blank line for readability.
+	Engine::get_singleton()->print_header("");
 
 	register_core_singletons();
 

@@ -307,7 +307,7 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 	}
 }
 
-bool CSharpLanguage::is_control_flow_keyword(String p_keyword) const {
+bool CSharpLanguage::is_control_flow_keyword(const String &p_keyword) const {
 	return p_keyword == "break" ||
 			p_keyword == "case" ||
 			p_keyword == "catch" ||
@@ -516,22 +516,11 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 }
 
 String CSharpLanguage::make_function(const String &, const String &p_name, const PackedStringArray &p_args) const {
-	// FIXME
-	// - Due to Godot's API limitation this just appends the function to the end of the file
-	// - Use fully qualified name if there is ambiguity
-	String s = "private void " + p_name + "(";
-	for (int i = 0; i < p_args.size(); i++) {
-		const String &arg = p_args[i];
-
-		if (i > 0) {
-			s += ", ";
-		}
-
-		s += variant_type_to_managed_name(arg.get_slice(":", 1)) + " " + escape_csharp_keyword(arg.get_slice(":", 0));
-	}
-	s += ")\n{\n    // Replace with function body.\n}\n";
-
-	return s;
+	// The make_function() API does not work for C# scripts.
+	// It will always append the generated function at the very end of the script. In C#, it will break compilation by
+	// appending code after the final closing bracket (either the class' or the namespace's).
+	// To prevent issues, we have can_make_function() returning false, and make_function() is never implemented.
+	return String();
 }
 #else
 String CSharpLanguage::make_function(const String &, const String &, const PackedStringArray &) const {

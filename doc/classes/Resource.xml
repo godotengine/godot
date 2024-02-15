@@ -71,11 +71,10 @@
 				Returns the [RID] of this resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], and so on) are high-level abstractions of resources stored in a specialized server ([DisplayServer], [RenderingServer], etc.), so this function will return the original [RID].
 			</description>
 		</method>
-		<method name="setup_local_to_scene" is_deprecated="true">
+		<method name="setup_local_to_scene" deprecated="This method should only be called internally. Override [method _setup_local_to_scene] instead.">
 			<return type="void" />
 			<description>
 				Calls [method _setup_local_to_scene]. If [member resource_local_to_scene] is set to [code]true[/code], this method is automatically called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance.
-				[i]Deprecated.[/i] This method should only be called internally. Override [method _setup_local_to_scene] instead.
 			</description>
 		</method>
 		<method name="take_over_path">
@@ -107,10 +106,9 @@
 				[b]Note:[/b] This signal is not emitted automatically for properties of custom resources. If necessary, a setter needs to be created to emit the signal.
 			</description>
 		</signal>
-		<signal name="setup_local_to_scene_requested" is_deprecated="true">
+		<signal name="setup_local_to_scene_requested" deprecated="This signal is only emitted when the resource is created. Override [method _setup_local_to_scene] instead.">
 			<description>
-				Emitted by a newly duplicated resource with [member resource_local_to_scene] set to [code]true[/code]. 
-				[i]Deprecated.[/i] This signal is only emitted when the resource is created. Override [method _setup_local_to_scene] instead.
+				Emitted by a newly duplicated resource with [member resource_local_to_scene] set to [code]true[/code].
 			</description>
 		</signal>
 	</signals>

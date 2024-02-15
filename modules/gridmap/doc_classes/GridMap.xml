@@ -138,11 +138,11 @@
 				Returns the position of a grid cell in the GridMap's local coordinate space. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method map_to_local].
 			</description>
 		</method>
-		<method name="resource_changed" is_deprecated="true">
+		<method name="resource_changed" deprecated="Use [signal Resource.changed] instead.">
 			<return type="void" />
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				[i]Obsoleted.[/i] Use [signal Resource.changed] instead.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="set_cell_item">

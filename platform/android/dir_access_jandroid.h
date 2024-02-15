@@ -77,7 +77,7 @@ public:
 	virtual bool dir_exists(String p_dir) override;
 
 	virtual Error make_dir(String p_dir) override;
-	virtual Error make_dir_recursive(String p_dir) override;
+	virtual Error make_dir_recursive(const String &p_dir) override;
 
 	virtual Error rename(String p_from, String p_to) override;
 	virtual Error remove(String p_name) override;

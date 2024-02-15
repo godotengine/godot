@@ -53,7 +53,7 @@ CryptoKey *CryptoKeyMbedTLS::create() {
 	return memnew(CryptoKeyMbedTLS);
 }
 
-Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
+Error CryptoKeyMbedTLS::load(const String &p_path, bool p_public_only) {
 	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Key is in use");
 
 	PackedByteArray out;
@@ -79,7 +79,7 @@ Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 	return OK;
 }
 
-Error CryptoKeyMbedTLS::save(String p_path, bool p_public_only) {
+Error CryptoKeyMbedTLS::save(const String &p_path, bool p_public_only) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
 
@@ -103,7 +103,7 @@ Error CryptoKeyMbedTLS::save(String p_path, bool p_public_only) {
 	return OK;
 }
 
-Error CryptoKeyMbedTLS::load_from_string(String p_string_key, bool p_public_only) {
+Error CryptoKeyMbedTLS::load_from_string(const String &p_string_key, bool p_public_only) {
 	int ret = 0;
 	if (p_public_only) {
 		ret = mbedtls_pk_parse_public_key(&pkey, (unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size());
@@ -138,7 +138,7 @@ X509Certificate *X509CertificateMbedTLS::create() {
 	return memnew(X509CertificateMbedTLS);
 }
 
-Error X509CertificateMbedTLS::load(String p_path) {
+Error X509CertificateMbedTLS::load(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is already in use.");
 
 	PackedByteArray out;
@@ -170,7 +170,7 @@ Error X509CertificateMbedTLS::load_from_memory(const uint8_t *p_buffer, int p_le
 	return OK;
 }
 
-Error X509CertificateMbedTLS::save(String p_path) {
+Error X509CertificateMbedTLS::save(const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot save X509CertificateMbedTLS file '%s'.", p_path));
 
@@ -235,7 +235,7 @@ HMACContext *HMACContextMbedTLS::create() {
 	return memnew(HMACContextMbedTLS);
 }
 
-Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PackedByteArray p_key) {
+Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, const PackedByteArray &p_key) {
 	ERR_FAIL_COND_V_MSG(ctx != nullptr, ERR_FILE_ALREADY_IN_USE, "HMACContext already started.");
 
 	// HMAC keys can be any size.
@@ -255,7 +255,7 @@ Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PackedByte
 	return ret ? FAILED : OK;
 }
 
-Error HMACContextMbedTLS::update(PackedByteArray p_data) {
+Error HMACContextMbedTLS::update(const PackedByteArray &p_data) {
 	ERR_FAIL_NULL_V_MSG(ctx, ERR_INVALID_DATA, "Start must be called before update.");
 
 	ERR_FAIL_COND_V_MSG(p_data.is_empty(), ERR_INVALID_PARAMETER, "Src must not be empty.");
@@ -338,7 +338,7 @@ X509CertificateMbedTLS *CryptoMbedTLS::get_default_certificates() {
 	return default_certs;
 }
 
-void CryptoMbedTLS::load_default_certificates(String p_path) {
+void CryptoMbedTLS::load_default_certificates(const String &p_path) {
 	ERR_FAIL_COND(default_certs != nullptr);
 
 	default_certs = memnew(X509CertificateMbedTLS);
@@ -380,7 +380,7 @@ Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {
 	return out;
 }
 
-Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) {
+Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoKey> p_key, const String &p_issuer_name, const String &p_not_before, const String &p_not_after) {
 	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(key.is_null(), nullptr, "Invalid private key argument.");
 	mbedtls_x509write_cert crt;
@@ -452,7 +452,7 @@ mbedtls_md_type_t CryptoMbedTLS::md_type_from_hashtype(HashingContext::HashType 
 	}
 }
 
-Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Ref<CryptoKey> p_key) {
+Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, const Vector<uint8_t> &p_hash, Ref<CryptoKey> p_key) {
 	int size;
 	mbedtls_md_type_t type = CryptoMbedTLS::md_type_from_hashtype(p_hash_type, size);
 	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, Vector<uint8_t>(), "Invalid hash type.");
@@ -470,7 +470,7 @@ Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector
 	return out;
 }
 
-bool CryptoMbedTLS::verify(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Vector<uint8_t> p_signature, Ref<CryptoKey> p_key) {
+bool CryptoMbedTLS::verify(HashingContext::HashType p_hash_type, const Vector<uint8_t> &p_hash, const Vector<uint8_t> &p_signature, Ref<CryptoKey> p_key) {
 	int size;
 	mbedtls_md_type_t type = CryptoMbedTLS::md_type_from_hashtype(p_hash_type, size);
 	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, false, "Invalid hash type.");
@@ -480,7 +480,7 @@ bool CryptoMbedTLS::verify(HashingContext::HashType p_hash_type, Vector<uint8_t>
 	return mbedtls_pk_verify(&(key->pkey), type, p_hash.ptr(), size, p_signature.ptr(), p_signature.size()) == 0;
 }
 
-Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_plaintext) {
+Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, const Vector<uint8_t> &p_plaintext) {
 	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
 	uint8_t buf[1024];
@@ -493,7 +493,7 @@ Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_p
 	return out;
 }
 
-Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_ciphertext) {
+Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, const Vector<uint8_t> &p_ciphertext) {
 	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
 	ERR_FAIL_COND_V_MSG(key->is_public_only(), Vector<uint8_t>(), "Invalid key provided. Cannot decrypt using a public_only key.");

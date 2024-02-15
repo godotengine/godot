@@ -55,8 +55,8 @@ namespace Godot.SourceGenerators
                 .Where(x =>
                     // Ignore classes whose name is not the same as the file name
                     Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name)
-                .GroupBy(x => x.symbol)
-                .ToDictionary(g => g.Key, g => g.Select(x => x.cds));
+                .GroupBy<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol), INamedTypeSymbol>(x => x.symbol, SymbolEqualityComparer.Default)
+                .ToDictionary<IGrouping<INamedTypeSymbol, (ClassDeclarationSyntax cds, INamedTypeSymbol symbol)>, INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>>(g => g.Key, g => g.Select(x => x.cds), SymbolEqualityComparer.Default);
 
             foreach (var godotClass in godotClasses)
             {

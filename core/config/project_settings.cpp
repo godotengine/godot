@@ -688,7 +688,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	return err;
 }
 
-bool ProjectSettings::has_setting(String p_var) const {
+bool ProjectSettings::has_setting(const String &p_var) const {
 	_THREAD_SAFE_METHOD_
 
 	return props.has(p_var);
@@ -971,7 +971,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 }
 
 #ifdef TOOLS_ENABLED
-bool _csproj_exists(String p_root_dir) {
+bool _csproj_exists(const String &p_root_dir) {
 	Ref<DirAccess> dir = DirAccess::open(p_root_dir);
 	ERR_FAIL_COND_V(dir.is_null(), false);
 
@@ -1394,6 +1394,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
 	GLOBAL_DEF("application/run/enable_alt_space_menu", false);
+	GLOBAL_DEF("application/run/print_header", true);
 	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");

@@ -268,7 +268,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 		doc.tutorials.append(td);
 	}
 	doc.is_deprecated = p_class->doc_data.is_deprecated;
+	doc.deprecated_message = p_class->doc_data.deprecated_message;
 	doc.is_experimental = p_class->doc_data.is_experimental;
+	doc.experimental_message = p_class->doc_data.experimental_message;
 
 	for (const GDP::ClassNode::Member &member : p_class->members) {
 		switch (member.type) {
@@ -295,7 +297,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.is_value_valid = true;
 				const_doc.description = m_const->doc_data.description;
 				const_doc.is_deprecated = m_const->doc_data.is_deprecated;
+				const_doc.deprecated_message = m_const->doc_data.deprecated_message;
 				const_doc.is_experimental = m_const->doc_data.is_experimental;
+				const_doc.experimental_message = m_const->doc_data.experimental_message;
 				doc.constants.push_back(const_doc);
 			} break;
 
@@ -309,7 +313,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				method_doc.name = func_name;
 				method_doc.description = m_func->doc_data.description;
 				method_doc.is_deprecated = m_func->doc_data.is_deprecated;
+				method_doc.deprecated_message = m_func->doc_data.deprecated_message;
 				method_doc.is_experimental = m_func->doc_data.is_experimental;
+				method_doc.experimental_message = m_func->doc_data.experimental_message;
 				method_doc.qualifiers = m_func->is_static ? "static" : "";
 
 				if (m_func->return_type) {
@@ -349,7 +355,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				signal_doc.name = signal_name;
 				signal_doc.description = m_signal->doc_data.description;
 				signal_doc.is_deprecated = m_signal->doc_data.is_deprecated;
+				signal_doc.deprecated_message = m_signal->doc_data.deprecated_message;
 				signal_doc.is_experimental = m_signal->doc_data.is_experimental;
+				signal_doc.experimental_message = m_signal->doc_data.experimental_message;
 
 				for (const GDScriptParser::ParameterNode *p : m_signal->parameters) {
 					DocData::ArgumentDoc arg_doc;
@@ -371,7 +379,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				prop_doc.name = var_name;
 				prop_doc.description = m_var->doc_data.description;
 				prop_doc.is_deprecated = m_var->doc_data.is_deprecated;
+				prop_doc.deprecated_message = m_var->doc_data.deprecated_message;
 				prop_doc.is_experimental = m_var->doc_data.is_experimental;
+				prop_doc.experimental_message = m_var->doc_data.experimental_message;
 				_doctype_from_gdtype(m_var->get_datatype(), prop_doc.type, prop_doc.enumeration);
 
 				switch (m_var->property) {
@@ -417,7 +427,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				DocData::EnumDoc enum_doc;
 				enum_doc.description = m_enum->doc_data.description;
 				enum_doc.is_deprecated = m_enum->doc_data.is_deprecated;
+				enum_doc.deprecated_message = m_enum->doc_data.deprecated_message;
 				enum_doc.is_experimental = m_enum->doc_data.is_experimental;
+				enum_doc.experimental_message = m_enum->doc_data.experimental_message;
 				doc.enums[name] = enum_doc;
 
 				for (const GDP::EnumNode::Value &val : m_enum->values) {
@@ -428,7 +440,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					const_doc.enumeration = name;
 					const_doc.description = val.doc_data.description;
 					const_doc.is_deprecated = val.doc_data.is_deprecated;
+					const_doc.deprecated_message = val.doc_data.deprecated_message;
 					const_doc.is_experimental = val.doc_data.is_experimental;
+					const_doc.experimental_message = val.doc_data.experimental_message;
 
 					doc.constants.push_back(const_doc);
 				}
@@ -448,7 +462,9 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.enumeration = "@unnamed_enums";
 				const_doc.description = m_enum_val.doc_data.description;
 				const_doc.is_deprecated = m_enum_val.doc_data.is_deprecated;
+				const_doc.deprecated_message = m_enum_val.doc_data.deprecated_message;
 				const_doc.is_experimental = m_enum_val.doc_data.is_experimental;
+				const_doc.experimental_message = m_enum_val.doc_data.experimental_message;
 				doc.constants.push_back(const_doc);
 			} break;
 

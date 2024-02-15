@@ -1545,24 +1545,26 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared_from_slice(Text
 			}
 		} break;
 		case TEXTURE_SLICE_CUBEMAP: {
-			if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE) {
-				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
-			} else if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE || p_layer == 0) {
+			if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE || p_layer == 0) {
 				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+				srv_desc.TextureCube.MostDetailedMip = p_mipmap;
+				srv_desc.TextureCube.MipLevels = 1;
 
 				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
-				uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+				uav_desc.Texture2DArray.MipSlice = p_mipmap;
 				uav_desc.Texture2DArray.FirstArraySlice = 0;
 				uav_desc.Texture2DArray.ArraySize = 6;
 				uav_desc.Texture2DArray.PlaneSlice = 0;
 			} else if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBEARRAY || p_layer != 0) {
 				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+				srv_desc.TextureCubeArray.MostDetailedMip = p_mipmap;
+				srv_desc.TextureCubeArray.MipLevels = 1;
 				srv_desc.TextureCubeArray.First2DArrayFace = p_layer;
 				srv_desc.TextureCubeArray.NumCubes = 1;
 				srv_desc.TextureCubeArray.ResourceMinLODClamp = 0.0f;
 
 				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
-				uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+				uav_desc.Texture2DArray.MipSlice = p_mipmap;
 				uav_desc.Texture2DArray.FirstArraySlice = p_layer;
 				uav_desc.Texture2DArray.ArraySize = 6;
 				uav_desc.Texture2DArray.PlaneSlice = 0;

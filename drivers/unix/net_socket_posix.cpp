@@ -787,11 +787,11 @@ Ref<NetSocket> NetSocketPosix::accept(IPAddress &r_ip, uint16_t &r_port) {
 	return Ref<NetSocket>(ns);
 }
 
-Error NetSocketPosix::join_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
+Error NetSocketPosix::join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, true);
 }
 
-Error NetSocketPosix::leave_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
+Error NetSocketPosix::leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
 

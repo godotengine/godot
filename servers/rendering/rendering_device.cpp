@@ -4983,7 +4983,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		}
 
 		// Output our device version.
-		print_line(vformat("%s %s - %s - Using Device #%d: %s - %s", get_device_api_name(), get_device_api_version(), rendering_method, device_index, _get_device_vendor_name(device), device.name));
+		Engine::get_singleton()->print_header(vformat("%s %s - %s - Using Device #%d: %s - %s", get_device_api_name(), get_device_api_version(), rendering_method, device_index, _get_device_vendor_name(device), device.name));
 	}
 
 	// Pick the main queue family. It is worth noting we explicitly do not request the transfer bit, as apparently the specification defines

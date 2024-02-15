@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonIK3D" inherits="Node" is_deprecated="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SkeletonIK3D" inherits="Node" deprecated="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node used to rotate all bones of a [Skeleton3D] bone chain a way that places the end bone at a desired 3D position.
 	</brief_description>
@@ -24,7 +24,6 @@
 		# Apply zero IK effect (a value at or below 0.01 also removes bones_global_pose_override on Skeleton)
 		skeleton_ik_node.set_interpolation(0.0)
 		[/codeblock]
-		[i]Deprecated.[/i] This class is deprecated, and might be removed in a future release.
 	</description>
 	<tutorials>
 		<link title="3D Inverse Kinematics Demo">https://godotengine.org/asset-library/asset/523</link>
