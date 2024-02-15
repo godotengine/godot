@@ -24,6 +24,9 @@ elif env["platform"] == "linuxbsd":
     if env["x11"]:
         env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])
 
+    if env["wayland"]:
+        env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_WAYLAND"])
+
     # FIXME: Review what needs to be set for Android and macOS.
     env_openxr.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
 elif env["platform"] == "windows":
@@ -93,35 +96,13 @@ if env["builtin_openxr"]:
 module_obj = []
 
 env_openxr.add_source_files(module_obj, "*.cpp")
-env_openxr.add_source_files(module_obj, "action_map/*.cpp")
-env_openxr.add_source_files(module_obj, "scene/*.cpp")
-
-# We're a little more targeted with our extensions
-if env["platform"] == "android":
-    env_openxr.add_source_files(module_obj, "extensions/openxr_android_extension.cpp")
-if env["vulkan"]:
-    env_openxr.add_source_files(module_obj, "extensions/openxr_vulkan_extension.cpp")
-if env["opengl3"] and env["platform"] != "macos":
-    env_openxr.add_source_files(module_obj, "extensions/openxr_opengl_extension.cpp")
-
-env_openxr.add_source_files(module_obj, "extensions/openxr_palm_pose_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_composition_layer_depth_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_eye_gaze_interaction.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_htc_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_htc_vive_tracker_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_huawei_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_hand_tracking_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_fb_foveation_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_fb_update_swapchain_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_fb_passthrough_extension_wrapper.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_fb_display_refresh_rate_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_pico_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_wmr_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_ml2_controller_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_extension_wrapper_extension.cpp")
-env_openxr.add_source_files(module_obj, "extensions/openxr_api_extension.cpp")
-
 env.modules_sources += module_obj
+
+Export("env_openxr")
+
+SConscript("action_map/SCsub")
+SConscript("extensions/SCsub")
+SConscript("scene/SCsub")
 
 if env.editor_build:
     SConscript("editor/SCsub")

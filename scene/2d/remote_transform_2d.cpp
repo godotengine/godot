@@ -34,7 +34,7 @@ void RemoteTransform2D::_update_cache() {
 	cache = ObjectID();
 	if (has_node(remote_node)) {
 		Node *node = get_node(remote_node);
-		if (!node || this == node || node->is_ancestor_of(this) || this->is_ancestor_of(node)) {
+		if (!node || this == node || node->is_ancestor_of(this) || is_ancestor_of(node)) {
 			return;
 		}
 
@@ -200,8 +200,8 @@ void RemoteTransform2D::force_update_cache() {
 	_update_cache();
 }
 
-PackedStringArray RemoteTransform2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array RemoteTransform2D::get_configuration_warnings() const {
+	Array warnings = Node::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node2D>(get_node(remote_node))) {
 		warnings.push_back(RTR("Path property must point to a valid Node2D node to work."));

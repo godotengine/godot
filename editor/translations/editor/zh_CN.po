@@ -72,7 +72,7 @@
 # Gardner Belgrade <hapenia@sina.com>, 2020.
 # godhidden <z2zz2zz@yahoo.com>, 2020.
 # BinotaLIU <me@binota.org>, 2020, 2021.
-# TakWolf <takwolf@foxmail.com>, 2020.
+# TakWolf <takwolf@foxmail.com>, 2020, 2023.
 # twoBornottwoB <305766341@qq.com>, 2021.
 # Magian <magian1127@gmail.com>, 2021.
 # Weiduo Xie <xwditfr@gmail.com>, 2021.
@@ -96,13 +96,15 @@
 # Zi Jiaxu <Shelpdicriter@users.noreply.hosted.weblate.org>, 2023.
 # bay <xinkangzhou96@gmail.com>, 2023.
 # Arsvine Zhu <2162371684@qq.com>, 2023.
+# Helan Du <250233335@qq.com>, 2024.
+# Ainsley <vhtmscyo@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-12-07 14:59+0000\n"
-"Last-Translator: 风青山 <idleman@yeah.net>\n"
+"PO-Revision-Date: 2024-01-25 05:54+0000\n"
+"Last-Translator: Ainsley <vhtmscyo@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -110,7 +112,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "主线程"
@@ -143,10 +145,10 @@ msgid "Mouse Wheel Right"
 msgstr "鼠标滚轮向右"
 
 msgid "Mouse Thumb Button 1"
-msgstr "鼠标拇指键 1"
+msgstr "鼠标侧键 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "鼠标拇指键 2"
+msgstr "鼠标侧键 2"
 
 msgid "Button"
 msgstr "按钮"
@@ -3507,6 +3509,15 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr "无法写入文件“%s”，文件被占用、已锁定、或权限不足。"
 
+msgid "Forward+"
+msgstr "Forward+"
+
+msgid "Mobile"
+msgstr "移动"
+
+msgid "Compatibility"
+msgstr "兼容"
+
 msgid "Pan View"
 msgstr "平移视图"
 
@@ -3683,21 +3694,6 @@ msgstr "关于 Godot"
 
 msgid "Support Godot Development"
 msgstr "支持 Godot 开发"
-
-msgid "Choose a renderer."
-msgstr "选择渲染器。"
-
-msgid "Forward+"
-msgstr "Forward+"
-
-msgid "Mobile"
-msgstr "移动"
-
-msgid "Compatibility"
-msgstr "兼容"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "改变渲染器需要重启编辑器。"
 
 msgid "Update Continuously"
 msgstr "持续更新"
@@ -12723,13 +12719,6 @@ msgstr ""
 "语言已更改。\n"
 "界面将在重新启动编辑器或项目管理器后更新。"
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"确定要扫描文件夹 %s 中的现有 Godot 项目吗？ \n"
-"这可能需要一段时间。"
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "项目管理器"
@@ -14216,11 +14205,6 @@ msgstr "包段中的第一个字符不能是 “%s”。"
 
 msgid "The package must have at least one '.' separator."
 msgstr "包必须至少有一个 “.” 分隔符。"
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr "项目名称不符合包名格式的要求。请显式指定包名。"
 
 msgid "Invalid public key for APK expansion."
 msgstr "APK 扩展的公钥无效。"

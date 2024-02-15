@@ -31,6 +31,7 @@
 #include "class_db.h"
 
 #include "core/config/engine.h"
+#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/mutex.h"
@@ -1299,6 +1300,12 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 		check = check->inherits_ptr;
 	}
 
+	// The "free()" method is special, so we assume it exists and return a Callable.
+	if (p_property == CoreStringNames::get_singleton()->_free) {
+		r_value = Callable(p_object, p_property);
+		return true;
+	}
+
 	return false;
 }
 
@@ -1605,6 +1612,28 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 		check = check->inherits_ptr;
 	}
 
+#endif
+}
+
+void ClassDB::add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info) {
+	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
+
+#ifdef DEBUG_METHODS_ENABLED
+	PackedStringArray arg_names;
+
+	MethodInfo mi;
+	mi.name = *reinterpret_cast<StringName *>(p_method_info->name);
+	mi.return_val = PropertyInfo(p_method_info->return_value);
+	mi.return_val_metadata = p_method_info->return_value_metadata;
+	mi.flags = p_method_info->method_flags;
+	for (int i = 0; i < (int)p_method_info->argument_count; i++) {
+		PropertyInfo arg(p_method_info->arguments[i]);
+		mi.arguments.push_back(arg);
+		mi.arguments_metadata.push_back(p_method_info->arguments_metadata[i]);
+		arg_names.push_back(arg.name);
+	}
+
+	add_virtual_method(p_class, mi, true, arg_names);
 #endif
 }
 

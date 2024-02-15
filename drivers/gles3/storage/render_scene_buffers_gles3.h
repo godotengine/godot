@@ -108,7 +108,7 @@ public:
 
 	void free_render_buffer_data();
 
-	void check_backbuffer(bool p_need_color, bool p_need_depth); // check if we need to initialise our backbuffer
+	void check_backbuffer(bool p_need_color, bool p_need_depth); // Check if we need to initialize our backbuffer.
 
 	GLuint get_render_fbo();
 	GLuint get_msaa3d_fbo() const { return msaa3d.fbo; }

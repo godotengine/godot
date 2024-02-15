@@ -346,7 +346,7 @@ void ScrollContainer::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_updating_scrollbars = true;
-			call_deferred(SNAME("_update_scrollbar_position"));
+			callable_mp(this, &ScrollContainer::_update_scrollbar_position).call_deferred();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -537,8 +537,8 @@ void ScrollContainer::set_follow_focus(bool p_follow) {
 	follow_focus = p_follow;
 }
 
-PackedStringArray ScrollContainer::get_configuration_warnings() const {
-	PackedStringArray warnings = Container::get_configuration_warnings();
+Array ScrollContainer::get_configuration_warnings() const {
+	Array warnings = Container::get_configuration_warnings();
 
 	int found = 0;
 
@@ -573,8 +573,6 @@ VScrollBar *ScrollContainer::get_v_scroll_bar() {
 }
 
 void ScrollContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
-
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
 

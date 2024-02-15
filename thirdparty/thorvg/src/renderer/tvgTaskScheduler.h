@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +25,13 @@
 
 #include <mutex>
 #include <condition_variable>
+
 #include "tvgCommon.h"
+#include "tvgInlist.h"
 
-namespace tvg
-{
+namespace tvg {
 
-struct Task;
-
-struct TaskScheduler
-{
-    static unsigned threads();
-    static void init(unsigned threads);
-    static void term();
-    static void request(Task* task);
-    static void async(bool on);
-};
+#ifdef THORVG_THREAD_SUPPORT
 
 struct Task
 {
@@ -50,6 +42,8 @@ private:
     bool                    pending = false;
 
 public:
+    INLIST_ITEM(Task);
+
     virtual ~Task() = default;
 
     void done()
@@ -83,7 +77,36 @@ private:
     friend struct TaskSchedulerImpl;
 };
 
-}
+#else  //THORVG_THREAD_SUPPORT
+
+struct Task
+{
+public:
+    INLIST_ITEM(Task);
+
+    virtual ~Task() = default;
+    void done() {}
+
+protected:
+    virtual void run(unsigned tid) = 0;
+
+private:
+    friend struct TaskSchedulerImpl;
+};
+
+#endif  //THORVG_THREAD_SUPPORT
+
+
+struct TaskScheduler
+{
+    static uint32_t threads();
+    static void init(uint32_t threads);
+    static void term();
+    static void request(Task* task);
+    static void async(bool on);
+};
+
+}  //namespace
 
 #endif //_TVG_TASK_SCHEDULER_H_
  

@@ -24,7 +24,7 @@
 # Sebastian Pasich <sebastian.pasich@gmail.com>, 2017, 2019, 2020, 2022, 2023.
 # siatek papieros <sbigneu@gmail.com>, 2016.
 # Zatherz <zatherz@linux.pl>, 2017, 2020, 2021.
-# Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023.
+# Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023, 2024.
 # Wojcieh Er Zet <wojcieh.rzepecki@gmail.com>, 2018.
 # Dariusz Siek <dariuszynski@gmail.com>, 2018, 2019, 2020, 2021.
 # Szymon Nowakowski <smnbdg13@gmail.com>, 2019.
@@ -74,7 +74,7 @@
 # Michał Walczak <mjf.walczak@gmail.com>, 2023.
 # Lukas <ox86udoo@duck.com>, 2023.
 # Marcin Sokołowski <sokolekster@gmail.com>, 2023.
-# Jakub Marcowski <chubercikbattle@gmail.com>, 2023.
+# Jakub Marcowski <chubercikbattle@gmail.com>, 2023, 2024.
 # "Janusz G." <400@poczta.fm>, 2023.
 # Michał Biernat <michalbiernat@windowslive.com>, 2023.
 # stereopolex <stereopolex@gmail.com>, 2023.
@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-11 21:00+0000\n"
+"PO-Revision-Date: 2024-01-21 10:55+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -99,10 +99,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
-msgstr "Główny wątek"
+msgstr "Główny Wątek"
 
 msgid "Unset"
 msgstr "Wymaż"
@@ -111,37 +111,37 @@ msgid "Physical"
 msgstr "Fizyczny"
 
 msgid "Left Mouse Button"
-msgstr "Lewy przycisk myszy"
+msgstr "Lewy Przycisk Myszy"
 
 msgid "Right Mouse Button"
-msgstr "Prawy przycisk myszy"
+msgstr "Prawy Przycisk Myszy"
 
 msgid "Middle Mouse Button"
-msgstr "Środkowy przycisk myszy"
+msgstr "Środkowy Przycisk Myszy"
 
 msgid "Mouse Wheel Up"
-msgstr "Kółko myszy w górę"
+msgstr "Kółko Myszy w Górę"
 
 msgid "Mouse Wheel Down"
-msgstr "Kółko myszy w dół"
+msgstr "Kółko Myszy w Dół"
 
 msgid "Mouse Wheel Left"
-msgstr "Kółko myszy w lewo"
+msgstr "Kółko Myszy w Lewo"
 
 msgid "Mouse Wheel Right"
-msgstr "Kółko myszy w prawo"
+msgstr "Kółko Myszy w Prawo"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Boczny przycisk myszki 1"
+msgstr "Boczny Przycisk Myszki 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Boczny przycisk myszki 2"
+msgstr "Boczny Przycisk Myszki 2"
 
 msgid "Button"
 msgstr "Przycisk"
 
 msgid "Double Click"
-msgstr "Podwójne kliknięcie"
+msgstr "Podwójne Kliknięcie"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Ruch myszy w pozycji (%s) z prędkością (%s)"
@@ -802,7 +802,7 @@ msgid "Don't Use Blend"
 msgstr "Nie używaj mieszania"
 
 msgid "Continuous"
-msgstr "Ciągłe"
+msgstr "Ciągły"
 
 msgid "Discrete"
 msgstr "Nieciągły"
@@ -3595,6 +3595,15 @@ msgstr ""
 "Nie można zapisać do pliku '%s', plik jest w użyciu, zablokowany lub nie ma "
 "wystarczających uprawnień."
 
+msgid "Forward+"
+msgstr "Przedni+"
+
+msgid "Mobile"
+msgstr "Mobilny"
+
+msgid "Compatibility"
+msgstr "Kompatybilny"
+
 msgid "Pan View"
 msgstr "Przesuń widok"
 
@@ -3771,21 +3780,6 @@ msgstr "O Godocie"
 
 msgid "Support Godot Development"
 msgstr "Wesprzyj rozwój Godota"
-
-msgid "Choose a renderer."
-msgstr "Wybierz renderer."
-
-msgid "Forward+"
-msgstr "Przedni+"
-
-msgid "Mobile"
-msgstr "Mobilny"
-
-msgid "Compatibility"
-msgstr "Kompatybilny"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "Zmiana renderera wymaga restartu edytora."
 
 msgid "Update Continuously"
 msgstr "Stale aktualizuj"
@@ -13158,14 +13152,6 @@ msgstr ""
 "Język został zmieniony.\n"
 "Interfejs zaktualizuje się po restarcie edytora lub menedżera projektów."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Czy na pewno chcesz przeskanować %s folderów w poszukiwaniu istniejących "
-"projektów Godota?\n"
-"To może chwilę zająć."
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "Menedżer projektów"
@@ -14712,13 +14698,6 @@ msgstr "Znak \"%s\" nie może być pierwszym znakiem w segmencie paczki."
 
 msgid "The package must have at least one '.' separator."
 msgstr "Paczka musi mieć co najmniej jedną kropkę jako separator."
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr ""
-"Nazwa projektu nie spełnia wymagań dotyczących formatu nazwy pakietu. Proszę "
-"wyraźnie określić nazwę pakietu."
 
 msgid "Invalid public key for APK expansion."
 msgstr "Niepoprawny klucz publiczny dla ekspansji APK."

@@ -109,6 +109,8 @@ protected:
 
 	void set_body_mode(PhysicsServer2D::BodyMode p_mode);
 
+	virtual void _space_changed(const RID &p_new_space);
+
 	GDVIRTUAL3(_input_event, Viewport *, Ref<InputEvent>, int)
 	GDVIRTUAL0(_mouse_enter)
 	GDVIRTUAL0(_mouse_exit)
@@ -164,7 +166,7 @@ public:
 	void set_pickable(bool p_enabled);
 	bool is_pickable() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

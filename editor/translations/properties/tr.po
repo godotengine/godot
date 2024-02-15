@@ -3726,8 +3726,8 @@ msgstr "Kurulumu Kaldırınca Verileri Tut"
 msgid "Exclude From Recents"
 msgstr "Son Kullanılanlara Koyma"
 
-msgid "Show in Android Tv"
-msgstr "Android Tv'de göster"
+msgid "Show in Android TV"
+msgstr "Android TV'de göster"
 
 msgid "Show in App Library"
 msgstr "Uygulama Kitaplığında Göster"

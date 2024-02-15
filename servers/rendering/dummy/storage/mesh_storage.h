@@ -50,10 +50,14 @@ private:
 
 	mutable RID_Owner<DummyMesh> mesh_owner;
 
-public:
-	static MeshStorage *get_singleton() {
-		return singleton;
+	struct DummyMultiMesh {
+		PackedFloat32Array buffer;
 	};
+
+	mutable RID_Owner<DummyMultiMesh> multimesh_owner;
+
+public:
+	static MeshStorage *get_singleton() { return singleton; }
 
 	MeshStorage();
 	~MeshStorage();
@@ -113,8 +117,11 @@ public:
 
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) override {}
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const override { return AABB(); }
-
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override { return AABB(); }
+
+	virtual void mesh_set_path(RID p_mesh, const String &p_path) override {}
+	virtual String mesh_get_path(RID p_mesh) const override { return String(); }
+
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override {}
 	virtual void mesh_clear(RID p_mesh) override;
 
@@ -131,9 +138,11 @@ public:
 
 	/* MULTIMESH API */
 
-	virtual RID multimesh_allocate() override { return RID(); }
-	virtual void multimesh_initialize(RID p_rid) override {}
-	virtual void multimesh_free(RID p_rid) override {}
+	bool owns_multimesh(RID p_rid) { return multimesh_owner.owns(p_rid); }
+
+	virtual RID multimesh_allocate() override;
+	virtual void multimesh_initialize(RID p_rid) override;
+	virtual void multimesh_free(RID p_rid) override;
 
 	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) override {}
 	virtual int multimesh_get_instance_count(RID p_multimesh) const override { return 0; }
@@ -151,8 +160,8 @@ public:
 	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const override { return Transform2D(); }
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const override { return Color(); }
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const override { return Color(); }
-	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) override {}
-	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const override { return Vector<float>(); }
+	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) override;
+	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const override;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) override {}
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const override { return 0; }

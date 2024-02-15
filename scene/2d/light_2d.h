@@ -146,6 +146,9 @@ private:
 	Vector2 texture_offset;
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif // DISABLE_DEPRECATED
 	static void _bind_methods();
 
 public:
@@ -171,7 +174,7 @@ public:
 	void set_texture_scale(real_t p_scale);
 	real_t get_texture_scale() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	PointLight2D();
 };

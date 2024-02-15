@@ -1478,7 +1478,7 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 	ERR_FAIL_V(TileMapCell());
 }
 
-Vector<Vector2> TileSet::get_tile_shape_polygon() {
+Vector<Vector2> TileSet::get_tile_shape_polygon() const {
 	Vector<Vector2> points;
 	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
 		points.push_back(Vector2(-0.5, -0.5));
@@ -1519,7 +1519,7 @@ Vector<Vector2> TileSet::get_tile_shape_polygon() {
 	return points;
 }
 
-void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform, Color p_color, bool p_filled, Ref<Texture2D> p_texture) {
+void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform, Color p_color, bool p_filled, Ref<Texture2D> p_texture) const {
 	if (tile_meshes_dirty) {
 		Vector<Vector2> shape = get_tile_shape_polygon();
 		Vector<Vector2> uvs;
@@ -1561,6 +1561,708 @@ void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform
 	} else {
 		p_canvas_item->draw_mesh(tile_lines_mesh, Ref<Texture2D>(), p_transform, p_color);
 	}
+}
+
+Vector2 TileSet::map_to_local(const Vector2i &p_pos) const {
+	// SHOULD RETURN THE CENTER OF THE CELL.
+	Vector2 ret = p_pos;
+
+	if (tile_shape == TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE || tile_shape == TileSet::TILE_SHAPE_HEXAGON || tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
+		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap.
+		if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+			switch (tile_layout) {
+				case TileSet::TILE_LAYOUT_STACKED:
+					ret = Vector2(ret.x + (Math::posmod(ret.y, 2) == 0 ? 0.0 : 0.5), ret.y);
+					break;
+				case TileSet::TILE_LAYOUT_STACKED_OFFSET:
+					ret = Vector2(ret.x + (Math::posmod(ret.y, 2) == 1 ? 0.0 : 0.5), ret.y);
+					break;
+				case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+					ret = Vector2(ret.x + ret.y / 2, ret.y);
+					break;
+				case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+					ret = Vector2(ret.x / 2, ret.y * 2 + ret.x);
+					break;
+				case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+					ret = Vector2((ret.x + ret.y) / 2, ret.y - ret.x);
+					break;
+				case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+					ret = Vector2((ret.x - ret.y) / 2, ret.y + ret.x);
+					break;
+			}
+		} else { // TILE_OFFSET_AXIS_VERTICAL.
+			switch (tile_layout) {
+				case TileSet::TILE_LAYOUT_STACKED:
+					ret = Vector2(ret.x, ret.y + (Math::posmod(ret.x, 2) == 0 ? 0.0 : 0.5));
+					break;
+				case TileSet::TILE_LAYOUT_STACKED_OFFSET:
+					ret = Vector2(ret.x, ret.y + (Math::posmod(ret.x, 2) == 1 ? 0.0 : 0.5));
+					break;
+				case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+					ret = Vector2(ret.x * 2 + ret.y, ret.y / 2);
+					break;
+				case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+					ret = Vector2(ret.x, ret.y + ret.x / 2);
+					break;
+				case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+					ret = Vector2(ret.x + ret.y, (ret.y - ret.x) / 2);
+					break;
+				case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+					ret = Vector2(ret.x - ret.y, (ret.y + ret.x) / 2);
+					break;
+			}
+		}
+	}
+
+	// Multiply by the overlapping ratio.
+	double overlapping_ratio = 1.0;
+	if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+			overlapping_ratio = 0.5;
+		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
+			overlapping_ratio = 0.75;
+		}
+		ret.y *= overlapping_ratio;
+	} else { // TILE_OFFSET_AXIS_VERTICAL.
+		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+			overlapping_ratio = 0.5;
+		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
+			overlapping_ratio = 0.75;
+		}
+		ret.x *= overlapping_ratio;
+	}
+
+	return (ret + Vector2(0.5, 0.5)) * tile_size;
+}
+
+Vector2i TileSet::local_to_map(const Vector2 &p_local_position) const {
+	Vector2 ret = p_local_position;
+	ret /= tile_size;
+
+	// Divide by the overlapping ratio.
+	double overlapping_ratio = 1.0;
+	if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+			overlapping_ratio = 0.5;
+		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
+			overlapping_ratio = 0.75;
+		}
+		ret.y /= overlapping_ratio;
+	} else { // TILE_OFFSET_AXIS_VERTICAL.
+		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+			overlapping_ratio = 0.5;
+		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
+			overlapping_ratio = 0.75;
+		}
+		ret.x /= overlapping_ratio;
+	}
+
+	// For each half-offset shape, we check if we are in the corner of the tile, and thus should correct the local position accordingly.
+	if (tile_shape == TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE || tile_shape == TileSet::TILE_SHAPE_HEXAGON || tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
+		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap.
+		if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+			// Smart floor of the position
+			Vector2 raw_pos = ret;
+			if (Math::posmod(Math::floor(ret.y), 2) ^ (tile_layout == TileSet::TILE_LAYOUT_STACKED_OFFSET)) {
+				ret = Vector2(Math::floor(ret.x + 0.5) - 0.5, Math::floor(ret.y));
+			} else {
+				ret = ret.floor();
+			}
+
+			// Compute the tile offset, and if we might the output for a neighbor top tile.
+			Vector2 in_tile_pos = raw_pos - ret;
+			bool in_top_left_triangle = (in_tile_pos - Vector2(0.5, 0.0)).cross(Vector2(-0.5, 1.0 / overlapping_ratio - 1)) <= 0;
+			bool in_top_right_triangle = (in_tile_pos - Vector2(0.5, 0.0)).cross(Vector2(0.5, 1.0 / overlapping_ratio - 1)) > 0;
+
+			switch (tile_layout) {
+				case TileSet::TILE_LAYOUT_STACKED:
+					ret = ret.floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(Math::posmod(Math::floor(ret.y), 2) ? 0 : -1, -1);
+					} else if (in_top_right_triangle) {
+						ret += Vector2i(Math::posmod(Math::floor(ret.y), 2) ? 1 : 0, -1);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_STACKED_OFFSET:
+					ret = ret.floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(Math::posmod(Math::floor(ret.y), 2) ? -1 : 0, -1);
+					} else if (in_top_right_triangle) {
+						ret += Vector2i(Math::posmod(Math::floor(ret.y), 2) ? 0 : 1, -1);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+					ret = Vector2(ret.x - ret.y / 2, ret.y).floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(0, -1);
+					} else if (in_top_right_triangle) {
+						ret += Vector2i(1, -1);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+					ret = Vector2(ret.x * 2, ret.y / 2 - ret.x).floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(-1, 0);
+					} else if (in_top_right_triangle) {
+						ret += Vector2i(1, -1);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+					ret = Vector2(ret.x - ret.y / 2, ret.y / 2 + ret.x).floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(0, -1);
+					} else if (in_top_right_triangle) {
+						ret += Vector2i(1, 0);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+					ret = Vector2(ret.x + ret.y / 2, ret.y / 2 - ret.x).floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(-1, 0);
+					} else if (in_top_right_triangle) {
+						ret += Vector2i(0, -1);
+					}
+					break;
+			}
+		} else { // TILE_OFFSET_AXIS_VERTICAL.
+			// Smart floor of the position.
+			Vector2 raw_pos = ret;
+			if (Math::posmod(Math::floor(ret.x), 2) ^ (tile_layout == TileSet::TILE_LAYOUT_STACKED_OFFSET)) {
+				ret = Vector2(Math::floor(ret.x), Math::floor(ret.y + 0.5) - 0.5);
+			} else {
+				ret = ret.floor();
+			}
+
+			// Compute the tile offset, and if we might the output for a neighbor top tile.
+			Vector2 in_tile_pos = raw_pos - ret;
+			bool in_top_left_triangle = (in_tile_pos - Vector2(0.0, 0.5)).cross(Vector2(1.0 / overlapping_ratio - 1, -0.5)) > 0;
+			bool in_bottom_left_triangle = (in_tile_pos - Vector2(0.0, 0.5)).cross(Vector2(1.0 / overlapping_ratio - 1, 0.5)) <= 0;
+
+			switch (tile_layout) {
+				case TileSet::TILE_LAYOUT_STACKED:
+					ret = ret.floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(-1, Math::posmod(Math::floor(ret.x), 2) ? 0 : -1);
+					} else if (in_bottom_left_triangle) {
+						ret += Vector2i(-1, Math::posmod(Math::floor(ret.x), 2) ? 1 : 0);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_STACKED_OFFSET:
+					ret = ret.floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(-1, Math::posmod(Math::floor(ret.x), 2) ? -1 : 0);
+					} else if (in_bottom_left_triangle) {
+						ret += Vector2i(-1, Math::posmod(Math::floor(ret.x), 2) ? 0 : 1);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+					ret = Vector2(ret.x / 2 - ret.y, ret.y * 2).floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(0, -1);
+					} else if (in_bottom_left_triangle) {
+						ret += Vector2i(-1, 1);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+					ret = Vector2(ret.x, ret.y - ret.x / 2).floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(-1, 0);
+					} else if (in_bottom_left_triangle) {
+						ret += Vector2i(-1, 1);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+					ret = Vector2(ret.x / 2 - ret.y, ret.y + ret.x / 2).floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(0, -1);
+					} else if (in_bottom_left_triangle) {
+						ret += Vector2i(-1, 0);
+					}
+					break;
+				case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+					ret = Vector2(ret.x / 2 + ret.y, ret.y - ret.x / 2).floor();
+					if (in_top_left_triangle) {
+						ret += Vector2i(-1, 0);
+					} else if (in_bottom_left_triangle) {
+						ret += Vector2i(0, 1);
+					}
+					break;
+			}
+		}
+	} else {
+		ret = (ret + Vector2(0.00005, 0.00005)).floor();
+	}
+	return Vector2i(ret);
+}
+
+bool TileSet::is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const {
+	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+		return p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER;
+
+	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		return p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER ||
+				p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
+	} else {
+		if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+			return p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
+		} else {
+			return p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE ||
+					p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
+		}
+	}
+}
+
+Vector2i TileSet::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const {
+	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+		switch (p_cell_neighbor) {
+			case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
+				return p_coords + Vector2i(1, 0);
+			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
+				return p_coords + Vector2i(1, 1);
+			case TileSet::CELL_NEIGHBOR_BOTTOM_SIDE:
+				return p_coords + Vector2i(0, 1);
+			case TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_CORNER:
+				return p_coords + Vector2i(-1, 1);
+			case TileSet::CELL_NEIGHBOR_LEFT_SIDE:
+				return p_coords + Vector2i(-1, 0);
+			case TileSet::CELL_NEIGHBOR_TOP_LEFT_CORNER:
+				return p_coords + Vector2i(-1, -1);
+			case TileSet::CELL_NEIGHBOR_TOP_SIDE:
+				return p_coords + Vector2i(0, -1);
+			case TileSet::CELL_NEIGHBOR_TOP_RIGHT_CORNER:
+				return p_coords + Vector2i(1, -1);
+			default:
+				ERR_FAIL_V(p_coords);
+		}
+	} else { // Half-offset shapes (square and hexagon).
+		switch (tile_layout) {
+			case TileSet::TILE_LAYOUT_STACKED: {
+				if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+					bool is_offset = p_coords.y % 2;
+					if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+							(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+						return p_coords + Vector2i(1, 0);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+						return p_coords + Vector2i(is_offset ? 1 : 0, 1);
+					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+						return p_coords + Vector2i(0, 2);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+						return p_coords + Vector2i(is_offset ? 0 : -1, 1);
+					} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+							(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+						return p_coords + Vector2i(-1, 0);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+						return p_coords + Vector2i(is_offset ? 0 : -1, -1);
+					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+						return p_coords + Vector2i(0, -2);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+						return p_coords + Vector2i(is_offset ? 1 : 0, -1);
+					} else {
+						ERR_FAIL_V(p_coords);
+					}
+				} else {
+					bool is_offset = p_coords.x % 2;
+
+					if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+							(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+						return p_coords + Vector2i(0, 1);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+						return p_coords + Vector2i(1, is_offset ? 1 : 0);
+					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+						return p_coords + Vector2i(2, 0);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+						return p_coords + Vector2i(1, is_offset ? 0 : -1);
+					} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+							(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+						return p_coords + Vector2i(0, -1);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+						return p_coords + Vector2i(-1, is_offset ? 0 : -1);
+					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+						return p_coords + Vector2i(-2, 0);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+						return p_coords + Vector2i(-1, is_offset ? 1 : 0);
+					} else {
+						ERR_FAIL_V(p_coords);
+					}
+				}
+			} break;
+			case TileSet::TILE_LAYOUT_STACKED_OFFSET: {
+				if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+					bool is_offset = p_coords.y % 2;
+
+					if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+							(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+						return p_coords + Vector2i(1, 0);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+						return p_coords + Vector2i(is_offset ? 0 : 1, 1);
+					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+						return p_coords + Vector2i(0, 2);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+						return p_coords + Vector2i(is_offset ? -1 : 0, 1);
+					} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+							(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+						return p_coords + Vector2i(-1, 0);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+						return p_coords + Vector2i(is_offset ? -1 : 0, -1);
+					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+						return p_coords + Vector2i(0, -2);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+						return p_coords + Vector2i(is_offset ? 0 : 1, -1);
+					} else {
+						ERR_FAIL_V(p_coords);
+					}
+				} else {
+					bool is_offset = p_coords.x % 2;
+
+					if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+							(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+						return p_coords + Vector2i(0, 1);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+						return p_coords + Vector2i(1, is_offset ? 0 : 1);
+					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+						return p_coords + Vector2i(2, 0);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+						return p_coords + Vector2i(1, is_offset ? -1 : 0);
+					} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+							(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+						return p_coords + Vector2i(0, -1);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+						return p_coords + Vector2i(-1, is_offset ? -1 : 0);
+					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+						return p_coords + Vector2i(-2, 0);
+					} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+						return p_coords + Vector2i(-1, is_offset ? 0 : 1);
+					} else {
+						ERR_FAIL_V(p_coords);
+					}
+				}
+			} break;
+			case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+			case TileSet::TILE_LAYOUT_STAIRS_DOWN: {
+				if ((tile_layout == TileSet::TILE_LAYOUT_STAIRS_RIGHT) ^ (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+					if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+						if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+							return p_coords + Vector2i(1, 0);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+							return p_coords + Vector2i(0, 1);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+							return p_coords + Vector2i(-1, 2);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 1);
+						} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+							return p_coords + Vector2i(-1, 0);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+							return p_coords + Vector2i(0, -1);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+							return p_coords + Vector2i(1, -2);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, -1);
+						} else {
+							ERR_FAIL_V(p_coords);
+						}
+
+					} else {
+						if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+							return p_coords + Vector2i(0, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, 0);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+							return p_coords + Vector2i(2, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, -1);
+						} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+							return p_coords + Vector2i(0, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 0);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+							return p_coords + Vector2i(-2, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 1);
+						} else {
+							ERR_FAIL_V(p_coords);
+						}
+					}
+				} else {
+					if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+						if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+							return p_coords + Vector2i(2, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, 0);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+							return p_coords + Vector2i(0, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 1);
+						} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+							return p_coords + Vector2i(-2, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 0);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+							return p_coords + Vector2i(0, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, -1);
+						} else {
+							ERR_FAIL_V(p_coords);
+						}
+
+					} else {
+						if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+							return p_coords + Vector2i(-1, 2);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+							return p_coords + Vector2i(0, 1);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+							return p_coords + Vector2i(1, 0);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, -1);
+						} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+							return p_coords + Vector2i(1, -2);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+							return p_coords + Vector2i(0, -1);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+							return p_coords + Vector2i(-1, 0);
+
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 1);
+						} else {
+							ERR_FAIL_V(p_coords);
+						}
+					}
+				}
+			} break;
+			case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+			case TileSet::TILE_LAYOUT_DIAMOND_DOWN: {
+				if ((tile_layout == TileSet::TILE_LAYOUT_DIAMOND_RIGHT) ^ (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+					if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+						if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+							return p_coords + Vector2i(1, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+							return p_coords + Vector2i(0, 1);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+							return p_coords + Vector2i(-1, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 0);
+						} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+							return p_coords + Vector2i(-1, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+							return p_coords + Vector2i(0, -1);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+							return p_coords + Vector2i(1, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, 0);
+						} else {
+							ERR_FAIL_V(p_coords);
+						}
+
+					} else {
+						if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+							return p_coords + Vector2i(1, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, 0);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+							return p_coords + Vector2i(1, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+							return p_coords + Vector2i(0, -1);
+						} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+							return p_coords + Vector2i(-1, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 0);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+							return p_coords + Vector2i(-1, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+							return p_coords + Vector2i(0, 1);
+						} else {
+							ERR_FAIL_V(p_coords);
+						}
+					}
+				} else {
+					if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+						if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_SIDE)) {
+							return p_coords + Vector2i(1, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, 0);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) {
+							return p_coords + Vector2i(1, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+							return p_coords + Vector2i(0, 1);
+						} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_SIDE)) {
+							return p_coords + Vector2i(-1, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 0);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) {
+							return p_coords + Vector2i(-1, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+							return p_coords + Vector2i(0, -1);
+						} else {
+							ERR_FAIL_V(p_coords);
+						}
+
+					} else {
+						if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)) {
+							return p_coords + Vector2i(-1, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE) {
+							return p_coords + Vector2i(0, 1);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_RIGHT_CORNER) {
+							return p_coords + Vector2i(1, 1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE) {
+							return p_coords + Vector2i(1, 0);
+						} else if ((tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_CORNER) ||
+								(tile_shape != TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_SIDE)) {
+							return p_coords + Vector2i(1, -1);
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE) {
+							return p_coords + Vector2i(0, -1);
+						} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC && p_cell_neighbor == TileSet::CELL_NEIGHBOR_LEFT_CORNER) {
+							return p_coords + Vector2i(-1, -1);
+
+						} else if (p_cell_neighbor == TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE) {
+							return p_coords + Vector2i(-1, 0);
+						} else {
+							ERR_FAIL_V(p_coords);
+						}
+					}
+				}
+			} break;
+			default:
+				ERR_FAIL_V(p_coords);
+		}
+	}
+}
+
+TypedArray<Vector2i> TileSet::get_surrounding_cells(const Vector2i &p_coords) const {
+	TypedArray<Vector2i> around;
+	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+		around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_RIGHT_SIDE));
+		around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE));
+		around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_LEFT_SIDE));
+		around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_TOP_SIDE));
+	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE));
+		around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE));
+		around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE));
+		around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE));
+	} else {
+		if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_RIGHT_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_LEFT_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE));
+		} else {
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_TOP_SIDE));
+			around.push_back(get_neighbor_cell(p_coords, TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE));
+		}
+	}
+
+	return around;
+}
+
+Vector2i TileSet::map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern) const {
+	ERR_FAIL_COND_V(p_pattern.is_null(), Vector2i());
+	ERR_FAIL_COND_V(!p_pattern->has_cell(p_coords_in_pattern), Vector2i());
+
+	Vector2i output = p_position_in_tilemap + p_coords_in_pattern;
+	if (tile_shape != TileSet::TILE_SHAPE_SQUARE) {
+		if (tile_layout == TileSet::TILE_LAYOUT_STACKED) {
+			if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL && bool(p_position_in_tilemap.y % 2) && bool(p_coords_in_pattern.y % 2)) {
+				output.x += 1;
+			} else if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL && bool(p_position_in_tilemap.x % 2) && bool(p_coords_in_pattern.x % 2)) {
+				output.y += 1;
+			}
+		} else if (tile_layout == TileSet::TILE_LAYOUT_STACKED_OFFSET) {
+			if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL && bool(p_position_in_tilemap.y % 2) && bool(p_coords_in_pattern.y % 2)) {
+				output.x -= 1;
+			} else if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL && bool(p_position_in_tilemap.x % 2) && bool(p_coords_in_pattern.x % 2)) {
+				output.y -= 1;
+			}
+		}
+	}
+
+	return output;
+}
+
+void TileSet::draw_cells_outline(CanvasItem *p_canvas_item, const RBSet<Vector2i> &p_cells, Color p_color, Transform2D p_transform) const {
+	Vector<Vector2> polygon = get_tile_shape_polygon();
+	for (const Vector2i &E : p_cells) {
+		Vector2 center = map_to_local(E);
+
+#define DRAW_SIDE_IF_NEEDED(side, polygon_index_from, polygon_index_to)                     \
+	if (!p_cells.has(get_neighbor_cell(E, side))) {                                         \
+		Vector2 from = p_transform.xform(center + polygon[polygon_index_from] * tile_size); \
+		Vector2 to = p_transform.xform(center + polygon[polygon_index_to] * tile_size);     \
+		p_canvas_item->draw_line(from, to, p_color);                                        \
+	}
+
+		if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_RIGHT_SIDE, 1, 2);
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, 2, 3);
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_LEFT_SIDE, 3, 0);
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_SIDE, 0, 1);
+		} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, 2, 3);
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, 1, 2);
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, 0, 1);
+			DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, 3, 0);
+		} else {
+			if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, 3, 4);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, 2, 3);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_LEFT_SIDE, 1, 2);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, 0, 1);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, 5, 0);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_RIGHT_SIDE, 4, 5);
+			} else {
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE, 3, 4);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_SIDE, 4, 5);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE, 5, 0);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_LEFT_SIDE, 0, 1);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_SIDE, 1, 2);
+				DRAW_SIDE_IF_NEEDED(TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE, 2, 3);
+			}
+		}
+	}
+#undef DRAW_SIDE_IF_NEEDED
 }
 
 Vector<Point2> TileSet::get_terrain_polygon(int p_terrain_set) {
@@ -2559,6 +3261,115 @@ void TileSet::reset_state() {
 	tile_size = Size2i(16, 16);
 }
 
+Vector2i TileSet::transform_coords_layout(const Vector2i &p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout) {
+	// Transform to stacked layout.
+	Vector2i output = p_coords;
+	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+		SWAP(output.x, output.y);
+	}
+	switch (p_from_layout) {
+		case TileSet::TILE_LAYOUT_STACKED:
+			break;
+		case TileSet::TILE_LAYOUT_STACKED_OFFSET:
+			if (output.y % 2) {
+				output.x -= 1;
+			}
+			break;
+		case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+		case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+			if ((p_from_layout == TileSet::TILE_LAYOUT_STAIRS_RIGHT) ^ (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+				if (output.y < 0 && bool(output.y % 2)) {
+					output = Vector2i(output.x + output.y / 2 - 1, output.y);
+				} else {
+					output = Vector2i(output.x + output.y / 2, output.y);
+				}
+			} else {
+				if (output.x < 0 && bool(output.x % 2)) {
+					output = Vector2i(output.x / 2 - 1, output.x + output.y * 2);
+				} else {
+					output = Vector2i(output.x / 2, output.x + output.y * 2);
+				}
+			}
+			break;
+		case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+		case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+			if ((p_from_layout == TileSet::TILE_LAYOUT_DIAMOND_RIGHT) ^ (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+				if ((output.x + output.y) < 0 && (output.x - output.y) % 2) {
+					output = Vector2i((output.x + output.y) / 2 - 1, output.y - output.x);
+				} else {
+					output = Vector2i((output.x + output.y) / 2, -output.x + output.y);
+				}
+			} else {
+				if ((output.x - output.y) < 0 && (output.x + output.y) % 2) {
+					output = Vector2i((output.x - output.y) / 2 - 1, output.x + output.y);
+				} else {
+					output = Vector2i((output.x - output.y) / 2, output.x + output.y);
+				}
+			}
+			break;
+	}
+
+	switch (p_to_layout) {
+		case TileSet::TILE_LAYOUT_STACKED:
+			break;
+		case TileSet::TILE_LAYOUT_STACKED_OFFSET:
+			if (output.y % 2) {
+				output.x += 1;
+			}
+			break;
+		case TileSet::TILE_LAYOUT_STAIRS_RIGHT:
+		case TileSet::TILE_LAYOUT_STAIRS_DOWN:
+			if ((p_to_layout == TileSet::TILE_LAYOUT_STAIRS_RIGHT) ^ (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+				if (output.y < 0 && (output.y % 2)) {
+					output = Vector2i(output.x - output.y / 2 + 1, output.y);
+				} else {
+					output = Vector2i(output.x - output.y / 2, output.y);
+				}
+			} else {
+				if (output.y % 2) {
+					if (output.y < 0) {
+						output = Vector2i(2 * output.x + 1, -output.x + output.y / 2 - 1);
+					} else {
+						output = Vector2i(2 * output.x + 1, -output.x + output.y / 2);
+					}
+				} else {
+					output = Vector2i(2 * output.x, -output.x + output.y / 2);
+				}
+			}
+			break;
+		case TileSet::TILE_LAYOUT_DIAMOND_RIGHT:
+		case TileSet::TILE_LAYOUT_DIAMOND_DOWN:
+			if ((p_to_layout == TileSet::TILE_LAYOUT_DIAMOND_RIGHT) ^ (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL)) {
+				if (output.y % 2) {
+					if (output.y > 0) {
+						output = Vector2i(output.x - output.y / 2, output.x + output.y / 2 + 1);
+					} else {
+						output = Vector2i(output.x - output.y / 2 + 1, output.x + output.y / 2);
+					}
+				} else {
+					output = Vector2i(output.x - output.y / 2, output.x + output.y / 2);
+				}
+			} else {
+				if (output.y % 2) {
+					if (output.y < 0) {
+						output = Vector2i(output.x + output.y / 2, -output.x + output.y / 2 - 1);
+					} else {
+						output = Vector2i(output.x + output.y / 2 + 1, -output.x + output.y / 2);
+					}
+				} else {
+					output = Vector2i(output.x + output.y / 2, -output.x + output.y / 2);
+				}
+			}
+			break;
+	}
+
+	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
+		SWAP(output.x, output.y);
+	}
+
+	return output;
+}
+
 const Vector2i TileSetSource::INVALID_ATLAS_COORDS = Vector2i(-1, -1);
 const int TileSetSource::INVALID_TILE_ALTERNATIVE = -1;
 
@@ -3403,7 +4214,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Sources.
 	// Note: sources have to be listed in at the end as some TileData rely on the TileSet properties being initialized first.
 	for (const KeyValue<int, Ref<TileSetSource>> &E_source : sources) {
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("sources/%d", E_source.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("sources/%d", E_source.key), PROPERTY_HINT_RESOURCE_TYPE, "TileSetAtlasSource", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 	}
 
 	// Tile Proxies.
@@ -4675,7 +5486,6 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tile_texture_region", "atlas_coords", "frame"), &TileSetAtlasSource::get_tile_texture_region, DEFVAL(0));
 
 	// Getters for texture and tile region (padded or not)
-	ClassDB::bind_method(D_METHOD("_update_padded_texture"), &TileSetAtlasSource::_update_padded_texture);
 	ClassDB::bind_method(D_METHOD("get_runtime_texture"), &TileSetAtlasSource::get_runtime_texture);
 	ClassDB::bind_method(D_METHOD("get_runtime_tile_texture_region", "atlas_coords", "frame"), &TileSetAtlasSource::get_runtime_tile_texture_region);
 
@@ -4761,7 +5571,7 @@ void TileSetAtlasSource::_create_coords_mapping_cache(Vector2i p_atlas_coords) {
 
 void TileSetAtlasSource::_queue_update_padded_texture() {
 	padded_texture_needs_update = true;
-	call_deferred(SNAME("_update_padded_texture"));
+	callable_mp(this, &TileSetAtlasSource::_update_padded_texture).call_deferred();
 }
 
 Ref<ImageTexture> TileSetAtlasSource::_create_padded_image_texture(const Ref<Texture2D> &p_source) {

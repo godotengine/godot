@@ -1823,9 +1823,6 @@ msgstr "Докладване на проблем"
 msgid "About Godot"
 msgstr "Относно Godot"
 
-msgid "Choose a renderer."
-msgstr "Избор на метод на изчертаване."
-
 msgid "Inspector"
 msgstr "Инспектор"
 

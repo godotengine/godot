@@ -33,6 +33,7 @@
 
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
+#include "scene/animation/animation_player.h"
 #include "scene/scene_string_names.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -605,8 +606,8 @@ uint64_t AnimationTree::get_last_process_pass() const {
 	return process_pass;
 }
 
-PackedStringArray AnimationTree::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array AnimationTree::get_configuration_warnings() const {
+	Array warnings = Node::get_configuration_warnings();
 	if (!root_animation_node.is_valid()) {
 		warnings.push_back(RTR("No root AnimationNode for the graph is set."));
 	}
@@ -618,7 +619,7 @@ void AnimationTree::_tree_changed() {
 		return;
 	}
 
-	call_deferred(SNAME("_update_properties"));
+	callable_mp(this, &AnimationTree::_update_properties).call_deferred();
 	properties_dirty = true;
 }
 
@@ -764,15 +765,16 @@ void AnimationTree::_setup_animation_player() {
 		return;
 	}
 
-	AnimationMixer *mixer = Object::cast_to<AnimationMixer>(get_node_or_null(animation_player));
-	if (mixer) {
-		if (!mixer->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			mixer->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+	// Using AnimationPlayer here is for compatibility. Changing to AnimationMixer needs extra work like error handling.
+	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node_or_null(animation_player));
+	if (player) {
+		if (!player->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
 		}
-		if (!mixer->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			mixer->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+		if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
 		}
-		Node *root = mixer->get_node_or_null(mixer->get_root_node());
+		Node *root = player->get_node_or_null(player->get_root_node());
 		if (root) {
 			set_root_node(get_path_to(root, true));
 		}
@@ -780,9 +782,9 @@ void AnimationTree::_setup_animation_player() {
 			remove_animation_library(animation_libraries[0].name);
 		}
 		List<StringName> list;
-		mixer->get_animation_library_list(&list);
+		player->get_animation_library_list(&list);
 		for (int i = 0; i < list.size(); i++) {
-			Ref<AnimationLibrary> lib = mixer->get_animation_library(list[i]);
+			Ref<AnimationLibrary> lib = player->get_animation_library(list[i]);
 			if (lib.is_valid()) {
 				add_animation_library(list[i], lib);
 			}
@@ -798,6 +800,9 @@ void AnimationTree::_validate_property(PropertyInfo &p_property) const {
 	if (!animation_player.is_empty()) {
 		if (p_property.name == "root_node" || p_property.name.begins_with("libraries")) {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+		if (p_property.name.begins_with("libraries")) {
+			p_property.usage &= ~PROPERTY_USAGE_STORAGE;
 		}
 	}
 }
@@ -880,8 +885,6 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_animation_player", "path"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
-
-	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");

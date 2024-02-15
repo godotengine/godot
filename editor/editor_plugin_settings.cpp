@@ -36,7 +36,7 @@
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
 
@@ -64,7 +64,7 @@ void EditorPluginSettings::update_plugins() {
 	for (int i = 0; i < plugins.size(); i++) {
 		Ref<ConfigFile> cf;
 		cf.instantiate();
-		const String path = plugins[i];
+		const String &path = plugins[i];
 
 		Error err2 = cf->load(path);
 

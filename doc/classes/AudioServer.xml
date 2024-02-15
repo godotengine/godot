@@ -281,6 +281,8 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
+				If set to [code]true[/code], all instances of [AudioStreamPlayback] will call [method AudioStreamPlayback._tag_used_streams] every mix step.
+				[b]Note:[/b] This is enabled by default in the editor, as it is used by editor plugins for the audio stream previews.
 			</description>
 		</method>
 		<method name="swap_bus_effects">

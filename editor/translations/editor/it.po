@@ -94,13 +94,14 @@
 # Frankie McEyes <mceyes@protonmail.com>, 2023.
 # Andrea <andrea.rubino1990@gmail.com>, 2023.
 # Samuele Righi <blackdestinyx145@gmail.com>, 2023.
+# Ott8v <Ott8v@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-11 21:00+0000\n"
-"Last-Translator: Samuele Righi <blackdestinyx145@gmail.com>\n"
+"PO-Revision-Date: 2024-01-28 23:10+0000\n"
+"Last-Translator: Ott8v <Ott8v@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -108,7 +109,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread Principale"
@@ -3484,6 +3485,9 @@ msgstr ""
 msgid "Save & Close"
 msgstr "Salva e chiudi"
 
+msgid "Save before closing?"
+msgstr "Salvare prima di chiudere?"
+
 msgid "%d more files or folders"
 msgstr "%d altri file o cartelle"
 
@@ -3497,6 +3501,15 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 "Impossibile scrivere sul file '%s', file in uso, bloccato o mancano permessi."
+
+msgid "Forward+"
+msgstr "Forward+"
+
+msgid "Mobile"
+msgstr "Mobile"
+
+msgid "Compatibility"
+msgstr "Compatibilità"
 
 msgid "Pan View"
 msgstr "Trasla Visuale"
@@ -3672,21 +3685,6 @@ msgstr "Informazioni su Godot"
 
 msgid "Support Godot Development"
 msgstr "Supporta lo sviluppo di Godot"
-
-msgid "Choose a renderer."
-msgstr "Scegli un renderer."
-
-msgid "Forward+"
-msgstr "Forward+"
-
-msgid "Mobile"
-msgstr "Mobile"
-
-msgid "Compatibility"
-msgstr "Compatibilità"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "Il cambiamento del renderer richiede il riavvio dell'editor."
 
 msgid "Update Continuously"
 msgstr "Aggiorna Continuamente"
@@ -6537,6 +6535,9 @@ msgstr "Sposta Nodo"
 
 msgid "Transition exists!"
 msgstr "La transizione esiste!"
+
+msgid "Edit %s"
+msgstr "Modifica %s"
 
 msgid "Add Node and Transition"
 msgstr "Aggiungi un nodo e una transizione"
@@ -10342,6 +10343,9 @@ msgstr ""
 "Coordinate dell'atlas: %s\n"
 "Alternativa: %d"
 
+msgid "Probability"
+msgstr "Probabilità"
+
 msgid "Physics Layer %d"
 msgstr "Layer di fisica %d"
 
@@ -10488,6 +10492,9 @@ msgstr ""
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Aggiunti nuovi modelli nella modalità di editing della TileMap."
+
+msgid "ID: %d"
+msgstr "ID: %d"
 
 msgid "Add a Scene Tile"
 msgstr "Aggiungi un tassello scena"
@@ -12105,14 +12112,6 @@ msgstr ""
 "L'interfaccia si aggiornerà dopo un riavvio dell'editor o del gestore dei "
 "progetti."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Sei sicuro di voler scansionare %s cartelle per progetti Godot già "
-"esistenti?\n"
-"Potrebbe volerci un po' di tempo."
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "Gestore Progetto"
@@ -13285,13 +13284,6 @@ msgstr ""
 
 msgid "The package must have at least one '.' separator."
 msgstr "Il pacchetto deve avere almeno un \".\" separatore."
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr ""
-"Il nome del progetto non rispetta i requisiti per il formato del nome del "
-"pacchetto. Per favore specificare esplicitamente il nome del pacchetto."
 
 msgid "Invalid public key for APK expansion."
 msgstr "Chiave pubblica non valida per l'espansione dell'APK."
@@ -14528,6 +14520,9 @@ msgstr "Le constanti non possono essere modificate."
 
 msgid "Cannot convert from '%s' to '%s'."
 msgstr "Impossibile convertire da '%s' a '%s'."
+
+msgid "Expected ')' in expression."
+msgstr "Prevista ')' nell'espressione."
 
 msgid "Void value not allowed in expression."
 msgstr "Valore di tipo void non consentito in un espressione."

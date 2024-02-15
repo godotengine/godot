@@ -36,11 +36,12 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/menu_button.h"
@@ -238,6 +239,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			MenuButton *mb = memnew(MenuButton);
 			mb->set_text(anim->get_animation());
 			mb->set_icon(get_editor_theme_icon(SNAME("Animation")));
+			mb->set_auto_translate(false);
 			mb->set_disabled(read_only);
 			Array options;
 
@@ -621,6 +623,111 @@ void AnimationNodeBlendTreeEditor::_filter_edited() {
 	undo_redo->add_undo_method(this, "_update_filters", _filter_edit);
 	undo_redo->commit_action();
 	updating = false;
+}
+
+void AnimationNodeBlendTreeEditor::_filter_fill_selection() {
+	TreeItem *ti = filters->get_root();
+	if (!ti) {
+		return;
+	}
+
+	updating = true;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Fill Selected Filter Children"));
+
+	_filter_fill_selection_recursive(undo_redo, ti, false);
+
+	undo_redo->add_do_method(this, "_update_filters", _filter_edit);
+	undo_redo->add_undo_method(this, "_update_filters", _filter_edit);
+	undo_redo->commit_action();
+	updating = false;
+
+	_update_filters(_filter_edit);
+}
+
+void AnimationNodeBlendTreeEditor::_filter_invert_selection() {
+	TreeItem *ti = filters->get_root();
+	if (!ti) {
+		return;
+	}
+
+	updating = true;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Invert Filter Selection"));
+
+	_filter_invert_selection_recursive(undo_redo, ti);
+
+	undo_redo->add_do_method(this, "_update_filters", _filter_edit);
+	undo_redo->add_undo_method(this, "_update_filters", _filter_edit);
+	undo_redo->commit_action();
+	updating = false;
+
+	_update_filters(_filter_edit);
+}
+
+void AnimationNodeBlendTreeEditor::_filter_clear_selection() {
+	TreeItem *ti = filters->get_root();
+	if (!ti) {
+		return;
+	}
+
+	updating = true;
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Clear Filter Selection"));
+
+	_filter_clear_selection_recursive(undo_redo, ti);
+
+	undo_redo->add_do_method(this, "_update_filters", _filter_edit);
+	undo_redo->add_undo_method(this, "_update_filters", _filter_edit);
+	undo_redo->commit_action();
+	updating = false;
+
+	_update_filters(_filter_edit);
+}
+
+void AnimationNodeBlendTreeEditor::_filter_fill_selection_recursive(EditorUndoRedoManager *p_undo_redo, TreeItem *p_item, bool p_parent_filtered) {
+	TreeItem *ti = p_item->get_first_child();
+	bool parent_filtered = p_parent_filtered;
+	while (ti) {
+		NodePath item_path = ti->get_metadata(0);
+		bool filtered = _filter_edit->is_path_filtered(item_path);
+		parent_filtered |= filtered;
+
+		p_undo_redo->add_do_method(_filter_edit.ptr(), "set_filter_path", item_path, parent_filtered);
+		p_undo_redo->add_undo_method(_filter_edit.ptr(), "set_filter_path", item_path, filtered);
+
+		_filter_fill_selection_recursive(p_undo_redo, ti, parent_filtered);
+		ti = ti->get_next();
+		parent_filtered = p_parent_filtered;
+	}
+}
+
+void AnimationNodeBlendTreeEditor::_filter_invert_selection_recursive(EditorUndoRedoManager *p_undo_redo, TreeItem *p_item) {
+	TreeItem *ti = p_item->get_first_child();
+	while (ti) {
+		NodePath item_path = ti->get_metadata(0);
+		bool filtered = _filter_edit->is_path_filtered(item_path);
+
+		p_undo_redo->add_do_method(_filter_edit.ptr(), "set_filter_path", item_path, !filtered);
+		p_undo_redo->add_undo_method(_filter_edit.ptr(), "set_filter_path", item_path, filtered);
+
+		_filter_invert_selection_recursive(p_undo_redo, ti);
+		ti = ti->get_next();
+	}
+}
+
+void AnimationNodeBlendTreeEditor::_filter_clear_selection_recursive(EditorUndoRedoManager *p_undo_redo, TreeItem *p_item) {
+	TreeItem *ti = p_item->get_first_child();
+	while (ti) {
+		NodePath item_path = ti->get_metadata(0);
+		bool filtered = _filter_edit->is_path_filtered(item_path);
+
+		p_undo_redo->add_do_method(_filter_edit.ptr(), "set_filter_path", item_path, false);
+		p_undo_redo->add_undo_method(_filter_edit.ptr(), "set_filter_path", item_path, filtered);
+
+		_filter_clear_selection_recursive(p_undo_redo, ti);
+		ti = ti->get_next();
+	}
 }
 
 bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &anode) {
@@ -1121,10 +1228,28 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	VBoxContainer *filter_vbox = memnew(VBoxContainer);
 	filter_dialog->add_child(filter_vbox);
 
+	HBoxContainer *filter_hbox = memnew(HBoxContainer);
+	filter_vbox->add_child(filter_hbox);
+
 	filter_enabled = memnew(CheckBox);
 	filter_enabled->set_text(TTR("Enable Filtering"));
 	filter_enabled->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_toggled));
-	filter_vbox->add_child(filter_enabled);
+	filter_hbox->add_child(filter_enabled);
+
+	filter_fill_selection = memnew(Button);
+	filter_fill_selection->set_text(TTR("Fill Selected Children"));
+	filter_fill_selection->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_fill_selection));
+	filter_hbox->add_child(filter_fill_selection);
+
+	filter_invert_selection = memnew(Button);
+	filter_invert_selection->set_text(TTR("Invert"));
+	filter_invert_selection->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_invert_selection));
+	filter_hbox->add_child(filter_invert_selection);
+
+	filter_clear_selection = memnew(Button);
+	filter_clear_selection->set_text(TTR("Clear"));
+	filter_clear_selection->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_clear_selection));
+	filter_hbox->add_child(filter_clear_selection);
 
 	filters = memnew(Tree);
 	filter_vbox->add_child(filters);

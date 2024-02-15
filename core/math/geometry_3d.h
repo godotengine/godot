@@ -31,6 +31,7 @@
 #ifndef GEOMETRY_3D_H
 #define GEOMETRY_3D_H
 
+#include "core/math/delaunay_3d.h"
 #include "core/math/face3.h"
 #include "core/object/object.h"
 #include "core/templates/local_vector.h"
@@ -530,6 +531,21 @@ public:
 		}
 
 		return clipped;
+	}
+
+	static Vector<int32_t> tetrahedralize_delaunay(const Vector<Vector3> &p_points) {
+		Vector<Delaunay3D::OutputSimplex> tetr = Delaunay3D::tetrahedralize(p_points);
+		Vector<int32_t> tetrahedrons;
+
+		tetrahedrons.resize(4 * tetr.size());
+		int32_t *ptr = tetrahedrons.ptrw();
+		for (int i = 0; i < tetr.size(); i++) {
+			*ptr++ = tetr[i].points[0];
+			*ptr++ = tetr[i].points[1];
+			*ptr++ = tetr[i].points[2];
+			*ptr++ = tetr[i].points[3];
+		}
+		return tetrahedrons;
 	}
 
 	// Create a "wrap" that encloses the given geometry.

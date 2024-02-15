@@ -12,9 +12,10 @@
 	</tutorials>
 	<members>
 		<member name="motion_mirroring" type="Vector2" setter="set_mirroring" getter="get_mirroring" default="Vector2(0, 0)">
-			The ParallaxLayer's [Texture2D] repeating. Useful for creating an infinite scrolling background. If an axis is set to [code]0[/code], the [Texture2D] will not be repeated.
-			If the length of the viewport axis is bigger than twice the repeated axis size, it will not repeat infinitely, as the parallax layer only draws 2 instances of the texture at any given time.
-			[b]Note:[/b] Despite its name, the texture will not be mirrored, it will simply be repeated.
+			The interval, in pixels, at which the [ParallaxLayer] is drawn repeatedly. Useful for creating an infinitely scrolling background. If an axis is set to [code]0[/code], the [ParallaxLayer] will be drawn only once along that direction.
+			[b]Note:[/b] If you want the repetition to pixel-perfect match a [Texture2D] displayed by a child node, you should account for any scale applied to the texture when defining this interval. For example, if you use a child [Sprite2D] scaled to [code]0.5[/code] to display a 600x600 texture, and want this sprite to be repeated continuously horizontally, you should set the mirroring to [code]Vector2(300, 0)[/code].
+			[b]Note:[/b] If the length of the viewport axis is bigger than twice the repeated axis size, it will not repeat infinitely, as the parallax layer only draws 2 instances of the layer at any given time. The visibility window is calculated from the parent [ParallaxBackground]'s position, not the layer's own position. So, if you use mirroring, [b]do not[/b] change the [ParallaxLayer] position relative to its parent. Instead, if you need to adjust the background's position, set the [member CanvasLayer.offset] property in the parent [ParallaxBackground].
+			[b]Note:[/b] Despite the name, the layer will not be mirrored, it will only be repeated.
 		</member>
 		<member name="motion_offset" type="Vector2" setter="set_motion_offset" getter="get_motion_offset" default="Vector2(0, 0)">
 			The ParallaxLayer's offset relative to the parent ParallaxBackground's [member ParallaxBackground.scroll_offset].

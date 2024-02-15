@@ -468,6 +468,9 @@ void LightStorage::reflection_probe_set_enable_shadows(RID p_probe, bool p_enabl
 void LightStorage::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
 }
 
+void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) {
+}
+
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
 }
 
@@ -480,6 +483,10 @@ RS::ReflectionProbeUpdateMode LightStorage::reflection_probe_get_update_mode(RID
 }
 
 uint32_t LightStorage::reflection_probe_get_cull_mask(RID p_probe) const {
+	return 0;
+}
+
+uint32_t LightStorage::reflection_probe_get_reflection_mask(RID p_probe) const {
 	return 0;
 }
 

@@ -252,7 +252,7 @@ class ConnectionsDock : public VBoxContainer {
 	void _signal_menu_about_to_popup();
 	void _handle_slot_menu_option(int p_option);
 	void _slot_menu_about_to_popup();
-	void _rmb_pressed(const Ref<InputEvent> &p_event);
+	void _tree_gui_input(const Ref<InputEvent> &p_event);
 	void _close();
 
 protected:

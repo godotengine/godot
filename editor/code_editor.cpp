@@ -34,10 +34,10 @@
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "core/templates/pair.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/font.h"
 
 void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
@@ -336,7 +336,7 @@ void FindReplaceBar::_replace_all() {
 	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
-	text_editor->call_deferred(SNAME("connect"), "text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
+	callable_mp((Object *)text_editor, &Object::connect).call_deferred("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed), 0U);
 	results_count = -1;
 	results_count_to_current = -1;
 	needs_to_count_results = true;
@@ -517,10 +517,10 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 
 	if (p_focus_replace) {
 		search_text->deselect();
-		replace_text->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)replace_text, &Control::grab_focus).call_deferred();
 	} else {
 		replace_text->deselect();
-		search_text->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)search_text, &Control::grab_focus).call_deferred();
 	}
 
 	if (text_editor->has_selection(0) && !is_selection_only()) {
@@ -1277,7 +1277,7 @@ void CodeTextEditor::move_lines_up() {
 
 		for (int j = 0; j < caret_groups[i].size(); j++) {
 			int c = caret_groups[i][j];
-			Vector<int> caret_parameters = caret_group_parameters[j];
+			const Vector<int> &caret_parameters = caret_group_parameters[j];
 			text_editor->set_caret_line(caret_parameters[4] - 1, c == 0, true, 0, c);
 			text_editor->set_caret_column(caret_parameters[5], c == 0, c);
 
@@ -1374,7 +1374,7 @@ void CodeTextEditor::move_lines_down() {
 
 		for (int j = 0; j < caret_groups[i].size(); j++) {
 			int c = caret_groups[i][j];
-			Vector<int> caret_parameters = caret_group_parameters[j];
+			const Vector<int> &caret_parameters = caret_group_parameters[j];
 			text_editor->set_caret_line(caret_parameters[4] + 1, c == 0, true, 0, c);
 			text_editor->set_caret_column(caret_parameters[5], c == 0, c);
 
@@ -1572,20 +1572,20 @@ void CodeTextEditor::goto_line(int p_line) {
 	text_editor->remove_secondary_carets();
 	text_editor->deselect();
 	text_editor->unfold_line(p_line);
-	text_editor->call_deferred(SNAME("set_caret_line"), p_line);
+	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_line).call_deferred(p_line, true, true, 0, 0);
 }
 
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->remove_secondary_carets();
 	text_editor->unfold_line(p_line);
-	text_editor->call_deferred(SNAME("set_caret_line"), p_line);
-	text_editor->call_deferred(SNAME("set_caret_column"), p_begin);
+	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_line).call_deferred(p_line, true, true, 0, 0);
+	callable_mp((TextEdit *)text_editor, &TextEdit::set_caret_column).call_deferred(p_begin, true, 0);
 	text_editor->select(p_line, p_begin, p_line, p_end);
 }
 
 void CodeTextEditor::goto_line_centered(int p_line) {
 	goto_line(p_line);
-	text_editor->call_deferred(SNAME("center_viewport_to_caret"));
+	callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).call_deferred(0);
 }
 
 void CodeTextEditor::set_executing_line(int p_line) {

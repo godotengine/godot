@@ -35,6 +35,63 @@
 
 @implementation GodotApplicationDelegate
 
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app {
+	return YES;
+}
+
+- (NSArray<NSString *> *)localizedTitlesForItem:(id)item {
+	NSArray *item_name = @[ item[1] ];
+	return item_name;
+}
+
+- (void)searchForItemsWithSearchString:(NSString *)searchString resultLimit:(NSInteger)resultLimit matchedItemHandler:(void (^)(NSArray *items))handleMatchedItems {
+	NSMutableArray *found_items = [[NSMutableArray alloc] init];
+
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds && ds->_help_get_search_callback().is_valid()) {
+		Callable cb = ds->_help_get_search_callback();
+
+		Variant ret;
+		Variant search_string = String::utf8([searchString UTF8String]);
+		Variant result_limit = (uint64_t)resultLimit;
+		Callable::CallError ce;
+		const Variant *args[2] = { &search_string, &result_limit };
+
+		cb.callp(args, 2, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat(RTR("Failed to execute help search callback: %s."), Variant::get_callable_error_text(cb, args, 2, ce)));
+		}
+		Dictionary results = ret;
+		for (const Variant *E = results.next(); E; E = results.next(E)) {
+			const String &key = *E;
+			const String &value = results[*E];
+			if (key.length() > 0 && value.length() > 0) {
+				NSArray *item = @[ [NSString stringWithUTF8String:key.utf8().get_data()], [NSString stringWithUTF8String:value.utf8().get_data()] ];
+				[found_items addObject:item];
+			}
+		}
+	}
+
+	handleMatchedItems(found_items);
+}
+
+- (void)performActionForItem:(id)item {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds && ds->_help_get_action_callback().is_valid()) {
+		Callable cb = ds->_help_get_action_callback();
+
+		Variant ret;
+		Variant item_string = String::utf8([item[0] UTF8String]);
+		Callable::CallError ce;
+		const Variant *args[1] = { &item_string };
+
+		cb.callp(args, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat(RTR("Failed to execute help action callback: %s."), Variant::get_callable_error_text(cb, args, 1, ce)));
+		}
+	}
+}
+
 - (void)forceUnbundledWindowActivationHackStep1 {
 	// Step 1: Switch focus to macOS SystemUIServer process.
 	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
@@ -59,6 +116,13 @@
 	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
 
+- (void)system_theme_changed:(NSNotification *)notification {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->emit_system_theme_changed();
+	}
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)notice {
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	NSString *nsbundleid_env = [NSString stringWithUTF8String:getenv("__CFBundleIdentifier")];
@@ -67,6 +131,8 @@
 		// If the executable is started from terminal or is not bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
 		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
 	}
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleColorPreferencesChangedNotification" object:nil];
 }
 
 - (id)init {
@@ -77,6 +143,11 @@
 	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEOpenDocuments];
 
 	return self;
+}
+
+- (void)dealloc {
+	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleInterfaceThemeChangedNotification" object:nil];
+	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleColorPreferencesChangedNotification" object:nil];
 }
 
 - (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {

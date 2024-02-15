@@ -23,6 +23,7 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
+        ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         (
             "IOS_TOOLCHAIN_PATH",
             "Path to iOS toolchain",
@@ -31,6 +32,7 @@ def get_opts():
         ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),
         ("ios_triple", "Triple for ios toolchain", ""),
+        BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
 
 
@@ -152,7 +154,7 @@ def configure(env: "Environment"):
     env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])

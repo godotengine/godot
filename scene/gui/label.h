@@ -91,10 +91,13 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	virtual PackedStringArray get_configuration_warnings() const override;
+	virtual Array get_configuration_warnings() const override;
 
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
@@ -160,6 +163,8 @@ public:
 	int get_line_height(int p_line = -1) const;
 	int get_line_count() const;
 	int get_visible_line_count() const;
+
+	Rect2 get_character_bounds(int p_pos) const;
 
 	Label(const String &p_text = String());
 	~Label();

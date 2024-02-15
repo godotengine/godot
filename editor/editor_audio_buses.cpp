@@ -35,12 +35,13 @@
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 #include "servers/audio_server.h"
@@ -84,9 +85,9 @@ void EditorAudioBus::_notification(int p_what) {
 
 			disabled_vu = get_editor_theme_icon(SNAME("BusVuFrozen"));
 
-			Color solo_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.0, 0.92, 0.44);
-			Color mute_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(1.0, 0.44, 0.44);
-			Color bypass_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
+			Color solo_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.0, 0.92, 0.44);
+			Color mute_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(1.0, 0.44, 0.44);
+			Color bypass_color = EditorThemeManager::is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
 
 			solo->set_icon(get_editor_theme_icon(SNAME("AudioBusSolo")));
 			solo->add_theme_color_override("icon_pressed_color", solo_color);
@@ -327,7 +328,7 @@ void EditorAudioBus::_volume_changed(float p_normalized) {
 
 	updating_bus = true;
 
-	const float p_db = this->_normalized_volume_to_scaled_db(p_normalized);
+	const float p_db = _normalized_volume_to_scaled_db(p_normalized);
 
 	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 		// Snap the value when holding Ctrl for easier editing.
@@ -1234,7 +1235,7 @@ void EditorAudioBuses::_load_default_layout() {
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-	call_deferred(SNAME("_select_layout"));
+	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
 void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
@@ -1250,7 +1251,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		AudioServer::get_singleton()->set_bus_layout(state);
 		_rebuild_buses();
 		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-		call_deferred(SNAME("_select_layout"));
+		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 
 	} else if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 		if (new_layout) {
@@ -1270,14 +1271,13 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		_rebuild_buses();
 		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-		call_deferred(SNAME("_select_layout"));
+		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 	}
 }
 
 void EditorAudioBuses::_bind_methods() {
 	ClassDB::bind_method("_update_bus", &EditorAudioBuses::_update_bus);
 	ClassDB::bind_method("_update_sends", &EditorAudioBuses::_update_sends);
-	ClassDB::bind_method("_select_layout", &EditorAudioBuses::_select_layout);
 }
 
 EditorAudioBuses::EditorAudioBuses() {
@@ -1370,7 +1370,7 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-	call_deferred(SNAME("_select_layout"));
+	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
 void AudioBusesEditorPlugin::edit(Object *p_node) {

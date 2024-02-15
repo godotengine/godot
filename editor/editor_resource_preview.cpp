@@ -34,14 +34,14 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/object/message_queue.h"
 #include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server_default.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	bool success = false;
@@ -123,11 +123,13 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 		cache[p_path] = item;
 	}
 
-	MessageQueue::get_singleton()->push_call(id, p_func, p_path, p_texture, p_small_texture, p_ud);
+	Callable(id, p_func).call_deferred(p_path, p_texture, p_small_texture, p_ud);
 }
 
 void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base, Dictionary &p_metadata) {
 	String type;
+
+	uint64_t started_at = OS::get_singleton()->get_ticks_usec();
 
 	if (p_item.resource.is_valid()) {
 		type = p_item.resource->get_class();
@@ -138,6 +140,10 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	if (type.is_empty()) {
 		r_texture = Ref<ImageTexture>();
 		r_small_texture = Ref<ImageTexture>();
+
+		if (is_print_verbose_enabled()) {
+			print_line(vformat("Generated '%s' preview in %d usec", p_item.path, OS::get_singleton()->get_ticks_usec() - started_at));
+		}
 		return; //could not guess type
 	}
 
@@ -195,6 +201,10 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
 			_write_preview_cache(f, thumbnail_size, has_small_texture, FileAccess::get_modified_time(p_item.path), FileAccess::get_md5(p_item.path), p_metadata);
 		}
+	}
+
+	if (is_print_verbose_enabled()) {
+		print_line(vformat("Generated '%s' preview in %d usec", p_item.path, OS::get_singleton()->get_ticks_usec() - started_at));
 	}
 }
 
@@ -339,6 +349,20 @@ void EditorResourcePreview::_thread() {
 	exited.set();
 }
 
+void EditorResourcePreview::_idle_callback() {
+	if (!singleton) {
+		// Just in case the shutdown of the editor involves the deletion of the singleton
+		// happening while additional idle callbacks can happen.
+		return;
+	}
+
+	// Process preview tasks, trying to leave a little bit of responsiveness worst case.
+	uint64_t start = OS::get_singleton()->get_ticks_msec();
+	while (!singleton->queue.is_empty() && OS::get_singleton()->get_ticks_msec() - start < 100) {
+		singleton->_iterate();
+	}
+}
+
 void EditorResourcePreview::_update_thumbnail_sizes() {
 	if (small_thumbnail_size == -1) {
 		// Kind of a workaround to retrieve the default icon size.
@@ -442,27 +466,36 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	if (DisplayServer::get_singleton()->get_name() != "headless") {
+	if (DisplayServer::get_singleton()->get_name() == "headless") {
+		return;
+	}
+
+	if (RSG::texture_storage->can_create_resources_async()) {
 		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
 		thread.start(_thread_func, this);
+	} else {
+		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+		ERR_FAIL_NULL_MSG(st, "Editor's MainLoop is not a SceneTree. This is a bug.");
 	}
 }
 
 void EditorResourcePreview::stop() {
-	if (thread.is_started()) {
-		exiting.set();
-		preview_sem.post();
+	if (RSG::texture_storage->can_create_resources_async()) {
+		if (thread.is_started()) {
+			exiting.set();
+			preview_sem.post();
 
-		for (int i = 0; i < preview_generators.size(); i++) {
-			preview_generators.write[i]->abort();
+			for (int i = 0; i < preview_generators.size(); i++) {
+				preview_generators.write[i]->abort();
+			}
+
+			while (!exited.is_set()) {
+				OS::get_singleton()->delay_usec(10000);
+				RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
+			}
+
+			thread.wait_to_finish();
 		}
-
-		while (!exited.is_set()) {
-			OS::get_singleton()->delay_usec(10000);
-			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
-		}
-
-		thread.wait_to_finish();
 	}
 }
 

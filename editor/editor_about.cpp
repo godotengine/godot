@@ -35,6 +35,7 @@
 #include "core/license.gen.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
 const String EditorAbout::META_TEXT_TO_COPY = "text_to_copy";
@@ -99,6 +100,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 			vbc->add_child(lbl);
 
 			ItemList *il = memnew(ItemList);
+			il->set_auto_translate(false);
 			il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			il->set_same_column_width(true);
 			il->set_auto_height(true);

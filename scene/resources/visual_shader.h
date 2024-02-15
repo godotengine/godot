@@ -314,6 +314,7 @@ public:
 	void set_output_port_connected(int p_port, bool p_connected);
 	bool is_input_port_connected(int p_port) const;
 	void set_input_port_connected(int p_port, bool p_connected);
+	bool is_any_port_connected() const;
 	virtual bool is_generate_input_var(int p_port) const;
 
 	virtual bool has_output_port_preview(int p_port) const;
@@ -639,6 +640,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
+	bool is_shader_valid() const;
 	void set_shader_rid(const RID &p_shader);
 
 	void set_parameter_name(const String &p_name);

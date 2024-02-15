@@ -81,6 +81,23 @@ public:
 class EditorPropertyArray : public EditorProperty {
 	GDCLASS(EditorPropertyArray, EditorProperty);
 
+	struct Slot {
+		Ref<EditorPropertyArrayObject> object;
+		HBoxContainer *container = nullptr;
+		int index = -1;
+		Variant::Type type = Variant::VARIANT_MAX;
+		bool as_id = false;
+		EditorProperty *prop = nullptr;
+		Button *reorder_button = nullptr;
+
+		void set_index(int p_idx) {
+			String prop_name = "indices/" + itos(p_idx);
+			prop->set_object_and_property(object.ptr(), prop_name);
+			prop->set_label(itos(p_idx));
+			index = p_idx;
+		}
+	};
+
 	PopupMenu *change_type = nullptr;
 
 	int page_length = 20;
@@ -96,13 +113,11 @@ class EditorPropertyArray : public EditorProperty {
 	Variant::Type subtype;
 	PropertyHint subtype_hint;
 	String subtype_hint_string;
+	LocalVector<Slot> slots;
 
-	int reorder_from_index = -1;
+	Slot reorder_slot;
 	int reorder_to_index = -1;
 	float reorder_mouse_y_delta = 0.0f;
-	HBoxContainer *reorder_selected_element_hbox = nullptr;
-	Button *reorder_selected_button = nullptr;
-
 	void initialize_array(Variant &p_array);
 
 	void _page_changed(int p_page);
@@ -110,6 +125,7 @@ class EditorPropertyArray : public EditorProperty {
 	void _reorder_button_gui_input(const Ref<InputEvent> &p_event);
 	void _reorder_button_down(int p_index);
 	void _reorder_button_up();
+	void create_new_property_slot();
 
 protected:
 	Ref<EditorPropertyArrayObject> object;
@@ -124,7 +140,7 @@ protected:
 	virtual void _length_changed(double p_page);
 	virtual void _edit_pressed();
 	virtual void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
-	virtual void _change_type(Object *p_button, int p_index);
+	virtual void _change_type(Object *p_button, int p_slot_index);
 	virtual void _change_type_menu(int p_index);
 
 	virtual void _object_id_selected(const StringName &p_property, ObjectID p_id);

@@ -80,7 +80,7 @@ fi
 # To get consistent formatting, we recommend contributors to use the same
 # clang-format version as CI.
 RECOMMENDED_CLANG_FORMAT_MAJOR_MIN="13"
-RECOMMENDED_CLANG_FORMAT_MAJOR_MAX="15"
+RECOMMENDED_CLANG_FORMAT_MAJOR_MAX="16"
 
 if [ ! -x "$CLANG_FORMAT" ] ; then
 	message="Error: clang-format executable not found. Please install clang-format $RECOMMENDED_CLANG_FORMAT_MAJOR_MAX."
@@ -139,6 +139,9 @@ do
     fi
     if grep -q "\-so_wrap." <<< $file; then
         continue;
+    fi
+    if grep -q "tests/python_build" <<< $file; then
+          continue;
     fi
 
     # ignore file if we do check for file extensions and the file

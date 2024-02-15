@@ -64,6 +64,7 @@ private:
 	bool fractional_delta = false;
 	bool interpolate = true;
 	float interp_to_end_factor = 0;
+	Vector3 previous_velocity;
 	Vector2 previous_position;
 #ifdef TOOLS_ENABLED
 	bool show_visibility_rect = false;
@@ -160,7 +161,7 @@ public:
 	void set_amount_ratio(float p_ratio);
 	float get_amount_ratio() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;

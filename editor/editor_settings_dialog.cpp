@@ -38,12 +38,12 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void EditorSettingsDialog::ok_pressed() {
@@ -62,8 +62,12 @@ void EditorSettingsDialog::_settings_changed() {
 void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 	String full_name = inspector->get_full_item_path(p_name);
 
+	// Set theme presets to Custom when controlled settings change.
+
 	if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast" || full_name == "interface/theme/draw_extra_borders") {
-		EditorSettings::get_singleton()->set_manually("interface/theme/preset", "Custom"); // set preset to Custom
+		EditorSettings::get_singleton()->set_manually("interface/theme/preset", "Custom");
+	} else if (full_name == "interface/theme/base_spacing" || full_name == "interface/theme/additional_spacing") {
+		EditorSettings::get_singleton()->set_manually("interface/theme/spacing_preset", "Custom");
 	} else if (full_name.begins_with("text_editor/theme/highlighting")) {
 		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", "Custom");
 	}
@@ -91,9 +95,6 @@ void EditorSettingsDialog::popup_edit_settings() {
 
 	inspector->edit(EditorSettings::get_singleton());
 	inspector->get_inspector()->update_tree();
-
-	search_box->select_all();
-	search_box->grab_focus();
 
 	_update_shortcuts();
 	set_process_shortcut_input(true);
@@ -762,7 +763,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_shortcuts->add_child(top_hbox);
 
 	shortcut_search_box = memnew(LineEdit);
-	shortcut_search_box->set_placeholder(TTR("Filter by name..."));
+	shortcut_search_box->set_placeholder(TTR("Filter by Name"));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	top_hbox->add_child(shortcut_search_box);
 	shortcut_search_box->connect("text_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
@@ -772,6 +773,8 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_search_by_event->set_stretch_ratio(0.75);
 	shortcut_search_by_event->set_allowed_input_types(INPUT_KEY);
 	shortcut_search_by_event->connect("event_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts_by_event));
+	shortcut_search_by_event->connect("focus_entered", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
+	shortcut_search_by_event->connect("focus_exited", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
 	top_hbox->add_child(shortcut_search_by_event);
 
 	Button *clear_all_search = memnew(Button);

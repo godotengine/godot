@@ -46,17 +46,6 @@
 		    # Prints "Attack!", when the button_pressed signal is emitted.
 		    button_pressed.connect(func(): print("Attack!"))
 		[/codeblock]
-		[b]Note:[/b] Methods of native types such as [Signal], [Array], or [Dictionary] are not of type [Callable] in order to avoid unnecessary overhead. If you need to pass those methods as [Callable], use a lambda function as a wrapper.
-		[codeblock]
-		func _init():
-		    var my_dictionary = { "hello": "world" }
-
-		    # This will not work, `clear` is not a callable.
-		    create_tween().tween_callback(my_dictionary.clear)
-
-		    # This will work, as lambdas are custom callables.
-		    create_tween().tween_callback(func(): my_dictionary.clear())
-		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -109,10 +98,18 @@
 			<return type="void" />
 			<description>
 				Calls the method represented by this [Callable] in deferred mode, i.e. at the end of the current frame. Arguments can be passed and should match the method's signature.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _ready():
 				    grab_focus.call_deferred()
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    Callable.From(GrabFocus).CallDeferred();
+				}
+				[/csharp]
+				[/codeblocks]
 				See also [method Object.call_deferred].
 			</description>
 		</method>

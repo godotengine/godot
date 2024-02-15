@@ -41,10 +41,12 @@
 #include "servers/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
-#if defined(VULKAN_ENABLED)
-#import "vulkan_context_ios.h"
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
 
-#include "drivers/vulkan/rendering_device_vulkan.h"
+#if defined(VULKAN_ENABLED)
+#import "rendering_context_driver_vulkan_ios.h"
+#endif
 #endif
 
 class OS_IOS : public OS_Unix {
@@ -127,6 +129,9 @@ public:
 
 	void on_focus_out();
 	void on_focus_in();
+
+	void on_enter_background();
+	void on_exit_background();
 };
 
 #endif // IOS_ENABLED

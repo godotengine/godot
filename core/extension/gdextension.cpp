@@ -518,6 +518,12 @@ void GDExtension::_register_extension_class_method(GDExtensionClassLibraryPtr p_
 
 	ClassDB::bind_method_custom(class_name, method);
 }
+
+void GDExtension::_register_extension_class_virtual_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassVirtualMethodInfo *p_method_info) {
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	ClassDB::add_extension_class_virtual_method(class_name, p_method_info);
+}
+
 void GDExtension::_register_extension_class_integer_constant(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_enum_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionInt p_constant_value, GDExtensionBool p_is_bitfield) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
 
@@ -653,6 +659,8 @@ void GDExtension::_unregister_extension_class(GDExtensionClassLibraryPtr p_libra
 	if (!ext->is_reloading) {
 		self->extension_classes.erase(class_name);
 	}
+
+	GDExtensionEditorHelp::remove_class(class_name);
 #else
 	self->extension_classes.erase(class_name);
 #endif
@@ -666,12 +674,12 @@ void GDExtension::_get_library_path(GDExtensionClassLibraryPtr p_library, GDExte
 
 HashMap<StringName, GDExtensionInterfaceFunctionPtr> GDExtension::gdextension_interface_functions;
 
-void GDExtension::register_interface_function(StringName p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
+void GDExtension::register_interface_function(const StringName &p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
 	ERR_FAIL_COND_MSG(gdextension_interface_functions.has(p_function_name), "Attempt to register interface function '" + p_function_name + "', which appears to be already registered.");
 	gdextension_interface_functions.insert(p_function_name, p_function_pointer);
 }
 
-GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(StringName p_function_name) {
+GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(const StringName &p_function_name) {
 	GDExtensionInterfaceFunctionPtr *function = gdextension_interface_functions.getptr(p_function_name);
 	ERR_FAIL_NULL_V_MSG(function, nullptr, "Attempt to get non-existent interface function: " + String(p_function_name) + ".");
 	return *function;
@@ -715,10 +723,8 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 #endif
 
 	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &library_path);
-	if (err != OK) {
-		ERR_PRINT("GDExtension dynamic library not found: " + abs_path);
-		return err;
-	}
+	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, "GDExtension dynamic library not found: " + abs_path);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Can't open GDExtension dynamic library: " + abs_path);
 
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	// If we copied the file, let's change the library path to point at the original,
@@ -794,6 +800,9 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 	ERR_FAIL_COND(p_level > int32_t(level_initialized));
 
 	level_initialized = int32_t(p_level) - 1;
+
+	ERR_FAIL_NULL(initialization.deinitialize);
+
 	initialization.deinitialize(initialization.userdata, GDExtensionInitializationLevel(p_level));
 }
 
@@ -834,6 +843,7 @@ void GDExtension::initialize_gdextensions() {
 #endif // DISABLE_DEPRECATED
 	register_interface_function("classdb_register_extension_class2", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class2);
 	register_interface_function("classdb_register_extension_class_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_method);
+	register_interface_function("classdb_register_extension_class_virtual_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_virtual_method);
 	register_interface_function("classdb_register_extension_class_integer_constant", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_integer_constant);
 	register_interface_function("classdb_register_extension_class_property", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property);
 	register_interface_function("classdb_register_extension_class_property_indexed", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property_indexed);
@@ -1197,5 +1207,18 @@ void GDExtensionEditorPlugins::remove_extension_class(const StringName &p_class_
 	} else {
 		extension_classes.erase(p_class_name);
 	}
+}
+
+GDExtensionEditorHelp::EditorHelpLoadXmlBufferFunc GDExtensionEditorHelp::editor_help_load_xml_buffer = nullptr;
+GDExtensionEditorHelp::EditorHelpRemoveClassFunc GDExtensionEditorHelp::editor_help_remove_class = nullptr;
+
+void GDExtensionEditorHelp::load_xml_buffer(const uint8_t *p_buffer, int p_size) {
+	ERR_FAIL_NULL(editor_help_load_xml_buffer);
+	editor_help_load_xml_buffer(p_buffer, p_size);
+}
+
+void GDExtensionEditorHelp::remove_class(const String &p_class) {
+	ERR_FAIL_NULL(editor_help_remove_class);
+	editor_help_remove_class(p_class);
 }
 #endif // TOOLS_ENABLED

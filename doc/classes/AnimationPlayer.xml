@@ -110,6 +110,26 @@
 				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
 			</description>
 		</method>
+		<method name="play_with_capture">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="duration" type="float" default="-1.0" />
+			<param index="2" name="custom_blend" type="float" default="-1" />
+			<param index="3" name="custom_speed" type="float" default="1.0" />
+			<param index="4" name="from_end" type="bool" default="false" />
+			<param index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<param index="6" name="ease_type" type="int" enum="Tween.EaseType" default="0" />
+			<description>
+				See [method AnimationMixer.capture]. It is almost the same as the following:
+				[codeblock]
+				capture(name, duration, trans_type, ease_type)
+				play(name, custom_blend, custom_speed, from_end)
+				[/codeblock]
+				If name is blank, it specifies [member assigned_animation].
+				If [param duration] is a negative value, the duration is set to the interval between the current position and the first key, when [param from_end] is [code]true[/code], uses the interval between the current position and the last key instead.
+				[b]Note:[/b] The [param duration] takes [member speed_scale] into account, but [param custom_speed] does not, because the capture cache is interpolated with the blend result and the result may contain multiple animations.
+			</description>
+		</method>
 		<method name="queue">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -125,7 +145,7 @@
 			<param index="2" name="update_only" type="bool" default="false" />
 			<description>
 				Seeks the animation to the [param seconds] point in time (in seconds). If [param update] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [param seconds] are skipped.
-				If [param update_only] is true, the method / audio / animation playback tracks will not be processed.
+				If [param update_only] is [code]true[/code], the method / audio / animation playback tracks will not be processed.
 				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal AnimationMixer.animation_finished]. If you want to skip animation and emit the signal, use [method AnimationMixer.advance].
 			</description>
 		</method>

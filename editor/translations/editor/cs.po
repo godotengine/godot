@@ -9,7 +9,7 @@
 # Luděk Novotný <gladosicek@gmail.com>, 2016, 2018.
 # Martin Novák <maidx@seznam.cz>, 2017, 2019.
 # zxey <r.hozak@seznam.cz>, 2018.
-# Vojtěch Šamla <auzkok@seznam.cz>, 2018, 2019, 2020, 2021, 2022, 2023.
+# Vojtěch Šamla <auzkok@seznam.cz>, 2018, 2019, 2020, 2021, 2022, 2023, 2024.
 # Peeter Angelo <contact@peeterangelo.com>, 2019.
 # VojtechBrezina <vojta.brezina@gmail.com>, 2019, 2021.
 # Garrom Orc Shaman <garromorcshaman@gmail.com>, 2019.
@@ -46,7 +46,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-07 07:04+0000\n"
+"PO-Revision-Date: 2024-01-13 16:00+0000\n"
 "Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -55,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Hlavní vlákno"
@@ -993,6 +993,12 @@ msgstr "Vybrat metodu"
 msgid "No method found matching given filters."
 msgstr "Daným filtrům neodpovídá žádná metoda."
 
+msgid "Script Methods Only"
+msgstr "Pouze metody skriptu"
+
+msgid "Compatible Methods Only"
+msgstr "Pouze kompatibilní metody"
+
 msgid "Remove"
 msgstr "Odebrat"
 
@@ -1285,6 +1291,9 @@ msgstr "Vlákno:"
 msgid "Stack Frames"
 msgstr "Rámce zásobníku"
 
+msgid "Filter Stack Variables"
+msgstr "Filtrovat proměnné zásobníku"
+
 msgid "Breakpoints"
 msgstr "Breakpointy"
 
@@ -1296,6 +1305,9 @@ msgstr "Sbalit vše"
 
 msgid "Profiler"
 msgstr "Profiler"
+
+msgid "Visual Profiler"
+msgstr "Vizuální profiler"
 
 msgid "List of Video Memory Usage by Resource:"
 msgstr "Spotřeba video paměti dle zdroje:"
@@ -1446,6 +1458,27 @@ msgstr "Vlastní"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Zdroje bez explicitního vlastnictví:"
 
+msgid "Folder name cannot be empty."
+msgstr "Název složky nemůže být prázdný."
+
+msgid "Folder name contains invalid characters."
+msgstr "Poskytnutý název složky obsahuje neplatné znaky."
+
+msgid "Folder name cannot begin or end with a space."
+msgstr "Název složky nemůže začínat nebo končit mezerou."
+
+msgid "Folder name cannot begin with a dot."
+msgstr "Název složky nemůže začínat tečkou."
+
+msgid "File with that name already exists."
+msgstr "Soubor s tímto názvem již existuje."
+
+msgid "Folder with that name already exists."
+msgstr "Složka s tímto názvem již existuje."
+
+msgid "Using slashes in folder names will create subfolders recursively."
+msgstr "Použití lomítek v názvech složek rekurzivně vytvoří podsložky."
+
 msgid "Could not create folder."
 msgstr "Nelze vytvořit složku."
 
@@ -1454,6 +1487,9 @@ msgstr "Vytvořit novou složku v %s:"
 
 msgid "Create Folder"
 msgstr "Vytvořit složku"
+
+msgid "Folder name is valid."
+msgstr "Název složky je platný."
 
 msgid "Thanks from the Godot community!"
 msgstr "Děkujeme za komunitu Godotu!"
@@ -1480,6 +1516,9 @@ msgstr "Vývojáři"
 msgid "Authors"
 msgstr "Autoři"
 
+msgid "Patrons"
+msgstr "Patroni"
+
 msgid "Platinum Sponsors"
 msgstr "Platinoví sponzoři"
 
@@ -1488,6 +1527,18 @@ msgstr "Zlatí sponzoři"
 
 msgid "Silver Sponsors"
 msgstr "Stříbrní sponzoři"
+
+msgid "Diamond Members"
+msgstr "Diamantoví členové"
+
+msgid "Titanium Members"
+msgstr "Titanoví členové"
+
+msgid "Platinum Members"
+msgstr "Platinoví členové"
+
+msgid "Gold Members"
+msgstr "Zlatí členové"
 
 msgid "Donors"
 msgstr "Dárci"
@@ -1524,6 +1575,19 @@ msgstr "Chyba při otevírání balíčku \"%s\" (není ve formátu ZIP)."
 msgid "%s (already exists)"
 msgstr "%s (již existuje)"
 
+msgid "%d file conflicts with your project and won't be installed"
+msgid_plural "%d files conflict with your project and won't be installed"
+msgstr[0] "%d soubor je v konfliktu s vaším projektem a nebude nainstalován"
+msgstr[1] ""
+"%d soubory jsou v konfliktu s vaším projektem a nebudou nainstalovány"
+msgstr[2] "%d souborů je v konfliktu s vaším projektem a nebudou nainstalovány"
+
+msgid "Ignore the root directory when extracting files."
+msgstr "Ignorovat kořenovou složku při extrakci souborů."
+
+msgid "Select Install Folder"
+msgstr "Vybrat složku k instalaci"
+
 msgid "Uncompressing Assets"
 msgstr "Dekomprese uživatelského obsahu"
 
@@ -1538,6 +1602,9 @@ msgstr "Balíček \"%s\" byl úspěšně nainstalován!"
 
 msgid "Success!"
 msgstr "Úspěch!"
+
+msgid "Change Install Folder"
+msgstr "Změnit složku k instalaci"
 
 msgid "No files conflict with your project"
 msgstr "Žádné soubory nejsou v konfliktu s vaším projektem"
@@ -1595,6 +1662,12 @@ msgstr "Obejít"
 
 msgid "Bus Options"
 msgstr "Možnosti sběrnice"
+
+msgid "Duplicate Bus"
+msgstr "Duplikovat sběrnici"
+
+msgid "Delete Bus"
+msgstr "Smazat sběrnici"
 
 msgid "Reset Volume"
 msgstr "Resetovat hlasitost"
@@ -1668,6 +1741,9 @@ msgstr "Načíst výchozí rozvržení sběrnice."
 msgid "Create a new Bus Layout."
 msgstr "Vytvořit nové rozvržení sběrnice."
 
+msgid "Audio Bus Layout"
+msgstr "Rozložení audio sběrnice"
+
 msgid "Invalid name."
 msgstr "Neplatný název."
 
@@ -1680,8 +1756,11 @@ msgstr "Platné znaky:"
 msgid "Must not collide with an existing engine class name."
 msgstr "Nesmí kolidovat s existující názvem třídy enginu."
 
+msgid "Must not collide with an existing global script class name."
+msgstr "Nesmí kolidovat s existujícím názvem globální třídy."
+
 msgid "Must not collide with an existing built-in type name."
-msgstr "Nesmí kolidovat s existujícím jménem zabudovaného typu."
+msgstr "Nesmí kolidovat s existujícím názvem vestavěného typu."
 
 msgid "Must not collide with an existing global constant name."
 msgstr "Nesmí kolidovat s existujícím názvem globální konstanty."
@@ -1713,6 +1792,9 @@ msgstr "%s je neplatná cesta. Není v cestě ke zdrojům (res://)."
 msgid "Path:"
 msgstr "Cesta:"
 
+msgid "Set path or press \"%s\" to create a script."
+msgstr "Pro vytvoření skriptu vyberte cestu, nebo zmáčkněte \"%s\"."
+
 msgid "Node Name:"
 msgstr "Název uzlu:"
 
@@ -1731,14 +1813,45 @@ msgstr "3D Fyzika"
 msgid "Navigation"
 msgstr "Navigace"
 
+msgid "XR"
+msgstr "XR"
+
 msgid "OpenGL"
 msgstr "OpenGL"
 
 msgid "Vulkan"
 msgstr "Vulkan"
 
+msgid "Text Server: Fallback"
+msgstr "Textový server: Záložní"
+
+msgid "Text Server: Advanced"
+msgstr "Textový server: Pokročilý"
+
+msgid "TTF, OTF, Type 1, WOFF1 Fonts"
+msgstr "Fonty TTF, OTF, Type 1, WOFF1"
+
+msgid "WOFF2 Fonts"
+msgstr "Fonty WOFF2"
+
+msgid "SIL Graphite Fonts"
+msgstr "Fonty SIL Grafite"
+
 msgid "Navigation, both 2D and 3D."
 msgstr "Navigace, jak 2D, tak i 3D."
+
+msgid "XR (AR and VR)."
+msgstr "XR (AR a VR)."
+
+msgid ""
+"TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
+"library (if disabled, WOFF2 support is also disabled)."
+msgstr ""
+"Podpora pro formáty fontů TrueType, OpenType, Type 1 a WOFF1 pomocí knihovny "
+"FreeType (pokud je vypnuta, pak je podpora pro WOFF2 také vypnuta)."
+
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr "Podpora pro formát fontů WOFF2 pomocí knihoven FreeType a Brotli."
 
 msgid "File saving failed."
 msgstr "Ukládání souboru selhalo."
@@ -1763,6 +1876,12 @@ msgstr "Profil:"
 
 msgid "Reset to Defaults"
 msgstr "Obnovit výchozí"
+
+msgid "Detect from Project"
+msgstr "Zjistit z projektu"
+
+msgid "Actions:"
+msgstr "Akce:"
 
 msgid "Please Confirm:"
 msgstr "Potvrďte prosím:"
@@ -1821,6 +1940,9 @@ msgstr "Souborový systém"
 
 msgid "Import Dock"
 msgstr "Importovat panel"
+
+msgid "History Dock"
+msgstr "Panel historie"
 
 msgid "Allows to view and edit 3D scenes."
 msgstr "Umožňuje prohlížet a upravovat 3D scény."
@@ -1934,6 +2056,9 @@ msgstr "Importovat profil(y)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Spravovat profily funkcí editoru"
 
+msgid "Some extensions need the editor to restart to take effect."
+msgstr "Některá rozšíření potřebují restartovat editor, aby se projevily změny."
+
 msgid "Restart"
 msgstr "Restartovat"
 
@@ -1959,8 +2084,38 @@ msgstr "Importovat zdroje typu: %s"
 msgid "No return value."
 msgstr "Žádná návratová hodnota."
 
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr "Tato hodnota je celé číslo složené jako bitmaska následujících vlajek."
+
+msgid "Deprecated"
+msgstr "Zastaralé"
+
 msgid "Experimental"
 msgstr "Experimentální"
+
+msgid "This method supports a variable number of arguments."
+msgstr "Tato metoda podporuje proměnný počet argumentů."
+
+msgid ""
+"This method is called by the engine.\n"
+"It can be overridden to customize built-in behavior."
+msgstr ""
+"Tato metoda je volaná enginem.\n"
+"Lze ji přepsat pro změnu vestavěného chování."
+
+msgid ""
+"This method has no side effects.\n"
+"It does not modify the object in any way."
+msgstr ""
+"Tato metoda nemá žádné vedlejší účinky.\n"
+"Žádným způsobem nemění daný objekt."
+
+msgid ""
+"This method does not need an instance to be called.\n"
+"It can be called directly using the class name."
+msgstr ""
+"Tato metoda nepotřebuje ke svému zavolání instanci objektu.\n"
+"Lze ji zavolat přimo použitím jména třídy."
 
 msgid "Error codes returned:"
 msgstr "Vráceny chybové kódy:"
@@ -1970,6 +2125,30 @@ msgstr "Momentálně zde není žádný popis této metody."
 
 msgid "There is currently no description for this constructor."
 msgstr "Momentálně zde není žádný popis tohoto konstruktoru."
+
+msgid "There is currently no description for this operator."
+msgstr "Momentálně neexistuje žádný popis pro tento operátor."
+
+msgid ""
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Momentálně neexistuje žádný popis pro tuto metodu. Prosím pomozte nám tím, že "
+"ho [color=$color][url=$url]vytvoříte[/url][/color]!"
+
+msgid ""
+"There is currently no description for this constructor. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Momentálně neexistuje žádný popis pro tento konstruktor. Prosím pomozte nám "
+"tím, že ho [color=$color][url=$url]vytvoříte[/url][/color]!"
+
+msgid ""
+"There is currently no description for this operator. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Momentálně neexistuje žádný popis pro tento operátor. Prosím pomozte nám tím, "
+"že ho[color=$color][url=$url]vytvoříte[/url][/color]!"
 
 msgid "Top"
 msgstr "Horní"
@@ -1987,8 +2166,28 @@ msgid ""
 "This class is marked as deprecated. It will be removed in future versions."
 msgstr "Třída je označena jako zastaralá. Bude odebrána v budoucích verzích."
 
+msgid ""
+"This class is marked as experimental. It is subject to likely change or "
+"possible removal in future versions. Use at your own discretion."
+msgstr ""
+"Tato třída je označena jako experimentální. V budoucnosti se pravděpodobně "
+"změní, nebo bude dokonce odstraněna. Používejte ji dle vlastního uvážení."
+
 msgid "Description"
 msgstr "Popis"
+
+msgid "There is currently no description for this class."
+msgstr "Momentálně neexistuje popis pro tuto třídu."
+
+msgid ""
+"There is currently no description for this class. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Momentálně neexistuje žádný popis pro tuto třídu. Prosím pomozte nám tím, že "
+"ho [color=$color][url=$url]vytvoříte[/url][/color]!"
+
+msgid "Note:"
+msgstr "Poznámka:"
 
 msgid "Online Tutorials"
 msgstr "Online návody"
@@ -2020,6 +2219,9 @@ msgstr "Konstanty"
 msgid "Fonts"
 msgstr "Fonty"
 
+msgid "Font Sizes"
+msgstr "Velikosti fontů"
+
 msgid "Icons"
 msgstr "Ikony"
 
@@ -2031,6 +2233,16 @@ msgstr "Výčty"
 
 msgid "Annotations"
 msgstr "Anotace"
+
+msgid "There is currently no description for this annotation."
+msgstr "Momentálně neexistuje popis pro tuto anotaci."
+
+msgid ""
+"There is currently no description for this annotation. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Momentálně neexistuje žádný popis pro tuto anotaci. Prosím pomozte nám tím, "
+"že ho [color=$color][url=$url]vytvoříte[/url][/color]!"
 
 msgid "Property Descriptions"
 msgstr "Popisy vlastnosti"
@@ -2096,6 +2308,9 @@ msgstr "Zobrazit všechny"
 msgid "Classes Only"
 msgstr "Pouze třídy"
 
+msgid "Constructors Only"
+msgstr "Pouze konstruktory"
+
 msgid "Methods Only"
 msgstr "Pouze metody"
 
@@ -2104,6 +2319,9 @@ msgstr "Pouze operátory"
 
 msgid "Signals Only"
 msgstr "Pouze signály"
+
+msgid "Annotations Only"
+msgstr "Pouze anotace"
 
 msgid "Constants Only"
 msgstr "Pouze konstanty"
@@ -2116,6 +2334,9 @@ msgstr "Pouze vlastnosti motivu"
 
 msgid "Member Type"
 msgstr "Typ člena"
+
+msgid "(constructors)"
+msgstr "(konstruktory)"
 
 msgid "Class"
 msgstr "Třída"
@@ -3589,6 +3810,9 @@ msgstr "Najít..."
 msgid "Replace..."
 msgstr "Nahradit..."
 
+msgid "Replace in Files"
+msgstr "Nahradit v souborech"
+
 msgid "Replace all (no undo)"
 msgstr "Nahradit všechny (nelze vrátit zpět)"
 
@@ -3865,6 +4089,9 @@ msgstr "Smyčka:"
 msgid "Configuration:"
 msgstr "Konfigurace:"
 
+msgid "Add configuration"
+msgstr "Přidat konfiguraci"
+
 msgid "Importing Scene..."
 msgstr "Importuji scénu..."
 
@@ -3894,6 +4121,16 @@ msgstr "3D"
 
 msgid "<Unnamed Material>"
 msgstr "<Nepojmenovaný materiál>"
+
+msgid "Import ID: %s"
+msgstr "ID importu: %s"
+
+msgid ""
+"Type: %s\n"
+"Import ID: %s"
+msgstr ""
+"Typ: %s\n"
+"ID importu: %s"
 
 msgid "Error opening scene"
 msgstr "Chyba při otevírání scény"
@@ -5636,6 +5873,9 @@ msgstr "Animační klíč vložen."
 msgid "Objects: %d\n"
 msgstr "Objekty: %d\n"
 
+msgid "Draw Calls: %d"
+msgstr "Vykreslovací volání: %d"
+
 msgid "FPS: %d"
 msgstr "FPS: %d"
 
@@ -6335,6 +6575,12 @@ msgstr "Vymazat nedávné skripty"
 msgid "Standard"
 msgstr "Standard"
 
+msgid "Plain Text"
+msgstr "Prostý text"
+
+msgid "JSON"
+msgstr "JSON"
+
 msgid "Connections to method:"
 msgstr "Připojení k metodě:"
 
@@ -6343,6 +6589,9 @@ msgstr "Zdroj"
 
 msgid "Target"
 msgstr "Cíl"
+
+msgid "Error at (%d, %d):"
+msgstr "Chyba na (%d. %d):"
 
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
@@ -6416,6 +6665,9 @@ msgstr "Automatické odsazení"
 
 msgid "Find in Files..."
 msgstr "Najít v souborech..."
+
+msgid "Replace in Files..."
+msgstr "Nahradit v souborech..."
 
 msgid "Contextual Help"
 msgstr "Kontextová nápověda"
@@ -7035,6 +7287,9 @@ msgstr "Uzel přesunut"
 msgid "Visual Shader Input Type Changed"
 msgstr "Typ vstupu Visual Shader změněn"
 
+msgid "Set Constant: %s"
+msgstr "Nastavit konstantu: %s"
+
 msgid "Vertex"
 msgstr "Vrchol"
 
@@ -7513,6 +7768,9 @@ msgstr ""
 "portů. Toto je přímé vkládání kódu do funkcí vrcholů/fragmentů/osvětlení, "
 "nepoužívat k deklaraci funkcí."
 
+msgid "Edit Visual Property: %s"
+msgstr "Upravit vizuální vlastnost: %s"
+
 msgid "Visual Shader Mode Changed"
 msgstr "Změnit režim vizuálního shaderu"
 
@@ -7724,13 +7982,6 @@ msgid ""
 msgstr ""
 "Jazyk byl změněn.\n"
 "Rozhraní se aktualizuje po restartování editoru nebo projektového manažera."
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Opravdu hledat projekty Godot ve složce %s?\n"
-"Může to chvíli trvat."
 
 msgctxt "Application"
 msgid "Project Manager"

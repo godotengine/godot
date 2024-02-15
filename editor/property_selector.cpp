@@ -34,7 +34,7 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tree.h"

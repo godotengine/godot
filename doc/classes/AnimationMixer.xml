@@ -15,10 +15,10 @@
 			<param index="0" name="animation" type="Animation" />
 			<param index="1" name="track" type="int" />
 			<param index="2" name="value" type="Variant" />
-			<param index="3" name="object" type="Object" />
-			<param index="4" name="object_idx" type="int" />
+			<param index="3" name="object_id" type="int" />
+			<param index="4" name="object_sub_idx" type="int" />
 			<description>
-				A virtual function for processing after key getting during playback.
+				A virtual function for processing after getting a key during playback.
 			</description>
 		</method>
 		<method name="add_animation_library">
@@ -34,6 +34,18 @@
 			<param index="0" name="delta" type="float" />
 			<description>
 				Manually advance the animations by the specified time (in seconds).
+			</description>
+		</method>
+		<method name="capture">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="duration" type="float" />
+			<param index="2" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<param index="3" name="ease_type" type="int" enum="Tween.EaseType" default="0" />
+			<description>
+				If the animation track specified by [param name] has an option [constant Animation.UPDATE_CAPTURE], stores current values of the objects indicated by the track path as a cache. If there is already a captured cache, the old cache is discarded.
+				After this it will interpolate with current animation blending result during the playback process for the time specified by [param duration], working like a crossfade.
+				You can specify [param trans_type] as the curve for the interpolation. For better results, it may be appropriate to specify [constant Tween.TRANS_LINEAR] for cases where the first key of the track begins with a non-zero value or where the key value does not change, and [constant Tween.TRANS_QUAD] for cases where the key value changes linearly.
 			</description>
 		</method>
 		<method name="clear_caches">

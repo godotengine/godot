@@ -2088,6 +2088,9 @@ msgstr "%d περισσότεροι φάκελοι"
 msgid "%d more files"
 msgstr "%d περισσότερα αρχεία"
 
+msgid "Forward+"
+msgstr "Εμπρός+"
+
 msgid "Pan View"
 msgstr "Μετατόπιση Οπτικής Γωνίας"
 
@@ -2218,12 +2221,6 @@ msgstr "Αποστολή Σχολίων Τεκμηρίωσης"
 
 msgid "Support Godot Development"
 msgstr "Υποστηρίξτε την ανάπτυξη του Godot"
-
-msgid "Choose a renderer."
-msgstr "Επιλέξτε έναν οδηγό βίντεο."
-
-msgid "Forward+"
-msgstr "Εμπρός+"
 
 msgid "Update Continuously"
 msgstr "Συνεχόμενη Ανανέωση"
@@ -6236,13 +6233,6 @@ msgstr ""
 "Η γλώσσα άλλαξε.\n"
 "Το περιβάλλον θα αλλάξει μετά από επανεκκίνηση του επεξεργαστή ή του "
 "διαχειριστή έργων."
-
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Θέλετε να σαρώσετε %s φακέλους για υπαρκτά έργα Godot;\n"
-"Αυτό μπορεί να πάρει κάποια ώρα."
 
 msgid "New Project"
 msgstr "Νέο έργο"

@@ -50,12 +50,12 @@ protected:
 
 	void _bind_tracker();
 	void _unbind_tracker();
-	void _changed_tracker(const StringName p_tracker_name, int p_tracker_type);
-	void _removed_tracker(const StringName p_tracker_name, int p_tracker_type);
+	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
 	void _pose_changed(const Ref<XRPose> &p_pose);
 
 public:
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
@@ -87,8 +87,8 @@ protected:
 
 	virtual void _bind_tracker();
 	virtual void _unbind_tracker();
-	void _changed_tracker(const StringName p_tracker_name, int p_tracker_type);
-	void _removed_tracker(const StringName p_tracker_name, int p_tracker_type);
+	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
 
 	void _pose_changed(const Ref<XRPose> &p_pose);
 	void _pose_lost_tracking(const Ref<XRPose> &p_pose);
@@ -96,10 +96,10 @@ protected:
 
 public:
 	void _validate_property(PropertyInfo &p_property) const;
-	void set_tracker(const StringName p_tracker_name);
+	void set_tracker(const StringName &p_tracker_name);
 	StringName get_tracker() const;
 
-	void set_pose_name(const StringName p_pose);
+	void set_pose_name(const StringName &p_pose);
 	StringName get_pose_name() const;
 
 	bool get_is_active() const;
@@ -109,7 +109,7 @@ public:
 
 	Ref<XRPose> get_pose();
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	XRNode3D();
 	~XRNode3D();
@@ -193,7 +193,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	real_t get_world_scale() const;
 	void set_world_scale(real_t p_world_scale);

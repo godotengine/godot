@@ -36,10 +36,10 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/progress_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
@@ -146,6 +146,9 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 
 	install_options_vb->hide();
 	download_progress_hb->show();
+	download_progress_bar->show();
+	download_progress_bar->set_indeterminate(true);
+
 	_set_current_progress_status(TTR("Starting the download..."));
 
 	download_templates->set_download_file(EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_templates.tpz"));
@@ -159,6 +162,7 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 	Error err = download_templates->request(p_url);
 	if (err != OK) {
 		_set_current_progress_status(TTR("Error requesting URL:") + " " + p_url, true);
+		download_progress_hb->hide();
 		return;
 	}
 
@@ -357,10 +361,10 @@ bool ExportTemplateManager::_humanize_http_status(HTTPRequest *p_request, String
 }
 
 void ExportTemplateManager::_set_current_progress_status(const String &p_status, bool p_error) {
-	download_progress_bar->hide();
 	download_progress_label->set_text(p_status);
 
 	if (p_error) {
+		download_progress_bar->hide();
 		download_progress_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	} else {
 		download_progress_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Label")));
@@ -369,6 +373,7 @@ void ExportTemplateManager::_set_current_progress_status(const String &p_status,
 
 void ExportTemplateManager::_set_current_progress_value(float p_value, const String &p_status) {
 	download_progress_bar->show();
+	download_progress_bar->set_indeterminate(false);
 	download_progress_bar->set_value(p_value);
 	download_progress_label->set_text(p_status);
 }
@@ -464,6 +469,13 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
+		}
+
+		if (String::utf8(fname).ends_with("/")) {
+			// File is a directory, ignore it.
+			// Directories will be created when extracting each file.
+			ret = unzGoToNextFile(pkg);
+			continue;
 		}
 
 		String file_path(String::utf8(fname).simplify_path());
@@ -758,7 +770,7 @@ void ExportTemplateManager::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			current_value->add_theme_font_override("font", get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 			current_missing_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			current_installed_label->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+			current_installed_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
 			mirror_options_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 		} break;
@@ -948,6 +960,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	download_progress_bar->set_max(1);
 	download_progress_bar->set_value(0);
 	download_progress_bar->set_step(0.01);
+	download_progress_bar->set_editor_preview_indeterminate(true);
 	download_progress_hb->add_child(download_progress_bar);
 
 	download_progress_label = memnew(Label);

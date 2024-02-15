@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A 3×4 matrix (3 rows, 4 columns) used for 3D linear transformations. It can represent transformations such as translation, rotation, and scaling. It consists of a [member basis] (first 3 columns) and a [Vector3] for the [member origin] (last column).
-		For more information, read the "Matrices and transforms" documentation article.
+		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
@@ -243,6 +243,20 @@
 			<param index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Transform3D], including the [member origin] vector, which scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform3D" />
+			<param index="0" name="right" type="float" />
+			<description>
+				This operator divides all components of the [Transform3D], including the [member origin] vector, which inversely scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform3D" />
+			<param index="0" name="right" type="int" />
+			<description>
+				This operator divides all components of the [Transform3D], including the [member origin] vector, which inversely scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator ==">

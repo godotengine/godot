@@ -52,9 +52,11 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 	Ref<SceneState> state = Ref<PackedScene>(loaded_res)->get_state();
 
 	Vector<String> parsed_strings;
+	List<String> tabcontainer_paths;
 	for (int i = 0; i < state->get_node_count(); i++) {
 		String node_type = state->get_node_type(i);
-		if (!ClassDB::is_parent_class(node_type, "Control") && !ClassDB::is_parent_class(node_type, "Window")) {
+		bool is_control = ClassDB::is_parent_class(node_type, "Control");
+		if (!is_control && !ClassDB::is_parent_class(node_type, "Window")) {
 			continue;
 		}
 
@@ -66,8 +68,26 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				break;
 			}
 		}
+
+		// Parse the names of children of `TabContainer`s, as they are used for tab titles.
+		if (!tabcontainer_paths.is_empty()) {
+			String parent_path = state->get_node_path(i, true);
+			if (!parent_path.begins_with(tabcontainer_paths[tabcontainer_paths.size() - 1])) {
+				// Switch to the previous `TabContainer` this was nested in, if that was the case.
+				tabcontainer_paths.pop_back();
+			}
+
+			if (is_control && auto_translating && !tabcontainer_paths.is_empty() && parent_path == tabcontainer_paths[tabcontainer_paths.size() - 1]) {
+				parsed_strings.push_back(state->get_node_name(i));
+			}
+		}
+
 		if (!auto_translating) {
 			continue;
+		}
+
+		if (node_type == "TabContainer") {
+			tabcontainer_paths.push_back(state->get_node_path(i));
 		}
 
 		for (int j = 0; j < state->get_node_property_count(i); j++) {

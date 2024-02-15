@@ -1,7 +1,7 @@
 using Godot;
+using GodotTools.Build;
 using GodotTools.Internals;
 using JetBrains.Annotations;
-using static GodotTools.Internals.Globals;
 
 namespace GodotTools
 {
@@ -16,14 +16,20 @@ namespace GodotTools
                 RestartTimer();
 
                 if (Internal.IsAssembliesReloadingNeeded())
+                {
+                    BuildManager.UpdateLastValidBuildDateTime();
                     Internal.ReloadAssemblies(softReload: false);
+                }
             }
         }
 
         private void TimerTimeout()
         {
             if (Internal.IsAssembliesReloadingNeeded())
+            {
+                BuildManager.UpdateLastValidBuildDateTime();
                 Internal.ReloadAssemblies(softReload: false);
+            }
         }
 
         [UsedImplicitly]

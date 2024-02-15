@@ -47,11 +47,6 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	taa_jitter = p_taa_jitter;
 }
 
-#ifdef MINGW_ENABLED
-#undef near
-#undef far
-#endif
-
 void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
@@ -90,7 +85,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 
 	// 5. figure out far plane, this could use some improvement, we may have our far plane too close like this, not sure if this matters
 	Vector3 far_center = (planes[0][Projection::PLANE_FAR].get_center() + planes[1][Projection::PLANE_FAR].get_center()) * 0.5;
-	Plane far(-z, far_center);
+	Plane far_plane = Plane(-z, far_center);
 
 	/////////////////////////////////////////////////////////////////////////////
 	// Figure out our top/bottom planes
@@ -98,9 +93,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	// 6. Intersect far and left planes with top planes from both eyes, save the point with highest y as top_left.
 	Vector3 top_left, other;
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_TOP], &top_left), "Can't determine left camera far/left/top vector");
+			!far_plane.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_TOP], &top_left), "Can't determine left camera far/left/top vector");
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/left/top vector");
+			!far_plane.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/left/top vector");
 	if (y.dot(top_left) < y.dot(other)) {
 		top_left = other;
 	}
@@ -108,9 +103,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	// 7. Intersect far and left planes with bottom planes from both eyes, save the point with lowest y as bottom_left.
 	Vector3 bottom_left;
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_BOTTOM], &bottom_left), "Can't determine left camera far/left/bottom vector");
+			!far_plane.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_BOTTOM], &bottom_left), "Can't determine left camera far/left/bottom vector");
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/left/bottom vector");
+			!far_plane.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/left/bottom vector");
 	if (y.dot(other) < y.dot(bottom_left)) {
 		bottom_left = other;
 	}
@@ -118,9 +113,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	// 8. Intersect far and right planes with top planes from both eyes, save the point with highest y as top_right.
 	Vector3 top_right;
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_TOP], &top_right), "Can't determine left camera far/right/top vector");
+			!far_plane.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_TOP], &top_right), "Can't determine left camera far/right/top vector");
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/right/top vector");
+			!far_plane.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/right/top vector");
 	if (y.dot(top_right) < y.dot(other)) {
 		top_right = other;
 	}
@@ -128,9 +123,9 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	//  9. Intersect far and right planes with bottom planes from both eyes, save the point with lowest y as bottom_right.
 	Vector3 bottom_right;
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_BOTTOM], &bottom_right), "Can't determine left camera far/right/bottom vector");
+			!far_plane.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_BOTTOM], &bottom_right), "Can't determine left camera far/right/bottom vector");
 	ERR_FAIL_COND_MSG(
-			!far.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/right/bottom vector");
+			!far_plane.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/right/bottom vector");
 	if (y.dot(other) < y.dot(bottom_right)) {
 		bottom_right = other;
 	}
@@ -145,29 +140,29 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	// Figure out our near plane points
 
 	// 12. Create a near plane using -camera z and the eye further along in that axis.
-	Plane near;
+	Plane near_plane;
 	Vector3 neg_z = -z;
 	if (neg_z.dot(p_transforms[1].origin) < neg_z.dot(p_transforms[0].origin)) {
-		near = Plane(neg_z, p_transforms[0].origin);
+		near_plane = Plane(neg_z, p_transforms[0].origin);
 	} else {
-		near = Plane(neg_z, p_transforms[1].origin);
+		near_plane = Plane(neg_z, p_transforms[1].origin);
 	}
 
 	// 13. Intersect near plane with bottm/left planes, to obtain min_vec then top/right to obtain max_vec
 	Vector3 min_vec;
 	ERR_FAIL_COND_MSG(
-			!near.intersect_3(bottom, planes[0][Projection::PLANE_LEFT], &min_vec), "Can't determine left camera near/left/bottom vector");
+			!near_plane.intersect_3(bottom, planes[0][Projection::PLANE_LEFT], &min_vec), "Can't determine left camera near/left/bottom vector");
 	ERR_FAIL_COND_MSG(
-			!near.intersect_3(bottom, planes[1][Projection::PLANE_LEFT], &other), "Can't determine right camera near/left/bottom vector");
+			!near_plane.intersect_3(bottom, planes[1][Projection::PLANE_LEFT], &other), "Can't determine right camera near/left/bottom vector");
 	if (x.dot(other) < x.dot(min_vec)) {
 		min_vec = other;
 	}
 
 	Vector3 max_vec;
 	ERR_FAIL_COND_MSG(
-			!near.intersect_3(top, planes[0][Projection::PLANE_RIGHT], &max_vec), "Can't determine left camera near/right/top vector");
+			!near_plane.intersect_3(top, planes[0][Projection::PLANE_RIGHT], &max_vec), "Can't determine left camera near/right/top vector");
 	ERR_FAIL_COND_MSG(
-			!near.intersect_3(top, planes[1][Projection::PLANE_RIGHT], &other), "Can't determine right camera near/right/top vector");
+			!near_plane.intersect_3(top, planes[1][Projection::PLANE_RIGHT], &other), "Can't determine right camera near/right/top vector");
 	if (x.dot(max_vec) < x.dot(other)) {
 		max_vec = other;
 	}
@@ -177,8 +172,8 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	Vector3 local_max_vec = main_transform_inv.xform(max_vec);
 
 	// 15. get x and y from these to obtain left, top, right bottom for the frustum. Get the distance from near plane to camera origin to obtain near, and the distance from the far plane to the camer origin to obtain far.
-	float z_near = -near.distance_to(main_transform.origin);
-	float z_far = -far.distance_to(main_transform.origin);
+	float z_near = -near_plane.distance_to(main_transform.origin);
+	float z_far = -far_plane.distance_to(main_transform.origin);
 
 	// 16. Use this to build the combined camera matrix.
 	main_projection.set_frustum(local_min_vec.x, local_max_vec.x, local_min_vec.y, local_max_vec.y, z_near, z_far);

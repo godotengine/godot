@@ -33,9 +33,9 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
@@ -106,7 +106,7 @@ void SurfaceUpgradeTool::prepare_upgrade() {
 	EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "resave_paths", resave_paths);
 
 	// Delay to avoid deadlocks, since this dialog can be triggered by loading a scene.
-	MessageQueue::get_singleton()->push_callable(callable_mp(EditorNode::get_singleton(), &EditorNode::restart_editor));
+	callable_mp(EditorNode::get_singleton(), &EditorNode::restart_editor).call_deferred();
 }
 
 // Ensure that the warnings and popups are skipped.

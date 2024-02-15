@@ -32,7 +32,6 @@
 
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
@@ -40,6 +39,7 @@
 #include "editor/plugins/text_shader_editor.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/shader_create_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"
@@ -84,7 +84,8 @@ void ShaderEditorPlugin::_update_shader_list() {
 		Ref<Texture2D> icon = shader_list->get_editor_theme_icon(_class);
 
 		shader_list->add_item(text, icon);
-		shader_list->set_item_tooltip(shader_list->get_item_count() - 1, path);
+		shader_list->set_item_tooltip(-1, path);
+		edited_shader.name = text;
 	}
 
 	if (shader_tabs->get_tab_count()) {
@@ -292,11 +293,6 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 }
 
 String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
-	if (!p_for_scene.is_empty()) {
-		// TODO: handle built-in shaders.
-		return String();
-	}
-
 	// TODO: This should also include visual shaders and shader includes, but save_external_data() doesn't seem to save them...
 	PackedStringArray unsaved_shaders;
 	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
@@ -305,10 +301,30 @@ String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 				if (unsaved_shaders.is_empty()) {
 					unsaved_shaders.append(TTR("Save changes to the following shaders(s) before quitting?"));
 				}
-				unsaved_shaders.append(edited_shaders[i].shader_editor->get_name());
+				unsaved_shaders.append(edited_shaders[i].name.trim_suffix("(*)"));
 			}
 		}
 	}
+
+	if (!p_for_scene.is_empty()) {
+		PackedStringArray unsaved_built_in_shaders;
+
+		const String scene_file = p_for_scene.get_file();
+		for (const String &E : unsaved_shaders) {
+			if (!E.is_resource_file() && E.contains(scene_file)) {
+				if (unsaved_built_in_shaders.is_empty()) {
+					unsaved_built_in_shaders.append(TTR("There are unsaved changes in the following built-in shaders(s):"));
+				}
+				unsaved_built_in_shaders.append(E);
+			}
+		}
+
+		if (!unsaved_built_in_shaders.is_empty()) {
+			return String("\n").join(unsaved_built_in_shaders);
+		}
+		return String();
+	}
+
 	return String("\n").join(unsaved_shaders);
 }
 
@@ -517,7 +533,7 @@ bool ShaderEditorPlugin::can_drop_data_fw(const Point2 &p_point, const Variant &
 		}
 
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
+			const String &file = files[i];
 			if (ResourceLoader::exists(file, "Shader")) {
 				Ref<Shader> shader = ResourceLoader::load(file);
 				if (shader.is_valid()) {
@@ -558,7 +574,7 @@ void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		Vector<String> files = d["files"];
 
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
+			const String &file = files[i];
 			Ref<Resource> res;
 			if (ResourceLoader::exists(file, "Shader") || ResourceLoader::exists(file, "ShaderInclude")) {
 				res = ResourceLoader::load(file);
@@ -586,6 +602,7 @@ void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
 void ShaderEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), CONNECT_DEFERRED);
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ShaderEditorPlugin::_close_builtin_shaders_from_scene));
 			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ShaderEditorPlugin::_file_removed));
 		} break;
@@ -626,21 +643,23 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 		file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(i), true);
 	}
 
-	if (window_wrapper->is_window_available()) {
-		Control *padding = memnew(Control);
-		padding->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		menu_hb->add_child(padding);
+	Control *padding = memnew(Control);
+	padding->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	menu_hb->add_child(padding);
 
-		make_floating = memnew(ScreenSelect);
-		make_floating->set_flat(true);
+	make_floating = memnew(ScreenSelect);
+	make_floating->set_flat(true);
+	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
+	if (!make_floating->is_disabled()) {
+		// Override default ScreenSelect tooltip if multi-window support is available.
 		make_floating->set_tooltip_text(TTR("Make the shader editor floating."));
-		make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
-
-		menu_hb->add_child(make_floating);
-		window_wrapper->connect("window_visibility_changed", callable_mp(this, &ShaderEditorPlugin::_window_changed));
 	}
 
+	menu_hb->add_child(make_floating);
+	window_wrapper->connect("window_visibility_changed", callable_mp(this, &ShaderEditorPlugin::_window_changed));
+
 	shader_list = memnew(ItemList);
+	shader_list->set_auto_translate(false);
 	shader_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(shader_list);
 	shader_list->connect("item_selected", callable_mp(this, &ShaderEditorPlugin::_shader_selected));
@@ -659,9 +678,6 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_tabs->add_theme_style_override("panel", empty);
 
 	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), window_wrapper);
-
-	// Defer connect because Editor class is not in the binding system yet.
-	EditorNode::get_singleton()->call_deferred("connect", "resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), CONNECT_DEFERRED);
 
 	shader_create_dialog = memnew(ShaderCreateDialog);
 	vb->add_child(shader_create_dialog);

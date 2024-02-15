@@ -172,11 +172,10 @@ void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_na
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	if (baking_navmeshes.has(p_navigation_mesh)) {
-		baking_navmesh_mutex.unlock();
+	if (is_baking(p_navigation_mesh)) {
 		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
 	}
+	baking_navmesh_mutex.lock();
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
@@ -208,12 +207,11 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	if (baking_navmeshes.has(p_navigation_mesh)) {
-		baking_navmesh_mutex.unlock();
+	if (is_baking(p_navigation_mesh)) {
 		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
 		return;
 	}
+	baking_navmesh_mutex.lock();
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
@@ -226,6 +224,13 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator3D::generator_thread_bake, generator_task, NavMeshGenerator3D::baking_use_high_priority_threads, SNAME("NavMeshGeneratorBake3D"));
 	generator_tasks.insert(generator_task->thread_task_id, generator_task);
 	generator_task_mutex.unlock();
+}
+
+bool NavMeshGenerator3D::is_baking(Ref<NavigationMesh> p_navigation_mesh) {
+	baking_navmesh_mutex.lock();
+	bool baking = baking_navmeshes.has(p_navigation_mesh);
+	baking_navmesh_mutex.unlock();
+	return baking;
 }
 
 void NavMeshGenerator3D::generator_thread_bake(void *p_arg) {
@@ -625,6 +630,9 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	cfg.cs = p_navigation_mesh->get_cell_size();
 	cfg.ch = p_navigation_mesh->get_cell_height();
+	if (p_navigation_mesh->get_border_size() > 0.0) {
+		cfg.borderSize = (int)Math::ceil(p_navigation_mesh->get_border_size() / cfg.cs);
+	}
 	cfg.walkableSlopeAngle = p_navigation_mesh->get_agent_max_slope();
 	cfg.walkableHeight = (int)Math::ceil(p_navigation_mesh->get_agent_height() / cfg.ch);
 	cfg.walkableClimb = (int)Math::floor(p_navigation_mesh->get_agent_max_climb() / cfg.ch);
@@ -637,6 +645,9 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	cfg.detailSampleDist = MAX(p_navigation_mesh->get_cell_size() * p_navigation_mesh->get_detail_sample_distance(), 0.1f);
 	cfg.detailSampleMaxError = p_navigation_mesh->get_cell_height() * p_navigation_mesh->get_detail_sample_max_error();
 
+	if (p_navigation_mesh->get_border_size() > 0.0 && !Math::is_equal_approx(p_navigation_mesh->get_cell_size(), p_navigation_mesh->get_border_size())) {
+		WARN_PRINT("Property border_size is ceiled to cell_size voxel units and loses precision.");
+	}
 	if (!Math::is_equal_approx((float)cfg.walkableHeight * cfg.ch, p_navigation_mesh->get_agent_height())) {
 		WARN_PRINT("Property agent_height is ceiled to cell_height voxel units and loses precision.");
 	}
@@ -702,7 +713,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		Vector<unsigned char> tri_areas;
 		tri_areas.resize(ntris);
 
-		ERR_FAIL_COND(tri_areas.size() == 0);
+		ERR_FAIL_COND(tri_areas.is_empty());
 
 		memset(tri_areas.ptrw(), 0, ntris * sizeof(unsigned char));
 		rcMarkWalkableTriangles(&ctx, cfg.walkableSlopeAngle, verts, nverts, tris, ntris, tri_areas.ptrw());
@@ -738,11 +749,11 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	if (p_navigation_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_WATERSHED) {
 		ERR_FAIL_COND(!rcBuildDistanceField(&ctx, *chf));
-		ERR_FAIL_COND(!rcBuildRegions(&ctx, *chf, 0, cfg.minRegionArea, cfg.mergeRegionArea));
+		ERR_FAIL_COND(!rcBuildRegions(&ctx, *chf, cfg.borderSize, cfg.minRegionArea, cfg.mergeRegionArea));
 	} else if (p_navigation_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_MONOTONE) {
-		ERR_FAIL_COND(!rcBuildRegionsMonotone(&ctx, *chf, 0, cfg.minRegionArea, cfg.mergeRegionArea));
+		ERR_FAIL_COND(!rcBuildRegionsMonotone(&ctx, *chf, cfg.borderSize, cfg.minRegionArea, cfg.mergeRegionArea));
 	} else {
-		ERR_FAIL_COND(!rcBuildLayerRegions(&ctx, *chf, 0, cfg.minRegionArea));
+		ERR_FAIL_COND(!rcBuildLayerRegions(&ctx, *chf, cfg.borderSize, cfg.minRegionArea));
 	}
 
 	bake_state = "Creating contours..."; // step #8

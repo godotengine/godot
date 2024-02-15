@@ -32,11 +32,11 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel.h"
@@ -191,12 +191,14 @@ void EditorSceneTabs::_disable_menu_option_if(int p_option, bool p_condition) {
 }
 
 void EditorSceneTabs::update_scene_tabs() {
+	static bool menu_initialized = false;
 	tab_preview_panel->hide();
 
-	if (scene_tabs->get_tab_count() == EditorNode::get_editor_data().get_edited_scene_count()) {
+	if (menu_initialized && scene_tabs->get_tab_count() == EditorNode::get_editor_data().get_edited_scene_count()) {
 		_update_tab_titles();
 		return;
 	}
+	menu_initialized = true;
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
 		DisplayServer::get_singleton()->global_menu_clear("_dock");

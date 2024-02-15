@@ -99,7 +99,7 @@ open internal class VkSurfaceView(context: Context) : SurfaceView(context), Surf
 	 *
 	 * Must not be called before a [VkRenderer] has been set.
 	 */
-	open fun onResume() {
+	protected fun resumeRenderThread() {
 		vkThread.onResume()
 	}
 
@@ -108,7 +108,7 @@ open internal class VkSurfaceView(context: Context) : SurfaceView(context), Surf
 	 *
 	 * Must not be called before a [VkRenderer] has been set.
 	 */
-	open fun onPause() {
+	protected fun pauseRenderThread() {
 		vkThread.onPause()
 	}
 

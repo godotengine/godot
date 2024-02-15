@@ -2,19 +2,7 @@
  *  The RSA public-key cryptosystem
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 /*
@@ -46,6 +34,7 @@
 #include "mbedtls/error.h"
 #include "constant_time_internal.h"
 #include "mbedtls/constant_time.h"
+#include "bignum_internal.h"
 
 #include <string.h>
 
@@ -817,6 +806,46 @@ cleanup:
 }
 
 /*
+ * Unblind
+ * T = T * Vf mod N
+ */
+static int rsa_unblind(mbedtls_mpi *T, mbedtls_mpi *Vf, const mbedtls_mpi *N)
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    const size_t nlimbs = N->n;
+    const size_t tlimbs = 2 * (nlimbs + 1);
+
+    mbedtls_mpi_uint mm = mbedtls_mpi_montmul_init(N->p);
+
+    mbedtls_mpi RR, M_T;
+
+    mbedtls_mpi_init(&RR);
+    mbedtls_mpi_init(&M_T);
+
+    MBEDTLS_MPI_CHK(mbedtls_mpi_get_mont_r2_unsafe(&RR, N));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&M_T, tlimbs));
+
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(T, nlimbs));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(Vf, nlimbs));
+
+    /* T = T * Vf mod N
+     * Reminder: montmul(A, B, N) = A * B * R^-1 mod N
+     * Usually both operands are multiplied by R mod N beforehand, yielding a
+     * result that's also * R mod N (aka "in the Montgomery domain"). Here we
+     * only multiply one operand by R mod N, so the result is directly what we
+     * want - no need to call `mpi_montred()` on it. */
+    mbedtls_mpi_montmul(T, &RR, N, mm, &M_T);
+    mbedtls_mpi_montmul(T, Vf, N, mm, &M_T);
+
+cleanup:
+
+    mbedtls_mpi_free(&RR);
+    mbedtls_mpi_free(&M_T);
+
+    return ret;
+}
+
+/*
  * Exponent blinding supposed to prevent side-channel attacks using multiple
  * traces of measurements to recover the RSA key. The more collisions are there,
  * the more bits of the key can be recovered. See [3].
@@ -879,7 +908,7 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
 
     /* Temporaries holding the initial input and the double
      * checked result; should be the same in the end. */
-    mbedtls_mpi I, C;
+    mbedtls_mpi input_blinded, check_result_blinded;
 
     RSA_VALIDATE_RET(ctx != NULL);
     RSA_VALIDATE_RET(input  != NULL);
@@ -916,8 +945,8 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
     mbedtls_mpi_init(&TP); mbedtls_mpi_init(&TQ);
 #endif
 
-    mbedtls_mpi_init(&I);
-    mbedtls_mpi_init(&C);
+    mbedtls_mpi_init(&input_blinded);
+    mbedtls_mpi_init(&check_result_blinded);
 
     /* End of MPI initialization */
 
@@ -926,8 +955,6 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
         ret = MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
         goto cleanup;
     }
-
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&I, &T));
 
     if (f_rng != NULL) {
         /*
@@ -980,6 +1007,9 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
 #endif /* MBEDTLS_RSA_NO_CRT */
     }
 
+    /* Make a copy of the input (after blinding if there was any) */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&input_blinded, &T));
+
 #if defined(MBEDTLS_RSA_NO_CRT)
     MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&T, &T, D, &ctx->N, &ctx->RN));
 #else
@@ -1007,21 +1037,20 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
     MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&T, &TQ, &TP));
 #endif /* MBEDTLS_RSA_NO_CRT */
 
+    /* Verify the result to prevent glitching attacks. */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&check_result_blinded, &T, &ctx->E,
+                                        &ctx->N, &ctx->RN));
+    if (mbedtls_mpi_cmp_mpi(&check_result_blinded, &input_blinded) != 0) {
+        ret = MBEDTLS_ERR_RSA_VERIFY_FAILED;
+        goto cleanup;
+    }
+
     if (f_rng != NULL) {
         /*
          * Unblind
          * T = T * Vf mod N
          */
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&T, &T, &ctx->Vf));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&T, &T, &ctx->N));
-    }
-
-    /* Verify the result to prevent glitching attacks. */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&C, &T, &ctx->E,
-                                        &ctx->N, &ctx->RN));
-    if (mbedtls_mpi_cmp_mpi(&C, &I) != 0) {
-        ret = MBEDTLS_ERR_RSA_VERIFY_FAILED;
-        goto cleanup;
+        MBEDTLS_MPI_CHK(rsa_unblind(&T, &ctx->Vf, &ctx->N));
     }
 
     olen = ctx->len;
@@ -1053,8 +1082,8 @@ cleanup:
     mbedtls_mpi_free(&TP); mbedtls_mpi_free(&TQ);
 #endif
 
-    mbedtls_mpi_free(&C);
-    mbedtls_mpi_free(&I);
+    mbedtls_mpi_free(&check_result_blinded);
+    mbedtls_mpi_free(&input_blinded);
 
     if (ret != 0 && ret >= -0x007f) {
         return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_RSA_PRIVATE_FAILED, ret);

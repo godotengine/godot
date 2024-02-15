@@ -51,7 +51,7 @@ template <class T>
 struct VariantCaster {
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
 		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of<Object, TStripped>::value) {
+		if constexpr (std::is_base_of_v<Object, TStripped>) {
 			return Object::cast_to<TStripped>(p_variant);
 		} else {
 			return p_variant;
@@ -63,7 +63,7 @@ template <class T>
 struct VariantCaster<T &> {
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
 		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of<Object, TStripped>::value) {
+		if constexpr (std::is_base_of_v<Object, TStripped>) {
 			return Object::cast_to<TStripped>(p_variant);
 		} else {
 			return p_variant;
@@ -75,7 +75,7 @@ template <class T>
 struct VariantCaster<const T &> {
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
 		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of<Object, TStripped>::value) {
+		if constexpr (std::is_base_of_v<Object, TStripped>) {
 			return Object::cast_to<TStripped>(p_variant);
 		} else {
 			return p_variant;
@@ -176,6 +176,7 @@ VARIANT_ENUM_CAST(Variant::Operator);
 
 VARIANT_ENUM_CAST(Key);
 VARIANT_BITFIELD_CAST(KeyModifierMask);
+VARIANT_ENUM_CAST(KeyLocation);
 
 static inline Key &operator|=(Key &a, BitField<KeyModifierMask> b) {
 	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b.operator int64_t()));
@@ -225,7 +226,7 @@ template <typename T>
 struct VariantObjectClassChecker {
 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
 		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of<Object, TStripped>::value) {
+		if constexpr (std::is_base_of_v<Object, TStripped>) {
 			Object *obj = p_variant;
 			return Object::cast_to<TStripped>(p_variant) || !obj;
 		} else {

@@ -116,6 +116,8 @@ protected:
 
 	void set_body_mode(PhysicsServer3D::BodyMode p_mode);
 
+	virtual void _space_changed(const RID &p_new_space);
+
 	void set_only_update_transform_changes(bool p_enable);
 	bool is_only_update_transform_changes_enabled() const;
 
@@ -171,7 +173,7 @@ public:
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	CollisionObject3D();
 	~CollisionObject3D();

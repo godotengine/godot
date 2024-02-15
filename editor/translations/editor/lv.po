@@ -2105,6 +2105,9 @@ msgstr "%s vēl mapes"
 msgid "%d more files"
 msgstr "%d vēl faili"
 
+msgid "Forward+"
+msgstr "UzPriekšu+"
+
 msgid "Dock Position"
 msgstr "Doka pozīcija"
 
@@ -2239,9 +2242,6 @@ msgstr "Par Godot"
 
 msgid "Support Godot Development"
 msgstr "Atbalstīt Godot izstrādi"
-
-msgid "Forward+"
-msgstr "UzPriekšu+"
 
 msgid "Update Continuously"
 msgstr "Nepārtraukti Atjaunot"

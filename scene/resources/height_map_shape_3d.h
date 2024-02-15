@@ -54,6 +54,9 @@ public:
 	void set_map_data(Vector<real_t> p_new);
 	Vector<real_t> get_map_data() const;
 
+	real_t get_min_height() const;
+	real_t get_max_height() const;
+
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 

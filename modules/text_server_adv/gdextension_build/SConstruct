@@ -74,6 +74,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/renderer/tvgShape.cpp",
         "src/renderer/tvgSwCanvas.cpp",
         "src/renderer/tvgTaskScheduler.cpp",
+        "src/renderer/tvgText.cpp",
+        # "src/renderer/tvgWgCanvas.cpp",
         # renderer sw_engine
         "src/renderer/sw_engine/tvgSwFill.cpp",
         "src/renderer/sw_engine/tvgSwImage.cpp",
@@ -623,6 +625,8 @@ thirdparty_icu_sources = [
     "common/uloc.cpp",
     "common/uloc_keytype.cpp",
     "common/uloc_tag.cpp",
+    "common/ulocale.cpp",
+    "common/ulocbuilder.cpp",
     "common/umapfile.cpp",
     "common/umath.cpp",
     "common/umutablecptrie.cpp",
@@ -688,7 +692,7 @@ thirdparty_icu_sources = [
 ]
 thirdparty_icu_sources = [thirdparty_icu_dir + file for file in thirdparty_icu_sources]
 
-icu_data_name = "icudt73l.dat"
+icu_data_name = "icudt74l.dat"
 
 if env["static_icu_data"]:
     env_icu.Depends("../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/" + icu_data_name)

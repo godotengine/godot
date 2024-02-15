@@ -31,9 +31,9 @@
 #include "editor_performance_profiler.h"
 
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"
 
 EditorPerformanceProfiler::Monitor::Monitor() {}
@@ -122,7 +122,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 	}
 	Size2i cell_size = Size2i(monitor_draw->get_size()) / Size2i(columns, rows);
 	float spacing = float(POINT_SEPARATION) / float(columns);
-	float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4f : 0.55f;
+	float value_multiplier = EditorThemeManager::is_dark_theme() ? 1.4f : 0.55f;
 	float hue_shift = 1.0f / float(monitors.size());
 
 	for (int i = 0; i < active.size(); i++) {

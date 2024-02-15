@@ -35,9 +35,9 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/split_container.h"
 #include "servers/display_server.h"
@@ -256,6 +256,7 @@ ShaderFileEditor::ShaderFileEditor() {
 	add_child(main_hs);
 
 	versions = memnew(ItemList);
+	versions->set_auto_translate(false);
 	versions->connect("item_selected", callable_mp(this, &ShaderFileEditor::_version_selected));
 	versions->set_custom_minimum_size(Size2i(200 * EDSCALE, 0));
 	main_hs->add_child(versions);

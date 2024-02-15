@@ -44,7 +44,7 @@ using namespace godot;
 
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
 
-#else
+#elif defined(GODOT_MODULE)
 // Headers for building as built-in module.
 
 #include "core/config/project_settings.h"
@@ -370,7 +370,7 @@ bool TextServerAdvanced::_has_feature(Feature p_feature) const {
 String TextServerAdvanced::_get_name() const {
 #ifdef GDEXTENSION
 	return "ICU / HarfBuzz / Graphite (GDExtension)";
-#else
+#elif defined(GODOT_MODULE)
 	return "ICU / HarfBuzz / Graphite (Built-in)";
 #endif
 }
@@ -2409,6 +2409,37 @@ int64_t TextServerAdvanced::_font_get_spacing(const RID &p_font_rid, SpacingType
 	}
 }
 
+void TextServerAdvanced::_font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) {
+	FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		if (fdv->baseline_offset != p_baseline_offset) {
+			fdv->baseline_offset = p_baseline_offset;
+		}
+	} else {
+		FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL(fd);
+
+		MutexLock lock(fd->mutex);
+		if (fd->baseline_offset != p_baseline_offset) {
+			_font_clear_cache(fd);
+			fd->baseline_offset = p_baseline_offset;
+		}
+	}
+}
+
+float TextServerAdvanced::_font_get_baseline_offset(const RID &p_font_rid) const {
+	FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		return fdv->baseline_offset;
+	} else {
+		FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL_V(fd, 0.0);
+
+		MutexLock lock(fd->mutex);
+		return fd->baseline_offset;
+	}
+}
+
 void TextServerAdvanced::_font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) {
 	FontAdvanced *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -3243,7 +3274,7 @@ TypedArray<Vector2i> TextServerAdvanced::_font_get_kerning_list(const RID &p_fon
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), TypedArray<Vector2i>());
 
 	TypedArray<Vector2i> ret;
-	for (const KeyValue<Vector2i, FontForSizeAdvanced *> &E : fd->cache) {
+	for (const KeyValue<Vector2i, Vector2> &E : fd->cache[size]->kerning_map) {
 		ret.push_back(E.key);
 	}
 	return ret;
@@ -4852,7 +4883,7 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 #ifdef GDEXTENSION
 	for (int fb = 0; fb < fallback_font_name.size(); fb++) {
 		const String &E = fallback_font_name[fb];
-#else
+#elif defined(GODOT_MODULE)
 	for (const String &E : fallback_font_name) {
 #endif
 		SystemFontKey key = SystemFontKey(E, font_style & TextServer::FONT_ITALIC, font_weight, font_stretch, p_fdef, this);
@@ -5750,6 +5781,11 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 			gl.x_off = Math::round((double)glyph_pos[0].x_offset / (64.0 / scale));
 		}
 		gl.y_off = -Math::round((double)glyph_pos[0].y_offset / (64.0 / scale));
+		if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+			gl.y_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+		} else {
+			gl.x_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+		}
 
 		if ((glyph_info[0].codepoint != 0) || !u_isgraph(p_char)) {
 			gl.flags |= GRAPHEME_IS_VALID;
@@ -5964,6 +6000,11 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 					gl.x_off = Math::round((double)glyph_pos[i].x_offset / (64.0 / scale));
 				}
 				gl.y_off = -Math::round((double)glyph_pos[i].y_offset / (64.0 / scale));
+				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+					gl.y_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+				} else {
+					gl.x_off += _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+				}
 			}
 			if (!last_run || i < glyph_count - 1) {
 				// Do not add extra spacing to the last glyph of the string.
@@ -6757,7 +6798,7 @@ String TextServerAdvanced::_strip_diacritics(const String &p_string) const {
 		if (u_getCombiningClass(normalized_string[i]) == 0) {
 #ifdef GDEXTENSION
 			result = result + String::chr(normalized_string[i]);
-#else
+#elif defined(GODOT_MODULE)
 			result = result + normalized_string[i];
 #endif
 		}

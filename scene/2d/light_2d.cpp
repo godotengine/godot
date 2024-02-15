@@ -401,11 +401,14 @@ Vector2 PointLight2D::get_texture_offset() const {
 	return texture_offset;
 }
 
-PackedStringArray PointLight2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array PointLight2D::get_configuration_warnings() const {
+	Array warnings = Node::get_configuration_warnings();
 
 	if (!texture.is_valid()) {
-		warnings.push_back(RTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
+		Dictionary texture_warning;
+		texture_warning["message"] = RTR("A texture with the shape of the light must be supplied.");
+		texture_warning["property"] = "texture";
+		warnings.push_back(texture_warning);
 	}
 
 	return warnings;
@@ -424,6 +427,17 @@ void PointLight2D::set_texture_scale(real_t p_scale) {
 real_t PointLight2D::get_texture_scale() const {
 	return _scale;
 }
+
+#ifndef DISABLE_DEPRECATED
+bool PointLight2D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "mode" && p_value.is_num()) { // Compatibility with Godot 3.x.
+		set_blend_mode((BlendMode)(int)p_value);
+		return true;
+	}
+
+	return false;
+}
+#endif // DISABLE_DEPRECATED
 
 void PointLight2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &PointLight2D::set_texture);

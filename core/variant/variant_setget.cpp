@@ -30,6 +30,8 @@
 
 #include "variant_setget.h"
 
+#include "variant_callable.h"
+
 struct VariantSetterGetterInfo {
 	void (*setter)(Variant *base, const Variant *value, bool &valid);
 	void (*getter)(const Variant *base, Variant *value);
@@ -264,42 +266,45 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 }
 
 Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
-	Variant ret;
 	uint32_t s = variant_setters_getters[type].size();
 	if (s) {
 		for (uint32_t i = 0; i < s; i++) {
 			if (variant_setters_getters_names[type][i] == p_member) {
+				Variant ret;
 				variant_setters_getters[type][i].getter(this, &ret);
 				r_valid = true;
 				return ret;
 			}
 		}
-
-		r_valid = false;
-
-	} else if (type == Variant::OBJECT) {
-		Object *obj = get_validated_object();
-		if (!obj) {
-			r_valid = false;
-			return "Instance base is null.";
-		} else {
-			return obj->get(p_member, &r_valid);
-		}
-	} else if (type == Variant::DICTIONARY) {
-		const Variant *v = VariantGetInternalPtr<Dictionary>::get_ptr(this)->getptr(p_member);
-		if (v) {
-			r_valid = true;
-
-			return *v;
-		} else {
-			r_valid = false;
-		}
-
-	} else {
-		r_valid = false;
 	}
 
-	return ret;
+	switch (type) {
+		case Variant::OBJECT: {
+			Object *obj = get_validated_object();
+			if (!obj) {
+				r_valid = false;
+				return "Instance base is null.";
+			} else {
+				return obj->get(p_member, &r_valid);
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			const Variant *v = VariantGetInternalPtr<Dictionary>::get_ptr(this)->getptr(p_member);
+			if (v) {
+				r_valid = true;
+				return *v;
+			}
+		} break;
+		default: {
+			if (Variant::has_builtin_method(type, p_member)) {
+				r_valid = true;
+				return Callable(memnew(VariantCallable(*this, p_member)));
+			}
+		} break;
+	}
+
+	r_valid = false;
+	return Variant();
 }
 
 /**** INDEXED SETTERS AND GETTERS ****/
@@ -1166,30 +1171,48 @@ bool Variant::has_key(const Variant &p_key, bool &r_valid) const {
 	}
 }
 
-void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid) {
+void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid, VariantSetError *err_code) {
+	if (err_code) {
+		*err_code = VariantSetError::SET_OK;
+	}
 	if (type == DICTIONARY || type == OBJECT) {
 		bool valid;
 		set_keyed(p_index, p_value, valid);
 		if (r_valid) {
 			*r_valid = valid;
+			if (!valid && err_code) {
+				*err_code = VariantSetError::SET_KEYED_ERR;
+			}
 		}
 	} else {
 		bool valid = false;
 		if (p_index.get_type() == STRING_NAME) {
 			set_named(*VariantGetInternalPtr<StringName>::get_ptr(&p_index), p_value, valid);
+			if (!valid && err_code) {
+				*err_code = VariantSetError::SET_NAMED_ERR;
+			}
 		} else if (p_index.get_type() == INT) {
 			bool obb;
 			set_indexed(*VariantGetInternalPtr<int64_t>::get_ptr(&p_index), p_value, valid, obb);
 			if (obb) {
 				valid = false;
+				if (err_code) {
+					*err_code = VariantSetError::SET_INDEXED_ERR;
+				}
 			}
 		} else if (p_index.get_type() == STRING) { // less efficient version of named
 			set_named(*VariantGetInternalPtr<String>::get_ptr(&p_index), p_value, valid);
+			if (!valid && err_code) {
+				*err_code = VariantSetError::SET_NAMED_ERR;
+			}
 		} else if (p_index.get_type() == FLOAT) { // less efficient version of indexed
 			bool obb;
 			set_indexed(*VariantGetInternalPtr<double>::get_ptr(&p_index), p_value, valid, obb);
 			if (obb) {
 				valid = false;
+				if (err_code) {
+					*err_code = VariantSetError::SET_INDEXED_ERR;
+				}
 			}
 		}
 		if (r_valid) {
@@ -1198,31 +1221,49 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 	}
 }
 
-Variant Variant::get(const Variant &p_index, bool *r_valid) const {
+Variant Variant::get(const Variant &p_index, bool *r_valid, VariantGetError *err_code) const {
+	if (err_code) {
+		*err_code = VariantGetError::GET_OK;
+	}
 	Variant ret;
 	if (type == DICTIONARY || type == OBJECT) {
 		bool valid;
 		ret = get_keyed(p_index, valid);
 		if (r_valid) {
 			*r_valid = valid;
+			if (!valid && err_code) {
+				*err_code = VariantGetError::GET_KEYED_ERR;
+			}
 		}
 	} else {
 		bool valid = false;
 		if (p_index.get_type() == STRING_NAME) {
 			ret = get_named(*VariantGetInternalPtr<StringName>::get_ptr(&p_index), valid);
+			if (!valid && err_code) {
+				*err_code = VariantGetError::GET_NAMED_ERR;
+			}
 		} else if (p_index.get_type() == INT) {
 			bool obb;
 			ret = get_indexed(*VariantGetInternalPtr<int64_t>::get_ptr(&p_index), valid, obb);
 			if (obb) {
 				valid = false;
+				if (err_code) {
+					*err_code = VariantGetError::GET_INDEXED_ERR;
+				}
 			}
 		} else if (p_index.get_type() == STRING) { // less efficient version of named
 			ret = get_named(*VariantGetInternalPtr<String>::get_ptr(&p_index), valid);
+			if (!valid && err_code) {
+				*err_code = VariantGetError::GET_NAMED_ERR;
+			}
 		} else if (p_index.get_type() == FLOAT) { // less efficient version of indexed
 			bool obb;
 			ret = get_indexed(*VariantGetInternalPtr<double>::get_ptr(&p_index), valid, obb);
 			if (obb) {
 				valid = false;
+				if (err_code) {
+					*err_code = VariantGetError::GET_INDEXED_ERR;
+				}
 			}
 		}
 		if (r_valid) {

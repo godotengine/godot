@@ -96,6 +96,11 @@ jobs:
           sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu focal main"
           sudo apt-get install -qq mesa-vulkan-drivers
 
+      # TODO: Figure out somehow how to embed this one.
+      - name: wayland-scanner dependency
+        run: |
+          sudo apt-get install libwayland-bin
+
       - name: Free disk space on runner
         run: |
           echo "Disk usage before:" && df -h

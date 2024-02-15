@@ -33,10 +33,11 @@
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_zoom_widget.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
@@ -96,10 +97,14 @@ void Polygon2DEditor::_notification(int p_what) {
 
 			b_snap_grid->set_icon(get_editor_theme_icon(SNAME("Grid")));
 			b_snap_enable->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
-			uv_icon_zoom->set_texture(get_editor_theme_icon(SNAME("Zoom")));
 
 			uv_vscroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
 			uv_hscroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
+			// Avoid scrollbar overlapping.
+			Size2 hmin = uv_hscroll->get_combined_minimum_size();
+			Size2 vmin = uv_vscroll->get_combined_minimum_size();
+			uv_hscroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -vmin.width);
+			uv_vscroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -hmin.height);
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -317,6 +322,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 				uv_edit->popup_centered_ratio(0.85);
 			}
 			_update_bone_list();
+			get_tree()->connect("process_frame", callable_mp(this, &Polygon2DEditor::_center_view), CONNECT_ONE_SHOT);
 		} break;
 		case UVEDIT_POLYGON_TO_UV: {
 			Vector<Vector2> points = node->get_polygon();
@@ -470,7 +476,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	}
 
 	Transform2D mtx;
-	mtx.columns[2] = -uv_draw_ofs;
+	mtx.columns[2] = -uv_draw_ofs * uv_draw_zoom;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -941,36 +947,79 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 			uv_edit_draw->queue_redraw();
 		}
 	}
+}
 
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_input;
-	if (magnify_gesture.is_valid()) {
-		uv_zoom->set_value(uv_zoom->get_value() * magnify_gesture->get_factor());
+void Polygon2DEditor::_center_view() {
+	Size2 texture_size;
+	if (node->get_texture().is_valid()) {
+		texture_size = node->get_texture()->get_size();
+		Vector2 zoom_factor = (uv_edit_draw->get_size() - Vector2(1, 1) * 50 * EDSCALE) / texture_size;
+		zoom_widget->set_zoom(MIN(zoom_factor.x, zoom_factor.y));
+	} else {
+		zoom_widget->set_zoom(EDSCALE);
 	}
+	// Recalculate scroll limits.
+	_update_zoom_and_pan(false);
 
-	Ref<InputEventPanGesture> pan_gesture = p_input;
-	if (pan_gesture.is_valid()) {
-		uv_hscroll->set_value(uv_hscroll->get_value() + uv_hscroll->get_page() * pan_gesture->get_delta().x / 8);
-		uv_vscroll->set_value(uv_vscroll->get_value() + uv_vscroll->get_page() * pan_gesture->get_delta().y / 8);
-	}
+	Size2 offset = (texture_size - uv_edit_draw->get_size() / uv_draw_zoom) / 2;
+	uv_hscroll->set_value_no_signal(offset.x);
+	uv_vscroll->set_value_no_signal(offset.y);
+	_update_zoom_and_pan(false);
 }
 
 void Polygon2DEditor::_uv_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
-	uv_hscroll->set_value(uv_hscroll->get_value() - p_scroll_vec.x);
-	uv_vscroll->set_value(uv_vscroll->get_value() - p_scroll_vec.y);
+	uv_hscroll->set_value_no_signal(uv_hscroll->get_value() - p_scroll_vec.x / uv_draw_zoom);
+	uv_vscroll->set_value_no_signal(uv_vscroll->get_value() - p_scroll_vec.y / uv_draw_zoom);
+	_update_zoom_and_pan(false);
 }
 
 void Polygon2DEditor::_uv_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
-	uv_zoom->set_value(uv_zoom->get_value() * p_zoom_factor);
+	zoom_widget->set_zoom(uv_draw_zoom * p_zoom_factor);
+	uv_draw_ofs += p_origin / uv_draw_zoom - p_origin / zoom_widget->get_zoom();
+	uv_hscroll->set_value_no_signal(uv_draw_ofs.x);
+	uv_vscroll->set_value_no_signal(uv_draw_ofs.y);
+	_update_zoom_and_pan(false);
 }
 
-void Polygon2DEditor::_uv_scroll_changed(real_t) {
-	if (updating_uv_scroll) {
-		return;
+void Polygon2DEditor::_update_zoom_and_pan(bool p_zoom_at_center) {
+	uv_draw_ofs = Vector2(uv_hscroll->get_value(), uv_vscroll->get_value());
+	real_t previous_zoom = uv_draw_zoom;
+	uv_draw_zoom = zoom_widget->get_zoom();
+	if (p_zoom_at_center) {
+		Vector2 center = uv_edit_draw->get_size() / 2;
+		uv_draw_ofs += center / previous_zoom - center / uv_draw_zoom;
 	}
 
-	uv_draw_ofs.x = uv_hscroll->get_value();
-	uv_draw_ofs.y = uv_vscroll->get_value();
-	uv_draw_zoom = uv_zoom->get_value();
+	Point2 min_corner;
+	Point2 max_corner;
+	if (node->get_texture().is_valid()) {
+		max_corner += node->get_texture()->get_size();
+	}
+
+	Vector<Vector2> points = uv_edit_mode[0]->is_pressed() ? node->get_uv() : node->get_polygon();
+	for (int i = 0; i < points.size(); i++) {
+		min_corner = min_corner.min(points[i]);
+		max_corner = max_corner.max(points[i]);
+	}
+	Size2 page_size = uv_edit_draw->get_size() / uv_draw_zoom;
+	Vector2 margin = Vector2(50, 50) * EDSCALE / uv_draw_zoom;
+	min_corner -= page_size - margin;
+	max_corner += page_size - margin;
+
+	uv_hscroll->set_block_signals(true);
+	uv_hscroll->set_min(min_corner.x);
+	uv_hscroll->set_max(max_corner.x);
+	uv_hscroll->set_page(page_size.x);
+	uv_hscroll->set_value(uv_draw_ofs.x);
+	uv_hscroll->set_block_signals(false);
+
+	uv_vscroll->set_block_signals(true);
+	uv_vscroll->set_min(min_corner.y);
+	uv_vscroll->set_max(max_corner.y);
+	uv_vscroll->set_page(page_size.y);
+	uv_vscroll->set_value(uv_draw_ofs.y);
+	uv_vscroll->set_block_signals(false);
+
 	uv_edit_draw->queue_redraw();
 }
 
@@ -987,7 +1036,7 @@ void Polygon2DEditor::_uv_draw() {
 	String warning;
 
 	Transform2D mtx;
-	mtx.columns[2] = -uv_draw_ofs;
+	mtx.columns[2] = -uv_draw_ofs * uv_draw_zoom;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
 	// Draw texture as a background if editing uvs or no uv mapping exist.
@@ -1094,7 +1143,6 @@ void Polygon2DEditor::_uv_draw() {
 		polygon_fill_color.push_back(pf);
 	}
 	Color prev_color = Color(0.5, 0.5, 0.5);
-	Rect2 rect;
 
 	int uv_draw_max = uvs.size();
 
@@ -1222,40 +1270,6 @@ void Polygon2DEditor::_uv_draw() {
 		//draw paint circle
 		uv_edit_draw->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
-
-	rect.position = -uv_edit_draw->get_size();
-	rect.size = uv_edit_draw->get_size() * 2.0 + base_tex->get_size() * uv_draw_zoom;
-
-	updating_uv_scroll = true;
-
-	uv_hscroll->set_min(rect.position.x);
-	uv_hscroll->set_max(rect.position.x + rect.size.x);
-	if (ABS(rect.position.x - (rect.position.x + rect.size.x)) <= uv_edit_draw->get_size().x) {
-		uv_hscroll->hide();
-	} else {
-		uv_hscroll->show();
-		uv_hscroll->set_page(uv_edit_draw->get_size().x);
-		uv_hscroll->set_value(uv_draw_ofs.x);
-	}
-
-	uv_vscroll->set_min(rect.position.y);
-	uv_vscroll->set_max(rect.position.y + rect.size.y);
-	if (ABS(rect.position.y - (rect.position.y + rect.size.y)) <= uv_edit_draw->get_size().y) {
-		uv_vscroll->hide();
-	} else {
-		uv_vscroll->show();
-		uv_vscroll->set_page(uv_edit_draw->get_size().y);
-		uv_vscroll->set_value(uv_draw_ofs.y);
-	}
-
-	Size2 hmin = uv_hscroll->get_combined_minimum_size();
-	Size2 vmin = uv_vscroll->get_combined_minimum_size();
-
-	// Avoid scrollbar overlapping.
-	uv_hscroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, uv_vscroll->is_visible() ? -vmin.width : 0);
-	uv_vscroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, uv_hscroll->is_visible() ? -hmin.height : 0);
-
-	updating_uv_scroll = false;
 }
 
 void Polygon2DEditor::_bind_methods() {
@@ -1480,33 +1494,20 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_y->connect("value_changed", callable_mp(this, &Polygon2DEditor::_set_snap_step_y));
 	grid_settings_vb->add_margin_child(TTR("Grid Step Y:"), sb_step_y);
 
-	uv_mode_hb->add_child(memnew(VSeparator));
-	uv_icon_zoom = memnew(TextureRect);
-	uv_icon_zoom->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
-	uv_mode_hb->add_child(uv_icon_zoom);
-	uv_zoom = memnew(HSlider);
-	uv_zoom->set_min(0.01);
-	uv_zoom->set_max(16);
-	uv_zoom->set_value(1);
-	uv_zoom->set_step(0.01);
-	uv_zoom->set_v_size_flags(SIZE_SHRINK_CENTER);
-
-	uv_mode_hb->add_child(uv_zoom);
-	uv_zoom->set_custom_minimum_size(Size2(80 * EDSCALE, 0));
-	uv_zoom_value = memnew(SpinBox);
-	uv_zoom->share(uv_zoom_value);
-	uv_zoom_value->set_custom_minimum_size(Size2(50, 0));
-	uv_mode_hb->add_child(uv_zoom_value);
-	uv_zoom->connect("value_changed", callable_mp(this, &Polygon2DEditor::_uv_scroll_changed));
+	zoom_widget = memnew(EditorZoomWidget);
+	uv_edit_draw->add_child(zoom_widget);
+	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
+	zoom_widget->connect("zoom_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(true));
+	zoom_widget->set_shortcut_context(nullptr);
 
 	uv_vscroll = memnew(VScrollBar);
 	uv_vscroll->set_step(0.001);
 	uv_edit_draw->add_child(uv_vscroll);
-	uv_vscroll->connect("value_changed", callable_mp(this, &Polygon2DEditor::_uv_scroll_changed));
+	uv_vscroll->connect("value_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 	uv_hscroll = memnew(HScrollBar);
 	uv_hscroll->set_step(0.001);
 	uv_edit_draw->add_child(uv_hscroll);
-	uv_hscroll->connect("value_changed", callable_mp(this, &Polygon2DEditor::_uv_scroll_changed));
+	uv_hscroll->connect("value_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
 	bone_scroll_main_vb->hide();
@@ -1535,7 +1536,6 @@ Polygon2DEditor::Polygon2DEditor() {
 	point_drag_index = -1;
 	uv_drag = false;
 	uv_create = false;
-	updating_uv_scroll = false;
 	bone_painting = false;
 
 	error = memnew(AcceptDialog);

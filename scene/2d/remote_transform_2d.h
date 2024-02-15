@@ -70,7 +70,7 @@ public:
 
 	void force_update_cache();
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	RemoteTransform2D();
 };

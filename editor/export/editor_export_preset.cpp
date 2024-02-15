@@ -323,6 +323,15 @@ String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
 }
 
+void EditorExportPreset::set_script_export_mode(int p_mode) {
+	script_mode = p_mode;
+	EditorExport::singleton->save_presets();
+}
+
+int EditorExportPreset::get_script_export_mode() const {
+	return script_mode;
+}
+
 Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid) const {
 	const String from_env = OS::get_singleton()->get_environment(p_env_var);
 	if (!from_env.is_empty()) {

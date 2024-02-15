@@ -86,8 +86,9 @@ public:
 		time += frame_step;
 	}
 
-	void prepare_for_blitting_render_targets() override {}
 	void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) override {}
+
+	void end_viewport(bool p_swap_buffers) override {}
 
 	void end_frame(bool p_swap_buffers) override {
 		if (p_swap_buffers) {

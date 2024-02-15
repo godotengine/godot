@@ -33,10 +33,10 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
@@ -226,8 +226,8 @@ void TextureRegionEditor::_texture_overlay_draw() {
 		hscroll->set_value((hscroll->get_min() + hscroll->get_max() - hscroll->get_page()) / 2);
 		vscroll->set_value((vscroll->get_min() + vscroll->get_max() - vscroll->get_page()) / 2);
 		// This ensures that the view is updated correctly.
-		callable_mp(this, &TextureRegionEditor::_pan_callback).bind(Vector2(1, 0)).call_deferred();
-		callable_mp(this, &TextureRegionEditor::_scroll_changed).bind(0.0).call_deferred();
+		callable_mp(this, &TextureRegionEditor::_pan_callback).call_deferred(Vector2(1, 0), Ref<InputEvent>());
+		callable_mp(this, &TextureRegionEditor::_scroll_changed).call_deferred(0.0);
 		request_center = false;
 	}
 
@@ -698,7 +698,7 @@ void TextureRegionEditor::_set_snap_sep_y(float p_val) {
 }
 
 void TextureRegionEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
-	if (p_zoom < 0.25 || p_zoom > 8) {
+	if (p_zoom < min_draw_zoom || p_zoom > max_draw_zoom) {
 		return;
 	}
 
@@ -1165,6 +1165,11 @@ TextureRegionEditor::TextureRegionEditor() {
 	hb_grid->add_child(sb_sep_y);
 
 	hb_grid->hide();
+
+	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
+	draw_zoom = MAX(1.0f, EDSCALE);
+	max_draw_zoom = 128.0f * MAX(1.0f, EDSCALE);
+	min_draw_zoom = 0.01f * MAX(1.0f, EDSCALE);
 
 	texture_preview = memnew(PanelContainer);
 	vb->add_child(texture_preview);

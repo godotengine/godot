@@ -29,13 +29,14 @@
 # Alexandra Moroz <allemoroz14@gmail.com>, 2023.
 # Alin Andrei Bălașa <alin.andrei.balasa+godotweblate@gmail.com>, 2023.
 # Cătălin George Feștilă <catalinfest@gmail.com>, 2023.
+# Vasile Milea <milea.vasile959@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-26 22:41+0000\n"
-"Last-Translator: Cătălin George Feștilă <catalinfest@gmail.com>\n"
+"PO-Revision-Date: 2023-12-15 13:10+0000\n"
+"Last-Translator: Vasile Milea <milea.vasile959@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -44,7 +45,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.3\n"
+
+msgid "Main Thread"
+msgstr "Fir principal"
 
 msgid "Unset"
 msgstr "Nesetat"
@@ -3789,7 +3793,7 @@ msgid "Invalid macro argument list."
 msgstr "Lista argumente invalidă a macrocomenzi"
 
 msgid "Invalid macro argument."
-msgstr "Argument invalid pentru macrocomendă"
+msgstr "Argument macro invalid."
 
 msgid "Invalid macro argument count."
 msgstr "Contor argument invalid pentru macrocomendă"

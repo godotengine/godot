@@ -474,6 +474,13 @@ private:
 		uint64_t last_frame_call_count = 0;
 		uint64_t last_frame_self_time = 0;
 		uint64_t last_frame_total_time = 0;
+		typedef struct NativeProfile {
+			uint64_t call_count;
+			uint64_t total_time;
+			String signature;
+		} NativeProfile;
+		HashMap<String, NativeProfile> native_calls;
+		HashMap<String, NativeProfile> last_native_calls;
 	} profile;
 #endif
 
@@ -514,6 +521,7 @@ public:
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
 #ifdef DEBUG_ENABLED
+	void _profile_native_call(uint64_t p_t_taken, const String &p_function_name, const String &p_instance_class_name = String());
 	void disassemble(const Vector<String> &p_code_lines) const;
 #endif
 

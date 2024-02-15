@@ -73,10 +73,12 @@ class AudioStreamPreviewGenerator;
 class BackgroundProgress;
 class DependencyEditor;
 class DependencyErrorDialog;
+class DockSplitContainer;
 class DynamicFontImportSettingsDialog;
 class EditorAbout;
 class EditorBuildProfileManager;
 class EditorCommandPalette;
+class EditorDockManager;
 class EditorExport;
 class EditorExtensionManager;
 class EditorFeatureProfileManager;
@@ -121,18 +123,6 @@ class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
 
 public:
-	enum DockSlot {
-		DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX
-	};
-
 	enum EditorTable {
 		EDITOR_2D = 0,
 		EDITOR_3D,
@@ -310,18 +300,15 @@ private:
 	String renderer_request;
 
 	// Split containers.
-	HSplitContainer *left_l_hsplit = nullptr;
-	VSplitContainer *left_l_vsplit = nullptr;
-	HSplitContainer *left_r_hsplit = nullptr;
-	VSplitContainer *left_r_vsplit = nullptr;
-	HSplitContainer *main_hsplit = nullptr;
-	HSplitContainer *right_hsplit = nullptr;
-	VSplitContainer *right_l_vsplit = nullptr;
-	VSplitContainer *right_r_vsplit = nullptr;
-	VSplitContainer *center_split = nullptr;
-	// To access those easily by index.
-	Vector<VSplitContainer *> vsplits;
-	Vector<HSplitContainer *> hsplits;
+	DockSplitContainer *left_l_hsplit = nullptr;
+	DockSplitContainer *left_l_vsplit = nullptr;
+	DockSplitContainer *left_r_hsplit = nullptr;
+	DockSplitContainer *left_r_vsplit = nullptr;
+	DockSplitContainer *main_hsplit = nullptr;
+	DockSplitContainer *right_hsplit = nullptr;
+	DockSplitContainer *right_l_vsplit = nullptr;
+	DockSplitContainer *right_r_vsplit = nullptr;
+	DockSplitContainer *center_split = nullptr;
 
 	// Main tabs.
 	EditorSceneTabs *scene_tabs = nullptr;
@@ -346,6 +333,7 @@ private:
 	EditorRunBar *project_run_bar = nullptr;
 	VBoxContainer *main_screen_vbox = nullptr;
 	MenuBar *main_menu = nullptr;
+	PopupMenu *apple_menu = nullptr;
 	PopupMenu *file_menu = nullptr;
 	PopupMenu *project_menu = nullptr;
 	PopupMenu *debug_menu = nullptr;
@@ -425,20 +413,8 @@ private:
 	Button *new_inherited_button = nullptr;
 	String open_import_request;
 
-	Vector<WindowWrapper *> floating_docks;
-
-	Button *dock_float = nullptr;
-	Button *dock_tab_move_left = nullptr;
-	Button *dock_tab_move_right = nullptr;
-	Control *dock_select = nullptr;
-	PopupPanel *dock_select_popup = nullptr;
-	Rect2 dock_select_rect[DOCK_SLOT_MAX];
-	TabContainer *dock_slot[DOCK_SLOT_MAX];
+	EditorDockManager *editor_dock_manager = nullptr;
 	Timer *editor_layout_save_delay_timer = nullptr;
-	bool docks_visible = true;
-	int dock_popup_selected_idx = -1;
-	int dock_select_rect_over_idx = -1;
-
 	Button *distraction_free = nullptr;
 
 	Vector<BottomPanelItem> bottom_panel_items;
@@ -512,6 +488,8 @@ private:
 
 	String _get_system_info() const;
 
+	bool _should_display_update_spinner() const;
+
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
 		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 		if (!singleton->dependency_errors.has(p_path)) {
@@ -540,7 +518,8 @@ private:
 
 	void _dialog_action(String p_file);
 
-	void _edit_current(bool p_skip_foreign = false);
+	void _add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only);
+	void _edit_current(bool p_skip_foreign = false, bool p_skip_inspector_update = false);
 	void _dialog_display_save_error(String p_file, Error p_error);
 	void _dialog_display_load_error(String p_file, Error p_error);
 
@@ -608,6 +587,7 @@ private:
 	void _dropped_files(const Vector<String> &p_files);
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 
+	void _update_vsync_mode();
 	void _update_from_settings();
 	void _gdextensions_reloaded();
 
@@ -633,17 +613,6 @@ private:
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
-	void _dock_select_input(const Ref<InputEvent> &p_input);
-	void _dock_move_left();
-	void _dock_move_right();
-	void _dock_select_draw();
-	void _dock_pre_popup(int p_which);
-	void _dock_split_dragged(int ofs);
-	void _dock_popup_exit();
-	void _dock_floating_close_request(WindowWrapper *p_wrapper);
-	void _dock_make_selected_float();
-	void _dock_make_float(Control *p_control, int p_slot_index, bool p_show_window = true);
-
 	void _proceed_closing_scene_tabs();
 	bool _is_closing_editor() const;
 
@@ -654,11 +623,6 @@ private:
 
 	void _save_editor_layout();
 	void _load_editor_layout();
-	void _save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
-	void _restore_floating_dock(const Dictionary &p_dock_dump, Control *p_wrapper, int p_slot_index);
-	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section);
-	void _update_dock_slots_visibility(bool p_keep_selected_tabs = false);
-	void _dock_tab_changed(int p_tab);
 
 	void _save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file);
 	void _load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file);
@@ -694,8 +658,10 @@ private:
 	void _immediate_dialog_confirmed();
 	void _select_default_main_screen_plugin();
 
+	void _bottom_panel_switch_by_control(bool p_enable, Control *p_control);
 	void _bottom_panel_switch(bool p_enable, int p_idx);
 	void _bottom_panel_raise_toggled(bool);
+	bool _bottom_panel_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 
 	void _begin_first_scan();
 
@@ -771,14 +737,8 @@ public:
 
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
 
-	void set_docks_visible(bool p_show);
-	bool get_docks_visible() const;
-
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
-
-	void add_control_to_dock(DockSlot p_slot, Control *p_control);
-	void remove_control_from_dock(Control *p_control);
 
 	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
@@ -793,6 +753,7 @@ public:
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
+	void push_item_no_inspector(Object *p_object);
 	void edit_item(Object *p_object, Object *p_editing_owner);
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
@@ -803,6 +764,8 @@ public:
 	void edit_foreign_resource(Ref<Resource> p_resource);
 
 	bool is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_resources_are_writable = false);
+
+	String get_multiwindow_support_tooltip_text() const;
 
 	bool is_changing_scene() const;
 
@@ -853,6 +816,7 @@ public:
 			List<AdditiveNodeEntry> &p_addition_list);
 
 	bool is_scene_open(const String &p_path);
+	bool is_multi_window_enabled() const;
 
 	void setup_color_picker(ColorPicker *p_picker);
 
@@ -909,7 +873,7 @@ public:
 
 	bool is_exiting() const { return exiting; }
 
-	Button *add_bottom_panel_item(String p_text, Control *p_item);
+	Button *add_bottom_panel_item(String p_text, Control *p_item, bool p_at_front = false);
 	void make_bottom_panel_item_visible(Control *p_item);
 	void raise_bottom_panel_item(Control *p_item);
 	void hide_bottom_panel();
