@@ -305,7 +305,7 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				const Variant &value = p_value;
 
 				setting = true;
-				undo_redo->create_action(TTR("Animation Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+				undo_redo->create_action(TTR("Animation Change Keyframe Value"), UndoRedo::MERGE_ENDS, animation.ptr());
 				int prev_mode = animation->bezier_track_get_key_handle_mode(track, key);
 				Vector2 prev_in_handle = animation->bezier_track_get_key_in_handle(track, key);
 				Vector2 prev_out_handle = animation->bezier_track_get_key_out_handle(track, key);
