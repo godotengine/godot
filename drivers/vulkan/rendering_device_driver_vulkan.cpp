@@ -1884,7 +1884,7 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 // Was:
 // pool_sets_it = descriptor_set_pools.insert(p_key, HashMap<VkDescriptorPool, uint32_t>());
 		if (linear_pool) {
-	pool_sets_it = linear_descriptor_set_pools[p_linear_pool_index].insert(p_key, HashMap<VkDescriptorPool, uint32_t>());
+			pool_sets_it = linear_descriptor_set_pools[p_linear_pool_index].insert(p_key, HashMap<VkDescriptorPool, uint32_t>());
 		} else {
 			pool_sets_it = descriptor_set_pools.insert(p_key, HashMap<VkDescriptorPool, uint32_t>());
 		}
@@ -2169,14 +2169,14 @@ void RenderingDeviceDriverVulkan::uniform_set_free(UniformSetID p_uniform_set) {
 
 void RenderingDeviceDriverVulkan::linear_uniform_set_pools_reset(int p_linear_pool_index) {
 	if (linear_descriptor_pools_enabled ) {
-		DescriptorSetPools pools_to_reset = linear_descriptor_set_pools[p_linear_pool_index];
-
+		DescriptorSetPools& pools_to_reset = linear_descriptor_set_pools[p_linear_pool_index];
 		DescriptorSetPools::Iterator curr_pool = pools_to_reset.begin();
 
 		while (curr_pool != pools_to_reset.end()) {
 			HashMap<VkDescriptorPool, uint32_t>::Iterator curr_pair = curr_pool->value.begin();
 			while (curr_pair != curr_pool->value.end()) {
 				vkResetDescriptorPool(vk_device, curr_pair->key, 0);
+				curr_pair->value = 0;
 				++curr_pair;
 			}
 			++curr_pool;
