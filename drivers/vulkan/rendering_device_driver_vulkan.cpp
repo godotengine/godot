@@ -1176,7 +1176,7 @@ VmaPool RenderingDeviceDriverVulkan::_find_or_create_small_allocs_pool(uint32_t 
 	pci.minAllocationAlignment = 0;
 	pci.pMemoryAllocateNext = nullptr;
 	VmaPool pool = VK_NULL_HANDLE;
-	VkResult res = vmaCreatePool(allocators[VKC::VK_TRACKED_OBJECT_TYPE_VMA], &pci, &pool);
+	VkResult res = vmaCreatePool(allocator, &pci, &pool);
 	small_allocs_pools[p_mem_type_index] = pool; // Don't try to create it again if failed the first time.
 	ERR_FAIL_COND_V_MSG(res, pool, "vmaCreatePool failed with error " + itos(res) + ".");
 
@@ -1217,14 +1217,14 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 				// Looks like a readback buffer: GPU copies from VRAM, then CPU maps and reads.
 				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
 			}
-			alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 			alloc_create_info.requiredFlags = (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		} break;
 		case MEMORY_ALLOCATION_TYPE_GPU: {
-			alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+			alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
 			if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
 				uint32_t mem_type_index = 0;
-				vmaFindMemoryTypeIndexForBufferInfo(allocators[VKC::VK_TRACKED_OBJECT_TYPE_VMA], &create_info, &alloc_create_info, &mem_type_index);
+				vmaFindMemoryTypeIndexForBufferInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
 				alloc_create_info.pool = _find_or_create_small_allocs_pool(mem_type_index);
 			}
 		} break;
@@ -1233,8 +1233,16 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	VkBuffer vk_buffer = VK_NULL_HANDLE;
 	VmaAllocation allocation = nullptr;
 	VmaAllocationInfo alloc_info = {};
-	VkResult err = vmaCreateBuffer(allocators[VK_OBJECT_TYPE_BUFFER], &create_info, &alloc_create_info, &vk_buffer, &allocation, &alloc_info);
+
+	VkResult err = vkCreateBuffer(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER), &vk_buffer);
 	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
+	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, NULL);
+	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+#if VMA_STATS_STRING_ENABLED
+	//allocation->InitBufferImageUsage(alloc_create_info.usage);
+#endif
 
 	// Bookkeep.
 
@@ -1269,7 +1277,10 @@ void RenderingDeviceDriverVulkan::buffer_free(BufferID p_buffer) {
 	if (buf_info->vk_view) {
 		vkDestroyBufferView(vk_device, buf_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW));
 	}
-	vmaDestroyBuffer(allocators[VK_OBJECT_TYPE_BUFFER], buf_info->vk_buffer, buf_info->allocation.handle);
+
+	vkDestroyBuffer(vk_device, buf_info->vk_buffer, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
+	vmaFreeMemory(allocator, buf_info->allocation.handle);
+
 	VersatileResource::free(resources_allocator, buf_info);
 }
 
@@ -1281,14 +1292,14 @@ uint64_t RenderingDeviceDriverVulkan::buffer_get_allocation_size(BufferID p_buff
 uint8_t *RenderingDeviceDriverVulkan::buffer_map(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
 	void *data_ptr = nullptr;
-	VkResult err = vmaMapMemory(allocators[VK_OBJECT_TYPE_BUFFER], buf_info->allocation.handle, &data_ptr);
+	VkResult err = vmaMapMemory(allocator, buf_info->allocation.handle, &data_ptr);
 	ERR_FAIL_COND_V_MSG(err, nullptr, "vmaMapMemory failed with error " + itos(err) + ".");
 	return (uint8_t *)data_ptr;
 }
 
 void RenderingDeviceDriverVulkan::buffer_unmap(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
-	vmaUnmapMemory(allocators[VK_OBJECT_TYPE_BUFFER], buf_info->allocation.handle);
+	vmaUnmapMemory(allocator, buf_info->allocation.handle);
 }
 
 /*****************/
@@ -1452,10 +1463,9 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 
 	VmaAllocationCreateInfo alloc_create_info = {};
 	alloc_create_info.flags = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT : 0;
-	alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
 		uint32_t mem_type_index = 0;
-		vmaFindMemoryTypeIndexForImageInfo(allocators[VKC::VK_TRACKED_OBJECT_TYPE_VMA], &create_info, &alloc_create_info, &mem_type_index);
+		vmaFindMemoryTypeIndexForImageInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
 		alloc_create_info.pool = _find_or_create_small_allocs_pool(mem_type_index);
 	}
 
@@ -1464,8 +1474,16 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VkImage vk_image = VK_NULL_HANDLE;
 	VmaAllocation allocation = nullptr;
 	VmaAllocationInfo alloc_info = {};
-	VkResult err = vmaCreateImage(allocators[VK_OBJECT_TYPE_IMAGE], &create_info, &alloc_create_info, &vk_image, &allocation, &alloc_info);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "vmaCreateImage failed with error " + itos(err) + ".");
+
+	VkResult err = vkCreateImage(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE), &vk_image);
+	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
+	err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
+	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't allocate memory for image, error: " + itos(err) + ".");
+	err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, NULL);
+	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't bind memory to image, error: " + itos(err) + ".");
+#if VMA_STATS_STRING_ENABLED
+	//allocation->InitBufferImageUsage(alloc_create_info.usage);
+#endif
 
 	// Create view.
 
@@ -1489,19 +1507,21 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VkImageView vk_image_view = VK_NULL_HANDLE;
 	err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
-		vmaDestroyImage(allocators[VK_OBJECT_TYPE_IMAGE], vk_image, allocation);
+		vkDestroyImage(vk_device, vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
+		vmaFreeMemory(allocator, allocation);
 		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 	}
 
 	// Bookkeep.
 
 	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
+	tex_info->vk_image = vk_image;
 	tex_info->vk_view = vk_image_view;
 	tex_info->rd_format = p_format.format;
 	tex_info->vk_create_info = create_info;
 	tex_info->vk_view_create_info = image_view_create_info;
 	tex_info->allocation.handle = allocation;
-	vmaGetAllocationInfo(allocators[VK_OBJECT_TYPE_IMAGE], tex_info->allocation.handle, &tex_info->allocation.info);
+	vmaGetAllocationInfo(allocator, tex_info->allocation.handle, &tex_info->allocation.info);
 
 #if PRINT_NATIVE_COMMANDS
 	print_line(vformat("vkCreateImageView: 0x%uX for 0x%uX", uint64_t(vk_image_view), uint64_t(vk_image)));
@@ -1659,7 +1679,8 @@ void RenderingDeviceDriverVulkan::texture_free(TextureID p_texture) {
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
 	vkDestroyImageView(vk_device, tex_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
 	if (tex_info->allocation.handle) {
-		vmaDestroyImage(allocators[VK_OBJECT_TYPE_IMAGE], tex_info->vk_view_create_info.image, tex_info->allocation.handle);
+		vkDestroyImage(vk_device, tex_info->vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
+		vmaFreeMemory(allocator, tex_info->allocation.handle);
 	}
 	VersatileResource::free(resources_allocator, tex_info);
 }
@@ -1731,14 +1752,14 @@ uint8_t *RenderingDeviceDriverVulkan::texture_map(TextureID p_texture, const Tex
 			0,
 			&data_ptr);
 
-	vmaMapMemory(allocators[VK_OBJECT_TYPE_IMAGE], tex_info->allocation.handle, &data_ptr);
+	vmaMapMemory(allocator, tex_info->allocation.handle, &data_ptr);
 	ERR_FAIL_COND_V_MSG(err, nullptr, "vkMapMemory failed with error " + itos(err) + ".");
 	return (uint8_t *)data_ptr;
 }
 
 void RenderingDeviceDriverVulkan::texture_unmap(TextureID p_texture) {
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
-	vkUnmapMemory(vk_device, tex_info->allocation.info.deviceMemory);
+	vmaUnmapMemory(allocator, tex_info->allocation.handle);
 }
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
@@ -4771,12 +4792,12 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 
 void RenderingDeviceDriverVulkan::print_lost_device_info() {
 	void *breadcrumb_ptr;
-	vmaFlushAllocation(allocators[VK_OBJECT_TYPE_BUFFER], ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
-	vmaInvalidateAllocation(allocators[VK_OBJECT_TYPE_BUFFER], ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
+	vmaFlushAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
+	vmaInvalidateAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
 
-	vmaMapMemory(allocators[VK_OBJECT_TYPE_BUFFER], ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, &breadcrumb_ptr);
+	vmaMapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, &breadcrumb_ptr);
 	uint32_t last_breadcrumb = *(uint32_t*)breadcrumb_ptr;
-	vmaUnmapMemory(allocators[VK_OBJECT_TYPE_BUFFER], ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle);
+	vmaUnmapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle);
 	uint32_t phase = last_breadcrumb >> 16;
 	uint32_t user_data = last_breadcrumb & ((1 << 16) - 1);
 	String errorMsg = "Last known breadcrumb: ";
@@ -4904,7 +4925,7 @@ uint64_t RenderingDeviceDriverVulkan::get_resource_native_handle(DriverResource 
 
 uint64_t RenderingDeviceDriverVulkan::get_total_memory_used() {
 	VmaTotalStatistics stats = {};
-	vmaCalculateStatistics(allocators[VKC::VK_TRACKED_OBJECT_TYPE_VMA], &stats);
+	vmaCalculateStatistics(allocator, &stats);
 	return stats.total.statistics.allocationBytes;
 }
 
@@ -5059,12 +5080,11 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 }
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
-	memfree(allocators);
 	buffer_free(breadcrumb_buffer);
 
 	while (small_allocs_pools.size()) {
 		HashMap<uint32_t, VmaPool>::Iterator E = small_allocs_pools.begin();
-			vmaDestroyPool(allocators[VKC::VK_TRACKED_OBJECT_TYPE_VMA], E->value);
+			vmaDestroyPool(allocator, E->value);
 		small_allocs_pools.remove(E);
 	}
 	vmaDestroyAllocator(allocator);

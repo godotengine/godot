@@ -42,7 +42,7 @@
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
-#if defined(VK_TRACK_DRIVER_MEMORY)
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 #include "drivers/vulkan/vulkan_context.h"
 #endif
 

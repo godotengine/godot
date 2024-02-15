@@ -154,7 +154,7 @@ private:
 	/**** MEMORY ****/
 	/****************/
 
-	VmaAllocator* allocators = NULL;
+	VmaAllocator allocator;
 	HashMap<uint32_t, VmaPool> small_allocs_pools;
 
 	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
@@ -188,6 +188,7 @@ public:
 	/*****************/
 
 	struct TextureInfo {
+		VkImage vk_image = VK_NULL_HANDLE;
 		VkImageView vk_view = VK_NULL_HANDLE;
 		DataFormat rd_format = DATA_FORMAT_MAX;
 		VkImageCreateInfo vk_create_info = {};
