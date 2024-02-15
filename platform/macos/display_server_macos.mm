@@ -699,10 +699,12 @@ DisplayServerMacOS::WindowData &DisplayServerMacOS::get_window(WindowID p_window
 }
 
 void DisplayServerMacOS::send_event(NSEvent *p_event) {
-	// Special case handling of command-period, which is traditionally a special
-	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
+	// Special case handling of shortcuts that don't arrive at the regular keyDown handler
 	if ([p_event type] == NSEventTypeKeyDown) {
-		if ((([p_event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask) == NSEventModifierFlagCommand) && [p_event keyCode] == 0x2f) {
+		NSEventModifierFlags flags = [p_event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask;
+
+		// Command-period
+		if ((flags == NSEventModifierFlagCommand) && [p_event keyCode] == 0x2f) {
 			Ref<InputEventKey> k;
 			k.instantiate();
 
@@ -715,6 +717,24 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 			k->set_echo([p_event isARepeat]);
 
 			Input::get_singleton()->parse_input_event(k);
+			return;
+		}
+
+		// Ctrl+Tab and Ctrl+Shift+Tab
+		if (((flags == NSEventModifierFlagControl) || (flags == (NSEventModifierFlagControl | NSEventModifierFlagShift))) && [p_event keyCode] == 0x30) {
+			Ref<InputEventKey> k;
+			k.instantiate();
+
+			get_key_modifier_state([p_event modifierFlags], k);
+			k->set_window_id(DisplayServerMacOS::INVALID_WINDOW_ID);
+			k->set_pressed(true);
+			k->set_keycode(Key::TAB);
+			k->set_physical_keycode(Key::TAB);
+			k->set_key_label(Key::TAB);
+			k->set_echo([p_event isARepeat]);
+
+			Input::get_singleton()->parse_input_event(k);
+			return;
 		}
 	}
 }
