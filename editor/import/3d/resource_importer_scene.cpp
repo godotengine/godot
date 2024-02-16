@@ -488,8 +488,9 @@ void _apply_scale_to_scalable_node_collection(ScalableNodeCollection &p_collecti
 		if (skeleton_3d) {
 			for (int i = 0; i < skeleton_3d->get_bone_count(); i++) {
 				Transform3D rest = skeleton_3d->get_bone_rest(i);
+				Vector3 position = skeleton_3d->get_bone_pose_position(i);
 				skeleton_3d->set_bone_rest(i, Transform3D(rest.basis, p_scale * rest.origin));
-				skeleton_3d->set_bone_pose_position(i, p_scale * rest.origin);
+				skeleton_3d->set_bone_pose_position(i, p_scale * position);
 			}
 		}
 	}

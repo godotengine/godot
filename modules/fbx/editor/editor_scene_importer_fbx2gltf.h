@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_template_convert.h                                               */
+/*  editor_scene_importer_fbx2gltf.h                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,68 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_TEMPLATE_CONVERT_H
-#define GLTF_TEMPLATE_CONVERT_H
+#ifndef EDITOR_SCENE_IMPORTER_FBX2GLTF_H
+#define EDITOR_SCENE_IMPORTER_FBX2GLTF_H
 
-#include "core/templates/hash_set.h"
-#include "core/variant/array.h"
-#include "core/variant/dictionary.h"
-#include "core/variant/typed_array.h"
+#ifdef TOOLS_ENABLED
 
-namespace GLTFTemplateConvert {
-template <class T>
-static Array to_array(const Vector<T> &p_inp) {
-	Array ret;
-	for (int i = 0; i < p_inp.size(); i++) {
-		ret.push_back(p_inp[i]);
-	}
-	return ret;
-}
+#include "editor/import/3d/resource_importer_scene.h"
 
-template <class T>
-static TypedArray<T> to_array(const HashSet<T> &p_inp) {
-	TypedArray<T> ret;
-	typename HashSet<T>::Iterator elem = p_inp.begin();
-	while (elem) {
-		ret.push_back(*elem);
-		++elem;
-	}
-	return ret;
-}
+class Animation;
+class Node;
 
-template <class T>
-static void set_from_array(Vector<T> &r_out, const Array &p_inp) {
-	r_out.clear();
-	for (int i = 0; i < p_inp.size(); i++) {
-		r_out.push_back(p_inp[i]);
-	}
-}
+class EditorSceneFormatImporterFBX2GLTF : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterFBX2GLTF, EditorSceneFormatImporter);
 
-template <class T>
-static void set_from_array(HashSet<T> &r_out, const TypedArray<T> &p_inp) {
-	r_out.clear();
-	for (int i = 0; i < p_inp.size(); i++) {
-		r_out.insert(p_inp[i]);
-	}
-}
+public:
+	virtual uint32_t get_import_flags() const override;
+	virtual void get_extensions(List<String> *r_extensions) const override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
+			const HashMap<StringName, Variant> &p_options,
+			List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual void get_import_options(const String &p_path,
+			List<ResourceImporter::ImportOption> *r_options) override;
+	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
+			const HashMap<StringName, Variant> &p_options) override;
+	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
+};
 
-template <class K, class V>
-static Dictionary to_dictionary(const HashMap<K, V> &p_inp) {
-	Dictionary ret;
-	for (const KeyValue<K, V> &E : p_inp) {
-		ret[E.key] = E.value;
-	}
-	return ret;
-}
+#endif // TOOLS_ENABLED
 
-template <class K, class V>
-static void set_from_dictionary(HashMap<K, V> &r_out, const Dictionary &p_inp) {
-	r_out.clear();
-	Array keys = p_inp.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		r_out[keys[i]] = p_inp[keys[i]];
-	}
-}
-} //namespace GLTFTemplateConvert
-
-#endif // GLTF_TEMPLATE_CONVERT_H
+#endif // EDITOR_SCENE_IMPORTER_FBX2GLTF_H
