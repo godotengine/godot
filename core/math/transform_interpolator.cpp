@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  light_occluder_2d.h                                                   */
+/*  transform_interpolator.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,89 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHT_OCCLUDER_2D_H
-#define LIGHT_OCCLUDER_2D_H
+#include "transform_interpolator.h"
 
-#include "scene/2d/node_2d.h"
+#include "core/math/transform_2d.h"
 
-class OccluderPolygon2D : public Resource {
-	GDCLASS(OccluderPolygon2D, Resource);
+void TransformInterpolator::interpolate_transform_2d(const Transform2D &p_prev, const Transform2D &p_curr, Transform2D &r_result, real_t p_fraction) {
+	// Extract parameters.
+	Vector2 p1 = p_prev.get_origin();
+	Vector2 p2 = p_curr.get_origin();
 
-public:
-	enum CullMode {
-		CULL_DISABLED,
-		CULL_CLOCKWISE,
-		CULL_COUNTER_CLOCKWISE
-	};
+	// Special case for physics interpolation, if flipping, don't interpolate basis.
+	// If the determinant polarity changes, the handedness of the coordinate system changes.
+	if (_sign(p_prev.determinant()) != _sign(p_curr.determinant())) {
+		r_result.columns[0] = p_curr.columns[0];
+		r_result.columns[1] = p_curr.columns[1];
+		r_result.set_origin(p1.lerp(p2, p_fraction));
+		return;
+	}
 
-private:
-	RID occ_polygon;
-	Vector<Vector2> polygon;
-	bool closed = true;
-	CullMode cull = CULL_DISABLED;
+	real_t r1 = p_prev.get_rotation();
+	real_t r2 = p_curr.get_rotation();
 
-	mutable Rect2 item_rect;
-	mutable bool rect_cache_dirty = true;
+	Size2 s1 = p_prev.get_scale();
+	Size2 s2 = p_curr.get_scale();
 
-protected:
-	static void _bind_methods();
+	// Slerp rotation.
+	Vector2 v1(Math::cos(r1), Math::sin(r1));
+	Vector2 v2(Math::cos(r2), Math::sin(r2));
 
-public:
-#ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
-#endif
+	real_t dot = v1.dot(v2);
 
-	void set_polygon(const Vector<Vector2> &p_polygon);
-	Vector<Vector2> get_polygon() const;
+	dot = CLAMP(dot, -1, 1);
 
-	void set_closed(bool p_closed);
-	bool is_closed() const;
+	Vector2 v;
 
-	void set_cull_mode(CullMode p_mode);
-	CullMode get_cull_mode() const;
+	if (dot > 0.9995f) {
+		v = v1.lerp(v2, p_fraction).normalized(); // Linearly interpolate to avoid numerical precision issues.
+	} else {
+		real_t angle = p_fraction * Math::acos(dot);
+		Vector2 v3 = (v2 - v1 * dot).normalized();
+		v = v1 * Math::cos(angle) + v3 * Math::sin(angle);
+	}
 
-	virtual RID get_rid() const override;
-	OccluderPolygon2D();
-	~OccluderPolygon2D();
-};
-
-VARIANT_ENUM_CAST(OccluderPolygon2D::CullMode);
-
-class LightOccluder2D : public Node2D {
-	GDCLASS(LightOccluder2D, Node2D);
-
-	RID occluder;
-	int mask = 1;
-	Ref<OccluderPolygon2D> occluder_polygon;
-	bool sdf_collision = false;
-	void _poly_changed();
-
-	virtual void _physics_interpolated_changed() override;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-#ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
-#endif
-
-	void set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon);
-	Ref<OccluderPolygon2D> get_occluder_polygon() const;
-
-	void set_occluder_light_mask(int p_mask);
-	int get_occluder_light_mask() const;
-
-	void set_as_sdf_collision(bool p_enable);
-	bool is_set_as_sdf_collision() const;
-
-	PackedStringArray get_configuration_warnings() const override;
-
-	LightOccluder2D();
-	~LightOccluder2D();
-};
-
-#endif // LIGHT_OCCLUDER_2D_H
+	// Construct matrix.
+	r_result = Transform2D(Math::atan2(v.y, v.x), p1.lerp(p2, p_fraction));
+	r_result.scale_basis(s1.lerp(s2, p_fraction));
+}

@@ -336,6 +336,19 @@ void CanvasItem::_notification(int p_what) {
 				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::canvas_parent_mark_dirty).bind(get_parent()), CONNECT_REFERENCE_COUNTED);
 			}
 
+			// If using physics interpolation, reset for this node only,
+			// as a helper, as in most cases, users will want items reset when
+			// adding to the tree.
+			// In cases where they move immediately after adding,
+			// there will be little cost in having two resets as these are cheap,
+			// and it is worth it for convenience.
+			// Do not propagate to children, as each child of an added branch
+			// receives its own NOTIFICATION_ENTER_TREE, and this would
+			// cause unnecessary duplicate resets.
+			if (is_physics_interpolated_and_enabled()) {
+				notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+			}
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_MAIN_THREAD_GUARD;
@@ -357,6 +370,12 @@ void CanvasItem::_notification(int p_what) {
 
 			if (get_viewport()) {
 				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::canvas_parent_mark_dirty).bind(get_parent()));
+			}
+		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (is_visible_in_tree() && is_physics_interpolated()) {
+				RenderingServer::get_singleton()->canvas_item_reset_physics_interpolation(canvas_item);
 			}
 		} break;
 
@@ -919,6 +938,10 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 		_notify_transform(ci);
 	}
+}
+
+void CanvasItem::_physics_interpolated_changed() {
+	RenderingServer::get_singleton()->canvas_item_set_interpolated(canvas_item, is_physics_interpolated());
 }
 
 Rect2 CanvasItem::get_viewport_rect() const {

@@ -3690,6 +3690,8 @@ void Control::_bind_methods() {
 
 Control::Control() {
 	data.theme_owner = memnew(ThemeOwner(this));
+
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }
 
 Control::~Control() {

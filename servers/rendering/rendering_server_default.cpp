@@ -370,6 +370,16 @@ void RenderingServerDefault::_thread_loop() {
 	_finish();
 }
 
+/* INTERPOLATION */
+
+void RenderingServerDefault::tick() {
+	RSG::canvas->tick();
+}
+
+void RenderingServerDefault::set_physics_interpolation_enabled(bool p_enabled) {
+	RSG::canvas->set_physics_interpolation_enabled(p_enabled);
+}
+
 /* EVENT QUEUING */
 
 void RenderingServerDefault::sync() {

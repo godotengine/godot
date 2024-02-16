@@ -129,6 +129,7 @@ void Parallax2D::_update_repeat() {
 
 	Point2 repeat_scale = repeat_size * get_scale();
 	RenderingServer::get_singleton()->canvas_set_item_repeat(get_canvas_item(), repeat_scale, repeat_times);
+	RenderingServer::get_singleton()->canvas_item_set_interpolated(get_canvas_item(), false);
 }
 
 void Parallax2D::set_scroll_scale(const Size2 &p_scale) {
@@ -287,4 +288,6 @@ void Parallax2D::_bind_methods() {
 }
 
 Parallax2D::Parallax2D() {
+	// Parallax2D is always updated every frame so there is no need to interpolate.
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }

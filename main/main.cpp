@@ -3967,6 +3967,11 @@ bool Main::iteration() {
 		PhysicsServer3D::get_singleton()->flush_queries();
 #endif // _3D_DISABLED
 
+		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
+		// by the physics server, otherwise the current and previous transforms
+		// may be the same, and no interpolation takes place.
+		OS::get_singleton()->get_main_loop()->iteration_prepare();
+
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
 
