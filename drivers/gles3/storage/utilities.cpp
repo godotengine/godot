@@ -355,19 +355,16 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 	if (p_feature == "rgtc") {
 		return config->rgtc_supported;
 	}
-
 	if (p_feature == "s3tc") {
 		return config->s3tc_supported;
 	}
-
 	if (p_feature == "bptc") {
 		return config->bptc_supported;
 	}
 	if (p_feature == "astc") {
 		return config->astc_supported;
 	}
-
-	if (p_feature == "etc" || p_feature == "etc2") {
+	if (p_feature == "etc2") {
 		return config->etc2_supported;
 	}
 
