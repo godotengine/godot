@@ -30,6 +30,7 @@
 
 #include "gltf_document.h"
 
+#include "core/object/object_id.h"
 #include "extensions/gltf_spec_gloss.h"
 
 #include "core/config/project_settings.h"
@@ -40,8 +41,9 @@
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer.h"
-#include "core/math/disjoint_set.h"
 #include "core/version.h"
+#include "gltf_document.compat.inc"
+#include "modules/gltf/gltf_state.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -49,6 +51,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/resources/image_texture.h"
+#include "scene/resources/model_state_3d.h"
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/resources/skin.h"
 #include "scene/resources/surface_tool.h"
@@ -74,7 +77,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstdint>
-#include <limits>
 
 static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 	Ref<ImporterMesh> importer_mesh;
@@ -472,25 +474,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 }
 
 String GLTFDocument::_gen_unique_name(Ref<GLTFState> p_state, const String &p_name) {
-	const String s_name = p_name.validate_node_name();
-
-	String u_name;
-	int index = 1;
-	while (true) {
-		u_name = s_name;
-
-		if (index > 1) {
-			u_name += itos(index);
-		}
-		if (!p_state->unique_names.has(u_name)) {
-			break;
-		}
-		index++;
-	}
-
-	p_state->unique_names.insert(u_name);
-
-	return u_name;
+	return _gen_unique_name_static(p_state->unique_names, p_name);
 }
 
 String GLTFDocument::_sanitize_animation_name(const String &p_name) {
@@ -599,6 +583,7 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 		const Dictionary &n = nodes[i];
 
 		if (n.has("name")) {
+			node->set_original_name(n["name"]);
 			node->set_name(n["name"]);
 		}
 		if (n.has("camera")) {
@@ -622,6 +607,11 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 			if (n.has("scale")) {
 				node->set_scale(_arr_to_vec3(n["scale"]));
 			}
+
+			Transform3D godot_rest_transform;
+			godot_rest_transform.basis.set_quaternion_scale(node->transform.basis.get_rotation_quaternion(), node->transform.basis.get_scale());
+			godot_rest_transform.origin = node->transform.origin;
+			node->set_additional_data("GODOT_rest_transform", godot_rest_transform);
 		}
 
 		if (n.has("extensions")) {
@@ -2572,8 +2562,10 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 		String mesh_name = "mesh";
 		if (d.has("name") && !String(d["name"]).is_empty()) {
 			mesh_name = d["name"];
+			mesh->set_original_name(mesh_name);
 		}
 		import_mesh->set_name(_gen_unique_name(p_state, vformat("%s_%s", p_state->scene_name, mesh_name)));
+		mesh->set_name(import_mesh->get_name());
 
 		for (int j = 0; j < primitives.size(); j++) {
 			uint64_t flags = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
@@ -4207,237 +4199,6 @@ void GLTFDocument::spec_gloss_to_metal_base_color(const Color &p_specular_factor
 	r_base_color.a = p_diffuse.a;
 	r_base_color = r_base_color.clamp();
 }
-
-GLTFNodeIndex GLTFDocument::_find_highest_node(Ref<GLTFState> p_state, const Vector<GLTFNodeIndex> &p_subset) {
-	int highest = -1;
-	GLTFNodeIndex best_node = -1;
-
-	for (int i = 0; i < p_subset.size(); ++i) {
-		const GLTFNodeIndex node_i = p_subset[i];
-		const Ref<GLTFNode> node = p_state->nodes[node_i];
-
-		if (highest == -1 || node->height < highest) {
-			highest = node->height;
-			best_node = node_i;
-		}
-	}
-
-	return best_node;
-}
-
-bool GLTFDocument::_capture_nodes_in_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin, const GLTFNodeIndex p_node_index) {
-	bool found_joint = false;
-
-	for (int i = 0; i < p_state->nodes[p_node_index]->children.size(); ++i) {
-		found_joint |= _capture_nodes_in_skin(p_state, p_skin, p_state->nodes[p_node_index]->children[i]);
-	}
-
-	if (found_joint) {
-		// Mark it if we happen to find another skins joint...
-		if (p_state->nodes[p_node_index]->joint && p_skin->joints.find(p_node_index) < 0) {
-			p_skin->joints.push_back(p_node_index);
-		} else if (p_skin->non_joints.find(p_node_index) < 0) {
-			p_skin->non_joints.push_back(p_node_index);
-		}
-	}
-
-	if (p_skin->joints.find(p_node_index) > 0) {
-		return true;
-	}
-
-	return false;
-}
-
-void GLTFDocument::_capture_nodes_for_multirooted_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin) {
-	DisjointSet<GLTFNodeIndex> disjoint_set;
-
-	for (int i = 0; i < p_skin->joints.size(); ++i) {
-		const GLTFNodeIndex node_index = p_skin->joints[i];
-		const GLTFNodeIndex parent = p_state->nodes[node_index]->parent;
-		disjoint_set.insert(node_index);
-
-		if (p_skin->joints.find(parent) >= 0) {
-			disjoint_set.create_union(parent, node_index);
-		}
-	}
-
-	Vector<GLTFNodeIndex> roots;
-	disjoint_set.get_representatives(roots);
-
-	if (roots.size() <= 1) {
-		return;
-	}
-
-	int maxHeight = -1;
-
-	// Determine the max height rooted tree
-	for (int i = 0; i < roots.size(); ++i) {
-		const GLTFNodeIndex root = roots[i];
-
-		if (maxHeight == -1 || p_state->nodes[root]->height < maxHeight) {
-			maxHeight = p_state->nodes[root]->height;
-		}
-	}
-
-	// Go up the tree till all of the multiple roots of the skin are at the same hierarchy level.
-	// This sucks, but 99% of all game engines (not just Godot) would have this same issue.
-	for (int i = 0; i < roots.size(); ++i) {
-		GLTFNodeIndex current_node = roots[i];
-		while (p_state->nodes[current_node]->height > maxHeight) {
-			GLTFNodeIndex parent = p_state->nodes[current_node]->parent;
-
-			if (p_state->nodes[parent]->joint && p_skin->joints.find(parent) < 0) {
-				p_skin->joints.push_back(parent);
-			} else if (p_skin->non_joints.find(parent) < 0) {
-				p_skin->non_joints.push_back(parent);
-			}
-
-			current_node = parent;
-		}
-
-		// replace the roots
-		roots.write[i] = current_node;
-	}
-
-	// Climb up the tree until they all have the same parent
-	bool all_same;
-
-	do {
-		all_same = true;
-		const GLTFNodeIndex first_parent = p_state->nodes[roots[0]]->parent;
-
-		for (int i = 1; i < roots.size(); ++i) {
-			all_same &= (first_parent == p_state->nodes[roots[i]]->parent);
-		}
-
-		if (!all_same) {
-			for (int i = 0; i < roots.size(); ++i) {
-				const GLTFNodeIndex current_node = roots[i];
-				const GLTFNodeIndex parent = p_state->nodes[current_node]->parent;
-
-				if (p_state->nodes[parent]->joint && p_skin->joints.find(parent) < 0) {
-					p_skin->joints.push_back(parent);
-				} else if (p_skin->non_joints.find(parent) < 0) {
-					p_skin->non_joints.push_back(parent);
-				}
-
-				roots.write[i] = parent;
-			}
-		}
-
-	} while (!all_same);
-}
-
-Error GLTFDocument::_expand_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin) {
-	_capture_nodes_for_multirooted_skin(p_state, p_skin);
-
-	// Grab all nodes that lay in between skin joints/nodes
-	DisjointSet<GLTFNodeIndex> disjoint_set;
-
-	Vector<GLTFNodeIndex> all_skin_nodes;
-	all_skin_nodes.append_array(p_skin->joints);
-	all_skin_nodes.append_array(p_skin->non_joints);
-
-	for (int i = 0; i < all_skin_nodes.size(); ++i) {
-		const GLTFNodeIndex node_index = all_skin_nodes[i];
-		const GLTFNodeIndex parent = p_state->nodes[node_index]->parent;
-		disjoint_set.insert(node_index);
-
-		if (all_skin_nodes.find(parent) >= 0) {
-			disjoint_set.create_union(parent, node_index);
-		}
-	}
-
-	Vector<GLTFNodeIndex> out_owners;
-	disjoint_set.get_representatives(out_owners);
-
-	Vector<GLTFNodeIndex> out_roots;
-
-	for (int i = 0; i < out_owners.size(); ++i) {
-		Vector<GLTFNodeIndex> set;
-		disjoint_set.get_members(set, out_owners[i]);
-
-		const GLTFNodeIndex root = _find_highest_node(p_state, set);
-		ERR_FAIL_COND_V(root < 0, FAILED);
-		out_roots.push_back(root);
-	}
-
-	out_roots.sort();
-
-	for (int i = 0; i < out_roots.size(); ++i) {
-		_capture_nodes_in_skin(p_state, p_skin, out_roots[i]);
-	}
-
-	p_skin->roots = out_roots;
-
-	return OK;
-}
-
-Error GLTFDocument::_verify_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin) {
-	// This may seem duplicated from expand_skins, but this is really a safety check! (so it kinda is)
-	// In case additional interpolating logic is added to the skins, this will help ensure that you
-	// do not cause it to self implode into a fiery blaze
-
-	// We are going to re-calculate the root nodes and compare them to the ones saved in the skin,
-	// then ensure the multiple trees (if they exist) are on the same sublevel
-
-	// Grab all nodes that lay in between skin joints/nodes
-	DisjointSet<GLTFNodeIndex> disjoint_set;
-
-	Vector<GLTFNodeIndex> all_skin_nodes;
-	all_skin_nodes.append_array(p_skin->joints);
-	all_skin_nodes.append_array(p_skin->non_joints);
-
-	for (int i = 0; i < all_skin_nodes.size(); ++i) {
-		const GLTFNodeIndex node_index = all_skin_nodes[i];
-		const GLTFNodeIndex parent = p_state->nodes[node_index]->parent;
-		disjoint_set.insert(node_index);
-
-		if (all_skin_nodes.find(parent) >= 0) {
-			disjoint_set.create_union(parent, node_index);
-		}
-	}
-
-	Vector<GLTFNodeIndex> out_owners;
-	disjoint_set.get_representatives(out_owners);
-
-	Vector<GLTFNodeIndex> out_roots;
-
-	for (int i = 0; i < out_owners.size(); ++i) {
-		Vector<GLTFNodeIndex> set;
-		disjoint_set.get_members(set, out_owners[i]);
-
-		const GLTFNodeIndex root = _find_highest_node(p_state, set);
-		ERR_FAIL_COND_V(root < 0, FAILED);
-		out_roots.push_back(root);
-	}
-
-	out_roots.sort();
-
-	ERR_FAIL_COND_V(out_roots.is_empty(), FAILED);
-
-	// Make sure the roots are the exact same (they better be)
-	ERR_FAIL_COND_V(out_roots.size() != p_skin->roots.size(), FAILED);
-	for (int i = 0; i < out_roots.size(); ++i) {
-		ERR_FAIL_COND_V(out_roots[i] != p_skin->roots[i], FAILED);
-	}
-
-	// Single rooted skin? Perfectly ok!
-	if (out_roots.size() == 1) {
-		return OK;
-	}
-
-	// Make sure all parents of a multi-rooted skin are the SAME
-	const GLTFNodeIndex parent = p_state->nodes[out_roots[0]]->parent;
-	for (int i = 1; i < out_roots.size(); ++i) {
-		if (p_state->nodes[out_roots[i]]->parent != parent) {
-			return FAILED;
-		}
-	}
-
-	return OK;
-}
-
 Error GLTFDocument::_parse_skins(Ref<GLTFState> p_state) {
 	if (!p_state->json.has("skins")) {
 		return OK;
@@ -4489,357 +4250,14 @@ Error GLTFDocument::_parse_skins(Ref<GLTFState> p_state) {
 
 		// Expand the skin to capture all the extra non-joints that lie in between the actual joints,
 		// and expand the hierarchy to ensure multi-rooted trees lie on the same height level
-		ERR_FAIL_COND_V(_expand_skin(p_state, skin), ERR_PARSE_ERROR);
-		ERR_FAIL_COND_V(_verify_skin(p_state, skin), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(SkinTool::_expand_skin(p_state->nodes, skin), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(SkinTool::_verify_skin(p_state->nodes, skin), ERR_PARSE_ERROR);
 	}
 
 	print_verbose("glTF: Total skins: " + itos(p_state->skins.size()));
 
 	return OK;
 }
-
-void GLTFDocument::_recurse_children(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index,
-		RBSet<GLTFNodeIndex> &p_all_skin_nodes, HashSet<GLTFNodeIndex> &p_child_visited_set) {
-	if (p_child_visited_set.has(p_node_index)) {
-		return;
-	}
-	p_child_visited_set.insert(p_node_index);
-	for (int i = 0; i < p_state->nodes[p_node_index]->children.size(); ++i) {
-		_recurse_children(p_state, p_state->nodes[p_node_index]->children[i], p_all_skin_nodes, p_child_visited_set);
-	}
-
-	if (p_state->nodes[p_node_index]->skin < 0 || p_state->nodes[p_node_index]->mesh < 0 || !p_state->nodes[p_node_index]->children.is_empty()) {
-		p_all_skin_nodes.insert(p_node_index);
-	}
-}
-
-Error GLTFDocument::_determine_skeletons(Ref<GLTFState> p_state) {
-	// Using a disjoint set, we are going to potentially combine all skins that are actually branches
-	// of a main skeleton, or treat skins defining the same set of nodes as ONE skeleton.
-	// This is another unclear issue caused by the current glTF specification.
-
-	DisjointSet<GLTFNodeIndex> skeleton_sets;
-
-	for (GLTFSkinIndex skin_i = 0; skin_i < p_state->skins.size(); ++skin_i) {
-		const Ref<GLTFSkin> skin = p_state->skins[skin_i];
-
-		HashSet<GLTFNodeIndex> child_visited_set;
-		RBSet<GLTFNodeIndex> all_skin_nodes;
-		for (int i = 0; i < skin->joints.size(); ++i) {
-			all_skin_nodes.insert(skin->joints[i]);
-			_recurse_children(p_state, skin->joints[i], all_skin_nodes, child_visited_set);
-		}
-		for (int i = 0; i < skin->non_joints.size(); ++i) {
-			all_skin_nodes.insert(skin->non_joints[i]);
-			_recurse_children(p_state, skin->non_joints[i], all_skin_nodes, child_visited_set);
-		}
-		for (GLTFNodeIndex node_index : all_skin_nodes) {
-			const GLTFNodeIndex parent = p_state->nodes[node_index]->parent;
-			skeleton_sets.insert(node_index);
-
-			if (all_skin_nodes.has(parent)) {
-				skeleton_sets.create_union(parent, node_index);
-			}
-		}
-
-		// We are going to connect the separate skin subtrees in each skin together
-		// so that the final roots are entire sets of valid skin trees
-		for (int i = 1; i < skin->roots.size(); ++i) {
-			skeleton_sets.create_union(skin->roots[0], skin->roots[i]);
-		}
-	}
-
-	{ // attempt to joint all touching subsets (siblings/parent are part of another skin)
-		Vector<GLTFNodeIndex> groups_representatives;
-		skeleton_sets.get_representatives(groups_representatives);
-
-		Vector<GLTFNodeIndex> highest_group_members;
-		Vector<Vector<GLTFNodeIndex>> groups;
-		for (int i = 0; i < groups_representatives.size(); ++i) {
-			Vector<GLTFNodeIndex> group;
-			skeleton_sets.get_members(group, groups_representatives[i]);
-			highest_group_members.push_back(_find_highest_node(p_state, group));
-			groups.push_back(group);
-		}
-
-		for (int i = 0; i < highest_group_members.size(); ++i) {
-			const GLTFNodeIndex node_i = highest_group_members[i];
-
-			// Attach any siblings together (this needs to be done n^2/2 times)
-			for (int j = i + 1; j < highest_group_members.size(); ++j) {
-				const GLTFNodeIndex node_j = highest_group_members[j];
-
-				// Even if they are siblings under the root! :)
-				if (p_state->nodes[node_i]->parent == p_state->nodes[node_j]->parent) {
-					skeleton_sets.create_union(node_i, node_j);
-				}
-			}
-
-			// Attach any parenting going on together (we need to do this n^2 times)
-			const GLTFNodeIndex node_i_parent = p_state->nodes[node_i]->parent;
-			if (node_i_parent >= 0) {
-				for (int j = 0; j < groups.size() && i != j; ++j) {
-					const Vector<GLTFNodeIndex> &group = groups[j];
-
-					if (group.find(node_i_parent) >= 0) {
-						const GLTFNodeIndex node_j = highest_group_members[j];
-						skeleton_sets.create_union(node_i, node_j);
-					}
-				}
-			}
-		}
-	}
-
-	// At this point, the skeleton groups should be finalized
-	Vector<GLTFNodeIndex> skeleton_owners;
-	skeleton_sets.get_representatives(skeleton_owners);
-
-	// Mark all the skins actual skeletons, after we have merged them
-	for (GLTFSkeletonIndex skel_i = 0; skel_i < skeleton_owners.size(); ++skel_i) {
-		const GLTFNodeIndex skeleton_owner = skeleton_owners[skel_i];
-		Ref<GLTFSkeleton> skeleton;
-		skeleton.instantiate();
-
-		Vector<GLTFNodeIndex> skeleton_nodes;
-		skeleton_sets.get_members(skeleton_nodes, skeleton_owner);
-
-		for (GLTFSkinIndex skin_i = 0; skin_i < p_state->skins.size(); ++skin_i) {
-			Ref<GLTFSkin> skin = p_state->skins.write[skin_i];
-
-			// If any of the the skeletons nodes exist in a skin, that skin now maps to the skeleton
-			for (int i = 0; i < skeleton_nodes.size(); ++i) {
-				GLTFNodeIndex skel_node_i = skeleton_nodes[i];
-				if (skin->joints.find(skel_node_i) >= 0 || skin->non_joints.find(skel_node_i) >= 0) {
-					skin->skeleton = skel_i;
-					continue;
-				}
-			}
-		}
-
-		Vector<GLTFNodeIndex> non_joints;
-		for (int i = 0; i < skeleton_nodes.size(); ++i) {
-			const GLTFNodeIndex node_i = skeleton_nodes[i];
-
-			if (p_state->nodes[node_i]->joint) {
-				skeleton->joints.push_back(node_i);
-			} else {
-				non_joints.push_back(node_i);
-			}
-		}
-
-		p_state->skeletons.push_back(skeleton);
-
-		_reparent_non_joint_skeleton_subtrees(p_state, p_state->skeletons.write[skel_i], non_joints);
-	}
-
-	for (GLTFSkeletonIndex skel_i = 0; skel_i < p_state->skeletons.size(); ++skel_i) {
-		Ref<GLTFSkeleton> skeleton = p_state->skeletons.write[skel_i];
-
-		for (int i = 0; i < skeleton->joints.size(); ++i) {
-			const GLTFNodeIndex node_i = skeleton->joints[i];
-			Ref<GLTFNode> node = p_state->nodes[node_i];
-
-			ERR_FAIL_COND_V(!node->joint, ERR_PARSE_ERROR);
-			ERR_FAIL_COND_V(node->skeleton >= 0, ERR_PARSE_ERROR);
-			node->skeleton = skel_i;
-		}
-
-		ERR_FAIL_COND_V(_determine_skeleton_roots(p_state, skel_i), ERR_PARSE_ERROR);
-	}
-
-	return OK;
-}
-
-Error GLTFDocument::_reparent_non_joint_skeleton_subtrees(Ref<GLTFState> p_state, Ref<GLTFSkeleton> p_skeleton, const Vector<GLTFNodeIndex> &p_non_joints) {
-	DisjointSet<GLTFNodeIndex> subtree_set;
-
-	// Populate the disjoint set with ONLY non joints that are in the skeleton hierarchy (non_joints vector)
-	// This way we can find any joints that lie in between joints, as the current glTF specification
-	// mentions nothing about non-joints being in between joints of the same skin. Hopefully one day we
-	// can remove this code.
-
-	// skinD depicted here explains this issue:
-	// https://github.com/KhronosGroup/glTF-Asset-Generator/blob/master/Output/Positive/Animation_Skin
-
-	for (int i = 0; i < p_non_joints.size(); ++i) {
-		const GLTFNodeIndex node_i = p_non_joints[i];
-
-		subtree_set.insert(node_i);
-
-		const GLTFNodeIndex parent_i = p_state->nodes[node_i]->parent;
-		if (parent_i >= 0 && p_non_joints.find(parent_i) >= 0 && !p_state->nodes[parent_i]->joint) {
-			subtree_set.create_union(parent_i, node_i);
-		}
-	}
-
-	// Find all the non joint subtrees and re-parent them to a new "fake" joint
-
-	Vector<GLTFNodeIndex> non_joint_subtree_roots;
-	subtree_set.get_representatives(non_joint_subtree_roots);
-
-	for (int root_i = 0; root_i < non_joint_subtree_roots.size(); ++root_i) {
-		const GLTFNodeIndex subtree_root = non_joint_subtree_roots[root_i];
-
-		Vector<GLTFNodeIndex> subtree_nodes;
-		subtree_set.get_members(subtree_nodes, subtree_root);
-
-		for (int subtree_i = 0; subtree_i < subtree_nodes.size(); ++subtree_i) {
-			Ref<GLTFNode> node = p_state->nodes[subtree_nodes[subtree_i]];
-			node->joint = true;
-			// Add the joint to the skeletons joints
-			p_skeleton->joints.push_back(subtree_nodes[subtree_i]);
-		}
-	}
-
-	return OK;
-}
-
-Error GLTFDocument::_determine_skeleton_roots(Ref<GLTFState> p_state, const GLTFSkeletonIndex p_skel_i) {
-	DisjointSet<GLTFNodeIndex> disjoint_set;
-
-	for (GLTFNodeIndex i = 0; i < p_state->nodes.size(); ++i) {
-		const Ref<GLTFNode> node = p_state->nodes[i];
-
-		if (node->skeleton != p_skel_i) {
-			continue;
-		}
-
-		disjoint_set.insert(i);
-
-		if (node->parent >= 0 && p_state->nodes[node->parent]->skeleton == p_skel_i) {
-			disjoint_set.create_union(node->parent, i);
-		}
-	}
-
-	Ref<GLTFSkeleton> skeleton = p_state->skeletons.write[p_skel_i];
-
-	Vector<GLTFNodeIndex> representatives;
-	disjoint_set.get_representatives(representatives);
-
-	Vector<GLTFNodeIndex> roots;
-
-	for (int i = 0; i < representatives.size(); ++i) {
-		Vector<GLTFNodeIndex> set;
-		disjoint_set.get_members(set, representatives[i]);
-		const GLTFNodeIndex root = _find_highest_node(p_state, set);
-		ERR_FAIL_COND_V(root < 0, FAILED);
-		roots.push_back(root);
-	}
-
-	roots.sort();
-
-	skeleton->roots = roots;
-
-	if (roots.size() == 0) {
-		return FAILED;
-	} else if (roots.size() == 1) {
-		return OK;
-	}
-
-	// Check that the subtrees have the same parent root
-	const GLTFNodeIndex parent = p_state->nodes[roots[0]]->parent;
-	for (int i = 1; i < roots.size(); ++i) {
-		if (p_state->nodes[roots[i]]->parent != parent) {
-			return FAILED;
-		}
-	}
-
-	return OK;
-}
-
-Error GLTFDocument::_create_skeletons(Ref<GLTFState> p_state) {
-	for (GLTFSkeletonIndex skel_i = 0; skel_i < p_state->skeletons.size(); ++skel_i) {
-		Ref<GLTFSkeleton> gltf_skeleton = p_state->skeletons.write[skel_i];
-
-		Skeleton3D *skeleton = memnew(Skeleton3D);
-		gltf_skeleton->godot_skeleton = skeleton;
-		p_state->skeleton3d_to_gltf_skeleton[skeleton->get_instance_id()] = skel_i;
-
-		// Make a unique name, no gltf node represents this skeleton
-		skeleton->set_name("Skeleton3D");
-
-		List<GLTFNodeIndex> bones;
-
-		for (int i = 0; i < gltf_skeleton->roots.size(); ++i) {
-			bones.push_back(gltf_skeleton->roots[i]);
-		}
-
-		// Make the skeleton creation deterministic by going through the roots in
-		// a sorted order, and DEPTH FIRST
-		bones.sort();
-
-		while (!bones.is_empty()) {
-			const GLTFNodeIndex node_i = bones.front()->get();
-			bones.pop_front();
-
-			Ref<GLTFNode> node = p_state->nodes[node_i];
-			ERR_FAIL_COND_V(node->skeleton != skel_i, FAILED);
-
-			{ // Add all child nodes to the stack (deterministically)
-				Vector<GLTFNodeIndex> child_nodes;
-				for (int i = 0; i < node->children.size(); ++i) {
-					const GLTFNodeIndex child_i = node->children[i];
-					if (p_state->nodes[child_i]->skeleton == skel_i) {
-						child_nodes.push_back(child_i);
-					}
-				}
-
-				// Depth first insertion
-				child_nodes.sort();
-				for (int i = child_nodes.size() - 1; i >= 0; --i) {
-					bones.push_front(child_nodes[i]);
-				}
-			}
-
-			const int bone_index = skeleton->get_bone_count();
-
-			if (node->get_name().is_empty()) {
-				node->set_name("bone");
-			}
-
-			node->set_name(_gen_unique_bone_name(p_state, skel_i, node->get_name()));
-
-			skeleton->add_bone(node->get_name());
-			skeleton->set_bone_rest(bone_index, node->transform);
-			skeleton->set_bone_pose_position(bone_index, node->get_position());
-			skeleton->set_bone_pose_rotation(bone_index, node->get_rotation());
-			skeleton->set_bone_pose_scale(bone_index, node->get_scale());
-
-			if (node->parent >= 0 && p_state->nodes[node->parent]->skeleton == skel_i) {
-				const int bone_parent = skeleton->find_bone(p_state->nodes[node->parent]->get_name());
-				ERR_FAIL_COND_V(bone_parent < 0, FAILED);
-				skeleton->set_bone_parent(bone_index, skeleton->find_bone(p_state->nodes[node->parent]->get_name()));
-			}
-
-			p_state->scene_nodes.insert(node_i, skeleton);
-		}
-	}
-
-	ERR_FAIL_COND_V(_map_skin_joints_indices_to_skeleton_bone_indices(p_state), ERR_PARSE_ERROR);
-
-	return OK;
-}
-
-Error GLTFDocument::_map_skin_joints_indices_to_skeleton_bone_indices(Ref<GLTFState> p_state) {
-	for (GLTFSkinIndex skin_i = 0; skin_i < p_state->skins.size(); ++skin_i) {
-		Ref<GLTFSkin> skin = p_state->skins.write[skin_i];
-
-		Ref<GLTFSkeleton> skeleton = p_state->skeletons[skin->skeleton];
-
-		for (int joint_index = 0; joint_index < skin->joints_original.size(); ++joint_index) {
-			const GLTFNodeIndex node_i = skin->joints_original[joint_index];
-			const Ref<GLTFNode> node = p_state->nodes[node_i];
-
-			const int bone_index = skeleton->godot_skeleton->find_bone(node->get_name());
-			ERR_FAIL_COND_V(bone_index < 0, FAILED);
-
-			skin->joint_i_to_bone_i.insert(joint_index, bone_index);
-		}
-	}
-
-	return OK;
-}
-
 Error GLTFDocument::_serialize_skins(Ref<GLTFState> p_state) {
 	_remove_duplicate_skins(p_state);
 	Array json_skins;
@@ -5254,6 +4672,7 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 			if (anim_name_lower.begins_with("loop") || anim_name_lower.ends_with("loop") || anim_name_lower.begins_with("cycle") || anim_name_lower.ends_with("cycle")) {
 				animation->set_loop(true);
 			}
+			animation->set_original_name(anim_name);
 			animation->set_name(_gen_unique_animation_name(p_state, anim_name));
 		}
 
@@ -5534,6 +4953,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 #endif // TOOLS_ENABLED
 	Ref<GLTFNode> gltf_node;
 	gltf_node.instantiate();
+	gltf_node->set_original_name(p_current->get_name());
 	gltf_node->set_name(_gen_unique_name(p_state, p_current->get_name()));
 	if (cast_to<Node3D>(p_current)) {
 		Node3D *spatial = cast_to<Node3D>(p_current);
@@ -5625,10 +5045,12 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
 	gltf_mesh->set_mesh(mesh);
+	gltf_mesh->set_original_name(csg->get_name());
 	GLTFMeshIndex mesh_i = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
 	p_gltf_node->mesh = mesh_i;
 	p_gltf_node->transform = csg->get_meshes()[0];
+	p_gltf_node->set_original_name(csg->get_name());
 	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
 }
 #endif // MODULE_CSG_ENABLED
@@ -5702,9 +5124,11 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instantiate();
 		gltf_mesh->set_mesh(_mesh_to_importer_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
+		gltf_mesh->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
 		new_gltf_node->mesh = p_state->meshes.size();
 		p_state->meshes.push_back(gltf_mesh);
 		new_gltf_node->transform = cell_xform * p_grid_map->get_transform();
+		new_gltf_node->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
 		new_gltf_node->set_name(_gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell)));
 	}
 }
@@ -5726,6 +5150,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 	if (mesh.is_null()) {
 		return;
 	}
+	gltf_mesh->set_original_name(multi_mesh->get_name());
 	gltf_mesh->set_name(multi_mesh->get_name());
 	Ref<ImporterMesh> importer_mesh;
 	importer_mesh.instantiate();
@@ -5773,6 +5198,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 		new_gltf_node.instantiate();
 		new_gltf_node->mesh = mesh_index;
 		new_gltf_node->transform = transform;
+		new_gltf_node->set_original_name(p_multi_mesh_instance->get_name());
 		new_gltf_node->set_name(_gen_unique_name(p_state, p_multi_mesh_instance->get_name()));
 		p_gltf_node->children.push_back(p_state->nodes.size());
 		p_state->nodes.push_back(new_gltf_node);
@@ -5796,6 +5222,7 @@ void GLTFDocument::_convert_skeleton_to_gltf(Skeleton3D *p_skeleton3d, Ref<GLTFS
 		joint_node.instantiate();
 		// Note that we cannot use _gen_unique_bone_name here, because glTF spec requires all node
 		// names to be unique regardless of whether or not they are used as joints.
+		joint_node->set_original_name(skeleton->get_bone_name(bone_i));
 		joint_node->set_name(_gen_unique_name(p_state, skeleton->get_bone_name(bone_i)));
 		joint_node->transform = skeleton->get_bone_pose(bone_i);
 		joint_node->joint = true;
@@ -6934,6 +6361,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 	Ref<Animation> animation = p_animation_player->get_animation(p_animation_track_name);
 	Ref<GLTFAnimation> gltf_animation;
 	gltf_animation.instantiate();
+	gltf_animation->set_original_name(p_animation_track_name);
 	gltf_animation->set_name(_gen_unique_name(p_state, p_animation_track_name));
 	for (int32_t track_i = 0; track_i < animation->get_track_count(); track_i++) {
 		if (!animation->track_is_enabled(track_i)) {
@@ -7284,19 +6712,6 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 }
 
 void GLTFDocument::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "base_path"),
-			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("append_from_buffer", "bytes", "base_path", "state", "flags"),
-			&GLTFDocument::append_from_buffer, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("append_from_scene", "node", "state", "flags"),
-			&GLTFDocument::append_from_scene, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("generate_scene", "state", "bake_fps", "trimming", "remove_immutable_tracks"),
-			&GLTFDocument::generate_scene, DEFVAL(30), DEFVAL(false), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("generate_buffer", "state"),
-			&GLTFDocument::generate_buffer);
-	ClassDB::bind_method(D_METHOD("write_to_filesystem", "state", "path"),
-			&GLTFDocument::write_to_filesystem);
-
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_SINGLE_ROOT);
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_KEEP_ROOT);
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_MULTI_ROOT);
@@ -7398,35 +6813,11 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 	return buffer->get_data_array();
 }
 
-PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> p_state) {
-	ERR_FAIL_NULL_V(p_state, PackedByteArray());
-	// For buffers, set the state filename to an empty string, but
-	// don't touch the base path, in case the user set it manually.
-	p_state->filename = "";
-	Error err = _serialize(p_state);
-	ERR_FAIL_COND_V(err != OK, PackedByteArray());
-	PackedByteArray bytes = _serialize_glb_buffer(p_state, &err);
-	return bytes;
-}
-
-Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
-	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
-	p_state->base_path = p_path.get_base_dir();
-	p_state->filename = p_path.get_file();
-	Error err = _serialize(p_state);
-	if (err != OK) {
-		return err;
-	}
-	err = _serialize_file(p_state, p_path);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-	return OK;
-}
-
 Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	// Generate the skeletons and skins (if any).
-	Error err = _create_skeletons(p_state);
+	HashMap<ObjectID, SkinSkeletonIndex> skeleton_map;
+	Error err = SkinTool::_create_skeletons(p_state->unique_names, p_state->skins, p_state->nodes,
+			skeleton_map, p_state->skeletons, p_state->scene_nodes);
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "GLTF: Failed to create skeletons.");
 	err = _create_skins(p_state);
 	ERR_FAIL_COND_V_MSG(err != OK, nullptr, "GLTF: Failed to create skins.");
@@ -7453,106 +6844,6 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 		}
 	}
 	return single_root;
-}
-
-Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
-	ERR_FAIL_NULL_V(p_state, nullptr);
-	ERR_FAIL_INDEX_V(0, p_state->root_nodes.size(), nullptr);
-	Error err = OK;
-	Node *root = _generate_scene_node_tree(p_state);
-	ERR_FAIL_NULL_V(root, nullptr);
-	_process_mesh_instances(p_state, root);
-	if (p_state->get_create_animations() && p_state->animations.size()) {
-		AnimationPlayer *ap = memnew(AnimationPlayer);
-		root->add_child(ap, true);
-		ap->set_owner(root);
-		for (int i = 0; i < p_state->animations.size(); i++) {
-			_import_animation(p_state, ap, i, p_bake_fps, p_trimming, p_remove_immutable_tracks);
-		}
-	}
-	for (KeyValue<GLTFNodeIndex, Node *> E : p_state->scene_nodes) {
-		ERR_CONTINUE(!E.value);
-		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
-			ERR_CONTINUE(ext.is_null());
-			Dictionary node_json;
-			if (p_state->json.has("nodes")) {
-				Array nodes = p_state->json["nodes"];
-				if (0 <= E.key && E.key < nodes.size()) {
-					node_json = nodes[E.key];
-				}
-			}
-			Ref<GLTFNode> gltf_node = p_state->nodes[E.key];
-			err = ext->import_node(p_state, gltf_node, node_json, E.value);
-			ERR_CONTINUE(err != OK);
-		}
-	}
-	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
-		ERR_CONTINUE(ext.is_null());
-		err = ext->import_post(p_state, root);
-		ERR_CONTINUE(err != OK);
-	}
-	ERR_FAIL_NULL_V(root, nullptr);
-	return root;
-}
-
-Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags) {
-	ERR_FAIL_COND_V(p_state.is_null(), FAILED);
-	p_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
-	p_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
-	p_state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
-	p_state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
-	if (!p_state->buffers.size()) {
-		p_state->buffers.push_back(Vector<uint8_t>());
-	}
-	// Perform export preflight for document extensions. Only extensions that
-	// return OK will be used for the rest of the export steps.
-	document_extensions.clear();
-	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
-		ERR_CONTINUE(ext.is_null());
-		Error err = ext->export_preflight(p_state, p_node);
-		if (err == OK) {
-			document_extensions.push_back(ext);
-		}
-	}
-	// Add the root node(s) and their descendants to the state.
-	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_MULTI_ROOT) {
-		const int child_count = p_node->get_child_count();
-		if (child_count > 0) {
-			for (int i = 0; i < child_count; i++) {
-				_convert_scene_node(p_state, p_node->get_child(i), -1, -1);
-			}
-			p_state->scene_name = p_node->get_name();
-			return OK;
-		}
-	}
-	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT) {
-		p_state->extensions_used.append("GODOT_single_root");
-	}
-	_convert_scene_node(p_state, p_node, -1, -1);
-	return OK;
-}
-
-Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags) {
-	ERR_FAIL_COND_V(p_state.is_null(), FAILED);
-	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
-	Error err = FAILED;
-	p_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
-	p_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
-	p_state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
-	p_state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
-
-	Ref<FileAccessMemory> file_access;
-	file_access.instantiate();
-	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
-	p_state->base_path = p_base_path.get_base_dir();
-	err = _parse(p_state, p_state->base_path, file_access);
-	ERR_FAIL_COND_V(err != OK, err);
-	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
-		ERR_CONTINUE(ext.is_null());
-		err = ext->import_post_parse(p_state);
-		ERR_FAIL_COND_V(err != OK, err);
-	}
-	return OK;
 }
 
 Error GLTFDocument::_parse_asset_header(Ref<GLTFState> p_state) {
@@ -7630,7 +6921,7 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* DETERMINE SKELETONS */
-	err = _determine_skeletons(p_state);
+	err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* PARSE MESHES (we have enough info now) */
@@ -7655,16 +6946,148 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	return OK;
 }
 
-Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags, String p_base_path) {
-	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
-	if (p_state == Ref<GLTFState>()) {
-		p_state.instantiate();
+PackedByteArray GLTFDocument::generate_buffer_from_data(Ref<ModelState3D> p_state) {
+	Ref<GLTFState> state = p_state;
+	ERR_FAIL_NULL_V(state, PackedByteArray());
+	// For buffers, set the state filename to an empty string, but
+	// don't touch the base path, in case the user set it manually.
+	state->filename = "";
+	Error err = _serialize(state);
+	ERR_FAIL_COND_V(err != OK, PackedByteArray());
+	PackedByteArray bytes = _serialize_glb_buffer(state, &err);
+	return bytes;
+}
+
+Error GLTFDocument::write_to_filesystem_from_data(Ref<ModelState3D> p_state, const String &p_path) {
+	Ref<GLTFState> state = p_state;
+	ERR_FAIL_NULL_V(state, ERR_INVALID_PARAMETER);
+	state->base_path = p_path.get_base_dir();
+	state->filename = p_path.get_file();
+	Error err = _serialize(state);
+	if (err != OK) {
+		return err;
 	}
-	p_state->filename = p_path.get_file().get_basename();
-	p_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
-	p_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
-	p_state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
-	p_state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
+	err = _serialize_file(state, p_path);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+	return OK;
+}
+
+Node *GLTFDocument::generate_scene_from_data(Ref<ModelState3D> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
+	Ref<GLTFState> state = p_state;
+	ERR_FAIL_NULL_V(state, nullptr);
+	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
+	Error err = OK;
+	Node *root = _generate_scene_node_tree(state);
+	ERR_FAIL_NULL_V(root, nullptr);
+	_process_mesh_instances(state, root);
+	if (state->get_create_animations() && state->animations.size()) {
+		AnimationPlayer *ap = memnew(AnimationPlayer);
+		root->add_child(ap, true);
+		ap->set_owner(root);
+		for (int i = 0; i < state->animations.size(); i++) {
+			_import_animation(state, ap, i, p_bake_fps, p_trimming, p_remove_immutable_tracks);
+		}
+	}
+	for (KeyValue<GLTFNodeIndex, Node *> E : state->scene_nodes) {
+		ERR_CONTINUE(!E.value);
+		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+			ERR_CONTINUE(ext.is_null());
+			Dictionary node_json;
+			if (state->json.has("nodes")) {
+				Array nodes = state->json["nodes"];
+				if (0 <= E.key && E.key < nodes.size()) {
+					node_json = nodes[E.key];
+				}
+			}
+			Ref<GLTFNode> gltf_node = state->nodes[E.key];
+			err = ext->import_node(p_state, gltf_node, node_json, E.value);
+			ERR_CONTINUE(err != OK);
+		}
+	}
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		err = ext->import_post(p_state, root);
+		ERR_CONTINUE(err != OK);
+	}
+	ERR_FAIL_NULL_V(root, nullptr);
+	return root;
+}
+
+Error GLTFDocument::append_data_from_scene(Node *p_node, Ref<ModelState3D> p_state, uint32_t p_flags) {
+	Ref<GLTFState> state = p_state;
+	ERR_FAIL_COND_V(state.is_null(), FAILED);
+	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
+	state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
+	if (!state->buffers.size()) {
+		state->buffers.push_back(Vector<uint8_t>());
+	}
+	// Perform export preflight for document extensions. Only extensions that
+	// return OK will be used for the rest of the export steps.
+	document_extensions.clear();
+	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->export_preflight(state, p_node);
+		if (err == OK) {
+			document_extensions.push_back(ext);
+		}
+	}
+	// Add the root node(s) and their descendants to the state.
+	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_MULTI_ROOT) {
+		const int child_count = p_node->get_child_count();
+		if (child_count > 0) {
+			for (int i = 0; i < child_count; i++) {
+				_convert_scene_node(state, p_node->get_child(i), -1, -1);
+			}
+			state->scene_name = p_node->get_name();
+			return OK;
+		}
+	}
+	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT) {
+		state->extensions_used.append("GODOT_single_root");
+	}
+	_convert_scene_node(state, p_node, -1, -1);
+	return OK;
+}
+
+Error GLTFDocument::append_data_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<ModelState3D> p_state, uint32_t p_flags) {
+	Ref<GLTFState> state = p_state;
+	ERR_FAIL_COND_V(state.is_null(), FAILED);
+	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
+	Error err = FAILED;
+	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
+	state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
+
+	Ref<FileAccessMemory> file_access;
+	file_access.instantiate();
+	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
+	state->base_path = p_base_path.get_base_dir();
+	err = _parse(p_state, state->base_path, file_access);
+	ERR_FAIL_COND_V(err != OK, err);
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		err = ext->import_post_parse(state);
+		ERR_FAIL_COND_V(err != OK, err);
+	}
+	return OK;
+}
+
+Error GLTFDocument::append_data_from_file(String p_path, Ref<ModelState3D> p_state, uint32_t p_flags, String p_base_path) {
+	Ref<GLTFState> state = p_state;
+	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
+	if (state == Ref<GLTFState>()) {
+		state.instantiate();
+	}
+	state->filename = p_path.get_file().get_basename();
+	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
+	state->force_disable_compression = p_flags & GLTF_IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -7674,7 +7097,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 	if (base_path.is_empty()) {
 		base_path = p_path.get_base_dir();
 	}
-	p_state->base_path = base_path;
+	state->base_path = base_path;
 	err = _parse(p_state, base_path, file);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
@@ -7724,4 +7147,26 @@ void GLTFDocument::set_root_node_mode(GLTFDocument::RootNodeMode p_root_node_mod
 
 GLTFDocument::RootNodeMode GLTFDocument::get_root_node_mode() const {
 	return _root_node_mode;
+}
+
+String GLTFDocument::_gen_unique_name_static(HashSet<String> &r_unique_names, const String &p_name) {
+	const String s_name = p_name.validate_node_name();
+
+	String u_name;
+	int index = 1;
+	while (true) {
+		u_name = s_name;
+
+		if (index > 1) {
+			u_name += itos(index);
+		}
+		if (!r_unique_names.has(u_name)) {
+			break;
+		}
+		index++;
+	}
+
+	r_unique_names.insert(u_name);
+
+	return u_name;
 }

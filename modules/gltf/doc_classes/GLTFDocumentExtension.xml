@@ -55,7 +55,7 @@
 			<param index="0" name="state" type="GLTFState" />
 			<description>
 				Part of the export process. This method is run after [method _convert_scene_node] and before [method _get_saveable_image_formats].
-				This method can be used to alter the state before performing serialization. It runs every time when generating a buffer with [method GLTFDocument.generate_buffer] or writing to the file system with [method GLTFDocument.write_to_filesystem].
+				This method can be used to alter the state before performing serialization. It runs every time when generating a buffer with [method ModelDocument3D.generate_buffer_from_data] or writing to the file system with [method ModelDocument3D.write_to_filesystem_from_data].
 			</description>
 		</method>
 		<method name="_generate_scene_node" qualifiers="virtual">

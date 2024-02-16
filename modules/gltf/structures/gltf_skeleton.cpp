@@ -30,7 +30,7 @@
 
 #include "gltf_skeleton.h"
 
-#include "../gltf_template_convert.h"
+#include "modules/gltf/gltf_template_convert.h"
 
 #include "scene/3d/bone_attachment_3d.h"
 
@@ -82,11 +82,11 @@ void GLTFSkeleton::set_unique_names(TypedArray<String> p_unique_names) {
 }
 
 Dictionary GLTFSkeleton::get_godot_bone_node() {
-	return GLTFTemplateConvert::to_dict(godot_bone_node);
+	return GLTFTemplateConvert::to_dictionary(godot_bone_node);
 }
 
 void GLTFSkeleton::set_godot_bone_node(Dictionary p_indict) {
-	GLTFTemplateConvert::set_from_dict(godot_bone_node, p_indict);
+	GLTFTemplateConvert::set_from_dictionary(godot_bone_node, p_indict);
 }
 
 BoneAttachment3D *GLTFSkeleton::get_bone_attachment(int idx) {

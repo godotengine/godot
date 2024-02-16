@@ -56,8 +56,8 @@ void FBXImporterManager::show_dialog(bool p_exclusive) {
 	set_close_on_escape(!p_exclusive);
 
 	if (is_importing) {
-		get_cancel_button()->set_text(TTR("Disable FBX & Restart"));
-		get_cancel_button()->set_tooltip_text(TTR("Canceling this dialog will disable the FBX importer.\nYou can re-enable it in the Project Settings under Filesystem > Import > FBX > Enabled.\n\nThe editor will restart as importers are registered when the editor starts."));
+		get_cancel_button()->set_text(TTR("Disable FBX2glTF & Restart"));
+		get_cancel_button()->set_tooltip_text(TTR("Canceling this dialog will disable the FBX2glTF importer and use the ufbx importer.\nYou can re-enable FBX2glTF in the Project Settings under Filesystem > Import > FBX > Enabled.\n\nThe editor will restart as importers are registered when the editor starts."));
 	} else {
 		get_cancel_button()->set_text(TTR("Cancel"));
 		get_cancel_button()->set_tooltip_text("");
@@ -136,7 +136,7 @@ FBXImporterManager::FBXImporterManager() {
 	set_title(TTR("Configure FBX Importer"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
-	vb->add_child(memnew(Label(TTR("FBX2glTF is required for importing FBX files.\nPlease download it and provide a valid path to the binary:"))));
+	vb->add_child(memnew(Label(TTR("FBX2glTF is required for importing FBX files if using FBX2glTF.\nAlternatively, you can use ufbx by disabling FBX2glTF.\nPlease download the necessary tool and provide a valid path to the binary:"))));
 	LinkButton *lb = memnew(LinkButton);
 	lb->set_text(TTR("Click this link to download FBX2glTF"));
 	lb->set_uri("https://godotengine.org/fbx-import");

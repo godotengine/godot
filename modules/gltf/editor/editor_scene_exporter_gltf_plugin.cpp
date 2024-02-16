@@ -107,11 +107,11 @@ void SceneExporterGLTFPlugin::_export_scene_as_gltf(const String &p_file_path) {
 	state->set_copyright(_export_settings->get_copyright());
 	int32_t flags = 0;
 	flags |= EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
-	Error err = _gltf_document->append_from_scene(root, state, flags);
+	Error err = _gltf_document->append_data_from_scene(root, state, flags);
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
 	}
-	err = _gltf_document->write_to_filesystem(state, p_file_path);
+	err = _gltf_document->write_to_filesystem_from_data(state, p_file_path);
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
 	}

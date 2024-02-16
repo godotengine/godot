@@ -36,6 +36,7 @@
 #include "extensions/gltf_spec_gloss.h"
 #include "extensions/physics/gltf_document_extension_physics.h"
 #include "gltf_document.h"
+#include "modules/gltf/gltf_state.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_import_blend_runner.h"
@@ -99,10 +100,6 @@ static void _editor_init() {
 		Ref<EditorSceneFormatImporterFBX> importer;
 		importer.instantiate();
 		ResourceImporterScene::add_scene_importer(importer);
-
-		Ref<EditorFileSystemImportFormatSupportQueryFBX> fbx_import_query;
-		fbx_import_query.instantiate();
-		EditorFileSystem::get_singleton()->add_import_format_support_query(fbx_import_query);
 	}
 }
 #endif // TOOLS_ENABLED

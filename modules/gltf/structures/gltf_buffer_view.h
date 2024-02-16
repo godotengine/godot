@@ -31,12 +31,13 @@
 #ifndef GLTF_BUFFER_VIEW_H
 #define GLTF_BUFFER_VIEW_H
 
-#include "../gltf_defines.h"
+#include "modules/gltf/gltf_defines.h"
 
 #include "core/io/resource.h"
 
 class GLTFBufferView : public Resource {
 	GDCLASS(GLTFBufferView, Resource);
+	friend class ModelDocument3D;
 	friend class GLTFDocument;
 
 private:

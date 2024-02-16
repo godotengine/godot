@@ -31,13 +31,14 @@
 #ifndef GLTF_ACCESSOR_H
 #define GLTF_ACCESSOR_H
 
-#include "../gltf_defines.h"
-
 #include "core/io/resource.h"
+
+#include "modules/gltf/gltf_defines.h"
 
 struct GLTFAccessor : public Resource {
 	GDCLASS(GLTFAccessor, Resource);
 	friend class GLTFDocument;
+	friend class ModelDocument3D;
 
 private:
 	GLTFBufferViewIndex buffer_view = -1;

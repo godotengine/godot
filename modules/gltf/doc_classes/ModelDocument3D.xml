@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ModelDocument3D" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="append_data_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="bytes" type="PackedByteArray" />
+			<param index="1" name="base_path" type="String" />
+			<param index="2" name="state" type="ModelState3D" />
+			<param index="3" name="flags" type="int" default="0" />
+			<description>
+				Takes a [PackedByteArray] defining a model and imports the data to the given [ModelState3D] object through the [param state] parameter.
+				[b]Note:[/b] The [param base_path] tells [method append_data_from_buffer] where to find dependencies and can be empty.
+			</description>
+		</method>
+		<method name="append_data_from_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="state" type="ModelState3D" />
+			<param index="2" name="flags" type="int" default="0" />
+			<param index="3" name="base_path" type="String" default="&quot;&quot;" />
+			<description>
+				Takes a path to a model file and imports the data at that file path to the given [ModelState3D] object through the [param state] parameter.
+				[b]Note:[/b] The [param base_path] tells [method append_data_from_file] where to find dependencies and can be empty.
+			</description>
+		</method>
+		<method name="append_data_from_scene">
+			<return type="int" enum="Error" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="state" type="ModelState3D" />
+			<param index="2" name="flags" type="int" default="0" />
+			<description>
+				Takes a Godot Engine scene node and exports it and its descendants to the given [ModelState3D] object through the [param state] parameter.
+			</description>
+		</method>
+		<method name="generate_buffer_from_data">
+			<return type="PackedByteArray" />
+			<param index="0" name="state" type="ModelState3D" />
+			<description>
+				Takes a [ModelState3D] object through the [param state] parameter and returns a model [PackedByteArray].
+			</description>
+		</method>
+		<method name="generate_scene_from_data">
+			<return type="Node" />
+			<param index="0" name="state" type="ModelState3D" />
+			<param index="1" name="bake_fps" type="float" default="30" />
+			<param index="2" name="trimming" type="bool" default="false" />
+			<param index="3" name="remove_immutable_tracks" type="bool" default="true" />
+			<description>
+				Takes a [ModelState3D] object through the [param state] parameter and returns a Godot Engine scene node.
+			</description>
+		</method>
+		<method name="write_to_filesystem_from_data">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="ModelState3D" />
+			<param index="1" name="path" type="String" />
+			<description>
+				Takes a [ModelState3D] object through the [param state] parameter and writes a model file to the filesystem.
+			</description>
+		</method>
+	</methods>
+</class>
