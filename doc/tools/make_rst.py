@@ -1098,7 +1098,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             if signal.description is not None and signal.description.strip() != "":
                 f.write(f"{format_text_block(signal.description.strip(), signal, state)}\n\n")
-            else:
+            elif signal.deprecated is None and signal.experimental is None:
                 f.write(".. container:: contribute\n\n\t")
                 f.write(
                     translate(
@@ -1145,7 +1145,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if value.text is not None and value.text.strip() != "":
                     f.write(f"{format_text_block(value.text.strip(), value, state)}")
-                else:
+                elif value.deprecated is None and value.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
@@ -1178,7 +1178,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             if constant.text is not None and constant.text.strip() != "":
                 f.write(f"{format_text_block(constant.text.strip(), constant, state)}")
-            else:
+            elif constant.deprecated is None and constant.experimental is None:
                 f.write(".. container:: contribute\n\n\t")
                 f.write(
                     translate(
@@ -1274,7 +1274,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             if property_def.text is not None and property_def.text.strip() != "":
                 f.write(f"{format_text_block(property_def.text.strip(), property_def, state)}\n\n")
-            else:
+            elif property_def.deprecated is None and property_def.experimental is None:
                 f.write(".. container:: contribute\n\n\t")
                 f.write(
                     translate(
@@ -1314,7 +1314,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
-                else:
+                elif m.deprecated is None and m.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
@@ -1357,7 +1357,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
-                else:
+                elif m.deprecated is None and m.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
@@ -1399,7 +1399,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if m.description is not None and m.description.strip() != "":
                     f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
-                else:
+                elif m.deprecated is None and m.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
@@ -1438,7 +1438,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             if theme_item_def.text is not None and theme_item_def.text.strip() != "":
                 f.write(f"{format_text_block(theme_item_def.text.strip(), theme_item_def, state)}\n\n")
-            else:
+            elif theme_item_def.deprecated is None and theme_item_def.experimental is None:
                 f.write(".. container:: contribute\n\n\t")
                 f.write(
                     translate(
