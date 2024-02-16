@@ -180,6 +180,8 @@ public:
 	bool get_one_shot() const;
 	bool is_editing() const;
 
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
 	void init(const ConnectionData &p_cd, const PackedStringArray &p_signal_args, bool p_edit = false);
 
 	void popup_dialog(const String p_for_signal);

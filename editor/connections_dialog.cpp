@@ -591,6 +591,18 @@ bool ConnectDialog::is_editing() const {
 	return edit_mode;
 }
 
+void ConnectDialog::shortcut_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> &key = p_event;
+
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			filter_nodes->grab_focus();
+			filter_nodes->select_all();
+			filter_nodes->accept_event();
+		}
+	}
+}
+
 /*
  * Initialize ConnectDialog and populate fields with expected data.
  * If creating a connection from scratch, sensible defaults are used.
@@ -1554,6 +1566,7 @@ ConnectionsDock::ConnectionsDock() {
 
 	connect_dialog = memnew(ConnectDialog);
 	connect_dialog->connect("connected", callable_mp(NodeDock::get_singleton(), &NodeDock::restore_last_valid_node), CONNECT_DEFERRED);
+	connect_dialog->set_process_shortcut_input(true);
 	add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);
