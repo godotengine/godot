@@ -1089,6 +1089,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 		render_data.voxel_gi_instances = &empty;
+		render_data.lightmaps = &empty;
 	}
 
 	Color clear_color;
