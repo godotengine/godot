@@ -476,6 +476,7 @@ void EditorResourcePreview::start() {
 	} else {
 		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 		ERR_FAIL_NULL_MSG(st, "Editor's MainLoop is not a SceneTree. This is a bug.");
+		st->add_idle_callback(&_idle_callback);
 	}
 }
 
