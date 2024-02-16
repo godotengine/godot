@@ -197,6 +197,7 @@ public:
 	Ref<PropertyTweener> as_relative();
 	Ref<PropertyTweener> set_trans(Tween::TransitionType p_trans);
 	Ref<PropertyTweener> set_ease(Tween::EaseType p_ease);
+	Ref<PropertyTweener> set_custom_interpolator(const Callable &p_method);
 	Ref<PropertyTweener> set_delay(double p_delay);
 
 	void set_tween(const Ref<Tween> &p_tween) override;
@@ -222,6 +223,7 @@ private:
 	double duration = 0;
 	Tween::TransitionType trans_type = Tween::TRANS_MAX; // This is set inside set_tween();
 	Tween::EaseType ease_type = Tween::EASE_MAX;
+	Callable custom_method;
 
 	double delay = 0;
 	bool do_continue = true;
