@@ -1955,48 +1955,44 @@ RDD::CommandQueueID RenderingDeviceDriverD3D12::command_queue_create(CommandQueu
 	return CommandQueueID(command_queue);
 }
 
-Error RenderingDeviceDriverD3D12::command_queue_execute(CommandQueueID p_cmd_queue, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_wait_semaphores, VectorView<SemaphoreID> p_signal_semaphores, FenceID p_signal_fence) {
+Error RenderingDeviceDriverD3D12::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
 	CommandQueueInfo *command_queue = (CommandQueueInfo *)(p_cmd_queue.id);
 	for (uint32_t i = 0; i < p_wait_semaphores.size(); i++) {
 		const SemaphoreInfo *semaphore = (const SemaphoreInfo *)(p_wait_semaphores[i].id);
 		command_queue->d3d_queue->Wait(semaphore->d3d_fence.Get(), semaphore->fence_value);
 	}
 
-	thread_local LocalVector<ID3D12CommandList *> command_lists;
-	command_lists.resize(p_cmd_buffers.size());
-	for (uint32_t i = 0; i < p_cmd_buffers.size(); i++) {
-		const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)(p_cmd_buffers[i].id);
-		command_lists[i] = cmd_buf_info->cmd_list.Get();
+	if (p_cmd_buffers.size() > 0) {
+		thread_local LocalVector<ID3D12CommandList *> command_lists;
+		command_lists.resize(p_cmd_buffers.size());
+		for (uint32_t i = 0; i < p_cmd_buffers.size(); i++) {
+			const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)(p_cmd_buffers[i].id);
+			command_lists[i] = cmd_buf_info->cmd_list.Get();
+		}
+
+		command_queue->d3d_queue->ExecuteCommandLists(command_lists.size(), command_lists.ptr());
+
+		for (uint32_t i = 0; i < p_cmd_semaphores.size(); i++) {
+			SemaphoreInfo *semaphore = (SemaphoreInfo *)(p_cmd_semaphores[i].id);
+			semaphore->fence_value++;
+			command_queue->d3d_queue->Signal(semaphore->d3d_fence.Get(), semaphore->fence_value);
+		}
+
+		if (p_cmd_fence) {
+			FenceInfo *fence = (FenceInfo *)(p_cmd_fence.id);
+			fence->fence_value++;
+			command_queue->d3d_queue->Signal(fence->d3d_fence.Get(), fence->fence_value);
+			fence->d3d_fence->SetEventOnCompletion(fence->fence_value, fence->event_handle);
+		}
 	}
 
-	command_queue->d3d_queue->ExecuteCommandLists(command_lists.size(), command_lists.ptr());
-
-	for (uint32_t i = 0; i < p_signal_semaphores.size(); i++) {
-		SemaphoreInfo *semaphore = (SemaphoreInfo *)(p_signal_semaphores[i].id);
-		semaphore->fence_value++;
-		command_queue->d3d_queue->Signal(semaphore->d3d_fence.Get(), semaphore->fence_value);
-	}
-
-	if (p_signal_fence) {
-		FenceInfo *fence = (FenceInfo *)(p_signal_fence.id);
-		fence->fence_value++;
-		command_queue->d3d_queue->Signal(fence->d3d_fence.Get(), fence->fence_value);
-		fence->d3d_fence->SetEventOnCompletion(fence->fence_value, fence->event_handle);
-	}
-
-	return OK;
-}
-
-Error RenderingDeviceDriverD3D12::command_queue_present(CommandQueueID p_cmd_queue, VectorView<SwapChainID> p_swap_chains, VectorView<SemaphoreID> p_wait_semaphores) {
-	// D3D12 does not require waiting for the command queue's semaphores to handle presentation.
-	// We just present the swap chains that were specified and ignore the command queue and the semaphores.
 	HRESULT res;
 	bool any_present_failed = false;
 	for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
 		SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
 		res = swap_chain->d3d_swap_chain->Present(swap_chain->sync_interval, swap_chain->present_flags);
 		if (!SUCCEEDED(res)) {
-			print_verbose("D3D12: Presenting swapchain failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+			print_verbose(vformat("D3D12: Presenting swapchain failed with error 0x%08ux.", (uint64_t)res));
 			any_present_failed = true;
 		}
 	}
