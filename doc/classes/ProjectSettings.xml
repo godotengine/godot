@@ -238,6 +238,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="animation/warnings/check_angle_interpolation_type_conflicting" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [AnimationMixer] prints the warning of interpolation being forced to choose the shortest rotation path due to multiple angle interpolation types being mixed in the [AnimationMixer] cache.
+		</member>
+		<member name="animation/warnings/check_invalid_track_paths" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [AnimationMixer] prints the warning of no matching object of the track path in the scene.
+		</member>
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color(0.14, 0.14, 0.14, 1)">
 			Background color for the boot splash.
 		</member>

@@ -77,10 +77,10 @@ void AnimationTrackKeyEdit::_fix_node_path(Variant &value) {
 
 	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 
-	Node *np_node = root->get_node(np);
+	Node *np_node = root->get_node_or_null(np);
 	ERR_FAIL_NULL(np_node);
 
-	Node *edited_node = root->get_node(base);
+	Node *edited_node = root->get_node_or_null(base);
 	ERR_FAIL_NULL(edited_node);
 
 	value = edited_node->get_path_to(np_node);
@@ -601,8 +601,8 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 		case Animation::TYPE_ANIMATION: {
 			String animations;
 
-			if (root_path && root_path->has_node(animation->track_get_path(track))) {
-				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node(animation->track_get_path(track)));
+			if (root_path) {
+				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(track)));
 				if (ap) {
 					List<StringName> anims;
 					ap->get_animation_list(&anims);
@@ -663,10 +663,10 @@ void AnimationMultiTrackKeyEdit::_fix_node_path(Variant &value, NodePath &base) 
 
 	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 
-	Node *np_node = root->get_node(np);
+	Node *np_node = root->get_node_or_null(np);
 	ERR_FAIL_NULL(np_node);
 
-	Node *edited_node = root->get_node(base);
+	Node *edited_node = root->get_node_or_null(base);
 	ERR_FAIL_NULL(edited_node);
 
 	value = edited_node->get_path_to(np_node);
@@ -1207,8 +1207,8 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 
 				String animations;
 
-				if (root_path && root_path->has_node(animation->track_get_path(first_track))) {
-					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node(animation->track_get_path(first_track)));
+				if (root_path) {
+					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node_or_null(animation->track_get_path(first_track)));
 					if (ap) {
 						List<StringName> anims;
 						ap->get_animation_list(&anims);
@@ -1940,8 +1940,8 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				NodePath anim_path = animation->track_get_path(track);
 				Node *node = nullptr;
-				if (root && root->has_node(anim_path)) {
-					node = root->get_node(anim_path);
+				if (root) {
+					node = root->get_node_or_null(anim_path);
 				}
 
 				String text;
@@ -2481,10 +2481,9 @@ void AnimationTrackEdit::_path_submitted(const String &p_text) {
 }
 
 bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const {
-	if (root == nullptr) {
+	if (root == nullptr || !root->has_node_and_resource(animation->track_get_path(track))) {
 		return false;
 	}
-
 	Ref<Resource> res;
 	Vector<StringName> leftover_path;
 	Node *node = root->get_node_and_resource(animation->track_get_path(track), res, leftover_path);
@@ -2774,11 +2773,11 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					AnimationPlayer *ap = ape->get_player();
 					if (ap) {
 						NodePath npath = animation->track_get_path(track);
-						Node *a_ap_root_node = ap->get_node(ap->get_root_node());
+						Node *a_ap_root_node = ap->get_node_or_null(ap->get_root_node());
 						Node *nd = nullptr;
 						// We must test that we have a valid a_ap_root_node before trying to access its content to init the nd Node.
 						if (a_ap_root_node) {
-							nd = a_ap_root_node->get_node(NodePath(npath.get_concatenated_names()));
+							nd = a_ap_root_node->get_node_or_null(NodePath(npath.get_concatenated_names()));
 						}
 						if (nd) {
 							StringName prop = npath.get_concatenated_subnames();
@@ -3310,8 +3309,8 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			int separation = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
-			if (root && root->has_node(node)) {
-				Node *n = root->get_node(node);
+			if (root) {
+				Node *n = root->get_node_or_null(node);
 				if (n && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
 					color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 				}
@@ -3353,7 +3352,10 @@ void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
 		if (node_name_rect.has_point(pos)) {
 			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 			editor_selection->clear();
-			editor_selection->add_node(root->get_node(node));
+			Node *n = root->get_node_or_null(node);
+			if (n) {
+				editor_selection->add_node(n);
+			}
 		}
 	}
 }
@@ -4474,8 +4476,8 @@ void AnimationTrackEditor::_update_tracks() {
 		if (use_filter) {
 			NodePath path = animation->track_get_path(i);
 
-			if (root && root->has_node(path)) {
-				Node *node = root->get_node(path);
+			if (root) {
+				Node *node = root->get_node_or_null(path);
 				if (!node) {
 					continue; // No node, no filter.
 				}
@@ -4527,8 +4529,8 @@ void AnimationTrackEditor::_update_tracks() {
 			NodePath path = animation->track_get_path(i);
 
 			Node *node = nullptr;
-			if (root && root->has_node(path)) {
-				node = root->get_node(path);
+			if (root) {
+				node = root->get_node_or_null(path);
 			}
 
 			if (node && Object::cast_to<AnimationPlayer>(node)) {
@@ -4557,8 +4559,8 @@ void AnimationTrackEditor::_update_tracks() {
 				Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Node"));
 				String name = base_path;
 				String tooltip;
-				if (root && root->has_node(base_path)) {
-					Node *n = root->get_node(base_path);
+				if (root) {
+					Node *n = root->get_node_or_null(base_path);
 					if (n) {
 						icon = EditorNode::get_singleton()->get_object_icon(n, "Node");
 						name = n->get_name();
@@ -4808,7 +4810,7 @@ void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
 
 void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	ERR_FAIL_NULL(root);
-	Node *node = get_node(p_path);
+	Node *node = get_node_or_null(p_path);
 	ERR_FAIL_NULL(node);
 	NodePath path_to = root->get_path_to(node, true);
 
@@ -5129,7 +5131,8 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 				EditorNode::get_singleton()->show_warning(TTR("Track path is invalid, so can't add a method key."));
 				return;
 			}
-			Node *base = root->get_node(animation->track_get_path(p_track));
+			Node *base = root->get_node_or_null(animation->track_get_path(p_track));
+			ERR_FAIL_NULL(base);
 
 			method_selector->select_method_from_instance(base);
 
@@ -5182,7 +5185,8 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 		EditorNode::get_singleton()->show_warning(TTR("Track path is invalid, so can't add a method key."));
 		return;
 	}
-	Node *base = root->get_node(animation->track_get_path(insert_key_from_track_call_track));
+	Node *base = root->get_node_or_null(animation->track_get_path(insert_key_from_track_call_track));
+	ERR_FAIL_NULL(base);
 
 	List<MethodInfo> minfo;
 	base->get_method_list(&minfo);
@@ -5963,8 +5967,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				NodePath path = animation->track_get_path(i);
 				Node *node = nullptr;
 
-				if (root && root->has_node(path)) {
-					node = root->get_node(path);
+				if (root) {
+					node = root->get_node_or_null(path);
 				}
 
 				String text;
@@ -6085,7 +6089,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 				if (root) {
 					NodePath np = track_clipboard[i].full_path;
-					exists = root->get_node(np);
+					exists = root->get_node_or_null(np);
 					if (exists) {
 						path = NodePath(root->get_path_to(exists).get_names(), track_clipboard[i].full_path.get_subnames(), false);
 					}
@@ -6587,14 +6591,16 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 	for (int i = 0; i < p_animation->get_track_count(); i++) {
+		if (!root->has_node_and_resource(p_animation->track_get_path(i))) {
+			continue;
+		}
+		Ref<Resource> res;
+		Vector<StringName> leftover_path;
+		Node *node = root->get_node_and_resource(p_animation->track_get_path(i), res, leftover_path);
+
 		bool prop_exists = false;
 		Variant::Type valid_type = Variant::NIL;
 		Object *obj = nullptr;
-
-		Ref<Resource> res;
-		Vector<StringName> leftover_path;
-
-		Node *node = root->get_node_and_resource(p_animation->track_get_path(i), res, leftover_path);
 
 		if (res.is_valid()) {
 			obj = res.ptr();
@@ -6772,9 +6778,9 @@ void AnimationTrackEditor::_pick_track_select_recursive(TreeItem *p_item, const 
 	}
 
 	NodePath np = p_item->get_metadata(0);
-	Node *node = get_node(np);
+	Node *node = get_node_or_null(np);
 
-	if (!p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
+	if (node && !p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
 		p_select_candidates.push_back(node);
 	}
 
