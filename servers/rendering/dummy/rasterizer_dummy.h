@@ -103,7 +103,7 @@ public:
 
 	static void make_current() {
 		_create_func = _create_current;
-		low_end = true;
+		low_end = false;
 	}
 
 	uint64_t get_frame_number() const override { return frame; }
