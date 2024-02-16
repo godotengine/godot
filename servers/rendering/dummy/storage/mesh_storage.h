@@ -153,6 +153,9 @@ public:
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) override {}
 	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) override {}
 
+	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) override {}
+	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const override { return AABB(); }
+
 	virtual RID multimesh_get_mesh(RID p_multimesh) const override { return RID(); }
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const override { return AABB(); }
 
