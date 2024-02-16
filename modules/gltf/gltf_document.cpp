@@ -811,7 +811,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 
 				ERR_FAIL_COND_V(!buffer.has("byteLength"), ERR_PARSE_ERROR);
 				int byteLength = buffer["byteLength"];
-				ERR_FAIL_COND_V(byteLength < buffer_data.size(), ERR_PARSE_ERROR);
+				ERR_FAIL_COND_V_MSG(buffer_data.size() < byteLength, ERR_PARSE_ERROR, "glTF: Buffer data smaller than expected: " + uri);
 				p_state->buffers.push_back(buffer_data);
 			}
 		}
