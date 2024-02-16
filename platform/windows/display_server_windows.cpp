@@ -759,24 +759,49 @@ Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 
 			if (ptr != NULL) {
 				BITMAPINFOHEADER *info = &ptr->bmiHeader;
-				PackedByteArray pba;
+				void *dib_bits = (void *)(ptr->bmiColors);
 
-				for (LONG y = info->biHeight - 1; y > -1; y--) {
-					for (LONG x = 0; x < info->biWidth; x++) {
-						tagRGBQUAD *rgbquad = ptr->bmiColors + (info->biWidth * y) + x;
-						pba.append(rgbquad->rgbRed);
-						pba.append(rgbquad->rgbGreen);
-						pba.append(rgbquad->rgbBlue);
-						pba.append(rgbquad->rgbReserved);
+				// Draw DIB image to temporary DC surface and read it back as BGRA8.
+				HDC dc = GetDC(0);
+				if (dc) {
+					HDC hdc = CreateCompatibleDC(dc);
+					if (hdc) {
+						HBITMAP hbm = CreateCompatibleBitmap(dc, info->biWidth, abs(info->biHeight));
+						if (hbm) {
+							SelectObject(hdc, hbm);
+							SetDIBitsToDevice(hdc, 0, 0, info->biWidth, abs(info->biHeight), 0, 0, 0, abs(info->biHeight), dib_bits, ptr, DIB_RGB_COLORS);
+
+							BITMAPINFO bmp_info = {};
+							bmp_info.bmiHeader.biSize = sizeof(bmp_info.bmiHeader);
+							bmp_info.bmiHeader.biWidth = info->biWidth;
+							bmp_info.bmiHeader.biHeight = -abs(info->biHeight);
+							bmp_info.bmiHeader.biPlanes = 1;
+							bmp_info.bmiHeader.biBitCount = 32;
+							bmp_info.bmiHeader.biCompression = BI_RGB;
+
+							Vector<uint8_t> img_data;
+							img_data.resize(info->biWidth * abs(info->biHeight) * 4);
+							GetDIBits(hdc, hbm, 0, abs(info->biHeight), img_data.ptrw(), &bmp_info, DIB_RGB_COLORS);
+
+							uint8_t *wr = (uint8_t *)img_data.ptrw();
+							for (int i = 0; i < info->biWidth * abs(info->biHeight); i++) {
+								SWAP(wr[i * 4 + 0], wr[i * 4 + 2]); // Swap B and R.
+								if (info->biBitCount != 32) {
+									wr[i * 4 + 3] = 255; // Set A to solid if it's not in the source image.
+								}
+							}
+							image = Image::create_from_data(info->biWidth, abs(info->biHeight), false, Image::Format::FORMAT_RGBA8, img_data);
+
+							DeleteObject(hbm);
+						}
+						DeleteDC(hdc);
 					}
+					ReleaseDC(NULL, dc);
 				}
-				image = Image::create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
-
 				GlobalUnlock(mem);
 			}
 		}
 	}
-
 	CloseClipboard();
 
 	return image;
@@ -1153,7 +1178,7 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 
 				uint8_t *wr = (uint8_t *)img_data.ptrw();
 				for (int i = 0; i < width * height; i++) {
-					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]);
+					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]); // Swap B and R.
 				}
 				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
 
