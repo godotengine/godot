@@ -33,6 +33,7 @@
 
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
+#include "core/templates/self_list.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -215,7 +216,6 @@ private:
 		struct States {
 			// As many subresources as mipmaps * layers; planes (for depth-stencil) are tracked together.
 			TightLocalVector<D3D12_RESOURCE_STATES> subresource_states; // Used only if not a view.
-			uint32_t last_batch_transitioned_to_uav = 0;
 			uint32_t last_batch_with_uav_barrier = 0;
 		};
 
@@ -307,7 +307,9 @@ private:
 		} aliasing_hack = {}; // [[CROSS_FAMILY_ALIASING]]
 
 		UINT mapped_subresource = UINT_MAX;
+		SelfList<TextureInfo> pending_clear{ this };
 	};
+	SelfList<TextureInfo>::List textures_pending_clear;
 
 	HashMap<DXGI_FORMAT, uint32_t> format_sample_counts_mask_cache;
 
@@ -514,6 +516,7 @@ private:
 	};
 
 	D3D12_RENDER_TARGET_VIEW_DESC _make_rtv_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
+	D3D12_UNORDERED_ACCESS_VIEW_DESC _make_ranged_uav_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
 	D3D12_DEPTH_STENCIL_VIEW_DESC _make_dsv_for_texture(const TextureInfo *p_texture_info);
 
 	FramebufferID _framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height, bool p_is_screen);
@@ -759,6 +762,7 @@ public:
 	virtual void command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) override final;
 	virtual void command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) override final;
 
+public:
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) override final;
 	virtual void command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) override final;
 
