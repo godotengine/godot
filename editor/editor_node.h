@@ -80,6 +80,7 @@ class EditorBuildProfileManager;
 class EditorCommandPalette;
 class EditorDockManager;
 class EditorExport;
+class EditorExportPreset;
 class EditorExtensionManager;
 class EditorFeatureProfileManager;
 class EditorFileDialog;
@@ -382,6 +383,9 @@ private:
 	ConfirmationDialog *gradle_build_manage_templates = nullptr;
 	ConfirmationDialog *install_android_build_template = nullptr;
 	ConfirmationDialog *remove_android_build_template = nullptr;
+	Label *install_android_build_template_message = nullptr;
+	OptionButton *choose_android_export_profile = nullptr;
+	Ref<EditorExportPreset> android_export_preset;
 
 	PopupMenu *vcs_actions_menu = nullptr;
 	EditorFileDialog *file = nullptr;
@@ -528,6 +532,7 @@ private:
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _android_build_source_selected(const String &p_file);
+	void _android_export_preset_selected(int p_index);
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
