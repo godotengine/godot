@@ -42,6 +42,10 @@
 		<member name="custom_template/release" type="String" setter="" getter="">
 			Path to the custom export template. If left empty, default template is used.
 		</member>
+		<member name="gradle_build/compress_native_libraries" type="bool" setter="" getter="">
+			If [code]true[/code], native libraries are compressed when performing a Gradle build.
+			[b]Note:[/b] Although your binary may be smaller, your application may load slower because the native libraries are not loaded directly from the binary at runtime.
+		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Export format for Gradle build.
 		</member>
