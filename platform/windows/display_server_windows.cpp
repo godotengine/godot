@@ -3543,6 +3543,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					if (!engine->is_project_manager_hint() && !engine->is_editor_hint() && !GLOBAL_GET("application/run/enable_alt_space_menu") && ((lParam >> 16) <= 0)) {
 						return 0;
 					}
+					if (!alt_mem || !(GetAsyncKeyState(VK_SPACE) & (1 << 15))) {
+						return 0;
+					}
+					SendMessage(windows[window_id].hWnd, WM_SYSKEYUP, VK_SPACE, 0);
+					SendMessage(windows[window_id].hWnd, WM_SYSKEYUP, VK_MENU, 0);
 			}
 		} break;
 		case WM_INDICATOR_CALLBACK_MESSAGE: {
