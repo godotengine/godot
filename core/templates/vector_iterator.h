@@ -98,6 +98,7 @@ template <class T>
 struct VectorIterator : ConstVectorIterator<T> {
 	using _base = ConstVectorIterator<T>;
 	using _base::_base;
+	using _base::elem_ptr;
 
 	using value_type = T;
 	using difference_type = ptrdiff_t;
