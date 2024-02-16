@@ -240,6 +240,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		name->set_text("");
 		name->set_editable(false);
 		export_path->hide();
+		advanced_options->set_disabled(true);
 		runnable->set_disabled(true);
 		parameters->edit(nullptr);
 		presets->deselect_all();
@@ -274,6 +275,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	export_path->setup(extension_vector, false, true);
 	export_path->update_property();
+	advanced_options->set_disabled(false);
+	advanced_options->set_pressed(current->are_advanced_options_enabled());
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
 	if (parameters->get_edited_object() != current.ptr()) {
@@ -447,6 +450,18 @@ void ProjectExportDialog::_tab_changed(int) {
 
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
 	_update_current_preset();
+}
+
+void ProjectExportDialog::_advanced_options_pressed() {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_advanced_options_enabled(advanced_options->is_pressed());
+	_update_presets();
 }
 
 void ProjectExportDialog::_runnable_pressed() {
@@ -637,6 +652,7 @@ void ProjectExportDialog::_duplicate_preset() {
 	if (make_runnable) {
 		preset->set_runnable(make_runnable);
 	}
+	preset->set_advanced_options_enabled(current->are_advanced_options_enabled());
 	preset->set_dedicated_server(current->is_dedicated_server());
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
@@ -1236,11 +1252,22 @@ ProjectExportDialog::ProjectExportDialog() {
 	name = memnew(LineEdit);
 	settings_vb->add_margin_child(TTR("Name:"), name);
 	name->connect("text_changed", callable_mp(this, &ProjectExportDialog::_name_changed));
+
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
 	runnable->set_tooltip_text(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
 	runnable->connect("pressed", callable_mp(this, &ProjectExportDialog::_runnable_pressed));
-	settings_vb->add_child(runnable);
+
+	advanced_options = memnew(CheckButton);
+	advanced_options->set_text(TTR("Advanced Options"));
+	advanced_options->set_tooltip_text(TTR("If checked, the advanced options will be shown."));
+	advanced_options->connect("pressed", callable_mp(this, &ProjectExportDialog::_advanced_options_pressed));
+
+	HBoxContainer *preset_configs_container = memnew(HBoxContainer);
+	preset_configs_container->add_spacer(true);
+	preset_configs_container->add_child(advanced_options);
+	preset_configs_container->add_child(runnable);
+	settings_vb->add_child(preset_configs_container);
 
 	export_path = memnew(EditorPropertyPath);
 	settings_vb->add_child(export_path);
@@ -1413,6 +1440,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Disable by default.
 	name->set_editable(false);
 	export_path->hide();
+	advanced_options->set_disabled(true);
 	runnable->set_disabled(true);
 	duplicate_preset->set_disabled(true);
 	delete_preset->set_disabled(true);
