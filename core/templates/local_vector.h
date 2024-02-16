@@ -139,7 +139,7 @@ public:
 	_FORCE_INLINE_ U get_capacity() const { return capacity; }
 	_FORCE_INLINE_ void reserve(U p_size) {
 		if constexpr (!tight) {
-			p_size = nearest_power_of_2_templated(p_size);	
+			p_size = nearest_power_of_2_templated(p_size);
 		}
 		if (p_size > capacity) {
 			realloc_more(p_size);
