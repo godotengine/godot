@@ -3510,6 +3510,18 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(VulkanContext *p_contex
 	header->driver_abi = sizeof(void *);
 
 	limits = context->get_device_limits();
+	// <TF>
+	// @ShadyTF
+	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
+	// Which eventually run out of memory. in such case we should not be using linear allocated pools
+	// Bug introduced in driver 512.597.0 and fixed in 512.671.0
+	// Confirmed by Qualcomm
+	if (linear_descriptor_pools_enabled) {
+		const uint32_t reset_descriptor_pool_broken_driver_begin = VK_MAKE_VERSION( 512u, 597u, 0u );
+		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION( 512u, 671u, 0u );
+		linear_descriptor_pools_enabled = props.driverVersion < reset_descriptor_pool_broken_driver_begin || props.driverVersion > reset_descriptor_pool_fixed_driver_begin;
+	}
+	// </TF>
 }
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
