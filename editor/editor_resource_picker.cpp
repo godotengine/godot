@@ -194,7 +194,7 @@ void EditorResourcePicker::_update_menu_items() {
 		set_create_options(edit_menu);
 
 		// Add an option to load a resource from a file using the QuickOpen dialog.
-		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load"), OBJ_MENU_QUICKLOAD);
+		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Search")), TTR("Search"), OBJ_MENU_QUICKLOAD);
 
 		// Add an option to load a resource from a file using the regular file dialog.
 		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load"), OBJ_MENU_LOAD);
