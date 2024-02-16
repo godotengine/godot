@@ -1430,7 +1430,13 @@ void RenderingDeviceGraph::add_compute_list_usage(ResourceTracker *p_tracker, Re
 		compute_instruction_list.command_trackers.push_back(p_tracker);
 		compute_instruction_list.command_tracker_usages.push_back(p_usage);
 		p_tracker->compute_list_index = compute_instruction_list.index;
+		p_tracker->compute_list_usage = p_usage;
 	}
+#ifdef DEV_ENABLED
+	else if (p_tracker->compute_list_usage != p_usage) {
+		ERR_FAIL_MSG(vformat("Tracker can't have more than one type of usage in the same compute list. Compute list usage is %d and the requested usage is %d.", p_tracker->compute_list_usage, p_usage));
+	}
+#endif
 }
 
 void RenderingDeviceGraph::add_compute_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages) {
@@ -1614,7 +1620,13 @@ void RenderingDeviceGraph::add_draw_list_usage(ResourceTracker *p_tracker, Resou
 		draw_instruction_list.command_trackers.push_back(p_tracker);
 		draw_instruction_list.command_tracker_usages.push_back(p_usage);
 		p_tracker->draw_list_index = draw_instruction_list.index;
+		p_tracker->draw_list_usage = p_usage;
 	}
+#ifdef DEV_ENABLED
+	else if (p_tracker->draw_list_usage != p_usage) {
+		ERR_FAIL_MSG(vformat("Tracker can't have more than one type of usage in the same draw list. Draw list usage is %d and the requested usage is %d.", p_tracker->draw_list_usage, p_usage));
+	}
+#endif
 }
 
 void RenderingDeviceGraph::add_draw_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages) {
