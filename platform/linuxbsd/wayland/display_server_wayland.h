@@ -117,7 +117,7 @@ class DisplayServerWayland : public DisplayServer {
 
 	Context context;
 
-	bool frame = false;
+	bool suspended = false;
 	bool emulate_vsync = false;
 
 	String rendering_driver;

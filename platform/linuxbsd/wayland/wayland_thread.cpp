@@ -469,7 +469,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	}
 
 	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		registry->xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, MAX(2, MIN(5, (int)version)));
+		registry->xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, MAX(2, MIN(6, (int)version)));
 		registry->xdg_wm_base_name = name;
 
 		xdg_wm_base_add_listener(registry->xdg_wm_base, &xdg_wm_base_listener, nullptr);
@@ -1063,9 +1063,10 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	// Expect the window to be in windowed mode. The mode will get overridden if
-	// the compositor reports otherwise.
+	// Expect the window to be in a plain state. It will get properly set if the
+	// compositor reports otherwise below.
 	ws->mode = DisplayServer::WINDOW_MODE_WINDOWED;
+	ws->suspended = false;
 
 	uint32_t *state = nullptr;
 	wl_array_for_each(state, states) {
@@ -1076,6 +1077,10 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 
 			case XDG_TOPLEVEL_STATE_FULLSCREEN: {
 				ws->mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_SUSPENDED: {
+				ws->suspended = true;
 			} break;
 
 			default: {
@@ -1176,9 +1181,10 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 
 	libdecor_window_state window_state = LIBDECOR_WINDOW_STATE_NONE;
 
-	// Expect the window to be in windowed mode. The mode will get overridden if
-	// the compositor reports otherwise.
+	// Expect the window to be in a plain state. It will get properly set if the
+	// compositor reports otherwise below.
 	ws->mode = DisplayServer::WINDOW_MODE_WINDOWED;
+	ws->suspended = false;
 
 	if (libdecor_configuration_get_window_state(configuration, &window_state)) {
 		if (window_state & LIBDECOR_WINDOW_STATE_MAXIMIZED) {
@@ -1187,6 +1193,10 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 
 		if (window_state & LIBDECOR_WINDOW_STATE_FULLSCREEN) {
 			ws->mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_SUSPENDED) {
+			ws->suspended = true;
 		}
 	}
 
@@ -3870,6 +3880,102 @@ bool WaylandThread::get_reset_frame() {
 	frame = false;
 
 	return old_frame;
+}
+
+// Dispatches events until a frame event is received, a window is reported as
+// suspended or the timeout expires.
+bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
+	if (main_window.suspended) {
+		// The window is suspended! The compositor is telling us _explicitly_ that we
+		// don't need to draw, without letting us guess through the frame event's
+		// timing and stuff like that. Our job here is done.
+		return false;
+	}
+
+	if (frame) {
+		// We already have a frame! Probably it got there while the caller locked :D
+		frame = false;
+		return true;
+	}
+
+	struct pollfd poll_fd;
+	poll_fd.fd = wl_display_get_fd(wl_display);
+	poll_fd.events = POLLIN | POLLHUP;
+
+	int begin_ms = OS::get_singleton()->get_ticks_msec();
+	int remaining_ms = p_timeout;
+
+	while (remaining_ms > 0) {
+		// Empty the event queue while it's full.
+		while (wl_display_prepare_read(wl_display) != 0) {
+			if (wl_display_dispatch_pending(wl_display) == -1) {
+				// Oh no. We'll check and handle any display error below.
+				break;
+			}
+
+			if (main_window.suspended) {
+				return false;
+			}
+
+			if (frame) {
+				// We had a frame event in the queue :D
+				frame = false;
+				return true;
+			}
+		}
+
+		int werror = wl_display_get_error(wl_display);
+
+		if (werror) {
+			if (werror == EPROTO) {
+				struct wl_interface *wl_interface = nullptr;
+				uint32_t id = 0;
+
+				int error_code = wl_display_get_protocol_error(wl_display, (const struct wl_interface **)&wl_interface, &id);
+				CRASH_NOW_MSG(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
+			} else {
+				CRASH_NOW_MSG(vformat("Wayland client error code %d.", werror));
+			}
+		}
+
+		wl_display_flush(wl_display);
+
+		// Wait for the event file descriptor to have new data.
+		poll(&poll_fd, 1, remaining_ms);
+
+		if (poll_fd.revents | POLLIN) {
+			// Load the queues with fresh new data.
+			wl_display_read_events(wl_display);
+		} else {
+			// Oh well... Stop signaling that we want to read.
+			wl_display_cancel_read(wl_display);
+
+			// We've got no new events :(
+			// We won't even bother with checking the frame flag.
+			return false;
+		}
+
+		// Let's try dispatching now...
+		wl_display_dispatch_pending(wl_display);
+
+		if (main_window.suspended) {
+			return false;
+		}
+
+		if (frame) {
+			frame = false;
+			return true;
+		}
+
+		remaining_ms -= OS::get_singleton()->get_ticks_msec() - begin_ms;
+	}
+
+	DEBUG_LOG_WAYLAND_THREAD("Frame timeout.");
+	return false;
+}
+
+bool WaylandThread::is_suspended() const {
+	return main_window.suspended;
 }
 
 void WaylandThread::destroy() {

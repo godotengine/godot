@@ -177,6 +177,7 @@ public:
 
 		Rect2i rect;
 		DisplayServer::WindowMode mode = DisplayServer::WINDOW_MODE_WINDOWED;
+		bool suspended = false;
 
 		// These are true by default as it isn't guaranteed that we'll find an
 		// xdg-shell implementation with wm_capabilities available. If and once we
@@ -939,6 +940,9 @@ public:
 
 	void set_frame();
 	bool get_reset_frame();
+	bool wait_frame_suspend_ms(int p_timeout);
+
+	bool is_suspended() const;
 
 	Error init();
 	void destroy();
