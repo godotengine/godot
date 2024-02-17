@@ -200,8 +200,8 @@ void RemoteTransform2D::force_update_cache() {
 	_update_cache();
 }
 
-Array RemoteTransform2D::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray RemoteTransform2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node2D>(get_node(remote_node))) {
 		warnings.push_back(RTR("Path property must point to a valid Node2D node to work."));

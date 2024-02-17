@@ -190,8 +190,8 @@ AABB ReflectionProbe::get_aabb() const {
 	return aabb;
 }
 
-Array ReflectionProbe::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray ReflectionProbe::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("ReflectionProbes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));

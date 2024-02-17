@@ -401,14 +401,11 @@ Vector2 PointLight2D::get_texture_offset() const {
 	return texture_offset;
 }
 
-Array PointLight2D::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray PointLight2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!texture.is_valid()) {
-		Dictionary texture_warning;
-		texture_warning["message"] = RTR("A texture with the shape of the light must be supplied.");
-		texture_warning["property"] = "texture";
-		warnings.push_back(texture_warning);
+		warnings.push_back(RTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
 	}
 
 	return warnings;

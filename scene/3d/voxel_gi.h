@@ -163,7 +163,7 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	VoxelGI();
 	~VoxelGI();

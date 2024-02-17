@@ -928,10 +928,10 @@ void RigidBody2D::_notification(int p_what) {
 #endif
 }
 
-Array RigidBody2D::get_configuration_warnings() const {
+PackedStringArray RigidBody2D::get_configuration_warnings() const {
 	Transform2D t = get_transform();
 
-	Array warnings = CollisionObject2D::get_configuration_warnings();
+	PackedStringArray warnings = CollisionObject2D::get_configuration_warnings();
 
 	if (ABS(t.columns[0].length() - 1.0) > 0.05 || ABS(t.columns[1].length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));

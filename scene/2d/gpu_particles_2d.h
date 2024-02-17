@@ -161,7 +161,7 @@ public:
 	void set_amount_ratio(float p_ratio);
 	float get_amount_ratio() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;

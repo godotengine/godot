@@ -995,8 +995,8 @@ TypedArray<Node3D> RigidBody3D::get_colliding_bodies() const {
 	return ret;
 }
 
-Array RigidBody3D::get_configuration_warnings() const {
-	Array warnings = CollisionObject3D::get_configuration_warnings();
+PackedStringArray RigidBody3D::get_configuration_warnings() const {
+	PackedStringArray warnings = CollisionObject3D::get_configuration_warnings();
 
 	Vector3 scale = get_transform().get_basis().get_scale();
 	if (ABS(scale.x - 1.0) > 0.05 || ABS(scale.y - 1.0) > 0.05 || ABS(scale.z - 1.0) > 0.05) {
