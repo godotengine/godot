@@ -5907,7 +5907,7 @@ void AnimationTrackEditor::_edit_menu_about_to_popup() {
 
 	bool has_length = false;
 	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
-		if (animation->track_get_type(E.key.track) == Animation::TYPE_AUDIO) {
+		if (animation->track_get_type(E.key.track) == Animation::TYPE_AUDIO && animation->audio_track_get_key_stream(E.key.track, E.key.key).is_valid()) {
 			has_length = true;
 			break;
 		}
@@ -6247,6 +6247,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					continue;
 				}
 				Ref<AudioStream> stream = animation->audio_track_get_key_stream(E.key.track, E.key.key);
+				if (stream.is_null()) {
+					continue;
+				}
 				double len = stream->get_length() - animation->audio_track_get_key_end_offset(E.key.track, E.key.key);
 				real_t prev_offset = animation->audio_track_get_key_start_offset(E.key.track, E.key.key);
 				double prev_time = animation->track_get_key_time(E.key.track, E.key.key);
@@ -6273,6 +6276,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					continue;
 				}
 				Ref<AudioStream> stream = animation->audio_track_get_key_stream(E.key.track, E.key.key);
+				if (stream.is_null()) {
+					continue;
+				}
 				double len = stream->get_length() - animation->audio_track_get_key_start_offset(E.key.track, E.key.key);
 				real_t prev_offset = animation->audio_track_get_key_end_offset(E.key.track, E.key.key);
 				double prev_time = animation->track_get_key_time(E.key.track, E.key.key);
