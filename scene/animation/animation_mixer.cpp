@@ -1496,7 +1496,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 					} else {
 						if (seeked) {
-							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
 							if (idx < 0) {
 								continue;
 							}
@@ -1532,7 +1532,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 					TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 					if (seeked) {
-						int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
+						int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
 						if (idx < 0) {
 							continue;
 						}
@@ -1579,7 +1579,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					// Find stream.
 					int idx = -1;
 					if (seeked) {
-						idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
+						// Audio key may be playbacked from the middle, should use FIND_MODE_NEAREST.
+						// Then, check the current playing stream to prevent to playback doubly.
+						idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
 						// Discard previous stream when seeking.
 						if (map.has(idx)) {
 							t->audio_stream_playback->stop_stream(map[idx].index);
@@ -1647,7 +1649,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 					if (seeked) {
 						// Seek.
-						int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
+						int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
 						if (idx < 0) {
 							continue;
 						}

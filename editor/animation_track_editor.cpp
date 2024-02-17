@@ -5904,6 +5904,16 @@ bool AnimationTrackEditor::_is_track_compatible(int p_target_track_idx, Variant:
 void AnimationTrackEditor::_edit_menu_about_to_popup() {
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
 	edit->get_popup()->set_item_disabled(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), !player->can_apply_reset());
+
+	bool has_length = false;
+	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+		if (animation->track_get_type(E.key.track) == Animation::TYPE_AUDIO && animation->audio_track_get_key_stream(E.key.track, E.key.key).is_valid()) {
+			has_length = true;
+			break;
+		}
+	}
+	edit->get_popup()->set_item_disabled(edit->get_popup()->get_item_index(EDIT_SET_START_OFFSET), !has_length);
+	edit->get_popup()->set_item_disabled(edit->get_popup()->get_item_index(EDIT_SET_END_OFFSET), !has_length);
 }
 
 void AnimationTrackEditor::goto_prev_step(bool p_from_mouse_event) {
@@ -6229,6 +6239,62 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			undo_redo->commit_action();
 		} break;
 
+		case EDIT_SET_START_OFFSET: {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Animation Set Start Offset"), UndoRedo::MERGE_ENDS);
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				if (animation->track_get_type(E.key.track) != Animation::TYPE_AUDIO) {
+					continue;
+				}
+				Ref<AudioStream> stream = animation->audio_track_get_key_stream(E.key.track, E.key.key);
+				if (stream.is_null()) {
+					continue;
+				}
+				double len = stream->get_length() - animation->audio_track_get_key_end_offset(E.key.track, E.key.key);
+				real_t prev_offset = animation->audio_track_get_key_start_offset(E.key.track, E.key.key);
+				double prev_time = animation->track_get_key_time(E.key.track, E.key.key);
+				float cur_time = timeline->get_play_position();
+				float diff = prev_offset + cur_time - prev_time;
+				float destination = cur_time - MIN(0, diff);
+				if (diff >= len || animation->track_find_key(E.key.track, destination, Animation::FIND_MODE_EXACT) >= 0) {
+					continue;
+				}
+				undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_start_offset", E.key.track, E.key.key, diff);
+				undo_redo->add_do_method(animation.ptr(), "track_set_key_time", E.key.track, E.key.key, destination);
+				undo_redo->add_undo_method(animation.ptr(), "track_set_key_time", E.key.track, E.key.key, prev_time);
+				undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_start_offset", E.key.track, E.key.key, prev_offset);
+			}
+			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->commit_action();
+		} break;
+		case EDIT_SET_END_OFFSET: {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Animation Set End Offset"), UndoRedo::MERGE_ENDS);
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				if (animation->track_get_type(E.key.track) != Animation::TYPE_AUDIO) {
+					continue;
+				}
+				Ref<AudioStream> stream = animation->audio_track_get_key_stream(E.key.track, E.key.key);
+				if (stream.is_null()) {
+					continue;
+				}
+				double len = stream->get_length() - animation->audio_track_get_key_start_offset(E.key.track, E.key.key);
+				real_t prev_offset = animation->audio_track_get_key_end_offset(E.key.track, E.key.key);
+				double prev_time = animation->track_get_key_time(E.key.track, E.key.key);
+				float cur_time = timeline->get_play_position();
+				float diff = prev_time + len - cur_time;
+				if (diff >= len) {
+					continue;
+				}
+				undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_end_offset", E.key.track, E.key.key, diff);
+				undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_end_offset", E.key.track, E.key.key, prev_offset);
+			}
+			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->commit_action();
+		} break;
+
 		case EDIT_EASE_SELECTION: {
 			ease_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
@@ -6341,6 +6407,36 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 		case EDIT_PASTE_KEYS: {
 			_anim_paste_keys(-1.0, -1.0);
+		} break;
+		case EDIT_MOVE_FIRST_SELECTED_KEY_TO_CURSOR: {
+			if (moving_selection || selection.is_empty()) {
+				break;
+			}
+			real_t from_t = 1e20;
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				real_t t = animation->track_get_key_time(E.key.track, E.key.key);
+				if (t < from_t) {
+					from_t = t;
+				}
+			}
+			_move_selection_begin();
+			_move_selection(timeline->get_play_position() - from_t);
+			_move_selection_commit();
+		} break;
+		case EDIT_MOVE_LAST_SELECTED_KEY_TO_CURSOR: {
+			if (moving_selection || selection.is_empty()) {
+				break;
+			}
+			real_t to_t = -1e20;
+			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+				real_t t = animation->track_get_key_time(E.key.track, E.key.key);
+				if (t > to_t) {
+					to_t = t;
+				}
+			}
+			_move_selection_begin();
+			_move_selection(timeline->get_play_position() - to_t);
+			_move_selection_commit();
 		} break;
 		case EDIT_ADD_RESET_KEY: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -6590,6 +6686,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 }
 
 void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
+	_clear_selection();
 	for (int i = 0; i < p_animation->get_track_count(); i++) {
 		if (!root->has_node_and_resource(p_animation->track_get_path(i))) {
 			continue;
@@ -6616,6 +6713,76 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 			p_animation->remove_track(i);
 			i--;
 			continue;
+		}
+
+		if (cleanup_keys_with_trimming_head->is_pressed()) {
+			// Check is necessary because if there is already a key in position 0, it should not be replaced.
+			if (p_animation->track_get_type(i) == Animation::TYPE_AUDIO && p_animation->track_find_key(i, 0, Animation::FIND_MODE_EXACT) < 0) {
+				for (int j = 0; j < p_animation->track_get_key_count(i); j++) {
+					double t = p_animation->track_get_key_time(i, j);
+					if (t < 0) {
+						if (j == p_animation->track_get_key_count(i) - 1 || (j + 1 < p_animation->track_get_key_count(i) && p_animation->track_get_key_time(i, j + 1) > 0)) {
+							Ref<AudioStream> stream = p_animation->audio_track_get_key_stream(i, j);
+							double len = stream->get_length() - p_animation->audio_track_get_key_end_offset(i, j);
+							double prev_offset = p_animation->audio_track_get_key_start_offset(i, j);
+							double prev_time = p_animation->track_get_key_time(i, j);
+							double diff = prev_offset - prev_time;
+							if (diff >= len) {
+								p_animation->track_remove_key(i, j);
+								j--;
+								continue;
+							}
+							p_animation->audio_track_set_key_start_offset(i, j, diff);
+							p_animation->track_set_key_time(i, j, 0);
+						} else {
+							p_animation->track_remove_key(i, j);
+							j--;
+						}
+					}
+				}
+			} else {
+				for (int j = 0; j < p_animation->track_get_key_count(i); j++) {
+					double t = p_animation->track_get_key_time(i, j);
+					if (t < 0) {
+						p_animation->track_remove_key(i, j);
+						j--;
+					}
+				}
+			}
+		}
+
+		if (cleanup_keys_with_trimming_end->is_pressed()) {
+			if (p_animation->track_get_type(i) == Animation::TYPE_AUDIO) {
+				for (int j = 0; j < p_animation->track_get_key_count(i); j++) {
+					double t = p_animation->track_get_key_time(i, j);
+					if (t <= p_animation->get_length() && (j == p_animation->track_get_key_count(i) - 1 || (j + 1 < p_animation->track_get_key_count(i) && p_animation->track_get_key_time(i, j + 1) > p_animation->get_length()))) {
+						Ref<AudioStream> stream = animation->audio_track_get_key_stream(i, j);
+						double len = stream->get_length() - animation->audio_track_get_key_start_offset(i, j);
+						if (t + len < p_animation->get_length()) {
+							continue;
+						}
+						double prev_time = animation->track_get_key_time(i, j);
+						double diff = prev_time + len - p_animation->get_length();
+						if (diff >= len) {
+							p_animation->track_remove_key(i, j);
+							j--;
+							continue;
+						}
+						p_animation->audio_track_set_key_end_offset(i, j, diff);
+					} else if (t > p_animation->get_length()) {
+						p_animation->track_remove_key(i, j);
+						j--;
+					}
+				}
+			} else {
+				for (int j = 0; j < p_animation->track_get_key_count(i); j++) {
+					double t = p_animation->track_get_key_time(i, j);
+					if (t > p_animation->get_length()) {
+						p_animation->track_remove_key(i, j);
+						j--;
+					}
+				}
+			}
 		}
 
 		if (!prop_exists || p_animation->track_get_type(i) != Animation::TYPE_VALUE || !cleanup_keys->is_pressed()) {
@@ -6983,12 +7150,18 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_item(TTR("Scale Selection"), EDIT_SCALE_SELECTION);
 	edit->get_popup()->add_item(TTR("Scale From Cursor"), EDIT_SCALE_FROM_CURSOR);
 	edit->get_popup()->add_separator();
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_start_offset", TTR("Set Start Offset (Audio)"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETLEFT), EDIT_SET_START_OFFSET);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_end_offset", TTR("Set End Offset (Audio)"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETRIGHT), EDIT_SET_END_OFFSET);
+	edit->get_popup()->add_separator();
 	edit->get_popup()->add_item(TTR("Make Easing Selection"), EDIT_EASE_SELECTION);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selected_keys", TTR("Duplicate Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::D), EDIT_DUPLICATE_SELECTED_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/copy_selected_keys", TTR("Copy Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::C), EDIT_COPY_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/paste_keys", TTR("Paste Keys"), KeyModifierMask::CMD_OR_CTRL | Key::V), EDIT_PASTE_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/add_reset_value", TTR("Add RESET Value(s)")));
+	edit->get_popup()->add_separator();
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_first_selected_key_to_cursor", TTR("Move First Selected Key to Cursor"), Key::BRACKETLEFT), EDIT_MOVE_FIRST_SELECTED_KEY_TO_CURSOR);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_last_selected_key_to_cursor", TTR("Move Last Selected Key to Cursor"), Key::BRACKETRIGHT), EDIT_MOVE_LAST_SELECTED_KEY_TO_CURSOR);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/delete_selection", TTR("Delete Selection"), Key::KEY_DELETE), EDIT_DELETE_SELECTION);
 
@@ -7083,11 +7256,20 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	optimize_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_OPTIMIZE_ANIMATION_CONFIRM));
 
 	//
-
 	cleanup_dialog = memnew(ConfirmationDialog);
 	add_child(cleanup_dialog);
 	VBoxContainer *cleanup_vb = memnew(VBoxContainer);
 	cleanup_dialog->add_child(cleanup_vb);
+
+	cleanup_keys_with_trimming_head = memnew(CheckBox);
+	cleanup_keys_with_trimming_head->set_text(TTR("Trim keys placed in negative time"));
+	cleanup_keys_with_trimming_head->set_pressed(true);
+	cleanup_vb->add_child(cleanup_keys_with_trimming_head);
+
+	cleanup_keys_with_trimming_end = memnew(CheckBox);
+	cleanup_keys_with_trimming_end->set_text(TTR("Trim keys placed exceed the animation length"));
+	cleanup_keys_with_trimming_end->set_pressed(true);
+	cleanup_vb->add_child(cleanup_keys_with_trimming_end);
 
 	cleanup_keys = memnew(CheckBox);
 	cleanup_keys->set_text(TTR("Remove invalid keys"));
