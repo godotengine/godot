@@ -117,8 +117,8 @@ AABB FogVolume::get_aabb() const {
 	return AABB();
 }
 
-Array FogVolume::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray FogVolume::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	Ref<Environment> environment = get_viewport()->find_world_3d()->get_environment();
 

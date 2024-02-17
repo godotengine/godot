@@ -283,8 +283,8 @@ void NavigationRegion2D::_navigation_debug_changed() {
 }
 #endif // DEBUG_ENABLED
 
-Array NavigationRegion2D::get_configuration_warnings() const {
-	Array warnings = Node2D::get_configuration_warnings();
+PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!navigation_polygon.is_valid()) {

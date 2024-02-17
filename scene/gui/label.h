@@ -97,7 +97,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	virtual Array get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;

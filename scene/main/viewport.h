@@ -614,7 +614,7 @@ public:
 	Control *gui_get_focus_owner() const;
 	Control *gui_get_hovered_control() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;

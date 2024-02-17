@@ -55,7 +55,7 @@ public:
 	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
 	Ref<CameraAttributes> get_camera_attributes() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	WorldEnvironment();
 };

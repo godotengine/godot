@@ -125,7 +125,7 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	AnimatedSprite2D();

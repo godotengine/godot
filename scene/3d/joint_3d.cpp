@@ -198,8 +198,8 @@ bool Joint3D::get_exclude_nodes_from_collision() const {
 	return exclude_from_collision;
 }
 
-Array Joint3D::get_configuration_warnings() const {
-	Array warnings = Node3D::get_configuration_warnings();
+PackedStringArray Joint3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (!warning.is_empty()) {
 		warnings.push_back(warning);

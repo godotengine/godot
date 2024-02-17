@@ -305,7 +305,7 @@ public:
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void restart();
 

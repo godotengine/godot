@@ -181,7 +181,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Array get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	enum BakeError {
 		BAKE_ERROR_OK,

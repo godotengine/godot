@@ -113,8 +113,8 @@ Color CanvasModulate::get_color() const {
 	return color;
 }
 
-Array CanvasModulate::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray CanvasModulate::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_in_canvas && is_visible_in_tree()) {
 		List<Node *> nodes;
