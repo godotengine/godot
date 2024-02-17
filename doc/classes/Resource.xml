@@ -71,7 +71,7 @@
 				Returns the [RID] of this resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], and so on) are high-level abstractions of resources stored in a specialized server ([DisplayServer], [RenderingServer], etc.), so this function will return the original [RID].
 			</description>
 		</method>
-		<method name="setup_local_to_scene" deprecated="This method should only be called internally. Override [method _setup_local_to_scene] instead.">
+		<method name="setup_local_to_scene" deprecated="This method should only be called internally.">
 			<return type="void" />
 			<description>
 				Calls [method _setup_local_to_scene]. If [member resource_local_to_scene] is set to [code]true[/code], this method is automatically called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance.

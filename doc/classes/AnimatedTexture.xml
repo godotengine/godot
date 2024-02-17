@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedTexture" inherits="Texture2D" deprecated="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimatedTexture" inherits="Texture2D" deprecated="This class does not work properly in current versions and may be removed in the future. There is currently no equivalent workaround." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Proxy texture for simple frame-based animations.
 	</brief_description>

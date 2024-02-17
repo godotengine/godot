@@ -27,7 +27,7 @@
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				Returns whether the given [param path] is configured for synchronization.
+				Returns [code]true[/code] if the given [param path] is configured for synchronization.
 			</description>
 		</method>
 		<method name="property_get_index" qualifiers="const">
@@ -48,21 +48,21 @@
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				Returns whether the property identified by the given [param path] is configured to be synchronized on spawn.
+				Returns [code]true[/code] if the property identified by the given [param path] is configured to be synchronized on spawn.
 			</description>
 		</method>
 		<method name="property_get_sync" deprecated="Use [method property_get_replication_mode] instead.">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				Returns whether the property identified by the given [param path] is configured to be synchronized on process.
+				Returns [code]true[/code] if the property identified by the given [param path] is configured to be synchronized on process.
 			</description>
 		</method>
 		<method name="property_get_watch" deprecated="Use [method property_get_replication_mode] instead.">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				Returns whether the property identified by the given [param path] is configured to be reliably synchronized when changes are detected on process.
+				Returns [code]true[/code] if the property identified by the given [param path] is configured to be reliably synchronized when changes are detected on process.
 			</description>
 		</method>
 		<method name="property_set_replication_mode">

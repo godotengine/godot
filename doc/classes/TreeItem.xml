@@ -574,8 +574,8 @@
 			<param index="1" name="object" type="Object" />
 			<param index="2" name="callback" type="StringName" />
 			<description>
-				Sets the given column's custom draw callback to [param callback] method on [param object].
-				The [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
+				Sets the given column's custom draw callback to the [param callback] method on [param object].
+				The method named [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
 			</description>
 		</method>
 		<method name="set_custom_draw_callback">

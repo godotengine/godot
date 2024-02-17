@@ -15,12 +15,14 @@
 		<method name="get_process_callback" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="int" enum="AnimationTree.AnimationProcessCallback" />
 			<description>
+				Returns the process notification in which to update animations.
 			</description>
 		</method>
 		<method name="set_process_callback" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="AnimationTree.AnimationProcessCallback" />
 			<description>
+				Sets the process notification in which to update animations.
 			</description>
 		</method>
 	</methods>

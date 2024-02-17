@@ -19,6 +19,7 @@
 			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
+				This method does nothing.
 			</description>
 		</method>
 		<method name="buffer_clear">
@@ -194,6 +195,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="color" type="Color" />
 			<description>
+				This method does nothing.
 			</description>
 		</method>
 		<method name="draw_list_begin">
@@ -254,6 +256,7 @@
 			<param index="9" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<param index="10" name="storage_textures" type="RID[]" default="[]" />
 			<description>
+				This method does nothing and always returns an empty [PackedInt64Array].
 			</description>
 		</method>
 		<method name="draw_list_bind_index_array">
@@ -348,6 +351,7 @@
 			<return type="PackedInt64Array" />
 			<param index="0" name="splits" type="int" />
 			<description>
+				This method does nothing and always returns an empty [PackedInt64Array].
 			</description>
 		</method>
 		<method name="framebuffer_create">
@@ -438,6 +442,7 @@
 		<method name="full_barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
 			<return type="void" />
 			<description>
+				This method does nothing.
 			</description>
 		</method>
 		<method name="get_captured_timestamp_cpu_time" qualifiers="const">
