@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -73,7 +74,7 @@ namespace GodotTools.Export
             };
         }
 
-        private string _maybeLastExportError;
+        private string? _maybeLastExportError;
 
         // With this method we can override how a file is exported in the PCK
         public override void _ExportFile(string path, string type, string[] features)
@@ -135,7 +136,7 @@ namespace GodotTools.Export
             if (!ProjectContainsDotNet())
                 return;
 
-            if (!DeterminePlatformFromFeatures(features, out string platform))
+            if (!DeterminePlatformFromFeatures(features, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
@@ -327,7 +328,7 @@ namespace GodotTools.Export
                                         AddSharedObject(path, tags: null,
                                             Path.Join(projectDataDirName,
                                                 Path.GetRelativePath(publishOutputDir,
-                                                    Path.GetDirectoryName(path))));
+                                                    Path.GetDirectoryName(path)!)));
                                     }
                                 }
                             }
@@ -450,7 +451,7 @@ namespace GodotTools.Export
             }
         }
 
-        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
+        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, [NotNullWhen(true)] out string? platform)
         {
             foreach (var feature in features)
             {

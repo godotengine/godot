@@ -7,7 +7,7 @@ namespace GodotTools.Core
 {
     public static class StringExtensions
     {
-        private static readonly string _driveRoot = Path.GetPathRoot(Environment.CurrentDirectory);
+        private static readonly string _driveRoot = Path.GetPathRoot(Environment.CurrentDirectory)!;
 
         public static string RelativeToPath(this string path, string dir)
         {
@@ -26,9 +26,6 @@ namespace GodotTools.Core
 
         public static string NormalizePath(this string path)
         {
-            if (string.IsNullOrEmpty(path))
-                return path;
-
             bool rooted = path.IsAbsolutePath();
 
             path = path.Replace('\\', '/');

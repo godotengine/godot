@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
     <!-- The Godot editor uses the Debug Godot API assemblies -->
     <GodotApiConfiguration>Debug</GodotApiConfiguration>
     <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
