@@ -49,4 +49,21 @@ else:
         source=sources,
     )
 
+## Option to use C++20 for this extension by replacing CXXFLAGS
+#if env.get("is_msvc", False):
+#    env.Replace(CXXFLAGS=["/std:c++20"])
+#else:
+#    env.Replace(CXXFLAGS=["-std=c++20"])
+
+## Reenable CXXFLAGS removed by the above from godot-cpp/tools/godotcpp.py
+# Disable exception handling. Godot doesn't use exceptions anywhere, and this
+# saves around 20% of binary size and very significant build time.
+#if env["disable_exceptions"]:
+#    if env.get("is_msvc", False):
+#        env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
+#    else:
+#        env.Append(CXXFLAGS=["-fno-exceptions"])
+#elif env.get("is_msvc", False):
+#    env.Append(CXXFLAGS=["/EHsc"])
+
 Default(library)

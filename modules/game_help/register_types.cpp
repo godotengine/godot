@@ -36,15 +36,31 @@
 #include "modules/game_help/foliage_manager/register_types.h"
 #include "modules/game_help/game_gui/game_gui_compoent.h"
 
+
+#include "modules/game_help/logic/animation_help.h"
+static AnimationHelp* animation_help = nullptr;
+
 void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
 	initialize_terrain_3d(p_level);
 	initialize_filiage_manager(p_level);
+	ClassDB::register_class<AnimationHelp>();
+
+	animation_help = memnew(AnimationHelp);
+
+	Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationHelp", animation_help));
 
 }
 
 void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
+	
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+	Engine::get_singleton()->remove_singleton("AnimationHelp");
+	memdelete(animation_help);
+	animation_help = nullptr;
 
 }

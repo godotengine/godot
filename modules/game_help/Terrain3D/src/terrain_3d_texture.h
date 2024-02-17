@@ -18,7 +18,7 @@ public:
 	struct Settings {
 		String _name = "New Texture";
 		int _texture_id = 0;
-		Color _albedo_color = Color(1.0, 1.0, 1.0, 1.0);
+		Color _albedo_color = Color(1.f, 1.f, 1.f, 1.f);
 		Ref<Texture2D> _albedo_texture;
 		Ref<Texture2D> _normal_texture;
 		real_t _uv_scale = 0.1f;

@@ -1,5 +1,5 @@
 #!/bin/bash
-GODOT=/c/gd/bin/Godot_v4.1.3-stable_win64.exe
+GODOT=/c/gd/bin/Godot_v4.2.1-stable_win64.exe
 MAKERST=/c/gd/godot/doc/tools/make_rst.py
 REPO=`git rev-parse --show-toplevel`
 

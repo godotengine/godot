@@ -1,25 +1,7 @@
 Building from Source
 ====================
 
-## 0. Push Builds aka Nightly Builds
-
-Traditionally, nightly builds were automatically built by the development server every night. Our Github repository is configured to build automatically on every commit and PR push. If you want to test more recent versions of Terrain3D than the releases, you can download these builds. They are exactly the same as the releases except for the commit used. However, they are inherently less tested and may have more problems than the release builds.
-
-1. [Click here](https://github.com/TokisanGames/Terrain3D/actions/workflows/build.yml?query=branch%3Amain) for `Github Actions`, `Build All` workflow, `main` branch.
-
-2. Click the most recent successful build:
-
-```{image} images/build_workflow.png
-:target: ../_images/build_workflow.png
-```
-
-3. Download the artifact, which is just a zip file with a "nightly" build.
-
-```{image} images/build_artifact.png
-:target: ../_images/build_artifact.png
-```
-
-Otherwise, continue on to build from source on your own system. This is necessary for development, and recommended for macOS.
+If you wish to use more recent builds without building from source, see [Nightly Builds](nightly_builds.md).
 
 ## 1. Install dependencies
 
@@ -158,12 +140,15 @@ scons: done building targets.
 
 ## 6. Set up the extension in Godot
 
-* Close Godot. (Not required the first time, but necessary when updating the files on subsequent builds.)
-* Copy `project/addons/terrain_3d` to your own project folder as `/addons/terrain_3d`. 
-* Upon opening or switching back to Godot, it should prompt to restart. Do so.
-* To finalize resource importing and clear out error messages, it's best to reload the project a second time. 
-* Create or open a 3D scene and add a new Terrain3D node.
-* Select Terrain3D in the scene tree. In the inspector, click the down arrow to the right of the storage resource and save it as a binary .res file. This is optional, but highly recommended. Otherwise it will save terrain data as text in the current scene file. The other resources can be left as is or saved as text .tres. These external files can be shared with other scenes.
+1. Build Terrain3D, then ensure binary libraries exist in `project/addons/terrain_3d/bin`.
+2. Close Godot. (Not required the first time, but necessary when updating the files on subsequent builds.)
+3. Copy `project/addons/terrain_3d` to your own project folder as `/addons/terrain_3d`. 
+4. Run Godot, using the console executable so you can see error messages. Restart when it prompts.
+5. In `Project Settings / Plugins`, ensure that Terrain3D is enabled.
+6. Select `Project / Reload Current Project` to restart once more.
+7. Create or open a 3D scene and add a new Terrain3D node.
+8. Select Terrain3D in the Scene panel. In the Inspector, click the down arrow to the right of the `storage` resource and save it as a binary `.res` file. The other resources can be left as is or saved as text `.tres`. These external files can be shared with other scenes.
+9. Learn how to properly [set up your textures](texture_prep.md), or skip to [importing data](import_export.md).
 
 ## Other Build Options
 
@@ -198,6 +183,12 @@ This plugin supports Windows, Linux and macOS. We've received successful reports
 
 scons platform=linux
 ```
+
+### Using C++20
+The C++ standard used in Godot and Godot-cpp is C++17. However you may use C++20 for building GDExtensions if desired.
+
+The [SConstruct](https://github.com/TokisanGames/Terrain3D/blob/main/SConstruct) file has some commented code at the bottom that will replace update the standard.
+
 
 ### See all options
 ```

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Terrain3DStorage" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Terrain3DStorage" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A resource that stores all data for Terrain3D. Also see [url=../docs/controlmap_format.html]Controlmap Format[/url] and [url=../docs/storage_format.html]Storage Format Changelog[/url].
 	</brief_description>
 	<description>
+		This resource stores all map data for Terrain3D. Also see [url=../docs/controlmap_format.html]Controlmap Format[/url] and [url=../docs/storage_format.html]Storage Format Changelog[/url].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,6 +14,12 @@
 			<param index="1" name="images" type="Image[]" default="[]" />
 			<param index="2" name="update" type="bool" default="true" />
 			<description>
+				Adds a region for sculpting and painting. This allocates new set of [member region_size] sized image maps in memory and on disk to store sculpting and texture painting data.
+				If the region already exists and image maps are included, the current maps will be overwritten. This means that if some maps are null, existing maps will be removed.
+				Parameters:
+				-	p_global_position - the world location to place the region, which gets rounded down to the nearest region_size multiple. That means adding a region at (1500, 0, 1500) is the same as adding it at (1024, 0, 1024) when region_size is 1024.
+				-	p_images - Optional array of { Height, Control, Color } with region_sized images. See [enum MapType].
+				-	p_update - rebuild the maps if true. Set to false if bulk adding many regions, then true on the last one or use [method force_update_maps].
 			</description>
 		</method>
 		<method name="export_image">
@@ -21,30 +27,40 @@
 			<param index="0" name="file_name" type="String" />
 			<param index="1" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
 			<description>
+				Exports the specified map type as one of r16/raw, exr, jpg, png, webp, res, tres. 
+				R16 or exr are recommended for roundtrip external editing.
+				R16 can be edited by Krita, however you must know the dimensions and min/max before reimporting. This information is printed to the console.
+				Res/tres allow storage in any of Godot's native Image formats.
 			</description>
 		</method>
 		<method name="force_update_maps">
 			<return type="void" />
 			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" default="3" />
 			<description>
+				Regenerates the TextureArrays that house the requested map types. Using the default [enum MapType] TYPE_MAX(3) will regenerate all map types.
 			</description>
 		</method>
 		<method name="get_color">
 			<return type="Color" />
 			<param index="0" name="global_position" type="Vector3" />
 			<description>
+				Returns the associated pixel on the color map at the requested location. Calls [method get_pixel].
 			</description>
 		</method>
 		<method name="get_control">
 			<return type="int" />
 			<param index="0" name="global_position" type="Vector3" />
 			<description>
+				Returns the associated pixel on the control map at the requested location. Calls [method get_pixel].
 			</description>
 		</method>
 		<method name="get_height">
 			<return type="float" />
 			<param index="0" name="global_position" type="Vector3" />
 			<description>
+				Returns the associated pixel on the height map at the requested location. This function is only accurate at vertex coordinates, and on flat areas. It does not currently interpolate heights between vertices, while mesh faces do. Locations between vertices will return the height of the vertex at the floored coordinates. See [url="https://github.com/TokisanGames/Terrain3D/issues/324"]issue 324[/url].
+				Returns NAN if the requested position is a hole.
+				Calls [method get_pixel].
 			</description>
 		</method>
 		<method name="get_map_region">
@@ -52,18 +68,21 @@
 			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
 			<param index="1" name="region_index" type="int" />
 			<description>
+				Returns the Image for the specified map type and region. E.g. Returns the region_size height map Image at the first defined region 0.
 			</description>
 		</method>
 		<method name="get_maps">
 			<return type="Image[]" />
 			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
 			<description>
+				Returns an Array of Images containing all of the regions for the specified map type.
 			</description>
 		</method>
 		<method name="get_maps_copy">
 			<return type="Image[]" />
 			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
 			<description>
+				Returns a copy of the Array of Images containing all of the regions for the specified map type.
 			</description>
 		</method>
 		<method name="get_mesh_vertex">
@@ -72,12 +91,18 @@
 			<param index="1" name="filter" type="int" enum="Terrain3DStorage.HeightFilter" />
 			<param index="2" name="global_position" type="Vector3" />
 			<description>
+				Returns the location of a terrain vertex at a certain LOD. If there is a hole at the position, it returns NAN in the vector's Y coordinate.
+				[code skip-lint]lod[/code] - Determines how many heights around the given global position will be sampled. Range 0 - 8.
+				[code skip-lint]filter[/code] - Specifies how samples are filtered. See [enum HeightFilter].
+				[code skip-lint]global_position[/code] - X and Z coordinates of the vertex. Heights will be sampled around these coordinates.
 			</description>
 		</method>
 		<method name="get_normal">
 			<return type="Vector3" />
 			<param index="0" name="global_position" type="Vector3" />
 			<description>
+				Returns the terrain normal at the specified location. This function uses [method get_height], which is not currently accurate between vertices. Therefore, this function may also be inacurate between vertices.
+				Returns [code skip-lint]Vector3(NAN, NAN, NAN)[/code] if the requested position is a hole or outside of defined regions.
 			</description>
 		</method>
 		<method name="get_pixel">
@@ -85,41 +110,51 @@
 			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
 			<param index="1" name="global_position" type="Vector3" />
 			<description>
+				Returns the pixel for the map type associated with the specified location.
+				Returns [code skip-lint]Color(NAN, NAN, NAN, NAN)[/code] if the position is outside of defined regions.
 			</description>
 		</method>
 		<method name="get_region_count">
 			<return type="int" />
 			<description>
+				Returns the number of allocated regions.
 			</description>
 		</method>
 		<method name="get_region_index">
 			<return type="int" />
 			<param index="0" name="global_position" type="Vector3" />
 			<description>
+				Returns the index into the [member region_offsets] array for the region associated with the specified location.
 			</description>
 		</method>
 		<method name="get_region_offset">
 			<return type="Vector2i" />
 			<param index="0" name="global_position" type="Vector3" />
 			<description>
+				Converts a world space location to region space. For a region_size of 1024 this basically means [code skip-lint]global_position/1024.0[/code]. Also see [member region_offsets].
 			</description>
 		</method>
 		<method name="get_roughness">
 			<return type="float" />
 			<param index="0" name="global_position" type="Vector3" />
 			<description>
+				Returns the roughness modifier (wetness) on the color map alpha channel associated with the specified location. Calls [method set_pixel].
 			</description>
 		</method>
 		<method name="get_texture_id">
 			<return type="Vector3" />
 			<param index="0" name="global_position" type="Vector3" />
 			<description>
+				Returns a Vector3 with x = base texture id, y = overlay id, z = blend value.
+				It's up to you to determine which is visually apparent based on your shader settings, such as height or alpha blending.
+				This is often used for things like footsteps. Observing how this is done in Witcher 3, there are only about 6 sounds used (snow, foliage, dirt, gravel, rock, wood), and they are not pixel perfect, except for wood. However that is easy to do by detecting if the player is walking on wood meshes. The other 5 sounds are played when the player is in an area where the textures are blending. So it might play rock while over a dirt area, but the end result is still a seamless audio visual experience.
 			</description>
 		</method>
 		<method name="has_region">
 			<return type="bool" />
 			<param index="0" name="global_position" type="Vector3" />
 			<description>
+				Returns true if the specified location has a region allocated.
 			</description>
 		</method>
 		<method name="import_images">
@@ -129,12 +164,18 @@
 			<param index="2" name="offset" type="float" default="0.0" />
 			<param index="3" name="scale" type="float" default="1.0" />
 			<description>
+				Imports an Image set (Height, Control, Color) into this resource. It does NOT normalize values to 0-1. You must do that using get_min_max() and adjusting scale and offset.
+				[code skip-lint]images[/code] - MapType.TYPE_MAX sized array of Images for Height, Control, Color. Images can be blank or null.
+				[code skip-lint]global_position[/code] - X,0,Z location on the region map. Valid range is ~ (+/-8192, +/-8192).
+				[code skip-lint]offset[/code] - Add this factor to all height values, can be negative.
+				[code skip-lint]scale[/code] - Scale all height values by this factor (applied after offset).
 			</description>
 		</method>
 		<method name="layered_to_image">
 			<return type="Image" />
 			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
 			<description>
+				Returns an Image of the given map type that contains all regions in one large image. If the world has multiple islands, this function will return an image large enough to encompass all used regions, with black areas in between the islands.
 			</description>
 		</method>
 		<method name="load_image" qualifiers="static">
@@ -144,6 +185,11 @@
 			<param index="2" name="r16_height_range" type="Vector2" default="Vector2(0, 255)" />
 			<param index="3" name="r16_size" type="Vector2i" default="Vector2i(0, 0)" />
 			<description>
+				Loads a file from disk and returns an Image.
+				[code skip-lint]filename[/code] - The file name on disk to load. Loads EXR, R16/RAW, PNG, or a ResourceLoader format (jpg, res, tres, etc).
+				[code skip-lint]cache_mode[/code] - Send this flag to the resource loader to force caching or not.
+				[code skip-lint]height_range[/code] - Heights for R16 format. x=Min &amp; y=Max value ranges. Required for R16 import.
+				[code skip-lint]size[/code] - Image dimensions for R16 format. Default (0,0) auto detects size, assuming square images. Required for non-square R16.
 			</description>
 		</method>
 		<method name="remove_region">
@@ -151,12 +197,13 @@
 			<param index="0" name="global_position" type="Vector3" />
 			<param index="1" name="update" type="bool" default="true" />
 			<description>
+				Removes the region at the specified location from the [member region_offsets] and the height, control, and color map arrays.
 			</description>
 		</method>
 		<method name="save">
 			<return type="void" />
 			<description>
-				Tells the ResourceSaver to write this storage file to disk.
+				Saves this storage resource to disk, if saved as an external [code skip-lint].res[/code] file, which is the recommended practice.
 			</description>
 		</method>
 		<method name="set_color">
@@ -164,6 +211,7 @@
 			<param index="0" name="global_position" type="Vector3" />
 			<param index="1" name="color" type="Color" />
 			<description>
+				Sets the color on the color map pixel associated with the specified location. Calls [method set_pixel].
 			</description>
 		</method>
 		<method name="set_control">
@@ -171,6 +219,7 @@
 			<param index="0" name="global_position" type="Vector3" />
 			<param index="1" name="control" type="int" />
 			<description>
+				Sets the value on the control map pixel associated with the specified location. Calls [method set_pixel].
 			</description>
 		</method>
 		<method name="set_height">
@@ -178,6 +227,7 @@
 			<param index="0" name="global_position" type="Vector3" />
 			<param index="1" name="height" type="float" />
 			<description>
+				Sets the height value on the heightmap pixel associated with the specified location. Calls [method set_pixel].
 			</description>
 		</method>
 		<method name="set_map_region">
@@ -186,6 +236,7 @@
 			<param index="1" name="region_index" type="int" />
 			<param index="2" name="image" type="Image" />
 			<description>
+				Sets the Image for the specified map type and region. This method calls [method force_update_maps].
 			</description>
 		</method>
 		<method name="set_maps">
@@ -193,6 +244,7 @@
 			<param index="0" name="map_type" type="int" enum="Terrain3DStorage.MapType" />
 			<param index="1" name="maps" type="Image[]" />
 			<description>
+				Sets the Array of Images for the specified map type. This method calls [method force_update_maps].
 			</description>
 		</method>
 		<method name="set_pixel">
@@ -201,6 +253,8 @@
 			<param index="1" name="global_position" type="Vector3" />
 			<param index="2" name="pixel" type="Color" />
 			<description>
+				Sets the pixel for the map type associated with the specified location. This method is fine for setting a few pixels, but if you wish to modify thousands of pixels quickly, you should use [method get_maps] or [method get_map_region] and edit the images directly.
+				After setting pixels you need to call [method force_update_maps]. You may also need to regenerate collision if you don't have dynamic collision enabled.
 			</description>
 		</method>
 		<method name="set_roughness">
@@ -208,75 +262,106 @@
 			<param index="0" name="global_position" type="Vector3" />
 			<param index="1" name="roughness" type="float" />
 			<description>
+				Sets the roughness modifier (wetness) on the color map alpha channel associated with the specified location. Calls [method set_pixel].
 			</description>
 		</method>
 		<method name="update_height_range">
 			<return type="void" />
 			<description>
+				Evaluates every height map pixel for every region and updates [member height_range].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="color_maps" type="Image[]" setter="set_color_maps" getter="get_color_maps" default="[]">
-			Array of images of format: FORMAT_RGBA8, 32-bits per pixel as four 8-bit components.
-			      [b]RGB[/b] is used for color, which is multiplied by albedo in the shader. Multiply is a blend mode that only darkens.
-			      [b]A[/b] is used for a roughness modifier. A value of 0.5 means no change to the existing texture roughness. Higher than this value increases roughness, lower decreases it.
+			The Array of Images containing all the color maps for all regions.
+			Image format: FORMAT_RGBA8, 32-bits per pixel as four 8-bit components.
+			[b]RGB[/b] is used for color, which is multiplied by albedo in the shader. Multiply is a blend mode that only darkens.
+			[b]A[/b] is used for a roughness modifier. A value of 0.5 means no change to the existing texture roughness. Higher than this value increases roughness, lower decreases it.
+			The setter calls [method set_maps].
 		</member>
 		<member name="control_maps" type="Image[]" setter="set_control_maps" getter="get_control_maps" default="[]">
-			Array of images of format: FORMAT_RF, 32-bit per pixel as full-precision floating-point.
-			      However we interpret these images as format: [url=https://docs.godotengine.org/en/stable/classes/class_renderingdevice.html#class-renderingdevice-constant-data-format-r32-uint]RenderingDevice.DATA_FORMAT_R32_UINT[/url] aka OpenGL RG32UI 32-bit per pixel as unsigned integer. See [url=../docs/controlmap_format.html]Control map format[/url].
+			The Array of Images containing all the control maps for all regions.
+			Image format: FORMAT_RF, 32-bit per pixel as full-precision floating-point.
+			However we interpret these images as format: [url=https://docs.godotengine.org/en/stable/classes/class_renderingdevice.html#class-renderingdevice-constant-data-format-r32-uint]RenderingDevice.DATA_FORMAT_R32_UINT[/url] aka OpenGL RG32UI 32-bit per pixel as unsigned integer. See [url=../docs/controlmap_format.html]Control map format[/url].
+			The setter calls [method set_maps].
 		</member>
 		<member name="height_maps" type="Image[]" setter="set_height_maps" getter="get_height_maps" default="[]">
-			Array of images of format: FORMAT_RF, 32-bit per pixel as full-precision floating-point.
-			      Defines the height value of the terrain at a given pixel. This is sent to the vertex shader on the GPU which modifies the mesh in real-time.
-			      Editing is always done in 32-bit. We do provide an option to save as 16-bit, which converts to 32-bit on load and back to 16-bit on save.
+			The Array of Images containing all the heightmaps for all regions.
+			Image format: FORMAT_RF, 32-bit per pixel as full-precision floating-point.
+			Defines the height value of the terrain at a given pixel. This is sent to the vertex shader on the GPU which modifies the mesh in real-time.
+			Editing is always done in 32-bit. We do provide an option to save as 16-bit, see [member save_16_bit], which converts to 32-bit on load and back to 16-bit on save.
+			The setter calls [method set_maps].
 		</member>
 		<member name="height_range" type="Vector2" setter="set_height_range" getter="get_height_range" default="Vector2(0, 0)">
+			The highest and lowest heights for the sculpted terrain. Any [member Terrain3DMaterial.world_background] used that extends the mesh height outside of this range will not change this variable. Also see [member Terrain3D.render_cull_margin].
 		</member>
 		<member name="region_offsets" type="Vector2i[]" setter="set_region_offsets" getter="get_region_offsets" default="[]">
 			An array of the active regions in region grid coordinates (+/-8, +/-8). e.g. { (0, 0), (-1, 3), (1, 1) }. It is ordered by the sequence in which regions were created, not by location.
-			      This is the opposite of region_map. Here is how these two arrays are used:
-			      * region_map - access x,y location to get region id index: [code]region_id = region_map[y*region_map_size + x] - 1[/code]
-			      * region_offsets - access region id index to get x,y location: [code]position = region_offsets[region_id][/code]
+			Also see [method get_region_index] which returns the index into this array based on location.
+			And [method get_region_offset] which converts a location in world space to a region space, which is what is stored in this array. Eg. [code skip-lint]get_region_offset(Vector3(1500, 0, 1500))[/code] would return (1, 1).
 		</member>
 		<member name="region_size" type="int" setter="set_region_size" getter="get_region_size" enum="Terrain3DStorage.RegionSize" default="1024">
+			The size of each region. Limited to 1024 for now.
 		</member>
 		<member name="save_16_bit" type="bool" setter="set_save_16_bit" getter="get_save_16_bit" default="false">
+			Heightmaps are loaded and edited in 32-bit. This option converts the file to 16-bit upon saving to reduce file size. This process is lossy.
 		</member>
 		<member name="version" type="float" setter="set_version" getter="get_version" default="0.8">
-			Current version of this storage resource, which is independent of the Terrain3D version. This is updated to the latest version upon save.
+			Current version of this storage resource. This is used for upgrading data files and is independent of [member Terrain3D.version]. The file and this variable are updated to the latest version upon saving this resource.
 		</member>
 	</members>
 	<signals>
 		<signal name="height_maps_changed">
 			<description>
+				Emitted when the height maps have changed and been regenerated.
+			</description>
+		</signal>
+		<signal name="maps_edited">
+			<param index="0" name="edited_area" type="AABB" />
+			<description>
+				This signal is emitted whenever the editor is used to:
+				- add or remove a region,
+				- alter a region map with a brush tool,
+				- undo or redo any of the above operations.
+				The parameter contains the axis-aligned bounding box of the area edited.
 			</description>
 		</signal>
 		<signal name="region_size_changed">
 			<description>
+				Emitted when [member region_size] is changed.
 			</description>
 		</signal>
 		<signal name="regions_changed">
 			<description>
+				Emitted when any of the maps or regions are modified and regenerated.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="TYPE_HEIGHT" value="0" enum="MapType">
+			Height map.
 		</constant>
 		<constant name="TYPE_CONTROL" value="1" enum="MapType">
+			Control map.
 		</constant>
 		<constant name="TYPE_COLOR" value="2" enum="MapType">
+			Color map.
 		</constant>
 		<constant name="TYPE_MAX" value="3" enum="MapType">
+			The number of elements in this enum.
 		</constant>
 		<constant name="SIZE_1024" value="1024" enum="RegionSize">
+			Region size is 1024 x 1024 vertices or pixels on maps.
 		</constant>
 		<constant name="HEIGHT_FILTER_NEAREST" value="0" enum="HeightFilter">
+			Samples the height map at the exact coordinates given.
 		</constant>
 		<constant name="HEIGHT_FILTER_MINIMUM" value="1" enum="HeightFilter">
+			Samples (1 &lt;&lt; lod) * 2 heights around the given coordinates and returns the lowest.
 		</constant>
 		<constant name="REGION_MAP_SIZE" value="16">
+			Hard coded number of regions on a side. The total number of regions is this squared.
 		</constant>
 	</constants>
 </class>

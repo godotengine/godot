@@ -6,7 +6,7 @@
 R"(
 //INSERT: DEBUG_CHECKERED
 	// Show a checkered grid
-	vec2 __p = UV * 1.0; // scale
+	vec2 __p = uv * 1.0; // scale
 	vec2 __ddx = dFdx(__p);
 	vec2 __ddy = dFdy(__p);
 	vec2 __w = max(abs(__ddx), abs(__ddy)) + 0.01;
@@ -25,7 +25,7 @@ R"(
 
 //INSERT: DEBUG_HEIGHTMAP
 	// Show heightmap
-	ALBEDO = vec3(smoothstep(-0.1, 2.0, 0.5 + get_height(UV2)/300.0));
+	ALBEDO = vec3(smoothstep(-0.1, 2.0, 0.5 + get_height(uv2)/300.0));
 	ROUGHNESS = 0.7;
 	SPECULAR = 0.;
 	NORMAL_MAP = vec3(0.5, 0.5, 1.0);
@@ -74,7 +74,7 @@ R"(
 	NORMAL_MAP = vec3(0.5, 0.5, 1.0);
 
 //INSERT: DEBUG_AUTOSHADER
-	ivec3 __ruv = get_region_uv(floor(UV));
+	ivec3 __ruv = get_region_uv(floor(uv));
 	uint __control = texelFetch(_control_maps, __ruv, 0).r;
 	float __autoshader = float( bool(__control & 0x1u) || __ruv.z<0 );
 	ALBEDO = vec3(__autoshader);
@@ -113,16 +113,16 @@ R"(
 	float __view_distance = 300.0;	// Visible distance of grid
 	// Draw region grid
 	__region_line = .1*sqrt(__camera_dist);
-	if (mod(__pixel_pos.x + __region_line*.5, _region_size) <= __region_line || 
-		mod(__pixel_pos.z + __region_line*.5, _region_size) <= __region_line ) {
+	if (mod(__pixel_pos.x * _mesh_vertex_density + __region_line*.5, _region_size) <= __region_line || 
+		mod(__pixel_pos.z * _mesh_vertex_density + __region_line*.5, _region_size) <= __region_line ) {
 		ALBEDO = vec3(1.);
 	}
 	vec3 __vertex_mul = vec3(0.);
 	vec3 __vertex_add = vec3(0.);
 	float __distance_factor = clamp(1.-__camera_dist/__view_distance, 0., 1.);
 	// Draw vertex grid
-	if ( mod(__pixel_pos.x + __grid_line*.5, __grid_step) < __grid_line || 
-	  	 mod(__pixel_pos.z + __grid_line*.5, __grid_step) < __grid_line ) { 
+	if ( mod(__pixel_pos.x * _mesh_vertex_density + __grid_line*.5, __grid_step) < __grid_line || 
+	  	 mod(__pixel_pos.z * _mesh_vertex_density + __grid_line*.5, __grid_step) < __grid_line ) { 
 		__vertex_mul = vec3(0.5) * __distance_factor;
 	}
 	// Draw Vertices

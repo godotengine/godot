@@ -58,6 +58,15 @@ public:
 			Color p_color = COLOR_BLACK,
 			bool p_create_mipmaps = true,
 			Image::Format p_format = Image::FORMAT_MAX);
+	static Ref<Image> pack_image(const Ref<Image> p_src_rgb, const Ref<Image> p_src_r, bool p_invert_green_channel = false);
 };
+
+template <typename TType>
+_FORCE_INLINE_ void memdelete_safely(TType *&p_ptr) {
+	if (p_ptr != nullptr) {
+		memdelete(p_ptr);
+		p_ptr = nullptr;
+	}
+}
 
 #endif // UTIL_CLASS_H

@@ -99,6 +99,7 @@ Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk
    :maxdepth: 1
    :caption: Advanced Usage
 
+   docs/double_precision
    docs/integrating
    docs/mobile_web
    docs/navigation
@@ -108,12 +109,13 @@ Geometry clipmap mesh code created by `Mike J. Savage <https://mikejsavage.co.uk
    :maxdepth: 1
    :caption: Development
 
+   docs/nightly_builds
    docs/building_from_source
    docs/system_architecture
    docs/shader_design
-   docs/previous_engines
    docs/controlmap_format
    docs/storage_format
+   docs/previous_engines
    docs/contributing
 
 

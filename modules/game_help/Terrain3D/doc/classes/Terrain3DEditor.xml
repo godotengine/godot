@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Terrain3DEditor" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Terrain3DEditor" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
+		This class handles all of the sculpting and painting operations for Terrain3D.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,26 +12,31 @@
 			<return type="void" />
 			<param index="0" name="maps" type="Array" />
 			<description>
+				Undo the previous changes, with the reverted images in the array. Used by Godot, not users.
 			</description>
 		</method>
 		<method name="get_operation">
 			<return type="int" enum="Terrain3DEditor.Operation" />
 			<description>
-			</description>
-		</method>
-		<method name="get_singleton" qualifiers="static">
-			<return type="Terrain3DEditor" />
-			<description>
+				Returns the current operation.
 			</description>
 		</method>
 		<method name="get_terrain">
 			<return type="Terrain3D" />
 			<description>
+				Returns the instance of Terrain3D this class is conneced to.
 			</description>
 		</method>
 		<method name="get_tool">
 			<return type="int" enum="Terrain3DEditor.Tool" />
 			<description>
+				Returns the current tool selected in the editor plugin.
+			</description>
+		</method>
+		<method name="is_operating">
+			<return type="bool" />
+			<description>
+				Returns true if currently brushing.
 			</description>
 		</method>
 		<method name="operate">
@@ -38,89 +44,102 @@
 			<param index="0" name="position" type="Vector3" />
 			<param index="1" name="camera_direction" type="float" />
 			<description>
+				Start brushing.
 			</description>
 		</method>
 		<method name="set_brush_data">
 			<return type="void" />
 			<param index="0" name="data" type="Dictionary" />
 			<description>
+				Sets all brush settings used in the editor plugin.
 			</description>
 		</method>
 		<method name="set_operation">
 			<return type="void" />
 			<param index="0" name="operation" type="int" enum="Terrain3DEditor.Operation" />
 			<description>
+				Sets the tool operation used in the editor plugin.
 			</description>
 		</method>
 		<method name="set_terrain">
 			<return type="void" />
 			<param index="0" name="terrain" type="Terrain3D" />
 			<description>
+				Sets the instance of Terrain3D this class is connected to.
 			</description>
 		</method>
 		<method name="set_tool">
 			<return type="void" />
 			<param index="0" name="tool" type="int" enum="Terrain3DEditor.Tool" />
 			<description>
+				Sets the tool selected in the editor plugin.
 			</description>
 		</method>
 		<method name="start_operation">
 			<return type="void" />
 			<param index="0" name="position" type="Vector3" />
 			<description>
+				Begin a sculpting or painting operation.
 			</description>
 		</method>
 		<method name="stop_operation">
 			<return type="void" />
 			<description>
+				End a sculpting or painting operation.
 			</description>
 		</method>
 	</methods>
-	<signals>
-		<signal name="terrain_edited">
-			<param index="0" name="edited_area" type="AABB" />
-			<description>
-				This signal is emitted whenever the editor is used to:
-				- add or remove a region,
-				- alter a region map with a brush tool,
-				- undo or redo any of the above operations.
-
-				The parameter contains the axis-aligned bounding box of the area edited.
-			</description>
-		</signal>
-	</signals>
 	<constants>
 		<constant name="ADD" value="0" enum="Operation">
+			Additive operations.
 		</constant>
 		<constant name="SUBTRACT" value="1" enum="Operation">
+			Subtractive operations.
 		</constant>
 		<constant name="MULTIPLY" value="2" enum="Operation">
+			Multiplicative operations.
 		</constant>
 		<constant name="DIVIDE" value="3" enum="Operation">
+			Divisive operations.
 		</constant>
 		<constant name="REPLACE" value="4" enum="Operation">
+			Replacing operations.
 		</constant>
 		<constant name="AVERAGE" value="5" enum="Operation">
+			Averaging operations.
 		</constant>
-		<constant name="OP_MAX" value="6" enum="Operation">
+		<constant name="GRADIENT" value="6" enum="Operation">
+			Gradient operations.
+		</constant>
+		<constant name="OP_MAX" value="7" enum="Operation">
+			The number of elements in this enum.
 		</constant>
 		<constant name="HEIGHT" value="0" enum="Tool">
+			Sculpt heights.
 		</constant>
 		<constant name="TEXTURE" value="1" enum="Tool">
+			Paint textures.
 		</constant>
 		<constant name="COLOR" value="2" enum="Tool">
+			Paint on the color map.
 		</constant>
 		<constant name="ROUGHNESS" value="3" enum="Tool">
+			Paint a roughness modifier, aka wetness.
 		</constant>
 		<constant name="AUTOSHADER" value="4" enum="Tool">
+			Paint where the shader automatically textures.
 		</constant>
 		<constant name="HOLES" value="5" enum="Tool">
+			Paint where vertices will be invalidated to leave holes.
 		</constant>
 		<constant name="NAVIGATION" value="6" enum="Tool">
+			Paint where navigation will be generated.
 		</constant>
 		<constant name="REGION" value="7" enum="Tool">
+			Add/remove regions.
 		</constant>
 		<constant name="TOOL_MAX" value="8" enum="Tool">
+			The number of elements in this enum.
 		</constant>
 	</constants>
 </class>

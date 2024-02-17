@@ -36,8 +36,8 @@ private:
 	Ref<Shader> _shader_override;
 	Ref<Shader> _shader_tmp;
 	Dictionary _shader_code;
-	mutable TypedArray<StringName> _active_params;
-	mutable Dictionary _shader_params;
+	mutable TypedArray<StringName> _active_params; // All shader params in the current shader
+	mutable Dictionary _shader_params; // Public shader params saved to disk
 
 	// Material Features
 	WorldBackground _world_background = FLAT;
@@ -64,6 +64,7 @@ private:
 	// Cached data from Storage
 	int _texture_count = 0;
 	int _region_size = 1024;
+	real_t _mesh_vertex_spacing = 1.0f;
 	Vector2i _region_sizev = Vector2i(_region_size, _region_size);
 	PackedInt32Array _region_map;
 	GeneratedTex _generated_region_blend_map; // 512x512 blurred image of region_map
@@ -108,6 +109,8 @@ public:
 
 	void set_shader_param(const StringName &p_name, const Variant &p_value);
 	Variant get_shader_param(const StringName &p_name) const;
+
+	void set_mesh_vertex_spacing(real_t p_spacing);
 
 	// Editor functions / Debug views
 	void set_show_checkered(bool p_enabled);

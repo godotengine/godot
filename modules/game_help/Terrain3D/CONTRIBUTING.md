@@ -86,13 +86,43 @@ Other formatting:
 
 ## Documentation
 
-### User Manual
-The usage documentation lives in [doc/docs](https://github.com/TokisanGames/Terrain3D/tree/main/doc/docs) and is written in Markdown. Images are stored in images and videos are stored [_static/video](https://github.com/TokisanGames/Terrain3D/tree/main/doc/_static/video). 
+All PRs that include new methods and features or changed functionality should include documentation updates. This could be in the form of a tutorial page for the user manual, or API changes to the XML Class Reference.
 
-Man pages need to also be included in doc/index.rst. Readthedocs should then be able to find everything and build it upon a commit.
+### User Manual
+
+Tutorials and usage documentation lives in [doc/docs](https://github.com/TokisanGames/Terrain3D/tree/main/doc/docs) and is written in Markdown (*.md). Images are stored in `images` and videos are stored [_static/video](https://github.com/TokisanGames/Terrain3D/tree/main/doc/_static/video). 
+
+Pages also need to be included in the table of contents `doc/index.rst`. Readthedocs will then be able to find everything it needs to build the html documentation upon a commit.
 
 ### Class Reference
-Godot's doc-tool is used to extract or update the class reference in [XML files](https://github.com/TokisanGames/Terrain3D/tree/main/doc/classes). These files are edited for class documentation. Then `build_docs.sh` can be used to generate the API rst files and the html files.
+
+The class reference documentation that contributors edit is stored in [XML files](https://github.com/TokisanGames/Terrain3D/tree/main/doc/classes). These files are used as the source for generated documentation.
 
 Edit the class reference according to the [Godot class reference primer](https://docs.godotengine.org/en/stable/contributing/documentation/class_reference_primer.html#doc-class-reference-primer).
+
+Godot's doc-tool is used to extract or update the class structure from the compiled addon. See below for instructions.
+
+### Using the Documentation Tools
+
+This step isn't required for contributors. You may ask for help generating the XML class structure so you can edit it, or generating the resulting RST files. 
+
+#### To setup your system
+
+1. Use a bash shell available in linux, [gitforwindows](https://gitforwindows.org), or [Microsoft's WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
+2. Install the following modules using python's pip: `pip install docutils myst-parser sphinx sphinx-rtd-theme sphinx-rtd-dark-mode`.
+3. Edit `doc/build_docs.sh` and adjust the paths to your Godot executable and `make_rst.py`, found in the Godot repository.
+
+#### To edit the documentation
+
+1. Build Terrain3D with your updated code.
+2. Within the `doc` folder, run `./build_docs.sh`. The following will occur:
+  - The Godot executable dumps the XML structure for all classes, including those of installed addons.
+  - Any existing XML files (eg Terrain3D*) will be updated with the new structure, leaving prior written documentation.
+  - Sphinx RST files are generated from the XML files.
+  - All non-Terrain3D XML files are removed.
+  - A local html copy of the docs are generated from the Markdown and RST files, and a browser is open to view them.
+3. Fill in the XML files with documentation of the new generated structure and make any other changes to the Markdown files.
+4. Run the script again to update the RST files. This isn't necessary for Markdown updates, except to view the changes locally.
+5. Push your updates to the Markdown, XML, and RST files to the repository. Due to the nature of generation scripts, carefully review the changes so you only push those you intend.
+6. Readthedocs will detect commits to the main tree and will build the online html docs from the Markdown and RST files.
 

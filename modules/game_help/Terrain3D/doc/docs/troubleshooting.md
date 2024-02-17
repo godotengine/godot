@@ -35,13 +35,21 @@ You can also enable debugging from the command line by running Godot with `--ter
 
 To run the demo from the command line with debugging, open a terminal, and change to the project folder (where `project.godot` is):
 
+Adjust the file paths to your system. The console executable is not needed since you're already running these commands in a terminal window.
+
 ```
-# Adjust the file paths to your system. The console executable is not needed since you're already running these commands in a terminal window.
+# 1. Change to the project folder
+cd <PATH TO PROJECT FOLDER>
 
-# Change to the demo project folder, eg.
+# 2a. Run the project with debugging enabled at startup
+<PATH TO GODOT EXECUTABLE> --terrain3d-debug=DEBUG
+
+# 2b. Or run the editor with debugging enabled at startup
+<PATH TO GODOT EXECUTABLE> -e --terrain3d-debug=DEBUG
+
+
+# E.g. To run the demo with debug messages
 cd /c/gd/Terrain3D/project
-
-# Run the demo scene with debug messages
 /c/gd/bin/Godot_v4.1.3-stable_win64.exe --terrain3d-debug=DEBUG
 
 # Load the editor with debug messages

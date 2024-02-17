@@ -5,7 +5,7 @@
     <img src="logo_outlined.svg" width="400" alt="Godot Engine logo">
   </a>
 </p>
-调试版windows编辑器命令： scons p=windows vsproj=yes use_assertions=yes dev_build=yes debug_symbols=yes
+调试版windows编辑器命令： scons p=windows vsproj=yes use_assertions=yes dev_build=yes debug_symbols=yes vsproj_gen_only=no
 ## 2D and 3D cross-platform game engine
 
 **[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform

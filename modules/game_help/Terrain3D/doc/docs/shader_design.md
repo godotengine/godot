@@ -56,15 +56,15 @@ _Side note_: Interestingly, since the grid aligns with vertices on LOD0, there i
 
 It is trivial to store one texture value for any given location on a control map. However, what if we want to blend two or more textures at that point? How do we identify up to 16 or 32 textures? How do we blend them?
 
-This analysis compares the *splat map* method used by [Zylann's HTerrain](https://github.com/Zylann/godot_heightmap_plugin/) and other systems with an *index map* method, used by [cdxntchou's IndexMapTerrain](https://github.com/cdxntchou/IndexMapTerrain).
+This analysis compares the *splat map* method used by many other terrain systems with an *index map* method, used by Terrain3D and [cdxntchou's IndexMapTerrain](https://github.com/cdxntchou/IndexMapTerrain).
 
-At their core, all height map based terrain tools are just fancy painting applications. For texturing, the reasonable approach is to paint each texture on the control map and blend with opacity exactly as one would in Photoshop or Krita. This is what HTerrain does, but instead of painting with just RGBA, it paints with RGBACDEFHIJKLMNO. The unreasonable approach would be to use an entirely different methodology in order to reduce memory or increase speed.
+At their core, all height map based terrain tools are just fancy painting applications. For texturing, the reasonable approach is to paint each texture on the control map and blend with opacity exactly as one would in Photoshop or Krita. This is how a splat map works, but instead of painting with just RGBA, it paints with RGBACDEFHIJKLMNO (for 16 textures). The unreasonable approach would be to use an entirely different methodology in order to reduce memory or increase speed.
 
-**HTerrain's splat map approach** specifies 16 textures at each terrain vertex. This is stored in 4 splat maps, each consuming 32-bits as RGBA. This means each vertex in the terrain uses 4 bytes per 4 splat maps, for a total of 16 bytes for texture values. Each value represents a texture strength of 0-255. 
+**Splat map approach** specifies 4 textures at each terrain vertex per splat map, each vertex consuming 32-bits as RGBA. Each RGBA value represents a texture strength of 0-255. For 16 textures this method stores 4 splat maps. This means each vertex in the terrain uses 4 bytes per 4 splat maps, for a total of 16 bytes for texture values. Double for 32 textures.  
 
-All 4 splat maps are sampled, and of the 16 values, the 4 strongest are height blended together, per terrain pixel. The blending of textures for pixels drawn between vertices is handled by the GPU's linear interpolated texture filter during texture lookups.
+All splat maps are sampled, and of the 16-32 values, the 4 strongest are blended together, per terrain pixel. The blending of textures for pixels drawn between vertices is handled by the GPU's linear interpolated texture filter during texture lookups.
 
-**Our index map approach** samples a control map at 4 fixed grid points surrounding the current terrain pixel. The 4 surrounding samples have a base texture, an overlay texture, and a blending value. The base and overlay texture values range from 0-31, each stored in 5 bits. The blend values are stored in 8-bits.
+**Index map approach** samples a control map at 4 fixed grid points surrounding the current terrain pixel. The 4 surrounding samples have a base texture, an overlay texture, and a blending value. The base and overlay texture values range from 0-31, each stored in 5 bits. The blend values are stored in 8-bits.
 
 *Side note:* Storing blend values in 3-bits is possible, where each of the 8 numbers represents an index in a array of 0-1 values: `{ 0.0f, .125f, .25f, .334f, .5f, .667f, .8f, 1.0f }`. In the future, this may be baked at runtime. However, editing using a 3-bit array of fixed values was exceedingly difficult and unsuccessful.
 
@@ -73,18 +73,18 @@ The position of the pixel within its grid square is used to bilinear interpolate
 **Comparing the two methods:**
 
 * **Texture lookups** - Considering only lookups for which ground texture to use and loading the texture data:
-  * HTerrain uses 12 lookups per pixel:
-    * 4 for the 4 splat maps to get the texture for the closest vertex point
+  * Splat maps use 12-16 lookups per pixel depending on 16 or 32 textures:
+    * 4 for the 4 splat maps for 16 textures. 8 for 32 textures. This gets the texture for the closest vertex point
     * 8 for the strongest 4 albedo_height textures and the 4 normal_rough textures
-  * Terrain3D uses 12-20 lookups per pixel:
+  * Terrain3D uses 12-20 lookups per pixel depending on if an area has an overlay texture:
     * 4 for the surrounding 4 grid points on the control map
     * 8-16 for the 2-4 albedo_height & normal_rough for the base and overlay textures, for each of the 4 grid points
 
-* **VRAM consumed** - HTerrain stores 16 texture strength values in 16 bytes per pixel (16 * 8 bits = 128 bits). We could store that in 16 bits. However, we provide 32 textures. Using the splat map method, 32 textures would require 32 bytes per pixel. We store it in 18 bits (5 base, 5 overlay, 8 blend value). On a 4096 x 4096 terrain with 16M pixels, HTerrain consumes 256MB for a 16 texture splatmap; 32 texture splatmap would require 512MB. We can designate 32 textures in 36MB. This calculation considers only the portion of the control maps that define which textures to use. Both tools use up a lot more VRAM for other things.
+* **VRAM consumed** - Splat maps store 16 texture strength values in 16 bytes per pixel (16 * 8 bits = 128 bits). We could store that in 16 bits. Splat maps with 32 textures would require 32 bytes per pixel. We store that in 18 bits (5 base, 5 overlay, 8 blend value). On a 4096 x 4096 terrain with 16M pixels, splat maps consume 256MB for 16 textures, 512MB for 32. We can specify 32 textures in only 36MB for a 93% reduction in VRAM. This calculation considers only the portion of the maps that define where to place the textures on the terrain. Tools use up a lot more VRAM for other things.
 
 **In practice**
 
-* HTerrain - 4 textures can technically be blended per vertex. Generally, painting 3-4 textures in an area works fine. However, some combinations of 3 textures (depending on their position in the texture array) and sometimes adding in a 4th introduces artifacts. 
+* Splat maps - 4 textures can be blended intuitively as one would paint in photoshop. Some systems might introduce artifacts when 3-4 textures are blended in an area.
 
 * Terrain3D - Getting 3 or 4 textures in an area is feasible as long as only 2 textures are blending per grid point (vertex). It's possible to achieve a natural looking result with [the right technique](texture_painting.md#manual-painting-technique).
 

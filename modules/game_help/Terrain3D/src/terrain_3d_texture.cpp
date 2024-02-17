@@ -42,7 +42,7 @@ Terrain3DTexture::~Terrain3DTexture() {
 void Terrain3DTexture::clear() {
 	_data._name = "New Texture";
 	_data._texture_id = 0;
-	_data._albedo_color = Color(1.0, 1.0, 1.0, 1.0);
+	_data._albedo_color = Color(1.0f, 1.0f, 1.0f, 1.0f);
 	_data._albedo_texture.unref();
 	_data._normal_texture.unref();
 	_data._uv_scale = 0.1f;

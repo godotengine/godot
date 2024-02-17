@@ -74,18 +74,18 @@ public:
 		Ref<ImageTexture> _texture;
 
 		int _size = 0;
-		real_t _opacity = 0.0;
-		real_t _height = 0.0;
+		real_t _opacity = 0.0f;
+		real_t _height = 0.0f;
 		int _texture_index = 0;
 		Color _color = COLOR_ROUGHNESS;
-		real_t _roughness = 0.5;
+		real_t _roughness = 0.5f;
 		PackedVector3Array _gradient_points;
 		bool _enable = false;
 
 		bool _auto_regions = false;
 		bool _align_to_view = false;
-		real_t _gamma = 1.0;
-		real_t _jitter = 0.0;
+		real_t _gamma = 1.0f;
+		real_t _jitter = 0.0f;
 
 	public:
 		void set_data(Dictionary p_data);
@@ -136,23 +136,9 @@ private:
 	void _store_undo();
 	void _apply_undo(const Array &p_set);
 
-	// Singleton
-	friend void initialize_terrain_3d(ModuleInitializationLevel p_level);
-	friend void uninitialize_terrain_3d(ModuleInitializationLevel p_level);
-
-	static Terrain3DEditor *_singleton;
-
-	static void create() { _singleton = memnew(Terrain3DEditor); }
-	static void free() {
-		memdelete(_singleton);
-		_singleton = nullptr;
-	}
 public:
 	Terrain3DEditor();
 	~Terrain3DEditor();
-
-public:
-	static Terrain3DEditor *get_singleton() { return _singleton; }
 
 	void set_terrain(Terrain3D *p_terrain) { _terrain = p_terrain; }
 	Terrain3D *get_terrain() const { return _terrain; }

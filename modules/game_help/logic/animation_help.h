@@ -8,14 +8,10 @@
 class AnimationHelp : public Object
 {
     GDCLASS(AnimationHelp, Object);
-    static void _bind_methods()
-    {
-
-    }
+    static void _bind_methods();
     static AnimationHelp *singleton;
     double lastTickTime = 0;
     NodePath animationPlayer = NodePath("AnimationPlayer");
-    static Ref<Animation>  nullAnimation;
     struct AnimationInfo
     {
         String animationPath;
@@ -39,6 +35,7 @@ class AnimationHelp : public Object
             }
         }
     };
+    static Ref<Animation> getNullAnimation();
     // 处理开始播放动画
     static void on_animation_player_begin(AnimationPlayer* player,double p_delta, bool p_update_only)
     {
@@ -51,7 +48,7 @@ class AnimationHelp : public Object
             return;
         }
         singleton->animationGroup[player->get_animation_group()];
-        player->reset_all_animation(singleton->nullAnimation);
+        player->reset_all_animation(singleton->getNullAnimation());
     }
     static void on_animation_player_end(AnimationPlayer* player,double p_delta, bool p_update_only)
     {
@@ -136,7 +133,7 @@ class AnimationHelp : public Object
                 anim.last_using_time = time;
                 return anim.animation;
             }
-            return AnimationHelp::nullAnimation;
+            return AnimationHelp::getNullAnimation();
         }
         // 配置动画树
         void setup_animation_player(AnimationPlayer* player)

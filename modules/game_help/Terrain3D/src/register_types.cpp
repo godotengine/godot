@@ -23,16 +23,12 @@ void initialize_terrain_3d(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<Terrain3DTexture>();
 	ClassDB::register_class<Terrain3DTextureList>();
 	ClassDB::register_class<Terrain3DEditor>();
-
-	Terrain3DEditor::create();
 }
 
 void uninitialize_terrain_3d(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-
-	Terrain3DEditor::free();
 }
 
 // extern "C" {

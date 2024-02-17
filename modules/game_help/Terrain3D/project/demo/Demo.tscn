@@ -32,6 +32,7 @@ noise = SubResource("FastNoiseLite_d8lcj")
 
 [sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_jrc01"]
 _shader_parameters = {
+"_mouse_layer": 2147483648,
 "auto_base_texture": 0,
 "auto_height_reduction": 0.1,
 "auto_overlay_texture": 1,

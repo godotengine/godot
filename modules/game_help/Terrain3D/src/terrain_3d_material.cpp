@@ -285,8 +285,8 @@ void Terrain3DMaterial::_update_shader() {
 		pfa.push_back(1.0f);
 		curve->set_offsets(pfa);
 		PackedColorArray pca;
-		pca.push_back(Color(1., 1., 1., 1.));
-		pca.push_back(Color(0., 0., 0., 1.));
+		pca.push_back(Color(1.f, 1.f, 1.f, 1.f));
+		pca.push_back(Color(0.f, 0.f, 0.f, 1.f));
 		curve->set_colors(pca);
 
 		Ref<NoiseTexture2D> noise_tex;
@@ -424,7 +424,7 @@ void Terrain3DMaterial::_set_region_size(int p_size) {
 }
 
 void Terrain3DMaterial::_set_shader_parameters(const Dictionary &p_dict) {
-	LOG(INFO, "Setting param cache dictionary: ", p_dict.size());
+	LOG(INFO, "Setting shader params dictionary: ", p_dict.size());
 	_shader_params = p_dict;
 }
 
@@ -514,6 +514,13 @@ Variant Terrain3DMaterial::get_shader_param(const StringName &p_name) const {
 	Variant value;
 	_get(p_name, value);
 	return value;
+}
+
+void Terrain3DMaterial::set_mesh_vertex_spacing(real_t p_spacing) {
+	LOG(INFO, "Setting mesh vertex spacing in material: ", p_spacing);
+	_mesh_vertex_spacing = p_spacing;
+	RSS->material_set_param(_material, "_mesh_vertex_spacing", p_spacing);
+	RSS->material_set_param(_material, "_mesh_vertex_density", 1.0f / p_spacing);
 }
 
 void Terrain3DMaterial::set_show_checkered(bool p_enabled) {
@@ -681,9 +688,6 @@ void Terrain3DMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 			pi.usage = PROPERTY_USAGE_EDITOR;
 			p_list->push_back(pi);
 
-			// Populate list of public parameters for current shader
-			_active_params.push_back(_name);
-
 			// Store this param in a dictionary that is saved in the resource file
 			// Initially set with default value
 			// Also acts as a cache for _get
@@ -693,7 +697,9 @@ void Terrain3DMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				_property_get_revert(_name, _shader_params[_name]);
 			}
 		}
-		++bit;
+
+		// Populate list of public and private parameters for current shader
+		_active_params.push_back(_name);
 	}
 	return;
 }

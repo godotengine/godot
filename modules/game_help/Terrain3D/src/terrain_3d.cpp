@@ -28,6 +28,7 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/world_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/resources/primitive_meshes.h"
 
 
 
@@ -82,8 +83,10 @@ void Terrain3D::_initialize() {
 	// Initialize the system
 	if (!_initialized && _is_inside_world && is_inside_tree()) {
 		_material->initialize(_storage->get_region_size());
+		_material->set_mesh_vertex_spacing(_mesh_vertex_spacing);
 		_storage->update_regions(true); // generate map arrays
 		_texture_list->update_list(); // generate texture arrays
+		_setup_mouse_picking();
 		_build(_mesh_lods, _mesh_size);
 		_build_collision();
 		_initialized = true;
@@ -105,13 +108,13 @@ void Terrain3D::__process(double delta) {
 		return;
 
 	// If the game/editor camera is not set, find it
-	if (!VariantUtilityFunctions::is_instance_valid(_camera)) {
+	if (!UtilityFunctions::is_instance_valid(_camera)) {
 		LOG(DEBUG, "camera is null, getting the current one");
 		_grab_camera();
 	}
 
 	// If camera has moved enough, re-center the terrain on it.
-	if (VariantUtilityFunctions::is_instance_valid(_camera) && _camera->is_inside_tree()) {
+	if (UtilityFunctions::is_instance_valid(_camera) && _camera->is_inside_tree()) {
 		Vector3 cam_pos = _camera->get_global_position();
 		Vector2 cam_pos_2d = Vector2(cam_pos.x, cam_pos.z);
 		if (_camera_last_position.distance_to(cam_pos_2d) > 0.2f) {
@@ -119,6 +122,68 @@ void Terrain3D::__process(double delta) {
 			_camera_last_position = cam_pos_2d;
 		}
 	}
+}
+
+void Terrain3D::_setup_mouse_picking() {
+	LOG(INFO, "Setting up mouse picker and get_intersection viewport, camera & screen quad");
+	_mouse_vp = memnew(SubViewport);
+	_mouse_vp->set_name("SubViewport");
+	add_child(_mouse_vp, true);
+	_mouse_vp->set_size(Vector2i(2, 2));
+	_mouse_vp->set_update_mode(SubViewport::UPDATE_ONCE);
+	_mouse_vp->set_handle_input_locally(false);
+	_mouse_vp->set_canvas_cull_mask(0);
+	// DEPRECATED Enable in 4.2 and disable texture srgb->linear
+	//_mouse_vp->set_use_hdr_2d(true);
+	_mouse_vp->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	_mouse_vp->set_positional_shadow_atlas_size(0);
+	_mouse_vp->set_positional_shadow_atlas_quadrant_subdiv(0, Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
+	_mouse_vp->set_positional_shadow_atlas_quadrant_subdiv(1, Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
+	_mouse_vp->set_positional_shadow_atlas_quadrant_subdiv(2, Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
+	_mouse_vp->set_positional_shadow_atlas_quadrant_subdiv(3, Viewport::SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
+
+	_mouse_cam = memnew(Camera3D);
+	_mouse_cam->set_name("MouseCamera3D");
+	_mouse_vp->add_child(_mouse_cam, true);
+	Ref<Environment> env;
+	env.instantiate();
+	env->set_tonemapper(Environment::TONE_MAPPER_LINEAR);
+	_mouse_cam->set_environment(env);
+	_mouse_cam->set_projection(Camera3D::PROJECTION_ORTHOGONAL);
+	_mouse_cam->set_size(0.1f);
+	_mouse_cam->set_far(100000.f);
+
+	_mouse_quad = memnew(MeshInstance3D);
+	_mouse_quad->set_name("ScreenQuad");
+	_mouse_cam->add_child(_mouse_quad, true);
+	Ref<QuadMesh> quad;
+	quad.instantiate();
+	quad->set_size(Vector2(0.1f, 0.1f));
+	_mouse_quad->set_mesh(quad);
+	String shader_code = String(
+#include "shaders/gpu_depth.glsl"
+	);
+	Ref<Shader> shader;
+	shader.instantiate();
+	shader->set_code(shader_code);
+	Ref<ShaderMaterial> shader_material;
+	shader_material.instantiate();
+	shader_material->set_shader(shader);
+	_mouse_quad->set_surface_override_material(0, shader_material);
+	_mouse_quad->set_position(Vector3(0.f, 0.f, -0.5f));
+
+	// Set terrain, terrain shader, mouse camera, and screen quad to mouse layer
+	set_mouse_layer(_mouse_layer);
+}
+
+void Terrain3D::_destroy_mouse_picking() {
+	LOG(DEBUG, "Freeing mouse_quad");
+	memdelete_safely(_mouse_quad);
+	LOG(DEBUG, "Freeing mouse_cam");
+	memdelete_safely(_mouse_cam);
+	LOG(DEBUG, "memdelete mouse_vp");
+	memdelete_safely(_mouse_vp);
+	LOG(DEBUG, "finished");
 }
 
 /**
@@ -147,6 +212,7 @@ void Terrain3D::_grab_camera() {
 
 /**
  * Recursive helper function for _grab_camera().
+ * DEPRECATED - Remove when moving to 4.2 and use EditorInterface.get_editor_viewport_3d(i).get_camera_3d()
  */
 void Terrain3D::_find_cameras(TypedArray<Node> from_nodes, Node *excluded_node, TypedArray<Camera3D> &cam_array) {
 	for (int i = 0; i < from_nodes.size(); i++) {
@@ -282,7 +348,6 @@ void Terrain3D::_build_collision() {
 		_debug_static_body = memnew(StaticBody3D);
 		_debug_static_body->set_name("StaticBody3D");
 		add_child(_debug_static_body, true);
-		_debug_static_body->set_owner(this);
 	}
 	_update_collision();
 }
@@ -318,23 +383,23 @@ void Terrain3D::_update_collision() {
 		map_data.resize(shape_size * shape_size);
 
 		Vector2i global_offset = Vector2i(_storage->get_region_offsets()[i]) * region_size;
-		Vector3 global_pos = Vector3(global_offset.x, 0, global_offset.y);
+		Vector3 global_pos = Vector3(global_offset.x, 0.f, global_offset.y);
 
 		Ref<Image> map, map_x, map_z, map_xz;
 		Ref<Image> cmap, cmap_x, cmap_z, cmap_xz;
 		map = _storage->get_map_region(Terrain3DStorage::TYPE_HEIGHT, i);
 		cmap = _storage->get_map_region(Terrain3DStorage::TYPE_CONTROL, i);
-		int region = _storage->get_region_index(Vector3(global_pos.x + region_size, 0, global_pos.z));
+		int region = _storage->get_region_index(Vector3(global_pos.x + region_size, 0.f, global_pos.z));
 		if (region >= 0) {
 			map_x = _storage->get_map_region(Terrain3DStorage::TYPE_HEIGHT, region);
 			cmap_x = _storage->get_map_region(Terrain3DStorage::TYPE_CONTROL, region);
 		}
-		region = _storage->get_region_index(Vector3(global_pos.x, 0, global_pos.z + region_size));
+		region = _storage->get_region_index(Vector3(global_pos.x, 0.f, global_pos.z + region_size));
 		if (region >= 0) {
 			map_z = _storage->get_map_region(Terrain3DStorage::TYPE_HEIGHT, region);
 			cmap_z = _storage->get_map_region(Terrain3DStorage::TYPE_CONTROL, region);
 		}
-		region = _storage->get_region_index(Vector3(global_pos.x + region_size, 0, global_pos.z + region_size));
+		region = _storage->get_region_index(Vector3(global_pos.x + region_size, 0.f, global_pos.z + region_size));
 		if (region >= 0) {
 			map_xz = _storage->get_map_region(Terrain3DStorage::TYPE_HEIGHT, region);
 			cmap_xz = _storage->get_map_region(Terrain3DStorage::TYPE_CONTROL, region);
@@ -377,8 +442,9 @@ void Terrain3D::_update_collision() {
 		// Non rotated shape for normal array index above
 		//Transform3D xform = Transform3D(Basis(), global_pos);
 		// Rotated shape Y=90 for -90 rotated array index
-		Transform3D xform = Transform3D(Basis(Vector3(0, 1.0, 0), Math_PI * .5),
-				global_pos + Vector3(region_size, 0, region_size) * .5);
+		Transform3D xform = Transform3D(Basis(Vector3(0.f, 1.f, 0.f), Math_PI * .5f),
+				global_pos + Vector3(region_size, 0.f, region_size) * .5f);
+		xform.scale(Vector3(_mesh_vertex_spacing, 1.f, _mesh_vertex_spacing));
 
 		if (!_show_debug_collision) {
 			RID shape = PhysicsServer3D::get_singleton()->heightmap_shape_create();
@@ -400,7 +466,7 @@ void Terrain3D::_update_collision() {
 			debug_col_shape = memnew(CollisionShape3D);
 			debug_col_shape->set_name("CollisionShape3D");
 			_debug_static_body->add_child(debug_col_shape, true);
-			debug_col_shape->set_owner(this);
+			debug_col_shape->set_owner(_debug_static_body);
 
 			Ref<HeightMapShape3D> hshape;
 			hshape.instantiate();
@@ -432,12 +498,12 @@ void Terrain3D::_destroy_collision() {
 			Node *child = _debug_static_body->get_child(i);
 			LOG(DEBUG, "Freeing dsb child ", i, " ", child->get_name());
 			_debug_static_body->remove_child(child);
-			memfree(child);
+			memdelete(child);
 		}
 
 		LOG(DEBUG, "Freeing static body");
 		remove_child(_debug_static_body);
-		memfree(_debug_static_body);
+		memdelete(_debug_static_body);
 		_debug_static_body = nullptr;
 	}
 }
@@ -510,14 +576,14 @@ void Terrain3D::_generate_triangles(PackedVector3Array &p_vertices, PackedVector
 			}
 		}
 	} else {
-		int32_t z_start = (int32_t)Math::ceil(p_global_aabb.position.z);
-		int32_t z_end = (int32_t)Math::floor(p_global_aabb.get_end().z) + 1;
-		int32_t x_start = (int32_t)Math::ceil(p_global_aabb.position.x);
-		int32_t x_end = (int32_t)Math::floor(p_global_aabb.get_end().x) + 1;
+		int32_t z_start = (int32_t)Math::ceil(p_global_aabb.position.z / _mesh_vertex_spacing);
+		int32_t z_end = (int32_t)Math::floor(p_global_aabb.get_end().z / _mesh_vertex_spacing) + 1;
+		int32_t x_start = (int32_t)Math::ceil(p_global_aabb.position.x / _mesh_vertex_spacing);
+		int32_t x_end = (int32_t)Math::floor(p_global_aabb.get_end().x / _mesh_vertex_spacing) + 1;
 
 		for (int32_t z = z_start; z < z_end; ++z) {
 			for (int32_t x = x_start; x < x_end; ++x) {
-				real_t height = _storage->get_height(Vector3(x, 0.0, z));
+				real_t height = _storage->get_height(Vector3(x, 0.f, z));
 				if (height >= p_global_aabb.position.y && height <= p_global_aabb.get_end().y) {
 					_generate_triangle_pair(p_vertices, p_uvs, p_lod, p_filter, p_require_nav, x, z);
 				}
@@ -532,11 +598,12 @@ void Terrain3D::_generate_triangle_pair(PackedVector3Array &p_vertices, PackedVe
 	uint32_t control1 = _storage->get_control(Vector3(x, 0.0, z));
 	uint32_t control2 = _storage->get_control(Vector3(x + step, 0.0, z + step));
 	uint32_t control3 = _storage->get_control(Vector3(x, 0.0, z + step));
-	if (!Util::is_hole(control1) && !Util::is_hole(control2) && !Util::is_hole(control3)) {
-		if (!p_require_nav || (Util::is_nav(control1) && Util::is_nav(control2) && Util::is_nav(control3))) {
-			Vector3 v1 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x, 0.0, z));
-			Vector3 v2 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x + step, 0.0, z + step));
-			Vector3 v3 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x, 0.0, z + step));
+	Vector3 vertex_scaler = Vector3(_mesh_vertex_spacing, 1.0, _mesh_vertex_spacing);
+	if (!p_require_nav || (Util::is_nav(control1) && Util::is_nav(control2) && Util::is_nav(control3))) {
+		Vector3 v1 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x, 0.0, z)) * vertex_scaler;
+		Vector3 v2 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x + step, 0.0, z + step)) * vertex_scaler;
+		Vector3 v3 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x, 0.0, z + step)) * vertex_scaler;
+		if (!UtilityFunctions::is_nan(v1.y) && !UtilityFunctions::is_nan(v2.y) && !UtilityFunctions::is_nan(v3.y)) {
 			p_vertices.push_back(v1);
 			p_vertices.push_back(v2);
 			p_vertices.push_back(v3);
@@ -551,11 +618,11 @@ void Terrain3D::_generate_triangle_pair(PackedVector3Array &p_vertices, PackedVe
 	control1 = _storage->get_control(Vector3(x, 0.0, z));
 	control2 = _storage->get_control(Vector3(x + step, 0.0, z));
 	control3 = _storage->get_control(Vector3(x + step, 0.0, z + step));
-	if (!Util::is_hole(control1) && !Util::is_hole(control2) && !Util::is_hole(control3)) {
-		if (!p_require_nav || (Util::is_nav(control1) && Util::is_nav(control2) && Util::is_nav(control3))) {
-			Vector3 v1 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x, 0.0, z));
-			Vector3 v2 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x + step, 0.0, z));
-			Vector3 v3 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x + step, 0.0, z + step));
+	if (!p_require_nav || (Util::is_nav(control1) && Util::is_nav(control2) && Util::is_nav(control3))) {
+		Vector3 v1 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x, 0.0, z)) * vertex_scaler;
+		Vector3 v2 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x + step, 0.0, z)) * vertex_scaler;
+		Vector3 v3 = _storage->get_mesh_vertex(p_lod, p_filter, Vector3(x + step, 0.0, z + step)) * vertex_scaler;
+		if (!UtilityFunctions::is_nan(v1.y) && !UtilityFunctions::is_nan(v2.y) && !UtilityFunctions::is_nan(v3.y)) {
 			p_vertices.push_back(v1);
 			p_vertices.push_back(v2);
 			p_vertices.push_back(v3);
@@ -620,8 +687,21 @@ void Terrain3D::set_mesh_size(int p_size) {
 	}
 }
 
+void Terrain3D::set_mesh_vertex_spacing(real_t p_spacing) {
+	p_spacing = CLAMP(p_spacing, 0.25f, 100.0f);
+	if (_mesh_vertex_spacing != p_spacing) {
+		LOG(INFO, "Setting mesh vertex spacing: ", p_spacing);
+		_mesh_vertex_spacing = p_spacing;
+		_clear();
+		_initialize();
+	}
+	if (Engine::get_singleton()->is_editor_hint() && _plugin != nullptr) {
+		_plugin->call("update_region_grid");
+	}
+}
+
 void Terrain3D::set_material(const Ref<Terrain3DMaterial> &p_material) {
-	if (_storage != p_material) {
+	if (_material != p_material) {
 		LOG(INFO, "Setting material");
 		_material = p_material;
 		_clear();
@@ -659,19 +739,45 @@ void Terrain3D::set_plugin(EditorPlugin *p_plugin) {
 }
 
 void Terrain3D::set_camera(Camera3D *p_camera) {
-	_camera = p_camera;
-	if (p_camera == nullptr) {
-		LOG(DEBUG, "Received null camera. Calling _grab_camera");
-		_grab_camera();
-	} else {
-		LOG(DEBUG, "Setting camera: ", p_camera);
+	if (_camera != p_camera) {
 		_camera = p_camera;
+		if (p_camera == nullptr) {
+			LOG(DEBUG, "Received null camera. Calling _grab_camera");
+			_grab_camera();
+		} else {
+			LOG(DEBUG, "Setting camera: ", p_camera);
+			_camera = p_camera;
+		}
 	}
 }
 
 void Terrain3D::set_render_layers(uint32_t p_layers) {
+	LOG(INFO, "Setting terrain render layers to: ", p_layers);
 	_render_layers = p_layers;
 	_update_instances();
+}
+
+void Terrain3D::set_mouse_layer(uint32_t p_layer) {
+	p_layer = CLAMP(p_layer, 21, 32);
+	_mouse_layer = p_layer;
+	uint32_t mouse_mask = 1 << (_mouse_layer - 1);
+	LOG(INFO, "Setting mouse layer: ", p_layer, " (", mouse_mask, ") on terrain mesh, material, mouse camera, mouse quad");
+
+	// Set terrain meshes to mouse layer
+	// Mask off editor render layers by ORing user layers 1-20 and current mouse layer
+	set_render_layers((_render_layers & 0xFFFFF) | mouse_mask);
+	// Set terrain shader to exclude mouse camera from showing holes
+	if (_material != nullptr) {
+		_material->set_shader_param("_mouse_layer", mouse_mask);
+	}
+	// Set mouse camera to see only mouse layer
+	if (_mouse_cam != nullptr) {
+		_mouse_cam->set_cull_mask(mouse_mask);
+	}
+	// Set screenquad to mouse layer
+	if (_mouse_quad != nullptr) {
+		_mouse_quad->set_layer_mask(mouse_mask);
+	}
 }
 
 void Terrain3D::set_cast_shadows(GeometryInstance3D::ShadowCastingSetting p_shadow_casting) {
@@ -711,17 +817,19 @@ void Terrain3D::snap(Vector3 p_cam_pos) {
 	p_cam_pos.y = 0;
 	LOG(DEBUG_CONT, "Snapping terrain to: ", String(p_cam_pos));
 
-	Transform3D t = Transform3D(Basis(), p_cam_pos.floor());
+	Vector3 snapped_pos = (p_cam_pos / _mesh_vertex_spacing).floor() * _mesh_vertex_spacing;
+	Transform3D t = Transform3D().scaled(Vector3(_mesh_vertex_spacing, 1, _mesh_vertex_spacing));
+	t.origin = snapped_pos;
 	RSS->instance_set_transform(_data.cross, t);
 
 	int edge = 0;
 	int tile = 0;
 
 	for (int l = 0; l < _mesh_lods; l++) {
-		real_t scale = real_t(1 << l);
+		real_t scale = real_t(1 << l) * _mesh_vertex_spacing;
 		Vector3 snapped_pos = (p_cam_pos / scale).floor() * scale;
-		Vector3 tile_size = Vector3(real_t(_mesh_size << l), 0, real_t(_mesh_size << l));
-		Vector3 base = snapped_pos - Vector3(real_t(_mesh_size << (l + 1)), 0, real_t(_mesh_size << (l + 1)));
+		Vector3 tile_size = Vector3(real_t(_mesh_size << l), 0, real_t(_mesh_size << l)) * _mesh_vertex_spacing;
+		Vector3 base = snapped_pos - Vector3(real_t(_mesh_size << (l + 1)), 0.f, real_t(_mesh_size << (l + 1))) * _mesh_vertex_spacing;
 
 		// Position tiles
 		for (int x = 0; x < 4; x++) {
@@ -730,11 +838,11 @@ void Terrain3D::snap(Vector3 p_cam_pos) {
 					continue;
 				}
 
-				Vector3 fill = Vector3(x >= 2 ? 1 : 0, 0, y >= 2 ? 1 : 0) * scale;
-				Vector3 tile_tl = base + Vector3(x, 0, y) * tile_size + fill;
+				Vector3 fill = Vector3(x >= 2 ? 1.f : 0.f, 0.f, y >= 2 ? 1.f : 0.f) * scale;
+				Vector3 tile_tl = base + Vector3(x, 0.f, y) * tile_size + fill;
 				//Vector3 tile_br = tile_tl + tile_size;
 
-				Transform3D t = Transform3D().scaled(Vector3(scale, 1, scale));
+				Transform3D t = Transform3D().scaled(Vector3(scale, 1.f, scale));
 				t.origin = tile_tl;
 
 				RSS->instance_set_transform(_data.tiles[tile], t);
@@ -743,7 +851,7 @@ void Terrain3D::snap(Vector3 p_cam_pos) {
 			}
 		}
 		{
-			Transform3D t = Transform3D().scaled(Vector3(scale, 1, scale));
+			Transform3D t = Transform3D().scaled(Vector3(scale, 1.f, scale));
 			t.origin = snapped_pos;
 			RSS->instance_set_transform(_data.fillers[l], t);
 		}
@@ -754,26 +862,26 @@ void Terrain3D::snap(Vector3 p_cam_pos) {
 
 			// Position trims
 			{
-				Vector3 tile_center = snapped_pos + (Vector3(scale, 0, scale) * 0.5f);
+				Vector3 tile_center = snapped_pos + (Vector3(scale, 0.f, scale) * 0.5f);
 				Vector3 d = p_cam_pos - next_snapped_pos;
 
 				int r = 0;
 				r |= d.x >= scale ? 0 : 2;
 				r |= d.z >= scale ? 0 : 1;
 
-				real_t rotations[4] = { 0.0, 270.0, 90, 180.0 };
+				real_t rotations[4] = { 0.f, 270.f, 90.f, 180.f };
 
-				real_t angle = VariantUtilityFunctions::deg_to_rad(rotations[r]);
-				Transform3D t = Transform3D().rotated(Vector3(0, 1, 0), -angle);
-				t = t.scaled(Vector3(scale, 1, scale));
+				real_t angle = UtilityFunctions::deg_to_rad(rotations[r]);
+				Transform3D t = Transform3D().rotated(Vector3(0.f, 1.f, 0.f), -angle);
+				t = t.scaled(Vector3(scale, 1.f, scale));
 				t.origin = tile_center;
 				RSS->instance_set_transform(_data.trims[edge], t);
 			}
 
 			// Position seams
 			{
-				Vector3 next_base = next_snapped_pos - Vector3(real_t(_mesh_size << (l + 1)), 0, real_t(_mesh_size << (l + 1)));
-				Transform3D t = Transform3D().scaled(Vector3(scale, 1, scale));
+				Vector3 next_base = next_snapped_pos - Vector3(real_t(_mesh_size << (l + 1)), 0.f, real_t(_mesh_size << (l + 1))) * _mesh_vertex_spacing;
+				Transform3D t = Transform3D().scaled(Vector3(scale, 1.f, scale));
 				t.origin = next_base;
 				RSS->instance_set_transform(_data.seams[edge], t);
 			}
@@ -832,42 +940,62 @@ void Terrain3D::update_aabbs() {
 }
 
 /* Iterate over ground to find intersection point between two rays:
- *	p_position (camera position)
+ *	p_src_pos (camera position)
  *	p_direction (camera direction looking at the terrain)
  *	test_dir (camera direction 0 Y, traversing terrain along height
  * Returns vec3(Double max 3.402823466e+38F) on no intersection. Test w/ if (var.x < 3.4e38)
  */
-Vector3 Terrain3D::get_intersection(Vector3 p_position, Vector3 p_direction) {
-	Vector3 test_dir = Vector3(p_direction.x, 0., p_direction.z).normalized();
-	Vector3 test_point = p_position;
+Vector3 Terrain3D::get_intersection(Vector3 p_src_pos, Vector3 p_direction) {
+	if (_camera == nullptr) {
+		LOG(ERROR, "Invalid camera");
+		return Vector3(NAN, NAN, NAN);
+	}
+	if (_mouse_cam == nullptr) {
+		LOG(ERROR, "Invalid mouse camera");
+		return Vector3(NAN, NAN, NAN);
+	}
 	p_direction.normalize();
 
-	real_t highest_dotp = 0.f;
-	Vector3 highest_point;
+	Vector3 point;
 
-	if (_storage.is_valid()) {
-		for (int i = 0; i < 3000; i++) {
-			test_point += test_dir;
-			test_point.y = _storage->get_height(test_point);
-			Vector3 test_vec = (test_point - p_position).normalized();
+	// Position mouse cam one unit behind the requested position
+	_mouse_cam->set_global_position(p_src_pos - p_direction);
 
-			real_t test_dotp = p_direction.dot(test_vec);
-			if (test_dotp > highest_dotp) {
-				highest_dotp = test_dotp;
-				highest_point = test_point;
-			}
-			// Highest accuracy hits most of the time
-			if (test_dotp > 0.9999) {
-				return test_point;
-			}
+	// If looking straight down (eg orthogonal camera), look_at won't work
+	if ((p_direction - Vector3(0.f, -1.f, 0.f)).length_squared() < 0.00001f) {
+		_mouse_cam->set_rotation_degrees(Vector3(-90.f, 0.f, 0.f));
+		point = p_src_pos;
+		point.y = _storage->get_height(p_src_pos);
+	} else {
+		// Get depth from perspective camera snapshot
+		_mouse_cam->look_at(_mouse_cam->get_global_position() + p_direction, Vector3(0.f, 1.f, 0.f));
+		_mouse_vp->set_update_mode(SubViewport::UPDATE_ONCE);
+		Ref<ViewportTexture> vp_tex = _mouse_vp->get_texture();
+		Ref<Image> vp_img = vp_tex->get_image();
+
+		// Read the depth pixel from the camera viewport
+		// DEPRECATED - remove srgb_to_linear and use HDR viewport for Godot 4.2 +
+		Color screen_depth = vp_img->get_pixel(0, 0).srgb_to_linear();
+
+		// Get position from depth packed in RG - unpack back to float.
+		// Needed for Mobile renderer
+		// https://gamedev.stackexchange.com/questions/201151/24bit-float-to-rgb
+		Vector2 screen_rg = Vector2(screen_depth.r, screen_depth.g);
+		real_t normalized_distance = screen_rg.dot(Vector2(1.f, 1.f / 255.f));
+		if (normalized_distance < 0.00001f) {
+			return Vector3(__FLT_MAX__, __FLT_MAX__, __FLT_MAX__);
+		}
+		// Necessary for a correct value depth = 1
+		if (normalized_distance > 0.9999f) {
+			normalized_distance = 1.0f;
 		}
 
-		// Good enough fallback (the above test often overshoots, so this grabs the highest we did hit)
-		if (highest_dotp >= 0.999) {
-			return highest_point;
-		}
+		// Denormalize distance to get real depth and terrain position
+		real_t depth = normalized_distance * _mouse_cam->get_far();
+		point = _mouse_cam->get_global_position() + p_direction * depth;
 	}
-	return Vector3(__FLT_MAX__, __FLT_MAX__, __FLT_MAX__);
+
+	return point;
 }
 
 /**
@@ -970,6 +1098,7 @@ void Terrain3D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			LOG(INFO, "NOTIFICATION_EXIT_TREE");
 			_clear();
+			_destroy_mouse_picking();
 			break;
 		}
 
@@ -1032,6 +1161,8 @@ void Terrain3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh_lods"), &Terrain3D::get_mesh_lods);
 	ClassDB::bind_method(D_METHOD("set_mesh_size", "size"), &Terrain3D::set_mesh_size);
 	ClassDB::bind_method(D_METHOD("get_mesh_size"), &Terrain3D::get_mesh_size);
+	ClassDB::bind_method(D_METHOD("set_mesh_vertex_spacing", "scale"), &Terrain3D::set_mesh_vertex_spacing);
+	ClassDB::bind_method(D_METHOD("get_mesh_vertex_spacing"), &Terrain3D::get_mesh_vertex_spacing);
 
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &Terrain3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &Terrain3D::get_material);
@@ -1047,6 +1178,8 @@ void Terrain3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_render_layers", "layers"), &Terrain3D::set_render_layers);
 	ClassDB::bind_method(D_METHOD("get_render_layers"), &Terrain3D::get_render_layers);
+	ClassDB::bind_method(D_METHOD("set_mouse_layer", "layer"), &Terrain3D::set_mouse_layer);
+	ClassDB::bind_method(D_METHOD("get_mouse_layer"), &Terrain3D::get_mouse_layer);
 	ClassDB::bind_method(D_METHOD("set_cast_shadows", "shadow_casting_setting"), &Terrain3D::set_cast_shadows);
 	ClassDB::bind_method(D_METHOD("get_cast_shadows"), &Terrain3D::get_cast_shadows);
 	ClassDB::bind_method(D_METHOD("set_cull_margin", "margin"), &Terrain3D::set_cull_margin);
@@ -1066,11 +1199,12 @@ void Terrain3D::_bind_methods() {
 	// Utility functions
 	ClassDB::bind_static_method("Terrain3D", D_METHOD("get_min_max", "image"), &Util::get_min_max);
 	ClassDB::bind_static_method("Terrain3D", D_METHOD("get_thumbnail", "image", "size"), &Util::get_thumbnail, DEFVAL(Vector2i(256, 256)));
-	ClassDB::bind_static_method("Terrain3D", D_METHOD("get_filled_image", "size", "color", "create_mipmaps", "format"), &Util::get_filled_image); //, DEFVAL(Vector2i(256, 256)));
+	ClassDB::bind_static_method("Terrain3D", D_METHOD("get_filled_image", "size", "color", "create_mipmaps", "format"), &Util::get_filled_image);
+	ClassDB::bind_static_method("Terrain3D", D_METHOD("pack_image", "src_rgb", "src_r", "invert_green_channel"), &Util::pack_image, DEFVAL(false));
 
 	// Expose 'update_aabbs' so it can be used in Callable. Not ideal.
 	ClassDB::bind_method(D_METHOD("update_aabbs"), &Terrain3D::update_aabbs);
-	ClassDB::bind_method(D_METHOD("get_intersection", "position", "direction"), &Terrain3D::get_intersection);
+	ClassDB::bind_method(D_METHOD("get_intersection", "src_pos", "direction"), &Terrain3D::get_intersection);
 	ClassDB::bind_method(D_METHOD("bake_mesh", "lod", "filter"), &Terrain3D::bake_mesh);
 	ClassDB::bind_method(D_METHOD("generate_nav_mesh_source_geometry", "global_aabb", "require_nav"), &Terrain3D::generate_nav_mesh_source_geometry, DEFVAL(true));
 
@@ -1081,6 +1215,7 @@ void Terrain3D::_bind_methods() {
 
 	ADD_GROUP("Renderer", "render_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_render_layers", "get_render_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_mouse_layer", PROPERTY_HINT_RANGE, "21, 32"), "set_mouse_layer", "get_mouse_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_cast_shadows", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows", "get_cast_shadows");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "render_cull_margin", PROPERTY_HINT_RANGE, "0, 10000, 1, or_greater"), "set_cull_margin", "get_cull_margin");
 
@@ -1093,6 +1228,7 @@ void Terrain3D::_bind_methods() {
 	ADD_GROUP("Mesh", "mesh_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh_lods", PROPERTY_HINT_RANGE, "1,10,1"), "set_mesh_lods", "get_mesh_lods");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh_size", PROPERTY_HINT_RANGE, "8,64,1"), "set_mesh_size", "get_mesh_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_vertex_spacing", PROPERTY_HINT_RANGE, "0.25,10.0,0.05,or_greater"), "set_mesh_vertex_spacing", "get_mesh_vertex_spacing");
 
 	ADD_GROUP("Debug", "debug_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_level", PROPERTY_HINT_ENUM, "Errors,Info,Debug,Debug Continuous"), "set_debug_level", "get_debug_level");

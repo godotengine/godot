@@ -70,7 +70,7 @@ float world_noise(vec2 p) {
 
 //INSERT: WORLD_NOISE2
 	// World Noise
-   	if(_background_mode == 2) {
+   	if(_background_mode == 2u) {
 	    float weight = texture(_region_blend_map, (uv/float(_region_map_size))+0.5).r;
 	    float rmap_half_size = float(_region_map_size)*.5;
 	    if(abs(uv.x) > rmap_half_size+.5 || abs(uv.y) > rmap_half_size+.5) {

@@ -39,7 +39,7 @@ Vector2 Util::get_min_max(const Ref<Image> p_image) {
 		return Vector2(INFINITY, INFINITY);
 	}
 
-	Vector2 min_max = Vector2(0, 0);
+	Vector2 min_max = Vector2(0.f, 0.f);
 
 	for (int y = 0; y < p_image->get_height(); y++) {
 		for (int x = 0; x < p_image->get_width(); x++) {
@@ -87,7 +87,7 @@ Ref<Image> Util::get_thumbnail(const Ref<Image> p_image, Vector2i p_size) {
 	hmin = abs(hmin);
 	hmax = abs(hmax) + hmin;
 	// Avoid divide by zero
-	hmax = (hmax == 0) ? 0.001 : hmax;
+	hmax = (hmax == 0) ? 0.001f : hmax;
 
 	// Create a new image w / normalized values
 	Ref<Image> thumb = memnew(Image(p_size.x, p_size.y, false, Image::FORMAT_RGB8));
@@ -173,4 +173,35 @@ Ref<Image> Util::get_filled_image(Vector2i p_size, Color p_color, bool p_create_
 		img->compress_from_channels(compression_format, channels);
 	}
 	return img;
+}
+
+/* From source RGB and R channels, create a new RGBA image. If p_invert_green_channel is true,
+ * the destination green channel will be 1.0 - input green channel.
+ */
+Ref<Image> Util::pack_image(const Ref<Image> p_src_rgb, const Ref<Image> p_src_r, bool p_invert_green_channel) {
+	if (!p_src_rgb.is_valid() || !p_src_r.is_valid()) {
+		LOG(ERROR, "Provided images are not valid. Cannot pack.");
+		return Ref<Image>();
+	}
+	if (p_src_rgb->get_size() != p_src_r->get_size()) {
+		LOG(ERROR, "Provided images are not the same size. Cannot pack.");
+		return Ref<Image>();
+	}
+	if (p_src_rgb->is_empty() || p_src_r->is_empty()) {
+		LOG(ERROR, "Provided images are empty. Cannot pack.");
+		return Ref<Image>();
+	}
+	Ref<Image> dst = memnew(Image(p_src_rgb->get_width(), p_src_rgb->get_height(), false, Image::FORMAT_RGBA8));
+	LOG(INFO, "Creating image from source RGB + R images.");
+	for (int y = 0; y < p_src_rgb->get_height(); y++) {
+		for (int x = 0; x < p_src_rgb->get_width(); x++) {
+			Color col = p_src_rgb->get_pixel(x, y);
+			col.a = p_src_r->get_pixel(x, y).r;
+			if (p_invert_green_channel) {
+				col.g = 1.0f - col.g;
+			}
+			dst->set_pixel(x, y, col);
+		}
+	}
+	return dst;
 }

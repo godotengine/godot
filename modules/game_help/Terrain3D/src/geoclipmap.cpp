@@ -96,7 +96,7 @@ Vector<RID> GeoClipMap::generate(int p_size, int p_levels) {
 			}
 		}
 
-		aabb = AABB(Vector3(0, 0, 0), Vector3(PATCH_VERT_RESOLUTION, 0.1, PATCH_VERT_RESOLUTION));
+		aabb = AABB(Vector3(0.f, 0.f, 0.f), Vector3(PATCH_VERT_RESOLUTION, 0.1f, PATCH_VERT_RESOLUTION));
 		tile_mesh = _create_mesh(vertices, indices, aabb);
 	}
 
@@ -191,7 +191,7 @@ Vector<RID> GeoClipMap::generate(int p_size, int p_levels) {
 		indices.resize((CLIPMAP_VERT_RESOLUTION * 2 - 1) * 6);
 
 		n = 0;
-		Vector3 offset = Vector3(0.5f * real_t(CLIPMAP_VERT_RESOLUTION + 1), 0, 0.5f * real_t(CLIPMAP_VERT_RESOLUTION + 1));
+		Vector3 offset = Vector3(0.5f * real_t(CLIPMAP_VERT_RESOLUTION + 1), 0.f, 0.5f * real_t(CLIPMAP_VERT_RESOLUTION + 1));
 
 		for (int i = 0; i < CLIPMAP_VERT_RESOLUTION + 1; i++) {
 			vertices.write[n] = Vector3(0, 0, CLIPMAP_VERT_RESOLUTION - i) - offset;

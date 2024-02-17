@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Terrain3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Terrain3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A high performance, editable terrain system for Godot 4.
 	</brief_description>
 	<description>
+		Terrain3D is a high performance, editable terrain system for Godot 4. It provides a clipmap based terrain that supports up to 16k terrains with multiple LODs, 32 textures, and editor tools for importing or creating terrains.
+		This class handles mesh and collision generation, and management of the whole system. See [url=../docs/system_architecture.html]System Architecture[/url] for design details.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,6 +14,9 @@
 			<param index="0" name="lod" type="int" />
 			<param index="1" name="filter" type="int" enum="Terrain3DStorage.HeightFilter" />
 			<description>
+				Generates a static ArrayMesh for the terrain.
+				[code skip-lint]lod[/code] - Determines the granularity of the generated mesh. The range is 0-8. 4 is recommended.
+				[code skip-lint]filter[/code] - Controls how vertex Y coordinates are generated from the height map. See [enum Terrain3DStorage.HeightFilter].
 			</description>
 		</method>
 		<method name="generate_nav_mesh_source_geometry">
@@ -20,11 +24,15 @@
 			<param index="0" name="global_aabb" type="AABB" />
 			<param index="1" name="require_nav" type="bool" default="true" />
 			<description>
+				Generates source geometry faces for input to nav mesh baking. Geometry is only generated where there are no holes and the terrain has been painted as navigable.
+				[code skip-lint]global_aabb[/code] - If non-empty, geometry will be generated only within this AABB. If empty, geometry will be generated for the entire terrain.
+				[code skip-lint]require_nav[/code] - If true, this function will only generate geometry for terrain marked navigable. Otherwise, geometry is generated for the entire terrain within the AABB (which can be useful for dynamic and/or runtime nav mesh baking).
 			</description>
 		</method>
 		<method name="get_camera">
 			<return type="Camera3D" />
 			<description>
+				Returns the camera the terrain is currently snapping to.
 			</description>
 		</method>
 		<method name="get_filled_image" qualifiers="static">
@@ -34,24 +42,40 @@
 			<param index="2" name="create_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
+				A utility function that returns an Image filled with a specified color and format.
+				If [code skip-lint]color.a &lt; 0[/code], its filled with a checkered pattern multiplied by [code skip-lint]color.rgb[/code].
+				The behavior changes if a compressed format is requested:
+				- If the editor is running and the format is DXT1, DXT5, or BPTC_RGBA, it returns a filled image in the requested color and format.
+				- All other compressed formats return a blank image in that format.
+				The reason for this is the Image compression library is available only in the editor. And it is unreliable, offering little control over the output format, choosing automatically and often wrong. We have selected a few compressed formats it gets right.
 			</description>
 		</method>
 		<method name="get_intersection">
 			<return type="Vector3" />
-			<param index="0" name="position" type="Vector3" />
+			<param index="0" name="src_pos" type="Vector3" />
 			<param index="1" name="direction" type="Vector3" />
 			<description>
+				Casts a ray from [code skip-lint]src_pos[/code] pointing towards [code skip-lint]direction[/code], attempting to intersect the terrain.
+				Possible return values:
+				- If the terrain is hit, the intersection point is returned.
+				- If there is no intersection, eg. the ray points towards the sky, it returns the maximum double float value [code skip-lint]Vector3(3.402823466e+38F,...)[/code]. You can check this case with this code: [code skip-lint]if point.z &gt; 3.4e38:[/code]
+				- On error, it returns [code skip-lint]Vector3(NAN, NAN, NAN)[/code] and prints a message to the console.
+				This ray cast does not use physics, so enabling collision is unnecessary. It places a camera at the specified point and "looks" at the terrain. It then uses the renderer's depth texture to determine how far away the intersection point is.
+				This function is used by the editor plugin to place the mouse cursor. It can also be used by 3rd party plugins, and even during gameplay, such as a space ship firing lasers at the terrain and causing an explosion at the hit point.
+				It does require the use of an editor render layer (21-32) that should be dedicated while using this function. See [member render_mouse_layer].
 			</description>
 		</method>
 		<method name="get_min_max" qualifiers="static">
 			<return type="Vector2" />
 			<param index="0" name="image" type="Image" />
 			<description>
+				A utility function that returns the minimum and maximum r channel values of an Image. Used for heightmaps.
 			</description>
 		</method>
 		<method name="get_plugin">
 			<return type="EditorPlugin" />
 			<description>
+				Returns the EditorPlugin connected to Terrain3D.
 			</description>
 		</method>
 		<method name="get_thumbnail" qualifiers="static">
@@ -59,69 +83,112 @@
 			<param index="0" name="image" type="Image" />
 			<param index="1" name="size" type="Vector2i" default="Vector2i(256, 256)" />
 			<description>
+				A utility function that returns an Image normalized and converted to RGB8. Used for creating a human viewable thumbnail of a heightmap.
+			</description>
+		</method>
+		<method name="pack_image" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="src_rgb" type="Image" />
+			<param index="1" name="src_r" type="Image" />
+			<param index="2" name="invert_green_channel" type="bool" default="false" />
+			<description>
+				A utility function that returns an Image with the following content:
+				- RGB channels from [code skip-lint]src_rgb[/code].
+				- A channel from [code skip-lint]src_r[/code].
+				- G inverted, if specified (eg for converting normal maps between DirectX and OpenGL).
 			</description>
 		</method>
 		<method name="set_camera">
 			<return type="void" />
 			<param index="0" name="camera" type="Camera3D" />
 			<description>
+				Sets the camera the terrain snaps to.
 			</description>
 		</method>
 		<method name="set_plugin">
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorPlugin" />
 			<description>
+				Sets the EditorPlugin connected to Terrain3D.
 			</description>
 		</method>
 		<method name="update_aabbs">
 			<return type="void" />
 			<description>
+				Sets the bounding boxes (AABBs) for the terrain meshes so they won't be culled. Also see [member render_cull_margin].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="get_collision_enabled" default="true">
+			If enabled, collision is generated according to the mode selected. By default collision is generated for all regions at run time only using the physics server. Also see [member debug_show_collision].
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+			The physics layers the terrain lives in. Also see [member collision_mask].
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The physics layers the terrain scans for colliding objects. Also see [member collision_layer].
 		</member>
 		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
+			The priority used to solve collisions. The higher priority, the lower the penetration of a colliding object.
 		</member>
 		<member name="debug_level" type="int" setter="set_debug_level" getter="get_debug_level" default="0">
+			The verbosity of debug messages printed to the console. Errors and warnings are always printed. This can also be set via command line using [code skip-lint]--terrain3d-debug=LEVEL[/code] where [code skip-lint]LEVEL[/code] is one of [code skip-lint]ERROR, INFO, DEBUG, DEBUG_CONT[/code]. The last is for continuously recurring messages like position updates for the mesh as the camera moves around.
 		</member>
 		<member name="debug_show_collision" type="bool" setter="set_show_debug_collision" getter="get_show_debug_collision" default="false">
+			If collision is enabled, this generates collision in the editor and in game. It can be visible in the editor by enabling [code skip-lint]View Gizmos[/code] in the viewport menu.
 		</member>
 		<member name="material" type="Terrain3DMaterial" setter="set_material" getter="get_material">
+			A custom material for Terrain3D. You can optionally save this as an external [code skip-lint].tres[/code] text file if you wish to share it with instances of Terrain3D in other scenes. See [Terrain3DMaterial].
 		</member>
 		<member name="mesh_lods" type="int" setter="set_mesh_lods" getter="get_mesh_lods" default="7">
+			The number of lods generated in the mesh. Enable wireframe mode in the viewport to see them.
 		</member>
 		<member name="mesh_size" type="int" setter="set_mesh_size" getter="get_mesh_size" default="48">
+			The correlated size of the terrain meshes. Lod0 has [code skip-lint]4*mesh_size + 2[/code] quads per side. E.g. when mesh_size=8, lod0 has 34 quads to a side, including 2 quads for seams.
+		</member>
+		<member name="mesh_vertex_spacing" type="float" setter="set_mesh_vertex_spacing" getter="get_mesh_vertex_spacing" default="1.0">
+			The distance between vertices. Godot units are typically considered to be meters. This scales the terrain on X and Z axes.
 		</member>
 		<member name="render_cast_shadows" type="int" setter="set_cast_shadows" getter="get_cast_shadows" enum="GeometryInstance3D.ShadowCastingSetting" default="1">
+			Tells the renderer how to cast shadows from the terrain onto other objects. This sets [code skip-lint]GeometryInstance3D.ShadowCastingSetting[/code] in the engine.
 		</member>
 		<member name="render_cull_margin" type="float" setter="set_cull_margin" getter="get_cull_margin" default="0.0">
+			This margin is added to the terrain bounding box (AABB). The terrain already sets its AABB, so this setting only needs to be used if the shader has expanded the terrain beyond the AABB and the terrain meshes are being culled, as might happen from using [member Terrain3DMaterial.world_background] with NOISE and a large height value. This sets [code skip-lint]GeometryInstance3D.extra_cull_margin[/code] in the engine.
 		</member>
-		<member name="render_layers" type="int" setter="set_render_layers" getter="get_render_layers" default="1">
+		<member name="render_layers" type="int" setter="set_render_layers" getter="get_render_layers" default="2147483649">
+			The render layers the terrain is drawn on. This sets [code skip-lint]VisualInstance3D.layers[/code] in the engine. The defaults is layer 1 and 32 (for the mouse cursor). When you set this, make sure the layer for [member render_mouse_layer] is included, or set that variable again after this so that the mouse cursor works.
+		</member>
+		<member name="render_mouse_layer" type="int" setter="set_mouse_layer" getter="get_mouse_layer" default="32">
+			Godot supports 32 render layers. For most objects, only layers 1-20 are available for selection in the inspector. 21-32 are settable via code, and are considered reserved for editor plugins.
+			This variable sets the editor render layer (21-32) to be used by [code skip-lint]get_intersection[/code], which the mouse cursor uses.
+			You may place other objects on this layer, however [code skip-lint]get_intersection[/code] will report intersections with them. So either dedicate this layer to Terrain3D, or if you must use all 32 layers, dedicate this one during editing or when using [code skip-lint]get_intersection[/code], and then you can use it during game play.
+			See [method get_intersection].
 		</member>
 		<member name="storage" type="Terrain3DStorage" setter="set_storage" getter="get_storage">
+			The object that houses all Terrain3D region, height, control, and color maps. Make sure to save this as an external [code skip-lint].res[/code] binary file.
 		</member>
 		<member name="texture_list" type="Terrain3DTextureList" setter="set_texture_list" getter="get_texture_list">
+			The list of texture files used by Terrain3D. You can optionally save this as an external [code skip-lint].tres[/code] text file if you wish to share it with instances of Terrain3D in other scenes.
 		</member>
 		<member name="version" type="String" setter="" getter="get_version" default="&quot;0.9.1-dev&quot;">
+			The current version of Terrain3D.
 		</member>
 	</members>
 	<signals>
 		<signal name="material_changed">
 			<description>
+				Emitted when [member material] is changed.
 			</description>
 		</signal>
 		<signal name="storage_changed">
 			<description>
+				Emitted when [member storage] is changed.
 			</description>
 		</signal>
 		<signal name="texture_list_changed">
 			<description>
+				Emitted when [member texture_list] is changed.
 			</description>
 		</signal>
 	</signals>
