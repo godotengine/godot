@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Godot.SourceGenerators
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class GlobalClassAnalyzer : DiagnosticAnalyzer
+    public sealed class GlobalClassAnalyzer : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
             => ImmutableArray.Create(
@@ -33,10 +33,22 @@ namespace Godot.SourceGenerators
                 return;
 
             if (typeSymbol.IsGenericType)
-                Common.ReportGlobalClassMustNotBeGeneric(context, typeClassDecl, typeSymbol);
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.GlobalClassMustNotBeGenericRule,
+                    typeSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                    typeSymbol.ToDisplayString()
+                ));
+            }
 
             if (!typeSymbol.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
-                Common.ReportGlobalClassMustDeriveFromGodotObject(context, typeClassDecl, typeSymbol);
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.GlobalClassMustDeriveFromGodotObjectRule,
+                    typeSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                    typeSymbol.ToDisplayString()
+                ));
+            }
         }
     }
 }

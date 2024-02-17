@@ -136,7 +136,11 @@ namespace Godot.SourceGenerators
             {
                 if (!signalDelegateSymbol.Name.EndsWith(SignalDelegateSuffix))
                 {
-                    Common.ReportSignalDelegateMissingSuffix(context, signalDelegateSymbol);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.SignalDelegateMissingSuffixRule,
+                        signalDelegateSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        signalDelegateSymbol.ToDisplayString()
+                    ));
                     continue;
                 }
 
@@ -154,21 +158,32 @@ namespace Godot.SourceGenerators
                         {
                             if (parameter.RefKind != RefKind.None)
                             {
-                                Common.ReportSignalParameterTypeNotSupported(context, parameter);
+                                context.ReportDiagnostic(Diagnostic.Create(
+                                    Common.SignalParameterTypeNotSupportedRule,
+                                    parameter.Locations.FirstLocationWithSourceTreeOrDefault(),
+                                    parameter.ToDisplayString()
+                                ));
                                 continue;
                             }
 
                             var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(parameter.Type, typeCache);
-
                             if (marshalType == null)
                             {
-                                Common.ReportSignalParameterTypeNotSupported(context, parameter);
+                                context.ReportDiagnostic(Diagnostic.Create(
+                                    Common.SignalParameterTypeNotSupportedRule,
+                                    parameter.Locations.FirstLocationWithSourceTreeOrDefault(),
+                                    parameter.ToDisplayString()
+                                ));
                             }
                         }
 
                         if (!methodSymbol.ReturnsVoid)
                         {
-                            Common.ReportSignalDelegateSignatureMustReturnVoid(context, signalDelegateSymbol);
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                Common.SignalDelegateSignatureMustReturnVoidRule,
+                                signalDelegateSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                                signalDelegateSymbol.ToDisplayString()
+                            ));
                         }
                     }
 
