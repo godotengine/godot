@@ -3222,13 +3222,29 @@ PackedStringArray Node::get_configuration_warnings_as_strings(bool p_wrap_lines,
 	return all_warnings;
 }
 
+#ifdef TOOLS_ENABLED
+inline bool can_node_be_seen_in_editor(Node &node) {
+	if (!node.is_inside_tree()) {
+		return false;
+	}
+	const Node *edited_scene_root = node.get_tree()->get_edited_scene_root();
+	if (edited_scene_root == nullptr) {
+		return false;
+	}
+	if (edited_scene_root == &node) {
+		return true;
+	}
+	// Not sure why `is_ancestor_of` is required
+	return edited_scene_root->is_ancestor_of(&node) && node.get_owner() == edited_scene_root;
+}
+#endif
+
 void Node::update_configuration_warnings() {
 	ERR_THREAD_GUARD
 #ifdef TOOLS_ENABLED
-	if (!is_inside_tree()) {
-		return;
-	}
-	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+	// One reason to do this is if you have lots of nodes procedurally generated, or any nodes part of a tool.
+	// It would emit many signals that would lead to nothing being done or flood the message queue unnecessarily.
+	if (can_node_be_seen_in_editor(*this)) {
 		get_tree()->emit_signal(SceneStringNames::get_singleton()->node_configuration_warning_changed, this);
 	}
 #endif
