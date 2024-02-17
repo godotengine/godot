@@ -88,11 +88,14 @@ TEST_CASE("[Image] Saving and loading") {
 			err == OK,
 			"The image should be saved successfully as a .png file.");
 
+	// Only available on editor builds.
+#ifdef TOOLS_ENABLED
 	// Save EXR
 	err = image->save_exr(save_path_exr, false);
 	CHECK_MESSAGE(
 			err == OK,
 			"The image should be saved successfully as an .exr file.");
+#endif // TOOLS_ENABLED
 
 	// Load using load()
 	Ref<Image> image_load = memnew(Image());
