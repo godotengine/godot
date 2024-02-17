@@ -83,17 +83,28 @@ RenderingContextDriverD3D12::RenderingContextDriverD3D12() {
 }
 
 RenderingContextDriverD3D12::~RenderingContextDriverD3D12() {
+	if (lib_d3d12) {
+		FreeLibrary(lib_d3d12);
+	}
+	if (lib_dxgi) {
+		FreeLibrary(lib_dxgi);
+	}
 }
 
 Error RenderingContextDriverD3D12::_init_device_factory() {
 	uint32_t agility_sdk_version = GLOBAL_GET("rendering/rendering_device/d3d12/agility_sdk_version");
 	String agility_sdk_path = String(".\\") + Engine::get_singleton()->get_architecture_name();
 
+	lib_d3d12 = LoadLibraryW(L"D3D12.dll");
+	ERR_FAIL_NULL_V(lib_d3d12, ERR_CANT_CREATE);
+
+	lib_dxgi = LoadLibraryW(L"DXGI.dll");
+	ERR_FAIL_NULL_V(lib_dxgi, ERR_CANT_CREATE);
+
 	// Note: symbol is not available in MinGW import library.
-	PFN_D3D12_GET_INTERFACE d3d_D3D12GetInterface = (PFN_D3D12_GET_INTERFACE)GetProcAddress(LoadLibraryW(L"D3D12.dll"), "D3D12GetInterface");
-	if (d3d_D3D12GetInterface == nullptr) {
-		// FIXME: Is it intended for this to silently return when it fails to find the symbol?
-		return OK;
+	PFN_D3D12_GET_INTERFACE d3d_D3D12GetInterface = (PFN_D3D12_GET_INTERFACE)(void *)GetProcAddress(lib_d3d12, "D3D12GetInterface");
+	if (!d3d_D3D12GetInterface) {
+		return OK; // Fallback to the system loader.
 	}
 
 	ID3D12SDKConfiguration *sdk_config = nullptr;
@@ -109,18 +120,22 @@ Error RenderingContextDriverD3D12::_init_device_factory() {
 		}
 		sdk_config->Release();
 	}
-
 	return OK;
 }
 
 Error RenderingContextDriverD3D12::_initialize_debug_layers() {
 	ComPtr<ID3D12Debug> debug_controller;
 	HRESULT res;
+
 	if (device_factory) {
 		res = device_factory->GetConfigurationInterface(CLSID_D3D12DebugGodot, IID_PPV_ARGS(&debug_controller));
 	} else {
-		res = D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
+		PFN_D3D12_GET_DEBUG_INTERFACE d3d_D3D12GetDebugInterface = (PFN_D3D12_GET_DEBUG_INTERFACE)(void *)GetProcAddress(lib_d3d12, "D3D12GetDebugInterface");
+		ERR_FAIL_NULL_V(d3d_D3D12GetDebugInterface, ERR_CANT_CREATE);
+
+		res = d3d_D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
 	}
+
 	ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_QUERY_FAILED);
 	debug_controller->EnableDebugLayer();
 	return OK;
@@ -128,7 +143,12 @@ Error RenderingContextDriverD3D12::_initialize_debug_layers() {
 
 Error RenderingContextDriverD3D12::_initialize_devices() {
 	const UINT dxgi_factory_flags = use_validation_layers() ? DXGI_CREATE_FACTORY_DEBUG : 0;
-	HRESULT res = CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgi_factory));
+
+	typedef HRESULT(WINAPI * PFN_DXGI_CREATE_DXGI_FACTORY2)(UINT, REFIID, void **);
+	PFN_DXGI_CREATE_DXGI_FACTORY2 dxgi_CreateDXGIFactory2 = (PFN_DXGI_CREATE_DXGI_FACTORY2)(void *)GetProcAddress(lib_dxgi, "CreateDXGIFactory2");
+	ERR_FAIL_NULL_V(dxgi_CreateDXGIFactory2, ERR_CANT_CREATE);
+
+	HRESULT res = dxgi_CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&dxgi_factory));
 	ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 
 	// Enumerate all possible adapters.
