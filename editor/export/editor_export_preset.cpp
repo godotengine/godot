@@ -221,6 +221,7 @@ String EditorExportPreset::get_name() const {
 
 void EditorExportPreset::set_runnable(bool p_enable) {
 	runnable = p_enable;
+	EditorExport::singleton->emit_presets_runnable_changed();
 	EditorExport::singleton->save_presets();
 }
 

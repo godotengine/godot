@@ -294,7 +294,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 
 		// Check for devices updates
 		String adb = get_adb_path();
-		if (FileAccess::exists(adb)) {
+		if (ea->has_runnable_preset.is_set() && FileAccess::exists(adb)) {
 			String devices;
 			List<String> args;
 			args.push_back("devices");
@@ -424,6 +424,25 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 		List<String> args;
 		args.push_back("kill-server");
 		OS::get_singleton()->execute(adb, args);
+	}
+}
+
+void EditorExportPlatformAndroid::_update_preset_status() {
+	const int preset_count = EditorExport::get_singleton()->get_export_preset_count();
+	bool has_runnable = false;
+
+	for (int i = 0; i < preset_count; i++) {
+		const Ref<EditorExportPreset> &preset = EditorExport::get_singleton()->get_export_preset(i);
+		if (preset->get_platform() == this && preset->is_runnable()) {
+			has_runnable = true;
+			break;
+		}
+	}
+
+	if (has_runnable) {
+		has_runnable_preset.set();
+	} else {
+		has_runnable_preset.clear();
 	}
 }
 #endif
@@ -806,6 +825,15 @@ bool EditorExportPlatformAndroid::_uses_vulkan() {
 	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
 	bool uses_vulkan = (current_renderer == "forward_plus" || current_renderer == "mobile") && GLOBAL_GET("rendering/rendering_device/driver.android") == "vulkan";
 	return uses_vulkan;
+}
+
+void EditorExportPlatformAndroid::_notification(int p_what) {
+#ifndef ANDROID_ENABLED
+	if (p_what == NOTIFICATION_POSTINITIALIZE) {
+		ERR_FAIL_NULL(EditorExport::get_singleton());
+		EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformAndroid::_update_preset_status));
+	}
+#endif
 }
 
 void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
@@ -3574,6 +3602,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 		android_plugins_changed.set();
 #endif // DISABLE_DEPRECATED
 #ifndef ANDROID_ENABLED
+		_update_preset_status();
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif
 	}

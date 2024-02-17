@@ -81,9 +81,11 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 #ifdef MACOS_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
+	SafeFlag has_runnable_preset;
 
 	static bool _check_xcode_install();
 	static void _check_for_changes_poll_thread(void *ud);
+	void _update_preset_status();
 #endif
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
@@ -151,6 +153,8 @@ protected:
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
+
+	void _notification(int p_what);
 
 public:
 	virtual String get_name() const override { return "iOS"; }
