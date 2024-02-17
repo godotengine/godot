@@ -44,6 +44,7 @@ import org.godotengine.godot.utils.BenchmarkUtils;
 import org.godotengine.godot.utils.GodotNetUtils;
 import org.godotengine.godot.utils.PermissionsUtil;
 import org.godotengine.godot.xr.XRMode;
+import org.godotengine.godot.input.GodotInputHandler;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -352,6 +353,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		if (godotHost != null) {
 			godotHost.onGodotSetupCompleted();
 		}
+		GodotInputHandler.setRotaryInputAxis(GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis"));
 	}
 
 	/**

@@ -1329,6 +1329,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("display/window/ios/hide_status_bar", true);
 	GLOBAL_DEF("display/window/ios/suppress_ui_gesture", true);
 
+	GLOBAL_DEF("input_devices/pointing/android/rotary_input_scroll_axis", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pointing/android/rotary_input_scroll_axis",
+			PropertyInfo(Variant::INT,
+					"input_devices/pointing/android/rotary_input_scroll_axis",
+					PROPERTY_HINT_ENUM, "Horizontal,Vertical"));
+
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
 #ifdef DEBUG_ENABLED

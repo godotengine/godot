@@ -57,6 +57,9 @@ import java.util.Set;
 public class GodotInputHandler implements InputManager.InputDeviceListener {
 	private static final String TAG = GodotInputHandler.class.getSimpleName();
 
+	private static final int ROTARY_INPUT_VERTICAL_AXIS = 1;
+	private static final int ROTARY_INPUT_HORIZONTAL_AXIS = 0;
+
 	private final SparseIntArray mJoystickIds = new SparseIntArray(4);
 	private final SparseArray<Joystick> mJoysticksDevices = new SparseArray<>(4);
 
@@ -70,6 +73,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 	 * Used to decide whether mouse capture can be enabled.
 	 */
 	private int lastSeenToolType = MotionEvent.TOOL_TYPE_UNKNOWN;
+
+	private static int rotaryInputAxis = ROTARY_INPUT_VERTICAL_AXIS;
 
 	public GodotInputHandler(GodotView godotView) {
 		final Context context = godotView.getContext();
@@ -337,6 +342,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 					Log.w(TAG, " - DUPLICATE AXIS VALUE IN LIST: " + axis);
 				}
 			}
+		} else if (event.isFromSource(InputDevice.SOURCE_ROTARY_ENCODER)) {
+			return handleRotaryEvent(event);
 		}
 		Collections.sort(joystick.axes);
 		for (int idx = 0; idx < joystick.axes.size(); idx++) {
@@ -467,6 +474,16 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 		return handleTouchEvent(eventAction, x, y, doubleTap);
 	}
 
+	/**
+   	 * On Wear OS devices, sets which axis of the mouse wheel rotary input is mapped to. This is 1 (vertical axis) by default.
+   	 */
+   	public static void setRotaryInputAxis(String axis) {
+   		if (axis != null && !axis.isEmpty() && !axis.equals("Null")) {
+   			rotaryInputAxis = java.lang.Integer.parseInt(axis);
+   		}
+   	}
+
+
 	static boolean handleMouseEvent(final MotionEvent event) {
 		final int eventAction = event.getActionMasked();
 		final float x = event.getX();
@@ -558,6 +575,23 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			case MotionEvent.ACTION_POINTER_DOWN: {
 				GodotLib.dispatchTouchEvent(eventAction, actionPointerId, pointerCount, positions, doubleTap);
 				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean handleRotaryEvent(final MotionEvent event) {
+		if(event.getAction() == MotionEvent.ACTION_SCROLL){
+			final int buttonsMask = event.getButtonState();
+			final int action = event.getAction();
+			final float x = event.getX();
+			final float y = event.getY();
+			final float rotaryFactor = -event.getAxisValue(MotionEvent.AXIS_SCROLL);
+			if (rotaryInputAxis == ROTARY_INPUT_HORIZONTAL_AXIS) {
+				GodotLib.touch(InputDevice.SOURCE_MOUSE, action, 0, 1, new float[] { 0, x, y }, buttonsMask, 0, rotaryFactor);
+			} else {
+				// If rotaryInputAxis is not ROTARY_INPUT_HORIZONTAL_AXIS then use default ROTARY_INPUT_VERTICAL_AXIS axis.
+				GodotLib.touch(InputDevice.SOURCE_MOUSE, action, 0, 1, new float[] { 0, x, y }, buttonsMask, rotaryFactor, 0);
 			}
 		}
 		return false;
