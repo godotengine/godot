@@ -66,7 +66,7 @@ ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 
 	button = memnew(Button);
 	add_child(button);
-	button->set_auto_translate(false);
+	button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	button->set_text(p_text.capitalize());
 	button->set_focus_mode(FOCUS_NONE);
 	button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);

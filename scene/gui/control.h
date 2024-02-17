@@ -253,7 +253,6 @@ private:
 		bool is_rtl_dirty = true;
 		bool is_rtl = false;
 
-		bool auto_translate = true;
 		bool localize_numeral_system = true;
 
 		// Extra properties.
@@ -624,11 +623,10 @@ public:
 	void set_localize_numeral_system(bool p_enable);
 	bool is_localizing_numeral_system() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-	_FORCE_INLINE_ String atr(const String p_string) const {
-		return is_auto_translating() ? tr(p_string) : p_string;
-	};
+#endif
 
 	// Extra properties.
 

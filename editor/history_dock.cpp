@@ -248,7 +248,7 @@ HistoryDock::HistoryDock() {
 	global_history_checkbox->connect("toggled", callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
 	action_list = memnew(ItemList);
-	action_list->set_auto_translate(false);
+	action_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(action_list);
 	action_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list->connect("item_selected", callable_mp(this, &HistoryDock::seek_history));
