@@ -300,6 +300,9 @@ class AudioStreamPlaybackRandomizer : public AudioStreamPlayback {
 	float pitch_scale;
 	float volume_scale;
 
+protected:
+	static void _bind_methods();
+
 public:
 	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
@@ -307,6 +310,7 @@ public:
 
 	virtual int get_loop_count() const override; //times it looped
 
+	Ref<AudioStream> get_current_stream() const;
 	virtual double get_playback_position() const override;
 	virtual void seek(double p_time) override;
 
