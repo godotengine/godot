@@ -518,6 +518,12 @@ void GDExtension::_register_extension_class_method(GDExtensionClassLibraryPtr p_
 
 	ClassDB::bind_method_custom(class_name, method);
 }
+
+void GDExtension::_register_extension_class_virtual_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassVirtualMethodInfo *p_method_info) {
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	ClassDB::add_extension_class_virtual_method(class_name, p_method_info);
+}
+
 void GDExtension::_register_extension_class_integer_constant(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_enum_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionInt p_constant_value, GDExtensionBool p_is_bitfield) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
 
@@ -794,16 +800,15 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 	ERR_FAIL_COND(p_level > int32_t(level_initialized));
 
 	level_initialized = int32_t(p_level) - 1;
+
+	ERR_FAIL_NULL(initialization.deinitialize);
+
 	initialization.deinitialize(initialization.userdata, GDExtensionInitializationLevel(p_level));
 }
 
 void GDExtension::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol"), &GDExtension::open_library);
-	ClassDB::bind_method(D_METHOD("close_library"), &GDExtension::close_library);
 	ClassDB::bind_method(D_METHOD("is_library_open"), &GDExtension::is_library_open);
-
 	ClassDB::bind_method(D_METHOD("get_minimum_library_initialization_level"), &GDExtension::get_minimum_library_initialization_level);
-	ClassDB::bind_method(D_METHOD("initialize_library", "level"), &GDExtension::initialize_library);
 
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_CORE);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_SERVERS);
@@ -834,6 +839,7 @@ void GDExtension::initialize_gdextensions() {
 #endif // DISABLE_DEPRECATED
 	register_interface_function("classdb_register_extension_class2", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class2);
 	register_interface_function("classdb_register_extension_class_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_method);
+	register_interface_function("classdb_register_extension_class_virtual_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_virtual_method);
 	register_interface_function("classdb_register_extension_class_integer_constant", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_integer_constant);
 	register_interface_function("classdb_register_extension_class_property", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property);
 	register_interface_function("classdb_register_extension_class_property_indexed", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property_indexed);
@@ -904,7 +910,7 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 		return ERR_INVALID_DATA;
 	}
 
-	String library_path = GDExtension::find_extension_library(p_path, config, [](String p_feature) { return OS::get_singleton()->has_feature(p_feature); });
+	String library_path = GDExtension::find_extension_library(p_path, config, [](const String &p_feature) { return OS::get_singleton()->has_feature(p_feature); });
 
 	if (library_path.is_empty()) {
 		const String os_arch = OS::get_singleton()->get_name().to_lower() + "." + Engine::get_singleton()->get_architecture_name();

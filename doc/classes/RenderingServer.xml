@@ -1556,11 +1556,11 @@
 				Returns [code]true[/code] if changes have been made to the RenderingServer's data. [method force_draw] is usually called if this happens.
 			</description>
 		</method>
-		<method name="has_feature" qualifiers="const" is_deprecated="true">
+		<method name="has_feature" qualifiers="const" deprecated="This method has not been used since Godot 3.0.">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="RenderingServer.Features" />
 			<description>
-				[i]Deprecated.[/i] This method has not been used since Godot 3.0. Always returns false.
+				Always returns false.
 			</description>
 		</method>
 		<method name="has_os_feature" qualifiers="const">
@@ -2332,6 +2332,13 @@
 				[b]Note:[/b] If the buffer is in the engine's internal cache, it will have to be fetched from GPU memory and possibly decompressed. This means [method multimesh_get_buffer] is potentially a slow operation and should be avoided whenever possible.
 			</description>
 		</method>
+		<method name="multimesh_get_custom_aabb" qualifiers="const">
+			<return type="AABB" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Returns the custom AABB defined for this MultiMesh resource.
+			</description>
+		</method>
 		<method name="multimesh_get_instance_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="multimesh" type="RID" />
@@ -2440,6 +2447,14 @@
 				  - Position + Custom data: 16 floats (12 floats for Transform3D, 4 floats of custom data)
 				  - Position + Vertex color + Custom data: 20 floats (12 floats for Transform3D, 4 floats for Color, 4 floats of custom data)
 				[/codeblock]
+			</description>
+		</method>
+		<method name="multimesh_set_custom_aabb">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="aabb" type="AABB" />
+			<description>
+				Sets the custom AABB for this MultiMesh resource.
 			</description>
 		</method>
 		<method name="multimesh_set_mesh">
@@ -3371,19 +3386,19 @@
 				Returns a texture [RID] that can be used with [RenderingDevice].
 			</description>
 		</method>
-		<method name="texture_proxy_create" is_deprecated="true">
+		<method name="texture_proxy_create" deprecated="ProxyTexture was removed in Godot 4.">
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />
 			<description>
-				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method does nothing when called and always returns a null [RID].
+				This method does nothing when called and always returns a null [RID].
 			</description>
 		</method>
-		<method name="texture_proxy_update" is_deprecated="true">
+		<method name="texture_proxy_update" deprecated="ProxyTexture was removed in Godot 4.">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="proxy_to" type="RID" />
 			<description>
-				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method cannot be used anymore.
+				This method should not be used.
 			</description>
 		</method>
 		<method name="texture_rd_create">
@@ -4044,8 +4059,8 @@
 		<constant name="MAX_GLOW_LEVELS" value="7">
 			The maximum number of glow levels that can be used with the glow post-processing effect.
 		</constant>
-		<constant name="MAX_CURSORS" value="8" is_deprecated="true">
-			[i]Deprecated.[/i] This constant is unused internally.
+		<constant name="MAX_CURSORS" value="8" deprecated="">
+			This constant is unused internally.
 		</constant>
 		<constant name="MAX_2D_DIRECTIONAL_LIGHTS" value="8">
 			The maximum number of directional lights that can be rendered at a given time in 2D.
@@ -5340,11 +5355,9 @@
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
 			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
 		</constant>
-		<constant name="FEATURE_SHADERS" value="0" enum="Features" is_deprecated="true">
-			[i]Deprecated.[/i] This constant has not been used since Godot 3.0.
+		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>
-		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features" is_deprecated="true">
-			[i]Deprecated.[/i] This constant has not been used since Godot 3.0.
+		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>
 	</constants>
 </class>

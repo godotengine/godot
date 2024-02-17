@@ -347,6 +347,15 @@ real_t NavigationPolygon::get_cell_size() const {
 	return cell_size;
 }
 
+void NavigationPolygon::set_border_size(real_t p_value) {
+	ERR_FAIL_COND(p_value < 0.0);
+	border_size = p_value;
+}
+
+real_t NavigationPolygon::get_border_size() const {
+	return border_size;
+}
+
 void NavigationPolygon::set_parsed_geometry_type(ParsedGeometryType p_geometry_type) {
 	ERR_FAIL_INDEX(p_geometry_type, PARSED_GEOMETRY_MAX);
 	parsed_geometry_type = p_geometry_type;
@@ -410,6 +419,24 @@ real_t NavigationPolygon::get_agent_radius() const {
 	return agent_radius;
 }
 
+void NavigationPolygon::set_baking_rect(const Rect2 &p_rect) {
+	baking_rect = p_rect;
+	emit_changed();
+}
+
+Rect2 NavigationPolygon::get_baking_rect() const {
+	return baking_rect;
+}
+
+void NavigationPolygon::set_baking_rect_offset(const Vector2 &p_rect_offset) {
+	baking_rect_offset = p_rect_offset;
+	emit_changed();
+}
+
+Vector2 NavigationPolygon::get_baking_rect_offset() const {
+	return baking_rect_offset;
+}
+
 void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &NavigationPolygon::set_vertices);
 	ClassDB::bind_method(D_METHOD("get_vertices"), &NavigationPolygon::get_vertices);
@@ -440,6 +467,9 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &NavigationPolygon::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &NavigationPolygon::get_cell_size);
 
+	ClassDB::bind_method(D_METHOD("set_border_size", "border_size"), &NavigationPolygon::set_border_size);
+	ClassDB::bind_method(D_METHOD("get_border_size"), &NavigationPolygon::get_border_size);
+
 	ClassDB::bind_method(D_METHOD("set_parsed_geometry_type", "geometry_type"), &NavigationPolygon::set_parsed_geometry_type);
 	ClassDB::bind_method(D_METHOD("get_parsed_geometry_type"), &NavigationPolygon::get_parsed_geometry_type);
 
@@ -458,6 +488,11 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_agent_radius", "agent_radius"), &NavigationPolygon::set_agent_radius);
 	ClassDB::bind_method(D_METHOD("get_agent_radius"), &NavigationPolygon::get_agent_radius);
 
+	ClassDB::bind_method(D_METHOD("set_baking_rect", "rect"), &NavigationPolygon::set_baking_rect);
+	ClassDB::bind_method(D_METHOD("get_baking_rect"), &NavigationPolygon::get_baking_rect);
+	ClassDB::bind_method(D_METHOD("set_baking_rect_offset", "rect_offset"), &NavigationPolygon::set_baking_rect_offset);
+	ClassDB::bind_method(D_METHOD("get_baking_rect_offset"), &NavigationPolygon::get_baking_rect_offset);
+
 	ClassDB::bind_method(D_METHOD("clear"), &NavigationPolygon::clear);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
@@ -466,15 +501,19 @@ void NavigationPolygon::_bind_methods() {
 
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Meshes and Static Colliders"), "set_parsed_geometry_type", "get_parsed_geometry_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_parsed_collision_mask", "get_parsed_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "parsed_collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_parsed_collision_mask", "get_parsed_collision_mask");
 	ADD_PROPERTY_DEFAULT("parsed_collision_mask", 0xFFFFFFFF);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_geometry_group_name"), "set_source_geometry_group_name", "get_source_geometry_group_name");
 	ADD_PROPERTY_DEFAULT("source_geometry_group_name", StringName("navigation_polygon_source_geometry_group"));
 	ADD_GROUP("Cells", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "1.0,50.0,1.0,or_greater,suffix:px"), "set_cell_size", "get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "border_size", PROPERTY_HINT_RANGE, "0.0,500.0,1.0,or_greater,suffix:px"), "set_border_size", "get_border_size");
 	ADD_GROUP("Agents", "agent_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:px"), "set_agent_radius", "get_agent_radius");
+	ADD_GROUP("Filters", "");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "baking_rect"), "set_baking_rect", "get_baking_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "baking_rect_offset"), "set_baking_rect_offset", "get_baking_rect_offset");
 
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MESH_INSTANCES);
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);

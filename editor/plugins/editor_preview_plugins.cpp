@@ -464,6 +464,17 @@ bool EditorScriptPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Script");
 }
 
+Ref<Texture2D> EditorScriptPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size, Dictionary &p_metadata) const {
+	Error err;
+	String code = FileAccess::get_file_as_string(p_path, &err);
+	if (err != OK) {
+		return Ref<Texture2D>();
+	}
+
+	ScriptLanguage *lang = ScriptServer::get_language_for_extension(p_path.get_extension());
+	return _generate_from_source_code(lang, code, p_size, p_metadata);
+}
+
 Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
 	Ref<Script> scr = p_from;
 	if (scr.is_null()) {
@@ -471,18 +482,24 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	}
 
 	String code = scr->get_source_code().strip_edges();
-	if (code.is_empty()) {
+	return _generate_from_source_code(scr->get_language(), code, p_size, p_metadata);
+}
+
+Ref<Texture2D> EditorScriptPreviewPlugin::_generate_from_source_code(const ScriptLanguage *p_language, const String &p_source_code, const Size2 &p_size, Dictionary &p_metadata) const {
+	if (p_source_code.is_empty()) {
 		return Ref<Texture2D>();
 	}
 
 	List<String> kwors;
-	scr->get_language()->get_reserved_words(&kwors);
+	if (p_language) {
+		p_language->get_reserved_words(&kwors);
+	}
 
 	HashSet<String> control_flow_keywords;
 	HashSet<String> keywords;
 
 	for (const String &E : kwors) {
-		if (scr->get_language()->is_control_flow_keyword(E)) {
+		if (p_language && p_language->is_control_flow_keyword(E)) {
 			control_flow_keywords.insert(E);
 		} else {
 			keywords.insert(E);
@@ -505,7 +522,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	if (bg_color.a == 0) {
 		bg_color = Color(0, 0, 0, 0);
 	}
-	bg_color.a = MAX(bg_color.a, 0.2); // some background
+	bg_color.a = MAX(bg_color.a, 0.2); // Ensure we have some background, regardless of the text editor setting.
 
 	img->fill(bg_color);
 
@@ -519,14 +536,14 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	bool in_keyword = false;
 	bool in_comment = false;
 	bool in_doc_comment = false;
-	for (int i = 0; i < code.length(); i++) {
-		char32_t c = code[i];
+	for (int i = 0; i < p_source_code.length(); i++) {
+		char32_t c = p_source_code[i];
 		if (c > 32) {
 			if (col < thumbnail_size) {
 				Color color = text_color;
 
 				if (c == '#') {
-					if (i < code.length() - 1 && code[i + 1] == '#') {
+					if (i < p_source_code.length() - 1 && p_source_code[i + 1] == '#') {
 						in_doc_comment = true;
 					} else {
 						in_comment = true;
@@ -539,17 +556,17 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 					color = doc_comment_color;
 				} else {
 					if (is_symbol(c)) {
-						//make symbol a little visible
+						// Make symbol a little visible.
 						color = symbol_color;
 						in_control_flow_keyword = false;
 						in_keyword = false;
 					} else if (!prev_is_text && is_ascii_identifier_char(c)) {
 						int pos = i;
 
-						while (is_ascii_identifier_char(code[pos])) {
+						while (is_ascii_identifier_char(p_source_code[pos])) {
 							pos++;
 						}
-						String word = code.substr(i, pos - i);
+						String word = p_source_code.substr(i, pos - i);
 						if (control_flow_keywords.has(word)) {
 							in_control_flow_keyword = true;
 						} else if (keywords.has(word)) {
@@ -649,11 +666,11 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 		}
 
 		for (int j = from; j < to; j++) {
-			max = MAX(max, frames[j].l);
-			max = MAX(max, frames[j].r);
+			max = MAX(max, frames[j].left);
+			max = MAX(max, frames[j].right);
 
-			min = MIN(min, frames[j].l);
-			min = MIN(min, frames[j].r);
+			min = MIN(min, frames[j].left);
+			min = MIN(min, frames[j].right);
 		}
 
 		int pfrom = CLAMP((min * 0.5 + 0.5) * h / 2, 0, h / 2) + h / 4;

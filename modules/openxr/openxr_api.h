@@ -104,8 +104,10 @@ private:
 
 	// blend mode
 	XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+	XrEnvironmentBlendMode requested_environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 	uint32_t num_supported_environment_blend_modes = 0;
 	XrEnvironmentBlendMode *supported_environment_blend_modes = nullptr;
+	bool emulate_environment_blend_mode_alpha_blend = false;
 
 	// state
 	XrInstance instance = XR_NULL_HANDLE;
@@ -429,7 +431,16 @@ public:
 	const XrEnvironmentBlendMode *get_supported_environment_blend_modes(uint32_t &count);
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
 	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
-	XrEnvironmentBlendMode get_environment_blend_mode() const { return environment_blend_mode; }
+	XrEnvironmentBlendMode get_environment_blend_mode() const { return requested_environment_blend_mode; }
+
+	enum OpenXRAlphaBlendModeSupport {
+		OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE = 0,
+		OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL = 1,
+		OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING = 2,
+	};
+
+	void set_emulate_environment_blend_mode_alpha_blend(bool p_enabled);
+	OpenXRAlphaBlendModeSupport is_environment_blend_mode_alpha_blend_supported();
 
 	OpenXRAPI();
 	~OpenXRAPI();

@@ -187,7 +187,7 @@
 				Helper method which calls the [code]set_text()[/code] method on the currently focused [Control], provided that it is defined (e.g. if the focused Control is [Button] or [LineEdit]).
 			</description>
 		</method>
-		<method name="push_unhandled_input" is_deprecated="true">
+		<method name="push_unhandled_input" deprecated="Use [method push_input] instead.">
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<param index="1" name="in_local_coords" type="bool" default="false" />
@@ -202,7 +202,6 @@
 				If an earlier method marks the input as handled via [method set_input_as_handled], any later method in this list will not be called.
 				If none of the methods handle the event and [member physics_object_picking] is [code]true[/code], the event is used for physics object picking.
 				[b]Note:[/b] This method doesn't propagate input events to embedded [Window]s or [SubViewport]s.
-				[i]Deprecated.[/i] Use [method push_input] instead.
 			</description>
 		</method>
 		<method name="set_canvas_cull_mask_bit">
@@ -306,6 +305,11 @@
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 			[b]Note:[/b] The number of simultaneously pickable objects is limited to 64 and they are selected in a non-deterministic order, which can be different in each picking process.
+		</member>
+		<member name="physics_object_picking_first_only" type="bool" setter="set_physics_object_picking_first_only" getter="get_physics_object_picking_first_only" default="false">
+			If [code]true[/code], the input_event signal will only be sent to one physics object in the mouse picking process. If you want to get the top object only, you must also enable [member physics_object_picking_sort].
+			If [code]false[/code], an input_event signal will be sent to all physics objects in the mouse picking process.
+			This applies to 2D CanvasItem object picking only.
 		</member>
 		<member name="physics_object_picking_sort" type="bool" setter="set_physics_object_picking_sort" getter="get_physics_object_picking_sort" default="false">
 			If [code]true[/code], objects receive mouse picking events sorted primarily by their [member CanvasItem.z_index] and secondarily by their position in the scene tree. If [code]false[/code], the order is undetermined.

@@ -50,16 +50,15 @@ namespace tvg
         Paint* paint = nullptr;
         RenderTransform* rTransform = nullptr;
         Composite* compData = nullptr;
-        BlendMethod blendMethod = BlendMethod::Normal;              //uint8_t
+        RenderMethod* renderer = nullptr;
+        BlendMethod blendMethod = BlendMethod::Normal;   //uint8_t
         uint8_t renderFlag = RenderUpdateFlag::None;
         uint8_t ctxFlag = ContextFlag::Invalid;
         uint8_t id;
         uint8_t opacity = 255;
-        uint8_t refCnt = 0;
+        uint8_t refCnt = 0;                              //reference count
 
-        Impl(Paint* pnt) : paint(pnt)
-        {
-        }
+        Impl(Paint* pnt) : paint(pnt) {}
 
         ~Impl()
         {
@@ -68,18 +67,19 @@ namespace tvg
                 free(compData);
             }
             delete(rTransform);
+            if (renderer && (renderer->unref() == 0)) delete(renderer);
         }
 
         uint8_t ref()
         {
             if (refCnt == 255) TVGERR("RENDERER", "Corrupted reference count!");
-            return (++refCnt);
+            return ++refCnt;
         }
 
         uint8_t unref()
         {
             if (refCnt == 0) TVGERR("RENDERER", "Corrupted reference count!");
-            return (--refCnt);
+            return --refCnt;
         }
 
         bool transform(const Matrix& m)
@@ -131,15 +131,14 @@ namespace tvg
             return true;
         }
 
-        RenderRegion bounds(RenderMethod& renderer) const;
-        bool dispose(RenderMethod& renderer);
+        RenderRegion bounds(RenderMethod* renderer) const;
         Iterator* iterator();
         bool rotate(float degree);
         bool scale(float factor);
         bool translate(float x, float y);
         bool bounds(float* x, float* y, float* w, float* h, bool transformed, bool stroking);
-        RenderData update(RenderMethod& renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper = false);
-        bool render(RenderMethod& renderer);
+        RenderData update(RenderMethod* renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper = false);
+        bool render(RenderMethod* renderer);
         Paint* duplicate();
     };
 }

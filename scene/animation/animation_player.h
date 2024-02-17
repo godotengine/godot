@@ -128,6 +128,7 @@ protected:
 
 	// Make animation instances.
 	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map) override;
+	virtual void _blend_capture(double p_delta) override;
 	virtual void _blend_post_process() override;
 
 	virtual void _animation_removed(const StringName &p_name, const StringName &p_library) override;
@@ -157,6 +158,7 @@ public:
 
 	void play(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_backwards(const StringName &p_name = StringName(), double p_custom_blend = -1);
+	void play_with_capture(const StringName &p_name, double p_duration = -1.0, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
 	void queue(const StringName &p_name);
 	Vector<String> get_queue();
 	void clear_queue();

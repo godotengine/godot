@@ -280,7 +280,6 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 
 	presets.insert("bptc");
 	presets.insert("s3tc");
-	presets.insert("etc");
 	presets.insert("etc2");
 	presets.insert("editor");
 	presets.insert("template_debug");

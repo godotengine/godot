@@ -885,7 +885,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(int32_t), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit integer) to convert to PackedInt32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(int32_t));
 		return dest;
 	}
@@ -899,7 +899,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(int64_t), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit integer) to convert to PackedInt64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(int64_t));
 		return dest;
 	}
@@ -913,7 +913,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(float), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit float) to convert to PackedFloat32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(float));
 		return dest;
 	}
@@ -927,7 +927,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(double), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit double) to convert to PackedFloat64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
 		return dest;
 	}

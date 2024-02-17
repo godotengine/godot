@@ -236,8 +236,9 @@ public:
 		reference = nullptr;
 	}
 
-	void instantiate() {
-		ref(memnew(T));
+	template <typename... VarArgs>
+	void instantiate(VarArgs... p_params) {
+		ref(memnew(T(p_params...)));
 	}
 
 	Ref() {}

@@ -584,7 +584,7 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			file_list_button_sort->set_icon(get_editor_theme_icon(SNAME("Sort")));
 
-			button_dock_placement->set_icon(get_editor_theme_icon(SNAME("GuiTabMenu")));
+			button_dock_placement->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			if (is_layout_rtl()) {
 				button_hist_next->set_icon(get_editor_theme_icon(SNAME("Back")));
@@ -979,6 +979,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			}
 		}
 	} else {
+		if (!directory.begins_with("res://")) {
+			directory = "res://" + directory;
+		}
 		// Get infos on the directory + file.
 		if (directory.ends_with("/") && directory != "res://") {
 			directory = directory.substr(0, directory.length() - 1);
@@ -2125,7 +2128,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				terminal_emulators.push_back(terminal_emulator_setting);
 			}
 
-			String arguments = EDITOR_GET("filesystem/external_programs/terminal_emulator_flags");
+			String flags = EDITOR_GET("filesystem/external_programs/terminal_emulator_flags");
+			String arguments = flags;
 			if (arguments.is_empty()) {
 				// NOTE: This default value is ignored further below if the terminal executable is `powershell` or `cmd`,
 				// due to these terminals requiring nonstandard syntax to start in a specified folder.
@@ -2135,16 +2139,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 #ifdef LINUXBSD_ENABLED
 			String chosen_terminal_emulator;
 			for (const String &terminal_emulator : terminal_emulators) {
+				String pipe;
 				List<String> test_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
-				test_args.push_back("-v");
-				test_args.push_back(terminal_emulator);
-				// Silence command name being printed when found. (stderr is already silenced by `OS::execute()` by default.)
-				// FIXME: This doesn't appear to silence stdout.
-				test_args.push_back(">");
-				test_args.push_back("/dev/null");
-				int exit_code = 0;
-				const Error err = OS::get_singleton()->execute("command", test_args, nullptr, &exit_code);
-				if (err == OK && exit_code == EXIT_SUCCESS) {
+				test_args.push_back("-cr");
+				test_args.push_back("command -v " + terminal_emulator);
+				const Error err = OS::get_singleton()->execute("bash", test_args, &pipe);
+				// Check if a path to the terminal executable exists.
+				if (err == OK && pipe.contains("/")) {
 					chosen_terminal_emulator = terminal_emulator;
 					break;
 				} else if (err == ERR_CANT_FORK) {
@@ -2161,8 +2162,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Prepend default arguments based on the terminal emulator name.
 			// Use `String.ends_with()` so that installations in non-default paths
 			// or `/usr/local/bin` are detected correctly.
-			if (chosen_terminal_emulator.ends_with("konsole")) {
-				terminal_emulator_args.push_back("--workdir");
+			if (flags.is_empty()) {
+				if (chosen_terminal_emulator.ends_with("konsole")) {
+					terminal_emulator_args.push_back("--workdir");
+				} else if (chosen_terminal_emulator.ends_with("gnome-terminal")) {
+					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("urxvt")) {
+					terminal_emulator_args.push_back("-cd");
+				}
 			}
 #endif
 

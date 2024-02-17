@@ -11,15 +11,15 @@ if env["use_sowrap"]:
     WAYLAND_BUILDERS_SOWRAP = {
         "WAYLAND_API_HEADER": Builder(
             action=Action(
-                "wayland-scanner -c client-header < ${SOURCE} | sed 's:wayland-client-core\.h:../dynwrappers/wayland-client-core-so_wrap\.h:' > ${TARGET}",
+                r"wayland-scanner -c client-header < ${SOURCE} | sed 's:wayland-client-core\.h:../dynwrappers/wayland-client-core-so_wrap\.h:' > ${TARGET}",
                 'Generating Wayland client header: "${TARGET}"',
             ),
             single_source=True,
         ),
         "WAYLAND_API_CODE": Builder(
             action=Action(
-                "wayland-scanner -c private-code < ${SOURCE} | sed 's:wayland-util\.h:../dynwrappers/wayland-client-core-so_wrap\.h:' > ${TARGET}",
-                'Generating Wayland protocol marshalling code: "${TARGET}"',
+                r"wayland-scanner -c private-code < ${SOURCE} | sed 's:wayland-util\.h:../dynwrappers/wayland-client-core-so_wrap\.h:' > ${TARGET}",
+                'Generating Wayland protocol marshaling code: "${TARGET}"',
             ),
             single_source=True,
         ),
@@ -29,15 +29,15 @@ else:
     WAYLAND_BUILDERS = {
         "WAYLAND_API_HEADER": Builder(
             action=Action(
-                "wayland-scanner -c client-header < ${SOURCE} > ${TARGET}",
+                r"wayland-scanner -c client-header < ${SOURCE} > ${TARGET}",
                 'Generating Wayland client header: "${TARGET}"',
             ),
             single_source=True,
         ),
         "WAYLAND_API_CODE": Builder(
             action=Action(
-                "wayland-scanner -c private-code < ${SOURCE} > ${TARGET}",
-                'Generating Wayland protocol marshalling code: "${TARGET}"',
+                r"wayland-scanner -c private-code < ${SOURCE} > ${TARGET}",
+                'Generating Wayland protocol marshaling code: "${TARGET}"',
             ),
             single_source=True,
         ),
@@ -195,7 +195,7 @@ if env["use_sowrap"]:
 
 
 if env["vulkan"]:
-    source_files.append("vulkan_context_wayland.cpp")
+    source_files.append("rendering_context_driver_vulkan_wayland.cpp")
 
 if env["opengl3"]:
     source_files.append("egl_manager_wayland.cpp")

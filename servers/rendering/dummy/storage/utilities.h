@@ -53,6 +53,8 @@ public:
 	virtual RS::InstanceType get_base_type(RID p_rid) const override {
 		if (RendererDummy::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
 			return RS::INSTANCE_MESH;
+		} else if (RendererDummy::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
+			return RS::INSTANCE_MULTIMESH;
 		}
 		return RS::INSTANCE_NONE;
 	}
@@ -106,7 +108,7 @@ public:
 	virtual void set_debug_generate_wireframes(bool p_generate) override {}
 
 	virtual bool has_os_feature(const String &p_feature) const override {
-		return p_feature == "rgtc" || p_feature == "bptc" || p_feature == "s3tc" || p_feature == "etc" || p_feature == "etc2";
+		return p_feature == "rgtc" || p_feature == "bptc" || p_feature == "s3tc" || p_feature == "etc2";
 	}
 
 	virtual void update_memory_info() override {}

@@ -256,7 +256,7 @@ ShaderFileEditor::ShaderFileEditor() {
 	add_child(main_hs);
 
 	versions = memnew(ItemList);
-	versions->set_auto_translate(false);
+	versions->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	versions->connect("item_selected", callable_mp(this, &ShaderFileEditor::_version_selected));
 	versions->set_custom_minimum_size(Size2i(200 * EDSCALE, 0));
 	main_hs->add_child(versions);

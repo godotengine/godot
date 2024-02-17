@@ -217,7 +217,7 @@ _FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
 	return p_path;
 }
 
-Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_MacOS::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
@@ -353,11 +353,14 @@ Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
 	return OK;
 }
 
-Error OS_MacOS::shell_open(String p_uri) {
+Error OS_MacOS::shell_open(const String &p_uri) {
 	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *uri = [[NSURL alloc] initWithString:string];
-	// Escape special characters in filenames
 	if (!uri || !uri.scheme || [uri.scheme isEqual:@"file"]) {
+		// No scheme set, assume "file://" and escape special characters.
+		if (!p_uri.begins_with("file://")) {
+			string = [NSString stringWithUTF8String:("file://" + p_uri).utf8().get_data()];
+		}
 		uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
 	}
 	[[NSWorkspace sharedWorkspace] openURL:uri];
@@ -827,6 +830,7 @@ OS_MacOS::OS_MacOS() {
 	id delegate = [[GodotApplicationDelegate alloc] init];
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
+	[NSApp registerUserInterfaceItemSearchHandler:delegate];
 
 	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
 	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);

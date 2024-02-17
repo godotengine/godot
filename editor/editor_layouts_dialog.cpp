@@ -114,7 +114,7 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	add_child(makevb);
 
 	layout_names = memnew(ItemList);
-	layout_names->set_auto_translate(false);
+	layout_names->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	layout_names->set_auto_height(true);
 	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
 	layout_names->set_visible(true);

@@ -109,7 +109,7 @@ int64_t VariantUtilityFunctions::posmod(int64_t b, int64_t r) {
 	return Math::posmod(b, r);
 }
 
-Variant VariantUtilityFunctions::floor(Variant x, Callable::CallError &r_error) {
+Variant VariantUtilityFunctions::floor(const Variant &x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
 		case Variant::INT: {
@@ -153,7 +153,7 @@ int64_t VariantUtilityFunctions::floori(double x) {
 	return int64_t(Math::floor(x));
 }
 
-Variant VariantUtilityFunctions::ceil(Variant x, Callable::CallError &r_error) {
+Variant VariantUtilityFunctions::ceil(const Variant &x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
 		case Variant::INT: {
@@ -197,7 +197,7 @@ int64_t VariantUtilityFunctions::ceili(double x) {
 	return int64_t(Math::ceil(x));
 }
 
-Variant VariantUtilityFunctions::round(Variant x, Callable::CallError &r_error) {
+Variant VariantUtilityFunctions::round(const Variant &x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
 		case Variant::INT: {

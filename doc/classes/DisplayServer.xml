@@ -56,6 +56,15 @@
 				[b]Note:[/b] This method is only implemented on Linux (X11/Wayland).
 			</description>
 		</method>
+		<method name="create_status_indicator">
+			<return type="int" />
+			<param index="0" name="icon" type="Image" />
+			<param index="1" name="tooltip" type="String" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Creates a new application status indicator with the specified icon, tooltip, and activation callback.
+			</description>
+		</method>
 		<method name="cursor_get_shape" qualifiers="const">
 			<return type="int" enum="DisplayServer.CursorShape" />
 			<description>
@@ -76,6 +85,13 @@
 			<param index="0" name="shape" type="int" enum="DisplayServer.CursorShape" />
 			<description>
 				Sets the default mouse cursor shape. The cursor's appearance will vary depending on the user's operating system and mouse cursor theme. See also [method cursor_get_shape] and [method cursor_set_custom_image].
+			</description>
+		</method>
+		<method name="delete_status_indicator">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Removes the application status indicator.
 			</description>
 		</method>
 		<method name="dialog_input_text">
@@ -120,7 +136,7 @@
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include Linux (X11 and Wayland), Windows, and macOS.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] On Linux, [param show_hidden] is ignored.
 				[b]Note:[/b] On macOS, native file dialogs have no title.
@@ -145,7 +161,7 @@
 				- [code]"values"[/code] - [PackedStringArray] of values. If empty, boolean option (check box) is used.
 				- [code]"default"[/code] - default selected option index ([int]) or default boolean value ([bool]).
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int, selected_option: Dictionary[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include Linux (X11 and Wayland), Windows, and macOS.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] On Linux (X11), [param show_hidden] is ignored.
 				[b]Note:[/b] On macOS, native file dialogs have no title.
@@ -163,6 +179,13 @@
 			<return type="Color" />
 			<description>
 				Returns OS theme accent color. Returns [code]Color(0, 0, 0, 0)[/code], if accent color is unknown.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_base_color" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns the OS theme base color (default control background). Returns [code]Color(0, 0, 0, 0)[/code] if the base color is unknown.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
@@ -859,6 +882,17 @@
 				Returns [code]true[/code] if the specified [param feature] is supported by the current [DisplayServer], [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="help_set_search_callbacks">
+			<return type="void" />
+			<param index="0" name="search_callback" type="Callable" />
+			<param index="1" name="action_callback" type="Callable" />
+			<description>
+				Sets native help system search callbacks.
+				[param search_callback] has the following arguments: [code]String search_string, int result_limit[/code] and return a [Dictionary] with "key, display name" pairs for the search results. Called when the user enters search terms in the [code]Help[/code] menu.
+				[param action_callback] has the following arguments: [code]String key[/code]. Called when the user selects a search result in the [code]Help[/code] menu.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="ime_get_selection" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -1118,6 +1152,38 @@
 			<param index="0" name="filename" type="String" />
 			<description>
 				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. The file at [param filename] must be in [code].ico[/code] format on Windows or [code].icns[/code] on macOS. By using specially crafted [code].ico[/code] or [code].icns[/code] icons, [method set_native_icon] allows specifying different icons depending on the size the icon is displayed at. This size is determined by the operating system and user preferences (including the display scale factor). To use icons in other formats, use [method set_icon] instead.
+			</description>
+		</method>
+		<method name="set_system_theme_change_callback">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Sets the [param callable] that should be called when system theme settings are changed. Callback method should have zero arguments.
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
+			</description>
+		</method>
+		<method name="status_indicator_set_callback">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the application status indicator activation callback.
+			</description>
+		</method>
+		<method name="status_indicator_set_icon">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="icon" type="Image" />
+			<description>
+				Sets the application status indicator icon.
+			</description>
+		</method>
+		<method name="status_indicator_set_tooltip">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets the application status indicator tooltip.
 			</description>
 		</method>
 		<method name="tablet_get_current_driver" qualifiers="const">
@@ -1713,7 +1779,7 @@
 			Display server supports setting the mouse cursor shape to a custom image. [b]Windows, macOS, Linux (X11/Wayland), Web[/b]
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG" value="9" enum="Feature">
-			Display server supports spawning dialogs using the operating system's native look-and-feel. [b]macOS[/b]
+			Display server supports spawning dialogs using the operating system's native look-and-feel. [b]Windows, macOS, Linux (X11/Wayland)[/b]
 		</constant>
 		<constant name="FEATURE_IME" value="10" enum="Feature">
 			Display server supports [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url], which is commonly used for inputting Chinese/Japanese/Korean text. This is handled by the operating system, rather than by Godot. [b]Windows, macOS, Linux (X11)[/b]
@@ -1747,6 +1813,12 @@
 		</constant>
 		<constant name="FEATURE_SCREEN_CAPTURE" value="21" enum="Feature">
 			Display server supports reading screen pixels. See [method screen_get_pixel].
+		</constant>
+		<constant name="FEATURE_STATUS_INDICATOR" value="22" enum="Feature">
+			Display server supports application status indicators.
+		</constant>
+		<constant name="FEATURE_NATIVE_HELP" value="23" enum="Feature">
+			Display server supports native help system search callbacks. See [method help_set_search_callbacks].
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
@@ -1785,6 +1857,9 @@
 		</constant>
 		<constant name="INVALID_WINDOW_ID" value="-1">
 			The ID that refers to a nonexistent window. This is returned by some [DisplayServer] methods if no window matches the requested result.
+		</constant>
+		<constant name="INVALID_INDICATOR_ID" value="-1">
+			The ID that refers to a nonexistent application status indicator.
 		</constant>
 		<constant name="SCREEN_LANDSCAPE" value="0" enum="ScreenOrientation">
 			Default landscape orientation.

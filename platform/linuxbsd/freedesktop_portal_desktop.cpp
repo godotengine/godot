@@ -528,10 +528,10 @@ void FreeDesktopPortalDesktop::_file_dialog_callback(const Callable &p_callable,
 	}
 }
 
-void FreeDesktopPortalDesktop::_thread_file_dialog_monitor(void *p_ud) {
+void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)p_ud;
 
-	while (!portal->file_dialog_thread_abort.is_set()) {
+	while (!portal->monitor_thread_abort.is_set()) {
 		{
 			MutexLock lock(portal->file_dialog_mutex);
 			for (int i = portal->file_dialogs.size() - 1; i >= 0; i--) {
@@ -579,7 +579,41 @@ void FreeDesktopPortalDesktop::_thread_file_dialog_monitor(void *p_ud) {
 				}
 			}
 		}
+
+		if (portal->theme_connection) {
+			while (true) {
+				DBusMessage *msg = dbus_connection_pop_message(portal->theme_connection);
+				if (!msg) {
+					break;
+				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Settings", "SettingChanged")) {
+					DBusMessageIter iter;
+					if (dbus_message_iter_init(msg, &iter)) {
+						const char *value;
+						dbus_message_iter_get_basic(&iter, &value);
+						String name_space = String::utf8(value);
+						dbus_message_iter_next(&iter);
+						dbus_message_iter_get_basic(&iter, &value);
+						String key = String::utf8(value);
+
+						if (name_space == "org.freedesktop.appearance" && key == "color-scheme") {
+							callable_mp(portal, &FreeDesktopPortalDesktop::_system_theme_changed_callback).call_deferred();
+						}
+					}
+					dbus_message_unref(msg);
+					break;
+				}
+				dbus_message_unref(msg);
+			}
+			dbus_connection_read_write(portal->theme_connection, 0);
+		}
+
 		usleep(50000);
+	}
+}
+
+void FreeDesktopPortalDesktop::_system_theme_changed_callback() {
+	if (system_theme_changed.is_valid()) {
+		system_theme_changed.call();
 	}
 }
 
@@ -611,17 +645,34 @@ FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
 		unsupported = true;
 	}
 
+	DBusError err;
+	dbus_error_init(&err);
+	theme_connection = dbus_bus_get(DBUS_BUS_SESSION, &err);
+	if (dbus_error_is_set(&err)) {
+		dbus_error_free(&err);
+	} else {
+		theme_path = "type='signal',sender='org.freedesktop.portal.Desktop',interface='org.freedesktop.portal.Settings',member='SettingChanged'";
+		dbus_bus_add_match(theme_connection, theme_path.utf8().get_data(), &err);
+		if (dbus_error_is_set(&err)) {
+			dbus_error_free(&err);
+			dbus_connection_unref(theme_connection);
+			theme_connection = nullptr;
+		}
+		dbus_connection_read_write(theme_connection, 0);
+	}
+
 	if (!unsupported) {
-		file_dialog_thread_abort.clear();
-		file_dialog_thread.start(FreeDesktopPortalDesktop::_thread_file_dialog_monitor, this);
+		monitor_thread_abort.clear();
+		monitor_thread.start(FreeDesktopPortalDesktop::_thread_monitor, this);
 	}
 }
 
 FreeDesktopPortalDesktop::~FreeDesktopPortalDesktop() {
-	file_dialog_thread_abort.set();
-	if (file_dialog_thread.is_started()) {
-		file_dialog_thread.wait_to_finish();
+	monitor_thread_abort.set();
+	if (monitor_thread.is_started()) {
+		monitor_thread.wait_to_finish();
 	}
+
 	for (FreeDesktopPortalDesktop::FileDialogData &fd : file_dialogs) {
 		if (fd.connection) {
 			DBusError err;
@@ -630,6 +681,13 @@ FreeDesktopPortalDesktop::~FreeDesktopPortalDesktop() {
 			dbus_error_free(&err);
 			dbus_connection_unref(fd.connection);
 		}
+	}
+	if (theme_connection) {
+		DBusError err;
+		dbus_error_init(&err);
+		dbus_bus_remove_match(theme_connection, theme_path.utf8().get_data(), &err);
+		dbus_error_free(&err);
+		dbus_connection_unref(theme_connection);
 	}
 }
 

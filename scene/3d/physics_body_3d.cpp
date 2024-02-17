@@ -35,6 +35,7 @@
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("get_gravity"), &PhysicsBody3D::get_gravity);
 
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &PhysicsBody3D::set_axis_lock);
 	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &PhysicsBody3D::get_axis_lock);
@@ -182,8 +183,15 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion
 
 	PhysicsServer3D::MotionParameters parameters(p_from, p_motion, p_margin);
 	parameters.recovery_as_collision = p_recovery_as_collision;
+	parameters.max_collisions = p_max_collisions;
 
 	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+}
+
+Vector3 PhysicsBody3D::get_gravity() const {
+	PhysicsDirectBodyState3D *state = PhysicsServer3D::get_singleton()->body_get_direct_state(get_rid());
+	ERR_FAIL_NULL_V(state, Vector3());
+	return state->get_total_gravity();
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
@@ -493,6 +501,8 @@ void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
 	angular_velocity = p_state->get_angular_velocity();
 
 	inverse_inertia_tensor = p_state->get_inverse_inertia_tensor();
+
+	contact_count = p_state->get_contact_count();
 
 	if (sleeping != p_state->is_sleeping()) {
 		sleeping = p_state->is_sleeping();
@@ -869,9 +879,7 @@ int RigidBody3D::get_max_contacts_reported() const {
 }
 
 int RigidBody3D::get_contact_count() const {
-	PhysicsDirectBodyState3D *bs = PhysicsServer3D::get_singleton()->body_get_direct_state(get_rid());
-	ERR_FAIL_NULL_V(bs, 0);
-	return bs->get_contact_count();
+	return contact_count;
 }
 
 void RigidBody3D::apply_central_impulse(const Vector3 &p_impulse) {
@@ -987,8 +995,8 @@ TypedArray<Node3D> RigidBody3D::get_colliding_bodies() const {
 	return ret;
 }
 
-PackedStringArray RigidBody3D::get_configuration_warnings() const {
-	PackedStringArray warnings = CollisionObject3D::get_configuration_warnings();
+Array RigidBody3D::get_configuration_warnings() const {
+	Array warnings = CollisionObject3D::get_configuration_warnings();
 
 	Vector3 scale = get_transform().get_basis().get_scale();
 	if (ABS(scale.x - 1.0) > 0.05 || ABS(scale.y - 1.0) > 0.05 || ABS(scale.z - 1.0) > 0.05) {

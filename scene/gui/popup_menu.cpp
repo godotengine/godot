@@ -57,6 +57,25 @@ bool PopupMenu::_set_item_accelerator(int p_index, const Ref<InputEventKey> &p_i
 	return false;
 }
 
+void PopupMenu::_set_item_checkable_type(int p_index, int p_checkable_type) {
+	switch (p_checkable_type) {
+		case Item::CHECKABLE_TYPE_NONE: {
+			set_item_as_checkable(p_index, false);
+		} break;
+		case Item::CHECKABLE_TYPE_CHECK_BOX: {
+			set_item_as_checkable(p_index, true);
+		} break;
+		case Item::CHECKABLE_TYPE_RADIO_BUTTON: {
+			set_item_as_radio_checkable(p_index, true);
+		} break;
+	}
+}
+
+int PopupMenu::_get_item_checkable_type(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, items.size(), Item::CHECKABLE_TYPE_NONE);
+	return items[p_index].checkable_type;
+}
+
 String PopupMenu::bind_global_menu() {
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
@@ -437,6 +456,9 @@ void PopupMenu::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> b = p_event;
+	Ref<InputEventMouseMotion> m = p_event;
+
 	if (!items.is_empty()) {
 		Input *input = Input::get_singleton();
 		Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
@@ -565,52 +587,57 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	Ref<InputEventMouseButton> b = p_event;
-
-	if (b.is_valid()) {
-		if (!item_clickable_area.has_point(b->get_position())) {
-			return;
+	if (m.is_valid() && drag_to_press) {
+		BitField<MouseButtonMask> initial_button_mask = m->get_button_mask();
+		if (!initial_button_mask.has_flag(mouse_button_to_mask(MouseButton::LEFT)) && !initial_button_mask.has_flag(mouse_button_to_mask(MouseButton::RIGHT))) {
+			mouse_is_pressed = false;
 		}
 
-		MouseButton button_idx = b->get_button_index();
-		if (!b->is_pressed()) {
-			// Activate the item on release of either the left mouse button or
-			// any mouse button held down when the popup was opened.
-			// This allows for opening the popup and triggering an action in a single mouse click.
-			if (button_idx == MouseButton::LEFT || initial_button_mask.has_flag(mouse_button_to_mask(button_idx))) {
-				bool was_during_grabbed_click = during_grabbed_click;
-				during_grabbed_click = false;
-				initial_button_mask.clear();
-
-				// Disable clicks under a time threshold to avoid selection right when opening the popup.
-				uint64_t now = OS::get_singleton()->get_ticks_msec();
-				uint64_t diff = now - popup_time_msec;
-				if (diff < 150) {
-					return;
-				}
-
-				int over = _get_mouse_over(b->get_position());
-				if (over < 0) {
-					if (!was_during_grabbed_click) {
-						hide();
-					}
-					return;
-				}
-
-				if (items[over].separator || items[over].disabled) {
-					return;
-				}
-
-				if (!items[over].submenu.is_empty()) {
-					_activate_submenu(over);
-					return;
-				}
-				activate_item(over);
-			}
+		if (!item_clickable_area.has_point(m->get_position()) && !mouse_is_pressed) {
+			drag_to_press = false;
 		}
 	}
 
-	Ref<InputEventMouseMotion> m = p_event;
+	if ((b.is_valid() && b->is_pressed()) || (!mouse_is_pressed && drag_to_press)) {
+		if (b.is_valid()) {
+			MouseButton button_idx = b->get_button_index();
+			if (button_idx != MouseButton::LEFT && button_idx != MouseButton::RIGHT) {
+				return;
+			}
+		} else {
+			uint64_t now = OS::get_singleton()->get_ticks_msec();
+			uint64_t diff = now - popup_time_msec;
+			if (diff < 250) {
+				drag_to_press = false;
+				return;
+			}
+		}
+
+		drag_to_press = false;
+
+		int over = -1;
+
+		if (m.is_valid()) {
+			over = _get_mouse_over(m->get_position());
+		} else if (b.is_valid()) {
+			over = _get_mouse_over(b->get_position());
+		}
+
+		if (over < 0) {
+			hide();
+			return;
+		}
+
+		if (items[over].separator || items[over].disabled) {
+			return;
+		}
+
+		if (!items[over].submenu.is_empty()) {
+			_activate_submenu(over);
+			return;
+		}
+		activate_item(over);
+	}
 
 	if (m.is_valid()) {
 		if (m->get_velocity().is_zero_approx()) {
@@ -1041,11 +1068,6 @@ void PopupMenu::_notification(int p_what) {
 				mouse_over = -1;
 				control->queue_redraw();
 			}
-		} break;
-
-		case NOTIFICATION_POST_POPUP: {
-			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
-			during_grabbed_click = (bool)initial_button_mask;
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -2561,39 +2583,10 @@ void PopupMenu::take_mouse_focus() {
 }
 
 bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
-		int item_index = components[0].trim_prefix("item_").to_int();
-		const String &property = components[1];
-		if (property == "text") {
-			set_item_text(item_index, p_value);
-			return true;
-		} else if (property == "icon") {
-			set_item_icon(item_index, p_value);
-			return true;
-		} else if (property == "checkable") {
-			bool radio_checkable = (int)p_value == Item::CHECKABLE_TYPE_RADIO_BUTTON;
-			if (radio_checkable) {
-				set_item_as_radio_checkable(item_index, true);
-			} else {
-				bool checkable = p_value;
-				set_item_as_checkable(item_index, checkable);
-			}
-			return true;
-		} else if (property == "checked") {
-			set_item_checked(item_index, p_value);
-			return true;
-		} else if (property == "id") {
-			set_item_id(item_index, p_value);
-			return true;
-		} else if (property == "disabled") {
-			set_item_disabled(item_index, p_value);
-			return true;
-		} else if (property == "separator") {
-			set_item_as_separator(item_index, p_value);
-			return true;
-		}
+	if (property_helper.property_set_value(p_name, p_value)) {
+		return true;
 	}
+
 #ifndef DISABLE_DEPRECATED
 	// Compatibility.
 	if (p_name == "items") {
@@ -2637,71 +2630,6 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 	}
 #endif
 	return false;
-}
-
-bool PopupMenu::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
-		int item_index = components[0].trim_prefix("item_").to_int();
-		const String &property = components[1];
-		if (property == "text") {
-			r_ret = get_item_text(item_index);
-			return true;
-		} else if (property == "icon") {
-			r_ret = get_item_icon(item_index);
-			return true;
-		} else if (property == "checkable") {
-			if (item_index >= 0 && item_index < items.size()) {
-				r_ret = items[item_index].checkable_type;
-				return true;
-			} else {
-				r_ret = Item::CHECKABLE_TYPE_NONE;
-				ERR_FAIL_V(true);
-			}
-		} else if (property == "checked") {
-			r_ret = is_item_checked(item_index);
-			return true;
-		} else if (property == "id") {
-			r_ret = get_item_id(item_index);
-			return true;
-		} else if (property == "disabled") {
-			r_ret = is_item_disabled(item_index);
-			return true;
-		} else if (property == "separator") {
-			r_ret = is_item_separator(item_index);
-			return true;
-		}
-	}
-	return false;
-}
-
-void PopupMenu::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < items.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
-
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
-		pi.usage &= ~(get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::INT, vformat("item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button");
-		pi.usage &= ~(!is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/checked", i));
-		pi.usage &= ~(!is_item_checked(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::INT, vformat("item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/disabled", i));
-		pi.usage &= ~(!is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/separator", i));
-		pi.usage &= ~(!is_item_separator(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-	}
 }
 
 void PopupMenu::_bind_methods() {
@@ -2860,12 +2788,25 @@ void PopupMenu::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, PopupMenu, font_separator_outline_size, "separator_outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_outline_color);
+
+	Item defaults(true);
+
+	base_property_helper.set_prefix("item_");
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &PopupMenu::set_item_text, &PopupMenu::get_item_text);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &PopupMenu::set_item_icon, &PopupMenu::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"), defaults.checkable_type, &PopupMenu::_set_item_checkable_type, &PopupMenu::_get_item_checkable_type);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "checked"), defaults.checked, &PopupMenu::set_item_checked, &PopupMenu::is_item_checked);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), defaults.id, &PopupMenu::set_item_id, &PopupMenu::get_item_id);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &PopupMenu::set_item_disabled, &PopupMenu::is_item_disabled);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &PopupMenu::set_item_as_separator, &PopupMenu::is_item_separator);
 }
 
 void PopupMenu::popup(const Rect2i &p_bounds) {
 	moved = Vector2();
 	popup_time_msec = OS::get_singleton()->get_ticks_msec();
 	Popup::popup(p_bounds);
+	drag_to_press = true;
+	mouse_is_pressed = true;
 }
 
 PopupMenu::PopupMenu() {
@@ -2900,6 +2841,8 @@ PopupMenu::PopupMenu() {
 	minimum_lifetime_timer->set_one_shot(true);
 	minimum_lifetime_timer->connect("timeout", callable_mp(this, &PopupMenu::_minimum_lifetime_timeout));
 	add_child(minimum_lifetime_timer, false, INTERNAL_MODE_FRONT);
+
+	property_helper.setup_for_instance(base_property_helper, this);
 }
 
 PopupMenu::~PopupMenu() {

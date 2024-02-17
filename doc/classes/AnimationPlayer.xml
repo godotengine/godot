@@ -44,10 +44,9 @@
 				Returns the blend time (in seconds) between two animations, referenced by their keys.
 			</description>
 		</method>
-		<method name="get_method_call_mode" qualifiers="const" is_deprecated="true">
+		<method name="get_method_call_mode" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_method] instead.">
 			<return type="int" enum="AnimationPlayer.AnimationMethodCallMode" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeMethod].
 			</description>
 		</method>
 		<method name="get_playing_speed" qualifiers="const">
@@ -57,10 +56,9 @@
 				Returns a negative value if the current animation is playing backwards.
 			</description>
 		</method>
-		<method name="get_process_callback" qualifiers="const" is_deprecated="true">
+		<method name="get_process_callback" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="int" enum="AnimationPlayer.AnimationProcessCallback" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeProcess].
 			</description>
 		</method>
 		<method name="get_queue">
@@ -69,10 +67,9 @@
 				Returns a list of the animation keys that are currently queued to play.
 			</description>
 		</method>
-		<method name="get_root" qualifiers="const" is_deprecated="true">
+		<method name="get_root" qualifiers="const" deprecated="Use [member AnimationMixer.root_node] instead.">
 			<return type="NodePath" />
 			<description>
-				For backward compatibility. See [member AnimationMixer.root_node].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -110,6 +107,26 @@
 				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
 			</description>
 		</method>
+		<method name="play_with_capture">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="duration" type="float" default="-1.0" />
+			<param index="2" name="custom_blend" type="float" default="-1" />
+			<param index="3" name="custom_speed" type="float" default="1.0" />
+			<param index="4" name="from_end" type="bool" default="false" />
+			<param index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
+			<param index="6" name="ease_type" type="int" enum="Tween.EaseType" default="0" />
+			<description>
+				See [method AnimationMixer.capture]. It is almost the same as the following:
+				[codeblock]
+				capture(name, duration, trans_type, ease_type)
+				play(name, custom_blend, custom_speed, from_end)
+				[/codeblock]
+				If name is blank, it specifies [member assigned_animation].
+				If [param duration] is a negative value, the duration is set to the interval between the current position and the first key, when [param from_end] is [code]true[/code], uses the interval between the current position and the last key instead.
+				[b]Note:[/b] The [param duration] takes [member speed_scale] into account, but [param custom_speed] does not, because the capture cache is interpolated with the blend result and the result may contain multiple animations.
+			</description>
+		</method>
 		<method name="queue">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -125,7 +142,7 @@
 			<param index="2" name="update_only" type="bool" default="false" />
 			<description>
 				Seeks the animation to the [param seconds] point in time (in seconds). If [param update] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [param seconds] are skipped.
-				If [param update_only] is true, the method / audio / animation playback tracks will not be processed.
+				If [param update_only] is [code]true[/code], the method / audio / animation playback tracks will not be processed.
 				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal AnimationMixer.animation_finished]. If you want to skip animation and emit the signal, use [method AnimationMixer.advance].
 			</description>
 		</method>
@@ -138,25 +155,22 @@
 				Specifies a blend time (in seconds) between two animations, referenced by their keys.
 			</description>
 		</method>
-		<method name="set_method_call_mode" is_deprecated="true">
+		<method name="set_method_call_mode" deprecated="Use [member AnimationMixer.callback_mode_method] instead.">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="AnimationPlayer.AnimationMethodCallMode" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeMethod].
 			</description>
 		</method>
-		<method name="set_process_callback" is_deprecated="true">
+		<method name="set_process_callback" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="AnimationPlayer.AnimationProcessCallback" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeProcess].
 			</description>
 		</method>
-		<method name="set_root" is_deprecated="true">
+		<method name="set_root" deprecated="Use [member AnimationMixer.root_node] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				For backward compatibility. See [member AnimationMixer.root_node].
 			</description>
 		</method>
 		<method name="stop">
@@ -215,20 +229,15 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
 		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">
 		</constant>
-		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].">
 		</constant>
-		<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" enum="AnimationMethodCallMode" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_DEFERRED].
+		<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" enum="AnimationMethodCallMode" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_DEFERRED].">
 		</constant>
-		<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" enum="AnimationMethodCallMode" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE].
+		<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" enum="AnimationMethodCallMode" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE].">
 		</constant>
 	</constants>
 </class>

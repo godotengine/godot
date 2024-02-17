@@ -180,6 +180,20 @@ real_t GodotNavigationServer::map_get_cell_height(RID p_map) const {
 	return map->get_cell_height();
 }
 
+COMMAND_2(map_set_merge_rasterizer_cell_scale, RID, p_map, float, p_value) {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL(map);
+
+	map->set_merge_rasterizer_cell_scale(p_value);
+}
+
+float GodotNavigationServer::map_get_merge_rasterizer_cell_scale(RID p_map) const {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL_V(map, false);
+
+	return map->get_merge_rasterizer_cell_scale();
+}
+
 COMMAND_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled) {
 	NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL(map);
@@ -1114,6 +1128,10 @@ void GodotNavigationServer::bake_from_source_geometry_data_async(const Ref<Navig
 	ERR_FAIL_NULL(NavMeshGenerator3D::get_singleton());
 	NavMeshGenerator3D::get_singleton()->bake_from_source_geometry_data_async(p_navigation_mesh, p_source_geometry_data, p_callback);
 #endif // _3D_DISABLED
+}
+
+bool GodotNavigationServer::is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const {
+	return NavMeshGenerator3D::get_singleton()->is_baking(p_navigation_mesh);
 }
 
 COMMAND_1(free, RID, p_object) {

@@ -37,6 +37,7 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.graphics.Color
 import android.graphics.Rect
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -149,6 +150,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	private var useApkExpansion = false
 	private var useImmersive = false
 	private var useDebugOpengl = false
+	private var darkMode = false;
 
 	private var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
@@ -183,6 +185,8 @@ class Godot(private val context: Context) : SensorEventListener {
 			Log.d(TAG, "OnCreate already invoked")
 			return
 		}
+
+		darkMode = context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
 		beginBenchmarkMeasure("Startup", "Godot::onCreate")
 		try {
@@ -376,6 +380,8 @@ class Godot(private val context: Context) : SensorEventListener {
 							ViewGroup.LayoutParams.MATCH_PARENT,
 							activity.resources.getDimension(R.dimen.text_edit_height).toInt()
 					)
+			// Prevent GodotEditText from showing on splash screen on devices with Android 14 or newer.
+			editText.setBackgroundColor(Color.TRANSPARENT)
 			// ...add to FrameLayout
 			containerLayout?.addView(editText)
 			renderView = if (usesVulkan()) {
@@ -560,6 +566,17 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	/**
+	 * Configuration change callback
+	*/
+	fun onConfigurationChanged(newConfig: Configuration) {
+		var newDarkMode = newConfig.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		if (darkMode != newDarkMode) {
+			darkMode = newDarkMode
+			GodotLib.onNightModeChanged()
+		}
+	}
+
+	/**
 	 * Activity result callback
 	 */
 	fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -596,11 +613,13 @@ class Godot(private val context: Context) : SensorEventListener {
 		// These properties are defined after Godot setup completion, so we retrieve them here.
 		val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
 		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
+		val rotaryInputAxis = java.lang.Integer.parseInt(GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis"));
 
 		runOnUiThread {
 			renderView?.inputHandler?.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
+				setRotaryInputAxis(rotaryInputAxis)
 			}
 		}
 
@@ -731,7 +750,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	@Keep
 	private fun isDarkModeSupported(): Boolean {
-		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+		return context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_UNDEFINED
 	}
 
 	/**
@@ -739,10 +758,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	@Keep
 	private fun isDarkMode(): Boolean {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			return context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-		}
-		return false
+		return darkMode
 	}
 
 	fun hasClipboard(): Boolean {

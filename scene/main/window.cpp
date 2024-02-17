@@ -52,8 +52,8 @@ void Window::set_root_layout_direction(int p_root_dir) {
 
 bool Window::_set(const StringName &p_name, const Variant &p_value) {
 	ERR_MAIN_THREAD_GUARD_V(false);
-
 	String name = p_name;
+
 	if (!name.begins_with("theme_override")) {
 		return false;
 	}
@@ -95,7 +95,6 @@ bool Window::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			return false;
 		}
-
 	} else {
 		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
@@ -124,8 +123,8 @@ bool Window::_set(const StringName &p_name, const Variant &p_value) {
 
 bool Window::_get(const StringName &p_name, Variant &r_ret) const {
 	ERR_READ_THREAD_GUARD_V(false);
-
 	String sname = p_name;
+
 	if (!sname.begins_with("theme_override")) {
 		return false;
 	}
@@ -1307,14 +1306,6 @@ void Window::_notification(int p_what) {
 				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
-
-#ifdef TOOLS_ENABLED
-			if (is_part_of_edited_scene()) {
-				// Don't translate Windows on scene when inside editor.
-				set_message_translation(false);
-				notification(NOTIFICATION_TRANSLATION_CHANGED);
-			}
-#endif
 
 			// Emits NOTIFICATION_THEME_CHANGED internally.
 			set_theme_context(ThemeDB::get_singleton()->get_nearest_theme_context(this));
@@ -2649,21 +2640,17 @@ bool Window::is_layout_rtl() const {
 	}
 }
 
+#ifndef DISABLE_DEPRECATED
 void Window::set_auto_translate(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
-	if (p_enable == auto_translate) {
-		return;
-	}
-
-	auto_translate = p_enable;
-
-	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	set_auto_translate_mode(p_enable ? AUTO_TRANSLATE_MODE_ALWAYS : AUTO_TRANSLATE_MODE_DISABLED);
 }
 
 bool Window::is_auto_translating() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return auto_translate;
+	return can_auto_translate();
 }
+#endif
 
 Transform2D Window::get_final_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
@@ -2894,8 +2881,10 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
 	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Window::is_layout_rtl);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Window::set_auto_translate);
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Window::is_auto_translating);
+#endif
 
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
@@ -2949,8 +2938,9 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_stretch", PROPERTY_HINT_ENUM, "Fractional,Integer"), "set_content_scale_stretch", "get_content_scale_stretch");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
 
-	ADD_GROUP("Localization", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_translate", "is_auto_translating");
+#endif
 
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");

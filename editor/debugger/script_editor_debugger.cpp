@@ -387,7 +387,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		}
 
 	} else if (p_msg == "set_pid") {
-		ERR_FAIL_COND(p_data.size() < 1);
+		ERR_FAIL_COND(p_data.is_empty());
 		remote_pid = p_data[0];
 	} else if (p_msg == "scene:click_ctrl") {
 		ERR_FAIL_COND(p_data.size() < 2);
@@ -806,7 +806,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		}
 		performance_profiler->update_monitors(monitors);
 	} else if (p_msg == "filesystem:update_file") {
-		ERR_FAIL_COND(p_data.size() < 1);
+		ERR_FAIL_COND(p_data.is_empty());
 		if (EditorFileSystem::get_singleton()) {
 			EditorFileSystem::get_singleton()->update_file(p_data[0]);
 		}

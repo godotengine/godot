@@ -2246,7 +2246,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_vb->add_child(add_type_options_label);
 
 	add_type_options = memnew(ItemList);
-	add_type_options->set_auto_translate(false);
+	add_type_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_type_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_type_vb->add_child(add_type_options);
 	add_type_options->connect("item_selected", callable_mp(this, &ThemeTypeDialog::_add_type_options_cbk));
@@ -2373,18 +2373,23 @@ void ThemeTypeEditor::_update_type_list_debounced() {
 	update_debounce_timer->start();
 }
 
-HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, void (Theme::*get_list_func)(const StringName &, List<StringName> *) const, bool include_default) {
+HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, Theme::DataType p_type, bool p_include_default) {
 	HashMap<StringName, bool> items;
 	List<StringName> names;
 
-	if (include_default) {
+	if (p_include_default) {
 		names.clear();
 		String default_type = p_type_name;
 		if (edited_theme->get_type_variation_base(p_type_name) != StringName()) {
 			default_type = edited_theme->get_type_variation_base(p_type_name);
 		}
 
-		(ThemeDB::get_singleton()->get_default_theme().operator->()->*get_list_func)(default_type, &names);
+		List<ThemeDB::ThemeItemBind> theme_binds;
+		ThemeDB::get_singleton()->get_class_items(default_type, &theme_binds, true, p_type);
+		for (const ThemeDB::ThemeItemBind &E : theme_binds) {
+			names.push_back(E.item_name);
+		}
+
 		names.sort_custom<StringName::AlphCompare>();
 		for (const StringName &E : names) {
 			items[E] = false;
@@ -2393,7 +2398,7 @@ HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, v
 
 	{
 		names.clear();
-		(edited_theme.operator->()->*get_list_func)(p_type_name, &names);
+		edited_theme->get_theme_item_list(p_type, p_type_name, &names);
 		names.sort_custom<StringName::AlphCompare>();
 		for (const StringName &E : names) {
 			items[E] = true;
@@ -2499,7 +2504,7 @@ void ThemeTypeEditor::_update_type_items() {
 			color_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> color_items = _get_type_items(edited_type, &Theme::get_color_list, show_default);
+		HashMap<StringName, bool> color_items = _get_type_items(edited_type, Theme::DATA_TYPE_COLOR, show_default);
 		for (const KeyValue<StringName, bool> &E : color_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_COLOR, E.key, E.value);
 			ColorPickerButton *item_editor = memnew(ColorPickerButton);
@@ -2528,7 +2533,7 @@ void ThemeTypeEditor::_update_type_items() {
 			constant_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, &Theme::get_constant_list, show_default);
+		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, Theme::DATA_TYPE_CONSTANT, show_default);
 		for (const KeyValue<StringName, bool> &E : constant_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key, E.value);
 			SpinBox *item_editor = memnew(SpinBox);
@@ -2561,7 +2566,7 @@ void ThemeTypeEditor::_update_type_items() {
 			font_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> font_items = _get_type_items(edited_type, &Theme::get_font_list, show_default);
+		HashMap<StringName, bool> font_items = _get_type_items(edited_type, Theme::DATA_TYPE_FONT, show_default);
 		for (const KeyValue<StringName, bool> &E : font_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
@@ -2599,7 +2604,7 @@ void ThemeTypeEditor::_update_type_items() {
 			font_size_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, &Theme::get_font_size_list, show_default);
+		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, Theme::DATA_TYPE_FONT_SIZE, show_default);
 		for (const KeyValue<StringName, bool> &E : font_size_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key, E.value);
 			SpinBox *item_editor = memnew(SpinBox);
@@ -2632,7 +2637,7 @@ void ThemeTypeEditor::_update_type_items() {
 			icon_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> icon_items = _get_type_items(edited_type, &Theme::get_icon_list, show_default);
+		HashMap<StringName, bool> icon_items = _get_type_items(edited_type, Theme::DATA_TYPE_ICON, show_default);
 		for (const KeyValue<StringName, bool> &E : icon_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_ICON, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
@@ -2700,7 +2705,7 @@ void ThemeTypeEditor::_update_type_items() {
 			stylebox_items_list->add_child(memnew(HSeparator));
 		}
 
-		HashMap<StringName, bool> stylebox_items = _get_type_items(edited_type, &Theme::get_stylebox_list, show_default);
+		HashMap<StringName, bool> stylebox_items = _get_type_items(edited_type, Theme::DATA_TYPE_STYLEBOX, show_default);
 		for (const KeyValue<StringName, bool> &E : stylebox_items) {
 			if (leading_stylebox.pinned && leading_stylebox.item_name == E.key) {
 				continue;
@@ -3411,7 +3416,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	theme_type_list = memnew(OptionButton);
 	theme_type_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	theme_type_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	theme_type_list->set_auto_translate(false);
+	theme_type_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	type_list_hb->add_child(theme_type_list);
 	theme_type_list->connect("item_selected", callable_mp(this, &ThemeTypeEditor::_list_type_selected));
 

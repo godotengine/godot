@@ -44,11 +44,10 @@
 				Returns the bone index that matches [param name] as its name.
 			</description>
 		</method>
-		<method name="force_update_all_bone_transforms" is_deprecated="true">
+		<method name="force_update_all_bone_transforms" deprecated="Do not use this method.">
 			<return type="void" />
 			<description>
 				Force updates the bone transforms/poses for all bones in the skeleton.
-				[i]Deprecated.[/i] Do not use.
 			</description>
 		</method>
 		<method name="force_update_bone_child_transform">

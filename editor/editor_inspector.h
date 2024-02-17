@@ -76,6 +76,7 @@ private:
 	String doc_path;
 	bool internal = false;
 	bool has_doc_tooltip = false;
+	AcceptDialog *warning_dialog = nullptr;
 
 	int property_usage;
 
@@ -98,6 +99,8 @@ private:
 	bool check_hover = false;
 	Rect2 delete_rect;
 	bool delete_hover = false;
+	Rect2 configuration_warning_rect;
+	bool configuration_warning_hover = false;
 
 	bool can_revert = false;
 	bool can_pin = false;
@@ -121,12 +124,15 @@ private:
 	Control *bottom_editor = nullptr;
 	PopupMenu *menu = nullptr;
 
+	String configuration_warning;
+
 	HashMap<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
 	GDVIRTUAL1(_set_read_only, bool)
 
 	void _update_pin_flags();
+	void _update_configuration_warnings();
 
 protected:
 	void _notification(int p_what);
@@ -202,6 +208,9 @@ public:
 
 	void set_name_split_ratio(float p_ratio);
 	float get_name_split_ratio() const;
+
+	void set_configuration_warning(const String &p_configuration_warning);
+	String get_configuration_warning() const;
 
 	void set_object_and_property(Object *p_object, const StringName &p_property);
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
@@ -505,8 +514,10 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
+	LocalVector<Dictionary> property_configuration_warnings;
 	HashMap<StringName, HashMap<StringName, String>> doc_path_cache;
 	HashSet<StringName> restart_request_props;
+	HashMap<String, String> custom_property_descriptions;
 
 	HashMap<ObjectID, int> scroll_cache;
 
@@ -532,6 +543,8 @@ class EditorInspector : public ScrollContainer {
 	void _object_id_selected(const String &p_path, ObjectID p_id);
 
 	void _node_removed(Node *p_node);
+	void _warning_changed(Node *p_node);
+	bool _update_configuration_warnings();
 
 	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);
@@ -613,6 +626,9 @@ public:
 
 	void set_property_prefix(const String &p_prefix);
 	String get_property_prefix() const;
+
+	void add_custom_property_description(const String &p_class, const String &p_property, const String &p_description);
+	String get_custom_property_description(const String &p_property) const;
 
 	void set_object_class(const String &p_class);
 	String get_object_class() const;

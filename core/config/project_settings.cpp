@@ -688,7 +688,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	return err;
 }
 
-bool ProjectSettings::has_setting(String p_var) const {
+bool ProjectSettings::has_setting(const String &p_var) const {
 	_THREAD_SAFE_METHOD_
 
 	return props.has(p_var);
@@ -971,7 +971,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 }
 
 #ifdef TOOLS_ENABLED
-bool _csproj_exists(String p_root_dir) {
+bool _csproj_exists(const String &p_root_dir) {
 	Ref<DirAccess> dir = DirAccess::open(p_root_dir);
 	ERR_FAIL_COND_V(dir.is_null(), false);
 
@@ -1372,6 +1372,19 @@ ProjectSettings::ProjectSettings() {
 	CRASH_COND_MSG(singleton != nullptr, "Instantiating a new ProjectSettings singleton is not supported.");
 	singleton = this;
 
+#ifdef TOOLS_ENABLED
+	// Available only at runtime in editor builds. Needs to be processed before anything else to work properly.
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		String editor_features = OS::get_singleton()->get_environment("GODOT_EDITOR_CUSTOM_FEATURES");
+		if (!editor_features.is_empty()) {
+			PackedStringArray feature_list = editor_features.split(",");
+			for (const String &s : feature_list) {
+				custom_features.insert(s);
+			}
+		}
+	}
+#endif
+
 	GLOBAL_DEF_BASIC("application/config/name", "");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
@@ -1380,6 +1393,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res"), "");
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
+	GLOBAL_DEF("application/run/print_header", true);
 	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
@@ -1410,11 +1424,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/extend_to_title", false);
 	GLOBAL_DEF("display/window/size/no_focus", false);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "1,7680,1,or_greater"), 0); // 8K resolution
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "1,4320,1,or_greater"), 0); // 8K resolution
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor", false);
+
+	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
+	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
@@ -1470,6 +1487,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/frame_queue_size", PROPERTY_HINT_RANGE, "2,3,1"), 2);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/swapchain_image_count", PROPERTY_HINT_RANGE, "2,4,1"), 3);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/staging_buffer/block_size_kb", PROPERTY_HINT_RANGE, "4,2048,1,or_greater"), 256);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/staging_buffer/max_size_mb", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 128);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/staging_buffer/texture_upload_region_size_px", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), 64);

@@ -136,6 +136,7 @@
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/status_indicator.h"
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -351,6 +352,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CanvasModulate);
 	GDREGISTER_CLASS(ResourcePreloader);
 	GDREGISTER_CLASS(Window);
+
+	GDREGISTER_CLASS(StatusIndicator);
 
 	/* REGISTER GUI */
 
@@ -783,6 +786,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TileMapPattern);
 	GDREGISTER_CLASS(TileData);
 	GDREGISTER_CLASS(TileMap);
+	GDREGISTER_ABSTRACT_CLASS(TileMapLayerGroup);
 	GDREGISTER_CLASS(ParallaxBackground);
 	GDREGISTER_CLASS(ParallaxLayer);
 	GDREGISTER_CLASS(TouchScreenButton);

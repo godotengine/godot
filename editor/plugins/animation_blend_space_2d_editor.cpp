@@ -1083,6 +1083,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	animations_menu = memnew(PopupMenu);
 	menu->add_child(animations_menu);
 	animations_menu->set_name("AddAnimations");
+	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_animation_type));
 
 	open_file = memnew(EditorFileDialog);

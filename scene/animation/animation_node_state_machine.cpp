@@ -1793,6 +1793,22 @@ void AnimationNodeStateMachine::_animation_node_removed(const ObjectID &p_oid, c
 	AnimationRootNode::_animation_node_removed(p_oid, p_node);
 }
 
+void AnimationNodeStateMachine::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	String pf = p_function;
+	bool add_state_options = false;
+	if (p_idx == 0) {
+		add_state_options = (pf == "get_node" || pf == "has_node" || pf == "rename_node" || pf == "remove_node" || pf == "replace_node" || pf == "set_node_position" || pf == "get_node_position");
+	} else if (p_idx <= 1) {
+		add_state_options = (pf == "has_transition" || pf == "add_transition" || pf == "remove_transition");
+	}
+	if (add_state_options) {
+		for (KeyValue<StringName, State> E : states) {
+			r_options->push_back(String(E.key).quote());
+		}
+	}
+	AnimationRootNode::get_argument_options(p_function, p_idx, r_options);
+}
+
 void AnimationNodeStateMachine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "name", "node", "position"), &AnimationNodeStateMachine::add_node, DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("replace_node", "name", "node"), &AnimationNodeStateMachine::replace_node);

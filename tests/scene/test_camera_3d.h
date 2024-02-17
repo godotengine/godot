@@ -65,17 +65,17 @@ TEST_CASE("[SceneTree][Camera3D] Getters and setters") {
 	}
 
 	SUBCASE("Camera frustum properties") {
-		constexpr float near = 0.2f;
-		constexpr float far = 995.0f;
+		constexpr float depth_near = 0.2f;
+		constexpr float depth_far = 995.0f;
 		constexpr float fov = 120.0f;
 		constexpr float size = 7.0f;
 		constexpr float h_offset = 1.1f;
 		constexpr float v_offset = -1.6f;
 		const Vector2 frustum_offset(5, 7);
-		test_camera->set_near(near);
-		CHECK(test_camera->get_near() == near);
-		test_camera->set_far(far);
-		CHECK(test_camera->get_far() == far);
+		test_camera->set_near(depth_near);
+		CHECK(test_camera->get_near() == depth_near);
+		test_camera->set_far(depth_far);
+		CHECK(test_camera->get_far() == depth_far);
 		test_camera->set_fov(fov);
 		CHECK(test_camera->get_fov() == fov);
 		test_camera->set_size(size);

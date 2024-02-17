@@ -5544,7 +5544,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);
 	selection_menu->set_min_size(Vector2(100, 0));
-	selection_menu->set_auto_translate(false);
+	selection_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	selection_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_selection_result_pressed));
 	selection_menu->connect("popup_hide", callable_mp(this, &CanvasItemEditor::_selection_menu_hide), CONNECT_DEFERRED);
 
@@ -5661,7 +5661,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		if (texture != nullptr || scene != nullptr) {
 			bool root_node_selected = EditorNode::get_singleton()->get_editor_selection()->is_selected(EditorNode::get_singleton()->get_edited_scene());
-			String desc = TTR("Drag and drop to add as child of current scene's root node.") + "\n" + vformat(TTR("Hold %s when dropping to add as child of selected node."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
+			String desc = TTR("Drag and drop to add as child of selected node.") + "\n" + TTR("Hold Alt when dropping to add as child of root node.");
 			if (!root_node_selected) {
 				desc += "\n" + TTR("Hold Shift when dropping to add as sibling of selected node.");
 			}
@@ -5672,7 +5672,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 				preview_node->add_child(sprite);
 				label->show();
 				label_desc->show();
-				desc += "\n" + TTR("Hold Alt when dropping to add as a different node type.");
+				desc += "\n" + TTR("Hold Alt + Shift when dropping to add as a different node type.");
 				label_desc->set_text(desc);
 			} else {
 				if (scene.is_valid()) {
@@ -5781,7 +5781,11 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 
 	// there's nothing to be used as source position so snapping will work as absolute if enabled
 	target_position = canvas_item_editor->snap_point(target_position);
-	undo_redo->add_do_method(child, "set_global_position", target_position);
+
+	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(parent);
+	Point2 local_target_pos = parent_ci ? parent_ci->get_global_transform().affine_inverse().xform(target_position) : target_position;
+
+	undo_redo->add_do_method(child, "set_position", local_target_pos);
 }
 
 bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
@@ -5807,10 +5811,12 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 	instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(path));
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	undo_redo->add_do_method(parent, "add_child", instantiated_scene, true);
 	undo_redo->add_do_method(instantiated_scene, "set_owner", edited_scene);
 	undo_redo->add_do_reference(instantiated_scene);
 	undo_redo->add_undo_method(parent, "remove_child", instantiated_scene);
+	undo_redo->add_do_method(editor_selection, "add_node", instantiated_scene);
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
@@ -5849,6 +5855,8 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action_for_history(TTR("Create Node"), EditorNode::get_editor_data().get_current_edited_scene_history_id());
+	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	undo_redo->add_do_method(editor_selection, "clear");
 
 	for (int i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];
@@ -5875,6 +5883,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			if (texture != nullptr && texture.is_valid()) {
 				Node *child = Object::cast_to<Node>(ClassDB::instantiate(default_texture_node_type));
 				_create_nodes(target_node, child, path, drop_pos);
+				undo_redo->add_do_method(editor_selection, "add_node", child);
 			}
 		}
 	}
@@ -5965,7 +5974,6 @@ bool CanvasItemEditorViewport::_only_packed_scenes_selected() const {
 
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);
-	bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 	bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	selected_files.clear();
@@ -5981,9 +5989,9 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes[0];
-		target_node = root_node;
-		if (is_ctrl) {
-			target_node = selected_node;
+		target_node = selected_node;
+		if (is_alt) {
+			target_node = root_node;
 		} else if (is_shift && selected_node != root_node) {
 			target_node = selected_node->get_parent();
 		}
@@ -5997,7 +6005,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 
 	drop_pos = p_point;
 
-	if (is_alt && !_only_packed_scenes_selected()) {
+	if (is_alt && is_shift && !_only_packed_scenes_selected()) {
 		_show_resource_type_selector();
 	} else {
 		_perform_drop_data();
@@ -6029,6 +6037,10 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			_remove_preview();
 		} break;
 	}
 }

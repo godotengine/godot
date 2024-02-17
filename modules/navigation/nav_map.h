@@ -48,6 +48,8 @@ class NavAgent;
 class NavObstacle;
 
 class NavMap : public NavRid {
+	RWLock map_rwlock;
+
 	/// Map Up
 	Vector3 up = Vector3(0, 1, 0);
 
@@ -55,6 +57,12 @@ class NavMap : public NavRid {
 	/// each cell has the following cell_size and cell_height.
 	real_t cell_size = 0.25; // Must match ProjectSettings default 3D cell_size and NavigationMesh cell_size.
 	real_t cell_height = 0.25; // Must match ProjectSettings default 3D cell_height and NavigationMesh cell_height.
+
+	// For the inter-region merging to work, internal rasterization is performed.
+	float merge_rasterizer_cell_size = 0.25;
+	float merge_rasterizer_cell_height = 0.25;
+	// This value is used to control sensitivity of internal rasterizer.
+	float merge_rasterizer_cell_scale = 1.0;
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.
@@ -132,6 +140,11 @@ public:
 
 	void set_cell_height(real_t p_cell_height);
 	real_t get_cell_height() const { return cell_height; }
+
+	void set_merge_rasterizer_cell_scale(float p_value);
+	float get_merge_rasterizer_cell_scale() const {
+		return merge_rasterizer_cell_scale;
+	}
 
 	void set_use_edge_connections(bool p_enabled);
 	bool get_use_edge_connections() const {
@@ -217,6 +230,8 @@ private:
 	void _update_rvo_obstacles_tree_2d();
 	void _update_rvo_agents_tree_2d();
 	void _update_rvo_agents_tree_3d();
+
+	void _update_merge_rasterizer_cell_dimensions();
 };
 
 #endif // NAV_MAP_H

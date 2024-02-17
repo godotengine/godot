@@ -31,7 +31,7 @@
 #ifndef TILE_MAP_H
 #define TILE_MAP_H
 
-#include "scene/2d/node_2d.h"
+#include "scene/2d/tile_map_layer_group.h"
 #include "scene/resources/tile_set.h"
 
 class Control;
@@ -45,8 +45,8 @@ enum TileMapDataFormat {
 	FORMAT_MAX,
 };
 
-class TileMap : public Node2D {
-	GDCLASS(TileMap, Node2D);
+class TileMap : public TileMapLayerGroup {
+	GDCLASS(TileMap, TileMapLayerGroup);
 
 public:
 	enum VisibilityMode {
@@ -64,7 +64,6 @@ private:
 	static constexpr float FP_ADJUST = 0.00001;
 
 	// Properties.
-	Ref<TileSet> tile_set;
 	int rendering_quadrant_size = 16;
 	bool collision_animatable = false;
 	VisibilityMode collision_visibility_mode = VISIBILITY_MODE_DEFAULT;
@@ -73,14 +72,12 @@ private:
 	// Layers.
 	LocalVector<TileMapLayer *> layers;
 	TileMapLayer *default_layer; // Dummy layer to fetch default values.
-	int selected_layer = -1;
-	bool pending_update = false;
 
 	// Transforms for collision_animatable.
 	Transform2D last_valid_transform;
 	Transform2D new_transform;
 
-	void _tile_set_changed();
+	void _emit_changed();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -103,8 +100,6 @@ protected:
 #endif
 
 public:
-	static Vector2i transform_coords_layout(const Vector2i &p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout);
-
 #ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 #endif
@@ -113,17 +108,10 @@ public:
 	void force_update(int p_layer);
 #endif
 
-	// Called by TileMapLayers.
-	void queue_internal_update();
-	void _internal_update();
-
-	void set_tileset(const Ref<TileSet> &p_tileset);
-	Ref<TileSet> get_tileset() const;
-
 	void set_rendering_quadrant_size(int p_size);
 	int get_rendering_quadrant_size() const;
 
-	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_animation_offset = 0.0);
+	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
 
 	// Layers management.
 	int get_layers_count() const;
@@ -147,9 +135,6 @@ public:
 	bool is_layer_navigation_enabled(int p_layer) const;
 	void set_layer_navigation_map(int p_layer, RID p_map);
 	RID get_layer_navigation_map(int p_layer) const;
-
-	void set_selected_layer(int p_layer_id); // For editor use.
-	int get_selected_layer() const;
 
 	void set_collision_animatable(bool p_collision_animatable);
 	bool is_collision_animatable() const;
@@ -224,15 +209,14 @@ public:
 	void notify_runtime_tile_data_update(int p_layer = -1);
 
 	// Helpers?
-	TypedArray<Vector2i> get_surrounding_cells(const Vector2i &coords);
-	void draw_cells_outline(Control *p_control, const RBSet<Vector2i> &p_cells, Color p_color, Transform2D p_transform = Transform2D());
+	TypedArray<Vector2i> get_surrounding_cells(const Vector2i &p_coords);
 
 	// Virtual function to modify the TileData at runtime.
 	GDVIRTUAL2R(bool, _use_tile_data_runtime_update, int, Vector2i);
 	GDVIRTUAL3(_tile_data_runtime_update, int, Vector2i, TileData *);
 
 	// Configuration warnings.
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	TileMap();
 	~TileMap();

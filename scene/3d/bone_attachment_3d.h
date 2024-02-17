@@ -71,7 +71,8 @@ public:
 	virtual void notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map);
 #endif // TOOLS_ENABLED
 
-	virtual PackedStringArray get_configuration_warnings() const override;
+public:
+	virtual Array get_configuration_warnings() const override;
 
 	void set_bone_name(const String &p_name);
 	String get_bone_name() const;

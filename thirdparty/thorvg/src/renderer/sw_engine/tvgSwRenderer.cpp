@@ -63,7 +63,7 @@ struct SwTask : Task
         return region;
     }
 
-    virtual bool dispose() = 0;
+    virtual void dispose() = 0;
     virtual bool clip(SwRleData* target) = 0;
     virtual SwRleData* rle() = 0;
 
@@ -196,10 +196,9 @@ struct SwShapeTask : SwTask
         shapeDelOutline(&shape, mpool, tid);
     }
 
-    bool dispose() override
+    void dispose() override
     {
        shapeFree(&shape);
-       return true;
     }
 };
 
@@ -250,10 +249,9 @@ struct SwSceneTask : SwTask
         }
     }
 
-    bool dispose() override
+    void dispose() override
     {
         rleFree(sceneRle);
-        return true;
     }
 };
 
@@ -318,10 +316,9 @@ struct SwImageTask : SwTask
         imageDelOutline(&image, mpool, tid);
     }
 
-    bool dispose() override
+    void dispose() override
     {
        imageFree(&image);
-       return true;
     }
 };
 
@@ -703,17 +700,15 @@ ColorSpace SwRenderer::colorSpace()
 }
 
 
-bool SwRenderer::dispose(RenderData data)
+void SwRenderer::dispose(RenderData data)
 {
     auto task = static_cast<SwTask*>(data);
-    if (!task) return true;
+    if (!task) return;
     task->done();
     task->dispose();
 
     if (task->pushed) task->disposed = true;
     else delete(task);
-
-    return true;
 }
 
 

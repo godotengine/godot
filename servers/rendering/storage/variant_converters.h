@@ -243,10 +243,10 @@ inline bool is_convertible_array(Variant::Type type) {
 }
 
 template <class, class = void>
-struct is_vector_type : std::false_type {};
+inline constexpr bool is_vector_type_v = false;
 
 template <class T>
-struct is_vector_type<T, std::void_t<decltype(T::AXIS_COUNT)>> : std::true_type {};
+inline constexpr bool is_vector_type_v<T, std::void_t<decltype(T::AXIS_COUNT)>> = true;
 
 template <typename T, typename P>
 void convert_item_std140(const T &p_item, P *p_write, bool p_compact = false) {
@@ -274,7 +274,7 @@ Vector<P> convert_array_std140(const Variant &p_variant, [[maybe_unused]] bool p
 			const Variant &item = array.get(i);
 			P *offset = write + (i * elements);
 
-			if constexpr (is_vector_type<T>::value) {
+			if constexpr (is_vector_type_v<T>) {
 				const T &vec = convert_to_vector<T>(item, p_linear_color);
 				convert_item_std140<T, P>(vec, offset, true);
 			} else {

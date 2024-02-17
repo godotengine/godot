@@ -295,6 +295,47 @@
 				See also [method Window.set_unparent_when_invisible].
 			</description>
 		</method>
+		<method name="popup_node_selector">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="valid_types" type="StringName[]" default="[]" />
+			<description>
+				Pops up an editor dialog for selecting a [Node] from the edited scene. The [param callback] must take a single argument of type [NodePath]. It is called on the selected [NodePath] or the empty path [code]^""[/code] if the dialog is canceled. If [param valid_types] is provided, the dialog will only show Nodes that match one of the listed Node types.
+				[b]Example:[/b]
+				[codeblock]
+				func _ready():
+				    if Engine.is_editor_hint():
+				        EditorInterface.popup_node_selector(_on_node_selected, ["Button"])
+
+				func _on_node_selected(node_path):
+				    if node_path.is_empty():
+				        print("node selection canceled")
+				    else:
+				        print("selected ", node_path)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="popup_property_selector">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="type_filter" type="PackedInt32Array" default="PackedInt32Array()" />
+			<description>
+				Pops up an editor dialog for selecting properties from [param object]. The [param callback] must take a single argument of type [NodePath]. It is called on the selected property path (see [method NodePath.get_as_property_path]) or the empty path [code]^""[/code] if the dialog is canceled. If [param type_filter] is provided, the dialog will only show properties that match one of the listed [enum Variant.Type] values.
+				[b]Example:[/b]
+				[codeblock]
+				func _ready():
+				    if Engine.is_editor_hint():
+				        EditorInterface.popup_property_selector(this, _on_property_selected, [TYPE_INT])
+
+				func _on_property_selected(property_path):
+				    if property_path.is_empty():
+				        print("property selection canceled")
+				    else:
+				        print("selected ", property_path)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="reload_scene_from_path">
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />

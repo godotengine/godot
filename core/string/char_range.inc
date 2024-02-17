@@ -38,7 +38,7 @@ struct CharRange {
 	char32_t end;
 };
 
-static CharRange xid_start[] = {
+inline constexpr CharRange xid_start[] = {
 	{ 0x41, 0x5a },
 	{ 0x5f, 0x5f },
 	{ 0x61, 0x7a },
@@ -692,7 +692,7 @@ static CharRange xid_start[] = {
 	{ 0x0, 0x0 },
 };
 
-static CharRange xid_continue[] = {
+inline constexpr CharRange xid_continue[] = {
 	{ 0x30, 0x39 },
 	{ 0x41, 0x5a },
 	{ 0x5f, 0x5f },

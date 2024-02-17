@@ -38,10 +38,6 @@
 #include <new>
 #include <type_traits>
 
-#ifndef PAD_ALIGN
-#define PAD_ALIGN 16 //must always be greater than this at much
-#endif
-
 class Memory {
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> mem_usage;
@@ -51,6 +47,17 @@ class Memory {
 	static SafeNumeric<uint64_t> alloc_count;
 
 public:
+	// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
+	//             ┌─────────────────┬──┬────────────────┬──┬───────────...
+	//             │ uint64_t        │░░│ uint64_t       │░░│ T[]
+	//             │ alloc size      │░░│ element count  │░░│ data
+	//             └─────────────────┴──┴────────────────┴──┴───────────...
+	// Offset:     ↑ SIZE_OFFSET        ↑ ELEMENT_OFFSET    ↑ DATA_OFFSET
+
+	static constexpr size_t SIZE_OFFSET = 0;
+	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
+	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
+
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
 	static void free_static(void *p_ptr, bool p_pad_align = false);
@@ -105,7 +112,7 @@ void memdelete(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
-	if (!std::is_trivially_destructible<T>::value) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
 		p_class->~T();
 	}
 
@@ -117,7 +124,7 @@ void memdelete_allocator(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
-	if (!std::is_trivially_destructible<T>::value) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
 		p_class->~T();
 	}
 
@@ -133,6 +140,10 @@ void memdelete_allocator(T *p_class) {
 
 #define memnew_arr(m_class, m_count) memnew_arr_template<m_class>(m_count)
 
+_FORCE_INLINE_ uint64_t *_get_element_count_ptr(uint8_t *p_ptr) {
+	return (uint64_t *)(p_ptr - Memory::DATA_OFFSET + Memory::ELEMENT_OFFSET);
+}
+
 template <typename T>
 T *memnew_arr_template(size_t p_elements) {
 	if (p_elements == 0) {
@@ -142,12 +153,14 @@ T *memnew_arr_template(size_t p_elements) {
 	same strategy used by std::vector, and the Vector class, so it should be safe.*/
 
 	size_t len = sizeof(T) * p_elements;
-	uint64_t *mem = (uint64_t *)Memory::alloc_static(len, true);
+	uint8_t *mem = (uint8_t *)Memory::alloc_static(len, true);
 	T *failptr = nullptr; //get rid of a warning
 	ERR_FAIL_NULL_V(mem, failptr);
-	*(mem - 1) = p_elements;
 
-	if (!std::is_trivially_constructible<T>::value) {
+	uint64_t *_elem_count_ptr = _get_element_count_ptr(mem);
+	*(_elem_count_ptr) = p_elements;
+
+	if constexpr (!std::is_trivially_constructible_v<T>) {
 		T *elems = (T *)mem;
 
 		/* call operator new */
@@ -166,16 +179,18 @@ T *memnew_arr_template(size_t p_elements) {
 
 template <typename T>
 size_t memarr_len(const T *p_class) {
-	uint64_t *ptr = (uint64_t *)p_class;
-	return *(ptr - 1);
+	uint8_t *ptr = (uint8_t *)p_class;
+	uint64_t *_elem_count_ptr = _get_element_count_ptr(ptr);
+	return *(_elem_count_ptr);
 }
 
 template <typename T>
 void memdelete_arr(T *p_class) {
-	uint64_t *ptr = (uint64_t *)p_class;
+	uint8_t *ptr = (uint8_t *)p_class;
 
-	if (!std::is_trivially_destructible<T>::value) {
-		uint64_t elem_count = *(ptr - 1);
+	if constexpr (!std::is_trivially_destructible_v<T>) {
+		uint64_t *_elem_count_ptr = _get_element_count_ptr(ptr);
+		uint64_t elem_count = *(_elem_count_ptr);
 
 		for (uint64_t i = 0; i < elem_count; i++) {
 			p_class[i].~T();

@@ -223,7 +223,7 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 	}
 }
 
-void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_allow_y_sort, uint32_t p_canvas_cull_mask) {
+void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_allow_y_sort, uint32_t p_canvas_cull_mask) {
 	Item *ci = p_canvas_item;
 
 	if (!ci->visible) {
@@ -248,10 +248,14 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	}
 
 	Transform2D xform = ci->xform;
+	Transform2D parent_xform = p_parent_xform;
+
 	if (snapping_2d_transforms_to_pixel) {
-		xform.columns[2] = xform.columns[2].floor();
+		xform.columns[2] = xform.columns[2].round();
+		parent_xform.columns[2] = parent_xform.columns[2].round();
 	}
-	xform = p_transform * xform;
+
+	xform = parent_xform * xform;
 
 	Rect2 global_rect = xform.xform(rect);
 	global_rect.position += p_clip_rect.position;

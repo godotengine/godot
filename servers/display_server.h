@@ -125,10 +125,14 @@ public:
 		FEATURE_TEXT_TO_SPEECH,
 		FEATURE_EXTEND_TO_TITLE,
 		FEATURE_SCREEN_CAPTURE,
+		FEATURE_STATUS_INDICATOR,
+		FEATURE_NATIVE_HELP,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
+
+	virtual void help_set_search_callbacks(const Callable &p_search_callback = Callable(), const Callable &p_action_callback = Callable());
 
 	virtual void global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callback = Callable(), const Callable &p_close_callback = Callable());
 
@@ -223,7 +227,9 @@ public:
 
 	virtual bool is_dark_mode_supported() const { return false; };
 	virtual bool is_dark_mode() const { return false; };
-	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); };
+	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); }
+	virtual Color get_base_color() const { return Color(0, 0, 0, 0); }
+	virtual void set_system_theme_change_callback(const Callable &p_callable) {}
 
 private:
 	static bool window_early_clear_override_enabled;
@@ -332,10 +338,12 @@ public:
 	virtual bool screen_is_kept_on() const;
 	enum {
 		MAIN_WINDOW_ID = 0,
-		INVALID_WINDOW_ID = -1
+		INVALID_WINDOW_ID = -1,
+		INVALID_INDICATOR_ID = -1
 	};
 
 	typedef int WindowID;
+	typedef int IndicatorID;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const = 0;
 
@@ -539,6 +547,12 @@ public:
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
+
+	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback);
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon);
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip);
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback);
+	virtual void delete_status_indicator(IndicatorID p_id);
 
 	enum Context {
 		CONTEXT_EDITOR,

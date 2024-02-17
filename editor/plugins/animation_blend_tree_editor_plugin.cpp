@@ -239,6 +239,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			MenuButton *mb = memnew(MenuButton);
 			mb->set_text(anim->get_animation());
 			mb->set_icon(get_editor_theme_icon(SNAME("Animation")));
+			mb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			mb->set_disabled(read_only);
 			Array options;
 

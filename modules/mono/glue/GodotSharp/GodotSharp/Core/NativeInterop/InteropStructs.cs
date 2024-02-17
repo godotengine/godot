@@ -105,6 +105,61 @@ namespace Godot.NativeInterop
         }
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    // ReSharper disable once InconsistentNaming
+    public ref struct godot_csharp_type_info
+    {
+        private godot_string _className;
+        private godot_string _iconPath;
+        private godot_bool _isTool;
+        private godot_bool _isGlobalClass;
+        private godot_bool _isAbstract;
+        private godot_bool _isConstructedGenericType;
+        private godot_bool _isGenericTypeDefinition;
+
+        public godot_string ClassName
+        {
+            readonly get => _className;
+            set => _className = value;
+        }
+
+        public godot_string IconPath
+        {
+            readonly get => _iconPath;
+            set => _iconPath = value;
+        }
+
+        public godot_bool IsTool
+        {
+            readonly get => _isTool;
+            set => _isTool = value;
+        }
+
+        public godot_bool IsGlobalClass
+        {
+            readonly get => _isGlobalClass;
+            set => _isGlobalClass = value;
+        }
+
+        public godot_bool IsAbstract
+        {
+            readonly get => _isAbstract;
+            set => _isAbstract = value;
+        }
+
+        public godot_bool IsConstructedGenericType
+        {
+            readonly get => _isConstructedGenericType;
+            set => _isConstructedGenericType = value;
+        }
+
+        public godot_bool IsGenericTypeDefinition
+        {
+            readonly get => _isGenericTypeDefinition;
+            set => _isGenericTypeDefinition = value;
+        }
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_variant
@@ -907,7 +962,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? *(_ptr - 1) : 0;
+            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
         }
     }
 

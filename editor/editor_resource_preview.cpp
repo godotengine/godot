@@ -129,6 +129,8 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base, Dictionary &p_metadata) {
 	String type;
 
+	uint64_t started_at = OS::get_singleton()->get_ticks_usec();
+
 	if (p_item.resource.is_valid()) {
 		type = p_item.resource->get_class();
 	} else {
@@ -138,6 +140,10 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	if (type.is_empty()) {
 		r_texture = Ref<ImageTexture>();
 		r_small_texture = Ref<ImageTexture>();
+
+		if (is_print_verbose_enabled()) {
+			print_line(vformat("Generated '%s' preview in %d usec", p_item.path, OS::get_singleton()->get_ticks_usec() - started_at));
+		}
 		return; //could not guess type
 	}
 
@@ -195,6 +201,10 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
 			_write_preview_cache(f, thumbnail_size, has_small_texture, FileAccess::get_modified_time(p_item.path), FileAccess::get_md5(p_item.path), p_metadata);
 		}
+	}
+
+	if (is_print_verbose_enabled()) {
+		print_line(vformat("Generated '%s' preview in %d usec", p_item.path, OS::get_singleton()->get_ticks_usec() - started_at));
 	}
 }
 
@@ -466,6 +476,7 @@ void EditorResourcePreview::start() {
 	} else {
 		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 		ERR_FAIL_NULL_MSG(st, "Editor's MainLoop is not a SceneTree. This is a bug.");
+		st->add_idle_callback(&_idle_callback);
 	}
 }
 

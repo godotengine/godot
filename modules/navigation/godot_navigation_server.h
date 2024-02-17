@@ -117,6 +117,9 @@ public:
 	COMMAND_2(map_set_cell_height, RID, p_map, real_t, p_cell_height);
 	virtual real_t map_get_cell_height(RID p_map) const override;
 
+	COMMAND_2(map_set_merge_rasterizer_cell_scale, RID, p_map, float, p_value);
+	virtual float map_get_merge_rasterizer_cell_scale(RID p_map) const override;
+
 	COMMAND_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled);
 	virtual bool map_get_use_edge_connections(RID p_map) const override;
 
@@ -258,6 +261,7 @@ public:
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
+	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override;
 
 	COMMAND_1(free, RID, p_object);
 

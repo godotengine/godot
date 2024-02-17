@@ -4,7 +4,7 @@
 		A color represented in RGBA format.
 	</brief_description>
 	<description>
-		A color represented in RGBA format by a red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) component. Each component is a 16-bit floating-point value, usually ranging from [code]0.0[/code] to [code]1.0[/code]. Some properties (such as [member CanvasItem.modulate]) may support values greater than [code]1.0[/code], for overbright or HDR (High Dynamic Range) colors.
+		A color represented in RGBA format by a red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) component. Each component is a 32-bit floating-point value, usually ranging from [code]0.0[/code] to [code]1.0[/code]. Some properties (such as [member CanvasItem.modulate]) may support values greater than [code]1.0[/code], for overbright or HDR (High Dynamic Range) colors.
 		Colors can be created in various ways: By the various [Color] constructors, by static methods such as [method from_hsv], and by using a name from the set of standardized colors based on [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url] with the addition of [constant TRANSPARENT]. GDScript also provides [method @GDScript.Color8], which uses integers from [code]0[/code] to [code]255[/code] and doesn't support overbright colors.
 		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it is equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png]Color constants cheatsheet[/url]

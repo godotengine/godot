@@ -1274,26 +1274,26 @@ enum PackedVectorFormat {
 };
 
 enum CooperativeMatrixOperandsShift {
-    CooperativeMatrixOperandsMatrixASignedComponentsShift = 0,
-    CooperativeMatrixOperandsMatrixBSignedComponentsShift = 1,
-    CooperativeMatrixOperandsMatrixCSignedComponentsShift = 2,
-    CooperativeMatrixOperandsMatrixResultSignedComponentsShift = 3,
-    CooperativeMatrixOperandsSaturatingAccumulationShift = 4,
+    CooperativeMatrixOperandsMatrixASignedComponentsKHRShift = 0,
+    CooperativeMatrixOperandsMatrixBSignedComponentsKHRShift = 1,
+    CooperativeMatrixOperandsMatrixCSignedComponentsKHRShift = 2,
+    CooperativeMatrixOperandsMatrixResultSignedComponentsKHRShift = 3,
+    CooperativeMatrixOperandsSaturatingAccumulationKHRShift = 4,
     CooperativeMatrixOperandsMax = 0x7fffffff,
 };
 
 enum CooperativeMatrixOperandsMask {
     CooperativeMatrixOperandsMaskNone = 0,
-    CooperativeMatrixOperandsMatrixASignedComponentsMask = 0x00000001,
-    CooperativeMatrixOperandsMatrixBSignedComponentsMask = 0x00000002,
-    CooperativeMatrixOperandsMatrixCSignedComponentsMask = 0x00000004,
-    CooperativeMatrixOperandsMatrixResultSignedComponentsMask = 0x00000008,
-    CooperativeMatrixOperandsSaturatingAccumulationMask = 0x00000010,
+    CooperativeMatrixOperandsMatrixASignedComponentsKHRMask = 0x00000001,
+    CooperativeMatrixOperandsMatrixBSignedComponentsKHRMask = 0x00000002,
+    CooperativeMatrixOperandsMatrixCSignedComponentsKHRMask = 0x00000004,
+    CooperativeMatrixOperandsMatrixResultSignedComponentsKHRMask = 0x00000008,
+    CooperativeMatrixOperandsSaturatingAccumulationKHRMask = 0x00000010,
 };
 
 enum CooperativeMatrixLayout {
-    CooperativeMatrixLayoutCooperativeMatrixRowMajorKHR = 0,
-    CooperativeMatrixLayoutCooperativeMatrixColumnMajorKHR = 1,
+    CooperativeMatrixLayoutRowMajorKHR = 0,
+    CooperativeMatrixLayoutColumnMajorKHR = 1,
     CooperativeMatrixLayoutMax = 0x7fffffff,
 };
 

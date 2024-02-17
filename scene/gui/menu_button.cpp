@@ -149,10 +149,6 @@ void MenuButton::_notification(int p_what) {
 				menu_btn_other->get_popup()->set_focused_item(-1);
 			}
 		} break;
-
-		case NOTIFICATION_TRANSLATION_CHANGED: {
-			popup->set_auto_translate(is_auto_translating());
-		} break;
 	}
 }
 

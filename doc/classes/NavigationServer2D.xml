@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationServer2D" inherits="Object" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationServer2D" inherits="Object" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A server interface for low-level 2D navigation access.
 	</brief_description>
@@ -301,6 +301,13 @@
 			<return type="RID[]" />
 			<description>
 				Returns all created navigation map [RID]s on the NavigationServer. This returns both 2D and 3D created navigation maps as there is technically no distinction between them.
+			</description>
+		</method>
+		<method name="is_baking_navigation_polygon" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="navigation_polygon" type="NavigationPolygon" />
+			<description>
+				Returns [code]true[/code] when the provided navigation polygon is being baked on a background thread.
 			</description>
 		</method>
 		<method name="link_create">

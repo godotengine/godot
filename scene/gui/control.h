@@ -253,7 +253,6 @@ private:
 		bool is_rtl_dirty = true;
 		bool is_rtl = false;
 
-		bool auto_translate = true;
 		bool localize_numeral_system = true;
 
 		// Extra properties.
@@ -408,7 +407,7 @@ public:
 	static void set_root_layout_direction(int p_root_dir);
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	virtual bool is_text_field() const;
 
@@ -624,11 +623,10 @@ public:
 	void set_localize_numeral_system(bool p_enable);
 	bool is_localizing_numeral_system() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-	_FORCE_INLINE_ String atr(const String p_string) const {
-		return is_auto_translating() ? tr(p_string) : p_string;
-	};
+#endif
 
 	// Extra properties.
 

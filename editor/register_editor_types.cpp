@@ -272,6 +272,8 @@ void register_editor_types() {
 	GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
 	GLOBAL_DEF("editor/import/use_multiple_threads", true);
 
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/import/atlas_max_width", PROPERTY_HINT_RANGE, "128,8192,1,or_greater"), 2048);
+
 	GLOBAL_DEF("editor/export/convert_text_resources_to_binary", true);
 
 	GLOBAL_DEF("editor/version_control/plugin_name", "");

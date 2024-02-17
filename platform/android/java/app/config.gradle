@@ -361,3 +361,26 @@ ext.shouldSign = { ->
 ext.shouldNotStrip = { ->
     return isAndroidStudio() || project.hasProperty("doNotStrip")
 }
+
+/**
+ * Whether to use the legacy convention of compressing all .so files in the APK.
+ *
+ * For more background, see:
+ * - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
+ * - https://stackoverflow.com/a/44704840
+ */
+ext.shouldUseLegacyPackaging = { ->
+    int minSdk = getExportMinSdkVersion()
+    if (minSdk < 23) {
+        // Enforce the default behavior for compatibility with device running api < 23
+        return true
+    }
+
+    String legacyPackagingFlag = project.hasProperty("compress_native_libraries") ? project.property("compress_native_libraries") : ""
+    if (legacyPackagingFlag != null && !legacyPackagingFlag.isEmpty()) {
+        return Boolean.parseBoolean(legacyPackagingFlag)
+    }
+
+    // Default behavior for minSdk >= 23
+    return false
+}

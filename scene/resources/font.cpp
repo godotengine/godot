@@ -288,6 +288,7 @@ Size2 Font::get_string_size(const String &p_text, HorizontalAlignment p_alignmen
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
+		buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
 		cache.insert(key, buffer);
 	}
@@ -315,6 +316,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, HorizontalAlignment 
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_break_flags(p_brk_flags);
 		lines_buffer->set_justification_flags(p_jst_flags);
+		lines_buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		cache_wrap.insert(key, lines_buffer);
 	}
 
@@ -335,6 +337,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
+		buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
 		cache.insert(key, buffer);
 	}
@@ -369,6 +372,7 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_break_flags(p_brk_flags);
 		lines_buffer->set_justification_flags(p_jst_flags);
+		lines_buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		cache_wrap.insert(key, lines_buffer);
 	}
 
@@ -396,6 +400,7 @@ void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const Str
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
+		buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
 		cache.insert(key, buffer);
 	}
@@ -430,6 +435,7 @@ void Font::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos,
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_break_flags(p_brk_flags);
 		lines_buffer->set_justification_flags(p_jst_flags);
+		lines_buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		cache_wrap.insert(key, lines_buffer);
 	}
 
@@ -1342,7 +1348,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 			int tx_cnt = get_texture_count(i, sz);
 			for (int k = 0; k < tx_cnt; k++) {
 				p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, prefix_sz + "textures/" + itos(k) + "/offsets", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE));
 			}
 			PackedInt32Array glyphs = get_glyph_list(i, sz);
 			for (int k = 0; k < glyphs.size(); k++) {

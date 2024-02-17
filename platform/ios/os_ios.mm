@@ -219,7 +219,7 @@ _FORCE_INLINE_ String OS_IOS::get_framework_executable(const String &p_path) {
 	return p_path;
 }
 
-Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_IOS::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	if (p_path.length() == 0) {
 		// Static xcframework.
 		p_library_handle = RTLD_SELF;
@@ -272,7 +272,7 @@ Error OS_IOS::close_dynamic_library(void *p_library_handle) {
 	return OS_Unix::close_dynamic_library(p_library_handle);
 }
 
-Error OS_IOS::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+Error OS_IOS::get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional) {
 	if (p_library_handle == RTLD_SELF) {
 		void **ptr = OS_IOS::dynamic_symbol_lookup_table.getptr(p_name);
 		if (ptr) {
@@ -305,7 +305,7 @@ String OS_IOS::get_model_name() const {
 	return OS_Unix::get_model_name();
 }
 
-Error OS_IOS::shell_open(String p_uri) {
+Error OS_IOS::shell_open(const String &p_uri) {
 	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *url = [NSURL URLWithString:urlPath];
 
@@ -601,6 +601,10 @@ void OS_IOS::on_focus_out() {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 		}
 
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+		}
+
 		[AppDelegate.viewController.godotView stopRendering];
 
 		audio_driver.stop();
@@ -615,9 +619,33 @@ void OS_IOS::on_focus_in() {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 		}
 
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+		}
+
 		[AppDelegate.viewController.godotView startRendering];
 
 		audio_driver.start();
+	}
+}
+
+void OS_IOS::on_enter_background() {
+	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
+	}
+
+	on_focus_out();
+}
+
+void OS_IOS::on_exit_background() {
+	if (!is_focused) {
+		on_focus_in();
+
+		if (OS::get_singleton()->get_main_loop()) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
+		}
 	}
 }
 

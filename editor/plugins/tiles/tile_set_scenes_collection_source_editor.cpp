@@ -269,7 +269,7 @@ void TileSetScenesCollectionSourceEditor::_scene_file_selected(const String &p_p
 
 void TileSetScenesCollectionSourceEditor::_source_delete_pressed() {
 	Vector<int> selected_indices = scene_tiles_list->get_selected_items();
-	ERR_FAIL_COND(selected_indices.size() <= 0);
+	ERR_FAIL_COND(selected_indices.is_empty());
 	int scene_id = scene_tiles_list->get_item_metadata(selected_indices[0]);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -357,6 +357,17 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 
 void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			scenes_collection_source_inspector->edit(scenes_collection_source_proxy_object);
+			scenes_collection_source_inspector->add_custom_property_description("TileSetScenesCollectionProxyObject", "id", TTR("The tile's unique identifier within this TileSet. Each tile stores its source ID, so changing one may make tiles invalid."));
+			scenes_collection_source_inspector->add_custom_property_description("TileSetScenesCollectionProxyObject", "name", TTR("The human-readable name for the scene collection. Use a descriptive name here for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."));
+
+			tile_inspector->edit(tile_proxy_object);
+			tile_inspector->add_custom_property_description("SceneTileProxyObject", "id", TTR("ID of the scene tile in the collection. Each painted tile has associated ID, so changing this property may cause your TileMaps to not display properly."));
+			tile_inspector->add_custom_property_description("SceneTileProxyObject", "scene", TTR("Absolute path to the scene associated with this tile."));
+			tile_inspector->add_custom_property_description("SceneTileProxyObject", "display_placeholder", TTR("If [code]true[/code], a placeholder marker will be displayed on top of the scene's preview. The marker is displayed anyway if the scene has no valid preview."));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			scene_tile_add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
 			scene_tile_delete_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
@@ -524,8 +535,8 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 
 	scenes_collection_source_inspector = memnew(EditorInspector);
 	scenes_collection_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	scenes_collection_source_inspector->set_use_doc_hints(true);
 	scenes_collection_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
-	scenes_collection_source_inspector->edit(scenes_collection_source_proxy_object);
 	middle_vbox_container->add_child(scenes_collection_source_inspector);
 
 	// Tile inspector.
@@ -540,7 +551,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 
 	tile_inspector = memnew(EditorInspector);
 	tile_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	tile_inspector->edit(tile_proxy_object);
+	tile_inspector->set_use_doc_hints(true);
 	tile_inspector->set_use_folding(true);
 	middle_vbox_container->add_child(tile_inspector);
 
@@ -549,7 +560,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	split_container_right_side->add_child(right_vbox_container);
 
 	scene_tiles_list = memnew(ItemList);
-	scene_tiles_list->set_auto_translate(false);
+	scene_tiles_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	scene_tiles_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	SET_DRAG_FORWARDING_CDU(scene_tiles_list, TileSetScenesCollectionSourceEditor);

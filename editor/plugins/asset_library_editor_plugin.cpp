@@ -93,6 +93,12 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 			category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 			author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 			price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+
+			if (author->get_default_cursor_shape() == CURSOR_ARROW) {
+				// Disable visible feedback if author link isn't clickable.
+				author->add_theme_color_override("font_pressed_color", Color(0.5, 0.5, 0.5));
+				author->add_theme_color_override("font_hover_color", Color(0.5, 0.5, 0.5));
+			}
 		} break;
 	}
 }
@@ -106,7 +112,7 @@ void EditorAssetLibraryItem::_category_clicked() {
 }
 
 void EditorAssetLibraryItem::_author_clicked() {
-	emit_signal(SNAME("author_selected"), author_id);
+	emit_signal(SNAME("author_selected"), author->get_text());
 }
 
 void EditorAssetLibraryItem::_bind_methods() {
@@ -116,7 +122,7 @@ void EditorAssetLibraryItem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("author_selected"));
 }
 
-EditorAssetLibraryItem::EditorAssetLibraryItem() {
+EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	Ref<StyleBoxEmpty> border;
 	border.instantiate();
 	border->set_content_margin_all(5 * EDSCALE);
@@ -129,9 +135,6 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	icon = memnew(TextureButton);
 	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
-	icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
-	icon->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
-
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -141,23 +144,48 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	title = memnew(LinkButton);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	title->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
 	vb->add_child(title);
 
 	category = memnew(LinkButton);
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	category->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_category_clicked));
 	vb->add_child(category);
 
+	HBoxContainer *author_price_hbox = memnew(HBoxContainer);
+	author_price_hbox->add_theme_constant_override("separation", 5 * EDSCALE);
+	vb->add_child(author_price_hbox);
+
 	author = memnew(LinkButton);
-	author->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	author->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_author_clicked));
-	vb->add_child(author);
+	author->set_tooltip_text(TTR("Author"));
+	author_price_hbox->add_child(author);
+
+	author_price_hbox->add_child(memnew(HSeparator));
+
+	if (p_clickable) {
+		author->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
+		icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
+		icon->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
+		title->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_asset_clicked));
+		category->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_category_clicked));
+		author->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_author_clicked));
+	} else {
+		title->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		category->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		author->set_underline_mode(LinkButton::UNDERLINE_MODE_NEVER);
+		author->set_default_cursor_shape(CURSOR_ARROW);
+	}
+
+	Ref<StyleBoxEmpty> label_margin;
+	label_margin.instantiate();
+	label_margin->set_content_margin_all(0);
 
 	price = memnew(Label);
-	vb->add_child(price);
+	price->add_theme_style_override("normal", label_margin);
+	price->set_tooltip_text(TTR("License"));
+	price->set_mouse_filter(MOUSE_FILTER_PASS);
 
-	set_custom_minimum_size(Size2(250, 100) * EDSCALE);
+	author_price_hbox->add_child(price);
+
+	set_custom_minimum_size(Size2(250, 80) * EDSCALE);
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);
 }
 
@@ -262,6 +290,10 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_a
 }
 
 void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, const String &p_url) {
+	if (preview_images.is_empty()) {
+		previews_vbox->show();
+	}
+
 	Preview new_preview;
 	new_preview.id = p_id;
 	new_preview.video_link = p_url;
@@ -290,7 +322,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	item = memnew(EditorAssetLibraryItem);
 
 	desc_vbox->add_child(item);
-	desc_vbox->set_custom_minimum_size(Size2(440 * EDSCALE, 0));
+	desc_vbox->set_custom_minimum_size(Size2(440 * EDSCALE, 440 * EDSCALE));
 
 	description = memnew(RichTextLabel);
 	desc_vbox->add_child(description);
@@ -298,7 +330,9 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	description->connect("meta_clicked", callable_mp(this, &EditorAssetLibraryItemDescription::_link_click));
 	description->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
 
-	VBoxContainer *previews_vbox = memnew(VBoxContainer);
+	previews_vbox = memnew(VBoxContainer);
+	previews_vbox->hide(); // Will be shown if we add any previews later.
+
 	hbox->add_child(previews_vbox);
 	previews_vbox->add_theme_constant_override("separation", 15 * EDSCALE);
 	previews_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -384,6 +418,10 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		} break;
 	}
 
+	// Make the progress bar invisible but don't reflow other Controls around it.
+	progress->set_modulate(Color(0, 0, 0, 0));
+	progress->set_indeterminate(false);
+
 	if (!error_text.is_empty()) {
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
 		download_error->popup_centered();
@@ -394,8 +432,6 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 
 	install_button->set_disabled(false);
 	status->set_text(TTR("Ready to install!"));
-	// Make the progress bar invisible but don't reflow other Controls around it.
-	progress->set_modulate(Color(0, 0, 0, 0));
 
 	set_process(false);
 
@@ -436,13 +472,13 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
 			if (cstatus == HTTPClient::STATUS_BODY) {
 				if (download->get_body_size() > 0) {
+					progress->set_indeterminate(false);
 					status->set_text(vformat(
 							TTR("Downloading (%s / %s)..."),
 							String::humanize_size(download->get_downloaded_bytes()),
 							String::humanize_size(download->get_body_size())));
 				} else {
-					// Total file size is unknown, so it cannot be displayed.
-					progress->set_modulate(Color(0, 0, 0, 0));
+					progress->set_indeterminate(true);
 					status->set_text(vformat(
 							TTR("Downloading...") + " (%s)",
 							String::humanize_size(download->get_downloaded_bytes())));
@@ -508,6 +544,7 @@ void EditorAssetLibraryItemDownload::_make_request() {
 	if (err != OK) {
 		status->set_text(TTR("Error making request"));
 	} else {
+		progress->set_indeterminate(true);
 		set_process(true);
 	}
 }
@@ -548,6 +585,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	status = memnew(Label(TTR("Idle")));
 	vb->add_child(status);
 	progress = memnew(ProgressBar);
+	progress->set_editor_preview_indeterminate(true);
 	vb->add_child(progress);
 
 	HBoxContainer *hb2 = memnew(HBoxContainer);
@@ -732,8 +770,12 @@ const char *EditorAssetLibrary::support_text[SUPPORT_MAX] = {
 	TTRC("Testing"),
 };
 
-void EditorAssetLibrary::_select_author(int p_id) {
-	// Open author window.
+void EditorAssetLibrary::_select_author(const String &p_author) {
+	if (!host.contains("godotengine.org")) {
+		// Don't open the link for alternative repositories.
+		return;
+	}
+	OS::get_singleton()->shell_open("https://godotengine.org/asset-library/asset?user=" + p_author.uri_encode());
 }
 
 void EditorAssetLibrary::_select_category(int p_id) {
@@ -754,86 +796,97 @@ void EditorAssetLibrary::_select_asset(int p_id) {
 	_api_request("asset/" + itos(p_id), REQUESTING_ASSET);
 }
 
-void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedByteArray &p_data, int p_queue_id) {
+void EditorAssetLibrary::_image_update(bool p_use_cache, bool p_final, const PackedByteArray &p_data, int p_queue_id) {
 	Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
+	if (!obj) {
+		return;
+	}
 
-	if (obj) {
-		bool image_set = false;
-		PackedByteArray image_data = p_data;
+	bool image_set = false;
+	PackedByteArray image_data = p_data;
 
-		if (use_cache) {
-			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().path_join("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
+	if (p_use_cache) {
+		String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().path_join("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 
-			Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
-			if (file.is_valid()) {
-				PackedByteArray cached_data;
-				int len = file->get_32();
-				cached_data.resize(len);
+		Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
+		if (file.is_valid()) {
+			PackedByteArray cached_data;
+			int len = file->get_32();
+			cached_data.resize(len);
 
-				uint8_t *w = cached_data.ptrw();
-				file->get_buffer(w, len);
+			uint8_t *w = cached_data.ptrw();
+			file->get_buffer(w, len);
 
-				image_data = cached_data;
+			image_data = cached_data;
+		}
+	}
+
+	int len = image_data.size();
+	const uint8_t *r = image_data.ptr();
+	Ref<Image> image = memnew(Image);
+
+	uint8_t png_signature[8] = { 137, 80, 78, 71, 13, 10, 26, 10 };
+	uint8_t jpg_signature[3] = { 255, 216, 255 };
+	uint8_t webp_signature[4] = { 82, 73, 70, 70 };
+	uint8_t bmp_signature[2] = { 66, 77 };
+
+	if (r) {
+		Ref<Image> parsed_image;
+
+		if ((memcmp(&r[0], &png_signature[0], 8) == 0) && Image::_png_mem_loader_func) {
+			parsed_image = Image::_png_mem_loader_func(r, len);
+		} else if ((memcmp(&r[0], &jpg_signature[0], 3) == 0) && Image::_jpg_mem_loader_func) {
+			parsed_image = Image::_jpg_mem_loader_func(r, len);
+		} else if ((memcmp(&r[0], &webp_signature[0], 4) == 0) && Image::_webp_mem_loader_func) {
+			parsed_image = Image::_webp_mem_loader_func(r, len);
+		} else if ((memcmp(&r[0], &bmp_signature[0], 2) == 0) && Image::_bmp_mem_loader_func) {
+			parsed_image = Image::_bmp_mem_loader_func(r, len);
+		} else if (Image::_svg_scalable_mem_loader_func) {
+			parsed_image = Image::_svg_scalable_mem_loader_func(r, len, 1.0);
+		}
+
+		if (parsed_image.is_null()) {
+			if (is_print_verbose_enabled()) {
+				ERR_PRINT(vformat("Asset Library: Invalid image downloaded from '%s' for asset # %d", image_queue[p_queue_id].image_url, image_queue[p_queue_id].asset_id));
 			}
+		} else {
+			image->copy_internals_from(parsed_image);
+		}
+	}
+
+	if (!image->is_empty()) {
+		switch (image_queue[p_queue_id].image_type) {
+			case IMAGE_QUEUE_ICON:
+				image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_LANCZOS);
+				break;
+
+			case IMAGE_QUEUE_THUMBNAIL: {
+				float max_height = 85 * EDSCALE;
+
+				float scale_ratio = max_height / (image->get_height() * EDSCALE);
+				if (scale_ratio < 1) {
+					image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
+				}
+			} break;
+
+			case IMAGE_QUEUE_SCREENSHOT: {
+				float max_height = 397 * EDSCALE;
+
+				float scale_ratio = max_height / (image->get_height() * EDSCALE);
+				if (scale_ratio < 1) {
+					image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
+				}
+			} break;
 		}
 
-		int len = image_data.size();
-		const uint8_t *r = image_data.ptr();
-		Ref<Image> image = Ref<Image>(memnew(Image));
+		Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
 
-		uint8_t png_signature[8] = { 137, 80, 78, 71, 13, 10, 26, 10 };
-		uint8_t jpg_signature[3] = { 255, 216, 255 };
-		uint8_t webp_signature[4] = { 82, 73, 70, 70 };
-		uint8_t bmp_signature[2] = { 66, 77 };
+		obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, tex);
+		image_set = true;
+	}
 
-		if (r) {
-			if ((memcmp(&r[0], &png_signature[0], 8) == 0) && Image::_png_mem_loader_func) {
-				image->copy_internals_from(Image::_png_mem_loader_func(r, len));
-			} else if ((memcmp(&r[0], &jpg_signature[0], 3) == 0) && Image::_jpg_mem_loader_func) {
-				image->copy_internals_from(Image::_jpg_mem_loader_func(r, len));
-			} else if ((memcmp(&r[0], &webp_signature[0], 4) == 0) && Image::_webp_mem_loader_func) {
-				image->copy_internals_from(Image::_webp_mem_loader_func(r, len));
-			} else if ((memcmp(&r[0], &bmp_signature[0], 2) == 0) && Image::_bmp_mem_loader_func) {
-				image->copy_internals_from(Image::_bmp_mem_loader_func(r, len));
-			} else if (Image::_svg_scalable_mem_loader_func) {
-				image->copy_internals_from(Image::_svg_scalable_mem_loader_func(r, len, 1.0));
-			}
-		}
-
-		if (!image->is_empty()) {
-			switch (image_queue[p_queue_id].image_type) {
-				case IMAGE_QUEUE_ICON:
-
-					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_LANCZOS);
-
-					break;
-				case IMAGE_QUEUE_THUMBNAIL: {
-					float max_height = 85 * EDSCALE;
-
-					float scale_ratio = max_height / (image->get_height() * EDSCALE);
-					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
-					}
-				} break;
-				case IMAGE_QUEUE_SCREENSHOT: {
-					float max_height = 397 * EDSCALE;
-
-					float scale_ratio = max_height / (image->get_height() * EDSCALE);
-					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
-					}
-				} break;
-			}
-
-			Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
-
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, tex);
-			image_set = true;
-		}
-
-		if (!image_set && final) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_editor_theme_icon(SNAME("FileBrokenBigThumb")));
-		}
+	if (!image_set && p_final) {
+		obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_editor_theme_icon(SNAME("FileBrokenBigThumb")));
 	}
 }
 
@@ -866,7 +919,10 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		WARN_PRINT("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
+		if (is_print_verbose_enabled()) {
+			WARN_PRINT(vformat("Asset Library: Error getting image from '%s' for asset # %d.", image_queue[p_queue_id].image_url, image_queue[p_queue_id].asset_id));
+		}
+
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_editor_theme_icon(SNAME("FileBrokenBigThumb")));
@@ -915,22 +971,48 @@ void EditorAssetLibrary::_update_image_queue() {
 	}
 }
 
-void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, ImageType p_type, int p_image_index) {
+void EditorAssetLibrary::_request_image(ObjectID p_for, int p_asset_id, String p_image_url, ImageType p_type, int p_image_index) {
+	// Remove extra spaces around the URL. This isn't strictly valid, but recoverable.
+	String trimmed_url = p_image_url.strip_edges();
+	if (trimmed_url != p_image_url && is_print_verbose_enabled()) {
+		WARN_PRINT(vformat("Asset Library: Badly formatted image URL '%s' for asset # %d.", p_image_url, p_asset_id));
+	}
+
+	// Validate the image URL first.
+	{
+		String url_scheme;
+		String url_host;
+		int url_port;
+		String url_path;
+		Error err = trimmed_url.parse_url(url_scheme, url_host, url_port, url_path);
+		if (err != OK) {
+			if (is_print_verbose_enabled()) {
+				ERR_PRINT(vformat("Asset Library: Invalid image URL '%s' for asset # %d.", trimmed_url, p_asset_id));
+			}
+
+			Object *obj = ObjectDB::get_instance(p_for);
+			if (obj) {
+				obj->call("set_image", p_type, p_image_index, get_editor_theme_icon(SNAME("FileBrokenBigThumb")));
+			}
+			return;
+		}
+	}
+
 	ImageQueue iq;
-	iq.image_url = p_image_url;
+	iq.image_url = trimmed_url;
 	iq.image_index = p_image_index;
 	iq.image_type = p_type;
 	iq.request = memnew(HTTPRequest);
 	setup_http_request(iq.request);
 
 	iq.target = p_for;
+	iq.asset_id = p_asset_id;
 	iq.queue_id = ++last_queue_id;
 	iq.active = false;
 
 	iq.request->connect("request_completed", callable_mp(this, &EditorAssetLibrary::_image_request_completed).bind(iq.queue_id));
 
 	image_queue[iq.queue_id] = iq;
-
 	add_child(iq.request);
 
 	_image_update(true, false, PackedByteArray(), iq.queue_id);
@@ -1298,7 +1380,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				ERR_FAIL_COND(!category_map.has(r["category_id"]));
 				ERR_CONTINUE(!r.has("cost"));
 
-				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem);
+				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem(true));
 				asset_items->add_child(item);
 				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"]);
 				item->clamp_width(asset_items_column_width);
@@ -1307,7 +1389,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				item->connect("category_selected", callable_mp(this, &EditorAssetLibrary::_select_category));
 
 				if (r.has("icon_url") && !r["icon_url"].operator String().is_empty()) {
-					_request_image(item->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
+					_request_image(item->get_instance_id(), r["asset_id"], r["icon_url"], IMAGE_QUEUE_ICON, 0);
 				}
 			}
 
@@ -1338,7 +1420,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);
-			description->popup_centered();
 			description->connect("confirmed", callable_mp(this, &EditorAssetLibrary::_install_asset));
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
@@ -1358,7 +1439,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			}
 
 			if (r.has("icon_url") && !r["icon_url"].operator String().is_empty()) {
-				_request_image(description->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
+				_request_image(description->get_instance_id(), r["asset_id"], r["icon_url"], IMAGE_QUEUE_ICON, 0);
 			}
 
 			if (d.has("previews")) {
@@ -1379,14 +1460,16 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					description->add_preview(i, is_video, video_url);
 
 					if (p.has("thumbnail")) {
-						_request_image(description->get_instance_id(), p["thumbnail"], IMAGE_QUEUE_THUMBNAIL, i);
+						_request_image(description->get_instance_id(), r["asset_id"], p["thumbnail"], IMAGE_QUEUE_THUMBNAIL, i);
 					}
 
 					if (!is_video) {
-						_request_image(description->get_instance_id(), p["link"], IMAGE_QUEUE_SCREENSHOT, i);
+						_request_image(description->get_instance_id(), r["asset_id"], p["link"], IMAGE_QUEUE_SCREENSHOT, i);
 					}
 				}
 			}
+
+			description->popup_centered();
 		} break;
 		default:
 			break;

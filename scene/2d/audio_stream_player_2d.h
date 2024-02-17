@@ -89,6 +89,11 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+#ifndef DISABLE_DEPRECATED
+	bool _is_autoplay_enabled_bind_compat_86907();
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	void set_stream(Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_stream() const;
@@ -109,7 +114,7 @@ public:
 	StringName get_bus() const;
 
 	void set_autoplay(bool p_enable);
-	bool is_autoplay_enabled();
+	bool is_autoplay_enabled() const;
 
 	void set_max_distance(float p_pixels);
 	float get_max_distance() const;

@@ -54,6 +54,12 @@ public:
 		MODE_FILE_REMOVE,
 	};
 
+	enum ScriptExportMode {
+		MODE_SCRIPT_TEXT,
+		MODE_SCRIPT_BINARY_TOKENS,
+		MODE_SCRIPT_BINARY_TOKENS_COMPRESSED,
+	};
+
 private:
 	Ref<EditorExportPlatform> platform;
 	ExportFilter export_filter = EXPORT_ALL_RESOURCES;
@@ -72,6 +78,7 @@ private:
 
 	HashMap<StringName, PropertyInfo> properties;
 	HashMap<StringName, Variant> values;
+	HashMap<StringName, Variant> value_overrides;
 	HashMap<StringName, bool> update_visibility;
 
 	String name;
@@ -84,6 +91,7 @@ private:
 	bool enc_directory = false;
 
 	String script_key;
+	int script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -100,6 +108,7 @@ public:
 	bool has(const StringName &p_property) const { return values.has(p_property); }
 
 	void update_files();
+	void update_value_overrides();
 
 	Vector<String> get_files_to_export() const;
 	Dictionary get_customized_files() const;
@@ -151,6 +160,9 @@ public:
 
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;
+
+	void set_script_export_mode(int p_mode);
+	int get_script_export_mode() const;
 
 	Variant get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid = nullptr) const;
 

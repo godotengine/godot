@@ -150,6 +150,7 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	config["executable"] = p_name;
 	config["args"] = args;
 	config["fileSizes"] = p_file_sizes;
+	config["ensureCrossOriginIsolationHeaders"] = (bool)p_preset->get("progressive_web_app/ensure_cross_origin_isolation_headers");
 
 	String head_include;
 	if (p_preset->get("html/export_icon")) {
@@ -222,10 +223,12 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	const String dir = p_path.get_base_dir();
 	const String name = p_path.get_file().get_basename();
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
+	bool ensure_crossorigin_isolation_headers = (bool)p_preset->get("progressive_web_app/ensure_cross_origin_isolation_headers");
 	HashMap<String, String> replaces;
 	replaces["___GODOT_VERSION___"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
 	replaces["___GODOT_NAME___"] = proj_name.substr(0, 16);
 	replaces["___GODOT_OFFLINE_PAGE___"] = name + ".offline.html";
+	replaces["___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___"] = ensure_crossorigin_isolation_headers ? "true" : "false";
 
 	// Files cached during worker install.
 	Array cache_files;
@@ -353,6 +356,7 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/focus_canvas_on_start"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/enabled"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/ensure_cross_origin_isolation_headers"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/display", PROPERTY_HINT_ENUM, "Fullscreen,Standalone,Minimal UI,Browser"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/orientation", PROPERTY_HINT_ENUM, "Any,Landscape,Portrait"), 0));
@@ -584,7 +588,6 @@ bool EditorExportPlatformWeb::poll_export() {
 	menu_options = preset.is_valid();
 	if (server->is_listening()) {
 		if (menu_options == 0) {
-			MutexLock lock(server_lock);
 			server->stop();
 		} else {
 			menu_options += 1;
@@ -603,7 +606,6 @@ int EditorExportPlatformWeb::get_options_count() const {
 
 Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) {
 	if (p_option == 1) {
-		MutexLock lock(server_lock);
 		server->stop();
 		return OK;
 	}
@@ -653,12 +655,8 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 	const String tls_cert = EDITOR_GET("export/web/tls_certificate");
 
 	// Restart server.
-	{
-		MutexLock lock(server_lock);
-
-		server->stop();
-		err = server->listen(bind_port, bind_ip, use_tls, tls_key, tls_cert);
-	}
+	server->stop();
+	err = server->listen(bind_port, bind_ip, use_tls, tls_key, tls_cert);
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Error starting HTTP server: %d."), err));
 		return err;
@@ -674,21 +672,9 @@ Ref<Texture2D> EditorExportPlatformWeb::get_run_icon() const {
 	return run_icon;
 }
 
-void EditorExportPlatformWeb::_server_thread_poll(void *data) {
-	EditorExportPlatformWeb *ej = static_cast<EditorExportPlatformWeb *>(data);
-	while (!ej->server_quit) {
-		OS::get_singleton()->delay_usec(6900);
-		{
-			MutexLock lock(ej->server_lock);
-			ej->server->poll();
-		}
-	}
-}
-
 EditorExportPlatformWeb::EditorExportPlatformWeb() {
 	if (EditorNode::get_singleton()) {
 		server.instantiate();
-		server_thread.start(_server_thread_poll, this);
 
 #ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
@@ -711,11 +697,4 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 }
 
 EditorExportPlatformWeb::~EditorExportPlatformWeb() {
-	if (server.is_valid()) {
-		server->stop();
-	}
-	server_quit = true;
-	if (server_thread.is_started()) {
-		server_thread.wait_to_finish();
-	}
 }

@@ -242,7 +242,10 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 
 	ShelfPackTexture *ct = p_data->textures.ptrw();
 	for (int32_t i = 0; i < p_data->textures.size(); i++) {
-		if (p_image_format != ct[i].format) {
+		if (ct[i].image.is_null()) {
+			continue;
+		}
+		if (p_image_format != ct[i].image->get_format()) {
 			continue;
 		}
 		if (mw > ct[i].texture_w || mh > ct[i].texture_h) { // Too big for this texture.
@@ -274,12 +277,11 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 		}
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);
-		tex.format = p_image_format;
-		tex.imgdata.resize(texsize * texsize * p_color_size);
+		tex.image = Image::create_empty(texsize, texsize, false, p_image_format);
 		{
 			// Zero texture.
-			uint8_t *w = tex.imgdata.ptrw();
-			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.imgdata.size(), ret);
+			uint8_t *w = tex.image->ptrw();
+			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.image->data_size(), ret);
 			// Initialize the texture to all-white pixels to prevent artifacts when the
 			// font is displayed at a non-default scale with filtering enabled.
 			if (p_color_size == 2) {
@@ -456,12 +458,12 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
 
 		{
-			uint8_t *wr = tex.imgdata.ptrw();
+			uint8_t *wr = tex.image->ptrw();
 
 			for (int i = 0; i < h; i++) {
 				for (int j = 0; j < w; j++) {
 					int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * 4;
-					ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), FontGlyph());
+					ERR_FAIL_COND_V(ofs >= tex.image->data_size(), FontGlyph());
 					wr[ofs + 0] = (uint8_t)(CLAMP(image(j, i)[0] * 256.f, 0.f, 255.f));
 					wr[ofs + 1] = (uint8_t)(CLAMP(image(j, i)[1] * 256.f, 0.f, 255.f));
 					wr[ofs + 2] = (uint8_t)(CLAMP(image(j, i)[2] * 256.f, 0.f, 255.f));
@@ -521,12 +523,12 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 	ShelfPackTexture &tex = p_data->textures.write[tex_pos.index];
 
 	{
-		uint8_t *wr = tex.imgdata.ptrw();
+		uint8_t *wr = tex.image->ptrw();
 
 		for (int i = 0; i < h; i++) {
 			for (int j = 0; j < w; j++) {
 				int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * color_size;
-				ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), FontGlyph());
+				ERR_FAIL_COND_V(ofs >= tex.image->data_size(), FontGlyph());
 				switch (bitmap.pixel_mode) {
 					case FT_PIXEL_MODE_MONO: {
 						int byte = i * bitmap.pitch + (j >> 3);
@@ -1745,16 +1747,15 @@ void TextServerFallback::_font_set_texture_image(const RID &p_font_rid, const Ve
 
 	ShelfPackTexture &tex = fd->cache[size]->textures.write[p_texture_index];
 
-	tex.imgdata = p_image->get_data();
+	tex.image = p_image;
 	tex.texture_w = p_image->get_width();
 	tex.texture_h = p_image->get_height();
-	tex.format = p_image->get_format();
 
-	Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-	if (fd->mipmaps) {
+	Ref<Image> img = p_image;
+	if (fd->mipmaps && !img->has_mipmaps()) {
+		img = p_image->duplicate();
 		img->generate_mipmaps();
 	}
-
 	tex.texture = ImageTexture::create_from_image(img);
 	tex.dirty = false;
 }
@@ -1769,7 +1770,7 @@ Ref<Image> TextServerFallback::_font_get_texture_image(const RID &p_font_rid, co
 	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->textures.size(), Ref<Image>());
 
 	const ShelfPackTexture &tex = fd->cache[size]->textures[p_texture_index];
-	return Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+	return tex.image;
 }
 
 void TextServerFallback::_font_set_texture_offsets(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index, const PackedInt32Array &p_offsets) {
@@ -2124,8 +2125,9 @@ RID TextServerFallback::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 		if (gl[p_glyph | mod].texture_idx != -1) {
 			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
 				ShelfPackTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
-				Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-				if (fd->mipmaps) {
+				Ref<Image> img = tex.image;
+				if (fd->mipmaps && !img->has_mipmaps()) {
+					img = tex.image->duplicate();
 					img->generate_mipmaps();
 				}
 				if (tex.texture.is_null()) {
@@ -2170,8 +2172,9 @@ Size2 TextServerFallback::_font_get_glyph_texture_size(const RID &p_font_rid, co
 		if (gl[p_glyph | mod].texture_idx != -1) {
 			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
 				ShelfPackTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
-				Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-				if (fd->mipmaps) {
+				Ref<Image> img = tex.image;
+				if (fd->mipmaps && !img->has_mipmaps()) {
+					img = tex.image->duplicate();
 					img->generate_mipmaps();
 				}
 				if (tex.texture.is_null()) {
@@ -2518,15 +2521,16 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (fd->cache[size]->face && (fd->cache[size]->textures[gl.texture_idx].format == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
+			if (fd->cache[size]->face && fd->cache[size]->textures[gl.texture_idx].image.is_valid() && (fd->cache[size]->textures[gl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
 			if (RenderingServer::get_singleton() != nullptr) {
 				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
 					ShelfPackTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
-					Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-					if (fd->mipmaps) {
+					Ref<Image> img = tex.image;
+					if (fd->mipmaps && !img->has_mipmaps()) {
+						img = tex.image->duplicate();
 						img->generate_mipmaps();
 					}
 					if (tex.texture.is_null()) {
@@ -2628,15 +2632,16 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (fd->cache[size]->face && (fd->cache[size]->textures[gl.texture_idx].format == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
+			if (fd->cache[size]->face && fd->cache[size]->textures[gl.texture_idx].image.is_valid() && (fd->cache[size]->textures[gl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
 			if (RenderingServer::get_singleton() != nullptr) {
 				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
 					ShelfPackTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
-					Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-					if (fd->mipmaps) {
+					Ref<Image> img = tex.image;
+					if (fd->mipmaps && !img->has_mipmaps()) {
+						img = tex.image->duplicate();
 						img->generate_mipmaps();
 					}
 					if (tex.texture.is_null()) {
@@ -3625,7 +3630,9 @@ bool TextServerFallback::_shaped_text_update_breaks(const RID &p_shaped) {
 			}
 			if (is_whitespace(c) && !is_linebreak(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
-				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+				if (c != 0x00A0 && c != 0x202F && c != 0x2060 && c != 0x2007) { // Skip for non-breaking space variants.
+					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+				}
 			}
 			if (is_linebreak(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;

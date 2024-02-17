@@ -36,6 +36,7 @@
 #include "core/object/script_language.h"
 #include "core/os/condition_variable.h"
 #include "core/os/os.h"
+#include "core/os/safe_binary_mutex.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
@@ -340,7 +341,15 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	if (load_task.resource.is_valid()) {
 		if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-			load_task.resource->set_path(load_task.local_path);
+			if (load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE) {
+				Ref<Resource> old_res = ResourceCache::get_ref(load_task.local_path);
+				if (old_res.is_valid() && old_res != load_task.resource) {
+					// If resource is already loaded, only replace its data, to avoid existing invalidating instances.
+					old_res->copy_from(load_task.resource);
+					load_task.resource = old_res;
+				}
+			}
+			load_task.resource->set_path(load_task.local_path, load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
 		} else if (!load_task.local_path.is_resource_file()) {
 			load_task.resource->set_path_cache(load_task.local_path);
 		}
@@ -360,6 +369,17 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 		if (_loaded_callback) {
 			_loaded_callback(load_task.resource, load_task.local_path);
+		}
+	} else if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+		Ref<Resource> existing = ResourceCache::get_ref(load_task.local_path);
+		if (existing.is_valid()) {
+			load_task.resource = existing;
+			load_task.status = THREAD_LOAD_LOADED;
+			load_task.progress = 1.0;
+
+			if (_loaded_callback) {
+				_loaded_callback(load_task.resource, load_task.local_path);
+			}
 		}
 	}
 
@@ -463,7 +483,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 			load_task.type_hint = p_type_hint;
 			load_task.cache_mode = p_cache_mode;
 			load_task.use_sub_threads = p_thread_mode == LOAD_THREAD_DISTRIBUTE;
-			if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
 				Ref<Resource> existing = ResourceCache::get_ref(local_path);
 				if (existing.is_valid()) {
 					//referencing is fine
@@ -1094,7 +1114,7 @@ void ResourceLoader::set_load_callback(ResourceLoadedCallback p_callback) {
 
 ResourceLoadedCallback ResourceLoader::_loaded_callback = nullptr;
 
-Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(String path) {
+Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(const String &path) {
 	for (int i = 0; i < loader_count; ++i) {
 		if (loader[i]->get_script_instance() && loader[i]->get_script_instance()->get_script()->get_path() == path) {
 			return loader[i];
@@ -1103,7 +1123,7 @@ Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(St
 	return Ref<ResourceFormatLoader>();
 }
 
-bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
+bool ResourceLoader::add_custom_resource_format_loader(const String &script_path) {
 	if (_find_custom_resource_format_loader(script_path).is_valid()) {
 		return false;
 	}

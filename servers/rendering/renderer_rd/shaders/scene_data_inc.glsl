@@ -14,6 +14,9 @@ struct SceneData {
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
 
+	// Used for billboards to cast correct shadows.
+	highp mat4 main_cam_inv_view_matrix;
+
 	highp vec2 viewport_size;
 	highp vec2 screen_pixel_size;
 

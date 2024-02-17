@@ -39,6 +39,12 @@
 #include "main/main.h"
 #include "scene/resources/atlas_texture.h"
 
+#if defined(VULKAN_ENABLED)
+#include "rendering_context_driver_vulkan_windows.h"
+#endif
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
@@ -47,6 +53,7 @@
 #include <dwmapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
+#include <wbemcli.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -55,6 +62,8 @@
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1
 #define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 19
 #endif
+
+#define WM_INDICATOR_CALLBACK_MESSAGE (WM_USER + 1)
 
 #if defined(__GNUC__)
 // Workaround GCC warning from -Wcast-function-type.
@@ -101,6 +110,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_SCREEN_CAPTURE:
+		case FEATURE_STATUS_INDICATOR:
 			return true;
 		default:
 			return false;
@@ -749,25 +759,49 @@ Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 
 			if (ptr != NULL) {
 				BITMAPINFOHEADER *info = &ptr->bmiHeader;
-				PackedByteArray pba;
+				void *dib_bits = (void *)(ptr->bmiColors);
 
-				for (LONG y = info->biHeight - 1; y > -1; y--) {
-					for (LONG x = 0; x < info->biWidth; x++) {
-						tagRGBQUAD *rgbquad = ptr->bmiColors + (info->biWidth * y) + x;
-						pba.append(rgbquad->rgbRed);
-						pba.append(rgbquad->rgbGreen);
-						pba.append(rgbquad->rgbBlue);
-						pba.append(rgbquad->rgbReserved);
+				// Draw DIB image to temporary DC surface and read it back as BGRA8.
+				HDC dc = GetDC(0);
+				if (dc) {
+					HDC hdc = CreateCompatibleDC(dc);
+					if (hdc) {
+						HBITMAP hbm = CreateCompatibleBitmap(dc, info->biWidth, abs(info->biHeight));
+						if (hbm) {
+							SelectObject(hdc, hbm);
+							SetDIBitsToDevice(hdc, 0, 0, info->biWidth, abs(info->biHeight), 0, 0, 0, abs(info->biHeight), dib_bits, ptr, DIB_RGB_COLORS);
+
+							BITMAPINFO bmp_info = {};
+							bmp_info.bmiHeader.biSize = sizeof(bmp_info.bmiHeader);
+							bmp_info.bmiHeader.biWidth = info->biWidth;
+							bmp_info.bmiHeader.biHeight = -abs(info->biHeight);
+							bmp_info.bmiHeader.biPlanes = 1;
+							bmp_info.bmiHeader.biBitCount = 32;
+							bmp_info.bmiHeader.biCompression = BI_RGB;
+
+							Vector<uint8_t> img_data;
+							img_data.resize(info->biWidth * abs(info->biHeight) * 4);
+							GetDIBits(hdc, hbm, 0, abs(info->biHeight), img_data.ptrw(), &bmp_info, DIB_RGB_COLORS);
+
+							uint8_t *wr = (uint8_t *)img_data.ptrw();
+							for (int i = 0; i < info->biWidth * abs(info->biHeight); i++) {
+								SWAP(wr[i * 4 + 0], wr[i * 4 + 2]); // Swap B and R.
+								if (info->biBitCount != 32) {
+									wr[i * 4 + 3] = 255; // Set A to solid if it's not in the source image.
+								}
+							}
+							image = Image::create_from_data(info->biWidth, abs(info->biHeight), false, Image::Format::FORMAT_RGBA8, img_data);
+
+							DeleteObject(hbm);
+						}
+						DeleteDC(hdc);
 					}
+					ReleaseDC(NULL, dc);
 				}
-				image.instantiate();
-				image->create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
-
 				GlobalUnlock(mem);
 			}
 		}
 	}
-
 	CloseClipboard();
 
 	return image;
@@ -1144,7 +1178,7 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 
 				uint8_t *wr = (uint8_t *)img_data.ptrw();
 				for (int i = 0; i < width * height; i++) {
-					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]);
+					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]); // Swap B and R.
 				}
 				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
 
@@ -1291,6 +1325,11 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (mainwindow_icon) {
 		SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
 	}
+#ifdef RD_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_create(window_id);
+	}
+#endif
 	return window_id;
 }
 
@@ -1345,8 +1384,12 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 
 #ifdef RD_ENABLED
-	if (context_rd) {
-		context_rd->window_destroy(p_window);
+	if (rendering_device) {
+		rendering_device->screen_free(p_window);
+	}
+
+	if (rendering_context) {
+		rendering_context->window_destroy(p_window);
 	}
 #endif
 #ifdef GLES3_ENABLED
@@ -1777,8 +1820,8 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	wd.height = h;
 
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->window_resize(p_window, w, h);
+	if (rendering_context) {
+		rendering_context->window_set_size(p_window, w, h);
 	}
 #endif
 #if defined(GLES3_ENABLED)
@@ -2828,11 +2871,177 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	}
 }
 
+DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+	HICON hicon = nullptr;
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+		Ref<Image> img = p_icon;
+		if (img != icon) {
+			img = img->duplicate();
+			img->convert(Image::FORMAT_RGBA8);
+		}
+
+		int w = img->get_width();
+		int h = img->get_height();
+
+		// Create temporary bitmap buffer.
+		int icon_len = 40 + h * w * 4;
+		Vector<BYTE> v;
+		v.resize(icon_len);
+		BYTE *icon_bmp = v.ptrw();
+
+		encode_uint32(40, &icon_bmp[0]);
+		encode_uint32(w, &icon_bmp[4]);
+		encode_uint32(h * 2, &icon_bmp[8]);
+		encode_uint16(1, &icon_bmp[12]);
+		encode_uint16(32, &icon_bmp[14]);
+		encode_uint32(BI_RGB, &icon_bmp[16]);
+		encode_uint32(w * h * 4, &icon_bmp[20]);
+		encode_uint32(0, &icon_bmp[24]);
+		encode_uint32(0, &icon_bmp[28]);
+		encode_uint32(0, &icon_bmp[32]);
+		encode_uint32(0, &icon_bmp[36]);
+
+		uint8_t *wr = &icon_bmp[40];
+		const uint8_t *r = img->get_data().ptr();
+
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
+				uint8_t *wpx = &wr[(i * w + j) * 4];
+				wpx[0] = rpx[2];
+				wpx[1] = rpx[1];
+				wpx[2] = rpx[0];
+				wpx[3] = rpx[3];
+			}
+		}
+
+		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+	}
+
+	IndicatorData idat;
+	idat.callback = p_callback;
+
+	NOTIFYICONDATAW ndat;
+	ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
+	ndat.cbSize = sizeof(NOTIFYICONDATAW);
+	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
+	ndat.uID = indicator_id_counter;
+	ndat.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
+	ndat.uCallbackMessage = WM_INDICATOR_CALLBACK_MESSAGE;
+	ndat.hIcon = hicon;
+	memcpy(ndat.szTip, p_tooltip.utf16().ptr(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
+	ndat.uVersion = NOTIFYICON_VERSION;
+
+	Shell_NotifyIconW(NIM_ADD, &ndat);
+	Shell_NotifyIconW(NIM_SETVERSION, &ndat);
+
+	IndicatorID iid = indicator_id_counter++;
+	indicators[iid] = idat;
+
+	return iid;
+}
+
+void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	HICON hicon = nullptr;
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+		Ref<Image> img = p_icon;
+		if (img != icon) {
+			img = img->duplicate();
+			img->convert(Image::FORMAT_RGBA8);
+		}
+
+		int w = img->get_width();
+		int h = img->get_height();
+
+		// Create temporary bitmap buffer.
+		int icon_len = 40 + h * w * 4;
+		Vector<BYTE> v;
+		v.resize(icon_len);
+		BYTE *icon_bmp = v.ptrw();
+
+		encode_uint32(40, &icon_bmp[0]);
+		encode_uint32(w, &icon_bmp[4]);
+		encode_uint32(h * 2, &icon_bmp[8]);
+		encode_uint16(1, &icon_bmp[12]);
+		encode_uint16(32, &icon_bmp[14]);
+		encode_uint32(BI_RGB, &icon_bmp[16]);
+		encode_uint32(w * h * 4, &icon_bmp[20]);
+		encode_uint32(0, &icon_bmp[24]);
+		encode_uint32(0, &icon_bmp[28]);
+		encode_uint32(0, &icon_bmp[32]);
+		encode_uint32(0, &icon_bmp[36]);
+
+		uint8_t *wr = &icon_bmp[40];
+		const uint8_t *r = img->get_data().ptr();
+
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
+				uint8_t *wpx = &wr[(i * w + j) * 4];
+				wpx[0] = rpx[2];
+				wpx[1] = rpx[1];
+				wpx[2] = rpx[0];
+				wpx[3] = rpx[3];
+			}
+		}
+
+		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+	}
+
+	NOTIFYICONDATAW ndat;
+	ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
+	ndat.cbSize = sizeof(NOTIFYICONDATAW);
+	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
+	ndat.uID = p_id;
+	ndat.uFlags = NIF_ICON;
+	ndat.hIcon = hicon;
+	ndat.uVersion = NOTIFYICON_VERSION;
+
+	Shell_NotifyIconW(NIM_MODIFY, &ndat);
+}
+
+void DisplayServerWindows::status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	NOTIFYICONDATAW ndat;
+	ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
+	ndat.cbSize = sizeof(NOTIFYICONDATAW);
+	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
+	ndat.uID = p_id;
+	ndat.uFlags = NIF_TIP;
+	memcpy(ndat.szTip, p_tooltip.utf16().ptr(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
+	ndat.uVersion = NOTIFYICON_VERSION;
+
+	Shell_NotifyIconW(NIM_MODIFY, &ndat);
+}
+
+void DisplayServerWindows::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	indicators[p_id].callback = p_callback;
+}
+
+void DisplayServerWindows::delete_status_indicator(IndicatorID p_id) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	NOTIFYICONDATAW ndat;
+	ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
+	ndat.cbSize = sizeof(NOTIFYICONDATAW);
+	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
+	ndat.uID = p_id;
+	ndat.uVersion = NOTIFYICON_VERSION;
+
+	Shell_NotifyIconW(NIM_DELETE, &ndat);
+	indicators.erase(p_id);
+}
+
 void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->set_vsync_mode(p_window, p_vsync_mode);
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 
@@ -2849,8 +3058,8 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		return context_rd->get_vsync_mode(p_window);
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
 
@@ -2913,6 +3122,7 @@ void DisplayServerWindows::_drag_event(WindowID p_window, float p_x, float p_y, 
 	event->set_index(idx);
 	event->set_position(Vector2(p_x, p_y));
 	event->set_relative(Vector2(p_x, p_y) - curr->get());
+	event->set_relative_screen_position(event->get_relative());
 
 	Input::get_singleton()->parse_input_event(event);
 
@@ -3267,6 +3477,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			if (wParam != WA_INACTIVE) {
 				track_mouse_leave_event(hWnd);
+
+				if (!IsIconic(hWnd)) {
+					SetFocus(hWnd);
+				}
 			}
 			return 0; // Return to the message loop.
 		} break;
@@ -3309,12 +3523,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_PAINT: {
 			Main::force_redraw();
 		} break;
-		case WM_SETTINGCHANGE: {
+		case WM_SETTINGCHANGE:
+		case WM_SYSCOLORCHANGE: {
 			if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, true) == CSTR_EQUAL) {
 				if (is_dark_mode_supported() && dark_title_available) {
 					BOOL value = is_dark_mode();
 					::DwmSetWindowAttribute(windows[window_id].hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 				}
+			}
+			if (system_theme_changed.is_valid()) {
+				system_theme_changed.call();
 			}
 		} break;
 		case WM_THEMECHANGED: {
@@ -3334,6 +3552,30 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					if ((lParam >> 16) <= 0) {
 						return 0;
 					}
+			}
+		} break;
+		case WM_INDICATOR_CALLBACK_MESSAGE: {
+			if (lParam == WM_LBUTTONDOWN || lParam == WM_RBUTTONDOWN || lParam == WM_MBUTTONDOWN || lParam == WM_XBUTTONDOWN) {
+				IndicatorID iid = (IndicatorID)wParam;
+				MouseButton mb = MouseButton::LEFT;
+				if (lParam == WM_RBUTTONDOWN) {
+					mb = MouseButton::RIGHT;
+				} else if (lParam == WM_MBUTTONDOWN) {
+					mb = MouseButton::MIDDLE;
+				} else if (lParam == WM_XBUTTONDOWN) {
+					mb = MouseButton::MB_XBUTTON1;
+				}
+				if (indicators.has(iid)) {
+					if (indicators[iid].callback.is_valid()) {
+						Variant v_button = mb;
+						Variant v_pos = mouse_get_position();
+						Variant *v_args[2] = { &v_button, &v_pos };
+						Variant ret;
+						Callable::CallError ce;
+						indicators[iid].callback.callp((const Variant **)&v_args, 2, ret, ce);
+					}
+				}
+				return 0;
 			}
 		} break;
 		case WM_CLOSE: // Did we receive a close message?
@@ -3425,6 +3667,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm->set_position(c);
 				mm->set_global_position(c);
 				mm->set_velocity(Vector2(0, 0));
+				mm->set_screen_velocity(Vector2(0, 0));
 
 				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
 					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
@@ -3449,6 +3692,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					old_x = coords.x;
 					old_y = coords.y;
 				}
+				mm->set_relative_screen_position(mm->get_relative());
 
 				if ((windows[window_id].window_has_focus || windows[window_id].is_popup) && mm->get_relative() != Vector2()) {
 					Input::get_singleton()->parse_input_event(mm);
@@ -3536,6 +3780,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+					mm->set_screen_velocity(mm->get_velocity());
 
 					if (old_invalid) {
 						old_x = mm->get_position().x;
@@ -3544,6 +3789,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+					mm->set_relative_screen_position(mm->get_relative());
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
 					if (windows[window_id].window_has_focus || window_get_active_popup() == window_id) {
@@ -3683,6 +3929,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+			mm->set_screen_velocity(mm->get_velocity());
 
 			if (old_invalid) {
 				old_x = mm->get_position().x;
@@ -3691,6 +3938,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+			mm->set_relative_screen_position(mm->get_relative());
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 			if (windows[window_id].window_has_focus || window_get_active_popup() == window_id) {
@@ -3802,6 +4050,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+			mm->set_screen_velocity(mm->get_velocity());
 
 			if (old_invalid) {
 				old_x = mm->get_position().x;
@@ -3810,6 +4059,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+			mm->set_relative_screen_position(mm->get_relative());
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 
@@ -4046,9 +4296,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					rect_changed = true;
 				}
 #if defined(RD_ENABLED)
-				if (context_rd && window.context_created) {
+				if (rendering_context && window.context_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
-					context_rd->window_resize(window_id, window.width, window.height);
+					rendering_context->window_set_size(window_id, window.width, window.height);
 				}
 #endif
 			}
@@ -4604,13 +4854,13 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 
 #ifdef RD_ENABLED
-		if (context_rd) {
+		if (rendering_context) {
 			union {
 #ifdef VULKAN_ENABLED
-				VulkanContextWindows::WindowPlatformData vulkan;
+				RenderingContextDriverVulkanWindows::WindowPlatformData vulkan;
 #endif
 #ifdef D3D12_ENABLED
-				D3D12Context::WindowPlatformData d3d12;
+				RenderingContextDriverD3D12::WindowPlatformData d3d12;
 #endif
 			} wpd;
 #ifdef VULKAN_ENABLED
@@ -4624,12 +4874,16 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				wpd.d3d12.window = wd.hWnd;
 			}
 #endif
-			if (context_rd->window_create(id, p_vsync_mode, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top, &wpd) != OK) {
-				memdelete(context_rd);
-				context_rd = nullptr;
+			if (rendering_context->window_create(id, &wpd) != OK) {
+				ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
+				memdelete(rendering_context);
+				rendering_context = nullptr;
 				windows.erase(id);
-				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, vformat("Failed to create %s Window.", context_rd->get_api_name()));
+				return INVALID_WINDOW_ID;
 			}
+
+			rendering_context->window_set_size(id, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
+			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
 			wd.context_created = true;
 		}
 #endif
@@ -4752,6 +5006,68 @@ GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
 LogicalToPhysicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_LogicalToPhysicalPointForPerMonitorDPI = nullptr;
 PhysicalToLogicalPointForPerMonitorDPIPtr DisplayServerWindows::win81p_PhysicalToLogicalPointForPerMonitorDPI = nullptr;
 
+Vector2i _get_device_ids(const String &p_device_name) {
+	if (p_device_name.is_empty()) {
+		return Vector2i();
+	}
+
+	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
+	REFIID uuid = IID_IWbemLocator; // Interface UUID
+	IWbemLocator *wbemLocator = NULL; // to get the services
+	IWbemServices *wbemServices = NULL; // to get the class
+	IEnumWbemClassObject *iter = NULL;
+	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
+
+	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
+	if (hr != S_OK) {
+		return Vector2i();
+	}
+	BSTR resource_name = SysAllocString(L"root\\CIMV2");
+	hr = wbemLocator->ConnectServer(resource_name, NULL, NULL, NULL, 0, NULL, NULL, &wbemServices);
+	SysFreeString(resource_name);
+
+	SAFE_RELEASE(wbemLocator) // from now on, use `wbemServices`
+	if (hr != S_OK) {
+		SAFE_RELEASE(wbemServices)
+		return Vector2i();
+	}
+
+	Vector2i ids;
+
+	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", p_device_name);
+	BSTR query = SysAllocString((const WCHAR *)gpu_device_class_query.utf16().get_data());
+	BSTR query_lang = SysAllocString(L"WQL");
+	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, NULL, &iter);
+	SysFreeString(query_lang);
+	SysFreeString(query);
+	if (hr == S_OK) {
+		ULONG resultCount;
+		hr = iter->Next(5000, 1, pnpSDriverObject, &resultCount); // Get exactly 1. Wait max 5 seconds.
+
+		if (hr == S_OK && resultCount > 0) {
+			VARIANT did;
+			VariantInit(&did);
+			BSTR object_name = SysAllocString(L"DeviceID");
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &did, NULL, NULL);
+			SysFreeString(object_name);
+			if (hr == S_OK) {
+				String device_id = String(V_BSTR(&did));
+				ids.x = device_id.get_slice("&", 0).lstrip("PCI\\VEN_").hex_to_int();
+				ids.y = device_id.get_slice("&", 1).lstrip("DEV_").hex_to_int();
+			}
+
+			for (ULONG i = 0; i < resultCount; i++) {
+				SAFE_RELEASE(pnpSDriverObject[i])
+			}
+		}
+	}
+
+	SAFE_RELEASE(wbemServices)
+	SAFE_RELEASE(iter)
+
+	return ids;
+}
+
 typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_DPI_UNAWARE = 0,
 	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
@@ -4773,6 +5089,19 @@ Color DisplayServerWindows::get_accent_color() const {
 
 	int argb = GetImmersiveColorFromColorSetEx((UINT)GetImmersiveUserColorSetPreference(false, false), GetImmersiveColorTypeFromName(L"ImmersiveSystemAccent"), false, 0);
 	return Color((argb & 0xFF) / 255.f, ((argb & 0xFF00) >> 8) / 255.f, ((argb & 0xFF0000) >> 16) / 255.f, ((argb & 0xFF000000) >> 24) / 255.f);
+}
+
+Color DisplayServerWindows::get_base_color() const {
+	if (!ux_theme_available) {
+		return Color(0, 0, 0, 0);
+	}
+
+	int argb = GetImmersiveColorFromColorSetEx((UINT)GetImmersiveUserColorSetPreference(false, false), GetImmersiveColorTypeFromName(ShouldAppsUseDarkMode() ? L"ImmersiveDarkChromeMediumLow" : L"ImmersiveLightChromeMediumLow"), false, 0);
+	return Color((argb & 0xFF) / 255.f, ((argb & 0xFF00) >> 8) / 255.f, ((argb & 0xFF0000) >> 16) / 255.f, ((argb & 0xFF000000) >> 24) / 255.f);
+}
+
+void DisplayServerWindows::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
 }
 
 int DisplayServerWindows::tablet_get_driver_count() const {
@@ -4940,19 +5269,19 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		context_rd = memnew(VulkanContextWindows);
+		rendering_context = memnew(RenderingContextDriverVulkanWindows);
 	}
 #endif
 #if defined(D3D12_ENABLED)
 	if (rendering_driver == "d3d12") {
-		context_rd = memnew(D3D12Context);
+		rendering_context = memnew(RenderingContextDriverD3D12);
 	}
 #endif
 
-	if (context_rd) {
-		if (context_rd->initialize() != OK) {
-			memdelete(context_rd);
-			context_rd = nullptr;
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			memdelete(rendering_context);
+			rendering_context = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			return;
 		}
@@ -4973,12 +5302,22 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 		bool force_angle = false;
 
+		Vector2i device_id = _get_device_ids(gl_info["name"]);
 		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
 		for (int i = 0; i < device_list.size(); i++) {
 			const Dictionary &device = device_list[i];
-			if (device.has("vendor") && device.has("name") && gl_info["vendor"].operator String().to_upper().contains(device["vendor"].operator String().to_upper()) && (device["name"] == "*" || gl_info["name"].operator String().to_upper().contains(device["name"].operator String().to_upper()))) {
-				force_angle = true;
-				break;
+			if (device.has("vendor") && device.has("name")) {
+				const String &vendor = device["vendor"];
+				const String &name = device["name"];
+				if (device_id != Vector2i() && vendor.begins_with("0x") && name.begins_with("0x") && device_id.x == vendor.lstrip("0x").hex_to_int() && device_id.y == name.lstrip("0x").hex_to_int()) {
+					// Check vendor/device IDs.
+					force_angle = true;
+					break;
+				} else if (gl_info["vendor"].operator String().to_upper().contains(vendor.to_upper()) && (name == "*" || gl_info["name"].operator String().to_upper().contains(name.to_upper()))) {
+					// Check vendor/device names.
+					force_angle = true;
+					break;
+				}
 			}
 		}
 
@@ -5042,9 +5381,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	show_window(MAIN_WINDOW_ID);
 
 #if defined(RD_ENABLED)
-	if (context_rd) {
+	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(context_rd);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -5138,6 +5478,18 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	cursors_cache.clear();
 
+	// Destroy all status indicators.
+	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E;) {
+		NOTIFYICONDATAW ndat;
+		ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
+		ndat.cbSize = sizeof(NOTIFYICONDATAW);
+		ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
+		ndat.uID = E->key;
+		ndat.uVersion = NOTIFYICON_VERSION;
+
+		Shell_NotifyIconW(NIM_DELETE, &ndat);
+	}
+
 	if (mouse_monitor) {
 		UnhookWindowsHookEx(mouse_monitor);
 	}
@@ -5156,8 +5508,12 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	if (windows.has(MAIN_WINDOW_ID)) {
 #ifdef RD_ENABLED
-		if (context_rd) {
-			context_rd->window_destroy(MAIN_WINDOW_ID);
+		if (rendering_device) {
+			rendering_device->screen_free(MAIN_WINDOW_ID);
+		}
+
+		if (rendering_context) {
+			rendering_context->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
 		if (wintab_available && windows[MAIN_WINDOW_ID].wtctx) {
@@ -5169,14 +5525,13 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 #ifdef RD_ENABLED
 	if (rendering_device) {
-		rendering_device->finalize();
 		memdelete(rendering_device);
 		rendering_device = nullptr;
 	}
 
-	if (context_rd) {
-		memdelete(context_rd);
-		context_rd = nullptr;
+	if (rendering_context) {
+		memdelete(rendering_context);
+		rendering_context = nullptr;
 	}
 #endif
 

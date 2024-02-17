@@ -49,11 +49,11 @@ void MultiplayerSynchronizer::_stop() {
 	}
 #endif
 	root_node_cache = ObjectID();
-	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		get_multiplayer()->object_configuration_remove(node, this);
 	}
+	reset();
 }
 
 void MultiplayerSynchronizer::_start() {
@@ -143,8 +143,8 @@ bool MultiplayerSynchronizer::update_inbound_sync_time(uint16_t p_network_time) 
 	return true;
 }
 
-PackedStringArray MultiplayerSynchronizer::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array MultiplayerSynchronizer::get_configuration_warnings() const {
+	Array warnings = Node::get_configuration_warnings();
 
 	if (root_path.is_empty() || !has_node(root_path)) {
 		warnings.push_back(RTR("A valid NodePath must be set in the \"Root Path\" property in order for MultiplayerSynchronizer to be able to synchronize properties."));

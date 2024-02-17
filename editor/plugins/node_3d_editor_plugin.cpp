@@ -943,13 +943,13 @@ void Node3DEditorViewport::_select_region() {
 		}
 	}
 
-	Plane near(-_get_camera_normal(), cam_pos);
-	near.d -= get_znear();
-	frustum.push_back(near);
+	Plane near_plane = Plane(-_get_camera_normal(), cam_pos);
+	near_plane.d -= get_znear();
+	frustum.push_back(near_plane);
 
-	Plane far = -near;
-	far.d += get_zfar();
-	frustum.push_back(far);
+	Plane far_plane = -near_plane;
+	far_plane.d += get_zfar();
+	frustum.push_back(far_plane);
 
 	if (spatial_editor->get_single_selected_node()) {
 		Node3D *single_selected = spatial_editor->get_single_selected_node();
@@ -1488,6 +1488,10 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 }
 
 void Node3DEditorViewport::_surface_mouse_enter() {
+	if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+		return;
+	}
+
 	if (!surface->has_focus() && (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field())) {
 		surface->grab_focus();
 	}
@@ -1749,8 +1753,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.mode = TRANSFORM_NONE;
 					_edit.original = spatial_editor->get_gizmo_transform(); // To prevent to break when flipping with scale.
 
-					bool node_selected = spatial_editor->get_single_selected_node();
-					bool can_select_gizmos = node_selected;
+					bool can_select_gizmos = spatial_editor->get_single_selected_node();
 
 					{
 						int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
@@ -1839,6 +1842,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					clicked = ObjectID();
+
+					bool node_selected = get_selected_count() > 0;
 
 					if (node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
 						begin_transform(TRANSFORM_ROTATE, false);
@@ -1985,9 +1990,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
-				// enable region-select if nothing has been selected yet or multi-select (shift key) is active
-				if (selection_in_progress && movement_threshold_passed) {
-					if (get_selected_count() == 0 || clicked_wants_append) {
+				if (selection_in_progress && movement_threshold_passed && clicked.is_valid()) {
+					if (clicked_wants_append || !editor_selection->is_selected(Object::cast_to<Node>(ObjectDB::get_instance(clicked)))) {
 						cursor.region_select = true;
 						cursor.region_begin = _edit.original_mouse_pos;
 						clicked = ObjectID();
@@ -2790,8 +2794,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				}
 
 				Transform3D t = sp->get_global_gizmo_transform();
-				VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(sp);
-				AABB new_aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp);
+				AABB new_aabb = _calculate_spatial_bounds(sp);
 
 				exist = true;
 				if (se->last_xform == t && se->aabb == new_aabb && !se->last_xform_dirty) {
@@ -2837,7 +2840,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 					last_message = message;
 				}
 
-				message_time -= get_physics_process_delta_time();
+				message_time -= get_process_delta_time();
 				if (message_time < 0) {
 					surface->queue_redraw();
 				}
@@ -3018,6 +3021,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			// Clear preview material when dropped outside applicable object.
 			if (spatial_editor->get_preview_material().is_valid() && !is_drag_successful()) {
 				_remove_preview_material();
+			} else {
+				_remove_preview_node();
 			}
 		} break;
 	}
@@ -3296,8 +3301,10 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					xform.basis.rotate_local(Vector3(1, 0, 0), Math_TAU * 0.25);
 				}
 
-				undo_redo->add_do_method(sp, "set_global_transform", xform);
-				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
+				Node3D *parent = sp->get_parent_node_3d();
+				Transform3D local_xform = parent ? parent->get_global_transform().affine_inverse() * xform : xform;
+				undo_redo->add_do_method(sp, "set_transform", local_xform);
+				undo_redo->add_undo_method(sp, "set_transform", sp->get_local_gizmo_transform());
 			}
 			undo_redo->commit_action();
 
@@ -4087,33 +4094,33 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	return world_pos + world_ray * FALLBACK_DISTANCE;
 }
 
-AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, bool p_exclude_top_level_transform) {
+AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, const Node3D *p_top_level_parent) {
 	AABB bounds;
+
+	if (!p_top_level_parent) {
+		p_top_level_parent = p_parent;
+	}
+
+	if (!p_parent) {
+		return AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
+	}
+
+	Transform3D xform_to_top_level_parent_space = p_top_level_parent->get_global_transform().affine_inverse() * p_parent->get_global_transform();
 
 	const VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(p_parent);
 	if (visual_instance) {
 		bounds = visual_instance->get_aabb();
+	} else {
+		bounds = AABB();
 	}
+	bounds = xform_to_top_level_parent_space.xform(bounds);
 
 	for (int i = 0; i < p_parent->get_child_count(); i++) {
 		Node3D *child = Object::cast_to<Node3D>(p_parent->get_child(i));
 		if (child) {
-			AABB child_bounds = _calculate_spatial_bounds(child, false);
-
-			if (bounds.size == Vector3() && p_parent) {
-				bounds = child_bounds;
-			} else {
-				bounds.merge_with(child_bounds);
-			}
+			AABB child_bounds = _calculate_spatial_bounds(child, p_top_level_parent);
+			bounds.merge_with(child_bounds);
 		}
-	}
-
-	if (bounds.size == Vector3() && !p_parent) {
-		bounds = AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
-	}
-
-	if (!p_exclude_top_level_transform) {
-		bounds = p_parent->get_transform().xform(bounds);
 	}
 
 	return bounds;
@@ -4353,6 +4360,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 	undo_redo->add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
 	undo_redo->add_do_reference(instantiated_scene);
 	undo_redo->add_undo_method(parent, "remove_child", instantiated_scene);
+	undo_redo->add_do_method(editor_selection, "add_node", instantiated_scene);
 
 	String new_name = parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
@@ -4361,16 +4369,17 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
-		Transform3D gl_transform;
+		Transform3D parent_tf;
 		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
 		if (parent_node3d) {
-			gl_transform = parent_node3d->get_global_gizmo_transform();
+			parent_tf = parent_node3d->get_global_gizmo_transform();
 		}
 
-		gl_transform.origin = preview_node_pos;
-		gl_transform.basis *= node3d->get_transform().basis;
+		Transform3D new_tf = node3d->get_transform();
+		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + node3d->get_position());
+		new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
 
-		undo_redo->add_do_method(instantiated_scene, "set_global_transform", gl_transform);
+		undo_redo->add_do_method(instantiated_scene, "set_transform", new_tf);
 	}
 
 	return true;
@@ -4401,7 +4410,8 @@ void Node3DEditorViewport::_perform_drop_data() {
 
 	Vector<String> error_files;
 
-	undo_redo->create_action(TTR("Create Node"));
+	undo_redo->create_action(TTR("Create Node"), UndoRedo::MERGE_DISABLE, target_node);
+	undo_redo->add_do_method(editor_selection, "clear");
 
 	for (int i = 0; i < selected_files.size(); i++) {
 		String path = selected_files[i];
@@ -4531,7 +4541,7 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);
-	bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
+	bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	selected_files.clear();
 	Dictionary d = p_data;
@@ -4541,15 +4551,15 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
-	if (selected_nodes.size() == 1) {
+	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes[0];
-		target_node = root_node;
-		if (is_ctrl) {
-			target_node = selected_node;
+		target_node = selected_node;
+		if (is_alt) {
+			target_node = root_node;
 		} else if (is_shift && selected_node != root_node) {
 			target_node = selected_node->get_parent();
 		}
-	} else if (selected_nodes.size() == 0) {
+	} else {
 		if (root_node) {
 			target_node = root_node;
 		} else {
@@ -4557,11 +4567,6 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 			SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 			target_node = get_tree()->get_edited_scene_root();
 		}
-	} else {
-		accept->set_text(TTR("Cannot drag and drop into multiple selected nodes."));
-		accept->popup_centered();
-		_remove_preview_node();
-		return;
 	}
 
 	drop_pos = p_point;
@@ -4606,8 +4611,8 @@ void Node3DEditorViewport::commit_transform() {
 			continue;
 		}
 
-		undo_redo->add_do_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
-		undo_redo->add_undo_method(sp, "set_global_transform", se->original);
+		undo_redo->add_do_method(sp, "set_transform", sp->get_local_gizmo_transform());
+		undo_redo->add_undo_method(sp, "set_transform", se->original_local);
 	}
 	undo_redo->commit_action();
 
@@ -6167,8 +6172,10 @@ void Node3DEditor::_xform_dialog_action() {
 			tr.origin += t.origin;
 		}
 
-		undo_redo->add_do_method(sp, "set_global_transform", tr);
-		undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
+		Node3D *parent = sp->get_parent_node_3d();
+		Transform3D local_tr = parent ? parent->get_global_transform().affine_inverse() * tr : tr;
+		undo_redo->add_do_method(sp, "set_transform", local_tr);
+		undo_redo->add_undo_method(sp, "set_transform", sp->get_transform());
 	}
 	undo_redo->commit_action();
 }
@@ -6501,20 +6508,20 @@ void vertex() {
 	// Points are already in world space, so no need for MODEL_MATRIX anymore.
 	vec4 clip_a = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(point_a, 1.0));
 	vec4 clip_b = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(point_b, 1.0));
-	
+
 	vec2 screen_a = VIEWPORT_SIZE * (0.5 * clip_a.xy / clip_a.w + 0.5);
 	vec2 screen_b = VIEWPORT_SIZE * (0.5 * clip_b.xy / clip_b.w + 0.5);
-	
+
 	vec2 x_basis = normalize(screen_b - screen_a);
 	vec2 y_basis = vec2(-x_basis.y, x_basis.x);
-	
+
 	float width = 3.0;
 	vec2 screen_point_a = screen_a + width * (VERTEX.x * x_basis + VERTEX.y * y_basis);
 	vec2 screen_point_b = screen_b + width * (VERTEX.x * x_basis + VERTEX.y * y_basis);
 	vec2 screen_point_final = mix(screen_point_a, screen_point_b, VERTEX.z);
-	
+
 	vec4 clip_final = mix(clip_a, clip_b, VERTEX.z);
-	
+
 	POSITION = vec4(clip_final.w * ((2.0 * screen_point_final) / VIEWPORT_SIZE - 1.0), clip_final.z, clip_final.w);
 	UV = VERTEX.yz * clip_final.w;
 
@@ -7516,8 +7523,10 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 					new_transform.origin.y = result.position.y;
 					new_transform.origin = new_transform.origin - position_offset;
 
-					undo_redo->add_do_method(sp, "set_global_transform", new_transform);
-					undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_transform());
+					Node3D *parent = sp->get_parent_node_3d();
+					Transform3D new_local_xform = parent ? parent->get_global_transform().affine_inverse() * new_transform : new_transform;
+					undo_redo->add_do_method(sp, "set_transform", new_local_xform);
+					undo_redo->add_undo_method(sp, "set_transform", sp->get_transform());
 				}
 			}
 

@@ -169,8 +169,8 @@ AABB Light3D::get_aabb() const {
 	return AABB();
 }
 
-PackedStringArray Light3D::get_configuration_warnings() const {
-	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
+Array Light3D::get_configuration_warnings() const {
+	Array warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (!get_scale().is_equal_approx(Vector3(1, 1, 1))) {
 		warnings.push_back(RTR("A light's scale does not affect the visual size of the light."));
@@ -596,8 +596,8 @@ OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
 	return shadow_mode;
 }
 
-PackedStringArray OmniLight3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Light3D::get_configuration_warnings();
+Array OmniLight3D::get_configuration_warnings() const {
+	Array warnings = Light3D::get_configuration_warnings();
 
 	if (!has_shadow() && get_projector().is_valid()) {
 		warnings.push_back(RTR("Projector texture only works with shadows active."));
@@ -616,7 +616,7 @@ void OmniLight3D::_bind_methods() {
 
 	ADD_GROUP("Omni", "omni_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp"), "set_param", "get_param", PARAM_RANGE);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_ATTENUATION);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.001,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_mode", PROPERTY_HINT_ENUM, "Dual Paraboloid,Cube"), "set_shadow_mode", "get_shadow_mode");
 
 	BIND_ENUM_CONSTANT(SHADOW_DUAL_PARABOLOID);
@@ -628,8 +628,8 @@ OmniLight3D::OmniLight3D() :
 	set_shadow_mode(SHADOW_CUBE);
 }
 
-PackedStringArray SpotLight3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Light3D::get_configuration_warnings();
+Array SpotLight3D::get_configuration_warnings() const {
+	Array warnings = Light3D::get_configuration_warnings();
 
 	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
 		warnings.push_back(RTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."));
@@ -649,7 +649,7 @@ PackedStringArray SpotLight3D::get_configuration_warnings() const {
 void SpotLight3D::_bind_methods() {
 	ADD_GROUP("Spot", "spot_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_ATTENUATION);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.01,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_angle", PROPERTY_HINT_RANGE, "0,180,0.01,degrees"), "set_param", "get_param", PARAM_SPOT_ANGLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spot_angle_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_SPOT_ATTENUATION);
 }

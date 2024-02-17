@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationServer3D" inherits="Object" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationServer3D" inherits="Object" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A server interface for low-level 3D navigation access.
 	</brief_description>
@@ -342,6 +342,13 @@
 				Returns information about the current state of the NavigationServer. See [enum ProcessInfo] for a list of available states.
 			</description>
 		</method>
+		<method name="is_baking_navigation_mesh" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<description>
+				Returns [code]true[/code] when the provided navigation mesh is being baked on a background thread.
+			</description>
+		</method>
 		<method name="link_create">
 			<return type="RID" />
 			<description>
@@ -575,6 +582,13 @@
 				Returns all navigation link [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
+		<method name="map_get_merge_rasterizer_cell_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns map's internal merge rasterizer cell scale.
+			</description>
+		</method>
 		<method name="map_get_obstacles" qualifiers="const">
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
@@ -670,6 +684,14 @@
 			<param index="1" name="radius" type="float" />
 			<description>
 				Set the map's link connection radius used to connect links to navigation polygons.
+			</description>
+		</method>
+		<method name="map_set_merge_rasterizer_cell_scale">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="scale" type="float" />
+			<description>
+				Set the map's internal merge rasterizer cell scale used to control merging sensitivity.
 			</description>
 		</method>
 		<method name="map_set_up">
@@ -864,13 +886,13 @@
 				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query.
 			</description>
 		</method>
-		<method name="region_bake_navigation_mesh" is_deprecated="true">
+		<method name="region_bake_navigation_mesh" deprecated="This method is deprecated due to core threading changes.">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="root_node" type="Node" />
 			<description>
 				Bakes the [param navigation_mesh] with bake source geometry collected starting from the [param root_node].
-				[i]Deprecated.[/i] This function is deprecated due to core threading changes. To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.
+				[i]Deprecated.[/i] To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.
 			</description>
 		</method>
 		<method name="region_create">

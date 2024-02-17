@@ -937,9 +937,8 @@
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
-		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true" deprecated="Use [member Node.auto_translate_mode] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
-			Also decides if the node's strings should be parsed for POT generation.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
@@ -1159,12 +1158,12 @@
 			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
 			See also [constant NOTIFICATION_MOUSE_EXIT_SELF].
 		</constant>
-		<constant name="NOTIFICATION_MOUSE_ENTER_SELF" value="60" is_experimental="true">
+		<constant name="NOTIFICATION_MOUSE_ENTER_SELF" value="60" experimental="">
 			Sent when the mouse cursor enters the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
 			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
 			See also [constant NOTIFICATION_MOUSE_ENTER].
 		</constant>
-		<constant name="NOTIFICATION_MOUSE_EXIT_SELF" value="61" is_experimental="true">
+		<constant name="NOTIFICATION_MOUSE_EXIT_SELF" value="61" experimental="">
 			Sent when the mouse cursor leaves the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
 			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
 			See also [constant NOTIFICATION_MOUSE_EXIT].

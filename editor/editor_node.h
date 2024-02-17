@@ -80,6 +80,7 @@ class EditorBuildProfileManager;
 class EditorCommandPalette;
 class EditorDockManager;
 class EditorExport;
+class EditorExportPreset;
 class EditorExtensionManager;
 class EditorFeatureProfileManager;
 class EditorFileDialog;
@@ -382,6 +383,9 @@ private:
 	ConfirmationDialog *gradle_build_manage_templates = nullptr;
 	ConfirmationDialog *install_android_build_template = nullptr;
 	ConfirmationDialog *remove_android_build_template = nullptr;
+	Label *install_android_build_template_message = nullptr;
+	OptionButton *choose_android_export_profile = nullptr;
+	Ref<EditorExportPreset> android_export_preset;
 
 	PopupMenu *vcs_actions_menu = nullptr;
 	EditorFileDialog *file = nullptr;
@@ -488,6 +492,8 @@ private:
 
 	String _get_system_info() const;
 
+	bool _should_display_update_spinner() const;
+
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
 		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 		if (!singleton->dependency_errors.has(p_path)) {
@@ -516,7 +522,8 @@ private:
 
 	void _dialog_action(String p_file);
 
-	void _edit_current(bool p_skip_foreign = false);
+	void _add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only);
+	void _edit_current(bool p_skip_foreign = false, bool p_skip_inspector_update = false);
 	void _dialog_display_save_error(String p_file, Error p_error);
 	void _dialog_display_load_error(String p_file, Error p_error);
 
@@ -525,6 +532,7 @@ private:
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _android_build_source_selected(const String &p_file);
+	void _android_export_preset_selected(int p_index);
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
@@ -584,6 +592,7 @@ private:
 	void _dropped_files(const Vector<String> &p_files);
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 
+	void _update_vsync_mode();
 	void _update_from_settings();
 	void _gdextensions_reloaded();
 
@@ -749,6 +758,7 @@ public:
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
+	void push_item_no_inspector(Object *p_object);
 	void edit_item(Object *p_object, Object *p_editing_owner);
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);

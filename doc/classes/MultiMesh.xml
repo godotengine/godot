@@ -90,10 +90,12 @@
 	<members>
 		<member name="buffer" type="PackedFloat32Array" setter="set_buffer" getter="get_buffer" default="PackedFloat32Array()">
 		</member>
-		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array" is_deprecated="true">
-			See [method set_instance_color].
+		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array" deprecated="Use [method set_instance_color] instead.">
 		</member>
-		<member name="custom_data_array" type="PackedColorArray" setter="_set_custom_data_array" getter="_get_custom_data_array" is_deprecated="true">
+		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
+			Custom AABB for this MultiMesh resource. Setting this manually prevents costly runtime AABB recalculations.
+		</member>
+		<member name="custom_data_array" type="PackedColorArray" setter="_set_custom_data_array" getter="_get_custom_data_array" deprecated="Use [method set_instance_custom_data] instead.">
 			See [method set_instance_custom_data].
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count" default="0">
@@ -104,11 +106,9 @@
 			[Mesh] resource to be instanced.
 			The looks of the individual instances can be modified using [method set_instance_color] and [method set_instance_custom_data].
 		</member>
-		<member name="transform_2d_array" type="PackedVector2Array" setter="_set_transform_2d_array" getter="_get_transform_2d_array" is_deprecated="true">
-			See [method set_instance_transform_2d].
+		<member name="transform_2d_array" type="PackedVector2Array" setter="_set_transform_2d_array" getter="_get_transform_2d_array" deprecated="Use [method set_instance_transform_2d] instead.">
 		</member>
-		<member name="transform_array" type="PackedVector3Array" setter="_set_transform_array" getter="_get_transform_array" is_deprecated="true">
-			See [method set_instance_transform].
+		<member name="transform_array" type="PackedVector3Array" setter="_set_transform_array" getter="_get_transform_array" deprecated="Use [method set_instance_transform] instead.">
 		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat" default="0">
 			Format of transform used to transform mesh, either 2D or 3D.

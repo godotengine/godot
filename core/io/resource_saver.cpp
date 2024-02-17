@@ -215,7 +215,7 @@ void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_form
 	--saver_count;
 }
 
-Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(String path) {
+Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(const String &path) {
 	for (int i = 0; i < saver_count; ++i) {
 		if (saver[i]->get_script_instance() && saver[i]->get_script_instance()->get_script()->get_path() == path) {
 			return saver[i];
@@ -224,7 +224,7 @@ Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(Strin
 	return Ref<ResourceFormatSaver>();
 }
 
-bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
+bool ResourceSaver::add_custom_resource_format_saver(const String &script_path) {
 	if (_find_custom_resource_format_saver(script_path).is_valid()) {
 		return false;
 	}

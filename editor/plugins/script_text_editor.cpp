@@ -345,14 +345,19 @@ void ScriptTextEditor::reload_text() {
 }
 
 void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
+	ScriptLanguage *language = script->get_language();
+	if (!language->can_make_function()) {
+		return;
+	}
+
 	String code = code_editor->get_text_editor()->get_text();
-	int pos = script->get_language()->find_function(p_function, code);
+	int pos = language->find_function(p_function, code);
 	code_editor->get_text_editor()->remove_secondary_carets();
 	if (pos == -1) {
 		//does not exist
 		code_editor->get_text_editor()->deselect();
 		pos = code_editor->get_text_editor()->get_line_count() + 2;
-		String func = script->get_language()->make_function("", p_function, p_args);
+		String func = language->make_function("", p_function, p_args);
 		//code=code+func;
 		code_editor->get_text_editor()->set_caret_line(pos + 1);
 		code_editor->get_text_editor()->set_caret_column(1000000); //none shall be that big
@@ -500,11 +505,14 @@ void ScriptTextEditor::_validate_script() {
 	safe_lines.clear();
 
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
-		for (List<ScriptLanguage::ScriptError>::Element *E = errors.front(); E; E = E->next()) {
+		List<ScriptLanguage::ScriptError>::Element *E = errors.front();
+		while (E) {
+			List<ScriptLanguage::ScriptError>::Element *next_E = E->next();
 			if ((E->get().path.is_empty() && !script->get_path().is_empty()) || E->get().path != script->get_path()) {
 				depended_errors[E->get().path].push_back(E->get());
 				E->erase();
 			}
+			E = next_E;
 		}
 
 		if (errors.size() > 0) {
@@ -1269,6 +1277,7 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 
 void ScriptTextEditor::_edit_option(int p_op) {
 	CodeEdit *tx = code_editor->get_text_editor();
+	tx->apply_ime();
 
 	switch (p_op) {
 		case EDIT_UNDO: {
@@ -1959,6 +1968,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	}
 
 	if (create_menu) {
+		tx->apply_ime();
+
 		Point2i pos = tx->get_line_column_at_pos(local_pos);
 		int row = pos.y;
 		int col = pos.x;

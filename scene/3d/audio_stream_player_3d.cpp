@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "audio_stream_player_3d.h"
+#include "audio_stream_player_3d.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "scene/3d/area_3d.h"
@@ -122,20 +123,20 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
 		case AudioServer::SPEAKER_SURROUND_71:
-			output.write[3].l = volumes[5]; // side-left
-			output.write[3].r = volumes[6]; // side-right
+			output.write[3].left = volumes[5]; // side-left
+			output.write[3].right = volumes[6]; // side-right
 			[[fallthrough]];
 		case AudioServer::SPEAKER_SURROUND_51:
-			output.write[2].l = volumes[3]; // rear-left
-			output.write[2].r = volumes[4]; // rear-right
+			output.write[2].left = volumes[3]; // rear-left
+			output.write[2].right = volumes[4]; // rear-right
 			[[fallthrough]];
 		case AudioServer::SPEAKER_SURROUND_31:
-			output.write[1].r = 1.0; // LFE - always full power
-			output.write[1].l = volumes[2]; // center
+			output.write[1].right = 1.0; // LFE - always full power
+			output.write[1].left = volumes[2]; // center
 			[[fallthrough]];
 		case AudioServer::SPEAKER_MODE_STEREO:
-			output.write[0].r = volumes[1]; // front-right
-			output.write[0].l = volumes[0]; // front-left
+			output.write[0].right = volumes[1]; // front-right
+			output.write[0].left = volumes[0]; // front-left
 			break;
 	}
 }
@@ -167,25 +168,25 @@ void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_p
 
 			// Stereo pair.
 			float c = rev_pos.x * 0.5 + 0.5;
-			reverb_vol.write[0].l = 1.0 - c;
-			reverb_vol.write[0].r = c;
+			reverb_vol.write[0].left = 1.0 - c;
+			reverb_vol.write[0].right = c;
 
 			if (channel_count >= 3) {
 				// Center pair + Side pair
 				float xl = Vector3(-1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
 				float xr = Vector3(1, 0, -1).normalized().dot(rev_pos) * 0.5 + 0.5;
 
-				reverb_vol.write[1].l = xl;
-				reverb_vol.write[1].r = xr;
-				reverb_vol.write[2].l = 1.0 - xr;
-				reverb_vol.write[2].r = 1.0 - xl;
+				reverb_vol.write[1].left = xl;
+				reverb_vol.write[1].right = xr;
+				reverb_vol.write[2].left = 1.0 - xr;
+				reverb_vol.write[2].right = 1.0 - xl;
 			}
 
 			if (channel_count >= 4) {
 				// Rear pair
 				// FIXME: Not sure what math should be done here
-				reverb_vol.write[3].l = 1.0 - c;
-				reverb_vol.write[3].r = c;
+				reverb_vol.write[3].left = 1.0 - c;
+				reverb_vol.write[3].right = c;
 			}
 
 			for (int i = 0; i < channel_count; i++) {
@@ -571,7 +572,7 @@ void AudioStreamPlayer3D::set_autoplay(bool p_enable) {
 	internal->autoplay = p_enable;
 }
 
-bool AudioStreamPlayer3D::is_autoplay_enabled() {
+bool AudioStreamPlayer3D::is_autoplay_enabled() const {
 	return internal->autoplay;
 }
 

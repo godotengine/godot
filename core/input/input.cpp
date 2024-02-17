@@ -130,6 +130,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
+	ClassDB::bind_method(D_METHOD("get_last_mouse_screen_velocity"), &Input::get_last_mouse_screen_velocity);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
 	ClassDB::bind_method(D_METHOD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
 	ClassDB::bind_method(D_METHOD("get_mouse_mode"), &Input::get_mouse_mode);
@@ -201,7 +202,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
 
-void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
+void Input::VelocityTrack::update(const Vector2 &p_delta_p, const Vector2 &p_screen_delta_p) {
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
 	uint32_t tdiff = tick - last_tick;
 	float delta_t = tdiff / 1000000.0;
@@ -210,12 +211,15 @@ void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
 	if (delta_t > max_ref_frame) {
 		// First movement in a long time, reset and start again.
 		velocity = Vector2();
+		screen_velocity = Vector2();
 		accum = p_delta_p;
+		screen_accum = p_screen_delta_p;
 		accum_t = 0;
 		return;
 	}
 
 	accum += p_delta_p;
+	screen_accum += p_screen_delta_p;
 	accum_t += delta_t;
 
 	if (accum_t < min_ref_frame) {
@@ -224,6 +228,7 @@ void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
 	}
 
 	velocity = accum / accum_t;
+	screen_velocity = screen_accum / accum_t;
 	accum = Vector2();
 	accum_t = 0;
 }
@@ -450,7 +455,7 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
-void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid, Dictionary p_joypad_info) {
+void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid, const Dictionary &p_joypad_info) {
 	_THREAD_SAFE_METHOD_
 
 	// Clear the pressed status if a Joypad gets disconnected.
@@ -594,7 +599,8 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			set_mouse_position(position);
 		}
 		Vector2 relative = mm->get_relative();
-		mouse_velocity_track.update(relative);
+		Vector2 screen_relative = mm->get_relative_screen_position();
+		mouse_velocity_track.update(relative, screen_relative);
 
 		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			Ref<InputEventScreenDrag> drag_event;
@@ -602,10 +608,12 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 			drag_event->set_position(position);
 			drag_event->set_relative(relative);
+			drag_event->set_relative_screen_position(screen_relative);
 			drag_event->set_tilt(mm->get_tilt());
 			drag_event->set_pen_inverted(mm->get_pen_inverted());
 			drag_event->set_pressure(mm->get_pressure());
 			drag_event->set_velocity(get_last_mouse_velocity());
+			drag_event->set_screen_velocity(get_last_mouse_screen_velocity());
 			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 
 			_THREAD_SAFE_UNLOCK_
@@ -669,8 +677,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	if (sd.is_valid()) {
 		VelocityTrack &track = touch_velocity_track[sd->get_index()];
-		track.update(sd->get_relative());
+		track.update(sd->get_relative(), sd->get_relative_screen_position());
 		sd->set_velocity(track.velocity);
+		sd->set_screen_velocity(track.screen_velocity);
 
 		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
 			Ref<InputEventMouseMotion> motion_event;
@@ -683,7 +692,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_position(sd->get_position());
 			motion_event->set_global_position(sd->get_position());
 			motion_event->set_relative(sd->get_relative());
+			motion_event->set_relative_screen_position(sd->get_relative_screen_position());
 			motion_event->set_velocity(sd->get_velocity());
+			motion_event->set_screen_velocity(sd->get_screen_velocity());
 			motion_event->set_button_mask(mouse_button_mask);
 
 			_parse_input_event_impl(motion_event, true);
@@ -827,8 +838,13 @@ Point2 Input::get_mouse_position() const {
 }
 
 Point2 Input::get_last_mouse_velocity() {
-	mouse_velocity_track.update(Vector2());
+	mouse_velocity_track.update(Vector2(), Vector2());
 	return mouse_velocity_track.velocity;
+}
+
+Point2 Input::get_last_mouse_screen_velocity() {
+	mouse_velocity_track.update(Vector2(), Vector2());
+	return mouse_velocity_track.screen_velocity;
 }
 
 BitField<MouseButtonMask> Input::get_mouse_button_mask() const {
@@ -1398,7 +1414,7 @@ void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat
 	}
 }
 
-JoyButton Input::_get_output_button(String output) {
+JoyButton Input::_get_output_button(const String &output) {
 	for (int i = 0; i < (int)JoyButton::SDL_MAX; i++) {
 		if (output == _joy_buttons[i]) {
 			return JoyButton(i);
@@ -1407,7 +1423,7 @@ JoyButton Input::_get_output_button(String output) {
 	return JoyButton::INVALID;
 }
 
-JoyAxis Input::_get_output_axis(String output) {
+JoyAxis Input::_get_output_axis(const String &output) {
 	for (int i = 0; i < (int)JoyAxis::SDL_MAX; i++) {
 		if (output == _joy_axes[i]) {
 			return JoyAxis(i);
@@ -1416,7 +1432,7 @@ JoyAxis Input::_get_output_axis(String output) {
 	return JoyAxis::INVALID;
 }
 
-void Input::parse_mapping(String p_mapping) {
+void Input::parse_mapping(const String &p_mapping) {
 	_THREAD_SAFE_METHOD_;
 	JoyDeviceMapping mapping;
 
@@ -1519,7 +1535,7 @@ void Input::parse_mapping(String p_mapping) {
 	map_db.push_back(mapping);
 }
 
-void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
+void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 	parse_mapping(p_mapping);
 	if (p_update_existing) {
 		Vector<String> entry = p_mapping.split(",");
@@ -1533,7 +1549,7 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	}
 }
 
-void Input::remove_joy_mapping(String p_guid) {
+void Input::remove_joy_mapping(const String &p_guid) {
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
 			map_db.remove_at(i);
@@ -1547,7 +1563,7 @@ void Input::remove_joy_mapping(String p_guid) {
 	}
 }
 
-void Input::set_fallback_mapping(String p_guid) {
+void Input::set_fallback_mapping(const String &p_guid) {
 	for (int i = 0; i < map_db.size(); i++) {
 		if (map_db[i].uid == p_guid) {
 			fallback_mapping = i;

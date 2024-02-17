@@ -39,7 +39,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #ifdef VULKAN_ENABLED
-#include "wayland/vulkan_context_wayland.h"
+#include "wayland/rendering_context_driver_vulkan_wayland.h"
 #endif
 
 #endif //RD_ENABLED
@@ -117,13 +117,13 @@ class DisplayServerWayland : public DisplayServer {
 
 	Context context;
 
-	bool frame = false;
+	bool suspended = false;
 	bool emulate_vsync = false;
 
 	String rendering_driver;
 
 #ifdef RD_ENABLED
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 
@@ -171,6 +171,7 @@ public:
 #ifdef DBUS_ENABLED
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;

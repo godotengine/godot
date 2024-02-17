@@ -357,11 +357,10 @@
 				Centers a native window on the current screen and an embedded window on its embedder [Viewport].
 			</description>
 		</method>
-		<method name="move_to_foreground" is_deprecated="true">
+		<method name="move_to_foreground" deprecated="Use [method Window.grab_focus] instead.">
 			<return type="void" />
 			<description>
 				Moves the [Window] on top of other windows and focuses it.
-				[i]Deprecated.[/i] Use [method Window.grab_focus] instead.
 			</description>
 		</method>
 		<method name="popup">
@@ -558,7 +557,7 @@
 		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the window will be on top of all other windows. Does not work if [member transient] is enabled.
 		</member>
-		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true" deprecated="Use [member Node.auto_translate_mode] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
 		</member>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">

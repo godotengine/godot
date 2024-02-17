@@ -473,7 +473,7 @@ void ShaderTextEditor::_validate_script() {
 
 	if (last_compile_result != OK) {
 		//preprocessor error
-		ERR_FAIL_COND(err_positions.size() == 0);
+		ERR_FAIL_COND(err_positions.is_empty());
 
 		String err_text = error_pp;
 		int err_line = err_positions.front()->get().line;
@@ -628,6 +628,8 @@ ShaderTextEditor::ShaderTextEditor() {
 /*** SCRIPT EDITOR ******/
 
 void TextShaderEditor::_menu_option(int p_option) {
+	shader_editor->get_text_editor()->apply_ime();
+
 	switch (p_option) {
 		case EDIT_UNDO: {
 			shader_editor->get_text_editor()->undo();
@@ -977,6 +979,8 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			CodeEdit *tx = shader_editor->get_text_editor();
+
+			tx->apply_ime();
 
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
 			int row = pos.y;

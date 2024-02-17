@@ -134,7 +134,8 @@ class AnimationTimelineEdit : public Range {
 	friend class AnimationBezierTrackEdit;
 	friend class AnimationTrackEditor;
 
-	static constexpr float SCROLL_ZOOM_FACTOR = 1.02f; // Zoom factor per mouse scroll in the animation editor. The closer to 1.0, the finer the control.
+	static constexpr float SCROLL_ZOOM_FACTOR_IN = 1.02f; // Zoom factor per mouse scroll in the animation editor when zooming in. The closer to 1.0, the finer the control.
+	static constexpr float SCROLL_ZOOM_FACTOR_OUT = 0.98f; // Zoom factor when zooming out. Similar to SCROLL_ZOOM_FACTOR_IN but less than 1.0.
 
 	Ref<Animation> animation;
 	bool read_only = false;
@@ -230,6 +231,8 @@ class AnimationTrackEdit : public Control {
 		MENU_LOOP_CLAMP,
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
+		MENU_KEY_COPY,
+		MENU_KEY_PASTE,
 		MENU_KEY_ADD_RESET,
 		MENU_KEY_DELETE,
 		MENU_USE_BLEND_ENABLED,
@@ -275,6 +278,7 @@ class AnimationTrackEdit : public Control {
 	void _path_submitted(const String &p_text);
 	void _play_position_draw();
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
+	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 
 	Ref<Texture2D> _get_key_type_icon() const;
 
@@ -351,6 +355,7 @@ class AnimationBezierTrackEdit;
 class AnimationTrackEditGroup : public Control {
 	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture2D> icon;
+	Vector2 icon_size;
 	String node_name;
 	NodePath node;
 	Node *root = nullptr;
@@ -375,6 +380,7 @@ public:
 class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
 	friend class AnimationTimelineEdit;
+	friend class AnimationBezierTrackEdit;
 
 	Ref<Animation> animation;
 	bool read_only = false;
@@ -570,7 +576,13 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _cleanup_animation(Ref<Animation> p_animation);
 
-	void _anim_duplicate_keys(bool transpose);
+	void _anim_duplicate_keys(float p_ofs, int p_track);
+
+	void _anim_copy_keys();
+
+	bool _is_track_compatible(int p_target_track_idx, Variant::Type p_source_value_type, Animation::TrackType p_source_track_type);
+
+	void _anim_paste_keys(float p_ofs, int p_track);
 
 	void _view_group_toggle();
 	Button *view_group = nullptr;
@@ -600,8 +612,23 @@ class AnimationTrackEditor : public VBoxContainer {
 		Vector<Key> keys;
 	};
 
-	Vector<TrackClipboard> track_clipboard;
+	struct KeyClipboard {
+		int top_track;
 
+		struct Key {
+			Animation::TrackType track_type;
+			int track;
+			float time = 0;
+			float transition = 0;
+			Variant value;
+		};
+		Vector<Key> keys;
+	};
+
+	Vector<TrackClipboard> track_clipboard;
+	KeyClipboard key_clipboard;
+
+	void _set_key_clipboard(int p_top_track, float p_top_time, RBMap<SelectedKey, KeyInfo> &p_keymap);
 	void _insert_animation_key(NodePath p_path, const Variant &p_value);
 
 	void _pick_track_filter_text_changed(const String &p_newtext);
@@ -622,13 +649,14 @@ public:
 		EDIT_COPY_TRACKS,
 		EDIT_COPY_TRACKS_CONFIRM,
 		EDIT_PASTE_TRACKS,
+		EDIT_COPY_KEYS,
+		EDIT_PASTE_KEYS,
 		EDIT_SCALE_SELECTION,
 		EDIT_SCALE_FROM_CURSOR,
 		EDIT_SCALE_CONFIRM,
 		EDIT_EASE_SELECTION,
 		EDIT_EASE_CONFIRM,
-		EDIT_DUPLICATE_SELECTION,
-		EDIT_DUPLICATE_TRANSPOSED,
+		EDIT_DUPLICATE_SELECTED_KEYS,
 		EDIT_ADD_RESET_KEY,
 		EDIT_DELETE_SELECTION,
 		EDIT_GOTO_NEXT_STEP,
@@ -672,6 +700,7 @@ public:
 
 	bool is_key_selected(int p_track, int p_key) const;
 	bool is_selection_active() const;
+	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
 	bool is_snap_enabled() const;
 	float get_moving_selection_offset() const;

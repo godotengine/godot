@@ -190,9 +190,9 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 			} else if (RS::get_singleton()->has_os_feature("s3tc")) {
 				format = basist::transcoder_texture_format::cTFBC1; // get this from renderer
 				imgfmt = Image::FORMAT_DXT1;
-			} else if (RS::get_singleton()->has_os_feature("etc")) {
+			} else if (RS::get_singleton()->has_os_feature("etc2")) {
 				format = basist::transcoder_texture_format::cTFETC1; // get this from renderer
-				imgfmt = Image::FORMAT_ETC;
+				imgfmt = Image::FORMAT_ETC2_RGB8;
 			} else {
 				format = basist::transcoder_texture_format::cTFBGR565; // get this from renderer
 				imgfmt = Image::FORMAT_RGB565;

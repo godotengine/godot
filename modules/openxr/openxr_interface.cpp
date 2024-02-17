@@ -156,26 +156,11 @@ PackedStringArray OpenXRInterface::get_suggested_tracker_names() const {
 		"left_hand", // /user/hand/left is mapped to our defaults
 		"right_hand", // /user/hand/right is mapped to our defaults
 		"/user/treadmill",
-
-		// Even though these are only available if you have the tracker extension,
-		// we add these as we may be deploying on a different platform than our
-		// editor is running on.
-		"/user/vive_tracker_htcx/role/handheld_object",
-		"/user/vive_tracker_htcx/role/left_foot",
-		"/user/vive_tracker_htcx/role/right_foot",
-		"/user/vive_tracker_htcx/role/left_shoulder",
-		"/user/vive_tracker_htcx/role/right_shoulder",
-		"/user/vive_tracker_htcx/role/left_elbow",
-		"/user/vive_tracker_htcx/role/right_elbow",
-		"/user/vive_tracker_htcx/role/left_knee",
-		"/user/vive_tracker_htcx/role/right_knee",
-		"/user/vive_tracker_htcx/role/waist",
-		"/user/vive_tracker_htcx/role/chest",
-		"/user/vive_tracker_htcx/role/camera",
-		"/user/vive_tracker_htcx/role/keyboard",
-
-		"/user/eyes_ext",
 	};
+
+	for (OpenXRExtensionWrapper *wrapper : OpenXRAPI::get_singleton()->get_registered_extension_wrappers()) {
+		arr.append_array(wrapper->get_suggested_tracker_names());
+	}
 
 	return arr;
 }
@@ -1158,21 +1143,19 @@ void OpenXRInterface::end_frame() {
 }
 
 bool OpenXRInterface::is_passthrough_supported() {
-	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_supported();
+	return get_supported_environment_blend_modes().find(XR_ENV_BLEND_MODE_ALPHA_BLEND);
 }
 
 bool OpenXRInterface::is_passthrough_enabled() {
-	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_enabled();
+	return get_environment_blend_mode() == XR_ENV_BLEND_MODE_ALPHA_BLEND;
 }
 
 bool OpenXRInterface::start_passthrough() {
-	return passthrough_wrapper != nullptr && passthrough_wrapper->start_passthrough();
+	return set_environment_blend_mode(XR_ENV_BLEND_MODE_ALPHA_BLEND);
 }
 
 void OpenXRInterface::stop_passthrough() {
-	if (passthrough_wrapper) {
-		passthrough_wrapper->stop_passthrough();
-	}
+	set_environment_blend_mode(XR_ENV_BLEND_MODE_OPAQUE);
 }
 
 Array OpenXRInterface::get_supported_environment_blend_modes() {
@@ -1204,6 +1187,11 @@ Array OpenXRInterface::get_supported_environment_blend_modes() {
 				WARN_PRINT("Unsupported blend mode found: " + String::num_int64(int64_t(env_blend_modes[i])));
 		}
 	}
+
+	if (openxr_api->is_environment_blend_mode_alpha_blend_supported() == OpenXRAPI::OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING) {
+		modes.push_back(XR_ENV_BLEND_MODE_ALPHA_BLEND);
+	}
+
 	return modes;
 }
 
@@ -1422,8 +1410,6 @@ OpenXRInterface::OpenXRInterface() {
 	_set_default_pos(head_transform, 1.0, 0);
 	_set_default_pos(transform_for_view[0], 1.0, 1);
 	_set_default_pos(transform_for_view[1], 1.0, 2);
-
-	passthrough_wrapper = OpenXRFbPassthroughExtensionWrapper::get_singleton();
 }
 
 OpenXRInterface::~OpenXRInterface() {

@@ -15,7 +15,7 @@ from SCons.Util import WhereIs
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -81,7 +81,7 @@ def get_flags():
     ]
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["wasm32"]
     if env["arch"] not in supported_arches:
@@ -169,7 +169,7 @@ def configure(env: "Environment"):
     env.AddMethod(create_template_zip, "CreateTemplateZip")
 
     # Closure compiler extern and support for ecmascript specs (const, let, etc).
-    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT_2020"
+    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT_2021"
 
     env["CC"] = "emcc"
     env["CXX"] = "em++"
@@ -206,6 +206,11 @@ def configure(env: "Environment"):
         env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
         # Allow use to take control of swapping WebGL buffers.
         env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
+        # Breaking change since emscripten 3.1.51
+        # https://github.com/emscripten-core/emscripten/blob/main/ChangeLog.md#3151---121323
+        if cc_semver >= (3, 1, 51):
+            # Enables the use of *glGetProcAddress()
+            env.Append(LINKFLAGS=["-s", "GL_ENABLE_GET_PROC_ADDRESS=1"])
 
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
@@ -229,6 +234,9 @@ def configure(env: "Environment"):
         # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
         if cc_semver >= (3, 1, 42) and cc_semver < (3, 1, 46):
             env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
+        # Workaround https://github.com/emscripten-core/emscripten/issues/16836.
+        if cc_semver >= (3, 1, 47):
+            env.Append(LINKFLAGS=["-Wl,-u,_emscripten_run_callback_on_thread"])
 
     if env["dlink_enabled"]:
         if env["proxy_to_pthread"]:

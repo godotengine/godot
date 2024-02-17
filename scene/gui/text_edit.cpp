@@ -1489,14 +1489,7 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			if (has_focus()) {
-				if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-					DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-					Point2 pos = get_global_position() + get_caret_draw_pos();
-					if (get_window()->get_embedder()) {
-						pos += get_viewport()->get_popup_base_transform().get_origin();
-					}
-					DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
-				}
+				_update_ime_window_position();
 			}
 		} break;
 
@@ -1507,14 +1500,7 @@ void TextEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				Point2 pos = get_global_position() + get_caret_draw_pos();
-				if (get_window()->get_embedder()) {
-					pos += get_viewport()->get_popup_base_transform().get_origin();
-				}
-				DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
-			}
+			_update_ime_window_position();
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				int caret_start = -1;
@@ -1541,17 +1527,7 @@ void TextEdit::_notification(int p_what) {
 				caret_blink_timer->stop();
 			}
 
-			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
-				DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
-				DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
-			}
-			if (!ime_text.is_empty()) {
-				ime_text = "";
-				ime_selection = Point2();
-				for (int i = 0; i < carets.size(); i++) {
-					text.invalidate_cache(get_caret_line(i), get_caret_column(i), true, ime_text);
-				}
-			}
+			apply_ime();
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
@@ -1571,15 +1547,8 @@ void TextEdit::_notification(int p_what) {
 					delete_selection();
 				}
 
-				for (int i = 0; i < carets.size(); i++) {
-					String t;
-					if (get_caret_column(i) >= 0) {
-						t = text[get_caret_line(i)].substr(0, get_caret_column(i)) + ime_text + text[get_caret_line(i)].substr(get_caret_column(i), text[get_caret_line(i)].length());
-					} else {
-						t = ime_text;
-					}
-					text.invalidate_cache(get_caret_line(i), get_caret_column(i), true, t, structured_text_parser(st_parser, st_args, t));
-				}
+				_update_ime_text();
+				adjust_viewport_to_caret(0);
 				queue_redraw();
 			}
 		} break;
@@ -1681,10 +1650,6 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
-		if (ime_text.length() != 0) {
-			// Ignore mouse clicks in IME input mode.
-			return;
-		}
 
 		if (mb->is_pressed()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_or_control_pressed()) {
@@ -1717,6 +1682,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				_reset_caret_blink_timer();
+
+				apply_ime();
 
 				Point2i pos = get_line_column_at_pos(mpos);
 				int row = pos.y;
@@ -1865,11 +1832,13 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 
 			if (is_middle_mouse_paste_enabled() && mb->get_button_index() == MouseButton::MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+				apply_ime();
 				paste_primary_clipboard();
 			}
 
 			if (mb->get_button_index() == MouseButton::RIGHT && (context_menu_enabled || is_move_caret_on_right_click_enabled())) {
 				_reset_caret_blink_timer();
+				apply_ime();
 
 				Point2i pos = get_line_column_at_pos(mpos);
 				int row = pos.y;
@@ -1909,6 +1878,11 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 		} else {
+			if (has_ime_text()) {
+				// Ignore mouse up in IME input mode.
+				return;
+			}
+
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (selection_drag_attempt && is_mouse_over_selection()) {
 					remove_secondary_carets();
@@ -1967,7 +1941,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				_update_minimap_drag();
 			}
 
-			if (!dragging_minimap) {
+			if (!dragging_minimap && !has_ime_text()) {
 				switch (selecting_mode) {
 					case SelectionMode::SELECTION_MODE_POINTER: {
 						_update_selection_mode_pointer();
@@ -2012,6 +1986,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (drag_action && can_drop_data(mpos, get_viewport()->gui_get_drag_data())) {
+			apply_ime();
 			drag_caret_force_displayed = true;
 			Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
 			set_caret_line(pos.y, false, true, 0, 0);
@@ -3030,6 +3005,43 @@ void TextEdit::_update_caches() {
 	}
 }
 
+void TextEdit::_close_ime_window() {
+	if (get_viewport()->get_window_id() == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+		return;
+	}
+	DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
+	DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
+}
+
+void TextEdit::_update_ime_window_position() {
+	if (get_viewport()->get_window_id() == DisplayServer::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
+		return;
+	}
+	DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
+	Point2 pos = get_global_position() + get_caret_draw_pos();
+	if (get_window()->get_embedder()) {
+		pos += get_viewport()->get_popup_base_transform().get_origin();
+	}
+	// The window will move to the updated position the next time the IME is updated, not immediately.
+	DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
+}
+
+void TextEdit::_update_ime_text() {
+	if (has_ime_text()) {
+		// Update text to visually include IME text.
+		for (int i = 0; i < get_caret_count(); i++) {
+			String text_with_ime = text[get_caret_line(i)].substr(0, get_caret_column(i)) + ime_text + text[get_caret_line(i)].substr(get_caret_column(i), text[get_caret_line(i)].length());
+			text.invalidate_cache(get_caret_line(i), get_caret_column(i), true, text_with_ime, structured_text_parser(st_parser, st_args, text_with_ime));
+		}
+	} else {
+		// Reset text.
+		for (int i = 0; i < get_caret_count(); i++) {
+			text.invalidate_cache(get_caret_line(i), get_caret_column(i), true);
+		}
+	}
+	queue_redraw();
+}
+
 /* General overrides. */
 Size2 TextEdit::get_minimum_size() const {
 	Size2 size = theme_cache.style_normal->get_minimum_size();
@@ -3187,6 +3199,26 @@ void TextEdit::set_tooltip_request_func(const Callable &p_tooltip_callback) {
 // Text properties.
 bool TextEdit::has_ime_text() const {
 	return !ime_text.is_empty();
+}
+
+void TextEdit::cancel_ime() {
+	if (!has_ime_text()) {
+		return;
+	}
+	ime_text = String();
+	ime_selection = Point2();
+	_close_ime_window();
+	_update_ime_text();
+}
+
+void TextEdit::apply_ime() {
+	if (!has_ime_text()) {
+		return;
+	}
+	// Force apply the current IME text.
+	String insert_ime_text = ime_text;
+	cancel_ime();
+	insert_text_at_caret(insert_ime_text);
 }
 
 void TextEdit::set_editable(const bool p_editable) {
@@ -3568,16 +3600,8 @@ void TextEdit::insert_text_at_caret(const String &p_text, int p_caret) {
 		adjust_carets_after_edit(i, new_line, new_column, from_line, from_col);
 	}
 
-	if (!ime_text.is_empty()) {
-		for (int i = 0; i < carets.size(); i++) {
-			String t;
-			if (get_caret_column(i) >= 0) {
-				t = text[get_caret_line(i)].substr(0, get_caret_column(i)) + ime_text + text[get_caret_line(i)].substr(get_caret_column(i), text[get_caret_line(i)].length());
-			} else {
-				t = ime_text;
-			}
-			text.invalidate_cache(get_caret_line(i), get_caret_column(i), true, t, structured_text_parser(st_parser, st_args, t));
-		}
+	if (has_ime_text()) {
+		_update_ime_text();
 	}
 
 	end_complex_operation();
@@ -3927,7 +3951,7 @@ void TextEdit::end_complex_operation() {
 	if (complex_operation_count > 0) {
 		return;
 	}
-	ERR_FAIL_COND(undo_stack.size() == 0);
+	ERR_FAIL_COND(undo_stack.is_empty());
 
 	undo_stack.back()->get().end_carets = carets;
 	if (undo_stack.back()->get().chain_forward) {
@@ -5560,14 +5584,14 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 	Vector2i caret_pos;
 
 	// Get position of the start of caret.
-	if (ime_text.length() != 0 && ime_selection.x != 0) {
+	if (has_ime_text() && ime_selection.x != 0) {
 		caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x, get_caret_line(p_caret), get_caret_column(p_caret));
 	} else {
 		caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret), get_caret_line(p_caret), get_caret_column(p_caret));
 	}
 
 	// Get position of the end of caret.
-	if (ime_text.length() != 0) {
+	if (has_ime_text()) {
 		if (ime_selection.y != 0) {
 			caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x + ime_selection.y, get_caret_line(p_caret), get_caret_column(p_caret));
 		} else {
@@ -5612,14 +5636,14 @@ void TextEdit::center_viewport_to_caret(int p_caret) {
 		Vector2i caret_pos;
 
 		// Get position of the start of caret.
-		if (ime_text.length() != 0 && ime_selection.x != 0) {
+		if (has_ime_text() && ime_selection.x != 0) {
 			caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x, get_caret_line(p_caret), get_caret_column(p_caret));
 		} else {
 			caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret), get_caret_line(p_caret), get_caret_column(p_caret));
 		}
 
 		// Get position of the end of caret.
-		if (ime_text.length() != 0) {
+		if (has_ime_text()) {
 			if (ime_selection.y != 0) {
 				caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x + ime_selection.y, get_caret_line(p_caret), get_caret_column(p_caret));
 			} else {
@@ -6029,6 +6053,8 @@ void TextEdit::_bind_methods() {
 	/* Text */
 	// Text properties
 	ClassDB::bind_method(D_METHOD("has_ime_text"), &TextEdit::has_ime_text);
+	ClassDB::bind_method(D_METHOD("cancel_ime"), &TextEdit::cancel_ime);
+	ClassDB::bind_method(D_METHOD("apply_ime"), &TextEdit::apply_ime);
 
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &TextEdit::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &TextEdit::is_editable);
@@ -7333,7 +7359,7 @@ void TextEdit::_update_scrollbars() {
 
 	int visible_rows = get_visible_line_count();
 	int total_rows = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_total_visible_line_count();
-	if (scroll_past_end_of_file_enabled) {
+	if (scroll_past_end_of_file_enabled && !fit_content_height) {
 		total_rows += visible_rows - 1;
 	}
 

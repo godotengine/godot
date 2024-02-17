@@ -37,13 +37,25 @@
 			A list of additional command line arguments, exported project will receive when started.
 		</member>
 		<member name="custom_template/debug" type="String" setter="" getter="">
-			Path to the custom export template. If left empty, default template is used.
+			Path to an APK file to use as a custom export template for debug exports. If left empty, default template is used.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is disabled.
 		</member>
 		<member name="custom_template/release" type="String" setter="" getter="">
-			Path to the custom export template. If left empty, default template is used.
+			Path to an APK file to use as a custom export template for release exports. If left empty, default template is used.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is disabled.
+		</member>
+		<member name="gradle_build/android_source_template" type="String" setter="" getter="">
+			Path to a ZIP file holding the source for the export template used in a Gradle build. If left empty, the default template is used.
+		</member>
+		<member name="gradle_build/compress_native_libraries" type="bool" setter="" getter="">
+			If [code]true[/code], native libraries are compressed when performing a Gradle build.
+			[b]Note:[/b] Although your binary may be smaller, your application may load slower because the native libraries are not loaded directly from the binary at runtime.
 		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Export format for Gradle build.
+		</member>
+		<member name="gradle_build/gradle_build_directory" type="String" setter="" getter="">
+			Path to the Gradle build directory. If left empty, then [code]res://android[/code] will be used.
 		</member>
 		<member name="gradle_build/min_sdk" type="String" setter="" getter="">
 			Minimal Android SDK version for Gradle build.
@@ -119,7 +131,10 @@
 			If [code]true[/code], package signing is enabled.
 		</member>
 		<member name="package/unique_name" type="String" setter="" getter="">
-			Unique application identifier in a reverse-DNS format, can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+			Unique application identifier in a reverse-DNS format. The reverse DNS format should preferably match a domain name you control, but this is not strictly required. For instance, if you own [code]example.com[/code], your package unique name should preferably be of the form [code]com.example.mygame[/code]. This identifier can only contain lowercase alphanumeric characters ([code]a-z[/code], and [code]0-9[/code]), underscores ([code]_[/code]), and periods ([code].[/code]). Each component of the reverse DNS format must start with a letter: for instance, [code]com.example.8game[/code] is not valid.
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name converted to lowercase. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]noname[/code].
+			[b]Note:[/b] Changing the package name will cause the package to be considered as a new package, with its own installation and data paths. The new package won't be usable to update existing installations.
+			[b]Note:[/b] When publishing to Google Play, the package name must be [i]globally[/i] unique. This means no other apps published on Google Play must be using the same package name as yours. Otherwise, you'll be prevented from publishing your app on Google Play.
 		</member>
 		<member name="permissions/access_checkin_properties" type="bool" setter="" getter="">
 			Allows read/write access to the "properties" table in the checkin database. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_CHECKIN_PROPERTIES]ACCESS_CHECKIN_PROPERTIES[/url].

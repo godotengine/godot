@@ -35,6 +35,7 @@
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
 #include "gdscript_rpc_callable.h"
+#include "gdscript_tokenizer_buffer.h"
 #include "gdscript_warning.h"
 
 #ifdef TOOLS_ENABLED
@@ -162,13 +163,14 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 
 	_super_implicit_constructor(this, instance, r_error);
 	if (r_error.error != Callable::CallError::CALL_OK) {
+		String error_text = Variant::get_call_error_text(instance->owner, "@implicit_new", nullptr, 0, r_error);
 		instance->script = Ref<GDScript>();
 		instance->owner->set_script_instance(nullptr);
 		{
 			MutexLock lock(GDScriptLanguage::singleton->mutex);
 			instances.erase(p_owner);
 		}
-		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
+		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 	}
 
 	if (p_argcount < 0) {
@@ -179,13 +181,14 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	if (initializer != nullptr) {
 		initializer->call(instance, p_args, p_argcount, r_error);
 		if (r_error.error != Callable::CallError::CALL_OK) {
+			String error_text = Variant::get_call_error_text(instance->owner, "_init", p_args, p_argcount, r_error);
 			instance->script = Ref<GDScript>();
 			instance->owner->set_script_instance(nullptr);
 			{
 				MutexLock lock(GDScriptLanguage::singleton->mutex);
 				instances.erase(p_owner);
 			}
-			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
+			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 		}
 	}
 	//@TODO make thread safe
@@ -738,7 +741,12 @@ Error GDScript::reload(bool p_keep_state) {
 
 	valid = false;
 	GDScriptParser parser;
-	Error err = parser.parse(source, path, false);
+	Error err;
+	if (!binary_tokens.is_empty()) {
+		err = parser.parse_binary(binary_tokens, path);
+	} else {
+		err = parser.parse(source, path, false);
+	}
 	if (err) {
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
@@ -1048,6 +1056,19 @@ Error GDScript::load_source_code(const String &p_path) {
 	return OK;
 }
 
+void GDScript::set_binary_tokens_source(const Vector<uint8_t> &p_binary_tokens) {
+	binary_tokens = p_binary_tokens;
+}
+
+const Vector<uint8_t> &GDScript::get_binary_tokens_source() const {
+	return binary_tokens;
+}
+
+Vector<uint8_t> GDScript::get_as_binary_tokens() const {
+	GDScriptTokenizerBuffer tokenizer;
+	return tokenizer.parse_code_string(source, GDScriptTokenizerBuffer::COMPRESS_NONE);
+}
+
 const HashMap<StringName, GDScriptFunction *> &GDScript::debug_get_member_functions() const {
 	return member_functions;
 }
@@ -1149,7 +1170,7 @@ GDScript *GDScript::get_root_script() {
 RBSet<GDScript *> GDScript::get_dependencies() {
 	RBSet<GDScript *> dependencies;
 
-	_get_dependencies(dependencies, this);
+	_collect_dependencies(dependencies, this);
 	dependencies.erase(this);
 
 	return dependencies;
@@ -1255,52 +1276,55 @@ GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {
 	return Object::cast_to<GDScript>(obj);
 }
 
-void GDScript::_get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except) {
+void GDScript::_collect_function_dependencies(GDScriptFunction *p_func, RBSet<GDScript *> &p_dependencies, const GDScript *p_except) {
+	if (p_func == nullptr) {
+		return;
+	}
+	for (GDScriptFunction *lambda : p_func->lambdas) {
+		_collect_function_dependencies(lambda, p_dependencies, p_except);
+	}
+	for (const Variant &V : p_func->constants) {
+		GDScript *scr = _get_gdscript_from_variant(V);
+		if (scr != nullptr && scr != p_except) {
+			scr->_collect_dependencies(p_dependencies, p_except);
+		}
+	}
+}
+
+void GDScript::_collect_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except) {
 	if (p_dependencies.has(this)) {
 		return;
 	}
-	p_dependencies.insert(this);
+	if (this != p_except) {
+		p_dependencies.insert(this);
+	}
 
 	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
-		if (E.value == nullptr) {
-			continue;
-		}
-		for (const Variant &V : E.value->constants) {
-			GDScript *scr = _get_gdscript_from_variant(V);
-			if (scr != nullptr && scr != p_except) {
-				scr->_get_dependencies(p_dependencies, p_except);
-			}
-		}
+		_collect_function_dependencies(E.value, p_dependencies, p_except);
 	}
 
 	if (implicit_initializer) {
-		for (const Variant &V : implicit_initializer->constants) {
-			GDScript *scr = _get_gdscript_from_variant(V);
-			if (scr != nullptr && scr != p_except) {
-				scr->_get_dependencies(p_dependencies, p_except);
-			}
-		}
+		_collect_function_dependencies(implicit_initializer, p_dependencies, p_except);
 	}
 
 	if (implicit_ready) {
-		for (const Variant &V : implicit_ready->constants) {
-			GDScript *scr = _get_gdscript_from_variant(V);
-			if (scr != nullptr && scr != p_except) {
-				scr->_get_dependencies(p_dependencies, p_except);
-			}
-		}
+		_collect_function_dependencies(implicit_ready, p_dependencies, p_except);
+	}
+
+	if (static_initializer) {
+		_collect_function_dependencies(static_initializer, p_dependencies, p_except);
 	}
 
 	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
 		if (E.value != p_except) {
-			E.value->_get_dependencies(p_dependencies, p_except);
+			E.value->_collect_dependencies(p_dependencies, p_except);
 		}
 	}
 
 	for (const KeyValue<StringName, Variant> &E : constants) {
 		GDScript *scr = _get_gdscript_from_variant(E.value);
 		if (scr != nullptr && scr != p_except) {
-			scr->_get_dependencies(p_dependencies, p_except);
+			scr->_collect_dependencies(p_dependencies, p_except);
 		}
 	}
 }
@@ -1380,6 +1404,18 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 	return "<unknown script>";
 }
 #endif
+
+bool GDScript::is_equal_gdscript_paths(const String &p_path_a, const String &p_path_b) {
+	String path_a = p_path_a;
+	if (path_a.get_extension() == "gdc") {
+		path_a = path_a.get_basename() + ".gd";
+	}
+	String path_b = p_path_b;
+	if (path_b.get_extension() == "gdc") {
+		path_b = path_b.get_basename() + ".gd";
+	}
+	return path_a == path_b;
+}
 
 GDScript::UpdatableFuncPtr::UpdatableFuncPtr(GDScriptFunction *p_function) {
 	if (p_function == nullptr) {
@@ -2573,7 +2609,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 	}
 }
 
-bool GDScriptLanguage::is_control_flow_keyword(String p_keyword) const {
+bool GDScriptLanguage::is_control_flow_keyword(const String &p_keyword) const {
 	// Please keep alphabetical order.
 	return p_keyword == "break" ||
 			p_keyword == "continue" ||
@@ -2803,6 +2839,7 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 
 void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("gd");
+	p_extensions->push_back("gdc");
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
@@ -2811,7 +2848,7 @@ bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "gd") {
+	if (el == "gd" || el == "gdc") {
 		return "GDScript";
 	}
 	return "";

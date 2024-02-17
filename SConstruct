@@ -153,7 +153,7 @@ env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
-env_base.SConsignFile(".sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL))
+env_base.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
 
 # Build options
 
@@ -183,7 +183,6 @@ opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
-opts.Add(BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False))
 opts.Add(BoolVariable("threads", "Enable threading support", True))
 
 # Components
@@ -1001,9 +1000,6 @@ if selected_platform in platform_list:
 
     # Microsoft Visual Studio Project Generation
     if env["vsproj"]:
-        if os.name != "nt":
-            print("Error: The `vsproj` option is only usable on Windows with Visual Studio.")
-            Exit(255)
         env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
         methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
         methods.generate_cpp_hint_file("cpp.hint")

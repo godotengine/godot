@@ -251,8 +251,8 @@ Control::CursorShape GraphEdit::get_cursor_shape(const Point2 &p_pos) const {
 	return Control::get_cursor_shape(p_pos);
 }
 
-PackedStringArray GraphEdit::get_configuration_warnings() const {
-	PackedStringArray warnings = Control::get_configuration_warnings();
+Array GraphEdit::get_configuration_warnings() const {
+	Array warnings = Control::get_configuration_warnings();
 
 	warnings.push_back(RTR("Please be aware that GraphEdit and GraphNode will undergo extensive refactoring in a future 4.x version involving compatibility-breaking API changes."));
 

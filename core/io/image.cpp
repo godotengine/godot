@@ -1029,7 +1029,7 @@ void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 }
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
-	ERR_FAIL_COND_MSG(data.size() == 0, "Cannot resize image before creating it, use set_data() first.");
+	ERR_FAIL_COND_MSG(data.is_empty(), "Cannot resize image before creating it, use set_data() first.");
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
@@ -1700,7 +1700,7 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 }
 
 void Image::shrink_x2() {
-	ERR_FAIL_COND(data.size() == 0);
+	ERR_FAIL_COND(data.is_empty());
 
 	if (mipmaps) {
 		//just use the lower mipmap as base and copy all
@@ -1710,7 +1710,7 @@ void Image::shrink_x2() {
 
 		int new_size = data.size() - ofs;
 		new_img.resize(new_size);
-		ERR_FAIL_COND(new_img.size() == 0);
+		ERR_FAIL_COND(new_img.is_empty());
 
 		{
 			uint8_t *w = new_img.ptrw();
@@ -1729,8 +1729,8 @@ void Image::shrink_x2() {
 		ERR_FAIL_COND(!_can_modify(format));
 		int ps = get_format_pixel_size(format);
 		new_img.resize((width / 2) * (height / 2) * ps);
-		ERR_FAIL_COND(new_img.size() == 0);
-		ERR_FAIL_COND(data.size() == 0);
+		ERR_FAIL_COND(new_img.is_empty());
+		ERR_FAIL_COND(data.is_empty());
 
 		{
 			uint8_t *w = new_img.ptrw();
@@ -2781,7 +2781,7 @@ void Image::_get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2
 }
 
 void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blit_rect an image: invalid source Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
@@ -2823,8 +2823,8 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const P
 }
 
 void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
-	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blit_rect_mask an image: invalid source Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "Cannot blit_rect_mask an image: invalid mask Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();
@@ -2873,7 +2873,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 }
 
 void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blend_rect an image: invalid source Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
@@ -2908,8 +2908,8 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const 
 }
 
 void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
-	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blend_rect_mask an image: invalid source Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "Cannot blend_rect_mask an image: invalid mask Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();
@@ -3300,6 +3300,18 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 	_set_color_at_ofs(data.ptrw(), ofs, p_color);
 }
 
+const uint8_t *Image::ptr() const {
+	return data.ptr();
+}
+
+uint8_t *Image::ptrw() {
+	return data.ptrw();
+}
+
+int64_t Image::data_size() const {
+	return data.size();
+}
+
 void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot adjust_bcs in compressed or custom image formats.");
 
@@ -3323,7 +3335,7 @@ void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation)
 }
 
 Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
-	ERR_FAIL_COND_V(data.size() == 0, USED_CHANNELS_RGBA);
+	ERR_FAIL_COND_V(data.is_empty(), USED_CHANNELS_RGBA);
 	ERR_FAIL_COND_V(is_compressed(), USED_CHANNELS_RGBA);
 	bool r = false, g = false, b = false, a = false, c = false;
 
@@ -3878,7 +3890,7 @@ Error Image::load_ktx_from_buffer(const Vector<uint8_t> &p_array) {
 
 void Image::convert_rg_to_ra_rgba8() {
 	ERR_FAIL_COND(format != FORMAT_RGBA8);
-	ERR_FAIL_COND(!data.size());
+	ERR_FAIL_COND(data.is_empty());
 
 	int s = data.size();
 	uint8_t *w = data.ptrw();
@@ -3891,7 +3903,7 @@ void Image::convert_rg_to_ra_rgba8() {
 
 void Image::convert_ra_rgba8_to_rg() {
 	ERR_FAIL_COND(format != FORMAT_RGBA8);
-	ERR_FAIL_COND(!data.size());
+	ERR_FAIL_COND(data.is_empty());
 
 	int s = data.size();
 	uint8_t *w = data.ptrw();
@@ -3904,7 +3916,7 @@ void Image::convert_ra_rgba8_to_rg() {
 
 void Image::convert_rgba8_to_bgra8() {
 	ERR_FAIL_COND(format != FORMAT_RGBA8);
-	ERR_FAIL_COND(!data.size());
+	ERR_FAIL_COND(data.is_empty());
 
 	int s = data.size();
 	uint8_t *w = data.ptrw();

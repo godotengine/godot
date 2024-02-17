@@ -176,6 +176,13 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 		} else {
 			r_res = Ref<Resource>();
 		}
+#ifdef TOOLS_ENABLED
+		if (r_res.is_null()) {
+			// Hack to allow checking original path.
+			r_res.instantiate();
+			r_res->set_meta("__load_path__", ext_resources[id].path);
+		}
+#endif
 	}
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);

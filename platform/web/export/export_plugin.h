@@ -52,9 +52,6 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	int menu_options = 0;
 
 	Ref<EditorHTTPServer> server;
-	bool server_quit = false;
-	Mutex server_lock;
-	Thread server_thread;
 
 	String _get_template_name(bool p_extension, bool p_thread_support, bool p_debug) const {
 		String name = "web";
@@ -98,8 +95,6 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	Error _add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr);
 	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
 	Error _write_or_error(const uint8_t *p_content, int p_len, String p_path);
-
-	static void _server_thread_poll(void *data);
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;

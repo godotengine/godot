@@ -157,11 +157,10 @@ void NavMeshGenerator2D::bake_from_source_geometry_data(Ref<NavigationPolygon> p
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	if (baking_navmeshes.has(p_navigation_mesh)) {
-		baking_navmesh_mutex.unlock();
+	if (is_baking(p_navigation_mesh)) {
 		ERR_FAIL_MSG("NavigationPolygon is already baking. Wait for current bake to finish.");
 	}
+	baking_navmesh_mutex.lock();
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
@@ -193,11 +192,10 @@ void NavMeshGenerator2D::bake_from_source_geometry_data_async(Ref<NavigationPoly
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	if (baking_navmeshes.has(p_navigation_mesh)) {
-		baking_navmesh_mutex.unlock();
+	if (is_baking(p_navigation_mesh)) {
 		ERR_FAIL_MSG("NavigationPolygon is already baking. Wait for current bake to finish.");
 	}
+	baking_navmesh_mutex.lock();
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
@@ -210,6 +208,13 @@ void NavMeshGenerator2D::bake_from_source_geometry_data_async(Ref<NavigationPoly
 	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator2D::generator_thread_bake, generator_task, NavMeshGenerator2D::baking_use_high_priority_threads, "NavMeshGeneratorBake2D");
 	generator_tasks.insert(generator_task->thread_task_id, generator_task);
 	generator_task_mutex.unlock();
+}
+
+bool NavMeshGenerator2D::is_baking(Ref<NavigationPolygon> p_navigation_polygon) {
+	baking_navmesh_mutex.lock();
+	bool baking = baking_navmeshes.has(p_navigation_polygon);
+	baking_navmesh_mutex.unlock();
+	return baking;
 }
 
 void NavMeshGenerator2D::generator_thread_bake(void *p_arg) {
@@ -738,9 +743,13 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	Paths64 traversable_polygon_paths;
 	Paths64 obstruction_polygon_paths;
 
+	traversable_polygon_paths.reserve(outline_count + traversable_outlines.size());
+	obstruction_polygon_paths.reserve(obstruction_outlines.size());
+
 	for (int i = 0; i < outline_count; i++) {
 		const Vector<Vector2> &traversable_outline = p_navigation_mesh->get_outline(i);
 		Path64 subject_path;
+		subject_path.reserve(traversable_outline.size());
 		for (const Vector2 &traversable_point : traversable_outline) {
 			const Point64 &point = Point64(traversable_point.x, traversable_point.y);
 			subject_path.push_back(point);
@@ -750,6 +759,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	for (const Vector<Vector2> &traversable_outline : traversable_outlines) {
 		Path64 subject_path;
+		subject_path.reserve(traversable_outline.size());
 		for (const Vector2 &traversable_point : traversable_outline) {
 			const Point64 &point = Point64(traversable_point.x, traversable_point.y);
 			subject_path.push_back(point);
@@ -759,11 +769,28 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	for (const Vector<Vector2> &obstruction_outline : obstruction_outlines) {
 		Path64 clip_path;
+		clip_path.reserve(obstruction_outline.size());
 		for (const Vector2 &obstruction_point : obstruction_outline) {
 			const Point64 &point = Point64(obstruction_point.x, obstruction_point.y);
 			clip_path.push_back(point);
 		}
 		obstruction_polygon_paths.push_back(clip_path);
+	}
+
+	Rect2 baking_rect = p_navigation_mesh->get_baking_rect();
+	if (baking_rect.has_area()) {
+		Vector2 baking_rect_offset = p_navigation_mesh->get_baking_rect_offset();
+
+		const int rect_begin_x = baking_rect.position[0] + baking_rect_offset.x;
+		const int rect_begin_y = baking_rect.position[1] + baking_rect_offset.y;
+		const int rect_end_x = baking_rect.position[0] + baking_rect.size[0] + baking_rect_offset.x;
+		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y;
+
+		Rect64 clipper_rect = Rect64(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
+		RectClip rect_clip = RectClip(clipper_rect);
+
+		traversable_polygon_paths = rect_clip.Execute(traversable_polygon_paths);
+		obstruction_polygon_paths = rect_clip.Execute(obstruction_polygon_paths);
 	}
 
 	Paths64 path_solution;
@@ -782,6 +809,21 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	}
 	//path_solution = RamerDouglasPeucker(path_solution, 0.025); //
 
+	real_t border_size = p_navigation_mesh->get_border_size();
+	if (baking_rect.has_area() && border_size > 0.0) {
+		Vector2 baking_rect_offset = p_navigation_mesh->get_baking_rect_offset();
+
+		const int rect_begin_x = baking_rect.position[0] + baking_rect_offset.x + border_size;
+		const int rect_begin_y = baking_rect.position[1] + baking_rect_offset.y + border_size;
+		const int rect_end_x = baking_rect.position[0] + baking_rect.size[0] + baking_rect_offset.x - border_size;
+		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y - border_size;
+
+		Rect64 clipper_rect = Rect64(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
+		RectClip rect_clip = RectClip(clipper_rect);
+
+		path_solution = rect_clip.Execute(path_solution);
+	}
+
 	Vector<Vector<Vector2>> new_baked_outlines;
 
 	for (const Path64 &scaled_path : path_solution) {
@@ -799,6 +841,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	}
 
 	Paths64 polygon_paths;
+	polygon_paths.reserve(new_baked_outlines.size());
 
 	for (const Vector<Vector2> &baked_outline : new_baked_outlines) {
 		Path64 polygon_path;

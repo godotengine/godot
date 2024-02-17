@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMeshGenerator" inherits="Object" is_deprecated="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationMeshGenerator" inherits="Object" deprecated="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper class for creating and clearing navigation meshes.
 	</brief_description>
@@ -14,7 +14,7 @@
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
 	</tutorials>
 	<methods>
-		<method name="bake" is_deprecated="true">
+		<method name="bake" deprecated="">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="root_node" type="Node" />

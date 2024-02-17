@@ -57,7 +57,7 @@ public:
 	virtual AABB get_aabb() const override;
 	bool is_on_screen() const;
 
-	virtual PackedStringArray get_configuration_warnings() const override;
+	virtual Array get_configuration_warnings() const override;
 
 	VisibleOnScreenNotifier3D();
 	~VisibleOnScreenNotifier3D();

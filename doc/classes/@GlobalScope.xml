@@ -1080,7 +1080,7 @@
 				[b]Note:[/b] This function is called automatically when the project is run. If you need to fix the seed to have consistent, reproducible results, use [method seed] to initialize the random number generator.
 			</description>
 		</method>
-		<method name="remap">
+		<method name="remap" keywords="range, lerp">
 			<return type="float" />
 			<param index="0" name="value" type="float" />
 			<param index="1" name="istart" type="float" />
@@ -2889,8 +2889,7 @@
 			[/codeblocks]
 			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint" is_deprecated="true">
-			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint" deprecated="This hint is not used anywhere and will be removed in the future.">
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
 			Hints that an object is too big to be sent via the debugger.
@@ -2904,9 +2903,7 @@
 		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
 			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the entire filesystem. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint" is_deprecated="true">
-			Hints that an [int] property is an object ID.
-			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint" deprecated="This hint is not used anywhere and will be removed in the future.">
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="30" enum="PropertyHint">
 			Hints that an [int] property is a pointer. Used by GDExtension.
@@ -2977,9 +2974,7 @@
 		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags" is_bitfield="true">
 			If this property is modified, all inspector fields will be refreshed.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" is_deprecated="true">
-			Signifies a default value from a placeholder script instance.
-			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This hint is not used anywhere and will be removed in the future.">
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is an enum, i.e. it only takes named integer constants from its associated enumeration.
@@ -3008,9 +3003,7 @@
 		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags" is_bitfield="true">
 			Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true" is_deprecated="true">
-			When loading, the resource for this property can be set at the end of loading.
-			[i]Deprecated.[/i] This hint is not used anywhere and will be removed in the future.
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This hint is not used anywhere and will be removed in the future.">
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags" is_bitfield="true">
 			When this property is a [Resource] and base object is a [Node], a resource instance will be automatically created whenever the node is created in the editor.

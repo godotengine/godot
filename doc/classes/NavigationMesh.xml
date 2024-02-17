@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMesh" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationMesh" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A navigation mesh that defines traversable areas and obstacles.
 	</brief_description>
@@ -95,6 +95,11 @@
 		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.5">
 			The distance to erode/shrink the walkable area of the heightfield away from obstructions.
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
+		</member>
+		<member name="border_size" type="float" setter="set_border_size" getter="get_border_size" default="0.0">
+			The size of the non-navigable border around the bake bounding area.
+			In conjunction with the [member filter_baking_aabb] and a [member edge_max_error] value at [code]1.0[/code] or below the border size can be used to bake tile aligned navigation meshes without the tile edges being shrunk by [member agent_radius].
+			[b]Note:[/b] While baking and not zero, this value will be rounded up to the nearest multiple of [member cell_size].
 		</member>
 		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
 			The cell height used to rasterize the navigation mesh vertices on the Y axis. Must match with the cell height on the navigation map.

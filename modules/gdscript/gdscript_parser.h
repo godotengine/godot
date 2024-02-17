@@ -274,13 +274,17 @@ public:
 		String description;
 		Vector<Pair<String, String>> tutorials;
 		bool is_deprecated = false;
+		String deprecated_message;
 		bool is_experimental = false;
+		String experimental_message;
 	};
 
 	struct MemberDocData {
 		String description;
 		bool is_deprecated = false;
+		String deprecated_message;
 		bool is_experimental = false;
+		String experimental_message;
 	};
 #endif // TOOLS_ENABLED
 
@@ -1336,7 +1340,7 @@ private:
 	HashSet<int> unsafe_lines;
 #endif
 
-	GDScriptTokenizer tokenizer;
+	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
 
@@ -1540,6 +1544,7 @@ private:
 
 public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
+	Error parse_binary(const Vector<uint8_t> &p_binary, const String &p_script_path);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
 	ClassNode *find_class(const String &p_qualified_name) const;

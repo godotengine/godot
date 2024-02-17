@@ -54,13 +54,6 @@
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
-
-#if defined(VULKAN_ENABLED)
-#include "vulkan_context_win.h"
-#endif
-#if defined(D3D12_ENABLED)
-#include "drivers/d3d12/d3d12_context.h"
-#endif
 #endif
 
 #if defined(GLES3_ENABLED)
@@ -349,7 +342,7 @@ class DisplayServerWindows : public DisplayServer {
 #endif
 
 #if defined(RD_ENABLED)
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 
@@ -454,6 +447,13 @@ class DisplayServerWindows : public DisplayServer {
 
 	WNDPROC user_proc = nullptr;
 
+	struct IndicatorData {
+		Callable callback;
+	};
+
+	IndicatorID indicator_id_counter = 0;
+	HashMap<IndicatorID, IndicatorData> indicators;
+
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
 	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
@@ -476,6 +476,8 @@ class DisplayServerWindows : public DisplayServer {
 	HCURSOR cursors[CURSOR_MAX] = { nullptr };
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 	RBMap<CursorShape, Vector<Variant>> cursors_cache;
+
+	Callable system_theme_changed;
 
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
@@ -522,6 +524,8 @@ public:
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
 	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
@@ -661,6 +665,12 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
+
+	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) override;
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual void delete_status_indicator(IndicatorID p_id) override;
 
 	virtual void set_context(Context p_context) override;
 

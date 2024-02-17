@@ -854,7 +854,7 @@ TileSetEditor::TileSetEditor() {
 	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 
 	sources_list = memnew(ItemList);
-	sources_list->set_auto_translate(false);
+	sources_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -934,7 +934,7 @@ TileSetEditor::TileSetEditor() {
 	//// Patterns ////
 	int thumbnail_size = 64;
 	patterns_item_list = memnew(ItemList);
-	patterns_item_list->set_auto_translate(false);
+	patterns_item_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	patterns_item_list->set_max_columns(0);
 	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
@@ -988,7 +988,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 
 void TileSourceInspectorPlugin::_confirm_change_id() {
 	edited_source->set("id", id_input->get_value());
-	id_label->set_text(vformat(TTR("ID: %d"), edited_source->get("id"))); // Use get(), because the provided ID might've been invalid.
+	id_label->set_text(itos(edited_source->get("id"))); // Use get(), because the provided ID might've been invalid.
 }
 
 bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
@@ -1002,17 +1002,22 @@ bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::
 			return true;
 		}
 
+		EditorProperty *ep = memnew(EditorProperty);
+
 		HBoxContainer *hbox = memnew(HBoxContainer);
 		hbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 
-		id_label = memnew(Label(vformat(TTR("ID: %d"), value)));
+		id_label = memnew(Label(itos(value)));
+		id_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbox->add_child(id_label);
 
 		Button *button = memnew(Button(TTR("Edit")));
+		button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbox->add_child(button);
 		button->connect("pressed", callable_mp(this, &TileSourceInspectorPlugin::_show_id_edit_dialog).bind(p_object));
 
-		add_custom_control(hbox);
+		ep->add_child(hbox);
+		add_property_editor(p_path, ep);
 		return true;
 	}
 	return false;

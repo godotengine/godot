@@ -856,6 +856,9 @@ void Viewport::_process_picking() {
 
 							if (send_event) {
 								co->_input_event_call(this, ev, res[i].shape);
+								if (physics_object_picking_first_only) {
+									break;
+								}
 							}
 						}
 					}
@@ -893,13 +896,13 @@ void Viewport::_process_picking() {
 			if (camera_3d) {
 				Vector3 from = camera_3d->project_ray_origin(pos);
 				Vector3 dir = camera_3d->project_ray_normal(pos);
-				real_t far = camera_3d->far;
+				real_t depth_far = camera_3d->get_far();
 
 				PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
 				if (space) {
 					PhysicsDirectSpaceState3D::RayParameters ray_params;
 					ray_params.from = from;
-					ray_params.to = from + dir * far;
+					ray_params.to = from + dir * depth_far;
 					ray_params.collide_with_areas = true;
 					ray_params.pick_ray = true;
 
@@ -1514,7 +1517,6 @@ void Viewport::_gui_show_tooltip() {
 	if (!base_tooltip) {
 		gui.tooltip_label = memnew(Label);
 		gui.tooltip_label->set_theme_type_variation(SNAME("TooltipLabel"));
-		gui.tooltip_label->set_auto_translate(gui.tooltip_control->is_auto_translating());
 		gui.tooltip_label->set_text(gui.tooltip_text);
 		base_tooltip = gui.tooltip_label;
 		panel->connect("mouse_entered", callable_mp(this, &Viewport::_gui_cancel_tooltip));
@@ -3466,6 +3468,14 @@ bool Viewport::get_physics_object_picking_sort() {
 	return physics_object_picking_sort;
 }
 
+void Viewport::set_physics_object_picking_first_only(bool p_enable) {
+	physics_object_picking_first_only = p_enable;
+}
+
+bool Viewport::get_physics_object_picking_first_only() {
+	return physics_object_picking_first_only;
+}
+
 Vector2 Viewport::get_camera_coords(const Vector2 &p_viewport_coords) const {
 	ERR_READ_THREAD_GUARD_V(Vector2());
 	Transform2D xf = stretch_transform * global_canvas_transform;
@@ -3500,9 +3510,9 @@ Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
 
-PackedStringArray Viewport::get_configuration_warnings() const {
-	ERR_MAIN_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array Viewport::get_configuration_warnings() const {
+	ERR_MAIN_THREAD_GUARD_V(Array());
+	Array warnings = Node::get_configuration_warnings();
 
 	if (size.x <= 1 || size.y <= 1) {
 		warnings.push_back(RTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything."));
@@ -4616,6 +4626,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
 	ClassDB::bind_method(D_METHOD("set_physics_object_picking_sort", "enable"), &Viewport::set_physics_object_picking_sort);
 	ClassDB::bind_method(D_METHOD("get_physics_object_picking_sort"), &Viewport::get_physics_object_picking_sort);
+	ClassDB::bind_method(D_METHOD("set_physics_object_picking_first_only", "enable"), &Viewport::set_physics_object_picking_first_only);
+	ClassDB::bind_method(D_METHOD("get_physics_object_picking_first_only"), &Viewport::get_physics_object_picking_first_only);
 
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(D_METHOD("push_text_input", "text"), &Viewport::push_text_input);
@@ -4774,6 +4786,7 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("Physics", "physics_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking_sort"), "set_physics_object_picking_sort", "get_physics_object_picking_sort");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking_first_only"), "set_physics_object_picking_first_only", "get_physics_object_picking_first_only");
 	ADD_GROUP("GUI", "gui_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");

@@ -178,6 +178,7 @@ void ConnectDialog::_tree_node_selected() {
 		set_dst_method(generate_method_callback_name(source, signal, current));
 	}
 	_update_method_tree();
+	_update_warning_label();
 	_update_ok_enabled();
 }
 
@@ -433,6 +434,23 @@ void ConnectDialog::_update_ok_enabled() {
 	get_ok_button()->set_disabled(false);
 }
 
+void ConnectDialog::_update_warning_label() {
+	Ref<Script> scr = source->get_node(dst_path)->get_script();
+	if (scr.is_null()) {
+		warning_label->set_visible(false);
+		return;
+	}
+
+	ScriptLanguage *language = scr->get_language();
+	if (language->can_make_function()) {
+		warning_label->set_visible(false);
+		return;
+	}
+
+	warning_label->set_text(vformat(TTR("%s: Callback code won't be generated, please add it manually."), language->get_name()));
+	warning_label->set_visible(true);
+}
+
 void ConnectDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -573,6 +591,18 @@ bool ConnectDialog::is_editing() const {
 	return edit_mode;
 }
 
+void ConnectDialog::shortcut_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> &key = p_event;
+
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			filter_nodes->grab_focus();
+			filter_nodes->select_all();
+			filter_nodes->accept_event();
+		}
+	}
+}
+
 /*
  * Initialize ConnectDialog and populate fields with expected data.
  * If creating a connection from scratch, sensible defaults are used.
@@ -617,6 +647,7 @@ void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_
 
 void ConnectDialog::popup_dialog(const String p_for_signal) {
 	from_signal->set_text(p_for_signal);
+	warning_label->add_theme_color_override("font_color", warning_label->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	filter_nodes->clear();
 
@@ -693,6 +724,10 @@ ConnectDialog::ConnectDialog() {
 	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), hbc_filter, false);
 	connect_to_label = Object::cast_to<Label>(vbc_left->get_child(mc->get_index() - 1));
 	vbc_left->add_child(tree);
+
+	warning_label = memnew(Label);
+	vbc_left->add_child(warning_label);
+	warning_label->hide();
 
 	error_label = memnew(Label);
 	error_label->set_text(TTR("Scene does not contain any script."));
@@ -1531,6 +1566,7 @@ ConnectionsDock::ConnectionsDock() {
 
 	connect_dialog = memnew(ConnectDialog);
 	connect_dialog->connect("connected", callable_mp(NodeDock::get_singleton(), &NodeDock::restore_last_valid_node), CONNECT_DEFERRED);
+	connect_dialog->set_process_shortcut_input(true);
 	add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);

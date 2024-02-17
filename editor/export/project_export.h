@@ -160,6 +160,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 	LineEdit *enc_in_filters = nullptr;
 	LineEdit *enc_ex_filters = nullptr;
 
+	OptionButton *script_mode = nullptr;
+
 	void _open_export_template_manager();
 
 	void _export_pck_zip();
@@ -182,6 +184,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _enc_filters_changed(const String &p_text);
 	void _script_encryption_key_changed(const String &p_key);
 	bool _validate_script_encryption_key(const String &p_key);
+
+	void _script_export_mode_changed(int p_mode);
 
 	void _open_key_help_link();
 

@@ -65,14 +65,11 @@ using Microsoft::WRL::ComPtr;
 #define D3D12_BITCODE_OFFSETS_NUM_STAGES 3
 
 struct dxil_validator;
-
-class D3D12Context;
+class RenderingContextDriverD3D12;
 
 // Design principles:
 // - D3D12 structs are zero-initialized and fields not requiring a non-zero value are omitted (except in cases where expresivity reasons apply).
 class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
-	friend class D3D12Context; // For FramebufferInfo, RenderPassInfo and CommandBufferInfo.
-
 	/*****************/
 	/**** GENERIC ****/
 	/*****************/
@@ -86,8 +83,58 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 
 	static const D3D12Format RD_TO_D3D12_FORMAT[RDD::DATA_FORMAT_MAX];
 
-	D3D12Context *context = nullptr;
-	ID3D12Device *device = nullptr; // Owned by the context.
+	struct DeviceLimits {
+		uint64_t max_srvs_per_shader_stage = 0;
+		uint64_t max_cbvs_per_shader_stage = 0;
+		uint64_t max_samplers_across_all_stages = 0;
+		uint64_t max_uavs_across_all_stages = 0;
+		uint64_t timestamp_frequency = 0;
+	};
+
+	struct SubgroupCapabilities {
+		uint32_t size = 0;
+		bool wave_ops_supported = false;
+		uint32_t supported_stages_flags_rd() const;
+		uint32_t supported_operations_flags_rd() const;
+	};
+
+	struct VRSCapabilities {
+		bool draw_call_supported = false; // We can specify our fragment rate on a draw call level.
+		bool primitive_supported = false; // We can specify our fragment rate on each drawcall.
+		bool primitive_in_multiviewport = false;
+		bool ss_image_supported = false; // We can provide a density map attachment on our framebuffer.
+		uint32_t ss_image_tile_size = 0;
+		bool additional_rates_supported = false;
+	};
+
+	struct ShaderCapabilities {
+		D3D_SHADER_MODEL shader_model = (D3D_SHADER_MODEL)0;
+		bool native_16bit_ops = false;
+	};
+
+	struct StorageBufferCapabilities {
+		bool storage_buffer_16_bit_access_is_supported = false;
+	};
+
+	struct FormatCapabilities {
+		bool relaxed_casting_supported = false;
+	};
+
+	RenderingContextDriverD3D12 *context_driver = nullptr;
+	RenderingContextDriver::Device context_device;
+	ComPtr<IDXGIAdapter> adapter;
+	DXGI_ADAPTER_DESC adapter_desc;
+	ComPtr<ID3D12Device> device;
+	DeviceLimits device_limits;
+	RDD::Capabilities device_capabilities;
+	uint32_t feature_level = 0; // Major * 10 + minor.
+	SubgroupCapabilities subgroup_capabilities;
+	RDD::MultiviewCapabilities multiview_capabilities;
+	VRSCapabilities vrs_capabilities;
+	ShaderCapabilities shader_capabilities;
+	StorageBufferCapabilities storage_buffer_capabilities;
+	FormatCapabilities format_capabilities;
+	String pipeline_cache_id;
 
 	class DescriptorsHeap {
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
@@ -127,6 +174,19 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		ComPtr<ID3D12CommandSignature> dispatch;
 	} indirect_cmd_signatures;
 
+	static void STDMETHODCALLTYPE _debug_message_func(D3D12_MESSAGE_CATEGORY p_category, D3D12_MESSAGE_SEVERITY p_severity, D3D12_MESSAGE_ID p_id, LPCSTR p_description, void *p_context);
+	void _set_object_name(ID3D12Object *p_object, String p_object_name);
+	Error _initialize_device();
+	Error _check_capabilities();
+	Error _get_device_limits();
+	Error _initialize_allocator();
+	Error _initialize_frames(uint32_t p_frame_count);
+	Error _initialize_command_signatures();
+
+public:
+	Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override final;
+
+private:
 	/****************/
 	/**** MEMORY ****/
 	/****************/
@@ -183,7 +243,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 			uint64_t subres_mask[MAX_SUBRESOURCES / 64] = {};
 		} groups[MAX_GROUPS];
 		uint8_t groups_count = 0;
-		static const D3D12_RESOURCE_STATES DELETED_GROUP = D3D12_RESOURCE_STATE_COMMON;
+		static const D3D12_RESOURCE_STATES DELETED_GROUP = D3D12_RESOURCE_STATES(0xFFFFFFFFU);
 	};
 	PagedAllocator<HashMapElement<ResourceInfo::States *, BarrierRequest>> res_barriers_requests_allocator;
 	HashMap<ResourceInfo::States *, BarrierRequest, HashMapHasherDefault, HashMapComparatorDefault<ResourceInfo::States *>, decltype(res_barriers_requests_allocator)> res_barriers_requests;
@@ -307,13 +367,65 @@ public:
 			VectorView<RDD::BufferBarrier> p_buffer_barriers,
 			VectorView<RDD::TextureBarrier> p_texture_barriers) override final;
 
-	/*************************/
-	/**** COMMAND BUFFERS ****/
-	/*************************/
+private:
+	/****************/
+	/**** FENCES ****/
+	/****************/
 
+	struct FenceInfo {
+		ComPtr<ID3D12Fence> d3d_fence = nullptr;
+		HANDLE event_handle = NULL;
+		UINT64 fence_value = 0;
+	};
+
+public:
+	virtual FenceID fence_create() override;
+	virtual Error fence_wait(FenceID p_fence) override;
+	virtual void fence_free(FenceID p_fence) override;
+
+private:
+	/********************/
+	/**** SEMAPHORES ****/
+	/********************/
+
+	struct SemaphoreInfo {
+		ComPtr<ID3D12Fence> d3d_fence = nullptr;
+		UINT64 fence_value = 0;
+	};
+
+	virtual SemaphoreID semaphore_create() override;
+	virtual void semaphore_free(SemaphoreID p_semaphore) override;
+
+	/******************/
+	/**** COMMANDS ****/
+	/******************/
+
+	// ----- QUEUE FAMILY -----
+
+	virtual CommandQueueFamilyID command_queue_family_get(BitField<CommandQueueFamilyBits> p_cmd_queue_family_bits, RenderingContextDriver::SurfaceID p_surface = 0) override;
+
+private:
+	// ----- QUEUE -----
+
+	struct CommandQueueInfo {
+		ComPtr<ID3D12CommandQueue> d3d_queue;
+	};
+
+public:
+	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) override;
+	virtual Error command_queue_execute(CommandQueueID p_cmd_queue, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_wait_semaphores, VectorView<SemaphoreID> p_signal_semaphores, FenceID p_signal_fence) override;
+	virtual Error command_queue_present(CommandQueueID p_cmd_queue, VectorView<SwapChainID> p_swap_chains, VectorView<SemaphoreID> p_wait_semaphores) override;
+	virtual void command_queue_free(CommandQueueID p_cmd_queue) override;
+
+private:
 	// ----- POOL -----
+	struct CommandPoolInfo {
+		CommandQueueFamilyID queue_family;
+		CommandBufferType buffer_type = COMMAND_BUFFER_TYPE_PRIMARY;
+	};
 
-	virtual CommandPoolID command_pool_create(CommandBufferType p_cmd_buffer_type) override final;
+public:
+	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) override final;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) override final;
 
 	// ----- BUFFER -----
@@ -347,16 +459,44 @@ private:
 		uint32_t compute_root_signature_crc = 0;
 
 		RenderPassState render_pass_state;
+		bool descriptor_heaps_set = false;
 	};
-	RBMap<CommandPoolID, LocalVector<CommandBufferInfo *>> pools_command_buffers;
-	CommandPoolID last_command_pool_id;
 
 public:
-	virtual CommandBufferID command_buffer_create(CommandBufferType p_cmd_buffer_type, CommandPoolID p_cmd_pool) override final;
+	virtual CommandBufferID command_buffer_create(CommandPoolID p_cmd_pool) override final;
 	virtual bool command_buffer_begin(CommandBufferID p_cmd_buffer) override final;
 	virtual bool command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) override final;
 	virtual void command_buffer_end(CommandBufferID p_cmd_buffer) override final;
 	virtual void command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) override final;
+
+private:
+	/********************/
+	/**** SWAP CHAIN ****/
+	/********************/
+
+	struct SwapChain {
+		ComPtr<IDXGISwapChain3> d3d_swap_chain;
+		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
+		UINT present_flags = 0;
+		UINT sync_interval = 1;
+		UINT creation_flags = 0;
+		RenderPassID render_pass;
+		TightLocalVector<ID3D12Resource *> render_targets;
+		TightLocalVector<TextureInfo> render_targets_info;
+		TightLocalVector<FramebufferID> framebuffers;
+		RDD::DataFormat data_format = DATA_FORMAT_MAX;
+	};
+
+	void _swap_chain_release(SwapChain *p_swap_chain);
+	void _swap_chain_release_buffers(SwapChain *p_swap_chain);
+
+public:
+	virtual SwapChainID swap_chain_create(RenderingContextDriver::SurfaceID p_surface) override;
+	virtual Error swap_chain_resize(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, uint32_t p_desired_framebuffer_count) override;
+	virtual FramebufferID swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) override;
+	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override;
+	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override;
+	virtual void swap_chain_free(SwapChainID p_swap_chain) override;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -375,6 +515,8 @@ private:
 
 	D3D12_RENDER_TARGET_VIEW_DESC _make_rtv_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
 	D3D12_DEPTH_STENCIL_VIEW_DESC _make_dsv_for_texture(const TextureInfo *p_texture_info);
+
+	FramebufferID _framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height, bool p_is_screen);
 
 public:
 	virtual FramebufferID framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) override final;
@@ -602,6 +744,7 @@ public:
 	virtual void command_uniform_set_prepare_for_use(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
 
 private:
+	void _command_check_descriptor_sets(CommandBufferID p_cmd_buffer);
 	void _command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, bool p_for_compute);
 
 public:
@@ -777,12 +920,6 @@ public:
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) override final;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
 
-	/****************/
-	/**** SCREEN ****/
-	/****************/
-
-	virtual DataFormat screen_get_format() override final;
-
 	/********************/
 	/**** SUBMISSION ****/
 	/********************/
@@ -821,7 +958,7 @@ private:
 	bool segment_begun = false;
 
 public:
-	virtual void begin_segment(CommandBufferID p_cmd_buffer, uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
+	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
 	virtual void end_segment() override final;
 
 	/**************/
@@ -835,6 +972,12 @@ public:
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
+	virtual String get_api_name() const override final;
+	virtual String get_api_version() const override final;
+	virtual String get_pipeline_cache_uuid() const override final;
+	virtual const Capabilities &get_capabilities() const override final;
+
+	static bool is_in_developer_mode();
 
 private:
 	/*********************/
@@ -858,7 +1001,7 @@ private:
 	/******************/
 
 public:
-	RenderingDeviceDriverD3D12(D3D12Context *p_context, ID3D12Device *p_device, uint32_t p_frame_count);
+	RenderingDeviceDriverD3D12(RenderingContextDriverD3D12 *p_context_driver);
 	virtual ~RenderingDeviceDriverD3D12();
 };
 

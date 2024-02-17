@@ -177,6 +177,9 @@
     <description summary="callback object">
       Clients can handle the 'done' event to get notified when
       the related request is done.
+
+      Note, because wl_callback objects are created from multiple independent
+      factory interfaces, the wl_callback interface is frozen at version 1.
     </description>
 
     <event name="done" type="destructor">
@@ -187,7 +190,7 @@
     </event>
   </interface>
 
-  <interface name="wl_compositor" version="5">
+  <interface name="wl_compositor" version="6">
     <description summary="the compositor singleton">
       A compositor.  This object is a singleton global.  The
       compositor is in charge of combining the contents of multiple
@@ -453,6 +456,9 @@
       If the buffer uses a format that has an alpha channel, the alpha channel
       is assumed to be premultiplied in the color channels unless otherwise
       specified.
+
+      Note, because wl_buffer objects are created from multiple independent
+      factory interfaces, the wl_buffer interface is frozen at version 1.
     </description>
 
     <request name="destroy" type="destructor">
@@ -624,8 +630,9 @@
     <event name="source_actions" since="3">
       <description summary="notify the source-side available actions">
 	This event indicates the actions offered by the data source. It
-	will be sent right after wl_data_device.enter, or anytime the source
-	side changes its offered actions through wl_data_source.set_actions.
+	will be sent immediately after creating the wl_data_offer object,
+	or anytime the source side changes its offered actions through
+	wl_data_source.set_actions.
       </description>
       <arg name="source_actions" type="uint" summary="actions offered by the data source"
 	   enum="wl_data_device_manager.dnd_action"/>
@@ -867,11 +874,8 @@
 	a drag-and-drop icon. If the icon surface already has another role,
 	it raises a protocol error.
 
-	The current and pending input regions of the icon wl_surface are
-	cleared, and wl_surface.set_input_region is ignored until the
-	wl_surface is no longer used as the icon surface. When the use
-	as an icon ends, the current and pending input regions become
-	undefined, and the wl_surface is unmapped.
+	The input region is ignored for wl_surfaces with the role of a
+	drag-and-drop icon.
       </description>
       <arg name="source" type="object" interface="wl_data_source" allow-null="true" summary="data source for the eventual transfer"/>
       <arg name="origin" type="object" interface="wl_surface" summary="surface where the drag originates"/>
@@ -1352,7 +1356,7 @@
     </event>
   </interface>
 
-  <interface name="wl_surface" version="5">
+  <interface name="wl_surface" version="6">
     <description summary="an onscreen surface">
       A surface is a rectangular area that may be displayed on zero
       or more outputs, and shown any number of times at the compositor's
@@ -1384,8 +1388,9 @@
       that this request gives a role to a wl_surface. Often, this
       request also creates a new protocol object that represents the
       role and adds additional functionality to wl_surface. When a
-      client wants to destroy a wl_surface, they must destroy this 'role
-      object' before the wl_surface.
+      client wants to destroy a wl_surface, they must destroy this role
+      object before the wl_surface, otherwise a defunct_role_object error is
+      sent.
 
       Destroying the role object does not remove the role from the
       wl_surface, but it may stop the wl_surface from "playing the role".
@@ -1405,6 +1410,8 @@
       <entry name="invalid_transform" value="1" summary="buffer transform value is invalid"/>
       <entry name="invalid_size" value="2" summary="buffer size is invalid"/>
       <entry name="invalid_offset" value="3" summary="buffer offset is invalid"/>
+      <entry name="defunct_role_object" value="4"
+             summary="surface was destroyed before its role object"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -1433,8 +1440,9 @@
 
 	When the bound wl_surface version is 5 or higher, passing any
 	non-zero x or y is a protocol violation, and will result in an
-	'invalid_offset' error being raised. To achieve equivalent semantics,
-	use wl_surface.offset.
+        'invalid_offset' error being raised. The x and y arguments are ignored
+        and do not change the pending state. To achieve equivalent semantics,
+        use wl_surface.offset.
 
 	Surface contents are double-buffered state, see wl_surface.commit.
 
@@ -1786,9 +1794,37 @@
       <arg name="x" type="int" summary="surface-local x coordinate"/>
       <arg name="y" type="int" summary="surface-local y coordinate"/>
     </request>
+
+    <!-- Version 6 additions -->
+
+    <event name="preferred_buffer_scale" since="6">
+      <description summary="preferred buffer scale for the surface">
+	This event indicates the preferred buffer scale for this surface. It is
+	sent whenever the compositor's preference changes.
+
+	It is intended that scaling aware clients use this event to scale their
+	content and use wl_surface.set_buffer_scale to indicate the scale they
+	have rendered with. This allows clients to supply a higher detail
+	buffer.
+      </description>
+      <arg name="factor" type="int" summary="preferred scaling factor"/>
+    </event>
+
+    <event name="preferred_buffer_transform" since="6">
+      <description summary="preferred buffer transform for the surface">
+	This event indicates the preferred buffer transform for this surface.
+	It is sent whenever the compositor's preference changes.
+
+	It is intended that transform aware clients use this event to apply the
+	transform to their content and use wl_surface.set_buffer_transform to
+	indicate the transform they have rendered with.
+      </description>
+      <arg name="transform" type="uint" enum="wl_output.transform"
+	   summary="preferred transform"/>
+    </event>
    </interface>
 
-  <interface name="wl_seat" version="8">
+  <interface name="wl_seat" version="9">
     <description summary="group of input devices">
       A seat is a group of keyboards, pointer and touch devices. This
       object is published as a global during start up, or when such a
@@ -1921,7 +1957,7 @@
 
   </interface>
 
-  <interface name="wl_pointer" version="8">
+  <interface name="wl_pointer" version="9">
     <description summary="pointer input device">
       The wl_pointer interface represents one or more input devices,
       such as mice, which control the pointer location and pointer_focus
@@ -1965,11 +2001,9 @@
 	pointer surface to this request with new values for hotspot_x
 	and hotspot_y.
 
-	The current and pending input regions of the wl_surface are
-	cleared, and wl_surface.set_input_region is ignored until the
-	wl_surface is no longer used as the cursor. When the use as a
-	cursor ends, the current and pending input regions become
-	undefined, and the wl_surface is unmapped.
+	The input region is ignored for wl_surfaces with the role of
+	a cursor. When the use as a cursor ends, the wl_surface is
+	unmapped.
 
 	The serial parameter must match the latest wl_pointer.enter
 	serial number sent to the client. Otherwise the request will be
@@ -2278,9 +2312,65 @@
       <arg name="axis" type="uint" enum="axis" summary="axis type"/>
       <arg name="value120" type="int" summary="scroll distance as fraction of 120"/>
     </event>
+
+    <!-- Version 9 additions -->
+
+    <enum name="axis_relative_direction">
+      <description summary="axis relative direction">
+	This specifies the direction of the physical motion that caused a
+	wl_pointer.axis event, relative to the wl_pointer.axis direction.
+      </description>
+      <entry name="identical" value="0"
+	  summary="physical motion matches axis direction"/>
+      <entry name="inverted" value="1"
+	  summary="physical motion is the inverse of the axis direction"/>
+    </enum>
+
+    <event name="axis_relative_direction" since="9">
+      <description summary="axis relative physical direction event">
+	Relative directional information of the entity causing the axis
+	motion.
+
+	For a wl_pointer.axis event, the wl_pointer.axis_relative_direction
+	event specifies the movement direction of the entity causing the
+	wl_pointer.axis event. For example:
+	- if a user's fingers on a touchpad move down and this
+	  causes a wl_pointer.axis vertical_scroll down event, the physical
+	  direction is 'identical'
+	- if a user's fingers on a touchpad move down and this causes a
+	  wl_pointer.axis vertical_scroll up scroll up event ('natural
+	  scrolling'), the physical direction is 'inverted'.
+
+	A client may use this information to adjust scroll motion of
+	components. Specifically, enabling natural scrolling causes the
+	content to change direction compared to traditional scrolling.
+	Some widgets like volume control sliders should usually match the
+	physical direction regardless of whether natural scrolling is
+	active. This event enables clients to match the scroll direction of
+	a widget to the physical direction.
+
+	This event does not occur on its own, it is coupled with a
+	wl_pointer.axis event that represents this axis value.
+	The protocol guarantees that each axis_relative_direction event is
+	always followed by exactly one axis event with the same
+	axis number within the same wl_pointer.frame. Note that the protocol
+	allows for other events to occur between the axis_relative_direction
+	and its coupled axis event.
+
+	The axis number is identical to the axis number in the associated
+	axis event.
+
+	The order of wl_pointer.axis_relative_direction,
+	wl_pointer.axis_discrete and wl_pointer.axis_source is not
+	guaranteed.
+      </description>
+      <arg name="axis" type="uint" enum="axis" summary="axis type"/>
+      <arg name="direction" type="uint" enum="axis_relative_direction"
+	  summary="physical direction relative to axis motion"/>
+    </event>
   </interface>
 
-  <interface name="wl_keyboard" version="8">
+  <interface name="wl_keyboard" version="9">
     <description summary="keyboard input device">
       The wl_keyboard interface represents one or more keyboards
       associated with a seat.
@@ -2407,7 +2497,7 @@
     </event>
   </interface>
 
-  <interface name="wl_touch" version="8">
+  <interface name="wl_touch" version="9">
     <description summary="touchscreen input device">
       The wl_touch interface represents a touchscreen
       associated with a seat.
@@ -2861,6 +2951,8 @@
     <enum name="error">
       <entry name="bad_surface" value="0"
 	     summary="the to-be sub-surface is invalid"/>
+      <entry name="bad_parent" value="1"
+	     summary="the to-be sub-surface parent is invalid"/>
     </enum>
 
     <request name="get_subsurface">
@@ -2870,13 +2962,17 @@
 	plain wl_surface into a sub-surface.
 
 	The to-be sub-surface must not already have another role, and it
-	must not have an existing wl_subsurface object. Otherwise a protocol
-	error is raised.
+	must not have an existing wl_subsurface object. Otherwise the
+	bad_surface protocol error is raised.
 
 	Adding sub-surfaces to a parent is a double-buffered operation on the
 	parent (see wl_surface.commit). The effect of adding a sub-surface
 	becomes visible on the next time the state of the parent surface is
 	applied.
+
+	The parent surface must not be one of the child surface's descendants,
+	and the parent must be different from the child surface, otherwise the
+	bad_parent protocol error is raised.
 
 	This request modifies the behaviour of wl_surface.commit request on
 	the sub-surface, see the documentation on wl_subsurface interface.
@@ -2932,12 +3028,10 @@
       synchronized mode, and then assume that all its child and grand-child
       sub-surfaces are synchronized, too, without explicitly setting them.
 
-      If the wl_surface associated with the wl_subsurface is destroyed, the
-      wl_subsurface object becomes inert. Note, that destroying either object
-      takes effect immediately. If you need to synchronize the removal
-      of a sub-surface to the parent surface update, unmap the sub-surface
-      first by attaching a NULL wl_buffer, update parent, and then destroy
-      the sub-surface.
+      Destroying a sub-surface takes effect immediately. If you need to
+      synchronize the removal of a sub-surface to the parent surface update,
+      unmap the sub-surface first by attaching a NULL wl_buffer, update parent,
+      and then destroy the sub-surface.
 
       If the parent wl_surface object is destroyed, the sub-surface is
       unmapped.
@@ -2948,8 +3042,7 @@
 	The sub-surface interface is removed from the wl_surface object
 	that was turned into a sub-surface with a
 	wl_subcompositor.get_subsurface request. The wl_surface's association
-	to the parent is deleted, and the wl_surface loses its role as
-	a sub-surface. The wl_surface is unmapped immediately.
+	to the parent is deleted. The wl_surface is unmapped immediately.
       </description>
     </request>
 

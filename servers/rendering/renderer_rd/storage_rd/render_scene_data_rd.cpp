@@ -76,6 +76,8 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 		ubo.eye_offset[v][3] = 0.0;
 	}
 
+	RendererRD::MaterialStorage::store_transform(main_cam_transform, ubo.main_cam_inv_view_matrix);
+
 	ubo.taa_jitter[0] = taa_jitter.x;
 	ubo.taa_jitter[1] = taa_jitter.y;
 

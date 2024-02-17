@@ -9,12 +9,24 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_composition_layer" qualifiers="virtual">
+			<return type="int" />
+			<description>
+				Returns a pointer to a [code]XrCompositionLayerBaseHeader[/code] struct to provide a composition layer. This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
+			</description>
+		</method>
 		<method name="_get_requested_extensions" qualifiers="virtual">
 			<return type="Dictionary" />
 			<description>
 				Returns a [Dictionary] of OpenXR extensions related to this extension. The [Dictionary] should contain the name of the extension, mapped to a [code]bool *[/code] cast to an integer:
 				- If the [code]bool *[/code] is a [code]nullptr[/code] this extension is mandatory.
 				- If the [code]bool *[/code] points to a boolean, the boolean will be updated to [code]true[/code] if the extension is enabled.
+			</description>
+		</method>
+		<method name="_get_suggested_tracker_names" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a [PackedStringArray] of positional tracker names that are used within the extension wrapper.
 			</description>
 		</method>
 		<method name="_on_before_instance_created" qualifiers="virtual">

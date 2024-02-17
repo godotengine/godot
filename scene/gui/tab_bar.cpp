@@ -376,6 +376,7 @@ void TabBar::_notification(int p_what) {
 			}
 
 			queue_redraw();
+			update_minimum_size();
 
 			[[fallthrough]];
 		}

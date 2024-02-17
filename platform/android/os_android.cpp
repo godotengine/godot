@@ -162,7 +162,7 @@ Vector<String> OS_Android::get_granted_permissions() const {
 	return godot_java->get_granted_permissions();
 }
 
-Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path;
 	bool so_file_exists = true;
 	if (!FileAccess::exists(path)) {
@@ -324,15 +324,21 @@ void OS_Android::main_loop_end() {
 
 void OS_Android::main_loop_focusout() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+	}
 	audio_driver_android.set_pause(true);
 }
 
 void OS_Android::main_loop_focusin() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+	}
 	audio_driver_android.set_pause(false);
 }
 
-Error OS_Android::shell_open(String p_uri) {
+Error OS_Android::shell_open(const String &p_uri) {
 	return godot_io_java->open_uri(p_uri);
 }
 

@@ -40,15 +40,6 @@ RenderingDeviceGraph::RenderingDeviceGraph() {
 }
 
 RenderingDeviceGraph::~RenderingDeviceGraph() {
-	_wait_for_secondary_command_buffer_tasks();
-
-	for (Frame &f : frames) {
-		for (SecondaryCommandBuffer &secondary : f.secondary_command_buffers) {
-			if (secondary.command_pool.id != 0) {
-				driver->command_pool_free(secondary.command_pool);
-			}
-		}
-	}
 }
 
 bool RenderingDeviceGraph::_is_write_usage(ResourceUsage p_usage) {
@@ -1268,7 +1259,7 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 	}
 }
 
-void RenderingDeviceGraph::initialize(RDD *p_driver, uint32_t p_frame_count, uint32_t p_secondary_command_buffers_per_frame) {
+void RenderingDeviceGraph::initialize(RDD *p_driver, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
 	driver = p_driver;
 	frames.resize(p_frame_count);
 
@@ -1277,13 +1268,27 @@ void RenderingDeviceGraph::initialize(RDD *p_driver, uint32_t p_frame_count, uin
 
 		for (uint32_t j = 0; j < p_secondary_command_buffers_per_frame; j++) {
 			SecondaryCommandBuffer &secondary = frames[i].secondary_command_buffers[j];
-			secondary.command_pool = driver->command_pool_create(RDD::COMMAND_BUFFER_TYPE_SECONDARY);
-			secondary.command_buffer = driver->command_buffer_create(RDD::COMMAND_BUFFER_TYPE_SECONDARY, secondary.command_pool);
+			secondary.command_pool = driver->command_pool_create(p_secondary_command_queue_family, RDD::COMMAND_BUFFER_TYPE_SECONDARY);
+			secondary.command_buffer = driver->command_buffer_create(secondary.command_pool);
 			secondary.task = WorkerThreadPool::INVALID_TASK_ID;
 		}
 	}
 
 	driver_honors_barriers = driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS);
+}
+
+void RenderingDeviceGraph::finalize() {
+	_wait_for_secondary_command_buffer_tasks();
+
+	for (Frame &f : frames) {
+		for (SecondaryCommandBuffer &secondary : f.secondary_command_buffers) {
+			if (secondary.command_pool.id != 0) {
+				driver->command_pool_free(secondary.command_pool);
+			}
+		}
+	}
+
+	frames.clear();
 }
 
 void RenderingDeviceGraph::begin() {
@@ -1447,7 +1452,13 @@ void RenderingDeviceGraph::add_compute_list_usage(ResourceTracker *p_tracker, Re
 		compute_instruction_list.command_trackers.push_back(p_tracker);
 		compute_instruction_list.command_tracker_usages.push_back(p_usage);
 		p_tracker->compute_list_index = compute_instruction_list.index;
+		p_tracker->compute_list_usage = p_usage;
 	}
+#ifdef DEV_ENABLED
+	else if (p_tracker->compute_list_usage != p_usage) {
+		ERR_FAIL_MSG(vformat("Tracker can't have more than one type of usage in the same compute list. Compute list usage is %d and the requested usage is %d.", p_tracker->compute_list_usage, p_usage));
+	}
+#endif
 }
 
 void RenderingDeviceGraph::add_compute_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages) {
@@ -1653,7 +1664,13 @@ void RenderingDeviceGraph::add_draw_list_usage(ResourceTracker *p_tracker, Resou
 		draw_instruction_list.command_trackers.push_back(p_tracker);
 		draw_instruction_list.command_tracker_usages.push_back(p_usage);
 		p_tracker->draw_list_index = draw_instruction_list.index;
+		p_tracker->draw_list_usage = p_usage;
 	}
+#ifdef DEV_ENABLED
+	else if (p_tracker->draw_list_usage != p_usage) {
+		ERR_FAIL_MSG(vformat("Tracker can't have more than one type of usage in the same draw list. Draw list usage is %d and the requested usage is %d.", p_tracker->draw_list_usage, p_usage));
+	}
+#endif
 }
 
 void RenderingDeviceGraph::add_draw_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages) {

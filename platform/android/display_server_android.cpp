@@ -42,7 +42,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#include "vulkan_context_android.h"
+#include "rendering_context_driver_vulkan_android.h"
 #endif
 #endif
 
@@ -125,6 +125,16 @@ bool DisplayServerAndroid::is_dark_mode() const {
 	ERR_FAIL_NULL_V(godot_java, false);
 
 	return godot_java->is_dark_mode();
+}
+
+void DisplayServerAndroid::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
+}
+
+void DisplayServerAndroid::emit_system_theme_changed() {
+	if (system_theme_changed.is_valid()) {
+		system_theme_changed.call_deferred();
+	}
 }
 
 void DisplayServerAndroid::clipboard_set(const String &p_text) {
@@ -518,15 +528,17 @@ void DisplayServerAndroid::register_android_driver() {
 
 void DisplayServerAndroid::reset_window() {
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		VSyncMode last_vsync_mode = context_rd->get_vsync_mode(MAIN_WINDOW_ID);
-		context_rd->window_destroy(MAIN_WINDOW_ID);
+	if (rendering_context) {
+		if (rendering_device) {
+			rendering_device->screen_free(MAIN_WINDOW_ID);
+		}
 
-		Size2i display_size = OS_Android::get_singleton()->get_display_size();
+		VSyncMode last_vsync_mode = rendering_context->window_get_vsync_mode(MAIN_WINDOW_ID);
+		rendering_context->window_destroy(MAIN_WINDOW_ID);
 
 		union {
 #ifdef VULKAN_ENABLED
-			VulkanContextAndroid::WindowPlatformData vulkan;
+			RenderingContextDriverVulkanAndroid::WindowPlatformData vulkan;
 #endif
 		} wpd;
 #ifdef VULKAN_ENABLED
@@ -537,10 +549,19 @@ void DisplayServerAndroid::reset_window() {
 		}
 #endif
 
-		if (context_rd->window_create(MAIN_WINDOW_ID, last_vsync_mode, display_size.width, display_size.height, &wpd) != OK) {
-			memdelete(context_rd);
-			context_rd = nullptr;
-			ERR_FAIL_MSG(vformat("Failed to reset %s window.", context_rd->get_api_name()));
+		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+			ERR_PRINT(vformat("Failed to reset %s window.", rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			return;
+		}
+
+		Size2i display_size = OS_Android::get_singleton()->get_display_size();
+		rendering_context->window_set_size(MAIN_WINDOW_ID, display_size.width, display_size.height);
+		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, last_vsync_mode);
+
+		if (rendering_device) {
+			rendering_device->screen_create(MAIN_WINDOW_ID);
 		}
 	}
 #endif
@@ -564,27 +585,26 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 #endif
 
 #if defined(RD_ENABLED)
-	context_rd = nullptr;
+	rendering_context = nullptr;
 	rendering_device = nullptr;
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		context_rd = memnew(VulkanContextAndroid);
+		rendering_context = memnew(RenderingContextDriverVulkanAndroid);
 	}
 #endif
 
-	if (context_rd) {
-		if (context_rd->initialize() != OK) {
-			memdelete(context_rd);
-			context_rd = nullptr;
-			ERR_FAIL_MSG(vformat("Failed to initialize %s context", context_rd->get_api_name()));
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			return;
 		}
-
-		Size2i display_size = OS_Android::get_singleton()->get_display_size();
 
 		union {
 #ifdef VULKAN_ENABLED
-			VulkanContextAndroid::WindowPlatformData vulkan;
+			RenderingContextDriverVulkanAndroid::WindowPlatformData vulkan;
 #endif
 		} wpd;
 #ifdef VULKAN_ENABLED
@@ -595,14 +615,20 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		}
 #endif
 
-		if (context_rd->window_create(MAIN_WINDOW_ID, p_vsync_mode, display_size.width, display_size.height, &wpd) != OK) {
-			memdelete(context_rd);
-			context_rd = nullptr;
-			ERR_FAIL_MSG(vformat("Failed to create %s window.", context_rd->get_api_name()));
+		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
+			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			return;
 		}
 
+		Size2i display_size = OS_Android::get_singleton()->get_display_size();
+		rendering_context->window_set_size(MAIN_WINDOW_ID, display_size.width, display_size.height);
+		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
+
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(context_rd);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -617,11 +643,10 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 DisplayServerAndroid::~DisplayServerAndroid() {
 #if defined(RD_ENABLED)
 	if (rendering_device) {
-		rendering_device->finalize();
 		memdelete(rendering_device);
 	}
-	if (context_rd) {
-		memdelete(context_rd);
+	if (rendering_context) {
+		memdelete(rendering_context);
 	}
 #endif
 }
@@ -713,16 +738,16 @@ void DisplayServerAndroid::cursor_set_custom_image(const Ref<Resource> &p_cursor
 
 void DisplayServerAndroid::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->set_vsync_mode(p_window, p_vsync_mode);
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerAndroid::window_get_vsync_mode(WindowID p_window) const {
 #if defined(RD_ENABLED)
-	if (context_rd) {
-		return context_rd->get_vsync_mode(p_window);
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;

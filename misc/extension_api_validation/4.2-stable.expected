@@ -73,3 +73,70 @@ GH-87668
 Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 8 to 9.
 
 Added optional "baseline_offset" argument. Compatibility method registered.
+
+
+GH-81996
+--------
+Validate extension JSON: Error: Field 'classes/GPUParticles2D/properties/process_material': type changed value in new API, from "ShaderMaterial,ParticleProcessMaterial" to "ParticleProcessMaterial,ShaderMaterial".
+Validate extension JSON: Error: Field 'classes/GPUParticles3D/properties/process_material': type changed value in new API, from "ShaderMaterial,ParticleProcessMaterial" to "ParticleProcessMaterial,ShaderMaterial".
+Validate extension JSON: Error: Field 'classes/Sky/properties/sky_material': type changed value in new API, from "ShaderMaterial,PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial" to "PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial,ShaderMaterial".
+
+Property hints reordered to improve editor usability. The types allowed are still the same as before. No adjustments should be necessary.
+
+
+GH-68420
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/_get_configuration_warnings/return_value': type changed value in new API, from "PackedStringArray" to "Array".
+
+Allow configuration warnings to refer to a property. Compatibility method registered.
+
+
+GH-86907
+--------
+
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_buffer': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_length': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_offset': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_stride': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_indices': is_const changed value in new API, from false to true.
+
+Change AudioStreamPlayer* is_autoplay_enabled and GLTFBufferView getters to be const.
+
+
+GH-87379
+--------
+Validate extension JSON: API was removed: classes/TileMap/methods/get_tileset
+Validate extension JSON: API was removed: classes/TileMap/methods/set_tileset
+Validate extension JSON: API was removed: classes/TileMap/properties/tile_set
+
+Moved to the parent TileMapLayerGroup class. No change should be necessary.
+
+
+GH-87340
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderingDevice/methods/screen_get_framebuffer_format': arguments
+
+screen_get_framebuffer_format can now specify the screen it should get the format from. The argument defaults to the main window to emulate the behavior of the old function.
+
+
+GH-88418
+--------
+Validate extension JSON: API was removed: classes/GDExtension/methods/close_library
+Validate extension JSON: API was removed: classes/GDExtension/methods/initialize_library
+Validate extension JSON: API was removed: classes/GDExtension/methods/open_library
+
+Since it was basically impossible to use these methods in any useful way, the GDExtension team agreed that breaking compatibility by removing them was OK.
+
+
+GH-86629
+--------
+Validate extension JSON: Error: Field 'classes/Animation/methods/position_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/rotation_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/scale_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/blend_shape_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/value_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument to track_interpolate to treat playing backward correctly. Compatibility method registered.

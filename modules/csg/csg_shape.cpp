@@ -800,7 +800,7 @@ CSGBrush *CSGMesh3D::_build_brush() {
 
 		if (arrays.size() == 0) {
 			_make_dirty();
-			ERR_FAIL_COND_V(arrays.size() == 0, memnew(CSGBrush));
+			ERR_FAIL_COND_V(arrays.is_empty(), memnew(CSGBrush));
 		}
 
 		Vector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
@@ -1826,11 +1826,13 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			if (path) {
 				path->disconnect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
 				path->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
+				path->set_update_callback(Callable());
 			}
 			path = current_path;
 			if (path) {
 				path->connect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
 				path->connect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
+				path->set_update_callback(callable_mp(this, &CSGPolygon3D::_path_changed));
 			}
 		}
 

@@ -802,11 +802,11 @@ const int CooperativeMatrixOperandsCeiling = 6;
 const char* CooperativeMatrixOperandsString(int op)
 {
     switch (op) {
-    case CooperativeMatrixOperandsMatrixASignedComponentsShift:  return "ASignedComponents";
-    case CooperativeMatrixOperandsMatrixBSignedComponentsShift:  return "BSignedComponents";
-    case CooperativeMatrixOperandsMatrixCSignedComponentsShift:  return "CSignedComponents";
-    case CooperativeMatrixOperandsMatrixResultSignedComponentsShift:  return "ResultSignedComponents";
-    case CooperativeMatrixOperandsSaturatingAccumulationShift:   return "SaturatingAccumulation";
+    case CooperativeMatrixOperandsMatrixASignedComponentsKHRShift:  return "ASignedComponentsKHR";
+    case CooperativeMatrixOperandsMatrixBSignedComponentsKHRShift:  return "BSignedComponentsKHR";
+    case CooperativeMatrixOperandsMatrixCSignedComponentsKHRShift:  return "CSignedComponentsKHR";
+    case CooperativeMatrixOperandsMatrixResultSignedComponentsKHRShift:  return "ResultSignedComponentsKHR";
+    case CooperativeMatrixOperandsSaturatingAccumulationKHRShift:   return "SaturatingAccumulationKHR";
 
     default: return "Bad";
     }

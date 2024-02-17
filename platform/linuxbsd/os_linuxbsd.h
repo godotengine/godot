@@ -118,7 +118,7 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
 
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;
@@ -126,8 +126,6 @@ public:
 	virtual bool is_sandboxed() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
-
-	virtual int get_low_processor_usage_mode_sleep_usec() const override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 

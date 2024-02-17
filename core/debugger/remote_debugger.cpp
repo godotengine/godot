@@ -92,7 +92,7 @@ public:
 	}
 };
 
-Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
+Error RemoteDebugger::_put_msg(const String &p_message, const Array &p_data) {
 	Array msg;
 	msg.push_back(p_message);
 	msg.push_back(Thread::get_caller_id());
@@ -527,7 +527,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				}
 
 			} else if (command == "set_skip_breakpoints") {
-				ERR_FAIL_COND(data.size() < 1);
+				ERR_FAIL_COND(data.is_empty());
 				script_debugger->set_skip_breakpoints(data[0]);
 			} else {
 				bool captured = false;
@@ -631,7 +631,7 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 		}
 
 	} else if (p_cmd == "set_skip_breakpoints") {
-		ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
 		script_debugger->set_skip_breakpoints(p_data[0]);
 	} else if (p_cmd == "break") {
 		script_debugger->debug(script_debugger->get_break_language());
@@ -643,7 +643,7 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 
 Error RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured) {
 	r_captured = false;
-	ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(p_data[0].get_type() != Variant::BOOL, ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(!has_profiler(p_cmd), ERR_UNAVAILABLE);
 	Array opts;
@@ -665,7 +665,7 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 	// Performance Profiler
 	Object *perf = Engine::get_singleton()->get_singleton_object("Performance");
 	if (perf) {
-		performance_profiler = Ref<PerformanceProfiler>(memnew(PerformanceProfiler(perf)));
+		performance_profiler.instantiate(perf);
 		performance_profiler->bind("performance");
 		profiler_enable("performance", true);
 	}

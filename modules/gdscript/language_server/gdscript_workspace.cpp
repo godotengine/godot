@@ -641,7 +641,7 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 			while (!stack.is_empty()) {
 				current = Object::cast_to<Node>(stack.pop_back());
 				Ref<GDScript> scr = current->get_script();
-				if (scr.is_valid() && scr->get_path() == path) {
+				if (scr.is_valid() && GDScript::is_equal_gdscript_paths(scr->get_path(), path)) {
 					break;
 				}
 				for (int i = 0; i < current->get_child_count(); ++i) {
@@ -650,7 +650,7 @@ void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<S
 			}
 
 			Ref<GDScript> scr = current->get_script();
-			if (!scr.is_valid() || scr->get_path() != path) {
+			if (!scr.is_valid() || !GDScript::is_equal_gdscript_paths(scr->get_path(), path)) {
 				current = owner_scene_node;
 			}
 		}

@@ -276,6 +276,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->update_property();
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
+	if (parameters->get_edited_object() != current.ptr()) {
+		current->update_value_overrides();
+	}
 	parameters->set_object_class(current->get_platform()->get_class_name());
 	parameters->edit(current.ptr());
 
@@ -382,6 +385,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		script_key->set_editable(false);
 		script_key_error->hide();
 	}
+
+	int script_export_mode = current->get_script_export_mode();
+	script_mode->select(script_export_mode);
 
 	updating = false;
 }
@@ -580,6 +586,19 @@ bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
 		is_valid = true;
 	}
 	return is_valid;
+}
+
+void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_script_export_mode(p_mode);
+
+	_update_current_preset();
 }
 
 void ProjectExportDialog::_duplicate_preset() {
@@ -1084,6 +1103,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	exporting = true;
 
 	platform->clear_messages();
+	current->update_value_overrides();
 	Error err = platform->export_project(current, export_debug->is_pressed(), current->get_export_path(), 0);
 	result_dialog_log->clear();
 	if (err != ERR_SKIP) {
@@ -1133,6 +1153,7 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 			ep.step(preset->get_name(), i);
 
 			platform->clear_messages();
+			preset->update_value_overrides();
 			Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
 			if (err == ERR_SKIP) {
 				exporting = false;
@@ -1191,7 +1212,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(mc);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
-	presets->set_auto_translate(false);
+	presets->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(presets, ProjectExportDialog);
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
@@ -1328,7 +1349,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	feature_vb->add_margin_child(TTR("Feature List:"), custom_feature_display, true);
 	sections->add_child(feature_vb);
 
-	// Script export parameters.
+	// Encryption export parameters.
 
 	VBoxContainer *sec_vb = memnew(VBoxContainer);
 	sec_vb->set_name(TTR("Encryption"));
@@ -1372,6 +1393,20 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_more_info->set_text(TTR("More Info..."));
 	sec_more_info->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_key_help_link));
 	sec_vb->add_child(sec_more_info);
+
+	// Script export parameters.
+
+	VBoxContainer *script_vb = memnew(VBoxContainer);
+	script_vb->set_name(TTR("Scripts"));
+
+	script_mode = memnew(OptionButton);
+	script_vb->add_margin_child(TTR("GDScript Export Mode:"), script_mode);
+	script_mode->add_item(TTR("Text (easier debugging)"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
+	script_mode->add_item(TTR("Binary tokens (faster loading)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS);
+	script_mode->add_item(TTR("Compressed binary tokens (smaller files)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
+	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
+
+	sections->add_child(script_vb);
 
 	sections->connect("tab_changed", callable_mp(this, &ProjectExportDialog::_tab_changed));
 

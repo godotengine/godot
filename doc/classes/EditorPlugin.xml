@@ -559,11 +559,10 @@
 				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [UndoRedo] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
 			</description>
 		</method>
-		<method name="get_editor_interface" is_deprecated="true">
+		<method name="get_editor_interface" deprecated="[EditorInterface] is a global singleton and can be accessed directly by its name.">
 			<return type="EditorInterface" />
 			<description>
 				Returns the [EditorInterface] singleton instance.
-				[i]Deprecated.[/i] [EditorInterface] is a global singleton and can be accessed directly by its name.
 			</description>
 		</method>
 		<method name="get_export_as_menu">
@@ -750,10 +749,9 @@
 				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
-		<signal name="project_settings_changed" is_deprecated="true">
+		<signal name="project_settings_changed" deprecated="Use [signal ProjectSettings.settings_changed] instead.">
 			<description>
 				Emitted when any project setting has changed.
-				[i]Deprecated.[/i] Use [signal ProjectSettings.settings_changed] instead.
 			</description>
 		</signal>
 		<signal name="resource_saved">

@@ -2406,7 +2406,36 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 
 void TileSetAtlasSourceEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_READY: {
+			atlas_source_inspector->edit(atlas_source_proxy_object);
+			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "id", TTR("The tile's unique identifier within this TileSet. Each tile stores its source ID, so changing one may make tiles invalid."));
+			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "name", TTR("The human-readable name for the atlas. Use a descriptive name here for organizational purposes (such as \"terrain\", \"decoration\", etc.)."));
+			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "texture", TTR("The image from which the tiles will be created."));
+			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "margins", TTR("The margins on the image's edges that should not be selectable as tiles (in pixels). Increasing this can be useful if you download a tilesheet image that has margins on the edges (e.g. for attribution)."));
+			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "separation", TTR("The separation between each tile on the atlas in pixels. Increasing this can be useful if the tilesheet image you're using contains guides (such as outlines between every tile)."));
+			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "texture_region_size", TTR("The size of each tile on the atlas in pixels. In most cases, this should match the tile size defined in the TileMap property (although this is not strictly necessary)."));
+			atlas_source_inspector->add_custom_property_description("TileSetAtlasSourceProxyObject", "use_texture_padding", TTR("If checked, adds a 1-pixel transparent edge around each tile to prevent texture bleeding when filtering is enabled. It's recommended to leave this enabled unless you're running into rendering issues due to texture padding."));
+
+			tile_inspector->edit(tile_proxy_object);
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "atlas_coords", TTR("The position of the tile's top-left corner in the atlas. The position and size must be within the atlas and can't overlap another tile.\nEach painted tile has associated atlas coords, so changing this property may cause your TileMaps to not display properly."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "size_in_atlas", TTR("The unit size of the tile."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "animation_columns", TTR("Number of columns for the animation grid. If number of columns is lower than number of frames, the animation will automatically adjust row count."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "animation_separation", TTR("The space (in tiles) between each frame of the animation."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "animation_speed", TTR("Animation speed in frames per second."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "animation_mode", TTR("Determines how animation will start. In \"Default\" mode all tiles start animating at the same frame. In \"Random Start Times\" mode, each tile starts animation with a random offset."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "flip_h", TTR("If [code]true[/code], the tile is horizontally flipped."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "flip_v", TTR("If [code]true[/code], the tile is vertically flipped."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "transpose", TTR("If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] and then flipped vertically. In practice, this means that to rotate a tile by 90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and [b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable [b]Flip V[/b] and [b]Transpose[/b]."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "texture_origin", TTR("The origin to use for drawing the tile. This can be used to visually offset the tile compared to the base tile."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "modulate", TTR("The color multiplier to use when rendering the tile."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "material", TTR("The material to use for this tile. This can be used to apply a different blend mode or custom shaders to a single tile."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "z_index", TTR("The sorting order for this tile. Higher values will make the tile render in front of others on the same layer. The index is relative to the TileMap's own Z index."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "y_sort_origin", TTR("The vertical offset to use for tile sorting based on its Y coordinate (in pixels). This allows using layers as if they were on different height for top-down games. Adjusting this can help alleviate issues with sorting certain tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile is placed on."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "terrain_set", TTR("The index of the terrain set this tile belongs to. [code]-1[/code] means it will not be used in terrains."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "terrain", TTR("The index of the terrain inside the terrain set this tile belongs to. [code]-1[/code] means it will not be used in terrains."));
+			tile_inspector->add_custom_property_description("AtlasTileProxyObject", "probability", TTR("The relative probability of this tile appearing when painting with \"Place Random Tile\" enabled."));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			tool_setup_atlas_source_button->set_icon(get_editor_theme_icon(SNAME("Tools")));
 			tool_select_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
@@ -2526,7 +2555,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_inspector = memnew(EditorInspector);
 	tile_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_inspector->set_show_categories(true);
-	tile_inspector->edit(tile_proxy_object);
+	tile_inspector->set_use_doc_hints(true);
 	tile_inspector->set_use_folding(true);
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
 	middle_vbox_container->add_child(tile_inspector);
@@ -2580,8 +2609,8 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector = memnew(EditorInspector);
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(true);
+	atlas_source_inspector->set_use_doc_hints(true);
 	atlas_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
-	atlas_source_inspector->edit(atlas_source_proxy_object);
 	middle_vbox_container->add_child(atlas_source_inspector);
 
 	// -- Right side --
