@@ -1,10 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Godot;
 using Godot.Collections;
 using GodotTools.Internals;
 using Path = System.IO.Path;
-
-#nullable enable
 
 namespace GodotTools.Build
 {
@@ -25,7 +24,7 @@ namespace GodotTools.Build
 
         public string LogsDirPath => GodotSharpDirs.LogsDirPathFor(Solution, Configuration);
 
-        public override bool Equals(object? obj)
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is BuildInfo other &&
                 other.Solution == Solution &&

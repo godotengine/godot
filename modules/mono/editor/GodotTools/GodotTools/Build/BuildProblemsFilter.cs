@@ -1,7 +1,5 @@
 using Godot;
 
-#nullable enable
-
 namespace GodotTools.Build
 {
     public class BuildProblemsFilter

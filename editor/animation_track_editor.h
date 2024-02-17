@@ -556,6 +556,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	SpinBox *optimize_precision_error = nullptr;
 
 	ConfirmationDialog *cleanup_dialog = nullptr;
+	CheckBox *cleanup_keys_with_trimming_head = nullptr;
+	CheckBox *cleanup_keys_with_trimming_end = nullptr;
 	CheckBox *cleanup_keys = nullptr;
 	CheckBox *cleanup_tracks = nullptr;
 	CheckBox *cleanup_all = nullptr;
@@ -654,9 +656,15 @@ public:
 		EDIT_SCALE_SELECTION,
 		EDIT_SCALE_FROM_CURSOR,
 		EDIT_SCALE_CONFIRM,
+		EDIT_SET_START_OFFSET,
+		EDIT_SET_END_OFFSET,
 		EDIT_EASE_SELECTION,
 		EDIT_EASE_CONFIRM,
 		EDIT_DUPLICATE_SELECTED_KEYS,
+		EDIT_DUPLICATE_SELECTION,
+		EDIT_DUPLICATE_TRANSPOSED,
+		EDIT_MOVE_FIRST_SELECTED_KEY_TO_CURSOR,
+		EDIT_MOVE_LAST_SELECTED_KEY_TO_CURSOR,
 		EDIT_ADD_RESET_KEY,
 		EDIT_DELETE_SELECTION,
 		EDIT_GOTO_NEXT_STEP,

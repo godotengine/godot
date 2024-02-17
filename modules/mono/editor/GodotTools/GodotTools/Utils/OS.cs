@@ -150,8 +150,7 @@ namespace GodotTools.Utils
 
         public static char PathSep => IsWindows ? ';' : ':';
 
-        [return: MaybeNull]
-        public static string PathWhich([NotNull] string name)
+        public static string? PathWhich(string name)
         {
             if (IsWindows)
                 return PathWhichWindows(name);
@@ -159,12 +158,11 @@ namespace GodotTools.Utils
             return PathWhichUnix(name);
         }
 
-        [return: MaybeNull]
-        private static string PathWhichWindows([NotNull] string name)
+        private static string? PathWhichWindows(string name)
         {
             string[] windowsExts =
                 Environment.GetEnvironmentVariable("PATHEXT")?.Split(PathSep) ?? Array.Empty<string>();
-            string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
+            string[]? pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
             char[] invalidPathChars = Path.GetInvalidPathChars();
 
             var searchDirs = new List<string>();
@@ -196,10 +194,9 @@ namespace GodotTools.Utils
                     select path + ext).FirstOrDefault(File.Exists);
         }
 
-        [return: MaybeNull]
-        private static string PathWhichUnix([NotNull] string name)
+        private static string? PathWhichUnix(string name)
         {
-            string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
+            string[]? pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
             char[] invalidPathChars = Path.GetInvalidPathChars();
 
             var searchDirs = new List<string>();
@@ -238,7 +235,7 @@ namespace GodotTools.Utils
             foreach (string arg in arguments)
                 startInfo.ArgumentList.Add(arg);
 
-            using Process process = Process.Start(startInfo);
+            using Process? process = Process.Start(startInfo);
 
             if (process == null)
                 throw new InvalidOperationException("No process was started.");
@@ -315,7 +312,7 @@ namespace GodotTools.Utils
 
         public static StringBuilder GetCommandLineDisplay(
             this ProcessStartInfo startInfo,
-            StringBuilder optionalBuilder = null
+            StringBuilder? optionalBuilder = null
         )
         {
             var builder = optionalBuilder ?? new StringBuilder();
