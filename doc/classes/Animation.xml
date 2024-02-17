@@ -359,8 +359,10 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time" type="float" />
 			<param index="2" name="find_mode" type="int" enum="Animation.FindMode" default="0" />
+			<param index="3" name="limit" type="bool" default="false" />
 			<description>
 				Finds the key index by time in a given track. Optionally, only find it if the approx/exact time is given.
+				If [param limit] is [code]true[/code], it does not return keys outside the animation range.
 			</description>
 		</method>
 		<method name="track_get_interpolation_loop_wrap" qualifiers="const">
