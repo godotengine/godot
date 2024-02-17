@@ -139,7 +139,7 @@ public:
 	static Ref<Resource> get_remap_resource(const Ref<Resource> &p_resource, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene);
 
 	int find_node_by_path(const NodePath &p_node) const;
-	Variant get_property_value(int p_node, const StringName &p_property, bool &found) const;
+	Variant get_property_value(int p_node, const StringName &p_property, bool &r_found, bool &r_node_deferred) const;
 	bool is_node_in_group(int p_node, const StringName &p_group) const;
 	bool is_connection(int p_node, const StringName &p_signal, int p_to_node, const StringName &p_to_method) const;
 
