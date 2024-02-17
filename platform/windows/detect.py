@@ -182,13 +182,14 @@ def get_opts():
 
     return [
         ("mingw_prefix", "MinGW prefix", mingw),
-        # Targeted Windows version: 7 (and later), minimum supported version
+        # Targeted Windows version: 10 (and later), minimum supported version
         # XP support dropped after EOL due to missing API for IPv6 and other issues
         # Vista support dropped after EOL due to GH-10243
+        # 7, 8 and 8.1 support dropped for builds with Direct3D 12
         (
             "target_win_version",
-            "Targeted Windows version, >= 0x0601 (Windows 7)",
-            "0x0601",
+            "Targeted Windows version, >= 0x0601 (Windows 7), >= 0x0A00 (Windows 10, if Direct3D 12 is enabled)",
+            "0x0A00",
         ),
         EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("gui", "console")),
         (
@@ -421,6 +422,13 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         else:
             print("Missing environment variable: WindowsSdkDir")
 
+    if int(env["target_win_version"], 16) < 0x0601:
+        print("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        sys.exit(255)
+    elif env["d3d12"] and int(env["target_win_version"], 16) < 0x0A00:
+        print("`target_win_version` should be 0x0A00 or higher (Windows 10) for build with Direct3D 12 enabled.")
+        sys.exit(255)
+
     env.AppendUnique(
         CPPDEFINES=[
             "WINDOWS_ENABLED",
@@ -649,6 +657,13 @@ def configure_mingw(env: "SConsEnvironment"):
     env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE)])
 
     ## Compile flags
+
+    if int(env["target_win_version"], 16) < 0x0601:
+        print("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        sys.exit(255)
+    elif env["d3d12"] and int(env["target_win_version"], 16) < 0x0A00:
+        print("`target_win_version` should be 0x0A00 or higher (Windows 10) for build with Direct3D 12 enabled.")
+        sys.exit(255)
 
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
