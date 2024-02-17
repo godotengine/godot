@@ -264,8 +264,8 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			if (topic == "class_enum") {
 				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-				for (int i = 0; i < cd.constants.size(); i++) {
-					if (cd.constants[i].enumeration == link) {
+				for (const DocData::ConstantDoc &constant : cd.constants) {
+					if (constant.enumeration == link) {
 						// Found in @GlobalScope.
 						emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
 						return;
@@ -274,8 +274,8 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			} else if (topic == "class_constant") {
 				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-				for (int i = 0; i < cd.constants.size(); i++) {
-					if (cd.constants[i].name == link) {
+				for (const DocData::ConstantDoc &constant : cd.constants) {
+					if (constant.name == link) {
 						// Found in @GlobalScope.
 						emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
 						return;
@@ -483,7 +483,9 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->add_text(" ");
 	}
 
-	if (p_overview && !p_method.description.strip_edges().is_empty()) {
+	const bool is_documented = p_method.is_deprecated || p_method.is_experimental || !p_method.description.strip_edges().is_empty();
+
+	if (p_overview && is_documented) {
 		class_desc->push_meta("@method " + p_method.name);
 	}
 
@@ -491,7 +493,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->add_text(p_method.name);
 	class_desc->pop(); // color
 
-	if (p_overview && !p_method.description.strip_edges().is_empty()) {
+	if (p_overview && is_documented) {
 		class_desc->pop(); // meta
 	}
 
@@ -500,22 +502,25 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->pop(); // color
 
 	for (int j = 0; j < p_method.arguments.size(); j++) {
+		const DocData::ArgumentDoc &argument = p_method.arguments[j];
+
 		class_desc->push_color(theme_cache.text_color);
+
 		if (j > 0) {
 			class_desc->add_text(", ");
 		}
 
-		class_desc->add_text(p_method.arguments[j].name);
+		class_desc->add_text(argument.name);
 		class_desc->add_text(": ");
-		_add_type(p_method.arguments[j].type, p_method.arguments[j].enumeration, p_method.arguments[j].is_bitfield);
+		_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
-		if (!p_method.arguments[j].default_value.is_empty()) {
+		if (!argument.default_value.is_empty()) {
 			class_desc->push_color(theme_cache.symbol_color);
 			class_desc->add_text(" = ");
 			class_desc->pop(); // color
 
 			class_desc->push_color(theme_cache.value_color);
-			class_desc->add_text(_fix_constant(p_method.arguments[j].default_value));
+			class_desc->add_text(_fix_constant(argument.default_value));
 			class_desc->pop(); // color
 		}
 
@@ -667,10 +672,10 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 	for (int pass = 0; pass < 2; pass++) {
 		Vector<DocData::MethodDoc> m;
 
-		for (int i = 0; i < p_methods.size(); i++) {
-			const String &q = p_methods[i].qualifiers;
+		for (const DocData::MethodDoc &method : p_methods) {
+			const String &q = method.qualifiers;
 			if ((pass == 0 && q.contains("virtual")) || (pass == 1 && !q.contains("virtual"))) {
-				m.push_back(p_methods[i]);
+				m.push_back(method);
 			}
 		}
 
@@ -745,13 +750,15 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 		}
 
 		for (int i = 0; i < methods_filtered.size(); i++) {
+			const DocData::MethodDoc &method = methods_filtered[i];
+
 			class_desc->add_newline();
 			class_desc->add_newline();
 			class_desc->add_newline();
 
 			_push_code_font();
 			// For constructors always point to the first one.
-			_add_method(methods_filtered[i], false, (p_method_type != METHOD_TYPE_CONSTRUCTOR || i == 0));
+			_add_method(method, false, (p_method_type != METHOD_TYPE_CONSTRUCTOR || i == 0));
 			_pop_code_font();
 
 			class_desc->add_newline();
@@ -761,40 +768,50 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 			_push_normal_font();
 			class_desc->push_color(theme_cache.text_color);
 
-			if (methods_filtered[i].is_deprecated) {
+			bool has_prev_text = false;
+
+			if (method.is_deprecated) {
+				has_prev_text = true;
+
 				static const char *messages_by_type[METHOD_TYPE_MAX] = {
 					TTRC("This method may be changed or removed in future versions."),
 					TTRC("This constructor may be changed or removed in future versions."),
 					TTRC("This operator may be changed or removed in future versions."),
 				};
-				DEPRECATED_DOC_MSG(DTR_DOC(methods_filtered[i].deprecated_message), TTRGET(messages_by_type[p_method_type]));
-
-				class_desc->add_newline();
-				class_desc->add_newline();
+				DEPRECATED_DOC_MSG(DTR_DOC(method.deprecated_message), TTRGET(messages_by_type[p_method_type]));
 			}
 
-			if (methods_filtered[i].is_experimental) {
+			if (method.is_experimental) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
+
 				static const char *messages_by_type[METHOD_TYPE_MAX] = {
 					TTRC("This method may be changed or removed in future versions."),
 					TTRC("This constructor may be changed or removed in future versions."),
 					TTRC("This operator may be changed or removed in future versions."),
 				};
-				EXPERIMENTAL_DOC_MSG(DTR_DOC(methods_filtered[i].experimental_message), TTRGET(messages_by_type[p_method_type]));
-
-				class_desc->add_newline();
-				class_desc->add_newline();
+				EXPERIMENTAL_DOC_MSG(DTR_DOC(method.experimental_message), TTRGET(messages_by_type[p_method_type]));
 			}
 
-			if (!methods_filtered[i].errors_returned.is_empty()) {
+			if (!method.errors_returned.is_empty()) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
+
 				class_desc->add_text(TTR("Error codes returned:"));
 				class_desc->add_newline();
 				class_desc->push_list(0, RichTextLabel::LIST_DOTS, false);
-				for (int j = 0; j < methods_filtered[i].errors_returned.size(); j++) {
+				for (int j = 0; j < method.errors_returned.size(); j++) {
 					if (j > 0) {
 						class_desc->add_newline();
 					}
 
-					int val = methods_filtered[i].errors_returned[j];
+					int val = method.errors_returned[j];
 					String text = itos(val);
 					for (int k = 0; k < CoreConstants::get_global_constant_count(); k++) {
 						if (CoreConstants::get_global_constant_value(k) == val && CoreConstants::get_global_constant_enum(k) == SNAME("Error")) {
@@ -808,15 +825,25 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 					class_desc->pop(); // font
 				}
 				class_desc->pop(); // list
-
-				class_desc->add_newline();
-				class_desc->add_newline();
 			}
 
-			const String descr = DTR_DOC(methods_filtered[i].description).strip_edges();
+			const String descr = DTR_DOC(method.description).strip_edges();
+			const bool is_documented = method.is_deprecated || method.is_experimental || !descr.is_empty();
 			if (!descr.is_empty()) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
+
 				_add_text(descr);
-			} else {
+			} else if (!is_documented) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
+
 				String message;
 				if (p_classdoc.is_script_doc) {
 					static const char *messages_by_type[METHOD_TYPE_MAX] = {
@@ -1049,10 +1076,10 @@ void EditorHelp::_update_doc() {
 		_push_code_font();
 		class_desc->push_color(theme_cache.symbol_color);
 
-		for (int i = 0; i < cd.tutorials.size(); i++) {
-			const String link = DTR_DOC(cd.tutorials[i].link).strip_edges();
+		for (const DocData::TutorialDoc &tutorial : cd.tutorials) {
+			const String link = DTR_DOC(tutorial.link).strip_edges();
 
-			String link_text = DTR_DOC(cd.tutorials[i].title).strip_edges();
+			String link_text = DTR_DOC(tutorial.title).strip_edges();
 			if (link_text.is_empty()) {
 				const int sep_pos = link.find("//");
 				if (sep_pos >= 0) {
@@ -1078,7 +1105,8 @@ void EditorHelp::_update_doc() {
 	bool has_properties = false;
 	bool has_property_descriptions = false;
 	for (const DocData::PropertyDoc &prop : cd.properties) {
-		if (cd.is_script_doc && prop.name.begins_with("_") && prop.description.strip_edges().is_empty()) {
+		const bool is_documented = prop.is_deprecated || prop.is_experimental || !prop.description.strip_edges().is_empty();
+		if (!is_documented && prop.name.begins_with("_")) {
 			continue;
 		}
 		has_properties = true;
@@ -1110,13 +1138,14 @@ void EditorHelp::_update_doc() {
 		bool is_generating_overridden_properties = true; // Set to false as soon as we encounter a non-overridden property.
 		bool overridden_property_exists = false;
 
-		for (int i = 0; i < cd.properties.size(); i++) {
+		for (const DocData::PropertyDoc &prop : cd.properties) {
 			// Ignore undocumented private.
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
+			const bool is_documented = prop.is_deprecated || prop.is_experimental || !prop.description.strip_edges().is_empty();
+			if (!is_documented && prop.name.begins_with("_")) {
 				continue;
 			}
 
-			if (is_generating_overridden_properties && !cd.properties[i].overridden) {
+			if (is_generating_overridden_properties && !prop.overridden) {
 				is_generating_overridden_properties = false;
 				// No need for the extra spacing when there's no overridden property.
 				if (overridden_property_exists) {
@@ -1131,31 +1160,31 @@ void EditorHelp::_update_doc() {
 				}
 			}
 
-			property_line[cd.properties[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
+			property_line[prop.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			// Property type.
 			class_desc->push_cell();
 			class_desc->push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
-			_add_type(cd.properties[i].type, cd.properties[i].enumeration, cd.properties[i].is_bitfield);
+			_add_type(prop.type, prop.enumeration, prop.is_bitfield);
 			class_desc->pop(); // paragraph
 			class_desc->pop(); // cell
 
 			bool describe = false;
 
-			if (!cd.properties[i].setter.is_empty()) {
-				skip_methods.insert(cd.properties[i].setter);
+			if (!prop.setter.is_empty()) {
+				skip_methods.insert(prop.setter);
 				describe = true;
 			}
-			if (!cd.properties[i].getter.is_empty()) {
-				skip_methods.insert(cd.properties[i].getter);
-				describe = true;
-			}
-
-			if (!cd.properties[i].description.strip_edges().is_empty()) {
+			if (!prop.getter.is_empty()) {
+				skip_methods.insert(prop.getter);
 				describe = true;
 			}
 
-			if (cd.properties[i].overridden) {
+			if (is_documented) {
+				describe = true;
+			}
+
+			if (prop.overridden) {
 				describe = false;
 			}
 
@@ -1164,10 +1193,10 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(theme_cache.headline_color);
 
 			if (describe) {
-				class_desc->push_meta("@member " + cd.properties[i].name);
+				class_desc->push_meta("@member " + prop.name);
 			}
 
-			class_desc->add_text(cd.properties[i].name);
+			class_desc->add_text(prop.name);
 
 			if (describe) {
 				class_desc->pop(); // meta
@@ -1179,13 +1208,13 @@ void EditorHelp::_update_doc() {
 			// Property value.
 			class_desc->push_cell();
 
-			if (!cd.properties[i].default_value.is_empty()) {
-				if (cd.properties[i].overridden) {
+			if (!prop.default_value.is_empty()) {
+				if (prop.overridden) {
 					class_desc->push_color(theme_cache.override_color);
 					class_desc->add_text("[");
-					const String link = vformat("[url=@member %s.%s]%s[/url]", cd.properties[i].overrides, cd.properties[i].name, cd.properties[i].overrides);
+					const String link = vformat("[url=@member %s.%s]%s[/url]", prop.overrides, prop.name, prop.overrides);
 					class_desc->append_text(vformat(TTR("overrides %s:"), link));
-					class_desc->add_text(" " + _fix_constant(cd.properties[i].default_value) + "]");
+					class_desc->add_text(" " + _fix_constant(prop.default_value) + "]");
 					class_desc->pop(); // color
 					overridden_property_exists = true;
 				} else {
@@ -1194,7 +1223,7 @@ void EditorHelp::_update_doc() {
 					class_desc->pop(); // color
 
 					class_desc->push_color(theme_cache.value_color);
-					class_desc->add_text(_fix_constant(cd.properties[i].default_value));
+					class_desc->add_text(_fix_constant(prop.default_value));
 					class_desc->pop(); // color
 
 					class_desc->push_color(theme_cache.symbol_color);
@@ -1210,20 +1239,20 @@ void EditorHelp::_update_doc() {
 
 			bool has_prev_text = false;
 
-			if (cd.is_script_doc && (!cd.properties[i].setter.is_empty() || !cd.properties[i].getter.is_empty())) {
+			if (cd.is_script_doc && (!prop.setter.is_empty() || !prop.getter.is_empty())) {
 				has_prev_text = true;
 
 				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text("[" + TTR("property:") + " ");
 				class_desc->pop(); // color
 
-				if (!cd.properties[i].setter.is_empty()) {
+				if (!prop.setter.is_empty()) {
 					class_desc->push_color(theme_cache.value_color);
 					class_desc->add_text("setter");
 					class_desc->pop(); // color
 				}
-				if (!cd.properties[i].getter.is_empty()) {
-					if (!cd.properties[i].setter.is_empty()) {
+				if (!prop.getter.is_empty()) {
+					if (!prop.setter.is_empty()) {
 						class_desc->push_color(theme_cache.symbol_color);
 						class_desc->add_text(", ");
 						class_desc->pop(); // color
@@ -1238,7 +1267,7 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); // color
 			}
 
-			if (cd.properties[i].is_deprecated) {
+			if (prop.is_deprecated) {
 				if (has_prev_text) {
 					class_desc->add_text(" ");
 				}
@@ -1246,7 +1275,7 @@ void EditorHelp::_update_doc() {
 				DEPRECATED_DOC_TAG;
 			}
 
-			if (cd.properties[i].is_experimental) {
+			if (prop.is_experimental) {
 				if (has_prev_text) {
 					class_desc->add_text(" ");
 				}
@@ -1267,17 +1296,18 @@ void EditorHelp::_update_doc() {
 
 	Vector<DocData::MethodDoc> methods;
 
-	for (int i = 0; i < cd.methods.size(); i++) {
-		if (skip_methods.has(cd.methods[i].name)) {
-			if (cd.methods[i].arguments.size() == 0 /* getter */ || (cd.methods[i].arguments.size() == 1 && cd.methods[i].return_type == "void" /* setter */)) {
+	for (const DocData::MethodDoc &method : cd.methods) {
+		if (skip_methods.has(method.name)) {
+			if (method.arguments.is_empty() /* getter */ || (method.arguments.size() == 1 && method.return_type == "void" /* setter */)) {
 				continue;
 			}
 		}
 		// Ignore undocumented non virtual private.
-		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.strip_edges().is_empty() && !cd.methods[i].qualifiers.contains("virtual")) {
+		const bool is_documented = method.is_deprecated || method.is_experimental || !method.description.strip_edges().is_empty();
+		if (!is_documented && method.name.begins_with("_") && !method.qualifiers.contains("virtual")) {
 			continue;
 		}
-		methods.push_back(cd.methods[i]);
+		methods.push_back(method);
 	}
 
 	if (!cd.constructors.is_empty()) {
@@ -1320,9 +1350,9 @@ void EditorHelp::_update_doc() {
 		data_type_names["icon"] = TTR("Icons");
 		data_type_names["style"] = TTR("Styles");
 
-		for (int i = 0; i < cd.theme_properties.size(); i++) {
-			if (theme_data_type != cd.theme_properties[i].data_type) {
-				theme_data_type = cd.theme_properties[i].data_type;
+		for (const DocData::ThemeItemDoc &theme_item : cd.theme_properties) {
+			if (theme_data_type != theme_item.data_type) {
+				theme_data_type = theme_item.data_type;
 
 				class_desc->add_newline();
 				class_desc->add_newline();
@@ -1343,7 +1373,7 @@ void EditorHelp::_update_doc() {
 			class_desc->add_newline();
 			class_desc->add_newline();
 
-			theme_property_line[cd.theme_properties[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
+			theme_property_line[theme_item.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			class_desc->push_indent(1);
 
@@ -1352,22 +1382,22 @@ void EditorHelp::_update_doc() {
 			_add_bulletpoint();
 
 			// Theme item object type.
-			_add_type(cd.theme_properties[i].type);
+			_add_type(theme_item.type);
 
 			// Theme item name.
 			class_desc->push_color(theme_cache.headline_color);
 			class_desc->add_text(" ");
-			class_desc->add_text(cd.theme_properties[i].name);
+			class_desc->add_text(theme_item.name);
 			class_desc->pop(); // color
 
 			// Theme item default value.
-			if (!cd.theme_properties[i].default_value.is_empty()) {
+			if (!theme_item.default_value.is_empty()) {
 				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text(" [" + TTR("default:") + " ");
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.value_color);
-				class_desc->add_text(_fix_constant(cd.theme_properties[i].default_value));
+				class_desc->add_text(_fix_constant(theme_item.default_value));
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.symbol_color);
@@ -1382,7 +1412,7 @@ void EditorHelp::_update_doc() {
 			_push_normal_font();
 			class_desc->push_color(theme_cache.comment_color);
 
-			const String descr = DTR_DOC(cd.theme_properties[i].description).strip_edges();
+			const String descr = DTR_DOC(theme_item.description).strip_edges();
 			if (!descr.is_empty()) {
 				_add_text(descr);
 			} else {
@@ -1419,11 +1449,11 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Signals"));
 		_pop_title_font();
 
-		for (int i = 0; i < cd.signals.size(); i++) {
+		for (const DocData::MethodDoc &signal : cd.signals) {
 			class_desc->add_newline();
 			class_desc->add_newline();
 
-			signal_line[cd.signals[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
+			signal_line[signal.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			class_desc->push_indent(1);
 
@@ -1431,33 +1461,35 @@ void EditorHelp::_update_doc() {
 			_push_code_font();
 			_add_bulletpoint();
 			class_desc->push_color(theme_cache.headline_color);
-			class_desc->add_text(cd.signals[i].name);
+			class_desc->add_text(signal.name);
 			class_desc->pop(); // color
 
 			class_desc->push_color(theme_cache.symbol_color);
 			class_desc->add_text("(");
 			class_desc->pop(); // color
 
-			for (int j = 0; j < cd.signals[i].arguments.size(); j++) {
+			for (int j = 0; j < signal.arguments.size(); j++) {
+				const DocData::ArgumentDoc &argument = signal.arguments[j];
+
 				class_desc->push_color(theme_cache.text_color);
 
 				if (j > 0) {
 					class_desc->add_text(", ");
 				}
 
-				class_desc->add_text(cd.signals[i].arguments[j].name);
+				class_desc->add_text(argument.name);
 				class_desc->add_text(": ");
-				_add_type(cd.signals[i].arguments[j].type, cd.signals[i].arguments[j].enumeration, cd.signals[i].arguments[j].is_bitfield);
+				_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
 				// Signals currently do not support default argument values, neither the core nor GDScript.
 				// This code is just for completeness.
-				if (!cd.signals[i].arguments[j].default_value.is_empty()) {
+				if (!argument.default_value.is_empty()) {
 					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(" = ");
 					class_desc->pop(); // color
 
 					class_desc->push_color(theme_cache.value_color);
-					class_desc->add_text(_fix_constant(cd.signals[i].arguments[j].default_value));
+					class_desc->add_text(_fix_constant(argument.default_value));
 					class_desc->pop(); // color
 				}
 
@@ -1477,28 +1509,36 @@ void EditorHelp::_update_doc() {
 			_push_normal_font();
 			class_desc->push_color(theme_cache.comment_color);
 
-			const String descr = DTR_DOC(cd.signals[i].description).strip_edges();
+			const String descr = DTR_DOC(signal.description).strip_edges();
 			const bool is_multiline = descr.find_char('\n') > 0;
+			bool has_prev_text = false;
 
-			if (cd.signals[i].is_deprecated) {
-				DEPRECATED_DOC_MSG(DTR_DOC(cd.signals[i].deprecated_message), TTR("This signal may be changed or removed in future versions."));
-				class_desc->add_newline();
-				if (is_multiline) {
-					class_desc->add_newline();
-				}
+			if (signal.is_deprecated) {
+				has_prev_text = true;
+				DEPRECATED_DOC_MSG(DTR_DOC(signal.deprecated_message), TTR("This signal may be changed or removed in future versions."));
 			}
 
-			if (cd.signals[i].is_experimental) {
-				EXPERIMENTAL_DOC_MSG(DTR_DOC(cd.signals[i].experimental_message), TTR("This signal may be changed or removed in future versions."));
-				class_desc->add_newline();
-				if (is_multiline) {
+			if (signal.is_experimental) {
+				if (has_prev_text) {
 					class_desc->add_newline();
+					if (is_multiline) {
+						class_desc->add_newline();
+					}
 				}
+				has_prev_text = true;
+				EXPERIMENTAL_DOC_MSG(DTR_DOC(signal.experimental_message), TTR("This signal may be changed or removed in future versions."));
 			}
 
 			if (!descr.is_empty()) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					if (is_multiline) {
+						class_desc->add_newline();
+					}
+				}
+				has_prev_text = true;
 				_add_text(descr);
-			} else {
+			} else if (!has_prev_text) {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
@@ -1523,19 +1563,20 @@ void EditorHelp::_update_doc() {
 		HashMap<String, Vector<DocData::ConstantDoc>> enums;
 		Vector<DocData::ConstantDoc> constants;
 
-		for (int i = 0; i < cd.constants.size(); i++) {
-			if (!cd.constants[i].enumeration.is_empty()) {
-				if (!enums.has(cd.constants[i].enumeration)) {
-					enums[cd.constants[i].enumeration] = Vector<DocData::ConstantDoc>();
+		for (const DocData::ConstantDoc &constant : cd.constants) {
+			if (!constant.enumeration.is_empty()) {
+				if (!enums.has(constant.enumeration)) {
+					enums[constant.enumeration] = Vector<DocData::ConstantDoc>();
 				}
 
-				enums[cd.constants[i].enumeration].push_back(cd.constants[i]);
+				enums[constant.enumeration].push_back(constant);
 			} else {
 				// Ignore undocumented private.
-				if (cd.constants[i].name.begins_with("_") && cd.constants[i].description.strip_edges().is_empty()) {
+				const bool is_documented = constant.is_deprecated || constant.is_experimental || !constant.description.strip_edges().is_empty();
+				if (!is_documented && constant.name.begins_with("_")) {
 					continue;
 				}
-				constants.push_back(cd.constants[i]);
+				constants.push_back(constant);
 			}
 		}
 
@@ -1543,7 +1584,8 @@ void EditorHelp::_update_doc() {
 		bool has_enums = enums.size() && !cd.is_script_doc;
 		if (enums.size() && !has_enums) {
 			for (KeyValue<String, DocData::EnumDoc> &E : cd.enums) {
-				if (E.key.begins_with("_") && E.value.description.strip_edges().is_empty()) {
+				const bool is_documented = E.value.is_deprecated || E.value.is_experimental || !E.value.description.strip_edges().is_empty();
+				if (!is_documented && E.key.begins_with("_")) {
 					continue;
 				}
 				has_enums = true;
@@ -1565,7 +1607,8 @@ void EditorHelp::_update_doc() {
 					key = key.get_slice(".", 1);
 				}
 				if (cd.enums.has(key)) {
-					if (cd.is_script_doc && cd.enums[key].description.strip_edges().is_empty() && E.key.begins_with("_")) {
+					const bool is_documented = cd.enums[key].is_deprecated || cd.enums[key].is_experimental || !cd.enums[key].description.strip_edges().is_empty();
+					if (!is_documented && cd.is_script_doc && E.key.begins_with("_")) {
 						continue;
 					}
 				}
@@ -1641,13 +1684,12 @@ void EditorHelp::_update_doc() {
 					}
 				}
 
-				Vector<DocData::ConstantDoc> enum_list = E.value;
 				HashMap<String, int> enum_values;
 				const int enum_start_line = enum_line[E.key];
 
 				bool prev_is_multiline = true; // Use a large margin for the first item.
-				for (int i = 0; i < enum_list.size(); i++) {
-					const String descr = DTR_DOC(enum_list[i].description).strip_edges();
+				for (const DocData::ConstantDoc &enum_value : E.value) {
+					const String descr = DTR_DOC(enum_value.description).strip_edges();
 					const bool is_multiline = descr.find_char('\n') > 0;
 
 					class_desc->add_newline();
@@ -1657,11 +1699,11 @@ void EditorHelp::_update_doc() {
 					prev_is_multiline = is_multiline;
 
 					if (cd.name == "@GlobalScope") {
-						enum_values[enum_list[i].name] = enum_start_line;
+						enum_values[enum_value.name] = enum_start_line;
 					}
 
 					// Add the enum constant line to the constant_line map so we can locate it as a constant.
-					constant_line[enum_list[i].name] = class_desc->get_paragraph_count() - 2;
+					constant_line[enum_value.name] = class_desc->get_paragraph_count() - 2;
 
 					class_desc->push_indent(1);
 
@@ -1670,7 +1712,7 @@ void EditorHelp::_update_doc() {
 					_add_bulletpoint();
 
 					class_desc->push_color(theme_cache.headline_color);
-					class_desc->add_text(enum_list[i].name);
+					class_desc->add_text(enum_value.name);
 					class_desc->pop(); // color
 
 					class_desc->push_color(theme_cache.symbol_color);
@@ -1678,13 +1720,13 @@ void EditorHelp::_update_doc() {
 					class_desc->pop(); // color
 
 					class_desc->push_color(theme_cache.value_color);
-					class_desc->add_text(_fix_constant(enum_list[i].value));
+					class_desc->add_text(_fix_constant(enum_value.value));
 					class_desc->pop(); // color
 
 					_pop_code_font();
 
 					// Enum value description.
-					if (enum_list[i].is_deprecated || enum_list[i].is_experimental || !descr.is_empty()) {
+					if (enum_value.is_deprecated || enum_value.is_experimental || !descr.is_empty()) {
 						class_desc->add_newline();
 
 						class_desc->push_indent(1);
@@ -1693,12 +1735,12 @@ void EditorHelp::_update_doc() {
 
 						bool has_prev_text = false;
 
-						if (enum_list[i].is_deprecated) {
+						if (enum_value.is_deprecated) {
 							has_prev_text = true;
-							DEPRECATED_DOC_MSG(DTR_DOC(enum_list[i].deprecated_message), TTR("This constant may be changed or removed in future versions."));
+							DEPRECATED_DOC_MSG(DTR_DOC(enum_value.deprecated_message), TTR("This constant may be changed or removed in future versions."));
 						}
 
-						if (enum_list[i].is_experimental) {
+						if (enum_value.is_experimental) {
 							if (has_prev_text) {
 								class_desc->add_newline();
 								if (is_multiline) {
@@ -1706,7 +1748,7 @@ void EditorHelp::_update_doc() {
 								}
 							}
 							has_prev_text = true;
-							EXPERIMENTAL_DOC_MSG(DTR_DOC(enum_list[i].experimental_message), TTR("This constant may be changed or removed in future versions."));
+							EXPERIMENTAL_DOC_MSG(DTR_DOC(enum_value.experimental_message), TTR("This constant may be changed or removed in future versions."));
 						}
 
 						if (!descr.is_empty()) {
@@ -1745,8 +1787,8 @@ void EditorHelp::_update_doc() {
 			_pop_title_font();
 
 			bool prev_is_multiline = true; // Use a large margin for the first item.
-			for (int i = 0; i < constants.size(); i++) {
-				const String descr = DTR_DOC(constants[i].description).strip_edges();
+			for (const DocData::ConstantDoc &constant : constants) {
+				const String descr = DTR_DOC(constant.description).strip_edges();
 				const bool is_multiline = descr.find_char('\n') > 0;
 
 				class_desc->add_newline();
@@ -1755,15 +1797,15 @@ void EditorHelp::_update_doc() {
 				}
 				prev_is_multiline = is_multiline;
 
-				constant_line[constants[i].name] = class_desc->get_paragraph_count() - 2;
+				constant_line[constant.name] = class_desc->get_paragraph_count() - 2;
 
 				class_desc->push_indent(1);
 
 				// Constant header.
 				_push_code_font();
 
-				if (constants[i].value.begins_with("Color(") && constants[i].value.ends_with(")")) {
-					String stripped = constants[i].value.replace(" ", "").replace("Color(", "").replace(")", "");
+				if (constant.value.begins_with("Color(") && constant.value.ends_with(")")) {
+					String stripped = constant.value.replace(" ", "").replace("Color(", "").replace(")", "");
 					PackedFloat64Array color = stripped.split_floats(",");
 					if (color.size() >= 3) {
 						class_desc->push_color(Color(color[0], color[1], color[2]));
@@ -1775,7 +1817,7 @@ void EditorHelp::_update_doc() {
 				}
 
 				class_desc->push_color(theme_cache.headline_color);
-				class_desc->add_text(constants[i].name);
+				class_desc->add_text(constant.name);
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.symbol_color);
@@ -1783,13 +1825,13 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.value_color);
-				class_desc->add_text(_fix_constant(constants[i].value));
+				class_desc->add_text(_fix_constant(constant.value));
 				class_desc->pop(); // color
 
 				_pop_code_font();
 
 				// Constant description.
-				if (constants[i].is_deprecated || constants[i].is_experimental || !descr.is_empty()) {
+				if (constant.is_deprecated || constant.is_experimental || !descr.is_empty()) {
 					class_desc->add_newline();
 
 					class_desc->push_indent(1);
@@ -1798,12 +1840,12 @@ void EditorHelp::_update_doc() {
 
 					bool has_prev_text = false;
 
-					if (constants[i].is_deprecated) {
+					if (constant.is_deprecated) {
 						has_prev_text = true;
-						DEPRECATED_DOC_MSG(DTR_DOC(constants[i].deprecated_message), TTR("This constant may be changed or removed in future versions."));
+						DEPRECATED_DOC_MSG(DTR_DOC(constant.deprecated_message), TTR("This constant may be changed or removed in future versions."));
 					}
 
-					if (constants[i].is_experimental) {
+					if (constant.is_experimental) {
 						if (has_prev_text) {
 							class_desc->add_newline();
 							if (is_multiline) {
@@ -1811,7 +1853,7 @@ void EditorHelp::_update_doc() {
 							}
 						}
 						has_prev_text = true;
-						EXPERIMENTAL_DOC_MSG(DTR_DOC(constants[i].experimental_message), TTR("This constant may be changed or removed in future versions."));
+						EXPERIMENTAL_DOC_MSG(DTR_DOC(constant.experimental_message), TTR("This constant may be changed or removed in future versions."));
 					}
 
 					if (!descr.is_empty()) {
@@ -1849,11 +1891,11 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Annotations"));
 		_pop_title_font();
 
-		for (int i = 0; i < cd.annotations.size(); i++) {
+		for (const DocData::MethodDoc &annotation : cd.annotations) {
 			class_desc->add_newline();
 			class_desc->add_newline();
 
-			annotation_line[cd.annotations[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
+			annotation_line[annotation.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			class_desc->push_indent(1);
 
@@ -1862,41 +1904,43 @@ void EditorHelp::_update_doc() {
 			_add_bulletpoint();
 
 			class_desc->push_color(theme_cache.headline_color);
-			class_desc->add_text(cd.annotations[i].name);
+			class_desc->add_text(annotation.name);
 			class_desc->pop(); // color
 
-			if (cd.annotations[i].arguments.size() > 0) {
+			if (!annotation.arguments.is_empty()) {
 				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text("(");
 				class_desc->pop(); // color
 
-				for (int j = 0; j < cd.annotations[i].arguments.size(); j++) {
+				for (int j = 0; j < annotation.arguments.size(); j++) {
+					const DocData::ArgumentDoc &argument = annotation.arguments[j];
+
 					class_desc->push_color(theme_cache.text_color);
 
 					if (j > 0) {
 						class_desc->add_text(", ");
 					}
 
-					class_desc->add_text(cd.annotations[i].arguments[j].name);
+					class_desc->add_text(argument.name);
 					class_desc->add_text(": ");
-					_add_type(cd.annotations[i].arguments[j].type);
+					_add_type(argument.type);
 
-					if (!cd.annotations[i].arguments[j].default_value.is_empty()) {
+					if (!argument.default_value.is_empty()) {
 						class_desc->push_color(theme_cache.symbol_color);
 						class_desc->add_text(" = ");
 						class_desc->pop(); // color
 
 						class_desc->push_color(theme_cache.value_color);
-						class_desc->add_text(_fix_constant(cd.annotations[i].arguments[j].default_value));
+						class_desc->add_text(_fix_constant(argument.default_value));
 						class_desc->pop(); // color
 					}
 
 					class_desc->pop(); // color
 				}
 
-				if (cd.annotations[i].qualifiers.contains("vararg")) {
+				if (annotation.qualifiers.contains("vararg")) {
 					class_desc->push_color(theme_cache.text_color);
-					if (!cd.annotations[i].arguments.is_empty()) {
+					if (!annotation.arguments.is_empty()) {
 						class_desc->add_text(", ");
 					}
 					class_desc->pop(); // color
@@ -1911,10 +1955,10 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); // color
 			}
 
-			if (!cd.annotations[i].qualifiers.is_empty()) {
+			if (!annotation.qualifiers.is_empty()) {
 				class_desc->push_color(theme_cache.qualifier_color);
 				class_desc->add_text(" ");
-				class_desc->add_text(cd.annotations[i].qualifiers);
+				class_desc->add_text(annotation.qualifiers);
 				class_desc->pop(); // color
 			}
 
@@ -1927,7 +1971,7 @@ void EditorHelp::_update_doc() {
 			_push_normal_font();
 			class_desc->push_color(theme_cache.comment_color);
 
-			const String descr = DTR_DOC(cd.annotations[i].description).strip_edges();
+			const String descr = DTR_DOC(annotation.description).strip_edges();
 			if (!descr.is_empty()) {
 				_add_text(descr);
 			} else {
@@ -1961,12 +2005,13 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Property Descriptions"));
 		_pop_title_font();
 
-		for (int i = 0; i < cd.properties.size(); i++) {
-			if (cd.properties[i].overridden) {
+		for (const DocData::PropertyDoc &prop : cd.properties) {
+			if (prop.overridden) {
 				continue;
 			}
 			// Ignore undocumented private.
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
+			const bool is_documented = prop.is_deprecated || prop.is_experimental || !prop.description.strip_edges().is_empty();
+			if (!is_documented && prop.name.begins_with("_")) {
 				continue;
 			}
 
@@ -1974,7 +2019,7 @@ void EditorHelp::_update_doc() {
 			class_desc->add_newline();
 			class_desc->add_newline();
 
-			property_line[cd.properties[i].name] = class_desc->get_paragraph_count() - 2;
+			property_line[prop.name] = class_desc->get_paragraph_count() - 2;
 
 			class_desc->push_table(2);
 			class_desc->set_table_column_expand(1, true);
@@ -1982,7 +2027,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_cell();
 			_push_code_font();
 			_add_bulletpoint();
-			_add_type(cd.properties[i].type, cd.properties[i].enumeration, cd.properties[i].is_bitfield);
+			_add_type(prop.type, prop.enumeration, prop.is_bitfield);
 			_pop_code_font();
 			class_desc->pop(); // cell
 
@@ -1990,16 +2035,16 @@ void EditorHelp::_update_doc() {
 			_push_code_font();
 
 			class_desc->push_color(theme_cache.headline_color);
-			class_desc->add_text(cd.properties[i].name);
+			class_desc->add_text(prop.name);
 			class_desc->pop(); // color
 
-			if (!cd.properties[i].default_value.is_empty()) {
+			if (!prop.default_value.is_empty()) {
 				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text(" [" + TTR("default:") + " ");
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.value_color);
-				class_desc->add_text(_fix_constant(cd.properties[i].default_value));
+				class_desc->add_text(_fix_constant(prop.default_value));
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.symbol_color);
@@ -2007,18 +2052,18 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); // color
 			}
 
-			if (cd.is_script_doc && (!cd.properties[i].setter.is_empty() || !cd.properties[i].getter.is_empty())) {
+			if (cd.is_script_doc && (!prop.setter.is_empty() || !prop.getter.is_empty())) {
 				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text(" [" + TTR("property:") + " ");
 				class_desc->pop(); // color
 
-				if (!cd.properties[i].setter.is_empty()) {
+				if (!prop.setter.is_empty()) {
 					class_desc->push_color(theme_cache.value_color);
 					class_desc->add_text("setter");
 					class_desc->pop(); // color
 				}
-				if (!cd.properties[i].getter.is_empty()) {
-					if (!cd.properties[i].setter.is_empty()) {
+				if (!prop.getter.is_empty()) {
+					if (!prop.setter.is_empty()) {
 						class_desc->push_color(theme_cache.symbol_color);
 						class_desc->add_text(", ");
 						class_desc->pop(); // color
@@ -2043,7 +2088,7 @@ void EditorHelp::_update_doc() {
 					method_map[methods[j].name] = methods[j];
 				}
 
-				if (!cd.properties[i].setter.is_empty()) {
+				if (!prop.setter.is_empty()) {
 					class_desc->push_cell();
 					class_desc->pop(); // cell
 
@@ -2051,13 +2096,13 @@ void EditorHelp::_update_doc() {
 					_push_code_font();
 					class_desc->push_color(theme_cache.text_color);
 
-					if (method_map[cd.properties[i].setter].arguments.size() > 1) {
+					if (method_map[prop.setter].arguments.size() > 1) {
 						// Setters with additional arguments are exposed in the method list, so we link them here for quick access.
-						class_desc->push_meta("@method " + cd.properties[i].setter);
-						class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
+						class_desc->push_meta("@method " + prop.setter);
+						class_desc->add_text(prop.setter + TTR("(value)"));
 						class_desc->pop(); // meta
 					} else {
-						class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
+						class_desc->add_text(prop.setter + TTR("(value)"));
 					}
 
 					class_desc->pop(); // color
@@ -2067,10 +2112,10 @@ void EditorHelp::_update_doc() {
 					_pop_code_font();
 					class_desc->pop(); // cell
 
-					method_line[cd.properties[i].setter] = property_line[cd.properties[i].name];
+					method_line[prop.setter] = property_line[prop.name];
 				}
 
-				if (!cd.properties[i].getter.is_empty()) {
+				if (!prop.getter.is_empty()) {
 					class_desc->push_cell();
 					class_desc->pop(); // cell
 
@@ -2078,13 +2123,13 @@ void EditorHelp::_update_doc() {
 					_push_code_font();
 					class_desc->push_color(theme_cache.text_color);
 
-					if (method_map[cd.properties[i].getter].arguments.size() > 0) {
+					if (!method_map[prop.getter].arguments.is_empty()) {
 						// Getters with additional arguments are exposed in the method list, so we link them here for quick access.
-						class_desc->push_meta("@method " + cd.properties[i].getter);
-						class_desc->add_text(cd.properties[i].getter + "()");
+						class_desc->push_meta("@method " + prop.getter);
+						class_desc->add_text(prop.getter + "()");
 						class_desc->pop(); // meta
 					} else {
-						class_desc->add_text(cd.properties[i].getter + "()");
+						class_desc->add_text(prop.getter + "()");
 					}
 
 					class_desc->pop(); // color
@@ -2094,7 +2139,7 @@ void EditorHelp::_update_doc() {
 					_pop_code_font();
 					class_desc->pop(); // cell
 
-					method_line[cd.properties[i].getter] = property_line[cd.properties[i].name];
+					method_line[prop.getter] = property_line[prop.name];
 				}
 			}
 
@@ -2107,22 +2152,31 @@ void EditorHelp::_update_doc() {
 			_push_normal_font();
 			class_desc->push_color(theme_cache.text_color);
 
-			if (cd.properties[i].is_deprecated) {
-				DEPRECATED_DOC_MSG(DTR_DOC(cd.properties[i].deprecated_message), TTR("This property may be changed or removed in future versions."));
-				class_desc->add_newline();
-				class_desc->add_newline();
+			bool has_prev_text = false;
+
+			if (prop.is_deprecated) {
+				has_prev_text = true;
+				DEPRECATED_DOC_MSG(DTR_DOC(prop.deprecated_message), TTR("This property may be changed or removed in future versions."));
 			}
 
-			if (cd.properties[i].is_experimental) {
-				EXPERIMENTAL_DOC_MSG(DTR_DOC(cd.properties[i].experimental_message), TTR("This property may be changed or removed in future versions."));
-				class_desc->add_newline();
-				class_desc->add_newline();
+			if (prop.is_experimental) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
+				EXPERIMENTAL_DOC_MSG(DTR_DOC(prop.experimental_message), TTR("This property may be changed or removed in future versions."));
 			}
 
-			const String descr = DTR_DOC(cd.properties[i].description).strip_edges();
+			const String descr = DTR_DOC(prop.description).strip_edges();
 			if (!descr.is_empty()) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
 				_add_text(descr);
-			} else {
+			} else if (!has_prev_text) {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
@@ -2982,10 +3036,10 @@ String EditorHelpBit::get_property_description(const StringName &p_class_name, c
 	DocTools *dd = EditorHelp::get_doc_data();
 	HashMap<String, DocData::ClassDoc>::ConstIterator E = dd->class_list.find(p_class_name);
 	if (E) {
-		for (int i = 0; i < E->value.properties.size(); i++) {
-			String description_current = is_native ? DTR(E->value.properties[i].description) : E->value.properties[i].description;
+		for (const DocData::PropertyDoc &property : E->value.properties) {
+			String description_current = is_native ? DTR(property.description) : property.description;
 
-			const Vector<String> class_enum = E->value.properties[i].enumeration.split(".");
+			const Vector<String> class_enum = property.enumeration.split(".");
 			const String enum_name = class_enum.size() >= 2 ? class_enum[1] : "";
 			if (!enum_name.is_empty()) {
 				// Classes can use enums from other classes, so check from which it came.
@@ -3005,7 +3059,7 @@ String EditorHelpBit::get_property_description(const StringName &p_class_name, c
 				}
 			}
 
-			if (E->value.properties[i].name == p_property_name) {
+			if (property.name == p_property_name) {
 				description = description_current;
 
 				if (!is_native) {
@@ -3014,7 +3068,7 @@ String EditorHelpBit::get_property_description(const StringName &p_class_name, c
 			}
 
 			if (is_native) {
-				doc_property_cache[p_class_name][E->value.properties[i].name] = description_current;
+				doc_property_cache[p_class_name][property.name] = description_current;
 			}
 		}
 	}
@@ -3033,10 +3087,10 @@ String EditorHelpBit::get_method_description(const StringName &p_class_name, con
 		// Non-native methods shouldn't be cached, nor translated.
 		bool is_native = ClassDB::class_exists(p_class_name);
 
-		for (int i = 0; i < E->value.methods.size(); i++) {
-			String description_current = is_native ? DTR(E->value.methods[i].description) : E->value.methods[i].description;
+		for (const DocData::MethodDoc &method : E->value.methods) {
+			String description_current = is_native ? DTR(method.description) : method.description;
 
-			if (E->value.methods[i].name == p_method_name) {
+			if (method.name == p_method_name) {
 				description = description_current;
 
 				if (!is_native) {
@@ -3045,7 +3099,7 @@ String EditorHelpBit::get_method_description(const StringName &p_class_name, con
 			}
 
 			if (is_native) {
-				doc_method_cache[p_class_name][E->value.methods[i].name] = description_current;
+				doc_method_cache[p_class_name][method.name] = description_current;
 			}
 		}
 	}
@@ -3064,10 +3118,10 @@ String EditorHelpBit::get_signal_description(const StringName &p_class_name, con
 		// Non-native signals shouldn't be cached, nor translated.
 		bool is_native = ClassDB::class_exists(p_class_name);
 
-		for (int i = 0; i < E->value.signals.size(); i++) {
-			String description_current = is_native ? DTR(E->value.signals[i].description) : E->value.signals[i].description;
+		for (const DocData::MethodDoc &signal : E->value.signals) {
+			String description_current = is_native ? DTR(signal.description) : signal.description;
 
-			if (E->value.signals[i].name == p_signal_name) {
+			if (signal.name == p_signal_name) {
 				description = description_current;
 
 				if (!is_native) {
@@ -3076,7 +3130,7 @@ String EditorHelpBit::get_signal_description(const StringName &p_class_name, con
 			}
 
 			if (is_native) {
-				doc_signal_cache[p_class_name][E->value.signals[i].name] = description_current;
+				doc_signal_cache[p_class_name][signal.name] = description_current;
 			}
 		}
 	}
@@ -3097,10 +3151,10 @@ String EditorHelpBit::get_theme_item_description(const StringName &p_class_name,
 		// Non-native theme items shouldn't be cached, nor translated.
 		bool is_native = ClassDB::class_exists(p_class_name);
 
-		for (int i = 0; i < E->value.theme_properties.size(); i++) {
-			String description_current = is_native ? DTR(E->value.theme_properties[i].description) : E->value.theme_properties[i].description;
+		for (const DocData::ThemeItemDoc &theme_item : E->value.theme_properties) {
+			String description_current = is_native ? DTR(theme_item.description) : theme_item.description;
 
-			if (E->value.theme_properties[i].name == p_theme_item_name) {
+			if (theme_item.name == p_theme_item_name) {
 				description = description_current;
 				found = true;
 
@@ -3110,7 +3164,7 @@ String EditorHelpBit::get_theme_item_description(const StringName &p_class_name,
 			}
 
 			if (is_native) {
-				doc_theme_item_cache[p_class_name][E->value.theme_properties[i].name] = description_current;
+				doc_theme_item_cache[p_class_name][theme_item.name] = description_current;
 			}
 		}
 
