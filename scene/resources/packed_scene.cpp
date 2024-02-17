@@ -614,7 +614,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	// document it. if you fail to understand something, please ask!
 
 	//discard nodes that do not belong to be processed
-	if (p_node != p_owner && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
+	if ((p_node->get_internal_mode() != Node::INTERNAL_MODE_DISABLED || !p_node->is_child_of_exposed_node(p_owner)) && p_node != p_owner && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
 		return OK;
 	}
 
@@ -833,6 +833,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	bool save_node = nd.properties.size() || nd.groups.size(); // some local properties or groups exist
 	save_node = save_node || p_node == p_owner; // owner is always saved
 	save_node = save_node || (p_node->get_owner() == p_owner && instantiated_by_owner); //part of scene and not instanced
+	save_node = save_node || (p_node->is_child_of_exposed_node(p_owner)); //parent is exposed in owner
 
 	int idx = nodes.size();
 	int parent_node = NO_PARENT_SAVED;
@@ -859,6 +860,18 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 
 		parent_node = idx;
 		nodes.push_back(nd);
+	}
+
+	if (!p_node->get_scene_file_path().is_empty() && p_owner != p_node && !p_owner->is_editable_instance(p_node)) {
+		TypedArray<Node> children = p_node->get_exposed_children();
+		while (!children.is_empty()) {
+			Node *child = Object::cast_to<Node>(children.pop_back());
+			TypedArray<Node> exposed_node_children = child->get_children();
+			while (!exposed_node_children.is_empty()) {
+				Node *e_child = Object::cast_to<Node>(exposed_node_children.pop_back());
+				_parse_node(p_owner, e_child, NO_PARENT_SAVED, name_map, variant_map, node_map, nodepath_map);
+			}
+		}
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
