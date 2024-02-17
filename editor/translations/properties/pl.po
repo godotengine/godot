@@ -84,6 +84,7 @@
 # Marcin Zieliński <czolgista83@gmail.com>, 2023.
 # Aleksander Łagowiec <mineolek10@users.noreply.hosted.weblate.org>, 2023.
 # Jakub Marcowski <chubercikbattle@gmail.com>, 2024.
+# Piotr Kostrzewski<piotr.kostrzewski2@outlook.com>,2024
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
@@ -111,7 +112,7 @@ msgid "Name"
 msgstr "Nazwa"
 
 msgid "Name Localized"
-msgstr "Nazwa lokalizowana"
+msgstr "Zlokalizowana nazwa"
 
 msgid "Description"
 msgstr "Opis"
@@ -123,13 +124,13 @@ msgid "Run"
 msgstr "Uruchom"
 
 msgid "Main Scene"
-msgstr "Scena główna"
+msgstr "Główna scena"
 
 msgid "Disable stdout"
-msgstr "Wyłączenie stdout"
+msgstr "Wyłącz stdout"
 
 msgid "Disable stderr"
-msgstr "Wyłączenie stderr"
+msgstr "Wyłącz stderr"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Użyj ukrytego katalogu danych projektu"
@@ -171,10 +172,10 @@ msgid "Mode"
 msgstr "Tryb"
 
 msgid "Initial Position Type"
-msgstr "Typ początkowej pozycji"
+msgstr "Typ pozycji początkowej"
 
 msgid "Initial Position"
-msgstr "Początkowa pozycja"
+msgstr "Pozycja początkowa"
 
 msgid "Initial Screen"
 msgstr "Ekran początkowy"
@@ -246,13 +247,12 @@ msgid "Script"
 msgstr "Skrypt"
 
 msgid "Search in File Extensions"
-msgstr "Rozszerzenia szukania w plikach"
-
+msgstr "Szukaj w rozszerzeniach plików"
 msgid "Subwindows"
-msgstr "Okna podrzędne"
+msgstr "Podrzędne okna"
 
 msgid "Embed Subwindows"
-msgstr "Osadź okna podrzędne"
+msgstr "Osadź podrzędne okna"
 
 msgid "Physics"
 msgstr "Fizyka"
@@ -279,7 +279,7 @@ msgid "Scale Mode"
 msgstr "Tryb skalowania"
 
 msgid "Debug"
-msgstr "Debugowanie"
+msgstr "Debuguj"
 
 msgid "Settings"
 msgstr "Ustawienia"
@@ -354,7 +354,7 @@ msgid "GUI"
 msgstr "GUI"
 
 msgid "Timers"
-msgstr "Czasy"
+msgstr "Timery"
 
 msgid "Incremental Search Max Interval Msec"
 msgstr "Maksymalny interwał szukania przyrostowego (ms)"
@@ -366,7 +366,7 @@ msgid "Snap Controls to Pixels"
 msgstr "Przyciągaj kontrolki do pikseli"
 
 msgid "Fonts"
-msgstr "Fonty"
+msgstr "Czcionki"
 
 msgid "Dynamic Fonts"
 msgstr "Czcionki dynamiczne"
@@ -456,7 +456,7 @@ msgid "Input Devices"
 msgstr "Urządzenia wejściowe"
 
 msgid "Compatibility"
-msgstr "Kompatybilny"
+msgstr "Zgodność"
 
 msgid "Device"
 msgstr "Urządzenie"
@@ -465,16 +465,16 @@ msgid "Window ID"
 msgstr "ID Okna"
 
 msgid "Alt Pressed"
-msgstr "Alt Wciśnięty"
+msgstr "Wiśnięto Alt"
 
 msgid "Shift Pressed"
-msgstr "Shift Wciśnięty"
+msgstr "Wciśnięto Shift"
 
 msgid "Ctrl Pressed"
-msgstr "Ctrl Wciśnięty"
+msgstr "Wciśnięto Ctrl"
 
 msgid "Pressed"
-msgstr "Wciśnięty"
+msgstr "Wciśnięto"
 
 msgid "Keycode"
 msgstr "Kod klawisza"
@@ -513,7 +513,7 @@ msgid "Double Click"
 msgstr "Podwójne kliknięcie"
 
 msgid "Tilt"
-msgstr "Pochylenie"
+msgstr "Nachylenie"
 
 msgid "Pressure"
 msgstr "Nacisk"
@@ -537,7 +537,7 @@ msgid "Index"
 msgstr "Indeks"
 
 msgid "Double Tap"
-msgstr "Podwójne dotknięcie"
+msgstr "Podwójne wciśnięcie"
 
 msgid "Action"
 msgstr "Akcja"
@@ -570,13 +570,13 @@ msgid "Events"
 msgstr "Zdarzenia"
 
 msgid "Include Hidden"
-msgstr "Zawrzyj ukryte"
+msgstr "Uwzględnij ukryte"
 
 msgid "Big Endian"
 msgstr "Big endian"
 
 msgid "Blocking Mode Enabled"
-msgstr "Tryb blokowania włączony"
+msgstr "Włączono tryb blokowania”
 
 msgid "Read Chunk Size"
 msgstr "Odczytaj rozmiar fragmentu"
@@ -777,7 +777,7 @@ msgid "Auto Unfold Foreign Scenes"
 msgstr "Automatyczne rozwijanie zagranicznych scen"
 
 msgid "Horizontal Vector2 Editing"
-msgstr "Edycja pozioma Vector2"
+msgstr "Pozioma edycja Vector2"
 
 msgid "Horizontal Vector Types Editing"
 msgstr "Edycja poziomych typów wektorów"
@@ -882,13 +882,13 @@ msgid "Default Project Path"
 msgstr "Domyślna ścieżka projektu"
 
 msgid "On Save"
-msgstr "Przy zapisie"
+msgstr "Podczas zapisywania"
 
 msgid "Compress Binary Resources"
 msgstr "Skompresuj binarne zasoby"
 
 msgid "File Dialog"
-msgstr "Dialog plików"
+msgstr "Okno plików"
 
 msgid "Show Hidden Files"
 msgstr "Pokaż ukryte pliki"
@@ -996,7 +996,7 @@ msgid "Whitespace"
 msgstr "Biały znak"
 
 msgid "Draw Tabs"
-msgstr "Rysuj taby"
+msgstr "Rysuj karty"
 
 msgid "Draw Spaces"
 msgstr "Rysuj spacje"
@@ -1026,7 +1026,7 @@ msgid "Files"
 msgstr "Pliki"
 
 msgid "Autosave Interval Secs"
-msgstr "czas autozapisu sek"
+msgstr "Interwał automatycznego zapisywania w  sekundach"
 
 msgid "Script List"
 msgstr "Lista skryptów"
