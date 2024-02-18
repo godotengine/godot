@@ -51,18 +51,18 @@ real_t Vector3::get_axis(int p_axis) const {
 	return operator[](p_axis);
 }
 
-void Vector3::snap(Vector3 p_val) {
+void Vector3::snap(const Vector3 &p_val) {
 	x = Math::stepify(x, p_val.x);
 	y = Math::stepify(y, p_val.y);
 	z = Math::stepify(z, p_val.z);
 }
-Vector3 Vector3::snapped(Vector3 p_val) const {
+Vector3 Vector3::snapped(const Vector3 &p_val) const {
 	Vector3 v = *this;
 	v.snap(p_val);
 	return v;
 }
 
-Vector3 Vector3::limit_length(const real_t p_len) const {
+Vector3 Vector3::limit_length(real_t p_len) const {
 	const real_t l = length();
 	Vector3 v = *this;
 	if (l > 0 && p_len < l) {
@@ -126,7 +126,7 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	return out;
 }
 
-Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
+Vector3 Vector3::move_toward(const Vector3 &p_to, real_t p_delta) const {
 	Vector3 v = *this;
 	Vector3 vd = p_to - v;
 	real_t len = vd.length();

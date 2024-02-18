@@ -87,12 +87,12 @@ struct _NO_DISCARD_CLASS_ Vector3 {
 	_FORCE_INLINE_ Vector3 normalized() const;
 	_FORCE_INLINE_ bool is_normalized() const;
 	_FORCE_INLINE_ Vector3 inverse() const;
-	Vector3 limit_length(const real_t p_len = 1.0) const;
+	Vector3 limit_length(real_t p_len = 1.0) const;
 
 	_FORCE_INLINE_ void zero();
 
-	void snap(Vector3 p_val);
-	Vector3 snapped(Vector3 p_val) const;
+	void snap(const Vector3 &p_val);
+	Vector3 snapped(const Vector3 &p_val) const;
 
 	void rotate(const Vector3 &p_axis, real_t p_angle);
 	Vector3 rotated(const Vector3 &p_axis, real_t p_angle) const;
@@ -103,7 +103,7 @@ struct _NO_DISCARD_CLASS_ Vector3 {
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, real_t p_weight) const;
 	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const;
 	Vector3 cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const;
-	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
+	Vector3 move_toward(const Vector3 &p_to, real_t p_delta) const;
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_b) const;
@@ -119,7 +119,7 @@ struct _NO_DISCARD_CLASS_ Vector3 {
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;
 
-	_FORCE_INLINE_ Vector3 posmod(const real_t p_mod) const;
+	_FORCE_INLINE_ Vector3 posmod(real_t p_mod) const;
 	_FORCE_INLINE_ Vector3 posmodv(const Vector3 &p_modv) const;
 	_FORCE_INLINE_ Vector3 project(const Vector3 &p_to) const;
 
@@ -222,7 +222,7 @@ real_t Vector3::distance_squared_to(const Vector3 &p_to) const {
 	return (p_to - *this).length_squared();
 }
 
-Vector3 Vector3::posmod(const real_t p_mod) const {
+Vector3 Vector3::posmod(real_t p_mod) const {
 	return Vector3(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod), Math::fposmod(z, p_mod));
 }
 

@@ -496,12 +496,12 @@ Color Color::operator*(const Color &p_color) const {
 			a * p_color.a);
 }
 
-Color Color::operator*(const real_t &rvalue) const {
+Color Color::operator*(real_t p_scalar) const {
 	return Color(
-			r * rvalue,
-			g * rvalue,
-			b * rvalue,
-			a * rvalue);
+			r * p_scalar,
+			g * p_scalar,
+			b * p_scalar,
+			a * p_scalar);
 }
 
 void Color::operator*=(const Color &p_color) {
@@ -511,11 +511,11 @@ void Color::operator*=(const Color &p_color) {
 	a = a * p_color.a;
 }
 
-void Color::operator*=(const real_t &rvalue) {
-	r = r * rvalue;
-	g = g * rvalue;
-	b = b * rvalue;
-	a = a * rvalue;
+void Color::operator*=(real_t p_scalar) {
+	r = r * p_scalar;
+	g = g * p_scalar;
+	b = b * p_scalar;
+	a = a * p_scalar;
 }
 
 Color Color::operator/(const Color &p_color) const {
@@ -526,12 +526,12 @@ Color Color::operator/(const Color &p_color) const {
 			a / p_color.a);
 }
 
-Color Color::operator/(const real_t &rvalue) const {
+Color Color::operator/(real_t p_scalar) const {
 	return Color(
-			r / rvalue,
-			g / rvalue,
-			b / rvalue,
-			a / rvalue);
+			r / p_scalar,
+			g / p_scalar,
+			b / p_scalar,
+			a / p_scalar);
 }
 
 void Color::operator/=(const Color &p_color) {
@@ -541,19 +541,19 @@ void Color::operator/=(const Color &p_color) {
 	a = a / p_color.a;
 }
 
-void Color::operator/=(const real_t &rvalue) {
-	if (rvalue == 0) {
+void Color::operator/=(real_t p_scalar) {
+	if (p_scalar == 0) {
 		r = 1.0;
 		g = 1.0;
 		b = 1.0;
 		a = 1.0;
 	} else {
-		r = r / rvalue;
-		g = g / rvalue;
-		b = b / rvalue;
-		a = a / rvalue;
+		r = r / p_scalar;
+		g = g / p_scalar;
+		b = b / p_scalar;
+		a = a / p_scalar;
 	}
-};
+}
 
 Color Color::operator-() const {
 	return Color(
