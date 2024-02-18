@@ -118,10 +118,14 @@ static void _setup_clock() {
 	_clock_start = mach_absolute_time() * _clock_scale;
 }
 #else
-#if defined(CLOCK_MONOTONIC_RAW) && !defined(WEB_ENABLED) // This is a better clock on Linux.
-#define GODOT_CLOCK CLOCK_MONOTONIC_RAW
+#if !defined(WEB_ENABLED)
+#undef CLOCK_MONOTONIC_RAW
+#endif
+#if defined(CLOCK_MONOTONIC_RAW) // This is a better clock on Linux.
+#define USE_CLOCK_MONOTONIC_RAW
+static clockid_t GODOT_CLOCK = CLOCK_MONOTONIC_RAW;
 #else
-#define GODOT_CLOCK CLOCK_MONOTONIC
+static clockid_t GODOT_CLOCK = CLOCK_MONOTONIC;
 #endif
 static void _setup_clock() {
 	struct timespec tv_now = { 0, 0 };
@@ -297,6 +301,16 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	struct timespec tv_now = { 0, 0 };
 	clock_gettime(GODOT_CLOCK, &tv_now);
 	uint64_t longtime = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
+#endif
+#if defined(USE_CLOCK_MONOTONIC_RAW)
+	static uint64_t _prev_longtime = 0;
+	// CLOCK_MONOTONIC_RAW might not be accurate, if this happens, fallback to CLOCK_MONOTONIC
+	if (GODOT_CLOCK == CLOCK_MONOTONIC_RAW && _prev_longtime > longtime) {
+		WARN_PRINT("CLOCK_MONOTONIC_RAW not stable, falling back to CLOCK_MONOTONIC");
+		GODOT_CLOCK = CLOCK_MONOTONIC;
+		longtime = _prev_longtime;
+	}
+	_prev_longtime = longtime;
 #endif
 	longtime -= _clock_start;
 
