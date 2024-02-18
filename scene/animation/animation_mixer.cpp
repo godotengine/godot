@@ -872,13 +872,12 @@ bool AnimationMixer::_update_caches() {
 				}
 			} else if (track_cache_type == Animation::TYPE_VALUE) {
 				TrackCacheValue *track_value = static_cast<TrackCacheValue *>(track);
-				if (track_value->init_value.is_string() && anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE) {
-					WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
-				}
-
 				// If it has at least one angle interpolation, it also uses angle interpolation for blending.
 				bool was_using_angle = track_value->is_using_angle;
 				if (track_src_type == Animation::TYPE_VALUE) {
+					if (track_value->init_value.is_string() && anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE) {
+						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
+					}
 					track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 				}
 				if (check_angle_interpolation && (was_using_angle != track_value->is_using_angle)) {
@@ -1419,10 +1418,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						continue; // Nothing to blend.
 					}
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
-					bool is_discrete = a->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE;
+					bool is_value = ttype == Animation::TYPE_VALUE;
+					bool is_discrete = is_value && a->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE;
 					bool force_continuous = callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
 					if (!is_discrete || force_continuous) {
-						Variant value = ttype == Animation::TYPE_VALUE ? a->value_track_interpolate(i, time, is_discrete && force_continuous ? backward : false) : Variant(a->bezier_track_interpolate(i, time));
+						Variant value = is_value ? a->value_track_interpolate(i, time, is_discrete && force_continuous ? backward : false) : Variant(a->bezier_track_interpolate(i, time));
 						value = post_process_key_value(a, i, value, t->object_id);
 						if (value == Variant()) {
 							continue;
