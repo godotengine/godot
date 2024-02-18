@@ -131,33 +131,55 @@ namespace Godot.SourceGenerators
             {
                 if (property.IsStatic)
                 {
-                    Common.ReportExportedMemberIsStatic(context, property);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedMemberIsStaticRule,
+                        property.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        property.ToDisplayString()
+                    ));
                     continue;
                 }
 
                 if (property.IsIndexer)
                 {
-                    Common.ReportExportedMemberIsIndexer(context, property);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedMemberIsIndexerRule,
+                        property.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        property.ToDisplayString()
+                    ));
                     continue;
                 }
 
-                // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
-                // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
+                // TODO: We should still restore read-only properties after reloading assembly.
+                // Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
+                // Ignore properties without a getter, without a setter or with an init-only setter.
+                // Godot properties must be both readable and writable.
                 if (property.IsWriteOnly)
                 {
-                    Common.ReportExportedMemberIsWriteOnly(context, property);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedPropertyIsWriteOnlyRule,
+                        property.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        property.ToDisplayString()
+                    ));
                     continue;
                 }
 
                 if (property.IsReadOnly || property.SetMethod!.IsInitOnly)
                 {
-                    Common.ReportExportedMemberIsReadOnly(context, property);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedMemberIsReadOnlyRule,
+                        property.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        property.ToDisplayString()
+                    ));
                     continue;
                 }
 
                 if (property.ExplicitInterfaceImplementations.Length > 0)
                 {
-                    Common.ReportExportedMemberIsExplicitInterfaceImplementation(context, property);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedMemberIsExplicitInterfaceImplementationRule,
+                        property.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        property.ToDisplayString()
+                    ));
                     continue;
                 }
 
@@ -166,7 +188,11 @@ namespace Godot.SourceGenerators
 
                 if (marshalType == null)
                 {
-                    Common.ReportExportedMemberTypeNotSupported(context, property);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedMemberTypeIsNotSupportedRule,
+                        property.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        property.ToDisplayString()
+                    ));
                     continue;
                 }
 
@@ -175,7 +201,10 @@ namespace Godot.SourceGenerators
                     if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
                         propertyType.InheritsFrom("GodotSharp", "Godot.Node"))
                     {
-                        Common.ReportOnlyNodesShouldExportNodes(context, property);
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            Common.OnlyNodesShouldExportNodesRule,
+                            property.Locations.FirstLocationWithSourceTreeOrDefault()
+                        ));
                     }
                 }
 
@@ -194,7 +223,7 @@ namespace Godot.SourceGenerators
                     else
                     {
                         var propertyGet = propertyDeclarationSyntax.AccessorList?.Accessors
-                            .Where(a => a.Keyword.IsKind(SyntaxKind.GetKeyword)).FirstOrDefault();
+                            .FirstOrDefault(a => a.Keyword.IsKind(SyntaxKind.GetKeyword));
                         if (propertyGet != null)
                         {
                             if (propertyGet.ExpressionBody != null)
@@ -253,7 +282,11 @@ namespace Godot.SourceGenerators
             {
                 if (field.IsStatic)
                 {
-                    Common.ReportExportedMemberIsStatic(context, field);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedMemberIsStaticRule,
+                        field.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        field.ToDisplayString()
+                    ));
                     continue;
                 }
 
@@ -261,7 +294,11 @@ namespace Godot.SourceGenerators
                 // Ignore properties without a getter or without a setter. Godot properties must be both readable and writable.
                 if (field.IsReadOnly)
                 {
-                    Common.ReportExportedMemberIsReadOnly(context, field);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedMemberIsReadOnlyRule,
+                        field.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        field.ToDisplayString()
+                    ));
                     continue;
                 }
 
@@ -270,7 +307,11 @@ namespace Godot.SourceGenerators
 
                 if (marshalType == null)
                 {
-                    Common.ReportExportedMemberTypeNotSupported(context, field);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedMemberTypeIsNotSupportedRule,
+                        field.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        field.ToDisplayString()
+                    ));
                     continue;
                 }
 
@@ -279,7 +320,10 @@ namespace Godot.SourceGenerators
                     if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
                         fieldType.InheritsFrom("GodotSharp", "Godot.Node"))
                     {
-                        Common.ReportOnlyNodesShouldExportNodes(context, field);
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            Common.OnlyNodesShouldExportNodesRule,
+                            field.Locations.FirstLocationWithSourceTreeOrDefault()
+                        ));
                     }
                 }
 
