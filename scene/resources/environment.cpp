@@ -766,6 +766,21 @@ bool Environment::is_fog_enabled() const {
 	return fog_enabled;
 }
 
+void Environment::set_fog_mode(FogMode p_mode) {
+	if (fog_mode != p_mode && p_mode == FogMode::FOG_MODE_EXPONENTIAL) {
+		set_fog_density(0.01);
+	} else {
+		set_fog_density(1.0);
+	}
+	fog_mode = p_mode;
+	_update_fog();
+	notify_property_list_changed();
+}
+
+Environment::FogMode Environment::get_fog_mode() const {
+	return fog_mode;
+}
+
 void Environment::set_fog_light_color(const Color &p_light_color) {
 	fog_light_color = p_light_color;
 	_update_fog();
@@ -837,7 +852,51 @@ void Environment::_update_fog() {
 			fog_height,
 			fog_height_density,
 			fog_aerial_perspective,
-			fog_sky_affect);
+			fog_sky_affect,
+			RS::EnvironmentFogMode(fog_mode));
+}
+
+// Depth Fog
+
+void Environment::set_fog_depth_curve(float p_curve) {
+	fog_depth_curve = p_curve;
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_curve() const {
+	return fog_depth_curve;
+}
+
+void Environment::set_fog_depth_begin(float p_begin) {
+	fog_depth_begin = p_begin;
+	if (fog_depth_begin > fog_depth_end) {
+		set_fog_depth_end(fog_depth_begin);
+	}
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_begin() const {
+	return fog_depth_begin;
+}
+
+void Environment::set_fog_depth_end(float p_end) {
+	fog_depth_end = p_end;
+	if (fog_depth_end < fog_depth_begin) {
+		set_fog_depth_begin(fog_depth_end);
+	}
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_end() const {
+	return fog_depth_end;
+}
+
+void Environment::_update_fog_depth() {
+	RS::get_singleton()->environment_set_fog_depth(
+			environment,
+			fog_depth_curve,
+			fog_depth_begin,
+			fog_depth_end);
 }
 
 // Volumetric Fog
@@ -1036,6 +1095,12 @@ void Environment::_update_adjustment() {
 void Environment::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "sky" || p_property.name == "sky_custom_fov" || p_property.name == "sky_rotation" || p_property.name == "ambient_light_sky_contribution") {
 		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
+	if (p_property.name == "fog_depth_curve" || p_property.name == "fog_depth_begin" || p_property.name == "fog_depth_end") {
+		if (fog_mode == FOG_MODE_EXPONENTIAL) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
@@ -1377,6 +1442,8 @@ void Environment::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_fog_enabled", "enabled"), &Environment::set_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_fog_enabled"), &Environment::is_fog_enabled);
+	ClassDB::bind_method(D_METHOD("set_fog_mode", "mode"), &Environment::set_fog_mode);
+	ClassDB::bind_method(D_METHOD("get_fog_mode"), &Environment::get_fog_mode);
 	ClassDB::bind_method(D_METHOD("set_fog_light_color", "light_color"), &Environment::set_fog_light_color);
 	ClassDB::bind_method(D_METHOD("get_fog_light_color"), &Environment::get_fog_light_color);
 	ClassDB::bind_method(D_METHOD("set_fog_light_energy", "light_energy"), &Environment::set_fog_light_energy);
@@ -1399,8 +1466,16 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fog_sky_affect", "sky_affect"), &Environment::set_fog_sky_affect);
 	ClassDB::bind_method(D_METHOD("get_fog_sky_affect"), &Environment::get_fog_sky_affect);
 
+	ClassDB::bind_method(D_METHOD("set_fog_depth_curve", "curve"), &Environment::set_fog_depth_curve);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_curve"), &Environment::get_fog_depth_curve);
+	ClassDB::bind_method(D_METHOD("set_fog_depth_begin", "begin"), &Environment::set_fog_depth_begin);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_begin"), &Environment::get_fog_depth_begin);
+	ClassDB::bind_method(D_METHOD("set_fog_depth_end", "end"), &Environment::set_fog_depth_end);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_end"), &Environment::get_fog_depth_end);
+
 	ADD_GROUP("Fog", "fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_enabled"), "set_fog_enabled", "is_fog_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fog_mode", PROPERTY_HINT_ENUM, "Exponential,Depth"), "set_fog_mode", "get_fog_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_fog_light_color", "get_fog_light_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_fog_light_energy", "get_fog_light_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sun_scatter", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_fog_sun_scatter", "get_fog_sun_scatter");
@@ -1410,6 +1485,10 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sky_affect", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_sky_affect", "get_fog_sky_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_less,or_greater,suffix:m"), "set_fog_height", "get_fog_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_less,or_greater"), "set_fog_height_density", "get_fog_height_density");
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_curve", PROPERTY_HINT_EXP_EASING), "set_fog_depth_curve", "get_fog_depth_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_begin", PROPERTY_HINT_RANGE, "0,4000,0.1,or_greater,or_less,suffix:m"), "set_fog_depth_begin", "get_fog_depth_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_end", PROPERTY_HINT_RANGE, "0,4000,0.1,or_greater,or_less,suffix:m"), "set_fog_depth_end", "get_fog_depth_end");
 
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_enabled", "enabled"), &Environment::set_volumetric_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_enabled"), &Environment::is_volumetric_fog_enabled);
@@ -1503,6 +1582,9 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_SOFTLIGHT);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_MIX);
+
+	BIND_ENUM_CONSTANT(FOG_MODE_EXPONENTIAL);
+	BIND_ENUM_CONSTANT(FOG_MODE_DEPTH);
 
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_50_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);

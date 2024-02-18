@@ -49,24 +49,29 @@ struct SceneData {
 	mediump float opaque_prepass_threshold;
 
 	bool fog_enabled;
+	uint fog_mode;
 	highp float fog_density;
 	highp float fog_height;
 	highp float fog_height_density;
 
-	mediump vec3 fog_light_color;
-	mediump float fog_sun_scatter;
+	highp float fog_depth_curve;
+	highp float pad;
+	highp float fog_depth_begin;
 
+	mediump vec3 fog_light_color;
+	highp float fog_depth_end;
+
+	mediump float fog_sun_scatter;
 	mediump float fog_aerial_perspective;
 	highp float time;
 	mediump float reflection_multiplier; // one normally, zero when rendering reflections
-	bool material_uv2_mode;
 
 	vec2 taa_jitter;
+	bool material_uv2_mode;
 	float emissive_exposure_normalization;
-	float IBL_exposure_normalization;
 
+	float IBL_exposure_normalization;
 	bool pancake_shadows;
 	uint camera_visible_layers;
 	float pass_alpha_multiplier;
-	uint pad3;
 };

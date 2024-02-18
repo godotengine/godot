@@ -62,6 +62,7 @@ private:
 
 		// Fog
 		bool fog_enabled = false;
+		RS::EnvironmentFogMode fog_mode = RS::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL;
 		Color fog_light_color = Color(0.518, 0.553, 0.608);
 		float fog_light_energy = 1.0;
 		float fog_sun_scatter = 0.0;
@@ -70,6 +71,11 @@ private:
 		float fog_height = 0.0;
 		float fog_height_density = 0.0; //can be negative to invert effect
 		float fog_aerial_perspective = 0.0;
+
+		// Depth Fog
+		float fog_depth_curve = 1.0;
+		float fog_depth_begin = 10.0;
+		float fog_depth_end = 100.0;
 
 		// Volumetric Fog
 		bool volumetric_fog_enabled = false;
@@ -192,8 +198,9 @@ public:
 	float environment_get_white(RID p_env) const;
 
 	// Fog
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect);
+	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode);
 	bool environment_get_fog_enabled(RID p_env) const;
+	RS::EnvironmentFogMode environment_get_fog_mode(RID p_env) const;
 	Color environment_get_fog_light_color(RID p_env) const;
 	float environment_get_fog_light_energy(RID p_env) const;
 	float environment_get_fog_sun_scatter(RID p_env) const;
@@ -202,6 +209,12 @@ public:
 	float environment_get_fog_height(RID p_env) const;
 	float environment_get_fog_height_density(RID p_env) const;
 	float environment_get_fog_aerial_perspective(RID p_env) const;
+
+	// Depth Fog
+	void environment_set_fog_depth(RID p_env, float p_curve, float p_begin, float p_end);
+	float environment_get_fog_depth_curve(RID p_env) const;
+	float environment_get_fog_depth_begin(RID p_env) const;
+	float environment_get_fog_depth_end(RID p_env) const;
 
 	// Volumetric Fog
 	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect);

@@ -140,3 +140,10 @@ GH-86661
 Validate extension JSON: Error: Field 'classes/Animation/methods/track_find_key/arguments': size changed value in new API, from 3 to 4.
 
 Added optional argument to track_find_key to avoid finding keys out of the animation range. Compatibility method registered.
+
+
+GH-84792
+--------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/environment_set_fog/arguments': size changed value in new API, from 10 to 11.
+
+Added fog mode argument. Compatibility method registered.
