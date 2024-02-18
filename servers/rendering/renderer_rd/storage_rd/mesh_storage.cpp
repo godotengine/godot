@@ -1963,7 +1963,7 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 		//if we have a mesh set, we need to re-generate the AABB from the new data
 		const float *data = p_buffer.ptr();
 
-		if (multimesh->custom_aabb != AABB()) {
+		if (multimesh->custom_aabb == AABB()) {
 			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
 			multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 		}
@@ -2087,7 +2087,7 @@ void MeshStorage::_update_dirty_multimeshes() {
 			if (multimesh->aabb_dirty) {
 				//aabb is dirty..
 				multimesh->aabb_dirty = false;
-				if (multimesh->custom_aabb != AABB()) {
+				if (multimesh->custom_aabb == AABB()) {
 					_multimesh_re_create_aabb(multimesh, data, visible_instances);
 					multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 				}
