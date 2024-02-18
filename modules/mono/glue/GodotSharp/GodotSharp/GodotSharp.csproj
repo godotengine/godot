@@ -44,6 +44,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Godot.SourceGenerators.Internal\Godot.SourceGenerators.Internal.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
+  <Target Name="CopyFiles" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll;$(OutputPath)\$(AssemblyName).pdb;$(OutputPath)\$(AssemblyName).xml"
+          DestinationFolder="$(MSBuildProjectDirectory)\..\..\..\..\..\bin\GodotSharp\Api\$(Configuration)"/>
+  </Target>
   <!-- Sources -->
   <ItemGroup>
     <Compile Include="Core\Aabb.cs" />

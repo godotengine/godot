@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <!-- The Godot editor uses the Debug Godot API assemblies -->
     <GodotApiConfiguration>Debug</GodotApiConfiguration>
-    <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
+    <GodotSourceRootPath>$(MSBuildProjectDirectory)/../../../../../</GodotSourceRootPath>
     <GodotOutputDataDir>$(GodotSourceRootPath)/bin/GodotSharp</GodotOutputDataDir>
     <GodotApiAssembliesDir>$(GodotOutputDataDir)/Api/$(GodotApiConfiguration)</GodotApiAssembliesDir>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
@@ -20,13 +20,12 @@
   <ItemGroup>
     <CompilerVisibleProperty Include="IsGodotToolsProject" />
   </ItemGroup>
-  <PropertyGroup Condition=" Exists('$(GodotApiAssembliesDir)/GodotSharp.dll') ">
-    <!-- The project is part of the Godot source tree -->
-    <!-- Use the Godot source tree output folder instead of '$(ProjectDir)/bin' -->
-    <OutputPath>$(GodotOutputDataDir)/Tools</OutputPath>
-    <!-- Must not append '$(TargetFramework)' to the output path in this case -->
-    <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
-  </PropertyGroup>
+  <Target Name="CopyFiles" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <OutputFiles Include="$(OutputPath)\*.*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(GodotOutputDataDir)\Tools"/>
+  </Target>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3.0" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="JetBrains.Rider.PathLocator" Version="1.0.8" />
@@ -51,4 +50,17 @@
     <ProjectReference Include="..\GodotTools.ProjectEditor\GodotTools.ProjectEditor.csproj" />
     <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
   </ItemGroup>
+  <Target Name="SecondPass" BeforeTargets="PreBuildEvent">
+    <ItemGroup>
+      <SecondPassProjects Include="..\..\..\glue\GodotSharp\GodotSharp\GodotSharp.csproj"/>
+      <SecondPassProjects Include="..\..\..\glue\GodotSharp\GodotSharpEditor\GodotSharpEditor.csproj"/>
+      <SecondPassProjects Include="..\..\..\glue\GodotSharp\GodotPlugins\GodotPlugins.csproj"/>
+      <SecondPassProperties Include="WarningLevel=0"/> <!-- Any relevant warnings would've already been logged in first pass -->
+      <SecondPassProperties Condition="'$(Configuration)' == 'Debug'" Include="Configuration=Release"/>
+      <SecondPassProperties Condition="'$(Configuration)' == 'Release'" Include="Configuration=Debug"/>
+      <SecondPassProperties Condition="'$(GodotPlatform)' != ''" Include="GodotPlatform=$(GodotPlatform)"/>
+      <SecondPassProperties Condition="'$(GodotFloat64)' != ''" Include="GodotFloat64=$(GodotFloat64)"/>
+    </ItemGroup>
+    <MSBuild Projects="@(SecondPassProjects)" Properties="@(SecondPassProperties)"/>
+  </Target>
 </Project>
