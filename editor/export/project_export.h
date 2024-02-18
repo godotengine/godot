@@ -81,6 +81,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
 	CheckButton *runnable = nullptr;
+	CheckButton *advanced_options = nullptr;
 
 	Button *button_export = nullptr;
 	bool updating = false;
@@ -119,6 +120,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	bool exporting = false;
 
+	void _advanced_options_pressed();
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);

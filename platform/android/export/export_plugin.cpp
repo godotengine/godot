@@ -1911,13 +1911,22 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 }
 
 bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (p_preset == nullptr) {
+		return true;
+	}
+
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
+	if (p_option == "graphics/opengl_debug" ||
+			p_option == "command_line/extra_args" ||
+			p_option == "permissions/custom_permissions") {
+		return advanced_options_enabled;
+	}
 	if (p_option == "gradle_build/gradle_build_directory" || p_option == "gradle_build/android_source_template") {
-		// @todo These are experimental options - keep them hidden for now.
-		//return (bool)p_preset->get("gradle_build/use_gradle_build");
-		return false;
-	} else if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
+		return advanced_options_enabled && bool(p_preset->get("gradle_build/use_gradle_build"));
+	}
+	if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
 		// The APK templates are ignored if Gradle build is enabled.
-		return !p_preset->get("gradle_build/use_gradle_build");
+		return advanced_options_enabled && !bool(p_preset->get("gradle_build/use_gradle_build"));
 	}
 	return true;
 }
