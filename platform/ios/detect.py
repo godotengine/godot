@@ -51,6 +51,7 @@ def get_flags():
         ("arch", "arm64"),  # Default for convenience.
         ("target", "template_debug"),
         ("use_volk", False),
+        ("supported", ["mono"]),
     ]
 
 
