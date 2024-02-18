@@ -635,6 +635,13 @@ void TabBar::set_tab_count(int p_count) {
 		}
 	}
 
+	if (!initialized) {
+		if (queued_current != current) {
+			current = queued_current;
+		}
+		initialized = true;
+	}
+
 	queue_redraw();
 	update_minimum_size();
 	notify_property_list_changed();
@@ -649,6 +656,10 @@ void TabBar::set_current_tab(int p_current) {
 		// An index of -1 is only valid if deselecting is enabled or there are no valid tabs.
 		ERR_FAIL_COND_MSG(!_can_deselect(), "Cannot deselect tabs, deselection is not enabled.");
 	} else {
+		if (!initialized && p_current >= get_tab_count()) {
+			queued_current = p_current;
+			return;
+		}
 		ERR_FAIL_INDEX(p_current, get_tab_count());
 	}
 
@@ -1825,9 +1836,6 @@ void TabBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 
-	// "current_tab" property must come after "tab_count", otherwise the property isn't loaded correctly.
-	ADD_ARRAY_COUNT("Tabs", "tab_count", "set_tab_count", "get_tab_count", "tab_");
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
@@ -1839,6 +1847,8 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_to_selected"), "set_scroll_to_selected", "get_scroll_to_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
+
+	ADD_ARRAY_COUNT("Tabs", "tab_count", "set_tab_count", "get_tab_count", "tab_");
 
 	BIND_ENUM_CONSTANT(ALIGNMENT_LEFT);
 	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
