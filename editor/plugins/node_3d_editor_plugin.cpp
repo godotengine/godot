@@ -2955,16 +2955,14 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
-			if (!update_preview_node) {
+			if (!update_preview_node || !preview_node->is_inside_tree()) {
 				return;
 			}
-			if (preview_node->is_inside_tree()) {
-				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos));
-				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
-				preview_node->set_global_transform(preview_gl_transform);
-				if (!preview_node->is_visible()) {
-					preview_node->show();
-				}
+			preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos));
+			Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
+			preview_node->set_global_transform(preview_gl_transform);
+			if (!preview_node->is_visible()) {
+				preview_node->show();
 			}
 			update_preview_node = false;
 		} break;
@@ -4066,7 +4064,11 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 
 	PhysicsDirectSpaceState3D::RayResult result;
 	if (ss->intersect_ray(ray_params, result)) {
-		return result.position;
+		AABB aabb = _calculate_spatial_bounds(preview_node);
+		float distance = Math::abs(aabb.size.dot(result.normal) / 2);
+		Vector3 result_offset = result.position + result.normal * distance;
+
+		return result_offset;
 	}
 
 	const bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
