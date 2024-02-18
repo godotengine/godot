@@ -42,6 +42,7 @@ class AnimationBezierTrackEdit : public Control {
 	enum {
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
+		MENU_KEY_CUT,
 		MENU_KEY_COPY,
 		MENU_KEY_PASTE,
 		MENU_KEY_DELETE,
@@ -212,7 +213,7 @@ public:
 	void update_play_position();
 
 	void duplicate_selected_keys(real_t p_ofs);
-	void copy_selected_keys();
+	void copy_selected_keys(bool p_cut);
 	void paste_keys(real_t p_ofs);
 	void delete_selection();
 

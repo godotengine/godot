@@ -231,6 +231,7 @@ class AnimationTrackEdit : public Control {
 		MENU_LOOP_CLAMP,
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
+		MENU_KEY_CUT,
 		MENU_KEY_COPY,
 		MENU_KEY_PASTE,
 		MENU_KEY_ADD_RESET,
@@ -580,7 +581,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _anim_duplicate_keys(float p_ofs, int p_track);
 
-	void _anim_copy_keys();
+	void _anim_copy_keys(bool p_cut);
 
 	bool _is_track_compatible(int p_target_track_idx, Variant::Type p_source_value_type, Animation::TrackType p_source_track_type);
 
@@ -651,6 +652,7 @@ public:
 		EDIT_COPY_TRACKS,
 		EDIT_COPY_TRACKS_CONFIRM,
 		EDIT_PASTE_TRACKS,
+		EDIT_CUT_KEYS,
 		EDIT_COPY_KEYS,
 		EDIT_PASTE_KEYS,
 		EDIT_SCALE_SELECTION,
