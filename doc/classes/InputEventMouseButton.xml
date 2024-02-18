@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Contains mouse click information. See [method Node._input].
+		[b]Note:[/b] On Wear OS devices, rotary input is mapped to [constant BUTTON_WHEEL_UP] and [constant BUTTON_WHEEL_DOWN]. This can be changed to [constant BUTTON_WHEEL_LEFT] and [constant BUTTON_WHEEL_RIGHT] with the [member ProjectSettings.input_devices/pointing/android/rotary_input_scroll_axis] setting.
 	</description>
 	<tutorials>
 		<link>$DOCS_URL/tutorials/inputs/mouse_and_input_coordinates.html</link>
