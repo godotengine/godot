@@ -1642,8 +1642,12 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 		}
 
 		scene_state.ubo.fog_enabled = environment_get_fog_enabled(p_render_data->environment);
+		scene_state.ubo.fog_mode = environment_get_fog_mode(p_render_data->environment);
 		scene_state.ubo.fog_density = environment_get_fog_density(p_render_data->environment);
 		scene_state.ubo.fog_height = environment_get_fog_height(p_render_data->environment);
+		scene_state.ubo.fog_depth_curve = environment_get_fog_depth_curve(p_render_data->environment);
+		scene_state.ubo.fog_depth_end = environment_get_fog_depth_end(p_render_data->environment) > 0.0 ? environment_get_fog_depth_end(p_render_data->environment) : scene_state.ubo.z_far;
+		scene_state.ubo.fog_depth_begin = MIN(environment_get_fog_depth_begin(p_render_data->environment), scene_state.ubo.fog_depth_end - 0.001);
 		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_render_data->environment);
 		scene_state.ubo.fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment);
 
@@ -2597,6 +2601,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 		if (render_data.environment.is_null() || (render_data.environment.is_valid() && !environment_get_fog_enabled(render_data.environment))) {
 			spec_constant_base_flags |= SceneShaderGLES3::DISABLE_FOG;
+		}
+
+		if (render_data.environment.is_valid() && environment_get_fog_mode(render_data.environment) == RS::EnvironmentFogMode::ENV_FOG_MODE_DEPTH) {
+			spec_constant_base_flags |= SceneShaderGLES3::USE_DEPTH_FOG;
 		}
 	}
 	// Render Opaque Objects.

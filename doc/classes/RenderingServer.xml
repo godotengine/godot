@@ -1145,6 +1145,7 @@
 			<param index="7" name="height_density" type="float" />
 			<param index="8" name="aerial_perspective" type="float" />
 			<param index="9" name="sky_affect" type="float" />
+			<param index="10" name="fog_mode" type="int" enum="RenderingServer.EnvironmentFogMode" default="0" />
 			<description>
 				Configures fog for the specified environment RID. See [code]fog_*[/code] properties in [Environment] for more information.
 			</description>
@@ -4888,6 +4889,12 @@
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_MIX" value="4" enum="EnvironmentGlowBlendMode">
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
+		</constant>
+		<constant name="ENV_FOG_MODE_EXPONENTIAL" value="0" enum="EnvironmentFogMode">
+			Use a physically-based fog model defined primarily by fog density.
+		</constant>
+		<constant name="ENV_FOG_MODE_DEPTH" value="1" enum="EnvironmentFogMode">
+			Use a simple fog model defined by start and end positions and a custom curve. While not physically accurate, this model can be useful when you need more artistic control.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
 			Output color as they came in. This can cause bright lighting to look blown out, with noticeable clipping in the output colors.

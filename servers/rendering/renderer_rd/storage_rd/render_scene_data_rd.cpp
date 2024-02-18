@@ -168,10 +168,15 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 		}
 
 		ubo.fog_enabled = render_scene_render->environment_get_fog_enabled(p_env);
+		ubo.fog_mode = render_scene_render->environment_get_fog_mode(p_env);
 		ubo.fog_density = render_scene_render->environment_get_fog_density(p_env);
 		ubo.fog_height = render_scene_render->environment_get_fog_height(p_env);
 		ubo.fog_height_density = render_scene_render->environment_get_fog_height_density(p_env);
 		ubo.fog_aerial_perspective = render_scene_render->environment_get_fog_aerial_perspective(p_env);
+
+		ubo.fog_depth_curve = render_scene_render->environment_get_fog_depth_curve(p_env);
+		ubo.fog_depth_end = render_scene_render->environment_get_fog_depth_end(p_env) > 0.0 ? render_scene_render->environment_get_fog_depth_end(p_env) : ubo.z_far;
+		ubo.fog_depth_begin = MIN(render_scene_render->environment_get_fog_depth_begin(p_env), ubo.fog_depth_end - 0.001);
 
 		Color fog_color = render_scene_render->environment_get_fog_light_color(p_env).srgb_to_linear();
 		float fog_energy = render_scene_render->environment_get_fog_light_energy(p_env);

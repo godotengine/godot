@@ -1401,15 +1401,15 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			time_icon->set_texture(get_editor_theme_icon(SNAME("Time")));
 
 			add_track->get_popup()->clear();
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyValue")), TTR("Property Track"));
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyXPosition")), TTR("3D Position Track"));
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyXRotation")), TTR("3D Rotation Track"));
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyXScale")), TTR("3D Scale Track"));
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyBlendShape")), TTR("Blend Shape Track"));
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyCall")), TTR("Call Method Track"));
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyBezier")), TTR("Bezier Curve Track"));
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAudio")), TTR("Audio Playback Track"));
-			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAnimation")), TTR("Animation Playback Track"));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyValue")), TTR("Property Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyXPosition")), TTR("3D Position Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyXRotation")), TTR("3D Rotation Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyXScale")), TTR("3D Scale Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyBlendShape")), TTR("Blend Shape Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyCall")), TTR("Call Method Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyBezier")), TTR("Bezier Curve Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAudio")), TTR("Audio Playback Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAnimation")), TTR("Animation Playback Track..."));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -2691,6 +2691,12 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			accept_event();
 		}
+		if (ED_GET_SHORTCUT("animation_editor/cut_selected_keys")->matches_event(p_event)) {
+			if (!read_only) {
+				emit_signal(SNAME("cut_request"));
+			}
+			accept_event();
+		}
 		if (ED_GET_SHORTCUT("animation_editor/copy_selected_keys")->matches_event(p_event)) {
 			if (!read_only) {
 				emit_signal(SNAME("copy_request"));
@@ -2847,10 +2853,11 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				bool selected = _try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), false);
 
 				menu->clear();
-				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Key"), MENU_KEY_INSERT);
+				menu->add_icon_item(get_editor_theme_icon(SNAME("Key")), TTR("Insert Key..."), MENU_KEY_INSERT);
 				if (selected || editor->is_selection_active()) {
 					menu->add_separator();
 					menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Duplicate Key(s)"), MENU_KEY_DUPLICATE);
+					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCut")), TTR("Cut Key(s)"), MENU_KEY_CUT);
 					menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTR("Copy Key(s)"), MENU_KEY_COPY);
 				}
 				if (editor->is_key_clipboard_active()) {
@@ -3176,10 +3183,12 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_KEY_DUPLICATE: {
 			emit_signal(SNAME("duplicate_request"), insert_at_pos);
 		} break;
+		case MENU_KEY_CUT: {
+			emit_signal(SNAME("cut_request"));
+		} break;
 		case MENU_KEY_COPY: {
 			emit_signal(SNAME("copy_request"));
 		} break;
-
 		case MENU_KEY_PASTE: {
 			emit_signal(SNAME("paste_request"), insert_at_pos);
 		} break;
@@ -3258,6 +3267,7 @@ void AnimationTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("duplicate_request", PropertyInfo(Variant::FLOAT, "offset")));
 	ADD_SIGNAL(MethodInfo("create_reset_request"));
 	ADD_SIGNAL(MethodInfo("copy_request"));
+	ADD_SIGNAL(MethodInfo("cut_request"));
 	ADD_SIGNAL(MethodInfo("paste_request", PropertyInfo(Variant::FLOAT, "offset")));
 	ADD_SIGNAL(MethodInfo("delete_request"));
 }
@@ -4610,6 +4620,7 @@ void AnimationTrackEditor::_update_tracks() {
 		track_edit->connect("move_selection_cancel", callable_mp(this, &AnimationTrackEditor::_move_selection_cancel));
 
 		track_edit->connect("duplicate_request", callable_mp(this, &AnimationTrackEditor::_anim_duplicate_keys).bind(i), CONNECT_DEFERRED);
+		track_edit->connect("cut_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_CUT_KEYS), CONNECT_DEFERRED);
 		track_edit->connect("copy_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_COPY_KEYS), CONNECT_DEFERRED);
 		track_edit->connect("paste_request", callable_mp(this, &AnimationTrackEditor::_anim_paste_keys).bind(i), CONNECT_DEFERRED);
 		track_edit->connect("create_reset_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_ADD_RESET_KEY), CONNECT_DEFERRED);
@@ -5724,10 +5735,11 @@ void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, int p_track) {
 	}
 }
 
-void AnimationTrackEditor::_anim_copy_keys() {
+void AnimationTrackEditor::_anim_copy_keys(bool p_cut) {
 	if (is_selection_active() && animation.is_valid()) {
 		int top_track = 0x7FFFFFFF;
 		float top_time = 1e10;
+
 		for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 			const SelectedKey &sk = E->key();
 
@@ -5743,6 +5755,24 @@ void AnimationTrackEditor::_anim_copy_keys() {
 		ERR_FAIL_COND(top_track == 0x7FFFFFFF || top_time == 1e10);
 
 		_set_key_clipboard(top_track, top_time, selection);
+
+		if (p_cut) {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Animation Cut Keys"), UndoRedo::MERGE_DISABLE, animation.ptr());
+			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+				int track_idx = E->key().track;
+				int key_idx = E->key().key;
+				float time = E->value().pos;
+				undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", track_idx, time);
+				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track_idx, time, animation->track_get_key_value(track_idx, key_idx), animation->track_get_key_transition(track_idx, key_idx));
+			}
+			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+				undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, E->value().pos);
+			}
+			undo_redo->commit_action();
+		}
 	}
 }
 
@@ -6398,12 +6428,19 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 			_anim_duplicate_keys(-1.0, -1.0);
 		} break;
-		case EDIT_COPY_KEYS: {
+		case EDIT_CUT_KEYS: {
 			if (bezier_edit->is_visible()) {
-				bezier_edit->copy_selected_keys();
+				bezier_edit->copy_selected_keys(true);
 				break;
 			}
-			_anim_copy_keys();
+			_anim_copy_keys(true);
+		} break;
+		case EDIT_COPY_KEYS: {
+			if (bezier_edit->is_visible()) {
+				bezier_edit->copy_selected_keys(false);
+				break;
+			}
+			_anim_copy_keys(false);
 		} break;
 		case EDIT_PASTE_KEYS: {
 			_anim_paste_keys(-1.0, -1.0);
@@ -7144,18 +7181,19 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->set_flat(false);
 	edit->set_disabled(true);
 	edit->set_tooltip_text(TTR("Animation properties."));
-	edit->get_popup()->add_item(TTR("Copy Tracks"), EDIT_COPY_TRACKS);
+	edit->get_popup()->add_item(TTR("Copy Tracks..."), EDIT_COPY_TRACKS);
 	edit->get_popup()->add_item(TTR("Paste Tracks"), EDIT_PASTE_TRACKS);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_item(TTR("Scale Selection"), EDIT_SCALE_SELECTION);
-	edit->get_popup()->add_item(TTR("Scale From Cursor"), EDIT_SCALE_FROM_CURSOR);
+	edit->get_popup()->add_item(TTR("Scale Selection..."), EDIT_SCALE_SELECTION);
+	edit->get_popup()->add_item(TTR("Scale From Cursor..."), EDIT_SCALE_FROM_CURSOR);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_start_offset", TTR("Set Start Offset (Audio)"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETLEFT), EDIT_SET_START_OFFSET);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_end_offset", TTR("Set End Offset (Audio)"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETRIGHT), EDIT_SET_END_OFFSET);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_item(TTR("Make Easing Selection"), EDIT_EASE_SELECTION);
+	edit->get_popup()->add_item(TTR("Make Easing Selection..."), EDIT_EASE_SELECTION);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selected_keys", TTR("Duplicate Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::D), EDIT_DUPLICATE_SELECTED_KEYS);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/cut_selected_keys", TTR("Cut Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::X), EDIT_CUT_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/copy_selected_keys", TTR("Copy Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::C), EDIT_COPY_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/paste_keys", TTR("Paste Keys"), KeyModifierMask::CMD_OR_CTRL | Key::V), EDIT_PASTE_KEYS);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/add_reset_value", TTR("Add RESET Value(s)")));
@@ -7171,9 +7209,9 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTR("Apply Reset")), EDIT_APPLY_RESET);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_item(TTR("Bake Animation"), EDIT_BAKE_ANIMATION);
-	edit->get_popup()->add_item(TTR("Optimize Animation (no undo)"), EDIT_OPTIMIZE_ANIMATION);
-	edit->get_popup()->add_item(TTR("Clean-Up Animation (no undo)"), EDIT_CLEAN_UP_ANIMATION);
+	edit->get_popup()->add_item(TTR("Bake Animation..."), EDIT_BAKE_ANIMATION);
+	edit->get_popup()->add_item(TTR("Optimize Animation (no undo)..."), EDIT_OPTIMIZE_ANIMATION);
+	edit->get_popup()->add_item(TTR("Clean-Up Animation (no undo)..."), EDIT_CLEAN_UP_ANIMATION);
 
 	edit->get_popup()->connect("id_pressed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed));
 	edit->get_popup()->connect("about_to_popup", callable_mp(this, &AnimationTrackEditor::_edit_menu_about_to_popup));

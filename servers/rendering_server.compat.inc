@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  node.compat.inc                                                       */
+/*  rendering_server.compat.inc                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,12 +30,12 @@
 
 #ifndef DISABLE_DEPRECATED
 
-PackedStringArray Node::get_configuration_warnings_bind_compat_68420() const {
-	return PackedStringArray(get_configuration_warnings());
+void RenderingServer::_environment_set_fog_bind_compat_84792(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) {
+	environment_set_fog(p_env, p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective, p_sky_affect, RS::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL);
 }
 
-void Node::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_configuration_warnings"), &Node::get_configuration_warnings_bind_compat_68420);
+void RenderingServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect"), &RenderingServer::_environment_set_fog_bind_compat_84792);
 }
 
-#endif // DISABLE_DEPRECATED
+#endif

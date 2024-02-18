@@ -307,7 +307,6 @@ protected:
 
 	static void _bind_methods();
 	static String _get_name_num_separator();
-	static StringName get_configuration_warning_icon(int p_count);
 
 	friend class SceneState;
 
@@ -334,7 +333,7 @@ protected:
 	GDVIRTUAL0(_enter_tree)
 	GDVIRTUAL0(_exit_tree)
 	GDVIRTUAL0(_ready)
-	GDVIRTUAL0RC(Array, _get_configuration_warnings)
+	GDVIRTUAL0RC(Vector<String>, _get_configuration_warnings)
 
 	GDVIRTUAL1(_input, Ref<InputEvent>)
 	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
@@ -651,11 +650,7 @@ public:
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
-	virtual Array get_configuration_warnings() const;
-	Dictionary configuration_warning_to_dict(const Variant &p_warning) const;
-	Vector<Dictionary> get_configuration_warnings_as_dicts() const;
-	Vector<Dictionary> get_configuration_warnings_of_property(const String &p_property = String()) const;
-	PackedStringArray get_configuration_warnings_as_strings(bool p_wrap_lines, const String &p_property = String()) const;
+	virtual PackedStringArray get_configuration_warnings() const;
 
 	void update_configuration_warnings();
 

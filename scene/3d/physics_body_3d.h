@@ -329,7 +329,7 @@ public:
 	void set_constant_torque(const Vector3 &p_torque);
 	Vector3 get_constant_torque() const;
 
-	virtual Array get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	RigidBody3D();
 	~RigidBody3D();

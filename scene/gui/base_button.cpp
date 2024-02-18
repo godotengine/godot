@@ -430,8 +430,8 @@ bool BaseButton::_was_pressed_by_mouse() const {
 	return was_mouse_pressed;
 }
 
-Array BaseButton::get_configuration_warnings() const {
-	Array warnings = Control::get_configuration_warnings();
+PackedStringArray BaseButton::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
 
 	if (get_button_group().is_valid() && !is_toggle_mode()) {
 		warnings.push_back(RTR("ButtonGroup is intended to be used only with buttons that have toggle_mode set to true."));

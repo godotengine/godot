@@ -327,8 +327,8 @@ float GPUParticles2D::get_interp_to_end() const {
 	return interp_to_end_factor;
 }
 
-Array GPUParticles2D::get_configuration_warnings() const {
-	Array warnings = Node2D::get_configuration_warnings();
+PackedStringArray GPUParticles2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (process_material.is_null()) {
 		warnings.push_back(RTR("A material to process the particles is not assigned, so no behavior is imprinted."));

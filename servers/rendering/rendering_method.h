@@ -154,9 +154,10 @@ public:
 	virtual float environment_get_white(RID p_env) const = 0;
 
 	// Fog
-	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) = 0;
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode = RS::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL) = 0;
 
 	virtual bool environment_get_fog_enabled(RID p_env) const = 0;
+	virtual RS::EnvironmentFogMode environment_get_fog_mode(RID p_env) const = 0;
 	virtual Color environment_get_fog_light_color(RID p_env) const = 0;
 	virtual float environment_get_fog_light_energy(RID p_env) const = 0;
 	virtual float environment_get_fog_sun_scatter(RID p_env) const = 0;
@@ -165,6 +166,13 @@ public:
 	virtual float environment_get_fog_height_density(RID p_env) const = 0;
 	virtual float environment_get_fog_aerial_perspective(RID p_env) const = 0;
 	virtual float environment_get_fog_sky_affect(RID p_env) const = 0;
+
+	// Depth Fog
+	virtual void environment_set_fog_depth(RID p_env, float p_curve, float p_begin, float p_end) = 0;
+
+	virtual float environment_get_fog_depth_curve(RID p_env) const = 0;
+	virtual float environment_get_fog_depth_begin(RID p_env) const = 0;
+	virtual float environment_get_fog_depth_end(RID p_env) const = 0;
 
 	// Volumetric Fog
 	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) = 0;

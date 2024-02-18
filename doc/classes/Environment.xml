@@ -87,7 +87,18 @@
 			This is useful to simulate [url=https://en.wikipedia.org/wiki/Aerial_perspective]aerial perspective[/url] in large scenes with low density fog. However, it is not very useful for high-density fog, as the sky will shine through. When set to [code]1.0[/code], the fog color comes completely from the [Sky]. If set to [code]0.0[/code], aerial perspective is disabled.
 		</member>
 		<member name="fog_density" type="float" setter="set_fog_density" getter="get_fog_density" default="0.01">
-			The [i]exponential[/i] fog density to use. Higher values result in a more dense fog. Fog rendering is exponential as in real life.
+			The fog density to be used. This is demonstrated in different ways depending on the [member fog_mode] mode chosen:
+			[b]Exponential Fog Mode:[/b] Higher values result in denser fog. The fog rendering is exponential like in real life.
+			[b]Depth Fog mode:[/b] The maximum intensity of the deep fog, effect will appear in the distance (relative to the camera). At [code]1.0[/code] the fog will fully obscure the scene, at [code]0.0[/code] the fog will not be visible.
+		</member>
+		<member name="fog_depth_begin" type="float" setter="set_fog_depth_begin" getter="get_fog_depth_begin" default="10.0">
+			The fog's depth starting distance from the camera. Only available when [member fog_mode] is set to [constant FOG_MODE_DEPTH].
+		</member>
+		<member name="fog_depth_curve" type="float" setter="set_fog_depth_curve" getter="get_fog_depth_curve" default="1.0">
+			The fog depth's intensity curve. A number of presets are available in the Inspector by right-clicking the curve. Only available when [member fog_mode] is set to [constant FOG_MODE_DEPTH].
+		</member>
+		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end" default="100.0">
+			The fog's depth end distance from the camera. If this value is set to [code]0[/code], it will be equal to the current camera's [member Camera3D.far] value. Only available when [member fog_mode] is set to [constant FOG_MODE_DEPTH].
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
 			If [code]true[/code], fog effects are enabled.
@@ -103,6 +114,9 @@
 		</member>
 		<member name="fog_light_energy" type="float" setter="set_fog_light_energy" getter="get_fog_light_energy" default="1.0">
 			The fog's brightness. Higher values result in brighter fog.
+		</member>
+		<member name="fog_mode" type="int" setter="set_fog_mode" getter="get_fog_mode" enum="Environment.FogMode" default="0">
+			The fog mode. See [enum FogMode] for possible values.
 		</member>
 		<member name="fog_sky_affect" type="float" setter="set_fog_sky_affect" getter="get_fog_sky_affect" default="1.0">
 			The factor to use when affecting the sky with non-volumetric fog. [code]1.0[/code] means that fog can fully obscure the sky. Lower values reduce the impact of fog on sky rendering, with [code]0.0[/code] not affecting sky rendering at all.
@@ -411,6 +425,12 @@
 		</constant>
 		<constant name="GLOW_BLEND_MODE_MIX" value="4" enum="GlowBlendMode">
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
+		</constant>
+		<constant name="FOG_MODE_EXPONENTIAL" value="0" enum="FogMode">
+			Use a physically-based fog model defined primarily by fog density.
+		</constant>
+		<constant name="FOG_MODE_DEPTH" value="1" enum="FogMode">
+			Use a simple fog model defined by start and end positions and a custom curve. While not physically accurate, this model can be useful when you need more artistic control.
 		</constant>
 		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="0" enum="SDFGIYScale">
 			Use 50% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be twice as short as they are wide. This allows providing increased GI detail and reduced light leaking with thin floors and ceilings. This is usually the best choice for scenes that don't feature much verticality.

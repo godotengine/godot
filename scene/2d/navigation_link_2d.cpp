@@ -337,8 +337,8 @@ void NavigationLink2D::set_travel_cost(real_t p_travel_cost) {
 	NavigationServer2D::get_singleton()->link_set_travel_cost(link, travel_cost);
 }
 
-Array NavigationLink2D::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray NavigationLink2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (start_position.is_equal_approx(end_position)) {
 		warnings.push_back(RTR("NavigationLink2D start position should be different than the end position to be useful."));

@@ -73,7 +73,7 @@ public:
 
 	double get_time_left() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_timer_process_callback(TimerProcessCallback p_callback);
 	TimerProcessCallback get_timer_process_callback() const;

@@ -537,8 +537,8 @@ void ScrollContainer::set_follow_focus(bool p_follow) {
 	follow_focus = p_follow;
 }
 
-Array ScrollContainer::get_configuration_warnings() const {
-	Array warnings = Container::get_configuration_warnings();
+PackedStringArray ScrollContainer::get_configuration_warnings() const {
+	PackedStringArray warnings = Container::get_configuration_warnings();
 
 	int found = 0;
 

@@ -71,6 +71,11 @@ protected:
 	static RenderingServer *(*create_func)();
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _environment_set_fog_bind_compat_84792(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	static RenderingServer *get_singleton();
 	static RenderingServer *create();
@@ -1178,7 +1183,13 @@ public:
 
 	virtual void environment_set_sdfgi_frames_to_update_light(EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
 
-	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) = 0;
+	enum EnvironmentFogMode {
+		ENV_FOG_MODE_EXPONENTIAL,
+		ENV_FOG_MODE_DEPTH,
+	};
+
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, EnvironmentFogMode p_mode = EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL) = 0;
+	virtual void environment_set_fog_depth(RID p_env, float p_curve, float p_begin, float p_end) = 0;
 
 	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) = 0;
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
@@ -1730,6 +1741,7 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentReflectionSource);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentGlowBlendMode);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentFogMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);

@@ -259,8 +259,8 @@ void SubViewportContainer::remove_child_notify(Node *p_child) {
 	}
 }
 
-Array SubViewportContainer::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray SubViewportContainer::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	bool has_viewport = false;
 	for (int i = 0; i < get_child_count(); i++) {

@@ -84,13 +84,6 @@ Validate extension JSON: Error: Field 'classes/Sky/properties/sky_material': typ
 Property hints reordered to improve editor usability. The types allowed are still the same as before. No adjustments should be necessary.
 
 
-GH-68420
---------
-Validate extension JSON: Error: Field 'classes/Node/methods/_get_configuration_warnings/return_value': type changed value in new API, from "PackedStringArray" to "Array".
-
-Allow configuration warnings to refer to a property. Compatibility method registered.
-
-
 GH-86907
 --------
 
@@ -147,3 +140,10 @@ GH-86661
 Validate extension JSON: Error: Field 'classes/Animation/methods/track_find_key/arguments': size changed value in new API, from 3 to 4.
 
 Added optional argument to track_find_key to avoid finding keys out of the animation range. Compatibility method registered.
+
+
+GH-84792
+--------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/environment_set_fog/arguments': size changed value in new API, from 10 to 11.
+
+Added fog mode argument. Compatibility method registered.

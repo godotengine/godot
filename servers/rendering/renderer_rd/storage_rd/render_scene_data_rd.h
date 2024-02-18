@@ -131,26 +131,31 @@ private:
 
 		// Fog
 		uint32_t fog_enabled;
+		uint32_t fog_mode;
 		float fog_density;
 		float fog_height;
+
 		float fog_height_density;
+		float fog_depth_curve;
+		float pad;
+		float fog_depth_begin;
 
 		float fog_light_color[3];
-		float fog_sun_scatter;
+		float fog_depth_end;
 
+		float fog_sun_scatter;
 		float fog_aerial_perspective;
 		float time;
 		float reflection_multiplier;
-		uint32_t material_uv2_mode;
 
 		float taa_jitter[2];
+		uint32_t material_uv2_mode;
 		float emissive_exposure_normalization; // Needed to normalize emissive when using physical units.
-		float IBL_exposure_normalization; // Adjusts for baked exposure.
 
+		float IBL_exposure_normalization; // Adjusts for baked exposure.
 		uint32_t pancake_shadows;
 		uint32_t camera_visible_layers;
 		float pass_alpha_multiplier;
-		uint32_t pad3;
 	};
 
 	struct UBODATA {
