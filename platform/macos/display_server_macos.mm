@@ -2559,7 +2559,7 @@ bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, N
 		}
 
 		// Confine mouse position to the window, and update delta.
-		NSRect frame = [p_wd.window_object frame];
+		NSRect frame = [p_wd.window_view frame];
 		NSPoint conf_pos = r_mpos;
 		conf_pos.x = CLAMP(conf_pos.x + r_delta.x, 0.f, frame.size.width);
 		conf_pos.y = CLAMP(conf_pos.y - r_delta.y, 0.f, frame.size.height);
