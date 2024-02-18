@@ -66,10 +66,12 @@ namespace Godot.SourceGenerators
         )
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
-            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedNameOmitGlobal() :
-                string.Empty;
+            string classNs = namespaceSymbol is { IsGlobalNamespace: false }
+                ? namespaceSymbol.FullQualifiedNameOmitGlobal()
+                : string.Empty;
             bool hasNamespace = classNs.Length != 0;
+
+            bool isNode = symbol.InheritsFrom("GodotSharp", GodotClasses.Node);
 
             bool isInnerClass = symbol.ContainingType != null;
 
@@ -114,14 +116,14 @@ namespace Godot.SourceGenerators
             var members = symbol.GetMembers();
 
             var exportedProperties = members
-                .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
+                .Where(s => s.Kind == SymbolKind.Property)
                 .Cast<IPropertySymbol>()
                 .Where(s => s.GetAttributes()
                     .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false))
                 .ToArray();
 
             var exportedFields = members
-                .Where(s => !s.IsStatic && s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
+                .Where(s => s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
                 .Cast<IFieldSymbol>()
                 .Where(s => s.GetAttributes()
                     .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false))
@@ -198,13 +200,13 @@ namespace Godot.SourceGenerators
 
                 if (marshalType == MarshalType.GodotObjectOrDerived)
                 {
-                    if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
-                        propertyType.InheritsFrom("GodotSharp", "Godot.Node"))
+                    if (!isNode && propertyType.InheritsFrom("GodotSharp", GodotClasses.Node))
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
                             Common.OnlyNodesShouldExportNodesRule,
                             property.Locations.FirstLocationWithSourceTreeOrDefault()
                         ));
+                        continue;
                     }
                 }
 
@@ -317,13 +319,13 @@ namespace Godot.SourceGenerators
 
                 if (marshalType == MarshalType.GodotObjectOrDerived)
                 {
-                    if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
-                        fieldType.InheritsFrom("GodotSharp", "Godot.Node"))
+                    if (!isNode && fieldType.InheritsFrom("GodotSharp", GodotClasses.Node))
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
                             Common.OnlyNodesShouldExportNodesRule,
                             field.Locations.FirstLocationWithSourceTreeOrDefault()
                         ));
+                        continue;
                     }
                 }
 
