@@ -148,7 +148,7 @@ class TextShaderEditor : public MarginContainer {
 	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
 
-	ShaderTextEditor *shader_editor = nullptr;
+	ShaderTextEditor *code_editor = nullptr;
 	bool compilation_success = true;
 
 	void _menu_option(int p_option);
@@ -156,6 +156,7 @@ class TextShaderEditor : public MarginContainer {
 	mutable Ref<ShaderInclude> shader_inc;
 
 	void _editor_settings_changed();
+	void _apply_editor_settings();
 	void _project_settings_changed();
 
 	void _check_for_external_edit();
@@ -197,6 +198,7 @@ public:
 	void validate_script();
 	bool is_unsaved() const;
 	void tag_saved_version();
+	ShaderTextEditor *get_code_editor() { return code_editor; }
 
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 

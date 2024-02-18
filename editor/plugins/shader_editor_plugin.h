@@ -86,6 +86,8 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	ShaderCreateDialog *shader_create_dialog = nullptr;
 
+	float text_shader_zoom_factor = 1.0f;
+
 	void _update_shader_list();
 	void _shader_selected(int p_index);
 	void _shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
@@ -105,6 +107,8 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _window_changed(bool p_visible);
+
+	void _set_text_shader_zoom_factor(float p_zoom_factor);
 
 protected:
 	void _notification(int p_what);
