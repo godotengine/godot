@@ -1,0 +1,68 @@
+diff --git a/thirdparty/miniupnpc/src/connecthostport.c b/thirdparty/miniupnpc/src/connecthostport.c
+index 79f832b8db..7aec20614d 100644
+--- a/thirdparty/miniupnpc/src/connecthostport.c
++++ b/thirdparty/miniupnpc/src/connecthostport.c
+@@ -91,13 +91,17 @@ SOCKET connecthostport(const char * host, unsigned short port,
+ 	/* setting a 3 seconds timeout for the connect() call */
+ 	timeout.tv_sec = 3;
+ 	timeout.tv_usec = 0;
+-	if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval)) < 0)
++	/* GODOT start */
++	if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
++	/* GODOT end */
+ 	{
+ 		PRINT_SOCKET_ERROR("setsockopt SO_RCVTIMEO");
+ 	}
+ 	timeout.tv_sec = 3;
+ 	timeout.tv_usec = 0;
+-	if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(struct timeval)) < 0)
++	/* GODOT start */
++	if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
++	/* GODOT end */
+ 	{
+ 		PRINT_SOCKET_ERROR("setsockopt SO_SNDTIMEO");
+ 	}
+@@ -210,13 +214,17 @@ SOCKET connecthostport(const char * host, unsigned short port,
+ 		/* setting a 3 seconds timeout for the connect() call */
+ 		timeout.tv_sec = 3;
+ 		timeout.tv_usec = 0;
+-		if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval)) < 0)
++		/* GODOT start */		
++		if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
++		/* GODOT end */
+ 		{
+ 			PRINT_SOCKET_ERROR("setsockopt");
+ 		}
+ 		timeout.tv_sec = 3;
+ 		timeout.tv_usec = 0;
+-		if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(struct timeval)) < 0)
++		/* GODOT start */
++		if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
++		/* GODOT end */
+ 		{
+ 			PRINT_SOCKET_ERROR("setsockopt");
+ 		}
+diff --git a/thirdparty/miniupnpc/src/minissdpc.c b/thirdparty/miniupnpc/src/minissdpc.c
+index 98c5b37463..6ce65a3653 100644
+--- a/thirdparty/miniupnpc/src/minissdpc.c
++++ b/thirdparty/miniupnpc/src/minissdpc.c
+@@ -189,13 +189,17 @@ connectToMiniSSDPD(const char * socketpath)
+ 	/* not supported for AF_UNIX sockets under Solaris */
+ 	timeout.tv_sec = 3;
+ 	timeout.tv_usec = 0;
+-	if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval)) < 0)
++	/* GODOT start */
++	if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
++	/* GODOT end */
+ 	{
+ 		perror("setsockopt SO_RCVTIMEO unix");
+ 	}
+ 	timeout.tv_sec = 3;
+ 	timeout.tv_usec = 0;
+-	if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(struct timeval)) < 0)
++	/* GODOT start */
++	if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
++	/* GODOT end */
+ 	{
+ 		perror("setsockopt SO_SNDTIMEO unix");
+ 	}

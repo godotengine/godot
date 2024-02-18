@@ -91,13 +91,17 @@ SOCKET connecthostport(const char * host, unsigned short port,
 	/* setting a 3 seconds timeout for the connect() call */
 	timeout.tv_sec = 3;
 	timeout.tv_usec = 0;
-	if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval)) < 0)
+	/* GODOT start */
+	if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
+	/* GODOT end */
 	{
 		PRINT_SOCKET_ERROR("setsockopt SO_RCVTIMEO");
 	}
 	timeout.tv_sec = 3;
 	timeout.tv_usec = 0;
-	if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(struct timeval)) < 0)
+	/* GODOT start */
+	if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
+	/* GODOT end */
 	{
 		PRINT_SOCKET_ERROR("setsockopt SO_SNDTIMEO");
 	}
@@ -210,13 +214,17 @@ SOCKET connecthostport(const char * host, unsigned short port,
 		/* setting a 3 seconds timeout for the connect() call */
 		timeout.tv_sec = 3;
 		timeout.tv_usec = 0;
-		if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval)) < 0)
+		/* GODOT start */		
+		if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
+		/* GODOT end */
 		{
 			PRINT_SOCKET_ERROR("setsockopt");
 		}
 		timeout.tv_sec = 3;
 		timeout.tv_usec = 0;
-		if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(struct timeval)) < 0)
+		/* GODOT start */
+		if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(struct timeval)) < 0)
+		/* GODOT end */
 		{
 			PRINT_SOCKET_ERROR("setsockopt");
 		}
