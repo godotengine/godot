@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  image_compress_basisu.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,34 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef IMAGE_COMPRESS_BASISU_H
+#define IMAGE_COMPRESS_BASISU_H
 
-#include "image_compress_basisu.h"
+#include "core/io/image.h"
 
-void initialize_basis_universal_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+enum BasisDecompressFormat {
+	BASIS_DECOMPRESS_RG,
+	BASIS_DECOMPRESS_RGB,
+	BASIS_DECOMPRESS_RGBA,
+	BASIS_DECOMPRESS_RG_AS_RA,
+};
 
-	basis_universal_init();
-
-#ifdef TOOLS_ENABLED
-	Image::basis_universal_packer = basis_universal_packer;
-#endif
-
-	Image::basis_universal_unpacker = basis_universal_unpacker;
-	Image::basis_universal_unpacker_ptr = basis_universal_unpacker_ptr;
-}
-
-void uninitialize_basis_universal_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+void basis_universal_init();
 
 #ifdef TOOLS_ENABLED
-	Image::basis_universal_packer = nullptr;
+Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels);
 #endif
 
-	Image::basis_universal_unpacker = nullptr;
-	Image::basis_universal_unpacker_ptr = nullptr;
-}
+Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size);
+Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer);
+
+#endif // IMAGE_COMPRESS_BASISU_H
