@@ -30,6 +30,13 @@
 				Returns an error string for the given [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrResult.html]XrResult[/url].
 			</description>
 		</method>
+		<method name="get_hand_tracker">
+			<return type="int" />
+			<param index="0" name="hand_index" type="int" />
+			<description>
+				Returns the corresponding [code]XRHandTrackerEXT[/code] handle for the given hand index value.
+			</description>
+		</method>
 		<method name="get_instance">
 			<return type="int" />
 			<description>

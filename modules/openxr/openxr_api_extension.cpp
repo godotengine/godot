@@ -51,6 +51,8 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_next_frame_time"), &OpenXRAPIExtension::get_next_frame_time);
 	ClassDB::bind_method(D_METHOD("can_render"), &OpenXRAPIExtension::can_render);
 
+	ClassDB::bind_method(D_METHOD("get_hand_tracker", "hand_index"), &OpenXRAPIExtension::get_hand_tracker);
+
 	ClassDB::bind_method(D_METHOD("register_composition_layer_provider", "extension"), &OpenXRAPIExtension::register_composition_layer_provider);
 	ClassDB::bind_method(D_METHOD("unregister_composition_layer_provider", "extension"), &OpenXRAPIExtension::unregister_composition_layer_provider);
 
@@ -136,6 +138,11 @@ int64_t OpenXRAPIExtension::get_next_frame_time() {
 bool OpenXRAPIExtension::can_render() {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 	return OpenXRAPI::get_singleton()->can_render();
+}
+
+uint64_t OpenXRAPIExtension::get_hand_tracker(int p_hand_index) {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (uint64_t)OpenXRAPI::get_singleton()->get_hand_tracker(p_hand_index);
 }
 
 void OpenXRAPIExtension::register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension) {
