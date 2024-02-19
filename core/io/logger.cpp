@@ -374,15 +374,15 @@ void UserLogManagerLogger::register_log_capture_nonthreadsafe(const Callable &p_
 		// and Frame 0 is guaranteed to be STATE_BUFFERED
 
 		// Adding things to the buffer is fine, we'll just loop until they're done; this is why we're not using an iterator but rather an index
-		int indexToSend = 0;
+		int index_to_send = 0;
 
 		while (true) {
-			Dictionary toSend;
+			Dictionary to_send;
 			{
 				// We do still need to lock the mutex while grabbing the Dictionary, though, just in case the buffer is being reallocated at this moment
 				MutexLock lock(mutex);
 
-				if (indexToSend >= buffered_logs.size()) {
+				if (index_to_send >= buffered_logs.size()) {
 					// Never mind that whole "send a message" plan!
 
 					// We've reached the end of the log, and because it's locked,
@@ -401,13 +401,13 @@ void UserLogManagerLogger::register_log_capture_nonthreadsafe(const Callable &p_
 				}
 
 				// We haven't reached the end; grab another message
-				toSend = buffered_logs[indexToSend++];
+				to_send = buffered_logs[index_to_send++];
 
 				// Unlock the mutex to avoid deadlocks in case our dispatch adds/removes callbacks or logs messages
 			}
 
 			// Off you go, while no locks are held!
-			dispatch_message(toSend, p_callable);
+			dispatch_message(to_send, p_callable);
 		}
 	} else {
 		// it's not Frame 0, therefore we don't have to mess around with the buffer at all
@@ -469,18 +469,18 @@ void UserLogManagerLogger::flush() {
 	// we're ok with that, it's still a chronologically coherent block
 	for (int i = 0; i < buffered_logs_mirror.size(); ++i) {
 		// This is the same index-as-iterator-to-avoid-lock-issues dance we do in register_log_capture_nonthreadsafe()
-		int indexToSendTo = 0;
+		int index_to_send_to = 0;
 
 		while (true) {
 			Callable callable;
 			{
 				MutexLock lock(mutex);
-				if (indexToSendTo >= captures_buffered.size()) {
+				if (index_to_send_to >= captures_buffered.size()) {
 					// we done!
 					break;
 				}
 
-				callable = captures_buffered[indexToSendTo++];
+				callable = captures_buffered[index_to_send_to++];
 			}
 
 			dispatch_message(buffered_logs_mirror[i], callable);
@@ -547,22 +547,22 @@ void UserLogManagerLogger::recalculate_state() {
 	// we should verify that the mutex is held (ideally by this thread) but the current API provides no way to do that
 	// (aside from switching to a non-recursive mutex and trying to lock it and hoping it fails, which, no)
 
-	State newState = STATE_OFF;
+	State new_state = STATE_OFF;
 
 	if (prebuffering) {
 		// We always buffer on the first frame, in case someone hooks to us and expects a replay
-		newState = STATE_BUFFERING;
+		new_state = STATE_BUFFERING;
 	} else if (!captures_buffered.is_empty()) {
 		// Anything buffering means we need to preserve the buffer
-		newState = STATE_BUFFERING;
+		new_state = STATE_BUFFERING;
 	} else if (!captures_nonthreadsafe.is_empty()) {
 		// Anything non-buffering means we still need to process
-		newState = STATE_PASSTHROUGH;
+		new_state = STATE_PASSTHROUGH;
 	}
 	// Otherwise, we're off
 
 	// if we're transitioning from buffering to anything else, we need to clear the buffer
-	if (state == STATE_BUFFERING && newState != STATE_BUFFERING) {
+	if (state == STATE_BUFFERING && new_state != STATE_BUFFERING) {
 		// NOTE: this line is why the register/unregister functions are locked to the main thread!
 
 		// imagine this set of events:
@@ -590,7 +590,7 @@ void UserLogManagerLogger::recalculate_state() {
 		buffered_logs.clear();
 	}
 
-	state = newState;
+	state = new_state;
 }
 
 void UserLogManagerLogger::register_callable(Vector<Callable> &p_vector, const Callable &p_callable) {
