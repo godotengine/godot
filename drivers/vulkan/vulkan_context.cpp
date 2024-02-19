@@ -918,6 +918,7 @@ Error VulkanContext::_initialize_device_extensions() {
 	}
 
 	register_requested_device_extension(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_EXT_DEVICE_FAULT_EXTENSION_NAME, false);
 
 	// obtain available device extensions
 	uint32_t device_extension_count = 0;
@@ -1268,6 +1269,10 @@ Error VulkanContext::_check_capabilities() {
 
 			if (is_device_extension_enabled(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
 				pipeline_cache_control_support = pipeline_cache_control_features.pipelineCreationCacheControl;
+			}
+
+			if (is_device_extension_enabled(VK_EXT_DEVICE_FAULT_EXTENSION_NAME)) {
+				device_fault_support = true;
 			}
 		}
 
@@ -1948,6 +1953,12 @@ Error VulkanContext::_create_device(VkDevice &r_vk_device) {
 		pipeline_cache_control_features.pipelineCreationCacheControl = pipeline_cache_control_support;
 
 		nextptr = &pipeline_cache_control_features;
+	}
+
+	VkPhysicalDeviceFaultFeaturesEXT deviceFaultFeatures = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT };
+	if (device_fault_support) {
+		deviceFaultFeatures.pNext = nextptr;
+		nextptr = &deviceFaultFeatures;
 	}
 
 	VkPhysicalDeviceVulkan11Features vulkan11features = {};

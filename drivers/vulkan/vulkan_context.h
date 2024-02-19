@@ -129,6 +129,7 @@ private:
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
 	bool pipeline_cache_control_support = false;
+	bool device_fault_support = false;
 
 	String device_vendor;
 	String device_name;
