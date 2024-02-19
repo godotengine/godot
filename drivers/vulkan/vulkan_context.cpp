@@ -251,6 +251,12 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 				size_t size,
 				size_t alignment,
 				VkSystemAllocationScope allocation_scope) -> void * {
+
+			if (p_original == nullptr) {
+				VkObjectType type = static_cast<VkObjectType>(*reinterpret_cast<uint32_t *>(p_user_data));
+				return get_allocation_callbacks(type)->pfnAllocation(p_user_data, size, alignment, allocation_scope);
+			}
+
 			uint8_t *mem = reinterpret_cast<uint8_t *>(p_original);
 			// Retrieve alignment
 			alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
@@ -345,6 +351,12 @@ VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type
 				size_t size,
 				size_t alignment,
 				VkSystemAllocationScope allocation_scope) -> void * {
+
+			if (p_original == nullptr) {
+				VkObjectType type = static_cast<VkObjectType>(*reinterpret_cast<uint32_t *>(p_user_data));
+				return get_allocation_callbacks(type)->pfnAllocation(p_user_data, size, alignment, allocation_scope);
+			}
+
 			uint8_t *mem = reinterpret_cast<uint8_t *>(p_original);
 			// Retrieve alignment
 			alignment = *reinterpret_cast<size_t *>(mem - sizeof(size_t));
