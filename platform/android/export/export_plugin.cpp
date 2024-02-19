@@ -830,8 +830,9 @@ bool EditorExportPlatformAndroid::_uses_vulkan() {
 void EditorExportPlatformAndroid::_notification(int p_what) {
 #ifndef ANDROID_ENABLED
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		ERR_FAIL_NULL(EditorExport::get_singleton());
-		EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformAndroid::_update_preset_status));
+		if (EditorExport::get_singleton()) {
+			EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformAndroid::_update_preset_status));
+		}
 	}
 #endif
 }
