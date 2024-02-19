@@ -1871,7 +1871,11 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 			r_style |= WS_MAXIMIZE;
 		}
 		if (!p_fullscreen) {
-			r_style |= WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+			r_style |= WS_SYSMENU | WS_MINIMIZEBOX;
+
+			if (p_resizable) {
+				r_style |= WS_MAXIMIZEBOX;
+			}
 		}
 		if ((p_fullscreen && p_multiwindow_fs) || p_maximized_fs) {
 			r_style |= WS_BORDER; // Allows child windows to be displayed on top of full screen.
