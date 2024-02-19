@@ -834,20 +834,20 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_pressed()) {
-		if (ED_GET_SHORTCUT("animation_editor/duplicate_selected_keys")->matches_event(p_event)) {
+		if (ED_IS_SHORTCUT("animation_editor/duplicate_selected_keys", p_event)) {
 			if (!read_only) {
 				duplicate_selected_keys(-1.0);
 			}
 			accept_event();
 		}
-		if (ED_GET_SHORTCUT("animation_editor/copy_selected_keys")->matches_event(p_event)) {
+		if (ED_IS_SHORTCUT("animation_editor/copy_selected_keys", p_event)) {
 			if (!read_only) {
 				copy_selected_keys(false);
 			}
 			accept_event();
 		}
 
-		if (ED_GET_SHORTCUT("animation_editor/paste_keys")->matches_event(p_event)) {
+		if (ED_IS_SHORTCUT("animation_editor/paste_keys", p_event)) {
 			if (!read_only) {
 				paste_keys(-1.0);
 			}
@@ -858,7 +858,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key_press = p_event;
 
 	if (key_press.is_valid() && key_press->is_pressed()) {
-		if (ED_GET_SHORTCUT("animation_bezier_editor/focus")->matches_event(p_event)) {
+		if (ED_IS_SHORTCUT("animation_bezier_editor/focus", p_event)) {
 			SelectionSet focused_keys;
 			if (selection.is_empty()) {
 				for (int i = 0; i < edit_points.size(); ++i) {
@@ -927,7 +927,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 			accept_event();
 			return;
-		} else if (ED_GET_SHORTCUT("animation_bezier_editor/select_all_keys")->matches_event(p_event)) {
+		} else if (ED_IS_SHORTCUT("animation_bezier_editor/select_all_keys", p_event)) {
 			for (int i = 0; i < edit_points.size(); ++i) {
 				selection.insert(IntPair(edit_points[i].track, edit_points[i].key));
 			}
@@ -935,7 +935,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 			accept_event();
 			return;
-		} else if (ED_GET_SHORTCUT("animation_bezier_editor/deselect_all_keys")->matches_event(p_event)) {
+		} else if (ED_IS_SHORTCUT("animation_bezier_editor/deselect_all_keys", p_event)) {
 			selection.clear();
 
 			queue_redraw();

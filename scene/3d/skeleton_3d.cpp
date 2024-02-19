@@ -95,17 +95,32 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 	} else if (what == "scale") {
 		set_bone_pose_scale(which, p_value);
 #ifndef DISABLE_DEPRECATED
-	} else if (what == "pose") {
+	} else if (what == "pose" || what == "bound_children") {
 		// Kept for compatibility from 3.x to 4.x.
 		WARN_DEPRECATED_MSG("Skeleton uses old pose format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene." +
 				(is_inside_tree() ? vformat(" Path: \"%s\"", get_path()) : String()));
-		// Old Skeleton poses were relative to rest, new ones are absolute, so we need to recompute the pose.
-		// Skeleton3D nodes were always written with rest before pose, so this *SHOULD* work...
-		Transform3D rest = get_bone_rest(which);
-		Transform3D pose = rest * (Transform3D)p_value;
-		set_bone_pose_position(which, pose.origin);
-		set_bone_pose_rotation(which, pose.basis.get_rotation_quaternion());
-		set_bone_pose_scale(which, pose.basis.get_scale());
+		if (what == "pose") {
+			// Old Skeleton poses were relative to rest, new ones are absolute, so we need to recompute the pose.
+			// Skeleton3D nodes were always written with rest before pose, so this *SHOULD* work...
+			Transform3D rest = get_bone_rest(which);
+			Transform3D pose = rest * (Transform3D)p_value;
+			set_bone_pose_position(which, pose.origin);
+			set_bone_pose_rotation(which, pose.basis.get_rotation_quaternion());
+			set_bone_pose_scale(which, pose.basis.get_scale());
+		} else { // bound_children
+			// This handles the case where the pose was set to the rest position; the pose property would == Transform() and would not be saved to the scene by default.
+			// However, the bound_children property was always saved regardless of value, and it was always saved after both pose and rest.
+			// We don't do anything else with bound_children, as it's not present on Skeleton3D.
+			Vector3 pos = get_bone_pose_position(which);
+			Quaternion rot = get_bone_pose_rotation(which);
+			Vector3 scale = get_bone_pose_scale(which);
+			Transform3D rest = get_bone_rest(which);
+			if (rest != Transform3D() && pos == Vector3() && rot == Quaternion() && scale == Vector3(1, 1, 1)) {
+				set_bone_pose_position(which, rest.origin);
+				set_bone_pose_rotation(which, rest.basis.get_rotation_quaternion());
+				set_bone_pose_scale(which, rest.basis.get_scale());
+			}
+		}
 #endif
 	} else {
 		return false;

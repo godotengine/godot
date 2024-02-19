@@ -329,6 +329,11 @@ namespace Godot.SourceGenerators
             }
         }
 
+        public static Location? FirstLocationWithSourceTreeOrDefault(this IEnumerable<Location> locations)
+        {
+            return locations.FirstOrDefault(location => location.SourceTree != null) ?? locations.FirstOrDefault();
+        }
+
         public static string Path(this Location location)
             => location.SourceTree?.GetLineSpan(location.SourceSpan).Path
                ?? location.GetLineSpan().Path;

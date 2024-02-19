@@ -28,6 +28,15 @@ namespace GodotTools.Inspector
                     continue;
 
                 string scriptPath = script.ResourcePath;
+
+                if (string.IsNullOrEmpty(scriptPath))
+                {
+                    // Generic types used empty paths in older versions of Godot
+                    // so we assume your project is out of sync.
+                    AddCustomControl(new InspectorOutOfSyncWarning());
+                    break;
+                }
+
                 if (scriptPath.StartsWith("csharp://"))
                 {
                     // This is a virtual path used by generic types, extract the real path.

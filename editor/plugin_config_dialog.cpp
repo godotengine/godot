@@ -100,7 +100,8 @@ void PluginConfigDialog::_on_canceled() {
 
 void PluginConfigDialog::_on_required_text_changed() {
 	int lang_idx = script_option_edit->get_selected();
-	String ext = ScriptServer::get_language(lang_idx)->get_extension();
+	ScriptLanguage *language = ScriptServer::get_language(lang_idx);
+	String ext = language->get_extension();
 
 	if (name_edit->get_text().is_empty()) {
 		validation_panel->set_message(MSG_ID_PLUGIN, TTR("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
@@ -119,6 +120,15 @@ void PluginConfigDialog::_on_required_text_changed() {
 		}
 	} else {
 		validation_panel->set_message(MSG_ID_SUBFOLDER, "", EditorValidationPanel::MSG_OK);
+	}
+	if (active_edit->is_visible()) {
+		if (language->get_name() == "C#") {
+			active_edit->set_pressed(false);
+			active_edit->set_disabled(true);
+			validation_panel->set_message(MSG_ID_ACTIVE, TTR("C# doesn't support activating the plugin on creation because the project must be built first."), EditorValidationPanel::MSG_WARNING);
+		} else {
+			active_edit->set_disabled(false);
+		}
 	}
 }
 
@@ -290,7 +300,6 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_edit);
 
 	// Activate now checkbox
-	// TODO Make this option work better with languages like C#. Right now, it does not work because the C# project must be compiled first.
 	Label *active_lb = memnew(Label);
 	active_lb->set_text(TTR("Activate now?"));
 	active_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
@@ -311,6 +320,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	validation_panel->add_line(MSG_ID_PLUGIN, TTR("Plugin name is valid."));
 	validation_panel->add_line(MSG_ID_SCRIPT, TTR("Script extension is valid."));
 	validation_panel->add_line(MSG_ID_SUBFOLDER, TTR("Subfolder name is valid."));
+	validation_panel->add_line(MSG_ID_ACTIVE, "");
 	validation_panel->set_update_callback(callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	validation_panel->set_accept_button(get_ok_button());
 

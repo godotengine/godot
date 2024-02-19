@@ -2673,17 +2673,20 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view->connect("transform_changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_view_transform_changed).unbind(2));
 	right_panel->add_child(tile_atlas_view);
 
-	tile_create_help = memnew(HBoxContainer);
+	tile_create_help = memnew(VBoxContainer);
 	tile_atlas_view->add_child(tile_create_help);
 	tile_create_help->set_mouse_filter(MOUSE_FILTER_IGNORE);
-	tile_create_help->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT, Control::PRESET_MODE_MINSIZE, 30 * EDSCALE);
-	tile_create_help->add_theme_constant_override("separation", 30 * EDSCALE);
 
 	Label *help_label = memnew(Label(TTR("Hold Ctrl to create multiple tiles.")));
 	tile_create_help->add_child(help_label);
 
 	help_label = memnew(Label(TTR("Hold Shift to create big tiles.")));
 	tile_create_help->add_child(help_label);
+
+	tile_create_help->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT, Control::PRESET_MODE_MINSIZE);
+	Vector2 pos = tile_create_help->get_position();
+	pos.y -= 8 * EDSCALE;
+	tile_create_help->set_position(pos);
 
 	base_tile_popup_menu = memnew(PopupMenu);
 	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
