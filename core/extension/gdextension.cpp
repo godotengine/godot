@@ -929,9 +929,13 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 			compatible = VERSION_MAJOR < compatibility_maximum[0];
 		} else if (VERSION_MINOR != compatibility_maximum[1]) {
 			compatible = VERSION_MINOR < compatibility_maximum[1];
-		} else {
+		}
+#if VERSION_PATCH
+		// #if check to avoid -Wtype-limits warning when 0.
+		else {
 			compatible = VERSION_PATCH <= compatibility_maximum[2];
 		}
+#endif
 
 		if (!compatible) {
 			ERR_PRINT(vformat("GDExtension only compatible with Godot version %s or earlier: %s", compat_string, p_path));
