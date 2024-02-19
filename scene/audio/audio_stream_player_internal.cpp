@@ -38,7 +38,7 @@ void AudioStreamPlayerInternal::_set_process(bool p_enabled) {
 	if (physical) {
 		node->set_physics_process_internal(p_enabled);
 	} else {
-		node->set_process(p_enabled);
+		node->set_process_internal(p_enabled);
 	}
 }
 
