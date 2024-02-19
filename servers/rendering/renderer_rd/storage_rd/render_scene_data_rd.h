@@ -51,6 +51,7 @@ public:
 	float taa_frame_count = 0.0f;
 	uint32_t camera_visible_layers;
 	bool cam_orthogonal = false;
+	bool cam_frustum = false;
 	bool flip_y = false;
 
 	// For billboards to cast correct shadows.
