@@ -132,6 +132,7 @@ public:
 		RENDERING_DRIVER_VULKAN,
 		RENDERING_DRIVER_OPENGL3,
 		RENDERING_DRIVER_D3D12,
+		RENDERING_DRIVER_METAL,
 	};
 
 	virtual PackedStringArray get_connected_midi_inputs();

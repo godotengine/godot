@@ -190,7 +190,7 @@ params;
 #ifndef MODE_COPY
 layout(set = 0, binding = 15) uniform texture3D prev_density_texture;
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 layout(set = 0, binding = 16) buffer density_only_map_buffer {
 	uint density_only_map[];
 };
@@ -287,7 +287,7 @@ void main() {
 	if (any(greaterThanEqual(pos, params.fog_volume_size))) {
 		return; //do not compute
 	}
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint lpos = pos.z * params.fog_volume_size.x * params.fog_volume_size.y + pos.y * params.fog_volume_size.x + pos.x;
 #endif
 
@@ -353,7 +353,7 @@ void main() {
 	vec3 total_light = vec3(0.0);
 
 	float total_density = params.base_density;
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint local_density = density_only_map[lpos];
 #else
 	uint local_density = imageLoad(density_only_map, pos).x;
@@ -362,7 +362,7 @@ void main() {
 	total_density += float(int(local_density)) / DENSITY_SCALE;
 	total_density = max(0.0, total_density);
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint scattering_u = light_only_map[lpos];
 #else
 	uint scattering_u = imageLoad(light_only_map, pos).x;
@@ -370,7 +370,7 @@ void main() {
 	vec3 scattering = vec3(scattering_u >> 21, (scattering_u << 11) >> 21, scattering_u % 1024) / vec3(2047.0, 2047.0, 1023.0);
 	scattering += params.base_scattering * params.base_density;
 
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	uint emission_u = emissive_only_map[lpos];
 #else
 	uint emission_u = imageLoad(emissive_only_map, pos).x;
@@ -710,7 +710,7 @@ void main() {
 	final_density = mix(final_density, reprojected_density, reproject_amount);
 
 	imageStore(density_map, pos, final_density);
-#ifdef MOLTENVK_USED
+#ifdef NO_IMAGE_ATOMICS
 	density_only_map[lpos] = 0;
 	light_only_map[lpos] = 0;
 	emissive_only_map[lpos] = 0;
