@@ -58,9 +58,10 @@ namespace Godot.SourceGenerators
                 .GroupBy<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol), INamedTypeSymbol>(x => x.symbol, SymbolEqualityComparer.Default)
                 .ToDictionary<IGrouping<INamedTypeSymbol, (ClassDeclarationSyntax cds, INamedTypeSymbol symbol)>, INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>>(g => g.Key, g => g.Select(x => x.cds), SymbolEqualityComparer.Default);
 
+            var usedPaths = new HashSet<string>();
             foreach (var godotClass in godotClasses)
             {
-                VisitGodotScriptClass(context, godotProjectDir,
+                VisitGodotScriptClass(context, godotProjectDir, usedPaths,
                     symbol: godotClass.Key,
                     classDeclarations: godotClass.Value);
             }
@@ -74,6 +75,7 @@ namespace Godot.SourceGenerators
         private static void VisitGodotScriptClass(
             GeneratorExecutionContext context,
             string godotProjectDir,
+            HashSet<string> usedPaths,
             INamedTypeSymbol symbol,
             IEnumerable<ClassDeclarationSyntax> classDeclarations
         )
@@ -93,8 +95,19 @@ namespace Godot.SourceGenerators
                 if (attributes.Length != 0)
                     attributes.Append("\n");
 
+                string scriptPath = RelativeToDir(cds.SyntaxTree.FilePath, godotProjectDir);
+                if (!usedPaths.Add(scriptPath))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.MultipleClassesInGodotScriptRule,
+                        cds.Identifier.GetLocation(),
+                        symbol.Name
+                    ));
+                    return;
+                }
+
                 attributes.Append(@"[ScriptPathAttribute(""res://");
-                attributes.Append(RelativeToDir(cds.SyntaxTree.FilePath, godotProjectDir));
+                attributes.Append(scriptPath);
                 attributes.Append(@""")]");
             }
 

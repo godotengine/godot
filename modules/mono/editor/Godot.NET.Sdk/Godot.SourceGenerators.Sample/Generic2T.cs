@@ -2,8 +2,8 @@
 
 namespace Godot.SourceGenerators.Sample
 {
-    // Generic again but without generic parameters
-    partial class Generic : GodotObject
+    // Generic again but different generic parameters
+    partial class Generic2T<T, R> : GodotObject
     {
         private int _field;
     }
