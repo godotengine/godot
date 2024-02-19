@@ -827,6 +827,22 @@ and solve conflicts and also enrich the feature set originally
 proposed by these libraries and better integrate them with Godot.
 
 
+## spirv-cross
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Cross
+- Version: vulkan-sdk-1.3.290.0 (5d127b917f080c6f052553c47170ec0ba702e54f, 2024)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- All `.cpp`, `.hpp` and `.h` files, minus `main.cpp`, `spirv_cross_c.*`, `spirv_hlsl.*`, `spirv_cpp.*`
+- `include/` folder
+- `LICENSE` and `LICENSES/` folder, minus `CC-BY-4.0.txt`
+
+Versions of this SDK do not have to match the `vulkan` section, as this SDK is required
+to generate Metal source from Vulkan SPIR-V.
+
+
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect

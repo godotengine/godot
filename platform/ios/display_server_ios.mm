@@ -73,6 +73,13 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 #ifdef VULKAN_ENABLED
 		RenderingContextDriverVulkanIOS::WindowPlatformData vulkan;
 #endif
+#ifdef METAL_ENABLED
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
+		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+		RenderingContextDriverMetal::WindowPlatformData metal;
+#pragma clang diagnostic pop
+#endif
 	} wpd;
 
 #if defined(VULKAN_ENABLED)
@@ -85,7 +92,19 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		rendering_context = memnew(RenderingContextDriverVulkanIOS);
 	}
 #endif
-
+#ifdef METAL_ENABLED
+	if (rendering_driver == "metal") {
+		if (@available(iOS 14.0, *)) {
+			layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"metal"];
+			wpd.metal.layer = (CAMetalLayer *)layer;
+			rendering_context = memnew(RenderingContextDriverMetal);
+		} else {
+			OS::get_singleton()->alert("Metal is only supported on iOS 14.0 and later.");
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+	}
+#endif
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
 			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
@@ -171,6 +190,11 @@ Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
 
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
+#endif
+#if defined(METAL_ENABLED)
+	if (@available(ios 14.0, *)) {
+		drivers.push_back("metal");
+	}
 #endif
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
