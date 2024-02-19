@@ -127,7 +127,9 @@ String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPres
 void EditorExportPlatformIOS::_notification(int p_what) {
 #ifdef MACOS_ENABLED
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformIOS::_update_preset_status));
+		if (EditorExport::get_singleton()) {
+			EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformIOS::_update_preset_status));
+		}
 	}
 #endif
 }
