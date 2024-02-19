@@ -4819,10 +4819,12 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 	}
 
 	if (user_data != 0) {
-		errorMsg += user_data;
+		errorMsg += " | User data: " + itos(user_data);
 	}
 
 	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, errorMsg);
+
+	context->on_device_lost();
 }
 
 /********************/

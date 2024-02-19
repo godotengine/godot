@@ -3353,6 +3353,67 @@ bool VulkanContext::is_debug_utils_enabled() const {
 	return is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 }
 
+void VulkanContext::on_device_lost() const {
+	VkDeviceFaultCountsEXT faultCounts = { VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT };
+	VkResult vkres = vkGetDeviceFaultInfoEXT(device, &faultCounts, nullptr);
+
+	if (vkres != VK_SUCCESS) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault count, skipping VK_EXT_device_fault report...");
+		return;
+	}
+
+	VkDeviceFaultInfoEXT faultInfo = { VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT };
+	faultInfo.pVendorInfos = faultCounts.vendorInfoCount
+			? (VkDeviceFaultVendorInfoEXT *)memalloc(faultCounts.vendorInfoCount * sizeof(VkDeviceFaultVendorInfoEXT))
+			: NULL;
+	faultInfo.pAddressInfos =
+			faultCounts.addressInfoCount
+			? (VkDeviceFaultAddressInfoEXT *)memalloc(faultCounts.addressInfoCount * sizeof(VkDeviceFaultAddressInfoEXT))
+			: NULL;
+	faultCounts.vendorBinarySize = 0;
+	vkres = vkGetDeviceFaultInfoEXT(device, &faultCounts, &faultInfo);
+	if (vkres != VK_SUCCESS) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault info, skipping VK_EXT_device_fault report...");
+	} else {
+		print_line("** Report from VK_EXT_device_fault **");
+		print_line("Description: %s", faultInfo.description);
+		print_line("Vendor infos");
+		for (uint32_t vd = 0; vd < faultCounts.vendorInfoCount; ++vd) {
+			const VkDeviceFaultVendorInfoEXT *vendorInfo = &faultInfo.pVendorInfos[vd];
+			print_line("Info[%u]", vd);
+			print_line("   Description: %s", vendorInfo->description);
+			print_line("   Fault code : %zu", (size_t)vendorInfo->vendorFaultCode);
+			print_line("   Fault data : %zu", (size_t)vendorInfo->vendorFaultData);
+		}
+
+		static constexpr const char *addressTypeNames[] = {
+			"NONE",
+			"READ_INVALID",
+			"WRITE_INVALID",
+			"EXECUTE_INVALID",
+			"INSTRUCTION_POINTER_UNKNOWN",
+			"INSTRUCTION_POINTER_INVALID",
+			"INSTRUCTION_POINTER_FAULT",
+		};
+		print_line("Address infos");
+		for (uint32_t ad = 0; ad < faultCounts.addressInfoCount; ++ad) {
+			const VkDeviceFaultAddressInfoEXT *addrInfo = &faultInfo.pAddressInfos[ad];
+			// From https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDeviceFaultAddressInfoEXT.html
+			const VkDeviceAddress lower = (addrInfo->reportedAddress & ~(addrInfo->addressPrecision - 1));
+			const VkDeviceAddress upper = (addrInfo->reportedAddress | (addrInfo->addressPrecision - 1));
+			print_line("Info[%u]", ad);
+			print_line("   Type            : %s", addressTypeNames[addrInfo->addressType]);
+			print_line("   Reported address: %zu", (size_t)addrInfo->reportedAddress);
+			print_line("   Lower address   : %zu", (size_t)lower);
+			print_line("   Upper address   : %zu", (size_t)upper);
+			print_line("   Precision       : %zu", (size_t)addrInfo->addressPrecision);
+		}
+	}
+
+	memfree(faultInfo.pVendorInfos);
+	memfree(faultInfo.pAddressInfos);
+}
+
 VulkanContext::VulkanContext() {
 	command_buffer_queue.resize(1); // First one is always the setup command.
 	command_buffer_queue[0] = nullptr;

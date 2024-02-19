@@ -446,7 +446,7 @@ void main() {
 #endif
 
 #ifdef MODE_RENDER_DEPTH
-
+	
 #ifdef MODE_DUAL_PARABOLOID
 
 	vertex_interp.z *= scene_data.dual_paraboloid_side;
@@ -1754,6 +1754,7 @@ void main() {
 	}
 #else
 #ifdef MODE_RENDER_DEPTH
+	
 #ifdef USE_OPAQUE_PREPASS
 
 	if (alpha < scene_data.opaque_prepass_threshold) {
@@ -1771,7 +1772,7 @@ void main() {
 #ifdef MODE_RENDER_DEPTH
 
 #ifdef MODE_RENDER_MATERIAL
-
+	
 	albedo_output_buffer.rgb = albedo;
 	albedo_output_buffer.a = alpha;
 

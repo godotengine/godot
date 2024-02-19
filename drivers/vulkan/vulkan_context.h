@@ -367,6 +367,8 @@ public:
 	virtual RenderingDeviceDriver *get_driver(RID p_local_device = RID()) override final;
 	virtual bool is_debug_utils_enabled() const override final;
 
+	virtual void on_device_lost() const override final;
+
 #if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 	static const char *get_tracked_object_name(uint32_t typeIndex);
 	static uint64_t get_tracked_object_type_count();
