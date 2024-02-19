@@ -509,9 +509,9 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 			e->f_score = e->g_score + _estimate_cost(e->id, p_end_point->id);
 
 			if (new_point) { // The position of the new points is already known.
-				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.size(), open_list.ptr());
 			} else {
-				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.find(e) + 1, open_list.ptr());
 			}
 		}
 	}
