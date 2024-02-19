@@ -58,9 +58,10 @@
 #endif
 
 // Note: symbols are not available in MinGW and old MSVC import libraries.
-const CLSID CLSID_D3D12DeviceFactoryGodot = __uuidof(ID3D12DeviceFactory);
-const CLSID CLSID_D3D12DebugGodot = __uuidof(ID3D12Debug);
-const CLSID CLSID_D3D12SDKConfigurationGodot = __uuidof(ID3D12SDKConfiguration);
+// GUID values from https://github.com/microsoft/DirectX-Headers/blob/7a9f4d06911d30eecb56a4956dab29dcca2709ed/include/directx/d3d12.idl#L5877-L5881
+const GUID CLSID_D3D12DeviceFactoryGodot = { 0x114863bf, 0xc386, 0x4aee, { 0xb3, 0x9d, 0x8f, 0x0b, 0xbb, 0x06, 0x29, 0x55 } };
+const GUID CLSID_D3D12DebugGodot = { 0xf2352aeb, 0xdd84, 0x49fe, { 0xb9, 0x7b, 0xa9, 0xdc, 0xfd, 0xcc, 0x1b, 0x4f } };
+const GUID CLSID_D3D12SDKConfigurationGodot = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x94, 0x58, 0x03, 0x34, 0xd2, 0x0e, 0x07, 0xce } };
 
 extern "C" {
 char godot_nir_arch_name[32];
