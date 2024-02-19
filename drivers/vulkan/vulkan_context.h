@@ -211,6 +211,8 @@ private:
 	HashSet<CharString> enabled_device_extension_names;
 	bool VK_KHR_incremental_present_enabled = true;
 	bool VK_GOOGLE_display_timing_enabled = true;
+	static const bool VK_EXT_memory_report_enabled = true;
+	static const bool VK_track_driver_memory = true;
 
 	PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT = nullptr;
 	PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT = nullptr;

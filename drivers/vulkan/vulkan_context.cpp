@@ -211,6 +211,9 @@ void VulkanContext::memory_report_callback(const VkDeviceMemoryReportCallbackDat
 }
 
 VkAllocationCallbacks *VulkanContext::get_allocation_callbacks(VkObjectType type) {
+	if (!VK_track_driver_memory)
+		return nullptr;
+
 #if !defined(VK_TRACK_DRIVER_MEMORY)
 	struct MemHeader {
 		size_t size;
@@ -1978,7 +1981,7 @@ Error VulkanContext::_create_device(VkDevice &r_vk_device) {
 		}
 	}
 
-	if (is_device_extension_enabled(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME)) {
+	if (is_device_extension_enabled(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME) && VK_EXT_memory_report_enabled) {
 		memory_report_info.sType = VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
 		memory_report_info.pfnUserCallback = memory_report_callback;
 		memory_report_info.pNext = nextptr;
