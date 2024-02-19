@@ -467,7 +467,7 @@ void UserLogManagerLogger::flush() {
 	// Any buffered callables that disable themselves stop getting messages ASAP
 	// any buffered callables that get attached might start getting messages midway through
 	// we're ok with that, it's still a chronologically coherent block
-	for (int i = 0; i < buffered_logs_mirror.size(); ++i) {
+	for (const Dictionary& log : buffered_logs_mirror) {
 		// This is the same index-as-iterator-to-avoid-lock-issues dance we do in register_log_capture_non_thread_safe()
 		int index_to_send_to = 0;
 
@@ -483,7 +483,7 @@ void UserLogManagerLogger::flush() {
 				callable = captures_buffered[index_to_send_to++];
 			}
 
-			dispatch_message(buffered_logs_mirror[i], callable);
+			dispatch_message(log, callable);
 		}
 	}
 
@@ -521,8 +521,8 @@ void UserLogManagerLogger::process(const Dictionary &p_message) {
 	// Dispatch to all the non_thread_safe callables at the moment we added to the buffer
 	// We actually don't have to care about cutesy threadsafety for once because we're working off a local copy of the captures list
 
-	for (int i = 0; i < captures_non_thread_safe_mirror.size(); ++i) {
-		dispatch_message(p_message, captures_non_thread_safe_mirror[i]);
+	for (const Callable& callable : captures_non_thread_safe_mirror) {
+		dispatch_message(p_message, callable);
 	}
 }
 
