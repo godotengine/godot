@@ -126,7 +126,7 @@ protected:
 	/* ---- General settings for animation ---- */
 	AnimationCallbackModeProcess callback_mode_process = ANIMATION_CALLBACK_MODE_PROCESS_IDLE;
 	AnimationCallbackModeMethod callback_mode_method = ANIMATION_CALLBACK_MODE_METHOD_DEFERRED;
-	AnimationCallbackModeDiscrete callback_mode_discrete = ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE;
+	AnimationCallbackModeDiscrete callback_mode_discrete = ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT;
 	int audio_max_polyphony = 32;
 	NodePath root_node;
 
