@@ -47,8 +47,13 @@
 // forward-compatible.
 // Example: "3.1"
 #define VERSION_BRANCH _MKSTR(VERSION_MAJOR) "." _MKSTR(VERSION_MINOR)
+#if VERSION_PATCH
 // Example: "3.1.4"
 #define VERSION_NUMBER VERSION_BRANCH "." _MKSTR(VERSION_PATCH)
+#else // patch is 0, we don't include it in the "pretty" version number.
+// Example: "3.1" instead of "3.1.0"
+#define VERSION_NUMBER VERSION_BRANCH
+#endif // VERSION_PATCH
 
 // Version number encoded as hexadecimal int with one byte for each number,
 // for easy comparison from code.
