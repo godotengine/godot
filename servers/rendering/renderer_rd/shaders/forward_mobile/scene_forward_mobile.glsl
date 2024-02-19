@@ -446,7 +446,7 @@ void main() {
 #endif
 
 #ifdef MODE_RENDER_DEPTH
-	
+
 #ifdef MODE_DUAL_PARABOLOID
 
 	vertex_interp.z *= scene_data.dual_paraboloid_side;

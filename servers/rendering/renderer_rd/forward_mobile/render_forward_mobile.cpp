@@ -615,7 +615,7 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 			//open the pass for directional shadows
 			light_storage->update_directional_shadow_atlas();
 
-			RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE);
+			RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0f, 0, Rect2(), RenderingDeviceCommons::BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL, 0);
 			RD::get_singleton()->draw_list_end();
 		}
 	}
@@ -1391,11 +1391,6 @@ void RenderForwardMobile::_render_shadow_end() {
 	uint32_t curr_shadow_index = 0;
 	bool is_cubemap = scene_state.shadow_passes[curr_shadow_index].is_cubemap;
 
-	RID framebuffer = scene_state.shadow_passes[curr_shadow_index].framebuffer;
-	Size2 fb_size = RD::get_singleton()->framebuffer_get_size(framebuffer);
-	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
-	RD::DrawListID draw_list;
-
 	while (curr_shadow_index < scene_state.shadow_passes.size()) {
 		// 4 = shadow cascades amount
 		uint32_t pass_amount = is_cubemap ? 6 : 4;
@@ -1408,7 +1403,12 @@ void RenderForwardMobile::_render_shadow_end() {
 				_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, shadow_pass.rect);
 			}
 		} else {
-			draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, Rect2(0, 0, fb_size.x, fb_size.y), RDD::BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL);
+			RID framebuffer = scene_state.shadow_passes[curr_shadow_index].framebuffer;
+			Size2 fb_size = RD::get_singleton()->framebuffer_get_size(framebuffer);
+			RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
+			RD::DrawListID draw_list;
+
+			draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, Rect2(0, 0, fb_size.x, fb_size.y), RenderingDeviceCommons::BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL);
 
 			for (uint32_t j = 0; j < pass_amount && curr_shadow_index + j < scene_state.shadow_passes.size(); j++) {
 				SceneState::ShadowPass shadow_pass = scene_state.shadow_passes[curr_shadow_index + j];
