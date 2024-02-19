@@ -1538,7 +1538,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 	p_output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
 
-	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
+	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" OPEN_BLOCK);
 
 	for (const ConstantInterface &iconstant : global_constants) {
 		if (iconstant.const_doc && iconstant.const_doc->description.size()) {
@@ -1589,50 +1589,48 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 			_log("Declaring global enum '%s' inside struct '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
-			p_output.append("\npublic partial struct ");
-			p_output.append(enum_class_name);
-			p_output.append("\n" OPEN_BLOCK);
+			p_output << "\npublic partial struct " << enum_class_name << "\n" OPEN_BLOCK;
 		}
+
+		const String maybe_indent = !enum_in_static_class ? "" : INDENT1;
 
 		if (ienum.is_flags) {
-			p_output.append("\n[System.Flags]");
+			p_output << "\n"
+					 << maybe_indent << "[System.Flags]";
 		}
 
-		p_output.append("\npublic enum ");
-		p_output.append(enum_proxy_name);
-		p_output.append(" : long");
-		p_output.append("\n" OPEN_BLOCK);
+		p_output << "\n"
+				 << maybe_indent << "public enum " << enum_proxy_name << " : long"
+				 << "\n"
+				 << maybe_indent << OPEN_BLOCK;
 
-		const ConstantInterface &last = ienum.constants.back()->get();
 		for (const ConstantInterface &iconstant : ienum.constants) {
 			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), nullptr);
 				Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 				if (summary_lines.size()) {
-					p_output.append(INDENT1 "/// <summary>\n");
+					p_output << maybe_indent << INDENT1 "/// <summary>\n";
 
 					for (int i = 0; i < summary_lines.size(); i++) {
-						p_output.append(INDENT1 "/// ");
-						p_output.append(summary_lines[i]);
-						p_output.append("\n");
+						p_output << maybe_indent << INDENT1 "/// " << summary_lines[i] << "\n";
 					}
 
-					p_output.append(INDENT1 "/// </summary>\n");
+					p_output << maybe_indent << INDENT1 "/// </summary>\n";
 				}
 			}
 
-			p_output.append(INDENT1);
-			p_output.append(iconstant.proxy_name);
-			p_output.append(" = ");
-			p_output.append(itos(iconstant.value));
-			p_output.append(&iconstant != &last ? ",\n" : "\n");
+			p_output << maybe_indent << INDENT1
+					 << iconstant.proxy_name
+					 << " = "
+					 << itos(iconstant.value)
+					 << ",\n";
 		}
 
-		p_output.append(CLOSE_BLOCK);
+		p_output << maybe_indent << CLOSE_BLOCK;
 
 		if (enum_in_static_class) {
-			p_output.append(CLOSE_BLOCK);
+			p_output << CLOSE_BLOCK;
 		}
 	}
 }
@@ -2162,7 +2160,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output << MEMBER_BEGIN "public " << itype.proxy_name << "() : this("
 					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
 					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
-					   << INDENT3 "_ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
+					   << INDENT3 "ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
 					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
 					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
 					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
@@ -2171,7 +2169,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output << MEMBER_BEGIN "internal " << itype.proxy_name << "() : this("
 					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
 					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
-					   << INDENT3 "_ConstructAndInitialize(null, "
+					   << INDENT3 "ConstructAndInitialize(null, "
 					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
 					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
 					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
@@ -2180,7 +2178,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// Add.. em.. trick constructor. Sort of.
 			output.append(MEMBER_BEGIN "internal ");
 			output.append(itype.proxy_name);
-			output.append("(bool " CS_PARAM_MEMORYOWN ") : base(" CS_PARAM_MEMORYOWN ") {}\n");
+			output.append("(bool " CS_PARAM_MEMORYOWN ") : base(" CS_PARAM_MEMORYOWN ") { }\n");
 		}
 	}
 
@@ -2240,6 +2238,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
 			   << INDENT1 "/// <param name=\"args\">Arguments to use with the invoked method.</param>\n"
 			   << INDENT1 "/// <param name=\"ret\">Value returned by the invoked method.</param>\n";
+
+		// Avoid raising diagnostics because of calls to obsolete methods.
+		output << "#pragma warning disable CS0618 // Member is obsolete\n";
 
 		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
@@ -2318,6 +2319,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		output << INDENT1 "}\n";
+
+		output << "#pragma warning restore CS0618\n";
 
 		// Generate HasGodotClassMethod
 
@@ -2969,7 +2972,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
 
 				if (idx != 0) {
-					p_output << ",";
+					p_output << ", ";
 				}
 
 				p_output << sformat(arg_type->cs_variant_to_managed,

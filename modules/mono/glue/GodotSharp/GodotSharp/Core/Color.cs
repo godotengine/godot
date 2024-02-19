@@ -784,7 +784,7 @@ namespace Godot
             name = name.Replace(".", string.Empty, StringComparison.Ordinal);
             name = name.ToUpperInvariant();
 
-            return Colors.namedColors.TryGetValue(name, out color);
+            return Colors.NamedColors.TryGetValue(name, out color);
         }
 
         /// <summary>
