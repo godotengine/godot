@@ -13,7 +13,7 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Registers a Buffered callback for the log capture system.
+				Registers a buffered callback for the log capture system.
 				Your callback will occasionally be called when log messages have been output. This is guaranteed to happen on the main thread and preserve message order; however, there may be some delay (at most, one frame) between the message being sent and the callback being called.
 				Your callback will be called with a single Variant containing a dictionary with fields. It is guaranteed to include:
 				[code]type[/code]: The type of message. Currently "error", "warning", 'info", "script", and "shader".
@@ -27,11 +27,11 @@
 				This function may be called on the main thread only.
 			</description>
 		</method>
-		<method name="register_log_capture_nonthreadsafe">
+		<method name="register_log_capture_non_thread_safe">
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Registers a Nonthreadsafe callback for the log capture system.
+				Registers a non_thread_safe callback for the log capture system.
 				Your callback will be called whenever a log message is output. This may happen in any thread or in any situation. [b]Your callback must be fully threadsafe, and it must not block.[/b] It may be called from any thread, including the main thread, even if another callback is currently being called. It may be called twice in parallel. It may be called in scenarios where you are disallowed from modifying Node values or creating Nodes. If you do anything to create a log message from this function, it may be called recursively, and this can potentially result in a stack overflow. Any or all of these things may happen before this register call returns. [b]Treat this function with extreme care.[/b]
 				Your callback will be called with a single Variant containing a dictionary with fields, containing the same information as the dictionary passed to [method register_log_capture_buffered].
 				If the callback is registered before the first frame, it will immediately replay all messages from the start of the game, in order.
@@ -42,15 +42,15 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Unregisters a Buffered callback for the log capture system. Messages being sent to the callback will cease immediately.
+				Unregisters a buffered callback for the log capture system. Messages being sent to the callback will cease immediately.
 				This function may be called on the main thread only.
 			</description>
 		</method>
-		<method name="unregister_log_capture_nonthreadsafe">
+		<method name="unregister_log_capture_non_thread_safe">
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Unregisters a Nonthreadsafe callback for the log capture system. Your callback may continue to receive messages for a short time after this function is called.
+				Unregisters a non_thread_safe callback for the log capture system. Your callback may continue to receive messages for a short time after this function is called.
 				This function may be called on the main thread only.
 			</description>
 		</method>

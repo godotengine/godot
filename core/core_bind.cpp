@@ -1918,19 +1918,19 @@ LogManager::~LogManager() {
 	singleton = nullptr;
 }
 
-void LogManager::register_log_capture_nonthreadsafe(const Callable &p_callable) {
+void LogManager::register_log_capture_non_thread_safe(const Callable &p_callable) {
 	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
 	ERR_FAIL_COND_MSG(log_manager == nullptr, "log_manager not yet initialized; this shouldn't be possible");
 	if (log_manager != nullptr) {
-		log_manager->register_log_capture_nonthreadsafe(p_callable);
+		log_manager->register_log_capture_non_thread_safe(p_callable);
 	}
 }
 
-void LogManager::unregister_log_capture_nonthreadsafe(const Callable &p_callable) {
+void LogManager::unregister_log_capture_non_thread_safe(const Callable &p_callable) {
 	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
 	ERR_FAIL_COND_MSG(log_manager == nullptr, "log_manager not yet initialized; this shouldn't be possible");
 	if (log_manager != nullptr) {
-		log_manager->unregister_log_capture_nonthreadsafe(p_callable);
+		log_manager->unregister_log_capture_non_thread_safe(p_callable);
 	}
 }
 
@@ -1951,8 +1951,8 @@ void LogManager::unregister_log_capture_buffered(const Callable &p_callable) {
 }
 
 void LogManager::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("register_log_capture_nonthreadsafe", "callable"), &LogManager::register_log_capture_nonthreadsafe);
-	ClassDB::bind_method(D_METHOD("unregister_log_capture_nonthreadsafe", "callable"), &LogManager::unregister_log_capture_nonthreadsafe);
+	ClassDB::bind_method(D_METHOD("register_log_capture_non_thread_safe", "callable"), &LogManager::register_log_capture_non_thread_safe);
+	ClassDB::bind_method(D_METHOD("unregister_log_capture_non_thread_safe", "callable"), &LogManager::unregister_log_capture_non_thread_safe);
 	ClassDB::bind_method(D_METHOD("register_log_capture_buffered", "callable"), &LogManager::register_log_capture_buffered);
 	ClassDB::bind_method(D_METHOD("unregister_log_capture_buffered", "callable"), &LogManager::unregister_log_capture_buffered);
 }

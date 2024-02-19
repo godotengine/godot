@@ -118,13 +118,13 @@ class UserLogManagerLogger : public Logger {
 	// Stored as Vector so we can iterate over it in a threadsafe manner without holding a lock
 	// Deleted items are replaced by Callable(), with the slot later reused, to avoid problems with in-flight iterators
 	// This technically means adding and removing a capture is O(n^2) but it's hard to imagine any sensible scenario where n>4
-	Vector<Callable> captures_nonthreadsafe;
+	Vector<Callable> captures_non_thread_safe;
 	Vector<Callable> captures_buffered;
 
 	enum State {
 		STATE_OFF, // log messages are not processed in any way
-		STATE_PASSTHROUGH, // log messages are processed but sent straight to nonthreadsafe
-		STATE_BUFFERING, // log messages are processed and buffered until the next flush (and maybe sent straight to nonthreadsafe also)
+		STATE_PASSTHROUGH, // log messages are processed but sent straight to non_thread_safe
+		STATE_BUFFERING, // log messages are processed and buffered until the next flush (and maybe sent straight to non_thread_safe also)
 	};
 	std::atomic<State> state;
 
@@ -150,8 +150,8 @@ public:
 
 	// Callback registration/unregistration (via LogManager)
 	// Must be called from the main thread
-	void register_log_capture_nonthreadsafe(const Callable &p_callable);
-	void unregister_log_capture_nonthreadsafe(const Callable &p_callable);
+	void register_log_capture_non_thread_safe(const Callable &p_callable);
+	void unregister_log_capture_non_thread_safe(const Callable &p_callable);
 	void register_log_capture_buffered(const Callable &p_callable);
 	void unregister_log_capture_buffered(const Callable &p_callable);
 

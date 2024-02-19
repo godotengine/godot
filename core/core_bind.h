@@ -580,8 +580,8 @@ public:
 
 	static LogManager *get_singleton() { return singleton; }
 
-	void register_log_capture_nonthreadsafe(const Callable &p_callable);
-	void unregister_log_capture_nonthreadsafe(const Callable &p_callable);
+	void register_log_capture_non_thread_safe(const Callable &p_callable);
+	void unregister_log_capture_non_thread_safe(const Callable &p_callable);
 
 	void register_log_capture_buffered(const Callable &p_callable);
 	void unregister_log_capture_buffered(const Callable &p_callable);
