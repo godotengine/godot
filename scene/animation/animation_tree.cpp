@@ -568,10 +568,11 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 			pi.seeked = true;
 			root_animation_node->_pre_process(&process_state, pi, false);
 			started = false;
+		} else {
+			pi.seeked = false;
+			pi.time = p_delta;
+			root_animation_node->_pre_process(&process_state, pi, false);
 		}
-		pi.seeked = false;
-		pi.time = p_delta;
-		root_animation_node->_pre_process(&process_state, pi, false);
 	}
 
 	if (!process_state.valid) {
