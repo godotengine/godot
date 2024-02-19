@@ -3534,6 +3534,10 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 		accept_event();
+	} else if (p_event->is_action("ui_menu") && p_event->is_pressed()) {
+		// Show the context menu.
+		emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), MouseButton::RIGHT);
+		accept_event();
 	}
 
 	if (allow_search && k.is_valid()) { // Incremental search
