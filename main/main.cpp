@@ -3999,7 +3999,9 @@ bool Main::iteration() {
 		}
 	}
 
-	// do this ASAP after incrementing frames_drawn
+	// trigger the logger flush now
+	// this could be moved before the frame update, but the first time it updates changes behavior a bit
+	// and it's convenient to say "behavior is X before the first frame"
 	UserLogManagerLogger::get_singleton()->flush();
 
 	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;

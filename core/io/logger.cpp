@@ -272,12 +272,13 @@ CompositeLogger::~CompositeLogger() {
 // This is the internal user log hooking system, which does all the hard work.
 
 UserLogManagerLogger *UserLogManagerLogger::singleton = nullptr;
-const int UserLogManagerLoggerFramesToSpeculativelyBuffer = 0;
 
 UserLogManagerLogger::UserLogManagerLogger() {
 	ERR_FAIL_COND_MSG(singleton != nullptr, "Somehow created two UserLogManagerLoggers");
 
 	singleton = this;
+
+	prebuffering = true;
 
 	// this is about to get overwritten by `recalculate_state`
 	state = STATE_OFF;
@@ -364,7 +365,7 @@ void UserLogManagerLogger::register_log_capture_nonthreadsafe(const Callable &p_
 	// It gets *extremely* hard to guarantee the proper semantics if you're allowed to call this from other threads.
 	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
 
-	if (get_frames_drawn_safe() <= UserLogManagerLoggerFramesToSpeculativelyBuffer) {
+	if (prebuffering) {
 		// Time to dispatch our messages! This catches this particular hook up to "realtime", replaying all buffered messages in fast-forward.
 
 		// We can be certain nobody is *removing* things from the buffer right now
@@ -486,11 +487,12 @@ void UserLogManagerLogger::flush() {
 		}
 	}
 
-	if (get_frames_drawn_safe() == UserLogManagerLoggerFramesToSpeculativelyBuffer + 1) {
+	if (prebuffering) {
 		// Buffering is done!
 		// Read the comment near the bottom of recalculate_state for a possible race condition and how it's dealt with.
 		// IT IS REALLY IMPORTANT THAT THIS HAPPENS ONLY ON THE MAIN THREAD.
 		MutexLock lock(mutex);
+		prebuffering = false;
 		recalculate_state();
 	}
 }
@@ -547,7 +549,7 @@ void UserLogManagerLogger::recalculate_state() {
 
 	State newState = STATE_OFF;
 
-	if (get_frames_drawn_safe() <= UserLogManagerLoggerFramesToSpeculativelyBuffer) {
+	if (prebuffering) {
 		// We always buffer on the first frame, in case someone hooks to us and expects a replay
 		newState = STATE_BUFFERING;
 	} else if (!captures_buffered.is_empty()) {
@@ -615,14 +617,4 @@ void UserLogManagerLogger::unregister_callable(Vector<Callable> &p_vector, const
 	if (index != -1) {
 		p_vector.write[index] = Callable();
 	}
-}
-
-uint64_t UserLogManagerLogger::get_frames_drawn_safe() const {
-	Engine *engine = ::Engine::get_singleton();
-	if (engine == nullptr) {
-		// We start early enough that Engine may actually not exist.
-		// But that's conceptually the same as "zero", so we'll just pretend it returned zero.
-		return 0;
-	}
-	return engine->get_frames_drawn();
 }

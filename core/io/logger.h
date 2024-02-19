@@ -128,6 +128,9 @@ class UserLogManagerLogger : public Logger {
 	};
 	std::atomic<State> state;
 
+	// whether we're in the first-frame Prebuffering mode or not
+	std::atomic<bool> prebuffering;
+
 	// This is expected to be called from multiple threads.
 	// Right now we have a single mutex that applies to any access of any collection, as well as `state` transitions.
 	// It's possible this should be split into multiple contextual states, but, man, good luck figuring out the details on that one.
@@ -168,9 +171,6 @@ private:
 	// small utility functions for our sparse vector behavior, assumes the mutex is already held
 	static void register_callable(Vector<Callable> &p_vector, const Callable &p_callable);
 	static void unregister_callable(Vector<Callable> &p_vector, const Callable &p_callable);
-
-	// small utility functions for common functionality
-	uint64_t get_frames_drawn_safe() const;
 };
 
 #endif // LOGGER_H
