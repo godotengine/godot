@@ -833,7 +833,7 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)(b
 	}
 
 #ifdef TOOLS_ENABLED
-	if constexpr (std::is_same_v<T, ClassNode>) {
+	if constexpr (types_are_same_v<T, ClassNode>) {
 		if (has_comment(member->start_line, true)) {
 			// Inline doc comment.
 			member->doc_data = parse_class_doc_comment(member->start_line, true);

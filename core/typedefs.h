@@ -303,6 +303,56 @@ struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
 template <size_t... Is>
 struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 
+template <bool C, typename T = void>
+struct EnableIf {
+	typedef T type;
+};
+
+template <typename T>
+struct EnableIf<false, T> {
+};
+
+template <bool C, typename T = void>
+using EnableIf_t = typename EnableIf<C, T>::type;
+
+template <typename, typename>
+inline constexpr bool types_are_same_v = false;
+
+template <typename T>
+inline constexpr bool types_are_same_v<T, T> = true;
+
+template <typename B, typename D>
+struct TypeInherits {
+	static D *get_d();
+
+	static char (&test(B *))[1];
+	static char (&test(...))[2];
+
+	static bool const value = sizeof(test(get_d())) == sizeof(char) &&
+			!types_are_same_v<B volatile const, void volatile const>;
+};
+
+template <typename B, typename D>
+constexpr bool TypeInherits_v = TypeInherits<B, D>::value;
+
+// Recursively remove pointer-to-const, reference, and pointer from type.
+template <typename T>
+struct RemoveRefPointerConst { using Type = T; };
+template <typename T>
+struct RemoveRefPointerConst<T *> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<T &> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<T *&> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<const T *> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<const T &> { using Type = typename RemoveRefPointerConst<T>::Type; };
+template <typename T>
+struct RemoveRefPointerConst<const T *&> { using Type = typename RemoveRefPointerConst<T>::Type; };
+
+template <typename T>
+using RemoveRefPointerConst_t = typename RemoveRefPointerConst<T>::Type;
 // Limit the depth of recursive algorithms when dealing with Array/Dictionary
 #define MAX_RECURSION 100
 
