@@ -584,6 +584,19 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 			Version::Specialization specialization;
 
 			specialization.id = glCreateProgram();
+			if (feedback_count) {
+				Vector<const char *> feedback;
+				for (int feedback_index = 0; feedback_index < feedback_count; feedback_index++) {
+					if (feedbacks[feedback_index].specialization == 0 || (feedbacks[feedback_index].specialization & specialization_key)) {
+						// Specialization for this feedback is enabled.
+						feedback.push_back(feedbacks[feedback_index].name);
+					}
+				}
+
+				if (!feedback.is_empty()) {
+					glTransformFeedbackVaryings(specialization.id, feedback.size(), feedback.ptr(), GL_INTERLEAVED_ATTRIBS);
+				}
+			}
 			glProgramBinary(specialization.id, variant_format, variant_bytes.ptr(), variant_bytes.size());
 
 			GLint link_status = 0;
