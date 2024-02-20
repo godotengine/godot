@@ -87,6 +87,7 @@
 #include "text/text_server_extension.h"
 #include "text_server.h"
 #include "xr/xr_face_tracker.h"
+#include "xr/xr_hand_tracker.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_interface_extension.h"
 #include "xr/xr_positional_tracker.h"
@@ -193,6 +194,7 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 
 	GDREGISTER_ABSTRACT_CLASS(XRInterface);
+	GDREGISTER_CLASS(XRHandTracker);
 	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
 	GDREGISTER_CLASS(XRPose);
 	GDREGISTER_CLASS(XRPositionalTracker);
