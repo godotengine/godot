@@ -18,6 +18,9 @@
 		<member name="camera_attributes" type="CameraAttributes" setter="set_camera_attributes" getter="get_camera_attributes">
 			The default [CameraAttributes] resource to use if none set on the [Camera3D].
 		</member>
+		<member name="compositor" type="Compositor" setter="set_compositor" getter="get_compositor">
+			The default [Compositor] resource to use if none set on the [Camera3D].
+		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] resource used by this [WorldEnvironment], defining the default properties.
 		</member>

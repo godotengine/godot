@@ -30,6 +30,20 @@
 
 #include "environment_storage.h"
 
+// Storage
+
+RendererEnvironmentStorage *RendererEnvironmentStorage::singleton = nullptr;
+
+RendererEnvironmentStorage::RendererEnvironmentStorage() {
+	singleton = this;
+}
+
+RendererEnvironmentStorage::~RendererEnvironmentStorage() {
+	singleton = nullptr;
+}
+
+// Environment
+
 RID RendererEnvironmentStorage::environment_allocate() {
 	return environment_owner.allocate_rid();
 }

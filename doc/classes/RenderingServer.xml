@@ -118,6 +118,14 @@
 				Sets the camera_attributes created with [method camera_attributes_create] to the given camera.
 			</description>
 		</method>
+		<method name="camera_set_compositor">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="compositor" type="RID" />
+			<description>
+				Sets the compositor used by this camera. Equivalent to [member Camera3D.compositor].
+			</description>
+		</method>
 		<method name="camera_set_cull_mask">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
@@ -916,6 +924,54 @@
 			<param index="1" name="repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" />
 			<description>
 				Sets the texture [param repeat] mode to use for the canvas texture specified by the [param canvas_texture] RID.
+			</description>
+		</method>
+		<method name="compositor_create">
+			<return type="RID" />
+			<description>
+				Creates a new compositor and adds it to the RenderingServer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+			</description>
+		</method>
+		<method name="compositor_effect_create">
+			<return type="RID" />
+			<description>
+				Creates a new rendering effect and adds it to the RenderingServer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+			</description>
+		</method>
+		<method name="compositor_effect_set_callback">
+			<return type="void" />
+			<param index="0" name="effect" type="RID" />
+			<param index="1" name="callback_type" type="int" enum="RenderingServer.CompositorEffectCallbackType" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Sets the callback type ([param callback_type]) and callback method([param callback]) for this rendering effect.
+			</description>
+		</method>
+		<method name="compositor_effect_set_enabled">
+			<return type="void" />
+			<param index="0" name="effect" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Enables/disables this rendering effect.
+			</description>
+		</method>
+		<method name="compositor_effect_set_flag">
+			<return type="void" />
+			<param index="0" name="effect" type="RID" />
+			<param index="1" name="flag" type="int" enum="RenderingServer.CompositorEffectFlags" />
+			<param index="2" name="set" type="bool" />
+			<description>
+				Sets the flag ([param flag]) for this rendering effect to [code]true[/code] or [code]false[/code] ([param set]).
+			</description>
+		</method>
+		<method name="compositor_set_compositor_effects">
+			<return type="void" />
+			<param index="0" name="compositor" type="RID" />
+			<param index="1" name="effects" type="RID[]" />
+			<description>
+				Sets the compositor effects for the specified compositor RID. [param effects] should be an array containing RIDs created with [method compositor_effect_create].
 			</description>
 		</method>
 		<method name="create_local_rendering_device" qualifiers="const">
@@ -3016,6 +3072,14 @@
 				Sets the camera attributes ([param effects]) that will be used with this scenario. See also [CameraAttributes].
 			</description>
 		</method>
+		<method name="scenario_set_compositor">
+			<return type="void" />
+			<param index="0" name="scenario" type="RID" />
+			<param index="1" name="compositor" type="RID" />
+			<description>
+				Sets the compositor ([param compositor]) that will be used with this scenario. See also [Compositor].
+			</description>
+		</method>
 		<method name="scenario_set_environment">
 			<return type="void" />
 			<param index="0" name="scenario" type="RID" />
@@ -4831,6 +4895,38 @@
 		<constant name="SKY_MODE_REALTIME" value="3" enum="SkyMode">
 			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times. If you need better quality, but still need to update the sky every frame, consider turning on [member ProjectSettings.rendering/reflections/sky_reflections/fast_filter_high_quality].
 			[b]Note:[/b] The fast filtering algorithm is limited to 256×256 cubemaps, so [method sky_set_radiance_size] must be set to [code]256[/code]. Otherwise, a warning is printed and the overridden radiance size is ignored.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR" value="1" enum="CompositorEffectFlags">
+			The rendering effect requires the color buffer to be resolved if MSAA is enabled.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH" value="2" enum="CompositorEffectFlags">
+			The rendering effect requires the depth buffer to be resolved if MSAA is enabled.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS" value="4" enum="CompositorEffectFlags">
+			The rendering effect requires motion vectors to be produced.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS" value="8" enum="CompositorEffectFlags">
+			The rendering effect requires normals and roughness g-buffer to be produced (Forward+ only).
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR" value="16" enum="CompositorEffectFlags">
+			The rendering effect requires specular data to be separated out (Forward+ only).
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE" value="0" enum="CompositorEffectCallbackType">
+			The callback is called before our opaque rendering pass, but after depth prepass (if applicable).
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE" value="1" enum="CompositorEffectCallbackType">
+			The callback is called after our opaque rendering pass, but before our sky is rendered.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_SKY" value="2" enum="CompositorEffectCallbackType">
+			The callback is called after our sky is rendered, but before our back buffers are created (and if enabled, before subsurface scattering and/or screen space reflections).
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT" value="3" enum="CompositorEffectCallbackType">
+			The callback is called before our transparent rendering pass, but after our sky is rendered and we've created our back buffers.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT" value="4" enum="CompositorEffectCallbackType">
+			The callback is called after our transparent rendering pass, but before any build in post effects and output to our render target.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY" value="-1" enum="CompositorEffectCallbackType">
 		</constant>
 		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
 			Use the clear color as background.

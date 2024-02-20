@@ -591,6 +591,7 @@ public:
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
 	FUNC2(camera_set_camera_attributes, RID, RID)
+	FUNC2(camera_set_compositor, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
 
 	/* OCCLUDER */
@@ -676,13 +677,26 @@ public:
 	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
 	FUNC2(viewport_set_vrs_texture, RID, RID)
 
-	/* ENVIRONMENT API */
+	/* COMPOSITOR EFFECT */
 
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
 #define ServerName RenderingMethod
 #define server_name RSG::scene
+
+	FUNCRIDSPLIT(compositor_effect)
+	FUNC2(compositor_effect_set_enabled, RID, bool)
+	FUNC3(compositor_effect_set_callback, RID, CompositorEffectCallbackType, const Callable &)
+	FUNC3(compositor_effect_set_flag, RID, CompositorEffectFlags, bool)
+
+	/* COMPOSITOR */
+
+	FUNC2(compositor_set_compositor_effects, RID, const TypedArray<RID> &)
+
+	FUNCRIDSPLIT(compositor)
+
+	/* ENVIRONMENT API */
 
 	FUNC1(voxel_gi_set_quality, VoxelGIQuality)
 
@@ -693,6 +707,8 @@ public:
 	FUNC2(sky_set_mode, RID, SkyMode)
 	FUNC2(sky_set_material, RID, RID)
 	FUNC4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
+
+	/* ENVIRONMENT */
 
 	FUNCRIDSPLIT(environment)
 
@@ -779,6 +795,7 @@ public:
 	FUNC2(scenario_set_environment, RID, RID)
 	FUNC2(scenario_set_camera_attributes, RID, RID)
 	FUNC2(scenario_set_fallback_environment, RID, RID)
+	FUNC2(scenario_set_compositor, RID, RID)
 
 	/* INSTANCING API */
 	FUNCRIDSPLIT(instance)

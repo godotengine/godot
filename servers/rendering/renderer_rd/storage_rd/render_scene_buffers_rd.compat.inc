@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  world_3d.h                                                            */
+/*  render_scene_buffers_rd.compat.inc                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,66 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_3D_H
-#define WORLD_3D_H
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/resource.h"
-#include "scene/resources/compositor.h"
-#include "scene/resources/environment.h"
-#include "servers/physics_server_3d.h"
-#include "servers/rendering_server.h"
+RID RenderSceneBuffersRD::_get_color_texture_compat_80214() {
+	return _get_color_texture(msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
 
-class CameraAttributes;
-class Camera3D;
-class VisibleOnScreenNotifier3D;
-struct SpatialIndexer;
+RID RenderSceneBuffersRD::_get_color_layer_compat_80214(const uint32_t p_layer) {
+	return _get_color_layer(p_layer, msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
 
-class World3D : public Resource {
-	GDCLASS(World3D, Resource);
+RID RenderSceneBuffersRD::_get_depth_texture_compat_80214() {
+	return _get_depth_texture(msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
 
-private:
-	RID scenario;
-	mutable RID space;
-	mutable RID navigation_map;
+RID RenderSceneBuffersRD::_get_depth_layer_compat_80214(const uint32_t p_layer) {
+	return _get_depth_layer(p_layer, msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
 
-	Ref<Environment> environment;
-	Ref<Environment> fallback_environment;
-	Ref<CameraAttributes> camera_attributes;
-	Ref<Compositor> compositor;
+RID RenderSceneBuffersRD::_get_velocity_texture_compat_80214() {
+	return _get_velocity_texture(msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
 
-	HashSet<Camera3D *> cameras;
+RID RenderSceneBuffersRD::_get_velocity_layer_compat_80214(const uint32_t p_layer) {
+	return _get_velocity_layer(p_layer, msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
 
-protected:
-	static void _bind_methods();
+void RenderSceneBuffersRD::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_color_texture"), &RenderSceneBuffersRD::_get_color_texture_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_color_layer", "layer"), &RenderSceneBuffersRD::_get_color_layer_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_depth_texture"), &RenderSceneBuffersRD::_get_depth_texture_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_depth_layer", "layer"), &RenderSceneBuffersRD::_get_depth_layer_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_velocity_texture"), &RenderSceneBuffersRD::_get_velocity_texture_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_velocity_layer", "layer"), &RenderSceneBuffersRD::_get_velocity_layer_compat_80214);
+}
 
-	friend class Camera3D;
-
-	void _register_camera(Camera3D *p_camera);
-	void _remove_camera(Camera3D *p_camera);
-
-public:
-	RID get_space() const;
-	RID get_navigation_map() const;
-	RID get_scenario() const;
-
-	void set_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_environment() const;
-
-	void set_fallback_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_fallback_environment() const;
-
-	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
-	Ref<CameraAttributes> get_camera_attributes() const;
-
-	void set_compositor(const Ref<Compositor> &p_compositor);
-	Ref<Compositor> get_compositor() const;
-
-	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
-
-	PhysicsDirectSpaceState3D *get_direct_space_state();
-
-	World3D();
-	~World3D();
-};
-
-#endif // WORLD_3D_H
+#endif // DISABLE_DEPRECATED

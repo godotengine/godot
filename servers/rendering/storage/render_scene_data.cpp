@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  world_3d.h                                                            */
+/*  render_scene_data.cpp                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,66 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_3D_H
-#define WORLD_3D_H
+#include "render_scene_data.h"
 
-#include "core/io/resource.h"
-#include "scene/resources/compositor.h"
-#include "scene/resources/environment.h"
-#include "servers/physics_server_3d.h"
-#include "servers/rendering_server.h"
+void RenderSceneData::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_cam_transform"), &RenderSceneData::get_cam_transform);
+	ClassDB::bind_method(D_METHOD("get_cam_projection"), &RenderSceneData::get_cam_projection);
 
-class CameraAttributes;
-class Camera3D;
-class VisibleOnScreenNotifier3D;
-struct SpatialIndexer;
+	ClassDB::bind_method(D_METHOD("get_view_count"), &RenderSceneData::get_view_count);
+	ClassDB::bind_method(D_METHOD("get_view_eye_offset", "view"), &RenderSceneData::get_view_eye_offset);
+	ClassDB::bind_method(D_METHOD("get_view_projection", "view"), &RenderSceneData::get_view_projection);
 
-class World3D : public Resource {
-	GDCLASS(World3D, Resource);
+	ClassDB::bind_method(D_METHOD("get_uniform_buffer"), &RenderSceneData::get_uniform_buffer);
+}
 
-private:
-	RID scenario;
-	mutable RID space;
-	mutable RID navigation_map;
+void RenderSceneDataExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_get_cam_transform);
+	GDVIRTUAL_BIND(_get_cam_projection);
+	GDVIRTUAL_BIND(_get_view_count);
+	GDVIRTUAL_BIND(_get_view_eye_offset, "view");
+	GDVIRTUAL_BIND(_get_view_projection, "view");
 
-	Ref<Environment> environment;
-	Ref<Environment> fallback_environment;
-	Ref<CameraAttributes> camera_attributes;
-	Ref<Compositor> compositor;
+	GDVIRTUAL_BIND(_get_uniform_buffer);
+}
 
-	HashSet<Camera3D *> cameras;
+Transform3D RenderSceneDataExtension::get_cam_transform() const {
+	Transform3D ret;
+	GDVIRTUAL_CALL(_get_cam_transform, ret);
+	return ret;
+}
 
-protected:
-	static void _bind_methods();
+Projection RenderSceneDataExtension::get_cam_projection() const {
+	Projection ret;
+	GDVIRTUAL_CALL(_get_cam_projection, ret);
+	return ret;
+}
 
-	friend class Camera3D;
+uint32_t RenderSceneDataExtension::get_view_count() const {
+	uint32_t ret = 0;
+	GDVIRTUAL_CALL(_get_view_count, ret);
+	return ret;
+}
 
-	void _register_camera(Camera3D *p_camera);
-	void _remove_camera(Camera3D *p_camera);
+Vector3 RenderSceneDataExtension::get_view_eye_offset(uint32_t p_view) const {
+	Vector3 ret;
+	GDVIRTUAL_CALL(_get_view_eye_offset, p_view, ret);
+	return ret;
+}
 
-public:
-	RID get_space() const;
-	RID get_navigation_map() const;
-	RID get_scenario() const;
+Projection RenderSceneDataExtension::get_view_projection(uint32_t p_view) const {
+	Projection ret;
+	GDVIRTUAL_CALL(_get_view_projection, p_view, ret);
+	return ret;
+}
 
-	void set_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_environment() const;
-
-	void set_fallback_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_fallback_environment() const;
-
-	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
-	Ref<CameraAttributes> get_camera_attributes() const;
-
-	void set_compositor(const Ref<Compositor> &p_compositor);
-	Ref<Compositor> get_compositor() const;
-
-	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
-
-	PhysicsDirectSpaceState3D *get_direct_space_state();
-
-	World3D();
-	~World3D();
-};
-
-#endif // WORLD_3D_H
+RID RenderSceneDataExtension::get_uniform_buffer() const {
+	RID ret;
+	GDVIRTUAL_CALL(_get_uniform_buffer, ret);
+	return ret;
+}
