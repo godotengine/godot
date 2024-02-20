@@ -1019,82 +1019,69 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 	ERR_FAIL_COND(p_recursion_depth > COMPLETION_RECURSION_LIMIT);
 
 	if (!p_parent_only) {
-		bool outer = false;
-		const GDScriptParser::ClassNode *clss = p_class;
-		int classes_processed = 0;
-		while (clss) {
-			for (int i = 0; i < clss->members.size(); i++) {
-				const int location = p_recursion_depth == 0 ? classes_processed : (p_recursion_depth | ScriptLanguage::LOCATION_PARENT_MASK);
-				const GDScriptParser::ClassNode::Member &member = clss->members[i];
-				ScriptLanguage::CodeCompletionOption option;
-				switch (member.type) {
-					case GDScriptParser::ClassNode::Member::VARIABLE:
-						if (p_types_only || p_only_functions || outer || (p_static && !member.variable->is_static)) {
-							continue;
-						}
-						option = ScriptLanguage::CodeCompletionOption(member.variable->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
-						break;
-					case GDScriptParser::ClassNode::Member::CONSTANT:
-						if (p_types_only || p_only_functions) {
-							continue;
-						}
-						if (r_result.has(member.constant->identifier->name)) {
-							continue;
-						}
-						option = ScriptLanguage::CodeCompletionOption(member.constant->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
-						if (member.constant->initializer) {
-							option.default_value = member.constant->initializer->reduced_value;
-						}
-						break;
-					case GDScriptParser::ClassNode::Member::CLASS:
-						if (p_only_functions) {
-							continue;
-						}
-						option = ScriptLanguage::CodeCompletionOption(member.m_class->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, location);
-						break;
-					case GDScriptParser::ClassNode::Member::ENUM_VALUE:
-						if (p_types_only || p_only_functions) {
-							continue;
-						}
-						option = ScriptLanguage::CodeCompletionOption(member.enum_value.identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
-						break;
-					case GDScriptParser::ClassNode::Member::ENUM:
-						if (p_only_functions) {
-							continue;
-						}
-						option = ScriptLanguage::CodeCompletionOption(member.m_enum->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_ENUM, location);
-						break;
-					case GDScriptParser::ClassNode::Member::FUNCTION:
-						if (p_types_only || outer || (p_static && !member.function->is_static) || member.function->identifier->name.operator String().begins_with("@")) {
-							continue;
-						}
-						option = ScriptLanguage::CodeCompletionOption(member.function->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-						if (member.function->parameters.size() > 0) {
-							option.insert_text += "(";
-						} else {
-							option.insert_text += "()";
-						}
-						break;
-					case GDScriptParser::ClassNode::Member::SIGNAL:
-						if (p_types_only || p_only_functions || outer || p_static) {
-							continue;
-						}
-						option = ScriptLanguage::CodeCompletionOption(member.signal->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL, location);
-						break;
-					case GDScriptParser::ClassNode::Member::GROUP:
-						break; // No-op, but silences warnings.
-					case GDScriptParser::ClassNode::Member::UNDEFINED:
-						break;
-				}
-				r_result.insert(option.display, option);
+		for (const GDScriptParser::ClassNode::Member &member : p_class->members) {
+			const int location = p_recursion_depth == 0 ? 0 : (p_recursion_depth | ScriptLanguage::LOCATION_PARENT_MASK);
+			ScriptLanguage::CodeCompletionOption option;
+			switch (member.type) {
+				case GDScriptParser::ClassNode::Member::VARIABLE:
+					if (p_types_only || p_only_functions || (p_static && !member.variable->is_static)) {
+						continue;
+					}
+					option = ScriptLanguage::CodeCompletionOption(member.variable->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
+					break;
+				case GDScriptParser::ClassNode::Member::CONSTANT:
+					if (p_types_only || p_only_functions) {
+						continue;
+					}
+					if (r_result.has(member.constant->identifier->name)) {
+						continue;
+					}
+					option = ScriptLanguage::CodeCompletionOption(member.constant->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
+					if (member.constant->initializer) {
+						option.default_value = member.constant->initializer->reduced_value;
+					}
+					break;
+				case GDScriptParser::ClassNode::Member::CLASS:
+					if (p_only_functions) {
+						continue;
+					}
+					option = ScriptLanguage::CodeCompletionOption(member.m_class->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, location);
+					break;
+				case GDScriptParser::ClassNode::Member::ENUM_VALUE:
+					if (p_types_only || p_only_functions) {
+						continue;
+					}
+					option = ScriptLanguage::CodeCompletionOption(member.enum_value.identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
+					break;
+				case GDScriptParser::ClassNode::Member::ENUM:
+					if (p_only_functions) {
+						continue;
+					}
+					option = ScriptLanguage::CodeCompletionOption(member.m_enum->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_ENUM, location);
+					break;
+				case GDScriptParser::ClassNode::Member::FUNCTION:
+					if (p_types_only || (p_static && !member.function->is_static) || member.function->identifier->name.operator String().begins_with("@")) {
+						continue;
+					}
+					option = ScriptLanguage::CodeCompletionOption(member.function->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
+					if (member.function->parameters.size() > 0) {
+						option.insert_text += "(";
+					} else {
+						option.insert_text += "()";
+					}
+					break;
+				case GDScriptParser::ClassNode::Member::SIGNAL:
+					if (p_types_only || p_only_functions || p_static) {
+						continue;
+					}
+					option = ScriptLanguage::CodeCompletionOption(member.signal->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL, location);
+					break;
+				case GDScriptParser::ClassNode::Member::GROUP:
+					break; // No-op, but silences warnings.
+				case GDScriptParser::ClassNode::Member::UNDEFINED:
+					break;
 			}
-			if (p_types_only) {
-				break; // Otherwise, it will fill the results with types from the outer class (which is undesired for that case).
-			}
-
-			outer = true;
-			clss = clss->outer;
-			classes_processed++;
+			r_result.insert(option.display, option);
 		}
 	}
 
