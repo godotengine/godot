@@ -1561,7 +1561,7 @@
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="RenderingServer.Features" />
 			<description>
-				Always returns false.
+				This method does nothing and always returns [code]false[/code].
 			</description>
 		</method>
 		<method name="has_os_feature" qualifiers="const">
@@ -3391,7 +3391,7 @@
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />
 			<description>
-				This method does nothing when called and always returns a null [RID].
+				This method does nothing and always returns an invalid [RID].
 			</description>
 		</method>
 		<method name="texture_proxy_update" deprecated="ProxyTexture was removed in Godot 4.">
@@ -3399,7 +3399,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="proxy_to" type="RID" />
 			<description>
-				This method should not be used.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="texture_rd_create">
@@ -4060,8 +4060,7 @@
 		<constant name="MAX_GLOW_LEVELS" value="7">
 			The maximum number of glow levels that can be used with the glow post-processing effect.
 		</constant>
-		<constant name="MAX_CURSORS" value="8" deprecated="">
-			This constant is unused internally.
+		<constant name="MAX_CURSORS" value="8" deprecated="This constant is not used by the engine.">
 		</constant>
 		<constant name="MAX_2D_DIRECTIONAL_LIGHTS" value="8">
 			The maximum number of directional lights that can be rendered at a given time in 2D.

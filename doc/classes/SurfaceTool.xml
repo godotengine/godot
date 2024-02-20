@@ -119,7 +119,7 @@
 				Removes the index array by expanding the vertex array.
 			</description>
 		</method>
-		<method name="generate_lod" deprecated="Unused internally and fails to preserve normals or UVs. Consider using [method ImporterMesh.generate_lods] instead.">
+		<method name="generate_lod" deprecated="This method is unused internally, as it does not preserve normals or UVs. Consider using [method ImporterMesh.generate_lods] instead.">
 			<return type="PackedInt32Array" />
 			<param index="0" name="nd_threshold" type="float" />
 			<param index="1" name="target_index_count" type="int" default="3" />

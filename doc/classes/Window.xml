@@ -360,7 +360,7 @@
 		<method name="move_to_foreground" deprecated="Use [method Window.grab_focus] instead.">
 			<return type="void" />
 			<description>
-				Moves the [Window] on top of other windows and focuses it.
+				Causes the window to grab focus, allowing it to receive user input.
 			</description>
 		</method>
 		<method name="popup">
