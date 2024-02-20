@@ -52,10 +52,12 @@
 			The global color saturation value of the rendered scene (default value is 1). Effective only if [member adjustment_enabled] is [code]true[/code].
 		</member>
 		<member name="ambient_light_color" type="Color" setter="set_ambient_light_color" getter="get_ambient_light_color" default="Color(0, 0, 0, 1)">
-			The ambient light's [Color]. Only effective if [member ambient_light_sky_contribution] is lower than [code]1.0[/code] (exclusive).
+			The ambient light's [Color].
+			[b]Note:[/b] [member ambient_light_color] is ignored if [member ambient_light_sky_contribution] is equal to [code]1.0[/code]. If you wish to customize [member ambient_light_color], set [member ambient_light_sky_contribution] to a value lower than [code]1.0[/code] first.
 		</member>
 		<member name="ambient_light_energy" type="float" setter="set_ambient_light_energy" getter="get_ambient_light_energy" default="1.0">
-			The ambient light's energy. The higher the value, the stronger the light. Only effective if [member ambient_light_sky_contribution] is lower than [code]1.0[/code] (exclusive).
+			The ambient light's energy. The higher the value, the stronger the light.
+			[b]Note:[/b] [member ambient_light_energy] is ignored if [member ambient_light_sky_contribution] is equal to [code]1.0[/code]. If you wish to customize [member ambient_light_energy], set [member ambient_light_sky_contribution] to a value lower than [code]1.0[/code] first.
 		</member>
 		<member name="ambient_light_sky_contribution" type="float" setter="set_ambient_light_sky_contribution" getter="get_ambient_light_sky_contribution" default="1.0">
 			Defines the amount of light that the sky brings on the scene. A value of [code]0.0[/code] means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of [code]1.0[/code] means that [i]all[/i] the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
