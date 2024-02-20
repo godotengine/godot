@@ -3607,7 +3607,8 @@ Dictionary FileSystemDock::get_assigned_folder_colors() const {
 
 MenuButton *FileSystemDock::_create_file_menu_button() {
 	MenuButton *button = memnew(MenuButton);
-	button->set_flat(true);
+	button->set_flat(false);
+	button->set_theme_type_variation("FlatMenuButton");
 	button->set_tooltip_text(TTR("Sort Files"));
 
 	PopupMenu *p = button->get_popup();
@@ -3821,7 +3822,7 @@ FileSystemDock::FileSystemDock() {
 	button_toggle_display_mode->connect("pressed", callable_mp(this, &FileSystemDock::_change_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
 	button_toggle_display_mode->set_tooltip_text(TTR("Change Split Mode"));
-	button_toggle_display_mode->set_flat(true);
+	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	button_dock_placement = memnew(Button);

@@ -505,7 +505,7 @@ namespace GodotTools
 
             _toolBarBuildButton = new Button
             {
-                Flat = true,
+                Flat = false,
                 Icon = EditorInterface.Singleton.GetEditorTheme().GetIcon("BuildCSharp", "EditorIcons"),
                 FocusMode = Control.FocusModeEnum.None,
                 Shortcut = EditorDefShortcut("mono/build_solution", "Build Project".TTR(), (Key)KeyModifierMask.MaskAlt | Key.B),
