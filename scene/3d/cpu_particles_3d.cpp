@@ -1684,7 +1684,6 @@ CPUParticles3D::CPUParticles3D() {
 
 	set_emitting(true);
 	set_amount(8);
-	set_visibility_aabb(AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8)));
 
 	set_param_min(PARAM_INITIAL_LINEAR_VELOCITY, 0);
 	set_param_min(PARAM_ANGULAR_VELOCITY, 0);
