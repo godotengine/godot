@@ -5650,10 +5650,15 @@ void RichTextLabel::set_text(const String &p_bbcode) {
 }
 
 void RichTextLabel::_apply_translation() {
+	// If `text` is empty, it could mean that the tag stack is being used instead. Leave it be.
+	if (text.is_empty()) {
+		return;
+	}
+
 	String xl_text = atr(text);
 	if (use_bbcode) {
 		parse_bbcode(xl_text);
-	} else { // raw text
+	} else { // Raw text.
 		clear();
 		add_text(xl_text);
 	}
