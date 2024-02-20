@@ -379,7 +379,8 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 							} else if (p.begins_with("ro.build.version.sdk=")) {
 								d.api_level = p.get_slice("=", 1).to_int();
 							} else if (p.begins_with("ro.product.cpu.abi=")) {
-								d.description += "CPU: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.architecture = p.get_slice("=", 1).strip_edges();
+								d.description += "CPU: " + d.architecture + "\n";
 							} else if (p.begins_with("ro.product.manufacturer=")) {
 								d.description += "Manufacturer: " + p.get_slice("=", 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.board.platform=")) {
@@ -1990,6 +1991,12 @@ String EditorExportPlatformAndroid::get_option_tooltip(int p_index) const {
 		s = devices[p_index].name + "\n\n" + s;
 	}
 	return s;
+}
+
+String EditorExportPlatformAndroid::get_device_architecture(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, devices.size(), "");
+	MutexLock lock(device_lock);
+	return devices[p_index].architecture;
 }
 
 Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
