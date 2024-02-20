@@ -456,9 +456,6 @@ void PopupMenu::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
-	Ref<InputEventMouseButton> b = p_event;
-	Ref<InputEventMouseMotion> m = p_event;
-
 	if (!items.is_empty()) {
 		Input *input = Input::get_singleton();
 		Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
@@ -587,57 +584,52 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (m.is_valid() && drag_to_press) {
-		BitField<MouseButtonMask> initial_button_mask = m->get_button_mask();
-		if (!initial_button_mask.has_flag(mouse_button_to_mask(MouseButton::LEFT)) && !initial_button_mask.has_flag(mouse_button_to_mask(MouseButton::RIGHT))) {
-			mouse_is_pressed = false;
+	Ref<InputEventMouseButton> b = p_event;
+
+	if (b.is_valid()) {
+		if (!item_clickable_area.has_point(b->get_position())) {
+			return;
 		}
 
-		if (!item_clickable_area.has_point(m->get_position()) && !mouse_is_pressed) {
-			drag_to_press = false;
+		MouseButton button_idx = b->get_button_index();
+		if (!b->is_pressed()) {
+			// Activate the item on release of either the left mouse button or
+			// any mouse button held down when the popup was opened.
+			// This allows for opening the popup and triggering an action in a single mouse click.
+			if (button_idx == MouseButton::LEFT || initial_button_mask.has_flag(mouse_button_to_mask(button_idx))) {
+				bool was_during_grabbed_click = during_grabbed_click;
+				during_grabbed_click = false;
+				initial_button_mask.clear();
+
+				// Disable clicks under a time threshold to avoid selection right when opening the popup.
+				uint64_t now = OS::get_singleton()->get_ticks_msec();
+				uint64_t diff = now - popup_time_msec;
+				if (diff < 150) {
+					return;
+				}
+
+				int over = _get_mouse_over(b->get_position());
+				if (over < 0) {
+					if (!was_during_grabbed_click) {
+						hide();
+					}
+					return;
+				}
+
+				if (items[over].separator || items[over].disabled) {
+					return;
+				}
+
+				if (!items[over].submenu.is_empty()) {
+					_activate_submenu(over);
+					return;
+				}
+				activate_item(over);
+			}
 		}
 	}
 
-	if ((b.is_valid() && b->is_pressed()) || (!mouse_is_pressed && drag_to_press)) {
-		if (b.is_valid()) {
-			MouseButton button_idx = b->get_button_index();
-			if (button_idx != MouseButton::LEFT && button_idx != MouseButton::RIGHT) {
-				return;
-			}
-		} else {
-			uint64_t now = OS::get_singleton()->get_ticks_msec();
-			uint64_t diff = now - popup_time_msec;
-			if (diff < 250) {
-				drag_to_press = false;
-				return;
-			}
-		}
-
-		drag_to_press = false;
-
-		int over = -1;
-
-		if (m.is_valid()) {
-			over = _get_mouse_over(m->get_position());
-		} else if (b.is_valid()) {
-			over = _get_mouse_over(b->get_position());
-		}
-
-		if (over < 0) {
-			hide();
-			return;
-		}
-
-		if (items[over].separator || items[over].disabled) {
-			return;
-		}
-
-		if (!items[over].submenu.is_empty()) {
-			_activate_submenu(over);
-			return;
-		}
-		activate_item(over);
-	}
+	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
 		if (m->get_velocity().is_zero_approx()) {
@@ -1068,6 +1060,11 @@ void PopupMenu::_notification(int p_what) {
 				mouse_over = -1;
 				control->queue_redraw();
 			}
+		} break;
+
+		case NOTIFICATION_POST_POPUP: {
+			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
+			during_grabbed_click = (bool)initial_button_mask;
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -2805,8 +2802,6 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 	moved = Vector2();
 	popup_time_msec = OS::get_singleton()->get_ticks_msec();
 	Popup::popup(p_bounds);
-	drag_to_press = true;
-	mouse_is_pressed = true;
 }
 
 PopupMenu::PopupMenu() {

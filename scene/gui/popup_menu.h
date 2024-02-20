@@ -107,8 +107,8 @@ class PopupMenu : public Popup {
 	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	bool mouse_is_pressed = true;
-	bool drag_to_press = true;
+	BitField<MouseButtonMask> initial_button_mask;
+	bool during_grabbed_click = false;
 	int mouse_over = -1;
 	int submenu_over = -1;
 	String _get_accel_text(const Item &p_item) const;
