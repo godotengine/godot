@@ -1,5 +1,7 @@
 using GodotTools.Core;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -92,8 +94,8 @@ EndProject";
                 if (!isFirstProject)
                     projectsDecl += "\n";
 
-                projectsDecl += string.Format(_projectDeclaration,
-                    name, projectInfo.PathRelativeToSolution.Replace("/", "\\"), projectInfo.Guid);
+                projectsDecl += string.Format(CultureInfo.InvariantCulture, _projectDeclaration,
+                    name, projectInfo.PathRelativeToSolution.Replace("/", "\\", StringComparison.Ordinal), projectInfo.Guid);
 
                 for (int i = 0; i < projectInfo.Configs.Count; i++)
                 {
@@ -105,15 +107,15 @@ EndProject";
                         projPlatformsCfg += "\n";
                     }
 
-                    slnPlatformsCfg += string.Format(_solutionPlatformsConfig, config);
-                    projPlatformsCfg += string.Format(_projectPlatformsConfig, projectInfo.Guid, config);
+                    slnPlatformsCfg += string.Format(CultureInfo.InvariantCulture, _solutionPlatformsConfig, config);
+                    projPlatformsCfg += string.Format(CultureInfo.InvariantCulture, _projectPlatformsConfig, projectInfo.Guid, config);
                 }
 
                 isFirstProject = false;
             }
 
             string solutionPath = Path.Combine(DirectoryPath, Name + ".sln");
-            string content = string.Format(_solutionTemplate, projectsDecl, slnPlatformsCfg, projPlatformsCfg);
+            string content = string.Format(CultureInfo.InvariantCulture, _solutionTemplate, projectsDecl, slnPlatformsCfg, projPlatformsCfg);
 
             File.WriteAllText(solutionPath, content, Encoding.UTF8); // UTF-8 with BOM
         }

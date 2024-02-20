@@ -38,21 +38,18 @@ namespace GodotTools.Build
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                int hash = 17;
-                hash = (hash * 29) + Solution.GetHashCode();
-                hash = (hash * 29) + Project.GetHashCode();
-                hash = (hash * 29) + Configuration.GetHashCode();
-                hash = (hash * 29) + (RuntimeIdentifier?.GetHashCode() ?? 0);
-                hash = (hash * 29) + (PublishOutputDir?.GetHashCode() ?? 0);
-                hash = (hash * 29) + Restore.GetHashCode();
-                hash = (hash * 29) + Rebuild.GetHashCode();
-                hash = (hash * 29) + OnlyClean.GetHashCode();
-                hash = (hash * 29) + CustomProperties.GetHashCode();
-                hash = (hash * 29) + LogsDirPath.GetHashCode();
-                return hash;
-            }
+            var hash = new HashCode();
+            hash.Add(Solution);
+            hash.Add(Project);
+            hash.Add(Configuration);
+            hash.Add(RuntimeIdentifier);
+            hash.Add(PublishOutputDir);
+            hash.Add(Restore);
+            hash.Add(Rebuild);
+            hash.Add(OnlyClean);
+            hash.Add(CustomProperties);
+            hash.Add(LogsDirPath);
+            return hash.ToHashCode();
         }
 
         // Needed for instantiation from Godot, after reloading assemblies

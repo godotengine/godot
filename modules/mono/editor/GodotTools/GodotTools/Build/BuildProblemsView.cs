@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -83,8 +84,8 @@ namespace GodotTools.Build
                         "error" or _ => BuildDiagnostic.DiagnosticType.Error,
                     },
                     File = csvColumns[1],
-                    Line = int.Parse(csvColumns[2]),
-                    Column = int.Parse(csvColumns[3]),
+                    Line = int.Parse(csvColumns[2], CultureInfo.InvariantCulture),
+                    Column = int.Parse(csvColumns[3], CultureInfo.InvariantCulture),
                     Code = csvColumns[4],
                     Message = csvColumns[5],
                     ProjectFile = csvColumns[6],
@@ -93,7 +94,7 @@ namespace GodotTools.Build
                 // If there's no ProjectFile but the File is a csproj, then use that.
                 if (string.IsNullOrEmpty(diagnostic.ProjectFile) &&
                     !string.IsNullOrEmpty(diagnostic.File) &&
-                    diagnostic.File.EndsWith(".csproj"))
+                    diagnostic.File.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
                 {
                     diagnostic.ProjectFile = diagnostic.File;
                 }
@@ -151,9 +152,9 @@ namespace GodotTools.Build
             foreach (var diagnostic in selectedDiagnostics)
             {
                 if (!string.IsNullOrEmpty(diagnostic.Code))
-                    sb.Append($"{diagnostic.Code}: ");
+                    sb.Append(CultureInfo.InvariantCulture, $"{diagnostic.Code}: ");
 
-                sb.AppendLine($"{diagnostic.Message} {diagnostic.File}({diagnostic.Line},{diagnostic.Column})");
+                sb.AppendLine(CultureInfo.InvariantCulture, $"{diagnostic.Message} {diagnostic.File}({diagnostic.Line},{diagnostic.Column})");
             }
 
             string text = sb.ToString();
@@ -251,7 +252,7 @@ namespace GodotTools.Build
 
             file = ProjectSettings.LocalizePath(file);
 
-            if (file.StartsWith("res://"))
+            if (file.StartsWith("res://", StringComparison.Ordinal))
             {
                 var script = (Script)ResourceLoader.Load(file, typeHint: Internal.CSharpLanguageType);
 
@@ -426,7 +427,7 @@ namespace GodotTools.Build
                         ? Path.GetRelativePath(projectDir, file)
                         : "Unknown file".TTR();
 
-                    string fileItemText = string.Format("{0} ({1} issues)".TTR(), relativeFilePath, fileDiagnostics.Length);
+                    string fileItemText = string.Format(CultureInfo.InvariantCulture, "{0} ({1} issues)".TTR(), relativeFilePath, fileDiagnostics.Length);
 
                     var fileItem = _problemsTree.CreateItem(projectItem);
                     fileItem.SetText(0, fileItemText);
@@ -468,10 +469,10 @@ namespace GodotTools.Build
                 shortMessage = shortMessage[..lineBreakIdx];
             text.Append(shortMessage);
 
-            tooltip.Append($"Message: {diagnostic.Message}");
+            tooltip.Append(CultureInfo.InvariantCulture, $"Message: {diagnostic.Message}");
 
             if (!string.IsNullOrEmpty(diagnostic.Code))
-                tooltip.Append($"\nCode: {diagnostic.Code}");
+                tooltip.Append(CultureInfo.InvariantCulture, $"\nCode: {diagnostic.Code}");
 
             string type = diagnostic.Type switch
             {
@@ -481,7 +482,7 @@ namespace GodotTools.Build
                 BuildDiagnostic.DiagnosticType.Error => "error",
                 _ => "unknown",
             };
-            tooltip.Append($"\nType: {type}");
+            tooltip.Append(CultureInfo.InvariantCulture, $"\nType: {type}");
 
             if (!string.IsNullOrEmpty(diagnostic.File))
             {
@@ -491,15 +492,15 @@ namespace GodotTools.Build
                     text.Append(diagnostic.File);
                 }
 
-                text.Append($"({diagnostic.Line},{diagnostic.Column})");
+                text.Append(CultureInfo.InvariantCulture, $"({diagnostic.Line},{diagnostic.Column})");
 
-                tooltip.Append($"\nFile: {diagnostic.File}");
-                tooltip.Append($"\nLine: {diagnostic.Line}");
-                tooltip.Append($"\nColumn: {diagnostic.Column}");
+                tooltip.Append(CultureInfo.InvariantCulture, $"\nFile: {diagnostic.File}");
+                tooltip.Append(CultureInfo.InvariantCulture, $"\nLine: {diagnostic.Line}");
+                tooltip.Append(CultureInfo.InvariantCulture, $"\nColumn: {diagnostic.Column}");
             }
 
             if (!string.IsNullOrEmpty(diagnostic.ProjectFile))
-                tooltip.Append($"\nProject: {diagnostic.ProjectFile}");
+                tooltip.Append(CultureInfo.InvariantCulture, $"\nProject: {diagnostic.ProjectFile}");
 
             return new ProblemItem()
             {

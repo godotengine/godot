@@ -1023,10 +1023,12 @@ namespace Godot
         /// <returns>A string representation of this projection.</returns>
         public readonly string ToString(string? format)
         {
+#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
             return $"{X.X.ToString(format)}, {X.Y.ToString(format)}, {X.Z.ToString(format)}, {X.W.ToString(format)}\n" +
                 $"{Y.X.ToString(format)}, {Y.Y.ToString(format)}, {Y.Z.ToString(format)}, {Y.W.ToString(format)}\n" +
                 $"{Z.X.ToString(format)}, {Z.Y.ToString(format)}, {Z.Z.ToString(format)}, {Z.W.ToString(format)}\n" +
                 $"{W.X.ToString(format)}, {W.Y.ToString(format)}, {W.Z.ToString(format)}, {W.W.ToString(format)}\n";
+#pragma warning restore CA1305
         }
     }
 }

@@ -15,7 +15,7 @@ namespace GodotTools.Core
             dir = Path.Combine(dir, " ").TrimEnd();
 
             if (Path.DirectorySeparatorChar == '\\')
-                dir = dir.Replace("/", "\\") + "\\";
+                dir = dir.Replace("/", "\\", StringComparison.Ordinal) + "\\";
 
             var fullPath = new Uri(Path.GetFullPath(path), UriKind.Absolute);
             var relRoot = new Uri(Path.GetFullPath(dir), UriKind.Absolute);

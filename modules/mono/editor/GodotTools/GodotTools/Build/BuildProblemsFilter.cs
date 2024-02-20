@@ -1,4 +1,5 @@
 using Godot;
+using System.Globalization;
 
 namespace GodotTools.Build
 {
@@ -16,7 +17,7 @@ namespace GodotTools.Build
             set
             {
                 _problemsCount = value;
-                ToggleButton.Text = _problemsCount.ToString();
+                ToggleButton.Text = _problemsCount.ToString(CultureInfo.InvariantCulture);
             }
         }
 

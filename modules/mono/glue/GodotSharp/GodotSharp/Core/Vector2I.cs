@@ -600,7 +600,9 @@ namespace Godot
         /// <returns>A string representation of this vector.</returns>
         public readonly string ToString(string? format)
         {
+#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
             return $"({X.ToString(format)}, {Y.ToString(format)})";
+#pragma warning restore CA1305
         }
     }
 }
