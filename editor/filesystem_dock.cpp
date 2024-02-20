@@ -2066,13 +2066,18 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				fpath = p_selected[0];
 			}
 
-			String file = ProjectSettings::get_singleton()->globalize_path(fpath);
+			const String file = ProjectSettings::get_singleton()->globalize_path(fpath);
+			const String extension = file.get_extension();
 
-			String resource_type = ResourceLoader::get_resource_type(fpath);
+			const String resource_type = ResourceLoader::get_resource_type(fpath);
 			String external_program;
 
-			if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
-				if (file.get_extension() == "svg" || file.get_extension() == "svgz") {
+			if (ClassDB::is_parent_class(resource_type, "Script") || extension == "tres" || extension == "tscn") {
+				external_program = EDITOR_GET("text_editor/external/exec_path");
+			} else if (extension == "res" || extension == "scn") {
+				// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
+			} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
+				if (extension == "svg" || extension == "svgz") {
 					external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
 				} else {
 					external_program = EDITOR_GET("filesystem/external_programs/raster_image_editor");
@@ -2080,12 +2085,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			} else if (ClassDB::is_parent_class(resource_type, "AudioStream")) {
 				external_program = EDITOR_GET("filesystem/external_programs/audio_editor");
 			} else if (resource_type == "PackedScene") {
-				// Ignore non-model scenes.
-				if (file.get_extension() != "tscn" && file.get_extension() != "scn" && file.get_extension() != "res") {
-					external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
-				}
-			} else if (ClassDB::is_parent_class(resource_type, "Script")) {
-				external_program = EDITOR_GET("text_editor/external/exec_path");
+				external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
 			}
 
 			if (external_program.is_empty()) {
