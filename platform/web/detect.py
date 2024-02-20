@@ -220,6 +220,10 @@ def configure(env: "Environment"):
         env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])
         env.extra_suffix = ".dlink" + env.extra_suffix
 
+    # WASM_BIGINT is needed since emscripten ≥ 3.1.41
+    if cc_semver >= (3, 1, 41):
+        env.Append(LINKFLAGS=["-s", "WASM_BIGINT"])
+
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web,worker"])
 
