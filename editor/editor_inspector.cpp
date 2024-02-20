@@ -429,7 +429,7 @@ EditorInspector *EditorProperty::get_parent_inspector() const {
 		}
 		parent = parent->get_parent();
 	}
-	ERR_FAIL_V_MSG(nullptr, "EditorProperty is outside inspector.");
+	return nullptr;
 }
 
 void EditorProperty::set_doc_path(const String &p_doc_path) {
