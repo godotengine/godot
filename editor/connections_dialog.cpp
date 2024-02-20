@@ -871,7 +871,7 @@ ConnectDialog::~ConnectDialog() {
 
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	// If it's not a doc tooltip, fallback to the default one.
-	return p_text.contains("::") ? nullptr : memnew(EditorHelpTooltip(p_text));
+	return p_text.contains("::") ? nullptr : memnew(EditorHelpBit(p_text));
 }
 
 struct _ConnectionsDockMethodInfoSort {
@@ -1448,8 +1448,8 @@ void ConnectionsDock::update_tree() {
 
 			section_item = tree->create_item(root);
 			section_item->set_text(0, class_name);
-			// `|` separators used in `EditorHelpTooltip` for formatting.
-			section_item->set_tooltip_text(0, "class|" + doc_class_name + "||");
+			// `|` separators used in `EditorHelpBit`.
+			section_item->set_tooltip_text(0, "class|" + doc_class_name + "|");
 			section_item->set_icon(0, class_icon);
 			section_item->set_selectable(0, false);
 			section_item->set_editable(0, false);
@@ -1480,8 +1480,8 @@ void ConnectionsDock::update_tree() {
 			sinfo["args"] = argnames;
 			signal_item->set_metadata(0, sinfo);
 			signal_item->set_icon(0, get_editor_theme_icon(SNAME("Signal")));
-			// `|` separators used in `EditorHelpTooltip` for formatting.
-			signal_item->set_tooltip_text(0, "signal|" + doc_class_name + "|" + String(signal_name) + "|" + signame.trim_prefix(mi.name));
+			// `|` separators used in `EditorHelpBit`.
+			signal_item->set_tooltip_text(0, "signal|" + doc_class_name + "|" + String(signal_name));
 
 			// List existing connections.
 			List<Object::Connection> existing_connections;

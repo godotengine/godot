@@ -252,49 +252,47 @@ public:
 class EditorHelpBit : public MarginContainer {
 	GDCLASS(EditorHelpBit, MarginContainer);
 
-	inline static HashMap<StringName, String> doc_class_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_property_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_method_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_signal_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_theme_item_cache;
+	struct HelpData {
+		String description;
+		String deprecated_message;
+		String experimental_message;
+		String arguments; // For signals.
+	};
+
+	inline static HashMap<StringName, HelpData> doc_class_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_property_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_method_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_signal_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_theme_item_cache;
+
+	String title;
+	HelpData help_data;
+	bool is_internal = false;
+	bool dirty = false;
 
 	RichTextLabel *rich_text = nullptr;
+
+	static HelpData _get_class_help_data(const StringName &p_class_name);
+	static HelpData _get_property_help_data(const StringName &p_class_name, const StringName &p_property_name);
+	static HelpData _get_method_help_data(const StringName &p_class_name, const StringName &p_method_name);
+	static HelpData _get_signal_help_data(const StringName &p_class_name, const StringName &p_signal_name);
+	static HelpData _get_theme_item_help_data(const StringName &p_class_name, const StringName &p_theme_item_name);
+
+	void _update_text();
+	void _update_rich_text_size();
 	void _go_to_help(const String &p_what);
 	void _meta_clicked(const String &p_select);
 
-	String text;
-
 protected:
-	String custom_description;
-
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	String get_class_description(const StringName &p_class_name) const;
-	String get_property_description(const StringName &p_class_name, const StringName &p_property_name) const;
-	String get_method_description(const StringName &p_class_name, const StringName &p_method_name) const;
-	String get_signal_description(const StringName &p_class_name, const StringName &p_signal_name) const;
-	String get_theme_item_description(const StringName &p_class_name, const StringName &p_theme_item_name) const;
+	void parse_symbol(const String &p_symbol);
+	void set_custom_text(const String &p_custom_text);
+	void prepend_description(const String &p_text);
 
-	RichTextLabel *get_rich_text() { return rich_text; }
-	void set_text(const String &p_text);
-
-	EditorHelpBit();
-};
-
-class EditorHelpTooltip : public EditorHelpBit {
-	GDCLASS(EditorHelpTooltip, EditorHelpBit);
-
-	String tooltip_text;
-
-protected:
-	void _notification(int p_what);
-
-public:
-	void parse_tooltip(const String &p_text);
-
-	EditorHelpTooltip(const String &p_text = String(), const String &p_custom_description = String());
+	EditorHelpBit(const String &p_symbol = String());
 };
 
 #endif // EDITOR_HELP_H
