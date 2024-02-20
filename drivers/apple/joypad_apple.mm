@@ -246,6 +246,84 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 				xboxGamepad.buttonShare.pressedChangedHandler = BUTTON(JoyButton::MISC1);
 			}
 		}
+
+		if (@available(macOS 11, iOS 14.0, tvOS 14.0, *)) {
+			if ([gamepad isKindOfClass:[GCDualShockGamepad class]]) {
+				GCDualShockGamepad *dsGamepad = (GCDualShockGamepad *)gamepad;
+				dsGamepad.touchpadButton.pressedChangedHandler = BUTTON(JoyButton::TOUCHPAD);
+				dsGamepad.touchpadPrimary.xAxis.valueChangedHandler = ^(GCControllerAxisInput *button, float value) {
+					if (axis_value[(int)JoyAxis::PRIMARY_FINGER_X] != value) {
+						axis_changed[(int)JoyAxis::PRIMARY_FINGER_X] = true;
+						axis_value[(int)JoyAxis::PRIMARY_FINGER_X] = value;
+					}
+				};
+				dsGamepad.touchpadPrimary.yAxis.valueChangedHandler = ^(GCControllerAxisInput *button, float value) {
+					if (axis_value[(int)JoyAxis::PRIMARY_FINGER_Y] != value) {
+						axis_changed[(int)JoyAxis::PRIMARY_FINGER_Y] = true;
+						axis_value[(int)JoyAxis::PRIMARY_FINGER_Y] = value;
+					}
+				};
+				dsGamepad.touchpadSecondary.xAxis.valueChangedHandler = ^(GCControllerAxisInput *button, float value) {
+					if (axis_value[(int)JoyAxis::SECONDARY_FINGER_X] != value) {
+						axis_changed[(int)JoyAxis::SECONDARY_FINGER_X] = true;
+						axis_value[(int)JoyAxis::SECONDARY_FINGER_X] = value;
+					}
+				};
+				dsGamepad.touchpadSecondary.yAxis.valueChangedHandler = ^(GCControllerAxisInput *button, float value) {
+					if (axis_value[(int)JoyAxis::SECONDARY_FINGER_Y] != value) {
+						axis_changed[(int)JoyAxis::SECONDARY_FINGER_Y] = true;
+						axis_value[(int)JoyAxis::SECONDARY_FINGER_Y] = value;
+					}
+				};
+			}
+		}
+
+		if (@available(macOS 11.3, iOS 14.5, tvOS 14.5, *)) {
+			if ([gamepad isKindOfClass:[GCDualSenseGamepad class]]) {
+				GCDualSenseGamepad *dsGamepad = (GCDualSenseGamepad *)gamepad;
+				dsGamepad.touchpadButton.pressedChangedHandler = BUTTON(JoyButton::TOUCHPAD);
+				dsGamepad.touchpadPrimary.xAxis.valueChangedHandler = ^(GCControllerAxisInput *button, float value) {
+					if (axis_value[(int)JoyAxis::PRIMARY_FINGER_X] != value) {
+						axis_changed[(int)JoyAxis::PRIMARY_FINGER_X] = true;
+						axis_value[(int)JoyAxis::PRIMARY_FINGER_X] = value;
+					}
+				};
+				dsGamepad.touchpadPrimary.yAxis.valueChangedHandler = ^(GCControllerAxisInput *button, float value) {
+					if (axis_value[(int)JoyAxis::PRIMARY_FINGER_Y] != value) {
+						axis_changed[(int)JoyAxis::PRIMARY_FINGER_Y] = true;
+						axis_value[(int)JoyAxis::PRIMARY_FINGER_Y] = value;
+					}
+				};
+				dsGamepad.touchpadSecondary.xAxis.valueChangedHandler = ^(GCControllerAxisInput *button, float value) {
+					if (axis_value[(int)JoyAxis::SECONDARY_FINGER_X] != value) {
+						axis_changed[(int)JoyAxis::SECONDARY_FINGER_X] = true;
+						axis_value[(int)JoyAxis::SECONDARY_FINGER_X] = value;
+					}
+				};
+				dsGamepad.touchpadSecondary.yAxis.valueChangedHandler = ^(GCControllerAxisInput *button, float value) {
+					if (axis_value[(int)JoyAxis::SECONDARY_FINGER_Y] != value) {
+						axis_changed[(int)JoyAxis::SECONDARY_FINGER_Y] = true;
+						axis_value[(int)JoyAxis::SECONDARY_FINGER_Y] = value;
+					}
+				};
+			}
+		}
+
+		if (@available(macOS 11, iOS 14.0, tvOS 14.0, *)) {
+			// The orientation of the device (if supported).
+			if (controller.motion != nil) {
+				controller.motion.valueChangedHandler = ^(GCMotion *motion) {
+					if (motion.hasGravityAndUserAcceleration) {
+						Input::get_singleton()->set_joy_gravity(l_joy_id, Vector3(motion.gravity.x, motion.gravity.y, motion.gravity.z));
+					}
+					Input::get_singleton()->set_joy_accelerometer(l_joy_id, Vector3(motion.acceleration.x, motion.acceleration.y, motion.acceleration.z));
+					if (motion.hasRotationRate) {
+						Input::get_singleton()->set_joy_gyroscope(l_joy_id, Vector3(motion.rotationRate.x, motion.rotationRate.y, motion.rotationRate.z));
+					}
+					Input::get_singleton()->set_joy_sensors_enabled(l_joy_id, motion.sensorsActive);
+				};
+			}
+		}
 	} else if (controller.microGamepad != nil) {
 		GCMicroGamepad *gamepad = controller.microGamepad;
 
@@ -349,11 +427,27 @@ void JoypadApple::add_joypad(GCController *p_controller) {
 		p_controller.playerIndex = get_free_player_index();
 	}
 
+	GameController *gc = memnew(GameController(joy_id, p_controller));
+
+	// Read current color and sensors state.
+	if (@available(macOS 11, iOS 14.5, tvOS 14.5, *)) {
+		if (p_controller.motion != nil) {
+			Input::get_singleton()->set_joy_sensors_enabled(joy_id, p_controller.motion.sensorsActive);
+		}
+	}
+	if (@available(macOS 11, iOS 14.5, tvOS 14.5, *)) {
+		if (p_controller.light) {
+			Color c = Color(p_controller.light.color.red, p_controller.light.color.green, p_controller.light.color.blue);
+			gc->color = c;
+			Input::get_singleton()->set_joy_light(joy_id, c);
+		}
+	}
+
 	// Tell Godot about our new controller.
 	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8(p_controller.vendorName.UTF8String));
 
 	// Assign our player index.
-	joypads.insert(joy_id, memnew(GameController(joy_id, p_controller)));
+	joypads.insert(joy_id, gc);
 	controller_to_joy_id.insert(p_controller, joy_id);
 }
 
@@ -437,6 +531,8 @@ void JoypadApple::joypad_vibration_stop(GameController &p_joypad, uint64_t p_tim
 
 void JoypadApple::process_joypads() {
 	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
+		Input *input = Input::get_singleton();
+
 		for (KeyValue<int, GameController *> &E : joypads) {
 			int id = E.key;
 			GameController &joypad = *E.value;
@@ -444,7 +540,103 @@ void JoypadApple::process_joypads() {
 			for (int i = 0; i < (int)JoyAxis::MAX; i++) {
 				if (joypad.axis_changed[i]) {
 					joypad.axis_changed[i] = false;
-					Input::get_singleton()->joy_axis(id, (JoyAxis)i, joypad.axis_value[i]);
+					input->joy_axis(id, (JoyAxis)i, joypad.axis_value[i]);
+				}
+			}
+
+			if (joypad.controller.battery != nil) {
+				switch (joypad.controller.battery.batteryState) {
+					case GCDeviceBatteryStateDischarging: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_DISCHARGING);
+					} break;
+					case GCDeviceBatteryStateCharging: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_CHARGING);
+					} break;
+					case GCDeviceBatteryStateFull: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_FULL);
+					} break;
+					default: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_UNKNOWN);
+					} break;
+				}
+				input->set_joy_battery_level(id, joypad.controller.battery.batteryLevel);
+			}
+			if (joypad.controller.light != nil) {
+				Color color = input->get_joy_light(id);
+				if (joypad.color != color) {
+					joypad.controller.light.color = [[GCColor alloc] initWithRed:color.r green:color.g blue:color.b];
+				}
+			}
+
+			if (@available(macOS 11.3, iOS 14.5, tvOS 14.5, *)) {
+				if (joypad.controller.extendedGamepad != nil && [joypad.controller.extendedGamepad isKindOfClass:[GCDualSenseGamepad class]]) {
+					GCDualSenseGamepad *dsGamepad = (GCDualSenseGamepad *)joypad.controller.extendedGamepad;
+
+					Input::JoyAdaptiveTriggerMode l_mode = input->get_joy_adaptive_trigger_mode(id, JoyAxis::TRIGGER_LEFT);
+					Vector2 l_strength = input->get_joy_adaptive_trigger_strength(id, JoyAxis::TRIGGER_LEFT);
+					Vector2 l_position = input->get_joy_adaptive_trigger_position(id, JoyAxis::TRIGGER_LEFT);
+					if (l_mode != joypad.l_mode || l_strength != joypad.l_strength || l_position != joypad.l_position) {
+						switch (l_mode) {
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF: {
+								[dsGamepad.leftTrigger setModeOff];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_FEEDBACK: {
+								[dsGamepad.leftTrigger setModeFeedbackWithStartPosition:l_position.x resistiveStrength:l_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_WEAPON: {
+								[dsGamepad.leftTrigger setModeWeaponWithStartPosition:l_position.x endPosition:l_position.y resistiveStrength:l_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_VIBRATION: {
+								[dsGamepad.leftTrigger setModeVibrationWithStartPosition:l_position.x amplitude:l_strength.x frequency:l_strength.y];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_SLOPE_FEEDBACK: {
+								if (@available(macOS 12.3, iOS 15.4, tvOS 15.4, *)) {
+									[dsGamepad.leftTrigger setModeSlopeFeedbackWithStartPosition:l_position.x endPosition:l_position.y startStrength:l_strength.x endStrength:l_strength.y];
+								}
+							} break;
+							default:
+								break;
+						}
+						joypad.l_mode = l_mode;
+						joypad.l_strength = l_strength;
+						joypad.l_position = l_position;
+					}
+					Input::JoyAdaptiveTriggerMode r_mode = input->get_joy_adaptive_trigger_mode(id, JoyAxis::TRIGGER_RIGHT);
+					Vector2 r_strength = input->get_joy_adaptive_trigger_strength(id, JoyAxis::TRIGGER_RIGHT);
+					Vector2 r_position = input->get_joy_adaptive_trigger_position(id, JoyAxis::TRIGGER_RIGHT);
+					if (r_mode != joypad.r_mode || r_strength != joypad.r_strength || r_position != joypad.r_position) {
+						switch (r_mode) {
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF: {
+								[dsGamepad.rightTrigger setModeOff];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_FEEDBACK: {
+								[dsGamepad.rightTrigger setModeFeedbackWithStartPosition:r_position.x resistiveStrength:r_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_WEAPON: {
+								[dsGamepad.rightTrigger setModeWeaponWithStartPosition:r_position.x endPosition:r_position.y resistiveStrength:r_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_VIBRATION: {
+								[dsGamepad.rightTrigger setModeVibrationWithStartPosition:r_position.x amplitude:r_strength.x frequency:r_strength.y];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_SLOPE_FEEDBACK: {
+								if (@available(macOS 12.3, iOS 15.4, tvOS 15.4, *)) {
+									[dsGamepad.rightTrigger setModeSlopeFeedbackWithStartPosition:r_position.x endPosition:r_position.y startStrength:r_strength.x endStrength:r_strength.y];
+								}
+							} break;
+							default:
+								break;
+						}
+						joypad.r_mode = r_mode;
+						joypad.r_strength = r_strength;
+						joypad.r_position = r_position;
+					}
+				}
+			}
+
+			if (joypad.controller != nil && joypad.controller.motion != nil) {
+				bool sensors_enabled = input->get_joy_sensors_enabled(id);
+				if (joypad.controller.motion.sensorsActive != sensors_enabled) {
+					joypad.controller.motion.sensorsActive = sensors_enabled;
 				}
 			}
 

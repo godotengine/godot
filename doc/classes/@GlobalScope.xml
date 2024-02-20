@@ -2543,6 +2543,18 @@
 		<constant name="JOY_AXIS_SDL_MAX" value="6" enum="JoyAxis">
 			The number of SDL game controller axes.
 		</constant>
+		<constant name="JOY_AXIS_PRIMARY_FINGER_X" value="6" enum="JoyAxis">
+			The X coordinate of the player's primary finger on the touchpad.
+		</constant>
+		<constant name="JOY_AXIS_PRIMARY_FINGER_Y" value="7" enum="JoyAxis">
+			The Y coordinate of the player's primary finger on the touchpad.
+		</constant>
+		<constant name="JOY_AXIS_SECONDARY_FINGER_X" value="8" enum="JoyAxis">
+			The X coordinate of the player's secondary finger on the touchpad.
+		</constant>
+		<constant name="JOY_AXIS_SECONDARY_FINGER_Y" value="9" enum="JoyAxis">
+			The Y coordinate of the player's secondary finger on the touchpad.
+		</constant>
 		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxis">
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
