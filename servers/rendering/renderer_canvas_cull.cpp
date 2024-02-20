@@ -311,12 +311,14 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			child_item_count = ci->ysort_children_count + 1;
 			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
+			ci->ysort_xform = ci->xform.affine_inverse();
+			ci->ysort_pos = Vector2();
+			ci->ysort_modulate = Color(1, 1, 1, 1);
+			ci->ysort_index = 0;
 			ci->ysort_parent_abs_z_index = parent_z;
 			child_items[0] = ci;
 			int i = 1;
 			_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), child_items, i, p_z);
-			ci->ysort_xform = ci->xform.affine_inverse();
-			ci->ysort_modulate = Color(1, 1, 1, 1);
 
 			SortArray<Item *, ItemPtrSort> sorter;
 			sorter.sort(child_items, child_item_count);
