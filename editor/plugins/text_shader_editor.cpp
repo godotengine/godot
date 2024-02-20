@@ -740,6 +740,9 @@ void TextShaderEditor::_notification(int p_what) {
 }
 
 void TextShaderEditor::_editor_settings_changed() {
+	if (!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
+		return;
+	}
 	shader_editor->update_editor_settings();
 
 	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));

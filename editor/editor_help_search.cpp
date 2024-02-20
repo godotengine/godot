@@ -36,6 +36,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 
 bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
 	for (int i = 0; i < p_terms.size(); i++) {
@@ -214,7 +215,12 @@ void EditorHelpSearch::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorThemeManager::is_generated_theme_outdated()) {
+				break;
+			}
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED: {
 			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			results_tree->add_theme_constant_override("icon_max_width", icon_width);

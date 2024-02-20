@@ -679,6 +679,11 @@ void EditorAssetLibrary::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("asset_library") &&
+					!EditorSettings::get_singleton()->check_changed_settings_in_group("netweork")) {
+				break;
+			}
+
 			_update_repository_options();
 			setup_http_request(request);
 

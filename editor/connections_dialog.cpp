@@ -1342,7 +1342,9 @@ void ConnectionsDock::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			update_tree();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editors")) {
+				update_tree();
+			}
 		} break;
 	}
 }

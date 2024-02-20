@@ -44,6 +44,7 @@
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/separator.h"
 #include "scene/main/window.h"
@@ -129,7 +130,9 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			}
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:

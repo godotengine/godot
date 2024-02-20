@@ -2133,6 +2133,9 @@ PopupMenu *LineEdit::get_menu() const {
 
 void LineEdit::_editor_settings_changed() {
 #ifdef TOOLS_ENABLED
+	if (!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/appearance/caret")) {
+		return;
+	}
 	set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
 	set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
 #endif

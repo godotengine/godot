@@ -2779,6 +2779,11 @@ void ScriptEditor::_save_layout() {
 }
 
 void ScriptEditor::_editor_settings_changed() {
+	if (!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor") &&
+			!EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
+		return;
+	}
+
 	textfile_extensions.clear();
 	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (const String &E : textfile_ext) {

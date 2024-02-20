@@ -618,8 +618,10 @@ void FileSystemDock::_notification(int p_what) {
 				_update_tree(get_uncollapsed_paths());
 			}
 
-			// Change full tree mode.
-			_update_display_mode();
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				// Change full tree mode.
+				_update_display_mode();
+			}
 		} break;
 	}
 }

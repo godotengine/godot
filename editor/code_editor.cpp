@@ -38,6 +38,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/resources/font.h"
 
 void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
@@ -92,8 +93,13 @@ GotoLineDialog::GotoLineDialog() {
 
 void FindReplaceBar::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorThemeManager::is_generated_theme_outdated()) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_READY: {
 			find_prev->set_icon(get_editor_theme_icon(SNAME("MoveUp")));
 			find_next->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
 			hide_button->set_texture_normal(get_editor_theme_icon(SNAME("Close")));
@@ -1721,7 +1727,11 @@ void CodeTextEditor::_update_text_editor_theme() {
 }
 
 void CodeTextEditor::_on_settings_change() {
-	_apply_settings_change();
+	if (EditorThemeManager::is_generated_theme_outdated() ||
+			EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") ||
+			EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/completion")) {
+		_apply_settings_change();
+	}
 }
 
 void CodeTextEditor::_apply_settings_change() {

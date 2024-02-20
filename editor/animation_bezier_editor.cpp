@@ -213,7 +213,9 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 void AnimationBezierTrackEdit::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

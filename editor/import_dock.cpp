@@ -37,6 +37,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
@@ -656,7 +657,9 @@ void ImportDock::_replace_resource_in_object(Object *p_object, const Ref<Resourc
 void ImportDock::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			imported->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				imported->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

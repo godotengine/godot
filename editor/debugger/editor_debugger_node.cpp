@@ -43,6 +43,7 @@
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/resources/packed_scene.h"
@@ -312,7 +313,7 @@ void EditorDebuggerNode::stop(bool p_force) {
 void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (tabs->get_tab_count() > 1) {
+			if (tabs->get_tab_count() > 1 && EditorThemeManager::is_generated_theme_outdated()) {
 				add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
 				add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
 

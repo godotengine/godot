@@ -2818,8 +2818,13 @@ void EditorHelp::_notification(int p_what) {
 			_class_desc_resized(false);
 		} break;
 
-		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_READY: {
 			_wait_for_thread();
 			_update_doc();
 		} break;

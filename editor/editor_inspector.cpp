@@ -43,6 +43,7 @@
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
@@ -4045,7 +4046,9 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			_update_inspector_bg();
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				_update_inspector_bg();
+			}
 
 			bool needs_update = false;
 

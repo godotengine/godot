@@ -1475,7 +1475,9 @@ void SceneTreeDock::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/scene_tree")) {
+				scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
