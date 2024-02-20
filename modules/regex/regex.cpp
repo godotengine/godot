@@ -334,7 +334,7 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 		return String();
 	}
 
-	return String(output.ptr(), olength);
+	return String(output.ptr(), olength) + p_subject.substr(length);
 }
 
 bool RegEx::is_valid() const {
