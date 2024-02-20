@@ -220,6 +220,10 @@ def configure(env):
         env.Append(CPPDEFINES=["ZSTD_HAVE_WEAK_SYMBOLS=0"])
         env.extra_suffix = ".gdnative" + env.extra_suffix
 
+    # WASM_BIGINT is needed since emscripten ≥ 3.1.41
+    if cc_semver >= (3, 1, 41):
+        env.Append(LINKFLAGS=["-s", "WASM_BIGINT"])
+
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web,worker"])
 
