@@ -492,14 +492,22 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 			ClassDB::get_property_list(current_extension->class_name, p_list, true, this);
 
 			if (current_extension->get_property_list) {
-				uint32_t pcount;
-				const GDExtensionPropertyInfo *pinfo = current_extension->get_property_list(_extension_instance, &pcount);
-				for (uint32_t i = 0; i < pcount; i++) {
-					p_list->push_back(PropertyInfo(pinfo[i]));
+#ifdef TOOLS_ENABLED
+				// If this is a placeholder, we can't call into the GDExtension on the parent class,
+				// because we don't have a real instance of the class to give it.
+				if (likely(!_extension->is_placeholder)) {
+#endif
+					uint32_t pcount;
+					const GDExtensionPropertyInfo *pinfo = current_extension->get_property_list(_extension_instance, &pcount);
+					for (uint32_t i = 0; i < pcount; i++) {
+						p_list->push_back(PropertyInfo(pinfo[i]));
+					}
+					if (current_extension->free_property_list) {
+						current_extension->free_property_list(_extension_instance, pinfo);
+					}
+#ifdef TOOLS_ENABLED
 				}
-				if (current_extension->free_property_list) {
-					current_extension->free_property_list(_extension_instance, pinfo);
-				}
+#endif
 			}
 
 			current_extension = current_extension->parent;
@@ -1792,6 +1800,16 @@ uint32_t Object::get_edited_version() const {
 #endif
 
 StringName Object::get_class_name_for_extension(const GDExtension *p_library) const {
+#ifdef TOOLS_ENABLED
+	// If this is the library this extension comes from and it's a placeholder, we
+	// have to return the closest native parent's class name, so that it doesn't try to
+	// use this like the real object.
+	if (unlikely(_extension && _extension->library == p_library && _extension->is_placeholder)) {
+		const StringName *class_name = _get_class_namev();
+		return *class_name;
+	}
+#endif
+
 	// Only return the class name per the extension if it matches the given p_library.
 	if (_extension && _extension->library == p_library) {
 		return _extension->class_name;
@@ -1919,13 +1937,15 @@ void Object::clear_internal_extension() {
 
 	// Clear the instance bindings.
 	_instance_binding_mutex.lock();
-	if (_instance_bindings[0].free_callback) {
-		_instance_bindings[0].free_callback(_instance_bindings[0].token, this, _instance_bindings[0].binding);
+	if (_instance_bindings) {
+		if (_instance_bindings[0].free_callback) {
+			_instance_bindings[0].free_callback(_instance_bindings[0].token, this, _instance_bindings[0].binding);
+		}
+		_instance_bindings[0].binding = nullptr;
+		_instance_bindings[0].token = nullptr;
+		_instance_bindings[0].free_callback = nullptr;
+		_instance_bindings[0].reference_callback = nullptr;
 	}
-	_instance_bindings[0].binding = nullptr;
-	_instance_bindings[0].token = nullptr;
-	_instance_bindings[0].free_callback = nullptr;
-	_instance_bindings[0].reference_callback = nullptr;
 	_instance_binding_mutex.unlock();
 
 	// Clear the virtual methods.

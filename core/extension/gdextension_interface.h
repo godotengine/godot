@@ -290,7 +290,7 @@ typedef struct {
 	GDExtensionClassGetVirtual get_virtual_func; // Queries a virtual function by name and returns a callback to invoke the requested virtual function.
 	GDExtensionClassGetRID get_rid_func;
 	void *class_userdata; // Per-class user data, later accessible in instance bindings.
-} GDExtensionClassCreationInfo; // Deprecated. Use GDExtensionClassCreationInfo2 instead.
+} GDExtensionClassCreationInfo; // Deprecated. Use GDExtensionClassCreationInfo3 instead.
 
 typedef struct {
 	GDExtensionBool is_virtual;
@@ -323,7 +323,41 @@ typedef struct {
 	GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
 	GDExtensionClassGetRID get_rid_func;
 	void *class_userdata; // Per-class user data, later accessible in instance bindings.
-} GDExtensionClassCreationInfo2;
+} GDExtensionClassCreationInfo2; // Deprecated. Use GDExtensionClassCreationInfo3 instead.
+
+typedef struct {
+	GDExtensionBool is_virtual;
+	GDExtensionBool is_abstract;
+	GDExtensionBool is_exposed;
+	GDExtensionBool is_runtime;
+	GDExtensionClassSet set_func;
+	GDExtensionClassGet get_func;
+	GDExtensionClassGetPropertyList get_property_list_func;
+	GDExtensionClassFreePropertyList free_property_list_func;
+	GDExtensionClassPropertyCanRevert property_can_revert_func;
+	GDExtensionClassPropertyGetRevert property_get_revert_func;
+	GDExtensionClassValidateProperty validate_property_func;
+	GDExtensionClassNotification2 notification_func;
+	GDExtensionClassToString to_string_func;
+	GDExtensionClassReference reference_func;
+	GDExtensionClassUnreference unreference_func;
+	GDExtensionClassCreateInstance create_instance_func; // (Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract.
+	GDExtensionClassFreeInstance free_instance_func; // Destructor; mandatory.
+	GDExtensionClassRecreateInstance recreate_instance_func;
+	// Queries a virtual function by name and returns a callback to invoke the requested virtual function.
+	GDExtensionClassGetVirtual get_virtual_func;
+	// Paired with `call_virtual_with_data_func`, this is an alternative to `get_virtual_func` for extensions that
+	// need or benefit from extra data when calling virtual functions.
+	// Returns user data that will be passed to `call_virtual_with_data_func`.
+	// Returning `NULL` from this function signals to Godot that the virtual function is not overridden.
+	// Data returned from this function should be managed by the extension and must be valid until the extension is deinitialized.
+	// You should supply either `get_virtual_func`, or `get_virtual_call_data_func` with `call_virtual_with_data_func`.
+	GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
+	// Used to call virtual functions when `get_virtual_call_data_func` is not null.
+	GDExtensionClassCallVirtualWithData call_virtual_with_data_func;
+	GDExtensionClassGetRID get_rid_func;
+	void *class_userdata; // Per-class user data, later accessible in instance bindings.
+} GDExtensionClassCreationInfo3;
 
 typedef void *GDExtensionClassLibraryPtr;
 
@@ -2240,6 +2274,9 @@ typedef void (*GDExtensionInterfaceObjectSetInstance)(GDExtensionObjectPtr p_o, 
  *
  * Gets the class name of an Object.
  *
+ * If the GDExtension wraps the Godot object in an abstraction specific to its class, this is the
+ * function that should be used to determine which wrapper to use.
+ *
  * @param p_object A pointer to the Object.
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param r_class_name A pointer to a String to receive the class name.
@@ -2486,7 +2523,7 @@ typedef void *(*GDExtensionInterfaceClassdbGetClassTag)(GDExtensionConstStringNa
 /**
  * @name classdb_register_extension_class
  * @since 4.1
- * @deprecated in Godot 4.2. Use `classdb_register_extension_class2` instead.
+ * @deprecated in Godot 4.2. Use `classdb_register_extension_class3` instead.
  *
  * Registers an extension class in the ClassDB.
  *
@@ -2502,6 +2539,7 @@ typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClass)(GDExtensionCla
 /**
  * @name classdb_register_extension_class2
  * @since 4.2
+ * @deprecated in Godot 4.3. Use `classdb_register_extension_class3` instead.
  *
  * Registers an extension class in the ClassDB.
  *
@@ -2513,6 +2551,21 @@ typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClass)(GDExtensionCla
  * @param p_extension_funcs A pointer to a GDExtensionClassCreationInfo2 struct.
  */
 typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClass2)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs);
+
+/**
+ * @name classdb_register_extension_class3
+ * @since 4.3
+ *
+ * Registers an extension class in the ClassDB.
+ *
+ * Provided struct can be safely freed once the function returns.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_class_name A pointer to a StringName with the class name.
+ * @param p_parent_class_name A pointer to a StringName with the parent class name.
+ * @param p_extension_funcs A pointer to a GDExtensionClassCreationInfo2 struct.
+ */
+typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClass3)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo3 *p_extension_funcs);
 
 /**
  * @name classdb_register_extension_class_method
