@@ -697,7 +697,7 @@ Files extracted from the upstream source:
 ## noise
 
 - Upstream: https://github.com/Auburn/FastNoiseLite
-- Version: git (6be3d6bf7fb408de341285f9ee8a29b67fd953f1, 2022)
+- Version: 1.1.0 (f7af54b56518aa659e1cf9fb103c0b6e36a833d9, 2023)
 - License: MIT
 
 Files extracted from the upstream source:

@@ -397,7 +397,7 @@ License: Expat
 
 Files: ./thirdparty/noise/FastNoiseLite.h
 Comment: FastNoise Lite
-Copyright: 2020, Jordan Peck and contributors
+Copyright: 2023, Jordan Peck and contributors
 License: Expat
 
 Files: ./thirdparty/misc/pcg.cpp
