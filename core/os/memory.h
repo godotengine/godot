@@ -107,7 +107,13 @@ _ALWAYS_INLINE_ bool predelete_handler(void *) {
 	return true;
 }
 
+template <class T, class = void>
+struct is_possible_gdclass : std::false_type {};
+
 template <class T>
+struct is_possible_gdclass<T, std::void_t<typename T::_is_possible_gdclass_type>> : std::true_type {};
+
+template <class T, std::enable_if_t<!is_possible_gdclass<T>::value, bool> = true>
 void memdelete(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
@@ -119,7 +125,7 @@ void memdelete(T *p_class) {
 	Memory::free_static(p_class, false);
 }
 
-template <class T, class A>
+template <class T, class A, std::enable_if_t<!is_possible_gdclass<T>::value, bool> = true>
 void memdelete_allocator(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
@@ -130,6 +136,13 @@ void memdelete_allocator(T *p_class) {
 
 	A::free(p_class);
 }
+
+// Lets memdelete() know that this class may be a Godot Object via multiple inheritance.
+#define IS_POSSIBLE_GDCLASS()            \
+public:                                  \
+	struct _is_possible_gdclass_type {}; \
+                                         \
+private:
 
 #define memdelete_notnull(m_v) \
 	{                          \

@@ -44,6 +44,9 @@ class OpenXRActionMap;
 
 // `OpenXRExtensionWrapper` allows us to implement OpenXR extensions.
 class OpenXRExtensionWrapper {
+	// Allows memdelete() to work correctly with multiple inheritance as used by this class.
+	IS_POSSIBLE_GDCLASS();
+
 public:
 	// `get_requested_extensions` should return a list of OpenXR extensions related to this extension.
 	// If the bool * is a nullptr this extension is mandatory

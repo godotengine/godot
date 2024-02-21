@@ -1057,4 +1057,46 @@ public:
 	static int get_object_count();
 };
 
+template <class T, std::enable_if_t<is_possible_gdclass<T>::value, bool> = true>
+void memdelete(T *p_class) {
+	if (!predelete_handler(p_class)) {
+		return; // doesn't want to be deleted
+	}
+
+	// Handle pointers to secondary parent classes by casting to Object pointer.
+	Object *obj = dynamic_cast<Object *>(p_class);
+	if (obj) {
+		obj->~Object();
+		Memory::free_static(obj, false);
+		return;
+	}
+
+	if constexpr (!std::is_trivially_destructible_v<T>) {
+		p_class->~T();
+	}
+
+	Memory::free_static(p_class, false);
+}
+
+template <class T, class A, std::enable_if_t<is_possible_gdclass<T>::value, bool> = true>
+void memdelete_allocator(T *p_class) {
+	if (!predelete_handler(p_class)) {
+		return; // doesn't want to be deleted
+	}
+
+	// Handle pointers to secondary parent classes by casting to Object pointer.
+	Object *obj = dynamic_cast<Object *>(p_class);
+	if (obj) {
+		obj->~Object();
+		A::free(obj);
+		return;
+	}
+
+	if constexpr (!std::is_trivially_destructible_v<T>) {
+		p_class->~T();
+	}
+
+	A::free(p_class);
+}
+
 #endif // OBJECT_H
