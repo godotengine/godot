@@ -454,7 +454,7 @@ bool XMLParser::is_empty() const {
 }
 
 Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
-	ERR_FAIL_COND_V(p_buffer.size() == 0, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_buffer.is_empty(), ERR_INVALID_DATA);
 
 	if (data_copy) {
 		memdelete_arr(data_copy);

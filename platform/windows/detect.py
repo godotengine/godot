@@ -7,7 +7,7 @@ from platform_methods import detect_arch
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 # To match other platforms
 STACK_SIZE = 8388608
@@ -164,6 +164,22 @@ def get_opts():
 
     mingw = os.getenv("MINGW_PREFIX", "")
 
+    # Direct3D 12 SDK dependencies folder.
+    d3d12_deps_folder = os.getenv("LOCALAPPDATA")
+    if d3d12_deps_folder:
+        d3d12_deps_folder = os.path.join(d3d12_deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            d3d12_deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except:  # Give up.
+            d3d12_deps_folder = ""
+
     return [
         ("mingw_prefix", "MinGW prefix", mingw),
         # Targeted Windows version: 7 (and later), minimum supported version
@@ -187,6 +203,33 @@ def get_opts():
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
+        # Direct3D 12 support.
+        (
+            "mesa_libs",
+            "Path to the MESA/NIR static libraries (required for D3D12)",
+            os.path.join(d3d12_deps_folder, "mesa"),
+        ),
+        (
+            "dxc_path",
+            "Path to the DirectX Shader Compiler distribution (required for D3D12)",
+            os.path.join(d3d12_deps_folder, "dxc"),
+        ),
+        (
+            "agility_sdk_path",
+            "Path to the Agility SDK distribution (optional for D3D12)",
+            os.path.join(d3d12_deps_folder, "agility_sdk"),
+        ),
+        BoolVariable(
+            "agility_sdk_multiarch",
+            "Whether the Agility SDK DLLs will be stored in arch-specific subdirectories",
+            False,
+        ),
+        BoolVariable("use_pix", "Use PIX (Performance tuning and debugging for DirectX 12) runtime", False),
+        (
+            "pix_path",
+            "Path to the PIX runtime distribution (optional for D3D12)",
+            os.path.join(d3d12_deps_folder, "pix"),
+        ),
     ]
 
 
@@ -205,10 +248,11 @@ def get_flags():
 
     return [
         ("arch", arch),
+        ("supported", ["mono"]),
     ]
 
 
-def build_res_file(target, source, env):
+def build_res_file(target, source, env: "SConsEnvironment"):
     arch_aliases = {
         "x86_32": "pe-i386",
         "x86_64": "pe-x86-64",
@@ -243,7 +287,7 @@ def build_res_file(target, source, env):
     return 0
 
 
-def setup_msvc_manual(env):
+def setup_msvc_manual(env: "SConsEnvironment"):
     """Running from VCVARS environment"""
 
     env_arch = detect_build_env_arch()
@@ -260,7 +304,7 @@ def setup_msvc_manual(env):
     print("Found MSVC, arch %s" % (env_arch))
 
 
-def setup_msvc_auto(env):
+def setup_msvc_auto(env: "SConsEnvironment"):
     """Set up MSVC using SCons's auto-detection logic"""
 
     # If MSVC_VERSION is set by SCons, we know MSVC is installed.
@@ -296,7 +340,7 @@ def setup_msvc_auto(env):
     print("Found MSVC version %s, arch %s" % (env["MSVC_VERSION"], env["arch"]))
 
 
-def setup_mingw(env):
+def setup_mingw(env: "SConsEnvironment"):
     """Set up env for use with mingw"""
 
     env_arch = detect_build_env_arch()
@@ -331,7 +375,7 @@ def setup_mingw(env):
     print("Using MinGW, arch %s" % (env["arch"]))
 
 
-def configure_msvc(env, vcvars_msvc_config):
+def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     """Configure env to work with MSVC"""
 
     ## Build type
@@ -374,7 +418,7 @@ def configure_msvc(env, vcvars_msvc_config):
 
     if vcvars_msvc_config:  # should be automatic if SCons found it
         if os.getenv("WindowsSdkDir") is not None:
-            env.Prepend(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
+            env.Prepend(CPPPATH=[str(os.getenv("WindowsSdkDir")) + "/Include"])
         else:
             print("Missing environment variable: WindowsSdkDir")
 
@@ -426,9 +470,41 @@ def configure_msvc(env, vcvars_msvc_config):
         LIBS += ["psapi", "dbghelp"]
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:
             LIBS += ["vulkan"]
+
+    if env["d3d12"]:
+        # Check whether we have d3d12 dependencies installed.
+        if not os.path.exists(env["mesa_libs"]):
+            print("The Direct3D 12 rendering driver requires dependencies to be installed.")
+            print(r"You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
+            print("See the documentation for more information:")
+            print(
+                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+            )
+            sys.exit(255)
+
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
+        LIBS += ["d3d12", "dxgi", "dxguid"]
+        LIBS += ["version"]  # Mesa dependency.
+
+        # Needed for avoiding C1128.
+        if env["target"] == "release_debug":
+            env.Append(CXXFLAGS=["/bigobj"])
+
+        # PIX
+        if not env["arch"] in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
+            env["use_pix"] = False
+
+        if env["use_pix"]:
+            arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
+
+            env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
+            LIBS += ["WinPixEventRuntime"]
+
+        env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
+        LIBS += ["libNIR.windows." + env["arch"]]
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
@@ -447,7 +523,7 @@ def configure_msvc(env, vcvars_msvc_config):
 
     if vcvars_msvc_config:
         if os.getenv("WindowsSdkDir") is not None:
-            env.Append(LIBPATH=[os.getenv("WindowsSdkDir") + "/Lib"])
+            env.Append(LIBPATH=[str(os.getenv("WindowsSdkDir")) + "/Lib"])
         else:
             print("Missing environment variable: WindowsSdkDir")
 
@@ -468,8 +544,8 @@ def configure_msvc(env, vcvars_msvc_config):
             env.AppendUnique(LINKFLAGS=["/LTCG"])
 
     if vcvars_msvc_config:
-        env.Prepend(CPPPATH=[p for p in os.getenv("INCLUDE").split(";")])
-        env.Append(LIBPATH=[p for p in os.getenv("LIB").split(";")])
+        env.Prepend(CPPPATH=[p for p in str(os.getenv("INCLUDE")).split(";")])
+        env.Append(LIBPATH=[p for p in str(os.getenv("LIB")).split(";")])
 
     # Sanitizers
     if env["use_asan"]:
@@ -481,11 +557,11 @@ def configure_msvc(env, vcvars_msvc_config):
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
     env["BUILDERS"]["Program"] = methods.precious_program
 
-    env.Append(LINKFLAGS=["/NATVIS:platform\windows\godot.natvis"])
+    env.Append(LINKFLAGS=["/NATVIS:platform\\windows\\godot.natvis"])
     env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
 
 
-def configure_mingw(env):
+def configure_mingw(env: "SConsEnvironment"):
     # Workaround for MinGW. See:
     # https://www.scons.org/wiki/LongCmdLinesOnWin32
     env.use_windows_spawn_fix()
@@ -619,9 +695,37 @@ def configure_mingw(env):
         env.Append(LIBS=["psapi", "dbghelp"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
+
+    if env["d3d12"]:
+        # Check whether we have d3d12 dependencies installed.
+        if not os.path.exists(env["mesa_libs"]):
+            print("The Direct3D 12 rendering driver requires dependencies to be installed.")
+            print(r"You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
+            print("See the documentation for more information:")
+            print(
+                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+            )
+            sys.exit(255)
+
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
+        env.Append(LIBS=["d3d12", "dxgi", "dxguid"])
+
+        # PIX
+        if not env["arch"] in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
+            env["use_pix"] = False
+
+        if env["use_pix"]:
+            arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
+
+            env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
+            env.Append(LIBS=["WinPixEventRuntime"])
+
+        env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
+        env.Append(LIBS=["libNIR.windows." + env["arch"]])
+        env.Append(LIBS=["version"])  # Mesa dependency.
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
@@ -644,7 +748,7 @@ def configure_mingw(env):
     env.Append(BUILDERS={"RES": env.Builder(action=build_res_file, suffix=".o", src_suffix=".rc")})
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:

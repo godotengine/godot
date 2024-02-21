@@ -82,9 +82,9 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 public:
-	bool has_dummy_property(StringName p_name);
-	void add_dummy_property(StringName p_name);
-	void remove_dummy_property(StringName p_name);
+	bool has_dummy_property(const StringName &p_name);
+	void add_dummy_property(const StringName &p_name);
+	void remove_dummy_property(const StringName &p_name);
 	void clear_dummy_properties();
 };
 
@@ -224,7 +224,7 @@ private:
 	HashMap<TileMapCell, Variant, TileMapCell> drag_modified;
 	Variant drag_painted_value;
 
-	void _property_value_changed(StringName p_property, Variant p_value, StringName p_field);
+	void _property_value_changed(const StringName &p_property, Variant p_value, const StringName &p_field);
 
 protected:
 	DummyObject *dummy_object = memnew(DummyObject);
@@ -238,7 +238,7 @@ protected:
 	virtual void _set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile);
 	virtual void _set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value);
 	virtual Variant _get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile);
-	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value);
+	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, Variant p_new_value);
 
 public:
 	virtual Control *get_toolbar() override { return toolbar; };
@@ -291,7 +291,7 @@ private:
 	virtual void _set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
 	virtual void _set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) override;
 	virtual Variant _get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
-	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) override;
+	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, Variant p_new_value) override;
 
 protected:
 	virtual void _tile_set_changed() override;
@@ -316,15 +316,15 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	DummyObject *dummy_object = memnew(DummyObject);
 	HashMap<StringName, EditorProperty *> property_editors;
 
-	void _property_value_changed(StringName p_property, Variant p_value, StringName p_field);
-	void _property_selected(StringName p_path, int p_focusable);
+	void _property_value_changed(const StringName &p_property, Variant p_value, const StringName &p_field);
+	void _property_selected(const StringName &p_path, int p_focusable);
 	void _polygons_changed();
 
 	virtual Variant _get_painted_value() override;
 	virtual void _set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
 	virtual void _set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) override;
 	virtual Variant _get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
-	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) override;
+	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, Variant p_new_value) override;
 
 protected:
 	virtual void _tile_set_changed() override;
@@ -368,7 +368,7 @@ private:
 	EditorPropertyEnum *terrain_set_property_editor = nullptr;
 	EditorPropertyEnum *terrain_property_editor = nullptr;
 
-	void _property_value_changed(StringName p_property, Variant p_value, StringName p_field);
+	void _property_value_changed(const StringName &p_property, Variant p_value, const StringName &p_field);
 
 	void _update_terrain_selector();
 
@@ -405,7 +405,7 @@ private:
 	virtual void _set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
 	virtual void _set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) override;
 	virtual Variant _get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) override;
-	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) override;
+	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, Variant p_new_value) override;
 
 protected:
 	virtual void _tile_set_changed() override;

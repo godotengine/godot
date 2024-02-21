@@ -35,6 +35,7 @@
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_gravity"), &PhysicsBody2D::get_gravity);
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
@@ -143,6 +144,12 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion
 	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+}
+
+Vector2 PhysicsBody2D::get_gravity() const {
+	PhysicsDirectBodyState2D *state = PhysicsServer2D::get_singleton()->body_get_direct_state(get_rid());
+	ERR_FAIL_NULL_V(state, Vector2());
+	return state->get_total_gravity();
 }
 
 TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
@@ -438,6 +445,8 @@ void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
+
+	contact_count = p_state->get_contact_count();
 
 	if (sleeping != p_state->is_sleeping()) {
 		sleeping = p_state->is_sleeping();
@@ -790,9 +799,7 @@ int RigidBody2D::get_max_contacts_reported() const {
 }
 
 int RigidBody2D::get_contact_count() const {
-	PhysicsDirectBodyState2D *bs = PhysicsServer2D::get_singleton()->body_get_direct_state(get_rid());
-	ERR_FAIL_NULL_V(bs, 0);
-	return bs->get_contact_count();
+	return contact_count;
 }
 
 void RigidBody2D::apply_central_impulse(const Vector2 &p_impulse) {

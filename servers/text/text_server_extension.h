@@ -173,6 +173,11 @@ public:
 	GDVIRTUAL3(_font_set_spacing, const RID &, SpacingType, int64_t);
 	GDVIRTUAL2RC(int64_t, _font_get_spacing, const RID &, SpacingType);
 
+	virtual void font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) override;
+	virtual float font_get_baseline_offset(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_baseline_offset, const RID &, float);
+	GDVIRTUAL1RC(float, _font_get_baseline_offset, const RID &);
+
 	virtual void font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) override;
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_transform, RID, Transform2D);
@@ -390,6 +395,11 @@ public:
 	virtual String shaped_text_get_custom_punctuation(const RID &p_shaped) const override;
 	GDVIRTUAL2(_shaped_text_set_custom_punctuation, RID, String);
 	GDVIRTUAL1RC(String, _shaped_text_get_custom_punctuation, RID);
+
+	virtual void shaped_text_set_custom_ellipsis(const RID &p_shaped, int64_t p_char) override;
+	virtual int64_t shaped_text_get_custom_ellipsis(const RID &p_shaped) const override;
+	GDVIRTUAL2(_shaped_text_set_custom_ellipsis, RID, int64_t);
+	GDVIRTUAL1RC(int64_t, _shaped_text_get_custom_ellipsis, RID);
 
 	virtual void shaped_text_set_orientation(const RID &p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) override;
 	virtual Orientation shaped_text_get_orientation(const RID &p_shaped) const override;

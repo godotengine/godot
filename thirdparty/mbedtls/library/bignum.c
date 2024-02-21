@@ -2,19 +2,7 @@
  *  Multi-precision integer library
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 /*
@@ -42,6 +30,7 @@
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
 #include "constant_time_internal.h"
+#include "bignum_internal.h"
 
 #include <limits.h>
 #include <string.h>
@@ -1919,48 +1908,24 @@ int mbedtls_mpi_mod_int(mbedtls_mpi_uint *r, const mbedtls_mpi *A, mbedtls_mpi_s
 /*
  * Fast Montgomery initialization (thanks to Tom St Denis)
  */
-static void mpi_montg_init(mbedtls_mpi_uint *mm, const mbedtls_mpi *N)
+mbedtls_mpi_uint mbedtls_mpi_montmul_init(const mbedtls_mpi_uint *N)
 {
-    mbedtls_mpi_uint x, m0 = N->p[0];
-    unsigned int i;
+    mbedtls_mpi_uint x = N[0];
 
-    x  = m0;
-    x += ((m0 + 2) & 4) << 1;
+    x += ((N[0] + 2) & 4) << 1;
 
-    for (i = biL; i >= 8; i /= 2) {
-        x *= (2 - (m0 * x));
+    for (unsigned int i = biL; i >= 8; i /= 2) {
+        x *= (2 - (N[0] * x));
     }
 
-    *mm = ~x + 1;
+    return ~x + 1;
 }
 
-/** Montgomery multiplication: A = A * B * R^-1 mod N  (HAC 14.36)
- *
- * \param[in,out]   A   One of the numbers to multiply.
- *                      It must have at least as many limbs as N
- *                      (A->n >= N->n), and any limbs beyond n are ignored.
- *                      On successful completion, A contains the result of
- *                      the multiplication A * B * R^-1 mod N where
- *                      R = (2^ciL)^n.
- * \param[in]       B   One of the numbers to multiply.
- *                      It must be nonzero and must not have more limbs than N
- *                      (B->n <= N->n).
- * \param[in]       N   The modulo. N must be odd.
- * \param           mm  The value calculated by `mpi_montg_init(&mm, N)`.
- *                      This is -N^-1 mod 2^ciL.
- * \param[in,out]   T   A bignum for temporary storage.
- *                      It must be at least twice the limb size of N plus 2
- *                      (T->n >= 2 * (N->n + 1)).
- *                      Its initial content is unused and
- *                      its final content is indeterminate.
- *                      Note that unlike the usual convention in the library
- *                      for `const mbedtls_mpi*`, the content of T can change.
- */
-static void mpi_montmul(mbedtls_mpi *A,
-                        const mbedtls_mpi *B,
-                        const mbedtls_mpi *N,
-                        mbedtls_mpi_uint mm,
-                        const mbedtls_mpi *T)
+void mbedtls_mpi_montmul(mbedtls_mpi *A,
+                         const mbedtls_mpi *B,
+                         const mbedtls_mpi *N,
+                         mbedtls_mpi_uint mm,
+                         const mbedtls_mpi *T)
 {
     size_t i, n, m;
     mbedtls_mpi_uint u0, u1, *d;
@@ -2008,7 +1973,8 @@ static void mpi_montmul(mbedtls_mpi *A,
 /*
  * Montgomery reduction: A = A * R^-1 mod N
  *
- * See mpi_montmul() regarding constraints and guarantees on the parameters.
+ * See mbedtls_mpi_montmul() regarding constraints and guarantees on the
+ * parameters.
  */
 static void mpi_montred(mbedtls_mpi *A, const mbedtls_mpi *N,
                         mbedtls_mpi_uint mm, const mbedtls_mpi *T)
@@ -2019,7 +1985,7 @@ static void mpi_montred(mbedtls_mpi *A, const mbedtls_mpi *N,
     U.n = U.s = (int) z;
     U.p = &z;
 
-    mpi_montmul(A, &U, N, mm, T);
+    mbedtls_mpi_montmul(A, &U, N, mm, T);
 }
 
 /**
@@ -2046,6 +2012,20 @@ static int mpi_select(mbedtls_mpi *R, const mbedtls_mpi *T, size_t T_size, size_
                                                      (unsigned char) mbedtls_ct_size_bool_eq(i,
                                                                                              idx)));
     }
+
+cleanup:
+    return ret;
+}
+
+int mbedtls_mpi_get_mont_r2_unsafe(mbedtls_mpi *X,
+                                   const mbedtls_mpi *N)
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(X, 1));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(X, N->n * 2 * biL));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(X, X, N));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_shrink(X, N->n));
 
 cleanup:
     return ret;
@@ -2088,7 +2068,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
     /*
      * Init temps and window size
      */
-    mpi_montg_init(&mm, N);
+    mm = mbedtls_mpi_montmul_init(N->p);
     mbedtls_mpi_init(&RR); mbedtls_mpi_init(&T);
     mbedtls_mpi_init(&Apos);
     mbedtls_mpi_init(&WW);
@@ -2142,10 +2122,10 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
 
     j = N->n + 1;
     /* All W[i] including the accumulator must have at least N->n limbs for
-     * the mpi_montmul() and mpi_montred() calls later. Here we ensure that
-     * W[1] and the accumulator W[x_index] are large enough. later we'll grow
-     * other W[i] to the same length. They must not be shrunk midway through
-     * this function!
+     * the mbedtls_mpi_montmul() and mpi_montred() calls later. Here we ensure
+     * that W[1] and the accumulator W[x_index] are large enough. later we'll
+     * grow other W[i] to the same length. They must not be shrunk midway
+     * through this function!
      */
     MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[x_index], j));
     MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[1],  j));
@@ -2165,9 +2145,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
      * If 1st call, pre-compute R^2 mod N
      */
     if (prec_RR == NULL || prec_RR->p == NULL) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&RR, 1));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(&RR, N->n * 2 * biL));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&RR, &RR, N));
+        mbedtls_mpi_get_mont_r2_unsafe(&RR, N);
 
         if (prec_RR != NULL) {
             memcpy(prec_RR, &RR, sizeof(mbedtls_mpi));
@@ -2183,7 +2161,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
         MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&W[1], A, N));
         /* This should be a no-op because W[1] is already that large before
          * mbedtls_mpi_mod_mpi(), but it's necessary to avoid an overflow
-         * in mpi_montmul() below, so let's make sure. */
+         * in mbedtls_mpi_montmul() below, so let's make sure. */
         MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[1], N->n + 1));
     } else {
         MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&W[1], A));
@@ -2191,7 +2169,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
 
     /* Note that this is safe because W[1] always has at least N->n limbs
      * (it grew above and was preserved by mbedtls_mpi_copy()). */
-    mpi_montmul(&W[1], &RR, N, mm, &T);
+    mbedtls_mpi_montmul(&W[1], &RR, N, mm, &T);
 
     /*
      * W[x_index] = R^2 * R^-1 mod N = R mod N
@@ -2217,7 +2195,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
         MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&W[j], &W[1]));
 
         for (i = 0; i < window_bitsize - 1; i++) {
-            mpi_montmul(&W[j], &W[j], N, mm, &T);
+            mbedtls_mpi_montmul(&W[j], &W[j], N, mm, &T);
         }
 
         /*
@@ -2227,7 +2205,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
             MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[i], N->n + 1));
             MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&W[i], &W[i - 1]));
 
-            mpi_montmul(&W[i], &W[1], N, mm, &T);
+            mbedtls_mpi_montmul(&W[i], &W[1], N, mm, &T);
         }
     }
 
@@ -2263,7 +2241,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
              * out of window, square W[x_index]
              */
             MBEDTLS_MPI_CHK(mpi_select(&WW, W, w_table_used_size, x_index));
-            mpi_montmul(&W[x_index], &WW, N, mm, &T);
+            mbedtls_mpi_montmul(&W[x_index], &WW, N, mm, &T);
             continue;
         }
 
@@ -2282,7 +2260,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
             for (i = 0; i < window_bitsize; i++) {
                 MBEDTLS_MPI_CHK(mpi_select(&WW, W, w_table_used_size,
                                            x_index));
-                mpi_montmul(&W[x_index], &WW, N, mm, &T);
+                mbedtls_mpi_montmul(&W[x_index], &WW, N, mm, &T);
             }
 
             /*
@@ -2290,7 +2268,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
              */
             MBEDTLS_MPI_CHK(mpi_select(&WW, W, w_table_used_size,
                                        exponent_bits_in_window));
-            mpi_montmul(&W[x_index], &WW, N, mm, &T);
+            mbedtls_mpi_montmul(&W[x_index], &WW, N, mm, &T);
 
             state--;
             nbits = 0;
@@ -2303,13 +2281,13 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
      */
     for (i = 0; i < nbits; i++) {
         MBEDTLS_MPI_CHK(mpi_select(&WW, W, w_table_used_size, x_index));
-        mpi_montmul(&W[x_index], &WW, N, mm, &T);
+        mbedtls_mpi_montmul(&W[x_index], &WW, N, mm, &T);
 
         exponent_bits_in_window <<= 1;
 
         if ((exponent_bits_in_window & ((size_t) 1 << window_bitsize)) != 0) {
             MBEDTLS_MPI_CHK(mpi_select(&WW, W, w_table_used_size, 1));
-            mpi_montmul(&W[x_index], &WW, N, mm, &T);
+            mbedtls_mpi_montmul(&W[x_index], &WW, N, mm, &T);
         }
     }
 

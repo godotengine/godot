@@ -49,7 +49,7 @@ PackedVector2Array AudioEffectCapture::get_buffer(int p_frames) {
 	streaming_data.resize(p_frames);
 	buffer.read(streaming_data.ptrw(), p_frames);
 	for (int32_t i = 0; i < p_frames; i++) {
-		ret.write[i] = Vector2(streaming_data[i].l, streaming_data[i].r);
+		ret.write[i] = Vector2(streaming_data[i].left, streaming_data[i].right);
 	}
 	return ret;
 }

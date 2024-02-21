@@ -287,7 +287,7 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 							ktxfmt = KTX_TTF_BC7_RGBA;
 						} else if (RS::get_singleton()->has_os_feature("s3tc")) {
 							ktxfmt = KTX_TTF_BC1_RGB;
-						} else if (RS::get_singleton()->has_os_feature("etc")) {
+						} else if (RS::get_singleton()->has_os_feature("etc2")) {
 							ktxfmt = KTX_TTF_ETC1_RGB;
 						} else {
 							ktxfmt = KTX_TTF_RGBA32;

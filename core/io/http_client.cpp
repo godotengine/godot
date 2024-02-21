@@ -73,7 +73,7 @@ String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 	Array keys = p_dict.keys();
 	for (int i = 0; i < keys.size(); ++i) {
 		String encoded_key = String(keys[i]).uri_encode();
-		Variant value = p_dict[keys[i]];
+		const Variant &value = p_dict[keys[i]];
 		switch (value.get_type()) {
 			case Variant::ARRAY: {
 				// Repeat the key with every values

@@ -32,11 +32,11 @@
 
 #include "core/version_generated.gen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
 #include "editor/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/split_container.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
@@ -170,8 +170,8 @@ void ShaderTextEditor::set_edited_code(const String &p_code) {
 
 	get_text_editor()->set_text(p_code);
 	get_text_editor()->clear_undo_history();
-	get_text_editor()->call_deferred(SNAME("set_h_scroll"), 0);
-	get_text_editor()->call_deferred(SNAME("set_v_scroll"), 0);
+	callable_mp((TextEdit *)get_text_editor(), &TextEdit::set_h_scroll).call_deferred(0);
+	callable_mp((TextEdit *)get_text_editor(), &TextEdit::set_v_scroll).call_deferred(0);
 	get_text_editor()->tag_saved_version();
 
 	_validate_script();
@@ -473,7 +473,7 @@ void ShaderTextEditor::_validate_script() {
 
 	if (last_compile_result != OK) {
 		//preprocessor error
-		ERR_FAIL_COND(err_positions.size() == 0);
+		ERR_FAIL_COND(err_positions.is_empty());
 
 		String err_text = error_pp;
 		int err_line = err_positions.front()->get().line;
@@ -628,6 +628,8 @@ ShaderTextEditor::ShaderTextEditor() {
 /*** SCRIPT EDITOR ******/
 
 void TextShaderEditor::_menu_option(int p_option) {
+	shader_editor->get_text_editor()->apply_ime();
+
 	switch (p_option) {
 		case EDIT_UNDO: {
 			shader_editor->get_text_editor()->undo();
@@ -719,7 +721,7 @@ void TextShaderEditor::_menu_option(int p_option) {
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
-		shader_editor->get_text_editor()->call_deferred(SNAME("grab_focus"));
+		callable_mp((Control *)shader_editor->get_text_editor(), &Control::grab_focus).call_deferred();
 	}
 }
 
@@ -738,6 +740,9 @@ void TextShaderEditor::_notification(int p_what) {
 }
 
 void TextShaderEditor::_editor_settings_changed() {
+	if (!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
+		return;
+	}
 	shader_editor->update_editor_settings();
 
 	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
@@ -820,7 +825,7 @@ void TextShaderEditor::_check_for_external_edit() {
 			if (use_autoreload) {
 				_reload_shader_include_from_disk();
 			} else {
-				disk_changed->call_deferred(SNAME("popup_centered"));
+				callable_mp((Window *)disk_changed, &Window::popup_centered).call_deferred(Size2i());
 			}
 		}
 		return;
@@ -834,7 +839,7 @@ void TextShaderEditor::_check_for_external_edit() {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
 		} else {
-			disk_changed->call_deferred(SNAME("popup_centered"));
+			callable_mp((Window *)disk_changed, &Window::popup_centered).call_deferred(Size2i());
 		}
 	}
 }
@@ -977,6 +982,8 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			CodeEdit *tx = shader_editor->get_text_editor();
+
+			tx->apply_ime();
 
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
 			int row = pos.y;

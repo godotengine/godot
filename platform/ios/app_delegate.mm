@@ -167,6 +167,14 @@ static ViewController *mainViewController = nil;
 	OS_IOS::get_singleton()->on_focus_in();
 }
 
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+	OS_IOS::get_singleton()->on_enter_background();
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+	OS_IOS::get_singleton()->on_exit_background();
+}
+
 - (void)dealloc {
 	self.window = nil;
 }

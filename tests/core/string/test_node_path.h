@@ -98,44 +98,44 @@ TEST_CASE("[NodePath] Relative path") {
 }
 
 TEST_CASE("[NodePath] Absolute path") {
-	const NodePath node_path_aboslute = NodePath("/root/Sprite2D");
+	const NodePath node_path_absolute = NodePath("/root/Sprite2D");
 
 	CHECK_MESSAGE(
-			node_path_aboslute.get_as_property_path() == NodePath(":root/Sprite2D"),
+			node_path_absolute.get_as_property_path() == NodePath(":root/Sprite2D"),
 			"The returned property path should match the expected value.");
 	CHECK_MESSAGE(
-			node_path_aboslute.get_concatenated_subnames() == "",
+			node_path_absolute.get_concatenated_subnames() == "",
 			"The returned concatenated subnames should match the expected value.");
 
 	CHECK_MESSAGE(
-			node_path_aboslute.get_name(0) == "root",
+			node_path_absolute.get_name(0) == "root",
 			"The returned name at index 0 should match the expected value.");
 	CHECK_MESSAGE(
-			node_path_aboslute.get_name(1) == "Sprite2D",
+			node_path_absolute.get_name(1) == "Sprite2D",
 			"The returned name at index 1 should match the expected value.");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			node_path_aboslute.get_name(2) == "",
+			node_path_absolute.get_name(2) == "",
 			"The returned name at invalid index 2 should match the expected value.");
 	CHECK_MESSAGE(
-			node_path_aboslute.get_name(-1) == "",
+			node_path_absolute.get_name(-1) == "",
 			"The returned name at invalid index -1 should match the expected value.");
 	ERR_PRINT_ON;
 
 	CHECK_MESSAGE(
-			node_path_aboslute.get_name_count() == 2,
+			node_path_absolute.get_name_count() == 2,
 			"The returned number of names should match the expected value.");
 
 	CHECK_MESSAGE(
-			node_path_aboslute.get_subname_count() == 0,
+			node_path_absolute.get_subname_count() == 0,
 			"The returned number of subnames should match the expected value.");
 
 	CHECK_MESSAGE(
-			node_path_aboslute.is_absolute(),
+			node_path_absolute.is_absolute(),
 			"The node path should be considered absolute.");
 
 	CHECK_MESSAGE(
-			!node_path_aboslute.is_empty(),
+			!node_path_absolute.is_empty(),
 			"The node path shouldn't be considered empty.");
 }
 

@@ -120,13 +120,15 @@
 # Gouvernon Stan <stany@gouvernon.org>, 2023.
 # Rertsyd <rertsyd@outlook.com>, 2023.
 # Roskai <angel.du.2558@gmail.com>, 2023.
+# peperoni <peperoni@users.noreply.hosted.weblate.org>, 2024.
+# Octano <theo.huchard@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-16 07:53+0000\n"
-"Last-Translator: Roskai <angel.du.2558@gmail.com>\n"
+"PO-Revision-Date: 2024-01-21 20:50+0000\n"
+"Last-Translator: Octano <theo.huchard@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -134,7 +136,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "Application"
@@ -267,6 +269,9 @@ msgstr "Intensité du panoramique audio en 3D"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Mix With Others"
+msgstr "Mixer avec les autres"
 
 msgid "Editor"
 msgstr "Éditeur"
@@ -3174,6 +3179,15 @@ msgstr "Catégorie de l'application"
 
 msgid "Exclude From Recents"
 msgstr "Exclure des récents"
+
+msgid "Show in Android TV"
+msgstr "Afficher sur Android TV"
+
+msgid "Show in App Library"
+msgstr "Afficher dans la bibliothèque d'applications"
+
+msgid "Show as Launcher App"
+msgstr "Afficher comme lanceur d'application"
 
 msgid "Graphics"
 msgstr "Graphismes"
@@ -6670,6 +6684,15 @@ msgstr "Réflexions"
 msgid "Texture Array Reflections"
 msgstr "Refléxions de la liste de textures"
 
+msgid "Reflection Atlas"
+msgstr "Atlas de Réflexions"
+
+msgid "Reflection Size"
+msgstr "Taille de la Réfléxion"
+
+msgid "Reflection Count"
+msgstr "Compteur de réflexion"
+
 msgid "GI"
 msgstr "GI"
 
@@ -6684,6 +6707,9 @@ msgstr "Pré-passe de Profondeur"
 
 msgid "Use Nearest Mipmap Filter"
 msgstr "Utiliser le filtre Mipmap le plus proche"
+
+msgid "Anisotropic Filtering Level"
+msgstr "Filtrage de niveau Anisotrope"
 
 msgid "Buffer Size"
 msgstr "Taille de tampon"

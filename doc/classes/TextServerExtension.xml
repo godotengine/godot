@@ -105,6 +105,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_font_get_baseline_offset" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_get_char_from_glyph_index" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
@@ -549,6 +555,13 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="size" type="int" />
 			<param index="2" name="ascent" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_baseline_offset" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="baseline_offset" type="float" />
 			<description>
 			</description>
 		</method>
@@ -1073,6 +1086,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shaped_text_get_custom_ellipsis" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_shaped_text_get_custom_punctuation" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="shaped" type="RID" />
@@ -1326,6 +1345,13 @@
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="override" type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_set_custom_ellipsis" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="char" type="int" />
 			<description>
 			</description>
 		</method>

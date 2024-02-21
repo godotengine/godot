@@ -138,6 +138,10 @@ void VisibleOnScreenEnabler3D::set_enable_node_path(NodePath p_path) {
 		return;
 	}
 	enable_node_path = p_path;
+	if (enable_node_path.is_empty()) {
+		node_id = ObjectID();
+		return;
+	}
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
 		node_id = ObjectID();
 		Node *node = get_node(enable_node_path);
@@ -177,8 +181,11 @@ void VisibleOnScreenEnabler3D::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				return;
 			}
-
 			node_id = ObjectID();
+			if (enable_node_path.is_empty()) {
+				return;
+			}
+
 			Node *node = get_node(enable_node_path);
 			if (node) {
 				node_id = node->get_instance_id();

@@ -125,10 +125,14 @@ public:
 		FEATURE_TEXT_TO_SPEECH,
 		FEATURE_EXTEND_TO_TITLE,
 		FEATURE_SCREEN_CAPTURE,
+		FEATURE_STATUS_INDICATOR,
+		FEATURE_NATIVE_HELP,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
+
+	virtual void help_set_search_callbacks(const Callable &p_search_callback = Callable(), const Callable &p_action_callback = Callable());
 
 	virtual void global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callback = Callable(), const Callable &p_close_callback = Callable());
 
@@ -185,6 +189,8 @@ public:
 	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx);
 	virtual void global_menu_clear(const String &p_menu_root);
 
+	virtual Dictionary global_menu_get_system_menu_roots() const;
+
 	struct TTSUtterance {
 		String text;
 		String voice;
@@ -221,7 +227,9 @@ public:
 
 	virtual bool is_dark_mode_supported() const { return false; };
 	virtual bool is_dark_mode() const { return false; };
-	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); };
+	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); }
+	virtual Color get_base_color() const { return Color(0, 0, 0, 0); }
+	virtual void set_system_theme_change_callback(const Callable &p_callable) {}
 
 private:
 	static bool window_early_clear_override_enabled;
@@ -330,10 +338,12 @@ public:
 	virtual bool screen_is_kept_on() const;
 	enum {
 		MAIN_WINDOW_ID = 0,
-		INVALID_WINDOW_ID = -1
+		INVALID_WINDOW_ID = -1,
+		INVALID_INDICATOR_ID = -1
 	};
 
 	typedef int WindowID;
+	typedef int IndicatorID;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const = 0;
 
@@ -434,6 +444,8 @@ public:
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
+	virtual WindowID get_focused_window() const;
+
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) {}
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector3i(); }
 
@@ -510,6 +522,7 @@ public:
 		FILE_DIALOG_MODE_SAVE_MAX
 	};
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback);
 
 	virtual int keyboard_get_layout_count() const;
 	virtual int keyboard_get_current_layout() const;
@@ -534,6 +547,12 @@ public:
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
+
+	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback);
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon);
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip);
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback);
+	virtual void delete_status_indicator(IndicatorID p_id);
 
 	enum Context {
 		CONTEXT_EDITOR,

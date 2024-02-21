@@ -1488,6 +1488,12 @@ msgstr "განლაგების წაშლა"
 msgid "Default"
 msgstr "ნაგულისხმები"
 
+msgid "Mobile"
+msgstr "მობაილი"
+
+msgid "Compatibility"
+msgstr "თავსებადობა"
+
 msgid "Pan View"
 msgstr "პანორამული ხედი"
 
@@ -1553,12 +1559,6 @@ msgstr "საზგადოება"
 
 msgid "Report a Bug"
 msgstr "შეცდომის პატაკი"
-
-msgid "Mobile"
-msgstr "მობაილი"
-
-msgid "Compatibility"
-msgstr "თავსებადობა"
 
 msgid "Update When Changed"
 msgstr "განახლება ცვლილებისას"

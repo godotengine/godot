@@ -138,6 +138,8 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_script"), &Script::get_base_script);
 	ClassDB::bind_method(D_METHOD("get_instance_base_type"), &Script::get_instance_base_type);
 
+	ClassDB::bind_method(D_METHOD("get_global_name"), &Script::get_global_name);
+
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
 
 	ClassDB::bind_method(D_METHOD("get_script_property_list"), &Script::_get_script_property_list);
@@ -164,6 +166,18 @@ ScriptLanguage *ScriptServer::get_language(int p_idx) {
 	MutexLock lock(languages_mutex);
 	ERR_FAIL_INDEX_V(p_idx, _language_count, nullptr);
 	return _languages[p_idx];
+}
+
+ScriptLanguage *ScriptServer::get_language_for_extension(const String &p_extension) {
+	MutexLock lock(languages_mutex);
+
+	for (int i = 0; i < _language_count; i++) {
+		if (_languages[i] && _languages[i]->get_extension() == p_extension) {
+			return _languages[i];
+		}
+	}
+
+	return nullptr;
 }
 
 Error ScriptServer::register_language(ScriptLanguage *p_language) {
@@ -631,6 +645,10 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values) {
 	HashSet<StringName> new_values;
 	for (const PropertyInfo &E : p_properties) {
+		if (E.usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_CATEGORY)) {
+			continue;
+		}
+
 		StringName n = E.name;
 		new_values.insert(n);
 

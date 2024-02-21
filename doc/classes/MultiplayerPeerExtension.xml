@@ -58,7 +58,7 @@
 		<method name="_get_packet_mode" qualifiers="virtual const">
 			<return type="int" enum="MultiplayerPeer.TransferMode" />
 			<description>
-				Called to get the [enum MultiplayerPeer.TransferMode] the remote peer used to send the next available packet. See [method MultiplayerPeer.get_packet_mode].
+				Called to get the transfer mode the remote peer used to send the next available packet. See [method MultiplayerPeer.get_packet_mode].
 			</description>
 		</method>
 		<method name="_get_packet_peer" qualifiers="virtual const">

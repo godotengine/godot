@@ -1,6 +1,10 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Godot.NativeInterop;
+
+#nullable enable
 
 namespace Godot
 {
@@ -773,11 +777,11 @@ namespace Godot
 
         private static bool FindNamedColor(string name, out Color color)
         {
-            name = name.Replace(" ", string.Empty);
-            name = name.Replace("-", string.Empty);
-            name = name.Replace("_", string.Empty);
-            name = name.Replace("'", string.Empty);
-            name = name.Replace(".", string.Empty);
+            name = name.Replace(" ", string.Empty, StringComparison.Ordinal);
+            name = name.Replace("-", string.Empty, StringComparison.Ordinal);
+            name = name.Replace("_", string.Empty, StringComparison.Ordinal);
+            name = name.Replace("'", string.Empty, StringComparison.Ordinal);
+            name = name.Replace(".", string.Empty, StringComparison.Ordinal);
             name = name.ToUpperInvariant();
 
             return Colors.namedColors.TryGetValue(name, out color);
@@ -1274,7 +1278,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the color and the other object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Color other && Equals(other);
         }
@@ -1324,9 +1328,11 @@ namespace Godot
         /// Converts this <see cref="Color"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this color.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
+#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
             return $"({R.ToString(format)}, {G.ToString(format)}, {B.ToString(format)}, {A.ToString(format)})";
+#pragma warning restore CA1305
         }
     }
 }

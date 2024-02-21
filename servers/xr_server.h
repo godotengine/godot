@@ -39,6 +39,7 @@
 
 class XRInterface;
 class XRPositionalTracker;
+class XRFaceTracker;
 
 /**
 	The XR server is a singleton object that gives access to the various
@@ -85,6 +86,8 @@ private:
 
 	Vector<Ref<XRInterface>> interfaces;
 	Dictionary trackers;
+
+	Dictionary face_trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
 
@@ -142,6 +145,7 @@ public:
 		and in the virtual world out of sync
 	*/
 	Transform3D get_reference_frame() const;
+	void clear_reference_frame();
 	void center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height);
 
 	/*
@@ -181,6 +185,14 @@ public:
 	PackedStringArray get_suggested_tracker_names() const;
 	PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const;
 	// Q: Should we add get_suggested_input_names and get_suggested_haptic_names even though we don't use them for the IDE?
+
+	/*
+		Face trackers are objects that expose the tracked blend shapes of a face.
+	 */
+	void add_face_tracker(const StringName &p_tracker_name, Ref<XRFaceTracker> p_face_tracker);
+	void remove_face_tracker(const StringName &p_tracker_name);
+	Dictionary get_face_trackers() const;
+	Ref<XRFaceTracker> get_face_tracker(const StringName &p_tracker_name) const;
 
 	// Process is called before we handle our physics process and game process. This is where our interfaces will update controller data and such.
 	void _process();

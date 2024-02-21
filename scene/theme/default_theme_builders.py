@@ -1,8 +1,10 @@
-"""Functions used to generate source files during build time
+"""
+Functions used to generate source files during build time
 
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+
 import os
 import os.path
 from platform_methods import subprocess_main

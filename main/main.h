@@ -39,6 +39,17 @@ template <class T>
 class Vector;
 
 class Main {
+	enum CLIOptionAvailability {
+		CLI_OPTION_AVAILABILITY_EDITOR,
+		CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG,
+		CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE,
+		CLI_OPTION_AVAILABILITY_HIDDEN,
+	};
+
+	static void print_help_copyright(const char *p_notice);
+	static void print_help_title(const char *p_title);
+	static void print_help_option(const char *p_option, const char *p_description, CLIOptionAvailability p_availability = CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE);
+	static String format_help_option(const char *p_option);
 	static void print_help(const char *p_binary);
 	static uint64_t last_ticks;
 	static uint32_t hide_print_fps_attempts;

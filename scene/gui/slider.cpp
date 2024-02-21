@@ -64,6 +64,8 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
+				grab.value_before_dragging = get_as_ratio();
+				emit_signal(SNAME("drag_started"));
 
 				double grab_width = (double)grabber->get_width();
 				double grab_height = (double)grabber->get_height();
@@ -78,20 +80,23 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
 
-				emit_signal(SNAME("drag_started"));
 				_notify_shared_value_changed();
 			} else {
 				grab.active = false;
 
-				const bool value_changed = !Math::is_equal_approx((double)grab.uvalue, get_as_ratio());
+				const bool value_changed = !Math::is_equal_approx((double)grab.value_before_dragging, get_as_ratio());
 				emit_signal(SNAME("drag_ended"), value_changed);
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-				grab_focus();
+				if (get_focus_mode() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				grab_focus();
+				if (get_focus_mode() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() - get_step());
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,9 @@
 #ifdef THORVG_TVG_SAVER_SUPPORT
     #include "tvgTvgSaver.h"
 #endif
+#ifdef THORVG_GIF_SAVER_SUPPORT
+    #include "tvgGifSaver.h"
+#endif
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -34,9 +37,12 @@
 struct Saver::Impl
 {
     SaveModule* saveModule = nullptr;
+    Paint* bg = nullptr;
+
     ~Impl()
     {
         delete(saveModule);
+        delete(bg);
     }
 };
 
@@ -47,6 +53,12 @@ static SaveModule* _find(FileType type)
         case FileType::Tvg: {
 #ifdef THORVG_TVG_SAVER_SUPPORT
             return new TvgSaver;
+#endif
+            break;
+        }
+        case FileType::Gif: {
+#ifdef THORVG_GIF_SAVER_SUPPORT
+            return new GifSaver;
 #endif
             break;
         }
@@ -62,12 +74,16 @@ static SaveModule* _find(FileType type)
             format = "TVG";
             break;
         }
+        case FileType::Gif: {
+            format = "GIF";
+            break;
+        }
         default: {
             format = "???";
             break;
         }
     }
-    TVGLOG("SAVER", "%s format is not supported", format);
+    TVGLOG("RENDERER", "%s format is not supported", format);
 #endif
     return nullptr;
 }
@@ -78,6 +94,8 @@ static SaveModule* _find(const string& path)
     auto ext = path.substr(path.find_last_of(".") + 1);
     if (!ext.compare("tvg")) {
         return _find(FileType::Tvg);
+    } else if (!ext.compare("gif")) {
+        return _find(FileType::Gif);
     }
     return nullptr;
 }
@@ -120,6 +138,46 @@ Result Saver::save(std::unique_ptr<Paint> paint, const string& path, bool compre
         }
     }
     delete(p);
+    return Result::NonSupport;
+}
+
+
+Result Saver::background(unique_ptr<Paint> paint) noexcept
+{
+    delete(pImpl->bg);
+    pImpl->bg = paint.release();
+
+    return Result::Success;
+}
+
+
+Result Saver::save(unique_ptr<Animation> animation, const string& path, uint32_t quality, uint32_t fps) noexcept
+{
+    auto a = animation.release();
+    if (!a) return Result::MemoryCorruption;
+
+    if (mathZero(a->totalFrame())) {
+        delete(a);
+        return Result::InsufficientCondition;
+    }
+
+    //Already on saving an other resource.
+    if (pImpl->saveModule) {
+        delete(a);
+        return Result::InsufficientCondition;
+    }
+
+    if (auto saveModule = _find(path)) {
+        if (saveModule->save(a, pImpl->bg, path, quality, fps)) {
+            pImpl->saveModule = saveModule;
+            return Result::Success;
+        } else {
+            delete(a);
+            delete(saveModule);
+            return Result::Unknown;
+        }
+    }
+    delete(a);
     return Result::NonSupport;
 }
 

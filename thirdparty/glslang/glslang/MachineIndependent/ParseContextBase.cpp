@@ -208,7 +208,7 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
     //
     // If we get here, we have an error and a message.
     //
-    const TIntermTyped* leftMostTypeNode = TIntermediate::findLValueBase(node, true);
+    const TIntermTyped* leftMostTypeNode = TIntermediate::traverseLValueBase(node, true);
 
     if (symNode)
         error(loc, " l-value required", op, "\"%s\" (%s)", symbol, message);
@@ -234,7 +234,7 @@ void TParseContextBase::rValueErrorCheck(const TSourceLoc& loc, const char* op, 
     const TIntermSymbol* symNode = node->getAsSymbolNode();
 
     if (node->getQualifier().isWriteOnly()) {
-        const TIntermTyped* leftMostTypeNode = TIntermediate::findLValueBase(node, true);
+        const TIntermTyped* leftMostTypeNode = TIntermediate::traverseLValueBase(node, true);
 
         if (symNode != nullptr)
             error(loc, "can't read from writeonly object: ", op, symNode->getName().c_str());
@@ -626,10 +626,8 @@ void TParseContextBase::growGlobalUniformBlock(const TSourceLoc& loc, TType& mem
     if (symbol) {
         if (memberType != symbol->getType()) {
             TString err;
-            err += "\"" + memberType.getCompleteString() + "\"";
-            err += " versus ";
-            err += "\"" + symbol->getType().getCompleteString() + "\"";
-            error(loc, "Types must match:", memberType.getFieldName().c_str(), err.c_str());
+            err += "Redeclaration: already declared as \"" + symbol->getType().getCompleteString() + "\"";
+            error(loc, "", memberName.c_str(), err.c_str());
         }
         return;
     }
@@ -723,6 +721,24 @@ void TParseContextBase::finish()
 {
     if (parsingBuiltins)
         return;
+
+    for (const TString& relaxedSymbol : relaxedSymbols)
+    {
+        TSymbol* symbol = symbolTable.find(relaxedSymbol);
+        TType& type = symbol->getWritableType();
+        for (const TTypeLoc& typeLoc : *type.getStruct())
+        {
+            if (typeLoc.type->isOpaque())
+            {
+                typeLoc.type->getSampler() = TSampler{};
+                typeLoc.type->setBasicType(EbtInt);
+                TString fieldName("/*");
+                fieldName.append(typeLoc.type->getFieldName());
+                fieldName.append("*/");
+                typeLoc.type->setFieldName(fieldName);
+            }
+        }
+    }
 
     // Transfer the linkage symbols to AST nodes, preserving order.
     TIntermAggregate* linkage = new TIntermAggregate;

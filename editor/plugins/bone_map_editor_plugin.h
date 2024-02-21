@@ -78,7 +78,7 @@ public:
 
 	bool is_require() const;
 
-	BoneMapperButton(const StringName p_profile_bone_name, bool p_require, bool p_selected);
+	BoneMapperButton(const StringName &p_profile_bone_name, bool p_require, bool p_selected);
 	~BoneMapperButton();
 };
 

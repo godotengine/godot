@@ -132,6 +132,10 @@ cppcheck-cppcheck-build-dir/
 *.pydevproject
 *.launch
 
+# Emacs
+\#*\#
+.\#*
+
 # GCOV code coverage
 *.gcda
 *.gcno
@@ -152,6 +156,9 @@ gmon.out
 
 # Kdevelop
 *.kdev4
+
+# Mypy
+.mypy_cache
 
 # Qt Creator
 *.config
@@ -364,3 +371,4 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+*.generated.props

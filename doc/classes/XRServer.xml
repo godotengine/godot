@@ -10,6 +10,14 @@
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="add_face_tracker">
+			<return type="void" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="face_tracker" type="XRFaceTracker" />
+			<description>
+				Registers a new [XRFaceTracker] that tracks the blend shapes of a face.
+			</description>
+		</method>
 		<method name="add_interface">
 			<return type="void" />
 			<param index="0" name="interface" type="XRInterface" />
@@ -37,11 +45,30 @@
 				You should call this method after a few seconds have passed. For example, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, or when implementing a teleport mechanism.
 			</description>
 		</method>
+		<method name="clear_reference_frame" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Clears the reference frame that was set by previous calls to [method center_on_hmd].
+			</description>
+		</method>
 		<method name="find_interface" qualifiers="const">
 			<return type="XRInterface" />
 			<param index="0" name="name" type="String" />
 			<description>
 				Finds an interface by its [param name]. For example, if your project uses capabilities of an AR/VR platform, you can find the interface for that platform by name and initialize it.
+			</description>
+		</method>
+		<method name="get_face_tracker" qualifiers="const">
+			<return type="XRFaceTracker" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Returns the [XRFaceTracker] with the given tracker name.
+			</description>
+		</method>
+		<method name="get_face_trackers" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of the registered face trackers. Each element of the dictionary is a tracker name mapping to the [XRFaceTracker] instance.
 			</description>
 		</method>
 		<method name="get_hmd_transform">
@@ -89,6 +116,13 @@
 				Returns a dictionary of trackers for [param tracker_types].
 			</description>
 		</method>
+		<method name="remove_face_tracker">
+			<return type="void" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Removes a registered [XRFaceTracker].
+			</description>
+		</method>
 		<method name="remove_interface">
 			<return type="void" />
 			<param index="0" name="interface" type="XRInterface" />
@@ -113,10 +147,30 @@
 			[b]Note:[/b] This property is managed by the current [XROrigin3D] node. It is exposed for access from GDExtensions.
 		</member>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" default="1.0">
-			Allows you to adjust the scale to your game's units. Most AR/VR platforms assume a scale of 1 game world unit = 1 real world meter.
+			The scale of the game world compared to the real world. By default, most AR/VR platforms assume that 1 game unit corresponds to 1 real world meter.
 		</member>
 	</members>
 	<signals>
+		<signal name="face_tracker_added">
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="face_tracker" type="XRFaceTracker" />
+			<description>
+				Emitted when a new face tracker is added.
+			</description>
+		</signal>
+		<signal name="face_tracker_removed">
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Emitted when a face tracker is removed.
+			</description>
+		</signal>
+		<signal name="face_tracker_updated">
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="face_tracker" type="XRFaceTracker" />
+			<description>
+				Emitted when an existing face tracker is updated.
+			</description>
+		</signal>
 		<signal name="interface_added">
 			<param index="0" name="interface_name" type="StringName" />
 			<description>

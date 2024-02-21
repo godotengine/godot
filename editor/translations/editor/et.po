@@ -2288,17 +2288,6 @@ msgstr ""
 "Lisandmooduli keelamine aadressil '%s', et vältida edasisi vigu."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Lisa-skripti ei olnud võimalik laadida teelt: '%s'. Baastüüp ei ole "
-"EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Lisa-skripti ei olnud võimalik laadida teelt: '%s'. Skript ei ole tööriista "
-"režiimis."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
@@ -2373,6 +2362,15 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 "Faili '%s' ei saa kirjutada, fail on kasutusel, lukus või puuduvad õigused."
+
+msgid "Forward+"
+msgstr "Edasi+"
+
+msgid "Mobile"
+msgstr "Mobiil"
+
+msgid "Compatibility"
+msgstr "Ühilduvus"
 
 msgid "Pan View"
 msgstr "Nihuta Vaadet"
@@ -2529,21 +2527,6 @@ msgstr "Teave Godot'ist"
 
 msgid "Support Godot Development"
 msgstr "Toeta Godot'i Arendamist"
-
-msgid "Choose a renderer."
-msgstr "Valige renderdaja."
-
-msgid "Forward+"
-msgstr "Edasi+"
-
-msgid "Mobile"
-msgstr "Mobiil"
-
-msgid "Compatibility"
-msgstr "Ühilduvus"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "Renderdaja muutmiseks tuleb Redaktor taaskäivitada."
 
 msgid "Update Continuously"
 msgstr "Värskenda Pidevalt"

@@ -24,7 +24,7 @@
 # Sebastian Pasich <sebastian.pasich@gmail.com>, 2017, 2019, 2020, 2022, 2023.
 # siatek papieros <sbigneu@gmail.com>, 2016.
 # Zatherz <zatherz@linux.pl>, 2017, 2020, 2021.
-# Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023.
+# Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023, 2024.
 # Wojcieh Er Zet <wojcieh.rzepecki@gmail.com>, 2018.
 # Dariusz Siek <dariuszynski@gmail.com>, 2018, 2019, 2020, 2021.
 # Szymon Nowakowski <smnbdg13@gmail.com>, 2019.
@@ -82,12 +82,14 @@
 # ThomsikDev <szczopek7@outlook.com>, 2023.
 # johnny1029 <jkste07@gmail.com>, 2023.
 # Marcin Zieliński <czolgista83@gmail.com>, 2023.
+# Aleksander Łagowiec <mineolek10@users.noreply.hosted.weblate.org>, 2023.
+# Jakub Marcowski <chubercikbattle@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-21 15:04+0000\n"
+"PO-Revision-Date: 2024-01-28 14:02+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
@@ -97,7 +99,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -234,6 +236,9 @@ msgstr "iOS"
 msgid "Session Category"
 msgstr "Kategoria sesji"
 
+msgid "Mix With Others"
+msgstr "Mieszaj z Innymi"
+
 msgid "Editor"
 msgstr "Edytor"
 
@@ -294,6 +299,9 @@ msgstr "Formaty"
 msgid "Zstd"
 msgstr "Zstd"
 
+msgid "Long Distance Matching"
+msgstr "Dopasowanie Na Odległość"
+
 msgid "Compression Level"
 msgstr "Poziom kompresji"
 
@@ -318,6 +326,9 @@ msgstr "Renderowanie"
 msgid "Occlusion Culling"
 msgstr "Usuwanie niewidocznych powierzchni"
 
+msgid "BVH Build Quality"
+msgstr "Jakość Wykonania BVH"
+
 msgid "Memory"
 msgstr "Pamięć"
 
@@ -327,11 +338,17 @@ msgstr "Limity"
 msgid "Multithreaded Server"
 msgstr "Serwer wielowątkowy"
 
+msgid "RID Pool Prealloc"
+msgstr "Preallokacja Puli RID"
+
 msgid "Internationalization"
 msgstr "Internacjonalizacja"
 
 msgid "Force Right to Left Layout Direction"
 msgstr "Wymuś kierunek układu od prawej do lewej"
+
+msgid "Root Node Layout Direction"
+msgstr "Kierunek układu węzła głównego"
 
 msgid "GUI"
 msgstr "GUI"
@@ -360,14 +377,26 @@ msgstr "Zastosuj nadpróbkowanie"
 msgid "Rendering Device"
 msgstr "Urządzenie renderujące"
 
+msgid "Staging Buffer"
+msgstr "Bufor przejściowy"
+
 msgid "Block Size (KB)"
 msgstr "Rozmiar bloku (KB)"
 
 msgid "Max Size (MB)"
 msgstr "Maks. rozmiar (MB)"
 
+msgid "Texture Upload Region Size Px"
+msgstr "Rozmiar regionu przesyłania tekstur (w piks.)"
+
+msgid "Pipeline Cache"
+msgstr "Pamięć podręczna Pipeline-u"
+
+msgid "Save Chunk Size (MB)"
+msgstr "Zapisz rozmiar fragmentu (MB)"
+
 msgid "Vulkan"
-msgstr "Vulkan"
+msgstr "Vulkan (API)"
 
 msgid "Max Descriptors per Pool"
 msgstr "Maks. liczba deskryptorów na pulę"
@@ -393,14 +422,20 @@ msgstr "Użyj otoczenia"
 msgid "Low Processor Usage Mode"
 msgstr "Tryb niskiego wykorzystania procesora"
 
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "Tryb Uśpienia Przy Niskim Zużyciu Procesora (µsek)"
+
 msgid "Delta Smoothing"
 msgstr "Wygładzanie delty"
 
 msgid "Print Error Messages"
 msgstr "Wyświetlaj komunikaty o błędach"
 
+msgid "Physics Ticks per Second"
+msgstr "Ticki Fizyki na Sekundę"
+
 msgid "Max Physics Steps per Frame"
-msgstr "Maksymalna liczba kroków fizyki na klatkę"
+msgstr "Maksymalna Liczba Kroków Fizyki na Klatkę"
 
 msgid "Max FPS"
 msgstr "Maks. FPS"
@@ -564,6 +599,9 @@ msgstr "Maksymalna wielkość bufora wyjściowego"
 msgid "Resource"
 msgstr "Zasób"
 
+msgid "Local to Scene"
+msgstr "Lokalnie dla Sceny"
+
 msgid "Path"
 msgstr "Ścieżka"
 
@@ -579,8 +617,17 @@ msgstr "Obszar"
 msgid "Offset"
 msgstr "Przesunięcie"
 
+msgid "Cell Size"
+msgstr "Rozmiar Komórki"
+
 msgid "Jumping Enabled"
 msgstr "Skakanie włączone"
+
+msgid "Default Compute Heuristic"
+msgstr "Domyślna Heurystyka Obliczeniowa"
+
+msgid "Default Estimate Heuristic"
+msgstr "Domyślna Heurystyka Szacunkowa"
 
 msgid "Seed"
 msgstr "Ziarno"
@@ -597,6 +644,9 @@ msgstr "Sieć"
 msgid "TCP"
 msgstr "TCP"
 
+msgid "Max Buffer (Power of 2)"
+msgstr "Maksymalny Bufor (Potęga 2)"
+
 msgid "TLS"
 msgstr "TLS"
 
@@ -607,7 +657,7 @@ msgid "Test"
 msgstr "Test"
 
 msgid "Fallback"
-msgstr "Fallback"
+msgstr "Rozwiązanie awaryjne"
 
 msgid "Prefix"
 msgstr "Przedrostek"
@@ -859,7 +909,7 @@ msgid "FBX"
 msgstr "FBX"
 
 msgid "Docks"
-msgstr "Doki, Docki"
+msgstr "Doki"
 
 msgid "Scene Tree"
 msgstr "Drzewo sceny"
@@ -2071,7 +2121,7 @@ msgid "Priority"
 msgstr "Priorytet"
 
 msgid "Lightmapping"
-msgstr "Lightmapping"
+msgstr "Mapowanie światła"
 
 msgid "Region Size"
 msgstr "Rozmiar regionu"
@@ -2157,8 +2207,26 @@ msgstr "Unikalna nazwa"
 msgid "App Category"
 msgstr "Kategoria aplikacji"
 
+msgid "Retain Data on Uninstall"
+msgstr "Zachowaj Dane po Odinstalowaniu"
+
+msgid "Show in Android TV"
+msgstr "Pokaż w Android TV"
+
 msgid "Graphics"
 msgstr "Grafika"
+
+msgid "OpenGL Debug"
+msgstr "Debugowanie OpenGL"
+
+msgid "XR Features"
+msgstr "Funkcje XR"
+
+msgid "XR Mode"
+msgstr "Tryb XR"
+
+msgid "Immersive Mode"
+msgstr "Tryb Immersyjny"
 
 msgid "Extra Args"
 msgstr "Dodatkowe argumenty"

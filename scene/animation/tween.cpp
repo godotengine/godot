@@ -505,11 +505,13 @@ Tween::Tween(bool p_valid) {
 
 Ref<PropertyTweener> PropertyTweener::from(const Variant &p_value) {
 	ERR_FAIL_COND_V(tween.is_null(), nullptr);
-	if (!tween->_validate_type_match(p_value, final_val)) {
+
+	Variant from_value = p_value;
+	if (!tween->_validate_type_match(final_val, from_value)) {
 		return nullptr;
 	}
 
-	initial_val = p_value;
+	initial_val = from_value;
 	do_continue = false;
 	return this;
 }
@@ -531,6 +533,11 @@ Ref<PropertyTweener> PropertyTweener::set_trans(Tween::TransitionType p_trans) {
 
 Ref<PropertyTweener> PropertyTweener::set_ease(Tween::EaseType p_ease) {
 	ease_type = p_ease;
+	return this;
+}
+
+Ref<PropertyTweener> PropertyTweener::set_custom_interpolator(const Callable &p_method) {
+	custom_method = p_method;
 	return this;
 }
 
@@ -587,7 +594,23 @@ bool PropertyTweener::step(double &r_delta) {
 
 	double time = MIN(elapsed_time - delay, duration);
 	if (time < duration) {
-		target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
+		if (custom_method.is_valid()) {
+			const Variant t = tween->interpolate_variant(0.0, 1.0, time, duration, trans_type, ease_type);
+			const Variant *argptr = &t;
+
+			Variant result;
+			Callable::CallError ce;
+			custom_method.callp(&argptr, 1, result, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_FAIL_V_MSG(false, "Error calling custom method from PropertyTweener: " + Variant::get_callable_error_text(custom_method, &argptr, 1, ce) + ".");
+			} else if (result.get_type() != Variant::FLOAT) {
+				ERR_FAIL_V_MSG(false, vformat("Wrong return type in PropertyTweener custom method. Expected float, got %s.", Variant::get_type_name(result.get_type())));
+			}
+
+			target_instance->set_indexed(property, Animation::interpolate_variant(initial_val, final_val, result));
+		} else {
+			target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
+		}
 		r_delta = 0;
 		return true;
 	} else {
@@ -615,6 +638,7 @@ void PropertyTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("as_relative"), &PropertyTweener::as_relative);
 	ClassDB::bind_method(D_METHOD("set_trans", "trans"), &PropertyTweener::set_trans);
 	ClassDB::bind_method(D_METHOD("set_ease", "ease"), &PropertyTweener::set_ease);
+	ClassDB::bind_method(D_METHOD("set_custom_interpolator", "interpolator_method"), &PropertyTweener::set_custom_interpolator);
 	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &PropertyTweener::set_delay);
 }
 
@@ -691,7 +715,7 @@ bool CallbackTweener::step(double &r_delta) {
 		Callable::CallError ce;
 		callback.callp(nullptr, 0, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce));
+			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce) + ".");
 		}
 
 		finished = true;
@@ -771,7 +795,7 @@ bool MethodTweener::step(double &r_delta) {
 	Callable::CallError ce;
 	callback.callp(argptr, 1, result, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_callable_error_text(callback, argptr, 1, ce));
+		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_callable_error_text(callback, argptr, 1, ce) + ".");
 	}
 
 	if (time < duration) {

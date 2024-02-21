@@ -79,6 +79,7 @@
 		<method name="exp" qualifiers="const">
 			<return type="Quaternion" />
 			<description>
+				Returns the exponential of this quaternion. The rotation axis of the result is the normalized rotation axis of this quaternion, the angle of the result is the length of the vector part of this quaternion.
 			</description>
 		</method>
 		<method name="from_euler" qualifiers="static">
@@ -91,11 +92,14 @@
 		<method name="get_angle" qualifiers="const">
 			<return type="float" />
 			<description>
+				Returns the angle of the rotation represented by this quaternion.
+				[b]Note:[/b] The quaternion must be normalized.
 			</description>
 		</method>
 		<method name="get_axis" qualifiers="const">
 			<return type="Vector3" />
 			<description>
+				Returns the rotation axis of the rotation represented by this quaternion.
 			</description>
 		</method>
 		<method name="get_euler" qualifiers="const">
@@ -145,6 +149,7 @@
 		<method name="log" qualifiers="const">
 			<return type="Quaternion" />
 			<description>
+				Returns the logarithm of this quaternion. The vector part of the result is the rotation axis of this quaternion multiplied by its rotation angle, the real part of the result is zero.
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">

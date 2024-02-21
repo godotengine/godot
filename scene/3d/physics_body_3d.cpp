@@ -35,6 +35,7 @@
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("get_gravity"), &PhysicsBody3D::get_gravity);
 
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &PhysicsBody3D::set_axis_lock);
 	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &PhysicsBody3D::get_axis_lock);
@@ -182,8 +183,15 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion
 
 	PhysicsServer3D::MotionParameters parameters(p_from, p_motion, p_margin);
 	parameters.recovery_as_collision = p_recovery_as_collision;
+	parameters.max_collisions = p_max_collisions;
 
 	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+}
+
+Vector3 PhysicsBody3D::get_gravity() const {
+	PhysicsDirectBodyState3D *state = PhysicsServer3D::get_singleton()->body_get_direct_state(get_rid());
+	ERR_FAIL_NULL_V(state, Vector3());
+	return state->get_total_gravity();
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
@@ -493,6 +501,8 @@ void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
 	angular_velocity = p_state->get_angular_velocity();
 
 	inverse_inertia_tensor = p_state->get_inverse_inertia_tensor();
+
+	contact_count = p_state->get_contact_count();
 
 	if (sleeping != p_state->is_sleeping()) {
 		sleeping = p_state->is_sleeping();
@@ -869,9 +879,7 @@ int RigidBody3D::get_max_contacts_reported() const {
 }
 
 int RigidBody3D::get_contact_count() const {
-	PhysicsDirectBodyState3D *bs = PhysicsServer3D::get_singleton()->body_get_direct_state(get_rid());
-	ERR_FAIL_NULL_V(bs, 0);
-	return bs->get_contact_count();
+	return contact_count;
 }
 
 void RigidBody3D::apply_central_impulse(const Vector3 &p_impulse) {
@@ -2239,11 +2247,14 @@ void PhysicalBone3D::reset_physics_simulation_state() {
 
 void PhysicalBone3D::reset_to_rest_position() {
 	if (parent_skeleton) {
-		if (-1 == bone_id) {
-			set_global_transform(parent_skeleton->get_global_transform() * body_offset);
+		Transform3D new_transform = parent_skeleton->get_global_transform();
+		if (bone_id == -1) {
+			new_transform *= body_offset;
 		} else {
-			set_global_transform(parent_skeleton->get_global_transform() * parent_skeleton->get_bone_global_pose(bone_id) * body_offset);
+			new_transform *= parent_skeleton->get_bone_global_pose(bone_id) * body_offset;
 		}
+		new_transform.orthonormalize();
+		set_global_transform(new_transform);
 	}
 }
 

@@ -30,6 +30,11 @@
 
 #include "test_main.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_paths.h"
+#include "editor/editor_settings.h"
+#endif // TOOLS_ENABLED
+
 #include "tests/core/config/test_project_settings.h"
 #include "tests/core/input/test_input_event.h"
 #include "tests/core/input/test_input_event_key.h"
@@ -101,17 +106,14 @@
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_curve_3d.h"
 #include "tests/scene/test_gradient.h"
+#include "tests/scene/test_image_texture.h"
 #include "tests/scene/test_navigation_agent_2d.h"
-#include "tests/scene/test_navigation_agent_3d.h"
 #include "tests/scene/test_navigation_obstacle_2d.h"
-#include "tests/scene/test_navigation_obstacle_3d.h"
 #include "tests/scene/test_navigation_region_2d.h"
-#include "tests/scene/test_navigation_region_3d.h"
 #include "tests/scene/test_node.h"
 #include "tests/scene/test_node_2d.h"
 #include "tests/scene/test_packed_scene.h"
 #include "tests/scene/test_path_2d.h"
-#include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_primitives.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_text_edit.h"
@@ -121,9 +123,17 @@
 #include "tests/scene/test_window.h"
 #include "tests/servers/rendering/test_shader_preprocessor.h"
 #include "tests/servers/test_navigation_server_2d.h"
-#include "tests/servers/test_navigation_server_3d.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
+
+#ifndef _3D_DISABLED
+#include "tests/scene/test_camera_3d.h"
+#include "tests/scene/test_navigation_agent_3d.h"
+#include "tests/scene/test_navigation_obstacle_3d.h"
+#include "tests/scene/test_navigation_region_3d.h"
+#include "tests/scene/test_path_3d.h"
+#include "tests/servers/test_navigation_server_3d.h"
+#endif // _3D_DISABLED
 
 #include "modules/modules_tests.gen.h"
 
@@ -220,7 +230,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		String name = String(p_in.m_name);
 		String suite_name = String(p_in.m_test_suite);
 
-		if (name.find("[SceneTree]") != -1) {
+		if (name.find("[SceneTree]") != -1 || name.find("[Editor]") != -1) {
 			memnew(MessageQueue);
 
 			memnew(Input);
@@ -263,6 +273,15 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			if (!DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
 				SceneTree::get_singleton()->get_root()->set_embedding_subwindows(true);
 			}
+
+#ifdef TOOLS_ENABLED
+			if (name.find("[Editor]") != -1) {
+				Engine::get_singleton()->set_editor_hint(true);
+				EditorPaths::create();
+				EditorSettings::create();
+			}
+#endif // TOOLS_ENABLED
+
 			return;
 		}
 
@@ -285,6 +304,14 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	}
 
 	void test_case_end(const doctest::CurrentTestCaseStats &) override {
+#ifdef TOOLS_ENABLED
+		if (EditorSettings::get_singleton()) {
+			EditorSettings::destroy();
+		}
+#endif // TOOLS_ENABLED
+
+		Engine::get_singleton()->set_editor_hint(false);
+
 		if (SceneTree::get_singleton()) {
 			SceneTree::get_singleton()->finalize();
 		}

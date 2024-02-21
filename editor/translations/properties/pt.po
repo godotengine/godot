@@ -36,13 +36,16 @@
 # Hevinis <meauriocardoso@gmail.com>, 2023.
 # Ricardo Caetano <ricardofilipecaetano@gmail.com>, 2023.
 # Henricky Corazza Serrão <henrickyserrao@gmail.com>, 2023.
+# Ricardo Bustamante <ricardobqueiroz@gmail.com>, 2023.
+# Miguel Ângelo Oliveira Leirião <miguel.leiriao@hotmail.com>, 2024.
+# AegisTTN <tc.dev04@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-16 16:21+0000\n"
-"Last-Translator: Henricky Corazza Serrão <henrickyserrao@gmail.com>\n"
+"PO-Revision-Date: 2024-02-02 09:31+0000\n"
+"Last-Translator: AegisTTN <tc.dev04@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -50,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -184,6 +187,9 @@ msgstr "Força de Panning 3D"
 msgid "iOS"
 msgstr "iOS"
 
+msgid "Mix With Others"
+msgstr "Misturar Com Outros"
+
 msgid "Editor"
 msgstr "Editor"
 
@@ -259,6 +265,9 @@ msgstr "Limites"
 msgid "RID Pool Prealloc"
 msgstr "RID Pool Pré-alocação"
 
+msgid "Internationalization"
+msgstr "Internacionalização"
+
 msgid "Force Right to Left Layout Direction"
 msgstr "Forçar Direção de Layout Direita para Esquerda"
 
@@ -279,6 +288,9 @@ msgstr "Fontes Dinâmicas"
 
 msgid "Use Oversampling"
 msgstr "Usar Sobreamostragem"
+
+msgid "Pipeline Cache"
+msgstr "Cache de Pipeline"
 
 msgid "Vulkan"
 msgstr "Vulkan"
@@ -318,6 +330,9 @@ msgstr "Usar Entrada Acumulada"
 
 msgid "Input Devices"
 msgstr "Dispositivos de Entrada"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "Comportamento de Acabou de Pressionar (Legado)"
 
 msgid "Device"
 msgstr "Aparelho"
@@ -378,6 +393,9 @@ msgstr "Valor do Eixo"
 
 msgid "Index"
 msgstr "Índice"
+
+msgid "Double Tap"
+msgstr "Toque Duplo"
 
 msgid "Action"
 msgstr "Ação"
@@ -652,6 +670,9 @@ msgstr "Ligações contextuais da Fonte do código"
 msgid "Code Font Custom OpenType Features"
 msgstr "Recursos OpenType personalizados para a Fonte do código"
 
+msgid "Font Antialiasing"
+msgstr "Suavização de Fonte"
+
 msgid "Font Hinting"
 msgstr "Alinhar Fonte"
 
@@ -669,6 +690,9 @@ msgstr "Modo Livre de Distrações"
 
 msgid "Automatically Open Screenshots"
 msgstr "Abrir Capturas de Tela Automaticamente"
+
+msgid "Single Window Mode"
+msgstr "Modo de Janela Única"
 
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "Botões extra do Rato para Navegar no Histórico"
@@ -703,6 +727,9 @@ msgstr "Opacidade da Linha de Relacionamento"
 msgid "Border Size"
 msgstr "Tamanho da Borda"
 
+msgid "Corner Radius"
+msgstr "Raio do Canto"
+
 msgid "Additional Spacing"
 msgstr "Espaçamento Adicional"
 
@@ -724,6 +751,9 @@ msgstr "Ativar Pan e Gestos em Scala"
 msgid "Show Script Button"
 msgstr "Mostrar Botão de Script"
 
+msgid "Multi Window"
+msgstr "Janela Múltipla"
+
 msgid "Enable"
 msgstr "Ativar"
 
@@ -741,6 +771,9 @@ msgstr "Ao Salvar"
 
 msgid "Compress Binary Resources"
 msgstr "Comprimir Recursos Binários"
+
+msgid "Safe Save on Backup then Rename"
+msgstr "Guardar de Forma Segura na Cópia de Segurança e depois Renomear"
 
 msgid "File Dialog"
 msgstr "Arquivo de Diálogo"
@@ -765,6 +798,12 @@ msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "Caminho para FBX2glTF"
+
+msgid "Oidn"
+msgstr "OIDN"
+
+msgid "Oidn Denoise Path"
+msgstr "Caminho Oidn de Remoção de Ruído"
 
 msgid "Docks"
 msgstr "Painéis"
@@ -1086,6 +1125,9 @@ msgstr "Tamanho do Contorno dos Ossos"
 
 msgid "Viewport Border Color"
 msgstr "Cor da borda do Viewport"
+
+msgid "Use Integer Zoom by Default"
+msgstr "Usar Zoom Inteiro por Padrão"
 
 msgid "Sub Editors Panning Scheme"
 msgstr "Esquema de painéis do Sub Editor"
@@ -1622,7 +1664,7 @@ msgid "Camera"
 msgstr "Câmera"
 
 msgid "Decal"
-msgstr "Decalques"
+msgstr "Decalque"
 
 msgid "Particles"
 msgstr "Partículas"
@@ -1740,6 +1782,12 @@ msgstr "Caminho de Log"
 
 msgid "Driver"
 msgstr "Driver"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia Desabilitar Otimização em Threads"
+
+msgid "Force Angle on Devices"
+msgstr "Forçar Ângulo em Dispositivos"
 
 msgid "Include Text Server Data"
 msgstr "Incluir dados de Servidor de Texto"
@@ -2040,6 +2088,9 @@ msgstr "Massa"
 
 msgid "Angular Velocity"
 msgstr "Velocidade Angular"
+
+msgid "Is Trigger"
+msgstr "É Gatilho"
 
 msgid "Json"
 msgstr "Json"
@@ -2419,6 +2470,9 @@ msgstr "Depurar Senha de Armazenamento de Chaves"
 msgid "Force System User"
 msgstr "Forçar Usuário do Sistema"
 
+msgid "Use Wi-Fi for Remote Debug"
+msgstr "Use Wi-Fi para Depuração Remota"
+
 msgid "Launcher Icons"
 msgstr "Ícones do Inicializador"
 
@@ -2449,17 +2503,20 @@ msgstr "Plugins"
 msgid "Architectures"
 msgstr "Arquiteturas"
 
+msgid "Keystore"
+msgstr "Keystore"
+
 msgid "Debug User"
-msgstr "Depurar Utilizador"
+msgstr "Usuário de Depuração"
 
 msgid "Debug Password"
-msgstr "Depurar Palavra-passe"
+msgstr "Senha de Depuração"
 
 msgid "Release User"
-msgstr "Liberar Utilizador"
+msgstr "Usuário de Lançamento"
 
 msgid "Release Password"
-msgstr "Liberar Palavra-passe"
+msgstr "Senha de Lançamento"
 
 msgid "Code"
 msgstr "Código"
@@ -2478,6 +2535,9 @@ msgstr "Categoria da App"
 
 msgid "Exclude From Recents"
 msgstr "Excluir de Recentes"
+
+msgid "Show in Android TV"
+msgstr "Mostrar em Android TV"
 
 msgid "Graphics"
 msgstr "Gráficos"
@@ -3520,6 +3580,9 @@ msgstr "Flags"
 msgid "Billboard"
 msgstr "'Billboard'"
 
+msgid "Double Sided"
+msgstr "Dois Lados"
+
 msgid "No Depth Test"
 msgstr "Sem Teste de Profundidade"
 
@@ -3823,6 +3886,9 @@ msgstr "Nó Raiz"
 msgid "Root Motion"
 msgstr "Movimento Raiz"
 
+msgid "Method"
+msgstr "Método"
+
 msgid "Reset"
 msgstr "Repor"
 
@@ -3897,6 +3963,12 @@ msgstr "Forma do Cursor Predefinida"
 
 msgid "Scroll Offset"
 msgstr "Deslocamento da Rolagem"
+
+msgid "Show Grid"
+msgstr "Mostrar Grade"
+
+msgid "Toolbar Menu"
+msgstr "Menu de Ferramentas"
 
 msgid "Title"
 msgstr "Titulo"
@@ -4123,6 +4195,9 @@ msgstr "'MSAA 2D'"
 msgid "MSAA 3D"
 msgstr "'MSAA 3D'"
 
+msgid "HDR 2D"
+msgstr "HDR 2D"
+
 msgid "Use Debanding"
 msgstr "Usar Debanding"
 
@@ -4284,6 +4359,9 @@ msgstr "1"
 
 msgid "2"
 msgstr "2"
+
+msgid "3"
+msgstr "3"
 
 msgid "4"
 msgstr "4"
@@ -4894,6 +4972,9 @@ msgstr "Colidir com Áreas"
 msgid "Default Gravity"
 msgstr "Gravidade Padrão"
 
+msgid "Physics Engine"
+msgstr "Motor de Física"
+
 msgid "Vertex"
 msgstr "Vértice"
 
@@ -4920,6 +5001,9 @@ msgstr "GI"
 
 msgid "Overrides"
 msgstr "Sobrepõe"
+
+msgid "Decals"
+msgstr "Decalques"
 
 msgid "Shaders"
 msgstr "Shaders"

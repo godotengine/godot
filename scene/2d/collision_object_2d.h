@@ -109,6 +109,8 @@ protected:
 
 	void set_body_mode(PhysicsServer2D::BodyMode p_mode);
 
+	virtual void _space_changed(const RID &p_new_space);
+
 	GDVIRTUAL3(_input_event, Viewport *, Ref<InputEvent>, int)
 	GDVIRTUAL0(_mouse_enter)
 	GDVIRTUAL0(_mouse_exit)

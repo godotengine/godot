@@ -1302,6 +1302,16 @@ bool SceneTree::has_group(const StringName &p_identifier) const {
 	return group_map.has(p_identifier);
 }
 
+int SceneTree::get_node_count_in_group(const StringName &p_group) const {
+	_THREAD_SAFE_METHOD_
+	HashMap<StringName, Group>::ConstIterator E = group_map.find(p_group);
+	if (!E) {
+		return 0;
+	}
+
+	return E->value.nodes.size();
+}
+
 Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
@@ -1617,6 +1627,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_nodes_in_group", "group"), &SceneTree::_get_nodes_in_group);
 	ClassDB::bind_method(D_METHOD("get_first_node_in_group", "group"), &SceneTree::get_first_node_in_group);
+	ClassDB::bind_method(D_METHOD("get_node_count_in_group", "group"), &SceneTree::get_node_count_in_group);
 
 	ClassDB::bind_method(D_METHOD("set_current_scene", "child_node"), &SceneTree::set_current_scene);
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);
@@ -1703,7 +1714,21 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 				filename = dir_access->get_next();
 			}
 		}
+	} else {
+		bool add_options = false;
+		if (p_idx == 0) {
+			add_options = p_function == "get_nodes_in_group" || p_function == "has_group" || p_function == "get_first_node_in_group" || p_function == "set_group" || p_function == "notify_group" || p_function == "call_group" || p_function == "add_to_group";
+		} else if (p_idx == 1) {
+			add_options = p_function == "set_group_flags" || p_function == "call_group_flags" || p_function == "notify_group_flags";
+		}
+		if (add_options) {
+			HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
+			for (const KeyValue<StringName, String> &E : global_groups) {
+				r_options->push_back(E.key.operator String().quote());
+			}
+		}
 	}
+	MainLoop::get_argument_options(p_function, p_idx, r_options);
 }
 
 void SceneTree::set_disable_node_threading(bool p_disable) {
@@ -1730,6 +1755,7 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
+	root->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
 	root->set_name("root");
 	root->set_title(GLOBAL_GET("application/config/name"));
 
@@ -1777,10 +1803,10 @@ SceneTree::SceneTree() {
 	float mesh_lod_threshold = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"), 1.0);
 	root->set_mesh_lod_threshold(mesh_lod_threshold);
 
-	bool snap_2d_transforms = GLOBAL_DEF("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
+	bool snap_2d_transforms = GLOBAL_DEF_BASIC("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 
-	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
+	bool snap_2d_vertices = GLOBAL_DEF_BASIC("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
 	// We setup VRS for the main viewport here, in the editor this will have little effect.

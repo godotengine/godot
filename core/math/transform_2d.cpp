@@ -295,6 +295,18 @@ Transform2D Transform2D::operator*(const real_t p_val) const {
 	return ret;
 }
 
+void Transform2D::operator/=(const real_t p_val) {
+	columns[0] /= p_val;
+	columns[1] /= p_val;
+	columns[2] /= p_val;
+}
+
+Transform2D Transform2D::operator/(const real_t p_val) const {
+	Transform2D ret(*this);
+	ret /= p_val;
+	return ret;
+}
+
 Transform2D::operator String() const {
 	return "[X: " + columns[0].operator String() +
 			", Y: " + columns[1].operator String() +

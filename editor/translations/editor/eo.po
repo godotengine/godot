@@ -1750,17 +1750,6 @@ msgstr ""
 "Malŝaltas la kromprogramon ĉe '%s' por malebligi pli erarojn."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Ne eblas ŝargi kromprograman skripton ĉe dosierindiko: '%s'. Baza tipo ne "
-"estas EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Ne eblas ŝargi kromprograman skripton ĉe dosierindiko: '%s'. Skripto ne estas "
-"en ila reĝimo."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""

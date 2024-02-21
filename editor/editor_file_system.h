@@ -165,7 +165,7 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
 
-	bool use_threads = true;
+	bool use_threads = false;
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
@@ -231,7 +231,7 @@ class EditorFileSystem : public Node {
 
 	Thread thread_sources;
 	bool scanning_changes = false;
-	bool scanning_changes_done = false;
+	SafeFlag scanning_changes_done;
 
 	static void _thread_func_sources(void *_userdata);
 
@@ -266,6 +266,14 @@ class EditorFileSystem : public Node {
 	void _queue_update_script_class(const String &p_path);
 	void _update_script_classes();
 	void _update_pending_script_classes();
+
+	Mutex update_scene_mutex;
+	HashSet<String> update_scene_paths;
+	void _queue_update_scene_groups(const String &p_path);
+	void _update_scene_groups();
+	void _update_pending_scene_groups();
+	HashSet<StringName> _get_scene_groups(const String &p_path);
+	void _get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet<String> &r_list);
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
 

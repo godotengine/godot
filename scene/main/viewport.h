@@ -256,6 +256,7 @@ private:
 
 	bool physics_object_picking = false;
 	bool physics_object_picking_sort = false;
+	bool physics_object_picking_first_only = false;
 	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
@@ -276,7 +277,6 @@ private:
 	Ref<World2D> world_2d;
 
 	StringName input_group;
-	StringName gui_input_group;
 	StringName shortcut_input_group;
 	StringName unhandled_input_group;
 	StringName unhandled_key_input_group;
@@ -362,6 +362,7 @@ private:
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
 		LocalVector<Control *> mouse_over_hierarchy;
+		bool sending_mouse_enter_exit_notifications = false;
 		Window *subwindow_over = nullptr; // mouse_over and subwindow_over are mutually exclusive. At all times at least one of them is nullptr.
 		Window *windowmanager_window_over = nullptr; // Only used in root Viewport.
 		Control *drag_mouse_over = nullptr;
@@ -601,6 +602,8 @@ public:
 	bool get_physics_object_picking();
 	void set_physics_object_picking_sort(bool p_enable);
 	bool get_physics_object_picking_sort();
+	void set_physics_object_picking_first_only(bool p_enable);
+	bool get_physics_object_picking_first_only();
 
 	Variant gui_get_drag_data() const;
 
@@ -609,6 +612,7 @@ public:
 
 	void gui_release_focus();
 	Control *gui_get_focus_owner() const;
+	Control *gui_get_hovered_control() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 

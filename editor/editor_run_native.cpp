@@ -31,10 +31,10 @@
 #include "editor_run_native.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
 void EditorRunNative::_notification(int p_what) {
@@ -157,6 +157,8 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 
 EditorRunNative::EditorRunNative() {
 	remote_debug = memnew(MenuButton);
+	remote_debug->set_flat(false);
+	remote_debug->set_theme_type_variation("RunBarButton");
 	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::start_run_native));
 	remote_debug->set_tooltip_text(TTR("Remote Debug"));
 	remote_debug->set_disabled(true);

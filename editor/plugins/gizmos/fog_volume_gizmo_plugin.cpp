@@ -38,7 +38,7 @@
 #include "scene/3d/fog_volume.h"
 
 FogVolumeGizmoPlugin::FogVolumeGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/fog_volume", Color(0.5, 0.7, 1));
+	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/fog_volume", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
 	gizmo_color.a = 0.15;
 	create_material("shape_material_internal", gizmo_color);

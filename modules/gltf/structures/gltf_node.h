@@ -40,18 +40,14 @@ class GLTFNode : public Resource {
 	friend class GLTFDocument;
 
 private:
-	// matrices need to be transformed to this
 	GLTFNodeIndex parent = -1;
 	int height = -1;
-	Transform3D xform;
+	Transform3D transform;
 	GLTFMeshIndex mesh = -1;
 	GLTFCameraIndex camera = -1;
 	GLTFSkinIndex skin = -1;
 	GLTFSkeletonIndex skeleton = -1;
 	bool joint = false;
-	Vector3 position;
-	Quaternion rotation;
-	Vector3 scale = Vector3(1, 1, 1);
 	Vector<int> children;
 	GLTFLightIndex light = -1;
 	Dictionary additional_data;

@@ -1544,6 +1544,22 @@ void AnimationNodeBlendTree::_node_changed(const StringName &p_node) {
 	emit_signal(SNAME("node_changed"), p_node);
 }
 
+void AnimationNodeBlendTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	String pf = p_function;
+	bool add_node_options = false;
+	if (p_idx == 0) {
+		add_node_options = (pf == "get_node" || pf == "has_node" || pf == "rename_node" || pf == "remove_node" || pf == "set_node_position" || pf == "get_node_position" || pf == "connect_node" || pf == "disconnect_node");
+	} else if (p_idx == 2) {
+		add_node_options = (pf == "connect_node" || pf == "disconnect_node");
+	}
+	if (add_node_options) {
+		for (KeyValue<StringName, Node> E : nodes) {
+			r_options->push_back(String(E.key).quote());
+		}
+	}
+	AnimationRootNode::get_argument_options(p_function, p_idx, r_options);
+}
+
 void AnimationNodeBlendTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "name", "node", "position"), &AnimationNodeBlendTree::add_node, DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("get_node", "name"), &AnimationNodeBlendTree::get_node);

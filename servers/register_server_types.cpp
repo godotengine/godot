@@ -69,10 +69,16 @@
 #include "physics_server_3d.h"
 #include "physics_server_3d_wrap_mt.h"
 #include "rendering/renderer_compositor.h"
+#include "rendering/renderer_rd/framebuffer_cache_rd.h"
+#include "rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+#include "rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
+#include "rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
+#include "rendering/storage/render_data.h"
 #include "rendering/storage/render_scene_buffers.h"
+#include "rendering/storage/render_scene_data.h"
 #include "rendering_server.h"
 #include "servers/extensions/physics_server_2d_extension.h"
 #include "servers/extensions/physics_server_3d_extension.h"
@@ -80,6 +86,7 @@
 #include "text/text_server_dummy.h"
 #include "text/text_server_extension.h"
 #include "text_server.h"
+#include "xr/xr_face_tracker.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_interface_extension.h"
 #include "xr/xr_positional_tracker.h"
@@ -88,7 +95,11 @@
 ShaderTypes *shader_types = nullptr;
 
 static PhysicsServer3D *_createGodotPhysics3DCallback() {
+#ifdef THREADS_ENABLED
 	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
+#else
+	bool using_threads = false;
+#endif
 
 	PhysicsServer3D *physics_server_3d = memnew(GodotPhysicsServer3D(using_threads));
 
@@ -96,7 +107,11 @@ static PhysicsServer3D *_createGodotPhysics3DCallback() {
 }
 
 static PhysicsServer2D *_createGodotPhysics2DCallback() {
+#ifdef THREADS_ENABLED
 	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread");
+#else
+	bool using_threads = false;
+#endif
 
 	PhysicsServer2D *physics_server_2d = memnew(GodotPhysicsServer2D(using_threads));
 
@@ -117,6 +132,8 @@ static MovieWriterMJPEG *writer_mjpeg = nullptr;
 static MovieWriterPNGWAV *writer_pngwav = nullptr;
 
 void register_server_types() {
+	OS::get_singleton()->benchmark_begin_measure("Servers", "Register Extensions");
+
 	shader_types = memnew(ShaderTypes);
 
 	GDREGISTER_CLASS(TextServerManager);
@@ -179,6 +196,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
 	GDREGISTER_CLASS(XRPose);
 	GDREGISTER_CLASS(XRPositionalTracker);
+	GDREGISTER_CLASS(XRFaceTracker);
 
 	GDREGISTER_CLASS(AudioStream);
 	GDREGISTER_CLASS(AudioStreamPlayback);
@@ -249,10 +267,21 @@ void register_server_types() {
 	GDREGISTER_CLASS(RDShaderFile);
 	GDREGISTER_CLASS(RDPipelineSpecializationConstant);
 
+	GDREGISTER_ABSTRACT_CLASS(RenderData);
+	GDREGISTER_CLASS(RenderDataExtension);
+	GDREGISTER_CLASS(RenderDataRD);
+
+	GDREGISTER_ABSTRACT_CLASS(RenderSceneData);
+	GDREGISTER_CLASS(RenderSceneDataExtension);
+	GDREGISTER_CLASS(RenderSceneDataRD);
+
 	GDREGISTER_CLASS(RenderSceneBuffersConfiguration);
 	GDREGISTER_ABSTRACT_CLASS(RenderSceneBuffers);
 	GDREGISTER_CLASS(RenderSceneBuffersExtension);
-	GDREGISTER_ABSTRACT_CLASS(RenderSceneBuffersRD);
+	GDREGISTER_CLASS(RenderSceneBuffersRD);
+
+	GDREGISTER_CLASS(FramebufferCacheRD);
+	GDREGISTER_CLASS(UniformSetCacheRD);
 
 	GDREGISTER_CLASS(CameraFeed);
 
@@ -293,16 +322,24 @@ void register_server_types() {
 
 	writer_pngwav = memnew(MovieWriterPNGWAV);
 	MovieWriter::add_writer(writer_pngwav);
+
+	OS::get_singleton()->benchmark_end_measure("Servers", "Register Extensions");
 }
 
 void unregister_server_types() {
+	OS::get_singleton()->benchmark_begin_measure("Servers", "Unregister Extensions");
+
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
 	memdelete(writer_mjpeg);
 	memdelete(writer_pngwav);
+
+	OS::get_singleton()->benchmark_end_measure("Servers", "Unregister Extensions");
 }
 
 void register_server_singletons() {
+	OS::get_singleton()->benchmark_begin_measure("Servers", "Register Singletons");
+
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton(), "RenderingServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton(), "AudioServer"));
@@ -312,4 +349,6 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton(), "NavigationServer3D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton(), "XRServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
+
+	OS::get_singleton()->benchmark_end_measure("Servers", "Register Singletons");
 }

@@ -3186,6 +3186,60 @@ TEST_CASE("[SceneTree][TextEdit] versioning") {
 	CHECK(text_edit->get_version() == 3); // Should this be cleared?
 	CHECK(text_edit->get_saved_version() == 0);
 
+	SUBCASE("[TextEdit] versioning selection") {
+		text_edit->set_text("Godot Engine\nWaiting for Godot\nTest Text for multi carat\nLine 4 Text");
+		text_edit->set_multiple_carets_enabled(true);
+
+		text_edit->remove_secondary_carets();
+		text_edit->deselect();
+		text_edit->set_caret_line(0);
+		text_edit->set_caret_column(0);
+
+		CHECK(text_edit->get_caret_count() == 1);
+
+		Array caret_index;
+		caret_index.push_back(0);
+
+		for (int i = 1; i < 4; i++) {
+			caret_index.push_back(text_edit->add_caret(i, 0));
+			CHECK((int)caret_index.back() >= 0);
+		}
+
+		CHECK(text_edit->get_caret_count() == 4);
+
+		for (int i = 0; i < 4; i++) {
+			text_edit->select(i, 0, i, 5, caret_index[i]);
+		}
+
+		CHECK(text_edit->get_caret_count() == 4);
+		for (int i = 0; i < 4; i++) {
+			CHECK(text_edit->has_selection(caret_index[i]));
+			CHECK(text_edit->get_selection_from_line(caret_index[i]) == i);
+			CHECK(text_edit->get_selection_from_column(caret_index[i]) == 0);
+			CHECK(text_edit->get_selection_to_line(caret_index[i]) == i);
+			CHECK(text_edit->get_selection_to_column(caret_index[i]) == 5);
+		}
+		text_edit->begin_complex_operation();
+		text_edit->deselect();
+		text_edit->set_text("New Line Text");
+		text_edit->select(0, 0, 0, 7, 0);
+		text_edit->end_complex_operation();
+
+		CHECK(text_edit->get_caret_count() == 1);
+		CHECK(text_edit->get_selected_text(0) == "New Lin");
+
+		text_edit->undo();
+
+		CHECK(text_edit->get_caret_count() == 4);
+		for (int i = 0; i < 4; i++) {
+			CHECK(text_edit->has_selection(caret_index[i]));
+			CHECK(text_edit->get_selection_from_line(caret_index[i]) == i);
+			CHECK(text_edit->get_selection_from_column(caret_index[i]) == 0);
+			CHECK(text_edit->get_selection_to_line(caret_index[i]) == i);
+			CHECK(text_edit->get_selection_to_column(caret_index[i]) == 5);
+		}
+	}
+
 	memdelete(text_edit);
 }
 
@@ -4118,7 +4172,7 @@ TEST_CASE("[SceneTree][TextEdit] setter getters") {
 		CHECK_FALSE(text_edit->is_drawing_spaces());
 	}
 
-	SUBCASE("[TextEdit] draw minimao") {
+	SUBCASE("[TextEdit] draw minimap") {
 		text_edit->set_draw_minimap(true);
 		CHECK(text_edit->is_drawing_minimap());
 		text_edit->set_draw_minimap(false);

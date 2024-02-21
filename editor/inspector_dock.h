@@ -133,6 +133,8 @@ class InspectorDock : public VBoxContainer {
 	void _select_history(int p_idx);
 	void _prepare_history();
 
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
 private:
 	static InspectorDock *singleton;
 

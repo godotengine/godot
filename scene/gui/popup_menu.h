@@ -35,10 +35,13 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
+
+	static HashMap<String, PopupMenu *> system_menus;
 
 	struct Item {
 		Ref<Texture2D> icon;
@@ -57,7 +60,7 @@ class PopupMenu : public Popup {
 			CHECKABLE_TYPE_NONE,
 			CHECKABLE_TYPE_CHECK_BOX,
 			CHECKABLE_TYPE_RADIO_BUTTON,
-		} checkable_type;
+		} checkable_type = CHECKABLE_TYPE_NONE;
 		int max_states = 0;
 		int state = 0;
 		bool separator = false;
@@ -87,9 +90,15 @@ class PopupMenu : public Popup {
 			accel_text_buf.instantiate();
 			checkable_type = CHECKABLE_TYPE_NONE;
 		}
+
+		Item(bool p_dummy) {}
 	};
 
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
+
 	String global_menu_name;
+	String system_menu_name;
 
 	bool close_allowed = false;
 	bool activated_by_keyboard = false;
@@ -112,7 +121,6 @@ class PopupMenu : public Popup {
 
 	void _shape_item(int p_idx);
 
-	virtual void gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
 
@@ -191,15 +199,22 @@ class PopupMenu : public Popup {
 	void _minimum_lifetime_timeout();
 	void _close_pressed();
 	void _menu_changed();
+	void _input_from_window_internal(const Ref<InputEvent> &p_event);
+	bool _set_item_accelerator(int p_index, const Ref<InputEventKey> &p_ie);
+	void _set_item_checkable_type(int p_index, int p_checkable_type);
+	int _get_item_checkable_type(int p_index) const;
 
 protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, items.size()); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
@@ -218,6 +233,9 @@ public:
 
 	String bind_global_menu();
 	void unbind_global_menu();
+	bool is_system_menu() const;
+	void set_system_menu_root(const String &p_special);
+	String get_system_menu_root() const;
 
 	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
@@ -256,6 +274,7 @@ public:
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
 	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false);
 	void set_item_indent(int p_idx, int p_indent);
+	void set_item_max_states(int p_idx, int p_max_states);
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);

@@ -54,7 +54,7 @@
 #define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type)                    \
 	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type));   \
 	static_assert(alignof(SafeNumeric<m_type>) == alignof(m_type)); \
-	static_assert(std::is_trivially_destructible<std::atomic<m_type>>::value);
+	static_assert(std::is_trivially_destructible_v<std::atomic<m_type>>);
 #define SAFE_FLAG_TYPE_PUN_GUARANTEES                \
 	static_assert(sizeof(SafeFlag) == sizeof(bool)); \
 	static_assert(alignof(SafeFlag) == alignof(bool));

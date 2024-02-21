@@ -52,7 +52,7 @@ void PrimitiveMesh::_update() const {
 
 	Vector<Vector3> points = arr[RS::ARRAY_VERTEX];
 
-	ERR_FAIL_COND_MSG(points.size() == 0, "_create_mesh_array must return at least a vertex array.");
+	ERR_FAIL_COND_MSG(points.is_empty(), "_create_mesh_array must return at least a vertex array.");
 
 	aabb = AABB();
 
@@ -232,8 +232,6 @@ RID PrimitiveMesh::get_rid() const {
 }
 
 void PrimitiveMesh::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update"), &PrimitiveMesh::_update);
-
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &PrimitiveMesh::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &PrimitiveMesh::get_material);
 
@@ -552,7 +550,7 @@ void CapsuleMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
 
 	ADD_LINKED_PROPERTY("radius", "height");
 	ADD_LINKED_PROPERTY("height", "radius");
@@ -594,7 +592,8 @@ int CapsuleMesh::get_radial_segments() const {
 }
 
 void CapsuleMesh::set_rings(const int p_rings) {
-	rings = p_rings > 1 ? p_rings : 1;
+	ERR_FAIL_COND(p_rings < 0);
+	rings = p_rings;
 	_request_update();
 }
 
@@ -1161,7 +1160,7 @@ void CylinderMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_top"), "set_cap_top", "is_cap_top");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_bottom"), "set_cap_bottom", "is_cap_bottom");
 }
@@ -1206,7 +1205,8 @@ int CylinderMesh::get_radial_segments() const {
 }
 
 void CylinderMesh::set_rings(const int p_rings) {
-	rings = p_rings > 0 ? p_rings : 0;
+	ERR_FAIL_COND(p_rings < 0);
+	rings = p_rings;
 	_request_update();
 }
 
@@ -1476,15 +1476,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
-		float scale = (y - start_pos.y) / size.y;
+		float scale = j / (subdivide_h + 1.0);
 		float scaled_size_x = size.x * scale;
 		float start_x = start_pos.x + (1.0 - scale) * size.x * left_to_right;
 		float offset_front = (1.0 - scale) * onethird * left_to_right;
 		float offset_back = (1.0 - scale) * onethird * (1.0 - left_to_right);
 
 		float v = j;
-		float v2 = j / (subdivide_h + 1.0);
-		v /= (2.0 * (subdivide_h + 1.0));
+		float v2 = scale;
+		v /= 2.0 * (subdivide_h + 1.0);
 
 		x = 0.0;
 		for (i = 0; i <= (subdivide_w + 1); i++) {
@@ -1566,15 +1566,15 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	thisrow = point;
 	prevrow = 0;
 	for (j = 0; j <= (subdivide_h + 1); j++) {
-		float v = j;
-		float v2 = j / (subdivide_h + 1.0);
-		v /= (2.0 * (subdivide_h + 1.0));
-
 		float left, right;
-		float scale = (y - start_pos.y) / size.y;
+		float scale = j / (subdivide_h + 1.0);
 
 		left = start_pos.x + (size.x * (1.0 - scale) * left_to_right);
 		right = left + (size.x * scale);
+
+		float v = j;
+		float v2 = scale;
+		v /= 2.0 * (subdivide_h + 1.0);
 
 		z = start_pos.z;
 		for (i = 0; i <= (subdivide_d + 1); i++) {
@@ -1919,7 +1919,8 @@ int SphereMesh::get_radial_segments() const {
 }
 
 void SphereMesh::set_rings(const int p_rings) {
-	rings = p_rings > 1 ? p_rings : 1;
+	ERR_FAIL_COND(p_rings < 1);
+	rings = p_rings;
 	_request_update();
 }
 
@@ -3339,7 +3340,6 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &TextMesh::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &TextMesh::is_uppercase);
 
-	ClassDB::bind_method(D_METHOD("_font_changed"), &TextMesh::_font_changed);
 	ClassDB::bind_method(D_METHOD("_request_update"), &TextMesh::_request_update);
 
 	ADD_GROUP("Text", "");
@@ -3443,14 +3443,16 @@ void TextMesh::_font_changed() {
 
 void TextMesh::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
+		const Callable font_changed = callable_mp(this, &TextMesh::_font_changed);
+
 		if (font_override.is_valid()) {
-			font_override->disconnect_changed(Callable(this, "_font_changed"));
+			font_override->disconnect_changed(font_changed);
 		}
 		font_override = p_font;
 		dirty_font = true;
 		dirty_cache = true;
 		if (font_override.is_valid()) {
-			font_override->connect_changed(Callable(this, "_font_changed"));
+			font_override->connect_changed(font_changed);
 		}
 		_request_update();
 	}

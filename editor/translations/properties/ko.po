@@ -50,13 +50,15 @@
 # rethinking21 <rethinking21@gmail.com>, 2023.
 # TQQQBuffett <tqqqbuffett@gmail.com>, 2023.
 # Kyjel Blue <kyjelblue@daum.net>, 2023.
+# nulta <un5450@outlook.com>, 2024.
+# Sovlus Haesaun <josuke4832@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-10 08:03+0000\n"
-"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2024-01-22 23:01+0000\n"
+"Last-Translator: Sovlus Haesaun <josuke4832@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -64,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -197,6 +199,9 @@ msgstr "3D 패닝 강도"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Session Category"
+msgstr "세션 카테고리"
 
 msgid "Editor"
 msgstr "에디터"
@@ -1441,10 +1446,10 @@ msgid "Bone IK Color"
 msgstr "본 IK 색상"
 
 msgid "Bone Outline Color"
-msgstr "뼈 윤곽선 색상"
+msgstr "본 윤곽선 색상"
 
 msgid "Bone Outline Size"
-msgstr "뼈 윤곽선 크기"
+msgstr "본 윤곽선 크기"
 
 msgid "Viewport Border Color"
 msgstr "표시 영역 테두리 색상"
@@ -1840,7 +1845,7 @@ msgid "Retarget"
 msgstr "리타겟"
 
 msgid "Bone Renamer"
-msgstr "본 리네이머"
+msgstr "본 이름 변경기"
 
 msgid "Rename Bones"
 msgstr "본 이름 바꾸기"
@@ -2014,7 +2019,7 @@ msgid "Resolution"
 msgstr "해상도"
 
 msgid "Max Num Vertices per Convex Hull"
-msgstr "컨벡스 헐 당 최대 꼭지점 수"
+msgstr "컨벡스 헐 당 최대 꼭짓점 수"
 
 msgid "Plane Downsampling"
 msgstr "평면 다운샘플링"
@@ -2032,7 +2037,7 @@ msgid "Max Convex Hulls"
 msgstr "최대 컨벡스 헐"
 
 msgid "Project Hull Vertices"
-msgstr "프로젝트 헐 꼭지점"
+msgstr "프로젝트 헐 꼭짓점"
 
 msgid "Primitive"
 msgstr "프리미티브"
@@ -2155,7 +2160,7 @@ msgid "Import Script"
 msgstr "스크립트 가져오기"
 
 msgid "Normal Map"
-msgstr "일반 맵"
+msgstr "노멀 맵"
 
 msgid "Roughness"
 msgstr "굵기"
@@ -4822,7 +4827,7 @@ msgid "UV"
 msgstr "UV"
 
 msgid "Vertex Colors"
-msgstr "꼭짓점 색"
+msgstr "버텍스 컬러"
 
 msgid "Polygons"
 msgstr "폴리곤"
@@ -4900,7 +4905,7 @@ msgid "Navigation Visibility Mode"
 msgstr "네비게이션 가시성 모드"
 
 msgid "Texture Normal"
-msgstr "일반 텍스처"
+msgstr "노멀 텍스처"
 
 msgid "Texture Pressed"
 msgstr "눌림 텍스처"
@@ -6385,7 +6390,7 @@ msgid "Snap 2D Transforms to Pixel"
 msgstr "2D 변형을 픽셀에 스냅"
 
 msgid "Snap 2D Vertices to Pixel"
-msgstr "2D 꼭지점을 픽셀에 스냅"
+msgstr "2D 꼭짓점을 픽셀에 스냅"
 
 msgid "VRS"
 msgstr "VRS"
@@ -6733,7 +6738,7 @@ msgid "Disable Ambient Light"
 msgstr "환경광 비활성화"
 
 msgid "Vertex Color"
-msgstr "꼭짓점 색"
+msgstr "버텍스 컬러"
 
 msgid "Use as Albedo"
 msgstr "알베도로 사용"
@@ -6976,7 +6981,7 @@ msgid "B"
 msgstr "B"
 
 msgid "Bone"
-msgstr "뼈"
+msgstr "본"
 
 msgid "Sky Material"
 msgstr "하늘 머티리얼"
@@ -7225,7 +7230,7 @@ msgid "Custom Font"
 msgstr "커스텀 글꼴"
 
 msgid "Default Font Antialiasing"
-msgstr "기본 글꼴 안티앨리어신"
+msgstr "기본 글꼴 안티앨리어싱"
 
 msgid "Default Font Hinting"
 msgstr "기본 글꼴 힌팅"
@@ -7476,8 +7481,14 @@ msgstr "프래그먼트"
 msgid "Cull"
 msgstr "컬링"
 
+msgid "Skip Vertex Transform"
+msgstr "버텍스 변형 건너뛰기"
+
+msgid "World Vertex Coords"
+msgstr "전역 꼭짓점 좌표"
+
 msgid "Vertex Lighting"
-msgstr "꼭짓점 조명"
+msgstr "버텍스 라이팅"
 
 msgid "Shadow Atlas"
 msgstr "그림자 아틀라스"
@@ -7496,6 +7507,9 @@ msgstr "GI"
 
 msgid "Overrides"
 msgstr "오버라이드"
+
+msgid "Force Vertex Shading"
+msgstr "버텍스 셰이딩 강제"
 
 msgid "Global Shader Variables"
 msgstr "전역 셰이더 변수"

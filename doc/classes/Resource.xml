@@ -4,8 +4,9 @@
 		Base class for serializable objects.
 	</brief_description>
 	<description>
-		Resource is the base class for all Godot-specific resource types, serving primarily as data containers. Since they inherit from [RefCounted], resources are reference-counted and freed when no longer in use. They can also be nested within other resources, and saved on disk. Once loaded from disk, further attempts to load a resource by [member resource_path] returns the same reference. [PackedScene], one of the most common [Object]s in a Godot project, is also a resource, uniquely capable of storing and instantiating the [Node]s it contains as many times as desired.
+		Resource is the base class for all Godot-specific resource types, serving primarily as data containers. Since they inherit from [RefCounted], resources are reference-counted and freed when no longer in use. They can also be nested within other resources, and saved on disk. [PackedScene], one of the most common [Object]s in a Godot project, is also a resource, uniquely capable of storing and instantiating the [Node]s it contains as many times as desired.
 		In GDScript, resources can loaded from disk by their [member resource_path] using [method @GDScript.load] or [method @GDScript.preload].
+		The engine keeps a global cache of all loaded resources, referenced by paths (see [method ResourceLoader.has_cached]). A resource will be cached when loaded for the first time and removed from cache once all references are released. When a resource is cached, subsequent loads using its path will return the cached reference.
 		[b]Note:[/b] In C#, resources will not be freed instantly after they are no longer in use. Instead, garbage collection will run periodically and will free resources that are no longer in use. This means that unused resources will linger on for a while before being removed.
 	</description>
 	<tutorials>
@@ -70,11 +71,10 @@
 				Returns the [RID] of this resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], and so on) are high-level abstractions of resources stored in a specialized server ([DisplayServer], [RenderingServer], etc.), so this function will return the original [RID].
 			</description>
 		</method>
-		<method name="setup_local_to_scene" is_deprecated="true">
+		<method name="setup_local_to_scene" deprecated="This method should only be called internally.">
 			<return type="void" />
 			<description>
 				Calls [method _setup_local_to_scene]. If [member resource_local_to_scene] is set to [code]true[/code], this method is automatically called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance.
-				[i]Deprecated.[/i] This method should only be called internally. Override [method _setup_local_to_scene] instead.
 			</description>
 		</method>
 		<method name="take_over_path">
@@ -106,10 +106,9 @@
 				[b]Note:[/b] This signal is not emitted automatically for properties of custom resources. If necessary, a setter needs to be created to emit the signal.
 			</description>
 		</signal>
-		<signal name="setup_local_to_scene_requested" is_deprecated="true">
+		<signal name="setup_local_to_scene_requested" deprecated="This signal is only emitted when the resource is created. Override [method _setup_local_to_scene] instead.">
 			<description>
-				Emitted by a newly duplicated resource with [member resource_local_to_scene] set to [code]true[/code]. 
-				[i]Deprecated.[/i] This signal is only emitted when the resource is created. Override [method _setup_local_to_scene] instead.
+				Emitted by a newly duplicated resource with [member resource_local_to_scene] set to [code]true[/code].
 			</description>
 		</signal>
 	</signals>

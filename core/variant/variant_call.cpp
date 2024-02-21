@@ -666,7 +666,7 @@ struct _VariantCall {
 			CharString cs;
 			cs.resize(p_instance->size() + 1);
 			memcpy(cs.ptrw(), r, p_instance->size());
-			cs[p_instance->size()] = 0;
+			cs[(int)p_instance->size()] = 0;
 
 			s = cs.get_data();
 		}
@@ -885,7 +885,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(int32_t), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit integer) to convert to PackedInt32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(int32_t));
 		return dest;
 	}
@@ -899,7 +899,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(int64_t), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit integer) to convert to PackedInt64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(int64_t));
 		return dest;
 	}
@@ -913,7 +913,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(float), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit float) to convert to PackedFloat32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(float));
 		return dest;
 	}
@@ -927,7 +927,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(double), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit double) to convert to PackedFloat64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
 		return dest;
 	}
@@ -1071,14 +1071,14 @@ struct _VariantCall {
 
 	static ConstantData *constant_data;
 
-	static void add_constant(int p_type, StringName p_constant_name, int64_t p_constant_value) {
+	static void add_constant(int p_type, const StringName &p_constant_name, int64_t p_constant_value) {
 		constant_data[p_type].value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].value_ordered.push_back(p_constant_name);
 #endif
 	}
 
-	static void add_variant_constant(int p_type, StringName p_constant_name, const Variant &p_constant_value) {
+	static void add_variant_constant(int p_type, const StringName &p_constant_name, const Variant &p_constant_value) {
 		constant_data[p_type].variant_value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].variant_value_ordered.push_back(p_constant_name);
@@ -1091,7 +1091,7 @@ struct _VariantCall {
 
 	static EnumData *enum_data;
 
-	static void add_enum_constant(int p_type, StringName p_enum_type_name, StringName p_enumeration_name, int p_enum_value) {
+	static void add_enum_constant(int p_type, const StringName &p_enum_type_name, const StringName &p_enumeration_name, int p_enum_value) {
 		enum_data[p_type].value[p_enum_type_name][p_enumeration_name] = p_enum_value;
 	}
 };
@@ -1114,6 +1114,46 @@ struct VariantBuiltInMethodInfo {
 	Variant::Type return_type;
 	int argument_count = 0;
 	Variant::Type (*get_argument_type)(int p_arg) = nullptr;
+
+	MethodInfo get_method_info(const StringName &p_name) const {
+		MethodInfo mi;
+		mi.name = p_name;
+
+		if (has_return_type) {
+			mi.return_val.type = return_type;
+			if (mi.return_val.type == Variant::NIL) {
+				mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
+		}
+
+		if (is_const) {
+			mi.flags |= METHOD_FLAG_CONST;
+		}
+		if (is_vararg) {
+			mi.flags |= METHOD_FLAG_VARARG;
+		}
+		if (is_static) {
+			mi.flags |= METHOD_FLAG_STATIC;
+		}
+
+		for (int i = 0; i < argument_count; i++) {
+			PropertyInfo pi;
+#ifdef DEBUG_METHODS_ENABLED
+			pi.name = argument_names[i];
+#else
+			pi.name = "arg" + itos(i + 1);
+#endif
+			pi.type = (*get_argument_type)(i);
+			if (pi.type == Variant::NIL) {
+				pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
+			mi.arguments.push_back(pi);
+		}
+
+		mi.default_arguments = default_arguments;
+
+		return mi;
+	}
 };
 
 typedef OAHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
@@ -1268,6 +1308,13 @@ Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(Variant::Type p_type, 
 	return method->ptrcall;
 }
 
+MethodInfo Variant::get_builtin_method_info(Variant::Type p_type, const StringName &p_method) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, MethodInfo());
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	ERR_FAIL_NULL_V(method, MethodInfo());
+	return method->get_method_info(p_method);
+}
+
 int Variant::get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
@@ -1378,43 +1425,7 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 		for (const StringName &E : builtin_method_names[type]) {
 			const VariantBuiltInMethodInfo *method = builtin_method_info[type].lookup_ptr(E);
 			ERR_CONTINUE(!method);
-
-			MethodInfo mi;
-			mi.name = E;
-
-			//return type
-			if (method->has_return_type) {
-				mi.return_val.type = method->return_type;
-				if (mi.return_val.type == Variant::NIL) {
-					mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-				}
-			}
-
-			if (method->is_const) {
-				mi.flags |= METHOD_FLAG_CONST;
-			}
-			if (method->is_vararg) {
-				mi.flags |= METHOD_FLAG_VARARG;
-			}
-			if (method->is_static) {
-				mi.flags |= METHOD_FLAG_STATIC;
-			}
-			for (int i = 0; i < method->argument_count; i++) {
-				PropertyInfo pi;
-#ifdef DEBUG_METHODS_ENABLED
-				pi.name = method->argument_names[i];
-#else
-				pi.name = "arg" + itos(i + 1);
-#endif
-				pi.type = method->get_argument_type(i);
-				if (pi.type == Variant::NIL) {
-					pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-				}
-				mi.arguments.push_back(pi);
-			}
-
-			mi.default_arguments = method->default_arguments;
-			p_list->push_back(mi);
+			p_list->push_back(method->get_method_info(E));
 		}
 	}
 }
@@ -1493,7 +1504,7 @@ void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums
 	}
 }
 
-void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations) {
+void Variant::get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
 	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
@@ -1505,7 +1516,7 @@ void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_
 	}
 }
 
-int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid) {
+int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid) {
 	if (r_valid) {
 		*r_valid = false;
 	}
@@ -1796,6 +1807,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2i, aspect, sarray(), varray());
 	bind_method(Vector2i, max_axis_index, sarray(), varray());
 	bind_method(Vector2i, min_axis_index, sarray(), varray());
+	bind_method(Vector2i, distance_to, sarray("to"), varray());
+	bind_method(Vector2i, distance_squared_to, sarray("to"), varray());
 	bind_method(Vector2i, length, sarray(), varray());
 	bind_method(Vector2i, length_squared, sarray(), varray());
 	bind_method(Vector2i, sign, sarray(), varray());
@@ -1886,6 +1899,8 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(Vector3i, min_axis_index, sarray(), varray());
 	bind_method(Vector3i, max_axis_index, sarray(), varray());
+	bind_method(Vector3i, distance_to, sarray("to"), varray());
+	bind_method(Vector3i, distance_squared_to, sarray("to"), varray());
 	bind_method(Vector3i, length, sarray(), varray());
 	bind_method(Vector3i, length_squared, sarray(), varray());
 	bind_method(Vector3i, sign, sarray(), varray());
@@ -1932,6 +1947,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4i, abs, sarray(), varray());
 	bind_method(Vector4i, clamp, sarray("min", "max"), varray());
 	bind_method(Vector4i, snapped, sarray("step"), varray());
+	bind_method(Vector4i, distance_to, sarray("to"), varray());
+	bind_method(Vector4i, distance_squared_to, sarray("to"), varray());
 
 	/* Plane */
 
@@ -2195,6 +2212,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, values, sarray(), varray());
 	bind_method(Dictionary, duplicate, sarray("deep"), varray(false));
 	bind_method(Dictionary, get, sarray("key", "default"), varray(Variant()));
+	bind_method(Dictionary, get_or_add, sarray("key", "default"), varray(Variant()));
 	bind_method(Dictionary, make_read_only, sarray(), varray());
 	bind_method(Dictionary, is_read_only, sarray(), varray());
 

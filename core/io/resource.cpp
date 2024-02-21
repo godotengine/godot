@@ -204,7 +204,58 @@ void Resource::reload_from_file() {
 	copy_from(s);
 }
 
-Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache) {
+void Resource::_dupe_sub_resources(Variant &r_variant, Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache) {
+	switch (r_variant.get_type()) {
+		case Variant::ARRAY: {
+			Array a = r_variant;
+			for (int i = 0; i < a.size(); i++) {
+				_dupe_sub_resources(a[i], p_for_scene, p_remap_cache);
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			Dictionary d = r_variant;
+			List<Variant> keys;
+			d.get_key_list(&keys);
+			for (Variant &k : keys) {
+				if (k.get_type() == Variant::OBJECT) {
+					// Replace in dictionary key.
+					Ref<Resource> sr = k;
+					if (sr.is_valid() && sr->is_local_to_scene()) {
+						if (p_remap_cache.has(sr)) {
+							d[p_remap_cache[sr]] = d[k];
+							d.erase(k);
+						} else {
+							Ref<Resource> dupe = sr->duplicate_for_local_scene(p_for_scene, p_remap_cache);
+							d[dupe] = d[k];
+							d.erase(k);
+							p_remap_cache[sr] = dupe;
+						}
+					}
+				} else {
+					_dupe_sub_resources(k, p_for_scene, p_remap_cache);
+				}
+
+				_dupe_sub_resources(d[k], p_for_scene, p_remap_cache);
+			}
+		} break;
+		case Variant::OBJECT: {
+			Ref<Resource> sr = r_variant;
+			if (sr.is_valid() && sr->is_local_to_scene()) {
+				if (p_remap_cache.has(sr)) {
+					r_variant = p_remap_cache[sr];
+				} else {
+					Ref<Resource> dupe = sr->duplicate_for_local_scene(p_for_scene, p_remap_cache);
+					r_variant = dupe;
+					p_remap_cache[sr] = dupe;
+				}
+			}
+		} break;
+		default: {
+		}
+	}
+}
+
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -217,21 +268,9 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		Variant p = get(E.name);
-		if (p.get_type() == Variant::OBJECT) {
-			Ref<Resource> sr = p;
-			if (sr.is_valid()) {
-				if (sr->is_local_to_scene()) {
-					if (remap_cache.has(sr)) {
-						p = remap_cache[sr];
-					} else {
-						Ref<Resource> dupe = sr->duplicate_for_local_scene(p_for_scene, remap_cache);
-						p = dupe;
-						remap_cache[sr] = dupe;
-					}
-				}
-			}
-		}
+		Variant p = get(E.name).duplicate(true);
+
+		_dupe_sub_resources(p, p_for_scene, p_remap_cache);
 
 		r->set(E.name, p);
 	}
@@ -239,7 +278,35 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref
 	return r;
 }
 
-void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache) {
+void Resource::_find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found) {
+	switch (p_variant.get_type()) {
+		case Variant::ARRAY: {
+			Array a = p_variant;
+			for (int i = 0; i < a.size(); i++) {
+				_find_sub_resources(a[i], p_resources_found);
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			Dictionary d = p_variant;
+			List<Variant> keys;
+			d.get_key_list(&keys);
+			for (const Variant &k : keys) {
+				_find_sub_resources(k, p_resources_found);
+				_find_sub_resources(d[k], p_resources_found);
+			}
+		} break;
+		case Variant::OBJECT: {
+			Ref<Resource> r = p_variant;
+			if (r.is_valid()) {
+				p_resources_found.insert(r);
+			}
+		} break;
+		default: {
+		}
+	}
+}
+
+void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -251,14 +318,15 @@ void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource
 			continue;
 		}
 		Variant p = get(E.name);
-		if (p.get_type() == Variant::OBJECT) {
-			Ref<Resource> sr = p;
-			if (sr.is_valid()) {
-				if (sr->is_local_to_scene()) {
-					if (!remap_cache.has(sr)) {
-						sr->configure_for_local_scene(p_for_scene, remap_cache);
-						remap_cache[sr] = sr;
-					}
+
+		HashSet<Ref<Resource>> sub_resources;
+		_find_sub_resources(p, sub_resources);
+
+		for (Ref<Resource> sr : sub_resources) {
+			if (sr->is_local_to_scene()) {
+				if (!p_remap_cache.has(sr)) {
+					sr->configure_for_local_scene(p_for_scene, p_remap_cache);
+					p_remap_cache[sr] = sr;
 				}
 			}
 		}
@@ -489,12 +557,14 @@ RWLock ResourceCache::path_cache_lock;
 #endif
 
 void ResourceCache::clear() {
-	if (resources.size()) {
-		ERR_PRINT("Resources still in use at exit (run with --verbose for details).");
+	if (!resources.is_empty()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT(vformat("%d resources still in use at exit.", resources.size()));
 			for (const KeyValue<String, Resource *> &E : resources) {
 				print_line(vformat("Resource still in use: %s (%s)", E.key, E.value->get_class()));
 			}
+		} else {
+			ERR_PRINT(vformat("%d resources still in use at exit (run with --verbose for details).", resources.size()));
 		}
 	}
 

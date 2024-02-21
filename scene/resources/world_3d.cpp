@@ -69,6 +69,7 @@ RID World3D::get_navigation_map() const {
 		NavigationServer3D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_GET("navigation/3d/default_cell_size"));
 		NavigationServer3D::get_singleton()->map_set_cell_height(navigation_map, GLOBAL_GET("navigation/3d/default_cell_height"));
 		NavigationServer3D::get_singleton()->map_set_up(navigation_map, GLOBAL_GET("navigation/3d/default_up"));
+		NavigationServer3D::get_singleton()->map_set_merge_rasterizer_cell_scale(navigation_map, GLOBAL_GET("navigation/3d/merge_rasterizer_cell_scale"));
 		NavigationServer3D::get_singleton()->map_set_use_edge_connections(navigation_map, GLOBAL_GET("navigation/3d/use_edge_connections"));
 		NavigationServer3D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_GET("navigation/3d/default_edge_connection_margin"));
 		NavigationServer3D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_GET("navigation/3d/default_link_connection_radius"));
@@ -129,6 +130,19 @@ void World3D::set_camera_attributes(const Ref<CameraAttributes> &p_camera_attrib
 
 Ref<CameraAttributes> World3D::get_camera_attributes() const {
 	return camera_attributes;
+}
+
+void World3D::set_compositor(const Ref<Compositor> &p_compositor) {
+	compositor = p_compositor;
+	if (compositor.is_valid()) {
+		RS::get_singleton()->scenario_set_compositor(scenario, compositor->get_rid());
+	} else {
+		RS::get_singleton()->scenario_set_compositor(scenario, RID());
+	}
+}
+
+Ref<Compositor> World3D::get_compositor() const {
+	return compositor;
 }
 
 PhysicsDirectSpaceState3D *World3D::get_direct_space_state() {

@@ -70,15 +70,23 @@
 		<method name="get_navigation_polygon" qualifiers="const">
 			<return type="NavigationPolygon" />
 			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="flip_h" type="bool" default="false" />
+			<param index="2" name="flip_v" type="bool" default="false" />
+			<param index="3" name="transpose" type="bool" default="false" />
 			<description>
 				Returns the navigation polygon of the tile for the TileSet navigation layer with index [param layer_id].
+				[param flip_h], [param flip_v], and [param transpose] allow transforming the returned polygon.
 			</description>
 		</method>
 		<method name="get_occluder" qualifiers="const">
 			<return type="OccluderPolygon2D" />
 			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="flip_h" type="bool" default="false" />
+			<param index="2" name="flip_v" type="bool" default="false" />
+			<param index="3" name="transpose" type="bool" default="false" />
 			<description>
 				Returns the occluder polygon of the tile for the TileSet occlusion layer with index [param layer_id].
+				[param flip_h], [param flip_v], and [param transpose] allow transforming the returned polygon.
 			</description>
 		</method>
 		<method name="get_terrain_peering_bit" qualifiers="const">

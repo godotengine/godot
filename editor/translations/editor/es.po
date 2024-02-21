@@ -14,7 +14,7 @@
 # Diego López <diegodario21@gmail.com>, 2017.
 # eon-s <emanuel.segretin@gmail.com>, 2018, 2019, 2020.
 # Gustavo Leon <gleondiaz@gmail.com>, 2017-2018.
-# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023.
+# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023, 2024.
 # Jose Maria Martinez <josemar1992@hotmail.com>, 2018.
 # Juan Quiroga <juanquiroga9@gmail.com>, 2017.
 # Kiji Pixel <raccoon.fella@gmail.com>, 2017.
@@ -124,14 +124,15 @@
 # simomi 073 <arcemoyanomanuel@gmail.com>, 2023.
 # "Hendrick Y. Rodríguez V. (NoVa)" <theyuniorytrodriguez04@gmail.com>, 2023.
 # Chimi <tximi.sysaad@gmail.com>, 2023.
-# gallegonovato <fran-carro@hotmail.es>, 2023.
+# gallegonovato <fran-carro@hotmail.es>, 2023, 2024.
+# Jacobo <jacoboperezgonzalez@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-29 09:42+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2024-01-17 23:13+0000\n"
+"Last-Translator: Jacobo <jacoboperezgonzalez@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -139,7 +140,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo principal"
@@ -2861,7 +2862,7 @@ msgid "Operators"
 msgstr "Operadores"
 
 msgid "Theme Properties"
-msgstr "Propiedades del Theme"
+msgstr "Propiedades del tema"
 
 msgid "Colors"
 msgstr "Colores"
@@ -3550,15 +3551,15 @@ msgstr ""
 "Desactivar el addon en '%s' para prevenir mas errores."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
+"Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."
 msgstr ""
-"No se pudo cargar el script addon desde la ruta: '%s' El tipo de base no es "
-"un EditorPlugin."
+"No se puede cargar el script de complemento desde la ruta: '%s'. El tipo base "
+"no es 'EditorPlugin'."
 
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
+msgid "Unable to load addon script from path: '%s'. Script is not in tool mode."
 msgstr ""
-"No se pudo cargar el script addon desde la ruta: '%s' El script no está en "
-"modo tool."
+"No se ha podido cargar el script del complemento desde la ruta: '%s'. El "
+"script no está en modo herramienta."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -3670,6 +3671,15 @@ msgid ""
 msgstr ""
 "No se puede escribir en el archivo '%s', archivo en uso, bloqueado o sin "
 "permisos."
+
+msgid "Forward+"
+msgstr "Forward+"
+
+msgid "Mobile"
+msgstr "Móvil"
+
+msgid "Compatibility"
+msgstr "Compatibilidad"
 
 msgid "Pan View"
 msgstr "Vista Panorámica"
@@ -3851,21 +3861,6 @@ msgstr "Sobre Godot"
 
 msgid "Support Godot Development"
 msgstr "Apoyar el desarrollo de Godot"
-
-msgid "Choose a renderer."
-msgstr "Elegir un renderizador."
-
-msgid "Forward+"
-msgstr "Forward+"
-
-msgid "Mobile"
-msgstr "Móvil"
-
-msgid "Compatibility"
-msgstr "Compatibilidad"
-
-msgid "Changing the renderer requires restarting the editor."
-msgstr "Cambiar el renderizador requiere reiniciar el editor."
 
 msgid "Update Continuously"
 msgstr "Actualizar Continuamente"
@@ -5799,9 +5794,8 @@ msgid ""
 "%s: Texture detected as used as a roughness map in 3D. Enabling roughness "
 "limiter based on the detected associated normal map at %s."
 msgstr ""
-"%s: Se ha detectado que la textura se utiliza como mapa de rugosidad en 3D. "
-"Se habilitará un limitador de rugosidad en función del mapa normal asociado "
-"detectado en %s."
+"%s: Se detectó una textura utilizada como mapa de rugosidad en 3D. Activando "
+"el limitador de rugosidad basado en el mapa normal asociado detectado en %s."
 
 msgid ""
 "%s: Texture detected as used in 3D. Enabling mipmap generation and setting "
@@ -13326,13 +13320,6 @@ msgstr ""
 "La interfaz se actualizará después de reiniciar el editor o el administrador "
 "de proyectos."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"¿Está seguro de escanear %s carpetas para los proyectos de Godot existentes?\n"
-"Esto puede tardar un poco."
-
 msgctxt "Application"
 msgid "Project Manager"
 msgstr "Administrador de Proyectos"
@@ -14225,11 +14212,61 @@ msgstr "El nombre '%s' es una palabra reservada del lenguaje del shader."
 msgid "Add Shader Global Parameter"
 msgstr "Añadir Parámetro Global en el Shader"
 
+msgid ""
+"This project uses meshes with an outdated mesh format from previous Godot "
+"versions. The engine needs to update the format in order to use those meshes. "
+"Please use the 'Upgrade Mesh Surfaces' tool from the 'Project > Tools' menu. "
+"You can ignore this message and keep using outdated meshes, but keep in mind "
+"that this leads to increased load times every time you load the project."
+msgstr ""
+"Este proyecto utiliza mallas con un formato obsoleto de versiones anteriores "
+"de Godot. El motor necesita actualizar el formato para poder usar esas "
+"mallas. Utiliza la herramienta ‘Actualizar Superficies de Malla’ del menú "
+"‘Proyecto > Herramientas’. Puedes ignorar este mensaje y seguir utilizando "
+"mallas obsoletas, pero ten en cuenta que esto conduce a tiempos de carga más "
+"largos cada vez que carga el proyecto."
+
+msgid ""
+"This project uses meshes with an outdated mesh format. Check the output log."
+msgstr ""
+"Este proyecto utiliza mallas con un formato obsoleto. Revisa el registro de "
+"salida."
+
 msgid "Upgrading All Meshes in Project"
 msgstr "Actualizar Todas las Mallas del Proyecto"
 
 msgid "Attempting to re-save "
-msgstr "Intentar volver a guardar "
+msgstr "Intentando volver a guardar "
+
+msgid "Attempting to remove "
+msgstr "Intentando eliminar "
+
+msgid ""
+"The mesh format has changed in Godot 4.2, which affects both imported meshes "
+"and meshes authored inside of Godot. The engine needs to update the format in "
+"order to use those meshes.\n"
+"\n"
+"If your project predates Godot 4.2 and contains meshes, we recommend you run "
+"this one time conversion tool. This update will restart the editor and may "
+"take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"You can still use your existing meshes as is. The engine will update each "
+"mesh in memory, but the update will not be saved. Choosing this option will "
+"lead to slower load times every time this project is loaded."
+msgstr ""
+"El formato de malla ha cambiado en Godot 4.2, lo que afecta tanto a las "
+"mallas importadas como a las mallas creadas dentro de Godot. El motor "
+"necesita actualizar el formato para poder usar esas mallas.\n"
+"\n"
+"Si tu proyecto es anterior a Godot 4.2 y contiene mallas, te recomendamos que "
+"ejecutes esta herramienta de conversión única. Esta actualización reiniciará "
+"el editor y puede tardar varios minutos. La actualización hará que las mallas "
+"sean incompatibles con las versiones anteriores de Godot.\n"
+"\n"
+"Todavía puedes usar tus mallas existentes tal cual. El motor actualizará cada "
+"malla en memoria, pero la actualización no se guardará. Elegir esta opción "
+"provocará tiempos de carga más lentos cada vez que se cargue este proyecto."
 
 msgid "Restart & Upgrade"
 msgstr "Reiniciar y Actualizar"
@@ -14846,13 +14883,6 @@ msgstr ""
 
 msgid "The package must have at least one '.' separator."
 msgstr "El paquete debe tener al menos un '.' como separador."
-
-msgid ""
-"The project name does not meet the requirement for the package name format. "
-"Please explicitly specify the package name."
-msgstr ""
-"El nombre del proyecto no cumple los requisitos del formato del nombre del "
-"paquete. Especifique explícitamente el nombre del paquete."
 
 msgid "Invalid public key for APK expansion."
 msgstr "Clave pública inválida para la expansión de APK."

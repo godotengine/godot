@@ -59,6 +59,7 @@ private:
 	void _update_debug_mesh();
 	void _update_debug_edge_connections_mesh();
 	void _navigation_map_changed(RID p_map);
+	void _navigation_debug_changed();
 #endif // DEBUG_ENABLED
 
 protected:
@@ -117,6 +118,7 @@ public:
 
 	void bake_navigation_polygon(bool p_on_thread);
 	void _bake_finished(Ref<NavigationPolygon> p_navigation_polygon);
+	bool is_baking() const;
 
 	NavigationRegion2D();
 	~NavigationRegion2D();

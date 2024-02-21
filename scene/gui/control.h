@@ -253,7 +253,6 @@ private:
 		bool is_rtl_dirty = true;
 		bool is_rtl = false;
 
-		bool auto_translate = true;
 		bool localize_numeral_system = true;
 
 		// Extra properties.
@@ -316,6 +315,8 @@ private:
 	void _invalidate_theme_cache();
 
 	// Extra properties.
+
+	static int root_layout_direction;
 
 	String get_tooltip_text() const;
 
@@ -402,6 +403,8 @@ public:
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
 
 	// Editor integration.
+
+	static void set_root_layout_direction(int p_root_dir);
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 	PackedStringArray get_configuration_warnings() const override;
@@ -620,11 +623,10 @@ public:
 	void set_localize_numeral_system(bool p_enable);
 	bool is_localizing_numeral_system() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-	_FORCE_INLINE_ String atr(const String p_string) const {
-		return is_auto_translating() ? tr(p_string) : p_string;
-	};
+#endif
 
 	// Extra properties.
 

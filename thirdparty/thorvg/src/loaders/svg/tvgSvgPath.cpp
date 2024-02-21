@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,9 @@
 #define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
 
 #include <cstring>
-#include <math.h>
 #include <ctype.h>
+#include "tvgMath.h"
+#include "tvgShape.h"
 #include "tvgSvgLoaderCommon.h"
 #include "tvgSvgPath.h"
 #include "tvgStr.h"
@@ -470,9 +471,16 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         }
         case 'a':
         case 'A': {
-            _pathAppendArcTo(cmds, pts, cur, curCtl, arr[5], arr[6], arr[0], arr[1], arr[2], arr[3], arr[4]);
-            *cur = *curCtl = {arr[5], arr[6]};
-            *isQuadratic = false;
+            if (mathZero(arr[0]) || mathZero(arr[1])) {
+                Point p = {arr[5], arr[6]};
+                cmds->push(PathCommand::LineTo);
+                pts->push(p);
+                *cur = {arr[5], arr[6]};
+            } else if (!mathEqual(cur->x, arr[5]) || !mathEqual(cur->y, arr[6])) {
+                _pathAppendArcTo(cmds, pts, cur, curCtl, arr[5], arr[6], fabsf(arr[0]), fabsf(arr[1]), arr[2], arr[3], arr[4]);
+                *cur = *curCtl = {arr[5], arr[6]};
+                *isQuadratic = false;
+            }
             break;
         }
         default: {
@@ -534,7 +542,7 @@ static char* _nextCommand(char* path, char* cmd, float* arr, int* count)
 /************************************************************************/
 
 
-bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point>& pts)
+bool svgPathToShape(const char* svgPath, Shape* shape)
 {
     float numberArray[7];
     int numberCount = 0;
@@ -545,11 +553,16 @@ bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point
     bool isQuadratic = false;
     char* path = (char*)svgPath;
 
+    auto& pts = P(shape)->rs.path.pts;
+    auto& cmds = P(shape)->rs.path.cmds;
+    auto lastCmds = cmds.count;
+
     while ((path[0] != '\0')) {
         path = _nextCommand(path, &cmd, numberArray, &numberCount);
         if (!path) break;
         if (!_processCommand(&cmds, &pts, cmd, numberArray, numberCount, &cur, &curCtl, &startPoint, &isQuadratic)) break;
     }
 
+    if (cmds.count > lastCmds && cmds[lastCmds] != PathCommand::MoveTo) return false;
     return true;
 }

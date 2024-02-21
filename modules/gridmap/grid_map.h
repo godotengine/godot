@@ -155,7 +155,6 @@ class GridMap : public Node3D {
 	Ref<PhysicsMaterial> physics_material;
 	bool bake_navigation = false;
 	RID map_override;
-	uint32_t navigation_layers = 1;
 
 	Transform3D last_transform;
 

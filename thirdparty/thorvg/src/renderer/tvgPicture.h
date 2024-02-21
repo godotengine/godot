@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,13 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_PICTURE_IMPL_H_
-#define _TVG_PICTURE_IMPL_H_
+#ifndef _TVG_PICTURE_H_
+#define _TVG_PICTURE_H_
 
 #include <string>
 #include "tvgPaint.h"
 #include "tvgLoader.h"
 
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
 
 struct PictureIterator : Iterator
 {
@@ -60,7 +57,7 @@ struct PictureIterator : Iterator
 
 struct Picture::Impl
 {
-    shared_ptr<LoadModule> loader = nullptr;
+    ImageLoader* loader = nullptr;
 
     Paint* paint = nullptr;           //vector picture uses
     Surface* surface = nullptr;       //bitmap picture uses
@@ -71,59 +68,35 @@ struct Picture::Impl
     bool resizing = false;
     bool needComp = false;            //need composition
 
+    RenderTransform resizeTransform(const RenderTransform* pTransform);
+    bool needComposition(uint8_t opacity);
+    bool render(RenderMethod* renderer);
+    bool size(float w, float h);
+    RenderRegion bounds(RenderMethod* renderer);
+    Result load(ImageLoader* ploader);
+
     Impl(Picture* p) : picture(p)
     {
     }
 
     ~Impl()
     {
+        LoaderMgr::retrieve(loader);
+        if (surface) {
+            if (auto renderer = PP(picture)->renderer) {
+                renderer->dispose(rd);
+            }
+        }
         delete(paint);
-        delete(surface);
     }
 
-    bool dispose(RenderMethod& renderer)
-    {
-        if (paint) paint->pImpl->dispose(renderer);
-        else if (surface) renderer.dispose(rd);
-        rd = nullptr;
-        return true;
-    }
-
-    RenderTransform resizeTransform(const RenderTransform* pTransform)
-    {
-        //Overriding Transformation by the desired image size
-        auto sx = w / loader->w;
-        auto sy = h / loader->h;
-        auto scale = sx < sy ? sx : sy;
-
-        RenderTransform tmp;
-        tmp.m = {scale, 0, 0, 0, scale, 0, 0, 0, 1};
-
-        if (!pTransform) return tmp;
-        else return RenderTransform(pTransform, &tmp);
-    }
-
-    bool needComposition(uint8_t opacity)
-    {
-        //In this case, paint(scene) would try composition itself.
-        if (opacity < 255) return false;
-
-        //Composition test
-        const Paint* target;
-        auto method = picture->composite(&target);
-        if (!target || method == tvg::CompositeMethod::ClipPath) return false;
-        if (target->pImpl->opacity == 255 || target->pImpl->opacity == 0) return false;
-
-        return true;
-    }
-
-    RenderData update(RenderMethod &renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
+    RenderData update(RenderMethod* renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
     {
         auto flag = load();
 
         if (surface) {
             auto transform = resizeTransform(pTransform);
-            rd = renderer.prepare(surface, &rm, rd, &transform, clips, opacity, static_cast<RenderUpdateFlag>(pFlag | flag));
+            rd = renderer->prepare(surface, &rm, rd, &transform, clips, opacity, static_cast<RenderUpdateFlag>(pFlag | flag));
         } else if (paint) {
             if (resizing) {
                 loader->resize(paint, w, h);
@@ -133,30 +106,6 @@ struct Picture::Impl
             rd = paint->pImpl->update(renderer, pTransform, clips, opacity, static_cast<RenderUpdateFlag>(pFlag | flag), clipper);
         }
         return rd;
-    }
-
-    bool render(RenderMethod &renderer)
-    {
-        bool ret = false;
-        if (surface) return renderer.renderImage(rd);
-        else if (paint) {
-            Compositor* cmp = nullptr;
-            if (needComp) {
-                cmp = renderer.target(bounds(renderer), renderer.colorSpace());
-                renderer.beginComposite(cmp, CompositeMethod::None, 255);
-            }
-            ret = paint->pImpl->render(renderer);
-            if (cmp) renderer.endComposite(cmp);
-        }
-        return ret;
-    }
-
-    bool size(float w, float h)
-    {
-        this->w = w;
-        this->h = h;
-        resizing = true;
-        return true;
     }
 
     bool bounds(float* x, float* y, float* w, float* h, bool stroking)
@@ -195,50 +144,35 @@ struct Picture::Impl
         return true;
     }
 
-    RenderRegion bounds(RenderMethod& renderer)
-    {
-        if (rd) return renderer.region(rd);
-        if (paint) return paint->pImpl->bounds(renderer);
-        return {0, 0, 0, 0};
-    }
-
     Result load(const string& path)
     {
         if (paint || surface) return Result::InsufficientCondition;
-        if (loader) loader->close();
+
         bool invalid;  //Invalid Path
-        loader = LoaderMgr::loader(path, &invalid);
+        auto loader = static_cast<ImageLoader*>(LoaderMgr::loader(path, &invalid));
         if (!loader) {
             if (invalid) return Result::InvalidArguments;
             return Result::NonSupport;
         }
-        if (!loader->read()) return Result::Unknown;
-        w = loader->w;
-        h = loader->h;
-        return Result::Success;
+        return load(loader);
     }
 
     Result load(const char* data, uint32_t size, const string& mimeType, bool copy)
     {
         if (paint || surface) return Result::InsufficientCondition;
-        if (loader) loader->close();
-        loader = LoaderMgr::loader(data, size, mimeType, copy);
+        auto loader = static_cast<ImageLoader*>(LoaderMgr::loader(data, size, mimeType, copy));
         if (!loader) return Result::NonSupport;
-        if (!loader->read()) return Result::Unknown;
-        w = loader->w;
-        h = loader->h;
-        return Result::Success;
+        return load(loader);
     }
 
     Result load(uint32_t* data, uint32_t w, uint32_t h, bool copy)
     {
         if (paint || surface) return Result::InsufficientCondition;
-        if (loader) loader->close();
-        loader = LoaderMgr::loader(data, w, h, copy);
+
+        auto loader = static_cast<ImageLoader*>(LoaderMgr::loader(data, w, h, copy));
         if (!loader) return Result::FailedAllocation;
-        this->w = loader->w;
-        this->h = loader->h;
-        return Result::Success;
+
+        return load(loader);
     }
 
     void mesh(const Polygon* triangles, const uint32_t triangleCnt)
@@ -258,18 +192,17 @@ struct Picture::Impl
     {
         load();
 
-        auto ret = Picture::gen();
+        auto ret = Picture::gen().release();
+        auto dup = ret->pImpl;
 
-        auto dup = ret.get()->pImpl;
         if (paint) dup->paint = paint->duplicate();
 
-        dup->loader = loader;
-        if (surface) {
-            dup->surface = new Surface;
-            *dup->surface = *surface;
-            //TODO: A dupilcation is not a proxy... it needs copy of the pixel data?
-            dup->surface->owner = false;
+        if (loader) {
+            dup->loader = loader;
+            ++dup->loader->sharing;
         }
+
+        dup->surface = surface;
         dup->w = w;
         dup->h = h;
         dup->resizing = resizing;
@@ -280,7 +213,7 @@ struct Picture::Impl
             memcpy(dup->rm.triangles, rm.triangles, sizeof(Polygon) * rm.triangleCnt);
         }
 
-        return ret.release();
+        return ret;
     }
 
     Iterator* iterator()
@@ -308,4 +241,4 @@ struct Picture::Impl
     RenderUpdateFlag load();
 };
 
-#endif //_TVG_PICTURE_IMPL_H_
+#endif //_TVG_PICTURE_H_

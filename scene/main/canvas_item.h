@@ -237,7 +237,7 @@ public:
 	Color get_modulate() const;
 	Color get_modulate_in_tree() const;
 
-	void set_self_modulate(const Color &p_self_modulate);
+	virtual void set_self_modulate(const Color &p_self_modulate);
 	Color get_self_modulate() const;
 
 	void set_visibility_layer(uint32_t p_visibility_layer);
@@ -248,7 +248,7 @@ public:
 
 	/* ORDERING */
 
-	void set_z_index(int p_z);
+	virtual void set_z_index(int p_z);
 	int get_z_index() const;
 	int get_effective_z_index() const;
 
@@ -363,6 +363,7 @@ public:
 	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };
 
 	int get_canvas_layer() const;
+	CanvasLayer *get_canvas_layer_node() const;
 
 	CanvasItem();
 	~CanvasItem();

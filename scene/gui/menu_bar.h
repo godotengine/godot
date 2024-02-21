@@ -55,6 +55,7 @@ class MenuBar : public Control {
 		Ref<TextLine> text_buf;
 		bool hidden = false;
 		bool disabled = false;
+		int global_index = -1;
 
 		Menu(const String &p_name) {
 			name = p_name;
@@ -71,7 +72,6 @@ class MenuBar : public Control {
 	int selected_menu = -1;
 	int active_menu = -1;
 
-	Vector2i mouse_pos_adjusted;
 	Vector2i old_mouse_pos;
 	ObjectID shortcut_context;
 

@@ -860,7 +860,7 @@ double AnimationNodeStateMachinePlayback::_process(const String &p_base_path, An
 			pi.time = 0;
 			pi.seeked = true;
 		}
-		fading_from_rem = p_state_machine->blend_node(p_state_machine->states[fading_from].node, fading_from, pi, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+		fading_from_rem = p_state_machine->blend_node(p_state_machine->states[fading_from].node, fading_from, pi, AnimationNode::FILTER_IGNORE, true, p_test_only); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
 		// Guess playback position.
 		if (fading_from_rem > len_fade_from) { /// Weird but ok.
@@ -976,7 +976,7 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 			pi.seeked = true;
 			pi.is_external_seeking = false;
 			pi.weight = 0;
-			p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true);
+			p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, p_test_only);
 		}
 
 		// Just get length to find next recursive.
@@ -1791,6 +1791,22 @@ void AnimationNodeStateMachine::_animation_node_renamed(const ObjectID &p_oid, c
 
 void AnimationNodeStateMachine::_animation_node_removed(const ObjectID &p_oid, const StringName &p_node) {
 	AnimationRootNode::_animation_node_removed(p_oid, p_node);
+}
+
+void AnimationNodeStateMachine::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	String pf = p_function;
+	bool add_state_options = false;
+	if (p_idx == 0) {
+		add_state_options = (pf == "get_node" || pf == "has_node" || pf == "rename_node" || pf == "remove_node" || pf == "replace_node" || pf == "set_node_position" || pf == "get_node_position");
+	} else if (p_idx <= 1) {
+		add_state_options = (pf == "has_transition" || pf == "add_transition" || pf == "remove_transition");
+	}
+	if (add_state_options) {
+		for (KeyValue<StringName, State> E : states) {
+			r_options->push_back(String(E.key).quote());
+		}
+	}
+	AnimationRootNode::get_argument_options(p_function, p_idx, r_options);
 }
 
 void AnimationNodeStateMachine::_bind_methods() {

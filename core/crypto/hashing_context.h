@@ -54,7 +54,7 @@ protected:
 
 public:
 	Error start(HashType p_type);
-	Error update(PackedByteArray p_chunk);
+	Error update(const PackedByteArray &p_chunk);
 	PackedByteArray finish();
 
 	HashingContext() {}

@@ -60,6 +60,7 @@ HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions() 
 
 	request_extensions[XR_EXT_HAND_TRACKING_EXTENSION_NAME] = &hand_tracking_ext;
 	request_extensions[XR_EXT_HAND_JOINTS_MOTION_RANGE_EXTENSION_NAME] = &hand_motion_range_ext;
+	request_extensions[XR_EXT_HAND_TRACKING_DATA_SOURCE_EXTENSION_NAME] = &hand_tracking_source_ext;
 
 	return request_extensions;
 }
@@ -137,26 +138,54 @@ void OpenXRHandTrackingExtension::on_process() {
 
 	for (int i = 0; i < OPENXR_MAX_TRACKED_HANDS; i++) {
 		if (hand_trackers[i].hand_tracker == XR_NULL_HANDLE) {
-			XrHandTrackerCreateInfoEXT createInfo = {
+			void *next_pointer = nullptr;
+
+			// Originally not all XR runtimes supported hand tracking data sourced both from controllers and normal hand tracking.
+			// With this extension we can indicate we accept input from both sources so hand tracking data is consistently provided
+			// on runtimes that support this.
+			XrHandTrackingDataSourceEXT data_sources[2] = { XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT, XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT };
+			XrHandTrackingDataSourceInfoEXT data_source_info = { XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT, next_pointer, 2, data_sources };
+			if (hand_tracking_source_ext) {
+				// If supported include this info
+				next_pointer = &data_source_info;
+			}
+
+			XrHandTrackerCreateInfoEXT create_info = {
 				XR_TYPE_HAND_TRACKER_CREATE_INFO_EXT, // type
-				nullptr, // next
+				next_pointer, // next
 				i == 0 ? XR_HAND_LEFT_EXT : XR_HAND_RIGHT_EXT, // hand
 				XR_HAND_JOINT_SET_DEFAULT_EXT, // handJointSet
 			};
 
-			result = xrCreateHandTrackerEXT(OpenXRAPI::get_singleton()->get_session(), &createInfo, &hand_trackers[i].hand_tracker);
+			result = xrCreateHandTrackerEXT(OpenXRAPI::get_singleton()->get_session(), &create_info, &hand_trackers[i].hand_tracker);
 			if (XR_FAILED(result)) {
 				// not successful? then we do nothing.
 				print_line("OpenXR: Failed to obtain hand tracking information [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 				hand_trackers[i].is_initialized = false;
 			} else {
-				void *next_pointer = nullptr;
+				next_pointer = nullptr;
 
 				hand_trackers[i].velocities.type = XR_TYPE_HAND_JOINT_VELOCITIES_EXT;
 				hand_trackers[i].velocities.next = next_pointer;
 				hand_trackers[i].velocities.jointCount = XR_HAND_JOINT_COUNT_EXT;
 				hand_trackers[i].velocities.jointVelocities = hand_trackers[i].joint_velocities;
 				next_pointer = &hand_trackers[i].velocities;
+
+				if (hand_tracking_source_ext) {
+					hand_trackers[i].data_source.type = XR_TYPE_HAND_TRACKING_DATA_SOURCE_STATE_EXT;
+					hand_trackers[i].data_source.next = next_pointer;
+					hand_trackers[i].data_source.isActive = false;
+					hand_trackers[i].data_source.dataSource = XrHandTrackingDataSourceEXT(0);
+					next_pointer = &hand_trackers[i].data_source;
+				}
+
+				// Needed for vendor hand tracking extensions implemented from GDExtension.
+				for (OpenXRExtensionWrapper *wrapper : OpenXRAPI::get_singleton()->get_registered_extension_wrappers()) {
+					void *np = wrapper->set_hand_joint_locations_and_get_next_pointer(i, next_pointer);
+					if (np != nullptr) {
+						next_pointer = np;
+					}
+				}
 
 				hand_trackers[i].locations.type = XR_TYPE_HAND_JOINT_LOCATIONS_EXT;
 				hand_trackers[i].locations.next = next_pointer;
@@ -171,14 +200,9 @@ void OpenXRHandTrackingExtension::on_process() {
 		if (hand_trackers[i].is_initialized) {
 			void *next_pointer = nullptr;
 
-			XrHandJointsMotionRangeInfoEXT motionRangeInfo;
-
+			XrHandJointsMotionRangeInfoEXT motion_range_info = { XR_TYPE_HAND_JOINTS_MOTION_RANGE_INFO_EXT, next_pointer, hand_trackers[i].motion_range };
 			if (hand_motion_range_ext) {
-				motionRangeInfo.type = XR_TYPE_HAND_JOINTS_MOTION_RANGE_INFO_EXT;
-				motionRangeInfo.next = next_pointer;
-				motionRangeInfo.handJointsMotionRange = hand_trackers[i].motion_range;
-
-				next_pointer = &motionRangeInfo;
+				next_pointer = &motion_range_info;
 			}
 
 			XrHandJointsLocateInfoEXT locateInfo = {
@@ -238,6 +262,25 @@ XrHandJointsMotionRangeEXT OpenXRHandTrackingExtension::get_motion_range(HandTra
 	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, XR_HAND_JOINTS_MOTION_RANGE_MAX_ENUM_EXT);
 
 	return hand_trackers[p_hand].motion_range;
+}
+
+OpenXRHandTrackingExtension::HandTrackedSource OpenXRHandTrackingExtension::get_hand_tracking_source(HandTrackedHands p_hand) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, OPENXR_SOURCE_UNKNOWN);
+
+	if (hand_tracking_source_ext && hand_trackers[p_hand].data_source.isActive) {
+		switch (hand_trackers[p_hand].data_source.dataSource) {
+			case XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT:
+				return OPENXR_SOURCE_UNOBSTRUCTED;
+
+			case XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT:
+				return OPENXR_SOURCE_CONTROLLER;
+
+			default:
+				return OPENXR_SOURCE_UNKNOWN;
+		}
+	}
+
+	return OPENXR_SOURCE_UNKNOWN;
 }
 
 void OpenXRHandTrackingExtension::set_motion_range(HandTrackedHands p_hand, XrHandJointsMotionRangeEXT p_motion_range) {
