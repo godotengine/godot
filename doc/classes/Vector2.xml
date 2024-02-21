@@ -236,7 +236,7 @@
 				This method is faster than using [method is_equal_approx] with one value as a zero vector.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -249,7 +249,7 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector2" />
 			<param index="0" name="to" type="Vector2" />
 			<param index="1" name="weight" type="float" />
@@ -257,7 +257,7 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const">
+		<method name="limit_length" qualifiers="const" keywords="truncate">
 			<return type="Vector2" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>
@@ -344,7 +344,7 @@
 				Returns a new vector with each component set to [code]1.0[/code] if it's positive, [code]-1.0[/code] if it's negative, and [code]0.0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
-		<method name="slerp" qualifiers="const">
+		<method name="slerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector2" />
 			<param index="0" name="to" type="Vector2" />
 			<param index="1" name="weight" type="float" />

@@ -234,7 +234,7 @@
 				Returns [code]true[/code] if any action, key, joypad button, or mouse button is being pressed. This will also return [code]true[/code] if any action is simulated via code by calling [method action_press].
 			</description>
 		</method>
-		<method name="is_joy_button_pressed" qualifiers="const">
+		<method name="is_joy_button_pressed" qualifiers="const" keywords="is_gamepad_button_pressed, is_controller_button_pressed">
 			<return type="bool" />
 			<param index="0" name="device" type="int" />
 			<param index="1" name="button" type="int" enum="JoyButton" />
@@ -242,7 +242,7 @@
 				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoyButton]).
 			</description>
 		</method>
-		<method name="is_joy_known">
+		<method name="is_joy_known" keywords="is_gamepad_known, is_controller_known">
 			<return type="bool" />
 			<param index="0" name="device" type="int" />
 			<description>

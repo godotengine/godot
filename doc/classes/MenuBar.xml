@@ -151,7 +151,7 @@
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the menu item's text.
 		</theme_item>
-		<theme_item name="disabled" data_type="style" type="StyleBox">
+		<theme_item name="disabled" data_type="style" type="StyleBox" keywords="enabled">
 			[StyleBox] used when the menu item is disabled.
 		</theme_item>
 		<theme_item name="disabled_mirrored" data_type="style" type="StyleBox">

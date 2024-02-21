@@ -299,7 +299,7 @@
 				Returns [code]true[/code] if this color and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Color" />
 			<param index="0" name="to" type="Color" />
 			<param index="1" name="weight" type="float" />

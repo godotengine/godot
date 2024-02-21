@@ -209,7 +209,7 @@
 				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
 			</description>
 		</method>
-		<method name="range" qualifiers="vararg">
+		<method name="range" qualifiers="vararg" keywords="seq">
 			<return type="Array" />
 			<description>
 				Returns an array with the given range. [method range] can be called in three ways:
