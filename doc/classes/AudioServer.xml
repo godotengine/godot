@@ -110,6 +110,12 @@
 				Returns the volume of the bus at index [param bus_idx] in dB.
 			</description>
 		</method>
+		<method name="get_capture_mix_rate" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the sample rate at the input of the [AudioServer].
+			</description>
+		</method>
 		<method name="get_input_device_list">
 			<return type="PackedStringArray" />
 			<description>
