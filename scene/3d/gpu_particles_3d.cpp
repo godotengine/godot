@@ -900,11 +900,15 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
 	ADD_GROUP("Process Material", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_process_material", "get_process_material");
 	ADD_GROUP("Draw Passes", "draw_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_passes", PROPERTY_HINT_RANGE, "0," + itos(MAX_DRAW_PASSES) + ",1"), "set_draw_passes", "get_draw_passes");
 	for (int i = 0; i < MAX_DRAW_PASSES; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "draw_pass_" + itos(i + 1), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), "set_draw_pass_mesh", "get_draw_pass_mesh", i);
+		// Specify all types for explicit ordering in the inspector,
+		// but list generic Mesh last to allow extended types to show up at the end.
+		// Keep the order in sync with MeshInstance3D's `mesh` property,
+		// with the exception of moving QuadMesh to the beginning so that it's automatically instanced on node creation.
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "draw_pass_" + itos(i + 1), PROPERTY_HINT_RESOURCE_TYPE, "QuadMesh,BoxMesh,SphereMesh,CapsuleMesh,CylinderMesh,PrismMesh,TorusMesh,PlaneMesh,TextMesh,RibbonTrailMesh,TubeTrailMesh,PointMesh,ArrayMesh,ImmediateMesh,PlaceholderMesh,Mesh", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_draw_pass_mesh", "get_draw_pass_mesh", i);
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "draw_skin", PROPERTY_HINT_RESOURCE_TYPE, Skin::get_class_static()), "set_skin", "get_skin");
 
