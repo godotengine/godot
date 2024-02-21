@@ -30,13 +30,14 @@
 # Kann <iancanellas08@gmail.com>, 2023.
 # Diego22rct <diegorafaelcisnerostafur@gmail.com>, 2024.
 # Carlos Mena <menacarlos.asir@gmail.com>, 2024.
+# Franco Ezequiel Ibañez <francoibanez.dev@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-26 09:47+0000\n"
-"Last-Translator: Carlos Mena <menacarlos.asir@gmail.com>\n"
+"PO-Revision-Date: 2024-02-21 09:02+0000\n"
+"Last-Translator: Franco Ezequiel Ibañez <francoibanez.dev@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo Principal"
@@ -122,10 +123,10 @@ msgid "Joystick 4 Y-Axis"
 msgstr "Eje-Y del Joystick 4"
 
 msgid "Unknown Joypad Axis"
-msgstr "Eje de Joypad Desconocido"
+msgstr "Eje del Joypad desconocido"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
-msgstr "Movimiento del Joypad en el eje %d (%s) con valor %.2f"
+msgstr "Movimiento del Joypad en el eje %d (%s) con el valor de %.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "Acción Abajo, Cruz en Sony, Xbox A, Nintendo B"
@@ -175,8 +176,29 @@ msgstr "D-pad Derecha"
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Share en Xbox, Microphone en PS5, Capture en Nintendo"
 
+msgid "Xbox Paddle 1"
+msgstr "Palanca de Xbox 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Palanca de Xbox 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Palanca de Xbox 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Palanca de Xbox 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "Panel táctil PS4/5"
+
 msgid "Joypad Button %d"
 msgstr "Bottón de Joypad %d"
+
+msgid "Pressure:"
+msgstr "Presión:"
+
+msgid "canceled"
+msgstr "cancelado"
 
 msgid "touched"
 msgstr "tocado"
@@ -214,6 +236,18 @@ msgstr "Seleccionar"
 msgid "Cancel"
 msgstr "Cancelar"
 
+msgid "Focus Next"
+msgstr "Enfocar el siguiente"
+
+msgid "Focus Prev"
+msgstr "Enfocar el anterior"
+
+msgid "Left"
+msgstr "Izquierda"
+
+msgid "Right"
+msgstr "Derecha"
+
 msgid "Up"
 msgstr "Arriba"
 
@@ -222,6 +256,12 @@ msgstr "Abajo"
 
 msgid "Page Up"
 msgstr "Subir página"
+
+msgid "Page Down"
+msgstr "Bajar Página"
+
+msgid "Home"
+msgstr "Inicio"
 
 msgid "End"
 msgstr "Fin"
@@ -241,8 +281,26 @@ msgstr "Deshacer"
 msgid "Redo"
 msgstr "Rehacer"
 
+msgid "Completion Query"
+msgstr "Consulta de Finalización"
+
+msgid "New Line"
+msgstr "Nueva Línea"
+
 msgid "New Blank Line"
 msgstr "Nueva línea en blanco"
+
+msgid "New Line Above"
+msgstr "Nueva Línea Arriba"
+
+msgid "Indent"
+msgstr "Sangría"
+
+msgid "Dedent"
+msgstr "Eliminar Sangría"
+
+msgid "Backspace"
+msgstr "Retroceder"
 
 msgid "Backspace Word"
 msgstr "Retroceder palabra"
@@ -253,11 +311,53 @@ msgstr "Retroceder del todo hacia la izquierda"
 msgid "Delete"
 msgstr "Eliminar"
 
+msgid "Delete Word"
+msgstr "Suprimir Palabra"
+
+msgid "Delete all to Right"
+msgstr "Suprimir Punto"
+
+msgid "Caret Left"
+msgstr "Cursor Izquierda"
+
+msgid "Caret Word Left"
+msgstr "Cursor Palabra Izquierda"
+
+msgid "Caret Right"
+msgstr "Cursor Derecha"
+
+msgid "Caret Word Right"
+msgstr "Cursor Palabra Derecha"
+
 msgid "Caret Up"
 msgstr "Interfaz Subir Página"
 
+msgid "Caret Down"
+msgstr "Cursor Abajo"
+
+msgid "Caret Line Start"
+msgstr "Cursor Principio Línea"
+
+msgid "Caret Line End"
+msgstr "Cursor Final Línea"
+
 msgid "Caret Page Up"
 msgstr "Interfaz Subir Página"
+
+msgid "Caret Page Down"
+msgstr "Cursor Bajar Página"
+
+msgid "Caret Document Start"
+msgstr "Cursor Inicio Documento"
+
+msgid "Caret Document End"
+msgstr "Cursor Final Documento"
+
+msgid "Caret Add Below"
+msgstr "Añadir Cursor Abajo"
+
+msgid "Caret Add Above"
+msgstr "Añadir Cursor Arriba"
 
 msgid "Scroll Up"
 msgstr "Desplazarse hacia arriba"
@@ -267,6 +367,18 @@ msgstr "Desplazarse hacia abajo"
 
 msgid "Select All"
 msgstr "Seleccionar Todo"
+
+msgid "Select Word Under Caret"
+msgstr "Seleccionar Palabra Bajo el Cursor"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Agregar Selección para la Próxima Ocurrencia"
+
+msgid "Clear Carets and Selection"
+msgstr "Limpiar Cursores y Selecciones"
+
+msgid "Toggle Insert Mode"
+msgstr "Alternar Modo Insertar"
 
 msgid "Submit Text"
 msgstr "Enviar Texto"
@@ -282,6 +394,12 @@ msgstr "Subir un nivel"
 
 msgid "Refresh"
 msgstr "Refrescar"
+
+msgid "Show Hidden"
+msgstr "Mostrar Ocultos"
+
+msgid "Swap Input Direction"
+msgstr "Intercambiar Dirección de Entrada"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Entrada inválida %d (no se transmitió) en la expresión"
@@ -349,14 +467,35 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Ya existe una acción con el nombre '%s'."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "No se puede revertir - la acción es la misma que la inicial"
+
 msgid "Revert Action"
 msgstr "Revertir Acción"
 
 msgid "Add Event"
 msgstr "Agregar Evento"
 
+msgid "Remove Action"
+msgstr "Quitar Acción"
+
 msgid "Cannot Remove Action"
 msgstr "No se puede eliminar acción"
+
+msgid "Edit Event"
+msgstr "Modificar Evento"
+
+msgid "Remove Event"
+msgstr "Quitar Evento"
+
+msgid "Filter by name..."
+msgstr "Filtrar por nombre..."
+
+msgid "Clear All"
+msgstr "Limpiar Todo"
+
+msgid "Add New Action"
+msgstr "Agregar Acción Nueva"
 
 msgid "Add"
 msgstr "Agregar"
@@ -376,6 +515,9 @@ msgstr "Tiempo:"
 msgid "Value:"
 msgstr "Valor:"
 
+msgid "Update Selected Key Handles"
+msgstr "Actualizar Referencias de Claves Seleccionadas"
+
 msgid "Insert Key Here"
 msgstr "Insertar Clave Aquí"
 
@@ -385,11 +527,68 @@ msgstr "Duplicar Clave(s) Seleccionada(s)"
 msgid "Delete Selected Key(s)"
 msgstr "Eliminar Clave(s) Seleccionada(s)"
 
+msgid "Make Handles Free"
+msgstr "Liberar Manijas"
+
+msgid "Make Handles Linear"
+msgstr "Hacer Manijas Lineales"
+
+msgid "Make Handles Balanced"
+msgstr "Hacer Manijas Balanceadas"
+
+msgid "Make Handles Mirrored"
+msgstr "Hacer Manijas Reflejadas"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Hacer Manijas Reflejadas (Tangente Automática)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Hacer Manijas Reflejadas (Tangente Automática)"
+
 msgid "Add Bezier Point"
 msgstr "Agregar Punto Bezier"
 
 msgid "Move Bezier Points"
 msgstr "Mover Puntos Bezier"
+
+msgid "Animation Duplicate Keys"
+msgstr "Duplicar Claves de la Animación"
+
+msgid "Animation Delete Keys"
+msgstr "Borrar Claves de la Animación"
+
+msgid "Focus"
+msgstr "Foco"
+
+msgid "Select All Keys"
+msgstr "Seleccionar Todas las Claves"
+
+msgid "Deselect All Keys"
+msgstr "Deseleccionar Todas las Claves"
+
+msgid "Animation Change Transition"
+msgstr "Cambiar Transición de Animación"
+
+msgid "Animation Change Position3D"
+msgstr "Cambiar Posición en 3D de la Animación"
+
+msgid "Animation Change Rotation3D"
+msgstr "Cambiar la Rotación en 3D de la Animación"
+
+msgid "Animation Change Scale3D"
+msgstr "Cambiar Escala 3D de la Animación"
+
+msgid "Animation Change Keyframe Value"
+msgstr "Animación Cambiar valor de fotograma"
+
+msgid "Animation Change Call"
+msgstr "Animación Cambiar llamada"
+
+msgid "Animation Multi Change Transition"
+msgstr "Animación Múltiple Cambiar transición"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Animación Múltiple Cambiar posición 3D"
 
 msgid "Change Animation Length"
 msgstr "Cambiar Duración de la Animación"

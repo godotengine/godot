@@ -96,7 +96,7 @@
 # atahanacar <atahanacar@gmx.com>, 2023.
 # efella <furkanefe911@gmail.com>, 2023.
 # Black <ebubekir23atalay@gmail.com>, 2023.
-# Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023.
+# Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023, 2024.
 # ErcanPasha <dayanomerercan@gmail.com>, 2023.
 # Yoldaş Ulaş <yutalas@gmail.com>, 2023.
 # Mertcan YILDIRIM <mertcanyildirim463@gmail.com>, 2023.
@@ -111,7 +111,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-11 09:59+0000\n"
+"PO-Revision-Date: 2024-02-17 15:01+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -120,7 +120,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4\n"
 
 msgid "Main Thread"
 msgstr "Ana İş Parçası"
@@ -3623,6 +3623,22 @@ msgid ""
 msgstr ""
 "'%s' dosyasına yazılamıyor; dosya kullanımda, kilitli veya izinler eksik."
 
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the rendering method to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: gl_compatibility"
+msgstr ""
+"İşleyiciyi değiştirmek, düzenleyicinin yeniden başlatılmasını gerektirir.\n"
+"\n"
+"Kaydet ve Yeniden Başlat'ın seçilmesi, işleme yöntemini şu şekilde "
+"değiştirecektir:\n"
+"- Masaüstü platformları: %s\n"
+"- Mobil platformlar: %s\n"
+"- Web platformu: gl_compatibility"
+
 msgid "Forward+"
 msgstr "İleri+"
 
@@ -3631,6 +3647,9 @@ msgstr "Mobil"
 
 msgid "Compatibility"
 msgstr "Uyumluluk"
+
+msgid "(Overridden)"
+msgstr "(Özel ayarlanmış)"
 
 msgid "Pan View"
 msgstr "Görünümü Kaydır"
@@ -3808,6 +3827,21 @@ msgstr "Godot Hakkında"
 
 msgid "Support Godot Development"
 msgstr "Godot'yu Geliştirmeye Destek Olun"
+
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"Bir işleme yöntemi seçin.\n"
+"\n"
+"Notlar:\n"
+"- Mobil platformlar için, eğer burada İleri+ seçilirse Mobil işleme yöntemi "
+"kullanılır.\n"
+"- Web platformunda, her zaman Uyumluluk işleme yöntemi kullanılır."
 
 msgid "Update Continuously"
 msgstr "Sürekli Güncelle"
@@ -14912,6 +14946,14 @@ msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
 msgstr ""
 "\"En Küçük SDK\" değeri %d 'den büyük veya ona eşit olmalıdır (\"%s\" "
 "işleyicisi için)."
+
+msgid ""
+"The project name does not meet the requirement for the package name format "
+"and will be updated to \"%s\". Please explicitly specify the package name if "
+"needed."
+msgstr ""
+"Proje ismi, paket adı biçimi gereksinimlerini karşılamıyor ve \"%s\" olarak "
+"güncellenecektir. Gerekirse lütfen paket adını açık şekilde belirtin."
 
 msgid "Code Signing"
 msgstr "Kod İmzalama"

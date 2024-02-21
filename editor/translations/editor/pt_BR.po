@@ -162,7 +162,7 @@
 # Felipe Nogueira <contato.fnog@gmail.com>, 2023.
 # Paulo Henrique <paulohenprado@gmail.com>, 2023.
 # Lucas Eduardo da Silva <sain.dreams@outlook.com>, 2023.
-# "Márcio A. M. Reyes" <reyes.marcio@gmail.com>, 2023.
+# "Márcio A. M. Reyes" <reyes.marcio@gmail.com>, 2023, 2024.
 # Fernando Lopes <fefehex12@gmail.com>, 2023.
 # Daniel Mucciolo <danielviannapsi@gmail.com>, 2023.
 # Guilherme <gui.rugai.freire@gmail.com>, 2023.
@@ -176,13 +176,17 @@
 # Fernando Crozetta <fernando@czetta.com>, 2023.
 # Sergio Antonio <sergio.antonio.pn@proton.me>, 2023.
 # Martonio Junior <jose.mart.junior@gmail.com>, 2023, 2024.
+# Otávio Burato <otavioburato42@gmail.com>, 2024.
+# Augusto Renan <augustorenanss@gmail.com>, 2024.
+# João Vitor da Silva Matos <joaovitordasilvamatos21@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2024-01-11 08:00+0000\n"
-"Last-Translator: Murilo Gama <murilovsky2030@gmail.com>\n"
+"PO-Revision-Date: 2024-02-16 00:31+0000\n"
+"Last-Translator: João Vitor da Silva Matos <joaovitordasilvamatos21@gmail."
+"com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -190,7 +194,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.4\n"
 
 msgid "Main Thread"
 msgstr "Thread principal"
@@ -271,7 +275,7 @@ msgid "Unknown Joypad Axis"
 msgstr "Eixo Desconhecido do Joypad"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
-msgstr "Movimento do joypad no eixo %d (%s) com valor %.2f"
+msgstr "Movimento do Joypad no Eixo %d (%s) com Valor %.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "Botão de Ação, Sony X, Xbox A, Nintendo B"
@@ -2794,6 +2798,13 @@ msgstr "Atualmente não há uma descrição para este construtor."
 msgid "There is currently no description for this operator."
 msgstr "Atualmente não há uma descrição para este operador."
 
+msgid ""
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Atualmente não há uma descrição para este método. nos ajude com [color=$color]"
+"[url=$url]contribuindo com uma[/url][/color]!"
+
 msgid "Top"
 msgstr "Superior"
 
@@ -2830,6 +2841,17 @@ msgid ""
 msgstr ""
 "Atualmente não há descrição para esta classe. Ajude-nos [color=$color]"
 "[url=$url]contribuindo com uma[/url][/color]!"
+
+msgid "Note:"
+msgstr "Nota:"
+
+msgid ""
+"There are notable differences when using this API with C#. See [url=%s]C# API "
+"differences to GDScript[/url] for more information."
+msgstr ""
+"Existem diferenças notáveis ao usar esta API com C#. Consulte "
+"[url=%s]diferenças entre a API C# e GDScript[/url] para obter mais "
+"informações."
 
 msgid "Online Tutorials"
 msgstr "Tutoriais Online"
@@ -3576,6 +3598,28 @@ msgstr "Excluir Layout"
 msgid "Default"
 msgstr "Padrão"
 
+msgid "%d second ago"
+msgid_plural "%d seconds ago"
+msgstr[0] "%d segundo atrás"
+msgstr[1] "%d segundos atrás"
+
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] "%d minuto atrás"
+msgstr[1] "%d minutos atrás"
+
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] "%d hora atrás"
+msgstr[1] "%d horas atrás"
+
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"Last saved: %s."
+msgstr ""
+"A cena \"%s\" possui alterações não salvas.\n"
+"Última salva: %s."
+
 msgid "Save & Close"
 msgstr "Salvar & Fechar"
 
@@ -3593,6 +3637,21 @@ msgid ""
 msgstr ""
 "Não foi possível gravar no arquivo '%s', arquivo em uso, bloqueado ou sem "
 "permissões."
+
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the rendering method to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: gl_compatibility"
+msgstr ""
+"A alteração do renderizador requer a reinicialização do editor.\n"
+"\n"
+"Escolher Salvar e Reiniciar, mudará o método de renderização para:\n"
+"- Plataformas de desktop: %s\n"
+"- Dispositivos móveis: %s\n"
+"- Plataforma web: gl_compatibility"
 
 msgid "Forward+"
 msgstr "Avançado+"
@@ -3780,6 +3839,22 @@ msgstr "Sobre o Godot"
 
 msgid "Support Godot Development"
 msgstr "Apoie o Desenvolvimento do Godot"
+
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"Escolha um método de renderização.\n"
+"\n"
+"Notas:\n"
+"- Nos dispositivos moveis, o método de renderização Mobile será usado se "
+"Forward+ estiver selecionado aqui.\n"
+"- Na plataforma web, o método de renderização Compatibilidade é sempre "
+"utilizado."
 
 msgid "Update Continuously"
 msgstr "Atualizar Continuamente"
@@ -4327,6 +4402,9 @@ msgstr "Incorporar PCK"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Em exportações de 32 bits, o PCK embutido não pode ser maior que 4GB."
+
+msgid "Plugin \"%s\" is not supported on \"%s\""
+msgstr "O plugin \"%s\" não é compatível com \"%s\""
 
 msgid "Open the folder containing these templates."
 msgstr "Abrir a pasta contendo esses modelos."
@@ -4955,6 +5033,27 @@ msgstr "Renomear..."
 msgid "Open in External Program"
 msgstr "Abrir em Programa Externo"
 
+msgid "Yellow"
+msgstr "Amarelo"
+
+msgid "Green"
+msgstr "Verde"
+
+msgid "Teal"
+msgstr "Verde-azulado"
+
+msgid "Blue"
+msgstr "Azul"
+
+msgid "Purple"
+msgstr "Roxo"
+
+msgid "Pink"
+msgstr "Rosa"
+
+msgid "Gray"
+msgstr "Cinza"
+
 msgid "Go to previous selected folder/file."
 msgstr "Ir para a pasta/arquivo selecionado anteriormente."
 
@@ -5399,6 +5498,9 @@ msgstr "Árvore de Cena (Nós):"
 
 msgid "Node Configuration Warning!"
 msgstr "Aviso de Configuração de Nó!"
+
+msgid "Allowed:"
+msgstr "Permitido:"
 
 msgid "Select a Node"
 msgstr "Selecione um Nó"
@@ -6046,17 +6148,65 @@ msgstr "Atualizar"
 msgid "Plugin Name:"
 msgstr "Nome do Plugin:"
 
+msgid "Required. This name will be displayed in the list of plugins."
+msgstr "Obrigatório. Este nome será exibido na lista de plugins."
+
 msgid "Subfolder:"
 msgstr "Subpasta:"
+
+msgid ""
+"Optional. The folder name should generally use `snake_case` naming (avoid "
+"spaces and special characters).\n"
+"If left empty, the folder will be named after the plugin name converted to "
+"`snake_case`."
+msgstr ""
+"Opcional. O nome da pasta geralmente deve usar a nomenclatura `snake_case` "
+"(evite espaços e caracteres especiais).\n"
+"Se deixada em branco, a pasta receberá o nome do plugin convertido para "
+"`snake_case`."
+
+msgid ""
+"Optional. This description should be kept relatively short (up to 5 lines).\n"
+"It will display when hovering the plugin in the list of plugins."
+msgstr ""
+"Opcional. Esta descrição deve ser relativamente curta (até 5 linhas).\n"
+"Ela será exibida ao passar o mouse sobre o plugin na lista de plugins."
 
 msgid "Author:"
 msgstr "Autor:"
 
+msgid "Optional. The author's username, full name, or organization name."
+msgstr ""
+"Opcional. O nome de usuário, nome completo ou nome da organização do autor."
+
 msgid "Version:"
 msgstr "Versão:"
 
+msgid ""
+"Optional. A human-readable version identifier used for informational purposes "
+"only."
+msgstr ""
+"Opcional. Um identificador de versão legível usado apenas para fins "
+"informativos."
+
+msgid ""
+"Required. The scripting language to use for the script.\n"
+"Note that a plugin may use several languages at once by adding more scripts "
+"to the plugin."
+msgstr ""
+"Obrigatório. A linguagem de script a ser usada para o script.\n"
+"Observe que um plugin pode usar várias linguagens ao mesmo tempo adicionando "
+"mais scripts ao plugin."
+
 msgid "Script Name:"
 msgstr "Nome do Script:"
+
+msgid ""
+"Optional. The path to the script (relative to the add-on folder). If left "
+"empty, will default to \"plugin.gd\"."
+msgstr ""
+"Opcional. O caminho para o script (relativo à pasta do add-on). Se deixado em "
+"branco, o padrão será \"plugin.gd\"."
 
 msgid "Activate now?"
 msgstr "Ativar agora?"
@@ -6570,6 +6720,9 @@ msgstr "Mover Nó"
 msgid "Transition exists!"
 msgstr "A transição já existe!"
 
+msgid "Play/Travel to %s"
+msgstr "Jogar/Viajar para %s"
+
 msgid "Add Node and Transition"
 msgstr "Adicionar Nó e Transição"
 
@@ -6854,6 +7007,13 @@ msgstr "Passo de Rotação:"
 
 msgid "Scale Step:"
 msgstr "Escala do Passo:"
+
+msgid ""
+"Children of a container get their position and size determined only by their "
+"parent."
+msgstr ""
+"Os filhos de um contêiner têm sua posição e tamanho determinados apenas por "
+"seus pais."
 
 msgid "Move Node(s) to Position"
 msgstr "Mover Nó(s) para Posição"
@@ -7874,6 +8034,9 @@ msgstr "Nenhuma cena raiz do editor encontrada."
 msgid "Lightmap data is not local to the scene."
 msgstr "Os dados do mapa de iluminação não são locais para a cena."
 
+msgid "Maximum texture size is too small for the lightmap images."
+msgstr "O tamanho máximo da textura é muito pequeno para imagens de lightmap."
+
 msgid "Bake Lightmaps"
 msgstr "Gerar Mapas de Iluminação"
 
@@ -7951,6 +8114,12 @@ msgstr "Desempacotar UV2"
 
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "Malha contida não é do tipo ArrayMesh."
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "Somente triângulos são suportados para desempacotar a lightmap."
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "Normais são necessários para desempacotar a lightmap."
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "Falhou ao desempacotar UV, a malha pode não ser múltipla?"
@@ -8195,6 +8364,16 @@ msgstr "Editar Polígono (Remover Ponto)"
 
 msgid "Create Navigation Polygon"
 msgstr "Criar Polígono de Navegação"
+
+msgid ""
+"Bakes the NavigationPolygon by first parsing the scene for source geometry "
+"and then creating the navigation polygon vertices and polygons."
+msgstr ""
+"Faz o bake do PoligonoDeNavegacao por primeiro fazer o parsing da cena para "
+"geometria e então cria o polígono de navegação e outros polígonos."
+
+msgid "Clears the internal NavigationPolygon outlines, vertices and polygons."
+msgstr "Limpa as linhas de borda do PoligonoDeNavegacao, vértices e polígonos."
 
 msgid "Unnamed Gizmo"
 msgstr "Gizmo Sem Nome"
@@ -8905,6 +9084,9 @@ msgstr "Espelhar Comprimento do Controle"
 msgid "Curve Point #"
 msgstr "Ponto da Curva #"
 
+msgid "Handle In #"
+msgstr "Manipulador"
+
 msgid "Set Curve Point Position"
 msgstr "Definir Posição do Ponto da Curva"
 
@@ -9139,6 +9321,25 @@ msgstr "Não é possível obter o script para recarregar."
 msgid "Reload only takes effect on tool scripts."
 msgstr "Recarregar só tem efeito sobre scripts de ferramenta."
 
+msgid "Cannot run the edited file because it's not a script."
+msgstr "Não pode rodar o arquivo porque não é um script."
+
+msgid "Cannot run the script because it contains errors, check the output log."
+msgstr "Não pode rodar o script porque ele contém erros, olhe o log de saída."
+
+msgid "Cannot run the script because it doesn't extend EditorScript."
+msgstr "Não pode rodar o script porque não estende o tipo EditorScript."
+
+msgid ""
+"Cannot run the script because it's not a tool script (add the @tool "
+"annotation at the top)."
+msgstr ""
+"Não pode rodar o script porque não é um script de ferramenta (adicione a "
+"anotação @tool no topo)."
+
+msgid "Cannot run the script because it's not a tool script."
+msgstr "Não pode rodar o script porque não é um script ferramenta."
+
 msgid "Import Theme"
 msgstr "Importar Tema"
 
@@ -9257,6 +9458,9 @@ msgstr ""
 msgid "Search Results"
 msgstr "Resultados da Pesquisa"
 
+msgid "There are unsaved changes in the following built-in script(s):"
+msgstr "Há mudanças não salvas nos seguinte(s) script(s) built-in(s):"
+
 msgid "Clear Recent Scripts"
 msgstr "Limpar Scripts Recentes"
 
@@ -9294,6 +9498,13 @@ msgstr "Linha"
 
 msgid "Go to Function"
 msgstr "Ir para Função"
+
+msgid ""
+"The resource does not have a valid path because it has not been saved.\n"
+"Please save the scene or resource that contains this resource and try again."
+msgstr ""
+"O recurso não tem um caminho válido porque não foi salvo.\n"
+"Salve a cena ou o recurso que contém esse recurso e tente novamente."
 
 msgid "Can't drop nodes without an open scene."
 msgstr "Não é possível descartar nós sem uma cena aberta."
@@ -10392,6 +10603,13 @@ msgstr ""
 "Coordenadas do Atlas: %s\n"
 "Alternativa: %d"
 
+msgid ""
+"The selected atlas source has no valid texture. Assign a texture in the "
+"TileSet bottom tab."
+msgstr ""
+"A fonte do atlas selecionada não tem textura válida. Atribua uma textura na "
+"guia inferior TileSet."
+
 msgid "Base Tiles"
 msgstr "Tiles Base"
 
@@ -10470,6 +10688,9 @@ msgstr "Pintar Conjunto de Terreno"
 msgid "Painting Terrain"
 msgstr "Pintando Terreno"
 
+msgid "Can't rotate patterns when using non-square tile grid."
+msgstr "Não é possível girar padrões ao usar grade de bloco não quadrada."
+
 msgid "No Texture Atlas Source (ID: %d)"
 msgstr "Sem Fonte de Atlas de Textura (ID: %d)"
 
@@ -10491,11 +10712,18 @@ msgstr "Índice: %d"
 msgid "Tile with Invalid Scene"
 msgstr "Tile com Cena Inválida"
 
+msgid ""
+"The selected scene collection source has no scenes. Add scenes in the TileSet "
+"bottom tab."
+msgstr ""
+"A coleção de cenas selecionadas não possui cenas. Adicione cenas na aba "
+"inferior do TileSet."
+
 msgid "Delete tiles"
 msgstr "Excluir tiles"
 
 msgid "Drawing Rect:"
-msgstr "Desenho Reto:"
+msgstr "Retângulo de Desenho:"
 
 msgid "Change selection"
 msgstr "Mudar Seleção"
@@ -10743,14 +10971,30 @@ msgstr "Física"
 msgid "Physics Layer %d"
 msgstr "Camada de Física %d"
 
+msgid ""
+"Create and customize physics layers in the inspector of the TileSet resource."
+msgstr "Crie e personalize camadas de física no inspetor do recurso TileSet."
+
 msgid "Navigation Layer %d"
 msgstr "Camada de Navegação %d"
+
+msgid ""
+"Create and customize navigation layers in the inspector of the TileSet "
+"resource."
+msgstr "Crie e personalize camadas de navegação no inspetor do recurso TileSet."
 
 msgid "Custom Data"
 msgstr "Dados Personalizados"
 
 msgid "Custom Data %d"
 msgstr "Dados Personalizados %d"
+
+msgid ""
+"Create and customize custom data layers in the inspector of the TileSet "
+"resource."
+msgstr ""
+"Crie e personalize camadas de dados personalizadas no inspetor do recurso "
+"TileSet."
 
 msgid "Select a property editor"
 msgstr "Selecione um editor de propriedades"
@@ -10801,6 +11045,13 @@ msgstr "Selecionar Tiles."
 msgid "Paint properties."
 msgstr "Propriedades da pintura."
 
+msgid ""
+"No tiles selected.\n"
+"Select one or more tiles from the palette to edit its properties."
+msgstr ""
+"Nenhum bloco selecionado.\n"
+"Selecione um ou mais blocos da paleta para editar suas propriedades."
+
 msgid "Paint Properties:"
 msgstr "Propriedades da Pintura:"
 
@@ -10809,6 +11060,13 @@ msgstr "Criar Tiles em Regiões de Textura não Transparente"
 
 msgid "Remove Tiles in Fully Transparent Texture Regions"
 msgstr "Remover Tiles em Regiões de Textura Totalmente Transparentes"
+
+msgid ""
+"The current atlas source has tiles outside the texture.\n"
+"You can clear it using \"%s\" option in the 3 dots menu."
+msgstr ""
+"O recurso atual do atlas possui azulejos fora da textura.\n"
+"Você pode limpá-lo usando a opção \"%s\" no menu de três pontos."
 
 msgid "Create an Alternative Tile"
 msgstr "Criar um Tile Alternativo"
@@ -10864,6 +11122,15 @@ msgstr ""
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Adicione novos padrões no modo de edição TileMap."
+
+msgid ""
+"Warning: Modifying a source ID will result in all TileMaps using that source "
+"to reference an invalid source instead. This may result in unexpected data "
+"loss. Change this ID carefully."
+msgstr ""
+"Aviso: Modificar um ID de origem resultará em todos os TileMaps que utilizam "
+"essa origem referenciando uma origem inválida. Isso pode resultar em perda de "
+"dados inesperada. Mude este ID cuidadosamente."
 
 msgid "Add a Scene Tile"
 msgstr "Adicionar um Tile na Cena"
@@ -11855,6 +12122,9 @@ msgstr ""
 "Retorna o valor de profundidade obtido do pré-passe de profundidade em um "
 "espaço linear."
 
+msgid "Reconstructs the World Position of the Node from the depth texture."
+msgstr "Reconstrói a posição geral do nó a partir da textura de profundidade."
+
 msgid "Perform the 2D texture lookup."
 msgstr "Execute a pesquisa de textura 2D."
 
@@ -11975,6 +12245,9 @@ msgid "Remaps a given input from the input range to the output range."
 msgstr ""
 "Remapeia uma determinada entrada do intervalo de entrada para o intervalo de "
 "saída."
+
+msgid "Rotates an input vector by a given angle."
+msgstr "Rotaciona um vetor de entrada por um ângulo dado."
 
 msgid "Vector function."
 msgstr "Função vetorial."
@@ -12967,6 +13240,13 @@ msgstr "Nome da Cena:"
 msgid "Root Name:"
 msgstr "Nome da Raiz:"
 
+msgid ""
+"When empty, the root node name is derived from the scene name based on the "
+"\"editor/naming/node_name_casing\" project setting."
+msgstr ""
+"Quando vazio, o nome do nó raiz é derivado do nome da cena com base na "
+"configuração do projeto 'editor/naming/node_name_casing'."
+
 msgid "Scene name is valid."
 msgstr "O nome da cena é válido."
 
@@ -13240,6 +13520,9 @@ msgstr "(usado %d vezes)"
 msgid "Expand/Collapse Branch"
 msgstr "Expandir/Recolher Ramos"
 
+msgid "Paste as Sibling"
+msgstr "Colar como Irmão"
+
 msgid "Reparent to New Node"
 msgstr "Reparentar para Novo Nó"
 
@@ -13261,6 +13544,9 @@ msgid ""
 msgstr ""
 "Instancia um arquivo de cena como Nó. Cria uma cena herdada se não existir "
 "nenhum nó raiz."
+
+msgid "Filter: name, t:type, g:group"
+msgstr "Filtro: nome, t:tipo, g:grupo"
 
 msgid "Attach a new or existing script to the selected node."
 msgstr "Adicionar um novo script, ou um já existente, para o nó selecionado."
@@ -13455,6 +13741,56 @@ msgstr "O nome '%s' é uma palavra-chave reservada da linguagem de shader."
 msgid "Add Shader Global Parameter"
 msgstr "Adicionar Parâmetro Global Shader"
 
+msgid ""
+"This project uses meshes with an outdated mesh format from previous Godot "
+"versions. The engine needs to update the format in order to use those meshes. "
+"Please use the 'Upgrade Mesh Surfaces' tool from the 'Project > Tools' menu. "
+"You can ignore this message and keep using outdated meshes, but keep in mind "
+"that this leads to increased load times every time you load the project."
+msgstr ""
+"Este projeto utiliza malhas com um formato obsoleto de versões anteriores do "
+"Godot. A engine precisa atualizar o formato para utilizar essas malhas. Por "
+"favor, use a ferramenta 'Atualizar Superfícies de Malhas' do menu de 'Projeto "
+"> Ferramentas'. Você pode ignorar esta mensagem e continuar utilizando as "
+"malhas desatualizadas, mas tenha em mente que isso pode levar a um "
+"carregamento mais lento do projeto sempre que o carregar."
+
+msgid ""
+"This project uses meshes with an outdated mesh format. Check the output log."
+msgstr ""
+"Este projeto utiliza malhas com um formato de malha obsoleto. Confira o "
+"registro de saída."
+
+msgid ""
+"The mesh format has changed in Godot 4.2, which affects both imported meshes "
+"and meshes authored inside of Godot. The engine needs to update the format in "
+"order to use those meshes.\n"
+"\n"
+"If your project predates Godot 4.2 and contains meshes, we recommend you run "
+"this one time conversion tool. This update will restart the editor and may "
+"take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"You can still use your existing meshes as is. The engine will update each "
+"mesh in memory, but the update will not be saved. Choosing this option will "
+"lead to slower load times every time this project is loaded."
+msgstr ""
+"O formato de malha mudou na versão 4.2 do Godot, que afeta tanto malhas "
+"importadas quanto malhas criadas dentro do Godot. A engine precisa atualizar "
+"o formato para utilizar essas malhas.\n"
+"\n"
+"Se o seu projeto precede o Godot 4.2 e contém malhas, nós recomendamos que "
+"você execute essa ferramenta de conversão única. Essa atualização reiniciará "
+"o editor e poderá levar vários minutos. Atualizar as malhas fará com que elas "
+"sejam incompatíveis com versões anteriores do Godot.\n"
+"\n"
+"Você ainda pode usar as malhas como estão. A engine irá atualizar cada malha "
+"na memória, porém essa atualização não será salva. Escolher essa opção levará "
+"a uma execução mais lenta toda vez que esse projeto for carregado."
+
+msgid "Restart & Upgrade"
+msgstr "Reiniciar & Atualizar"
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Faça este painel flutuar na tela %d."
 
@@ -13580,6 +13916,14 @@ msgstr ""
 
 msgid "Disabling '.blend' file import requires restarting the editor."
 msgstr "Desativar a importação de arquivo '.blend' requer reiniciar o editor."
+
+msgid ""
+"Blend file import is enabled, but the Blender path doesn't point to an "
+"accessible directory. Blend files will not be imported."
+msgstr ""
+"A importação dos arquivos do Blender está ativada, porém o caminho de pasta "
+"do Blender não direciona para um diretório acessível pelo programa. Os "
+"arquivos não serão importados."
 
 msgid "Next Plane"
 msgstr "Próximo Plano"
@@ -13736,6 +14080,13 @@ msgstr ""
 
 msgid "Failed to load .NET runtime"
 msgstr "Falha ao carregar tempo de execução .NET"
+
+msgid ""
+"Unable to find the .NET assemblies directory.\n"
+"Make sure the '%s' directory exists and contains the .NET assemblies."
+msgstr ""
+"Não foi possível encontrar o diretório de assemblies .NET.\n"
+"Confirme que o diretório '%s' existe e contém os assemblies .NET."
 
 msgid ""
 "Unable to load .NET runtime, specifically hostfxr.\n"
@@ -14070,6 +14421,9 @@ msgstr "Executando no dispositivo..."
 msgid "Could not execute on device."
 msgstr "Não foi possível executar no dispositivo."
 
+msgid "Exporting to Android when using C#/.NET is experimental."
+msgstr "Exportar para Android usando C#/.NET é experimental."
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -14278,6 +14632,9 @@ msgstr "Identificador Inválido:"
 msgid "Export Icons"
 msgstr "Exportar Ícones"
 
+msgid "Exporting for iOS (Project Files Only)"
+msgstr "Exportando para iOS (Arquivos do Projeto Apenas)"
+
 msgid "Prepare Templates"
 msgstr "Preparando Modelos"
 
@@ -14306,6 +14663,12 @@ msgid ""
 msgstr ""
 ".ipa só pode ser criado no macOS. Saindo do projeto Xcode sem compilar o "
 "pacote."
+
+msgid "Exporting to iOS when using C#/.NET is experimental and requires macOS."
+msgstr "Exportar para iOS usando C#/.NET é experimental e requer macOS."
+
+msgid "Exporting to iOS when using C#/.NET is experimental."
+msgstr "Exportar para iOS usando C#/.NET é experimental."
 
 msgid "Identifier is missing."
 msgstr "Identificador está ausente."

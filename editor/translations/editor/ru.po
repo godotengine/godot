@@ -165,26 +165,28 @@
 # Daniil Zimchuk <danrus228zk@gmail.com>, 2023.
 # Иван Жиляк <zilakivan2008@gmail.com>, 2023.
 # Ilia Brykin <brykin.ilia@gmail.com>, 2023.
-# Ruslan <vovavalenkov15@gmail.com>, 2023.
+# Ruslan <vovavalenkov15@gmail.com>, 2023, 2024.
 # DLushin <dmiyashyt@gmail.com>, 2023.
 # a-d-polevoi <a.d.polevoi@gmail.com>, 2023.
 # "Станислав Л." <mr.levicsky@gmail.com>, 2023.
 # MaksKraft <Maksonchik2003@yandex.ru>, 2024.
+# Dmitry <www.dimon271296000@gmail.com>, 2024.
+# John Blacko <sporrershik@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-08 20:42+0000\n"
-"Last-Translator: MaksKraft <Maksonchik2003@yandex.ru>\n"
+"PO-Revision-Date: 2024-02-08 17:45+0000\n"
+"Last-Translator: Ruslan <vovavalenkov15@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
@@ -260,7 +262,7 @@ msgid "Joystick 4 X-Axis"
 msgstr "Ось X джойстика 4"
 
 msgid "Joystick 4 Y-Axis"
-msgstr "Ось Y джойстика 3"
+msgstr "Ось Y джойстика 4"
 
 msgid "Unknown Joypad Axis"
 msgstr "Неизвестная ось джойстика"
@@ -2085,7 +2087,7 @@ msgid "Gold Members"
 msgstr "Члены золотого уровня"
 
 msgid "Donors"
-msgstr "Доноры"
+msgstr "Спонсоры"
 
 msgid "License"
 msgstr "Лицензия"
@@ -3688,6 +3690,21 @@ msgstr ""
 "Невозможно записать в файл '%s', файл используется, заблокирован или "
 "отсутствуют разрешения."
 
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the rendering method to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: gl_compatibility"
+msgstr ""
+"Изменение отрисовщика требует перезапуска редактора\n"
+"\n"
+"Выбор Сохранение и Перезапуск поменяет метод отрисовки на:\n"
+"- Настольные платформы: %s\n"
+"- Мобильные платформы: %s\n"
+"- Веб-платформы: gl_compatibility"
+
 msgid "Forward+"
 msgstr "Forward+"
 
@@ -3696,6 +3713,9 @@ msgstr "Мобильные устройства"
 
 msgid "Compatibility"
 msgstr "Совместимость"
+
+msgid "(Overridden)"
+msgstr "(Overridden)"
 
 msgid "Pan View"
 msgstr "Панорамировать вид"
@@ -3874,6 +3894,21 @@ msgstr "О Godot"
 
 msgid "Support Godot Development"
 msgstr "Поддержать разработку Godot"
+
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"Выберите метод отрисовки.\n"
+"\n"
+"Примечания:\n"
+"- На мобильных платформах используется метод отрисовки Mobile, если Forward+ "
+"выбран здесь.\n"
+"- На веб-платформе всегда используется метод отрисовки Compatibility."
 
 msgid "Update Continuously"
 msgstr "Непрерывное обновление"

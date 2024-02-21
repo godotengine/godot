@@ -29,7 +29,7 @@
 # Mitsuha Miamizu <mitsuha.miamizu4444@gmail.com>, 2022.
 # LordProfo <nimaentity30@gmail.com>, 2022.
 # LordProfo (Nima) <nimaentity30@gmail.com>, 2022, 2023.
-# John Smith <pkafsharix@gmail.com>, 2022, 2023.
+# John Smith <pkafsharix@gmail.com>, 2022, 2023, 2024.
 # Ali Jafari <ali.jafari.sn@gmail.com>, 2022.
 # Ali Almasi <A710almasi@gmail.com>, 2022.
 # 2g.2d.2t <2g.2d.2t@gmail.com>, 2022.
@@ -48,7 +48,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-26 13:51+0000\n"
+"PO-Revision-Date: 2024-02-17 15:01+0000\n"
 "Last-Translator: John Smith <pkafsharix@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
@@ -57,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2.1-rc\n"
+"X-Generator: Weblate 5.4\n"
 
 msgid "Main Thread"
 msgstr "موضوع اصلی"
@@ -6248,6 +6248,14 @@ msgstr "در حال نصب در دستگاه، لطفا صبر کنید..."
 
 msgid "Could not install to device: %s"
 msgstr "در دستگاه نصب نشد: %s"
+
+msgid ""
+"The project name does not meet the requirement for the package name format "
+"and will be updated to \"%s\". Please explicitly specify the package name if "
+"needed."
+msgstr ""
+"نام پروژه نیازمندی‌ قالب نام بسته را برآورده نمی کند و به \"%s\" به روز می‌شود. "
+"لطفا در صورت نیاز نام بسته را به صراحت مشخص کنید."
 
 msgid "Verifying %s..."
 msgstr "در حال تایید %s..."

@@ -84,21 +84,22 @@
 # Marcin Zieliński <czolgista83@gmail.com>, 2023.
 # Aleksander Łagowiec <mineolek10@users.noreply.hosted.weblate.org>, 2023.
 # Jakub Marcowski <chubercikbattle@gmail.com>, 2024.
+# damian <damian2779898@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-28 14:02+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2024-02-15 10:11+0000\n"
+"Last-Translator: damian <damian2779898@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
@@ -800,6 +801,9 @@ msgstr "Język edytora"
 msgid "Display Scale"
 msgstr "Rozmiar wyświetlania"
 
+msgid "Use Embedded Menu"
+msgstr "Użyj wbudowanego menu"
+
 msgid "Custom Display Scale"
 msgstr "Niestandardowa skala wyświetlania"
 
@@ -907,6 +911,9 @@ msgstr "Ścieżka Blender 3"
 
 msgid "FBX"
 msgstr "FBX"
+
+msgid "FBX2glTF Path"
+msgstr "Ścieżka do FBX2glTF"
 
 msgid "Docks"
 msgstr "Doki"
@@ -1670,6 +1677,9 @@ msgstr "FPS"
 msgid "Normal Map"
 msgstr "Mapa normalnych"
 
+msgid "Roughness"
+msgstr "Chropowatość"
+
 msgid "Process"
 msgstr "Przetwarzanie"
 
@@ -1814,6 +1824,9 @@ msgstr "Odstęp"
 msgid "Texture Region Size"
 msgstr "Rozmiar obszaru tekstury"
 
+msgid "Alternative ID"
+msgstr "Alternatywne ID"
+
 msgid "Speed"
 msgstr "Prędkość"
 
@@ -1937,6 +1950,9 @@ msgstr "Przesunięcie pozycji podpowiedzi"
 msgid "Minimum Display Time"
 msgstr "Minimalny czas wyświetlania"
 
+msgid "Dotnet"
+msgstr "Dotnet"
+
 msgid "Project"
 msgstr "Projekt"
 
@@ -1996,6 +2012,9 @@ msgstr "Wielokąt"
 
 msgid "Depth"
 msgstr "Głębia"
+
+msgid "Spin Degrees"
+msgstr "Stopnie obrotu"
 
 msgid "Path Node"
 msgstr "Ścieżka węzła"

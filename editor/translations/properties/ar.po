@@ -71,7 +71,7 @@
 # أحمد النور <ahmed2699@gmail.com>, 2022.
 # Commander Gordon <gordoncommander@gmail.com>, 2022.
 # Abdulrahman <abdelrahman.ramadan686@gmail.com>, 2022.
-# بسام العوفي <co-able@hotmail.com>, 2023.
+# بسام العوفي <co-able@hotmail.com>, 2023, 2024.
 # Abdulkarim <abwkhaldalhwsawy@gmail.com>, 2023.
 # KhalilBenGaied <grozz1@yahoo.com>, 2023.
 # "Mr.k" <mineshtine28546271@gmail.com>, 2023.
@@ -84,8 +84,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-12 23:41+0000\n"
-"Last-Translator: Emad Alhaddad <emad142240@gmail.com>\n"
+"PO-Revision-Date: 2024-02-21 09:02+0000\n"
+"Last-Translator: بسام العوفي <co-able@hotmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ar/>\n"
 "Language: ar\n"
@@ -94,7 +94,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Application"
 msgstr "التطبيق"
@@ -148,7 +148,7 @@ msgid "Quit on Go Back"
 msgstr "الرجوع للخلف"
 
 msgid "Display"
-msgstr "عرض"
+msgstr "الإظهار"
 
 msgid "Window"
 msgstr "نافذة"
@@ -262,7 +262,7 @@ msgid "3D"
 msgstr "الثلاثي"
 
 msgid "Stretch"
-msgstr "تمدد"
+msgstr "التمدد"
 
 msgid "Aspect"
 msgstr "الجانب"

@@ -6,13 +6,13 @@
 # George Dzavashvili <dzavashviligeorge@gmail.com>, 2018.
 # დემეტრე შონია <blender.animation.maker@gmail.com>, 2019.
 # Rati Nikolaishvili <rati.nikolaishvili@gmail.com>, 2019.
-# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023.
+# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-07 16:32+0000\n"
+"PO-Revision-Date: 2024-02-18 23:39+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ka/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.4\n"
 
 msgid "Unset"
 msgstr "მოხსნა"
@@ -667,6 +667,9 @@ msgstr "ხაზის ნომერი:"
 msgid "%d replaced."
 msgstr "%d ჩანაცვლდა."
 
+msgid "No match"
+msgstr "დამთხვევის გარეშე"
+
 msgid "%d match"
 msgid_plural "%d matches"
 msgstr[0] "%d დამთხვევა"
@@ -1130,6 +1133,9 @@ msgstr "ასეტის \"%s\" დაყენება წარმატე
 msgid "Success!"
 msgstr "წარმატება!"
 
+msgid "Installation preview:"
+msgstr "დაყენების გადახედვა:"
+
 msgid "Install"
 msgstr "დაყენება"
 
@@ -1253,6 +1259,13 @@ msgstr "ქმედებები:"
 msgid "Load Profile"
 msgstr "პროფილის ჩატვირთვა"
 
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"ჩავარდა შესრულება ბრძანებისთვის \"%s\":\n"
+"%s."
+
 msgid "Filter Commands"
 msgstr "ბრძანებების ფილტრი"
 
@@ -1363,6 +1376,9 @@ msgstr "ოპერატორის აღწერები"
 
 msgid "Property:"
 msgstr "თვისება:"
+
+msgid "Method:"
+msgstr "მეთოდი:"
 
 msgid "Signal:"
 msgstr "სიგნალი:"
@@ -1494,6 +1510,9 @@ msgstr "მობაილი"
 msgid "Compatibility"
 msgstr "თავსებადობა"
 
+msgid "(Overridden)"
+msgstr "(გადაფარულია)"
+
 msgid "Pan View"
 msgstr "პანორამული ხედი"
 
@@ -1535,6 +1554,9 @@ msgstr "ხელსაწყოები"
 
 msgid "Orphan Resource Explorer..."
 msgstr "ობოლი რესურსების მაძიებელი..."
+
+msgid "Upgrade Mesh Surfaces..."
+msgstr "ბადის ზედაპირების დონის აწევა..."
 
 msgid "Editor"
 msgstr "რედაქტორი"
@@ -1589,6 +1611,12 @@ msgstr "ბიბლიოთეკის გატანა"
 
 msgid "Reload"
 msgstr "თავიდან ჩატვირთვა"
+
+msgid "Create Version Control Metadata..."
+msgstr "ვერსიის კონტროლის მეტამონაცემების შექმნა..."
+
+msgid "Version Control Settings..."
+msgstr "ვერსიის კონტროლის მორგება..."
 
 msgid "Ok"
 msgstr "დიახ"
@@ -1656,6 +1684,9 @@ msgstr "შეინახვა &როგორც..."
 msgid "Convert to %s"
 msgstr "%s-ში გადაყვანა"
 
+msgid "Select resources to make unique:"
+msgstr "აირჩიეთ რესურსი მათი უნიკალურად მოსანიშნად:"
+
 msgid "New %s"
 msgstr "ახალი %s"
 
@@ -1667,6 +1698,12 @@ msgstr "გაუქმება: %s"
 
 msgid "Redo: %s"
 msgstr "გამეორება: %s"
+
+msgid "Edit Built-in Action: %s"
+msgstr "ჩაშენებული ქმედების ჩასწორება: %s"
+
+msgid "Edit Shortcut: %s"
+msgstr "მალსახმობის ჩასწორება: %s"
 
 msgid "Common"
 msgstr "ჩვეულებრივი"
@@ -2203,6 +2240,9 @@ msgstr "წერტილი"
 msgid "Open Editor"
 msgstr "რედაქტორის გახსნა"
 
+msgid "Parameter Changed: %s"
+msgstr "პარამეტრი შეიცვალა: %s"
+
 msgid "Change Filter"
 msgstr "ფილტრის შეცვლა"
 
@@ -2277,6 +2317,9 @@ msgstr "სიღრმე"
 
 msgid "Transition exists!"
 msgstr "გარდასვლა არსებობს!"
+
+msgid "Edit %s"
+msgstr "%s-ის ჩასწორება"
 
 msgid "Immediate"
 msgstr "უეცარი"
@@ -2381,6 +2424,9 @@ msgstr "დაბლოკილი"
 msgid "Grouped"
 msgstr "დაჯგუფებული"
 
+msgid "Add Node Here..."
+msgstr "აქ კვანძის დამატება..."
+
 msgid "Move Node(s) Here"
 msgstr "კვანძ(ებ)-ის აქ გადმოტანა"
 
@@ -2440,6 +2486,9 @@ msgstr "გიდების ჩვენება"
 
 msgid "Center Selection"
 msgstr "მონიშვნის ცენტრირება"
+
+msgid "Project theme"
+msgstr "პროექტის თემა"
 
 msgid "Insert keys (based on mask)."
 msgstr "გასაღებების ჩასმა (ნიღაბზე დამოკიდებულებით)."
@@ -2596,6 +2645,12 @@ msgstr "თარგმნა"
 msgid "Translating:"
 msgstr "გადატანა:"
 
+msgid "Translating %s."
+msgstr "%s-ის თარგმანი."
+
+msgid "Scaling %s."
+msgstr "%s-ის მასშტაბი."
+
 msgid "Display Advanced..."
 msgstr "დამატებით ჩვენება..."
 
@@ -2682,6 +2737,9 @@ msgstr "რესურსის დამატება"
 
 msgid "Delete Resource"
 msgstr "რესურსის წაშლა"
+
+msgid "Path to AnimationMixer is invalid"
+msgstr "ბილიკი AnimationMixer-მდე არასწორია"
 
 msgid "Clear Recent Files"
 msgstr "ბოლო ფაილების გასუფთავება"
@@ -2846,6 +2904,9 @@ msgstr "მონიშნული პოზების დაბრუნე�
 
 msgid "Insert key of all bone poses."
 msgstr "ყველა ძვლს პოზის გასაღების ჩასმა."
+
+msgid "Can't convert an empty sprite to mesh."
+msgstr "ცარიელი სპრაიტის ბადეში გადაყვანა შეუძლებელია."
 
 msgid "Simplification:"
 msgstr "გამარტივება:"
@@ -3140,8 +3201,14 @@ msgstr "ფიზიკა"
 msgid "Physics Layer %d"
 msgstr "ფიზიკური ფენა %d"
 
+msgid "No physics layers"
+msgstr "ფიზიკური ფენების გარეშე"
+
 msgid "Navigation Layer %d"
 msgstr "ნავიგაციის ფენა %d"
+
+msgid "No navigation layers"
+msgstr "ნავიგაციის ფენების გარეშე"
 
 msgid "Custom Data %d"
 msgstr "ხელით მითითებული მონაცემები %d"
@@ -3430,6 +3497,9 @@ msgstr "3D ვექტორული მუდმივა."
 
 msgid "4D vector constant."
 msgstr "4D ვექტორული მუდმივა."
+
+msgid "Edit Visual Property: %s"
+msgstr "ვიზუალური თვისების ჩასწორება: %s"
 
 msgid "Bake VoxelGI"
 msgstr "VoxelGI-ის გამოცხობა"

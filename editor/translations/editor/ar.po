@@ -77,7 +77,7 @@
 # Mohammedi Mohammed Djawad <smallcloverstudio@gmail.com>, 2023.
 # Hamed Mohammed Almuslhi <wbk7777@hotmail.com>, 2023.
 # KhalilBenGaied <grozz1@yahoo.com>, 2023.
-# بسام العوفي <co-able@hotmail.com>, 2023.
+# بسام العوفي <co-able@hotmail.com>, 2023, 2024.
 # Abdulkarim <abwkhaldalhwsawy@gmail.com>, 2023.
 # Rémi Verschelde <remi@godotengine.org>, 2023.
 # Omran Alsaedi <Omran2222@outlook.sa>, 2023.
@@ -94,8 +94,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-21 20:50+0000\n"
-"Last-Translator: Varga <vancouver_cliparf@simplelogin.com>\n"
+"PO-Revision-Date: 2024-02-21 09:02+0000\n"
+"Last-Translator: بسام العوفي <co-able@hotmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -104,10 +104,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
-msgstr "ثريد رئيسي"
+msgstr "النظيمة الرئيسة"
 
 msgid "Unset"
 msgstr "غير محدد"
@@ -1577,7 +1577,7 @@ msgid "Decompressing remote file system"
 msgstr "توسيع(ضغط) نظام الملفات البعيد"
 
 msgid "Scanning for local changes"
-msgstr "الفحص عن التغييرات القريبة"
+msgstr "البحث عن التغييرات القريبة"
 
 msgid "Sending list of changed files:"
 msgstr "إرسال قائمة بالملفات المتغيرة:"
@@ -1910,7 +1910,7 @@ msgid "Errors loading!"
 msgstr "اخطاء في التحميل!"
 
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "هل تريد حذف %d عنصر (عناصر) نهائيًا؟ (لا يمكن التراجع!)"
+msgstr "هل تريد حذف العناصر %d نهائيًا؟ (لا يمكن التراجع!)"
 
 msgid "Show Dependencies"
 msgstr "إظهار التبعيات"
@@ -2220,7 +2220,7 @@ msgid "Load an existing Bus Layout."
 msgstr "حمّلْ تخطيط صوت سابق."
 
 msgid "Save As"
-msgstr "حفظ بأسم"
+msgstr "حفظ باسم"
 
 msgid "Save this Bus Layout to a file."
 msgstr "احفظْ تخطيط هذا المقطع إلى ملف."
@@ -2652,7 +2652,7 @@ msgid "Save & Restart"
 msgstr "حفظ و إعادة تشغيل"
 
 msgid "ScanSources"
-msgstr "فحص المصادر"
+msgstr "البحث في المصادر"
 
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
@@ -2878,7 +2878,7 @@ msgid "Signal:"
 msgstr "إشارة:"
 
 msgid "Theme Item:"
-msgstr "إضافة عنصر مظهر واجهة المستخدم:"
+msgstr "عنصر النمط:"
 
 msgid "No description available."
 msgstr "لا يوجد وصف متاح."
@@ -2941,7 +2941,7 @@ msgid "Method"
 msgstr "دالة"
 
 msgid "Signal"
-msgstr "الإشاراة"
+msgstr "الإشارة"
 
 msgid "Annotation"
 msgstr "التوضيح"
@@ -2980,13 +2980,13 @@ msgstr[4] "(%d تغييرات)"
 msgstr[5] "(%d تغييرات)"
 
 msgid "Add element to property array with prefix %s."
-msgstr "أضف عنصراً غلى مصفوفة الخصائص مع البادئة %s."
+msgstr "أضف عنصراً إلى المصفوفة المخصوصة مع البادئة %s."
 
 msgid "Remove element %d from property array with prefix %s."
-msgstr "أزل العنصر %d من مصفوفة الخاصيات ذو البادئة %s."
+msgstr "أزل العنصر %d من المصفوفة المخصوصة مع البادئة %s."
 
 msgid "Move element %d to position %d in property array with prefix %s."
-msgstr "أنقل العنصر %d إلى الترتيب %d في مصفوفة الخاصيات، ذو البادئة %s."
+msgstr "انقل العنصر %d إلى الموضع %d في المصفوفة المخصوصة مع البادئة %s."
 
 msgid "Clear Property Array with Prefix %s"
 msgstr "إزاله خاصية المصفوفة ذات البادئة %s"
@@ -3295,7 +3295,7 @@ msgid "Layout name not found!"
 msgstr "اسم النسق غير موجود!"
 
 msgid "Restored the Default layout to its base settings."
-msgstr "تم إسترجاع النسق الإفتراضي (Default layout) لاعدادتهِ الأساسية."
+msgstr "قد أُعيد التخطيط الافتراضي لإعدادتهِ الأساسية."
 
 msgid "This object is marked as read-only, so it's not editable."
 msgstr "تم وصف هذا الكائن على أنه للقراءة فقط، لذا لا يمكن تعديله."
@@ -3602,7 +3602,7 @@ msgstr ""
 "ينقصه الأذونات."
 
 msgid "Forward+"
-msgstr "تقدم+"
+msgstr "المتقدم"
 
 msgid "Mobile"
 msgstr "المتنقل (كالجوال والأجهزة اللوحية والحواسب المحمولة الضعيفة)"
@@ -3893,7 +3893,7 @@ msgid "Create Version Control Metadata..."
 msgstr "إعداد إدارة الإصدارات لالبيانات الوصفية (Version Control)..."
 
 msgid "Version Control Settings..."
-msgstr "نظام التحكم بالإصدار VCS..."
+msgstr "إعدادات التحكم في الإصدارات..."
 
 msgid "New Inherited"
 msgstr "موروث جديد"
@@ -5022,7 +5022,7 @@ msgid ""
 "Scanning Files,\n"
 "Please Wait..."
 msgstr ""
-"يفحص الملفات،\n"
+"البحث في الملفات،\n"
 "من فضلك انتظر..."
 
 msgid "Overwrite"
@@ -5683,7 +5683,7 @@ msgstr ""
 "خريطة-الرسمة-بدقات-متعددة (mipmap) وضغط نقش إلى %s."
 
 msgid "2D/3D (Auto-Detect)"
-msgstr "ثنائي الابعاد/ثلاثي الابعاد (تحقيق تلقائي)"
+msgstr "ثنائي /ثلاثي الأبعاد (تحقق تلقائي)"
 
 msgid "2D"
 msgstr "الثنائي"
@@ -6338,7 +6338,7 @@ msgid "Nodes Disconnected"
 msgstr "العُقد غير متصلة"
 
 msgid "Set Animation"
-msgstr "تحديد الرسومية المتحركة"
+msgstr "عينْ التحريك"
 
 msgid "Delete Node"
 msgstr "حذف العُقدة"
@@ -6634,7 +6634,7 @@ msgid "Display list of animations in player."
 msgstr "إظهار قائمة الحركات في المُشغل."
 
 msgid "Autoplay on Load"
-msgstr "تشغيل تلقائي حينما يتم التحميل"
+msgstr "تشغيل تلقائي عند التحميل"
 
 msgid "Enable Onion Skinning"
 msgstr "تفعيل تقشير البصل"
@@ -6924,7 +6924,7 @@ msgid "Search Templates, Projects, and Demos"
 msgstr "البحث في القوالب والمشاريع والأمثلة"
 
 msgid "Search Assets (Excluding Templates, Projects, and Demos)"
-msgstr "البحث في الملحقات (عدا القوالب، والمشاريع، والأمثلة)"
+msgstr "البحث في الأصول (عدا القوالب، والمشاريع، والأمثلة)"
 
 msgid "Import..."
 msgstr "استيراد..."
@@ -6986,7 +6986,8 @@ msgstr "خطوة التحجيم:"
 msgid ""
 "Children of a container get their position and size determined only by their "
 "parent."
-msgstr "أطفال الحاوية يتم تحديد موقعهم وحجمهم فقط من قبل والديهم."
+msgstr ""
+"فروع الحاوية لا يمكن تحديد مواقعها وأحجامها إلا من العقدة التي هي أًصل لها فقط."
 
 msgid "Move Node(s) to Position"
 msgstr "نقل العُقد إلى الموضع"
@@ -7040,7 +7041,7 @@ msgid "Move %d CanvasItems"
 msgstr "تحريك %d من عناصر-اللوحات"
 
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "تحريك عنصر-اللوحة \"%s\" الى (%d, %d)"
+msgstr "نقل عنصر-اللوحة \"%s\" الى (%d, %d)"
 
 msgid "Locked"
 msgstr "مُقفل"
@@ -7391,7 +7392,7 @@ msgid "Drag and drop to add as child of current scene's root node."
 msgstr "اسحبْ وألقِ؛ لإضافته فرعا للعقدة الجذرية للمشهد الحالي."
 
 msgid "Hold %s when dropping to add as child of selected node."
-msgstr "اضغط باستمرار على %s عند الإسقاط للإضافة كفرع للعقدة المحددة."
+msgstr "علّق على %s عند الإسقاط؛ لإضافته \"فرعا\" للعقدة المحددة."
 
 msgid "Hold Shift when dropping to add as sibling of selected node."
 msgstr "اضغط مع الاستمرار على Shift عند الإسقاط للإضافة كأخ للعقدة المحددة."
@@ -7720,7 +7721,7 @@ msgstr ""
 "في المشروع المشغل."
 
 msgid "Debug CanvasItem Redraws"
-msgstr "تصحيح أخطاء إعادة رسم عنصر اللوحة القماشية"
+msgstr "تنقيح مرتسمات عنصر-اللوحة"
 
 msgid ""
 "When this option is enabled, redraw requests of 2D objects will become "
@@ -8414,10 +8415,10 @@ msgid "Top Perspective"
 msgstr "نظر من فوق"
 
 msgid "Bottom Orthogonal"
-msgstr "نظر من الاسفل (متعامد)"
+msgstr "نظر من الأسفل (متعامد)"
 
 msgid "Bottom Perspective"
-msgstr "نظر من الاسفل"
+msgstr "نظر من الأسفل"
 
 msgid "Left Orthogonal"
 msgstr "نظر من الشمال (متعامد/ليس له بعد ثالث)"
@@ -8444,7 +8445,7 @@ msgid "Rear Perspective"
 msgstr "نظر من الخلف"
 
 msgid " [auto]"
-msgstr " [auto]"
+msgstr " [تلقائي]"
 
 msgid "X-Axis Transform."
 msgstr "التحوّل المحوري X."
@@ -8495,28 +8496,28 @@ msgid "FPS: %d"
 msgstr "ط ث : %d"
 
 msgid "Top View."
-msgstr "الواجهة العلوية."
+msgstr "المنظر العُلوي."
 
 msgid "Bottom View."
-msgstr "الواجهة السفلية."
+msgstr "المنظر السُّفلي."
 
 msgid "Left View."
-msgstr "الواجهة اليُسرى."
+msgstr "المنظر الأيسر."
 
 msgid "Right View."
-msgstr "الواجهة اليُمنى."
+msgstr "المنظر الأيمن."
 
 msgid "Front View."
-msgstr "الواجهة الأمامية."
+msgstr "المنظر الأمامي."
 
 msgid "Rear View."
-msgstr "الواجهة الخلفية."
+msgstr "المنظر الخلفي."
 
 msgid "Align Transform with View"
-msgstr "محاذاة التحوّل مع الواجهة"
+msgstr "محاذاة التحوّل مع المنظر"
 
 msgid "Align Rotation with View"
-msgstr "محاذاة التدوير مع الواجهة"
+msgstr "محاذاة التدوير مع المنظر"
 
 msgid "Set Surface %d Override Material"
 msgstr "قم بتعيين مادة تجاوز السطح %d"
@@ -8641,7 +8642,7 @@ msgid "Internal Buffer"
 msgstr "المخزن المؤقت الداخلي"
 
 msgid "Display Advanced..."
-msgstr "عرض إعدادات متقدمه..."
+msgstr "عرض الإعدادات المتقدمة..."
 
 msgid "View Environment"
 msgstr "عرض البيئة"
@@ -9547,7 +9548,7 @@ msgid "JSON"
 msgstr "JSON"
 
 msgid "Connections to method:"
-msgstr "الاتصالات لدالة:"
+msgstr "الاتصالات بالدالة:"
 
 msgid "Source"
 msgstr "مصدر"
@@ -9750,7 +9751,7 @@ msgid "ShaderFile"
 msgstr "ملف المُظَلِّل"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
-msgstr "لا يملك هذا الهكيل أيّة عظام، أنشئ بعض عُقد العظام ثنائية البُعد كأبناء."
+msgstr "لا يملك هذا الهكيل أيّة عظام، أنشئ عُقد عظم-ثنائي فرعية."
 
 msgid "Set Rest Pose to Bones"
 msgstr "تحديد وضعية الراحة على العظام"
@@ -9891,7 +9892,7 @@ msgid "Create LightOccluder2D Sibling"
 msgstr "أنشاء ضوء محجوب ثنائي الأبعاد"
 
 msgid "Sprite2D"
-msgstr "رسومية ثنائي الأبعاد"
+msgstr "أرسومة-ثنائية"
 
 msgid "Simplification:"
 msgstr "التبسيط:"
@@ -10357,13 +10358,13 @@ msgstr ""
 "ضف المزيد من العناصر يدوياً أو عن طريق استيرادها من ثيم آخر."
 
 msgid "Remove Theme Item"
-msgstr "إزالة غرض العنصر"
+msgstr "إزالة عنصر النمط"
 
 msgid "Add Theme Type"
 msgstr "إضافة نوع للسمة"
 
 msgid "Create Theme Item"
-msgstr "إنشاء عنصر الموضوع"
+msgstr "إنشاء عنصر النمط"
 
 msgid "Remove Theme Type"
 msgstr "إزالة نوع الموضوع"
@@ -10393,7 +10394,7 @@ msgid "Add Font Size Item"
 msgstr "إضافة عنصر حجم الخط"
 
 msgid "Add Icon Item"
-msgstr "إضافة عنصر العلامة/الايقونة"
+msgstr "إضافة عنصر العلامة/الأيقونة"
 
 msgid "Add Stylebox Item"
 msgstr "إضافة عنصر مربع المظهر"
@@ -10417,7 +10418,7 @@ msgid "Rename Stylebox Item"
 msgstr "اعادة تسمية عنصر مربع المظهر"
 
 msgid "Rename Theme Item"
-msgstr "إعادة تسمية عنصر السمه"
+msgstr "إعادة تسمية عنصر النمط"
 
 msgid "Invalid file, not a Theme resource."
 msgstr "الملف خطأ، ليس ملف مورد المظهر الكلي."
@@ -10456,7 +10457,7 @@ msgid "Remove All Items"
 msgstr "إزالة جميع العناصر"
 
 msgid "Add Theme Item"
-msgstr "إضافة عنصر مظهر واجهة المستخدم"
+msgstr "إضافة عنصر النمط"
 
 msgid "Old Name:"
 msgstr "الاسم القديم:"
@@ -10520,22 +10521,22 @@ msgid "Override All Default Theme Items"
 msgstr "تجاوز كافة عناصر السمة الافتراضية"
 
 msgid "Override Theme Item"
-msgstr "تجاوز عنصر السمه"
+msgstr "تجاوز عنصر النمط"
 
 msgid "Set Color Item in Theme"
-msgstr "تعيين عنصر اللون في السمه"
+msgstr "تعيين عنصر اللون في النمط"
 
 msgid "Set Constant Item in Theme"
-msgstr "تعيين عنصر ثابت في السمه"
+msgstr "تعيين عنصر ثابت في النمط"
 
 msgid "Set Font Size Item in Theme"
-msgstr "ضبط عنصر حجم الخط في السمة"
+msgstr "ضبط عنصر حجم الخط في النمط"
 
 msgid "Set Font Item in Theme"
-msgstr "تعيين عنصر الخط في السمه"
+msgstr "تعيين عنصر الخط في النمط"
 
 msgid "Set Icon Item in Theme"
-msgstr "تعيين أيقونة عنصر في السمة"
+msgstr "تعيين أيقونة عنصر في النمط"
 
 msgid "Set Stylebox Item in Theme"
 msgstr "تعيين عنصر مربع النمط في السمة"
@@ -11328,7 +11329,7 @@ msgstr "خطأ"
 
 msgid ""
 "Remote settings are empty. VCS features that use the network may not work."
-msgstr "الإعدادت عن بُعد فارغة. يمكن أنْ لا تعمل خصائص VCS التي تستخدم الشبكة."
+msgstr "الإعدادت عن بُعد فارغة. خصائص VCS التي تستخدم الشبكة قد لا تعمل."
 
 msgid "Commit"
 msgstr "ارتكاب"
@@ -13067,7 +13068,7 @@ msgid "Import Project"
 msgstr "استيراد مشروع"
 
 msgid "Scan"
-msgstr "فحص"
+msgstr "البحث"
 
 msgid "Scan Projects"
 msgstr "البحث في المشاريع"
@@ -13113,7 +13114,7 @@ msgid "Restart Now"
 msgstr "إعادة التشغيل الآن"
 
 msgid "Select a Folder to Scan"
-msgstr "اختر مُجلداً لفحصه"
+msgstr "اختر مُجلداً للبحث فيه"
 
 msgid "Remove All"
 msgstr "مسح الكل"
@@ -13206,7 +13207,7 @@ msgid "Project Settings (project.godot)"
 msgstr "إعدادات المشروع (project.godot)"
 
 msgid "Advanced Settings"
-msgstr "إعدادات مُتقدمة"
+msgstr "الإعدادات المُتقدمة"
 
 msgid "Select a Setting or Type its Name"
 msgstr "اختر إعدادا أو اكتبْ اسمه"
@@ -13282,7 +13283,7 @@ msgid "Per-level Counter"
 msgstr "العداد وفق-المستوى"
 
 msgid "If set, the counter restarts for each group of child nodes."
-msgstr "إذا تم تحديده فإن العداد سيعيد البدء لكل مجموعة من العُقد الأبناء."
+msgstr "إذا حُدد، فإن العداد سوف يُعاد لكل مجموعة من فروع العقد."
 
 msgid "Initial value for the counter."
 msgstr "القيمة المبدئية للعداد."
@@ -13459,7 +13460,7 @@ msgid "Make node as Root"
 msgstr "اجعل العقدة جذرا"
 
 msgid "Delete %d nodes and any children?"
-msgstr "حذف العُقدة %d مع جميع فروعها؟"
+msgstr "حذف العُقد %d مع جميع فروعها؟"
 
 msgid "Delete %d nodes?"
 msgstr "حذف العُقد %d؟"
@@ -13509,9 +13510,9 @@ msgid ""
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
-"لا يمكن حفظ فرع تابع لمشهد تم إنشاء مثيل له بالفعل.\n"
-"لحفظ هذا الفرع في المشهد الخاص به، افتح المشهد الأصلي، وانقر بزر الماوس "
-"الأيمن على هذا الفرع، ثم حدد \"حفظ الفرع كمشهد\"."
+"لا يمكن أن تحفظ فرعًا هو فرع في مشهد فرعي مستنسخ.\n"
+"لحفظ هذا الفرع في مشهده، افتح المشهد الأصلي، وانقر بزر الفأرة الأيمن على هذا "
+"الفرع، ثم اختر \"حفظ الفرع كمشهد\"."
 
 msgid ""
 "Can't save a branch which is part of an inherited scene.\n"
@@ -13535,8 +13536,8 @@ msgid ""
 "Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
 "all properties of the node to be reverted to their default."
 msgstr ""
-"سيؤدي تمكين \"التحميل كعنصر نائب\" إلى تعطيل \"العناصر الفرعية القابلة "
-"للتحرير\" ويتسبب في إعادة كافة خصائص العقدة إلى وضعها الافتراضي."
+"تمكين \"تحميله عنصرًا مناوبًا\" سوف يعطل \"فروع قابلة للتعديل\" ويُعيد كافة "
+"خصائص العقدة إلى وضعها الافتراضي."
 
 msgid "Make Local"
 msgstr "اجعله محلياً"
@@ -13628,7 +13629,7 @@ msgid "Editable Children"
 msgstr "فروع قابلة للتعديل"
 
 msgid "Load as Placeholder"
-msgstr "تحميله كعنصر نائب"
+msgstr "تحميله عنصرًا مناوِبًا"
 
 msgid "Auto Expand to Selected"
 msgstr "التوسيع التلقائي للمختارة"
@@ -13682,7 +13683,7 @@ msgid "Add Child Node..."
 msgstr "إضافة عقدة فرعية..."
 
 msgid "Instantiate Child Scene..."
-msgstr "إنشاء مشهد طفل..."
+msgstr "إلحاق مشهد فرعي..."
 
 msgid "Expand/Collapse Branch"
 msgstr "توسيع / طي الفروع"
@@ -13694,7 +13695,7 @@ msgid "Change Type..."
 msgstr "تغيير النوع..."
 
 msgid "Attach Script..."
-msgstr "إرفاق البرنامج النصي..."
+msgstr "إلحاق نص برمجي..."
 
 msgid "Extend Script..."
 msgstr "توسيع البرنامج النصي..."
@@ -16266,8 +16267,8 @@ msgid ""
 "Data from the original node is kept as a placeholder until this type of node "
 "is available again. It can hence be safely re-saved without risk of data loss."
 msgstr ""
-"يتم الاحتفاظ بالبيانات من العقدة الأصلية كعنصر نائب حتى يتوفر هذا النوع من "
-"العقد مرة أخرى. ومن ثم يمكن إعادة حفظها بأمان دون التعرض لخطر فقدان البيانات."
+"البيانات من العقدة الأصلية حُفظتْ \"عنصرا مناوبا\" حتى يتوفر هذا النوع من العقد "
+"مرة أخرى. ولذلك يمكن إعادة حفظها بأمان دون التعرض لخطر فقدان البيانات."
 
 msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
@@ -16610,6 +16611,9 @@ msgstr "لا يمكن استخدام مُعدِّل الدقة على الأنو
 
 msgid "Duplicated render mode: '%s'."
 msgstr "مضاعفة العُقد: '%s'."
+
+msgid "Invalid render mode: '%s'."
+msgstr "وضع التكوين غير صالح: '%s'."
 
 msgid "Unexpected token: '%s'."
 msgstr "رمز مميز غير متوقع: '%s'."

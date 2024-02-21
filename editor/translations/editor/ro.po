@@ -15,7 +15,7 @@
 # f0roots <f0rootss@gmail.com>, 2020.
 # Gigel2 <mihalacher02@gmail.com>, 2020.
 # R3ktGamerRO <bluegamermc1@gmail.com>, 2021.
-# FlooferLand <yunaflarf@gmail.com>, 2021, 2022.
+# FlooferLand <yunaflarf@gmail.com>, 2021, 2022, 2024.
 # N3mEee <n3mebusiness@gmail.com>, 2021.
 # Psynt <nichita@cadvegra.com>, 2022.
 # Ilie Adrian Avramescu <himark1977@protonmail.com>, 2022.
@@ -35,8 +35,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-12-15 13:10+0000\n"
-"Last-Translator: Vasile Milea <milea.vasile959@gmail.com>\n"
+"PO-Revision-Date: 2024-02-10 09:01+0000\n"
+"Last-Translator: FlooferLand <yunaflarf@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.3\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
 msgstr "Fir principal"
@@ -762,8 +762,14 @@ msgstr "Ești sigur că vrei să ștergi toate conexiunile de la acest semnal?"
 msgid "Disconnect All"
 msgstr "Deconectați Toate"
 
+msgid "Copy Name"
+msgstr "Copiați Numele"
+
 msgid "Edit..."
 msgstr "Modificare..."
+
+msgid "Change Type of \"%s\""
+msgstr "Schimbă Tipul lui \"%s\""
 
 msgid "Change"
 msgstr "Schimbați"
@@ -773,6 +779,9 @@ msgstr "Creați %s Nou"
 
 msgid "No results for \"%s\"."
 msgstr "Niciun rezultat pentru \"%s\"."
+
+msgid "This class is marked as experimental."
+msgstr "Această clasă este marcată ca experimentală."
 
 msgid "No description available for %s."
 msgstr "Nu exista o descriere pentru %s."
@@ -791,6 +800,9 @@ msgstr "Potriviri:"
 
 msgid "Description:"
 msgstr "Descriere:"
+
+msgid "Debugger"
+msgstr "Debugger"
 
 msgid "Debug"
 msgstr "Depanare"

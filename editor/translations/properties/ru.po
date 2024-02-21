@@ -163,12 +163,13 @@
 # Evgeni <u-dev@mail.ru>, 2024.
 # Daniel <blenderevd@gmail.com>, 2024.
 # suprohub <suprohub@gmail.com>, 2024.
+# msun_ <gmchofen@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-28 14:02+0000\n"
+"PO-Revision-Date: 2024-02-08 17:45+0000\n"
 "Last-Translator: Ruslan <vovavalenkov15@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
@@ -176,8 +177,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
@@ -421,7 +422,7 @@ msgid "RID Pool Prealloc"
 msgstr "Предварительное распределение пула RID"
 
 msgid "Internationalization"
-msgstr "Интернационализация"
+msgstr "Локализация"
 
 msgid "Force Right to Left Layout Direction"
 msgstr "Принудительно компоновать справа налево"
@@ -1113,11 +1114,23 @@ msgstr "Масштаб Гизмо Дескрипторы"
 msgid "Display Close Button"
 msgstr "Отобразить кнопку закрытия"
 
+msgid "Maximum Width"
+msgstr "Максимальная ширина"
+
 msgid "Show Script Button"
 msgstr "Показать кнопку скрипта"
 
+msgid "Multi Window"
+msgstr "Мультиоконный режим"
+
 msgid "Enable"
 msgstr "Включить"
+
+msgid "Maximize Window"
+msgstr "Развернуть Окно"
+
+msgid "Raster Image Editor"
+msgstr "Редактор изображений"
 
 msgid "Vector Image Editor"
 msgstr "Редактор векторных изображений"
@@ -1271,6 +1284,9 @@ msgstr "Сворачивание кода"
 
 msgid "Word Wrap"
 msgstr "Перенос по словам"
+
+msgid "Whitespace"
+msgstr "Пробел"
 
 msgid "Draw Tabs"
 msgstr "Рисовать табы"
@@ -2208,6 +2224,9 @@ msgstr "Реимпорт недостающих импортированных �
 msgid "Plugin Name"
 msgstr "Имя дополнения"
 
+msgid "Autoload on Startup"
+msgstr "Автозагрузка системы управления версиями при запуске"
+
 msgid "Show Scene Tree Root Selection"
 msgstr "Показывать выбор корня дерева сцены"
 
@@ -2372,6 +2391,9 @@ msgstr "Горячая точка пользовательского изобр�
 
 msgid "Tooltip Position Offset"
 msgstr "Смещение позиции всплывающей подсказки"
+
+msgid "Minimum Display Time"
+msgstr "Минимальное время отображения заставки"
 
 msgid "Dotnet"
 msgstr "Dotnet"
@@ -2548,7 +2570,7 @@ msgid "Is Trigger"
 msgstr "Является триггером"
 
 msgid "Json"
-msgstr "Json"
+msgstr "JSON"
 
 msgid "Major Version"
 msgstr "Старшая версия"
@@ -2965,7 +2987,7 @@ msgid "iPad 76 X 76"
 msgstr "iPad 76 X 76"
 
 msgid "iPad 152 X 152"
-msgstr "iPad 152 X 152"
+msgstr "iPad 152×152"
 
 msgid "iPad 167 X 167"
 msgstr "iPad 167 X 167"

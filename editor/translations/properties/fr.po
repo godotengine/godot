@@ -122,13 +122,14 @@
 # Roskai <angel.du.2558@gmail.com>, 2023.
 # peperoni <peperoni@users.noreply.hosted.weblate.org>, 2024.
 # Octano <theo.huchard@gmail.com>, 2024.
+# Didier Morandi <didier.morandi@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-21 20:50+0000\n"
-"Last-Translator: Octano <theo.huchard@gmail.com>\n"
+"PO-Revision-Date: 2024-02-21 09:02+0000\n"
+"Last-Translator: Didier Morandi <didier.morandi@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -136,7 +137,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Application"
 msgstr "Application"
@@ -270,6 +271,9 @@ msgstr "Intensité du panoramique audio en 3D"
 msgid "iOS"
 msgstr "iOS"
 
+msgid "Session Category"
+msgstr "Catégorie de la session"
+
 msgid "Mix With Others"
 msgstr "Mixer avec les autres"
 
@@ -308,6 +312,9 @@ msgstr "Aspect"
 
 msgid "Scale"
 msgstr "Mode mise à l'échelle"
+
+msgid "Scale Mode"
+msgstr "Mode de mise à l'échelle"
 
 msgid "Debug"
 msgstr "Débogage"
@@ -357,6 +364,9 @@ msgstr "Rendu"
 msgid "Occlusion Culling"
 msgstr "Elagage de l'occlusion"
 
+msgid "BVH Build Quality"
+msgstr "Qualité de construction BVH"
+
 msgid "Memory"
 msgstr "Mémoire"
 
@@ -366,11 +376,17 @@ msgstr "Limites"
 msgid "Multithreaded Server"
 msgstr "Serveur multi-thread"
 
+msgid "RID Pool Prealloc"
+msgstr "Nombre de RID pré-alloués (en pool)"
+
 msgid "Internationalization"
 msgstr "Internationalisation"
 
 msgid "Force Right to Left Layout Direction"
 msgstr "Forcer l'affichage de droite à gauche"
+
+msgid "Root Node Layout Direction"
+msgstr "Direction de disposition du nœud racine"
 
 msgid "GUI"
 msgstr "GUI"
@@ -399,11 +415,23 @@ msgstr "Utiliser le suréchantillonnage"
 msgid "Rendering Device"
 msgstr "Matériel de rendu"
 
+msgid "Staging Buffer"
+msgstr "Tampon intermédiaire"
+
 msgid "Block Size (KB)"
 msgstr "Taille de bloc (Ko)"
 
 msgid "Max Size (MB)"
 msgstr "Taille Maximale (Mo)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "Taille de la région de téléchargement de texture en pixels"
+
+msgid "Pipeline Cache"
+msgstr "Cache du pipeline"
+
+msgid "Save Chunk Size (MB)"
+msgstr "Taille du bloc d'enregistrement (Mo)"
 
 msgid "Vulkan"
 msgstr "Vulkan"
@@ -431,6 +459,12 @@ msgstr "Utiliser ambiant"
 
 msgid "Low Processor Usage Mode"
 msgstr "Mode d'utilisation du processeur bas en ressources"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "Mode de veille pour utilisation faible du processeur (µsec)"
+
+msgid "Delta Smoothing"
+msgstr "Lissage Delta"
 
 msgid "Print Error Messages"
 msgstr "Afficher les messages d'erreur"

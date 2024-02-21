@@ -32,22 +32,23 @@
 # Siked Siked <siked3@gmail.com>, 2023.
 # Вадим Коваль <vadimkoval571@gmail.com>, 2023.
 # Volodymyr Mikhav <mihaw.wolodymyr@gmail.com>, 2023.
+# Bogdan <Bgdn.Weblate@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-23 17:10+0000\n"
-"Last-Translator: Volodymyr Mikhav <mihaw.wolodymyr@gmail.com>\n"
+"PO-Revision-Date: 2024-02-11 04:06+0000\n"
+"Last-Translator: Bogdan <Bgdn.Weblate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.2.1-rc\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 msgid "Application"
 msgstr "Застосунок"
@@ -3541,9 +3542,6 @@ msgstr "Згладжена"
 msgid "Gizmo Extents"
 msgstr "Гаджети"
 
-msgid "Multimesh"
-msgstr "Помножити на %s"
-
 msgid "Path Max Distance"
 msgstr "Макс. відстань контуру"
 
@@ -4059,6 +4057,9 @@ msgstr "Мін. відстань"
 
 msgid "Max Iterations"
 msgstr "Макс к-ть ітерацій"
+
+msgid "Pinned Points"
+msgstr "Закріплені Точки"
 
 msgid "Parent Collision Ignore"
 msgstr "Ігнорувати батьківські зіткнення"
@@ -5052,6 +5053,9 @@ msgstr "Крива масштабування"
 
 msgid "Rough"
 msgstr "Грубо"
+
+msgid "Add UV2"
+msgstr "Додати UV2"
 
 msgid "Top Radius"
 msgstr "Радіус згори"

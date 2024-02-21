@@ -40,7 +40,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-23 18:16+0000\n"
+"PO-Revision-Date: 2024-02-14 08:02+0000\n"
 "Last-Translator: Kfir Pshititsky <Kfir4321@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
@@ -152,13 +152,13 @@ msgid "End"
 msgstr "סוף"
 
 msgid "Cut"
-msgstr "גזור"
+msgstr "גזירה"
 
 msgid "Copy"
 msgstr "העתקה"
 
 msgid "Paste"
-msgstr "הדבק"
+msgstr "הדבקה"
 
 msgid "Undo"
 msgstr "ביטול"
@@ -182,7 +182,7 @@ msgid "Select All"
 msgstr "לבחור הכול"
 
 msgid "Refresh"
-msgstr "רענון"
+msgstr "ריענון"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "קלט שגוי %d (לא הועבר) בתוך הביטוי"
@@ -204,6 +204,12 @@ msgstr "פרמטרים שגויים לבניית '%s'"
 
 msgid "On call to '%s':"
 msgstr "בקריאה ל־‚%s’:"
+
+msgid "Built-in script"
+msgstr "סקריפט מובנה"
+
+msgid "Built-in"
+msgstr "מובנה"
 
 msgid "B"
 msgstr "B"
@@ -263,7 +269,7 @@ msgid "Value:"
 msgstr "ערך:"
 
 msgid "Insert Key Here"
-msgstr "הכנס כאן מפתח"
+msgstr "הכנסת מפתח כאן"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "שכפול מפתח(ות) שנבחרו"
@@ -518,7 +524,7 @@ msgid "Scale From Cursor"
 msgstr "שינוי גודל מהמצביע"
 
 msgid "Duplicate Selection"
-msgstr "שכפול בחירה"
+msgstr "שכפול הבחירה"
 
 msgid "Duplicate Transposed"
 msgstr "שכפול מהרצועה שנבחרה"
@@ -603,7 +609,7 @@ msgid "Whole Words"
 msgstr "מילים שלמות"
 
 msgid "Replace"
-msgstr "החלף"
+msgstr "החלפה"
 
 msgid "Replace All"
 msgstr "להחליף הכול"
@@ -614,9 +620,6 @@ msgstr "בחירה בלבד"
 msgctxt "Indentation"
 msgid "Spaces"
 msgstr "רווחים"
-
-msgid "Toggle Scripts Panel"
-msgstr "החלפת תצוגת חלונית סקריפטים"
 
 msgid "Zoom In"
 msgstr "התקרבות"
@@ -645,7 +648,7 @@ msgstr "שם מתודה חייב להיות מזהה חוקי."
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
-msgstr "מתודת היעד לא נמצאה. יש לציין מתודה תקינה או לצרף סקריפט למפרק היעד."
+msgstr "מתודת היעד לא נמצאה. יש לציין מתודה תקינה או לצרף סקריפט לצומת היעד."
 
 msgid "Connect to Node:"
 msgstr "התחברות למפרק:"
@@ -1343,7 +1346,7 @@ msgid "3D Editor"
 msgstr "עורך תלת-מימד"
 
 msgid "Script Editor"
-msgstr "עורך סקריפטים"
+msgstr "עורך הסקריפטים"
 
 msgid "Asset Library"
 msgstr "ספריית משאבים"
@@ -1577,7 +1580,7 @@ msgid "Show Hierarchy"
 msgstr "הצג היררכיה"
 
 msgid "Display All"
-msgstr "הצג הכל"
+msgstr "הצגת הכול"
 
 msgid "Classes Only"
 msgstr "מחלקות בלבד"
@@ -1668,7 +1671,7 @@ msgid "Edit Filters"
 msgstr "עריכת מסננים"
 
 msgid "Clear Output"
-msgstr "ניקוי פלט"
+msgstr "ניקוי הפלט"
 
 msgid "Copy Selection"
 msgstr "העתקת הבחירה"
@@ -1861,7 +1864,7 @@ msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
-"אפשרות זו אינה זמינה עוד. מצבים בהם יש לאלץ רענון נחשבים לבאגים. נא לדווח "
+"אפשרות זו אינה זמינה עוד. מצבים בהם יש לאלץ ריענון נחשבים לבאגים. נא לדווח "
 "עליהם."
 
 msgid "Pick a Main Scene"
@@ -1983,7 +1986,7 @@ msgid "Open Scene..."
 msgstr "פתיחת סצנה…"
 
 msgid "Reopen Closed Scene"
-msgstr "פתיחה מחדש של סצנה סגורה"
+msgstr "פתיחה מחדש של הסצנה שנסגרה"
 
 msgid "Open Recent"
 msgstr "פתיחה מהאחרונים"
@@ -1995,7 +1998,7 @@ msgid "MeshLibrary..."
 msgstr "MeshLibrary..."
 
 msgid "Close Scene"
-msgstr "סגירת סצנה"
+msgstr "סגירת הסצנה"
 
 msgid "Quit"
 msgstr "יציאה"
@@ -2040,7 +2043,7 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "צילומי מסך נשמרים בתיקיית נתוני/הגדרות העורך."
 
 msgid "Toggle Fullscreen"
-msgstr "הפעלת/ביטול מסך מלא"
+msgstr "הפעלה/ביטול של מסך מלא"
 
 msgid "Open Editor Data/Settings Folder"
 msgstr "פתיחת תיקיית נתוני/הגדרות העורך"
@@ -2088,7 +2091,7 @@ msgid "Node"
 msgstr "מפרק"
 
 msgid "Expand Bottom Panel"
-msgstr "הרחבת פאנל תחתון"
+msgstr "הרחבת הפאנל התחתון"
 
 msgid "Output"
 msgstr "פלט"
@@ -2491,7 +2494,7 @@ msgid "Go Up"
 msgstr "מעבר מעלה"
 
 msgid "Toggle Hidden Files"
-msgstr "הצג/הסתר קבצים מוסתרים"
+msgstr "החלפת תצוגת קבצים מוסתרים"
 
 msgid "Toggle Favorite"
 msgstr "הוספת/ביטול מועדף"
@@ -2503,10 +2506,10 @@ msgid "Focus Path"
 msgstr "מיקוד נתיב"
 
 msgid "Move Favorite Up"
-msgstr "העברת מועדף מעלה"
+msgstr "העברת המועדף מעלה"
 
 msgid "Move Favorite Down"
-msgstr "העברת מועדף מטה"
+msgstr "העברת המועדף מטה"
 
 msgid "Go to previous folder."
 msgstr "מעבר לתיקיה הקודמת."
@@ -2518,7 +2521,7 @@ msgid "Go to parent folder."
 msgstr "מעבר לתיקיית העל."
 
 msgid "Refresh files."
-msgstr "רענן קבצים."
+msgstr "ריענון קבצים."
 
 msgid "(Un)favorite current folder."
 msgstr "(בטל) העדפת תיקייה נוכחית."
@@ -2540,6 +2543,9 @@ msgstr "הרצת המיזם."
 
 msgid "Play the edited scene."
 msgstr "הרצת הסצנה שנערכה."
+
+msgid "Play a custom scene."
+msgstr "הרצת סצנה בהתאמה אישית."
 
 msgid "Quick Run Scene..."
 msgstr "הפעלה מהירה של הסצנה..."
@@ -2739,6 +2745,9 @@ msgstr "טעינת הנפשה"
 
 msgid "Animation Name:"
 msgstr "שם הנפשה:"
+
+msgid "No animation resource in clipboard!"
+msgstr "אין משאב הנפשה בלוח ההעתקה!"
 
 msgid "Pasted Animation"
 msgstr "הנפשה הודבקה"
@@ -3080,7 +3089,7 @@ msgid "Paste Pose"
 msgstr "הדבק תנוחה"
 
 msgid "Select Mode"
-msgstr "בחר מצב"
+msgstr "בחירת מצב"
 
 msgid "Move Mode"
 msgstr "מצב תנועה"
@@ -3209,7 +3218,7 @@ msgid "Audio Listener"
 msgstr "מאזין לשמע"
 
 msgid "Use Snap"
-msgstr "השתמש ב-Snap"
+msgstr "שימוש בהצמדה"
 
 msgid "Bottom View"
 msgstr "מבט תחתי"

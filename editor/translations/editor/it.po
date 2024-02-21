@@ -95,13 +95,14 @@
 # Andrea <andrea.rubino1990@gmail.com>, 2023.
 # Samuele Righi <blackdestinyx145@gmail.com>, 2023.
 # Ott8v <Ott8v@users.noreply.hosted.weblate.org>, 2024.
+# NicKoehler <grillinicola@proton.me>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-28 23:10+0000\n"
-"Last-Translator: Ott8v <Ott8v@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2024-02-21 09:02+0000\n"
+"Last-Translator: NicKoehler <grillinicola@proton.me>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -109,7 +110,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread Principale"
@@ -631,6 +632,15 @@ msgstr "Deseleziona tutte le chiavi"
 
 msgid "Animation Change Transition"
 msgstr "Transizione al cambio dell'Animazione"
+
+msgid "Animation Change Position3D"
+msgstr "Animazione Cambia posizione3D"
+
+msgid "Animation Change Rotation3D"
+msgstr "Animazione Cambia rotazione3D"
+
+msgid "Animation Change Scale3D"
+msgstr "Animazione Cambia scala3D"
 
 msgid "Animation Change Keyframe Value"
 msgstr "Cambia il valore del fotogramma chiave di un'animazione"
@@ -3502,6 +3512,21 @@ msgid ""
 msgstr ""
 "Impossibile scrivere sul file '%s', file in uso, bloccato o mancano permessi."
 
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the rendering method to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: gl_compatibility"
+msgstr ""
+"La modifica del renderer richiede il riavvio dell'editor.\n"
+"\n"
+"Scegliendo Salva e riavvia si cambierà il metodo di rendering in:\n"
+"- Piattaforme desktop: %s\n"
+"- Piattaforme mobili: %s\n"
+"- Piattaforma web: gl_compatibility"
+
 msgid "Forward+"
 msgstr "Forward+"
 
@@ -3685,6 +3710,22 @@ msgstr "Informazioni su Godot"
 
 msgid "Support Godot Development"
 msgstr "Supporta lo sviluppo di Godot"
+
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"Scegliere un metodo di rendering.\n"
+"\n"
+"Note:\n"
+"- Sulle piattaforme mobili, il metodo di rendering Mobile viene utilizzato se "
+"si seleziona Forward+.\n"
+"- Sulla piattaforma Web, viene sempre utilizzato il metodo di rendering "
+"Compatibilità."
 
 msgid "Update Continuously"
 msgstr "Aggiorna Continuamente"
@@ -10493,6 +10534,15 @@ msgstr ""
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Aggiunti nuovi modelli nella modalità di editing della TileMap."
 
+msgid ""
+"Warning: Modifying a source ID will result in all TileMaps using that source "
+"to reference an invalid source instead. This may result in unexpected data "
+"loss. Change this ID carefully."
+msgstr ""
+"Attenzione: Se si modifica l'ID di una sorgente, tutte le TileMap che la "
+"utilizzano faranno riferimento a una sorgente non valida. Ciò potrebbe "
+"causare una perdita di dati imprevista. Modificare questo ID con attenzione."
+
 msgid "ID: %d"
 msgstr "ID: %d"
 
@@ -11405,6 +11455,12 @@ msgstr ""
 msgid "Perform the 3D texture lookup."
 msgstr "Esegue la ricerca di texture 3D."
 
+msgid "Apply panning function on texture coordinates."
+msgstr "Applica la funzione di panning alle coordinate della texture."
+
+msgid "Apply scaling function on texture coordinates."
+msgstr "Applica la funzione di scala alle coordinate della texture."
+
 msgid "Transform function."
 msgstr "Funzione di trasformazione."
 
@@ -11438,6 +11494,14 @@ msgstr "Scompone la trasformazione in quattro vettori."
 msgid "Calculates the determinant of a transform."
 msgstr "Calcola il determinante di una trasformazione."
 
+msgid ""
+"Calculates how the object should face the camera to be applied on Model View "
+"Matrix output port for 3D objects."
+msgstr ""
+"Calcola il modo in cui l'oggetto deve essere rivolto verso la telecamera per "
+"essere applicato alla porta di output della matrice di visualizzazione del "
+"modello per gli oggetti 3D."
+
 msgid "Calculates the inverse of a transform."
 msgstr "Calcola l'inverso di una trasformazione."
 
@@ -11467,6 +11531,20 @@ msgstr "Costante transform."
 
 msgid "Transform parameter."
 msgstr "Parametro di trasformazione."
+
+msgid ""
+"The distance fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"L’effetto di dissolvenza in base alla distanza attenua gradualmente ogni "
+"pixel in base alla sua distanza da un altro oggetto."
+
+msgid ""
+"The proximity fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"L’effetto di dissolvenza in base alla prossimità attenua gradualmente ogni "
+"pixel in base alla sua distanza da un altro oggetto."
 
 msgid "Returns a random value between the minimum and maximum input values."
 msgstr ""
@@ -11556,6 +11634,10 @@ msgstr "Interpolazione lineare tra due vettori."
 
 msgid "Linear interpolation between two vectors using scalar."
 msgstr "Interpolazione lineare tra due vettori usando scalare."
+
+msgid "Performs a fused multiply-add operation (a * b + c) on vectors."
+msgstr ""
+"Esegue un’operazione di moltiplicazione-addizione fusa (a * b + c) su vettori."
 
 msgid "Calculates the normalize product of vector."
 msgstr "Calcola il prodotto di normalizzazione del vettore."
@@ -12206,6 +12288,10 @@ msgstr "Impostazioni Progetto (project.godot)"
 
 msgid "Advanced Settings"
 msgstr "Opzioni avanzate"
+
+msgid "Changed settings will be applied to the editor after restarting."
+msgstr ""
+"Le impostazioni modificate saranno applicate all'editor dopo il riavvio."
 
 msgid "Input Map"
 msgstr "Mappa Input"
@@ -13732,6 +13818,9 @@ msgstr ""
 msgid "Could not start rcodesign executable."
 msgstr "Impossibile eseguire l'eseguibile di rcodesign."
 
+msgid "Notarization request UUID: \"%s\""
+msgstr "UUID della richiesta di autenticazione: \"%s\""
+
 msgid ""
 "You can check progress manually by opening a Terminal and running the "
 "following command:"
@@ -13957,6 +14046,9 @@ msgstr "Signtool ha fallito a firmare l'eseguibile: %s."
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "Fallito rimuovendo il file temporaneo \"%s\"."
 
+msgid "Windows executables cannot be >= 4 GiB."
+msgstr "Gli eseguibili di Windows non possono essere >= 4 GiB."
+
 msgid "Run on remote Windows system"
 msgstr "Esegui su un sistema Windows remoto"
 
@@ -14069,6 +14161,12 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 "Il poligono per questo occluder è vuoto. Si prega di disegnare un poligono."
+
+msgid ""
+"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
+msgstr ""
+"Il NavigationAgent2D può essere utilizzato solo sotto un nodo padre ereditato "
+"da Node2D."
 
 msgid ""
 "NavigationLink2D start position should be different than the end position to "

@@ -42,21 +42,22 @@
 # сэр Аноним <mcptminei@gmail.com>, 2024.
 # EmerickGrimm <dmytry.vynarchuk@gmail.com>, 2024.
 # Yulian <yulian.mysko@gmail.com>, 2024.
+# Bogdan <Bgdn.Weblate@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-01 17:01+0000\n"
-"Last-Translator: сэр Аноним <mcptminei@gmail.com>\n"
+"PO-Revision-Date: 2024-02-11 04:06+0000\n"
+"Last-Translator: Bogdan <Bgdn.Weblate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
@@ -2020,6 +2021,9 @@ msgstr "Пакунок «%s» успішно встановлено!"
 msgid "Success!"
 msgstr "Успіх!"
 
+msgid "Asset:"
+msgstr "Ассет:"
+
 msgid "Open the list of the asset contents and select which files to install."
 msgstr ""
 "Відкрийте список вмісту ресурсу і виберіть файли, які потрібно встановити."
@@ -2289,11 +2293,14 @@ msgstr "Шрифти SIL Graphite"
 msgid "Multi-channel Signed Distance Field Font Rendering"
 msgstr "Багатоканальна візуалізація шрифтів полів зі знаками відстані"
 
+msgid "3D Nodes as well as RenderingServer access to 3D features."
+msgstr "3D Вузли, а також СерверРендерінгу отримують доступ до 3D-функцій."
+
 msgid "2D Physics nodes and PhysicsServer2D."
-msgstr "Вузли 2D фізики та PhysicsServer2D."
+msgstr "Вузли 2D фізики та Сервер 2D фізики."
 
 msgid "3D Physics nodes and PhysicsServer3D."
-msgstr "Вузли 3D-фізики та PhysicsServer3D."
+msgstr "Вузли 3D-фізики та Сервер 3D фізики."
 
 msgid "Navigation, both 2D and 3D."
 msgstr "Навігація, як 2D, так і 3D."
@@ -3568,6 +3575,9 @@ msgstr "Мобільний"
 
 msgid "Compatibility"
 msgstr "Сумісність"
+
+msgid "(Overridden)"
+msgstr "(Перевизначенно)"
 
 msgid "Pan View"
 msgstr "Панорамування зображення"
@@ -14516,6 +14526,14 @@ msgstr ""
 
 msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
 msgstr "\"Min SDK\" має бути більшим або рівним %d для рендеру \"%s\"."
+
+msgid ""
+"The project name does not meet the requirement for the package name format "
+"and will be updated to \"%s\". Please explicitly specify the package name if "
+"needed."
+msgstr ""
+"Назва проекту не відповідає вимогам до формату назви пакету та буде замінено "
+"на \"%s\". Будь ласка, вкажіть іншу назву пакету, якщо потрібно."
 
 msgid "Code Signing"
 msgstr "Підписання коду"

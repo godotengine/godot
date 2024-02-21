@@ -46,7 +46,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-13 16:00+0000\n"
+"PO-Revision-Date: 2024-02-12 23:42+0000\n"
 "Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -54,7 +54,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
 "X-Generator: Weblate 5.4-dev\n"
 
 msgid "Main Thread"
@@ -2662,11 +2662,29 @@ msgstr "Nelze vrátit zpět, když jsou stisknuta tlačítka myši."
 msgid "Nothing to undo."
 msgstr "Není co vracet."
 
+msgid "Global Undo: %s"
+msgstr "Globální zpět: %s"
+
+msgid "Remote Undo: %s"
+msgstr "Vzdálené zpět: %s"
+
+msgid "Scene Undo: %s"
+msgstr "Zpět ve scéně: %s"
+
 msgid "Can't redo while mouse buttons are pressed."
 msgstr "Nelze opakovat, když jsou stisknuta tlačítka myši."
 
 msgid "Nothing to redo."
 msgstr "Není co opakovat."
+
+msgid "Global Redo: %s"
+msgstr "Globálně opakovat: %s"
+
+msgid "Remote Redo: %s"
+msgstr "Vzdáleně opakovat: %s"
+
+msgid "Scene Redo: %s"
+msgstr "Opakovat ve scéně: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Nelze načíst scénu, která nebyla nikdy uložena."
@@ -3214,6 +3232,9 @@ msgstr "Napište svůj kód v _run() metodě."
 
 msgid "There is an edited scene already."
 msgstr "Nějaka scéna už je upravována."
+
+msgid "Undo: %s"
+msgstr "Zpět: %s"
 
 msgid "Edit Built-in Action: %s"
 msgstr "Upravit vestavěnou funkci: %s"
@@ -4266,6 +4287,9 @@ msgstr "Otevřít dokumentaci k tomuto objektu."
 
 msgid "Manage object properties."
 msgstr "Spravovat vlastnosti objektu."
+
+msgid "This cannot be undone. Are you sure?"
+msgstr "Toto nelze vrátit zpět. Přejete si pokračovat?"
 
 msgid "Add %d Translations"
 msgstr "Přidat %d překladů"
