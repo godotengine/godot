@@ -1268,7 +1268,7 @@ vec4 fog_process(vec3 vertex) {
 	float fog_z = smoothstep(scene_data.fog_depth_begin, scene_data.fog_depth_end, length(vertex));
 	fog_amount = pow(fog_z, scene_data.fog_depth_curve) * scene_data.fog_density;
 #else
-	fog_amount = 1 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
+	fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
 #endif // USE_DEPTH_FOG
 
 	if (abs(scene_data.fog_height_density) >= 0.0001) {
