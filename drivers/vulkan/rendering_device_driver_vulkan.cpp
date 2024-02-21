@@ -35,6 +35,13 @@
 #include "thirdparty/misc/smolv.h"
 #include "vulkan_hooks.h"
 
+#if defined(ANDROID_ENABLED)
+#include "platform/android/java_godot_wrapper.h"
+#include "platform/android/os_android.h"
+#include "platform/android/thread_jandroid.h"
+#include "thirdparty/swappy-frame-pacing/swappyVk.h"
+#endif
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #define PRINT_NATIVE_COMMANDS 0
@@ -454,6 +461,41 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	device_extensions.resize(device_extension_count);
 	err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, device_extensions.ptr());
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+#if defined(ANDROID_ENABLED)
+	char **swappy_required_extensions;
+	uint32_t swappy_required_extensions_count;
+	// Determine number of extensions required by Swappy frame pacer
+	SwappyVk_determineDeviceExtensions(gpu, device_extension_count, device_extensions, &swappy_required_extensions_count, nullptr);
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Swappy extensions: " + itos(swappy_required_extensions_count));
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Godot extensions: " + itos(device_extension_count));
+
+	if (swappy_required_extensions_count < device_extension_count) {
+		// Determine the actual extensions
+		swappy_required_extensions = (char **)malloc(swappy_required_extensions_count * sizeof(char *));
+		char *pRequiredExtensionsData = (char *)malloc(swappy_required_extensions_count * (VK_MAX_EXTENSION_NAME_SIZE + 1));
+		for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
+			swappy_required_extensions[i] = &pRequiredExtensionsData[i * (VK_MAX_EXTENSION_NAME_SIZE + 1)];
+		}
+		SwappyVk_determineDeviceExtensions(gpu, device_extension_count,
+				device_extensions, &swappy_required_extensions_count, swappy_required_extensions);
+
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Swappy determined extensions");
+
+		// Enable extensions requested by Swappy
+		for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
+			CharString extension_name(swappy_required_extensions[i]);
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Swappy extension: " + String(swappy_required_extensions[i]));
+			if (requested_device_extensions.has(extension_name)) {
+				enabled_device_extension_names.insert(extension_name);
+			}
+		}
+
+		free(pRequiredExtensionsData);
+		free(swappy_required_extensions);
+	}
+
+#endif
 
 #ifdef DEV_ENABLED
 	for (uint32_t i = 0; i < device_extension_count; i++) {
@@ -2142,6 +2184,13 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 
 	ERR_FAIL_COND_V_MSG(picked_queue_index >= queue_family.size(), CommandQueueID(), "A queue in the picked family could not be found.");
 
+#if defined(ANDROID_ENABLED)
+	VkQueue selected_queue;
+	vkGetDeviceQueue(vk_device, family_index, picked_queue_index, &selected_queue);
+	SwappyVk_setQueueFamilyIndex(vk_device, selected_queue, family_index);
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Swappy queue family ok");
+#endif
+
 	// Create the virtual queue.
 	CommandQueue *command_queue = memnew(CommandQueue);
 	command_queue->queue_family = family_index;
@@ -2287,7 +2336,12 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		present_info.pResults = results.ptr();
 
 		device_queue.submit_mutex.lock();
+#if defined(ANDROID_ENABLED)
+		err = SwappyVk_queuePresent(present_queue, &present);
+#else
 		err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
+#endif
+
 		device_queue.submit_mutex.unlock();
 
 		// Set the index to an invalid value. If any of the swap chains returned out of date, indicate it should be resized the next time it's acquired.
@@ -2472,6 +2526,9 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 	swap_chain->framebuffers.clear();
 
 	if (swap_chain->vk_swapchain != VK_NULL_HANDLE) {
+#if defined(ANDROID_ENABLED)
+		SwappyVk_destroySwapchain(vk_device, swap_chain->vk_swapchain);
+#endif
 		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR));
 		swap_chain->vk_swapchain = VK_NULL_HANDLE;
 	}
@@ -2705,6 +2762,15 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.clipped = true;
 	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR), &swap_chain->vk_swapchain);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+#if defined(ANDROID_ENABLED)
+	uint64_t refresh_duration;
+	SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), gpu,
+			device, swap_chain->vk_swapchain, &refresh_duration);
+	SwappyVk_setWindow(device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
+
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "refresh duration: " + itos(refresh_duration));
+#endif
 
 	uint32_t image_count = 0;
 	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, nullptr);
