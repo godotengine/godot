@@ -3354,36 +3354,36 @@ bool VulkanContext::is_debug_utils_enabled() const {
 }
 
 void VulkanContext::on_device_lost() const {
-	VkDeviceFaultCountsEXT faultCounts = { VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT };
-	VkResult vkres = vkGetDeviceFaultInfoEXT(device, &faultCounts, nullptr);
+	VkDeviceFaultCountsEXT fault_counts = { VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT };
+	VkResult vkres = vkGetDeviceFaultInfoEXT(device, &fault_counts, nullptr);
 
 	if (vkres != VK_SUCCESS) {
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault count, skipping VK_EXT_device_fault report...");
 		return;
 	}
 
-	VkDeviceFaultInfoEXT faultInfo = { VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT };
-	faultInfo.pVendorInfos = faultCounts.vendorInfoCount
-			? (VkDeviceFaultVendorInfoEXT *)memalloc(faultCounts.vendorInfoCount * sizeof(VkDeviceFaultVendorInfoEXT))
+	VkDeviceFaultInfoEXT fault_info = { VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT };
+	fault_info.pVendorInfos = fault_counts.vendorInfoCount
+			? (VkDeviceFaultVendorInfoEXT *)memalloc(fault_counts.vendorInfoCount * sizeof(VkDeviceFaultVendorInfoEXT))
 			: NULL;
-	faultInfo.pAddressInfos =
-			faultCounts.addressInfoCount
-			? (VkDeviceFaultAddressInfoEXT *)memalloc(faultCounts.addressInfoCount * sizeof(VkDeviceFaultAddressInfoEXT))
+	fault_info.pAddressInfos =
+			fault_counts.addressInfoCount
+			? (VkDeviceFaultAddressInfoEXT *)memalloc(fault_counts.addressInfoCount * sizeof(VkDeviceFaultAddressInfoEXT))
 			: NULL;
-	faultCounts.vendorBinarySize = 0;
-	vkres = vkGetDeviceFaultInfoEXT(device, &faultCounts, &faultInfo);
+	fault_counts.vendorBinarySize = 0;
+	vkres = vkGetDeviceFaultInfoEXT(device, &fault_counts, &fault_info);
 	if (vkres != VK_SUCCESS) {
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault info, skipping VK_EXT_device_fault report...");
 	} else {
 		print_line("** Report from VK_EXT_device_fault **");
-		print_line("Description: %s", faultInfo.description);
+		print_line("Description: %s", fault_info.description);
 		print_line("Vendor infos");
-		for (uint32_t vd = 0; vd < faultCounts.vendorInfoCount; ++vd) {
-			const VkDeviceFaultVendorInfoEXT *vendorInfo = &faultInfo.pVendorInfos[vd];
+		for (uint32_t vd = 0; vd < fault_counts.vendorInfoCount; ++vd) {
+			const VkDeviceFaultVendorInfoEXT *vendor_info = &fault_info.pVendorInfos[vd];
 			print_line("Info[%u]", vd);
-			print_line("   Description: %s", vendorInfo->description);
-			print_line("   Fault code : %zu", (size_t)vendorInfo->vendorFaultCode);
-			print_line("   Fault data : %zu", (size_t)vendorInfo->vendorFaultData);
+			print_line("   Description: %s", vendor_info->description);
+			print_line("   Fault code : %zu", (size_t)vendor_info->vendorFaultCode);
+			print_line("   Fault data : %zu", (size_t)vendor_info->vendorFaultData);
 		}
 
 		static constexpr const char *addressTypeNames[] = {
@@ -3396,22 +3396,22 @@ void VulkanContext::on_device_lost() const {
 			"INSTRUCTION_POINTER_FAULT",
 		};
 		print_line("Address infos");
-		for (uint32_t ad = 0; ad < faultCounts.addressInfoCount; ++ad) {
-			const VkDeviceFaultAddressInfoEXT *addrInfo = &faultInfo.pAddressInfos[ad];
+		for (uint32_t ad = 0; ad < fault_counts.addressInfoCount; ++ad) {
+			const VkDeviceFaultAddressInfoEXT *addr_info = &fault_info.pAddressInfos[ad];
 			// From https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDeviceFaultAddressInfoEXT.html
-			const VkDeviceAddress lower = (addrInfo->reportedAddress & ~(addrInfo->addressPrecision - 1));
-			const VkDeviceAddress upper = (addrInfo->reportedAddress | (addrInfo->addressPrecision - 1));
+			const VkDeviceAddress lower = (addr_info->reportedAddress & ~(addr_info->addressPrecision - 1));
+			const VkDeviceAddress upper = (addr_info->reportedAddress | (addr_info->addressPrecision - 1));
 			print_line("Info[%u]", ad);
-			print_line("   Type            : %s", addressTypeNames[addrInfo->addressType]);
-			print_line("   Reported address: %zu", (size_t)addrInfo->reportedAddress);
+			print_line("   Type            : %s", addressTypeNames[addr_info->addressType]);
+			print_line("   Reported address: %zu", (size_t)addr_info->reportedAddress);
 			print_line("   Lower address   : %zu", (size_t)lower);
 			print_line("   Upper address   : %zu", (size_t)upper);
-			print_line("   Precision       : %zu", (size_t)addrInfo->addressPrecision);
+			print_line("   Precision       : %zu", (size_t)addr_info->addressPrecision);
 		}
 	}
 
-	memfree(faultInfo.pVendorInfos);
-	memfree(faultInfo.pAddressInfos);
+	memfree(fault_info.pVendorInfos);
+	memfree(fault_info.pAddressInfos);
 }
 
 VulkanContext::VulkanContext() {
