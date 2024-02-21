@@ -464,13 +464,11 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 
 #if defined(ANDROID_ENABLED)
 	char **swappy_required_extensions;
-	uint32_t swappy_required_extensions_count;
+	uint32_t swappy_required_extensions_count = 0;
 	// Determine number of extensions required by Swappy frame pacer
 	SwappyVk_determineDeviceExtensions(gpu, device_extension_count, device_extensions, &swappy_required_extensions_count, nullptr);
-	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Swappy extensions: " + itos(swappy_required_extensions_count));
-	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Godot extensions: " + itos(device_extension_count));
 
-	if (swappy_required_extensions_count < device_extension_count) {
+	if (swappy_required_extensions_count < device_extension_count && swappy_required_extensions_count < device_extension_count) {
 		// Determine the actual extensions
 		swappy_required_extensions = (char **)malloc(swappy_required_extensions_count * sizeof(char *));
 		char *pRequiredExtensionsData = (char *)malloc(swappy_required_extensions_count * (VK_MAX_EXTENSION_NAME_SIZE + 1));
@@ -480,12 +478,9 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 		SwappyVk_determineDeviceExtensions(gpu, device_extension_count,
 				device_extensions, &swappy_required_extensions_count, swappy_required_extensions);
 
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Swappy determined extensions");
-
 		// Enable extensions requested by Swappy
 		for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
 			CharString extension_name(swappy_required_extensions[i]);
-			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Swappy extension: " + String(swappy_required_extensions[i]));
 			if (requested_device_extensions.has(extension_name)) {
 				enabled_device_extension_names.insert(extension_name);
 			}
@@ -2188,7 +2183,6 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 	VkQueue selected_queue;
 	vkGetDeviceQueue(vk_device, family_index, picked_queue_index, &selected_queue);
 	SwappyVk_setQueueFamilyIndex(vk_device, selected_queue, family_index);
-	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Swappy queue family ok");
 #endif
 
 	// Create the virtual queue.
@@ -2768,8 +2762,6 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), gpu,
 			device, swap_chain->vk_swapchain, &refresh_duration);
 	SwappyVk_setWindow(device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
-
-	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "refresh duration: " + itos(refresh_duration));
 #endif
 
 	uint32_t image_count = 0;
