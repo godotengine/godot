@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "range.h"
-#include <climits>
 
 PackedStringArray Range::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
@@ -96,8 +95,8 @@ void Range::set_value(double p_val) {
 
 void Range::_set_value_no_signal(double p_val) {
 	if (!Math::is_finite(p_val)) {
-		if (shared->allow_non_finite) {
-			if (Math::is_nan(p_val)) {
+		if (shared->allow_infinite_input || shared->allow_nan_input) {
+			if (Math::is_nan(p_val) && shared->allow_nan_input) {
 				shared->val = p_val;
 				return;
 			}
@@ -130,10 +129,20 @@ void Range::_set_value_no_signal(double p_val) {
 }
 
 void Range::set_value_no_signal(double p_val) {
+	bool prev_nan = is_nan_input_allowed();
+	bool prev_inf = is_infinite_input_allowed();
+
+	if (is_display_non_finite_allowed()) {
+		set_allow_non_finite(true);
+	}
+
 	double prev_val = shared->val;
 	_set_value_no_signal(p_val);
 
-	if (shared->val != prev_val) {
+	set_allow_nan_input(prev_nan);
+	set_allow_infinite_input(prev_inf);
+
+	if (shared->val != prev_val || Math::is_nan(shared->val)) {
 		shared->redraw_owners();
 	}
 }
@@ -382,11 +391,36 @@ bool Range::is_lesser_allowed() const {
 }
 
 void Range::set_allow_non_finite(bool p_allow) {
-	shared->allow_non_finite = p_allow;
+	set_allow_infinite_input(p_allow);
+	set_allow_nan_input(p_allow);
 }
 
-bool Range::is_non_finited_allowed() const {
-	return shared->allow_non_finite;
+bool Range::is_non_finite_allowed() const {
+	return shared->allow_infinite_input && shared->allow_nan_input;
+}
+
+void Range::set_allow_infinite_input(bool p_allow) {
+	shared->allow_infinite_input = p_allow;
+}
+
+bool Range::is_infinite_input_allowed() const {
+	return shared->allow_infinite_input;
+}
+
+void Range::set_allow_nan_input(bool p_allow) {
+	shared->allow_nan_input = p_allow;
+}
+
+bool Range::is_nan_input_allowed() const {
+	return shared->allow_nan_input;
+}
+
+void Range::set_allow_display_non_finite(bool p_allow) {
+	shared->allow_display_non_finite = p_allow;
+}
+
+bool Range::is_display_non_finite_allowed() const {
+	return shared->allow_display_non_finite;
 }
 
 Range::Range() {

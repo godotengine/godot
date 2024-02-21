@@ -45,7 +45,9 @@ class Range : public Control {
 		bool exp_ratio = false;
 		bool allow_greater = false;
 		bool allow_lesser = false;
-		bool allow_non_finite = false;
+		bool allow_infinite_input = false;
+		bool allow_nan_input = false;
+		bool allow_display_non_finite = true;
 		HashSet<Range *> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what = "");
@@ -102,7 +104,16 @@ public:
 	bool is_lesser_allowed() const;
 
 	void set_allow_non_finite(bool p_allow);
-	bool is_non_finited_allowed() const;
+	bool is_non_finite_allowed() const;
+
+	void set_allow_infinite_input(bool p_allow);
+	bool is_infinite_input_allowed() const;
+
+	void set_allow_nan_input(bool p_allow);
+	bool is_nan_input_allowed() const;
+
+	void set_allow_display_non_finite(bool p_allow);
+	bool is_display_non_finite_allowed() const;
 
 	void share(Range *p_range);
 	void unshare();
