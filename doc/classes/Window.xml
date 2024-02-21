@@ -769,6 +769,11 @@
 				Emitted when the [Window] is currently focused and receives any input, passing the received event as an argument. The event's position, if present, is in the embedder's coordinate system.
 			</description>
 		</signal>
+		<signal name="window_size_changed">
+			<description>
+				Emitted when [Window] size is changed.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="30">

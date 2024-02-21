@@ -1196,6 +1196,7 @@ void Window::_update_viewport_size() {
 	if (old_size != size) {
 		old_size = size;
 		notification(NOTIFICATION_WM_SIZE_CHANGED);
+		emit_signal(SNAME("window_size_changed"));
 	}
 
 	if (embedder) {
@@ -2962,6 +2963,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 	ADD_SIGNAL(MethodInfo("dpi_changed"));
 	ADD_SIGNAL(MethodInfo("titlebar_changed"));
+	ADD_SIGNAL(MethodInfo("window_size_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);
