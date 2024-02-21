@@ -463,31 +463,33 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 #if defined(ANDROID_ENABLED)
-	char **swappy_required_extensions;
-	uint32_t swappy_required_extensions_count = 0;
-	// Determine number of extensions required by Swappy frame pacer
-	SwappyVk_determineDeviceExtensions(gpu, device_extension_count, device_extensions, &swappy_required_extensions_count, nullptr);
+	if (swappy_frame_pacer_enable) {
+		char **swappy_required_extensions;
+		uint32_t swappy_required_extensions_count = 0;
+		// Determine number of extensions required by Swappy frame pacer
+		SwappyVk_determineDeviceExtensions(gpu, device_extension_count, device_extensions, &swappy_required_extensions_count, nullptr);
 
-	if (swappy_required_extensions_count < device_extension_count && swappy_required_extensions_count < device_extension_count) {
-		// Determine the actual extensions
-		swappy_required_extensions = (char **)malloc(swappy_required_extensions_count * sizeof(char *));
-		char *pRequiredExtensionsData = (char *)malloc(swappy_required_extensions_count * (VK_MAX_EXTENSION_NAME_SIZE + 1));
-		for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
-			swappy_required_extensions[i] = &pRequiredExtensionsData[i * (VK_MAX_EXTENSION_NAME_SIZE + 1)];
-		}
-		SwappyVk_determineDeviceExtensions(gpu, device_extension_count,
-				device_extensions, &swappy_required_extensions_count, swappy_required_extensions);
-
-		// Enable extensions requested by Swappy
-		for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
-			CharString extension_name(swappy_required_extensions[i]);
-			if (requested_device_extensions.has(extension_name)) {
-				enabled_device_extension_names.insert(extension_name);
+		if (swappy_required_extensions_count < device_extension_count && swappy_required_extensions_count < device_extension_count) {
+			// Determine the actual extensions
+			swappy_required_extensions = (char **)malloc(swappy_required_extensions_count * sizeof(char *));
+			char *pRequiredExtensionsData = (char *)malloc(swappy_required_extensions_count * (VK_MAX_EXTENSION_NAME_SIZE + 1));
+			for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
+				swappy_required_extensions[i] = &pRequiredExtensionsData[i * (VK_MAX_EXTENSION_NAME_SIZE + 1)];
 			}
-		}
+			SwappyVk_determineDeviceExtensions(gpu, device_extension_count,
+					device_extensions, &swappy_required_extensions_count, swappy_required_extensions);
 
-		free(pRequiredExtensionsData);
-		free(swappy_required_extensions);
+			// Enable extensions requested by Swappy
+			for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
+				CharString extension_name(swappy_required_extensions[i]);
+				if (requested_device_extensions.has(extension_name)) {
+					enabled_device_extension_names.insert(extension_name);
+				}
+			}
+
+			free(pRequiredExtensionsData);
+			free(swappy_required_extensions);
+		}
 	}
 
 #endif
@@ -1187,6 +1189,12 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 
 	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
 	breadcrumb_buffer = buffer_create(sizeof(uint32_t), BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU);
+
+#if defined(ANDROID_ENABLED)
+	swappy_frame_pacer_enable = GLOBAL_GET("display/window/frame_pacing/android/enable_frame_pacing");
+	swappy_enable_auto_swap = GLOBAL_GET("display/window/frame_pacing/android/enable_auto_swap");
+	swappy_target_framerate = GLOBAL_GET("display/window/frame_pacing/android/target_frame_rate");
+#endif
 
 	return OK;
 }
@@ -2180,9 +2188,11 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 	ERR_FAIL_COND_V_MSG(picked_queue_index >= queue_family.size(), CommandQueueID(), "A queue in the picked family could not be found.");
 
 #if defined(ANDROID_ENABLED)
-	VkQueue selected_queue;
-	vkGetDeviceQueue(vk_device, family_index, picked_queue_index, &selected_queue);
-	SwappyVk_setQueueFamilyIndex(vk_device, selected_queue, family_index);
+	if (swappy_frame_pacer_enable) {
+		VkQueue selected_queue;
+		vkGetDeviceQueue(vk_device, family_index, picked_queue_index, &selected_queue);
+		SwappyVk_setQueueFamilyIndex(vk_device, selected_queue, family_index);
+	}
 #endif
 
 	// Create the virtual queue.
@@ -2331,7 +2341,11 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 
 		device_queue.submit_mutex.lock();
 #if defined(ANDROID_ENABLED)
-		err = SwappyVk_queuePresent(present_queue, &present);
+		if (swappy_frame_pacer_enable) {
+			err = SwappyVk_queuePresent(present_queue, &present);
+		} else {
+			err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
+		}
 #else
 		err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
 #endif
@@ -2521,7 +2535,9 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 
 	if (swap_chain->vk_swapchain != VK_NULL_HANDLE) {
 #if defined(ANDROID_ENABLED)
-		SwappyVk_destroySwapchain(vk_device, swap_chain->vk_swapchain);
+		if (swappy_frame_pacer_enable) {
+			SwappyVk_destroySwapchain(vk_device, swap_chain->vk_swapchain);
+		}
 #endif
 		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR));
 		swap_chain->vk_swapchain = VK_NULL_HANDLE;
@@ -2758,10 +2774,12 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 #if defined(ANDROID_ENABLED)
-	uint64_t refresh_duration;
-	SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), gpu,
-			device, swap_chain->vk_swapchain, &refresh_duration);
-	SwappyVk_setWindow(device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
+	if (swappy_frame_pacer_enable) {
+		uint64_t refresh_duration;
+		SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), gpu,
+				device, swap_chain->vk_swapchain, &refresh_duration);
+		SwappyVk_setWindow(device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
+	}
 #endif
 
 	uint32_t image_count = 0;

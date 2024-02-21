@@ -1457,6 +1457,11 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 	// Keep the enum values in sync with the `DisplayServer::VSyncMode` enum.
 	custom_prop_info["display/window/vsync/vsync_mode"] = PropertyInfo(Variant::INT, "display/window/vsync/vsync_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Adaptive,Mailbox");
+
+	GLOBAL_DEF("display/window/frame_pacing/android/enable_frame_pacing", false);
+	GLOBAL_DEF("display/window/frame_pacing/android/enable_auto_swap", true);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/frame_pacing/android/target_frame_rate", PROPERTY_HINT_RANGE, "Target frame rate"), 0);
+
 	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
