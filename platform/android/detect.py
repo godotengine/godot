@@ -200,6 +200,8 @@ def configure(env: "SConsEnvironment"):
     env.Prepend(CPPPATH=["#platform/android"])
     env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED"])
     env.Append(LIBS=["OpenSLES", "EGL", "android", "log", "z", "dl"])
+    env.Append(LIBPATH=["java/editor/build/intermediates/stripped_native_libs/dev/out/lib/arm64-v8a"])
+    env.Append(LIBS=["swappy-frame-pacing"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
