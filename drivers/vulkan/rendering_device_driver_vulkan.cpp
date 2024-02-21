@@ -4791,6 +4791,8 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 }
 
 void RenderingDeviceDriverVulkan::print_lost_device_info() {
+
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	void *breadcrumb_ptr;
 	vmaFlushAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
 	vmaInvalidateAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, sizeof(uint32_t));
@@ -4823,7 +4825,7 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 	}
 
 	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, errorMsg);
-
+#endif
 	context->on_device_lost();
 }
 

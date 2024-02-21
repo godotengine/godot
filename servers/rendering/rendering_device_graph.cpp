@@ -786,7 +786,9 @@ void RenderingDeviceGraph::_run_render_commands(RDD::CommandBufferID p_command_b
 			case RecordedCommand::TYPE_DRAW_LIST: {
 				const RecordedDrawListCommand *draw_list_command = reinterpret_cast<const RecordedDrawListCommand *>(command);
 				const VectorView clear_values(draw_list_command->clear_values(), draw_list_command->clear_values_count);
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 				driver->command_insert_breadcrumb(p_command_buffer, draw_list_command->breadcrumb);
+#endif
 				driver->command_begin_render_pass(p_command_buffer, draw_list_command->render_pass, draw_list_command->framebuffer, draw_list_command->command_buffer_type, draw_list_command->region, clear_values);
 				_run_draw_list_command(p_command_buffer, draw_list_command->instruction_data(), draw_list_command->instruction_data_size);
 				driver->command_end_render_pass(p_command_buffer);
