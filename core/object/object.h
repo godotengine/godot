@@ -358,8 +358,8 @@ struct ObjectGDExtension {
 
 #ifdef TOOLS_ENABLED
 	void *tracking_userdata = nullptr;
-	void (*track_instance)(void *p_userdata, void *p_instance);
-	void (*untrack_instance)(void *p_userdata, void *p_instance);
+	void (*track_instance)(void *p_userdata, void *p_instance) = nullptr;
+	void (*untrack_instance)(void *p_userdata, void *p_instance) = nullptr;
 #endif
 };
 

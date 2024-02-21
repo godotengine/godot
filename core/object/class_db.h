@@ -133,6 +133,7 @@ public:
 		bool exposed = false;
 		bool reloadable = false;
 		bool is_virtual = false;
+		bool is_runtime = false;
 		Object *(*creation_func)() = nullptr;
 
 		ClassInfo() {}
@@ -229,6 +230,23 @@ public:
 		t->creation_func = &creator<T>;
 		t->exposed = false;
 		t->is_virtual = false;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		T::register_custom_data_to_otdb();
+	}
+
+	template <class T>
+	static void register_runtime_class() {
+		GLOBAL_LOCK_FUNCTION;
+		static_assert(types_are_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_NULL(t);
+		ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", T::get_class_static()));
+		t->creation_func = &creator<T>;
+		t->exposed = true;
+		t->is_virtual = false;
+		t->is_runtime = true;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
 		T::register_custom_data_to_otdb();
@@ -516,6 +534,11 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 #define GDREGISTER_INTERNAL_CLASS(m_class)             \
 	if (m_class::_class_is_enabled) {                  \
 		::ClassDB::register_internal_class<m_class>(); \
+	}
+
+#define GDREGISTER_RUNTIME_CLASS(m_class)             \
+	if (m_class::_class_is_enabled) {                 \
+		::ClassDB::register_runtime_class<m_class>(); \
 	}
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
