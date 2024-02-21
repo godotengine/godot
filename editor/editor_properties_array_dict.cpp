@@ -780,9 +780,19 @@ void EditorPropertyDictionary::_add_key_value() {
 	}
 
 	Dictionary dict = object->get_dict().duplicate();
-	dict[object->get_new_item_key()] = object->get_new_item_value();
-	object->set_new_item_key(Variant());
-	object->set_new_item_value(Variant());
+	Variant new_key = object->get_new_item_key();
+	Variant new_value = object->get_new_item_value();
+	dict[new_key] = new_value;
+
+	Variant::Type type = new_key.get_type();
+	new_key.zero();
+	VariantInternal::initialize(&new_key, type);
+	object->set_new_item_key(new_key);
+
+	type = new_value.get_type();
+	new_value.zero();
+	VariantInternal::initialize(&new_value, type);
+	object->set_new_item_value(new_value);
 
 	emit_changed(get_edited_property(), dict, "", false);
 	update_property();
