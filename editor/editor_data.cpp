@@ -606,7 +606,9 @@ void EditorData::instantiate_object_properties(Object *p_object) {
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		PropertyInfo pi = E->get();
 		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
-			Object *prop = ClassDB::instantiate(pi.class_name);
+			// For comma-separated lists, instantiate the first item in the list (which is assumed to cover the most common use case).
+			// This is a situation where listing a subclass before a parent class makes sense (e.g. "NoiseTexture2D,Texture2D").
+			Object *prop = ClassDB::instantiate(String(pi.class_name).get_slicec(',', 0));
 			p_object->set(pi.name, prop);
 		}
 	}
