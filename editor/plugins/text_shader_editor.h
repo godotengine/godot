@@ -144,7 +144,7 @@ class TextShaderEditor : public ShaderEditor {
 	RichTextLabel *warnings_panel = nullptr;
 	uint64_t idle = 0;
 
-	GotoLineDialog *goto_line_dialog = nullptr;
+	GotoLinePopup *goto_line_popup = nullptr;
 	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
 
