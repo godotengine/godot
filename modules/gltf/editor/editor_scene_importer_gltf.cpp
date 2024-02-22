@@ -59,7 +59,7 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 		int32_t enum_option = p_options["gltf/embedded_image_handling"];
 		state->set_handle_binary_image(enum_option);
 	}
-	Error err = gltf->append_data_from_file(p_path, state, p_flags);
+	Error err = gltf->append_from_file(p_path, state, p_flags);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = err;
@@ -73,7 +73,7 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
 	bool remove_immutable = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
-	return gltf->generate_scene_from_data(state, (float)p_options["animation/fps"], trimming, remove_immutable);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, remove_immutable);
 #else
 	return gltf->create_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
 #endif

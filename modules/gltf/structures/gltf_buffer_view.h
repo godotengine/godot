@@ -37,7 +37,6 @@
 
 class GLTFBufferView : public Resource {
 	GDCLASS(GLTFBufferView, Resource);
-	friend class ModelDocument3D;
 	friend class GLTFDocument;
 
 private:

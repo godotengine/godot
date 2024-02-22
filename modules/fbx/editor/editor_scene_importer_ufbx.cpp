@@ -74,14 +74,14 @@ Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t
 		state->set_handle_binary_image(enum_option);
 	}
 	p_flags |= EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
-	Error err = fbx->append_data_from_file(path, state, p_flags, p_path.get_base_dir());
+	Error err = fbx->append_from_file(path, state, p_flags, p_path.get_base_dir());
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
 		}
 		return nullptr;
 	}
-	return fbx->generate_scene_from_data(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
+	return fbx->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
 }
 
 Variant EditorSceneFormatImporterUFBX::get_option_visibility(const String &p_path, bool p_for_animation,

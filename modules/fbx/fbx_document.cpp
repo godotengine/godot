@@ -48,6 +48,7 @@
 
 #include "modules/gltf/extensions/gltf_light.h"
 #include "modules/gltf/gltf_defines.h"
+#include "modules/gltf/skin_tool.h"
 #include "modules/gltf/structures/gltf_animation.h"
 #include "modules/gltf/structures/gltf_camera.h"
 
@@ -2006,7 +2007,7 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 void FBXDocument::_bind_methods() {
 }
 
-Node *FBXDocument::generate_scene_from_data(Ref<ModelState3D> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
+Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), nullptr);
 	ERR_FAIL_NULL_V(state, nullptr);
@@ -2031,7 +2032,7 @@ Node *FBXDocument::generate_scene_from_data(Ref<ModelState3D> p_state, float p_b
 	return root;
 }
 
-Error FBXDocument::append_data_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<ModelState3D> p_state, uint32_t p_flags) {
+Error FBXDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags) {
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_bytes.ptr(), ERR_INVALID_DATA);
@@ -2123,7 +2124,7 @@ Error FBXDocument::_parse_fbx_state(Ref<FBXState> p_state, const String &p_searc
 	return OK;
 }
 
-Error FBXDocument::append_data_from_file(String p_path, Ref<ModelState3D> p_state, uint32_t p_flags, String p_base_path) {
+Error FBXDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags, String p_base_path) {
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_path.is_empty(), ERR_FILE_NOT_FOUND);
@@ -2342,15 +2343,15 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 	return OK;
 }
 
-PackedByteArray FBXDocument::generate_buffer_from_data(Ref<ModelState3D> p_state) {
+PackedByteArray FBXDocument::generate_buffer(Ref<GLTFState> p_state) {
 	return PackedByteArray();
 }
 
-Error FBXDocument::write_to_filesystem_from_data(Ref<ModelState3D> p_state, const String &p_path) {
+Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 	return ERR_UNAVAILABLE;
 }
 
-Error FBXDocument::append_data_from_scene(Node *p_node, Ref<ModelState3D> p_state, uint32_t p_flags) {
+Error FBXDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags) {
 	return ERR_UNAVAILABLE;
 }
 

@@ -35,8 +35,6 @@
 #include "extensions/gltf_spec_gloss.h"
 #include "gltf_defines.h"
 #include "gltf_state.h"
-#include "model_document_3d.h"
-#include "model_state_3d.h"
 
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
@@ -49,8 +47,8 @@
 #include "modules/gridmap/grid_map.h"
 #endif // MODULE_GRIDMAP_ENABLED
 
-class GLTFDocument : public ModelDocument3D {
-	GDCLASS(GLTFDocument, ModelDocument3D);
+class GLTFDocument : public Resource {
+	GDCLASS(GLTFDocument, Resource);
 
 public:
 	const int32_t JOINT_GROUP_SIZE = 4;
@@ -82,16 +80,6 @@ public:
 		ROOT_NODE_MODE_KEEP_ROOT,
 		ROOT_NODE_MODE_MULTI_ROOT,
 	};
-
-public:
-	virtual Error append_data_from_file(String p_path, Ref<ModelState3D> p_state, uint32_t p_flags = 0, String p_base_path = String()) override;
-	virtual Error append_data_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<ModelState3D> p_state, uint32_t p_flags = 0) override;
-	virtual Error append_data_from_scene(Node *p_node, Ref<ModelState3D> p_state, uint32_t p_flags = 0) override;
-
-public:
-	virtual Node *generate_scene_from_data(Ref<ModelState3D> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true) override;
-	virtual PackedByteArray generate_buffer_from_data(Ref<ModelState3D> p_state) override;
-	virtual Error write_to_filesystem_from_data(Ref<ModelState3D> p_state, const String &p_path) override;
 
 private:
 	const float BAKE_FPS = 30.0f;
@@ -320,18 +308,14 @@ private:
 	static float get_perceived_brightness(const Color p_color);
 	static float get_max_component(const Color &p_color);
 
-#ifndef DISABLE_DEPRECATED
-protected:
-	Error append_from_file_81746(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String());
-	Error append_from_buffer_81746(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0);
-	Error append_from_scene_81746(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0);
+public:
+	Error append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String());
+	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0);
+	Error append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0);
 
-	Node *generate_scene_81746(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true);
-	PackedByteArray generate_buffer_81746(Ref<GLTFState> p_state);
-	Error write_to_filesystem_81746(Ref<GLTFState> p_state, const String &p_path);
-
-	static void _bind_compatibility_methods();
-#endif
+	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true);
+	PackedByteArray generate_buffer(Ref<GLTFState> p_state);
+	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path);
 
 public:
 	Error _parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path);

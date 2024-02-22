@@ -41,7 +41,6 @@ class TypedArray;
 
 class GLTFSkin : public Resource {
 	GDCLASS(GLTFSkin, Resource);
-	friend class ModelDocument3D;
 	friend class GLTFDocument;
 	friend class SkinTool;
 	friend class FBXDocument;

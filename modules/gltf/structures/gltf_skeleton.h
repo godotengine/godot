@@ -39,7 +39,6 @@
 
 class GLTFSkeleton : public Resource {
 	GDCLASS(GLTFSkeleton, Resource);
-	friend class ModelDocument3D;
 	friend class GLTFDocument;
 	friend class SkinTool;
 	friend class FBXDocument;

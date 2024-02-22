@@ -101,10 +101,6 @@ static void _editor_init() {
 
 void initialize_gltf_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		// FIXME: Should be decoupled from gltf module.
-		GDREGISTER_ABSTRACT_CLASS(ModelState3D);
-		GDREGISTER_ABSTRACT_CLASS(ModelDocument3D);
-
 		// glTF API available at runtime.
 		GDREGISTER_CLASS(GLTFAccessor);
 		GDREGISTER_CLASS(GLTFAnimation);

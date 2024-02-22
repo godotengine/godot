@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  model_document_3d.cpp                                                 */
+/*  skin_tool.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,14 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "model_document_3d.h"
-
-#include "structures/gltf_skeleton.h"
-#include "structures/gltf_skin.h"
-
-#include "core/math/disjoint_set.h"
-#include "core/variant/dictionary.h"
-#include "scene/3d/skeleton_3d.h"
+#include "skin_tool.h"
 
 SkinNodeIndex SkinTool::_find_highest_node(Vector<Ref<GLTFNode>> &r_nodes, const Vector<GLTFNodeIndex> &p_subset) {
 	int highest = -1;
@@ -804,19 +797,4 @@ String SkinTool::_sanitize_bone_name(const String &p_name) {
 	bone_name = bone_name.replace(":", "_");
 	bone_name = bone_name.replace("/", "_");
 	return bone_name;
-}
-
-void ModelDocument3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("append_data_from_file", "path", "state", "flags", "base_path"),
-			&ModelDocument3D::append_data_from_file, DEFVAL(0), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("append_data_from_buffer", "bytes", "base_path", "state", "flags"),
-			&ModelDocument3D::append_data_from_buffer, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("append_data_from_scene", "node", "state", "flags"),
-			&ModelDocument3D::append_data_from_scene, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("generate_scene_from_data", "state", "bake_fps", "trimming", "remove_immutable_tracks"),
-			&ModelDocument3D::generate_scene_from_data, DEFVAL(30), DEFVAL(false), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("generate_buffer_from_data", "state"),
-			&ModelDocument3D::generate_buffer_from_data);
-	ClassDB::bind_method(D_METHOD("write_to_filesystem_from_data", "state", "path"),
-			&ModelDocument3D::write_to_filesystem_from_data);
 }

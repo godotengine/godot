@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  model_document_3d.h                                                   */
+/*  skin_tool.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MODEL_DOCUMENT_3D_H
-#define MODEL_DOCUMENT_3D_H
-
-// FIXME: This should be in `scene`, but it CANNOT depend on the gltf module,
-// as that completely breaks the purpose of modules (encapsulation, opt-out).
+#ifndef SKIN_TOOL_H
+#define SKIN_TOOL_H
 
 #include "gltf_defines.h"
-#include "model_state_3d.h"
-#include "structures/gltf_node.h"
-#include "structures/gltf_skeleton.h"
-#include "structures/gltf_skin.h"
 
-#include "core/io/resource.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/hash_set.h"
+#include "modules/gltf/structures/gltf_node.h"
+#include "modules/gltf/structures/gltf_skeleton.h"
+#include "modules/gltf/structures/gltf_skin.h"
+
+#include "core/math/disjoint_set.h"
 #include "core/templates/rb_set.h"
-#include "scene/main/node.h"
-#include "scene/resources/skin.h"
 
 using SkinNodeIndex = int;
 using SkinSkeletonIndex = int;
@@ -102,21 +95,4 @@ public:
 	static Error _create_skins(Vector<Ref<GLTFSkin>> &skins, Vector<Ref<GLTFNode>> &nodes, bool use_named_skin_binds, HashSet<String> &unique_names);
 };
 
-class ModelDocument3D : public Resource {
-	GDCLASS(ModelDocument3D, Resource);
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual Error append_data_from_file(String p_path, Ref<ModelState3D> p_state, uint32_t p_flags = 0, String p_base_path = String()) = 0;
-	virtual Error append_data_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<ModelState3D> p_state, uint32_t p_flags = 0) = 0;
-	virtual Error append_data_from_scene(Node *p_node, Ref<ModelState3D> p_state, uint32_t p_flags = 0) = 0;
-
-public:
-	virtual Node *generate_scene_from_data(Ref<ModelState3D> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true) = 0;
-	virtual PackedByteArray generate_buffer_from_data(Ref<ModelState3D> p_state) = 0;
-	virtual Error write_to_filesystem_from_data(Ref<ModelState3D> p_state, const String &p_path) = 0;
-};
-
-#endif // MODEL_DOCUMENT_3D_H
+#endif // SKIN_TOOL_H
