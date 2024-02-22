@@ -3514,7 +3514,13 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::FLOAT:
 			if (r_iarg.type.cname == name_cache.type_float) {
-				r_iarg.default_argument += "f";
+				if (r_iarg.default_argument == "inf") {
+					r_iarg.default_argument = "float.PositiveInfinity";
+				} else if (r_iarg.default_argument == "inf_neg") {
+					r_iarg.default_argument = "float.NegativeInfinity";
+				} else {
+					r_iarg.default_argument += "f";
+				}
 			}
 			break;
 		case Variant::STRING:

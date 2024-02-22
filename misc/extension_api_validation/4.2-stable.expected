@@ -160,3 +160,13 @@ Validate extension JSON: JSON file: Field was added in a way that breaks compati
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderSceneBuffersRD/methods/get_velocity_texture': arguments
 
 MSAA flag was added, compatibility functions exist for these.
+
+
+GH-82155
+--------
+Validate extension JSON: Error: Field 'classes/MethodTweener/methods/set_trans/arguments': size changed value in new API, from 1 to 3.
+Validate extension JSON: Error: Field 'classes/PropertyTweener/methods/set_trans/arguments': size changed value in new API, from 1 to 3.
+Validate extension JSON: Error: Field 'classes/Tween/methods/interpolate_value/arguments': size changed value in new API, from 6 to 8.
+Validate extension JSON: Error: Field 'classes/Tween/methods/set_trans/arguments': size changed value in new API, from 1 to 3.
+
+Added optional arguments. Compatibility methods registered.

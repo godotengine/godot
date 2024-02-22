@@ -152,12 +152,15 @@
 			<param index="3" name="duration" type="float" />
 			<param index="4" name="trans_type" type="int" enum="Tween.TransitionType" />
 			<param index="5" name="ease_type" type="int" enum="Tween.EaseType" />
+			<param index="6" name="trans_param1" type="float" default="inf" />
+			<param index="7" name="trans_param2" type="float" default="inf" />
 			<description>
 				This method can be used for manual interpolation of a value, when you don't want [Tween] to do animating for you. It's similar to [method @GlobalScope.lerp], but with support for custom transition and easing.
 				[param initial_value] is the starting value of the interpolation.
 				[param delta_value] is the change of the value in the interpolation, i.e. it's equal to [code]final_value - initial_value[/code].
 				[param elapsed_time] is the time in seconds that passed after the interpolation started and it's used to control the position of the interpolation. E.g. when it's equal to half of the [param duration], the interpolated value will be halfway between initial and final values. This value can also be greater than [param duration] or lower than 0, which will extrapolate the value.
 				[param duration] is the total time of the interpolation.
+				[param trans_param1] and [param trans_param2] are control parameters of the transition. They are used only in specific transitions, check [enum TransitionType] for details.
 				[b]Note:[/b] If [param duration] is equal to [code]0[/code], the method will always return the final value, regardless of [param elapsed_time] provided.
 			</description>
 		</method>
@@ -271,9 +274,12 @@
 		<method name="set_trans">
 			<return type="Tween" />
 			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
+			<param index="1" name="param1" type="float" default="inf" />
+			<param index="2" name="param2" type="float" default="inf" />
 			<description>
 				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
 				If not specified, the default value is [constant TRANS_LINEAR].
+				[param param1] and [param param2] are control parameters of the transition. They are used only in specific transitions, check [enum TransitionType] for details.
 			</description>
 		</method>
 		<method name="stop">
@@ -496,6 +502,8 @@
 		</constant>
 		<constant name="TRANS_ELASTIC" value="6" enum="TransitionType">
 			The animation is interpolated with elasticity, wiggling around the edges.
+			[code]param1[/code] is [code]period[/code], it determines the frequency of wiggling. Default is [code]0.3[/code].
+			[code]param2[/code] is [code]damping[/code], it determines how far the value wiggles (lower = more). Default is [code]10[/code].
 		</constant>
 		<constant name="TRANS_CUBIC" value="7" enum="TransitionType">
 			The animation is interpolated with a cubic (to the power of 3) function.
@@ -508,6 +516,7 @@
 		</constant>
 		<constant name="TRANS_BACK" value="10" enum="TransitionType">
 			The animation is interpolated backing out at ends.
+			[code]param1[/code] is [code]overshoot[/code], it determines how far the value goes out of range. Default is [code]1.70158[/code].
 		</constant>
 		<constant name="TRANS_SPRING" value="11" enum="TransitionType">
 			The animation is interpolated like a spring towards the end.
