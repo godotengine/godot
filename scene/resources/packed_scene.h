@@ -258,6 +258,8 @@ public:
 	virtual void reload_from_file() override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	virtual void set_path_cache(const String &p_path) override;
+
 #ifdef TOOLS_ENABLED
 	virtual void set_last_modified_time(uint64_t p_time) override {
 		Resource::set_last_modified_time(p_time);
