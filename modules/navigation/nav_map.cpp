@@ -54,6 +54,15 @@
 		r_path_owners->push_back(poly->owner->get_owner_id()); \
 	}
 
+#ifdef DEBUG_ENABLED
+#define NAVMAP_ITERATION_ZERO_ERROR_MSG() \
+	ERR_PRINT_ONCE("NavigationServer navigation map query failed because it was made before first map synchronization.\n\
+	NavigationServer 'map_changed' signal can be used to receive update notifications.\n\
+	NavigationServer 'map_get_iteration_id()' can be used to check if a map has finished its newest iteration.");
+#else
+#define NAVMAP_ITERATION_ZERO_ERROR_MSG()
+#endif // DEBUG_ENABLED
+
 void NavMap::set_up(Vector3 p_up) {
 	if (up == p_up) {
 		return;
@@ -129,7 +138,8 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
 	RWLockRead read_lock(map_rwlock);
 	if (iteration_id == 0) {
-		ERR_FAIL_V_MSG(Vector<Vector3>(), "NavigationServer map query failed because it was made before first map synchronization.");
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector<Vector3>();
 	}
 
 	// Clear metadata outputs.
@@ -593,7 +603,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
 	RWLockRead read_lock(map_rwlock);
 	if (iteration_id == 0) {
-		ERR_FAIL_V_MSG(Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector3();
 	}
 
 	bool use_collision = p_use_collision;
@@ -645,7 +656,8 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
 	RWLockRead read_lock(map_rwlock);
 	if (iteration_id == 0) {
-		ERR_FAIL_V_MSG(Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector3();
 	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.point;
@@ -654,7 +666,8 @@ Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
 Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
 	RWLockRead read_lock(map_rwlock);
 	if (iteration_id == 0) {
-		ERR_FAIL_V_MSG(Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector3();
 	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.normal;
@@ -663,7 +676,8 @@ Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
 RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
 	RWLockRead read_lock(map_rwlock);
 	if (iteration_id == 0) {
-		ERR_FAIL_V_MSG(RID(), "NavigationServer map query failed because it was made before first map synchronization.");
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return RID();
 	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.owner;
