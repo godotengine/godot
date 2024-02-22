@@ -1,7 +1,7 @@
 using System;
 using Godot;
 
-public partial class ExportDiagnostics_GD0105 : Node
+public partial class ExportDiagnosticsEmpty : Node
 {
     [Export]
     public int {|GD0105:this|}[int index]

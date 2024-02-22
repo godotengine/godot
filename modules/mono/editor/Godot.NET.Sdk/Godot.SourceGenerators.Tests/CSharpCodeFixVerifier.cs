@@ -27,9 +27,9 @@ public static class CSharpCodeFixVerifier<TCodeFix, TAnalyzer>
         }
     }
 
-    public static Task Verify(string sources, string fixedSources)
+    public static Task Verify(string source, string fixedSource)
     {
-        return MakeVerifier(sources, fixedSources).RunAsync();
+        return MakeVerifier(source, fixedSource).RunAsync();
     }
 
     public static Test MakeVerifier(string source, string results)

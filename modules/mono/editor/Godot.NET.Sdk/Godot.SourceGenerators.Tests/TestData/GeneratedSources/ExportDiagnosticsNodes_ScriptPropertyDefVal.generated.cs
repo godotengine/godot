@@ -1,4 +1,4 @@
-partial class ExportDiagnostics_GD0106_OK
+partial class ExportDiagnosticsNodes
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
 #if TOOLS
@@ -11,9 +11,11 @@ partial class ExportDiagnostics_GD0106_OK
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     internal new static global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant> GetGodotPropertyDefaultValues()
     {
-        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(1);
-        int __MyProperty_default_value = default;
-        values.Add(PropertyName.MyProperty, global::Godot.Variant.From<int>(__MyProperty_default_value));
+        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(2);
+        global::Godot.Node __NodeProperty_default_value = default;
+        values.Add(PropertyName.NodeProperty, global::Godot.Variant.From<global::Godot.Node>(__NodeProperty_default_value));
+        global::Godot.Node __NodeField_default_value = default;
+        values.Add(PropertyName.NodeField, global::Godot.Variant.From<global::Godot.Node>(__NodeField_default_value));
         return values;
     }
 #endif // TOOLS

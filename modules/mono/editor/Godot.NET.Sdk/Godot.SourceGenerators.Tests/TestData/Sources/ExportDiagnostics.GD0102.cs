@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class ExportDiagnostics_GD0102 : Node
+public partial class ExportDiagnosticsEmpty : Node
 {
     public struct MyStruct { }
 
