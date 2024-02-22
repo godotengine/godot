@@ -322,10 +322,20 @@ public:
 		// be used as a mouse...), but we'll hack one in with the current ticks.
 		uint64_t button_time = 0;
 
+		uint64_t motion_time = 0;
+
+		uint32_t proximity_serial = 0;
+		struct wl_surface *proximal_surface = nullptr;
+	};
+
+	struct TabletToolState {
+		struct wl_seat *wl_seat = nullptr;
+
+		struct wl_surface *last_surface = nullptr;
 		bool is_eraser = false;
 
-		bool in_proximity = false;
-		bool touching = false;
+		TabletToolData data_pending;
+		TabletToolData data;
 	};
 
 	struct OfferState {
@@ -425,9 +435,6 @@ public:
 		struct zwp_tablet_seat_v2 *wp_tablet_seat = nullptr;
 
 		List<struct zwp_tablet_tool_v2 *> tablet_tools;
-
-		TabletToolData tablet_tool_data_buffer;
-		TabletToolData tablet_tool_data;
 	};
 
 	struct CustomCursor {
@@ -855,6 +862,7 @@ public:
 	static WindowState *wl_surface_get_window_state(struct wl_surface *p_surface);
 	static ScreenState *wl_output_get_screen_state(struct wl_output *p_output);
 	static SeatState *wl_seat_get_seat_state(struct wl_seat *p_seat);
+	static TabletToolState *wp_tablet_tool_get_state(struct zwp_tablet_tool_v2 *p_tool);
 	static OfferState *wl_data_offer_get_offer_state(struct wl_data_offer *p_offer);
 
 	static OfferState *wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer);
