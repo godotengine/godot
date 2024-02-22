@@ -838,6 +838,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/sorting_order", 0, "Last Edited,Name,Path")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/directory_naming_convention", 1, "No convention,kebab-case,snake_case,camelCase,PascalCase,Title Case")
 
 #if defined(WEB_ENABLED)
 	// Web platform only supports `gl_compatibility`.
