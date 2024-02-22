@@ -358,6 +358,13 @@ private:
 
 	Ref<Theme> theme;
 
+	Timer *system_theme_timer = nullptr;
+	bool follow_system_theme = false;
+	bool use_system_accent_color = false;
+	bool last_dark_mode_state = false;
+	Color last_system_base_color = Color(0, 0, 0, 0);
+	Color last_system_accent_color = Color(0, 0, 0, 0);
+
 	PopupMenu *recent_scenes = nullptr;
 	String _recent_scene;
 	List<String> previous_scenes;
@@ -537,6 +544,8 @@ private:
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
 	void _save_screenshot(NodePath p_path);
+
+	void _check_system_theme_changed();
 
 	void _tool_menu_option(int p_idx);
 	void _export_as_menu_option(int p_idx);
