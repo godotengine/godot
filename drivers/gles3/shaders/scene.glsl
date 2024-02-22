@@ -1200,7 +1200,10 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	vec3 spot_dir = spot_lights[idx].direction;
 	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights[idx].cone_angle);
 	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights[idx].cone_angle));
-	spot_attenuation *= 1.0 - pow(spot_rim, spot_lights[idx].cone_attenuation);
+
+	mediump float cone_attenuation = spot_lights[idx].cone_attenuation;
+	spot_attenuation *= 1.0 - pow(spot_rim, cone_attenuation);
+
 	vec3 color = spot_lights[idx].color;
 
 	float size_A = 0.0;
