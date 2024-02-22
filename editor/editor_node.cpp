@@ -515,8 +515,9 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 
 		scene_root_parent->add_theme_style_override("panel", theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
 		bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
-		main_menu->add_theme_style_override("hover", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
+		main_menu->add_theme_style_override("pressed", theme->get_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
 		distraction_free->set_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
+		distraction_free->add_theme_style_override("pressed", theme->get_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
 		bottom_panel_raise->set_icon(theme->get_icon(SNAME("ExpandBottomDock"), EditorStringName(EditorIcons)));
 
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), theme->get_icon(SNAME("HelpSearch"), EditorStringName(EditorIcons)));
@@ -526,6 +527,11 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 
 		if (EditorDebuggerNode::get_singleton()->is_visible()) {
 			bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
+		}
+
+		for (int i = 0; i < bottom_panel_items.size(); i++) {
+			bottom_panel_items.write[i].button->add_theme_style_override("pressed", theme->get_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
+			bottom_panel_items.write[i].button->add_theme_style_override("hover_pressed", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
 		}
 
 		for (int i = 0; i < main_editor_buttons.size(); i++) {
@@ -663,6 +669,8 @@ void EditorNode::_notification(int p_what) {
 
 			callable_mp(this, &EditorNode::_begin_first_scan).call_deferred();
 
+			DisplayServer::get_singleton()->set_system_theme_change_callback(callable_mp(this, &EditorNode::_update_theme));
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
@@ -761,36 +769,46 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			_update_vsync_mode();
-			FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-			EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-			EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog")) {
+				FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+				EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+				EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+			}
+
+			follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
+			use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
 
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				_update_theme();
+				_build_icon_type_cache();
+				recent_scenes->reset_size();
 			}
 
-			scene_tabs->update_scene_tabs();
-			recent_scenes->reset_size();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/scene_tabs")) {
+				scene_tabs->update_scene_tabs();
+			}
 
-			_build_icon_type_cache();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
+				HashSet<String> updated_textfile_extensions;
+				bool extensions_match = true;
+				const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
+				for (const String &E : textfile_ext) {
+					updated_textfile_extensions.insert(E);
+					if (extensions_match && !textfile_extensions.has(E)) {
+						extensions_match = false;
+					}
+				}
 
-			HashSet<String> updated_textfile_extensions;
-			bool extensions_match = true;
-			const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
-			for (const String &E : textfile_ext) {
-				updated_textfile_extensions.insert(E);
-				if (extensions_match && !textfile_extensions.has(E)) {
-					extensions_match = false;
+				if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size()) {
+					textfile_extensions = updated_textfile_extensions;
+					EditorFileSystem::get_singleton()->scan();
 				}
 			}
 
-			if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size()) {
-				textfile_extensions = updated_textfile_extensions;
-				EditorFileSystem::get_singleton()->scan();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
+				_update_update_spinner();
+				_update_vsync_mode();
 			}
-
-			_update_update_spinner();
 		} break;
 	}
 }
@@ -3117,6 +3135,35 @@ void EditorNode::_save_screenshot(NodePath p_path) {
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 }
 
+void EditorNode::_check_system_theme_changed() {
+	DisplayServer *display_server = DisplayServer::get_singleton();
+
+	bool system_theme_changed = false;
+
+	if (follow_system_theme) {
+		if (display_server->get_base_color() != last_system_base_color) {
+			system_theme_changed = true;
+			last_system_base_color = display_server->get_base_color();
+		}
+
+		if (display_server->is_dark_mode_supported() && display_server->is_dark_mode() != last_dark_mode_state) {
+			system_theme_changed = true;
+			last_dark_mode_state = display_server->is_dark_mode();
+		}
+	}
+
+	if (use_system_accent_color) {
+		if (display_server->get_accent_color() != last_system_accent_color) {
+			system_theme_changed = true;
+			last_system_accent_color = display_server->get_accent_color();
+		}
+	}
+
+	if (system_theme_changed) {
+		_update_theme();
+	}
+}
+
 void EditorNode::_tool_menu_option(int p_idx) {
 	switch (tool_menu->get_item_id(p_idx)) {
 		case TOOLS_ORPHAN_RESOURCES: {
@@ -3339,7 +3386,6 @@ void EditorNode::select_editor_by_name(const String &p_name) {
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 	if (p_editor->has_main_screen()) {
 		Button *tb = memnew(Button);
-		tb->set_flat(true);
 		tb->set_toggle_mode(true);
 		tb->set_theme_type_variation("MainScreenButton");
 		tb->set_name(p_editor->get_name());
@@ -5234,7 +5280,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 
 Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item, bool p_at_front) {
 	Button *tb = memnew(Button);
-	tb->set_flat(true);
+	tb->set_theme_type_variation("FlatMenuButton");
 	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch_by_control).bind(p_item));
 	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorNode::_bottom_panel_drag_hover).bind(tb, p_item), Callable());
 	tb->set_text(p_text);
@@ -6679,7 +6725,7 @@ EditorNode::EditorNode() {
 	scene_tabs->connect("tab_closed", callable_mp(this, &EditorNode::_scene_tab_closed));
 
 	distraction_free = memnew(Button);
-	distraction_free->set_flat(true);
+	distraction_free->set_theme_type_variation("FlatMenuButton");
 	ED_SHORTCUT_AND_COMMAND("editor/distraction_free_mode", TTR("Distraction Free Mode"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F11);
 	ED_SHORTCUT_OVERRIDE("editor/distraction_free_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::D);
 	distraction_free->set_shortcut(ED_GET_SHORTCUT("editor/distraction_free_mode"));
@@ -6719,9 +6765,7 @@ EditorNode::EditorNode() {
 
 	main_menu = memnew(MenuBar);
 	title_bar->add_child(main_menu);
-
-	main_menu->add_theme_style_override("hover", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
-	main_menu->set_flat(true);
+	main_menu->set_theme_type_variation("FlatMenuButton");
 	main_menu->set_start_index(0); // Main menu, add to the start of global menu.
 	main_menu->set_prefer_global_menu(global_menu);
 	main_menu->set_switch_on_hover(true);
@@ -7187,7 +7231,8 @@ EditorNode::EditorNode() {
 	bottom_panel_raise = memnew(Button);
 	bottom_panel_hb->add_child(bottom_panel_raise);
 	bottom_panel_raise->hide();
-	bottom_panel_raise->set_flat(true);
+	bottom_panel_raise->set_flat(false);
+	bottom_panel_raise->set_theme_type_variation("FlatMenuButton");
 	bottom_panel_raise->set_toggle_mode(true);
 	bottom_panel_raise->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
 	bottom_panel_raise->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_raise_toggled));
@@ -7557,6 +7602,15 @@ EditorNode::EditorNode() {
 	String exec = OS::get_singleton()->get_executable_path();
 	// Save editor executable path for third-party tools.
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "executable_path", exec);
+
+	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
+	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
+	system_theme_timer = memnew(Timer);
+	system_theme_timer->set_wait_time(1.0);
+	system_theme_timer->connect("timeout", callable_mp(this, &EditorNode::_check_system_theme_changed));
+	add_child(system_theme_timer);
+	system_theme_timer->set_owner(get_owner());
+	system_theme_timer->set_autostart(true);
 }
 
 EditorNode::~EditorNode() {

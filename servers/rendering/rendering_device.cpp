@@ -2853,17 +2853,6 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 
 					DEV_ASSERT(!texture->owner.is_valid() || texture_owner.get_or_null(texture->owner));
 
-					if (_texture_make_mutable(texture, texture_id)) {
-						// The texture must be mutable as a layout transition will be required.
-						draw_graph.add_synchronization();
-					}
-
-					if (texture->draw_tracker != nullptr) {
-						bool depth_stencil_read = (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-						draw_trackers.push_back(texture->draw_tracker);
-						draw_trackers_usage.push_back(depth_stencil_read ? RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ : RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ);
-					}
-
 					driver_uniform.ids.push_back(texture->driver_id);
 				}
 			} break;
@@ -3185,7 +3174,7 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 	uint32_t to_present_index = 0;
 	while (to_present_index < frames[frame].swap_chains_to_present.size()) {
 		if (frames[frame].swap_chains_to_present[to_present_index] == it->value) {
-			driver->command_queue_present(present_queue, it->value, {});
+			driver->command_queue_execute_and_present(present_queue, {}, {}, {}, {}, it->value);
 			frames[frame].swap_chains_to_present.remove_at(to_present_index);
 		} else {
 			to_present_index++;
@@ -4796,7 +4785,6 @@ void RenderingDevice::swap_buffers() {
 
 	_end_frame();
 	_execute_frame(true);
-	_present_frame();
 
 	// Advance to the next frame and begin recording again.
 	frame = (frame + 1) % frames.size();
@@ -4969,17 +4957,21 @@ void RenderingDevice::_end_frame() {
 	driver->end_segment();
 }
 
-void RenderingDevice::_execute_frame(bool p_signal_for_present) {
-	const bool frame_can_present = !frames[frame].swap_chains_to_present.is_empty();
-	const VectorView<RDD::SemaphoreID> execute_draw_semaphore = p_signal_for_present && frame_can_present ? frames[frame].draw_semaphore : VectorView<RDD::SemaphoreID>();
-	driver->command_queue_execute(main_queue, frames[frame].setup_command_buffer, {}, frames[frame].setup_semaphore, {});
-	driver->command_queue_execute(main_queue, frames[frame].draw_command_buffer, frames[frame].setup_semaphore, execute_draw_semaphore, frames[frame].draw_fence);
+void RenderingDevice::_execute_frame(bool p_present) {
+	const bool frame_can_present = p_present && !frames[frame].swap_chains_to_present.is_empty();
+	const bool separate_present_queue = main_queue != present_queue;
+	const VectorView<RDD::SemaphoreID> execute_draw_semaphore = frame_can_present && separate_present_queue ? frames[frame].draw_semaphore : VectorView<RDD::SemaphoreID>();
+	const VectorView<RDD::SwapChainID> execute_draw_swap_chains = frame_can_present && !separate_present_queue ? frames[frame].swap_chains_to_present : VectorView<RDD::SwapChainID>();
+	driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
+	driver->command_queue_execute_and_present(main_queue, frames[frame].setup_semaphore, frames[frame].draw_command_buffer, execute_draw_semaphore, frames[frame].draw_fence, execute_draw_swap_chains);
 	frames[frame].draw_fence_signaled = true;
-}
 
-void RenderingDevice::_present_frame() {
-	if (!frames[frame].swap_chains_to_present.is_empty()) {
-		driver->command_queue_present(present_queue, frames[frame].swap_chains_to_present, frames[frame].draw_semaphore);
+	if (frame_can_present) {
+		if (separate_present_queue) {
+			// Issue the presentation separately if the presentation queue is different from the main queue.
+			driver->command_queue_execute_and_present(present_queue, frames[frame].draw_semaphore, {}, {}, {}, frames[frame].swap_chains_to_present);
+		}
+
 		frames[frame].swap_chains_to_present.clear();
 	}
 }

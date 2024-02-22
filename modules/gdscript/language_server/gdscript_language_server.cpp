@@ -63,6 +63,10 @@ void GDScriptLanguageServer::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("network/language_server")) {
+				break;
+			}
+
 			String remote_host = String(_EDITOR_GET("network/language_server/remote_host"));
 			int remote_port = (GDScriptLanguageServer::port_override > -1) ? GDScriptLanguageServer::port_override : (int)_EDITOR_GET("network/language_server/remote_port");
 			bool remote_use_thread = (bool)_EDITOR_GET("network/language_server/use_thread");

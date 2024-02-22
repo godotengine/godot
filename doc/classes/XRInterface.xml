@@ -99,19 +99,19 @@
 		<method name="is_initialized" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if this interface has been initialized.
+				Returns [code]true[/code] if this interface has been initialized.
 			</description>
 		</method>
 		<method name="is_passthrough_enabled" deprecated="Check if [member environment_blend_mode] is [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if passthrough is enabled.
+				Returns [code]true[/code] if passthrough is enabled.
 			</description>
 		</method>
 		<method name="is_passthrough_supported" deprecated="Check that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is supported using [method get_supported_environment_blend_modes], instead.">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if this interface supports passthrough.
+				Returns [code]true[/code] if this interface supports passthrough.
 			</description>
 		</method>
 		<method name="set_environment_blend_mode">

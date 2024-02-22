@@ -135,6 +135,9 @@ void EditorFileDialog::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog")) {
+				break;
+			}
 			bool is_showing_hidden = EDITOR_GET("filesystem/file_dialog/show_hidden_files");
 			if (show_hidden_files != is_showing_hidden) {
 				set_show_hidden_files(is_showing_hidden);

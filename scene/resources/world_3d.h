@@ -32,6 +32,7 @@
 #define WORLD_3D_H
 
 #include "core/io/resource.h"
+#include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
 #include "servers/physics_server_3d.h"
 #include "servers/rendering_server.h"
@@ -52,6 +53,7 @@ private:
 	Ref<Environment> environment;
 	Ref<Environment> fallback_environment;
 	Ref<CameraAttributes> camera_attributes;
+	Ref<Compositor> compositor;
 
 	HashSet<Camera3D *> cameras;
 
@@ -76,6 +78,9 @@ public:
 
 	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
 	Ref<CameraAttributes> get_camera_attributes() const;
+
+	void set_compositor(const Ref<Compositor> &p_compositor);
+	Ref<Compositor> get_compositor() const;
 
 	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
 

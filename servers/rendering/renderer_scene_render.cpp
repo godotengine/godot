@@ -186,6 +186,64 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	}
 }
 
+/* Compositor effect API */
+
+RID RendererSceneRender::compositor_effect_allocate() {
+	return compositor_storage.compositor_effect_allocate();
+}
+
+void RendererSceneRender::compositor_effect_initialize(RID p_rid) {
+	compositor_storage.compositor_effect_initialize(p_rid);
+}
+
+void RendererSceneRender::compositor_effect_free(RID p_rid) {
+	compositor_storage.compositor_effect_free(p_rid);
+}
+
+bool RendererSceneRender::is_compositor_effect(RID p_effect) const {
+	return compositor_storage.is_compositor_effect(p_effect);
+}
+
+void RendererSceneRender::compositor_effect_set_enabled(RID p_effect, bool p_enabled) {
+	compositor_storage.compositor_effect_set_enabled(p_effect, p_enabled);
+}
+
+void RendererSceneRender::compositor_effect_set_callback(RID p_effect, RS::CompositorEffectCallbackType p_callback_type, const Callable &p_callback) {
+	compositor_storage.compositor_effect_set_callback(p_effect, p_callback_type, p_callback);
+}
+
+void RendererSceneRender::compositor_effect_set_flag(RID p_effect, RS::CompositorEffectFlags p_flag, bool p_set) {
+	compositor_storage.compositor_effect_set_flag(p_effect, p_flag, p_set);
+}
+
+/* Compositor API */
+
+RID RendererSceneRender::compositor_allocate() {
+	return compositor_storage.compositor_allocate();
+}
+
+void RendererSceneRender::compositor_initialize(RID p_rid) {
+	compositor_storage.compositor_initialize(p_rid);
+}
+
+void RendererSceneRender::compositor_free(RID p_rid) {
+	compositor_storage.compositor_free(p_rid);
+}
+
+bool RendererSceneRender::is_compositor(RID p_rid) const {
+	return compositor_storage.is_compositor(p_rid);
+}
+
+void RendererSceneRender::compositor_set_compositor_effects(RID p_compositor, const TypedArray<RID> &p_effects) {
+	Vector<RID> rids;
+	for (int i = 0; i < p_effects.size(); i++) {
+		RID rid = p_effects[i];
+		rids.push_back(rid);
+	}
+
+	compositor_storage.compositor_set_compositor_effects(p_compositor, rids);
+}
+
 /* Environment API */
 
 RID RendererSceneRender::environment_allocate() {

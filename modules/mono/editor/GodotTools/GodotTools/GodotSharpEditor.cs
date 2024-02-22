@@ -4,6 +4,7 @@ using GodotTools.Export;
 using GodotTools.Utils;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using GodotTools.Build;
@@ -202,10 +203,10 @@ namespace GodotTools
                     var insideQuotes = false;
                     var hasFileFlag = false;
 
-                    execArgs = execArgs.ReplaceN("{line}", line.ToString());
-                    execArgs = execArgs.ReplaceN("{col}", col.ToString());
+                    execArgs = execArgs.ReplaceN("{line}", line.ToString(CultureInfo.InvariantCulture));
+                    execArgs = execArgs.ReplaceN("{col}", col.ToString(CultureInfo.InvariantCulture));
                     execArgs = execArgs.StripEdges(true, true);
-                    execArgs = execArgs.Replace("\\\\", "\\");
+                    execArgs = execArgs.Replace("\\\\", "\\", StringComparison.Ordinal);
 
                     for (int i = 0; i < execArgs.Length; ++i)
                     {
@@ -225,7 +226,7 @@ namespace GodotTools
                             }
 
                             var arg = execArgs.Substr(from, numChars);
-                            if (arg.Contains("{file}"))
+                            if (arg.Contains("{file}", StringComparison.OrdinalIgnoreCase))
                             {
                                 hasFileFlag = true;
                             }
@@ -505,7 +506,7 @@ namespace GodotTools
 
             _toolBarBuildButton = new Button
             {
-                Flat = true,
+                Flat = false,
                 Icon = EditorInterface.Singleton.GetEditorTheme().GetIcon("BuildCSharp", "EditorIcons"),
                 FocusMode = Control.FocusModeEnum.None,
                 Shortcut = EditorDefShortcut("mono/build_solution", "Build Project".TTR(), (Key)KeyModifierMask.MaskAlt | Key.B),

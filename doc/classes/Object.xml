@@ -220,7 +220,7 @@
 			<return type="bool" />
 			<param index="0" name="property" type="StringName" />
 			<description>
-				Override this method to customize the given [param property]'s revert behavior. Should return [code]true[/code] if the [param property] can be reverted in the Inspector dock. Use [method _property_get_revert] to specify the [param property]'s default value.
+				Override this method to customize the given [param property]'s revert behavior. Should return [code]true[/code] if the [param property] has a custom default value and is revertible in the Inspector dock. Use [method _property_get_revert] to specify the [param property]'s default value.
 				[b]Note:[/b] This method must return consistently, regardless of the current value of the [param property].
 			</description>
 		</method>

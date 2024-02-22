@@ -493,6 +493,23 @@ void MeshInstance3D::create_debug_tangents() {
 	}
 }
 
+bool MeshInstance3D::_property_can_revert(const StringName &p_name) const {
+	HashMap<StringName, int>::ConstIterator E = blend_shape_properties.find(p_name);
+	if (E) {
+		return true;
+	}
+	return false;
+}
+
+bool MeshInstance3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	HashMap<StringName, int>::ConstIterator E = blend_shape_properties.find(p_name);
+	if (E) {
+		r_property = 0.0f;
+		return true;
+	}
+	return false;
+}
+
 void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance3D::get_mesh);

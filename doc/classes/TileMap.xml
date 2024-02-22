@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileMap" inherits="TileMapLayerGroup" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileMap" inherits="TileMapLayerGroup" keywords="gridmap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node for 2D tile-based maps.
 	</brief_description>
@@ -80,6 +80,7 @@
 			<return type="void" />
 			<param index="0" name="layer" type="int" default="-1" />
 			<description>
+				Forces the TileMap and the layer [param layer] to update.
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
@@ -167,7 +168,7 @@
 			<return type="RID" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				Returns the [NavigationServer2D] navigation map [RID] currently assigned to the specified TileMap [param layer].
+				Returns the [RID] of the [NavigationServer2D] navigation map assigned to the specified TileMap layer [param layer].
 				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
 				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_layer_navigation_map].
 				If [param layer] is negative, the layers are accessed from the last one.
@@ -195,11 +196,11 @@
 				Returns the number of layers in the TileMap.
 			</description>
 		</method>
-		<method name="get_navigation_map" qualifiers="const" deprecated="">
+		<method name="get_navigation_map" qualifiers="const" deprecated="Use [method get_layer_navigation_map] instead.">
 			<return type="RID" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				See [method get_layer_navigation_map].
+				Returns the [RID] of the [NavigationServer2D] navigation map assigned to the specified TileMap layer [param layer].
 			</description>
 		</method>
 		<method name="get_neighbor_cell" qualifiers="const">
@@ -409,7 +410,7 @@
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="map" type="RID" />
 			<description>
-				Assigns a [NavigationServer2D] navigation map [RID] to the specified TileMap [param layer].
+				Assigns [param map] as a [NavigationServer2D] navigation map for the specified TileMap layer [param layer].
 				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
 				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_layer_navigation_map].
 				If [param layer] is negative, the layers are accessed from the last one.
@@ -444,12 +445,12 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
-		<method name="set_navigation_map" deprecated="">
+		<method name="set_navigation_map" deprecated="Use [method set_layer_navigation_map] instead.">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="map" type="RID" />
 			<description>
-				See [method set_layer_navigation_map].
+				Assigns [param map] as a [NavigationServer2D] navigation map for the specified TileMap layer [param layer].
 			</description>
 		</method>
 		<method name="set_pattern">

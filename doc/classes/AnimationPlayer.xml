@@ -47,6 +47,7 @@
 		<method name="get_method_call_mode" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_method] instead.">
 			<return type="int" enum="AnimationPlayer.AnimationMethodCallMode" />
 			<description>
+				Returns the call mode used for "Call Method" tracks.
 			</description>
 		</method>
 		<method name="get_playing_speed" qualifiers="const">
@@ -59,6 +60,7 @@
 		<method name="get_process_callback" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="int" enum="AnimationPlayer.AnimationProcessCallback" />
 			<description>
+				Returns the process notification in which to update animations.
 			</description>
 		</method>
 		<method name="get_queue">
@@ -70,6 +72,7 @@
 		<method name="get_root" qualifiers="const" deprecated="Use [member AnimationMixer.root_node] instead.">
 			<return type="NodePath" />
 			<description>
+				Returns the node which node path references will travel from.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -159,18 +162,21 @@
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="AnimationPlayer.AnimationMethodCallMode" />
 			<description>
+				Sets the call mode used for "Call Method" tracks.
 			</description>
 		</method>
 		<method name="set_process_callback" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="AnimationPlayer.AnimationProcessCallback" />
 			<description>
+				Sets the process notification in which to update animations.
 			</description>
 		</method>
 		<method name="set_root" deprecated="Use [member AnimationMixer.root_node] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
+				Sets the node which node path references will travel from.
 			</description>
 		</method>
 		<method name="stop">

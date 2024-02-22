@@ -618,8 +618,10 @@ void FileSystemDock::_notification(int p_what) {
 				_update_tree(get_uncollapsed_paths());
 			}
 
-			// Change full tree mode.
-			_update_display_mode();
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				// Change full tree mode.
+				_update_display_mode();
+			}
 		} break;
 	}
 }
@@ -2066,13 +2068,18 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				fpath = p_selected[0];
 			}
 
-			String file = ProjectSettings::get_singleton()->globalize_path(fpath);
+			const String file = ProjectSettings::get_singleton()->globalize_path(fpath);
+			const String extension = file.get_extension();
 
-			String resource_type = ResourceLoader::get_resource_type(fpath);
+			const String resource_type = ResourceLoader::get_resource_type(fpath);
 			String external_program;
 
-			if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
-				if (file.get_extension() == "svg" || file.get_extension() == "svgz") {
+			if (ClassDB::is_parent_class(resource_type, "Script") || extension == "tres" || extension == "tscn") {
+				external_program = EDITOR_GET("text_editor/external/exec_path");
+			} else if (extension == "res" || extension == "scn") {
+				// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
+			} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
+				if (extension == "svg" || extension == "svgz") {
 					external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
 				} else {
 					external_program = EDITOR_GET("filesystem/external_programs/raster_image_editor");
@@ -2080,12 +2087,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			} else if (ClassDB::is_parent_class(resource_type, "AudioStream")) {
 				external_program = EDITOR_GET("filesystem/external_programs/audio_editor");
 			} else if (resource_type == "PackedScene") {
-				// Ignore non-model scenes.
-				if (file.get_extension() != "tscn" && file.get_extension() != "scn" && file.get_extension() != "res") {
-					external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
-				}
-			} else if (ClassDB::is_parent_class(resource_type, "Script")) {
-				external_program = EDITOR_GET("text_editor/external/exec_path");
+				external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
 			}
 
 			if (external_program.is_empty()) {
@@ -3605,7 +3607,8 @@ Dictionary FileSystemDock::get_assigned_folder_colors() const {
 
 MenuButton *FileSystemDock::_create_file_menu_button() {
 	MenuButton *button = memnew(MenuButton);
-	button->set_flat(true);
+	button->set_flat(false);
+	button->set_theme_type_variation("FlatMenuButton");
 	button->set_tooltip_text(TTR("Sort Files"));
 
 	PopupMenu *p = button->get_popup();
@@ -3819,7 +3822,7 @@ FileSystemDock::FileSystemDock() {
 	button_toggle_display_mode->connect("pressed", callable_mp(this, &FileSystemDock::_change_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
 	button_toggle_display_mode->set_tooltip_text(TTR("Change Split Mode"));
-	button_toggle_display_mode->set_flat(true);
+	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	button_dock_placement = memnew(Button);

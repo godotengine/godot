@@ -940,7 +940,9 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			_update_editor_settings();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				_update_editor_settings();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

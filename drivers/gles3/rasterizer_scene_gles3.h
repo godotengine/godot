@@ -127,6 +127,8 @@ struct RenderDataGLES3 {
 	uint32_t spot_light_count = 0;
 	uint32_t omni_light_count = 0;
 
+	float luminance_multiplier = 1.0;
+
 	RenderingMethod::RenderInfo *render_info = nullptr;
 
 	/* Shadow data */
@@ -404,15 +406,14 @@ private:
 
 			float fog_height_density;
 			float fog_depth_curve;
-			float pad;
+			float fog_sun_scatter;
 			float fog_depth_begin;
 
 			float fog_light_color[3];
 			float fog_depth_end;
 
-			float fog_sun_scatter;
-
 			float shadow_bias;
+			float luminance_multiplier;
 			uint32_t camera_visible_layers;
 			bool pancake_shadows;
 		};
@@ -442,9 +443,84 @@ private:
 		bool used_depth_prepass = false;
 
 		GLES3::SceneShaderData::BlendMode current_blend_mode = GLES3::SceneShaderData::BLEND_MODE_MIX;
-		GLES3::SceneShaderData::DepthDraw current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_OPAQUE;
-		GLES3::SceneShaderData::DepthTest current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_DISABLED;
 		GLES3::SceneShaderData::Cull cull_mode = GLES3::SceneShaderData::CULL_BACK;
+
+		bool current_blend_enabled = false;
+		bool current_depth_draw_enabled = false;
+		bool current_depth_test_enabled = false;
+		bool current_scissor_test_enabled = false;
+
+		void reset_gl_state() {
+			glDisable(GL_BLEND);
+			current_blend_enabled = false;
+
+			glDisable(GL_SCISSOR_TEST);
+			current_scissor_test_enabled = false;
+
+			glCullFace(GL_BACK);
+			glEnable(GL_CULL_FACE);
+			cull_mode = GLES3::SceneShaderData::CULL_BACK;
+
+			glDepthMask(GL_FALSE);
+			current_depth_draw_enabled = false;
+			glDisable(GL_DEPTH_TEST);
+			current_depth_test_enabled = false;
+		}
+
+		void set_gl_cull_mode(GLES3::SceneShaderData::Cull p_mode) {
+			if (cull_mode != p_mode) {
+				if (p_mode == GLES3::SceneShaderData::CULL_DISABLED) {
+					glDisable(GL_CULL_FACE);
+				} else {
+					if (cull_mode == GLES3::SceneShaderData::CULL_DISABLED) {
+						// Last time was disabled, so enable and set proper face.
+						glEnable(GL_CULL_FACE);
+					}
+					glCullFace(p_mode == GLES3::SceneShaderData::CULL_FRONT ? GL_FRONT : GL_BACK);
+				}
+				cull_mode = p_mode;
+			}
+		}
+
+		void enable_gl_blend(bool p_enabled) {
+			if (current_blend_enabled != p_enabled) {
+				if (p_enabled) {
+					glEnable(GL_BLEND);
+				} else {
+					glDisable(GL_BLEND);
+				}
+				current_blend_enabled = p_enabled;
+			}
+		}
+
+		void enable_gl_scissor_test(bool p_enabled) {
+			if (current_scissor_test_enabled != p_enabled) {
+				if (p_enabled) {
+					glEnable(GL_SCISSOR_TEST);
+				} else {
+					glDisable(GL_SCISSOR_TEST);
+				}
+				current_scissor_test_enabled = p_enabled;
+			}
+		}
+
+		void enable_gl_depth_draw(bool p_enabled) {
+			if (current_depth_draw_enabled != p_enabled) {
+				glDepthMask(p_enabled ? GL_TRUE : GL_FALSE);
+				current_depth_draw_enabled = p_enabled;
+			}
+		}
+
+		void enable_gl_depth_test(bool p_enabled) {
+			if (current_depth_test_enabled != p_enabled) {
+				if (p_enabled) {
+					glEnable(GL_DEPTH_TEST);
+				} else {
+					glDisable(GL_DEPTH_TEST);
+				}
+				current_depth_test_enabled = p_enabled;
+			}
+		}
 
 		bool texscreen_copied = false;
 		bool used_screen_texture = false;
@@ -656,9 +732,9 @@ protected:
 	void _setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();
-	void _update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier);
+	void _update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier);
 	void _filter_sky_radiance(Sky *p_sky, int p_base_layer);
-	void _draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y);
+	void _draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y, bool p_apply_color_adjustments_in_post);
 	void _free_sky_data(Sky *p_sky);
 
 	// Needed for a single argument calls (material and uv2).
@@ -737,7 +813,7 @@ public:
 
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override;
 
-	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
+	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
 	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 

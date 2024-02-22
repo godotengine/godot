@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)" keywords="colour">
 			The line's color.
 		</member>
 		<member name="grow_begin" type="float" setter="set_grow_begin" getter="get_grow_begin" default="1.0">

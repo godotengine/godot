@@ -155,11 +155,13 @@ void CopyEffects::copy_to_and_from_rect(const Rect2 &p_rect) {
 	draw_screen_quad();
 }
 
-void CopyEffects::copy_screen() {
-	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_DEFAULT);
+void CopyEffects::copy_screen(float p_multiply) {
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_SCREEN);
 	if (!success) {
 		return;
 	}
+
+	copy.shader.version_set_uniform(CopyShaderGLES3::MULTIPLY, p_multiply, copy.shader_version, CopyShaderGLES3::MODE_SCREEN);
 
 	draw_screen_triangle();
 }

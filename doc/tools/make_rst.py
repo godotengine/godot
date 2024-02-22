@@ -66,6 +66,7 @@ BASE_STRINGS = [
     "This method doesn't need an instance to be called, so it can be called directly using the class name.",
     "This method describes a valid operator to use with this type as left-hand operand.",
     "This value is an integer composed as a bitmask of the following flags.",
+    "No return value.",
     "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this enum. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
@@ -454,7 +455,7 @@ class TypeName:
         if self.enum is not None:
             return make_enum(self.enum, self.is_bitfield, state)
         elif self.type_name == "void":
-            return "void"
+            return "|void|"
         else:
             return make_type(self.type_name, state)
 
@@ -1454,14 +1455,26 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
 def make_type(klass: str, state: State) -> str:
     if klass.find("*") != -1:  # Pointer, ignore
-        return klass
+        return f"``{klass}``"
+
     link_type = klass
+    is_array = False
+
     if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
         link_type = link_type[:-2]
+        is_array = True
+
     if link_type in state.classes:
-        return f":ref:`{klass}<class_{link_type}>`"
-    print_error(f'{state.current_class}.xml: Unresolved type "{klass}".', state)
-    return klass
+        type_rst = f":ref:`{link_type}<class_{link_type}>`"
+        if is_array:
+            type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
+        return type_rst
+
+    print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
+    type_rst = f"``{link_type}``"
+    if is_array:
+        type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
+    return type_rst
 
 
 def make_enum(t: str, is_bitfield: bool, state: State) -> str:
@@ -1483,7 +1496,7 @@ def make_enum(t: str, is_bitfield: bool, state: State) -> str:
         if is_bitfield:
             if not state.classes[c].enums[e].is_bitfield:
                 print_error(f'{state.current_class}.xml: Enum "{t}" is not bitfield.', state)
-            return f"|bitfield|\\<:ref:`{e}<enum_{c}_{e}>`\\>"
+            return f"|bitfield|\\[:ref:`{e}<enum_{c}_{e}>`\\]"
         else:
             return f":ref:`{e}<enum_{c}_{e}>`"
 
@@ -1513,36 +1526,36 @@ def make_method_signature(
             out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
             for parameter in definition.parameters:
                 out += f"_{parameter.type_name.type_name}"
-            out += f">` "
+            out += f">`"
         elif ref_type == "method":
             ref_type_qualifier = ""
             if definition.name.startswith("_"):
                 ref_type_qualifier = "private_"
-            out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type_qualifier}{ref_type}_{definition.name}>` "
+            out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type_qualifier}{ref_type}_{definition.name}>`"
         else:
-            out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type}_{definition.name}>` "
+            out += f":ref:`{definition.name}<class_{class_def.name}_{ref_type}_{definition.name}>`"
     else:
-        out += f"**{definition.name}** "
+        out += f"**{definition.name}**"
 
-    out += "**(**"
+    out += "\\ ("
     for i, arg in enumerate(definition.parameters):
         if i > 0:
             out += ", "
         else:
-            out += " "
+            out += "\\ "
 
-        out += f"{arg.type_name.to_rst(state)} {arg.name}"
+        out += f"{arg.name}\\: {arg.type_name.to_rst(state)}"
 
         if arg.default_value is not None:
-            out += f"={arg.default_value}"
+            out += f" = {arg.default_value}"
 
     if qualifiers is not None and "vararg" in qualifiers:
         if len(definition.parameters) > 0:
             out += ", ..."
         else:
-            out += " ..."
+            out += "\\ ..."
 
-    out += " **)**"
+    out += "\\ )"
 
     if qualifiers is not None:
         # Use substitutions for abbreviations. This is used to display tooltips on hover.
@@ -1629,6 +1642,7 @@ def make_footer() -> str:
     )
     operator_msg = translate("This method describes a valid operator to use with this type as left-hand operand.")
     bitfield_msg = translate("This value is an integer composed as a bitmask of the following flags.")
+    void_msg = translate("No return value.")
 
     return (
         f".. |virtual| replace:: :abbr:`virtual ({virtual_msg})`\n"
@@ -1638,6 +1652,7 @@ def make_footer() -> str:
         f".. |static| replace:: :abbr:`static ({static_msg})`\n"
         f".. |operator| replace:: :abbr:`operator ({operator_msg})`\n"
         f".. |bitfield| replace:: :abbr:`BitField ({bitfield_msg})`\n"
+        f".. |void| replace:: :abbr:`void ({void_msg})`\n"
     )
 
 

@@ -38,6 +38,7 @@
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
 
+class CodeTextEditor;
 class EditorFileDialog;
 class EditorHelpSearch;
 class FindReplaceBar;
@@ -192,6 +193,7 @@ public:
 	virtual void set_find_replace_bar(FindReplaceBar *p_bar) = 0;
 
 	virtual Control *get_base_editor() const = 0;
+	virtual CodeTextEditor *get_code_editor() const = 0;
 
 	virtual void validate() = 0;
 
@@ -305,6 +307,8 @@ class ScriptEditor : public PanelContainer {
 	FindReplaceBar *find_replace_bar = nullptr;
 
 	String current_theme;
+
+	float zoom_factor = 1.0f;
 
 	TextureRect *script_icon = nullptr;
 	Label *script_name_label = nullptr;
@@ -420,6 +424,7 @@ class ScriptEditor : public PanelContainer {
 	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
 	void _editor_settings_changed();
+	void _apply_editor_settings();
 	void _filesystem_changed();
 	void _files_moved(const String &p_old_file, const String &p_new_file);
 	void _file_removed(const String &p_file);
@@ -490,6 +495,8 @@ class ScriptEditor : public PanelContainer {
 	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(PackedStringArray paths);
+
+	void _set_zoom_factor(float p_zoom_factor);
 
 	void _window_changed(bool p_visible);
 

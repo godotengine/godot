@@ -1064,8 +1064,7 @@
 			Notification received when the node is about to exit a [SceneTree]. See [method _exit_tree].
 			This notification is received [i]after[/i] the related [signal tree_exiting] signal.
 		</constant>
-		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" deprecated="Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.">
-			This notification is no longer emitted.
+		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" deprecated="This notification is no longer sent by the engine. Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.">
 		</constant>
 		<constant name="NOTIFICATION_READY" value="13">
 			Notification received when the node is ready. See [method _ready].

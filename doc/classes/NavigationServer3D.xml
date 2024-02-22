@@ -568,6 +568,14 @@
 				Returns the edge connection margin of the map. This distance is the minimum vertex distance needed to connect two edges from different regions.
 			</description>
 		</method>
+		<method name="map_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns the current iteration id of the navigation map. Every time the navigation map changes and synchronizes the iteration id increases. An iteration id of 0 means the navigation map has never synchronized.
+				[b]Note:[/b] The iteration id will wrap back to 1 after reaching its range limit.
+			</description>
+		</method>
 		<method name="map_get_link_connection_radius" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="map" type="RID" />
@@ -886,13 +894,12 @@
 				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query.
 			</description>
 		</method>
-		<method name="region_bake_navigation_mesh" deprecated="This method is deprecated due to core threading changes.">
+		<method name="region_bake_navigation_mesh" deprecated="This method is deprecated due to core threading changes. To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the [SceneTree] for nodes that should contribute to the navigation mesh baking. The [SceneTree] parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="root_node" type="Node" />
 			<description>
 				Bakes the [param navigation_mesh] with bake source geometry collected starting from the [param root_node].
-				[i]Deprecated.[/i] To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.
 			</description>
 		</method>
 		<method name="region_create">

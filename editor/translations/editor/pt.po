@@ -45,14 +45,14 @@
 # gomakappa <gomaproi@outlook.com>, 2023.
 # 100Nome <100nome.portugal@gmail.com>, 2023.
 # João Victor Alonso de Paula Sperandio <joaovictorapsperandio@gmail.com>, 2024.
+# AegisTTN <tc.dev04@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-08 20:42+0000\n"
-"Last-Translator: João Victor Alonso de Paula Sperandio "
-"<joaovictorapsperandio@gmail.com>\n"
+"PO-Revision-Date: 2024-02-18 23:39+0000\n"
+"Last-Translator: AegisTTN <tc.dev04@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -60,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.4\n"
 
 msgid "Main Thread"
 msgstr "Linha Principal"
@@ -502,9 +502,6 @@ msgstr "Editar Evento"
 msgid "Remove Event"
 msgstr "Remover Evento"
 
-msgid "Filter by name..."
-msgstr "Filtrar por nome..."
-
 msgid "Clear All"
 msgstr "Limpar Tudo"
 
@@ -631,33 +628,6 @@ msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Não é possível alterar o modo de repetição na animação incorporada em outra "
 "cena."
-
-msgid "Property Track"
-msgstr "Pista de Propriedades"
-
-msgid "3D Position Track"
-msgstr "Faixa de Posição 3D"
-
-msgid "3D Rotation Track"
-msgstr "Faixa de Rotação 3D"
-
-msgid "3D Scale Track"
-msgstr "Faixa de Escala 3D"
-
-msgid "Blend Shape Track"
-msgstr "Faixa de Transformação"
-
-msgid "Call Method Track"
-msgstr "Chamar Pista Método"
-
-msgid "Bezier Curve Track"
-msgstr "Pista Curva Bezier"
-
-msgid "Audio Playback Track"
-msgstr "Pista de Reprodução de Áudio"
-
-msgid "Animation Playback Track"
-msgstr "Pista de Reprodução de Animação"
 
 msgid "Animation length (frames)"
 msgstr "Duração da Animação (frames)"
@@ -790,9 +760,6 @@ msgstr "Prender Interp Loop"
 
 msgid "Wrap Loop Interp"
 msgstr "Enrolar Interp Loop"
-
-msgid "Insert Key"
-msgstr "Inserir Chave"
 
 msgid "Duplicate Key(s)"
 msgstr "Duplicar Chave(s)"
@@ -954,11 +921,6 @@ msgstr "Chaves de Escala da Animação"
 msgid "Make Easing Keys"
 msgstr "Gerar Chaves de Suavização"
 
-msgid ""
-"This option does not work for Bezier editing, as it's only a single track."
-msgstr ""
-"Esta opção não funciona para edição de Bezier, dado que é uma única faixa."
-
 msgid "Animation Add RESET Keys"
 msgstr "Adicionar chaves RESET na Animação"
 
@@ -1049,24 +1011,6 @@ msgstr "Editar"
 msgid "Animation properties."
 msgstr "Propriedades da Animação."
 
-msgid "Copy Tracks"
-msgstr "Copiar Pistas"
-
-msgid "Scale Selection"
-msgstr "Escalar Seleção"
-
-msgid "Scale From Cursor"
-msgstr "Escalar Partir do Cursor"
-
-msgid "Make Easing Selection"
-msgstr "Escolher Tipo de Suavização"
-
-msgid "Duplicate Selection"
-msgstr "Duplicar Seleção"
-
-msgid "Duplicate Transposed"
-msgstr "Duplicar Transposto"
-
 msgid "Delete Selection"
 msgstr "Apagar Seleção"
 
@@ -1078,15 +1022,6 @@ msgstr "Ir para Passo Anterior"
 
 msgid "Apply Reset"
 msgstr "Aplicar Reinicialização"
-
-msgid "Bake Animation"
-msgstr "Gerar Animação"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Otimizar Animação (irreversível)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Limpar Animação (irreversível)"
 
 msgid "Pick a node to animate:"
 msgstr "Escolha um nó para animar:"
@@ -1903,7 +1838,7 @@ msgid "Create Folder"
 msgstr "Criar Pasta"
 
 msgid "Folder name is valid."
-msgstr "O nome do arquivo é inválido."
+msgstr "O nome da pasta é válido."
 
 msgid "Thanks from the Godot community!"
 msgstr "Agradecimentos da Comunidade Godot!"
@@ -2416,9 +2351,6 @@ msgstr "Carregar Perfil"
 msgid "Export Profile"
 msgstr "Exportar Perfil"
 
-msgid "Forced classes on detect:"
-msgstr "Classes forçadas ao detetar:"
-
 msgid "Edit Build Configuration Profile"
 msgstr "Editar Perfil de Configuração da Compilação"
 
@@ -2449,6 +2381,15 @@ msgstr "[vazio]"
 
 msgid "[unsaved]"
 msgstr "[não guardado]"
+
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Engine"
+
+msgid "Dock Position"
+msgstr "Posição da Doca"
+
+msgid "Make Floating"
+msgstr "Tornar Flutuante"
 
 msgid "3D Editor"
 msgstr "Editor 3D"
@@ -2656,6 +2597,21 @@ msgstr ""
 "Este método não precisa de uma instância para ser chamado.\n"
 "Ele pode ser chamado diretamente usando o nome da classe."
 
+msgid "Constructors"
+msgstr "Construtores"
+
+msgid "Operators"
+msgstr "Operadores"
+
+msgid "Method Descriptions"
+msgstr "Descrições de Método"
+
+msgid "Constructor Descriptions"
+msgstr "Descrições do Construtor"
+
+msgid "Operator Descriptions"
+msgstr "Descrições de Operadores"
+
 msgid "Error codes returned:"
 msgstr "Códigos de erro retornados:"
 
@@ -2701,18 +2657,6 @@ msgstr "Herdar:"
 msgid "Inherited by:"
 msgstr "Herdado por:"
 
-msgid ""
-"This class is marked as deprecated. It will be removed in future versions."
-msgstr ""
-"Esta classe está marcada como obsoleta. Ela será removida em versões futuras."
-
-msgid ""
-"This class is marked as experimental. It is subject to likely change or "
-"possible removal in future versions. Use at your own discretion."
-msgstr ""
-"Esta classe está marcada como experimental. Está sujeita a prováveis "
-"alterações ou possível remoção em versões futuras. Use ao seu critério."
-
 msgid "Description"
 msgstr "Descrição"
 
@@ -2750,12 +2694,6 @@ msgstr "predefinição:"
 
 msgid "property:"
 msgstr "propriedade:"
-
-msgid "Constructors"
-msgstr "Construtores"
-
-msgid "Operators"
-msgstr "Operadores"
 
 msgid "Theme Properties"
 msgstr "Propriedades do Tema"
@@ -2810,15 +2748,6 @@ msgstr ""
 "Atualmente não existe descrição para esta Propriedade. Por favor nos ajude "
 "[color=$color][url=$url]contribuindo com uma[/url][/color]!"
 
-msgid "Constructor Descriptions"
-msgstr "Descrições do Construtor"
-
-msgid "Method Descriptions"
-msgstr "Descrições de Método"
-
-msgid "Operator Descriptions"
-msgstr "Descrições de Operadores"
-
 msgid "Metadata:"
 msgstr "Metadados:"
 
@@ -2831,9 +2760,6 @@ msgstr "Método:"
 msgid "Signal:"
 msgstr "Sinal:"
 
-msgid "Theme Item:"
-msgstr "Item Tema:"
-
 msgid "No description available."
 msgstr "Nenhuma descrição disponível."
 
@@ -2842,6 +2768,24 @@ msgstr "%d correspondência."
 
 msgid "%d matches."
 msgstr "%d correspondências."
+
+msgid "Method"
+msgstr "Método"
+
+msgid "Signal"
+msgstr "Sinal"
+
+msgid "Constant"
+msgstr "Constante"
+
+msgid "Property"
+msgstr "Propriedade"
+
+msgid "Theme Property"
+msgstr "Propriedade do Tema"
+
+msgid "Annotation"
+msgstr "Anotações"
 
 msgid "Search Help"
 msgstr "Procure em Ajuda"
@@ -2890,24 +2834,6 @@ msgstr "(Construtores)"
 
 msgid "Class"
 msgstr "Classe"
-
-msgid "Method"
-msgstr "Método"
-
-msgid "Signal"
-msgstr "Sinal"
-
-msgid "Annotation"
-msgstr "Anotações"
-
-msgid "Constant"
-msgstr "Constante"
-
-msgid "Property"
-msgstr "Propriedade"
-
-msgid "Theme Property"
-msgstr "Propriedade do Tema"
 
 msgid "This member is marked as deprecated."
 msgstr "Este membro esta marcado como obsoleto."
@@ -3470,9 +3396,6 @@ msgstr "Limpar Cenas Recentes"
 msgid "There is no defined scene to run."
 msgstr "Não existe cena definida para execução."
 
-msgid "%s - Godot Engine"
-msgstr "%s - Godot Engine"
-
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -3501,14 +3424,14 @@ msgstr ""
 "Poderá alterá-la depois em \"Configurações do Projeto\" dentro da categoria "
 "'application."
 
+msgid "Default"
+msgstr "Predefinição"
+
 msgid "Save Layout"
 msgstr "Guardar Modelo"
 
 msgid "Delete Layout"
 msgstr "Apagar Modelo"
-
-msgid "Default"
-msgstr "Predefinição"
 
 msgid "This scene was never saved."
 msgstr "Esta cena nunca foi salva."
@@ -3568,12 +3491,6 @@ msgstr "Compatibilidade"
 msgid "Pan View"
 msgstr "Vista Pan"
 
-msgid "Dock Position"
-msgstr "Posição da Doca"
-
-msgid "Make Floating"
-msgstr "Tornar Flutuante"
-
 msgid "Distraction Free Mode"
 msgstr "Modo Livre de Distrações"
 
@@ -3631,6 +3548,9 @@ msgstr "Fechar Cena"
 msgid "Quit"
 msgstr "Sair"
 
+msgid "Editor Settings..."
+msgstr "Configurações do Editor..."
+
 msgid "Project"
 msgstr "Projeto"
 
@@ -3672,9 +3592,6 @@ msgstr "Sair para a Lista de Projetos"
 
 msgid "Editor"
 msgstr "Editor"
-
-msgid "Editor Settings..."
-msgstr "Configurações do Editor..."
 
 msgid "Command Palette..."
 msgstr "Paleta de Comandos..."
@@ -3739,9 +3656,6 @@ msgstr "Proponha uma Funcionalidade"
 msgid "Send Docs Feedback"
 msgstr "Enviar Sugestão dos Docs"
 
-msgid "About Godot"
-msgstr "Sobre Godot"
-
 msgid "Support Godot Development"
 msgstr "Apoie o Desenvolvimento do Godot"
 
@@ -3786,33 +3700,6 @@ msgstr "Instalar do ficheiro"
 
 msgid "Select Android sources file"
 msgstr "Selecione os ficheiros fonte do Android"
-
-msgid ""
-"This will set up your project for gradle Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make gradle builds instead of using pre-built APKs, the "
-"\"Use Gradle Build\" option should be enabled in the Android export preset."
-msgstr ""
-"Isso configurará o seu projeto para compilações gradle do Android instalando "
-"o modelo de origem em \"res://android/build\".\n"
-"Pode aplicar modificações e criar o seu próprio APK personalizado na "
-"exportação (adicionar módulos, alterar o AndroidManifest.xml, etc.).\n"
-"Observe que, para criar gradle builds em vez de usar APKs pré-criados, a "
-"opção \"Use Gradle Build\" deve ser ativada na predefinição de exportação do "
-"Android."
-
-msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"res://android/build\" directory manually before attempting this "
-"operation again."
-msgstr ""
-"O modelo de compilação Android já está instalado neste projeto e não será "
-"substituído.\n"
-"Remova manualmente a diretoria \"res://android/build\" antes de repetir esta "
-"operação."
 
 msgid "Show in File Manager"
 msgstr "Mostrar no Gestor de Ficheiros"
@@ -3887,8 +3774,8 @@ msgstr "Ok"
 msgid "Warning!"
 msgstr "Aviso!"
 
-msgid "Main Script:"
-msgstr "Script principal:"
+msgid "On"
+msgstr "On"
 
 msgid "Edit Plugin"
 msgstr "Editar Plugin"
@@ -3905,14 +3792,8 @@ msgstr "Versão"
 msgid "Author"
 msgstr "Autor"
 
-msgid "Status"
-msgstr "Status"
-
 msgid "Edit Text:"
 msgstr "Editar Texto:"
-
-msgid "On"
-msgstr "On"
 
 msgid "Renaming layer %d:"
 msgstr "Renomeando a camada %d:"
@@ -4045,8 +3926,8 @@ msgstr ""
 "O recurso selecionado (%s) não corresponde a qualquer tipo esperado para esta "
 "propriedade (%s)."
 
-msgid "Quick Load"
-msgstr "Carregamento Rápido"
+msgid "Load..."
+msgstr "Carregar..."
 
 msgid "Inspect"
 msgstr "Inspetor"
@@ -4072,14 +3953,11 @@ msgstr "Selecione recursos para tornar único:"
 msgid "New %s"
 msgstr "Novo %s"
 
-msgid "New Script"
-msgstr "Novo Script"
+msgid "New Script..."
+msgstr "Novo Script..."
 
-msgid "Extend Script"
-msgstr "Estender Script"
-
-msgid "New Shader"
-msgstr "Novo Shader"
+msgid "Extend Script..."
+msgstr "Estender Script..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "Nenhuma predefinição de exportação de Depuração Remota configurada."
@@ -4105,12 +3983,6 @@ msgstr "Escreva a sua lógica no Método _run()."
 
 msgid "There is an edited scene already."
 msgstr "Já existe uma cena editada."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"Não foi possível executar o script do editor, esqueceu-se de substituir o "
-"método '_run'?"
 
 msgid "Undo: %s"
 msgstr "Desfazer: %s"
@@ -4219,12 +4091,6 @@ msgstr "Todos os Aparelhos"
 
 msgid "Device"
 msgstr "Aparelho"
-
-msgid "Listening for input..."
-msgstr "Aguardando entrada..."
-
-msgid "Filter by event..."
-msgstr "Filtrar por evento..."
 
 msgid "Project export for platform:"
 msgstr "Exportação do projeto para plataforma:"
@@ -4576,6 +4442,9 @@ msgstr ""
 "clique.\n"
 "Apenas uma predefinição por plataforma pode ser marcada como executável."
 
+msgid "Advanced Options"
+msgstr "Opções Avançadas"
+
 msgid "Export Path"
 msgstr "Exportar Caminho"
 
@@ -4917,9 +4786,6 @@ msgstr "Nova Diretoria..."
 msgid "New Scene..."
 msgstr "Nova Cena..."
 
-msgid "New Script..."
-msgstr "Novo Script..."
-
 msgid "New Resource..."
 msgstr "Novo Recurso..."
 
@@ -5066,56 +4932,20 @@ msgstr "%d correspondências no ficheiro %d"
 msgid "%d matches in %d files"
 msgstr "%d correspondências em %d ficheiros"
 
+msgid "Rename Group"
+msgstr "Renomear Grupo"
+
 msgid "Add to Group"
 msgstr "Adicionar ao Grupo"
 
 msgid "Remove from Group"
 msgstr "Remover do Grupo"
 
-msgid "Invalid group name."
-msgstr "Nome de grupo inválido."
-
-msgid "Group name already exists."
-msgstr "Já existe o nome de grupo ."
-
-msgid "Rename Group"
-msgstr "Renomear Grupo"
-
-msgid "Delete Group"
-msgstr "Apagar Grupo"
-
-msgid "Groups"
-msgstr "Grupos"
-
-msgid "Nodes Not in Group"
-msgstr "Nós fora do Grupo"
-
-msgid "Nodes in Group"
-msgstr "Nós no Grupo"
-
-msgid "Empty groups will be automatically removed."
-msgstr "Grupos vazios serão removidos automaticamente."
-
-msgid "Group Editor"
-msgstr "Editor de Grupo"
-
-msgid "Manage Groups"
-msgstr "Gerir Grupos"
+msgid "Global"
+msgstr "Global"
 
 msgid "Move"
 msgstr "Mover"
-
-msgid "Please select a base directory first."
-msgstr "Por favor selecione primeiro a diretoria base."
-
-msgid "Could not create folder. File with that name already exists."
-msgstr "Não foi possível criar a pasta. Já existe uma com esse nome."
-
-msgid "Choose a Directory"
-msgstr "Escolha uma Diretoria"
-
-msgid "Copy File(s)"
-msgstr "Copiar arquivo(s)"
 
 msgid "Network"
 msgstr "Rede"
@@ -5159,6 +4989,9 @@ msgstr "Abrir um Ficheiro ou Diretoria"
 
 msgid "Save a File"
 msgstr "Guardar um Ficheiro"
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "Não foi possível criar a pasta. Já existe uma com esse nome."
 
 msgid "Favorited folder does not exist anymore and will be removed."
 msgstr "A pasta favorita não existe mais e será removida."
@@ -5355,9 +5188,6 @@ msgstr "Alternar Visibilidade"
 msgid "Unlock Node"
 msgstr "Desbloquear Nó"
 
-msgid "Button Group"
-msgstr "Grupo Botão"
-
 msgid "Disable Scene Unique Name"
 msgstr "Desativar Nome Único de Cena"
 
@@ -5389,9 +5219,6 @@ msgstr[1] "O nó está nos seguintes grupos:"
 msgid "Click to show signals dock."
 msgstr "Clique para mostrar o painel de sinais."
 
-msgid "Open in Editor"
-msgstr "Abrir no Editor"
-
 msgid "This script is currently running in the editor."
 msgstr "Este script é executado no editor."
 
@@ -5422,6 +5249,9 @@ msgstr ""
 "AnimationPlayer está fixado.\n"
 "Clique para desafixar."
 
+msgid "Open in Editor"
+msgstr "Abrir no Editor"
+
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" não é um filtro conhecido."
 
@@ -5449,8 +5279,175 @@ msgstr "Mostrar Todos"
 msgid "The Beginning"
 msgstr "O Início"
 
-msgid "Global"
-msgstr "Global"
+msgid "Pre-Import Scene"
+msgstr "Pré-importando Cena"
+
+msgid "Importing Scene..."
+msgstr "A importar Cena..."
+
+msgid "Import Scene"
+msgstr "Importar Cena"
+
+msgid "Running Custom Script..."
+msgstr "A executar Script Personalizado..."
+
+msgid "Couldn't load post-import script:"
+msgstr "Não se conseguiu carregar o Script de pós-importação:"
+
+msgid "Invalid/broken script for post-import (check console):"
+msgstr "Script inválido/danificado para pós-importação (verificar consola):"
+
+msgid "Error running post-import script:"
+msgstr "Erro na execução do Script de pós-importação:"
+
+msgid "Did you return a Node-derived object in the `_post_import()` method?"
+msgstr "Retornou um objeto derivado de Node no método `_post_import()`?"
+
+msgid "Saving..."
+msgstr "A guardar..."
+
+msgid "<Unnamed Material>"
+msgstr "<Material Sem Nome>"
+
+msgid "Import ID: %s"
+msgstr "Importar ID: %s"
+
+msgid ""
+"Type: %s\n"
+"Import ID: %s"
+msgstr ""
+"Tipo: %s\n"
+"Importar ID: %s"
+
+msgid "Error opening scene"
+msgstr "Erro ao abrir cena"
+
+msgid "Advanced Import Settings for AnimationLibrary '%s'"
+msgstr "Configurações Avançadas de Importação de AnimationLibrary '%s'"
+
+msgid "Advanced Import Settings for Scene '%s'"
+msgstr "Configurações Avançadas de Importação para Cena '%s'"
+
+msgid "Select folder to extract material resources"
+msgstr "Selecione a pasta para extrair os recursos de material"
+
+msgid "Select folder where mesh resources will save on import"
+msgstr "Selecione a pasta onde os recursos de malha serão salvos ao importar"
+
+msgid "Select folder where animations will save on import"
+msgstr "Selecione a pasta onde as animações serão salvas ao importar"
+
+msgid "Warning: File exists"
+msgstr "Atenção: Ficheiro existente"
+
+msgid "Existing file with the same name will be replaced."
+msgstr "O ficheiro existente com o mesmo nome será substituído."
+
+msgid "Will create new file"
+msgstr "Vai criar um novo ficheiro"
+
+msgid "Already External"
+msgstr "Já é externo"
+
+msgid ""
+"This material already references an external file, no action will be taken.\n"
+"Disable the external property for it to be extracted again."
+msgstr ""
+"Esse material já referencia um ficheiro externo, nenhuma ação será feita.\n"
+"Desative a propriedade externa para que ele seja extraído novamente."
+
+msgid "No import ID"
+msgstr "Sem ID de importação"
+
+msgid ""
+"Material has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"O Material não tem nome nem outra forma de identificação ao reimportar.\n"
+"Dê-lhe um nome ou certifique-se de que ele seja exportado com um ID único."
+
+msgid "Extract Materials to Resource Files"
+msgstr "Extrair Materiais para Ficheiros de Recurso"
+
+msgid "Extract"
+msgstr "Extrair"
+
+msgid "Already Saving"
+msgstr "Já está a guardar"
+
+msgid ""
+"This mesh already saves to an external resource, no action will be taken."
+msgstr "Essa malha já é salva para um recurso externo, nenhuma ação será feita."
+
+msgid "Existing file with the same name will be replaced on import."
+msgstr "O ficheiro existente com o mesmo nome será substituído ao importar."
+
+msgid "Will save to new file"
+msgstr "Irá guardar num novo ficheiro"
+
+msgid ""
+"Mesh has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"A malha não tem nome nem outra forma de identificação ao reimportar.\n"
+"Dê-lhe um nome ou certifique-se que ela seja exportada com um ID único."
+
+msgid "Set paths to save meshes as resource files on Reimport"
+msgstr "Defina caminhos para gravar malhas como recursos ao Reimportar"
+
+msgid "Set Paths"
+msgstr "Definir Caminhos"
+
+msgid ""
+"This animation already saves to an external resource, no action will be taken."
+msgstr ""
+"Essa animação já foi salva como um recurso externo, nenhuma ação será feita."
+
+msgid "Set paths to save animations as resource files on Reimport"
+msgstr "Definir caminhos para gravar animações como recursos ao Reimportar"
+
+msgid "Can't make material external to file, write error:"
+msgstr ""
+"Não foi possível tornar o material um ficheiro externo, erro de escrita:"
+
+msgid "Actions..."
+msgstr "Ações..."
+
+msgid "Extract Materials"
+msgstr "Extrair Materiais"
+
+msgid "Set Animation Save Paths"
+msgstr "Definir Caminhos para Gravar Animação"
+
+msgid "Set Mesh Save Paths"
+msgstr "Definir Caminhos para Gravar Malhas"
+
+msgid "Meshes"
+msgstr "Malhas"
+
+msgid "Materials"
+msgstr "Materiais"
+
+msgid "Selected Animation Play/Pause"
+msgstr "Reproduzir/Pausar Animação Selecionada"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Save Extension:"
+msgstr "Gravar Extensão:"
+
+msgid "Text: *.tres"
+msgstr "Textura: *.tres"
+
+msgid "Binary: *.res"
+msgstr "Binário: *.res"
+
+msgid "Text Resource"
+msgstr "Recurso de Texto"
+
+msgid "Binary Resource"
+msgstr "Recurso Binário"
 
 msgid "Audio Stream Importer: %s"
 msgstr "Importador de Fluxo de Áudio: %s"
@@ -5618,33 +5615,6 @@ msgstr "Fonte TrueType/OpenType renderizada dinamicamente"
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "Campo de distância com sinal multicanal pré-renderizado (+verdadeiro)"
 
-msgid "Pre-Import Scene"
-msgstr "Pré-importando Cena"
-
-msgid "Importing Scene..."
-msgstr "A importar Cena..."
-
-msgid "Import Scene"
-msgstr "Importar Cena"
-
-msgid "Running Custom Script..."
-msgstr "A executar Script Personalizado..."
-
-msgid "Couldn't load post-import script:"
-msgstr "Não se conseguiu carregar o Script de pós-importação:"
-
-msgid "Invalid/broken script for post-import (check console):"
-msgstr "Script inválido/danificado para pós-importação (verificar consola):"
-
-msgid "Error running post-import script:"
-msgstr "Erro na execução do Script de pós-importação:"
-
-msgid "Did you return a Node-derived object in the `_post_import()` method?"
-msgstr "Retornou um objeto derivado de Node no método `_post_import()`?"
-
-msgid "Saving..."
-msgstr "A guardar..."
-
 msgid ""
 "Error importing GLSL shader file: '%s'. Open the file in the filesystem dock "
 "in order to see the reason."
@@ -5683,146 +5653,6 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
-
-msgid "<Unnamed Material>"
-msgstr "<Material Sem Nome>"
-
-msgid "Import ID: %s"
-msgstr "Importar ID: %s"
-
-msgid ""
-"Type: %s\n"
-"Import ID: %s"
-msgstr ""
-"Tipo: %s\n"
-"Importar ID: %s"
-
-msgid "Error opening scene"
-msgstr "Erro ao abrir cena"
-
-msgid "Advanced Import Settings for AnimationLibrary '%s'"
-msgstr "Configurações Avançadas de Importação de AnimationLibrary '%s'"
-
-msgid "Advanced Import Settings for Scene '%s'"
-msgstr "Configurações Avançadas de Importação para Cena '%s'"
-
-msgid "Select folder to extract material resources"
-msgstr "Selecione a pasta para extrair os recursos de material"
-
-msgid "Select folder where mesh resources will save on import"
-msgstr "Selecione a pasta onde os recursos de malha serão salvos ao importar"
-
-msgid "Select folder where animations will save on import"
-msgstr "Selecione a pasta onde as animações serão salvas ao importar"
-
-msgid "Warning: File exists"
-msgstr "Atenção: Ficheiro existente"
-
-msgid "Existing file with the same name will be replaced."
-msgstr "O ficheiro existente com o mesmo nome será substituído."
-
-msgid "Will create new file"
-msgstr "Vai criar um novo ficheiro"
-
-msgid "Already External"
-msgstr "Já é externo"
-
-msgid ""
-"This material already references an external file, no action will be taken.\n"
-"Disable the external property for it to be extracted again."
-msgstr ""
-"Esse material já referencia um ficheiro externo, nenhuma ação será feita.\n"
-"Desative a propriedade externa para que ele seja extraído novamente."
-
-msgid "No import ID"
-msgstr "Sem ID de importação"
-
-msgid ""
-"Material has no name nor any other way to identify on re-import.\n"
-"Please name it or ensure it is exported with an unique ID."
-msgstr ""
-"O Material não tem nome nem outra forma de identificação ao reimportar.\n"
-"Dê-lhe um nome ou certifique-se de que ele seja exportado com um ID único."
-
-msgid "Extract Materials to Resource Files"
-msgstr "Extrair Materiais para Ficheiros de Recurso"
-
-msgid "Extract"
-msgstr "Extrair"
-
-msgid "Already Saving"
-msgstr "Já está a guardar"
-
-msgid ""
-"This mesh already saves to an external resource, no action will be taken."
-msgstr "Essa malha já é salva para um recurso externo, nenhuma ação será feita."
-
-msgid "Existing file with the same name will be replaced on import."
-msgstr "O ficheiro existente com o mesmo nome será substituído ao importar."
-
-msgid "Will save to new file"
-msgstr "Irá guardar num novo ficheiro"
-
-msgid ""
-"Mesh has no name nor any other way to identify on re-import.\n"
-"Please name it or ensure it is exported with an unique ID."
-msgstr ""
-"A malha não tem nome nem outra forma de identificação ao reimportar.\n"
-"Dê-lhe um nome ou certifique-se que ela seja exportada com um ID único."
-
-msgid "Set paths to save meshes as resource files on Reimport"
-msgstr "Defina caminhos para gravar malhas como recursos ao Reimportar"
-
-msgid "Set Paths"
-msgstr "Definir Caminhos"
-
-msgid ""
-"This animation already saves to an external resource, no action will be taken."
-msgstr ""
-"Essa animação já foi salva como um recurso externo, nenhuma ação será feita."
-
-msgid "Set paths to save animations as resource files on Reimport"
-msgstr "Definir caminhos para gravar animações como recursos ao Reimportar"
-
-msgid "Can't make material external to file, write error:"
-msgstr ""
-"Não foi possível tornar o material um ficheiro externo, erro de escrita:"
-
-msgid "Actions..."
-msgstr "Ações..."
-
-msgid "Extract Materials"
-msgstr "Extrair Materiais"
-
-msgid "Set Animation Save Paths"
-msgstr "Definir Caminhos para Gravar Animação"
-
-msgid "Set Mesh Save Paths"
-msgstr "Definir Caminhos para Gravar Malhas"
-
-msgid "Meshes"
-msgstr "Malhas"
-
-msgid "Materials"
-msgstr "Materiais"
-
-msgid "Selected Animation Play/Pause"
-msgstr "Reproduzir/Pausar Animação Selecionada"
-
-msgid "Save Extension:"
-msgstr "Gravar Extensão:"
-
-msgid "Text: *.tres"
-msgstr "Textura: *.tres"
-
-msgid "Binary: *.res"
-msgstr "Binário: *.res"
-
-msgid "Text Resource"
-msgstr "Recurso de Texto"
-
-msgid "Binary Resource"
-msgstr "Recurso Binário"
 
 msgid "Importer:"
 msgstr "Importador:"
@@ -6079,6 +5909,9 @@ msgstr "Definindo %s nós como %d ativos"
 msgid "%s (%d Selected)"
 msgstr "%s (%d Selecionado)"
 
+msgid "Groups"
+msgstr "Grupos"
+
 msgid "Select a single node to edit its signals and groups."
 msgstr "Selecione um único nó para editar sinais e grupos."
 
@@ -6215,9 +6048,6 @@ msgstr "Adicionar Animação"
 
 msgid "Add %s"
 msgstr "Adicionar %s"
-
-msgid "Load..."
-msgstr "Carregar..."
 
 msgid "Move Node Point"
 msgstr "Mover Ponto Nó"
@@ -6462,26 +6292,14 @@ msgstr "Gravar Animação"
 msgid "Make Animation Unique: %s"
 msgstr "Tornar Animação Única: %s"
 
-msgid "Invalid AnimationLibrary file."
-msgstr "Ficheiro AnimationLibrary inválido."
-
-msgid "This library is already added to the mixer."
-msgstr "Esta biblioteca já foi adicionada ao reprodutor."
-
-msgid "Invalid Animation file."
-msgstr "Ficheiro de Animação inválido."
-
-msgid "This animation is already added to the library."
-msgstr "Esta animação já foi adicionada a biblioteca."
-
-msgid "Load Animation into Library: %s"
-msgstr "Carregar Animação na Biblioteca: %s"
-
 msgid "Save Animation library to File: %s"
 msgstr "Gravar Biblioteca de Animações no Ficheiro: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Gravar Animação em Ficheiro: %s"
+
+msgid "Load Animation into Library: %s"
+msgstr "Carregar Animação na Biblioteca: %s"
 
 msgid "Rename Animation Library: %s"
 msgstr "Renomear Biblioteca de Animações: %s"
@@ -6519,35 +6337,8 @@ msgstr "[Avulsa]"
 msgid "[imported]"
 msgstr "[Importada]"
 
-msgid "Add Animation to Library"
-msgstr "Adicionar Animação a Biblioteca"
-
-msgid "Load animation from file and add to library"
-msgstr "Carregar animação a partir de ficheiro e adicionar a biblioteca"
-
-msgid "Paste Animation to Library from clipboard"
-msgstr "Colar Animação da área de transferência na Biblioteca"
-
-msgid "Save animation library to resource on disk"
-msgstr "Gravar biblioteca de animação como recurso em disco"
-
-msgid "Remove animation library"
-msgstr "Remover biblioteca de animação"
-
-msgid "Copy animation to clipboard"
-msgstr "Copiar animação para área de transferência"
-
-msgid "Save animation to resource on disk"
-msgstr "Gravar animação como recurso em disco"
-
-msgid "Remove animation from Library"
-msgstr "Remover Animação da Biblioteca"
-
 msgid "Edit Animation Libraries"
 msgstr "Editar Bibliotecas de Animações"
-
-msgid "Add Library"
-msgstr "Adicionar Biblioteca"
 
 msgid "Load Library"
 msgstr "Carregar Biblioteca"
@@ -6910,6 +6701,9 @@ msgctxt "Pagination"
 msgid "Last"
 msgstr "Último"
 
+msgid "Failed to get repository configuration."
+msgstr "Falha ao obter a configuração do repositório."
+
 msgid "All"
 msgstr "Todos"
 
@@ -6948,9 +6742,6 @@ msgstr "Site:"
 
 msgid "Support"
 msgstr "Suporte"
-
-msgid "Failed to get repository configuration."
-msgstr "Falha ao obter a configuração do repositório."
 
 msgid "Assets ZIP File"
 msgstr "Ficheiro ZIP de Recursos"
@@ -7119,6 +6910,9 @@ msgstr "Limpar Guias"
 msgid "Create Custom Bone2D(s) from Node(s)"
 msgstr "Crie Bone2D(s) personalizado(s) a partir do(s) nó(s)"
 
+msgid "Cancel Transformation"
+msgstr "Cancelar Transformação"
+
 msgid "Zoom to 3.125%"
 msgstr "Zoom a 3.125%"
 
@@ -7268,14 +7062,8 @@ msgstr "Destravar o nó selecionado, para permitir a seleção e movimentação.
 msgid "Unlock Selected Node(s)"
 msgstr "Desbloquear Nó(s) Selecionado(s)"
 
-msgid "Make selected node's children not selectable."
-msgstr "Tornar os filhos deste Nó não selecionáveis."
-
 msgid "Group Selected Node(s)"
 msgstr "Agrupar Nó(s) Selecionado(s)"
-
-msgid "Make selected node's children selectable."
-msgstr "Tornar os filhos deste Nó selecionáveis."
 
 msgid "Ungroup Selected Node(s)"
 msgstr "Desagrupar Nó(s) Selecionado(s)"
@@ -7322,11 +7110,8 @@ msgstr "Mostrar Origem"
 msgid "Show Viewport"
 msgstr "Mostrar Viewport"
 
-msgid "Show Group And Lock Icons"
-msgstr "Mostrar Grupo e Bloquear Ícones"
-
-msgid "Show Transformation Gizmos"
-msgstr "Exibir Gizmos de Transformação"
+msgid "Gizmos"
+msgstr "Bugigangas"
 
 msgid "Center Selection"
 msgstr "Centrar Seleção"
@@ -7360,6 +7145,9 @@ msgstr "Máscara de escala para inserir chaves."
 
 msgid "Insert keys (based on mask)."
 msgstr "Inserir chaves (baseado na máscara)."
+
+msgid "Insert Key"
+msgstr "Inserir Chave"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -7397,18 +7185,8 @@ msgstr "Dividir passo da grelha por 2"
 msgid "Adding %s..."
 msgstr "A adicionar %s..."
 
-msgid "Drag and drop to add as child of current scene's root node."
-msgstr ""
-"Arrastar e largar para adicionar como um filho do Nó Raiz da cena atual."
-
-msgid "Hold %s when dropping to add as child of selected node."
-msgstr "Segure %s ao soltar para adicionar como filho do nó selecionado."
-
 msgid "Hold Shift when dropping to add as sibling of selected node."
 msgstr "Segure Shift ao soltar para adicionar como irmão do Nó selecionado."
-
-msgid "Hold Alt when dropping to add as a different node type."
-msgstr "Segure Alt ao soltar para adicionar o Nó como um de outro tipo."
 
 msgid "Cannot instantiate multiple nodes without root."
 msgstr "Incapaz de instanciar nós múltiplos sem raiz."
@@ -7613,11 +7391,23 @@ msgstr "Centralizado"
 msgid "Capture Colors from Pixel"
 msgstr "Capturar cores do pixel"
 
+msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
+msgstr "Gerando Visibilidade AABB (Aguardando Simulação de Partículas)"
+
+msgid "Generate Visibility AABB"
+msgstr "Gerar visibilidade AABB"
+
 msgid "CPUParticles3D"
 msgstr "CPUParticles3D"
 
+msgid "Generate AABB"
+msgstr "Gerar AABB"
+
 msgid "Create Emission Points From Node"
 msgstr "Criar Pontos de emissão a partir do Nó"
+
+msgid "Generation Time (sec):"
+msgstr "Tempo de geração (s):"
 
 msgid "Load Curve Preset"
 msgstr "Carregar Curva Predefinida"
@@ -7786,14 +7576,6 @@ msgstr ""
 "Quando essa opção está ativada, o servidor de depuração vai se manter aberto "
 "e verificando por novas sessões que começarem por fora do próprio editor."
 
-msgid "Run Multiple Instances"
-msgstr "Executar Múltiplas Instâncias"
-
-msgid "Run %d Instance"
-msgid_plural "Run %d Instances"
-msgstr[0] "Executando %d Instância"
-msgstr[1] "Executando %d Instâncias"
-
 msgid "Size: %s"
 msgstr "Tamanho: %s"
 
@@ -7917,9 +7699,6 @@ msgstr "Limpar máscara de emissão"
 msgid "GPUParticles2D"
 msgstr "GPUParticles2D"
 
-msgid "Generation Time (sec):"
-msgstr "Tempo de geração (s):"
-
 msgid "The geometry's faces don't contain any area."
 msgstr "As faces da geometria não contêm qualquer área."
 
@@ -7959,17 +7738,8 @@ msgstr "Um material processador do tipo 'ParticleProcessMaterial' é necessário
 msgid "Convert to CPUParticles3D"
 msgstr "Converter para CPUParticles3D"
 
-msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
-msgstr "Gerando Visibilidade AABB (Aguardando Simulação de Partículas)"
-
-msgid "Generate Visibility AABB"
-msgstr "Gerar visibilidade AABB"
-
 msgid "GPUParticles3D"
 msgstr "GPUParticles3D"
-
-msgid "Generate AABB"
-msgstr "Gerar AABB"
 
 msgid "Low"
 msgstr "Baixa"
@@ -8059,9 +7829,6 @@ msgstr "Nenhuma cena raiz do editor encontrada."
 
 msgid "Lightmap data is not local to the scene."
 msgstr "Os dados do mapa de iluminação não são locais para a cena."
-
-msgid "Maximum texture size is too small for the lightmap images."
-msgstr "Tamanho máximo de textura é muito pequeno para imagens de mapa de luz."
 
 msgid "Bake Lightmaps"
 msgstr "Consolidar Lightmaps"
@@ -8548,9 +8315,6 @@ msgstr "Definir Superfície %d Substituir Material"
 msgid "Set Material Override"
 msgstr "Definir Substituição de Material"
 
-msgid "Cannot drag and drop into multiple selected nodes."
-msgstr "Não é possível arrastar e soltar dentro de múltiplos nós selecionados."
-
 msgid "None"
 msgstr "Nenhum"
 
@@ -8733,9 +8497,6 @@ msgstr "Bloquear Transformação para o Plano-XZ"
 
 msgid "Lock Transformation to XY plane"
 msgstr "Bloquear Transformação para o Plano-XY"
-
-msgid "Cancel Transformation"
-msgstr "Cancelar Transformação"
 
 msgid "Begin Translate Transformation"
 msgstr "Iniciar Translação da Transformação"
@@ -8929,9 +8690,6 @@ msgstr "3 Viewports (Alt)"
 msgid "4 Viewports"
 msgstr "4 Viewports"
 
-msgid "Gizmos"
-msgstr "Bugigangas"
-
 msgid "View Origin"
 msgstr "Ver origem"
 
@@ -8955,9 +8713,6 @@ msgstr "Ajuste de Escala (%):"
 
 msgid "Viewport Settings"
 msgstr "Configuração do Viewport"
-
-msgid "Perspective FOV (deg.):"
-msgstr "Perspetiva FOV (graus):"
 
 msgid "View Z-Near:"
 msgstr "Ver Z-Near:"
@@ -9138,6 +8893,9 @@ msgstr "Apagar Ponto"
 
 msgid "Close Curve"
 msgstr "Fechar curva"
+
+msgid "Please Confirm..."
+msgstr "Confirme por favor..."
 
 msgid "Mirror Handle Angles"
 msgstr "Espelhar ângulos do manipulador"
@@ -9667,6 +9425,9 @@ msgstr "Criar região de código"
 msgid "Unfold All Lines"
 msgstr "Mostrar todas as linhas"
 
+msgid "Duplicate Selection"
+msgstr "Duplicar Seleção"
+
 msgid "Duplicate Lines"
 msgstr "Duplicar Linhas"
 
@@ -9733,20 +9494,8 @@ msgstr "Salvar a(s) alteração(ões) no(s) seguinte(s) shader(s) antes de sair?
 msgid "Shader Editor"
 msgstr "Editor Shader"
 
-msgid "New Shader Include"
-msgstr "Incluir Novo Shader"
-
-msgid "Load Shader File"
-msgstr "Carregar Ficheiro Shader"
-
-msgid "Load Shader Include File"
-msgstr "Carregar Ficheiro de Inclusão de Shader"
-
 msgid "Save File"
 msgstr "Salvar Ficheiro"
-
-msgid "Save File As"
-msgstr "Salvar Ficheiro Como"
 
 msgid "Open File in Inspector"
 msgstr "Abrir Ficheiro no Inspetor"
@@ -9886,9 +9635,6 @@ msgstr "Não é possível converter um sprite de uma cena estrangeira."
 
 msgid "Can't convert an empty sprite to mesh."
 msgstr "Não é possível converter um sprite vazio para malha."
-
-msgid "Can't convert a sprite using animation frames to mesh."
-msgstr "Incapaz de converter sprite com frames de animação para malha."
 
 msgid "Invalid geometry, can't replace by mesh."
 msgstr "Geometria inválida, não substituível por malha."
@@ -10921,13 +10667,6 @@ msgstr "Espalhamento:"
 msgid "Tiles"
 msgstr "Blocos"
 
-msgid ""
-"This TileMap's TileSet has no source configured. Go to the TileSet bottom tab "
-"to add one."
-msgstr ""
-"O TileSet deste TileMap não tem nenhuma fonte configurada. Vá para a guia "
-"inferior do TileSet para adicionar um."
-
 msgid "Sort sources"
 msgstr "Classificar fontes"
 
@@ -10968,13 +10707,6 @@ msgid ""
 msgstr ""
 "Modo de conexão: pinta um terreno e o conecta com os tiles adjacentes no "
 "mesmo terreno."
-
-msgid ""
-"Path mode: paints a terrain, thens connects it to the previous tile painted "
-"within the same stroke."
-msgstr ""
-"Modo Caminho: pinta um terreno, então conecta o mesmo ao tile anterior "
-"pintado com o mesmo traço."
 
 msgid "Terrains"
 msgstr "Terrenos"
@@ -11295,9 +11027,6 @@ msgstr ""
 "Aviso: a modificação de um ID de origem fará com que todos os TileMaps usem "
 "essa fonte para fazer referência a uma fonte inválida. Isso pode resultar em "
 "perda inesperada de dados. Altere este ID com cuidado."
-
-msgid "ID: %d"
-msgstr "ID:%d"
 
 msgid "Add a Scene Tile"
 msgstr "Adicionar um Tile na Cena"
@@ -12689,214 +12418,8 @@ msgstr "Gerar VoxelGI"
 msgid "Select path for VoxelGI Data File"
 msgstr "Selecione o caminho para o ficheiro de dados VoxelGI"
 
-msgid "The path specified doesn't exist."
-msgstr "O caminho especificado não existe."
-
-msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Erro ao abrir ficheiro comprimido (não está no formato ZIP)."
-
-msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr ""
-"Ficheiro de projeto \".zip\" inválido, não contém um ficheiro \"project."
-"godot\"."
-
-msgid "Please choose an empty folder."
-msgstr "Por favor escolha uma pasta vazia."
-
-msgid ""
-"Please choose a \"project.godot\", a directory with it, or a \".zip\" file."
-msgstr ""
-"Escolha um \"project.godot\", um diretório com ele ou um arquivo \".zip\"."
-
-msgid "This directory already contains a Godot project."
-msgstr "Esta diretoria já contém um projeto Godot."
-
-msgid ""
-"You cannot save a project in the selected path. Please make a new folder or "
-"choose a new path."
-msgstr ""
-"Não pode guardar um projeto no destino selecionado. Por favor, crie uma nova "
-"pasta ou escolha um novo destino."
-
-msgid ""
-"The selected path is not empty. Choosing an empty folder is highly "
-"recommended."
-msgstr ""
-"O caminho selecionado não está vazio. É recomendado escolher uma pasta vazia."
-
-msgid "New Game Project"
-msgstr "Novo Projeto de jogo"
-
-msgid "Imported Project"
-msgstr "Projeto importado"
-
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Escolha um ficheiro \"project.godot\" ou \".zip\"."
-
-msgid "Invalid project name."
-msgstr "Nome do projeto inválido."
-
-msgid "Couldn't create folder."
-msgstr "Incapaz de criar pasta."
-
-msgid "There is already a folder in this path with the specified name."
-msgstr "Já existe uma pasta neste caminho com o nome indicado."
-
-msgid "It would be a good idea to name your project."
-msgstr "Seria uma boa ideia dar um nome ao Projeto."
-
-msgid "Supports desktop platforms only."
-msgstr "Suporta apenas plataformas de desktop."
-
-msgid "Advanced 3D graphics available."
-msgstr "Gráficos 3D avançados disponíveis."
-
-msgid "Can scale to large complex scenes."
-msgstr "Pode escalar para cenas grandes e complexas."
-
-msgid "Uses RenderingDevice backend."
-msgstr "Suporta aparelho de renderização atuais."
-
-msgid "Slower rendering of simple scenes."
-msgstr "Renderização mais lenta de cenas simples."
-
-msgid "Supports desktop + mobile platforms."
-msgstr "Suporta desktop + plataformas mobile."
-
-msgid "Less advanced 3D graphics."
-msgstr "Gráficos 3D menos avançados."
-
-msgid "Less scalable for complex scenes."
-msgstr "Menos escalável para cenas complexas."
-
-msgid "Fast rendering of simple scenes."
-msgstr "Renderização rápida de cenas simples."
-
-msgid "Supports desktop, mobile + web platforms."
-msgstr "Suporta desktop, plataformas mobile + web."
-
-msgid "Least advanced 3D graphics (currently work-in-progress)."
-msgstr "Gráficos 3D menos avançados (em desenvolvimento)."
-
-msgid "Intended for low-end/older devices."
-msgstr "Destinado a aparelhos modestos/antigos."
-
-msgid "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2)."
-msgstr "Usa renderizador OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2)."
-
-msgid "Fastest rendering of simple scenes."
-msgstr "Renderização mais rápida de cenas simples."
-
-msgid "Invalid project path (changed anything?)."
-msgstr "Caminho de projeto inválido (alguma alteração?)."
-
-msgid ""
-"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
-msgstr ""
-"Não pode carregar o projeto em '%s' (error %d). Pode estar sumido ou "
-"corrompido."
-
-msgid "Couldn't save project at '%s' (error %d)."
-msgstr "Incapaz de salvar projeto em '%s' (error %d)."
-
-msgid "Warning: This folder is not empty"
-msgstr "Aviso: Esta pasta não está vazia"
-
-msgid ""
-"You are about to create a Godot project in a non-empty folder.\n"
-"The entire contents of this folder will be imported as project resources!\n"
-"\n"
-"Are you sure you wish to continue?"
-msgstr ""
-"Está prestes a criar um projeto Godot numa pasta não vazia.\n"
-"Todo o conteúdo desta pasta será importado como recursos do projeto!\n"
-"\n"
-"Tem certeza que deseja continuar?"
-
-msgid "Couldn't create project.godot in project path."
-msgstr "Incapaz de criar project.godot no caminho do projeto."
-
-msgid "Couldn't create icon.svg in project path."
-msgstr "Não foi possível criar icon.svg no caminho do projeto."
-
-msgid "Error opening package file, not in ZIP format."
-msgstr "Erro ao abrir ficheiro comprimido, não está no formato ZIP."
-
-msgid "The following files failed extraction from package:"
-msgstr "Falhou a extração dos seguintes Ficheiros do pacote:"
-
-msgid "Package installed successfully!"
-msgstr "Pacote Instalado com sucesso!"
-
-msgid "Rename Project"
-msgstr "Renomear Projeto"
-
-msgid "Import Existing Project"
-msgstr "Importar Projeto existente"
-
-msgid "Import & Edit"
-msgstr "Importar & Editar"
-
-msgid "Create New Project"
-msgstr "Criar novo Projeto"
-
-msgid "Create & Edit"
-msgstr "Criar & Editar"
-
-msgid "Install Project:"
-msgstr "Instalar Projeto:"
-
-msgid "Install & Edit"
-msgstr "Instalar & Editar"
-
-msgid "Project Name:"
-msgstr "Nome do Projeto:"
-
-msgid "Project Path:"
-msgstr "Caminho do Projeto:"
-
-msgid "Project Installation Path:"
-msgstr "Caminho de Instalação do Projeto:"
-
-msgid "Renderer:"
-msgstr "Renderizador:"
-
-msgid "The renderer can be changed later, but scenes may need to be adjusted."
-msgstr ""
-"O renderizador pode ser alterado posteriormente, mas as cenas podem precisar "
-"de ajustes."
-
-msgid "Version Control Metadata:"
-msgstr "Controle de Versão:"
-
-msgid "Git"
-msgstr "Git"
-
-msgid "This project was last edited in a different Godot version: "
-msgstr ""
-"Este projeto foi editado pela última vez em uma versão Godot diferente: "
-
-msgid "This project uses features unsupported by the current build:"
-msgstr "Este projeto usa recursos não suportados pela versão atual:"
-
-msgid "Error: Project is missing on the filesystem."
-msgstr "Erro: Projeto inexistente no sistema de ficheiros."
-
-msgid "Missing Project"
-msgstr "Projeto Inexistente"
-
-msgid "Local"
-msgstr "Local"
-
-msgid "Local Projects"
-msgstr "Projetos Locais"
-
-msgid "Asset Library Projects"
-msgstr "Projetos Biblioteca de Recursos"
-
-msgid "Can't open project at '%s'."
-msgstr "Incapaz de abrir projeto em '%s'."
+msgid "Are you sure to run %d projects at once?"
+msgstr "Está seguro que quer executar %d projetos em simultâneo?"
 
 msgid ""
 "You requested to open %d projects in parallel. Do you confirm?\n"
@@ -13045,37 +12568,6 @@ msgstr ""
 msgid "Open anyway? Project will be modified."
 msgstr "Abrir assim mesmo? Projeto será modificado."
 
-msgid ""
-"Can't run project: no main scene defined.\n"
-"Please edit the project and set the main scene in the Project Settings under "
-"the \"Application\" category."
-msgstr ""
-"Incapaz de executar o projeto: cena principal não definida.\n"
-"Edite o projeto e defina a cena principal em Configurações do Projeto dentro "
-"da categoria \"Application\"."
-
-msgid ""
-"Can't run project: Assets need to be imported.\n"
-"Please edit the project to trigger the initial import."
-msgstr ""
-"Incapaz de executar o projeto: Recursos têm de ser importados.\n"
-"Edite o projeto para desencadear a importação inicial."
-
-msgid "Are you sure to run %d projects at once?"
-msgstr "Está seguro que quer executar %d projetos em simultâneo?"
-
-msgid "Tag name can't be empty."
-msgstr "Nome de Etiqueta não pode ser vazio."
-
-msgid "Tag name can't contain spaces."
-msgstr "Nome de Etiqueta não pode conter espaços."
-
-msgid "These characters are not allowed in tags: %s."
-msgstr "Estes caracteres não são permitidos nas etiquetas: %s."
-
-msgid "Tag name must be lowercase."
-msgstr "Etiqueta de nome deve estar em letras minúsculas."
-
 msgid "Remove %d projects from the list?"
 msgstr "Remover %d projetos da lista?"
 
@@ -13090,12 +12582,25 @@ msgstr ""
 "O conteúdo das pastas não será modificado."
 
 msgid ""
-"Language changed.\n"
-"The interface will update after restarting the editor or project manager."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
-"Linguagem alterada.\n"
-"A interface será atualizada após o arranque do editor ou do gestor de "
-"projetos."
+"Não pode carregar o projeto em '%s' (error %d). Pode estar sumido ou "
+"corrompido."
+
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Incapaz de salvar projeto em '%s' (error %d)."
+
+msgid "Tag name can't be empty."
+msgstr "Nome de Etiqueta não pode ser vazio."
+
+msgid "Tag name can't contain spaces."
+msgstr "Nome de Etiqueta não pode conter espaços."
+
+msgid "These characters are not allowed in tags: %s."
+msgstr "Estes caracteres não são permitidos nas etiquetas: %s."
+
+msgid "Tag name must be lowercase."
+msgstr "Etiqueta de nome deve estar em letras minúsculas."
 
 msgctxt "Application"
 msgid "Project Manager"
@@ -13134,8 +12639,17 @@ msgstr "Ultima Modificação"
 msgid "Tags"
 msgstr "Etiquetas"
 
+msgid "Create New Project"
+msgstr "Criar novo Projeto"
+
+msgid "Import Existing Project"
+msgstr "Importar Projeto existente"
+
 msgid "Edit Project"
 msgstr "Editar Projeto"
+
+msgid "Rename Project"
+msgstr "Renomear Projeto"
 
 msgid "Manage Tags"
 msgstr "Gerenciar Etiquetas"
@@ -13145,12 +12659,6 @@ msgstr "Remover Projeto"
 
 msgid "Remove Missing"
 msgstr "Remover Ausente"
-
-msgid "About"
-msgstr "Sobre"
-
-msgid "Restart Now"
-msgstr "Reiniciar agora"
 
 msgid "Select a Folder to Scan"
 msgstr "Selecione uma Pasta para Pesquisar"
@@ -13186,17 +12694,6 @@ msgstr ""
 "pois esta operação impossibilita sua abertura em versões mais antigas do "
 "Godot."
 
-msgid "Can't run project"
-msgstr "Incapaz de executar o projeto"
-
-msgid ""
-"You currently don't have any projects.\n"
-"Would you like to explore official example projects in the Asset Library?"
-msgstr ""
-"Atualmente não tem quaisquer projetos.\n"
-"Gostaria de explorar os projetos de exemplo oficiais na Biblioteca de "
-"Recursos?"
-
 msgid "Manage Project Tags"
 msgstr "Gerenciar Etiquetas de Projeto"
 
@@ -13217,6 +12714,182 @@ msgstr "Criar Nova Etiqueta"
 
 msgid "Tags are capitalized automatically when displayed."
 msgstr "Letras maiúsculas são exibidas automaticamente nas tags."
+
+msgid "The path specified doesn't exist."
+msgstr "O caminho especificado não existe."
+
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Erro ao abrir ficheiro comprimido (não está no formato ZIP)."
+
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+msgstr ""
+"Ficheiro de projeto \".zip\" inválido, não contém um ficheiro \"project."
+"godot\"."
+
+msgid ""
+"Please choose a \"project.godot\", a directory with it, or a \".zip\" file."
+msgstr ""
+"Escolha um \"project.godot\", um diretório com ele ou um arquivo \".zip\"."
+
+msgid ""
+"You cannot save a project in the selected path. Please make a new folder or "
+"choose a new path."
+msgstr ""
+"Não pode guardar um projeto no destino selecionado. Por favor, crie uma nova "
+"pasta ou escolha um novo destino."
+
+msgid ""
+"The selected path is not empty. Choosing an empty folder is highly "
+"recommended."
+msgstr ""
+"O caminho selecionado não está vazio. É recomendado escolher uma pasta vazia."
+
+msgid "New Game Project"
+msgstr "Novo Projeto de jogo"
+
+msgid "Imported Project"
+msgstr "Projeto importado"
+
+msgid "Please choose a \"project.godot\" or \".zip\" file."
+msgstr "Escolha um ficheiro \"project.godot\" ou \".zip\"."
+
+msgid "Invalid project name."
+msgstr "Nome do projeto inválido."
+
+msgid "Couldn't create folder."
+msgstr "Incapaz de criar pasta."
+
+msgid "There is already a folder in this path with the specified name."
+msgstr "Já existe uma pasta neste caminho com o nome indicado."
+
+msgid "It would be a good idea to name your project."
+msgstr "Seria uma boa ideia dar um nome ao Projeto."
+
+msgid "Supports desktop platforms only."
+msgstr "Suporta apenas plataformas de desktop."
+
+msgid "Advanced 3D graphics available."
+msgstr "Gráficos 3D avançados disponíveis."
+
+msgid "Can scale to large complex scenes."
+msgstr "Pode escalar para cenas grandes e complexas."
+
+msgid "Uses RenderingDevice backend."
+msgstr "Suporta aparelho de renderização atuais."
+
+msgid "Slower rendering of simple scenes."
+msgstr "Renderização mais lenta de cenas simples."
+
+msgid "Supports desktop + mobile platforms."
+msgstr "Suporta desktop + plataformas mobile."
+
+msgid "Less advanced 3D graphics."
+msgstr "Gráficos 3D menos avançados."
+
+msgid "Less scalable for complex scenes."
+msgstr "Menos escalável para cenas complexas."
+
+msgid "Fast rendering of simple scenes."
+msgstr "Renderização rápida de cenas simples."
+
+msgid "Supports desktop, mobile + web platforms."
+msgstr "Suporta desktop, plataformas mobile + web."
+
+msgid "Least advanced 3D graphics (currently work-in-progress)."
+msgstr "Gráficos 3D menos avançados (em desenvolvimento)."
+
+msgid "Intended for low-end/older devices."
+msgstr "Destinado a aparelhos modestos/antigos."
+
+msgid "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2)."
+msgstr "Usa renderizador OpenGL 3 (OpenGL 3.3/ES 3.0/WebGL2)."
+
+msgid "Fastest rendering of simple scenes."
+msgstr "Renderização mais rápida de cenas simples."
+
+msgid "Invalid project path (changed anything?)."
+msgstr "Caminho de projeto inválido (alguma alteração?)."
+
+msgid "Warning: This folder is not empty"
+msgstr "Aviso: Esta pasta não está vazia"
+
+msgid ""
+"You are about to create a Godot project in a non-empty folder.\n"
+"The entire contents of this folder will be imported as project resources!\n"
+"\n"
+"Are you sure you wish to continue?"
+msgstr ""
+"Está prestes a criar um projeto Godot numa pasta não vazia.\n"
+"Todo o conteúdo desta pasta será importado como recursos do projeto!\n"
+"\n"
+"Tem certeza que deseja continuar?"
+
+msgid "Couldn't create project.godot in project path."
+msgstr "Incapaz de criar project.godot no caminho do projeto."
+
+msgid "Couldn't create icon.svg in project path."
+msgstr "Não foi possível criar icon.svg no caminho do projeto."
+
+msgid "Error opening package file, not in ZIP format."
+msgstr "Erro ao abrir ficheiro comprimido, não está no formato ZIP."
+
+msgid "The following files failed extraction from package:"
+msgstr "Falhou a extração dos seguintes Ficheiros do pacote:"
+
+msgid "Package installed successfully!"
+msgstr "Pacote Instalado com sucesso!"
+
+msgid "Import & Edit"
+msgstr "Importar & Editar"
+
+msgid "Create & Edit"
+msgstr "Criar & Editar"
+
+msgid "Install Project:"
+msgstr "Instalar Projeto:"
+
+msgid "Install & Edit"
+msgstr "Instalar & Editar"
+
+msgid "Project Name:"
+msgstr "Nome do Projeto:"
+
+msgid "Project Path:"
+msgstr "Caminho do Projeto:"
+
+msgid "Project Installation Path:"
+msgstr "Caminho de Instalação do Projeto:"
+
+msgid "Renderer:"
+msgstr "Renderizador:"
+
+msgid "The renderer can be changed later, but scenes may need to be adjusted."
+msgstr ""
+"O renderizador pode ser alterado posteriormente, mas as cenas podem precisar "
+"de ajustes."
+
+msgid "Version Control Metadata:"
+msgstr "Controle de Versão:"
+
+msgid "Git"
+msgstr "Git"
+
+msgid "This project was last edited in a different Godot version: "
+msgstr ""
+"Este projeto foi editado pela última vez em uma versão Godot diferente: "
+
+msgid "This project uses features unsupported by the current build:"
+msgstr "Este projeto usa recursos não suportados pela versão atual:"
+
+msgid "Error: Project is missing on the filesystem."
+msgstr "Erro: Projeto inexistente no sistema de ficheiros."
+
+msgid "Missing Project"
+msgstr "Projeto Inexistente"
+
+msgid "Restart Now"
+msgstr "Reiniciar agora"
 
 msgid "Add Project Setting"
 msgstr "Adicionar Configuração ao Projeto"
@@ -13293,9 +12966,6 @@ msgstr "Sufixo:"
 
 msgid "Use Regular Expressions"
 msgstr "Usar Expressões Regulares"
-
-msgid "Advanced Options"
-msgstr "Opções Avançadas"
 
 msgid "Substitute"
 msgstr "Substituto"
@@ -13481,12 +13151,6 @@ msgstr "Separar Script"
 msgid "This operation can't be done on the tree root."
 msgstr "Esta operação não pode ser feita na raiz da árvore."
 
-msgid "Move Node In Parent"
-msgstr "Mover Nó no Progenitor"
-
-msgid "Move Nodes In Parent"
-msgstr "Mover Nós no Progenitor"
-
 msgid "Duplicate Node(s)"
 msgstr "Duplicar Nó(s)"
 
@@ -13608,9 +13272,6 @@ msgstr "Nova Raiz da Cena"
 msgid "Create Root Node:"
 msgstr "Criar Nó Raiz:"
 
-msgid "Switch to Favorite Nodes"
-msgstr "Alternar para Nós Favoritos"
-
 msgid "Other Node"
 msgstr "Outro Nó"
 
@@ -13687,6 +13348,17 @@ msgstr "Auto Expandir Selecionados"
 msgid "All Scene Sub-Resources"
 msgstr "Todos os Sub-Recursos da Cena"
 
+msgid ""
+"Filter nodes by entering a part of their name, type (if prefixed with \"type:"
+"\" or \"t:\")\n"
+"or group (if prefixed with \"group:\" or \"g:\"). Filtering is case-"
+"insensitive."
+msgstr ""
+"Filtre os nós inserindo uma parte de seu nome, tipo (se prefixado com \"tipo:"
+"\" ou \"t:\")\n"
+"ou grupo (se prefixado com \"grupo:\" ou \"g:\"). A filtragem não diferencia "
+"maiúsculas de minúsculas."
+
 msgid "Filter by Type"
 msgstr "Filtrar por Tipo"
 
@@ -13748,12 +13420,6 @@ msgstr "Mudar Tipo..."
 msgid "Attach Script..."
 msgstr "Anexar Script..."
 
-msgid "Extend Script..."
-msgstr "Estender Script..."
-
-msgid "Reparent to New Node"
-msgstr "Reassociar a Novo Nó"
-
 msgid "Make Scene Root"
 msgstr "Tornar Raiz da Cena"
 
@@ -13776,17 +13442,6 @@ msgstr ""
 msgid "Filter: name, t:type, g:group"
 msgstr "Filtrar: nome, t:tipo, g:grupo"
 
-msgid ""
-"Filter nodes by entering a part of their name, type (if prefixed with \"type:"
-"\" or \"t:\")\n"
-"or group (if prefixed with \"group:\" or \"g:\"). Filtering is case-"
-"insensitive."
-msgstr ""
-"Filtre os nós inserindo uma parte de seu nome, tipo (se prefixado com \"tipo:"
-"\" ou \"t:\")\n"
-"ou grupo (se prefixado com \"grupo:\" ou \"g:\"). A filtragem não diferencia "
-"maiúsculas de minúsculas."
-
 msgid "Attach a new or existing script to the selected node."
 msgstr "Anexar script novo ou existente ao nó selecionado."
 
@@ -13807,6 +13462,9 @@ msgstr ""
 "Se selecionada, a doca de árvore da cena Remota vai travar o projeto cada vez "
 "que atualiza.\n"
 "Volte para a doca de árvore da cena Local para melhorar o desempenho."
+
+msgid "Local"
+msgstr "Local"
 
 msgid "Delete Related Animation Tracks"
 msgstr "Apagar trilhas de animação relacionadas"
@@ -13969,12 +13627,6 @@ msgstr "Criar Shader"
 msgid "Set Shader Global Variable"
 msgstr "Definir Variável Global Shader"
 
-msgid "Please specify a valid shader uniform identifier name."
-msgstr "Especifique um nome de identificador uniforme de shader válido."
-
-msgid "Global shader parameter '%s' already exists'"
-msgstr "O parâmetro de shader global '%s' já existe'"
-
 msgid "Name '%s' is a reserved shader language keyword."
 msgstr "O nome '%s' é uma palavra-chave reservada da linguagem de shader."
 
@@ -14043,13 +13695,6 @@ msgstr "Reiniciar & Atualizar"
 
 msgid "Make this panel floating in the screen %d."
 msgstr "Transforma esse painel em flutuante na tela %d."
-
-msgid ""
-"Make this panel floating.\n"
-"Right click to open the screen selector."
-msgstr ""
-"Transforma esse painel em flutuante.\n"
-"Clique com o botão direito para abrir o seletor de telas."
 
 msgid "Select Screen"
 msgstr "Tela de seleção"
@@ -14175,21 +13820,6 @@ msgstr ""
 
 msgid "Disabling '.blend' file import requires restarting the editor."
 msgstr "Desativar a importação de ficheiro '.blend' requer reiniciar o editor."
-
-msgid ""
-"Blend file import is enabled in the project settings, but no Blender path is "
-"configured in the editor settings. Blend files will not be imported."
-msgstr ""
-"A importação do arquivo Blender está habilitada nas configurações do projeto, "
-"mas nenhum caminho do Blender está configurado nas configurações do editor. "
-"Os arquivos Blend não serão importados."
-
-msgid ""
-"Blend file import is enabled, but the Blender path doesn't point to an "
-"accessible directory. Blend files will not be imported."
-msgstr ""
-"A importação do arquivo Blender está habilitada, mas o caminho do Blender não "
-"aponta para um diretório acessível. Os arquivos Blend não serão importados."
 
 msgid "Next Plane"
 msgstr "Plano Seguinte"
@@ -14803,6 +14433,15 @@ msgstr ""
 msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
 msgstr "\"Min SDK\" deve ser maior ou igual a %d para o renderizador \"%s\"."
 
+msgid ""
+"The project name does not meet the requirement for the package name format "
+"and will be updated to \"%s\". Please explicitly specify the package name if "
+"needed."
+msgstr ""
+"O nome do projeto não atende ao requisito para o formato do nome do pacote e "
+"será atualizado para \"%s\". Por favor especifique explicitamente o nome do "
+"pacote se necessário."
+
 msgid "Code Signing"
 msgstr "Assinatura de Código"
 
@@ -14871,20 +14510,6 @@ msgid ""
 msgstr ""
 "Tentando compilar a partir de um modelo gradle pronto, mas não existe nenhuma "
 "informação de versão dele. Reinstale a partir do menu 'Projeto'."
-
-msgid ""
-"Android build version mismatch: Template installed: %s, Godot version: %s. "
-"Please reinstall Android build template from 'Project' menu."
-msgstr ""
-"Incompatibilidade de versão de compilação do Android: Modelo instalado: %s, "
-"versão Godot: %s. Por favor, reinstale o modelo de compilação do Android no "
-"menu 'Projeto'."
-
-msgid ""
-"Unable to overwrite res://android/build/res/*.xml files with project name."
-msgstr ""
-"Incapaz de sobrescrever os ficheiros res://android/build/res/*.xml com o nome "
-"do projeto."
 
 msgid "Could not export project files to gradle project."
 msgstr "Incapaz de exportar ficheiros do projeto para projeto gradle."
@@ -15612,7 +15237,7 @@ msgid ""
 "its shape."
 msgstr ""
 "Este nó não tem forma, em poder colidir ou interagir com outros objetos.\n"
-"Considere adicionar nós CollisionShape2D ou CollisionPolygon2D como filhos "
+"Considere adicionar um nó CollisionShape2D ou CollisionPolygon2D como filho "
 "para definir a sua forma."
 
 msgid ""
@@ -15643,15 +15268,6 @@ msgid ""
 msgstr ""
 "A propriedade 'One Way Collision' será ignorada quando o objeto de colisão "
 "for uma Area2D."
-
-msgid ""
-"CollisionShape2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionShape2D serve apenas para fornecer uma forma de colisão para um nó "
-"derivado de CollisionObject2D. Use-o apenas como filho de Area2D, "
-"StaticBody2D, RigidBody2D, CharacterBody2D, etc."
 
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
@@ -15920,10 +15536,10 @@ msgid ""
 "Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
 "CharacterBody3D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D apenas serve para fornecer a forma de colisão para um nó "
-"derivado de CollisionObject2D.\n"
-"Por favor use-o apenas como filho de Area2D, StaticBody2D, RigidBody2D, "
-"KinematicBody2D, etc. para dá-los forma."
+"CollisionShape3D apenas serve para fornecer a forma de colisão para um nó "
+"derivado de CollisionObject3D.\n"
+"Por favor use-o apenas como filho de Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. para dá-los forma."
 
 msgid ""
 "A shape must be provided for CollisionShape3D to function. Please create a "
@@ -15931,12 +15547,6 @@ msgid ""
 msgstr ""
 "Uma forma deve ser fornecida para que CollisionShape3D funcione. Por favor, "
 "crie um recurso de forma para ele."
-
-msgid ""
-"ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."
-msgstr ""
-"ConcavePolygonShape3D não oferece suporte a RigidBody3D em outro modo além do "
-"estático."
 
 msgid ""
 "WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
@@ -16116,13 +15726,6 @@ msgstr "Gerando Volumes de Sonda"
 
 msgid "Generating Probe Acceleration Structures"
 msgstr "Gerando Estruturas de Aceleração de Sonda"
-
-msgid ""
-"LightmapGI nodes are not supported when using the GL Compatibility backend "
-"yet. Support will be added in a future release."
-msgstr ""
-"Os nós LightmapGI ainda não são suportados ao usar o módulo de "
-"compatibilidade GL. O suporte será adicionado numa versão futura."
 
 msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
@@ -16326,7 +15929,7 @@ msgid ""
 msgstr ""
 "Para ter qualquer efeito visível, WorldEnvironment requer que a propriedade "
 "\"Environment\" dele contenha um Environment, a propriedade \"Camera "
-"Attributes\" delecontenha um recurso CameraAttributes ou ambos."
+"Attributes\" dele contenha um recurso CameraAttributes ou ambos."
 
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instantiated "
@@ -16451,9 +16054,6 @@ msgstr ""
 
 msgid "Alert!"
 msgstr "Alerta!"
-
-msgid "Please Confirm..."
-msgstr "Confirme por favor..."
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "Não tem permissão para acessar o conteúdo desta pasta."

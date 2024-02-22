@@ -1172,6 +1172,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_mouse_position"), &CanvasItem::get_local_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
+	ClassDB::bind_method(D_METHOD("get_canvas_layer_node"), &CanvasItem::get_canvas_layer_node);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);
 
@@ -1326,6 +1327,11 @@ int CanvasItem::get_canvas_layer() const {
 	} else {
 		return 0;
 	}
+}
+
+CanvasLayer *CanvasItem::get_canvas_layer_node() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
+	return canvas_layer;
 }
 
 void CanvasItem::set_visibility_layer(uint32_t p_visibility_layer) {

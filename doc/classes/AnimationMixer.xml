@@ -279,7 +279,7 @@
 			To make the blended results look good, it is recommended to set this to [constant ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS] to update every frame during blending. Other values exist for compatibility and they are fine if there is no blending, but not so, may produce artifacts.
 		</member>
 		<member name="callback_mode_method" type="int" setter="set_callback_mode_method" getter="get_callback_mode_method" enum="AnimationMixer.AnimationCallbackModeMethod" default="0">
-			The call mode to use for Call Method tracks.
+			The call mode used for "Call Method" tracks.
 		</member>
 		<member name="callback_mode_process" type="int" setter="set_callback_mode_process" getter="get_callback_mode_process" enum="AnimationMixer.AnimationCallbackModeProcess" default="1">
 			The process notification in which to update animations.
@@ -301,7 +301,7 @@
 			If the track has type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_ROTATION_3D] or [constant Animation.TYPE_SCALE_3D] the transformation will be canceled visually, and the animation will appear to stay in place. See also [method get_root_motion_position], [method get_root_motion_rotation], [method get_root_motion_scale] and [RootMotionView].
 		</member>
 		<member name="root_node" type="NodePath" setter="set_root_node" getter="get_root_node" default="NodePath(&quot;..&quot;)">
-			The node from which node path references will travel.
+			The node which node path references will travel from.
 		</member>
 	</members>
 	<signals>
@@ -357,6 +357,7 @@
 		</constant>
 		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT" value="0" enum="AnimationCallbackModeDiscrete">
 			An [constant Animation.UPDATE_DISCRETE] track value takes precedence when blending [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and [constant Animation.UPDATE_DISCRETE] track values. This is the default behavior for [AnimationPlayer].
+			[b]Note:[/b] If a value track has non-numeric type key values, it is internally converted to use [constant ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT] with [constant Animation.UPDATE_DISCRETE].
 		</constant>
 		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE" value="1" enum="AnimationCallbackModeDiscrete">
 			An [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track value takes precedence when blending the [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and the [constant Animation.UPDATE_DISCRETE] track values.

@@ -77,6 +77,7 @@ public:
 	virtual TypedArray<RID> map_get_obstacles(RID p_map) const override;
 	virtual void map_force_update(RID p_map) override;
 	virtual Vector2 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
+	virtual uint32_t map_get_iteration_id(RID p_map) const override;
 
 	virtual RID region_create() override;
 	virtual void region_set_enabled(RID p_region, bool p_enabled) override;

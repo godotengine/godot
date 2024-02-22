@@ -457,9 +457,6 @@ msgstr "Edit Event"
 msgid "Remove Event"
 msgstr "Alihkan Event"
 
-msgid "Filter by name..."
-msgstr "Tapis mengikut nama..."
-
 msgid "Clear All"
 msgstr "Padam Semua"
 
@@ -552,21 +549,6 @@ msgstr ""
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Tidak dapat menukar mod gelung pada animasi yang terbenam dalam adegan lain."
-
-msgid "Property Track"
-msgstr "Trek Sifat"
-
-msgid "Call Method Track"
-msgstr "Trek Panggilan Kaedah"
-
-msgid "Bezier Curve Track"
-msgstr "Trek Lengkung Bezier"
-
-msgid "Audio Playback Track"
-msgstr "Trek Main balik Audio"
-
-msgid "Animation Playback Track"
-msgstr "Trek Main Balik Animasi"
 
 msgid "Animation length (frames)"
 msgstr "Panjang animasi (bingkai)"
@@ -670,9 +652,6 @@ msgstr "Kepit Gelung Interp"
 msgid "Wrap Loop Interp"
 msgstr "Balut Gelung Interp"
 
-msgid "Insert Key"
-msgstr "Masukkan Kunci"
-
 msgid "Duplicate Key(s)"
 msgstr "Menduakan Kunci"
 
@@ -774,12 +753,6 @@ msgstr "Papan klip kosong!"
 msgid "Paste Tracks"
 msgstr "Tampal Trek"
 
-msgid ""
-"This option does not work for Bezier editing, as it's only a single track."
-msgstr ""
-"Pilihan ini tidak berfungsi untuk pengeditan Bezier, kerana ia hanya satu "
-"trek."
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Pilih nod AnimationPlayer untuk mencipta dan mengedit animasi."
 
@@ -809,21 +782,6 @@ msgstr "Sunting"
 
 msgid "Animation properties."
 msgstr "Sifat animasi."
-
-msgid "Copy Tracks"
-msgstr "Salin Trek"
-
-msgid "Scale Selection"
-msgstr "Pemilihan Skala"
-
-msgid "Scale From Cursor"
-msgstr "Skala Dari Kursor"
-
-msgid "Duplicate Selection"
-msgstr "Menduakan Pilihan"
-
-msgid "Duplicate Transposed"
-msgstr "Menduakan Pindahan"
 
 msgid "Delete Selection"
 msgstr "Padam Pilihan"
@@ -1526,6 +1484,9 @@ msgstr "[kosong]"
 msgid "[unsaved]"
 msgstr "[tidak disimpan]"
 
+msgid "Dock Position"
+msgstr "Kedudukan Dok"
+
 msgid "3D Editor"
 msgstr "Editor 3D"
 
@@ -1684,6 +1645,9 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Mengimport (Semula) Aset"
 
+msgid "Method Descriptions"
+msgstr "Penerangan Kaedah"
+
 msgid "Top"
 msgstr "Atas"
 
@@ -1745,9 +1709,6 @@ msgstr ""
 "Tiada keterangan untuk sifat ini. Tolong bantu kami dengan [color=$color]"
 "[url=$url]menyumbang satu[/url][/color]!"
 
-msgid "Method Descriptions"
-msgstr "Penerangan Kaedah"
-
 msgid "Property:"
 msgstr "Sifat:"
 
@@ -1759,6 +1720,21 @@ msgstr "%d padan."
 
 msgid "%d matches."
 msgstr "%d padan."
+
+msgid "Method"
+msgstr "Kaedah"
+
+msgid "Signal"
+msgstr "Isyarat"
+
+msgid "Constant"
+msgstr "Pemalar"
+
+msgid "Property"
+msgstr "Sifat"
+
+msgid "Theme Property"
+msgstr "Sifat Tema"
 
 msgid "Search Help"
 msgstr "Cari Bantuan"
@@ -1795,21 +1771,6 @@ msgstr "Jenis Ahli"
 
 msgid "Class"
 msgstr "Kelas"
-
-msgid "Method"
-msgstr "Kaedah"
-
-msgid "Signal"
-msgstr "Isyarat"
-
-msgid "Constant"
-msgstr "Pemalar"
-
-msgid "Property"
-msgstr "Sifat"
-
-msgid "Theme Property"
-msgstr "Sifat Tema"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -2125,14 +2086,14 @@ msgstr ""
 "Anda boleh mengubahnya kemudian dalam \"Tetapan Projek\" di bawah kategori "
 "'aplikasi'."
 
+msgid "Default"
+msgstr "Lalai"
+
 msgid "Save Layout"
 msgstr "Simpan Susun Atur"
 
 msgid "Delete Layout"
 msgstr "Padam Susun Atur"
-
-msgid "Default"
-msgstr "Lalai"
 
 msgid "Save & Close"
 msgstr "Simpan & Tutup"
@@ -2148,9 +2109,6 @@ msgstr "%d lebih banyak fail-fail"
 
 msgid "Pan View"
 msgstr "Pandangan Pan"
-
-msgid "Dock Position"
-msgstr "Kedudukan Dok"
 
 msgid "Distraction Free Mode"
 msgstr "Mod Bebas Gangguan"
@@ -2194,6 +2152,9 @@ msgstr "Tutup Adegan"
 msgid "Quit"
 msgstr "Keluar"
 
+msgid "Editor Settings..."
+msgstr "Tetapan Editor..."
+
 msgid "Project"
 msgstr "Projek"
 
@@ -2226,9 +2187,6 @@ msgstr "Keluar ke Senarai Projek"
 
 msgid "Editor"
 msgstr "Editor"
-
-msgid "Editor Settings..."
-msgstr "Tetapan Editor..."
 
 msgid "Editor Layout"
 msgstr "Editor Susun Atur"
@@ -2278,9 +2236,6 @@ msgstr "Cadangkan Ciri"
 msgid "Send Docs Feedback"
 msgstr "Hantar Maklum Balas Dokumen"
 
-msgid "About Godot"
-msgstr "Tentang Godot"
-
 msgid "Support Godot Development"
 msgstr "Sokong Pembangunan Godot"
 
@@ -2316,17 +2271,6 @@ msgstr "Urus Templat-templat"
 
 msgid "Install from file"
 msgstr "Pasang dari fail"
-
-msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"res://android/build\" directory manually before attempting this "
-"operation again."
-msgstr ""
-"Templat binaan Android telah dipasang dalam projek ini dan ia tidak akan "
-"ditimpa.\n"
-"Keluarkan direktori \"res://android/build\" secara manual sebelum mencuba "
-"operasi ini semula."
 
 msgid "Show in File Manager"
 msgstr "Tunjukkan dalam Pengurus Fail"
@@ -2392,8 +2336,8 @@ msgstr "Buka Editor sebelumnya"
 msgid "Warning!"
 msgstr "Amaran!"
 
-msgid "Main Script:"
-msgstr "Skrip Utama:"
+msgid "On"
+msgstr "Hidupkan"
 
 msgid "Edit Plugin"
 msgstr "Sunting Plugin"
@@ -2407,14 +2351,8 @@ msgstr "Versi"
 msgid "Author"
 msgstr "Pengarang"
 
-msgid "Status"
-msgstr "Status"
-
 msgid "Edit Text:"
 msgstr "Sunting Teks:"
-
-msgid "On"
-msgstr "Hidupkan"
 
 msgid "No name provided."
 msgstr "Tidak ada nama yang diberikan."
@@ -2481,8 +2419,8 @@ msgstr ""
 "Sumber yang dipilih (%s) tidak sesuai dengan jenis yang diharapkan untuk "
 "sifat ini (%s)."
 
-msgid "Quick Load"
-msgstr "Muatan Cepat"
+msgid "Load..."
+msgstr "Muatkan..."
 
 msgid "Make Unique"
 msgstr "Buat Unik"
@@ -2499,11 +2437,8 @@ msgstr "Tukar ke %s"
 msgid "New %s"
 msgstr "%s baru"
 
-msgid "New Script"
-msgstr "Skrip Baru"
-
-msgid "Extend Script"
-msgstr "Lanjutkan Skrip"
+msgid "New Script..."
+msgstr "Skrip Baru..."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -2815,9 +2750,6 @@ msgstr "Folder Baru..."
 msgid "New Scene..."
 msgstr "Adegan Baru..."
 
-msgid "New Script..."
-msgstr "Skrip Baru..."
-
 msgid "New Resource..."
 msgstr "Sumber Baru..."
 
@@ -2898,50 +2830,17 @@ msgstr "Gantikan dalam Fail-fail"
 msgid "Searching..."
 msgstr "Mencari..."
 
+msgid "Rename Group"
+msgstr "Namakan semula Kumpulan"
+
 msgid "Add to Group"
 msgstr "Tambah ke Kumpulan"
 
 msgid "Remove from Group"
 msgstr "Alih keluar dari Kumpulan"
 
-msgid "Invalid group name."
-msgstr "Nama kumpulan tidak sah."
-
-msgid "Group name already exists."
-msgstr "Nama kumpulan sudah wujud."
-
-msgid "Rename Group"
-msgstr "Namakan semula Kumpulan"
-
-msgid "Delete Group"
-msgstr "Padam Kumpulan"
-
-msgid "Groups"
-msgstr "Kumpulan"
-
-msgid "Nodes Not in Group"
-msgstr "Nod-nod Tidak dalam Kumpulan"
-
-msgid "Nodes in Group"
-msgstr "Nod-nod dalam Kumpulan"
-
-msgid "Empty groups will be automatically removed."
-msgstr "Kumpulan-kumpulan kosong akan dikeluarkan secara automatik."
-
-msgid "Group Editor"
-msgstr "Editor Kumpulan"
-
-msgid "Manage Groups"
-msgstr "Urus Kumpulan-kumpulan"
-
 msgid "Move"
 msgstr "Pindah"
-
-msgid "Please select a base directory first."
-msgstr "Sila pilih direktori asas terlebih dahulu."
-
-msgid "Choose a Directory"
-msgstr "Pilih Direktori"
 
 msgid "Network"
 msgstr "Rangkaian"
@@ -3087,6 +2986,9 @@ msgstr "Ralat semasa menjalankan skrip pasca-import:"
 msgid "Saving..."
 msgstr "Menyimpan..."
 
+msgid "Status"
+msgstr "Status"
+
 msgid "2D"
 msgstr "2D"
 
@@ -3177,6 +3079,9 @@ msgstr "Urus sifat objek."
 msgid "Locale"
 msgstr "Tempatan"
 
+msgid "Groups"
+msgstr "Kumpulan"
+
 msgid "Select a single node to edit its signals and groups."
 msgstr "Pilih satu nod untuk menyunting isyarat dan kumpulan-kumpulannya."
 
@@ -3242,9 +3147,6 @@ msgstr "Tambah Animasi"
 
 msgid "Add %s"
 msgstr "Tambah %s"
-
-msgid "Load..."
-msgstr "Muatkan..."
 
 msgid "Move Node Point"
 msgstr "Pindahkan Titik Nod"
@@ -3984,9 +3886,6 @@ msgstr "Tunjukkan Asal"
 msgid "Show Viewport"
 msgstr "Tunjukkan Viewport"
 
-msgid "Show Group And Lock Icons"
-msgstr "Tunjukkan Ikon Kumpulan Dan Kunci"
-
 msgid "Center Selection"
 msgstr "Pemilihan Pusat"
 
@@ -4007,6 +3906,9 @@ msgstr "Topeng skala untuk memasukkan kekunci."
 
 msgid "Insert keys (based on mask)."
 msgstr "Masukkan kekunci (berdasarkan topeng)."
+
+msgid "Insert Key"
+msgstr "Masukkan Kunci"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -4300,6 +4202,9 @@ msgstr "Piawai"
 msgid "Go to Function"
 msgstr "Pergi ke Fungsi"
 
+msgid "Duplicate Selection"
+msgstr "Menduakan Pilihan"
+
 msgid "Evaluate Selection"
 msgstr "Menilai Pemilihan"
 
@@ -4386,9 +4291,6 @@ msgstr "Fail berikut gagal diekstrak dari pakej:"
 
 msgid "Package installed successfully!"
 msgstr "Pakej berjaya dipasang!"
-
-msgid "About"
-msgstr "Tentang"
 
 msgid "Batch Rename"
 msgstr "Namakan Semula Kumpulan"

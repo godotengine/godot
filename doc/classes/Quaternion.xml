@@ -134,7 +134,7 @@
 				Returns whether the quaternion is normalized or not.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length of the quaternion.
@@ -158,7 +158,7 @@
 				Returns a copy of the quaternion, normalized to unit length.
 			</description>
 		</method>
-		<method name="slerp" qualifiers="const">
+		<method name="slerp" qualifiers="const" keywords="interpolate">
 			<return type="Quaternion" />
 			<param index="0" name="to" type="Quaternion" />
 			<param index="1" name="weight" type="float" />

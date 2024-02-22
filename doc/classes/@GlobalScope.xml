@@ -362,7 +362,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="ease">
+		<method name="ease" keywords="smooth">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<param index="1" name="curve" type="float" />
@@ -518,7 +518,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="inverse_lerp">
+		<method name="inverse_lerp" keywords="interpolate">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
@@ -537,7 +537,7 @@
 				See also [method lerp], which performs the reverse of this operation, and [method remap] to map a continuous series of values to another.
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" keywords="roughly">
 			<return type="bool" />
 			<param index="0" name="a" type="float" />
 			<param index="1" name="b" type="float" />
@@ -615,7 +615,7 @@
 				This function is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
-		<method name="lerp">
+		<method name="lerp" keywords="interpolate">
 			<return type="Variant" />
 			<param index="0" name="from" type="Variant" />
 			<param index="1" name="to" type="Variant" />
@@ -630,7 +630,7 @@
 				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp].
 			</description>
 		</method>
-		<method name="lerp_angle">
+		<method name="lerp_angle" keywords="interpolate">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
@@ -1080,7 +1080,7 @@
 				[b]Note:[/b] This function is called automatically when the project is run. If you need to fix the seed to have consistent, reproducible results, use [method seed] to initialize the random number generator.
 			</description>
 		</method>
-		<method name="remap" keywords="range, lerp">
+		<method name="remap" keywords="range, lerp, interpolate">
 			<return type="float" />
 			<param index="0" name="value" type="float" />
 			<param index="1" name="istart" type="float" />
@@ -2889,7 +2889,7 @@
 			[/codeblocks]
 			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint" deprecated="This hint is not used anywhere and will be removed in the future.">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint" deprecated="This hint is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
 			Hints that an object is too big to be sent via the debugger.
@@ -2903,7 +2903,7 @@
 		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
 			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the entire filesystem. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint" deprecated="This hint is not used anywhere and will be removed in the future.">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint" deprecated="This hint is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="30" enum="PropertyHint">
 			Hints that an [int] property is a pointer. Used by GDExtension.
@@ -2974,7 +2974,7 @@
 		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags" is_bitfield="true">
 			If this property is modified, all inspector fields will be refreshed.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This hint is not used anywhere and will be removed in the future.">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This flag is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is an enum, i.e. it only takes named integer constants from its associated enumeration.
@@ -3003,7 +3003,7 @@
 		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags" is_bitfield="true">
 			Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This hint is not used anywhere and will be removed in the future.">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This flag is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags" is_bitfield="true">
 			When this property is a [Resource] and base object is a [Node], a resource instance will be automatically created whenever the node is created in the editor.

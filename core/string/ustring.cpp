@@ -1044,17 +1044,17 @@ String String::_camelcase_to_underscore() const {
 	int start_index = 0;
 
 	for (int i = 1; i < size(); i++) {
-		bool is_prev_upper = is_ascii_upper_case(cstr[i - 1]);
-		bool is_prev_lower = is_ascii_lower_case(cstr[i - 1]);
+		bool is_prev_upper = is_unicode_upper_case(cstr[i - 1]);
+		bool is_prev_lower = is_unicode_lower_case(cstr[i - 1]);
 		bool is_prev_digit = is_digit(cstr[i - 1]);
 
-		bool is_curr_upper = is_ascii_upper_case(cstr[i]);
-		bool is_curr_lower = is_ascii_lower_case(cstr[i]);
+		bool is_curr_upper = is_unicode_upper_case(cstr[i]);
+		bool is_curr_lower = is_unicode_lower_case(cstr[i]);
 		bool is_curr_digit = is_digit(cstr[i]);
 
 		bool is_next_lower = false;
 		if (i + 1 < size()) {
-			is_next_lower = is_ascii_lower_case(cstr[i + 1]);
+			is_next_lower = is_unicode_lower_case(cstr[i + 1]);
 		}
 
 		const bool cond_a = is_prev_lower && is_curr_upper; // aA

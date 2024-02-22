@@ -543,7 +543,7 @@ EditorToaster::EditorToaster() {
 	main_button->set_tooltip_text(TTR("No notifications."));
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
 	main_button->set_disabled(true);
-	main_button->set_flat(true);
+	main_button->set_theme_type_variation("FlatMenuButton");
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(true));
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_repop_old));
 	main_button->connect("draw", callable_mp(this, &EditorToaster::_draw_button));

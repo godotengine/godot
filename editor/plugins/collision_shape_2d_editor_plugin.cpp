@@ -537,7 +537,7 @@ void CollisionShape2DEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/polygon_editor/point_grab_radius")) {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/polygon_editor")) {
 				grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 			}
 		} break;

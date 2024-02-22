@@ -163,6 +163,12 @@ msgstr "Economia de Energia"
 msgid "Keep Screen On"
 msgstr "Manter Tela Ligada"
 
+msgid "Animation"
+msgstr "Animação"
+
+msgid "Warnings"
+msgstr "Avisos"
+
 msgid "Audio"
 msgstr "Áudio"
 
@@ -256,15 +262,6 @@ msgstr "Mensagem"
 msgid "Rendering"
 msgstr "Renderizando"
 
-msgid "Memory"
-msgstr "Memória"
-
-msgid "Limits"
-msgstr "Limites"
-
-msgid "RID Pool Prealloc"
-msgstr "RID Pool Pré-alocação"
-
 msgid "Internationalization"
 msgstr "Internacionalização"
 
@@ -288,6 +285,9 @@ msgstr "Fontes Dinâmicas"
 
 msgid "Use Oversampling"
 msgstr "Usar Sobreamostragem"
+
+msgid "V-Sync"
+msgstr "Sincronização Vertical"
 
 msgid "Pipeline Cache"
 msgstr "Cache de Pipeline"
@@ -328,6 +328,12 @@ msgstr "Modo do Rato"
 msgid "Use Accumulated Input"
 msgstr "Usar Entrada Acumulada"
 
+msgid "Emulate Mouse From Touch"
+msgstr "Emular o Rato do Toque"
+
+msgid "Emulate Touch From Mouse"
+msgstr "Emular Toque do Rato"
+
 msgid "Input Devices"
 msgstr "Dispositivos de Entrada"
 
@@ -348,6 +354,9 @@ msgstr "Keycode (Código de Tecla)"
 
 msgid "Unicode"
 msgstr "Unicode"
+
+msgid "Location"
+msgstr "Localização"
 
 msgid "Echo"
 msgstr "Eco"
@@ -472,6 +481,12 @@ msgstr "Semente"
 msgid "State"
 msgstr "Estado"
 
+msgid "Memory"
+msgstr "Memória"
+
+msgid "Limits"
+msgstr "Limites"
+
 msgid "Network"
 msgstr "Rede"
 
@@ -483,9 +498,6 @@ msgstr "TLS"
 
 msgid "Worker Pool"
 msgstr "Conjunto de Trabalhadores"
-
-msgid "Use System Threads for Low Priority Tasks"
-msgstr "Usar Threads do sistema para tarefas de baixa prioridade"
 
 msgid "Low Priority Thread Ratio"
 msgstr "Taxa de Threads de baixa prioridade"
@@ -544,9 +556,6 @@ msgstr "Deslocamento Inicial"
 msgid "End Offset"
 msgstr "Deslocamento Final"
 
-msgid "Animation"
-msgstr "Animação"
-
 msgid "Easing"
 msgstr "Flexibilização"
 
@@ -595,45 +604,6 @@ msgstr "Executar"
 msgid "Distraction Free Mode"
 msgstr "Modo Livre de Distrações"
 
-msgid "Interface"
-msgstr "Interface"
-
-msgid "Show Update Spinner"
-msgstr "Mostra Ícone de Atualização"
-
-msgid "Update Continuously"
-msgstr "Atualização Contínua"
-
-msgid "Localize Settings"
-msgstr "Configuração de tradução"
-
-msgid "Scene Tabs"
-msgstr "Abas da Cena"
-
-msgid "Inspector"
-msgstr "Inspetor"
-
-msgid "Default Property Name Style"
-msgstr "Estilo de Nome da Propriedade Predefinida"
-
-msgid "Default Float Step"
-msgstr "FloatStep Padrão"
-
-msgid "Disable Folding"
-msgstr "Desativar Botão"
-
-msgid "Auto Unfold Foreign Scenes"
-msgstr "Desdobramento Automático de Cenas Estrangeiras"
-
-msgid "Horizontal Vector2 Editing"
-msgstr "Edição Horizontal do Vector2"
-
-msgid "Horizontal Vector Types Editing"
-msgstr "Edição de Tipo de Vetor Horizontal"
-
-msgid "Default Color Picker Mode"
-msgstr "Modo Seletor de Cores Padrão"
-
 msgid "Base Type"
 msgstr "Mudar tipo base"
 
@@ -643,20 +613,26 @@ msgstr "Item Editável"
 msgid "Toggle Mode"
 msgstr "Alternar Modo"
 
+msgid "Interface"
+msgstr "Interface"
+
 msgid "Editor Language"
 msgstr "Linguagem do Editor"
 
+msgid "Localize Settings"
+msgstr "Configuração de tradução"
+
 msgid "Display Scale"
 msgstr "Escala do Editor"
+
+msgid "Custom Display Scale"
+msgstr "Escala de Exibição Personalizada"
 
 msgid "Enable Pseudolocalization"
 msgstr "Ativar Pseudo Localização"
 
 msgid "Use Embedded Menu"
 msgstr "Usar Menu Integrado"
-
-msgid "Custom Display Scale"
-msgstr "Escala de Exibição Personalizada"
 
 msgid "Main Font Size"
 msgstr "Tamanho da Fonte Principal"
@@ -703,8 +679,38 @@ msgstr "Caixa de Diálogo Aceitar: Botões OK/Cancelar"
 msgid "Show Internal Errors in Toast Notifications"
 msgstr "Mostrar Erros Internos em notificações Toast"
 
+msgid "Show Update Spinner"
+msgstr "Mostra Ícone de Atualização"
+
+msgid "Update Continuously"
+msgstr "Atualização Contínua"
+
+msgid "Inspector"
+msgstr "Inspetor"
+
 msgid "Show Low Level OpenType Features"
 msgstr "Mostrar atributos de baixo nível OpenType"
+
+msgid "Default Property Name Style"
+msgstr "Estilo de Nome da Propriedade Predefinida"
+
+msgid "Default Float Step"
+msgstr "FloatStep Padrão"
+
+msgid "Disable Folding"
+msgstr "Desativar Botão"
+
+msgid "Auto Unfold Foreign Scenes"
+msgstr "Desdobramento Automático de Cenas Estrangeiras"
+
+msgid "Horizontal Vector2 Editing"
+msgstr "Edição Horizontal do Vector2"
+
+msgid "Horizontal Vector Types Editing"
+msgstr "Edição de Tipo de Vetor Horizontal"
+
+msgid "Default Color Picker Mode"
+msgstr "Modo Seletor de Cores Padrão"
 
 msgid "Theme"
 msgstr "Tema"
@@ -747,6 +753,9 @@ msgstr "Ativar pressão longa como clique no botão direito"
 
 msgid "Enable Pan and Scale Gestures"
 msgstr "Ativar Pan e Gestos em Scala"
+
+msgid "Scene Tabs"
+msgstr "Abas da Cena"
 
 msgid "Show Script Button"
 msgstr "Mostrar Botão de Script"
@@ -798,12 +807,6 @@ msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "Caminho para FBX2glTF"
-
-msgid "Oidn"
-msgstr "OIDN"
-
-msgid "Oidn Denoise Path"
-msgstr "Caminho Oidn de Remoção de Ruído"
 
 msgid "Docks"
 msgstr "Painéis"
@@ -1192,6 +1195,12 @@ msgstr "Saída"
 msgid "Font Size"
 msgstr "Tamanho da Fonte"
 
+msgid "HTTP Proxy"
+msgstr "Proxy HTTP"
+
+msgid "Host"
+msgstr "Host"
+
 msgid "Remote Host"
 msgstr "Host Remoto"
 
@@ -1209,12 +1218,6 @@ msgstr "Intervalo de Atualização da Árvore de Cena Remota"
 
 msgid "Remote Inspect Refresh Interval"
 msgstr "Intervalo de Atualização de Inspeção Remota"
-
-msgid "HTTP Proxy"
-msgstr "Proxy HTTP"
-
-msgid "Host"
-msgstr "Host"
 
 msgid "Project Manager"
 msgstr "Gestor de Projetos"
@@ -1345,18 +1348,6 @@ msgstr "Incorporar PCK"
 msgid "Texture Format"
 msgstr "Formato de Textura"
 
-msgid "BPTC"
-msgstr "BPTC"
-
-msgid "S3TC"
-msgstr "S3TC"
-
-msgid "ETC"
-msgstr "ETC"
-
-msgid "ETC2"
-msgstr "ETC2"
-
 msgid "Export"
 msgstr "Exportar"
 
@@ -1381,36 +1372,6 @@ msgstr "Ocultar Slider"
 msgid "Zoom"
 msgstr "Zoom"
 
-msgid "Multichannel Signed Distance Field"
-msgstr "SDF multicanal"
-
-msgid "MSDF Pixel Range"
-msgstr "Escala de pixel de MSDF"
-
-msgid "Hinting"
-msgstr "Sugestão"
-
-msgid "Oversampling"
-msgstr "Excesso de Amostragem"
-
-msgid "Compress"
-msgstr "Comprimir"
-
-msgid "Language"
-msgstr "Idioma/Dialeto"
-
-msgid "Outline Size"
-msgstr "Tamanho do Contorno"
-
-msgid "Variation"
-msgstr "Variação"
-
-msgid "Embolden"
-msgstr "Aumento Boldem"
-
-msgid "Transform"
-msgstr "Transformar"
-
 msgid "Make Unique"
 msgstr "Fazer único"
 
@@ -1429,42 +1390,6 @@ msgstr "Limite"
 msgid "Unmapped Bones"
 msgstr "Ossos não mapeados"
 
-msgid "Create From"
-msgstr "Criar à Partir de"
-
-msgid "Delimiter"
-msgstr "Delimitador"
-
-msgid "Rows"
-msgstr "Linhas"
-
-msgid "Lossy Quality"
-msgstr "Qualidade com Perdas"
-
-msgid "Mipmaps"
-msgstr "Mipmaps"
-
-msgid "Generate"
-msgstr "Gerar"
-
-msgid "Limit"
-msgstr "Limite"
-
-msgid "Slices"
-msgstr "Fatias"
-
-msgid "Horizontal"
-msgstr "Horizontal"
-
-msgid "Vertical"
-msgstr "Vertical"
-
-msgid "Layout"
-msgstr "Esquema"
-
-msgid "Amount"
-msgstr "Quantidade"
-
 msgid "Generate Tangents"
 msgstr "Gerar Tangentes"
 
@@ -1473,6 +1398,9 @@ msgstr "Escalar Forma"
 
 msgid "Offset Mesh"
 msgstr "Forma de Compensação"
+
+msgid "Generate"
+msgstr "Gerar"
 
 msgid "NavMesh"
 msgstr "NavMesh"
@@ -1531,6 +1459,12 @@ msgstr "Modo de Loop"
 msgid "Keep Custom Tracks"
 msgstr "Manter Faixas Personalizadas"
 
+msgid "Slices"
+msgstr "Fatias"
+
+msgid "Amount"
+msgstr "Quantidade"
+
 msgid "Optimizer"
 msgstr "Otimizador"
 
@@ -1572,6 +1506,63 @@ msgstr "Usar Skins com Nome"
 
 msgid "FPS"
 msgstr "FPS"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "SDF multicanal"
+
+msgid "MSDF Pixel Range"
+msgstr "Escala de pixel de MSDF"
+
+msgid "Hinting"
+msgstr "Sugestão"
+
+msgid "Oversampling"
+msgstr "Excesso de Amostragem"
+
+msgid "Compress"
+msgstr "Comprimir"
+
+msgid "Language"
+msgstr "Idioma/Dialeto"
+
+msgid "Outline Size"
+msgstr "Tamanho do Contorno"
+
+msgid "Variation"
+msgstr "Variação"
+
+msgid "Embolden"
+msgstr "Aumento Boldem"
+
+msgid "Transform"
+msgstr "Transformar"
+
+msgid "Create From"
+msgstr "Criar à Partir de"
+
+msgid "Delimiter"
+msgstr "Delimitador"
+
+msgid "Rows"
+msgstr "Linhas"
+
+msgid "Lossy Quality"
+msgstr "Qualidade com Perdas"
+
+msgid "Mipmaps"
+msgstr "Mipmaps"
+
+msgid "Limit"
+msgstr "Limite"
+
+msgid "Horizontal"
+msgstr "Horizontal"
+
+msgid "Vertical"
+msgstr "Vertical"
+
+msgid "Layout"
+msgstr "Esquema"
 
 msgid "Normal Map"
 msgstr "Mapa Normal"
@@ -1663,11 +1654,11 @@ msgstr "Reprodutor de Fluxo 3D"
 msgid "Camera"
 msgstr "Câmera"
 
-msgid "Decal"
-msgstr "Decalque"
-
 msgid "Particles"
 msgstr "Partículas"
+
+msgid "Decal"
+msgstr "Decalque"
 
 msgid "Joint Body A"
 msgstr "Corpo de Articulação A"
@@ -1816,9 +1807,6 @@ msgstr "Portátil"
 msgid "Orientation"
 msgstr "Orientação"
 
-msgid "V-Sync"
-msgstr "Sincronização Vertical"
-
 msgid "Output Latency"
 msgstr "Latência de Saída"
 
@@ -1896,12 +1884,6 @@ msgstr "Liberação Ágil de Eventos"
 
 msgid "Pointing"
 msgstr "Pontuação"
-
-msgid "Emulate Touch From Mouse"
-msgstr "Emular Toque do Rato"
-
-msgid "Emulate Mouse From Touch"
-msgstr "Emular o Rato do Toque"
 
 msgid "Android"
 msgstr "Android"
@@ -2032,9 +2014,6 @@ msgstr "Cor do Caminho do Nó"
 msgid "Max Call Stack"
 msgstr "Máximo Empilhamento de Chamadas"
 
-msgid "Warnings"
-msgstr "Avisos"
-
 msgid "Exclude Addons"
 msgstr "Excluir Complementos"
 
@@ -2046,6 +2025,9 @@ msgstr "Habilitar Resolução Inteligente"
 
 msgid "Use Thread"
 msgstr "Usar Thread"
+
+msgid "Copyright"
+msgstr "Direitos Autorais"
 
 msgid "glTF"
 msgstr "'glTF'"
@@ -2100,9 +2082,6 @@ msgstr "Versão Importante"
 
 msgid "Minor Version"
 msgstr "Versão Minoritária"
-
-msgid "Copyright"
-msgstr "Direitos Autorais"
 
 msgid "GLB Data"
 msgstr "Dados do GLB"
@@ -2620,45 +2599,6 @@ msgstr "Destaque 40 X 40"
 msgid "Spotlight 80 X 80"
 msgstr "Destaque 80 X 80"
 
-msgid "Landscape Launch Screens"
-msgstr "Telas de Inicialização de Paisagem"
-
-msgid "iPhone 2436 X 1125"
-msgstr "iPhone 2436 X 1125"
-
-msgid "iPhone 2208 X 1242"
-msgstr "iPhone 2208 X 1242"
-
-msgid "iPad 1024 X 768"
-msgstr "iPad 1024 X 768"
-
-msgid "iPad 2048 X 1536"
-msgstr "iPad 2048 X 1536"
-
-msgid "Portrait Launch Screens"
-msgstr "Telas de Lançamento de Retrato"
-
-msgid "iPhone 640 X 960"
-msgstr "iPhone 640 X 960"
-
-msgid "iPhone 640 X 1136"
-msgstr "iPhone 640 X 1136"
-
-msgid "iPhone 750 X 1334"
-msgstr "iPhone 750 X 1334"
-
-msgid "iPhone 1125 X 2436"
-msgstr "iPhone 1125 X 2436"
-
-msgid "iPad 768 X 1024"
-msgstr "iPad 768 X 1024"
-
-msgid "iPad 1536 X 2048"
-msgstr "iPad 1536 X 2048"
-
-msgid "iPhone 1242 X 2208"
-msgstr "iPhone 1242 X 2208"
-
 msgid "App Store Team ID"
 msgstr "ID da Equipe na App Store"
 
@@ -2722,9 +2662,6 @@ msgstr "Descrição de Uso da Fotobiblioteca"
 msgid "Storyboard"
 msgstr "Storyboard"
 
-msgid "Use Launch Screen Storyboard"
-msgstr "Use o Storyboard da Tela de Inicialização"
-
 msgid "Image Scale Mode"
 msgstr "Modo de Escalonamento de Imagem"
 
@@ -2775,9 +2712,6 @@ msgstr "Desativar Validação da Biblioteca"
 
 msgid "Audio Input"
 msgstr "Entrada de Áudio"
-
-msgid "Location"
-msgstr "Localização"
 
 msgid "Address Book"
 msgstr "Contatos"
@@ -3481,6 +3415,9 @@ msgstr "Longe"
 msgid "Ray Pickable"
 msgstr "Raio selecionável"
 
+msgid "Visibility AABB"
+msgstr "Visibilidade AABB"
+
 msgid "Rotate Y"
 msgstr "Rotacionar em Y"
 
@@ -3510,9 +3447,6 @@ msgstr "Modular"
 
 msgid "Distance Fade"
 msgstr "Distância de Esmaecimento"
-
-msgid "Visibility AABB"
-msgstr "Visibilidade AABB"
 
 msgid "Draw Passes"
 msgstr "Passos de Desenho"
@@ -4105,6 +4039,12 @@ msgstr "Tamanho Máximo da Pilha de Desfazer na Edição de Texto"
 msgid "Hover"
 msgstr "Flutuar"
 
+msgid "Radial Fill"
+msgstr "Preenchimento Radial"
+
+msgid "Fill Degrees"
+msgstr "Graus de Preenchimento"
+
 msgid "Under"
 msgstr "Abaixo"
 
@@ -4113,12 +4053,6 @@ msgstr "Desvio de Progresso"
 
 msgid "Tint"
 msgstr "Matiz"
-
-msgid "Radial Fill"
-msgstr "Preenchimento Radial"
-
-msgid "Fill Degrees"
-msgstr "Graus de Preenchimento"
 
 msgid "Custom Minimum Height"
 msgstr "Altura Mínima Personalizada"
@@ -4548,18 +4482,6 @@ msgstr "Agrupados"
 
 msgid "Turbulence"
 msgstr "Turbulência"
-
-msgid "Influence Min"
-msgstr "Mínima Influência"
-
-msgid "Influence Max"
-msgstr "Máxima Influência"
-
-msgid "Initial Displacement Min"
-msgstr "Deslocamento Inicial Mínimo"
-
-msgid "Initial Displacement Max"
-msgstr "Deslocamento Inicial Máximo"
 
 msgid "Influence over Life"
 msgstr "Influência sobre Ciclo de Vida"

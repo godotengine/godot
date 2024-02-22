@@ -283,7 +283,9 @@ private:
 	bool _runtime_update_tile_data_was_cleaned_up = false;
 	void _build_runtime_update_tile_data();
 	void _build_runtime_update_tile_data_for_cell(CellData &r_cell_data, bool p_auto_add_to_dirty_list = false);
+	bool _runtime_update_needs_all_cells_cleaned_up = false;
 	void _clear_runtime_update_tile_data();
+	void _clear_runtime_update_tile_data_for_cell(CellData &r_cell_data);
 
 	// Per-system methods.
 #ifdef DEBUG_ENABLED

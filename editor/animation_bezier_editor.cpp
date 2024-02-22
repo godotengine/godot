@@ -213,7 +213,9 @@ void AnimationBezierTrackEdit::_draw_line_clipped(const Vector2 &p_from, const V
 void AnimationBezierTrackEdit::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -840,16 +842,27 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			accept_event();
 		}
+		if (ED_IS_SHORTCUT("animation_editor/cut_selected_keys", p_event)) {
+			if (!read_only) {
+				copy_selected_keys(true);
+			}
+			accept_event();
+		}
 		if (ED_IS_SHORTCUT("animation_editor/copy_selected_keys", p_event)) {
 			if (!read_only) {
 				copy_selected_keys(false);
 			}
 			accept_event();
 		}
-
 		if (ED_IS_SHORTCUT("animation_editor/paste_keys", p_event)) {
 			if (!read_only) {
 				paste_keys(-1.0);
+			}
+			accept_event();
+		}
+		if (ED_IS_SHORTCUT("animation_editor/delete_selection", p_event)) {
+			if (!read_only) {
+				delete_selection();
 			}
 			accept_event();
 		}
@@ -1247,7 +1260,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (moving_selection_attempt && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (!read_only) {
-			if (moving_selection) {
+			if (moving_selection && (abs(moving_selection_offset.x) > 0 || abs(moving_selection_offset.y) > 0)) {
 				//combit it
 
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -1504,7 +1517,7 @@ bool AnimationBezierTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p
 				}
 
 				set_animation_and_track(animation, pair.first, read_only);
-				if (p_deselectable || !selection.has(pair)) {
+				if (!selection.has(pair)) {
 					selection.clear();
 					selection.insert(pair);
 				}

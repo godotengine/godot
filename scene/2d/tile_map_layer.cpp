@@ -1360,6 +1360,7 @@ void TileMapLayer::_build_runtime_update_tile_data() {
 	if (!forced_cleanup) {
 		if (tile_map_node->GDVIRTUAL_IS_OVERRIDDEN(_use_tile_data_runtime_update) && tile_map_node->GDVIRTUAL_IS_OVERRIDDEN(_tile_data_runtime_update)) {
 			if (_runtime_update_tile_data_was_cleaned_up || dirty.flags[DIRTY_FLAGS_LAYER_GROUP_TILE_SET]) {
+				_runtime_update_needs_all_cells_cleaned_up = true;
 				for (KeyValue<Vector2i, CellData> &E : tile_map) {
 					_build_runtime_update_tile_data_for_cell(E.value);
 				}
@@ -1414,14 +1415,24 @@ void TileMapLayer::_build_runtime_update_tile_data_for_cell(CellData &r_cell_dat
 }
 
 void TileMapLayer::_clear_runtime_update_tile_data() {
-	for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-		CellData &cell_data = *cell_data_list_element->self();
-
-		// Clear the runtime tile data.
-		if (cell_data.runtime_tile_data_cache) {
-			memdelete(cell_data.runtime_tile_data_cache);
-			cell_data.runtime_tile_data_cache = nullptr;
+	if (_runtime_update_needs_all_cells_cleaned_up) {
+		for (KeyValue<Vector2i, CellData> &E : tile_map) {
+			_clear_runtime_update_tile_data_for_cell(E.value);
 		}
+		_runtime_update_needs_all_cells_cleaned_up = false;
+	} else {
+		for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
+			CellData &r_cell_data = *cell_data_list_element->self();
+			_clear_runtime_update_tile_data_for_cell(r_cell_data);
+		}
+	}
+}
+
+void TileMapLayer::_clear_runtime_update_tile_data_for_cell(CellData &r_cell_data) {
+	// Clear the runtime tile data.
+	if (r_cell_data.runtime_tile_data_cache) {
+		memdelete(r_cell_data.runtime_tile_data_cache);
+		r_cell_data.runtime_tile_data_cache = nullptr;
 	}
 }
 
@@ -1632,7 +1643,7 @@ void TileMapLayer::_deferred_internal_update() {
 
 void TileMapLayer::_internal_update() {
 	// Find TileData that need a runtime modification.
-	// This may add cells to the dirty list is a runtime modification has been notified.
+	// This may add cells to the dirty list if a runtime modification has been notified.
 	_build_runtime_update_tile_data();
 
 	// Update all subsystems.

@@ -99,7 +99,7 @@ public:
 	bool is_valid() const;
 
 	template <typename... VarArgs>
-	Callable bind(VarArgs... p_args);
+	Callable bind(VarArgs... p_args) const;
 	Callable bindv(const Array &p_arguments);
 
 	Callable bindp(const Variant **p_arguments, int p_argcount) const;

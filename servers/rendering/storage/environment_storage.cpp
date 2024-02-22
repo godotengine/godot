@@ -30,6 +30,20 @@
 
 #include "environment_storage.h"
 
+// Storage
+
+RendererEnvironmentStorage *RendererEnvironmentStorage::singleton = nullptr;
+
+RendererEnvironmentStorage::RendererEnvironmentStorage() {
+	singleton = this;
+}
+
+RendererEnvironmentStorage::~RendererEnvironmentStorage() {
+	singleton = nullptr;
+}
+
+// Environment
+
 RID RendererEnvironmentStorage::environment_allocate() {
 	return environment_owner.allocate_rid();
 }
@@ -417,11 +431,6 @@ void RendererEnvironmentStorage::environment_set_glow(RID p_env, bool p_enable, 
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	ERR_FAIL_COND_MSG(p_levels.size() != 7, "Size of array of glow levels must be 7");
-#ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_enable) {
-		WARN_PRINT_ONCE_ED("Glow is not supported when using the GL Compatibility backend yet. Support will be added in a future release.");
-	}
-#endif
 	env->glow_enabled = p_enable;
 	env->glow_levels = p_levels;
 	env->glow_intensity = p_intensity;

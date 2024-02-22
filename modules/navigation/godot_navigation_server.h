@@ -80,7 +80,7 @@ class GodotNavigationServer : public NavigationServer3D {
 
 	bool active = true;
 	LocalVector<NavMap *> active_maps;
-	LocalVector<uint32_t> active_maps_update_id;
+	LocalVector<uint32_t> active_maps_iteration_id;
 
 #ifndef _3D_DISABLED
 	NavMeshGenerator3D *navmesh_generator_3d = nullptr;
@@ -142,6 +142,7 @@ public:
 	virtual TypedArray<RID> map_get_obstacles(RID p_map) const override;
 
 	virtual void map_force_update(RID p_map) override;
+	virtual uint32_t map_get_iteration_id(RID p_map) const override;
 
 	virtual Vector3 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
 

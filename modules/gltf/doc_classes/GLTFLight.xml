@@ -52,7 +52,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			The [Color] of the light. Defaults to white. A black color causes the light to have no effect.
 		</member>
 		<member name="inner_cone_angle" type="float" setter="set_inner_cone_angle" getter="get_inner_cone_angle" default="0.0">

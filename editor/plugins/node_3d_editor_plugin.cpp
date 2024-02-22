@@ -2666,7 +2666,7 @@ void Node3DEditorPlugin::edited_scene_changed() {
 }
 
 void Node3DEditorViewport::_project_settings_changed() {
-	//update shadow atlas if changed
+	// Update shadow atlas if changed.
 	int shadowmap_size = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_size");
 	bool shadowmap_16_bits = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_16_bits");
 	int atlas_q0 = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv");
@@ -7697,8 +7697,10 @@ void Node3DEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			// Update grid color by rebuilding grid.
-			_finish_grid();
-			_init_grid();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d")) {
+				_finish_grid();
+				_init_grid();
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

@@ -165,7 +165,7 @@ namespace GodotTools.BuildLogger
             bool hasSpecialChar = value.IndexOfAny(new[] { '\"', '\n', '\r', delimiter }) != -1;
 
             if (hasSpecialChar)
-                return "\"" + value.Replace("\"", "\"\"") + "\"";
+                return "\"" + value.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
 
             return value;
         }

@@ -7,63 +7,25 @@ namespace Godot.SourceGenerators
     {
         private static readonly string _helpLinkFormat = $"{VersionDocsUrl}/tutorials/scripting/c_sharp/diagnostics/{{0}}.html";
 
-        public static void ReportNonPartialGodotScriptClass(
-            GeneratorExecutionContext context,
-            ClassDeclarationSyntax cds, INamedTypeSymbol symbol
-        )
-        {
-            string message =
-                "Missing partial modifier on declaration of type '" +
-                $"{symbol.FullQualifiedNameOmitGlobal()}' that derives from '{GodotClasses.GodotObject}'";
+        internal static readonly DiagnosticDescriptor ClassPartialModifierRule =
+            new DiagnosticDescriptor(id: "GD0001",
+                title: $"Missing partial modifier on declaration of type that derives from '{GodotClasses.GodotObject}'",
+                messageFormat: $"Missing partial modifier on declaration of type '{{0}}' that derives from '{GodotClasses.GodotObject}'",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                $"Classes that derive from '{GodotClasses.GodotObject}' must be declared with the partial modifier.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0001"));
 
-            string description = $"{message}. Classes that derive from '{GodotClasses.GodotObject}' " +
-                                 "must be declared with the partial modifier.";
-
-            context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GD0001",
-                    title: message,
-                    messageFormat: message,
-                    category: "Usage",
-                    DiagnosticSeverity.Error,
-                    isEnabledByDefault: true,
-                    description,
-                    helpLinkUri: string.Format(_helpLinkFormat, "GD0001")),
-                cds.GetLocation(),
-                cds.SyntaxTree.FilePath));
-        }
-
-        public static void ReportNonPartialGodotScriptOuterClass(
-            GeneratorExecutionContext context,
-            TypeDeclarationSyntax outerTypeDeclSyntax
-        )
-        {
-            var outerSymbol = context.Compilation
-                .GetSemanticModel(outerTypeDeclSyntax.SyntaxTree)
-                .GetDeclaredSymbol(outerTypeDeclSyntax);
-
-            string fullQualifiedName = outerSymbol is INamedTypeSymbol namedTypeSymbol ?
-                namedTypeSymbol.FullQualifiedNameOmitGlobal() :
-                "type not found";
-
-            string message =
-                $"Missing partial modifier on declaration of type '{fullQualifiedName}', " +
-                $"which contains nested classes that derive from '{GodotClasses.GodotObject}'";
-
-            string description = $"{message}. Classes that derive from '{GodotClasses.GodotObject}' and their " +
-                                 "containing types must be declared with the partial modifier.";
-
-            context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GD0002",
-                    title: message,
-                    messageFormat: message,
-                    category: "Usage",
-                    DiagnosticSeverity.Error,
-                    isEnabledByDefault: true,
-                    description,
-                    helpLinkUri: string.Format(_helpLinkFormat, "GD0002")),
-                outerTypeDeclSyntax.GetLocation(),
-                outerTypeDeclSyntax.SyntaxTree.FilePath));
-        }
+        internal static readonly DiagnosticDescriptor OuterClassPartialModifierRule =
+            new DiagnosticDescriptor(id: "GD0002",
+                title: $"Missing partial modifier on declaration of type which contains nested classes that derive from '{GodotClasses.GodotObject}'",
+                messageFormat: $"Missing partial modifier on declaration of type '{{0}}' which contains nested classes that derive from '{GodotClasses.GodotObject}'",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                $"Classes that derive from '{GodotClasses.GodotObject}' and their containing types must be declared with the partial modifier.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0002"));
 
         public static readonly DiagnosticDescriptor MultipleClassesInGodotScriptRule =
             new DiagnosticDescriptor(id: "GD0003",

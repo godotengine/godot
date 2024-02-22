@@ -150,6 +150,10 @@ Control *TextEditor::get_base_editor() const {
 	return code_editor->get_text_editor();
 }
 
+CodeTextEditor *TextEditor::get_code_editor() const {
+	return code_editor;
+}
+
 PackedInt32Array TextEditor::get_breakpoints() {
 	return PackedInt32Array();
 }
@@ -419,11 +423,11 @@ void TextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			tx->set_indent_using_spaces(true);
+			code_editor->set_indent_using_spaces(true);
 			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			tx->set_indent_using_spaces(false);
+			code_editor->set_indent_using_spaces(false);
 			convert_indent();
 		} break;
 		case EDIT_TO_UPPERCASE: {
