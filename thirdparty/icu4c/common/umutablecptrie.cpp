@@ -1304,7 +1304,7 @@ int32_t MutableCodePointTrie::compactIndex(int32_t fastILimit, MixedBlocks &mixe
         errorCode = U_MEMORY_ALLOCATION_ERROR;
         return 0;
     }
-    uprv_memcpy(index16, fastIndex, fastIndexLength * 2);
+    uprv_memcpy(index16, fastIndex, index16Capacity * 2);
 
     if (!mixedBlocks.init(index16Capacity, UCPTRIE_INDEX_3_BLOCK_LENGTH)) {
         errorCode = U_MEMORY_ALLOCATION_ERROR;
