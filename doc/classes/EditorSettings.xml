@@ -445,6 +445,66 @@
 			The color to use for the TileMap editor's grid.
 			[b]Note:[/b] Only effective if [member editors/tiles_editor/display_grid] is [code]true[/code].
 		</member>
+		<member name="editors/visual_editors/category_colors/color_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Color" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/conditional_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Conditional" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/input_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Input" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/output_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Output" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/particle_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Particle" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/scalar_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Scalar" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/special_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Special" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/textures_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Textures" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/transform_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Transform" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/utility_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Utility" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/vector_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Vector" category.
+		</member>
+		<member name="editors/visual_editors/color_theme" type="String" setter="" getter="">
+			The color theme to use in the visual shader editor.
+		</member>
+		<member name="editors/visual_editors/connection_colors/boolean_color" type="Color" setter="" getter="">
+			The color of a port/connection of boolean type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/sampler_color" type="Color" setter="" getter="">
+			The color of a port/connection of sampler type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/scalar_color" type="Color" setter="" getter="">
+			The color of a port/connection of scalar type (float, int, unsigned int).
+		</member>
+		<member name="editors/visual_editors/connection_colors/transform_color" type="Color" setter="" getter="">
+			The color of a port/connection of transform type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/vector2_color" type="Color" setter="" getter="">
+			The color of a port/connection of Vector2 type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/vector3_color" type="Color" setter="" getter="">
+			The color of a port/connection of Vector3 type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/vector4_color" type="Color" setter="" getter="">
+			The color of a port/connection of Vector4 type.
+		</member>
+		<member name="editors/visual_editors/grid_pattern" type="int" setter="" getter="">
+			The pattern used for the background grid.
+		</member>
 		<member name="editors/visual_editors/lines_curvature" type="float" setter="" getter="">
 			The curvature to use for connection lines in the visual shader editor. Higher values will make connection lines appear more curved, with values above [code]0.5[/code] resulting in more "angular" turns in the middle of connection lines.
 		</member>

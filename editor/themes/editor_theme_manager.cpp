@@ -39,6 +39,7 @@
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme.h"
+#include "scene/gui/graph_edit.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
@@ -213,6 +214,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 	_populate_standard_styles(theme, config);
 	_populate_editor_styles(theme, config);
 	_populate_text_editor_styles(theme, config);
+	_populate_visual_shader_styles(theme, config);
 
 	OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Create Base Theme");
 	return theme;
@@ -1465,13 +1467,22 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_stylebox("panel", "GraphEdit", p_config.tree_panel_style);
 		p_theme->set_stylebox("menu_panel", "GraphEdit", make_flat_stylebox(p_config.dark_color_1 * Color(1, 1, 1, 0.6), 4, 2, 4, 2, 3));
 
-		if (p_config.dark_theme) {
-			p_theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.1));
-			p_theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.05));
-		} else {
-			p_theme->set_color("grid_major", "GraphEdit", Color(0.0, 0.0, 0.0, 0.15));
-			p_theme->set_color("grid_minor", "GraphEdit", Color(0.0, 0.0, 0.0, 0.07));
+		float grid_base_brightness = p_config.dark_theme ? 1.0 : 0.0;
+		GraphEdit::GridPattern grid_pattern = (GraphEdit::GridPattern) int(EDITOR_GET("editors/visual_editors/grid_pattern"));
+		switch (grid_pattern) {
+			case GraphEdit::GRID_PATTERN_LINES:
+				p_theme->set_color("grid_major", "GraphEdit", Color(grid_base_brightness, grid_base_brightness, grid_base_brightness, 0.10));
+				p_theme->set_color("grid_minor", "GraphEdit", Color(grid_base_brightness, grid_base_brightness, grid_base_brightness, 0.05));
+				break;
+			case GraphEdit::GRID_PATTERN_DOTS:
+				p_theme->set_color("grid_major", "GraphEdit", Color(grid_base_brightness, grid_base_brightness, grid_base_brightness, 0.07));
+				p_theme->set_color("grid_minor", "GraphEdit", Color(grid_base_brightness, grid_base_brightness, grid_base_brightness, 0.07));
+				break;
+			default:
+				WARN_PRINT("Unknown grid pattern.");
+				break;
 		}
+
 		p_theme->set_color("selection_fill", "GraphEdit", p_theme->get_color(SNAME("box_selection_fill_color"), EditorStringName(Editor)));
 		p_theme->set_color("selection_stroke", "GraphEdit", p_theme->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor)));
 		p_theme->set_color("activity", "GraphEdit", p_config.dark_theme ? Color(1, 1, 1) : Color(0, 0, 0));
@@ -1522,31 +1533,48 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			const int gn_margin_side = 2;
 			const int gn_margin_bottom = 2;
 
+			const int gn_corner_radius = 3;
+
 			const Color gn_bg_color = p_config.dark_theme ? p_config.dark_color_3 : p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
-			const Color gn_selected_border_color = gn_bg_color.lerp(p_config.accent_color, 0.275);
+			const Color gn_selected_border_color = p_config.dark_theme ? Color(1, 1, 1) : Color(0, 0, 0);
 			const Color gn_frame_bg = gn_bg_color.lerp(p_config.tree_panel_style->get_bg_color(), 0.3);
 
+			const bool high_contrast_borders = p_config.draw_extra_borders && p_config.dark_theme;
+
 			Ref<StyleBoxFlat> gn_panel_style = make_flat_stylebox(gn_frame_bg, gn_margin_side, gn_margin_top, gn_margin_side, gn_margin_bottom, p_config.corner_radius);
-			gn_panel_style->set_border_width_all(p_config.border_width);
-			gn_panel_style->set_border_color(gn_bg_color);
-			gn_panel_style->set_corner_radius_individual(0, 0, p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE);
-			gn_panel_style->set_expand_margin(SIDE_TOP, 17 * EDSCALE);
+			gn_panel_style->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
+			gn_panel_style->set_border_width(SIDE_LEFT, 2 * EDSCALE);
+			gn_panel_style->set_border_width(SIDE_RIGHT, 2 * EDSCALE);
+			gn_panel_style->set_border_color(high_contrast_borders ? gn_bg_color.lightened(0.2) : gn_bg_color.darkened(0.3));
+			gn_panel_style->set_corner_radius_individual(0, 0, gn_corner_radius * EDSCALE, gn_corner_radius * EDSCALE);
+			gn_panel_style->set_anti_aliased(true);
 
-			Ref<StyleBoxFlat> gn_panel_selected_style = make_flat_stylebox(gn_frame_bg, gn_margin_side, gn_margin_top, gn_margin_side, gn_margin_bottom, p_config.corner_radius);
-			gn_panel_selected_style->set_border_width_all(2 * EDSCALE + p_config.border_width);
+			Ref<StyleBoxFlat> gn_panel_selected_style = gn_panel_style->duplicate();
+			gn_panel_selected_style->set_bg_color(p_config.dark_theme ? gn_bg_color.lightened(0.15) : gn_bg_color.darkened(0.15));
+			gn_panel_selected_style->set_border_width(SIDE_TOP, 0);
+			gn_panel_selected_style->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
+			gn_panel_selected_style->set_border_width(SIDE_LEFT, 2 * EDSCALE);
+			gn_panel_selected_style->set_border_width(SIDE_RIGHT, 2 * EDSCALE);
 			gn_panel_selected_style->set_border_color(gn_selected_border_color);
-			gn_panel_selected_style->set_corner_radius_individual(0, 0, p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE);
-			gn_panel_selected_style->set_expand_margin(SIDE_TOP, 17 * EDSCALE);
 
-			const int gn_titlebar_margin_left = 12;
-			const int gn_titlebar_margin_right = 4; // The rest is for the close button.
+			const int gn_titlebar_margin_top = 8;
+			const int gn_titlebar_margin_side = 12;
+			const int gn_titlebar_margin_bottom = 8;
 
-			Ref<StyleBoxFlat> gn_titlebar_style = make_flat_stylebox(gn_bg_color, gn_titlebar_margin_left, gn_margin_top, gn_titlebar_margin_right, 0, p_config.corner_radius);
+			Ref<StyleBoxFlat> gn_titlebar_style = make_flat_stylebox(gn_bg_color, gn_titlebar_margin_side, gn_titlebar_margin_top, gn_titlebar_margin_side, gn_titlebar_margin_bottom, p_config.corner_radius);
+			gn_titlebar_style->set_border_width(SIDE_TOP, 2 * EDSCALE);
+			gn_titlebar_style->set_border_width(SIDE_LEFT, 2 * EDSCALE);
+			gn_titlebar_style->set_border_width(SIDE_RIGHT, 2 * EDSCALE);
+			gn_titlebar_style->set_border_color(high_contrast_borders ? gn_bg_color.lightened(0.2) : gn_bg_color.darkened(0.3));
 			gn_titlebar_style->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
-			gn_titlebar_style->set_corner_radius_individual(p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE, 0, 0);
+			gn_titlebar_style->set_corner_radius_individual(gn_corner_radius * EDSCALE, gn_corner_radius * EDSCALE, 0, 0);
+			gn_titlebar_style->set_anti_aliased(true);
 
-			Ref<StyleBoxFlat> gn_titlebar_selected_style = make_flat_stylebox(gn_selected_border_color, gn_titlebar_margin_left, gn_margin_top, gn_titlebar_margin_right, 0, p_config.corner_radius);
-			gn_titlebar_selected_style->set_corner_radius_individual(p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE, 0, 0);
+			Ref<StyleBoxFlat> gn_titlebar_selected_style = gn_titlebar_style->duplicate();
+			gn_titlebar_selected_style->set_border_color(gn_selected_border_color);
+			gn_titlebar_selected_style->set_border_width(SIDE_TOP, 2 * EDSCALE);
+			gn_titlebar_selected_style->set_border_width(SIDE_LEFT, 2 * EDSCALE);
+			gn_titlebar_selected_style->set_border_width(SIDE_RIGHT, 2 * EDSCALE);
 			gn_titlebar_selected_style->set_expand_margin(SIDE_TOP, 2 * EDSCALE);
 
 			Color gn_decoration_color = p_config.dark_color_1.inverted();
@@ -1573,7 +1601,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			p_theme->set_color("resizer_color", "GraphNode", gn_decoration_color);
 
-			p_theme->set_constant("port_h_offset", "GraphNode", 0);
+			p_theme->set_constant("port_h_offset", "GraphNode", 1);
 			p_theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
 
 			Ref<ImageTexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
@@ -1584,7 +1612,11 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			// GraphNode's title Label.
 			p_theme->set_type_variation("GraphNodeTitleLabel", "Label");
 			p_theme->set_stylebox("normal", "GraphNodeTitleLabel", make_empty_stylebox(0, 0, 0, 0));
-			p_theme->set_color("font_color", "GraphNodeTitleLabel", p_config.font_color);
+			p_theme->set_color("font_color", "GraphNodeTitleLabel", p_config.dark_theme ? p_config.font_color : Color(1, 1, 1)); // Also use a bright font color for light themes.
+			p_theme->set_color("font_shadow_color", "GraphNodeTitleLabel", Color(0, 0, 0, 0.35));
+			p_theme->set_constant("shadow_outline_size", "GraphNodeTitleLabel", 4);
+			p_theme->set_constant("shadow_offset_x", "GraphNodeTitleLabel", 0);
+			p_theme->set_constant("shadow_offset_y", "GraphNodeTitleLabel", 1);
 			p_theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * EDSCALE);
 		}
 	}
@@ -2339,6 +2371,59 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	/* clang-format on */
 }
 
+void EditorThemeManager::_populate_visual_shader_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
+	EditorSettings *ed_settings = EditorSettings::get_singleton();
+	String visual_shader_color_theme = ed_settings->get("editors/visual_editors/color_theme");
+	if (visual_shader_color_theme == "Default") {
+		// Connection type colors
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/scalar_color", Color(0.55, 0.55, 0.55), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector2_color", Color(0.44, 0.43, 0.64), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector3_color", Color(0.337, 0.314, 0.71), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector4_color", Color(0.7, 0.65, 0.147), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/boolean_color", Color(0.243, 0.612, 0.349), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/transform_color", Color(0.71, 0.357, 0.64), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/sampler_color", Color(0.659, 0.4, 0.137), true);
+
+		// Node category colors (used for the node headers)
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/output_color", Color(0.26, 0.10, 0.15), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/color_color", Color(0.5, 0.5, 0.1), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/conditional_color", Color(0.208, 0.522, 0.298), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/input_color", Color(0.502, 0.2, 0.204), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/scalar_color", Color(0.1, 0.5, 0.6), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/textures_color", Color(0.5, 0.3, 0.1), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/transform_color", Color(0.5, 0.3, 0.5), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/utility_color", Color(0.2, 0.2, 0.2), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/vector_color", Color(0.2, 0.2, 0.5), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/special_color", Color(0.098, 0.361, 0.294), true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/particle_color", Color(0.12, 0.358, 0.8), true);
+
+	} else if (visual_shader_color_theme == "Legacy") {
+		// Connection type colors
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/scalar_color", Color(0.38, 0.85, 0.96), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector2_color", Color(0.74, 0.57, 0.95), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector3_color", Color(0.84, 0.49, 0.93), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/vector4_color", Color(1.0, 0.125, 0.95), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/boolean_color", Color(0.55, 0.65, 0.94), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/transform_color", Color(0.96, 0.66, 0.43), true);
+		ed_settings->set_initial_value("editors/visual_editors/connection_colors/sampler_color", Color(1.0, 1.0, 0.0), true);
+
+		// Node category colors (used for the node headers)
+		Ref<StyleBoxFlat> gn_panel_style = p_theme->get_stylebox("panel", "GraphNode");
+		Color gn_bg_color = gn_panel_style->get_bg_color();
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/output_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/color_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/conditional_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/input_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/scalar_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/textures_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/transform_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/utility_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/vector_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/special_color", gn_bg_color, true);
+		ed_settings->set_initial_value("editors/visual_editors/category_colors/particle_color", gn_bg_color, true);
+	}
+}
+
 void EditorThemeManager::_reset_dirty_flag() {
 	outdated_cache_dirty = true;
 }
@@ -2381,6 +2466,7 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/code_font") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/increase_scrollbar_touch_area") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/scale_gizmo_handles") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("docks/property_editor/subresource_hue_tint") ||
