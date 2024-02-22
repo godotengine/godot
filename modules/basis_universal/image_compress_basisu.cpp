@@ -154,6 +154,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 
 	// Get supported compression formats.
 	bool bptc_supported = RS::get_singleton()->has_os_feature("bptc");
+	bool astc_supported = RS::get_singleton()->has_os_feature("astc");
 	bool s3tc_supported = RS::get_singleton()->has_os_feature("s3tc");
 	bool etc2_supported = RS::get_singleton()->has_os_feature("etc2");
 
@@ -166,6 +167,9 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 			if (bptc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC7_M6_OPAQUE_ONLY;
 				image_format = Image::FORMAT_BPTC_RGBA;
+			} else if (astc_supported) {
+				basisu_format = basist::transcoder_texture_format::cTFASTC_4x4_RGBA;
+				image_format = Image::FORMAT_ASTC_4x4;
 			} else if (s3tc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC1;
 				image_format = Image::FORMAT_DXT1;
@@ -183,6 +187,9 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 			if (bptc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC7_M5;
 				image_format = Image::FORMAT_BPTC_RGBA;
+			} else if (astc_supported) {
+				basisu_format = basist::transcoder_texture_format::cTFASTC_4x4_RGBA;
+				image_format = Image::FORMAT_ASTC_4x4;
 			} else if (s3tc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC3;
 				image_format = Image::FORMAT_DXT5;
