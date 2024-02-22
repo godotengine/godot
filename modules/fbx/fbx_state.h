@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  fbx_state.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_MESH_H
-#define GLTF_MESH_H
+#ifndef FBX_STATE_H
+#define FBX_STATE_H
 
-#include "../gltf_defines.h"
+#include "modules/gltf/gltf_defines.h"
+#include "modules/gltf/gltf_state.h"
+#include "modules/gltf/structures/gltf_animation.h"
+#include "modules/gltf/structures/gltf_mesh.h"
+#include "modules/gltf/structures/gltf_node.h"
+#include "modules/gltf/structures/gltf_skeleton.h"
+#include "modules/gltf/structures/gltf_skin.h"
+#include "modules/gltf/structures/gltf_texture.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 
-#include "scene/resources/importer_mesh.h"
+#include "thirdparty/ufbx/ufbx.h"
 
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
+class FBXState : public GLTFState {
+	GDCLASS(FBXState, GLTFState);
+	friend class FBXDocument;
+	friend class SkinTool;
+	friend class GLTFSkin;
 
-private:
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
+	// Smart pointer that holds the loaded scene.
+	ufbx_unique_ptr<ufbx_scene> scene;
+	bool allow_geometry_helper_nodes = false;
 
-	String original_name;
-	Dictionary additional_data;
+	HashMap<uint64_t, Image::AlphaMode> alpha_mode_cache;
+	HashMap<Pair<uint64_t, uint64_t>, GLTFTextureIndex, PairHash<uint64_t, uint64_t>> albedo_transparency_textures;
+
+	Vector<GLTFSkinIndex> skin_indices;
+	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_fbx_skeleton;
+	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_fbx_skin;
+	HashSet<String> unique_mesh_names; // Not in GLTFState because GLTFState prefixes mesh names with the scene name (or _)
 
 protected:
 	static void _bind_methods();
 
 public:
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(Ref<ImporterMesh> p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(Vector<float> p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(TypedArray<Material> p_instance_materials);
-
-
-	String get_original_name();
-	void set_original_name(String p_name);
-	
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+	bool get_allow_geometry_helper_nodes();
+	void set_allow_geometry_helper_nodes(bool p_allow_geometry_helper_nodes);
 };
 
-#endif // GLTF_MESH_H
+#endif // FBX_STATE_H

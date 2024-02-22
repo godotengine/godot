@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  model_document_3d.cpp                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_MESH_H
-#define GLTF_MESH_H
+#include "scene/resources/model_document_3d.h"
 
-#include "../gltf_defines.h"
-
-#include "scene/resources/importer_mesh.h"
-
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
-
-private:
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
-
-	String original_name;
-	Dictionary additional_data;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(Ref<ImporterMesh> p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(Vector<float> p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(TypedArray<Material> p_instance_materials);
-
-
-	String get_original_name();
-	void set_original_name(String p_name);
-	
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-};
-
-#endif // GLTF_MESH_H
+void ModelDocument3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("append_data_from_file", "path", "state", "flags", "base_path"),
+			&ModelDocument3D::append_data_from_file, DEFVAL(0), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("append_data_from_buffer", "bytes", "base_path", "state", "flags"),
+			&ModelDocument3D::append_data_from_buffer, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("append_data_from_scene", "node", "state", "flags"),
+			&ModelDocument3D::append_data_from_scene, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_scene", "state", "bake_fps", "trimming", "remove_immutable_tracks"),
+			&ModelDocument3D::create_scene, DEFVAL(30), DEFVAL(false), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("create_buffer", "state"),
+			&ModelDocument3D::create_buffer);
+	ClassDB::bind_method(D_METHOD("write_asset_to_filesystem", "state", "path"),
+			&ModelDocument3D::write_asset_to_filesystem);
+}

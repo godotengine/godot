@@ -25,6 +25,19 @@
 				Create a new GLTFLight instance from the given Godot [Light3D] node.
 			</description>
 		</method>
+		<method name="get_additional_data">
+			<return type="Variant" />
+			<param index="0" name="extension_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_additional_data">
+			<return type="void" />
+			<param index="0" name="extension_name" type="StringName" />
+			<param index="1" name="additional_data" type="Variant" />
+			<description>
+			</description>
+		</method>
 		<method name="to_dictionary" qualifiers="const">
 			<return type="Dictionary" />
 			<description>

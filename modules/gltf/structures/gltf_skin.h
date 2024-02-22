@@ -43,6 +43,11 @@ class GLTFSkin : public Resource {
 	GDCLASS(GLTFSkin, Resource);
 	friend class GLTFDocument;
 
+	friend class ModelDocument3D;
+	friend class GLTFDocument;
+	friend class SkinTool;
+	friend class FBXDocument;
+
 private:
 	// The "skeleton" property defined in the gltf spec. -1 = Scene Root
 	GLTFNodeIndex skin_root = -1;

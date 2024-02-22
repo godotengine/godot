@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  register_types.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_MESH_H
-#define GLTF_MESH_H
+#ifndef FBX_REGISTER_TYPES_H
+#define FBX_REGISTER_TYPES_H
 
-#include "../gltf_defines.h"
+#include "modules/register_module_types.h"
 
-#include "scene/resources/importer_mesh.h"
+void initialize_fbx_module(ModuleInitializationLevel p_level);
+void uninitialize_fbx_module(ModuleInitializationLevel p_level);
 
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
-
-private:
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
-
-	String original_name;
-	Dictionary additional_data;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(Ref<ImporterMesh> p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(Vector<float> p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(TypedArray<Material> p_instance_materials);
-
-
-	String get_original_name();
-	void set_original_name(String p_name);
-	
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-};
-
-#endif // GLTF_MESH_H
+#endif // FBX_REGISTER_TYPES_H

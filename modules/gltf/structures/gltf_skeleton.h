@@ -39,6 +39,11 @@ class GLTFSkeleton : public Resource {
 	GDCLASS(GLTFSkeleton, Resource);
 	friend class GLTFDocument;
 
+	friend class ModelDocument3D;
+	friend class GLTFDocument;
+	friend class SkinTool;
+	friend class FBXDocument;
+
 private:
 	// The *synthesized* skeletons joints
 	Vector<GLTFNodeIndex> joints;

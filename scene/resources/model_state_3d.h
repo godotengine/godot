@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  model_state_3d.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_MESH_H
-#define GLTF_MESH_H
+#ifndef MODEL_STATE_3D_H
+#define MODEL_STATE_3D_H
 
-#include "../gltf_defines.h"
+#include "core/io/resource.h"
 
-#include "scene/resources/importer_mesh.h"
-
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
-
-private:
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
-
-	String original_name;
-	Dictionary additional_data;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(Ref<ImporterMesh> p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(Vector<float> p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(TypedArray<Material> p_instance_materials);
-
-
-	String get_original_name();
-	void set_original_name(String p_name);
-	
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+class ModelState3D : public Resource {
+	GDCLASS(ModelState3D, Resource);
 };
 
-#endif // GLTF_MESH_H
+#endif // MODEL_STATE_3D_H

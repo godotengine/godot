@@ -52,6 +52,9 @@ void GLTFLight::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_outer_cone_angle"), &GLTFLight::get_outer_cone_angle);
 	ClassDB::bind_method(D_METHOD("set_outer_cone_angle", "outer_cone_angle"), &GLTFLight::set_outer_cone_angle);
 
+	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFLight::get_additional_data);
+	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFLight::set_additional_data);
+
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color"); // Color
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity"), "set_intensity", "get_intensity"); // float
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "light_type"), "set_light_type", "get_light_type"); // String
@@ -219,4 +222,12 @@ Dictionary GLTFLight::to_dictionary() const {
 	d["intensity"] = intensity;
 	d["range"] = range;
 	return d;
+}
+
+Variant GLTFLight::get_additional_data(const StringName &p_extension_name) {
+	return additional_data[p_extension_name];
+}
+
+void GLTFLight::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
+	additional_data[p_extension_name] = p_additional_data;
 }

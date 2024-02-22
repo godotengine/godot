@@ -43,9 +43,18 @@
 #include "structures/gltf_texture.h"
 #include "structures/gltf_texture_sampler.h"
 
-class GLTFState : public Resource {
-	GDCLASS(GLTFState, Resource);
+#include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/resources/model_state_3d.h"
+
+class GLTFState : public ModelState3D {
+	GDCLASS(GLTFState, ModelState3D);
 	friend class GLTFDocument;
+
+
+	friend class ModelDocument3D;
+	friend class GLTFDocument;
+
+protected:
 
 	String base_path;
 	String filename;

@@ -100,9 +100,9 @@ static void _editor_init() {
 		importer.instantiate();
 		ResourceImporterScene::add_scene_importer(importer);
 
-		Ref<EditorFileSystemImportFormatSupportQueryFBX> fbx_import_query;
-		fbx_import_query.instantiate();
-		EditorFileSystem::get_singleton()->add_import_format_support_query(fbx_import_query);
+		// Ref<EditorFileSystemImportFormatSupportQueryFBX> fbx_import_query;
+		// fbx_import_query.instantiate();
+		// EditorFileSystem::get_singleton()->add_import_format_support_query(fbx_import_query);
 	}
 }
 #endif // TOOLS_ENABLED

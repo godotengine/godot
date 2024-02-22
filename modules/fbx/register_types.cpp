@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_MESH_H
-#define GLTF_MESH_H
+#include "register_types.h"
 
-#include "../gltf_defines.h"
+#include "fbx_document.h"
 
-#include "scene/resources/importer_mesh.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_scene_importer_ufbx.h"
 
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 
-private:
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
+static void _editor_init() {
+	Ref<EditorSceneFormatImporterUFBX> import_fbx;
+	import_fbx.instantiate();
+	ResourceImporterScene::add_scene_importer(import_fbx);
+}
+#endif // TOOLS_ENABLED
 
-	String original_name;
-	Dictionary additional_data;
+void initialize_fbx_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(FBXDocument);
+		GDREGISTER_CLASS(FBXState);
+	}
 
-protected:
-	static void _bind_methods();
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		// Editor-specific API.
+		ClassDB::APIType prev_api = ClassDB::get_current_api();
+		ClassDB::set_current_api(ClassDB::API_EDITOR);
 
-public:
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(Ref<ImporterMesh> p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(Vector<float> p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(TypedArray<Material> p_instance_materials);
+		GDREGISTER_CLASS(EditorSceneFormatImporterUFBX);
 
+		ClassDB::set_current_api(prev_api);
+		EditorNode::add_init_callback(_editor_init);
+	}
+#endif // TOOLS_ENABLED
+}
 
-	String get_original_name();
-	void set_original_name(String p_name);
-	
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-};
-
-#endif // GLTF_MESH_H
+void uninitialize_fbx_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+	// TODO: 20240118 // fire
+	// FBXDocument::unregister_all_gltf_document_extensions();
+}

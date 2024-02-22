@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  fbx_state.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_MESH_H
-#define GLTF_MESH_H
+#include "fbx_state.h"
 
-#include "../gltf_defines.h"
+#include "modules/gltf/gltf_template_convert.h"
+#include "modules/gltf/structures/gltf_animation.h"
 
-#include "scene/resources/importer_mesh.h"
+void FBXState::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_allow_geometry_helper_nodes"), &FBXState::get_root_nodes);
+	ClassDB::bind_method(D_METHOD("set_allow_geometry_helper_nodes", "allow"), &FBXState::set_root_nodes);
 
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_geometry_helper_nodes"), "set_allow_geometry_helper_nodes", "get_allow_geometry_helper_nodes");
+}
 
-private:
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
+bool FBXState::get_allow_geometry_helper_nodes() {
+	return allow_geometry_helper_nodes;
+}
 
-	String original_name;
-	Dictionary additional_data;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(Ref<ImporterMesh> p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(Vector<float> p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(TypedArray<Material> p_instance_materials);
-
-
-	String get_original_name();
-	void set_original_name(String p_name);
-	
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-};
-
-#endif // GLTF_MESH_H
+void FBXState::set_allow_geometry_helper_nodes(bool p_allow_geometry_helper_nodes) {
+	allow_geometry_helper_nodes = p_allow_geometry_helper_nodes;
+}

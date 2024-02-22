@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  editor_scene_importer_ufbx.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_MESH_H
-#define GLTF_MESH_H
+#ifndef EDITOR_SCENE_IMPORTER_UFBX_H
+#define EDITOR_SCENE_IMPORTER_UFBX_H
 
-#include "../gltf_defines.h"
+#ifdef TOOLS_ENABLED
 
-#include "scene/resources/importer_mesh.h"
+#include "editor/editor_file_system.h"
+#include "editor/import/3d/resource_importer_scene.h"
 
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
+class Animation;
+class Node;
 
-private:
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
-
-	String original_name;
-	Dictionary additional_data;
-
-protected:
-	static void _bind_methods();
+class EditorSceneFormatImporterUFBX : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterUFBX, EditorSceneFormatImporter);
 
 public:
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(Ref<ImporterMesh> p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(Vector<float> p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(TypedArray<Material> p_instance_materials);
-
-
-	String get_original_name();
-	void set_original_name(String p_name);
-	
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+	enum FBX_IMPORTER_TYPE {
+		FBX_IMPORTER_UFBX,
+		FBX_IMPORTER_FBX2GLTF,
+	};
+	virtual uint32_t get_import_flags() const override;
+	virtual void get_extensions(List<String> *r_extensions) const override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
+			const HashMap<StringName, Variant> &p_options,
+			List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual void get_import_options(const String &p_path,
+			List<ResourceImporter::ImportOption> *r_options) override;
+	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
+			const HashMap<StringName, Variant> &p_options) override;
+	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
 };
+#endif // TOOLS_ENABLED
 
-#endif // GLTF_MESH_H
+#endif // EDITOR_SCENE_IMPORTER_UFBX_H

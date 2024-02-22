@@ -31,6 +31,12 @@
 #include "gltf_node.h"
 
 void GLTFNode::_bind_methods() {
+
+
+	ClassDB::bind_method(D_METHOD("get_original_name"), &GLTFNode::get_original_name);
+	ClassDB::bind_method(D_METHOD("set_original_name", "original_name"), &GLTFNode::set_original_name);
+
+
 	ClassDB::bind_method(D_METHOD("get_parent"), &GLTFNode::get_parent);
 	ClassDB::bind_method(D_METHOD("set_parent", "parent"), &GLTFNode::set_parent);
 	ClassDB::bind_method(D_METHOD("get_height"), &GLTFNode::get_height);
@@ -70,6 +76,9 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "children"), "set_children", "get_children"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light"), "set_light", "get_light"); // GLTFLightIndex
+
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_name"), "set_original_name", "get_original_name"); // String
 }
 
 GLTFNodeIndex GLTFNode::get_parent() {
@@ -174,4 +183,12 @@ Variant GLTFNode::get_additional_data(const StringName &p_extension_name) {
 
 void GLTFNode::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
 	additional_data[p_extension_name] = p_additional_data;
+}
+
+
+String GLTFNode::get_original_name() {
+	return original_name;
+}
+void GLTFNode::set_original_name(String p_name) {
+	original_name = p_name;
 }

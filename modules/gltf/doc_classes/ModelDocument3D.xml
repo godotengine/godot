@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ModelDocument3D" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="append_data_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="bytes" type="PackedByteArray" />
+			<param index="1" name="base_path" type="String" />
+			<param index="2" name="state" type="ModelState3D" />
+			<param index="3" name="flags" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="append_data_from_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="state" type="ModelState3D" />
+			<param index="2" name="flags" type="int" default="0" />
+			<param index="3" name="base_path" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="append_data_from_scene">
+			<return type="int" enum="Error" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="state" type="ModelState3D" />
+			<param index="2" name="flags" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+		<method name="create_buffer">
+			<return type="PackedByteArray" />
+			<param index="0" name="state" type="ModelState3D" />
+			<description>
+			</description>
+		</method>
+		<method name="create_scene">
+			<return type="Node" />
+			<param index="0" name="state" type="ModelState3D" />
+			<param index="1" name="bake_fps" type="float" default="30" />
+			<param index="2" name="trimming" type="bool" default="false" />
+			<param index="3" name="remove_immutable_tracks" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="write_asset_to_filesystem">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="ModelState3D" />
+			<param index="1" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

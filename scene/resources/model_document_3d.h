@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  model_document_3d.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_MESH_H
-#define GLTF_MESH_H
+#ifndef MODEL_DOCUMENT_3D_H
+#define MODEL_DOCUMENT_3D_H
 
-#include "../gltf_defines.h"
+#include "scene/main/node.h"
+#include "scene/resources/model_state_3d.h"
 
-#include "scene/resources/importer_mesh.h"
-
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
-
-private:
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
-
-	String original_name;
-	Dictionary additional_data;
+class ModelDocument3D : public Resource {
+	GDCLASS(ModelDocument3D, Resource);
 
 protected:
 	static void _bind_methods();
 
 public:
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(Ref<ImporterMesh> p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(Vector<float> p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(TypedArray<Material> p_instance_materials);
+	virtual Error append_data_from_file(String p_path, Ref<ModelState3D> p_state, uint32_t p_flags = 0, String p_base_path = String()) = 0;
+	virtual Error append_data_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<ModelState3D> p_state, uint32_t p_flags = 0) = 0;
+	virtual Error append_data_from_scene(Node *p_node, Ref<ModelState3D> p_state, uint32_t p_flags = 0) = 0;
 
-
-	String get_original_name();
-	void set_original_name(String p_name);
-	
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+public:
+	virtual Node *create_scene(Ref<ModelState3D> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true) = 0;
+	virtual PackedByteArray create_buffer(Ref<ModelState3D> p_state) = 0;
+	virtual Error write_asset_to_filesystem(Ref<ModelState3D> p_state, const String &p_path) = 0;
 };
 
-#endif // GLTF_MESH_H
+#endif // MODEL_DOCUMENT_3D_H
