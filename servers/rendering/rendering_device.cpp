@@ -2853,17 +2853,6 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 
 					DEV_ASSERT(!texture->owner.is_valid() || texture_owner.get_or_null(texture->owner));
 
-					if (_texture_make_mutable(texture, texture_id)) {
-						// The texture must be mutable as a layout transition will be required.
-						draw_graph.add_synchronization();
-					}
-
-					if (texture->draw_tracker != nullptr) {
-						bool depth_stencil_read = (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-						draw_trackers.push_back(texture->draw_tracker);
-						draw_trackers_usage.push_back(depth_stencil_read ? RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ : RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ);
-					}
-
 					driver_uniform.ids.push_back(texture->driver_id);
 				}
 			} break;
