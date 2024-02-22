@@ -144,7 +144,9 @@
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
+#ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
+#endif // _3D_DISABLED
 #include "servers/rendering/rendering_server_default.h"
 
 int test_main(int argc, char *argv[]) {
@@ -219,7 +221,9 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 	SignalWatcher *signal_watcher = nullptr;
 
+#ifndef _3D_DISABLED
 	PhysicsServer3D *physics_server_3d = nullptr;
+#endif // _3D_DISABLED
 	PhysicsServer2D *physics_server_2d = nullptr;
 	NavigationServer3D *navigation_server_3d = nullptr;
 	NavigationServer2D *navigation_server_2d = nullptr;
@@ -254,8 +258,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			ThemeDB::get_singleton()->finalize_theme();
 			ThemeDB::get_singleton()->initialize_theme_noproject();
 
+#ifndef _3D_DISABLED
 			physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 			physics_server_3d->init();
+#endif // _3D_DISABLED
 
 			physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 			physics_server_2d->init();
@@ -334,11 +340,13 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			navigation_server_2d = nullptr;
 		}
 
+#ifndef _3D_DISABLED
 		if (physics_server_3d) {
 			physics_server_3d->finish();
 			memdelete(physics_server_3d);
 			physics_server_3d = nullptr;
 		}
+#endif // _3D_DISABLED
 
 		if (physics_server_2d) {
 			physics_server_2d->finish();

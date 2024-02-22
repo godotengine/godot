@@ -180,12 +180,22 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ISLAND_COUNT);
+#ifdef _3D_DISABLED
+		case PHYSICS_3D_ACTIVE_OBJECTS:
+			return 0;
+		case PHYSICS_3D_COLLISION_PAIRS:
+			return 0;
+		case PHYSICS_3D_ISLAND_COUNT:
+			return 0;
+#else
 		case PHYSICS_3D_ACTIVE_OBJECTS:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_3D_COLLISION_PAIRS:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_COLLISION_PAIRS);
 		case PHYSICS_3D_ISLAND_COUNT:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ISLAND_COUNT);
+#endif // _3D_DISABLED
+
 		case AUDIO_OUTPUT_LATENCY:
 			return AudioServer::get_singleton()->get_output_latency();
 		case NAVIGATION_ACTIVE_MAPS:

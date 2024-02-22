@@ -74,7 +74,9 @@
 #include "servers/navigation_server_3d.h"
 #include "servers/navigation_server_3d_dummy.h"
 #include "servers/physics_server_2d.h"
+#ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
+#endif // _3D_DISABLED
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server_dummy.h"
@@ -144,8 +146,10 @@ static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
+#ifndef _3D_DISABLED
 static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
+#endif // _3D_DISABLED
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
@@ -293,6 +297,7 @@ static Vector<String> get_files_with_extension(const String &p_root, const Strin
 
 // FIXME: Could maybe be moved to have less code in main.cpp.
 void initialize_physics() {
+#ifndef _3D_DISABLED
 	/// 3D Physics Server
 	physics_server_3d = PhysicsServer3DManager::get_singleton()->new_server(
 			GLOBAL_GET(PhysicsServer3DManager::setting_property_name));
@@ -302,6 +307,7 @@ void initialize_physics() {
 	}
 	ERR_FAIL_NULL(physics_server_3d);
 	physics_server_3d->init();
+#endif // _3D_DISABLED
 
 	// 2D Physics server
 	physics_server_2d = PhysicsServer2DManager::get_singleton()->new_server(
@@ -315,8 +321,10 @@ void initialize_physics() {
 }
 
 void finalize_physics() {
+#ifndef _3D_DISABLED
 	physics_server_3d->finish();
 	memdelete(physics_server_3d);
+#endif // _3D_DISABLED
 
 	physics_server_2d->finish();
 	memdelete(physics_server_2d);
@@ -655,7 +663,9 @@ Error Main::test_setup() {
 		tsman->add_interface(ts);
 	}
 
+#ifndef _3D_DISABLED
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
+#endif // _3D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 
 	// From `Main::setup2()`.
@@ -783,9 +793,11 @@ void Main::test_cleanup() {
 	if (tsman) {
 		memdelete(tsman);
 	}
+#ifndef _3D_DISABLED
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
 	}
+#endif // _3D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
 	}
@@ -2561,7 +2573,9 @@ Error Main::setup2() {
 		tsman->add_interface(ts);
 	}
 
+#ifndef _3D_DISABLED
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
+#endif // _3D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 
 	register_server_types();
@@ -3925,14 +3939,18 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
+#ifndef _3D_DISABLED
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
+#ifndef _3D_DISABLED
 			PhysicsServer3D::get_singleton()->end_sync();
+#endif // _3D_DISABLED
 			PhysicsServer2D::get_singleton()->end_sync();
 
 			exit = true;
@@ -3948,8 +3966,10 @@ bool Main::iteration() {
 
 		message_queue->flush();
 
+#ifndef _3D_DISABLED
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
@@ -4194,9 +4214,11 @@ void Main::cleanup(bool p_force) {
 	if (tsman) {
 		memdelete(tsman);
 	}
+#ifndef _3D_DISABLED
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
 	}
+#endif // _3D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
 	}
