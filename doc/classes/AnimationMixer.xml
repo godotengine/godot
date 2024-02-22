@@ -357,6 +357,7 @@
 		</constant>
 		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT" value="0" enum="AnimationCallbackModeDiscrete">
 			An [constant Animation.UPDATE_DISCRETE] track value takes precedence when blending [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and [constant Animation.UPDATE_DISCRETE] track values. This is the default behavior for [AnimationPlayer].
+			[b]Note:[/b] If a value track has non-numeric type key values, it is internally converted to use [constant ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT] with [constant Animation.UPDATE_DISCRETE].
 		</constant>
 		<constant name="ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE" value="1" enum="AnimationCallbackModeDiscrete">
 			An [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track value takes precedence when blending the [constant Animation.UPDATE_CONTINUOUS] or [constant Animation.UPDATE_CAPTURE] track values and the [constant Animation.UPDATE_DISCRETE] track values.

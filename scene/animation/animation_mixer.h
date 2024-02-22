@@ -224,6 +224,7 @@ protected:
 		Vector<StringName> subpath;
 		bool use_discrete = false;
 		bool is_using_angle = false;
+		bool is_variant_interpolatable = true;
 		Variant element_size;
 
 		TrackCacheValue(const TrackCacheValue &p_other) :
@@ -233,6 +234,7 @@ protected:
 				subpath(p_other.subpath),
 				use_discrete(p_other.use_discrete),
 				is_using_angle(p_other.is_using_angle),
+				is_variant_interpolatable(p_other.is_variant_interpolatable),
 				element_size(p_other.element_size) {}
 
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
