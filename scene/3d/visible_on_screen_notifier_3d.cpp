@@ -79,16 +79,6 @@ void VisibleOnScreenNotifier3D::_notification(int p_what) {
 	}
 }
 
-PackedStringArray VisibleOnScreenNotifier3D::get_configuration_warnings() const {
-	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
-
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("VisibleOnScreenNotifier3D nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
-	}
-
-	return warnings;
-}
-
 void VisibleOnScreenNotifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_aabb", "rect"), &VisibleOnScreenNotifier3D::set_aabb);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier3D::is_on_screen);
