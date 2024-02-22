@@ -30,7 +30,7 @@ namespace Godot.SourceGenerators
             AreGodotSourceGeneratorsDisabled(context) ||
             (context.TryGetGlobalAnalyzerProperty("GodotDisabledSourceGenerators", out string? disabledGenerators) &&
             disabledGenerators != null &&
-            disabledGenerators.Split(';').Contains(generatorName));
+            disabledGenerators.Split(';', ',').Contains(generatorName));
 
         public static bool InheritsFrom(this ITypeSymbol? symbol, string assemblyName, string typeFullName)
         {
