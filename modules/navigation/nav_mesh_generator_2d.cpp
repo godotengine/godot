@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef CLIPPER2_ENABLED
+
 #include "nav_mesh_generator_2d.h"
 
 #include "core/config/project_settings.h"
@@ -902,3 +904,5 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		p_navigation_mesh->add_polygon(new_polygons[i]);
 	}
 }
+
+#endif // CLIPPER2_ENABLED
