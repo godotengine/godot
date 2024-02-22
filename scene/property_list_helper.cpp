@@ -111,12 +111,7 @@ bool PropertyListHelper::property_set_value(const String &p_property, const Vari
 
 bool PropertyListHelper::property_can_revert(const String &p_property) const {
 	int index;
-	const Property *property = _get_property(p_property, &index);
-
-	if (property) {
-		return _call_getter(property->getter, index) != property->default_value;
-	}
-	return false;
+	return _get_property(p_property, &index) != nullptr;
 }
 
 bool PropertyListHelper::property_get_revert(const String &p_property, Variant &r_value) const {
