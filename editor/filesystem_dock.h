@@ -172,7 +172,7 @@ private:
 	LineEdit *file_list_search_box = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
 
-	String searched_string;
+	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
 	TextureRect *search_icon = nullptr;
@@ -311,6 +311,7 @@ private:
 	void _split_dragged(int p_offset);
 
 	void _search_changed(const String &p_text, const Control *p_from);
+	bool _matches_all_search_tokens(const String &p_text);
 
 	MenuButton *_create_file_menu_button();
 	void _file_sort_popup(int p_id);
