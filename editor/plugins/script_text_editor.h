@@ -256,6 +256,7 @@ public:
 	static void register_editor();
 
 	virtual Control *get_base_editor() const override;
+	virtual CodeTextEditor *get_code_editor() const override;
 
 	virtual void validate() override;
 

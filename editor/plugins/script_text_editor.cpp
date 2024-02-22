@@ -1393,11 +1393,11 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			tx->set_indent_using_spaces(true);
+			code_editor->set_indent_using_spaces(true);
 			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			tx->set_indent_using_spaces(false);
+			code_editor->set_indent_using_spaces(false);
 			convert_indent();
 		} break;
 		case EDIT_PICK_COLOR: {
@@ -1689,6 +1689,10 @@ void ScriptTextEditor::set_debugger_active(bool p_active) {
 
 Control *ScriptTextEditor::get_base_editor() const {
 	return code_editor->get_text_editor();
+}
+
+CodeTextEditor *ScriptTextEditor::get_code_editor() const {
+	return code_editor;
 }
 
 Variant ScriptTextEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -2373,8 +2377,6 @@ ScriptTextEditor::ScriptTextEditor() {
 	errors_panel->hide();
 
 	update_settings();
-
-	code_editor->get_text_editor()->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
