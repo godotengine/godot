@@ -1131,7 +1131,11 @@ void GodotNavigationServer::bake_from_source_geometry_data_async(const Ref<Navig
 }
 
 bool GodotNavigationServer::is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const {
+#ifdef _3D_DISABLED
+	return false;
+#else
 	return NavMeshGenerator3D::get_singleton()->is_baking(p_navigation_mesh);
+#endif // _3D_DISABLED
 }
 
 COMMAND_1(free, RID, p_object) {

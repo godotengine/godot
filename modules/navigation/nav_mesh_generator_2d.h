@@ -31,6 +31,8 @@
 #ifndef NAV_MESH_GENERATOR_2D_H
 #define NAV_MESH_GENERATOR_2D_H
 
+#ifdef CLIPPER2_ENABLED
+
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 
@@ -97,5 +99,7 @@ public:
 	NavMeshGenerator2D();
 	~NavMeshGenerator2D();
 };
+
+#endif // CLIPPER2_ENABLED
 
 #endif // NAV_MESH_GENERATOR_2D_H
