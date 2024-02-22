@@ -1014,7 +1014,7 @@
 				Sets the cull [param mask] in the decal specified by the [param decal] RID. Equivalent to [member Decal.cull_mask].
 			</description>
 		</method>
-		<method name="decal_set_distance_fade">
+		<method name="decal_set_distance_fade" keywords="decal_set_lod">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="enabled" type="bool" />
@@ -1958,7 +1958,7 @@
 				Sets the cull mask for this 3D light. Lights only affect objects in the selected layers. Equivalent to [member Light3D.light_cull_mask].
 			</description>
 		</method>
-		<method name="light_set_distance_fade">
+		<method name="light_set_distance_fade" keywords="light_set_lod">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="enabled" type="bool" />
@@ -1994,7 +1994,7 @@
 				Sets the specified 3D light parameter. See [enum LightParam] for options. Equivalent to [method Light3D.set_param].
 			</description>
 		</method>
-		<method name="light_set_projector">
+		<method name="light_set_projector" keywords="light_set_cookie">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="texture" type="RID" />
@@ -5223,13 +5223,13 @@
 		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
 			Only render the shadows from the object. The object itself will not be drawn.
 		</constant>
-		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode">
+		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode" keywords="LOD_FADE_DISABLED">
 			Disable visibility range fading for the given instance.
 		</constant>
-		<constant name="VISIBILITY_RANGE_FADE_SELF" value="1" enum="VisibilityRangeFadeMode">
+		<constant name="VISIBILITY_RANGE_FADE_SELF" value="1" enum="VisibilityRangeFadeMode" keywords="LOD_FADE_SELF">
 			Fade-out the given instance when it approaches its visibility range limits.
 		</constant>
-		<constant name="VISIBILITY_RANGE_FADE_DEPENDENCIES" value="2" enum="VisibilityRangeFadeMode">
+		<constant name="VISIBILITY_RANGE_FADE_DEPENDENCIES" value="2" enum="VisibilityRangeFadeMode" keywords="LOD_FADE_DEPENDENCIES">
 			Fade-in the given instance's dependencies when reaching its visibility range limits.
 		</constant>
 		<constant name="BAKE_CHANNEL_ALBEDO_ALPHA" value="0" enum="BakeChannels">
