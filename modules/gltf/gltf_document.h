@@ -32,16 +32,22 @@
 #define GLTF_DOCUMENT_H
 
 #include "extensions/gltf_document_extension.h"
+#include "extensions/gltf_spec_gloss.h"
 #include "gltf_defines.h"
-#include "modules/csg/csg_shape.h"
-#include "modules/gltf/extensions/gltf_spec_gloss.h"
-#include "modules/gltf/gltf_state.h"
-#include "modules/gridmap/grid_map.h"
+#include "gltf_state.h"
+#include "model_document_3d.h"
+#include "model_state_3d.h"
+
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
-#include "scene/resources/model_document_3d.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
+#ifdef MODULE_CSG_ENABLED
+#include "modules/csg/csg_shape.h"
+#endif // MODULE_CSG_ENABLED
+#ifdef MODULE_GRIDMAP_ENABLED
+#include "modules/gridmap/grid_map.h"
+#endif // MODULE_GRIDMAP_ENABLED
 
 class GLTFDocument : public ModelDocument3D {
 	GDCLASS(GLTFDocument, ModelDocument3D);

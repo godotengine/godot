@@ -33,7 +33,7 @@
 
 #include "core/io/resource.h"
 
-#include "modules/gltf/gltf_defines.h"
+#include "../gltf_defines.h"
 
 struct GLTFAccessor : public Resource {
 	GDCLASS(GLTFAccessor, Resource);

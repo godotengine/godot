@@ -31,7 +31,7 @@
 #ifndef GLTF_BUFFER_VIEW_H
 #define GLTF_BUFFER_VIEW_H
 
-#include "modules/gltf/gltf_defines.h"
+#include "../gltf_defines.h"
 
 #include "core/io/resource.h"
 

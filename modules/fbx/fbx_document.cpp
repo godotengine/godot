@@ -37,11 +37,6 @@
 #include "core/io/file_access_memory.h"
 #include "core/io/image.h"
 #include "core/math/color.h"
-#include "modules/gltf/extensions/gltf_light.h"
-#include "modules/gltf/gltf_defines.h"
-#include "modules/gltf/gltf_state.h"
-#include "modules/gltf/structures/gltf_animation.h"
-#include "modules/gltf/structures/gltf_camera.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -50,6 +45,11 @@
 #include "scene/resources/material.h"
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/resources/surface_tool.h"
+
+#include "modules/gltf/extensions/gltf_light.h"
+#include "modules/gltf/gltf_defines.h"
+#include "modules/gltf/structures/gltf_animation.h"
+#include "modules/gltf/structures/gltf_camera.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"

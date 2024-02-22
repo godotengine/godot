@@ -33,7 +33,6 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "editor/editor_file_system.h"
 #include "editor/import/3d/resource_importer_scene.h"
 
 class Animation;

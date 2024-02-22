@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "scene/resources/model_document_3d.h"
+#include "model_document_3d.h"
+
+#include "structures/gltf_skeleton.h"
+#include "structures/gltf_skin.h"
 
 #include "core/math/disjoint_set.h"
 #include "core/variant/dictionary.h"
-#include "modules/fbx/fbx_document.h"
-#include "modules/gltf/structures/gltf_skeleton.h"
-#include "modules/gltf/structures/gltf_skin.h"
 #include "scene/3d/skeleton_3d.h"
 
 SkinNodeIndex SkinTool::_find_highest_node(Vector<Ref<GLTFNode>> &r_nodes, const Vector<GLTFNodeIndex> &p_subset) {
@@ -537,23 +537,23 @@ Error SkinTool::_create_skeletons(
 		HashSet<String> &unique_names,
 		Vector<Ref<GLTFSkin>> &skins,
 		Vector<Ref<GLTFNode>> &nodes,
-		HashMap<ObjectID, GLTFSkeletonIndex> &skeleton3d_to_fbx_skeleton,
+		HashMap<ObjectID, GLTFSkeletonIndex> &skeleton3d_to_gltf_skeleton,
 		Vector<Ref<GLTFSkeleton>> &skeletons,
 		HashMap<GLTFNodeIndex, Node *> &scene_nodes) {
 	for (SkinSkeletonIndex skel_i = 0; skel_i < skeletons.size(); ++skel_i) {
-		Ref<GLTFSkeleton> fbx_skeleton = skeletons.write[skel_i];
+		Ref<GLTFSkeleton> gltf_skeleton = skeletons.write[skel_i];
 
 		Skeleton3D *skeleton = memnew(Skeleton3D);
-		fbx_skeleton->godot_skeleton = skeleton;
-		skeleton3d_to_fbx_skeleton[skeleton->get_instance_id()] = skel_i;
+		gltf_skeleton->godot_skeleton = skeleton;
+		skeleton3d_to_gltf_skeleton[skeleton->get_instance_id()] = skel_i;
 
 		// Make a unique name, no gltf node represents this skeleton
 		skeleton->set_name("Skeleton3D");
 
 		List<GLTFNodeIndex> bones;
 
-		for (int i = 0; i < fbx_skeleton->roots.size(); ++i) {
-			bones.push_back(fbx_skeleton->roots[i]);
+		for (int i = 0; i < gltf_skeleton->roots.size(); ++i) {
+			bones.push_back(gltf_skeleton->roots[i]);
 		}
 
 		// Make the skeleton creation deterministic by going through the roots in
@@ -678,11 +678,35 @@ Error SkinTool::_create_skins(Vector<Ref<GLTFSkin>> &skins, Vector<Ref<GLTFNode>
 		ERR_CONTINUE(skin.is_null());
 		if (skin->get_name().is_empty()) {
 			// Make a unique name, no node represents this skin
-			skin->set_name(FBXDocument::_gen_unique_name(unique_names, "Skin"));
+			skin->set_name(_gen_unique_name(unique_names, "Skin"));
 		}
 	}
 
 	return OK;
+}
+
+// FIXME: Duplicated from FBXDocument, very similar code in GLTFDocument too,
+// and even below in this class for bone names.
+String SkinTool::_gen_unique_name(HashSet<String> &unique_names, const String &p_name) {
+	const String s_name = p_name.validate_node_name();
+
+	String u_name;
+	int index = 1;
+	while (true) {
+		u_name = s_name;
+
+		if (index > 1) {
+			u_name += itos(index);
+		}
+		if (!unique_names.has(u_name)) {
+			break;
+		}
+		index++;
+	}
+
+	unique_names.insert(u_name);
+
+	return u_name;
 }
 
 bool SkinTool::_skins_are_same(const Ref<Skin> p_skin_a, const Ref<Skin> p_skin_b) {

@@ -8,10 +8,7 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "ModelState3D",
-        "ModelDocument3D",
         "EditorSceneFormatImporterBlend",
-        "EditorSceneFormatImporterFBX",
         "EditorSceneFormatImporterGLTF",
         "GLTFAccessor",
         "GLTFAnimation",
@@ -31,6 +28,9 @@ def get_doc_classes():
         "GLTFState",
         "GLTFTexture",
         "GLTFTextureSampler",
+        # FIXME: Remove once those classes are decoupled from the gltf module.
+        "ModelDocument3D",
+        "ModelState3D",
     ]
 
 

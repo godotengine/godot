@@ -31,11 +31,12 @@
 #ifndef FBX_DOCUMENT_H
 #define FBX_DOCUMENT_H
 
-#include "modules/fbx/fbx_state.h"
-#include "modules/gltf/gltf_defines.h"
-#include "scene/resources/model_document_3d.h"
+#include "fbx_state.h"
 
-#include "thirdparty/ufbx/ufbx.h"
+#include "modules/gltf/gltf_defines.h"
+#include "modules/gltf/model_document_3d.h"
+
+#include <ufbx.h>
 
 class FBXDocument : public ModelDocument3D {
 	GDCLASS(FBXDocument, ModelDocument3D);

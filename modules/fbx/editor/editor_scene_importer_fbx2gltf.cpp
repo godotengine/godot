@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_scene_importer_fbx.cpp                                         */
+/*  editor_scene_importer_fbx2gltf.cpp                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,27 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_scene_importer_fbx.h"
+#include "editor_scene_importer_fbx2gltf.h"
 
 #ifdef TOOLS_ENABLED
 
-#include "../gltf_document.h"
+#include "editor_scene_importer_ufbx.h"
+#include "modules/gltf/gltf_document.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
-#include "modules/fbx/editor/editor_scene_importer_ufbx.h"
 
-uint32_t EditorSceneFormatImporterFBX::get_import_flags() const {
+uint32_t EditorSceneFormatImporterFBX2GLTF::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
 }
 
-void EditorSceneFormatImporterFBX::get_extensions(List<String> *r_extensions) const {
+void EditorSceneFormatImporterFBX2GLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("fbx");
 }
 
-Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t p_flags,
+Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
+	// FIXME: Hack to work around GH-86309.
 	if (p_options.has("fbx/importer") && int(p_options["fbx/importer"]) == EditorSceneFormatImporterUFBX::FBX_IMPORTER_UFBX) {
 		Ref<EditorSceneFormatImporterUFBX> fbx2gltf_importer;
 		fbx2gltf_importer.instantiate();
@@ -59,6 +60,7 @@ Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t 
 			return nullptr;
 		}
 	}
+
 	// Get global paths for source and sink.
 
 	// Don't use `c_escape()` as it can generate broken paths. These paths will be
@@ -71,7 +73,7 @@ Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t 
 
 	// Run fbx2gltf.
 
-	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx/fbx2gltf_path");
+	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx2gltf/fbx2gltf_path");
 
 	List<String> args;
 	args.push_back("--pbr-metallic-roughness");
@@ -120,7 +122,7 @@ Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t 
 #endif
 }
 
-Variant EditorSceneFormatImporterFBX::get_option_visibility(const String &p_path, bool p_for_animation,
+Variant EditorSceneFormatImporterFBX2GLTF::get_option_visibility(const String &p_path, bool p_for_animation,
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
 	if (p_option == "fbx/embedded_image_handling") {
 		return false;
@@ -134,11 +136,11 @@ Variant EditorSceneFormatImporterFBX::get_option_visibility(const String &p_path
 #define ADD_OPTION_ENUM(PATH, ENUM_HINT, VALUE) \
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
 
-void EditorSceneFormatImporterFBX::get_import_options(const String &p_path,
+void EditorSceneFormatImporterFBX2GLTF::get_import_options(const String &p_path,
 		List<ResourceImporter::ImportOption> *r_options) {
 }
 
-void EditorSceneFormatImporterFBX::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
+void EditorSceneFormatImporterFBX2GLTF::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
 	if (!p_import_params.has("fbx/importer")) {
 		p_import_params["fbx/importer"] = EditorSceneFormatImporterUFBX::FBX_IMPORTER_UFBX;
 	}

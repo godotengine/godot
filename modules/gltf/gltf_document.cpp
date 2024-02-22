@@ -29,9 +29,10 @@
 /**************************************************************************/
 
 #include "gltf_document.h"
+#include "gltf_document.compat.inc"
 
-#include "core/object/object_id.h"
 #include "extensions/gltf_spec_gloss.h"
+#include "gltf_state.h"
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -41,9 +42,8 @@
 #include "core/io/file_access_memory.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer.h"
+#include "core/object/object_id.h"
 #include "core/version.h"
-#include "gltf_document.compat.inc"
-#include "modules/gltf/gltf_state.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -51,22 +51,13 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/model_state_3d.h"
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/resources/skin.h"
 #include "scene/resources/surface_tool.h"
 
-#include "modules/modules_enabled.gen.h" // For csg, gridmap.
-
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
 #endif
-#ifdef MODULE_CSG_ENABLED
-#include "modules/csg/csg_shape.h"
-#endif // MODULE_CSG_ENABLED
-#ifdef MODULE_GRIDMAP_ENABLED
-#include "modules/gridmap/grid_map.h"
-#endif // MODULE_GRIDMAP_ENABLED
 
 // FIXME: Hardcoded to avoid editor dependency.
 #define GLTF_IMPORT_GENERATE_TANGENT_ARRAYS 8

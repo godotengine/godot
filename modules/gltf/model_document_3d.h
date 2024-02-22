@@ -31,17 +31,19 @@
 #ifndef MODEL_DOCUMENT_3D_H
 #define MODEL_DOCUMENT_3D_H
 
-#include "scene/resources/model_state_3d.h"
+// FIXME: This should be in `scene`, but it CANNOT depend on the gltf module,
+// as that completely breaks the purpose of modules (encapsulation, opt-out).
+
+#include "gltf_defines.h"
+#include "model_state_3d.h"
+#include "structures/gltf_node.h"
+#include "structures/gltf_skeleton.h"
+#include "structures/gltf_skin.h"
 
 #include "core/io/resource.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/rb_set.h"
-
-#include "modules/gltf/gltf_defines.h"
-#include "modules/gltf/structures/gltf_node.h"
-#include "modules/gltf/structures/gltf_skeleton.h"
-#include "modules/gltf/structures/gltf_skin.h"
 #include "scene/main/node.h"
 #include "scene/resources/skin.h"
 
@@ -72,6 +74,7 @@ public:
 			Vector<Ref<GLTFSkin>> &r_skins,
 			Vector<Ref<GLTFSkeleton>> &r_skeletons,
 			Vector<Ref<GLTFNode>> &r_nodes);
+	static String _gen_unique_name(HashSet<String> &unique_names, const String &p_name);
 	static bool _skins_are_same(const Ref<Skin> p_skin_a, const Ref<Skin> p_skin_b);
 	static void _remove_duplicate_skins(Vector<Ref<GLTFSkin>> &r_skins);
 

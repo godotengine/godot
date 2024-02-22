@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  model_state_3d.cpp                                                    */
+/*  editor_scene_importer_fbx2gltf.h                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,4 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "model_state_3d.h"
+#ifndef EDITOR_SCENE_IMPORTER_FBX2GLTF_H
+#define EDITOR_SCENE_IMPORTER_FBX2GLTF_H
+
+#ifdef TOOLS_ENABLED
+
+#include "editor/import/3d/resource_importer_scene.h"
+
+class Animation;
+class Node;
+
+class EditorSceneFormatImporterFBX2GLTF : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterFBX2GLTF, EditorSceneFormatImporter);
+
+public:
+	virtual uint32_t get_import_flags() const override;
+	virtual void get_extensions(List<String> *r_extensions) const override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
+			const HashMap<StringName, Variant> &p_options,
+			List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual void get_import_options(const String &p_path,
+			List<ResourceImporter::ImportOption> *r_options) override;
+	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
+			const HashMap<StringName, Variant> &p_options) override;
+	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
+};
+
+#endif // TOOLS_ENABLED
+
+#endif // EDITOR_SCENE_IMPORTER_FBX2GLTF_H
