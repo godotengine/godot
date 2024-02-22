@@ -12,7 +12,7 @@ runs:
   steps:
     # Use python 3.x release (works cross platform)
     - name: Set up Python 3.x
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         # Semantic version range syntax or exact version of a Python version
         python-version: ${{ inputs.python-version }}
