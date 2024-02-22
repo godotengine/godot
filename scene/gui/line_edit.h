@@ -31,47 +31,12 @@
 #ifndef LINE_EDIT_H
 #define LINE_EDIT_H
 
-#include "scene/gui/control.h"
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/text_control.h"
 
-class LineEdit : public Control {
-	GDCLASS(LineEdit, Control);
+class LineEdit : public TextControl {
+	GDCLASS(LineEdit, TextControl);
 
 public:
-	enum MenuItems {
-		MENU_CUT,
-		MENU_COPY,
-		MENU_PASTE,
-		MENU_CLEAR,
-		MENU_SELECT_ALL,
-		MENU_UNDO,
-		MENU_REDO,
-		MENU_SUBMENU_TEXT_DIR,
-		MENU_DIR_INHERITED,
-		MENU_DIR_AUTO,
-		MENU_DIR_LTR,
-		MENU_DIR_RTL,
-		MENU_DISPLAY_UCC,
-		MENU_SUBMENU_INSERT_UCC,
-		MENU_INSERT_LRM,
-		MENU_INSERT_RLM,
-		MENU_INSERT_LRE,
-		MENU_INSERT_RLE,
-		MENU_INSERT_LRO,
-		MENU_INSERT_RLO,
-		MENU_INSERT_PDF,
-		MENU_INSERT_ALM,
-		MENU_INSERT_LRI,
-		MENU_INSERT_RLI,
-		MENU_INSERT_FSI,
-		MENU_INSERT_PDI,
-		MENU_INSERT_ZWJ,
-		MENU_INSERT_ZWNJ,
-		MENU_INSERT_WJ,
-		MENU_INSERT_SHY,
-		MENU_MAX
-	};
-
 	enum VirtualKeyboardType {
 		KEYBOARD_TYPE_DEFAULT,
 		KEYBOARD_TYPE_MULTILINE,
@@ -109,10 +74,6 @@ private:
 	bool drag_and_drop_selection_enabled = true;
 
 	bool context_menu_enabled = true;
-	PopupMenu *menu = nullptr;
-	PopupMenu *menu_dir = nullptr;
-	PopupMenu *menu_ctl = nullptr;
-
 	bool caret_mid_grapheme_enabled = false;
 
 	int caret_column = 0;
@@ -210,7 +171,7 @@ private:
 	void _create_undo_state();
 
 	Key _get_menu_action_accelerator(const String &p_action);
-	void _generate_context_menu();
+
 	void _update_context_menu();
 
 	void _shape();
@@ -255,6 +216,7 @@ protected:
 
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _context_menu_focus_changed() override;
 
 public:
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
@@ -266,7 +228,7 @@ public:
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
-	void menu_option(int p_option);
+	void menu_option(int p_option) override;
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
 	PopupMenu *get_menu() const;
@@ -393,7 +355,6 @@ public:
 	~LineEdit();
 };
 
-VARIANT_ENUM_CAST(LineEdit::MenuItems);
 VARIANT_ENUM_CAST(LineEdit::VirtualKeyboardType);
 
 #endif // LINE_EDIT_H

@@ -122,6 +122,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/text_control.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_progress_bar.h"
@@ -417,6 +418,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TextureProgressBar);
 	GDREGISTER_CLASS(ItemList);
 
+	GDREGISTER_CLASS(TextControl);
 	GDREGISTER_CLASS(LineEdit);
 	GDREGISTER_CLASS(VideoStreamPlayer);
 	GDREGISTER_VIRTUAL_CLASS(VideoStreamPlayback);

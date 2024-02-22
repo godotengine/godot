@@ -31,15 +31,14 @@
 #ifndef TEXT_EDIT_H
 #define TEXT_EDIT_H
 
-#include "scene/gui/control.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/gui/text_control.h"
 #include "scene/main/timer.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_paragraph.h"
 
-class TextEdit : public Control {
-	GDCLASS(TextEdit, Control);
+class TextEdit : public TextControl {
+	GDCLASS(TextEdit, TextControl);
 
 public:
 	/* Edit Actions. */
@@ -76,42 +75,6 @@ public:
 		GUTTER_TYPE_STRING,
 		GUTTER_TYPE_ICON,
 		GUTTER_TYPE_CUSTOM
-	};
-
-	/* Context Menu. */
-	enum MenuItems {
-		MENU_CUT,
-		MENU_COPY,
-		MENU_PASTE,
-		MENU_CLEAR,
-		MENU_SELECT_ALL,
-		MENU_UNDO,
-		MENU_REDO,
-		MENU_SUBMENU_TEXT_DIR,
-		MENU_DIR_INHERITED,
-		MENU_DIR_AUTO,
-		MENU_DIR_LTR,
-		MENU_DIR_RTL,
-		MENU_DISPLAY_UCC,
-		MENU_SUBMENU_INSERT_UCC,
-		MENU_INSERT_LRM,
-		MENU_INSERT_RLM,
-		MENU_INSERT_LRE,
-		MENU_INSERT_RLE,
-		MENU_INSERT_LRO,
-		MENU_INSERT_RLO,
-		MENU_INSERT_PDF,
-		MENU_INSERT_ALM,
-		MENU_INSERT_LRI,
-		MENU_INSERT_RLI,
-		MENU_INSERT_FSI,
-		MENU_INSERT_PDI,
-		MENU_INSERT_ZWJ,
-		MENU_INSERT_ZWNJ,
-		MENU_INSERT_WJ,
-		MENU_INSERT_SHY,
-		MENU_MAX
-
 	};
 
 	/* Search. */
@@ -307,13 +270,8 @@ private:
 	// Overridable actions.
 	String cut_copy_line = "";
 
-	// Context menu.
-	PopupMenu *menu = nullptr;
-	PopupMenu *menu_dir = nullptr;
-	PopupMenu *menu_ctl = nullptr;
-
 	Key _get_menu_action_accelerator(const String &p_action);
-	void _generate_context_menu();
+
 	void _update_context_menu();
 
 	/* Versioning */
@@ -696,6 +654,7 @@ public:
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 	void set_tooltip_request_func(const Callable &p_tooltip_callback);
+	void _context_menu_focus_changed() override;
 
 	/* Text */
 	// Text properties.
@@ -779,7 +738,7 @@ public:
 	// Context menu.
 	PopupMenu *get_menu() const;
 	bool is_menu_visible() const;
-	void menu_option(int p_option);
+	void menu_option(int p_option) override;
 
 	/* Versioning */
 	void start_action(EditAction p_action);
@@ -1043,7 +1002,6 @@ VARIANT_ENUM_CAST(TextEdit::CaretType);
 VARIANT_ENUM_CAST(TextEdit::LineWrappingMode);
 VARIANT_ENUM_CAST(TextEdit::SelectionMode);
 VARIANT_ENUM_CAST(TextEdit::GutterType);
-VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
 
 #endif // TEXT_EDIT_H
