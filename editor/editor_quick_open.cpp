@@ -91,17 +91,21 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 }
 
 void EditorQuickOpen::_update_search() {
-	const String search_text = search_box->get_text();
-	const bool empty_search = search_text.is_empty();
+	const PackedStringArray search_tokens = search_box->get_text().to_lower().replace("/", " ").split(" ", false);
+	const bool empty_search = search_tokens.is_empty();
 
 	// Filter possible candidates.
 	Vector<Entry> entries;
 	for (int i = 0; i < files.size(); i++) {
-		if (empty_search || search_text.is_subsequence_ofn(files[i])) {
-			Entry r;
-			r.path = files[i];
-			r.score = empty_search ? 0 : _score_path(search_text, files[i].to_lower());
+		Entry r;
+		r.path = files[i];
+		if (empty_search) {
 			entries.push_back(r);
+		} else {
+			r.score = _score_search_result(search_tokens, r.path.to_lower());
+			if (r.score > 0) {
+				entries.push_back(r);
+			}
 		}
 	}
 
@@ -135,23 +139,42 @@ void EditorQuickOpen::_update_search() {
 	}
 }
 
-float EditorQuickOpen::_score_path(const String &p_search, const String &p_path) {
-	float score = 0.9f + .1f * (p_search.length() / (float)p_path.length());
+float EditorQuickOpen::_score_search_result(const PackedStringArray &p_search_tokens, const String &p_path) {
+	float score = 0.0f;
+	int prev_min_match_idx = -1;
 
-	// Exact match.
-	if (p_search == p_path) {
-		return 1.2f;
+	for (const String &s : p_search_tokens) {
+		int min_match_idx = p_path.find(s);
+
+		if (min_match_idx == -1) {
+			return 0.0f;
+		}
+
+		float token_score = s.length();
+
+		int max_match_idx = p_path.rfind(s);
+
+		// Prioritize the actual file name over folder.
+		if (max_match_idx > p_path.rfind("/")) {
+			token_score *= 2.0f;
+		}
+
+		// Prioritize matches at the front of the path token.
+		if (min_match_idx == 0 || p_path.find("/" + s) != -1) {
+			token_score += 1.0f;
+		}
+
+		score += token_score;
+
+		// Prioritize tokens which appear in order.
+		if (prev_min_match_idx != -1 && max_match_idx > prev_min_match_idx) {
+			score += 1.0f;
+		}
+
+		prev_min_match_idx = min_match_idx;
 	}
 
-	// Positive bias for matches close to the beginning of the file name.
-	String file = p_path.get_file();
-	int pos = file.findn(p_search);
-	if (pos != -1) {
-		return score * (1.0f - 0.1f * (float(pos) / file.length()));
-	}
-
-	// Similarity
-	return p_path.to_lower().similarity(p_search.to_lower());
+	return score;
 }
 
 void EditorQuickOpen::_confirmed() {
