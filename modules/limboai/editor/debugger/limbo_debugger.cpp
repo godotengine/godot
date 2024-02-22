@@ -184,8 +184,7 @@ void LimboDebugger::_on_bt_updated(int _status, NodePath p_path) {
 	if (p_path != tracked_player) {
 		return;
 	}
-	Array arr;
-	BehaviorTreeData(active_trees.get(tracked_player), tracked_player, bt_resource_path).serialize(arr);
+	Array arr = BehaviorTreeData::serialize(active_trees.get(tracked_player), tracked_player, bt_resource_path);
 	EngineDebugger::get_singleton()->send_message("limboai:bt_update", arr);
 }
 
@@ -193,8 +192,7 @@ void LimboDebugger::_on_state_updated(float _delta, NodePath p_path) {
 	if (p_path != tracked_player) {
 		return;
 	}
-	Array arr;
-	BehaviorTreeData(active_trees.get(tracked_player), tracked_player, bt_resource_path).serialize(arr);
+	Array arr = BehaviorTreeData::serialize(active_trees.get(tracked_player), tracked_player, bt_resource_path);
 	EngineDebugger::get_singleton()->send_message("limboai:bt_update", arr);
 }
 

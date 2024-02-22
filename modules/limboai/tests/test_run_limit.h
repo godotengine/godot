@@ -40,26 +40,40 @@ TEST_CASE("[Modules][LimboAI] BTRunLimit") {
 
 		SUBCASE("When the child task succeeds") {
 			task->ret_status = BTTask::SUCCESS;
+
+			lim->set_count_policy(BTRunLimit::COUNT_FAILED);
 			CHECK(lim->execute(0.01666) == BTTask::SUCCESS);
 			CHECK_STATUS_ENTRIES_TICKS_EXITS(task, BTTask::SUCCESS, 2, 2, 2); // * task executed
+
+			lim->set_count_policy(BTRunLimit::COUNT_SUCCESSFUL);
+			CHECK(lim->execute(0.01666) == BTTask::SUCCESS);
+			CHECK_STATUS_ENTRIES_TICKS_EXITS(task, BTTask::SUCCESS, 3, 3, 3); // * task executed
 		}
 		SUBCASE("When the child task fails") {
 			task->ret_status = BTTask::FAILURE;
+
+			lim->set_count_policy(BTRunLimit::COUNT_SUCCESSFUL);
 			CHECK(lim->execute(0.01666) == BTTask::FAILURE);
 			CHECK_STATUS_ENTRIES_TICKS_EXITS(task, BTTask::FAILURE, 2, 2, 2); // * task executed
+
+			lim->set_count_policy(BTRunLimit::COUNT_FAILED);
+			CHECK(lim->execute(0.01666) == BTTask::FAILURE);
+			CHECK_STATUS_ENTRIES_TICKS_EXITS(task, BTTask::FAILURE, 3, 3, 3); // * task executed
 		}
 
 		task->ret_status = BTTask::SUCCESS;
+		lim->set_count_policy(BTRunLimit::COUNT_SUCCESSFUL);
 
 		CHECK(lim->execute(0.01666) == BTTask::FAILURE);
-		CHECK_ENTRIES_TICKS_EXITS(task, 2, 2, 2); // * task not executed
+		CHECK_ENTRIES_TICKS_EXITS(task, 3, 3, 3); // * task not executed
 
 		CHECK(lim->execute(0.01666) == BTTask::FAILURE);
-		CHECK_ENTRIES_TICKS_EXITS(task, 2, 2, 2); // * task not executed
+		CHECK_ENTRIES_TICKS_EXITS(task, 3, 3, 3); // * task not executed
 	}
 
 	SUBCASE("When the child task takes more than one tick to finish") {
 		lim->set_run_limit(2);
+		lim->set_count_policy(BTRunLimit::COUNT_ALL);
 
 		task->ret_status = BTTask::RUNNING;
 		CHECK(lim->execute(0.01666) == BTTask::RUNNING);

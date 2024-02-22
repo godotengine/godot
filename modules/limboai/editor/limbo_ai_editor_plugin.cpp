@@ -76,7 +76,7 @@ _FORCE_INLINE_ String _get_script_template_path() {
 	return templates_search_path.path_join("BTTask").path_join("custom_task.gd");
 }
 
-void LimboAIEditor::_add_task(const Ref<BTTask> &p_task) {
+void LimboAIEditor::_add_task(const Ref<BTTask> &p_task, bool p_as_sibling) {
 	if (task_tree->get_bt().is_null()) {
 		return;
 	}
@@ -98,8 +98,8 @@ void LimboAIEditor::_add_task(const Ref<BTTask> &p_task) {
 		undo_redo->add_do_method(task_tree->get_bt().ptr(), LW_NAME(set_root_task), p_task);
 		undo_redo->add_undo_method(task_tree->get_bt().ptr(), LW_NAME(set_root_task), task_tree->get_bt()->get_root_task());
 	} else {
-		if (Input::get_singleton()->is_key_pressed(LW_KEY(SHIFT)) && selected->get_parent().is_valid()) {
-			// When shift is pressed, insert task after the currently selected and on the same level.
+		if (p_as_sibling && selected.is_valid() && selected->get_parent().is_valid()) {
+			// Insert task after the currently selected and on the same level (usually when shift is pressed).
 			parent = selected->get_parent();
 			insert_idx = selected->get_index() + 1;
 		}
@@ -113,12 +113,18 @@ void LimboAIEditor::_add_task(const Ref<BTTask> &p_task) {
 	_mark_as_dirty(true);
 }
 
+void LimboAIEditor::_add_task_with_prototype(const Ref<BTTask> &p_prototype) {
+	Ref<BTTask> selected = task_tree->get_selected();
+	bool as_sibling = Input::get_singleton()->is_key_pressed(LW_KEY(SHIFT));
+	_add_task(p_prototype->clone(), as_sibling);
+}
+
 Ref<BTTask> LimboAIEditor::_create_task_by_class_or_path(const String &p_class_or_path) const {
 	Ref<BTTask> ret;
 
 	if (p_class_or_path.begins_with("res:")) {
 		Ref<Script> s = RESOURCE_LOAD(p_class_or_path, "Script");
-		ERR_FAIL_COND_V_MSG(s.is_null() || !s->can_instantiate(), nullptr, vformat("LimboAI: Failed to instantiate task. Bad script: %s", p_class_or_path));
+		ERR_FAIL_COND_V_MSG(s.is_null(), nullptr, vformat("LimboAI: Failed to instantiate task. Bad script: %s", p_class_or_path));
 		Variant inst = ClassDB::instantiate(s->get_instance_base_type());
 		ERR_FAIL_COND_V_MSG(inst == Variant(), nullptr, vformat("LimboAI: Failed to instantiate base type \"%s\".", s->get_instance_base_type()));
 
@@ -139,7 +145,9 @@ Ref<BTTask> LimboAIEditor::_create_task_by_class_or_path(const String &p_class_o
 }
 
 void LimboAIEditor::_add_task_by_class_or_path(const String &p_class_or_path) {
-	_add_task(_create_task_by_class_or_path(p_class_or_path));
+	Ref<BTTask> selected = task_tree->get_selected();
+	bool as_sibling = Input::get_singleton()->is_key_pressed(LW_KEY(SHIFT));
+	_add_task(_create_task_by_class_or_path(p_class_or_path), as_sibling);
 }
 
 void LimboAIEditor::_remove_task(const Ref<BTTask> &p_task) {
@@ -357,7 +365,7 @@ void LimboAIEditor::_process_shortcut_input(const Ref<InputEvent> &p_event) {
 
 	if (LW_IS_SHORTCUT("limbo_ai/open_debugger", p_event)) {
 		_misc_option_selected(MISC_OPEN_DEBUGGER);
-		accept_event();
+		get_viewport()->set_input_as_handled();
 	}
 
 	// * Local shortcuts.
@@ -368,6 +376,14 @@ void LimboAIEditor::_process_shortcut_input(const Ref<InputEvent> &p_event) {
 
 	if (LW_IS_SHORTCUT("limbo_ai/rename_task", p_event)) {
 		_action_selected(ACTION_RENAME);
+	} else if (LW_IS_SHORTCUT("limbo_ai/cut_task", p_event)) {
+		_action_selected(ACTION_CUT);
+	} else if (LW_IS_SHORTCUT("limbo_ai/copy_task", p_event)) {
+		_action_selected(ACTION_COPY);
+	} else if (LW_IS_SHORTCUT("limbo_ai/paste_task", p_event)) {
+		_action_selected(ACTION_PASTE);
+	} else if (LW_IS_SHORTCUT("limbo_ai/paste_task_after", p_event)) {
+		_action_selected(ACTION_PASTE_AFTER);
 	} else if (LW_IS_SHORTCUT("limbo_ai/move_task_up", p_event)) {
 		_action_selected(ACTION_MOVE_UP);
 	} else if (LW_IS_SHORTCUT("limbo_ai/move_task_down", p_event)) {
@@ -386,7 +402,7 @@ void LimboAIEditor::_process_shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	accept_event();
+	get_viewport()->set_input_as_handled();
 }
 
 void LimboAIEditor::_on_tree_rmb(const Vector2 &p_menu_pos) {
@@ -403,6 +419,14 @@ void LimboAIEditor::_on_tree_rmb(const Vector2 &p_menu_pos) {
 	menu->add_icon_item(theme_cache.edit_script_icon, TTR("Edit Script"), ACTION_EDIT_SCRIPT);
 	menu->add_icon_item(theme_cache.doc_icon, TTR("Open Documentation"), ACTION_OPEN_DOC);
 	menu->set_item_disabled(menu->get_item_index(ACTION_EDIT_SCRIPT), task->get_script() == Variant());
+
+	menu->add_separator();
+	menu->add_icon_shortcut(theme_cache.cut_icon, LW_GET_SHORTCUT("limbo_ai/cut_task"), ACTION_CUT);
+	menu->add_icon_shortcut(theme_cache.copy_icon, LW_GET_SHORTCUT("limbo_ai/copy_task"), ACTION_COPY);
+	menu->add_icon_shortcut(theme_cache.paste_icon, LW_GET_SHORTCUT("limbo_ai/paste_task"), ACTION_PASTE);
+	menu->add_icon_shortcut(theme_cache.paste_icon, LW_GET_SHORTCUT("limbo_ai/paste_task_after"), ACTION_PASTE_AFTER);
+	menu->set_item_disabled(ACTION_PASTE, clipboard_task.is_null());
+	menu->set_item_disabled(ACTION_PASTE_AFTER, clipboard_task.is_null());
 
 	menu->add_separator();
 	menu->add_icon_shortcut(theme_cache.move_task_up_icon, LW_GET_SHORTCUT("limbo_ai/move_task_up"), ACTION_MOVE_UP);
@@ -475,6 +499,22 @@ void LimboAIEditor::_action_selected(int p_id) {
 			}
 
 			LimboUtility::get_singleton()->open_doc_class(help_class);
+		} break;
+		case ACTION_COPY: {
+			Ref<BTTask> sel = task_tree->get_selected();
+			if (sel.is_valid()) {
+				clipboard_task = sel->clone();
+			}
+		} break;
+		case ACTION_PASTE: {
+			if (clipboard_task.is_valid()) {
+				_add_task(clipboard_task->clone(), false);
+			}
+		} break;
+		case ACTION_PASTE_AFTER: {
+			if (clipboard_task.is_valid()) {
+				_add_task(clipboard_task->clone(), true);
+			}
 		} break;
 		case ACTION_MOVE_UP: {
 			Ref<BTTask> sel = task_tree->get_selected();
@@ -554,9 +594,14 @@ void LimboAIEditor::_action_selected(int p_id) {
 				extract_dialog->popup_centered_ratio();
 			}
 		} break;
+		case ACTION_CUT:
 		case ACTION_REMOVE: {
 			Ref<BTTask> sel = task_tree->get_selected();
 			if (sel.is_valid()) {
+				if (p_id == ACTION_CUT) {
+					clipboard_task = sel->clone();
+				}
+
 				undo_redo->create_action(TTR("Remove BT Task"));
 				if (sel->is_root()) {
 					undo_redo->add_do_method(task_tree->get_bt().ptr(), LW_NAME(set_root_task), Variant());
@@ -1050,6 +1095,9 @@ void LimboAIEditor::_do_update_theme_item_cache() {
 	theme_cache.remove_task_icon = get_theme_icon(LW_NAME(Remove), LW_NAME(EditorIcons));
 	theme_cache.rename_task_icon = get_theme_icon(LW_NAME(Rename), LW_NAME(EditorIcons));
 	theme_cache.change_type_icon = get_theme_icon(LW_NAME(Reload), LW_NAME(EditorIcons));
+	theme_cache.cut_icon = get_theme_icon(LW_NAME(ActionCut), LW_NAME(EditorIcons));
+	theme_cache.copy_icon = get_theme_icon(LW_NAME(ActionCopy), LW_NAME(EditorIcons));
+	theme_cache.paste_icon = get_theme_icon(LW_NAME(ActionPaste), LW_NAME(EditorIcons));
 
 	theme_cache.behavior_tree_icon = LimboUtility::get_singleton()->get_task_icon("BehaviorTree");
 	theme_cache.percent_icon = LimboUtility::get_singleton()->get_task_icon("LimboPercent");
@@ -1161,13 +1209,17 @@ LimboAIEditor::LimboAIEditor() {
 	LW_SHORTCUT("limbo_ai/move_task_down", TTR("Move Down"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY(DOWN)));
 	LW_SHORTCUT("limbo_ai/duplicate_task", TTR("Duplicate"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY(D)));
 	LW_SHORTCUT("limbo_ai/remove_task", TTR("Remove"), Key::KEY_DELETE);
+	LW_SHORTCUT("limbo_ai/cut_task", TTR("Cut"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY(X)));
+	LW_SHORTCUT("limbo_ai/copy_task", TTR("Copy"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY(C)));
+	LW_SHORTCUT("limbo_ai/paste_task", TTR("Paste"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY(V)));
+	LW_SHORTCUT("limbo_ai/paste_task_after", TTR("Paste After Selected"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY_MASK(SHIFT) | LW_KEY(V)));
 
 	LW_SHORTCUT("limbo_ai/new_behavior_tree", TTR("New Behavior Tree"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY_MASK(ALT) | LW_KEY(N)));
 	LW_SHORTCUT("limbo_ai/save_behavior_tree", TTR("Save Behavior Tree"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY_MASK(ALT) | LW_KEY(S)));
 	LW_SHORTCUT("limbo_ai/load_behavior_tree", TTR("Load Behavior Tree"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY_MASK(ALT) | LW_KEY(L)));
 	LW_SHORTCUT("limbo_ai/open_debugger", TTR("Open Debugger"), (Key)(LW_KEY_MASK(CMD_OR_CTRL) | LW_KEY_MASK(ALT) | LW_KEY(D)));
 
-	set_process_input(true);
+	set_process_shortcut_input(true);
 
 	save_dialog = memnew(FileDialog);
 	save_dialog->set_file_mode(FileDialog::FILE_MODE_SAVE_FILE);

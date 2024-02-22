@@ -100,7 +100,9 @@ TEST_CASE("[Modules][LimboAI] BBNode") {
 			CHECK(param->get_value(dummy, bb) == Variant(other));
 		}
 		SUBCASE("When variable doesn't exist") {
+			ERR_PRINT_OFF;
 			CHECK(param->get_value(dummy, bb, Variant()).is_null());
+			ERR_PRINT_ON;
 		}
 		SUBCASE("When variable has wrong type") {
 			bb->set_var("test_var", 123);

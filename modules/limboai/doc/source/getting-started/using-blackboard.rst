@@ -35,6 +35,8 @@ Here's an example of how you can interact with the :ref:`Blackboard<class_Blackb
 
     **🛈 Note:** The variable doesn't need to exist when you set it.
 
+.. _editing_plan:
+
 Editing the Blackboard Plan
 ---------------------------
 

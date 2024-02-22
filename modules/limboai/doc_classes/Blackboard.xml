@@ -37,15 +37,16 @@
 			<return type="Variant" />
 			<param index="0" name="p_name" type="String" />
 			<param index="1" name="p_default" type="Variant" default="null" />
+			<param index="2" name="p_complain" type="bool" default="true" />
 			<description>
-				Returns variable value.
+				Returns variable value or [param p_default] if variable doesn't exist. If [param p_complain] is [code]true[/code], an error will be printed if variable doesn't exist.
 			</description>
 		</method>
 		<method name="has_var" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="p_name" type="String" />
 			<description>
-				Returns [code]true[/code] if the Blackboard contains the [param p_key] variable, including the parent scopes.
+				Returns [code]true[/code] if the Blackboard contains the [param p_name] variable, including the parent scopes.
 			</description>
 		</method>
 		<method name="prefetch_nodepath_vars">

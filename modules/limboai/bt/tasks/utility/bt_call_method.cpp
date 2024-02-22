@@ -77,7 +77,7 @@ String BTCallMethod::_generate_name() {
 			method != StringName() ? method : "???",
 			args_str,
 			node_param.is_valid() && !node_param->to_string().is_empty() ? node_param->to_string() : "???",
-			result_var.is_empty() ? "" : LW_NAME(output_var_prefix) + LimboUtility::get_singleton()->decorate_var(result_var));
+			result_var.is_empty() ? "" : LimboUtility::get_singleton()->decorate_output_var(result_var));
 }
 
 BT::Status BTCallMethod::_tick(double p_delta) {

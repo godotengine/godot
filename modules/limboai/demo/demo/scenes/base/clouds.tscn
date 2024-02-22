@@ -1,0 +1,256 @@
+[gd_scene load_steps=2 format=3 uid="uid://dt2jlrqffpyw"]
+
+[ext_resource type="Texture2D" uid="uid://65b6yuobhxf8" path="res://demo/assets/env_clouds.png" id="1_eigiy"]
+
+[node name="Clouds" type="Node2D"]
+modulate = Color(1, 1, 1, 0.792157)
+position = Vector2(-1998, -1508)
+metadata/_edit_lock_ = true
+
+[node name="Cloud1" type="Sprite2D" parent="."]
+position = Vector2(764, 358)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(12, 7, 455, 168)
+
+[node name="Cloud13" type="Sprite2D" parent="."]
+position = Vector2(4005, 2983)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(12, 7, 455, 168)
+
+[node name="Cloud5" type="Sprite2D" parent="."]
+position = Vector2(-152, 2723)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(12, 7, 455, 168)
+
+[node name="Cloud6" type="Sprite2D" parent="."]
+position = Vector2(3293, 936)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(12, 7, 455, 168)
+
+[node name="Cloud2" type="Sprite2D" parent="."]
+position = Vector2(85, 1505)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(10, 189, 644, 165)
+
+[node name="Cloud16" type="Sprite2D" parent="."]
+position = Vector2(3434, 3542)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(10, 189, 644, 165)
+
+[node name="Cloud7" type="Sprite2D" parent="."]
+position = Vector2(1380, 3802)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(10, 189, 644, 165)
+
+[node name="Cloud3" type="Sprite2D" parent="."]
+position = Vector2(503, 1222)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud14" type="Sprite2D" parent="."]
+position = Vector2(4174, 3309)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud15" type="Sprite2D" parent="."]
+position = Vector2(4695, 2800)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud8" type="Sprite2D" parent="."]
+position = Vector2(152, 3383)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud4" type="Sprite2D" parent="."]
+position = Vector2(164, 1669)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud9" type="Sprite2D" parent="."]
+position = Vector2(328, 3474)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud10" type="Sprite2D" parent="."]
+position = Vector2(933, 515)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud12" type="Sprite2D" parent="."]
+position = Vector2(4570, 1222)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud11" type="Sprite2D" parent="."]
+position = Vector2(3784, 345)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud17" type="Sprite2D" parent="."]
+position = Vector2(-2737.13, 367.814)
+scale = Vector2(1.35085, 1.15254)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(12, 7, 455, 168)
+
+[node name="Cloud18" type="Sprite2D" parent="."]
+position = Vector2(-1254.92, 3539.61)
+scale = Vector2(0.898305, 0.898305)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(10, 189, 644, 165)
+
+[node name="Cloud19" type="Sprite2D" parent="."]
+position = Vector2(-2912.7, 1260.29)
+scale = Vector2(1.10169, 1.10169)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud20" type="Sprite2D" parent="."]
+position = Vector2(-3251.5, 3437.56)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud21" type="Sprite2D" parent="."]
+position = Vector2(-3181.26, 3581.44)
+scale = Vector2(0.949153, 0.949153)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud22" type="Sprite2D" parent="."]
+position = Vector2(-420.856, 367.017)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud23" type="Sprite2D" parent="."]
+position = Vector2(-1493, 3040)
+scale = Vector2(0.898305, 0.898305)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(12, 7, 455, 168)
+
+[node name="Cloud24" type="Sprite2D" parent="."]
+position = Vector2(-510, 2429)
+scale = Vector2(1.15254, 1.15254)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(10, 189, 644, 165)
+
+[node name="Cloud25" type="Sprite2D" parent="."]
+position = Vector2(-712, 1373)
+scale = Vector2(1.10169, 1.10169)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud26" type="Sprite2D" parent="."]
+position = Vector2(-269, 2004)
+scale = Vector2(0.79661, 0.79661)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud27" type="Sprite2D" parent="."]
+position = Vector2(-1656, 2353)
+scale = Vector2(0.949153, 0.949153)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud28" type="Sprite2D" parent="."]
+position = Vector2(-461, 1787)
+scale = Vector2(1.10169, 1.10169)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud29" type="Sprite2D" parent="."]
+position = Vector2(3890, 2612.5)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(12, 7, 455, 168)
+
+[node name="Cloud30" type="Sprite2D" parent="."]
+position = Vector2(3832, 1394.5)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(10, 189, 644, 165)
+
+[node name="Cloud31" type="Sprite2D" parent="."]
+position = Vector2(3472, 3106)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(10, 189, 644, 165)
+
+[node name="Cloud32" type="Sprite2D" parent="."]
+position = Vector2(3095, 2689.5)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud33" type="Sprite2D" parent="."]
+position = Vector2(4016, 1558.5)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud34" type="Sprite2D" parent="."]
+position = Vector2(3863, 1375)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(12, 7, 455, 168)
+
+[node name="Cloud35" type="Sprite2D" parent="."]
+position = Vector2(3521.25, 3087)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud36" type="Sprite2D" parent="."]
+position = Vector2(3609.25, 3161)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(507, 7, 193, 88)
+
+[node name="Cloud37" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(3754.25, 1447)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(501, 99, 210, 92)
+
+[node name="Cloud38" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(2915.25, 2833)
+scale = Vector2(0.898305, 0.898305)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(10, 189, 644, 165)
+
+[node name="Cloud39" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(3270.25, 2207)
+texture = ExtResource("1_eigiy")
+region_enabled = true
+region_rect = Rect2(10, 189, 644, 165)

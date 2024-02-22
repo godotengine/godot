@@ -19,7 +19,7 @@ void BTProbability::set_run_chance(float p_value) {
 }
 
 String BTProbability::_generate_name() {
-	return vformat("Probability %.1f%%", run_chance);
+	return vformat("Probability %.1f%%", run_chance * 100.0);
 }
 
 BT::Status BTProbability::_tick(double p_delta) {

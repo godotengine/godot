@@ -23,6 +23,8 @@ Methods
    :widths: auto
 
    +-----------+-----------------------------------------------------------------------------------------------------------------+
+   | String    | :ref:`decorate_output_var<class_LimboUtility_method_decorate_output_var>` **(** String p_variable **)** |const| |
+   +-----------+-----------------------------------------------------------------------------------------------------------------+
    | String    | :ref:`decorate_var<class_LimboUtility_method_decorate_var>` **(** String p_variable **)** |const|               |
    +-----------+-----------------------------------------------------------------------------------------------------------------+
    | String    | :ref:`get_status_name<class_LimboUtility_method_get_status_name>` **(** int p_status **)** |const|              |
@@ -207,6 +209,18 @@ Bitwise XOR.
 
 Method Descriptions
 -------------------
+
+.. _class_LimboUtility_method_decorate_output_var:
+
+.. rst-class:: classref-method
+
+String **decorate_output_var** **(** String p_variable **)** |const|
+
+Just like :ref:`decorate_var<class_LimboUtility_method_decorate_var>`, produces a string with a :ref:`Blackboard<class_Blackboard>` variable name that is formatted for display, and also adds an additional symbol to indicate that the variable is used as an output.
+
+.. rst-class:: classref-item-separator
+
+----
 
 .. _class_LimboUtility_method_decorate_var:
 

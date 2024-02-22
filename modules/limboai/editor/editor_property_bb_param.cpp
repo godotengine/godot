@@ -270,6 +270,11 @@ void EditorPropertyBBParam::_variable_edited(const String &p_property, Variant p
 }
 
 void EditorPropertyBBParam::update_property() {
+	if (mode_button->get_mode() == -1) {
+		// Initialize UI -- needed after https://github.com/godotengine/godot/commit/db7175458a0532f1efe733f303ad2b55a02a52a5
+		_notification(NOTIFICATION_THEME_CHANGED);
+	}
+
 	Ref<BBParam> param = _get_edited_param();
 	bool is_variant_param = param->is_class_ptr(BBVariant::get_class_ptr_static());
 
@@ -309,6 +314,11 @@ void EditorPropertyBBParam::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
+			if (!get_edited_object()) {
+				// Null check needed after https://github.com/godotengine/godot/commit/db7175458a0532f1efe733f303ad2b55a02a52a5
+				return;
+			}
+
 			{
 				String type = Variant::get_type_name(_get_edited_param()->get_type());
 				type_choice->set_icon(get_editor_theme_icon(type));

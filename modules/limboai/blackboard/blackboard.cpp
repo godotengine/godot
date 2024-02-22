@@ -32,12 +32,15 @@ Ref<Blackboard> Blackboard::top() const {
 	return bb;
 }
 
-Variant Blackboard::get_var(const String &p_name, const Variant &p_default) const {
+Variant Blackboard::get_var(const String &p_name, const Variant &p_default, bool p_complain) const {
 	if (data.has(p_name)) {
 		return data.get(p_name).get_value();
 	} else if (parent.is_valid()) {
 		return parent->get_var(p_name, p_default);
 	} else {
+		if (p_complain) {
+			ERR_PRINT(vformat("Blackboard: Variable \"%s\" not found.", p_name));
+		}
 		return p_default;
 	}
 }
@@ -90,7 +93,7 @@ void Blackboard::prefetch_nodepath_vars(Node *p_node) {
 }
 
 void Blackboard::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_var", "p_name", "p_default"), &Blackboard::get_var, Variant());
+	ClassDB::bind_method(D_METHOD("get_var", "p_name", "p_default", "p_complain"), &Blackboard::get_var, Variant(), true);
 	ClassDB::bind_method(D_METHOD("set_var", "p_name", "p_value"), &Blackboard::set_var);
 	ClassDB::bind_method(D_METHOD("has_var", "p_name"), &Blackboard::has_var);
 	ClassDB::bind_method(D_METHOD("set_parent_scope", "p_blackboard"), &Blackboard::set_parent);

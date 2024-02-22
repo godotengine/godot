@@ -14,10 +14,15 @@
 
 #include "../../bt/tasks/bt_task.h"
 
-class BehaviorTreeData {
+class BehaviorTreeData : public RefCounted {
+	GDCLASS(BehaviorTreeData, RefCounted);
+
+protected:
+	static void _bind_methods();
+
 public:
 	struct TaskData {
-		int id = 0;
+		uint64_t id = 0;
 		String name;
 		bool is_custom_name = false;
 		int num_children = 0;
@@ -26,7 +31,7 @@ public:
 		String type_name;
 		String script_path;
 
-		TaskData(int p_id, const String &p_name, bool p_is_custom_name, int p_num_children, int p_status, double p_elapsed_time, const String &p_type_name, const String &p_script_path) {
+		TaskData(uint64_t p_id, const String &p_name, bool p_is_custom_name, int p_num_children, int p_status, double p_elapsed_time, const String &p_type_name, const String &p_script_path) {
 			id = p_id;
 			name = p_name;
 			is_custom_name = p_is_custom_name;
@@ -44,11 +49,12 @@ public:
 	NodePath bt_player_path;
 	String bt_resource_path;
 
-	void serialize(Array &p_arr);
-	void deserialize(const Array &p_arr);
+public:
+	static Array serialize(const Ref<BTTask> &p_tree_instance, const NodePath &p_player_path, const String &p_bt_resource_path);
+	static Ref<BehaviorTreeData> deserialize(const Array &p_array);
+	static Ref<BehaviorTreeData> create_from_tree_instance(const Ref<BTTask> &p_tree_instance);
 
-	BehaviorTreeData(const Ref<BTTask> &p_instance, const NodePath &p_player_path, const String &p_bt_resource);
-	BehaviorTreeData() {}
+	BehaviorTreeData();
 };
 
 #endif // BEHAVIOR_TREE_DATA_H

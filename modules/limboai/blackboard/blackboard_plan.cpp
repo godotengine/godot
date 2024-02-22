@@ -17,6 +17,10 @@ bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
 	// * Editor
 	if (var_map.has(prop_name)) {
 		var_map[prop_name].set_value(p_value);
+		if (base.is_valid() && p_value == base->get_var(prop_name).get_value()) {
+			// When user pressed reset property button in inspector...
+			var_map[prop_name].reset_value_changed();
+		}
 		return true;
 	}
 
@@ -234,8 +238,11 @@ void BlackboardPlan::sync_with_base_plan() {
 			var.copy_prop_info(base_var);
 			changed = true;
 		}
-		if (var.get_value().get_type() != base_var.get_type()) {
+		if ((!var.is_value_changed() && var.get_value() != base_var.get_value()) ||
+				(var.get_value().get_type() != base_var.get_type())) {
+			// Reset value according to base plan.
 			var.set_value(base_var.get_value());
+			var.reset_value_changed();
 			changed = true;
 		}
 	}

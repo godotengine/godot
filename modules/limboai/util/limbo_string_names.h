@@ -42,6 +42,7 @@ public:
 	_FORCE_INLINE_ static LimboStringNames *get_singleton() { return singleton; }
 
 	StringName _draw_failure_status;
+	StringName _draw_fresh;
 	StringName _draw_probability;
 	StringName _draw_running_status;
 	StringName _draw_success_status;
@@ -56,6 +57,9 @@ public:
 	StringName _update;
 	StringName _weight_;
 	StringName accent_color;
+	StringName ActionCopy;
+	StringName ActionCut;
+	StringName ActionPaste;
 	StringName add_child_at_index;
 	StringName add_child;
 	StringName Add;

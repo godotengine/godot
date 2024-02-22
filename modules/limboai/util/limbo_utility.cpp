@@ -15,6 +15,7 @@
 #include "../util/limbo_compat.h"
 
 #ifdef LIMBOAI_MODULE
+#include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
@@ -55,6 +56,10 @@ String LimboUtility::decorate_var(String p_variable) const {
 	}
 }
 
+String LimboUtility::decorate_output_var(String p_variable) const {
+	return LW_NAME(output_var_prefix) + decorate_var(p_variable);
+}
+
 String LimboUtility::get_status_name(int p_status) const {
 	switch (p_status) {
 		case BTTask::FRESH:
@@ -71,48 +76,52 @@ String LimboUtility::get_status_name(int p_status) const {
 }
 
 Ref<Texture2D> LimboUtility::get_task_icon(String p_class_or_script_path) const {
-#if defined(TOOLS_ENABLED) && defined(LIMBOAI_MODULE)
 	ERR_FAIL_COND_V_MSG(p_class_or_script_path.is_empty(), Variant(), "BTTask: script path or class cannot be empty.");
 
-	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
-	ERR_FAIL_COND_V(theme.is_null(), nullptr);
+#if defined(TOOLS_ENABLED) && defined(LIMBOAI_MODULE)
+	// * Using editor theme
+	if (Engine::get_singleton()->is_editor_hint()) {
+		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+		ERR_FAIL_COND_V(theme.is_null(), nullptr);
 
-	if (p_class_or_script_path.begins_with("res:")) {
-		Ref<Script> s = ResourceLoader::load(p_class_or_script_path, "Script");
-		if (s.is_null()) {
-			return theme->get_icon(SNAME("FileBroken"), SNAME("EditorIcons"));
+		if (p_class_or_script_path.begins_with("res:")) {
+			Ref<Script> s = ResourceLoader::load(p_class_or_script_path, "Script");
+			if (s.is_null()) {
+				return theme->get_icon(SNAME("FileBroken"), SNAME("EditorIcons"));
+			}
+
+			EditorData &ed = EditorNode::get_editor_data();
+			Ref<Texture2D> script_icon = ed.get_script_icon(s);
+			if (script_icon.is_valid()) {
+				return script_icon;
+			}
+
+			StringName base_type = s->get_instance_base_type();
+			if (theme->has_icon(base_type, SNAME("EditorIcons"))) {
+				return theme->get_icon(base_type, SNAME("EditorIcons"));
+			}
 		}
 
-		EditorData &ed = EditorNode::get_editor_data();
-		Ref<Texture2D> script_icon = ed.get_script_icon(s);
-		if (script_icon.is_valid()) {
-			return script_icon;
+		if (theme->has_icon(p_class_or_script_path, SNAME("EditorIcons"))) {
+			return theme->get_icon(p_class_or_script_path, SNAME("EditorIcons"));
 		}
 
-		StringName base_type = s->get_instance_base_type();
-		if (theme->has_icon(base_type, SNAME("EditorIcons"))) {
-			return theme->get_icon(base_type, SNAME("EditorIcons"));
+		// Use an icon of one of the base classes: look up max 3 parents.
+		StringName class_name = p_class_or_script_path;
+		for (int i = 0; i < 3; i++) {
+			class_name = ClassDB::get_parent_class(class_name);
+			if (theme->has_icon(class_name, SNAME("EditorIcons"))) {
+				return theme->get_icon(class_name, SNAME("EditorIcons"));
+			}
 		}
+
+		// Return generic resource icon as a fallback.
+		return theme->get_icon(SNAME("Resource"), SNAME("EditorIcons"));
 	}
-
-	if (theme->has_icon(p_class_or_script_path, SNAME("EditorIcons"))) {
-		return theme->get_icon(p_class_or_script_path, SNAME("EditorIcons"));
-	}
-
-	// Use an icon of one of the base classes: look up max 3 parents.
-	StringName class_name = p_class_or_script_path;
-	for (int i = 0; i < 3; i++) {
-		class_name = ClassDB::get_parent_class(class_name);
-		if (theme->has_icon(class_name, SNAME("EditorIcons"))) {
-			return theme->get_icon(class_name, SNAME("EditorIcons"));
-		}
-	}
-	// Return generic resource icon as a fallback.
-	return theme->get_icon(SNAME("Resource"), SNAME("EditorIcons"));
 #endif // ! TOOLS_ENABLED && LIMBOAI_MODULE
 
-#ifdef LIMBOAI_GDEXTENSION
 	String path;
+
 	if (p_class_or_script_path.begins_with("res://")) {
 		TypedArray<Dictionary> classes = ProjectSettings::get_singleton()->get_global_class_list();
 		for (int i = 0; i < classes.size(); i++) {
@@ -128,17 +137,15 @@ Ref<Texture2D> LimboUtility::get_task_icon(String p_class_or_script_path) const 
 			}
 		}
 	} else {
-		// Assuming global class.
+		// Trying addon icons
 		path = "res://addons/limboai/icons/" + p_class_or_script_path + ".svg";
 	}
 
-	Ref<Texture2D> icon = RESOURCE_LOAD(path, "Texture2D");
-	return icon;
-#endif // LIMBOAI_GDEXTENSION
+	if (RESOURCE_EXISTS(path, "Texture2D")) {
+		Ref<Texture2D> icon = RESOURCE_LOAD(path, "Texture2D");
+		return icon;
+	}
 
-	// TODO: GDExtension needs the icons too.
-
-	// * Class icons are not available at runtime as they are part of the editor theme.
 	return nullptr;
 }
 
@@ -598,6 +605,7 @@ void LimboUtility::open_doc_class(const String &p_class_name) {
 
 void LimboUtility::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("decorate_var", "p_variable"), &LimboUtility::decorate_var);
+	ClassDB::bind_method(D_METHOD("decorate_output_var", "p_variable"), &LimboUtility::decorate_output_var);
 	ClassDB::bind_method(D_METHOD("get_status_name", "p_status"), &LimboUtility::get_status_name);
 	ClassDB::bind_method(D_METHOD("get_task_icon", "p_class_or_script_path"), &LimboUtility::get_task_icon);
 

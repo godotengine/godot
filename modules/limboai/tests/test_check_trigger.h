@@ -35,8 +35,10 @@ TEST_CASE("[Modules][LimboAI] BTCheckTrigger") {
 
 	ct->set_variable("trigger");
 
-	SUBCASE("When variable is not set") {
+	SUBCASE("When variable is not found") {
+		ERR_PRINT_OFF;
 		CHECK(ct->execute(0.01666) == BTTask::FAILURE);
+		ERR_PRINT_ON;
 	}
 	SUBCASE("When variable set to false") {
 		bb->set_var("trigger", false);

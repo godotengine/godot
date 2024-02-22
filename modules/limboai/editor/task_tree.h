@@ -40,6 +40,7 @@ private:
 	Ref<BehaviorTree> bt;
 	Ref<BTTask> last_selected;
 	bool editable;
+	bool updating_tree;
 	HashMap<RECT_CACHE_KEY, Rect2> probability_rect_cache;
 
 	struct ThemeCache {
@@ -67,6 +68,7 @@ private:
 
 	void _on_item_selected();
 	void _on_item_activated();
+	void _on_item_collapsed(Object *p_obj);
 	void _on_item_mouse_selected(const Vector2 &p_pos, MouseButton p_button_index);
 	void _on_task_changed();
 

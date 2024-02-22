@@ -101,6 +101,8 @@ void BTState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_behavior_tree", "p_value"), &BTState::set_behavior_tree);
 	ClassDB::bind_method(D_METHOD("get_behavior_tree"), &BTState::get_behavior_tree);
 
+	ClassDB::bind_method(D_METHOD("get_tree_instance"), &BTState::get_tree_instance);
+
 	ClassDB::bind_method(D_METHOD("set_success_event", "p_event_name"), &BTState::set_success_event);
 	ClassDB::bind_method(D_METHOD("get_success_event"), &BTState::get_success_event);
 

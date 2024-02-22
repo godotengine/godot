@@ -1,0 +1,169 @@
+[gd_scene load_steps=18 format=3 uid="uid://wdauoepicegb"]
+
+[ext_resource type="Script" path="res://demo/agents/fireball/fireball.gd" id="1_ituf4"]
+[ext_resource type="Texture2D" uid="uid://dwhhxj5557qrb" path="res://demo/assets/shadow.png" id="2_6n8mx"]
+[ext_resource type="Texture2D" uid="uid://235liwnxn1n5" path="res://demo/assets/fireball.png" id="3_1an0e"]
+[ext_resource type="Script" path="res://demo/agents/scripts/hitbox.gd" id="4_rjhgc"]
+[ext_resource type="Texture2D" uid="uid://bdusy0qqtw0th" path="res://demo/assets/smoke.png" id="5_dcbp6"]
+
+[sub_resource type="Curve" id="Curve_mukra"]
+_data = [Vector2(0, 0), 0.0, 4.81319, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_56342"]
+curve = SubResource("Curve_mukra")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_gbya7"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 90.0
+initial_velocity_min = 150.0
+initial_velocity_max = 250.0
+angular_velocity_min = -90.0
+angular_velocity_max = 90.0
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -90.0
+radial_accel_max = 90.0
+damping_min = 200.0
+damping_max = 200.0
+scale_min = 0.8
+scale_max = 1.2
+scale_curve = SubResource("CurveTexture_56342")
+color = Color(0.552941, 0.552941, 0.552941, 1)
+
+[sub_resource type="Gradient" id="Gradient_c08h3"]
+offsets = PackedFloat32Array(0, 0.549738, 1)
+colors = PackedColorArray(0.980453, 0.717632, 0.282353, 1, 0.960906, 0.211521, 0.0390784, 1, 0.201527, 0.201527, 0.201527, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fhxvw"]
+gradient = SubResource("Gradient_c08h3")
+
+[sub_resource type="Curve" id="Curve_ugmtv"]
+_data = [Vector2(0, 0.010989), 0.0, 0.0, 0, 0, Vector2(0.151111, 1), 1.3559, 1.3559, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_1f5jp"]
+curve = SubResource("Curve_ugmtv")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_gilhy"]
+lifetime_randomness = 0.5
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(40, 1, 1)
+direction = Vector3(0, -1, 0)
+spread = 90.0
+initial_velocity_min = 150.0
+initial_velocity_max = 250.0
+angular_velocity_min = -90.0
+angular_velocity_max = 90.0
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -90.0
+radial_accel_max = 90.0
+damping_min = 200.0
+damping_max = 200.0
+scale_min = 0.8
+scale_max = 1.2
+scale_curve = SubResource("CurveTexture_1f5jp")
+color_ramp = SubResource("GradientTexture1D_fhxvw")
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7uc1b"]
+radius = 25.13
+
+[sub_resource type="Animation" id="Animation_wr7y0"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Root/Fireball:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_ey8it"]
+resource_name = "default"
+length = 0.3
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Root/Fireball:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cphpk"]
+_data = {
+"RESET": SubResource("Animation_wr7y0"),
+"default": SubResource("Animation_ey8it")
+}
+
+[node name="Fireball" type="Node2D"]
+script = ExtResource("1_ituf4")
+
+[node name="FX" type="Node2D" parent="."]
+position = Vector2(0, -92)
+
+[node name="Trail" type="GPUParticles2D" parent="FX"]
+show_behind_parent = true
+amount = 6
+process_material = SubResource("ParticleProcessMaterial_gbya7")
+texture = ExtResource("5_dcbp6")
+lifetime = 0.4
+fixed_fps = 60
+
+[node name="Death" type="GPUParticles2D" parent="FX"]
+emitting = false
+amount = 6
+process_material = SubResource("ParticleProcessMaterial_gilhy")
+texture = ExtResource("5_dcbp6")
+lifetime = 0.7
+one_shot = true
+explosiveness = 0.7
+fixed_fps = 60
+local_coords = true
+
+[node name="Root" type="Node2D" parent="."]
+
+[node name="Shadow" type="Sprite2D" parent="Root"]
+modulate = Color(1, 1, 1, 0.686275)
+position = Vector2(0, -1)
+scale = Vector2(0.382, 0.297)
+texture = ExtResource("2_6n8mx")
+
+[node name="Fireball" type="Sprite2D" parent="Root"]
+position = Vector2(0, -92)
+texture = ExtResource("3_1an0e")
+hframes = 3
+
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="Root/Fireball"]
+remote_path = NodePath("../../../FX")
+update_rotation = false
+update_scale = false
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+script = ExtResource("4_rjhgc")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("CircleShape2D_7uc1b")
+debug_color = Color(0.839216, 0.192157, 0.815686, 0.419608)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_cphpk")
+}
+autoplay = "default"
+
+[connection signal="area_entered" from="Hitbox" to="." method="_on_hitbox_area_entered"]

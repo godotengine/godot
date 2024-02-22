@@ -148,6 +148,10 @@ bool LimboHSM::dispatch(const String &p_event, const Variant &p_cargo) {
 			key = _get_transition_key(nullptr, p_event);
 			if (transitions.has(key)) {
 				to_state = transitions[key];
+				if (to_state == active_state) {
+					// Transitions to self are not allowed with ANYSTATE.
+					to_state = nullptr;
+				}
 			}
 		}
 		if (to_state != nullptr) {

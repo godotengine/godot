@@ -73,14 +73,14 @@ TEST_CASE("[Modules][LimboAI] BTNewScope") {
 		ns->get_blackboard()->set_var("berry", "raspberry");
 		CHECK(ns->get_blackboard()->get_var("berry", "wetgoop") == "raspberry");
 		CHECK(child->get_blackboard()->get_var("berry", "wetgoop") == "raspberry");
-		CHECK(parent->get_blackboard()->get_var("berry", "wetgoop") == "wetgoop");
+		CHECK(parent->get_blackboard()->get_var("berry", "wetgoop", false) == "wetgoop");
 		CHECK_FALSE(parent->get_blackboard()->has_var("berry"));
 
 		// * Check if setting a variable doesn't propagate it up the scope (now with the child task)
 		child->get_blackboard()->set_var("seed", "sunflower");
 		CHECK(child->get_blackboard()->get_var("seed", "wetgoop") == "sunflower");
 		CHECK(ns->get_blackboard()->get_var("seed", "wetgoop") == "sunflower");
-		CHECK(parent->get_blackboard()->get_var("seed", "wetgoop") == "wetgoop");
+		CHECK(parent->get_blackboard()->get_var("seed", "wetgoop", false) == "wetgoop");
 		CHECK_FALSE(parent->get_blackboard()->has_var("seed"));
 
 		// * Check return status

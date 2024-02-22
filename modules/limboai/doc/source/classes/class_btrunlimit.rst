@@ -31,9 +31,50 @@ Properties
 .. table::
    :widths: auto
 
-   +-----+-------------------------------------------------------+-------+
-   | int | :ref:`run_limit<class_BTRunLimit_property_run_limit>` | ``1`` |
-   +-----+-------------------------------------------------------+-------+
+   +-------------------------------------------------+-------------------------------------------------------------+-------+
+   | :ref:`CountPolicy<enum_BTRunLimit_CountPolicy>` | :ref:`count_policy<class_BTRunLimit_property_count_policy>` | ``0`` |
+   +-------------------------------------------------+-------------------------------------------------------------+-------+
+   | int                                             | :ref:`run_limit<class_BTRunLimit_property_run_limit>`       | ``1`` |
+   +-------------------------------------------------+-------------------------------------------------------------+-------+
+
+.. rst-class:: classref-section-separator
+
+----
+
+.. rst-class:: classref-descriptions-group
+
+Enumerations
+------------
+
+.. _enum_BTRunLimit_CountPolicy:
+
+.. rst-class:: classref-enumeration
+
+enum **CountPolicy**:
+
+.. _class_BTRunLimit_constant_COUNT_SUCCESSFUL:
+
+.. rst-class:: classref-enumeration-constant
+
+:ref:`CountPolicy<enum_BTRunLimit_CountPolicy>` **COUNT_SUCCESSFUL** = ``0``
+
+Count only successful runs towards the limit.
+
+.. _class_BTRunLimit_constant_COUNT_FAILED:
+
+.. rst-class:: classref-enumeration-constant
+
+:ref:`CountPolicy<enum_BTRunLimit_CountPolicy>` **COUNT_FAILED** = ``1``
+
+Count only failed runs towards the limit.
+
+.. _class_BTRunLimit_constant_COUNT_ALL:
+
+.. rst-class:: classref-enumeration-constant
+
+:ref:`CountPolicy<enum_BTRunLimit_CountPolicy>` **COUNT_ALL** = ``2``
+
+Count successful and failed runs towards the limit.
 
 .. rst-class:: classref-section-separator
 
@@ -43,6 +84,23 @@ Properties
 
 Property Descriptions
 ---------------------
+
+.. _class_BTRunLimit_property_count_policy:
+
+.. rst-class:: classref-property
+
+:ref:`CountPolicy<enum_BTRunLimit_CountPolicy>` **count_policy** = ``0``
+
+.. rst-class:: classref-property-setget
+
+- void **set_count_policy** **(** :ref:`CountPolicy<enum_BTRunLimit_CountPolicy>` value **)**
+- :ref:`CountPolicy<enum_BTRunLimit_CountPolicy>` **get_count_policy** **(** **)**
+
+Which runs should be counted towards the limit: successful, failed, or all?
+
+.. rst-class:: classref-item-separator
+
+----
 
 .. _class_BTRunLimit_property_run_limit:
 

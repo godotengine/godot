@@ -3,19 +3,19 @@ on:
   workflow_dispatch:
 
   push:
-    branches: [ master ]
+    branches: [master]
     paths-ignore:
       - "README.md"
-      - "LICENSE"
+      - "LICENSE.md"
       - "**/*.png"
       - "demo/**"
       - "doc/**"
 
   pull_request:
-    branches: [ master ]
+    branches: [master]
     paths-ignore:
       - "README.md"
-      - "LICENSE"
+      - "LICENSE.md"
       - "**/*.png"
       - "demo/**"
       - "doc/**"
@@ -77,8 +77,8 @@ jobs:
       - name: Set up Python 3.x
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
-          architecture: 'x64'
+          python-version: "3.x"
+          architecture: "x64"
 
       - name: Set up scons
         run: |

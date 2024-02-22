@@ -33,23 +33,27 @@ Methods
 .. table::
    :widths: auto
 
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`erase_var<class_Blackboard_method_erase_var>` **(** String p_name **)**                                                  |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Blackboard<class_Blackboard>` | :ref:`get_parent_scope<class_Blackboard_method_get_parent_scope>` **(** **)** |const|                                          |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | Variant                             | :ref:`get_var<class_Blackboard_method_get_var>` **(** String p_name, Variant p_default=null **)** |const|                      |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | bool                                | :ref:`has_var<class_Blackboard_method_has_var>` **(** String p_name **)** |const|                                              |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`prefetch_nodepath_vars<class_Blackboard_method_prefetch_nodepath_vars>` **(** Node p_node **)**                          |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`set_parent_scope<class_Blackboard_method_set_parent_scope>` **(** :ref:`Blackboard<class_Blackboard>` p_blackboard **)** |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`set_var<class_Blackboard_method_set_var>` **(** String p_name, Variant p_value **)**                                     |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Blackboard<class_Blackboard>` | :ref:`top<class_Blackboard_method_top>` **(** **)** |const|                                                                    |
-   +-------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`bind_var_to_property<class_Blackboard_method_bind_var_to_property>` **(** String p_name, Object p_object, StringName p_property **)** |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`erase_var<class_Blackboard_method_erase_var>` **(** String p_name **)**                                                               |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Blackboard<class_Blackboard>` | :ref:`get_parent_scope<class_Blackboard_method_get_parent_scope>` **(** **)** |const|                                                       |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | Variant                             | :ref:`get_var<class_Blackboard_method_get_var>` **(** String p_name, Variant p_default=null, bool p_complain=true **)** |const|             |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | bool                                | :ref:`has_var<class_Blackboard_method_has_var>` **(** String p_name **)** |const|                                                           |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`prefetch_nodepath_vars<class_Blackboard_method_prefetch_nodepath_vars>` **(** Node p_node **)**                                       |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`set_parent_scope<class_Blackboard_method_set_parent_scope>` **(** :ref:`Blackboard<class_Blackboard>` p_blackboard **)**              |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`set_var<class_Blackboard_method_set_var>` **(** String p_name, Variant p_value **)**                                                  |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Blackboard<class_Blackboard>` | :ref:`top<class_Blackboard_method_top>` **(** **)** |const|                                                                                 |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`unbind_var<class_Blackboard_method_unbind_var>` **(** String p_name **)**                                                             |
+   +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -59,6 +63,18 @@ Methods
 
 Method Descriptions
 -------------------
+
+.. _class_Blackboard_method_bind_var_to_property:
+
+.. rst-class:: classref-method
+
+void **bind_var_to_property** **(** String p_name, Object p_object, StringName p_property **)**
+
+Establish a binding between a variable and the object's property specified by ``p_property`` and ``p_object``. Changes to the variable update the property, and vice versa.
+
+.. rst-class:: classref-item-separator
+
+----
 
 .. _class_Blackboard_method_erase_var:
 
@@ -88,9 +104,9 @@ Returns a Blackboard that serves as the parent scope for this instance.
 
 .. rst-class:: classref-method
 
-Variant **get_var** **(** String p_name, Variant p_default=null **)** |const|
+Variant **get_var** **(** String p_name, Variant p_default=null, bool p_complain=true **)** |const|
 
-Returns variable value.
+Returns variable value or ``p_default`` if variable doesn't exist. If ``p_complain`` is ``true``, an error will be printed if variable doesn't exist.
 
 .. rst-class:: classref-item-separator
 
@@ -102,7 +118,7 @@ Returns variable value.
 
 bool **has_var** **(** String p_name **)** |const|
 
-Returns ``true`` if the Blackboard contains the ``p_key`` variable, including the parent scopes.
+Returns ``true`` if the Blackboard contains the ``p_name`` variable, including the parent scopes.
 
 .. rst-class:: classref-item-separator
 
@@ -151,6 +167,18 @@ Assigns a value to a Blackboard variable.
 :ref:`Blackboard<class_Blackboard>` **top** **(** **)** |const|
 
 Returns the topmost **Blackboard** in the scope chain.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_Blackboard_method_unbind_var:
+
+.. rst-class:: classref-method
+
+void **unbind_var** **(** String p_name **)**
+
+Remove binding from a variable.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`

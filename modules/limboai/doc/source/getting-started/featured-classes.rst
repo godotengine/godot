@@ -1,3 +1,5 @@
+.. _featured_classes:
+
 Important classes
 =================
 

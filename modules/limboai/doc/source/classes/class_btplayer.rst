@@ -55,13 +55,15 @@ Methods
 .. table::
    :widths: auto
 
-   +------+-----------------------------------------------------------------------------------+
-   | int  | :ref:`get_last_status<class_BTPlayer_method_get_last_status>` **(** **)** |const| |
-   +------+-----------------------------------------------------------------------------------+
-   | void | :ref:`restart<class_BTPlayer_method_restart>` **(** **)**                         |
-   +------+-----------------------------------------------------------------------------------+
-   | void | :ref:`update<class_BTPlayer_method_update>` **(** float p_delta **)**             |
-   +------+-----------------------------------------------------------------------------------+
+   +-----------------------------+-----------------------------------------------------------------------------------+
+   | int                         | :ref:`get_last_status<class_BTPlayer_method_get_last_status>` **(** **)** |const| |
+   +-----------------------------+-----------------------------------------------------------------------------------+
+   | :ref:`BTTask<class_BTTask>` | :ref:`get_tree_instance<class_BTPlayer_method_get_tree_instance>` **(** **)**     |
+   +-----------------------------+-----------------------------------------------------------------------------------+
+   | void                        | :ref:`restart<class_BTPlayer_method_restart>` **(** **)**                         |
+   +-----------------------------+-----------------------------------------------------------------------------------+
+   | void                        | :ref:`update<class_BTPlayer_method_update>` **(** float p_delta **)**             |
+   +-----------------------------+-----------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -270,6 +272,18 @@ Method Descriptions
 int **get_last_status** **(** **)** |const|
 
 Returns the behavior tree's last execution status. See :ref:`Status<enum_BT_Status>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BTPlayer_method_get_tree_instance:
+
+.. rst-class:: classref-method
+
+:ref:`BTTask<class_BTTask>` **get_tree_instance** **(** **)**
+
+Returns the root task of the instantiated behavior tree.
 
 .. rst-class:: classref-item-separator
 

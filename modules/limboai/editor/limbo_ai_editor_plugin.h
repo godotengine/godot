@@ -77,6 +77,10 @@ private:
 		ACTION_CHANGE_TYPE,
 		ACTION_EDIT_SCRIPT,
 		ACTION_OPEN_DOC,
+		ACTION_CUT,
+		ACTION_COPY,
+		ACTION_PASTE,
+		ACTION_PASTE_AFTER,
 		ACTION_MOVE_UP,
 		ACTION_MOVE_DOWN,
 		ACTION_DUPLICATE,
@@ -109,12 +113,16 @@ private:
 		Ref<Texture2D> change_type_icon;
 		Ref<Texture2D> extract_subtree_icon;
 		Ref<Texture2D> behavior_tree_icon;
+		Ref<Texture2D> cut_icon;
+		Ref<Texture2D> copy_icon;
+		Ref<Texture2D> paste_icon;
 	} theme_cache;
 
 	EditorPlugin *plugin;
 	Vector<Ref<BehaviorTree>> history;
 	int idx_history;
 	HashSet<Ref<BehaviorTree>> dirty;
+	Ref<BTTask> clipboard_task;
 
 	VBoxContainer *vbox;
 	Button *header;
@@ -155,11 +163,11 @@ private:
 
 	AcceptDialog *info_dialog;
 
-	void _add_task(const Ref<BTTask> &p_task);
+	void _add_task(const Ref<BTTask> &p_task, bool p_as_sibling);
+	void _add_task_with_prototype(const Ref<BTTask> &p_prototype);
 	Ref<BTTask> _create_task_by_class_or_path(const String &p_class_or_path) const;
 	void _add_task_by_class_or_path(const String &p_class_or_path);
 	void _remove_task(const Ref<BTTask> &p_task);
-	_FORCE_INLINE_ void _add_task_with_prototype(const Ref<BTTask> &p_prototype) { _add_task(p_prototype->clone()); }
 	void _update_header() const;
 	void _update_history_buttons();
 	void _update_favorite_tasks();
@@ -217,7 +225,7 @@ public:
 	void apply_changes();
 
 #ifdef LIMBOAI_GDEXTENSION
-	virtual void _input(const Ref<InputEvent> &p_event) override { _process_shortcut_input(p_event); }
+	virtual void _shortcut_input(const Ref<InputEvent> &p_event) override { _process_shortcut_input(p_event); }
 #endif
 
 	LimboAIEditor();

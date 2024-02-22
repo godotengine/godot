@@ -241,6 +241,8 @@ void BTPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("restart"), &BTPlayer::restart);
 	ClassDB::bind_method(D_METHOD("get_last_status"), &BTPlayer::get_last_status);
 
+	ClassDB::bind_method(D_METHOD("get_tree_instance"), &BTPlayer::get_tree_instance);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,Manual"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "get_active");

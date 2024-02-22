@@ -12,7 +12,7 @@ BTAction
 
 **Inherits:** :ref:`BTTask<class_BTTask>` **<** :ref:`BT<class_BT>`
 
-**Inherited By:** :ref:`BTAwaitAnimation<class_BTAwaitAnimation>`, :ref:`BTCallMethod<class_BTCallMethod>`, :ref:`BTConsolePrint<class_BTConsolePrint>`, :ref:`BTFail<class_BTFail>`, :ref:`BTPauseAnimation<class_BTPauseAnimation>`, :ref:`BTPlayAnimation<class_BTPlayAnimation>`, :ref:`BTRandomWait<class_BTRandomWait>`, :ref:`BTSetAgentProperty<class_BTSetAgentProperty>`, :ref:`BTSetVar<class_BTSetVar>`, :ref:`BTStopAnimation<class_BTStopAnimation>`, :ref:`BTWait<class_BTWait>`, :ref:`BTWaitTicks<class_BTWaitTicks>`
+**Inherited By:** :ref:`BTAwaitAnimation<class_BTAwaitAnimation>`, :ref:`BTCallMethod<class_BTCallMethod>`, :ref:`BTConsolePrint<class_BTConsolePrint>`, :ref:`BTEvaluateExpression<class_BTEvaluateExpression>`, :ref:`BTFail<class_BTFail>`, :ref:`BTPauseAnimation<class_BTPauseAnimation>`, :ref:`BTPlayAnimation<class_BTPlayAnimation>`, :ref:`BTRandomWait<class_BTRandomWait>`, :ref:`BTSetAgentProperty<class_BTSetAgentProperty>`, :ref:`BTSetVar<class_BTSetVar>`, :ref:`BTStopAnimation<class_BTStopAnimation>`, :ref:`BTWait<class_BTWait>`, :ref:`BTWaitTicks<class_BTWaitTicks>`
 
 Base class for all :ref:`BehaviorTree<class_BehaviorTree>` actions.
 

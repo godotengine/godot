@@ -37,6 +37,18 @@ Properties
    | String                                  | :ref:`success_event<class_BTState_property_success_event>` | ``"success"`` |
    +-----------------------------------------+------------------------------------------------------------+---------------+
 
+.. rst-class:: classref-reftable-group
+
+Methods
+-------
+
+.. table::
+   :widths: auto
+
+   +-----------------------------+--------------------------------------------------------------------------------------+
+   | :ref:`BTTask<class_BTTask>` | :ref:`get_tree_instance<class_BTState_method_get_tree_instance>` **(** **)** |const| |
+   +-----------------------------+--------------------------------------------------------------------------------------+
+
 .. rst-class:: classref-section-separator
 
 ----
@@ -92,6 +104,23 @@ String **success_event** = ``"success"``
 - String **get_success_event** **(** **)**
 
 HSM event that will be dispatched when the behavior tree results in ``SUCCESS``. See :ref:`LimboState.dispatch<class_LimboState_method_dispatch>`.
+
+.. rst-class:: classref-section-separator
+
+----
+
+.. rst-class:: classref-descriptions-group
+
+Method Descriptions
+-------------------
+
+.. _class_BTState_method_get_tree_instance:
+
+.. rst-class:: classref-method
+
+:ref:`BTTask<class_BTTask>` **get_tree_instance** **(** **)** |const|
+
+Returns the root task of the instantiated behavior tree.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`

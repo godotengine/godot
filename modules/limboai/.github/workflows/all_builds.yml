@@ -100,3 +100,10 @@ jobs:
       godot-cpp-treeish: ${{ inputs.godot-cpp-treeish }}
       limboai-treeish: ${{ needs.cache-sha.outputs.limboai-sha }}
       test-build: false
+
+  demo:
+    name: 🎮️ Demo project
+    needs: cache-sha
+    uses: ./.github/workflows/demo.yml
+    with:
+      limboai-treeish: ${{ needs.cache-sha.outputs.limboai-sha }}

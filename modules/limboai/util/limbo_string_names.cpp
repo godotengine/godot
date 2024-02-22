@@ -28,6 +28,7 @@ LimboStringNames *LimboStringNames::singleton = nullptr;
 
 LimboStringNames::LimboStringNames() {
 	_draw_failure_status = SN("_draw_failure_status");
+	_draw_fresh = SN("_draw_fresh");
 	_draw_probability = SN("_draw_probability");
 	_draw_running_status = SN("_draw_running_status");
 	_draw_success_status = SN("_draw_success_status");
@@ -42,6 +43,9 @@ LimboStringNames::LimboStringNames() {
 	_update_banners = SN("_update_banners");
 	_weight_ = SN("_weight_");
 	accent_color = SN("accent_color");
+	ActionCopy = SN("ActionCopy");
+	ActionCut = SN("ActionCut");
+	ActionPaste = SN("ActionPaste");
 	Add = SN("Add");
 	add_child = SN("add_child");
 	add_child_at_index = SN("add_child_at_index");

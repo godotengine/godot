@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BehaviorTreeView" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Visualizes the current state of a [BehaviorTree] instance.
+	</brief_description>
+	<description>
+		Visualizes the current state of a [BehaviorTree] instance. See also [BehaviorTreeData].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="update_tree">
+			<return type="void" />
+			<param index="0" name="p_behavior_tree_data" type="BehaviorTreeData" />
+			<description>
+				Updates the representation of a [BehaviorTree] instance. See also [BehaviorTreeData].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="update_interval_msec" type="int" setter="set_update_interval_msec" getter="get_update_interval_msec" default="0">
+			Minimum delay between two updates (in milliseconds). Set to higher values for a lower CPU load.
+		</member>
+	</members>
+</class>

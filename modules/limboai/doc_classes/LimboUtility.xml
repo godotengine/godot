@@ -8,6 +8,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="decorate_output_var" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="p_variable" type="String" />
+			<description>
+				Just like [method decorate_var], produces a string with a [Blackboard] variable name that is formatted for display, and also adds an additional symbol to indicate that the variable is used as an output.
+			</description>
+		</method>
 		<method name="decorate_var" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="p_variable" type="String" />

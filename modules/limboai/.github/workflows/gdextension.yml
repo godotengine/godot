@@ -34,6 +34,8 @@ on:
 env:
   SCONS_CACHE_LIMIT: 4096
   SCONSFLAGS: dev_build=no debug_symbols=no
+  EM_VERSION: 3.1.45
+  EM_CACHE_FOLDER: "emsdk-cache"
 
 jobs:
   gdextension:
@@ -85,8 +87,22 @@ jobs:
             arch: universal
             should-build: true
 
+          - name: 🌐 Web (wasm32, release)
+            runner: ubuntu-20.04
+            platform: web
+            target: template_release
+            arch: wasm32
+            should-build: true
+
+          - name: 🌐 Web (wasm32, debug)
+            runner: ubuntu-20.04
+            platform: web
+            target: template_debug
+            arch: wasm32
+            should-build: true
+
         exclude:
-          - { opts: {should-build: false }}
+          - { opts: { should-build: false } }
 
     env:
       BIN: liblimboai.${{matrix.opts.platform}}.${{matrix.opts.target}}.${{matrix.opts.arch}}
@@ -134,11 +150,30 @@ jobs:
         if: matrix.opts.platform == 'windows' || matrix.opts.platform == 'macos'
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
-          architecture: 'x64'
+          python-version: "3.x"
+          architecture: "x64"
+
+      - name: Set up Emscripten cache
+        if: matrix.opts.platform == 'web'
+        uses: actions/cache@v3
+        with:
+          path: ${{env.EM_CACHE_FOLDER}}
+          key: ${{env.EM_VERSION}}-${{runner.os}}-libs
+
+      - name: Set up Emscripten
+        if: matrix.opts.platform == 'web'
+        uses: mymindstorm/setup-emsdk@v12
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+
+      - name: Verify Emscripten setup
+        if: matrix.opts.platform == 'web'
+        run: |
+          emcc -v
 
       - name: Set up scons
-        if: matrix.opts.platform == 'windows' || matrix.opts.platform == 'macos'
+        if: matrix.opts.platform == 'windows' || matrix.opts.platform == 'macos' || matrix.opts.platform == 'web'
         run: |
           python -c "import sys; print(sys.version)"
           python -m pip install scons==4.4.0
@@ -168,7 +203,6 @@ jobs:
           echo "---"
           ls -l -R ./demo/
 
-
       - name: Compilation
         shell: bash
         env:
@@ -183,13 +217,14 @@ jobs:
           mkdir out
           mv demo/addons/ out/
           cp limboai/{README,LICENSE,LOGO_LICENSE}.md out/addons/limboai/
-          cp -R limboai/demo/demo out/demo
+          cp -R limboai/demo/demo/ out/demo/
+          cp limboai/demo/LICENSE_ASSETS.md out/demo/
           rm -f out/addons/limboai/bin/*.{exp,lib,pdb}
           echo "---"
           ls -R out/
 
       - name: Strip lib
-        if: matrix.opts.platform != 'windows'
+        if: matrix.opts.platform != 'windows' && matrix.opts.platform != 'web'
         run: |
           ls -l -R out/addons/limboai/bin/
           echo "---"

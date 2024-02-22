@@ -13,9 +13,13 @@
 ## Directory layout:
 ##   project/ -- call this script from here, directory name doesn't matter.
 ##   project/limboai/ -- LimboAI repository should be here after you clone it.
-##   project/godot-cpp/ -- will be created by this script.
-##   project/demo/ -- symbolic link that will be created by this script.
-##   project/SConstruct -- symbolic link that will be created by this script.
+##   project/godot-cpp/ -- will be created by this script, unless cloned manually.
+##   project/demo/ -- symbolic link (leads to limboai/demo).
+##   project/demo/addons/limboai/limboai.gdextension -- symbolid link (leads to limboai/gdextension/limboai.gdextension).
+##   project/demo/addons/limboai/icons/ -- symbolic link (leads to icons/).
+##   project/SConstruct -- symbolic link (leads to limboai/gdextension/SContruct).
+##
+##   Note: Symbolic links will be created by this script.
 ##
 ## Dependencies: bash, git, python3.
 

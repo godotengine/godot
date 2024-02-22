@@ -22,6 +22,7 @@ void BBVariable::unref() {
 
 void BBVariable::set_value(const Variant &p_value) {
 	data->value = p_value; // Setting value even when bound as a fallback in case the binding fails.
+	data->value_changed = true;
 
 	if (is_bound()) {
 		Object *obj = ObjectDB::get_instance(ObjectID(data->bound_object));
@@ -83,6 +84,9 @@ BBVariable BBVariable::duplicate() const {
 	var.data->hint_string = data->hint_string;
 	var.data->type = data->type;
 	var.data->value = data->value;
+	var.data->binding_path = data->binding_path;
+	var.data->bound_object = data->bound_object;
+	var.data->bound_property = data->bound_property;
 	return var;
 }
 
@@ -135,11 +139,11 @@ bool BBVariable::operator==(const BBVariable &p_var) const {
 		return false;
 	}
 
-	if (data->value != p_var.data->value) {
+	if (data->hint_string != p_var.data->hint_string) {
 		return false;
 	}
 
-	if (data->hint_string != p_var.data->hint_string) {
+	if (get_value() != p_var.get_value()) {
 		return false;
 	}
 

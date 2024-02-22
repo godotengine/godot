@@ -48,12 +48,22 @@ private:
 		Ref<Font> font_custom_name;
 	} theme_cache;
 
-	Vector<int> collapsed_ids;
+	Vector<uint64_t> collapsed_ids;
+	uint64_t last_root_id = 0;
+
+	int last_update_msec = 0;
+	int update_interval_msec = 0;
+	Ref<BehaviorTreeData> update_data;
+	bool update_pending = false;
 
 	void _draw_success_status(Object *p_obj, Rect2 p_rect);
 	void _draw_running_status(Object *p_obj, Rect2 p_rect);
 	void _draw_failure_status(Object *p_obj, Rect2 p_rect);
+	void _draw_fresh(Object *p_obj, Rect2 p_rect) {}
 	void _item_collapsed(Object *p_obj);
+	double _get_editor_scale() const;
+
+	void _update_tree(const Ref<BehaviorTreeData> &p_data);
 
 protected:
 	void _do_update_theme_item_cache();
@@ -63,8 +73,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	void update_tree(const BehaviorTreeData &p_data);
 	void clear();
+	void update_tree(const Ref<BehaviorTreeData> &p_data);
+
+	void set_update_interval_msec(int p_milliseconds) { update_interval_msec = p_milliseconds; }
+	int get_update_interval_msec() const { return update_interval_msec; }
 
 	BehaviorTreeView();
 };

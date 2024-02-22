@@ -90,7 +90,8 @@ void CompatShortcutBin::_shortcut_input(const Ref<InputEvent> &p_event) {
 
 	if (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventShortcut>(p_event.ptr())) {
 		// HACK: Propagate the window input to the editor main window to handle global shortcuts.
-		grandparent_window->push_input(p_event);
+		// ! This hack crashes the editor if used in GDExtension. Disabled for now.
+		// grandparent_window->push_input(p_event);
 
 		if (grandparent_window->is_input_handled()) {
 			get_viewport()->set_input_as_handled();
@@ -355,8 +356,9 @@ CompatWindowWrapper::CompatWindowWrapper() {
 	add_child(window);
 	window->hide();
 
-	CompatShortcutBin *capturer = memnew(CompatShortcutBin);
-	window->add_child(capturer);
+	// ! CompatShortcutBin crashes the editor if used in GDExtension. Disabled for now.
+	// CompatShortcutBin *capturer = memnew(CompatShortcutBin);
+	// window->add_child(capturer);
 
 	window_background = memnew(Panel);
 	window_background->set_anchors_and_offsets_preset(PRESET_FULL_RECT);

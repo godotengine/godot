@@ -24,6 +24,9 @@ using namespace godot;
 class BBVariable {
 private:
 	struct Data {
+		// Is used to decide if the value needs to be synced in a derived plan.
+		bool value_changed = false;
+
 		SafeRefCount refcount;
 		Variant value;
 		Variant::Type type = Variant::NIL;
@@ -53,6 +56,9 @@ public:
 
 	BBVariable duplicate() const;
 
+	_FORCE_INLINE_ bool is_value_changed() const { return data->value_changed; }
+	_FORCE_INLINE_ void reset_value_changed() { data->value_changed = false; }
+
 	bool is_same_prop_info(const BBVariable &p_other) const;
 	void copy_prop_info(const BBVariable &p_other);
 
@@ -62,7 +68,7 @@ public:
 	bool has_binding() { return data->binding_path.is_empty(); }
 
 	// * Runtime binding methods
-	bool is_bound() const { return data->bound_object != 0; }
+	_FORCE_INLINE_ bool is_bound() const { return data->bound_object != 0; }
 	void bind(Object *p_object, const StringName &p_property);
 	void unbind();
 

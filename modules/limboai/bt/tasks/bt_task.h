@@ -80,6 +80,7 @@ private:
 		Vector<Ref<BTTask>> children;
 		Status status = FRESH;
 		double elapsed = 0.0;
+		bool display_collapsed = false;
 	} data;
 
 	Array _get_children() const;
@@ -114,6 +115,9 @@ public:
 
 	_FORCE_INLINE_ Node *get_agent() const { return data.agent; }
 	void set_agent(Node *p_agent) { data.agent = p_agent; }
+
+	void set_display_collapsed(bool p_display_collapsed);
+	bool is_displayed_collapsed() const;
 
 	String get_custom_name() const { return data.custom_name; }
 	void set_custom_name(const String &p_name);

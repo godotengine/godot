@@ -16,6 +16,12 @@
 				Returns the behavior tree's last execution status. See [enum BT.Status].
 			</description>
 		</method>
+		<method name="get_tree_instance">
+			<return type="BTTask" />
+			<description>
+				Returns the root task of the instantiated behavior tree.
+			</description>
+		</method>
 		<method name="restart">
 			<return type="void" />
 			<description>

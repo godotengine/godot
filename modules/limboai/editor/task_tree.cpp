@@ -81,6 +81,7 @@ void TaskTree::_update_item(TreeItem *p_item) {
 	p_item->set_icon(0, LimboUtility::get_singleton()->get_task_icon(type_arg));
 	p_item->set_icon_max_width(0, 16 * EDSCALE);
 	p_item->set_editable(0, false);
+	p_item->set_collapsed(task->is_displayed_collapsed());
 
 	for (int i = 0; i < p_item->get_button_count(0); i++) {
 		p_item->erase_button(0, i);
@@ -111,7 +112,9 @@ void TaskTree::_update_tree() {
 	}
 
 	if (bt->get_root_task().is_valid()) {
+		updating_tree = true;
 		_create_tree(bt->get_root_task(), nullptr);
+		updating_tree = false;
 	}
 
 	TreeItem *item = _find_item(sel);
@@ -167,6 +170,21 @@ void TaskTree::_on_item_activated() {
 	emit_signal(LW_NAME(task_activated));
 }
 
+void TaskTree::_on_item_collapsed(Object *p_obj) {
+	if (updating_tree) {
+		return;
+	}
+
+	TreeItem *item = Object::cast_to<TreeItem>(p_obj);
+	if (!item) {
+		return;
+	}
+
+	Ref<BTTask> task = item->get_metadata(0);
+	ERR_FAIL_NULL(task);
+	task->set_display_collapsed(item->is_collapsed());
+}
+
 void TaskTree::_on_task_changed() {
 	_update_item(tree->get_selected());
 }
@@ -183,7 +201,9 @@ void TaskTree::load_bt(const Ref<BehaviorTree> &p_behavior_tree) {
 	tree->clear();
 	probability_rect_cache.clear();
 	if (bt->get_root_task().is_valid()) {
+		updating_tree = true;
 		_create_tree(bt->get_root_task(), nullptr);
+		updating_tree = false;
 	}
 }
 
@@ -366,6 +386,7 @@ void TaskTree::_notification(int p_what) {
 			tree->connect("item_mouse_selected", callable_mp(this, &TaskTree::_on_item_mouse_selected));
 			tree->connect("item_selected", callable_mp(this, &TaskTree::_on_item_selected));
 			tree->connect("item_activated", callable_mp(this, &TaskTree::_on_item_activated));
+			tree->connect("item_collapsed", callable_mp(this, &TaskTree::_on_item_collapsed));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			_do_update_theme_item_cache();
@@ -399,6 +420,7 @@ void TaskTree::_bind_methods() {
 
 TaskTree::TaskTree() {
 	editable = true;
+	updating_tree = false;
 
 	tree = memnew(Tree);
 	add_child(tree);

@@ -1,0 +1,196 @@
+[gd_scene load_steps=15 format=3 uid="uid://clyhgbpfpmtw7"]
+
+[ext_resource type="Script" path="res://demo/scenes/game.gd" id="1_qw71e"]
+[ext_resource type="Theme" uid="uid://boqtjf88xcpu4" path="res://demo/assets/ui.theme" id="2_r21q3"]
+[ext_resource type="Texture2D" uid="uid://tyu0ua1ju38l" path="res://demo/assets/logo.png" id="3_g0us4"]
+[ext_resource type="FontFile" uid="uid://d25vkmce7mhlt" path="res://demo/assets/fonts/knewave_regular.ttf" id="4_w0vii"]
+[ext_resource type="Script" path="res://demo/scenes/base/toggle_fullscreen.gd" id="5_m16ov"]
+[ext_resource type="Texture2D" uid="uid://dlw15foygohrk" path="res://demo/assets/hp_under.png" id="6_622dk"]
+[ext_resource type="Texture2D" uid="uid://cls8jtnu413o8" path="res://demo/assets/hp_over.png" id="7_430mt"]
+[ext_resource type="Texture2D" uid="uid://hnwi23oef752" path="res://demo/assets/hp_bar.png" id="8_invih"]
+[ext_resource type="PackedScene" uid="uid://bsig1usigbbuy" path="res://demo/scenes/base/arena.tscn" id="9_k3uu1"]
+[ext_resource type="PackedScene" uid="uid://bpd1wmw2f7bvg" path="res://demo/props/gong.tscn" id="10_tftjb"]
+[ext_resource type="PackedScene" uid="uid://d07ag5dcje13i" path="res://demo/agents/player/player.tscn" id="11_bndob"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_qvxvp"]
+font = ExtResource("4_w0vii")
+font_size = 33
+outline_size = 11
+outline_color = Color(0.258915, 0.234974, 0.191974, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_628x3"]
+font = ExtResource("4_w0vii")
+font_size = 36
+font_color = Color(1, 1, 0.239216, 1)
+outline_size = 20
+outline_color = Color(0.211521, 0.23888, 0.290166, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_grcwx"]
+font = ExtResource("4_w0vii")
+font_size = 37
+outline_size = 12
+outline_color = Color(0.317525, 0.344884, 0.388373, 1)
+
+[node name="Game" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1_qw71e")
+
+[node name="UI Layer" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="UI Layer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_r21q3")
+
+[node name="Toolbar" type="PanelContainer" parent="UI Layer/Control"]
+custom_minimum_size = Vector2(0, 54.26)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 64.0
+grow_horizontal = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI Layer/Control/Toolbar"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ToggleFullscreen" type="Button" parent="UI Layer/Control/Toolbar/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+theme_override_fonts/font = ExtResource("4_w0vii")
+theme_override_font_sizes/font_size = 22
+text = "Toggle Fullscreen"
+script = ExtResource("5_m16ov")
+
+[node name="Switch to Showcase" type="Button" parent="UI Layer/Control/Toolbar/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+theme_override_fonts/font = ExtResource("4_w0vii")
+theme_override_font_sizes/font_size = 22
+text = "Switch to Showcase
+"
+
+[node name="RoundCounter" type="Label" parent="UI Layer/Control/Toolbar/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 6
+text = "Strike the Gong to begin!"
+label_settings = SubResource("LabelSettings_qvxvp")
+
+[node name="HPBar" type="TextureProgressBar" parent="UI Layer/Control/Toolbar/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+value = 100.0
+texture_under = ExtResource("6_622dk")
+texture_over = ExtResource("7_430mt")
+texture_progress = ExtResource("8_invih")
+
+[node name="Logo" type="TextureRect" parent="UI Layer/Control"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1899.0
+offset_top = -130.0
+offset_right = -1643.0
+offset_bottom = -45.0
+grow_horizontal = 0
+grow_vertical = 0
+texture = ExtResource("3_g0us4")
+
+[node name="Demo project" type="Label" parent="UI Layer/Control/Logo"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -316.0
+offset_top = -72.0
+offset_right = 13.0
+offset_bottom = 74.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "demo project"
+label_settings = SubResource("LabelSettings_628x3")
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Keys" type="Label" parent="UI Layer/Control"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -336.0
+offset_top = -208.0
+offset_right = -18.0
+offset_bottom = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "Move       WASD
+Dodge     SPACE     
+Attack    ENTER / F
+"
+label_settings = SubResource("LabelSettings_grcwx")
+
+[node name="Arena" parent="." instance=ExtResource("9_k3uu1")]
+metadata/_edit_lock_ = true
+
+[node name="Gong" parent="." instance=ExtResource("10_tftjb")]
+position = Vector2(923, -21)
+
+[node name="Player" parent="." instance=ExtResource("11_bndob")]
+position = Vector2(843, 455)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position = Vector2(0, -100)
+zoom = Vector2(0.88, 0.88)
+process_callback = 0
+position_smoothing_enabled = true
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+drag_top_margin = 0.1
+drag_bottom_margin = 0.1
+
+[node name="SpawnPoints" type="Node2D" parent="."]
+
+[node name="SpawnPosition1" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(512, -180)
+
+[node name="SpawnPosition2" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(1421, -150)
+
+[node name="SpawnPosition3" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(1512, 300)
+
+[node name="SpawnPosition4" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(2264, 345)
+
+[node name="SpawnPosition5" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(1655, 789)
+
+[node name="SpawnPosition6" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(823, 826)
+
+[node name="SpawnPosition7" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(67, 648)
+
+[node name="SpawnPosition8" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(-399, 434)
+
+[node name="SpawnPosition9" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(629, 417)
+
+[node name="SpawnPosition10" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(1859, 3)
+
+[connection signal="pressed" from="UI Layer/Control/Toolbar/HBoxContainer/Switch to Showcase" to="." method="_on_switch_to_showcase_pressed"]
+[connection signal="gong_struck" from="Gong" to="." method="_on_gong_gong_struck"]

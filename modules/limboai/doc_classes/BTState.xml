@@ -8,6 +8,14 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_tree_instance" qualifiers="const">
+			<return type="BTTask" />
+			<description>
+				Returns the root task of the instantiated behavior tree.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="behavior_tree" type="BehaviorTree" setter="set_behavior_tree" getter="get_behavior_tree">
 			A [BehaviorTree] resource that defines state behavior.

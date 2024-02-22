@@ -20,5 +20,4 @@ runs:
 
     - name: Set NAME_PREFIX
       shell: bash
-      run: echo "NAME_PREFIX=gdextension-${GDEXTENSION_VERSION}.limboai+${LIMBOAI_VERSION}" >> "$GITHUB_ENV"
-
+      run: echo "NAME_PREFIX=limboai+${LIMBOAI_VERSION}.gdextension-${GDEXTENSION_VERSION}" >> "$GITHUB_ENV"

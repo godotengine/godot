@@ -1,5 +1,6 @@
 # LimboAI-specific
 demo/addons/
+demo/script_templates/
 icons/*.import
 
 # Godot auto generated files

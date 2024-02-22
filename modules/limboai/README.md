@@ -11,7 +11,7 @@
 ![Discord](https://img.shields.io/discord/1185664967379267774?logo=discord&link=https%3A%2F%2Fdiscord.gg%2FN5MGC95GpP)
 ![Mastodon Follow](https://img.shields.io/mastodon/follow/109346796150895359?domain=https%3A%2F%2Fmastodon.gamedev.place)
 
-**LimboAI** is an open-source C++ module for **Godot Engine 4** providing a combination of
+**LimboAI** is an open-source C++ plugin for **Godot Engine 4** providing a combination of
 **Behavior Trees** and **State Machines**, which can be used together to create complex AI behaviors.
 It comes with a behavior tree editor, built-in documentation, visual debugger, and more!
 While it is implemented in C++, it fully supports GDScript for [creating your own tasks](https://limboai.readthedocs.io/en/latest/getting-started/custom-tasks.html) and states.
@@ -33,10 +33,14 @@ Behavior Trees are powerful hierarchical structures used to model and control th
     - Control execution flow using composite, decorator, and condition tasks.
     - [Create custom tasks](https://limboai.readthedocs.io/en/latest/getting-started/custom-tasks.html) by extending core classes: `BTAction`, `BTCondition`, `BTDecorator`, and `BTComposite`.
     - Built-in class documentation. Check out the `BehaviorTree` class documentation to get started.
-    - Share data seamlessly between tasks using the `Blackboard`.
-    - Blackboard scopes isolate variable namespaces and enable advanced techniques like sharing data between agents in a group.
+    - Blackboard: Share data seamlessly between tasks using the `Blackboard`.
+      - Blackboard plans: Define variables in the BehaviorTree resource and override their values in the BTPlayer node.
+      - Blackboard scopes: Isolate variable namespaces and enable advanced techniques like sharing data between several agents in a group.
+      - Blackboard parameters: Export a BB parameter, for which user can provide a value or bind it to a blackboard variable (can be used in custom tasks).
+      - Editor support: Blackboard plan editor, and inspector property editor for exported string properties ending with "_var".
     - Use the `BTSubtree` task to execute a tree from a different resource file, promoting organization and reusability.
     - Visual Debugger: Inspect the execution of any BT in a running scene to identify and troubleshoot issues.
+    - Visualize BT in-game using `BehaviorTreeView` node (for custom in-game tools).
     - Monitor tree performance with custom performance monitors.
 
 - **Hierarchical State Machines (HSM):**
@@ -52,6 +56,8 @@ Behavior Trees are powerful hierarchical structures used to model and control th
 
 - **GDExtension:** LimboAI can be [used as extension](https://limboai.readthedocs.io/en/latest/getting-started/gdextension.html). Custom engine builds are not necessary.
 
+- **Demo Project:** Check out our extensive demo project with a tutorial (an introduction to behavior trees with examples)!
+
 ## Getting LimboAI
 
 LimboAI can be used as either a C++ module or as a GDExtension shared library. GDExtension version is more convenient to use but somewhat limited in features. Whichever you choose to use, your project will stay compatible with both and you can switch from one to the other any time. See [Using GDExtension](https://limboai.readthedocs.io/en/latest/getting-started/gdextension.html).
@@ -62,6 +68,8 @@ LimboAI can be used as either a C++ module or as a GDExtension shared library. G
 - For release builds, check [**Releases**](https://github.com/limbonaut/limboai/releases).
 
 ### Compiling from source
+
+>**🛈 For GDExtension:** Refer to comments in [setup_gdextension.sh](./gdextension/setup_gdextension.sh) file.
 
 - Download the Godot Engine source code and put this module source into the `modules/limboai` directory.
 - Consult the Godot Engine documentation for instructions on [how to build from source code](https://docs.godotengine.org/en/stable/contributing/development/compiling/index.html).
@@ -81,22 +89,22 @@ LimboAI can be used as either a C++ module or as a GDExtension shared library. G
 All contributions are welcome! Feel free to open issues with bug reports and feature requests, and submit PRs.
 
 Got an idea for a behavior tree task that you think would be useful on a variety of projects?
-Feel free to open an issue and describe your concept.
+I invite you to open an issue and describe your concept.
 
 ## Social
 
 We have a fresh new Discord server: https://discord.gg/N5MGC95GpP
 
-I also write about LimboAI development on the Mastodon: https://mastodon.gamedev.place/@limbo.
+I write about LimboAI development on the Mastodon: https://mastodon.gamedev.place/@limbo.
 
 ## Roadmap
 
 Features and improvements that may be implemented in the future:
 - ~~Providing precompiled builds for download.~~ 🗸
 - ~~Tests and CI.~~ 🗸
+- ~~GDExtension support.~~ 🗸
+- ~~Non-trivial demo project.~~ 🗸
 - Expanding the library of commonly useful tasks.
-- Creating a non-trivial demo project to showcase the capabilities of LimboAI.
 - Exploring the execution history of behavior trees in the visual debugger.
 - Per-project ignore list for tasks that users may want to hide in the task palette.
 - GUI editor for state machines.
-~~- Supporting GDExtension in the future, once it matures.~~ 🗸

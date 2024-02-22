@@ -77,6 +77,8 @@ public:
 	void restart();
 	int get_last_status() const { return last_status; }
 
+	Ref<BTTask> get_tree_instance() { return tree_instance; }
+
 	BTPlayer();
 	~BTPlayer();
 

@@ -18,8 +18,16 @@ class BTRunLimit : public BTDecorator {
 	GDCLASS(BTRunLimit, BTDecorator);
 	TASK_CATEGORY(Decorators);
 
+public:
+	enum CountPolicy {
+		COUNT_SUCCESSFUL,
+		COUNT_FAILED,
+		COUNT_ALL,
+	};
+
 private:
 	int run_limit = 1;
+	CountPolicy count_policy = CountPolicy::COUNT_SUCCESSFUL;
 	int num_runs = 0;
 
 protected:
@@ -31,6 +39,11 @@ protected:
 public:
 	void set_run_limit(int p_value);
 	int get_run_limit() const { return run_limit; }
+
+	void set_count_policy(CountPolicy p_policy);
+	CountPolicy get_count_policy() const { return count_policy; }
 };
+
+VARIANT_ENUM_CAST(BTRunLimit::CountPolicy);
 
 #endif // BT_RUN_LIMIT_H
