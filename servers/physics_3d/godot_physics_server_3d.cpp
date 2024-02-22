@@ -1649,6 +1649,27 @@ void GodotPhysicsServer3D::step(real_t p_step) {
 #endif
 }
 
+void GodotPhysicsServer3D::step_second_pass() {
+#ifndef _3D_DISABLED
+
+	if (!active) {
+		return;
+	}
+
+	_update_shapes();
+
+	island_count = 0;
+	active_objects = 0;
+	collision_pairs = 0;
+	for (const GodotSpace3D *E : active_spaces) {
+		stepper->step_second_pass(const_cast<GodotSpace3D *>(E));
+		island_count += E->get_island_count();
+		active_objects += E->get_active_objects();
+		collision_pairs += E->get_collision_pairs();
+	}
+#endif
+}
+
 void GodotPhysicsServer3D::sync() {
 	doing_sync = true;
 }

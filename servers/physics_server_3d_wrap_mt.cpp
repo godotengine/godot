@@ -75,6 +75,10 @@ void PhysicsServer3DWrapMT::step(real_t p_step) {
 	}
 }
 
+void PhysicsServer3DWrapMT::step_second_pass() {
+	physics_server_3d->step_second_pass();
+}
+
 void PhysicsServer3DWrapMT::sync() {
 	if (create_thread) {
 		if (first_frame) {

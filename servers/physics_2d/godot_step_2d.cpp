@@ -296,6 +296,123 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 	_step++;
 }
 
+void GodotStep2D::step_second_pass(GodotSpace2D *p_space) {
+	p_space->lock(); // can't access space during this
+
+	p_space->setup(); //update inertias, etc
+
+	delta = 0.0;
+
+	const SelfList<GodotBody2D>::List *body_list = &p_space->get_active_body_list();
+
+	uint64_t profile_begtime = OS::get_singleton()->get_ticks_usec();
+	uint64_t profile_endtime = 0;
+
+	int active_count = 0;
+
+	const SelfList<GodotBody2D> *b = body_list->first();
+	while (b) {
+		const SelfList<GodotBody2D> *n = b->next();
+		b->self()->contact_count = 0;
+		b = n; // in case it shuts itself down
+	}
+
+	p_space->set_active_objects(active_count);
+
+	/* GENERATE CONSTRAINT ISLANDS FOR MOVING AREAS */
+
+	uint32_t island_count = 0;
+
+	const SelfList<GodotArea2D>::List &aml = p_space->get_moved_area_list();
+
+	while (aml.first()) {
+		for (GodotConstraint2D *E : aml.first()->self()->get_constraints()) {
+			GodotConstraint2D *constraint = E;
+			if (constraint->get_island_step() == _step) {
+				continue;
+			}
+			constraint->set_island_step(_step);
+
+			// Each constraint can be on a separate island for areas as there's no solving phase.
+			++island_count;
+			if (constraint_islands.size() < island_count) {
+				constraint_islands.resize(island_count);
+			}
+			LocalVector<GodotConstraint2D *> &constraint_island = constraint_islands[island_count - 1];
+			constraint_island.clear();
+
+			all_constraints.push_back(constraint);
+			constraint_island.push_back(constraint);
+		}
+		p_space->area_remove_from_moved_list((SelfList<GodotArea2D> *)aml.first()); //faster to remove here
+	}
+
+	/* GENERATE CONSTRAINT ISLANDS FOR ACTIVE RIGID BODIES */
+
+	b = body_list->first();
+
+	uint32_t body_island_count = 0;
+
+	while (b) {
+		GodotBody2D *body = b->self();
+
+		if (body->get_island_step() != _step) {
+			++body_island_count;
+			if (body_islands.size() < body_island_count) {
+				body_islands.resize(body_island_count);
+			}
+			LocalVector<GodotBody2D *> &body_island = body_islands[body_island_count - 1];
+			body_island.clear();
+			body_island.reserve(BODY_ISLAND_SIZE_RESERVE);
+
+			++island_count;
+			if (constraint_islands.size() < island_count) {
+				constraint_islands.resize(island_count);
+			}
+			LocalVector<GodotConstraint2D *> &constraint_island = constraint_islands[island_count - 1];
+			constraint_island.clear();
+			constraint_island.reserve(ISLAND_SIZE_RESERVE);
+
+			_populate_island(body, body_island, constraint_island);
+
+			if (body_island.is_empty()) {
+				--body_island_count;
+			}
+
+			if (constraint_island.is_empty()) {
+				--island_count;
+			}
+		}
+		b = b->next();
+	}
+
+	p_space->set_island_count((int)island_count);
+
+	/* SETUP CONSTRAINTS / PROCESS COLLISIONS */
+
+	uint32_t total_constraint_count = all_constraints.size();
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep2D::_setup_constraint, nullptr, total_constraint_count, -1, true, SNAME("Physics2DConstraintSetup"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
+	/* PRE-SOLVE CONSTRAINT ISLANDS */
+
+	// Warning: This doesn't run on threads, because it involves thread-unsafe processing.
+	for (uint32_t island_index = 0; island_index < island_count; ++island_index) {
+		_pre_solve_island(constraint_islands[island_index]);
+	}
+
+	{ //profile
+		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		p_space->set_elapsed_time(GodotSpace2D::ELAPSED_TIME_SECOND_PASS, profile_endtime - profile_begtime);
+		profile_begtime = profile_endtime;
+	}
+
+	all_constraints.clear();
+
+	p_space->unlock();
+	_step++;
+}
+
 GodotStep2D::GodotStep2D() {
 	body_islands.reserve(BODY_ISLAND_COUNT_RESERVE);
 	constraint_islands.reserve(ISLAND_COUNT_RESERVE);

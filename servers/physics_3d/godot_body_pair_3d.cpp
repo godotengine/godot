@@ -432,11 +432,13 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 		c.active = true;
 		do_process = true;
 
-		if (collide_A) {
-			A->apply_impulse(-j_vec, c.rA + A->get_center_of_mass());
-		}
-		if (collide_B) {
-			B->apply_impulse(j_vec, c.rB + B->get_center_of_mass());
+		if (p_step > 0.0) {
+			if (collide_A) {
+				A->apply_impulse(-j_vec, c.rA + A->get_center_of_mass());
+			}
+			if (collide_B) {
+				B->apply_impulse(j_vec, c.rB + B->get_center_of_mass());
+			}
 		}
 
 		c.bounce = combine_bounce(A, B);

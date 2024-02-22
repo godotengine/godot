@@ -131,7 +131,6 @@ class GodotBody3D : public GodotCollisionObject3D {
 	};
 
 	Vector<Contact> contacts; //no contacts by default
-	int contact_count = 0;
 
 	Callable body_state_callback;
 
@@ -151,6 +150,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	friend class GodotPhysicsDirectBodyState3D; // i give up, too many functions to expose
 
 public:
+	int contact_count = 0;
 	void set_state_sync_callback(const Callable &p_callable);
 	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 
