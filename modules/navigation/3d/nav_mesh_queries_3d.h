@@ -31,8 +31,6 @@
 #ifndef NAV_MESH_QUERIES_3D_H
 #define NAV_MESH_QUERIES_3D_H
 
-#ifndef _3D_DISABLED
-
 #include "../nav_utils.h"
 
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
@@ -119,7 +117,5 @@ public:
 	static void simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector3> &p_points, real_t p_epsilon, LocalVector<bool> &r_valid_points);
 	static LocalVector<uint32_t> get_simplified_path_indices(const LocalVector<Vector3> &p_path, real_t p_epsilon);
 };
-
-#endif // _3D_DISABLED
 
 #endif // NAV_MESH_QUERIES_3D_H

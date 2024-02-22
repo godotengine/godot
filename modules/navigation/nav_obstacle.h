@@ -51,7 +51,9 @@ class NavObstacle : public NavRid {
 	real_t height = 0.0;
 
 	bool avoidance_enabled = false;
+#ifndef _3D_DISABLED
 	bool use_3d_avoidance = false;
+#endif
 	uint32_t avoidance_layers = 1;
 
 	bool obstacle_dirty = true;
@@ -68,8 +70,13 @@ public:
 	void set_avoidance_enabled(bool p_enabled);
 	bool is_avoidance_enabled() { return avoidance_enabled; }
 
+#ifdef _3D_DISABLED
+	void set_use_3d_avoidance(bool p_enabled) {}
+	bool get_use_3d_avoidance() { return false; }
+#else
 	void set_use_3d_avoidance(bool p_enabled);
 	bool get_use_3d_avoidance() { return use_3d_avoidance; }
+#endif
 
 	void set_map(NavMap *p_map);
 	NavMap *get_map() { return map; }

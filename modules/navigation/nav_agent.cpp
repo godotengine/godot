@@ -37,12 +37,15 @@ void NavAgent::set_avoidance_enabled(bool p_enabled) {
 	_update_rvo_agent_properties();
 }
 
+#ifndef _3D_DISABLED
 void NavAgent::set_use_3d_avoidance(bool p_enabled) {
 	use_3d_avoidance = p_enabled;
 	_update_rvo_agent_properties();
 }
+#endif
 
 void NavAgent::_update_rvo_agent_properties() {
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.neighborDist_ = neighbor_distance;
 		rvo_agent_3d.maxNeighbors_ = max_neighbors;
@@ -58,7 +61,9 @@ void NavAgent::_update_rvo_agent_properties() {
 		rvo_agent_3d.avoidance_layers_ = avoidance_layers;
 		rvo_agent_3d.avoidance_mask_ = avoidance_mask;
 		rvo_agent_3d.avoidance_priority_ = avoidance_priority;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.neighborDist_ = neighbor_distance;
 		rvo_agent_2d.maxNeighbors_ = max_neighbors;
 		rvo_agent_2d.timeHorizon_ = time_horizon_agents;
@@ -137,9 +142,12 @@ void NavAgent::dispatch_avoidance_callback() {
 
 	Vector3 new_velocity;
 
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		new_velocity = Vector3(rvo_agent_3d.velocity_.x(), rvo_agent_3d.velocity_.y(), rvo_agent_3d.velocity_.z());
-	} else {
+	} else
+#endif
+	{
 		new_velocity = Vector3(rvo_agent_2d.velocity_.x(), 0.0, rvo_agent_2d.velocity_.y());
 	}
 
@@ -153,9 +161,12 @@ void NavAgent::dispatch_avoidance_callback() {
 
 void NavAgent::set_neighbor_distance(real_t p_neighbor_distance) {
 	neighbor_distance = p_neighbor_distance;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.neighborDist_ = neighbor_distance;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.neighborDist_ = neighbor_distance;
 	}
 	agent_dirty = true;
@@ -165,9 +176,12 @@ void NavAgent::set_neighbor_distance(real_t p_neighbor_distance) {
 
 void NavAgent::set_max_neighbors(int p_max_neighbors) {
 	max_neighbors = p_max_neighbors;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.maxNeighbors_ = max_neighbors;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.maxNeighbors_ = max_neighbors;
 	}
 	agent_dirty = true;
@@ -177,9 +191,12 @@ void NavAgent::set_max_neighbors(int p_max_neighbors) {
 
 void NavAgent::set_time_horizon_agents(real_t p_time_horizon) {
 	time_horizon_agents = p_time_horizon;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.timeHorizon_ = time_horizon_agents;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.timeHorizon_ = time_horizon_agents;
 	}
 	agent_dirty = true;
@@ -189,9 +206,12 @@ void NavAgent::set_time_horizon_agents(real_t p_time_horizon) {
 
 void NavAgent::set_time_horizon_obstacles(real_t p_time_horizon) {
 	time_horizon_obstacles = p_time_horizon;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.timeHorizonObst_ = time_horizon_obstacles;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.timeHorizonObst_ = time_horizon_obstacles;
 	}
 	agent_dirty = true;
@@ -201,9 +221,12 @@ void NavAgent::set_time_horizon_obstacles(real_t p_time_horizon) {
 
 void NavAgent::set_radius(real_t p_radius) {
 	radius = p_radius;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.radius_ = radius;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.radius_ = radius;
 	}
 	agent_dirty = true;
@@ -213,9 +236,12 @@ void NavAgent::set_radius(real_t p_radius) {
 
 void NavAgent::set_height(real_t p_height) {
 	height = p_height;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.height_ = height;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.height_ = height;
 	}
 	agent_dirty = true;
@@ -226,9 +252,12 @@ void NavAgent::set_height(real_t p_height) {
 void NavAgent::set_max_speed(real_t p_max_speed) {
 	max_speed = p_max_speed;
 	if (avoidance_enabled) {
+#ifndef _3D_DISABLED
 		if (use_3d_avoidance) {
 			rvo_agent_3d.maxSpeed_ = max_speed;
-		} else {
+		} else
+#endif
+		{
 			rvo_agent_2d.maxSpeed_ = max_speed;
 		}
 	}
@@ -240,9 +269,12 @@ void NavAgent::set_max_speed(real_t p_max_speed) {
 void NavAgent::set_position(const Vector3 p_position) {
 	position = p_position;
 	if (avoidance_enabled) {
+#ifndef _3D_DISABLED
 		if (use_3d_avoidance) {
 			rvo_agent_3d.position_ = RVO3D::Vector3(p_position.x, p_position.y, p_position.z);
-		} else {
+		} else
+#endif
+		{
 			rvo_agent_2d.elevation_ = p_position.y;
 			rvo_agent_2d.position_ = RVO2D::Vector2(p_position.x, p_position.z);
 		}
@@ -261,9 +293,12 @@ void NavAgent::set_velocity(const Vector3 p_velocity) {
 	// This velocity is not guaranteed, RVO simulation will only try to fulfill it
 	velocity = p_velocity;
 	if (avoidance_enabled) {
+#ifndef _3D_DISABLED
 		if (use_3d_avoidance) {
 			rvo_agent_3d.prefVelocity_ = RVO3D::Vector3(velocity.x, velocity.y, velocity.z);
-		} else {
+		} else
+#endif
+		{
 			rvo_agent_2d.prefVelocity_ = RVO2D::Vector2(velocity.x, velocity.z);
 		}
 	}
@@ -279,9 +314,12 @@ void NavAgent::set_velocity_forced(const Vector3 p_velocity) {
 	// use velocity instead to update with a safer "suggestion"
 	velocity_forced = p_velocity;
 	if (avoidance_enabled) {
+#ifndef _3D_DISABLED
 		if (use_3d_avoidance) {
 			rvo_agent_3d.velocity_ = RVO3D::Vector3(p_velocity.x, p_velocity.y, p_velocity.z);
-		} else {
+		} else
+#endif
+		{
 			rvo_agent_2d.velocity_ = RVO2D::Vector2(p_velocity.x, p_velocity.z);
 		}
 	}
@@ -293,9 +331,12 @@ void NavAgent::set_velocity_forced(const Vector3 p_velocity) {
 void NavAgent::update() {
 	// Updates this agent with the calculated results from the rvo simulation
 	if (avoidance_enabled) {
+#ifndef _3D_DISABLED
 		if (use_3d_avoidance) {
 			velocity = Vector3(rvo_agent_3d.velocity_.x(), rvo_agent_3d.velocity_.y(), rvo_agent_3d.velocity_.z());
-		} else {
+		} else
+#endif
+		{
 			velocity = Vector3(rvo_agent_2d.velocity_.x(), 0.0, rvo_agent_2d.velocity_.y());
 		}
 	}
@@ -303,9 +344,12 @@ void NavAgent::update() {
 
 void NavAgent::set_avoidance_mask(uint32_t p_mask) {
 	avoidance_mask = p_mask;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.avoidance_mask_ = avoidance_mask;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.avoidance_mask_ = avoidance_mask;
 	}
 	agent_dirty = true;
@@ -315,9 +359,12 @@ void NavAgent::set_avoidance_mask(uint32_t p_mask) {
 
 void NavAgent::set_avoidance_layers(uint32_t p_layers) {
 	avoidance_layers = p_layers;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.avoidance_layers_ = avoidance_layers;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.avoidance_layers_ = avoidance_layers;
 	}
 	agent_dirty = true;
@@ -329,9 +376,12 @@ void NavAgent::set_avoidance_priority(real_t p_priority) {
 	ERR_FAIL_COND_MSG(p_priority < 0.0, "Avoidance priority must be between 0.0 and 1.0 inclusive.");
 	ERR_FAIL_COND_MSG(p_priority > 1.0, "Avoidance priority must be between 0.0 and 1.0 inclusive.");
 	avoidance_priority = p_priority;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		rvo_agent_3d.avoidance_priority_ = avoidance_priority;
-	} else {
+	} else
+#endif
+	{
 		rvo_agent_2d.avoidance_priority_ = avoidance_priority;
 	}
 	agent_dirty = true;
@@ -350,6 +400,7 @@ void NavAgent::sync() {
 const Dictionary NavAgent::get_avoidance_data() const {
 	// Returns debug data from RVO simulation internals of this agent.
 	Dictionary _avoidance_data;
+#ifndef _3D_DISABLED
 	if (use_3d_avoidance) {
 		_avoidance_data["max_neighbors"] = int(rvo_agent_3d.maxNeighbors_);
 		_avoidance_data["max_speed"] = float(rvo_agent_3d.maxSpeed_);
@@ -365,7 +416,9 @@ const Dictionary NavAgent::get_avoidance_data() const {
 		_avoidance_data["avoidance_layers"] = int(rvo_agent_3d.avoidance_layers_);
 		_avoidance_data["avoidance_mask"] = int(rvo_agent_3d.avoidance_mask_);
 		_avoidance_data["avoidance_priority"] = float(rvo_agent_3d.avoidance_priority_);
-	} else {
+	} else
+#endif
+	{
 		_avoidance_data["max_neighbors"] = int(rvo_agent_2d.maxNeighbors_);
 		_avoidance_data["max_speed"] = float(rvo_agent_2d.maxSpeed_);
 		_avoidance_data["neighbor_distance"] = float(rvo_agent_2d.neighborDist_);

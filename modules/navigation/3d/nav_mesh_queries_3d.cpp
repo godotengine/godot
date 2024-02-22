@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef _3D_DISABLED
-
 #include "nav_mesh_queries_3d.h"
 
 #include "../nav_base.h"
@@ -976,5 +974,3 @@ void NavMeshQueries3D::simplify_path_segment(int p_start_inx, int p_end_inx, con
 		simplify_path_segment(point_max_index, p_end_inx, p_points, p_epsilon, r_valid_points);
 	}
 }
-
-#endif // _3D_DISABLED

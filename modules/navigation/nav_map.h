@@ -40,9 +40,11 @@
 #include "servers/navigation/navigation_globals.h"
 
 #include <KdTree2d.h>
-#include <KdTree3d.h>
 #include <RVOSimulator2d.h>
+#ifndef _3D_DISABLED
+#include <KdTree3d.h>
 #include <RVOSimulator3d.h>
+#endif
 
 class NavLink;
 class NavRegion;
@@ -88,11 +90,15 @@ class NavMap : public NavRid {
 
 	/// RVO avoidance worlds
 	RVO2D::RVOSimulator2D rvo_simulation_2d;
+#ifndef _3D_DISABLED
 	RVO3D::RVOSimulator3D rvo_simulation_3d;
+#endif
 
 	/// avoidance controlled agents
 	LocalVector<NavAgent *> active_2d_avoidance_agents;
+#ifndef _3D_DISABLED
 	LocalVector<NavAgent *> active_3d_avoidance_agents;
+#endif
 
 	/// dirty flag when one of the agent's arrays are modified
 	bool agents_dirty = true;
@@ -257,13 +263,21 @@ private:
 	void compute_single_step(uint32_t index, NavAgent **agent);
 
 	void compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent);
+#ifdef _3D_DISABLED
+	void compute_single_avoidance_step_3d(uint32_t index, NavAgent **agent) {}
+#else
 	void compute_single_avoidance_step_3d(uint32_t index, NavAgent **agent);
+#endif
 
 	void _sync_avoidance();
 	void _update_rvo_simulation();
 	void _update_rvo_obstacles_tree_2d();
 	void _update_rvo_agents_tree_2d();
+#ifdef _3D_DISABLED
+	void _update_rvo_agents_tree_3d() {}
+#else
 	void _update_rvo_agents_tree_3d();
+#endif
 
 	void _update_merge_rasterizer_cell_dimensions();
 };
