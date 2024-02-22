@@ -108,7 +108,7 @@ class NavMap : public NavRid {
 	real_t deltatime = 0.0;
 
 	/// Change the id each time the map is updated.
-	uint32_t map_update_id = 0;
+	uint32_t iteration_id = 0;
 
 	bool use_threads = true;
 	bool avoidance_use_multiple_threads = true;
@@ -127,6 +127,8 @@ class NavMap : public NavRid {
 public:
 	NavMap();
 	~NavMap();
+
+	uint32_t get_iteration_id() const { return iteration_id; }
 
 	void set_up(Vector3 p_up);
 	Vector3 get_up() const {
@@ -197,10 +199,6 @@ public:
 	void remove_obstacle(NavObstacle *obstacle);
 	const LocalVector<NavObstacle *> &get_obstacles() const {
 		return obstacles;
-	}
-
-	uint32_t get_map_update_id() const {
-		return map_update_id;
 	}
 
 	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;

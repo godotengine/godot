@@ -504,6 +504,14 @@
 				Returns the edge connection margin of the map. The edge connection margin is a distance used to connect two regions.
 			</description>
 		</method>
+		<method name="map_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns the current iteration id of the navigation map. Every time the navigation map changes and synchronizes the iteration id increases. An iteration id of 0 means the navigation map has never synchronized.
+				[b]Note:[/b] The iteration id will wrap back to 1 after reaching its range limit.
+			</description>
+		</method>
 		<method name="map_get_link_connection_radius" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="map" type="RID" />

@@ -128,7 +128,7 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 
 Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
 	RWLockRead read_lock(map_rwlock);
-	if (map_update_id == 0) {
+	if (iteration_id == 0) {
 		ERR_FAIL_V_MSG(Vector<Vector3>(), "NavigationServer map query failed because it was made before first map synchronization.");
 	}
 
@@ -592,7 +592,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
 	RWLockRead read_lock(map_rwlock);
-	if (map_update_id == 0) {
+	if (iteration_id == 0) {
 		ERR_FAIL_V_MSG(Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
 	}
 
@@ -644,7 +644,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 
 Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
 	RWLockRead read_lock(map_rwlock);
-	if (map_update_id == 0) {
+	if (iteration_id == 0) {
 		ERR_FAIL_V_MSG(Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
 	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
@@ -653,7 +653,7 @@ Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
 
 Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
 	RWLockRead read_lock(map_rwlock);
-	if (map_update_id == 0) {
+	if (iteration_id == 0) {
 		ERR_FAIL_V_MSG(Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
 	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
@@ -662,7 +662,7 @@ Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
 
 RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
 	RWLockRead read_lock(map_rwlock);
-	if (map_update_id == 0) {
+	if (iteration_id == 0) {
 		ERR_FAIL_V_MSG(RID(), "NavigationServer map query failed because it was made before first map synchronization.");
 	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
@@ -1160,9 +1160,8 @@ void NavMap::sync() {
 			}
 		}
 
-		// Update the update ID.
-		// Some code treats 0 as a failure case, so we avoid returning 0.
-		map_update_id = map_update_id % 9999999 + 1;
+		// Some code treats 0 as a failure case, so we avoid returning 0 and modulo wrap UINT32_MAX manually.
+		iteration_id = iteration_id % UINT32_MAX + 1;
 	}
 
 	// Do we have modified obstacle positions?

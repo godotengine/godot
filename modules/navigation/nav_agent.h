@@ -72,7 +72,7 @@ class NavAgent : public NavRid {
 
 	bool agent_dirty = true;
 
-	uint32_t map_update_id = 0;
+	uint32_t last_map_iteration_id = 0;
 	bool paused = false;
 
 public:
