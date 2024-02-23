@@ -28,9 +28,8 @@
 			The custom HTML page that wraps the exported web build. If left empty, the default HTML shell is used.
 			For more information, see the [url=$DOCS_URL/tutorials/platform/web/customizing_html5_shell.html]Customizing HTML5 Shell[/url] tutorial.
 		</member>
-		<member name="html/experimental_virtual_keyboard" type="bool" setter="" getter="">
+		<member name="html/experimental_virtual_keyboard" type="bool" setter="" getter="" experimental="">
 			If [code]true[/code], embeds support for a virtual keyboard into the web page, which is shown when necessary on touchscreen devices.
-			[b]Warning:[/b] This feature is experimental and may be changed in a future release.
 		</member>
 		<member name="html/export_icon" type="bool" setter="" getter="">
 			If [code]true[/code], the project icon will be used as the favicon for this application's web page.
