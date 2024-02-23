@@ -37,12 +37,38 @@
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
+#include "thirdparty/misc/mikktspace.h"
 
 #include <cstdint>
 
 // The following classes are used by importers instead of ArrayMesh and MeshInstance3D
 // so the data is not registered (hence, quality loss), importing happens faster and
 // its easier to modify before saving
+
+//mikktspace callbacks
+namespace {
+struct ImporterMeshTangentGenerationContextUserData {
+	struct Vertex {
+		Vector3 vertex;
+		Color color;
+		Vector3 normal; // normal, binormal, tangent
+		Vector3 binormal;
+		Vector3 tangent;
+		Vector2 uv;
+		Vector2 uv2;
+		Vector<int> bones;
+		Vector<float> weights;
+		Color custom[RS::ARRAY_CUSTOM_COUNT];
+		uint32_t smooth_group = 0;
+
+		bool operator==(const Vertex &p_vertex) const;
+
+		Vertex() {}
+	};
+	LocalVector<Vertex> *vertices;
+	LocalVector<int> *indices;
+};
+} // namespace
 
 class ImporterMesh : public Resource {
 	GDCLASS(ImporterMesh, Resource)
@@ -82,6 +108,14 @@ class ImporterMesh : public Resource {
 
 	Size2i lightmap_size_hint;
 
+	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
+	static int mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace);
+	static void mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert);
+	static void mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert);
+	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
+	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
+			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
+
 protected:
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
@@ -89,6 +123,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	Error generate_tangents();
 	void add_blend_shape(const String &p_name);
 	int get_blend_shape_count() const;
 	String get_blend_shape_name(int p_blend_shape) const;

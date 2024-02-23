@@ -30,6 +30,8 @@
 
 #include "importer_mesh.h"
 
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
 #include "core/math/convex_hull.h"
 #include "core/math/random_pcg.h"
@@ -1364,6 +1366,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
+	ClassDB::bind_method(D_METHOD("generate_tangents"), &ImporterMesh::generate_tangents);
 	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::generate_lods);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
@@ -1375,4 +1378,159 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &ImporterMesh::get_lightmap_size_hint);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
+}
+
+Error ImporterMesh::generate_tangents() {
+	int surface_count = get_surface_count();
+	for (int surface_i = 0; surface_i < surface_count; surface_i++) {
+		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_TEX_UV)) {
+			ERR_PRINT("Surface does not have ARRAY_FORMAT_TEX_UV flag set.");
+			return ERR_INVALID_DATA;
+		}
+		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_NORMAL)) {
+			ERR_PRINT("Surface does not have ARRAY_FORMAT_NORMAL flag set.");
+			return ERR_INVALID_DATA;
+		}
+		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_INDEX)) {
+			ERR_PRINT("Surface does not have ARRAY_FORMAT_INDEX flag set.");
+			return ERR_INVALID_DATA;
+		}
+		bool is_8_weights = surfaces[surface_i].flags & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+		SMikkTSpaceInterface space_interface;
+		space_interface.m_getNormal = mikktGetNormal;
+		space_interface.m_getNumFaces = mikktGetNumFaces;
+		space_interface.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
+		space_interface.m_getPosition = mikktGetPosition;
+		space_interface.m_getTexCoord = mikktGetTexCoord;
+		space_interface.m_setTSpace = mikktSetTSpaceDefault;
+		space_interface.m_setTSpaceBasic = nullptr;
+
+		SMikkTSpaceContext space_context;
+		space_context.m_pInterface = &space_interface;
+
+		Array surface_arrays = get_surface_arrays(surface_i);
+
+		Vector<Vector3> vertex_array = surface_arrays[Mesh::ARRAY_VERTEX];
+		Vector<int32_t> index_array = surface_arrays[Mesh::ARRAY_INDEX];
+		LocalVector<int32_t> local_index_array;
+		local_index_array.resize(index_array.size());
+		for (int32_t index : index_array) {
+			local_index_array[index] = index_array[index];
+		}
+		Vector<Color> color_array = surface_arrays[Mesh::ARRAY_COLOR];
+		Vector<Vector3> normal_array = surface_arrays[Mesh::ARRAY_NORMAL];
+		Vector<Vector2> uv_array = surface_arrays[Mesh::ARRAY_TEX_UV];
+		Vector<Vector2> uv2_array = surface_arrays[Mesh::ARRAY_TEX_UV2];
+		Vector<int32_t> bones_array = surface_arrays[Mesh::ARRAY_BONES];
+		Vector<float_t> weights_array = surface_arrays[Mesh::ARRAY_WEIGHTS];
+
+		ImporterMeshTangentGenerationContextUserData triangle_data{};
+		triangle_data.vertices->resize(vertex_array.size());
+		LocalVector<ImporterMeshTangentGenerationContextUserData::Vertex> importer_mesh_vertex_array;
+		for (int vertex_i = 0; vertex_i < vertex_array.size(); ++vertex_i) {
+			ImporterMeshTangentGenerationContextUserData::Vertex &vertex = importer_mesh_vertex_array[vertex_i];
+			vertex.vertex = vertex_array[vertex_i];
+			vertex.color = color_array[vertex_i];
+			vertex.normal = normal_array[vertex_i];
+			vertex.uv = uv_array[vertex_i];
+			vertex.uv2 = uv2_array[vertex_i];
+			const int32_t weight_count = is_8_weights ? 8 : 4;
+			for (int bone_i = 0; bone_i < weight_count; bone_i++) {
+				int index = vertex_i * weight_count + bone_i;
+				vertex.bones.push_back(bones_array[index]);
+				vertex.weights.push_back(weights_array[index]);
+			}
+			for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; ++i) {
+				vertex.custom[i] = Color();
+			}
+			vertex.smooth_group = 0;
+		}
+
+		triangle_data.vertices = &importer_mesh_vertex_array;
+		triangle_data.indices = &local_index_array;
+		space_context.m_pUserData = &triangle_data;
+
+		bool res = genTangSpaceDefault(&space_context);
+		ERR_FAIL_COND_V_MSG(res == 0, FAILED, "Couldn't generate tangents.");
+		surfaces.write[surface_i].flags |= Mesh::ARRAY_FORMAT_TANGENT;
+	}
+	return OK;
+}
+
+void ImporterMesh::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
+		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
+	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
+	ImporterMeshTangentGenerationContextUserData::Vertex *vtx = nullptr;
+	if (triangle_data.indices->size() > 0) {
+		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
+		if (index < triangle_data.vertices->size()) {
+			vtx = &triangle_data.vertices->operator[](index);
+		}
+	} else {
+		vtx = &triangle_data.vertices->operator[](iFace * 3 + iVert);
+	}
+
+	if (vtx != nullptr) {
+		vtx->tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
+		vtx->binormal = Vector3(-fvBiTangent[0], -fvBiTangent[1], -fvBiTangent[2]); // for some reason these are reversed, something with the coordinate system in Godot
+	}
+}
+void ImporterMesh::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
+	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
+	Vector2 v;
+	if (triangle_data.indices->size() > 0) {
+		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
+		if (index < triangle_data.vertices->size()) {
+			v = triangle_data.vertices->operator[](index).uv;
+		}
+	} else {
+		v = triangle_data.vertices->operator[](iFace * 3 + iVert).uv;
+	}
+
+	fvTexcOut[0] = v.x;
+	fvTexcOut[1] = v.y;
+}
+void ImporterMesh::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
+	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
+	Vector3 v;
+	if (triangle_data.indices->size() > 0) {
+		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
+		if (index < triangle_data.vertices->size()) {
+			v = triangle_data.vertices->operator[](index).normal;
+		}
+	} else {
+		v = triangle_data.vertices->operator[](iFace * 3 + iVert).normal;
+	}
+
+	fvNormOut[0] = v.x;
+	fvNormOut[1] = v.y;
+	fvNormOut[2] = v.z;
+}
+void ImporterMesh::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
+	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
+	Vector3 v;
+	if (triangle_data.indices->size() > 0) {
+		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
+		if (index < triangle_data.vertices->size()) {
+			v = triangle_data.vertices->operator[](index).vertex;
+		}
+	} else {
+		v = triangle_data.vertices->operator[](iFace * 3 + iVert).vertex;
+	}
+
+	fvPosOut[0] = v.x;
+	fvPosOut[1] = v.y;
+	fvPosOut[2] = v.z;
+}
+int ImporterMesh::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
+	return 3; //always 3
+}
+int ImporterMesh::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
+	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
+
+	if (triangle_data.indices->size() > 0) {
+		return triangle_data.indices->size() / 3;
+	} else {
+		return triangle_data.vertices->size() / 3;
+	}
 }
