@@ -67,6 +67,7 @@ void EditorDebuggerSession::add_session_tab(Control *p_tab) {
 	ERR_FAIL_COND(!p_tab || !debugger);
 	debugger->add_debugger_tab(p_tab);
 	tabs.insert(p_tab);
+	debugger->update_tabs();
 }
 
 void EditorDebuggerSession::remove_session_tab(Control *p_tab) {

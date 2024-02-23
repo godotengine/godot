@@ -4334,7 +4334,10 @@ void EditorNode::_project_run_started() {
 		log->clear();
 	}
 
-	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
+	int debugger_tab_pin_idx = EditorDebuggerNode::get_singleton()->get_current_debugger()->get_debugger_tab_pin_idx();
+	if (debugger_tab_pin_idx >= 0) {
+		make_bottom_panel_item_visible(EditorDebuggerNode::get_singleton()->get_current_debugger());
+	} else if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
 		make_bottom_panel_item_visible(log);
 	}
 }

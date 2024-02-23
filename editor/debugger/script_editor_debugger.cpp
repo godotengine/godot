@@ -151,6 +151,18 @@ void ScriptEditorDebugger::update_tabs() {
 			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_editor_theme_icon(SNAME("Warning")));
 		}
 	}
+	if (tab_pin_button_idx != tabs->get_tab_count() - 1) {
+		// Ensure pin button is last in debugger tabs.
+		Control *pin_button = tabs->get_tab_control(tab_pin_button_idx);
+		tabs->remove_child(pin_button);
+		tabs->add_child(pin_button);
+		tab_pin_button_idx = tabs->get_tab_count() - 1;
+		if (tab_pin_idx == -1 || tabs->get_current_tab() != tab_pin_idx) {
+			_tab_pin_button_enable_pin();
+		} else {
+			_tab_pin_button_enable_unpin();
+		}
+	}
 }
 
 void ScriptEditorDebugger::clear_style() {
@@ -1008,7 +1020,11 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	set_process(true);
 	camera_override = CameraOverride::OVERRIDE_NONE;
 
-	tabs->set_current_tab(0);
+	if (tab_pin_idx >= 0) {
+		tabs->set_current_tab(tab_pin_idx);
+	} else {
+		tabs->set_current_tab(0);
+	}
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
 	emit_signal(SNAME("started"));
@@ -1731,6 +1747,66 @@ void ScriptEditorDebugger::_tab_changed(int p_tab) {
 		// "Video RAM" tab was clicked, refresh the data it's displaying when entering the tab.
 		_video_mem_request();
 	}
+	if (p_tab == tab_pin_button_idx) {
+		// This tab acts as a button, so always send user back to previous tab.
+		tabs->set_current_tab(tabs->get_previous_tab());
+		_tab_button_pressed(tab_pin_button_idx);
+		return;
+	}
+	// Update context of tab pin button.
+	if (p_tab == tab_pin_idx) {
+		_tab_pin_button_enable_unpin();
+	} else {
+		_tab_pin_button_enable_pin();
+	}
+
+}
+
+void ScriptEditorDebugger::_tab_button_pressed(int p_tab) {
+	{ //pinned tabs
+		if (p_tab == tab_pin_button_idx) {
+			if (tabs->get_tab_icon(tab_pin_button_idx) == get_editor_theme_icon(SNAME("PinJoint3D"))) {
+				// Unpin a tab.
+				tabs->set_tab_button_icon(tab_pin_idx, nullptr);
+				tab_pin_idx = -1;
+				_tab_pin_button_enable_pin();
+			} else if (tab_pin_idx == -1) {
+				// Pin a tab.
+				tab_pin_idx = tabs->get_current_tab();
+				tabs->set_tab_button_icon(tab_pin_idx, get_editor_theme_icon(SNAME("PinJoint2D")));
+				_tab_pin_button_enable_unpin();
+			} else {
+				// Shift pin from an already pinned tab.
+				tabs->set_tab_button_icon(tab_pin_idx, nullptr);
+				tab_pin_idx = tabs->get_current_tab();
+				tabs->set_tab_button_icon(tab_pin_idx, get_editor_theme_icon(SNAME("PinJoint2D")));
+				_tab_pin_button_enable_unpin();
+			}
+			return;
+		}
+		if (tabs->get_tab_button_icon(p_tab) == nullptr) {
+			// For some reason tabs without a texture can still emit tab_button_pressed, so ignore.
+			return;
+		}
+		// Unpin a tab with its button.
+		tabs->set_tab_button_icon(p_tab, nullptr);
+		tab_pin_idx = -1;
+		_tab_pin_button_enable_pin();
+	}
+}
+
+void ScriptEditorDebugger::_tab_pin_button_enable_pin() {
+	if (tab_pin_idx == -1) {
+		tabs->set_tab_title(tab_pin_button_idx, TTR("Pin Tab"));
+	} else {
+		tabs->set_tab_title(tab_pin_button_idx, TTR("Shift Pin"));
+	}
+	tabs->set_tab_icon(tab_pin_button_idx, get_editor_theme_icon(SNAME("PinJoint2D")));
+}
+
+void ScriptEditorDebugger::_tab_pin_button_enable_unpin() {
+	tabs->set_tab_title(tab_pin_button_idx, TTR("Unpin"));
+	tabs->set_tab_icon(tab_pin_button_idx, get_editor_theme_icon(SNAME("PinJoint3D")));
 }
 
 void ScriptEditorDebugger::_bind_methods() {
@@ -1781,6 +1857,10 @@ int ScriptEditorDebugger::get_current_debugger_tab() const {
 	return tabs->get_current_tab();
 }
 
+int ScriptEditorDebugger::get_debugger_tab_pin_idx() const {
+	return tab_pin_idx;
+}
+
 void ScriptEditorDebugger::switch_to_debugger(int p_debugger_tab_idx) {
 	tabs->set_current_tab(p_debugger_tab_idx);
 }
@@ -1800,6 +1880,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs = memnew(TabContainer);
 	add_child(tabs);
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
+	tabs->connect("tab_button_pressed", callable_mp(this, &ScriptEditorDebugger::_tab_button_pressed));
 
 	InspectorDock::get_inspector_singleton()->connect("object_id_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 
@@ -2118,6 +2199,12 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 		misc->add_child(buttons);
 	}
+
+	Button *pin_button = memnew(Button);
+	tabs->add_child(pin_button);
+	tab_pin_idx = -1;
+	tab_pin_button_idx = tabs->get_tab_count() - 1;
+	_tab_pin_button_enable_pin();
 
 	msgdialog = memnew(AcceptDialog);
 	add_child(msgdialog);

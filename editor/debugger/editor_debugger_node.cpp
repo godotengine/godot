@@ -267,7 +267,9 @@ Error EditorDebuggerNode::start(const String &p_uri) {
 	}
 	stop(true);
 	current_uri = p_uri;
-	if (EDITOR_GET("run/output/always_open_output_on_play")) {
+
+	int debugger_tab_pin_idx = EditorDebuggerNode::get_singleton()->get_current_debugger()->get_debugger_tab_pin_idx();
+	if (EDITOR_GET("run/output/always_open_output_on_play") && debugger_tab_pin_idx == -1) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
 	} else {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);

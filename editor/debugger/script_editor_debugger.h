@@ -117,6 +117,8 @@ private:
 	Ref<Script> stack_script;
 
 	TabContainer *tabs = nullptr;
+	int tab_pin_idx;
+	int tab_pin_button_idx;
 
 	Label *reason = nullptr;
 
@@ -221,6 +223,9 @@ private:
 	void _error_tree_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
 	void _item_menu_id_pressed(int p_option);
 	void _tab_changed(int p_tab);
+	void _tab_button_pressed(int p_tab);
+	void _tab_pin_button_enable_pin();
+	void _tab_pin_button_enable_unpin();
 
 	void _put_msg(String p_message, Array p_data, uint64_t p_thread_id = Thread::MAIN_ID);
 	void _export_csv();
@@ -310,6 +315,7 @@ public:
 	void add_debugger_tab(Control *p_control);
 	void remove_debugger_tab(Control *p_control);
 	int get_current_debugger_tab() const;
+	int get_debugger_tab_pin_idx() const;
 	void switch_to_debugger(int p_debugger_tab_idx);
 
 	void send_message(const String &p_message, const Array &p_args);
