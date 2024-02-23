@@ -34,6 +34,7 @@
 #include "editor/editor_plugin.h"
 #include "scene/gui/base_button.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/flow_container.h"
 
 class AcceptDialog;
 class CanvasItemEditorViewport;
@@ -198,7 +199,7 @@ private:
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
 	PanelContainer *context_toolbar_panel = nullptr;
-	HBoxContainer *context_toolbar_hbox = nullptr;
+	HFlowContainer *context_toolbar_hflow = nullptr;
 	HashMap<Control *, VSeparator *> context_toolbar_separators;
 
 	void _update_context_toolbar();

@@ -60,6 +60,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/flow_container.h"
 #include "scene/main/window.h"
 #include "scene/property_utils.h"
 #include "scene/resources/image_texture.h"
@@ -7185,19 +7186,12 @@ EditorNode::EditorNode() {
 	bottom_panel_hb->set_custom_minimum_size(Size2(0, 24 * EDSCALE)); // Adjust for the height of the "Expand Bottom Dock" icon.
 	bottom_panel_vb->add_child(bottom_panel_hb);
 
-	bottom_panel_hb_editors = memnew(HBoxContainer);
+	bottom_panel_hb_editors = memnew(HFlowContainer);
 	bottom_panel_hb_editors->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bottom_panel_hb->add_child(bottom_panel_hb_editors);
 
 	editor_toaster = memnew(EditorToaster);
 	bottom_panel_hb->add_child(editor_toaster);
-
-	VBoxContainer *version_info_vbc = memnew(VBoxContainer);
-	bottom_panel_hb->add_child(version_info_vbc);
-
-	// Add a dummy control node for vertical spacing.
-	Control *v_spacer = memnew(Control);
-	version_info_vbc->add_child(v_spacer);
 
 	version_btn = memnew(LinkButton);
 	version_btn->set_text(VERSION_FULL_CONFIG);
@@ -7211,8 +7205,9 @@ EditorNode::EditorNode() {
 	version_btn->set_self_modulate(Color(1, 1, 1, 0.65));
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	version_btn->set_tooltip_text(TTR("Click to copy."));
+	version_btn->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	version_btn->connect("pressed", callable_mp(this, &EditorNode::_version_button_pressed));
-	version_info_vbc->add_child(version_btn);
+	bottom_panel_hb->add_child(version_btn);
 
 	// Add a dummy control node for horizontal spacing.
 	Control *h_spacer = memnew(Control);

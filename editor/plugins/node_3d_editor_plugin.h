@@ -35,6 +35,7 @@
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/spin_box.h"
 
@@ -719,7 +720,7 @@ private:
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
 	PanelContainer *context_toolbar_panel = nullptr;
-	HBoxContainer *context_toolbar_hbox = nullptr;
+	HFlowContainer *context_toolbar_hflow = nullptr;
 	HashMap<Control *, VSeparator *> context_toolbar_separators;
 
 	void _update_context_toolbar();

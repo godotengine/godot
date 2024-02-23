@@ -48,6 +48,7 @@ class ConfirmationDialog;
 class Control;
 class FileDialog;
 class HBoxContainer;
+class HFlowContainer;
 class HSplitContainer;
 class LinkButton;
 class MenuBar;
@@ -431,7 +432,7 @@ private:
 	Vector<BottomPanelItem> bottom_panel_items;
 	PanelContainer *bottom_panel = nullptr;
 	HBoxContainer *bottom_panel_hb = nullptr;
-	HBoxContainer *bottom_panel_hb_editors = nullptr;
+	HFlowContainer *bottom_panel_hb_editors = nullptr;
 	VBoxContainer *bottom_panel_vb = nullptr;
 	EditorToaster *editor_toaster = nullptr;
 	LinkButton *version_btn = nullptr;
