@@ -319,7 +319,7 @@ const GodotWebXR = {
 					// next reference space.
 					window.setTimeout(function () {
 						const reference_space_c_str = GodotRuntime.allocString(reference_space_type);
-						const enabled_features_c_str = GodotRuntime.allocString(Array.from(session.enabledFeatures).join(","));
+						const enabled_features_c_str = GodotRuntime.allocString(Array.from(session.enabledFeatures).join(','));
 						onstarted(reference_space_c_str, enabled_features_c_str);
 						GodotRuntime.free(reference_space_c_str);
 						GodotRuntime.free(enabled_features_c_str);
@@ -567,7 +567,7 @@ const GodotWebXR = {
 
 		// Hand tracking data.
 		let has_hand_data = false;
-		if (input_source.hand && r_hand_joints != 0 && r_hand_radii != 0) {
+		if (input_source.hand && r_hand_joints !== 0 && r_hand_radii !== 0) {
 			const hand_joint_array = new Float32Array(25 * 16);
 			const hand_radii_array = new Float32Array(25);
 			if (frame.fillPoses(input_source.hand.values(), space, hand_joint_array) && frame.fillJointRadii(input_source.hand.values(), hand_radii_array)) {
