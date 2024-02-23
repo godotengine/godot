@@ -39,6 +39,7 @@
 
 class XRInterface;
 class XRPositionalTracker;
+class XRHandTracker;
 class XRFaceTracker;
 
 /**
@@ -86,7 +87,7 @@ private:
 
 	Vector<Ref<XRInterface>> interfaces;
 	Dictionary trackers;
-
+	Dictionary hand_trackers;
 	Dictionary face_trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
@@ -185,6 +186,14 @@ public:
 	PackedStringArray get_suggested_tracker_names() const;
 	PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const;
 	// Q: Should we add get_suggested_input_names and get_suggested_haptic_names even though we don't use them for the IDE?
+
+	/*
+		Hand trackers are objects that expose the tracked joints of a hand.
+	*/
+	void add_hand_tracker(const StringName &p_tracker_name, Ref<XRHandTracker> p_hand_tracker);
+	void remove_hand_tracker(const StringName &p_tracker_name);
+	Dictionary get_hand_trackers() const;
+	Ref<XRHandTracker> get_hand_tracker(const StringName &p_tracker_name) const;
 
 	/*
 		Face trackers are objects that expose the tracked blend shapes of a face.
