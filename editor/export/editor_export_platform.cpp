@@ -784,6 +784,8 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 			Error err = ResourceSaver::save(s, save_path);
 			ERR_FAIL_COND_V_MSG(err != OK, p_path, "Unable to save export scene file to: " + save_path);
 		}
+
+		node->queue_free();
 	} else {
 		Ref<Resource> res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 		ERR_FAIL_COND_V(res.is_null(), p_path);
