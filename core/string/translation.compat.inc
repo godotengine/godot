@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  code_edit.compat.inc                                                  */
+/*  translation.compat.inc                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,17 +30,17 @@
 
 #ifndef DISABLE_DEPRECATED
 
-String CodeEdit::_get_text_for_symbol_lookup_bind_compat_73196() {
-	return get_text_for_symbol_lookup();
+void Translation::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_message", "src_message", "xlated_message", "context"), &Translation::add_message, DEFVAL(""));
+	ClassDB::bind_compatibility_method(D_METHOD("add_plural_message", "src_message", "xlated_messages", "context"), &Translation::add_plural_message, DEFVAL(""));
+	ClassDB::bind_compatibility_method(D_METHOD("get_message", "src_message", "context"), &Translation::get_message, DEFVAL(""));
+	ClassDB::bind_compatibility_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(""));
+	ClassDB::bind_compatibility_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(""));
 }
 
-void CodeEdit::_add_code_completion_option_compat_84906(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value, int p_location) {
-	add_code_completion_option(p_type, p_display_text, p_insert_text, p_text_color, p_icon, p_value, p_location);
-}
-
-void CodeEdit::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_text_for_symbol_lookup"), &CodeEdit::_get_text_for_symbol_lookup_bind_compat_73196);
-	ClassDB::bind_compatibility_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::_add_code_completion_option_compat_84906, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant::NIL), DEFVAL(LOCATION_OTHER));
+void TranslationServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(""));
+	ClassDB::bind_compatibility_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(""));
 }
 
 #endif

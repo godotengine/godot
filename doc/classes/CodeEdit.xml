@@ -48,7 +48,7 @@
 			<param index="2" name="insert_text" type="String" />
 			<param index="3" name="text_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="icon" type="Resource" default="null" />
-			<param index="5" name="value" type="Variant" default="0" />
+			<param index="5" name="value" type="Variant" default="null" />
 			<param index="6" name="location" type="int" default="1024" />
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.

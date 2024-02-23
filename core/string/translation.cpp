@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "translation.h"
+#include "translation.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
@@ -155,11 +156,11 @@ int Translation::get_message_count() const {
 void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &Translation::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &Translation::get_locale);
-	ClassDB::bind_method(D_METHOD("add_message", "src_message", "xlated_message", "context"), &Translation::add_message, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("add_plural_message", "src_message", "xlated_messages", "context"), &Translation::add_plural_message, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_message", "src_message", "context"), &Translation::get_message, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_message", "src_message", "xlated_message", "context"), &Translation::add_message, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("add_plural_message", "src_message", "xlated_messages", "context"), &Translation::add_plural_message, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_message", "src_message", "context"), &Translation::get_message, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_message_list"), &Translation::_get_message_list);
 	ClassDB::bind_method(D_METHOD("get_translated_message_list"), &Translation::get_translated_message_list);
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
@@ -1002,8 +1003,8 @@ void TranslationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_locale_name", "locale"), &TranslationServer::get_locale_name);
 
-	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationServer::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
