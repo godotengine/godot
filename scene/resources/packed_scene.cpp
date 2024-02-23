@@ -200,6 +200,23 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				node->set_scene_inherited_state(sdata->get_state());
 			}
 
+			for (int64_t i = 0; i < variants.size(); i++) {
+				Variant variant = variants[i];
+				Variant::Type variant_type = variant.get_type();
+				switch (variant_type) {
+					case Variant::Type::ARRAY: {
+						Array array = variant;
+						node->set(names[i], array.duplicate(true));
+					} break;
+					case Variant::Type::DICTIONARY: {
+						Dictionary dict = variant;
+						node->set(names[i], dict.duplicate(true));
+					} break;
+					default: {
+						// Do nothing.
+					}
+				}
+			}
 		} else if (n.instance >= 0) {
 			// Instance a scene into this node.
 			if (n.instance & FLAG_INSTANCE_IS_PLACEHOLDER) {
