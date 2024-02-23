@@ -154,6 +154,8 @@ void FileSystemList::_bind_methods() {
 }
 
 FileSystemList::FileSystemList() {
+	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 	popup_editor = memnew(Popup);
 	add_child(popup_editor);
 
