@@ -46,6 +46,9 @@
 		<member name="mesh" type="int" setter="set_mesh" getter="get_mesh" default="-1">
 			If this GLTF node is a mesh, the index of the [GLTFMesh] in the [GLTFState] that describes the mesh's properties. If -1, this node is not a mesh.
 		</member>
+		<member name="original_name" type="String" setter="set_original_name" getter="get_original_name" default="&quot;&quot;">
+			The original name of the node.
+		</member>
 		<member name="parent" type="int" setter="set_parent" getter="get_parent" default="-1">
 			The index of the parent node in the [GLTFState]. If -1, this node is a root node.
 		</member>

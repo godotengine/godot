@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_template_convert.h                                               */
+/*  fbx_state.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,68 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_TEMPLATE_CONVERT_H
-#define GLTF_TEMPLATE_CONVERT_H
+#ifndef FBX_STATE_H
+#define FBX_STATE_H
 
-#include "core/templates/hash_set.h"
-#include "core/variant/array.h"
-#include "core/variant/dictionary.h"
-#include "core/variant/typed_array.h"
+#include "modules/gltf/gltf_defines.h"
+#include "modules/gltf/gltf_state.h"
+#include "modules/gltf/structures/gltf_skeleton.h"
+#include "modules/gltf/structures/gltf_skin.h"
+#include "modules/gltf/structures/gltf_texture.h"
 
-namespace GLTFTemplateConvert {
-template <class T>
-static Array to_array(const Vector<T> &p_inp) {
-	Array ret;
-	for (int i = 0; i < p_inp.size(); i++) {
-		ret.push_back(p_inp[i]);
-	}
-	return ret;
-}
+#include <ufbx.h>
 
-template <class T>
-static TypedArray<T> to_array(const HashSet<T> &p_inp) {
-	TypedArray<T> ret;
-	typename HashSet<T>::Iterator elem = p_inp.begin();
-	while (elem) {
-		ret.push_back(*elem);
-		++elem;
-	}
-	return ret;
-}
+class FBXState : public GLTFState {
+	GDCLASS(FBXState, GLTFState);
+	friend class FBXDocument;
+	friend class SkinTool;
+	friend class GLTFSkin;
 
-template <class T>
-static void set_from_array(Vector<T> &r_out, const Array &p_inp) {
-	r_out.clear();
-	for (int i = 0; i < p_inp.size(); i++) {
-		r_out.push_back(p_inp[i]);
-	}
-}
+	// Smart pointer that holds the loaded scene.
+	ufbx_unique_ptr<ufbx_scene> scene;
+	bool allow_geometry_helper_nodes = false;
 
-template <class T>
-static void set_from_array(HashSet<T> &r_out, const TypedArray<T> &p_inp) {
-	r_out.clear();
-	for (int i = 0; i < p_inp.size(); i++) {
-		r_out.insert(p_inp[i]);
-	}
-}
+	HashMap<uint64_t, Image::AlphaMode> alpha_mode_cache;
+	HashMap<Pair<uint64_t, uint64_t>, GLTFTextureIndex, PairHash<uint64_t, uint64_t>> albedo_transparency_textures;
 
-template <class K, class V>
-static Dictionary to_dictionary(const HashMap<K, V> &p_inp) {
-	Dictionary ret;
-	for (const KeyValue<K, V> &E : p_inp) {
-		ret[E.key] = E.value;
-	}
-	return ret;
-}
+	Vector<GLTFSkinIndex> skin_indices;
+	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_fbx_skeleton;
+	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_fbx_skin;
+	HashSet<String> unique_mesh_names; // Not in GLTFState because GLTFState prefixes mesh names with the scene name (or _)
 
-template <class K, class V>
-static void set_from_dictionary(HashMap<K, V> &r_out, const Dictionary &p_inp) {
-	r_out.clear();
-	Array keys = p_inp.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		r_out[keys[i]] = p_inp[keys[i]];
-	}
-}
-} //namespace GLTFTemplateConvert
+protected:
+	static void _bind_methods();
 
-#endif // GLTF_TEMPLATE_CONVERT_H
+public:
+	bool get_allow_geometry_helper_nodes();
+	void set_allow_geometry_helper_nodes(bool p_allow_geometry_helper_nodes);
+};
+
+#endif // FBX_STATE_H

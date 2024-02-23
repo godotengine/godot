@@ -204,3 +204,14 @@ Validate extension JSON: Error: Field 'classes/Window/methods/has_theme_stylebox
 Fix the default parameter value for StringName and Variant.
 The changes to StringName parameters should be equivalent to the previous default values.
 The change to the Variant parameter in 'add_code_completion_option' breaks behavior compatibility.
+
+
+GH-81746
+--------
+Validate extension JSON: API was removed: classes/EditorSceneFormatImporterFBX
+
+Renamed to EditorSceneFormatImporterFBX2GLTF.
+
+The compat breakage was deemed necessary as this is a class most users wouldn't
+use directly, and the name needs to be disambiguated with the new
+EditorSceneFormatImporterUFBX.
