@@ -197,13 +197,24 @@
 				If [param allow_echo] is [code]true[/code], the shortcut can be activated with echo events.
 			</description>
 		</method>
-		<method name="add_submenu_item">
+		<method name="add_submenu_item" deprecated="Prefer using [method add_submenu_node_item] instead.">
 			<return type="void" />
 			<param index="0" name="label" type="String" />
 			<param index="1" name="submenu" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
 			<description>
 				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument must be the name of an existing [PopupMenu] that has been added as a child to this node. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+			</description>
+		</method>
+		<method name="add_submenu_node_item">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="submenu" type="PopupMenu" />
+			<param index="2" name="id" type="int" default="-1" />
+			<description>
+				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
+				[param submenu] must be either child of this [PopupMenu] or has no parent node (in which case it will be automatically added as a child). If the [param submenu] popup has another parent, this method will fail.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
 			</description>
 		</method>
@@ -304,11 +315,18 @@
 				Returns the [Shortcut] associated with the item at the given [param index].
 			</description>
 		</method>
-		<method name="get_item_submenu" qualifiers="const">
+		<method name="get_item_submenu" qualifiers="const" deprecated="Prefer using [method get_item_submenu_node] instead.">
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the submenu name of the item at the given [param index]. See [method add_submenu_item] for more info on how to add a submenu.
+			</description>
+		</method>
+		<method name="get_item_submenu_node" qualifiers="const">
+			<return type="PopupMenu" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the submenu of the item at the given [param index], or [code]null[/code] if no submenu was added. See [method add_submenu_node_item] for more info on how to add a submenu.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -545,12 +563,20 @@
 				Disables the [Shortcut] of the item at the given [param index].
 			</description>
 		</method>
-		<method name="set_item_submenu">
+		<method name="set_item_submenu" deprecated="Prefer using [method set_item_submenu_node] instead.">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="submenu" type="String" />
 			<description>
 				Sets the submenu of the item at the given [param index]. The submenu is the name of a child [PopupMenu] node that would be shown when the item is clicked.
+			</description>
+		</method>
+		<method name="set_item_submenu_node">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="submenu" type="PopupMenu" />
+			<description>
+				Sets the submenu of the item at the given [param index]. The submenu is a [PopupMenu] node that would be shown when the item is clicked. It must either be a child of this [PopupMenu] or has no parent (in which case it will be automatically added as a child). If the [param submenu] popup has another parent, this method will fail.
 			</description>
 		</method>
 		<method name="set_item_text">

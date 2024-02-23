@@ -509,7 +509,7 @@ public:
 	RID sbox_instance_xray;
 	RID sbox_instance_xray_offset;
 	Ref<EditorNode3DGizmo> gizmo;
-	HashMap<int, Transform3D> subgizmos; // map ID -> initial transform
+	HashMap<int, Transform3D> subgizmos; // Key: Subgizmo ID, Value: Initial subgizmo transform.
 
 	Node3DEditorSelectedItem() {
 		sp = nullptr;

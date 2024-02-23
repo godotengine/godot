@@ -200,22 +200,6 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
-	// Primary handles: position.
-	if (!p_secondary) {
-		// Special cas for primary handle, the handle id equals control point id.
-		const int idx = p_id;
-		if (p_cancel) {
-			c->set_point_position(idx, p_restore);
-			return;
-		}
-		ur->create_action(TTR("Set Curve Point Position"));
-		ur->add_do_method(c.ptr(), "set_point_position", idx, c->get_point_position(idx));
-		ur->add_undo_method(c.ptr(), "set_point_position", idx, p_restore);
-		ur->commit_action();
-
-		return;
-	}
-
 	// Secondary handles: in, out, tilt.
 	const HandleInfo info = _secondary_handles_info[p_id];
 	const int idx = info.point_idx;
@@ -235,6 +219,7 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 				ur->add_do_method(c.ptr(), "set_point_in", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -c->get_point_out(idx) : (-c->get_point_out(idx).normalized() * orig_in_length));
 				ur->add_undo_method(c.ptr(), "set_point_in", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -static_cast<Vector3>(p_restore) : (-static_cast<Vector3>(p_restore).normalized() * orig_in_length));
 			}
+
 			ur->commit_action();
 			break;
 		}
@@ -252,6 +237,7 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 				ur->add_do_method(c.ptr(), "set_point_out", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -c->get_point_in(idx) : (-c->get_point_in(idx).normalized() * orig_out_length));
 				ur->add_undo_method(c.ptr(), "set_point_out", idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -static_cast<Vector3>(p_restore) : (-static_cast<Vector3>(p_restore).normalized() * orig_out_length));
 			}
+
 			ur->commit_action();
 			break;
 		}
@@ -263,6 +249,7 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 			ur->create_action(TTR("Set Curve Point Tilt"));
 			ur->add_do_method(c.ptr(), "set_point_tilt", idx, c->get_point_tilt(idx));
 			ur->add_undo_method(c.ptr(), "set_point_tilt", idx, p_restore);
+
 			ur->commit_action();
 			break;
 		}
@@ -275,7 +262,7 @@ void Path3DGizmo::redraw() {
 	Ref<StandardMaterial3D> path_material = gizmo_plugin->get_material("path_material", this);
 	Ref<StandardMaterial3D> path_thin_material = gizmo_plugin->get_material("path_thin_material", this);
 	Ref<StandardMaterial3D> path_tilt_material = gizmo_plugin->get_material("path_tilt_material", this);
-	Ref<StandardMaterial3D> handles_material = gizmo_plugin->get_material("handles");
+	Ref<StandardMaterial3D> path_tilt_muted_material = gizmo_plugin->get_material("path_tilt_muted_material", this);
 	Ref<StandardMaterial3D> sec_handles_material = gizmo_plugin->get_material("sec_handles");
 
 	Ref<Curve3D> c = path->get_curve();
@@ -353,48 +340,57 @@ void Path3DGizmo::redraw() {
 	if (Path3DEditorPlugin::singleton->get_edited_path() == path) {
 		PackedVector3Array handle_lines;
 		PackedVector3Array tilt_handle_lines;
-		PackedVector3Array primary_handle_points;
 		PackedVector3Array secondary_handle_points;
 		PackedInt32Array collected_secondary_handle_ids; // Avoid shadowing member on Node3DEditorGizmo.
 
 		_secondary_handles_info.resize(c->get_point_count() * 3);
 
 		for (int idx = 0; idx < c->get_point_count(); idx++) {
-			// Collect primary-handles.
 			const Vector3 pos = c->get_point_position(idx);
-			primary_handle_points.append(pos);
+			bool is_current_point_selected = is_subgizmo_selected(idx);
+			bool is_previous_point_selected = is_subgizmo_selected(idx - 1);
+			bool is_following_point_selected = is_subgizmo_selected(idx + 1);
 
 			HandleInfo info;
 			info.point_idx = idx;
 
 			// Collect in-handles except for the first point.
-			if (idx > 0) {
-				info.type = HandleType::HANDLE_TYPE_IN;
-				const int handle_idx = idx * 3 + 0;
-				collected_secondary_handle_ids.append(handle_idx);
-				_secondary_handles_info.write[handle_idx] = info;
-
+			if (idx > 0 && (is_current_point_selected || is_previous_point_selected)) {
 				const Vector3 in = c->get_point_in(idx);
-				secondary_handle_points.append(pos + in);
-				handle_lines.append(pos);
-				handle_lines.append(pos + in);
+
+				// Display in-handles only when they are "initialized".
+				if (in.length_squared() > 0) {
+					info.type = HandleType::HANDLE_TYPE_IN;
+					const int handle_idx = idx * 3 + 0;
+					collected_secondary_handle_ids.append(handle_idx);
+					_secondary_handles_info.write[handle_idx] = info;
+
+					secondary_handle_points.append(pos + in);
+					handle_lines.append(pos);
+					handle_lines.append(pos + in);
+				}
 			}
 
 			// Collect out-handles except for the last point.
-			if (idx < c->get_point_count() - 1) {
-				info.type = HandleType::HANDLE_TYPE_OUT;
-				const int handle_idx = idx * 3 + 1;
-				collected_secondary_handle_ids.append(handle_idx);
-				_secondary_handles_info.write[handle_idx] = info;
-
+			if (idx < c->get_point_count() - 1 && (is_current_point_selected || is_following_point_selected)) {
 				const Vector3 out = c->get_point_out(idx);
-				secondary_handle_points.append(pos + out);
-				handle_lines.append(pos);
-				handle_lines.append(pos + out);
+
+				// Display out-handles only when they are "initialized".
+				if (out.length_squared() > 0) {
+					info.type = HandleType::HANDLE_TYPE_OUT;
+					const int handle_idx = idx * 3 + 1;
+					collected_secondary_handle_ids.append(handle_idx);
+					_secondary_handles_info.write[handle_idx] = info;
+
+					secondary_handle_points.append(pos + out);
+					handle_lines.append(pos);
+					handle_lines.append(pos + out);
+				}
 			}
 
 			// Collect tilt-handles.
-			{
+			if (is_current_point_selected || is_previous_point_selected || is_following_point_selected) {
+				// Tilt handle.
 				{
 					info.type = HandleType::HANDLE_TYPE_TILT;
 					const int handle_idx = idx * 3 + 2;
@@ -423,7 +419,7 @@ void Path3DGizmo::redraw() {
 						const Vector3 edge = sin(a) * side + cos(a) * up;
 						disk.append(pos + edge * disk_size);
 					}
-					add_vertices(disk, path_tilt_material, Mesh::PRIMITIVE_LINE_STRIP);
+					add_vertices(disk, is_current_point_selected ? path_tilt_material : path_tilt_muted_material, Mesh::PRIMITIVE_LINE_STRIP);
 				}
 			}
 		}
@@ -436,13 +432,16 @@ void Path3DGizmo::redraw() {
 			add_lines(tilt_handle_lines, path_tilt_material);
 		}
 
-		if (primary_handle_points.size()) {
-			add_handles(primary_handle_points, handles_material);
-		}
 		if (secondary_handle_points.size()) {
 			add_handles(secondary_handle_points, sec_handles_material, collected_secondary_handle_ids, false, true);
 		}
+		// Draw the gizmo plugin manually, because handles are registered. In which case, the caller code skips drawing the gizmo plugin.
+		gizmo_plugin->redraw(this);
 	}
+}
+
+void Path3DGizmo::_update_transform_gizmo() {
+	Node3DEditor::get_singleton()->update_transform_gizmo();
 }
 
 Path3DGizmo::Path3DGizmo(Path3D *p_path, float p_disk_size) {
@@ -451,6 +450,9 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path, float p_disk_size) {
 	set_node_3d(p_path);
 	orig_in_length = 0;
 	orig_out_length = 0;
+
+	// Connecting to a signal once, rather than plaguing the implementation with calls to `Node3DEditor::update_transform_gizmo`.
+	path->connect("curve_changed", callable_mp(this, &Path3DGizmo::_update_transform_gizmo));
 }
 
 EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
@@ -819,8 +821,128 @@ Ref<EditorNode3DGizmo> Path3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
 	return ref;
 }
 
+bool Path3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<Path3D>(p_spatial) != nullptr;
+}
+
 String Path3DGizmoPlugin::get_gizmo_name() const {
 	return "Path3D";
+}
+
+void Path3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	Path3D *path = Object::cast_to<Path3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL(path);
+
+	Ref<Curve3D> curve = path->get_curve();
+
+	Ref<StandardMaterial3D> handle_material = get_material("handles", p_gizmo);
+	PackedVector3Array handles;
+
+	for (int idx = 0; idx < curve->get_point_count(); ++idx) {
+		// Collect handles.
+		const Vector3 pos = curve->get_point_position(idx);
+
+		handles.append(pos);
+	}
+
+	if (handles.size()) {
+		p_gizmo->add_vertices(handles, handle_material, Mesh::PRIMITIVE_POINTS);
+	}
+}
+
+int Path3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const {
+	Path3D *path = Object::cast_to<Path3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL_V(path, -1);
+	Ref<Curve3D> curve = path->get_curve();
+	ERR_FAIL_COND_V(curve.is_null(), -1);
+
+	for (int idx = 0; idx < curve->get_point_count(); ++idx) {
+		Vector3 pos = path->get_global_transform().xform(curve->get_point_position(idx));
+		if (p_camera->unproject_position(pos).distance_to(p_point) < 20) {
+			return idx;
+		}
+	}
+	return -1;
+}
+
+Vector<int> Path3DGizmoPlugin::subgizmos_intersect_frustum(const EditorNode3DGizmo *p_gizmo, const Camera3D *p_camera, const Vector<Plane> &p_frustum) const {
+	Vector<int> contained_points;
+
+	Path3D *path = Object::cast_to<Path3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL_V(path, contained_points);
+	Ref<Curve3D> curve = path->get_curve();
+	ERR_FAIL_COND_V(curve.is_null(), contained_points);
+
+	for (int idx = 0; idx < curve->get_point_count(); ++idx) {
+		Vector3 pos = path->get_global_transform().xform(curve->get_point_position(idx));
+		bool is_contained_in_frustum = true;
+		for (int i = 0; i < p_frustum.size(); ++i) {
+			if (p_frustum[i].distance_to(pos) > 0) {
+				is_contained_in_frustum = false;
+				break;
+			}
+		}
+
+		if (is_contained_in_frustum) {
+			contained_points.push_back(idx);
+		}
+	}
+
+	return contained_points;
+}
+
+Transform3D Path3DGizmoPlugin::get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const {
+	Path3D *path = Object::cast_to<Path3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL_V(path, Transform3D());
+	Ref<Curve3D> curve = path->get_curve();
+	ERR_FAIL_COND_V(curve.is_null(), Transform3D());
+	ERR_FAIL_INDEX_V(p_id, curve->get_point_count(), Transform3D());
+
+	Basis basis = transformation_locked_basis.has(p_id) ? transformation_locked_basis[p_id] : curve->get_point_baked_posture(p_id, true);
+	Vector3 pos = curve->get_point_position(p_id);
+
+	Transform3D t = Transform3D(basis, pos);
+	return t;
+}
+
+void Path3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) {
+	Path3D *path = Object::cast_to<Path3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL(path);
+	Ref<Curve3D> curve = path->get_curve();
+	ERR_FAIL_COND(curve.is_null());
+	ERR_FAIL_INDEX(p_id, curve->get_point_count());
+
+	if (!transformation_locked_basis.has(p_id)) {
+		transformation_locked_basis[p_id] = Basis(curve->get_point_baked_posture(p_id, true));
+	}
+	curve->set_point_position(p_id, p_transform.origin);
+}
+
+void Path3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) {
+	Path3D *path = Object::cast_to<Path3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL(path);
+	Ref<Curve3D> curve = path->get_curve();
+	ERR_FAIL_COND(curve.is_null());
+
+	transformation_locked_basis.clear();
+
+	if (p_cancel) {
+		for (int i = 0; i < p_ids.size(); ++i) {
+			curve->set_point_position(p_ids[i], p_restore[i].origin);
+		}
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	undo_redo->create_action(TTR("Set Curve Point Position"));
+
+	for (int i = 0; i < p_ids.size(); ++i) {
+		const int idx = p_ids[i];
+		undo_redo->add_do_method(curve.ptr(), "set_point_position", idx, curve->get_point_position(idx));
+		undo_redo->add_undo_method(curve.ptr(), "set_point_position", idx, p_restore[i].origin);
+	}
+	undo_redo->commit_action();
 }
 
 int Path3DGizmoPlugin::get_priority() const {
@@ -835,6 +957,7 @@ Path3DGizmoPlugin::Path3DGizmoPlugin(float p_disk_size) {
 	create_material("path_material", path_color);
 	create_material("path_thin_material", Color(0.6, 0.6, 0.6));
 	create_material("path_tilt_material", path_tilt_color);
+	create_material("path_tilt_muted_material", path_tilt_color * 0.7);
 	create_handle_material("handles", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
 	create_handle_material("sec_handles", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorCurveHandle"), EditorStringName(EditorIcons)));
 }

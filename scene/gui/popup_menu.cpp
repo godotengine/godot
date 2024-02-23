@@ -111,13 +111,10 @@ String PopupMenu::bind_global_menu() {
 			ds->global_menu_add_separator(global_menu_name);
 		} else {
 			int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), item.shortcut_is_global ? callable_mp(this, &PopupMenu::activate_item) : Callable(), i);
-			if (!item.submenu.is_empty()) {
-				PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu));
-				if (pm) {
-					String submenu_name = pm->bind_global_menu();
-					ds->global_menu_set_item_submenu(global_menu_name, index, submenu_name);
-					item.submenu_bound = true;
-				}
+			if (item.submenu) {
+				String submenu_name = item.submenu->bind_global_menu();
+				ds->global_menu_set_item_submenu(global_menu_name, index, submenu_name);
+				item.submenu_bound = true;
 			}
 			if (item.checkable_type == Item::CHECKABLE_TYPE_CHECK_BOX) {
 				ds->global_menu_set_item_checkable(global_menu_name, index, true);
@@ -158,11 +155,8 @@ void PopupMenu::unbind_global_menu() {
 
 	for (int i = 0; i < items.size(); i++) {
 		Item &item = items.write[i];
-		if (!item.submenu.is_empty()) {
-			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu));
-			if (pm) {
-				pm->unbind_global_menu();
-			}
+		if (item.submenu) {
+			item.submenu->unbind_global_menu();
 			item.submenu_bound = false;
 		}
 	}
@@ -251,7 +245,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 			accel_max_w = MAX(accel_w, accel_max_w);
 		}
 
-		if (!items[i].submenu.is_empty()) {
+		if (items[i].submenu) {
 			item_size.width += theme_cache.submenu->get_width();
 		}
 
@@ -335,10 +329,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 }
 
 void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
-	Node *n = get_node_or_null(items[p_over].submenu);
-	ERR_FAIL_NULL_MSG(n, "Item subnode does not exist: '" + items[p_over].submenu + "'.");
-	Popup *submenu_popup = Object::cast_to<Popup>(n);
-	ERR_FAIL_NULL_MSG(submenu_popup, "Item subnode is not a Popup: '" + items[p_over].submenu + "'.");
+	Popup *submenu_popup = items[p_over].submenu;
 	if (submenu_popup->is_visible()) {
 		return; // Already visible.
 	}
@@ -551,7 +542,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else if (p_event->is_action("ui_right", true) && p_event->is_pressed()) {
-			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && !items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
+			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && items[mouse_over].submenu && submenu_over != mouse_over) {
 				_activate_submenu(mouse_over, true);
 				set_input_as_handled();
 			} else {
@@ -564,7 +555,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
 			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
-				if (!items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
+				if (items[mouse_over].submenu && submenu_over != mouse_over) {
 					_activate_submenu(mouse_over, true);
 				} else {
 					activate_item(mouse_over);
@@ -620,7 +611,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (!items[over].submenu.is_empty()) {
+				if (items[over].submenu) {
 					_activate_submenu(over);
 					return;
 				}
@@ -657,7 +648,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (!items[over].submenu.is_empty() && submenu_over != over) {
+		if (items[over].submenu && submenu_over != over) {
 			submenu_over = over;
 			submenu_timer->start();
 		}
@@ -858,7 +849,7 @@ void PopupMenu::_draw_items() {
 		}
 
 		// Submenu arrow on right hand side.
-		if (!items[i].submenu.is_empty()) {
+		if (items[i].submenu) {
 			if (rtl) {
 				submenu->draw(ci, Point2(scroll_width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			} else {
@@ -974,11 +965,13 @@ void PopupMenu::_menu_changed() {
 void PopupMenu::add_child_notify(Node *p_child) {
 	Window::add_child_notify(p_child);
 
-	if (Object::cast_to<PopupMenu>(p_child) && !global_menu_name.is_empty()) {
-		String node_name = p_child->get_name();
-		PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(node_name));
+	PopupMenu *pm = Object::cast_to<PopupMenu>(p_child);
+	if (!pm) {
+		return;
+	}
+	if (!global_menu_name.is_empty()) {
 		for (int i = 0; i < items.size(); i++) {
-			if (items[i].submenu == node_name) {
+			if (items[i].submenu == p_child) {
 				String submenu_name = pm->bind_global_menu();
 				DisplayServer::get_singleton()->global_menu_set_item_submenu(global_menu_name, i, submenu_name);
 				items.write[i].submenu_bound = true;
@@ -996,9 +989,8 @@ void PopupMenu::remove_child_notify(Node *p_child) {
 		return;
 	}
 	if (Object::cast_to<PopupMenu>(p_child) && !global_menu_name.is_empty()) {
-		String node_name = p_child->get_name();
 		for (int i = 0; i < items.size(); i++) {
-			if (items[i].submenu == node_name) {
+			if (items[i].submenu == p_child) {
 				DisplayServer::get_singleton()->global_menu_set_item_submenu(global_menu_name, i, String());
 				items.write[i].submenu_bound = false;
 			}
@@ -1056,7 +1048,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_WM_MOUSE_EXIT: {
-			if (mouse_over >= 0 && (items[mouse_over].submenu.is_empty() || submenu_over != -1)) {
+			if (mouse_over >= 0 && (!items[mouse_over].submenu || submenu_over != -1)) {
 				mouse_over = -1;
 				control->queue_redraw();
 			}
@@ -1166,21 +1158,10 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				for (int i = 0; i < items.size(); i++) {
-					if (items[i].submenu.is_empty()) {
+					if (!items[i].submenu) {
 						continue;
 					}
-
-					Node *n = get_node(items[i].submenu);
-					if (!n) {
-						continue;
-					}
-
-					PopupMenu *pm = Object::cast_to<PopupMenu>(n);
-					if (!pm || !pm->is_visible()) {
-						continue;
-					}
-
-					pm->hide();
+					items[i].submenu->hide();
 				}
 
 				set_process_internal(false);
@@ -1563,9 +1544,18 @@ void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, cons
 }
 
 void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu, int p_id) {
-	String submenu_name_safe = p_submenu.replace("@", "_"); // Allow special characters for auto-generated names.
-	if (submenu_name_safe.validate_node_name() != submenu_name_safe) {
-		ERR_FAIL_MSG(vformat("Invalid node name '%s' for a submenu, the following characters are not allowed:\n%s", p_submenu, String::get_invalid_node_name_characters(true)));
+	PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(p_submenu));
+	ERR_FAIL_NULL_MSG(pm, vformat("Child PopupMenu \"%s\" does not exist.", p_submenu));
+
+	add_submenu_node_item(p_label, pm, p_id);
+}
+
+void PopupMenu::add_submenu_node_item(const String &p_label, PopupMenu *p_submenu, int p_id) {
+	ERR_FAIL_NULL(p_submenu);
+
+	if (p_submenu->get_parent() != this) {
+		ERR_FAIL_COND_MSG(p_submenu->get_parent() != nullptr, vformat("The submenu \"%s\" already has a different parent.", p_submenu->get_name()));
+		add_child(p_submenu);
 	}
 
 	Item item;
@@ -1573,17 +1563,15 @@ void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu,
 	item.xl_text = atr(p_label);
 	item.id = p_id == -1 ? items.size() : p_id;
 	item.submenu = p_submenu;
+	item.submenu_name = p_submenu->get_name();
 	items.push_back(item);
 
 	if (!global_menu_name.is_empty()) {
 		DisplayServer *ds = DisplayServer::get_singleton();
 		int index = ds->global_menu_add_item(global_menu_name, item.xl_text, callable_mp(this, &PopupMenu::activate_item), Callable(), items.size() - 1);
-		PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu)); // Find first menu with this name.
-		if (pm) {
-			String submenu_name = pm->bind_global_menu();
-			ds->global_menu_set_item_submenu(global_menu_name, index, submenu_name);
-			items.write[index].submenu_bound = true;
-		}
+		String submenu_name = p_submenu->bind_global_menu();
+		ds->global_menu_set_item_submenu(global_menu_name, index, submenu_name);
+		items.write[index].submenu_bound = true;
 	}
 
 	_shape_item(items.size() - 1);
@@ -1804,18 +1792,31 @@ void PopupMenu::set_item_submenu(int p_idx, const String &p_submenu) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	if (items[p_idx].submenu == p_submenu) {
+	if (items[p_idx].submenu_name == p_submenu) {
 		return;
 	}
 
-	String submenu_name_safe = p_submenu.replace("@", "_"); // Allow special characters for auto-generated names.
-	if (submenu_name_safe.validate_node_name() != submenu_name_safe) {
-		ERR_FAIL_MSG(vformat("Invalid node name '%s' for a submenu, the following characters are not allowed:\n%s", p_submenu, String::get_invalid_node_name_characters(true)));
+	PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(p_submenu));
+	ERR_FAIL_NULL_MSG(pm, vformat("Child PopupMenu \"%s\" does not exist.", p_submenu));
+
+	set_item_submenu_node(p_idx, pm);
+}
+
+void PopupMenu::set_item_submenu_node(int p_idx, PopupMenu *p_submenu) {
+	ERR_FAIL_NULL(p_submenu);
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (p_submenu->get_parent() != this) {
+		ERR_FAIL_COND_MSG(p_submenu->get_parent() != nullptr, vformat("The submenu \"%s\" already has a different parent.", p_submenu->get_name()));
+		add_child(p_submenu);
 	}
 
 	if (!global_menu_name.is_empty()) {
 		if (items[p_idx].submenu_bound) {
-			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(items[p_idx].submenu));
+			PopupMenu *pm = items[p_idx].submenu;
 			if (pm) {
 				DisplayServer::get_singleton()->global_menu_set_item_submenu(global_menu_name, p_idx, String());
 				pm->unbind_global_menu();
@@ -1827,13 +1828,10 @@ void PopupMenu::set_item_submenu(int p_idx, const String &p_submenu) {
 	items.write[p_idx].submenu = p_submenu;
 
 	if (!global_menu_name.is_empty()) {
-		if (!items[p_idx].submenu.is_empty()) {
-			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(items[p_idx].submenu));
-			if (pm) {
-				String submenu_name = pm->bind_global_menu();
-				DisplayServer::get_singleton()->global_menu_set_item_submenu(global_menu_name, p_idx, submenu_name);
-				items.write[p_idx].submenu_bound = true;
-			}
+		if (items[p_idx].submenu) {
+			String submenu_name = p_submenu->bind_global_menu();
+			DisplayServer::get_singleton()->global_menu_set_item_submenu(global_menu_name, p_idx, submenu_name);
+			items.write[p_idx].submenu_bound = true;
 		}
 	}
 
@@ -1937,6 +1935,11 @@ int PopupMenu::get_item_index(int p_id) const {
 
 String PopupMenu::get_item_submenu(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), "");
+	return items[p_idx].submenu_name;
+}
+
+PopupMenu *PopupMenu::get_item_submenu_node(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), nullptr);
 	return items[p_idx].submenu;
 }
 
@@ -2333,18 +2336,8 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 			return true;
 		}
 
-		if (!items[i].submenu.is_empty()) {
-			Node *n = get_node(items[i].submenu);
-			if (!n) {
-				continue;
-			}
-
-			PopupMenu *pm = Object::cast_to<PopupMenu>(n);
-			if (!pm) {
-				continue;
-			}
-
-			if (pm->activate_item_by_event(p_event, p_for_global_only)) {
+		if (items[i].submenu) {
+			if (items[i].submenu->activate_item_by_event(p_event, p_for_global_only)) {
 				return true;
 			}
 		}
@@ -2458,12 +2451,9 @@ void PopupMenu::clear(bool p_free_submenus) {
 			_unref_shortcut(I.shortcut);
 		}
 
-		if (p_free_submenus && !I.submenu.is_empty()) {
-			Node *submenu = get_node_or_null(I.submenu);
-			if (submenu) {
-				remove_child(submenu);
-				submenu->queue_free();
-			}
+		if (p_free_submenus && I.submenu) {
+			remove_child(I.submenu);
+			I.submenu->queue_free();
 		}
 	}
 
@@ -2471,11 +2461,8 @@ void PopupMenu::clear(bool p_free_submenus) {
 		DisplayServer *ds = DisplayServer::get_singleton();
 		for (int i = items.size() - 1; i >= 0; i--) {
 			Item &item = items.write[i];
-			if (!item.submenu.is_empty()) {
-				PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(item.submenu));
-				if (pm) {
-					pm->unbind_global_menu();
-				}
+			if (item.submenu) {
+				item.submenu->unbind_global_menu();
 				item.submenu_bound = false;
 			}
 			ds->global_menu_remove_item(global_menu_name, i);
@@ -2654,6 +2641,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_icon_radio_check_shortcut", "texture", "shortcut", "id", "global"), &PopupMenu::add_icon_radio_check_shortcut, DEFVAL(-1), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("add_submenu_item", "label", "submenu", "id"), &PopupMenu::add_submenu_item, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_submenu_node_item", "label", "submenu", "id"), &PopupMenu::add_submenu_node_item, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_item_text", "index", "text"), &PopupMenu::set_item_text);
 	ClassDB::bind_method(D_METHOD("set_item_text_direction", "index", "direction"), &PopupMenu::set_item_text_direction);
@@ -2667,6 +2655,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "index", "metadata"), &PopupMenu::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_disabled", "index", "disabled"), &PopupMenu::set_item_disabled);
 	ClassDB::bind_method(D_METHOD("set_item_submenu", "index", "submenu"), &PopupMenu::set_item_submenu);
+	ClassDB::bind_method(D_METHOD("set_item_submenu_node", "index", "submenu"), &PopupMenu::set_item_submenu_node);
 	ClassDB::bind_method(D_METHOD("set_item_as_separator", "index", "enable"), &PopupMenu::set_item_as_separator);
 	ClassDB::bind_method(D_METHOD("set_item_as_checkable", "index", "enable"), &PopupMenu::set_item_as_checkable);
 	ClassDB::bind_method(D_METHOD("set_item_as_radio_checkable", "index", "enable"), &PopupMenu::set_item_as_radio_checkable);
@@ -2693,6 +2682,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "index"), &PopupMenu::get_item_metadata);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "index"), &PopupMenu::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("get_item_submenu", "index"), &PopupMenu::get_item_submenu);
+	ClassDB::bind_method(D_METHOD("get_item_submenu_node", "index"), &PopupMenu::get_item_submenu_node);
 	ClassDB::bind_method(D_METHOD("is_item_separator", "index"), &PopupMenu::is_item_separator);
 	ClassDB::bind_method(D_METHOD("is_item_checkable", "index"), &PopupMenu::is_item_checkable);
 	ClassDB::bind_method(D_METHOD("is_item_radio_checkable", "index"), &PopupMenu::is_item_radio_checkable);
