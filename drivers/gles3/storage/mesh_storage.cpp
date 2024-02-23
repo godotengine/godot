@@ -188,6 +188,10 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			expected_size = skin_stride * p_surface.vertex_count;
 			ERR_FAIL_COND_MSG(expected_size != p_surface.skin_data.size(), "Size of skin data provided (" + itos(p_surface.skin_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
 		}
+
+		if ((p_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(p_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
+			WARN_PRINT("Mesh surface added with normals but without tangents. This is not supported. Please ensure that tangents are used whenever normals are used.");
+		}
 	}
 
 #endif
@@ -218,23 +222,9 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	if (new_surface.vertex_data.size()) {
 		glGenBuffers(1, &s->vertex_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
-		// If we have an uncompressed surface that contains normals, but not tangents, we need to differentiate the array
-		// from a compressed array in the shader. To do so, we allow the the normal to read 4 components out of the buffer
-		// But only give it 2 components per normal. So essentially, each vertex reads the next normal in normal.zw.
-		// This allows us to avoid adding a shader permutation, and avoid passing dummy tangents. Since the stride is kept small
-		// this should still be a net win for bandwidth.
-		// If we do this, then the last normal will read past the end of the array. So we need to pad the array with dummy data.
-		if (!(new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
-			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
-			Vector<uint8_t> new_vertex_data;
-			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
-			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
-			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_vertex_data.size(), new_vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
-			s->vertex_buffer_size = new_vertex_data.size();
-		} else {
-			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_surface.vertex_data.size(), new_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
-			s->vertex_buffer_size = new_surface.vertex_data.size();
-		}
+
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_surface.vertex_data.size(), new_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
+		s->vertex_buffer_size = new_surface.vertex_data.size();
 	}
 
 	if (new_surface.attribute_data.size()) {
@@ -541,11 +531,6 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	sd.format = s.format;
 	if (s.vertex_buffer != 0) {
 		sd.vertex_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_buffer_size);
-
-		// When using an uncompressed buffer with normals, but without tangents, we have to trim the padding.
-		if (!(s.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (s.format & RS::ARRAY_FORMAT_NORMAL) && !(s.format & RS::ARRAY_FORMAT_TANGENT)) {
-			sd.vertex_data.resize(sd.vertex_data.size() - sizeof(uint16_t) * 2);
-		}
 	}
 
 	if (s.attribute_buffer != 0) {
@@ -897,15 +882,9 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 					attribs[i].size = 2;
 					normal_tangent_stride += 2 * attribs[i].size;
 				} else {
+					// If using normals, we should always have tangents.
 					attribs[i].size = 4;
-					// A small trick here: if we are uncompressed and we have normals, but no tangents. We need
-					// the shader to think there are 4 components to "axis_tangent_attrib". So we give a size of 4,
-					// but a stride based on only having 2 elements.
-					if (!(s->format & RS::ARRAY_FORMAT_TANGENT)) {
-						normal_tangent_stride += (mis ? sizeof(float) : sizeof(uint16_t)) * 2;
-					} else {
-						normal_tangent_stride += (mis ? sizeof(float) : sizeof(uint16_t)) * 4;
-					}
+					normal_tangent_stride += (mis ? sizeof(float) : sizeof(uint16_t)) * 4;
 				}
 
 				if (mis) {

@@ -343,6 +343,10 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			expected_size = skin_stride * p_surface.vertex_count;
 			ERR_FAIL_COND_MSG(expected_size != p_surface.skin_data.size(), "Size of skin data provided (" + itos(p_surface.skin_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
 		}
+
+		if ((p_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(p_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
+			WARN_PRINT("Mesh surface added with normals but without tangents. This is not supported. Please ensure that tangents are used whenever normals are used.");
+		}
 	}
 
 #endif
@@ -373,23 +377,8 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	bool use_as_storage = (new_surface.skin_data.size() || mesh->blend_shape_count > 0);
 
 	if (new_surface.vertex_data.size()) {
-		// If we have an uncompressed surface that contains normals, but not tangents, we need to differentiate the array
-		// from a compressed array in the shader. To do so, we allow the the normal to read 4 components out of the buffer
-		// But only give it 2 components per normal. So essentially, each vertex reads the next normal in normal.zw.
-		// This allows us to avoid adding a shader permutation, and avoid passing dummy tangents. Since the stride is kept small
-		// this should still be a net win for bandwidth.
-		// If we do this, then the last normal will read past the end of the array. So we need to pad the array with dummy data.
-		if (!(new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
-			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
-			Vector<uint8_t> new_vertex_data;
-			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
-			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, use_as_storage);
-			s->vertex_buffer_size = new_vertex_data.size();
-		} else {
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data, use_as_storage);
-			s->vertex_buffer_size = new_surface.vertex_data.size();
-		}
+		s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data, use_as_storage);
+		s->vertex_buffer_size = new_surface.vertex_data.size();
 	}
 
 	if (new_surface.attribute_data.size()) {
@@ -590,10 +579,6 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	sd.format = s.format;
 	if (s.vertex_buffer.is_valid()) {
 		sd.vertex_data = RD::get_singleton()->buffer_get_data(s.vertex_buffer);
-		// When using an uncompressed buffer with normals, but without tangents, we have to trim the padding.
-		if (!(s.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (s.format & RS::ARRAY_FORMAT_NORMAL) && !(s.format & RS::ARRAY_FORMAT_TANGENT)) {
-			sd.vertex_data.resize(sd.vertex_data.size() - sizeof(uint16_t) * 2);
-		}
 	}
 	if (s.attribute_buffer.is_valid()) {
 		sd.attribute_data = RD::get_singleton()->buffer_get_data(s.attribute_buffer);
@@ -1234,15 +1219,9 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 						vd.format = RD::DATA_FORMAT_R16G16_UNORM;
 						normal_tangent_stride += sizeof(uint16_t) * 2;
 					} else {
+						// If using normals, we should always have tangents.
 						vd.format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
-						// A small trick here: if we are uncompressed and we have normals, but no tangents. We need
-						// the shader to think there are 4 components to "axis_tangent_attrib". So we give a size of 4,
-						// but a stride based on only having 2 elements.
-						if (!(s->format & RS::ARRAY_FORMAT_TANGENT)) {
-							normal_tangent_stride += sizeof(uint16_t) * 2;
-						} else {
-							normal_tangent_stride += sizeof(uint16_t) * 4;
-						}
+						normal_tangent_stride += sizeof(uint16_t) * 4;
 					}
 					if (mis) {
 						buffer = mis->vertex_buffer[p_current_buffer];
