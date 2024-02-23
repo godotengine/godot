@@ -4004,12 +4004,11 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTR("New Text File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_NEW_TEXTFILE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTR("Open...")), FILE_OPEN);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::T), FILE_REOPEN_CLOSED);
-	file_menu->get_popup()->add_submenu_item(TTR("Open Recent"), "RecentScripts", FILE_OPEN_RECENT);
 
 	recent_scripts = memnew(PopupMenu);
-	recent_scripts->set_name("RecentScripts");
-	file_menu->get_popup()->add_child(recent_scripts);
+	file_menu->get_popup()->add_submenu_node_item(TTR("Open Recent"), recent_scripts, FILE_OPEN_RECENT);
 	recent_scripts->connect("id_pressed", callable_mp(this, &ScriptEditor::_open_recent_script));
+
 	_update_recent_scripts();
 
 	file_menu->get_popup()->add_separator();
@@ -4027,14 +4026,11 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KeyModifierMask::ALT | Key::RIGHT), WINDOW_NEXT);
 	file_menu->get_popup()->add_separator();
 
-	file_menu->get_popup()->add_submenu_item(TTR("Theme"), "Theme", FILE_THEME);
-
 	theme_submenu = memnew(PopupMenu);
-	theme_submenu->set_name("Theme");
-	file_menu->get_popup()->add_child(theme_submenu);
-	theme_submenu->connect("id_pressed", callable_mp(this, &ScriptEditor::_theme_option));
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme...")), THEME_IMPORT);
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), THEME_RELOAD);
+	file_menu->get_popup()->add_submenu_node_item(TTR("Theme"), theme_submenu, FILE_THEME);
+	theme_submenu->connect("id_pressed", callable_mp(this, &ScriptEditor::_theme_option));
 
 	theme_submenu->add_separator();
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), THEME_SAVE);

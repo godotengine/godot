@@ -4209,18 +4209,15 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
 
 				if (selected_float_constant != -1) {
-					popup_menu->add_submenu_item(TTR("Float Constants"), "FloatConstants", int(NodeMenuOptions::FLOAT_CONSTANTS));
-
 					if (!constants_submenu) {
 						constants_submenu = memnew(PopupMenu);
-						constants_submenu->set_name("FloatConstants");
 
 						for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
 							constants_submenu->add_item(float_constant_defs[i].name, i);
 						}
-						popup_menu->add_child(constants_submenu);
 						constants_submenu->connect("index_pressed", callable_mp(this, &VisualShaderEditor::_float_constant_selected));
 					}
+					popup_menu->add_submenu_node_item(TTR("Float Constants"), constants_submenu, int(NodeMenuOptions::FLOAT_CONSTANTS));
 				}
 
 				if (selected_constants.size() > 0) {

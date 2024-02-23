@@ -568,7 +568,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 
 	List<StringName> animation_names;
 	tree->get_animation_list(&animation_names);
-	menu->add_submenu_item(TTR("Add Animation"), "AddAnimations");
+	menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 	if (animation_names.is_empty()) {
 		menu->set_item_disabled(menu->get_item_idx_from_text(TTR("Add Animation")), true);
 	} else {
@@ -1777,9 +1777,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	menu->connect("popup_hide", callable_mp(this, &AnimationNodeStateMachineEditor::_stop_connecting));
 
 	animations_menu = memnew(PopupMenu);
-	menu->add_child(animations_menu);
-	animations_menu->set_name("AddAnimations");
 	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	menu->add_child(animations_menu);
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_animation_type));
 
 	connect_menu = memnew(PopupMenu);
