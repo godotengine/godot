@@ -339,7 +339,7 @@ void _get_axis_angle(const Vector3 &p_normal, const Vector4 &p_tangent, float &r
 	if (d < 0.0) {
 		r_angle = CLAMP((1.0 - r_angle / Math_PI) * 0.5, 0.0, 0.49999);
 	} else {
-		r_angle = (r_angle / Math_PI) * 0.5 + 0.5;
+		r_angle = CLAMP((r_angle / Math_PI) * 0.5 + 0.5, 0.500008, 1.0);
 	}
 }
 
