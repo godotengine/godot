@@ -918,6 +918,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("font", "TabBar", Ref<Font>());
 	theme->set_font_size("font_size", "TabBar", -1);
 
+	theme->set_font("italics_font", "TabBar", italics_font);
+	theme->set_font_size("italics_font_size", "TabBar", -1);
+
 	theme->set_color("font_selected_color", "TabBar", control_font_hover_color);
 	theme->set_color("font_hovered_color", "TabBar", control_font_hover_color);
 	theme->set_color("font_unselected_color", "TabBar", control_font_low_color);

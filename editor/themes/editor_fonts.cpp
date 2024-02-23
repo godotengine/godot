@@ -421,6 +421,8 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font("italics_font", "RichTextLabel", italic_fc);
 	p_theme->set_font("bold_italics_font", "RichTextLabel", bold_italic_fc);
 
+	p_theme->set_font("italics_font", "TabBar", italic_fc);
+
 	// Documentation fonts
 	p_theme->set_font_size("doc_size", EditorStringName(EditorFonts), int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
 	p_theme->set_font("doc", EditorStringName(EditorFonts), default_fc);

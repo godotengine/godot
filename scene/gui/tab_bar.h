@@ -38,6 +38,10 @@ class TabBar : public Control {
 	GDCLASS(TabBar, Control);
 
 public:
+	enum TabTitleStyle {
+		NORMAL_FONT,
+		ITALIC_FONT //TODO: add bold support
+	};
 	enum AlignmentMode {
 		ALIGNMENT_LEFT,
 		ALIGNMENT_CENTER,
@@ -64,6 +68,7 @@ private:
 		int icon_max_width = 0;
 
 		bool disabled = false;
+		TabTitleStyle title_style = NORMAL_FONT;
 		bool hidden = false;
 		Variant metadata;
 		int ofs_cache = 0;
@@ -134,6 +139,8 @@ private:
 
 		Ref<Font> font;
 		int font_size;
+		Ref<Font> italics_font;
+		int italics_font_size;
 		int outline_size = 0;
 
 		Color font_selected_color;
@@ -183,6 +190,9 @@ public:
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
+
+	void set_tab_title_style(int p_tab, TabTitleStyle p_style);
+	TabTitleStyle get_tab_title_style(int p_tab) const;
 
 	void set_tab_text_direction(int p_tab, TextDirection p_text_direction);
 	TextDirection get_tab_text_direction(int p_tab) const;

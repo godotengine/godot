@@ -244,6 +244,7 @@ void EditorSceneTabs::_update_tab_titles() {
 
 		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorNode::get_editor_data().get_scene_history_id(i));
 		scene_tabs->set_tab_title(i, disambiguated_scene_names[i] + (unsaved ? "(*)" : ""));
+		scene_tabs->set_tab_title_style(i, unsaved ? TabBar::TabTitleStyle::ITALIC_FONT : TabBar::TabTitleStyle::NORMAL_FONT); // Italic Tabs For Unsaved Progress
 
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
 			int global_menu_index = scene_tabs->get_tab_metadata(i);
