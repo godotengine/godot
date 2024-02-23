@@ -38,6 +38,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
@@ -2219,7 +2220,7 @@ bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(frames_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(frames_editor);
 	} else {
 		button->hide();
 		frames_editor->edit(Ref<SpriteFrames>());
@@ -2229,7 +2230,7 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor = memnew(SpriteFramesEditor);
 	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("SpriteFrames"), frames_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("SpriteFrames"), frames_editor);
 	button->hide();
 }
 

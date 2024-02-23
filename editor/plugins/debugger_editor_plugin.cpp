@@ -36,6 +36,7 @@
 #include "editor/debugger/editor_file_server.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/run_instances_dialog.h"
 #include "editor/themes/editor_scale.h"
@@ -54,7 +55,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	file_server = memnew(EditorFileServer);
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
-	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
+	Button *db = EditorNode::get_bottom_panel()->add_item(TTR("Debugger"), debugger);
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.

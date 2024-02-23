@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_editor_plugin.cpp                                              */
+/*  editor_bottom_panel.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,38 +28,57 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "openxr_editor_plugin.h"
+#ifndef EDITOR_BOTTOM_PANEL_H
+#define EDITOR_BOTTOM_PANEL_H
 
-#include "../action_map/openxr_action_map.h"
+#include "scene/gui/panel_container.h"
 
-#include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
+class Button;
+class ConfigFile;
+class EditorToaster;
+class HBoxContainer;
+class LinkButton;
+class VBoxContainer;
 
-void OpenXREditorPlugin::edit(Object *p_node) {
-	if (Object::cast_to<OpenXRActionMap>(p_node)) {
-		String path = Object::cast_to<OpenXRActionMap>(p_node)->get_path();
-		if (path.is_resource_file()) {
-			action_map_editor->open_action_map(path);
-		}
-	}
-}
+class EditorBottomPanel : public PanelContainer {
+	GDCLASS(EditorBottomPanel, PanelContainer);
 
-bool OpenXREditorPlugin::handles(Object *p_node) const {
-	return (Object::cast_to<OpenXRActionMap>(p_node) != nullptr);
-}
+	struct BottomPanelItem {
+		String name;
+		Control *control = nullptr;
+		Button *button = nullptr;
+	};
 
-void OpenXREditorPlugin::make_visible(bool p_visible) {
-}
+	Vector<BottomPanelItem> items;
 
-OpenXREditorPlugin::OpenXREditorPlugin() {
-	action_map_editor = memnew(OpenXRActionMapEditor);
-	EditorNode::get_bottom_panel()->add_item(TTR("OpenXR Action Map"), action_map_editor);
+	VBoxContainer *item_vbox = nullptr;
+	HBoxContainer *bottom_hbox = nullptr;
+	HBoxContainer *button_hbox = nullptr;
+	EditorToaster *editor_toaster = nullptr;
+	LinkButton *version_btn = nullptr;
+	Button *expand_button = nullptr;
 
-#ifndef ANDROID_ENABLED
-	select_runtime = memnew(OpenXRSelectRuntime);
-	add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
-#endif
-}
+	void _switch_by_control(bool p_visible, Control *p_control);
+	void _switch_to_item(bool p_visible, int p_idx);
+	void _expand_button_toggled(bool p_pressed);
+	void _version_button_pressed();
 
-OpenXREditorPlugin::~OpenXREditorPlugin() {
-}
+	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
+	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
+
+	Button *add_item(String p_text, Control *p_item, bool p_at_front = false);
+	void remove_item(Control *p_item);
+	void make_item_visible(Control *p_item, bool p_visible = true);
+	void move_item_to_end(Control *p_item);
+	void hide_bottom_panel();
+
+	EditorBottomPanel();
+};
+
+#endif // EDITOR_BOTTOM_PANEL_H

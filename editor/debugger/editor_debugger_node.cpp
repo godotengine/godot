@@ -38,6 +38,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/editor_debugger_plugin.h"
@@ -268,9 +269,9 @@ Error EditorDebuggerNode::start(const String &p_uri) {
 	stop(true);
 	current_uri = p_uri;
 	if (EDITOR_GET("run/output/always_open_output_on_play")) {
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+		EditorNode::get_bottom_panel()->make_item_visible(EditorNode::get_log());
 	} else {
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+		EditorNode::get_bottom_panel()->make_item_visible(this);
 	}
 	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_uri.substr(0, p_uri.find("://") + 3)));
 	const Error err = server->start(p_uri);
@@ -502,7 +503,7 @@ void EditorDebuggerNode::_break_state_changed() {
 	const bool breaked = get_current_debugger()->is_breaked();
 	const bool can_debug = get_current_debugger()->is_debuggable();
 	if (breaked) { // Show debugger.
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+		EditorNode::get_bottom_panel()->make_item_visible(this);
 	}
 
 	// Update script menu.

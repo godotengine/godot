@@ -106,6 +106,7 @@
 #include "editor/export/project_export.h"
 #include "editor/fbx_importer_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_scene_tabs.h"
@@ -165,9 +166,6 @@
 #include <stdlib.h>
 
 EditorNode *EditorNode::singleton = nullptr;
-
-// The metadata key used to store and retrieve the version text to copy to the clipboard.
-static const String META_TEXT_TO_COPY = "text_to_copy";
 
 static const String EDITOR_NODE_CONFIG_SECTION = "EditorNode";
 
@@ -518,7 +516,6 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		main_menu->add_theme_style_override("pressed", theme->get_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
 		distraction_free->set_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
 		distraction_free->add_theme_style_override("pressed", theme->get_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
-		bottom_panel_raise->set_icon(theme->get_icon(SNAME("ExpandBottomDock"), EditorStringName(EditorIcons)));
 
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), theme->get_icon(SNAME("HelpSearch"), EditorStringName(EditorIcons)));
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), theme->get_icon(SNAME("ActionCopy"), EditorStringName(EditorIcons)));
@@ -527,11 +524,6 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 
 		if (EditorDebuggerNode::get_singleton()->is_visible()) {
 			bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
-		}
-
-		for (int i = 0; i < bottom_panel_items.size(); i++) {
-			bottom_panel_items.write[i].button->add_theme_style_override("pressed", theme->get_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
-			bottom_panel_items.write[i].button->add_theme_style_override("hover_pressed", theme->get_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
 		}
 
 		for (int i = 0; i < main_editor_buttons.size(); i++) {
@@ -622,8 +614,6 @@ void EditorNode::_notification(int p_what) {
 			editor_selection->update();
 
 			ResourceImporterTexture::get_singleton()->update_imports();
-
-			bottom_panel_updating = false;
 
 			if (requested_first_scan) {
 				requested_first_scan = false;
@@ -1172,10 +1162,6 @@ void EditorNode::_titlebar_resized() {
 	if (title_bar) {
 		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
 	}
-}
-
-void EditorNode::_version_button_pressed() {
-	DisplayServer::get_singleton()->clipboard_set(version_btn->get_meta(META_TEXT_TO_COPY));
 }
 
 void EditorNode::_update_undo_redo_allowed() {
@@ -4335,7 +4321,7 @@ void EditorNode::_project_run_started() {
 	}
 
 	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
-		make_bottom_panel_item_visible(log);
+		bottom_panel->make_item_visible(log);
 	}
 }
 
@@ -4344,12 +4330,7 @@ void EditorNode::_project_run_stopped() {
 		return;
 	}
 
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].control == log) {
-			_bottom_panel_switch(false, i);
-			break;
-		}
-	}
+	bottom_panel->make_item_visible(log, false);
 }
 
 void EditorNode::notify_all_debug_sessions_exited() {
@@ -4931,18 +4912,7 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 	int center_split_offset = center_split->get_split_offset();
 	p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset", center_split_offset);
 
-	int selected_bottom_panel_item_idx = -1;
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].button->is_pressed()) {
-			selected_bottom_panel_item_idx = i;
-			break;
-		}
-	}
-	if (selected_bottom_panel_item_idx != -1) {
-		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item", selected_bottom_panel_item_idx);
-	} else {
-		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item", Variant());
-	}
+	bottom_panel->save_layout_to_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
 
 	// Debugger tab.
 
@@ -4968,27 +4938,11 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file) {
 	// Bottom panel.
 
-	bool has_active_tab = false;
-	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item")) {
-		int selected_bottom_panel_item_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item");
-		if (selected_bottom_panel_item_idx >= 0 && selected_bottom_panel_item_idx < bottom_panel_items.size()) {
-			// Make sure we don't try to open contextual editors which are not enabled in the current context.
-			if (bottom_panel_items[selected_bottom_panel_item_idx].button->is_visible()) {
-				_bottom_panel_switch(true, selected_bottom_panel_item_idx);
-				has_active_tab = true;
-			}
-		}
-	}
+	bottom_panel->load_layout_from_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
 
 	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "center_split_offset")) {
 		int center_split_offset = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset");
 		center_split->set_split_offset(center_split_offset);
-
-		// If there is no active tab we need to collapse the panel.
-		if (!has_active_tab) {
-			bottom_panel_items[0].control->show(); // _bottom_panel_switch() can collapse only visible tabs.
-			_bottom_panel_switch(false, 0);
-		}
 	}
 
 	// Debugger tab.
@@ -5276,125 +5230,6 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 
 	save_editor_layout_delayed();
 	scene_tabs->update_scene_tabs();
-}
-
-Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item, bool p_at_front) {
-	Button *tb = memnew(Button);
-	tb->set_theme_type_variation("FlatMenuButton");
-	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch_by_control).bind(p_item));
-	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorNode::_bottom_panel_drag_hover).bind(tb, p_item), Callable());
-	tb->set_text(p_text);
-	tb->set_toggle_mode(true);
-	tb->set_focus_mode(Control::FOCUS_NONE);
-	bottom_panel_vb->add_child(p_item);
-	bottom_panel_hb->move_to_front();
-	bottom_panel_hb_editors->add_child(tb);
-	if (p_at_front) {
-		bottom_panel_hb_editors->move_child(tb, 0);
-	}
-	p_item->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	p_item->hide();
-	BottomPanelItem bpi;
-	bpi.button = tb;
-	bpi.control = p_item;
-	bpi.name = p_text;
-	bottom_panel_items.push_back(bpi);
-
-	return tb;
-}
-
-void EditorNode::hide_bottom_panel() {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].control->is_visible()) {
-			_bottom_panel_switch(false, i);
-			break;
-		}
-	}
-}
-
-void EditorNode::make_bottom_panel_item_visible(Control *p_item) {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].control == p_item) {
-			_bottom_panel_switch(true, i);
-			break;
-		}
-	}
-}
-
-void EditorNode::raise_bottom_panel_item(Control *p_item) {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].control == p_item) {
-			bottom_panel_items[i].button->move_to_front();
-			SWAP(bottom_panel_items.write[i], bottom_panel_items.write[bottom_panel_items.size() - 1]);
-			break;
-		}
-	}
-}
-
-void EditorNode::remove_bottom_panel_item(Control *p_item) {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].control == p_item) {
-			if (p_item->is_visible_in_tree()) {
-				_bottom_panel_switch(false, i);
-			}
-			bottom_panel_vb->remove_child(bottom_panel_items[i].control);
-			bottom_panel_hb_editors->remove_child(bottom_panel_items[i].button);
-			memdelete(bottom_panel_items[i].button);
-			bottom_panel_items.remove_at(i);
-			break;
-		}
-	}
-}
-
-void EditorNode::_bottom_panel_switch_by_control(bool p_enable, Control *p_control) {
-	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].control == p_control) {
-			_bottom_panel_switch(p_enable, i);
-			return;
-		}
-	}
-}
-
-void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
-	if (bottom_panel_updating) {
-		return;
-	}
-	ERR_FAIL_INDEX(p_idx, bottom_panel_items.size());
-
-	if (bottom_panel_items[p_idx].control->is_visible() == p_enable) {
-		return;
-	}
-
-	if (p_enable) {
-		bottom_panel_updating = true;
-
-		for (int i = 0; i < bottom_panel_items.size(); i++) {
-			bottom_panel_items[i].button->set_pressed(i == p_idx);
-			bottom_panel_items[i].control->set_visible(i == p_idx);
-		}
-		if (EditorDebuggerNode::get_singleton() == bottom_panel_items[p_idx].control) {
-			// This is the debug panel which uses tabs, so the top section should be smaller.
-			bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
-		} else {
-			bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
-		}
-		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
-		center_split->set_collapsed(false);
-		if (bottom_panel_raise->is_pressed()) {
-			top_split->hide();
-		}
-		bottom_panel_raise->show();
-	} else {
-		bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
-		bottom_panel_items[p_idx].button->set_pressed(false);
-		bottom_panel_items[p_idx].control->set_visible(false);
-		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
-		center_split->set_collapsed(true);
-		bottom_panel_raise->hide();
-		if (bottom_panel_raise->is_pressed()) {
-			top_split->show();
-		}
-	}
 }
 
 void EditorNode::_toggle_distraction_free_mode() {
@@ -6109,17 +5944,6 @@ Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion
 	}
 
 	return ret;
-}
-
-void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
-	top_split->set_visible(!p_pressed);
-}
-
-bool EditorNode::_bottom_panel_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control) {
-	if (!p_button->is_pressed()) {
-		_bottom_panel_switch_by_control(true, p_control);
-	}
-	return false;
 }
 
 void EditorNode::_update_renderer_color() {
@@ -7173,62 +6997,12 @@ EditorNode::EditorNode() {
 
 	// Bottom panels.
 
-	bottom_panel = memnew(PanelContainer);
-	bottom_panel->add_theme_style_override("panel", theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+	bottom_panel = memnew(EditorBottomPanel);
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
-	bottom_panel_vb = memnew(VBoxContainer);
-	bottom_panel->add_child(bottom_panel_vb);
-
-	bottom_panel_hb = memnew(HBoxContainer);
-	bottom_panel_hb->set_custom_minimum_size(Size2(0, 24 * EDSCALE)); // Adjust for the height of the "Expand Bottom Dock" icon.
-	bottom_panel_vb->add_child(bottom_panel_hb);
-
-	bottom_panel_hb_editors = memnew(HBoxContainer);
-	bottom_panel_hb_editors->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	bottom_panel_hb->add_child(bottom_panel_hb_editors);
-
-	editor_toaster = memnew(EditorToaster);
-	bottom_panel_hb->add_child(editor_toaster);
-
-	VBoxContainer *version_info_vbc = memnew(VBoxContainer);
-	bottom_panel_hb->add_child(version_info_vbc);
-
-	// Add a dummy control node for vertical spacing.
-	Control *v_spacer = memnew(Control);
-	version_info_vbc->add_child(v_spacer);
-
-	version_btn = memnew(LinkButton);
-	version_btn->set_text(VERSION_FULL_CONFIG);
-	String hash = String(VERSION_HASH);
-	if (hash.length() != 0) {
-		hash = " " + vformat("[%s]", hash.left(9));
-	}
-	// Set the text to copy in metadata as it slightly differs from the button's text.
-	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_FULL_BUILD + hash);
-	// Fade out the version label to be less prominent, but still readable.
-	version_btn->set_self_modulate(Color(1, 1, 1, 0.65));
-	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	version_btn->set_tooltip_text(TTR("Click to copy."));
-	version_btn->connect("pressed", callable_mp(this, &EditorNode::_version_button_pressed));
-	version_info_vbc->add_child(version_btn);
-
-	// Add a dummy control node for horizontal spacing.
-	Control *h_spacer = memnew(Control);
-	bottom_panel_hb->add_child(h_spacer);
-
-	bottom_panel_raise = memnew(Button);
-	bottom_panel_hb->add_child(bottom_panel_raise);
-	bottom_panel_raise->hide();
-	bottom_panel_raise->set_flat(false);
-	bottom_panel_raise->set_theme_type_variation("FlatMenuButton");
-	bottom_panel_raise->set_toggle_mode(true);
-	bottom_panel_raise->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
-	bottom_panel_raise->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_raise_toggled));
-
 	log = memnew(EditorLog);
-	Button *output_button = add_bottom_panel_item(TTR("Output"), log);
+	Button *output_button = bottom_panel->add_item(TTR("Output"), log);
 	log->set_tool_button(output_button);
 
 	center_split->connect("resized", callable_mp(this, &EditorNode::_vp_resized));
@@ -7389,7 +7163,7 @@ EditorNode::EditorNode() {
 	}
 
 	// More visually meaningful to have this later.
-	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
+	bottom_panel->move_item_to_end(AnimationPlayerEditor::get_singleton());
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
 

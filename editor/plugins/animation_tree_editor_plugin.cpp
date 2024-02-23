@@ -40,6 +40,7 @@
 #include "core/math/delaunay_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
@@ -300,11 +301,11 @@ void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 		//editor->hide_animation_player_editors();
 		//editor->animation_panel_make_visible(true);
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(anim_tree_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(anim_tree_editor);
 		anim_tree_editor->set_process(true);
 	} else {
 		if (anim_tree_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 		button->hide();
 		anim_tree_editor->set_process(false);
@@ -315,7 +316,7 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin() {
 	anim_tree_editor = memnew(AnimationTreeEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("AnimationTree"), anim_tree_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("AnimationTree"), anim_tree_editor);
 	button->hide();
 }
 

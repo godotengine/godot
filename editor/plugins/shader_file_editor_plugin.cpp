@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/split_container.h"
@@ -308,12 +309,12 @@ bool ShaderFileEditorPlugin::handles(Object *p_object) const {
 void ShaderFileEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(shader_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(shader_editor);
 
 	} else {
 		button->hide();
 		if (shader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 	}
 }
@@ -322,7 +323,7 @@ ShaderFileEditorPlugin::ShaderFileEditorPlugin() {
 	shader_editor = memnew(ShaderFileEditor);
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("ShaderFile"), shader_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("ShaderFile"), shader_editor);
 	button->hide();
 }
 

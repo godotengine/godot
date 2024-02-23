@@ -77,6 +77,7 @@ class DockSplitContainer;
 class DynamicFontImportSettingsDialog;
 class EditorAbout;
 class EditorBuildProfileManager;
+class EditorBottomPanel;
 class EditorCommandPalette;
 class EditorDockManager;
 class EditorExport;
@@ -244,12 +245,6 @@ private:
 		MAX_BUILD_CALLBACKS = 128
 	};
 
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
-	};
-
 	struct ExportDefer {
 		String preset;
 		String path;
@@ -324,7 +319,6 @@ private:
 	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
-	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
 
 	Label *project_title = nullptr;
@@ -428,15 +422,7 @@ private:
 	Timer *editor_layout_save_delay_timer = nullptr;
 	Button *distraction_free = nullptr;
 
-	Vector<BottomPanelItem> bottom_panel_items;
-	PanelContainer *bottom_panel = nullptr;
-	HBoxContainer *bottom_panel_hb = nullptr;
-	HBoxContainer *bottom_panel_hb_editors = nullptr;
-	VBoxContainer *bottom_panel_vb = nullptr;
-	EditorToaster *editor_toaster = nullptr;
-	LinkButton *version_btn = nullptr;
-	Button *bottom_panel_raise = nullptr;
-	bool bottom_panel_updating = false;
+	EditorBottomPanel *bottom_panel = nullptr;
 
 	Tree *disk_changed_list = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
@@ -571,7 +557,6 @@ private:
 	void _show_messages();
 	void _vp_resized();
 	void _titlebar_resized();
-	void _version_button_pressed();
 
 	void _update_undo_redo_allowed();
 
@@ -672,11 +657,6 @@ private:
 	void _immediate_dialog_confirmed();
 	void _select_default_main_screen_plugin();
 
-	void _bottom_panel_switch_by_control(bool p_enable, Control *p_control);
-	void _bottom_panel_switch(bool p_enable, int p_idx);
-	void _bottom_panel_raise_toggled(bool);
-	bool _bottom_panel_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
-
 	void _begin_first_scan();
 
 	void _notify_scene_updated(Node *p_node);
@@ -707,6 +687,7 @@ public:
 
 	static EditorTitleBar *get_title_bar() { return singleton->title_bar; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
+	static EditorBottomPanel *get_bottom_panel() { return singleton->bottom_panel; }
 
 	static String adjust_scene_name_casing(const String &root_name);
 
@@ -886,12 +867,6 @@ public:
 	void reload_instances_with_path_in_edited_scenes(const String &p_path);
 
 	bool is_exiting() const { return exiting; }
-
-	Button *add_bottom_panel_item(String p_text, Control *p_item, bool p_at_front = false);
-	void make_bottom_panel_item_visible(Control *p_item);
-	void raise_bottom_panel_item(Control *p_item);
-	void hide_bottom_panel();
-	void remove_bottom_panel_item(Control *p_item);
 
 	Variant drag_resource(const Ref<Resource> &p_res, Control *p_from);
 	Variant drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
