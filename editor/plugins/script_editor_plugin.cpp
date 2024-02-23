@@ -60,6 +60,7 @@
 #include "editor/plugins/shader_editor_plugin.h"
 #include "editor/plugins/text_shader_editor.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "editor/window_wrapper.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
@@ -2787,7 +2788,8 @@ void ScriptEditor::_save_layout() {
 }
 
 void ScriptEditor::_editor_settings_changed() {
-	if (!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") &&
+	if (!EditorThemeManager::is_generated_theme_outdated() &&
+			!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") &&
 			!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor") &&
 			!EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
 		return;

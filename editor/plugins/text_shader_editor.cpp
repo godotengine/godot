@@ -37,6 +37,7 @@
 #include "editor/filesystem_dock.h"
 #include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/split_container.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
@@ -740,7 +741,8 @@ void TextShaderEditor::_notification(int p_what) {
 }
 
 void TextShaderEditor::_editor_settings_changed() {
-	if (!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") &&
+	if (!EditorThemeManager::is_generated_theme_outdated() &&
+			!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") &&
 			!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor")) {
 		return;
 	}
