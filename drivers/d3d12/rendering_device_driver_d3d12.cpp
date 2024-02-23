@@ -2885,7 +2885,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 					uint32_t binding = (p_register % GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER) / GODOT_NIR_BINDING_MULTIPLIER;
 
 					DEV_ASSERT(set < (uint32_t)shader_data_in.sets_bindings.size());
-					bool found = false;
+					[[maybe_unused]] bool found = false;
 					for (int j = 0; j < shader_data_in.sets_bindings[set].size(); j++) {
 						if (shader_data_in.sets_bindings[set][j].binding != binding) {
 							continue;
@@ -2903,7 +2903,6 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 						} else {
 							CRASH_NOW();
 						}
-
 						found = true;
 						break;
 					}
@@ -2913,8 +2912,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 
 			godot_nir_callbacks.report_sc_bit_offset_fn = [](uint32_t p_sc_id, uint64_t p_bit_offset, void *p_data) {
 				ShaderData &shader_data_in = *(ShaderData *)p_data;
-
-				bool found = false;
+				[[maybe_unused]] bool found = false;
 				for (int j = 0; j < shader_data_in.specialization_constants.size(); j++) {
 					if (shader_data_in.specialization_constants[j].constant_id != p_sc_id) {
 						continue;
@@ -2923,7 +2921,6 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 					uint32_t offset_idx = SHADER_STAGES_BIT_OFFSET_INDICES[shader_data_in.stage];
 					DEV_ASSERT(shader_data_in.specialization_constants.write[j].stages_bit_offsets[offset_idx] == 0);
 					shader_data_in.specialization_constants.write[j].stages_bit_offsets[offset_idx] = p_bit_offset;
-
 					found = true;
 					break;
 				}
