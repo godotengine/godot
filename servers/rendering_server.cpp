@@ -565,7 +565,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								float angle;
 								Vector3 axis;
 								// Generate an arbitrary vector that is tangential to normal.
-								Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normal_src[i].normalized());
+								// This assumes that the normal is never (0,0,0).
+								Vector3 tan = Vector3(normal_src[i].z, -normal_src[i].x, normal_src[i].y).cross(normal_src[i].normalized()).normalized();
 								Vector4 tangent = Vector4(tan.x, tan.y, tan.z, 1.0);
 								_get_axis_angle(normal_src[i], tangent, angle, axis);
 
@@ -688,7 +689,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						// Set data for tangent.
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							// Generate an arbitrary vector that is tangential to normal.
-							Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normal_src[i].normalized());
+							// This assumes that the normal is never (0,0,0).
+							Vector3 tan = Vector3(normal_src[i].z, -normal_src[i].x, normal_src[i].y).cross(normal_src[i].normalized()).normalized();
 							Vector2 res = tan.octahedron_tangent_encode(1.0);
 							uint16_t vector[2] = {
 								(uint16_t)CLAMP(res.x * 65535, 0, 65535),
