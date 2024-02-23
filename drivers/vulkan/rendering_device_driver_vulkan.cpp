@@ -1470,8 +1470,14 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 
 	return ret;
 }
-
-RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) {
+// <TF>
+// @ShadyTF
+// adding support of immutable samplers, which can be embedded when creating the pipeline layout on the condition they remain
+// valid and unchanged, so they don't need to be specified when creating uniform sets
+// Was:
+//RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) {
+RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler>& r_immutableSamplers) {
+// </TF>
 	r_shader_desc = {}; // Driver-agnostic.
 	ShaderInfo shader_info; // Driver-specific.
 
@@ -1546,6 +1552,22 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 				case UNIFORM_TYPE_SAMPLER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 					layout_binding.descriptorCount = set_ptr[j].length;
+// <TF>
+// @ShadyTF
+// Immutable samplers : here they get set in the layoutbinding, given that  they will not be changed later
+					int immutable_bind_index = -1;
+					if (immutable_samplers_enabled && r_immutableSamplers.size() > 0) {
+						for (int k = 0; k < r_immutableSamplers.size(); k++) {
+							if (r_immutableSamplers[k].binding == layout_binding.binding) {
+								immutable_bind_index = k;
+								break;
+							}
+						}
+						if (immutable_bind_index >= 0) {
+							layout_binding.pImmutableSamplers = (VkSampler*)&r_immutableSamplers[immutable_bind_index].ids[0].id;
+						}
+					}
+// </TF>
 				} break;
 				case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1933,11 +1955,21 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 	}
 // </TF>
 	DescriptorSetPoolKey pool_key;
+// <TF>
+// @ShadyTF :
+// immutable samplers :
+// as immutable samplers will be skipped we need to track the number of vk_writes used
+// Was :
+//	VkWriteDescriptorSet *vk_writes = ALLOCA_ARRAY(VkWriteDescriptorSet, p_uniforms.size());
+//	for (uint32_t i = 0; i < p_uniforms.size(); i++) {
+//		const BoundUniform &uniform = p_uniforms[i];
 
 	VkWriteDescriptorSet *vk_writes = ALLOCA_ARRAY(VkWriteDescriptorSet, p_uniforms.size());
+	uint32_t immutable_samplers_count = 0;
 	for (uint32_t i = 0; i < p_uniforms.size(); i++) {
 		const BoundUniform &uniform = p_uniforms[i];
 
+// </TF>
 		vk_writes[i] = {};
 		vk_writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		vk_writes[i].dstBinding = uniform.binding;
@@ -1947,6 +1979,15 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 
 		switch (uniform.type) {
 			case UNIFORM_TYPE_SAMPLER: {
+// <TF>
+// @ShadyTF :
+// immutable samplers :
+// skipping immutable samplers.
+				if (uniform.immutable_sampler && immutable_samplers_enabled) {
+					immutable_samplers_count++;
+					continue;
+				}
+// <TF>
 				num_descriptors = uniform.ids.size();
 				VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
 
@@ -2122,10 +2163,21 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 		ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
 	}
 
-	for (uint32_t i = 0; i < p_uniforms.size(); i++) {
+// <TF>
+// @ShadyTF :
+// immutable samplers :
+// using number of vk_writes after skipping ummutable samplers
+// Was:
+//	for (uint32_t i = 0; i < p_uniforms.size(); i++) {
+//		vk_writes[i].dstSet = vk_descriptor_set;
+//	}
+//	vkUpdateDescriptorSets(vk_device, p_uniforms.size(), vk_writes, 0, nullptr);
+
+	for (uint32_t i = 0; i <  p_uniforms.size(); i++) {
 		vk_writes[i].dstSet = vk_descriptor_set;
 	}
-	vkUpdateDescriptorSets(vk_device, p_uniforms.size(), vk_writes, 0, nullptr);
+	vkUpdateDescriptorSets(vk_device,  p_uniforms.size() - immutable_samplers_count, vk_writes, 0, nullptr);
+// </TF>
 
 	// Bookkeep.
 
