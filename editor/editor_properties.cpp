@@ -2630,16 +2630,22 @@ void EditorPropertyColor::_set_read_only(bool p_read_only) {
 }
 
 void EditorPropertyColor::_color_changed(const Color &p_color) {
-	// Cancel the color change if the current color is identical to the new one.
-	if (get_edited_property_value() == p_color) {
+	if (!live_changes_enabled) {
 		return;
 	}
 
-	emit_changed(get_edited_property(), p_color, "", true);
+	// Cancel the color change if the current color is identical to the new one.
+	if (((Color)get_edited_property_value()).is_equal_approx(p_color)) {
+		return;
+	}
+
+	// Preview color change, bypassing undo/redo.
+	get_edited_object()->set(get_edited_property(), p_color);
 }
 
 void EditorPropertyColor::_popup_closed() {
-	if (picker->get_pick_color() != last_color) {
+	get_edited_object()->set(get_edited_property(), last_color);
+	if (!picker->get_pick_color().is_equal_approx(last_color)) {
 		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
 	}
 }
@@ -2680,6 +2686,10 @@ void EditorPropertyColor::update_property() {
 
 void EditorPropertyColor::setup(bool p_show_alpha) {
 	picker->set_edit_alpha(p_show_alpha);
+}
+
+void EditorPropertyColor::set_live_changes_enabled(bool p_enabled) {
+	live_changes_enabled = p_enabled;
 }
 
 EditorPropertyColor::EditorPropertyColor() {
