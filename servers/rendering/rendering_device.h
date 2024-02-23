@@ -860,6 +860,11 @@ public:
 		UniformType uniform_type = UNIFORM_TYPE_IMAGE;
 		uint32_t binding = 0; // Binding index as specified in shader.
 
+// <TF>
+// @ShadyTF
+// immutable samplers, this flag specifies that this is an immutable sampler to be set when creating pipeline layout		
+		bool immutable_sampler = false;
+// </TF>
 	private:
 		// In most cases only one ID is provided per binding, so avoid allocating memory unnecessarily for performance.
 		RID id; // If only one is provided, this is used.
@@ -919,6 +924,13 @@ public:
 		_FORCE_INLINE_ Uniform() = default;
 	};
 
+// <TF>
+// @ShadyTF
+// immutable samplers
+// alternate method to create shader from bytecode with immutable samplers provided in
+	typedef Uniform PipelineImmutableSampler;
+	RID shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID(), const Vector<PipelineImmutableSampler>& r_immutable_samplers = Vector<PipelineImmutableSampler>());
+// </TF>
 private:
 	static const uint32_t MAX_UNIFORM_SETS = 16;
 	static const uint32_t MAX_PUSH_CONSTANT_SIZE = 128;
