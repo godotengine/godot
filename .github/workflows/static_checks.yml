@@ -76,7 +76,7 @@ jobs:
 
       - name: JavaScript style and documentation checks via ESLint and JSDoc
         run: |
-          if grep -q "platform/web" changed.txt || [ -z "$(cat changed.txt)" ]; then
+          if grep -q "\.js" changed.txt || [ -z "$(cat changed.txt)" ]; then
             cd platform/web
             npm ci
             npm run lint
