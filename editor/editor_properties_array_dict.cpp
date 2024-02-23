@@ -211,7 +211,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 
 void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
 	Button *button = Object::cast_to<Button>(p_button);
-	changing_type_index = slots[p_slot_index].index;
+	changing_type_index = p_slot_index;
 	Rect2 rect = button->get_screen_rect();
 	change_type->reset_size();
 	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
@@ -228,7 +228,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	VariantInternal::initialize(&value, Variant::Type(p_index));
 
 	Variant array = object->get_array().duplicate();
-	array.set(changing_type_index, value);
+	array.set(slots[changing_type_index].index, value);
 
 	emit_changed(get_edited_property(), array, "", true);
 	update_property();
@@ -311,7 +311,9 @@ void EditorPropertyArray::update_property() {
 
 	int size = array.call("size");
 	int max_page = MAX(0, size - 1) / page_length;
-	page_index = MIN(page_index, max_page);
+	if (page_index > max_page) {
+		_page_changed(max_page);
+	}
 
 	edit->set_text(vformat(TTR("%s (size %s)"), array_type_name, itos(size)));
 
