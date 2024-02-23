@@ -1995,7 +1995,7 @@
 		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
 			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
 			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
-			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
+			[b]On Windows:[/b] Full screen transition might cause screens to go black for a moment. If [constant WINDOW_FLAG_BORDERLESS] is also set, will attempt to enter "borderless" full screen mode (support depends on GPU driver).
 			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
@@ -2004,7 +2004,7 @@
 			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_BORDERLESS" value="1" enum="WindowFlags">
-			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows.
+			The window do not have native title bar and other decorations.
 		</constant>
 		<constant name="WINDOW_FLAG_ALWAYS_ON_TOP" value="2" enum="WindowFlags">
 			The window is floating on top of all other windows. This flag is ignored for full-screen windows.
