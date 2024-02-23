@@ -238,3 +238,6 @@ OpenXRExtensionWrapperExtension::OpenXRExtensionWrapperExtension() :
 		Object(), OpenXRExtensionWrapper() {
 	openxr_api.instantiate();
 }
+
+OpenXRExtensionWrapperExtension::~OpenXRExtensionWrapperExtension() {
+}
