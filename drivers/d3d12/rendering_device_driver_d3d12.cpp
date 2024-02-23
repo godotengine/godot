@@ -1860,7 +1860,7 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(
 		VectorView<RDD::BufferBarrier> p_buffer_barriers,
 		VectorView<RDD::TextureBarrier> p_texture_barriers) {
 	if (p_src_stages.has_flag(PIPELINE_STAGE_ALL_COMMANDS_BIT) && p_dst_stages.has_flag(PIPELINE_STAGE_ALL_COMMANDS_BIT)) {
-		// Looks like the intent is a a full barrier.
+		// Looks like the intent is a full barrier.
 		// In the resource barriers world, we can force a full barrier by discarding some resource, as per
 		// https://microsoft.github.io/DirectX-Specs/d3d/D3D12EnhancedBarriers.html#synchronous-copy-discard-and-resolve.
 		const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;

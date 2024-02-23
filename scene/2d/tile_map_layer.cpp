@@ -1666,7 +1666,7 @@ void TileMapLayer::_internal_update() {
 	Vector<Vector2i> to_delete;
 	for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
 		CellData &cell_data = *cell_data_list_element->self();
-		// Select the the cell from tile_map if it is invalid.
+		// Select the cell from tile_map if it is invalid.
 		if (cell_data.cell.source_id == TileSet::INVALID_SOURCE) {
 			to_delete.push_back(cell_data.coords);
 		}

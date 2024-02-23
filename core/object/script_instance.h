@@ -76,7 +76,7 @@ public:
 	}
 
 	//this is used by script languages that keep a reference counter of their own
-	//you can make make Ref<> not die when it reaches zero, so deleting the reference
+	//you can make Ref<> not die when it reaches zero, so deleting the reference
 	//depends entirely from the script
 
 	virtual void refcount_incremented() {}

@@ -281,16 +281,16 @@ void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 			if (stack->skeleton->has_node(joint_one_bone2d_node)) {
 				Node *node = stack->skeleton->get_node(joint_one_bone2d_node);
 				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
-						"Cannot update update joint one Bone2D cache: node is this modification's skeleton or cannot be found!");
+						"Cannot update joint one Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update update joint one Bone2D cache: node is not in the scene tree!");
+						"Cannot update joint one Bone2D cache: node is not in the scene tree!");
 				joint_one_bone2d_node_cache = node->get_instance_id();
 
 				Bone2D *bone = Object::cast_to<Bone2D>(node);
 				if (bone) {
 					joint_one_bone_idx = bone->get_index_in_skeleton();
 				} else {
-					ERR_FAIL_MSG("update joint one Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
+					ERR_FAIL_MSG("Update joint one Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
 			}
 		}
@@ -309,16 +309,16 @@ void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
 			if (stack->skeleton->has_node(joint_two_bone2d_node)) {
 				Node *node = stack->skeleton->get_node(joint_two_bone2d_node);
 				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
-						"Cannot update update joint two Bone2D cache: node is this modification's skeleton or cannot be found!");
+						"Cannot update joint two Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update update joint two Bone2D cache: node is not in scene tree!");
+						"Cannot update joint two Bone2D cache: node is not in scene tree!");
 				joint_two_bone2d_node_cache = node->get_instance_id();
 
 				Bone2D *bone = Object::cast_to<Bone2D>(node);
 				if (bone) {
 					joint_two_bone_idx = bone->get_index_in_skeleton();
 				} else {
-					ERR_FAIL_MSG("update joint two Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
+					ERR_FAIL_MSG("Update joint two Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 				}
 			}
 		}
