@@ -135,9 +135,7 @@ static void handle_interrupt(int sig) {
 
 void OS_Unix::initialize_debugging() {
 #if defined(__SWITCH__)
-	// Don't compile this code at all to avoid undefined references.
-	// Actual virtual call goes to OS_Web.
-	ERR_FAIL_V();
+	return;
 #else
 	if (EngineDebugger::is_active()) {
 		struct sigaction action;
@@ -611,9 +609,7 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 
 Error OS_Unix::kill(const ProcessID &p_pid) {
 #if defined(__SWITCH__)
-	// Don't compile this code at all to avoid undefined references.
-	// Actual virtual call goes to OS_Web.
-	ERR_FAIL_V(ERR_BUG);
+	return ERR_UNAVAILABLE;
 #endif
 	int ret = ::kill(p_pid, SIGKILL);
 	if (!ret) {
@@ -630,9 +626,7 @@ int OS_Unix::get_process_id() const {
 
 bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
 #if defined(__SWITCH__)
-	// Don't compile this code at all to avoid undefined references.
-	// Actual virtual call goes to OS_Web.
-	ERR_FAIL_V(false);
+	return ERR_UNAVAILABLE;
 #endif
 	int status = 0;
 	if (waitpid(p_pid, &status, WNOHANG) != 0) {
