@@ -377,6 +377,9 @@ public:
 	Error decompress();
 	bool is_compressed() const;
 
+	bool is_hdr() const;
+	static bool is_format_hdr(Format p_format);
+
 	void fix_alpha_edges();
 	void premultiply_alpha();
 	void srgb_to_linear();

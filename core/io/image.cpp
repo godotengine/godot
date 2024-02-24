@@ -2619,6 +2619,16 @@ bool Image::is_compressed() const {
 	return format > FORMAT_RGBE9995;
 }
 
+bool Image::is_hdr() const {
+	return is_format_hdr(format);
+}
+
+bool Image::is_format_hdr(Format p_format) {
+	return (p_format >= FORMAT_RF && p_format <= FORMAT_RGBE9995) ||
+			p_format == FORMAT_BPTC_RGBF || p_format == FORMAT_BPTC_RGBFU ||
+			p_format == FORMAT_ASTC_4x4_HDR || p_format == FORMAT_ASTC_8x8_HDR;
+}
+
 Error Image::decompress() {
 	if (((format >= FORMAT_DXT1 && format <= FORMAT_RGTC_RG) || (format == FORMAT_DXT5_RA_AS_RG)) && _image_decompress_bc) {
 		_image_decompress_bc(this);
@@ -3464,6 +3474,9 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "astc_format"), &Image::compress_from_channels, DEFVAL(ASTC_FORMAT_4x4));
 	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
+
+	ClassDB::bind_method(D_METHOD("is_hdr"), &Image::is_hdr);
+	ClassDB::bind_static_method("Image", D_METHOD("is_format_hdr", "format"), &Image::is_format_hdr);
 
 	ClassDB::bind_method(D_METHOD("rotate_90", "direction"), &Image::rotate_90);
 	ClassDB::bind_method(D_METHOD("rotate_180"), &Image::rotate_180);
