@@ -14,10 +14,11 @@
 	</tutorials>
 	<methods>
 		<method name="add_bone">
-			<return type="void" />
+			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Adds a bone, with name [param name]. [method get_bone_count] will become the bone index.
+				Adds a new bone with the given name. Returns the new bone's index, or [code]-1[/code] if this method fails.
+				[b]Note:[/b] Bone names should be unique, non empty, and cannot include the [code]:[/code] and [code]/[/code] characters.
 			</description>
 		</method>
 		<method name="clear_bones">
