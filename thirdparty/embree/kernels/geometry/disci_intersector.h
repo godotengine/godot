@@ -19,7 +19,7 @@ namespace embree
 
       static __forceinline void intersect(const Precalculations& pre,
                                           RayHit& ray,
-                                          IntersectContext* context,
+                                          RayQueryContext* context,
                                           const Primitive& Disc)
       {
         STAT3(normal.trav_prims, 1, 1, 1);
@@ -32,7 +32,7 @@ namespace embree
 
       static __forceinline bool occluded(const Precalculations& pre,
                                          Ray& ray,
-                                         IntersectContext* context,
+                                         RayQueryContext* context,
                                          const Primitive& Disc)
       {
         STAT3(shadow.trav_prims, 1, 1, 1);
@@ -52,7 +52,7 @@ namespace embree
 
       static __forceinline void intersect(const Precalculations& pre,
                                           RayHit& ray,
-                                          IntersectContext* context,
+                                          RayQueryContext* context,
                                           const Primitive& Disc)
       {
         STAT3(normal.trav_prims, 1, 1, 1);
@@ -65,7 +65,7 @@ namespace embree
 
       static __forceinline bool occluded(const Precalculations& pre,
                                          Ray& ray,
-                                         IntersectContext* context,
+                                         RayQueryContext* context,
                                          const Primitive& Disc)
       {
         STAT3(shadow.trav_prims, 1, 1, 1);
@@ -84,7 +84,7 @@ namespace embree
       typedef CurvePrecalculationsK<K> Precalculations;
 
       static __forceinline void intersect(
-          const Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive& Disc)
+          const Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive& Disc)
       {
         STAT3(normal.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(Disc.geomID());
@@ -96,7 +96,7 @@ namespace embree
       }
 
       static __forceinline bool occluded(
-          const Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive& Disc)
+          const Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive& Disc)
       {
         STAT3(shadow.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(Disc.geomID());
@@ -115,7 +115,7 @@ namespace embree
       typedef CurvePrecalculationsK<K> Precalculations;
 
       static __forceinline void intersect(
-          const Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive& Disc)
+          const Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive& Disc)
       {
         STAT3(normal.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(Disc.geomID());
@@ -127,7 +127,7 @@ namespace embree
       }
 
       static __forceinline bool occluded(
-          const Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive& Disc)
+          const Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive& Disc)
       {
         STAT3(shadow.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(Disc.geomID());
@@ -146,7 +146,7 @@ namespace embree
 
       static __forceinline void intersect(const Precalculations& pre,
                                           RayHit& ray,
-                                          IntersectContext* context,
+                                          RayQueryContext* context,
                                           const Primitive& Disc)
       {
         STAT3(normal.trav_prims, 1, 1, 1);
@@ -160,7 +160,7 @@ namespace embree
 
       static __forceinline bool occluded(const Precalculations& pre,
                                          Ray& ray,
-                                         IntersectContext* context,
+                                         RayQueryContext* context,
                                          const Primitive& Disc)
       {
         STAT3(shadow.trav_prims, 1, 1, 1);
@@ -181,7 +181,7 @@ namespace embree
 
       static __forceinline void intersect(const Precalculations& pre,
                                           RayHit& ray,
-                                          IntersectContext* context,
+                                          RayQueryContext* context,
                                           const Primitive& Disc)
       {
         STAT3(normal.trav_prims, 1, 1, 1);
@@ -195,7 +195,7 @@ namespace embree
 
       static __forceinline bool occluded(const Precalculations& pre,
                                          Ray& ray,
-                                         IntersectContext* context,
+                                         RayQueryContext* context,
                                          const Primitive& Disc)
       {
         STAT3(shadow.trav_prims, 1, 1, 1);
@@ -215,7 +215,7 @@ namespace embree
       typedef CurvePrecalculationsK<K> Precalculations;
 
       static __forceinline void intersect(
-          const Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive& Disc)
+          const Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive& Disc)
       {
         STAT3(normal.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(Disc.geomID());
@@ -228,7 +228,7 @@ namespace embree
       }
 
       static __forceinline bool occluded(
-          const Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive& Disc)
+          const Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive& Disc)
       {
         STAT3(shadow.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(Disc.geomID());
@@ -248,7 +248,7 @@ namespace embree
       typedef CurvePrecalculationsK<K> Precalculations;
 
       static __forceinline void intersect(
-          const Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive& Disc)
+          const Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive& Disc)
       {
         STAT3(normal.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(Disc.geomID());
@@ -261,7 +261,7 @@ namespace embree
       }
 
       static __forceinline bool occluded(
-          const Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive& Disc)
+          const Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive& Disc)
       {
         STAT3(shadow.trav_prims, 1, 1, 1);
         const Points* geom = context->scene->get<Points>(Disc.geomID());

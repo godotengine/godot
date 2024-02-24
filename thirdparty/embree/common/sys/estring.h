@@ -28,6 +28,42 @@ namespace embree
     std::streamsize precision;
   };
 
+  struct IndentOStream : public std::streambuf
+  {
+    explicit IndentOStream(std::ostream &ostream, int indent = 2)
+      : streambuf(ostream.rdbuf())
+      , start_of_line(true)
+      , ident_str(indent, ' ')
+      , stream(&ostream)
+    {
+      // set streambuf of ostream to this and save original streambuf
+      stream->rdbuf(this);
+    }
+
+    virtual ~IndentOStream()
+    {
+      if (stream != NULL) {
+        // restore old streambuf
+        stream->rdbuf(streambuf);
+      }
+    }
+
+  protected:
+    virtual int overflow(int ch) {
+      if (start_of_line && ch != '\n') {
+        streambuf->sputn(ident_str.data(), ident_str.size());
+      }
+      start_of_line = ch == '\n';
+      return streambuf->sputc(ch);
+    }
+
+  private:
+    std::streambuf *streambuf;
+    bool start_of_line;
+    std::string ident_str;
+    std::ostream *stream;
+  };
+
   std::string toLowerCase(const std::string& s);
   std::string toUpperCase(const std::string& s);
 
