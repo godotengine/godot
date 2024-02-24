@@ -63,6 +63,7 @@ class EditorAssetLibraryItem : public PanelContainer {
 	TextureRect *stars[5];
 	Label *price = nullptr;
 
+	String title_text;
 	int asset_id = 0;
 	int category_id = 0;
 	int author_id = 0;
