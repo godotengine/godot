@@ -366,7 +366,9 @@ void main() {
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
 #ifdef USE_INSTANCING
-	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
+	vec4 instance_color;
+	instance_color.xy = unpackHalf2x16(instance_color_custom_data.x);
+	instance_color.zw = unpackHalf2x16(instance_color_custom_data.y);
 	color_interp *= instance_color;
 #endif
 #endif
@@ -403,7 +405,9 @@ void main() {
 #endif //USE_MULTIVIEW
 
 #ifdef USE_INSTANCING
-	vec4 instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+	vec4 instance_custom;
+	instance_custom.xy = unpackHalf2x16(instance_color_custom_data.z);
+	instance_custom.zw = unpackHalf2x16(instance_color_custom_data.w);
 #else
 	vec4 instance_custom = vec4(0.0);
 #endif
@@ -1747,7 +1751,8 @@ void main() {
 #endif //!MODE_UNSHADED
 
 #ifndef FOG_DISABLED
-	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+	fog.xy = unpackHalf2x16(fog_rg);
+	fog.zw = unpackHalf2x16(fog_ba);
 
 #ifndef DISABLE_FOG
 	if (scene_data.fog_enabled) {
@@ -1964,7 +1969,8 @@ void main() {
 	vec3 additive_light_color = diffuse_light + specular_light;
 
 #ifndef FOG_DISABLED
-	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+	fog.xy = unpackHalf2x16(fog_rg);
+	fog.zw = unpackHalf2x16(fog_ba);
 
 #ifndef DISABLE_FOG
 	if (scene_data.fog_enabled) {
