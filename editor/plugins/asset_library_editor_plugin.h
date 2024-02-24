@@ -62,6 +62,7 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *author = nullptr;
 	Label *price = nullptr;
 
+	String title_text;
 	int asset_id = 0;
 	int category_id = 0;
 	int author_id = 0;
