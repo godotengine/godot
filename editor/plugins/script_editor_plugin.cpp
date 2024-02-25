@@ -1715,18 +1715,6 @@ void ScriptEditor::_notification(int p_what) {
 			_test_script_times_on_disk();
 			_update_modified_scripts_for_external_editor();
 		} break;
-
-		case CanvasItem::NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible()) {
-				find_in_files_button->show();
-			} else {
-				if (find_in_files->is_visible_in_tree()) {
-					EditorNode::get_bottom_panel()->hide_bottom_panel();
-				}
-				find_in_files_button->hide();
-			}
-
-		} break;
 	}
 }
 
@@ -3775,6 +3763,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 					ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
 
 					if (ste) {
+						EditorInterface::get_singleton()->set_main_screen_editor("Script");
 						ste->goto_line_selection(line_number, begin, end);
 					}
 				}
@@ -3789,6 +3778,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 
 				ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
 				if (ste) {
+					EditorInterface::get_singleton()->set_main_screen_editor("Script");
 					ste->goto_line_selection(line_number - 1, begin, end);
 				}
 				return;
@@ -3822,6 +3812,13 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	find_in_files->set_replace_text(find_in_files_dialog->get_replace_text());
 	find_in_files->start_search();
 
+	if (find_in_files_button->get_index() != find_in_files_button->get_parent()->get_child_count()) {
+		find_in_files_button->get_parent()->move_child(find_in_files_button, -1);
+	}
+	if (!find_in_files_button->is_visible()) {
+		find_in_files_button->show();
+	}
+
 	EditorNode::get_bottom_panel()->make_item_visible(find_in_files);
 }
 
@@ -3846,6 +3843,11 @@ void ScriptEditor::_set_zoom_factor(float p_zoom_factor) {
 			}
 		}
 	}
+}
+
+void ScriptEditor::_on_find_in_files_close_button_clicked() {
+	EditorNode::get_bottom_panel()->hide_bottom_panel();
+	find_in_files_button->hide();
 }
 
 void ScriptEditor::_window_changed(bool p_visible) {
@@ -4201,6 +4203,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
+	find_in_files->connect(FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED, callable_mp(this, &ScriptEditor::_on_find_in_files_close_button_clicked));
 	find_in_files->hide();
 	find_in_files_button->hide();
 
