@@ -778,6 +778,16 @@ void ProjectDialog::show_dialog() {
 	popup_centered(Size2(500, 0) * EDSCALE);
 }
 
+void ProjectDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			create_dir->set_icon(get_editor_theme_icon(SNAME("FolderCreate")));
+			project_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+			install_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+		} break;
+	}
+}
+
 void ProjectDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("project_created"));
 	ADD_SIGNAL(MethodInfo("projects_updated"));
