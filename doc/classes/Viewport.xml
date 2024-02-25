@@ -414,6 +414,7 @@
 			<param index="0" name="node" type="Control" />
 			<description>
 				Emitted when a Control node grabs keyboard focus.
+				[b]Note:[/b] A Control node losing focus doesn't cause this signal to be emitted.
 			</description>
 		</signal>
 		<signal name="size_changed">
