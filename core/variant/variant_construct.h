@@ -661,7 +661,7 @@ public:
 		VariantInternal::clear(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
-		ERR_FAIL_MSG("can't ptrcall nil constructor");
+		ERR_FAIL_MSG("Cannot ptrcall nil constructor");
 	}
 
 	static int get_argument_count() {

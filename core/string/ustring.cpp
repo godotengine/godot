@@ -1536,7 +1536,7 @@ String String::num(double p_num, int p_decimals) {
 		fmt[5] = 'f';
 		fmt[6] = 0;
 	}
-	// if we want to convert a double with as much decimal places as as
+	// if we want to convert a double with as much decimal places as
 	// DBL_MAX or DBL_MIN then we would theoretically need a buffer of at least
 	// DBL_MAX_10_EXP + 2 for DBL_MAX and DBL_MAX_10_EXP + 4 for DBL_MIN.
 	// BUT those values where still giving me exceptions, so I tested from

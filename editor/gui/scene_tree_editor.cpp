@@ -767,7 +767,7 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 				// Filter by Type.
 				String type = get_node(p_item->get_metadata(0))->get_class();
 				bool term_in_inherited_class = false;
-				// Every Node is is a Node, duh!
+				// Every Node is a Node, duh!
 				while (type != "Node") {
 					if (type.to_lower().contains(argument)) {
 						term_in_inherited_class = true;
