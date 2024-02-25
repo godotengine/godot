@@ -651,8 +651,8 @@
 				[codeblocks]
 				[gdscript]
 				var n = -5.2e8
-				print(n)                       # Prints -520000000
-				print(String.NumScientific(n)) # Prints -5.2e+08
+				print(n)                        # Prints -520000000
+				print(String.num_scientific(n)) # Prints -5.2e+08
 				[/gdscript]
 				[csharp]
 				// This method is not implemented in C#.
