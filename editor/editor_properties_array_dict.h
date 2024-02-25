@@ -60,6 +60,7 @@ class EditorPropertyDictionaryObject : public RefCounted {
 	Variant new_item_key;
 	Variant new_item_value;
 	Dictionary dict;
+	bool new_item_key_invalidity = true;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -71,6 +72,10 @@ public:
 
 	void set_new_item_key(const Variant &p_new_item);
 	Variant get_new_item_key();
+
+	void update_new_item_key_invalidity();
+	bool get_new_item_key_invalidity();
+	Callable validity_change_callback;
 
 	void set_new_item_value(const Variant &p_new_item);
 	Variant get_new_item_value();
@@ -183,6 +188,7 @@ class EditorPropertyDictionary : public EditorProperty {
 
 	void _add_key_value();
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
+	void _on_new_key_validity_changed(bool p_invalidity);
 
 protected:
 	static void _bind_methods();

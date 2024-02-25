@@ -101,12 +101,12 @@ bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Varian
 	String name = p_name;
 
 	if (name == "new_item_key") {
-		new_item_key = p_value;
+		set_new_item_key(p_value);
 		return true;
 	}
 
 	if (name == "new_item_value") {
-		new_item_value = p_value;
+		set_new_item_value(p_value);
 		return true;
 	}
 
@@ -157,6 +157,20 @@ Dictionary EditorPropertyDictionaryObject::get_dict() {
 
 void EditorPropertyDictionaryObject::set_new_item_key(const Variant &p_new_item) {
 	new_item_key = p_new_item;
+	update_new_item_key_invalidity();
+}
+
+void EditorPropertyDictionaryObject::update_new_item_key_invalidity() {
+	bool new_invalidity = new_item_key.get_type() == Variant::NIL;
+
+	if (new_invalidity != new_item_key_invalidity) {
+		validity_change_callback.call(new_invalidity);
+	}
+	new_item_key_invalidity = new_invalidity;
+}
+
+bool EditorPropertyDictionaryObject::get_new_item_key_invalidity() {
+	return new_item_key_invalidity;
 }
 
 Variant EditorPropertyDictionaryObject::get_new_item_key() {
@@ -773,12 +787,16 @@ void EditorPropertyDictionary::_change_type(Object *p_button, int p_index) {
 	changing_type_index = p_index;
 }
 
-void EditorPropertyDictionary::_add_key_value() {
-	// Do not allow nil as valid key. I experienced errors with this
-	if (object->get_new_item_key().get_type() == Variant::NIL) {
-		return;
+void EditorPropertyDictionary::_on_new_key_validity_changed(bool p_invalidity) {
+	button_add_item->set_disabled(is_read_only() || p_invalidity);
+	if (p_invalidity) {
+		button_add_item->set_tooltip_text(TTR("The new key is null which isn't allowed."));
+	} else {
+		button_add_item->set_tooltip_text("");
 	}
+}
 
+void EditorPropertyDictionary::_add_key_value() {
 	Dictionary dict = object->get_dict().duplicate();
 	Variant new_key = object->get_new_item_key();
 	Variant new_value = object->get_new_item_value();
@@ -821,7 +839,6 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 		Variant key = dict.get_key_at_index(changing_type_index);
 		dict.erase(key);
 	}
-
 	emit_changed(get_edited_property(), dict, "", false);
 	update_property();
 }
@@ -1193,7 +1210,7 @@ void EditorPropertyDictionary::update_property() {
 			if (i == amount + 1) {
 				button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
 				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
-				button_add_item->set_disabled(is_read_only());
+				_on_new_key_validity_changed(object->get_new_item_key_invalidity());
 				button_add_item->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 				add_vbox->add_child(button_add_item);
 			}
@@ -1263,6 +1280,7 @@ void EditorPropertyDictionary::_bind_methods() {
 
 EditorPropertyDictionary::EditorPropertyDictionary() {
 	object.instantiate();
+	object->validity_change_callback = callable_mp(this, &EditorPropertyDictionary::_on_new_key_validity_changed);
 	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 
 	edit = memnew(Button);
