@@ -143,7 +143,11 @@ void EditorPluginSettings::_plugin_activity_changed() {
 		ti->set_checked(COLUMN_STATUS, is_enabled);
 		updating = false;
 	}
-	ti->set_custom_color(COLUMN_NAME, is_enabled ? Color() : get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+	if (is_enabled) {
+		ti->clear_custom_color(COLUMN_NAME);
+	} else {
+		ti->set_custom_color(COLUMN_NAME, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+	}
 }
 
 void EditorPluginSettings::_create_clicked() {
