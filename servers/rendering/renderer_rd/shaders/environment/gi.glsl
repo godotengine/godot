@@ -1100,6 +1100,7 @@ void main() {
 #if defined(USE_HDDAGI) || defined(USE_VOXEL_GI_INSTANCES)
 
 	uint vrs_x, vrs_y;
+	bool thread_active = true;
 #ifdef USE_VRS
 	if (sc_use_vrs) {
 		ivec2 vrs_pos;
@@ -1117,198 +1118,208 @@ void main() {
 		vrs_y = 1 << (vrs_texel & 3);
 
 		if (mod(pos.x, vrs_x) != 0) {
-			return;
+			thread_active = false;
 		}
 
 		if (mod(pos.y, vrs_y) != 0) {
-			return;
+			thread_active = false;
 		}
 	}
 #endif
 
-	if (sc_half_res) {
-		pos <<= 1;
-	}
+	if (thread_active) {
+		if (sc_half_res) {
+			pos <<= 1;
+		}
 
-	if (any(greaterThanEqual(pos, scene_data.screen_size))) { //too large, do nothing
-		return;
+		if (any(greaterThanEqual(pos, scene_data.screen_size))) { //too large, do nothing
+			thread_active = false;
+		}
 	}
 
 	vec4 ambient_light = vec4(0.0);
 	vec4 reflection_light = vec4(0.0);
-
-	vec3 vertex;
-	vec3 normal;
 	float roughness;
 
-	bool found_vertex = false;
+	if (thread_active) {
+		vec3 vertex;
+		vec3 normal;
 
-	vertex = reconstruct_position(pos);
-	vec4 normal_roughness = fetch_normal_and_roughness(pos);
-	found_vertex = length(normal_roughness.xyz) > 0.5;
-	normal = normal_roughness.xyz;
-	roughness = normal_roughness.w;
-	bool dynamic_object = roughness > 0.5;
-	if (dynamic_object) {
-		roughness = 1.0 - roughness;
-	}
-	roughness /= (127.0 / 255.0);
-	vertex.y = -vertex.y;
+		bool found_vertex = false;
 
-	if (found_vertex) {
-		process_gi(pos, vertex, normal, roughness, dynamic_object, ambient_light, reflection_light);
-	}
+		vertex = reconstruct_position(pos);
+		vec4 normal_roughness = fetch_normal_and_roughness(pos);
+		found_vertex = length(normal_roughness.xyz) > 0.5;
+		normal = normal_roughness.xyz;
+		roughness = normal_roughness.w;
+		bool dynamic_object = roughness > 0.5;
+		if (dynamic_object) {
+			roughness = 1.0 - roughness;
+		}
+		roughness /= (127.0 / 255.0);
+		vertex.y = -vertex.y;
+
+		if (found_vertex) {
+			process_gi(pos, vertex, normal, roughness, dynamic_object, ambient_light, reflection_light);
+		}
 
 #ifdef USE_HDDAGI
 
-	// If using reflections, blend the 4 adjacent pixels to get rid of dither
-	uint group_pos = gl_LocalInvocationID.y * GROUP_SIZE + gl_LocalInvocationID.x;
-	group_positions[group_pos] = vertex;
-	group_normals[group_pos] = normal;
-	group_reflections[group_pos] = reflection_light;
+		// If using reflections, blend the 4 adjacent pixels to get rid of dither
+		uint group_pos = gl_LocalInvocationID.y * GROUP_SIZE + gl_LocalInvocationID.x;
+		group_positions[group_pos] = vertex;
+		group_normals[group_pos] = normal;
+		group_reflections[group_pos] = reflection_light;
+#endif
+	}
 
 	memoryBarrierShared();
 	barrier();
 
-	if (roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
-		uvec2 local_group_pos_base = gl_LocalInvocationID.xy - (gl_LocalInvocationID.xy % DITHER_SIZE);
-		uint local_group_pos = local_group_pos_base.y * GROUP_SIZE + local_group_pos_base.x;
+#ifdef USE_HDDAGI
 
-		vec3 positions[DITHER_SIZE * DITHER_SIZE];
-		vec3 normals[DITHER_SIZE * DITHER_SIZE];
+	if (thread_active) {
+		if (roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
+			uvec2 local_group_pos_base = gl_LocalInvocationID.xy - (gl_LocalInvocationID.xy % DITHER_SIZE);
+			uint local_group_pos = local_group_pos_base.y * GROUP_SIZE + local_group_pos_base.x;
 
-		vec4 average = vec4(0.0);
-		for (int i = 0; i < DITHER_SIZE; i++) {
-			for (int j = 0; j < DITHER_SIZE; j++) {
-				uint src_pos = local_group_pos + i * GROUP_SIZE + j;
-				normals[i * DITHER_SIZE + j] = group_normals[src_pos];
-				positions[i * DITHER_SIZE + j] = group_positions[src_pos];
-				average += group_reflections[src_pos];
+			vec3 positions[DITHER_SIZE * DITHER_SIZE];
+			vec3 normals[DITHER_SIZE * DITHER_SIZE];
+
+			vec4 average = vec4(0.0);
+			for (int i = 0; i < DITHER_SIZE; i++) {
+				for (int j = 0; j < DITHER_SIZE; j++) {
+					uint src_pos = local_group_pos + i * GROUP_SIZE + j;
+					normals[i * DITHER_SIZE + j] = group_normals[src_pos];
+					positions[i * DITHER_SIZE + j] = group_positions[src_pos];
+					average += group_reflections[src_pos];
+				}
 			}
-		}
 
-		average /= 4.0;
+			average /= 4.0;
 
-		const int subgroup_count = (DITHER_SIZE - 1) * (DITHER_SIZE - 1);
-		uvec4 subgroups[subgroup_count] = uvec4[](
+			const int subgroup_count = (DITHER_SIZE - 1) * (DITHER_SIZE - 1);
+			uvec4 subgroups[subgroup_count] = uvec4[](
 #if DITHER_SIZE == 2
-				uvec4(0, 1, 2, 3)
+					uvec4(0, 1, 2, 3)
 #elif DITHER_SIZE == 3
-				uvec4(0, 1, 3, 4), uvec4(1, 2, 4, 5), uvec4(3, 4, 6, 7), uvec4(4, 5, 7, 8)
+					uvec4(0, 1, 3, 4), uvec4(1, 2, 4, 5), uvec4(3, 4, 6, 7), uvec4(4, 5, 7, 8)
 #endif
-		);
+			);
 
-		const float same_plane_threshold = 0.9659258262890683; // 15 degrees tolerance
+			const float same_plane_threshold = 0.9659258262890683; // 15 degrees tolerance
 
-		float weight = 1.0;
-		for (int i = 0; i < subgroup_count; i++) {
-			uvec4 sg = subgroups[i];
-			// Weight positions in plane.
-			vec3 p[4] = vec3[](positions[sg.x], positions[sg.y], positions[sg.z], positions[sg.w]);
-			vec3 n1 = normalize(cross(p[0] - p[2], p[0] - p[1]));
-			vec3 n2 = normalize(cross(p[2] - p[3], p[2] - p[1]));
-			weight *= max(0.0, smoothstep(same_plane_threshold, 1, dot(n1, n2)));
+			float weight = 1.0;
+			for (int i = 0; i < subgroup_count; i++) {
+				uvec4 sg = subgroups[i];
+				// Weight positions in plane.
+				vec3 p[4] = vec3[](positions[sg.x], positions[sg.y], positions[sg.z], positions[sg.w]);
+				vec3 n1 = normalize(cross(p[0] - p[2], p[0] - p[1]));
+				vec3 n2 = normalize(cross(p[2] - p[3], p[2] - p[1]));
+				weight *= max(0.0, smoothstep(same_plane_threshold, 1, dot(n1, n2)));
 
-			// Weight normal difference.
-			vec3 n[4] = vec3[](normals[sg.x], normals[sg.y], normals[sg.z], normals[sg.w]);
-			weight *= max(0.0, smoothstep(same_plane_threshold, 1, length((n[0] + n[1] + n[2] + n[3]) / 4.0)));
+				// Weight normal difference.
+				vec3 n[4] = vec3[](normals[sg.x], normals[sg.y], normals[sg.z], normals[sg.w]);
+				weight *= max(0.0, smoothstep(same_plane_threshold, 1, length((n[0] + n[1] + n[2] + n[3]) / 4.0)));
+			}
+
+			reflection_light = mix(reflection_light, average, weight);
+		}
+	}
+#endif
+
+	if (thread_active) {
+		if (sc_half_res) {
+			pos >>= 1;
 		}
 
-		reflection_light = mix(reflection_light, average, weight);
-	}
-#endif
+		uint ambient_rgbe = rgbe_encode(ambient_light.rgb);
+		uint reflection_rgbe = rgbe_encode(reflection_light.rgb);
+		uint blend = uint(clamp(reflection_light.a * 0xF, 0, 0xF)) | (uint(clamp(ambient_light.a * 0xF, 0, 0xF)) << 4);
 
-	if (sc_half_res) {
-		pos >>= 1;
-	}
-
-	uint ambient_rgbe = rgbe_encode(ambient_light.rgb);
-	uint reflection_rgbe = rgbe_encode(reflection_light.rgb);
-	uint blend = uint(clamp(reflection_light.a * 0xF, 0, 0xF)) | (uint(clamp(ambient_light.a * 0xF, 0, 0xF)) << 4);
-
-	imageStore(ambient_buffer, pos, uvec4(ambient_rgbe));
-	imageStore(reflection_buffer, pos, uvec4(reflection_rgbe));
-	imageStore(blend_buffer, pos, vec4(ambient_light.a, reflection_light.a, 0, 0));
+		imageStore(ambient_buffer, pos, uvec4(ambient_rgbe));
+		imageStore(reflection_buffer, pos, uvec4(reflection_rgbe));
+		imageStore(blend_buffer, pos, vec4(ambient_light.a, reflection_light.a, 0, 0));
 
 #ifdef USE_VRS
-	if (sc_use_vrs) {
-		if (vrs_x > 1) {
-			imageStore(ambient_buffer, pos + ivec2(1, 0), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(1, 0), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(1, 0), uvec4(blend));
+		if (sc_use_vrs) {
+			if (vrs_x > 1) {
+				imageStore(ambient_buffer, pos + ivec2(1, 0), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(1, 0), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(1, 0), uvec4(blend));
+			}
+
+			if (vrs_x > 2) {
+				imageStore(ambient_buffer, pos + ivec2(2, 0), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(2, 0), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(2, 0), uvec4(blend));
+
+				imageStore(ambient_buffer, pos + ivec2(3, 0), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(3, 0), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(3, 0), uvec4(blend));
+			}
+
+			if (vrs_y > 1) {
+				imageStore(ambient_buffer, pos + ivec2(0, 1), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(0, 1), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(0, 1), uvec4(blend));
+			}
+
+			if (vrs_y > 1 && vrs_x > 1) {
+				imageStore(ambient_buffer, pos + ivec2(1, 1), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(1, 1), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(1, 1), uvec4(blend));
+			}
+
+			if (vrs_y > 1 && vrs_x > 2) {
+				imageStore(ambient_buffer, pos + ivec2(2, 1), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(2, 1), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(2, 1), uvec4(blend));
+
+				imageStore(ambient_buffer, pos + ivec2(3, 1), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(3, 1), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(3, 1), uvec4(blend));
+			}
+
+			if (vrs_y > 2) {
+				imageStore(ambient_buffer, pos + ivec2(0, 2), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(0, 2), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(0, 2), uvec4(blend));
+
+				imageStore(ambient_buffer, pos + ivec2(0, 3), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(0, 3), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(0, 3), uvec4(blend));
+			}
+
+			if (vrs_y > 2 && vrs_x > 1) {
+				imageStore(ambient_buffer, pos + ivec2(1, 2), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(1, 2), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(1, 2), uvec4(blend));
+
+				imageStore(ambient_buffer, pos + ivec2(1, 3), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(1, 3), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(1, 3), uvec4(blend));
+			}
+
+			if (vrs_y > 2 && vrs_x > 2) {
+				imageStore(ambient_buffer, pos + ivec2(2, 2), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(2, 2), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(2, 2), uvec4(blend));
+
+				imageStore(ambient_buffer, pos + ivec2(2, 3), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(2, 3), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(2, 3), uvec4(blend));
+
+				imageStore(ambient_buffer, pos + ivec2(3, 2), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(3, 2), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(3, 2), uvec4(blend));
+
+				imageStore(ambient_buffer, pos + ivec2(3, 3), uvec4(ambient_rgbe));
+				imageStore(reflection_buffer, pos + ivec2(3, 3), uvec4(reflection_rgbe));
+				imageStore(blend_buffer, pos + ivec2(3, 3), uvec4(blend));
+			}
 		}
-
-		if (vrs_x > 2) {
-			imageStore(ambient_buffer, pos + ivec2(2, 0), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(2, 0), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(2, 0), uvec4(blend));
-
-			imageStore(ambient_buffer, pos + ivec2(3, 0), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(3, 0), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(3, 0), uvec4(blend));
-		}
-
-		if (vrs_y > 1) {
-			imageStore(ambient_buffer, pos + ivec2(0, 1), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(0, 1), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(0, 1), uvec4(blend));
-		}
-
-		if (vrs_y > 1 && vrs_x > 1) {
-			imageStore(ambient_buffer, pos + ivec2(1, 1), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(1, 1), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(1, 1), uvec4(blend));
-		}
-
-		if (vrs_y > 1 && vrs_x > 2) {
-			imageStore(ambient_buffer, pos + ivec2(2, 1), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(2, 1), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(2, 1), uvec4(blend));
-
-			imageStore(ambient_buffer, pos + ivec2(3, 1), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(3, 1), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(3, 1), uvec4(blend));
-		}
-
-		if (vrs_y > 2) {
-			imageStore(ambient_buffer, pos + ivec2(0, 2), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(0, 2), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(0, 2), uvec4(blend));
-
-			imageStore(ambient_buffer, pos + ivec2(0, 3), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(0, 3), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(0, 3), uvec4(blend));
-		}
-
-		if (vrs_y > 2 && vrs_x > 1) {
-			imageStore(ambient_buffer, pos + ivec2(1, 2), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(1, 2), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(1, 2), uvec4(blend));
-
-			imageStore(ambient_buffer, pos + ivec2(1, 3), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(1, 3), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(1, 3), uvec4(blend));
-		}
-
-		if (vrs_y > 2 && vrs_x > 2) {
-			imageStore(ambient_buffer, pos + ivec2(2, 2), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(2, 2), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(2, 2), uvec4(blend));
-
-			imageStore(ambient_buffer, pos + ivec2(2, 3), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(2, 3), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(2, 3), uvec4(blend));
-
-			imageStore(ambient_buffer, pos + ivec2(3, 2), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(3, 2), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(3, 2), uvec4(blend));
-
-			imageStore(ambient_buffer, pos + ivec2(3, 3), uvec4(ambient_rgbe));
-			imageStore(reflection_buffer, pos + ivec2(3, 3), uvec4(reflection_rgbe));
-			imageStore(blend_buffer, pos + ivec2(3, 3), uvec4(blend));
-		}
-	}
 #endif
-
+	}
 #endif
 }
