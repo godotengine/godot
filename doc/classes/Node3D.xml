@@ -49,7 +49,8 @@
 		<method name="get_parent_node_3d" qualifiers="const">
 			<return type="Node3D" />
 			<description>
-				Returns the parent [Node3D], or an empty [Object] if no parent exists or parent is not of type [Node3D].
+				Returns the parent [Node3D], or [code]null[/code] if no parent exists, the parent is not of type [Node3D], or [member top_level] is [code]true[/code].
+				[b]Note:[/b] Calling this method is not equivalent to [code]get_parent() as Node3D[/code], which does not take [member top_level] into account.
 			</description>
 		</method>
 		<method name="get_world_3d" qualifiers="const">
