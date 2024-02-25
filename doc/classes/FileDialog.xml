@@ -210,6 +210,9 @@
 		<theme_item name="back_folder" data_type="icon" type="Texture2D">
 			Custom icon for the back arrow.
 		</theme_item>
+		<theme_item name="create_folder" data_type="icon" type="Texture2D">
+			Custom icon for the create folder button.
+		</theme_item>
 		<theme_item name="file" data_type="icon" type="Texture2D">
 			Custom icon for files.
 		</theme_item>
