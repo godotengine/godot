@@ -428,7 +428,7 @@ void SceneMultiplayer::disconnect_peer(int p_id) {
 	if (pending_peers.has(p_id)) {
 		pending_peers.erase(p_id);
 	} else if (connected_peers.has(p_id)) {
-		connected_peers.has(p_id);
+		connected_peers.erase(p_id);
 	}
 	multiplayer_peer->disconnect_peer(p_id);
 }
