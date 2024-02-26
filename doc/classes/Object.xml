@@ -1071,4 +1071,29 @@
 			Reference-counted connections can be assigned to the same [Callable] multiple times. Each disconnection decreases the internal counter. The signal fully disconnects only when the counter reaches 0.
 		</constant>
 	</constants>
+	<structs>
+		<struct name="Object.PropertyInfo">
+			<member name="name" type="String" default="&quot;&quot;"/>
+			<member name="class_name" type="StringName" default="&amp;&quot;&quot;"/>
+			<member name="type" type="int" default="0"/>
+			<member name="hint" type="int" default="0"/>
+			<member name="hint_string" type="String" default="&quot;&quot;"/>
+			<member name="usage" type="int" default="6"/>
+		</struct>
+		<struct name="Object.MethodInfo">
+			<member name="name" type="String" default="&quot;&quot;"/>
+			<member name="args" type="Array" default="[]"/>
+			<member name="default_args" type="Array" default="[]"/>
+			<member name="flags" type="int" default="1"/>
+			<member name="id" type="int" default="0"/>
+			<member name="return" type="Array" default="[&quot;&quot;, &amp;&quot;&quot;, 0, 0, &quot;&quot;, 6]"/>
+			<member name="return_val_metadata" type="int" default="0"/>
+			<member name="arguments_metadata" type="PackedInt32Array" default="PackedInt32Array()"/>
+		</struct>
+		<struct name="Object.Connection">
+			<member name="signal" type="Signal" default="Signal()"/>
+			<member name="callable" type="Callable" default="Callable()"/>
+			<member name="flags" type="int" default="0"/>
+		</struct>
+	</structs>
 </class>
