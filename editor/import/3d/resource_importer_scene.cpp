@@ -1658,6 +1658,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/simplification", PROPERTY_HINT_ENUM, "Off,Low (Conservative),Medium (Balanced),High (Aggressive)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
@@ -1768,6 +1769,9 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 					p_options["generate/physics"].operator bool();
 
 			if (p_option.find("physics/") >= 0) {
+				if (p_option == "physics/simplification" && generate_physics) {
+					return p_options["physics/shape_type"] == Variant(SHAPE_TYPE_TRIMESH);
+				}
 				// Show if need to generate collisions.
 				return generate_physics;
 			}
