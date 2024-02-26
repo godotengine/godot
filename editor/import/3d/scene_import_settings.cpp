@@ -40,7 +40,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {

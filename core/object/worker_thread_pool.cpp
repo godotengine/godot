@@ -551,7 +551,7 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 	Group **groupp = groups.getptr(p_group);
 	task_mutex.unlock();
 	if (!groupp) {
-		ERR_FAIL_MSG("Invalid Group ID");
+		ERR_FAIL_MSG("Invalid Group ID.");
 	}
 
 	{

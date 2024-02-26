@@ -51,6 +51,8 @@ void GLTFLight::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_inner_cone_angle", "inner_cone_angle"), &GLTFLight::set_inner_cone_angle);
 	ClassDB::bind_method(D_METHOD("get_outer_cone_angle"), &GLTFLight::get_outer_cone_angle);
 	ClassDB::bind_method(D_METHOD("set_outer_cone_angle", "outer_cone_angle"), &GLTFLight::set_outer_cone_angle);
+	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFLight::get_additional_data);
+	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFLight::set_additional_data);
 
 	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFLight::get_additional_data);
 	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFLight::set_additional_data);

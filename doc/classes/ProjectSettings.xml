@@ -984,15 +984,15 @@
 		<member name="filesystem/import/blender/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/blender/enabled] on the Web where Blender can't easily be accessed from Godot.
 		</member>
-		<member name="filesystem/import/fbx/enabled" type="bool" setter="" getter="" default="true">
+		<member name="filesystem/import/fbx2gltf/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Autodesk FBX 3D scene files with the [code].fbx[/code] extension will be imported by converting them to glTF 2.0.
-			This requires configuring a path to a FBX2glTF executable in the editor settings at [code]filesystem/import/fbx/fbx2gltf_path[/code].
+			This requires configuring a path to a FBX2glTF executable in the editor settings at [member EditorSettings.filesystem/import/fbx2gltf/fbx2gltf_path].
 		</member>
-		<member name="filesystem/import/fbx/enabled.android" type="bool" setter="" getter="" default="false">
-			Override for [member filesystem/import/fbx/enabled] on Android where FBX2glTF can't easily be accessed from Godot.
+		<member name="filesystem/import/fbx2gltf/enabled.android" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/fbx2gltf/enabled] on Android where FBX2glTF can't easily be accessed from Godot.
 		</member>
-		<member name="filesystem/import/fbx/enabled.web" type="bool" setter="" getter="" default="false">
-			Override for [member filesystem/import/fbx/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
+		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
@@ -2345,9 +2345,8 @@
 			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
 			[b]Note:[/b] Depth prepass is only supported when using the Forward+ or Compatibility rendering method. When using the Mobile rendering method, there is no depth prepass performed.
 		</member>
-		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
+		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1" experimental="This setting has several known bugs which can lead to crashing, especially when using particles or resizing the window. Not recommended for use in production at this stage.">
 			The thread model to use for rendering. Rendering on a thread may improve performance, but synchronizing to the main thread can cause a bit more jitter.
-			[b]Note:[/b] The [b]Multi-Threaded[/b] option is experimental, and has several known bugs which can lead to crashing, especially when using particles or resizing the window. Not recommended for use in production at this stage.
 		</member>
 		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color(0.3, 0.3, 0.3, 1)">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].

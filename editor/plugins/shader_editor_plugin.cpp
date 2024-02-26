@@ -35,6 +35,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/text_shader_editor.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
@@ -186,7 +187,7 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(window_wrapper);
+		EditorNode::get_bottom_panel()->make_item_visible(window_wrapper);
 	}
 }
 
@@ -702,7 +703,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	empty.instantiate();
 	shader_tabs->add_theme_style_override("panel", empty);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), window_wrapper);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("Shader Editor"), window_wrapper);
 
 	shader_create_dialog = memnew(ShaderCreateDialog);
 	vb->add_child(shader_create_dialog);

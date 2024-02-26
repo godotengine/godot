@@ -150,8 +150,268 @@ static String fix_doc_description(const String &p_bbcode) {
 			.strip_edges();
 }
 
+String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype) {
+	// Based on the version in EditorHelp.
+
+	if (p_bbcode.is_empty()) {
+		return String();
+	}
+
+	DocTools *doc = EditorHelp::get_doc_data();
+
+	String bbcode = p_bbcode;
+
+	StringBuilder output;
+
+	List<String> tag_stack;
+	bool code_tag = false;
+
+	int pos = 0;
+	while (pos < bbcode.length()) {
+		int brk_pos = bbcode.find("[", pos);
+
+		if (brk_pos < 0) {
+			brk_pos = bbcode.length();
+		}
+
+		if (brk_pos > pos) {
+			String text = bbcode.substr(pos, brk_pos - pos);
+			if (code_tag || tag_stack.size() > 0) {
+				output.append("'" + text + "'");
+			} else {
+				output.append(text);
+			}
+		}
+
+		if (brk_pos == bbcode.length()) {
+			// Nothing else to add.
+			break;
+		}
+
+		int brk_end = bbcode.find("]", brk_pos + 1);
+
+		if (brk_end == -1) {
+			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
+			if (code_tag || tag_stack.size() > 0) {
+				output.append("'" + text + "'");
+			}
+
+			break;
+		}
+
+		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+
+		if (tag.begins_with("/")) {
+			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
+
+			if (!tag_ok) {
+				output.append("]");
+				pos = brk_pos + 1;
+				continue;
+			}
+
+			tag_stack.pop_front();
+			pos = brk_end + 1;
+			code_tag = false;
+		} else if (code_tag) {
+			output.append("[");
+			pos = brk_pos + 1;
+		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
+			const int tag_end = tag.find(" ");
+			const String link_tag = tag.substr(0, tag_end);
+			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
+
+			const Vector<String> link_target_parts = link_target.split(".");
+
+			if (link_target_parts.size() <= 0 || link_target_parts.size() > 2) {
+				ERR_PRINT("Invalid reference format: '" + tag + "'.");
+
+				output.append(tag);
+
+				pos = brk_end + 1;
+				continue;
+			}
+
+			const TypeInterface *target_itype;
+			StringName target_cname;
+
+			if (link_target_parts.size() == 2) {
+				target_itype = _get_type_or_null(TypeReference(link_target_parts[0]));
+				if (!target_itype) {
+					target_itype = _get_type_or_null(TypeReference("_" + link_target_parts[0]));
+				}
+				target_cname = link_target_parts[1];
+			} else {
+				target_itype = p_itype;
+				target_cname = link_target_parts[0];
+			}
+
+			if (link_tag == "method") {
+				_append_text_method(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "constructor") {
+				// TODO: Support constructors?
+				_append_text_undeclared(output, link_target);
+			} else if (link_tag == "operator") {
+				// TODO: Support operators?
+				_append_text_undeclared(output, link_target);
+			} else if (link_tag == "member") {
+				_append_text_member(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "signal") {
+				_append_text_signal(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "enum") {
+				_append_text_enum(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "constant") {
+				_append_text_constant(output, target_itype, target_cname, link_target, link_target_parts);
+			} else if (link_tag == "param") {
+				_append_text_param(output, link_target);
+			} else if (link_tag == "theme_item") {
+				// We do not declare theme_items in any way in C#, so there is nothing to reference.
+				_append_text_undeclared(output, link_target);
+			}
+
+			pos = brk_end + 1;
+		} else if (doc->class_list.has(tag)) {
+			if (tag == "Array" || tag == "Dictionary") {
+				output.append("'" BINDINGS_NAMESPACE_COLLECTIONS ".");
+				output.append(tag);
+				output.append("'");
+			} else if (tag == "bool" || tag == "int") {
+				output.append(tag);
+			} else if (tag == "float") {
+				output.append(
+#ifdef REAL_T_IS_DOUBLE
+						"double"
+#else
+						"float"
+#endif
+				);
+			} else if (tag == "Variant") {
+				output.append("'Godot.Variant'");
+			} else if (tag == "String") {
+				output.append("string");
+			} else if (tag == "Nil") {
+				output.append("null");
+			} else if (tag.begins_with("@")) {
+				// @GlobalScope, @GDScript, etc.
+				output.append("'" + tag + "'");
+			} else if (tag == "PackedByteArray") {
+				output.append("byte[]");
+			} else if (tag == "PackedInt32Array") {
+				output.append("int[]");
+			} else if (tag == "PackedInt64Array") {
+				output.append("long[]");
+			} else if (tag == "PackedFloat32Array") {
+				output.append("float[]");
+			} else if (tag == "PackedFloat64Array") {
+				output.append("double[]");
+			} else if (tag == "PackedStringArray") {
+				output.append("string[]");
+			} else if (tag == "PackedVector2Array") {
+				output.append("'" BINDINGS_NAMESPACE ".Vector2[]'");
+			} else if (tag == "PackedVector3Array") {
+				output.append("'" BINDINGS_NAMESPACE ".Vector3[]'");
+			} else if (tag == "PackedColorArray") {
+				output.append("'" BINDINGS_NAMESPACE ".Color[]'");
+			} else {
+				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
+
+				if (!target_itype) {
+					target_itype = _get_type_or_null(TypeReference("_" + tag));
+				}
+
+				if (target_itype) {
+					output.append("'" + target_itype->proxy_name + "'");
+				} else {
+					ERR_PRINT("Cannot resolve type reference in documentation: '" + tag + "'.");
+					output.append("'" + tag + "'");
+				}
+			}
+
+			pos = brk_end + 1;
+		} else if (tag == "b") {
+			// Bold is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "i") {
+			// Italic is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "code" || tag.begins_with("code ")) {
+			code_tag = true;
+			pos = brk_end + 1;
+			tag_stack.push_front("code");
+		} else if (tag == "kbd") {
+			// Keyboard combinations are not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "center") {
+			// Center alignment is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "br") {
+			// Break is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "u") {
+			// Underline is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "s") {
+			// Strikethrough is not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "url") {
+			int end = bbcode.find("[", brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String url = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			// Not supported. Just append the url.
+			output.append(url);
+
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("url=")) {
+			String url = tag.substr(4, tag.length());
+			// Not supported. Just append the url.
+			output.append(url);
+
+			pos = brk_end + 1;
+			tag_stack.push_front("url");
+		} else if (tag == "img") {
+			int end = bbcode.find("[", brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
+
+			// Not supported. Just append the bbcode.
+			output.append("[img]");
+			output.append(image);
+			output.append("[/img]");
+
+			pos = end;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("color=")) {
+			// Not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front("color");
+		} else if (tag.begins_with("font=")) {
+			// Not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front("font");
+		} else {
+			// Ignore unrecognized tag.
+			output.append("[");
+			pos = brk_pos + 1;
+		}
+	}
+
+	return output.as_string();
+}
+
 String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal) {
-	// Based on the version in EditorHelp
+	// Based on the version in EditorHelp.
 
 	if (p_bbcode.is_empty()) {
 		return String();
@@ -200,7 +460,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		}
 
 		if (brk_pos == bbcode.length()) {
-			break; // nothing else to add
+			// Nothing else to add.
+			break;
 		}
 
 		int brk_end = bbcode.find("]", brk_pos + 1);
@@ -316,7 +577,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			} else if (link_tag == "param") {
 				_append_xml_param(xml_output, link_target, p_is_signal);
 			} else if (link_tag == "theme_item") {
-				// We do not declare theme_items in any way in C#, so there is nothing to reference
+				// We do not declare theme_items in any way in C#, so there is nothing to reference.
 				_append_xml_undeclared(xml_output, link_target);
 			}
 
@@ -345,7 +606,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			} else if (tag == "Nil") {
 				xml_output.append("<see langword=\"null\"/>");
 			} else if (tag.begins_with("@")) {
-				// @GlobalScope, @GDScript, etc
+				// @GlobalScope, @GDScript, etc.
 				xml_output.append("<c>");
 				xml_output.append(tag);
 				xml_output.append("</c>");
@@ -432,22 +693,22 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front("csharp");
 		} else if (tag == "kbd") {
-			// keyboard combinations are not supported in xml comments
+			// Keyboard combinations are not supported in xml comments.
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "center") {
-			// center alignment is not supported in xml comments
+			// Center alignment is not supported in xml comments.
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "br") {
 			xml_output.append("\n"); // FIXME: Should use <para> instead. Luckily this tag isn't used for now.
 			pos = brk_end + 1;
 		} else if (tag == "u") {
-			// underline is not supported in Rider xml comments
+			// Underline is not supported in Rider xml comments.
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "s") {
-			// strikethrough is not supported in xml comments
+			// Strikethrough is not supported in xml comments.
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "url") {
@@ -495,7 +756,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			tag_stack.push_front("font");
 		} else {
 			if (!line_del) {
-				xml_output.append("["); // ignore
+				// Ignore unrecognized tag.
+				xml_output.append("[");
 			}
 			pos = brk_pos + 1;
 		}
@@ -504,6 +766,285 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 	xml_output.append("</para>");
 
 	return xml_output.as_string();
+}
+
+void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	if (p_link_target_parts[0] == name_cache.type_at_GlobalScope) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			OS::get_singleton()->print("Cannot resolve @GlobalScope method reference in documentation: %s\n", p_link_target.utf8().get_data());
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else if (!p_target_itype || !p_target_itype->is_object_type) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			if (p_target_itype) {
+				OS::get_singleton()->print("Cannot resolve method reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
+			} else {
+				OS::get_singleton()->print("Cannot resolve type from method reference in documentation: %s\n", p_link_target.utf8().get_data());
+			}
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else {
+		if (p_target_cname == "_init") {
+			// The _init method is not declared in C#, reference the constructor instead
+			p_output.append("'new " BINDINGS_NAMESPACE ".");
+			p_output.append(p_target_itype->proxy_name);
+			p_output.append("()'");
+		} else {
+			const MethodInterface *target_imethod = p_target_itype->find_method_by_name(p_target_cname);
+
+			if (target_imethod) {
+				p_output.append("'" BINDINGS_NAMESPACE ".");
+				p_output.append(p_target_itype->proxy_name);
+				p_output.append(".");
+				p_output.append(target_imethod->proxy_name);
+				p_output.append("(");
+				bool first_key = true;
+				for (const ArgumentInterface &iarg : target_imethod->arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+
+					if (first_key) {
+						first_key = false;
+					} else {
+						p_output.append(", ");
+					}
+					if (!arg_type) {
+						ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
+						p_output.append(iarg.type.cname);
+						continue;
+					}
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_output.append("Nullable<");
+					}
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					p_output.append(arg_cs_type.replacen("params ", ""));
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_output.append(">");
+					}
+				}
+				p_output.append(")'");
+			} else {
+				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
+				}
+
+				_append_text_undeclared(p_output, p_link_target);
+			}
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	if (p_link_target.find("/") >= 0) {
+		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
+		_append_text_undeclared(p_output, p_link_target);
+	} else if (!p_target_itype || !p_target_itype->is_object_type) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			if (p_target_itype) {
+				OS::get_singleton()->print("Cannot resolve member reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
+			} else {
+				OS::get_singleton()->print("Cannot resolve type from member reference in documentation: %s\n", p_link_target.utf8().get_data());
+			}
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else {
+		const TypeInterface *current_itype = p_target_itype;
+		const PropertyInterface *target_iprop = nullptr;
+
+		while (target_iprop == nullptr && current_itype != nullptr) {
+			target_iprop = current_itype->find_property_by_name(p_target_cname);
+			if (target_iprop == nullptr) {
+				current_itype = _get_type_or_null(TypeReference(current_itype->base_name));
+			}
+		}
+
+		if (target_iprop) {
+			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append(current_itype->proxy_name);
+			p_output.append(".");
+			p_output.append(target_iprop->proxy_name);
+			p_output.append("'");
+		} else {
+			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
+			}
+
+			_append_text_undeclared(p_output, p_link_target);
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_signal(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	if (!p_target_itype || !p_target_itype->is_object_type) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			if (p_target_itype) {
+				OS::get_singleton()->print("Cannot resolve signal reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
+			} else {
+				OS::get_singleton()->print("Cannot resolve type from signal reference in documentation: %s\n", p_link_target.utf8().get_data());
+			}
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else {
+		const SignalInterface *target_isignal = p_target_itype->find_signal_by_name(p_target_cname);
+
+		if (target_isignal) {
+			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append(p_target_itype->proxy_name);
+			p_output.append(".");
+			p_output.append(target_isignal->proxy_name);
+			p_output.append("'");
+		} else {
+			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
+			}
+
+			_append_text_undeclared(p_output, p_link_target);
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_enum(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	const StringName search_cname = !p_target_itype ? p_target_cname : StringName(p_target_itype->name + "." + (String)p_target_cname);
+
+	HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(search_cname);
+
+	if (!enum_match && search_cname != p_target_cname) {
+		enum_match = enum_types.find(p_target_cname);
+	}
+
+	if (enum_match) {
+		const TypeInterface &target_enum_itype = enum_match->value;
+
+		p_output.append("'" BINDINGS_NAMESPACE ".");
+		p_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
+		p_output.append("'");
+	} else {
+		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
+		}
+
+		_append_text_undeclared(p_output, p_link_target);
+	}
+}
+
+void BindingsGenerator::_append_text_constant(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+	if (p_link_target_parts[0] == name_cache.type_at_GlobalScope) {
+		_append_text_constant_in_global_scope(p_output, p_target_cname, p_link_target);
+	} else if (!p_target_itype || !p_target_itype->is_object_type) {
+		// Search in @GlobalScope as a last resort if no class was specified
+		if (p_link_target_parts.size() == 1) {
+			_append_text_constant_in_global_scope(p_output, p_target_cname, p_link_target);
+			return;
+		}
+
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			if (p_target_itype) {
+				OS::get_singleton()->print("Cannot resolve constant reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
+			} else {
+				OS::get_singleton()->print("Cannot resolve type from constant reference in documentation: %s\n", p_link_target.utf8().get_data());
+			}
+		}
+
+		// TODO Map what we can
+		_append_text_undeclared(p_output, p_link_target);
+	} else {
+		// Try to find the constant in the current class
+		if (p_target_itype->is_singleton_instance) {
+			// Constants and enums are declared in the static singleton class.
+			p_target_itype = &obj_types[p_target_itype->cname];
+		}
+
+		const ConstantInterface *target_iconst = find_constant_by_name(p_target_cname, p_target_itype->constants);
+
+		if (target_iconst) {
+			// Found constant in current class
+			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append(p_target_itype->proxy_name);
+			p_output.append(".");
+			p_output.append(target_iconst->proxy_name);
+			p_output.append("'");
+		} else {
+			// Try to find as enum constant in the current class
+			const EnumInterface *target_ienum = nullptr;
+
+			for (const EnumInterface &ienum : p_target_itype->enums) {
+				target_ienum = &ienum;
+				target_iconst = find_constant_by_name(p_target_cname, target_ienum->constants);
+				if (target_iconst) {
+					break;
+				}
+			}
+
+			if (target_iconst) {
+				p_output.append("'" BINDINGS_NAMESPACE ".");
+				p_output.append(p_target_itype->proxy_name);
+				p_output.append(".");
+				p_output.append(target_ienum->proxy_name);
+				p_output.append(".");
+				p_output.append(target_iconst->proxy_name);
+				p_output.append("'");
+			} else if (p_link_target_parts.size() == 1) {
+				// Also search in @GlobalScope as a last resort if no class was specified
+				_append_text_constant_in_global_scope(p_output, p_target_cname, p_link_target);
+			} else {
+				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+					ERR_PRINT("Cannot resolve constant reference in documentation: '" + p_link_target + "'.");
+				}
+
+				_append_xml_undeclared(p_output, p_link_target);
+			}
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_constant_in_global_scope(StringBuilder &p_output, const String &p_target_cname, const String &p_link_target) {
+	// Try to find as a global constant
+	const ConstantInterface *target_iconst = find_constant_by_name(p_target_cname, global_constants);
+
+	if (target_iconst) {
+		// Found global constant
+		p_output.append("'" BINDINGS_NAMESPACE "." BINDINGS_GLOBAL_SCOPE_CLASS ".");
+		p_output.append(target_iconst->proxy_name);
+		p_output.append("'");
+	} else {
+		// Try to find as global enum constant
+		const EnumInterface *target_ienum = nullptr;
+
+		for (const EnumInterface &ienum : global_enums) {
+			target_ienum = &ienum;
+			target_iconst = find_constant_by_name(p_target_cname, target_ienum->constants);
+			if (target_iconst) {
+				break;
+			}
+		}
+
+		if (target_iconst) {
+			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append(target_ienum->proxy_name);
+			p_output.append(".");
+			p_output.append(target_iconst->proxy_name);
+			p_output.append("'");
+		} else {
+			ERR_PRINT("Cannot resolve global constant reference in documentation: '" + p_link_target + "'.");
+			_append_text_undeclared(p_output, p_link_target);
+		}
+	}
+}
+
+void BindingsGenerator::_append_text_param(StringBuilder &p_output, const String &p_link_target) {
+	const String link_target = snake_to_camel_case(p_link_target);
+	p_output.append("'" + link_target + "'");
+}
+
+void BindingsGenerator::_append_text_undeclared(StringBuilder &p_output, const String &p_link_target) {
+	p_output.append("'" + p_link_target + "'");
 }
 
 void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
@@ -1429,10 +1970,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			output.append("/// </summary>\n");
 		}
+	}
 
-		if (class_doc->is_deprecated) {
-			output.append("[Obsolete(\"This class is deprecated.\")]\n");
-		}
+	if (itype.is_deprecated) {
+		output.append("[Obsolete(\"");
+		output.append(bbcode_to_text(itype.deprecation_message, &itype));
+		output.append("\")]\n");
 	}
 
 	// We generate a `GodotClassName` attribute if the engine class name is not the same as the
@@ -1489,10 +2032,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 				output.append(INDENT1 "/// </summary>");
 			}
+		}
 
-			if (iconstant.const_doc->is_deprecated) {
-				output.append(MEMBER_BEGIN "[Obsolete(\"This constant is deprecated.\")]");
-			}
+		if (iconstant.is_deprecated) {
+			output.append(MEMBER_BEGIN "[Obsolete(\"");
+			output.append(bbcode_to_text(iconstant.deprecation_message, &itype));
+			output.append("\")]");
 		}
 
 		output.append(MEMBER_BEGIN "public const long ");
@@ -1537,10 +2082,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 					output.append(INDENT2 "/// </summary>\n");
 				}
+			}
 
-				if (iconstant.const_doc->is_deprecated) {
-					output.append(INDENT2 "[Obsolete(\"This enum member is deprecated.\")]\n");
-				}
+			if (iconstant.is_deprecated) {
+				output.append(INDENT2 "[Obsolete(\"");
+				output.append(bbcode_to_text(iconstant.deprecation_message, &itype));
+				output.append("\")]\n");
 			}
 
 			output.append(INDENT2);
@@ -1992,10 +2539,12 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 			p_output.append(INDENT1 "/// </summary>");
 		}
+	}
 
-		if (p_iprop.prop_doc->is_deprecated) {
-			p_output.append(MEMBER_BEGIN "[Obsolete(\"This property is deprecated.\")]");
-		}
+	if (p_iprop.is_deprecated) {
+		p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+		p_output.append(bbcode_to_text(p_iprop.deprecation_message, &p_itype));
+		p_output.append("\")]");
 	}
 
 	p_output.append(MEMBER_BEGIN "public ");
@@ -2248,15 +2797,9 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_imethod.is_deprecated) {
-			if (p_imethod.deprecation_message.is_empty()) {
-				WARN_PRINT("An empty deprecation message is discouraged. Method: '" + p_imethod.proxy_name + "'.");
-			}
-
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
-			p_output.append(p_imethod.deprecation_message);
+			p_output.append(bbcode_to_text(p_imethod.deprecation_message, &p_itype));
 			p_output.append("\")]");
-		} else if (p_imethod.method_doc && p_imethod.method_doc->is_deprecated) {
-			p_output.append(MEMBER_BEGIN "[Obsolete(\"This method is deprecated.\")]");
 		}
 
 		if (p_imethod.is_compat) {
@@ -2401,12 +2944,8 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			p_output.append(INDENT1 "/// </summary>");
 
 			if (p_isignal.is_deprecated) {
-				if (p_isignal.deprecation_message.is_empty()) {
-					WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
-				}
-
 				p_output.append(MEMBER_BEGIN "[Obsolete(\"");
-				p_output.append(p_isignal.deprecation_message);
+				p_output.append(bbcode_to_text(p_isignal.deprecation_message, &p_itype));
 				p_output.append("\")]");
 			}
 
@@ -2459,15 +2998,11 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 				p_output.append(INDENT1 "/// </summary>");
 			}
-
-			if (p_isignal.method_doc->is_deprecated) {
-				p_output.append(MEMBER_BEGIN "[Obsolete(\"This signal is deprecated.\")]");
-			}
 		}
 
 		if (p_isignal.is_deprecated) {
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
-			p_output.append(p_isignal.deprecation_message);
+			p_output.append(bbcode_to_text(p_isignal.deprecation_message, &p_itype));
 			p_output.append("\")]");
 		}
 
@@ -3029,6 +3564,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.is_ref_counted = ClassDB::is_parent_class(type_cname, name_cache.type_RefCounted);
 		itype.memory_own = itype.is_ref_counted;
 
+		if (itype.class_doc) {
+			itype.is_deprecated = itype.class_doc->is_deprecated;
+			itype.deprecation_message = itype.class_doc->deprecated_message;
+
+			if (itype.deprecation_message.is_empty()) {
+				WARN_PRINT("An empty deprecation message is discouraged. Type: '" + itype.proxy_name + "'.");
+				itype.deprecation_message = "This class is deprecated.";
+			}
+		}
+
 		if (itype.is_singleton && compat_singletons.has(itype.cname)) {
 			itype.is_singleton = false;
 			itype.is_compat_singleton = true;
@@ -3100,6 +3645,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				if (prop_doc.name == iprop.cname) {
 					iprop.prop_doc = &prop_doc;
 					break;
+				}
+			}
+
+			if (iprop.prop_doc) {
+				iprop.is_deprecated = iprop.prop_doc->is_deprecated;
+				iprop.deprecation_message = iprop.prop_doc->deprecated_message;
+
+				if (iprop.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Property: '" + itype.proxy_name + "." + iprop.proxy_name + "'.");
+					iprop.deprecation_message = "This property is deprecated.";
 				}
 			}
 
@@ -3282,6 +3837,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				}
 			}
 
+			if (imethod.method_doc) {
+				imethod.is_deprecated = imethod.method_doc->is_deprecated;
+				imethod.deprecation_message = imethod.method_doc->deprecated_message;
+
+				if (imethod.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Method: '" + itype.proxy_name + "." + imethod.proxy_name + "'.");
+					imethod.deprecation_message = "This method is deprecated.";
+				}
+			}
+
 			ERR_FAIL_COND_V_MSG(itype.find_property_by_name(imethod.cname), false,
 					"Method name conflicts with property: '" + itype.name + "." + imethod.name + "'.");
 
@@ -3388,6 +3953,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				}
 			}
 
+			if (isignal.method_doc) {
+				isignal.is_deprecated = isignal.method_doc->is_deprecated;
+				isignal.deprecation_message = isignal.method_doc->deprecated_message;
+
+				if (isignal.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + itype.proxy_name + "." + isignal.proxy_name + "'.");
+					isignal.deprecation_message = "This signal is deprecated.";
+				}
+			}
+
 			itype.signals_.push_back(isignal);
 		}
 
@@ -3425,6 +4000,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 					if (const_doc.name == iconstant.name) {
 						iconstant.const_doc = &const_doc;
 						break;
+					}
+				}
+
+				if (iconstant.const_doc) {
+					iconstant.is_deprecated = iconstant.const_doc->is_deprecated;
+					iconstant.deprecation_message = iconstant.const_doc->deprecated_message;
+
+					if (iconstant.deprecation_message.is_empty()) {
+						WARN_PRINT("An empty deprecation message is discouraged. Enum member: '" + itype.proxy_name + "." + ienum.proxy_name + "." + iconstant.proxy_name + "'.");
+						iconstant.deprecation_message = "This enum member is deprecated.";
 					}
 				}
 
@@ -3467,6 +4052,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				if (const_doc.name == iconstant.name) {
 					iconstant.const_doc = &const_doc;
 					break;
+				}
+			}
+
+			if (iconstant.const_doc) {
+				iconstant.is_deprecated = iconstant.const_doc->is_deprecated;
+				iconstant.deprecation_message = iconstant.const_doc->deprecated_message;
+
+				if (iconstant.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Constant: '" + itype.proxy_name + "." + iconstant.proxy_name + "'.");
+					iconstant.deprecation_message = "This constant is deprecated.";
 				}
 			}
 

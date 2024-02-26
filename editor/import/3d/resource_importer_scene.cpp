@@ -46,15 +46,15 @@
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/separation_ray_shape_3d.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
+#include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/importer_mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/resource_format_text.h"
-#include "scene/resources/separation_ray_shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/resources/world_boundary_shape_3d.h"
 
 uint32_t EditorSceneFormatImporter::get_import_flags() const {
 	uint32_t ret;
@@ -488,8 +488,9 @@ void _apply_scale_to_scalable_node_collection(ScalableNodeCollection &p_collecti
 		if (skeleton_3d) {
 			for (int i = 0; i < skeleton_3d->get_bone_count(); i++) {
 				Transform3D rest = skeleton_3d->get_bone_rest(i);
+				Vector3 position = skeleton_3d->get_bone_pose_position(i);
 				skeleton_3d->set_bone_rest(i, Transform3D(rest.basis, p_scale * rest.origin));
-				skeleton_3d->set_bone_pose_position(i, p_scale * rest.origin);
+				skeleton_3d->set_bone_pose_position(i, p_scale * position);
 			}
 		}
 	}

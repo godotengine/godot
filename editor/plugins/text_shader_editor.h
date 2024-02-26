@@ -32,6 +32,7 @@
 #define TEXT_SHADER_EDITOR_H
 
 #include "editor/code_editor.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"

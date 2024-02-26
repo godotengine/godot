@@ -50,10 +50,6 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 void Button::_queue_update_size_cache() {
 }
 
-void Button::_set_h_separation_is_valid_when_no_text(bool p_h_separation_is_valid_when_no_text) {
-	h_separation_is_valid_when_no_text = p_h_separation_is_valid_when_no_text;
-}
-
 Ref<StyleBox> Button::_get_current_stylebox() const {
 	Ref<StyleBox> stylebox = theme_cache.normal;
 	const bool rtl = is_layout_rtl();
@@ -180,14 +176,12 @@ void Button::_notification(int p_what) {
 			float right_internal_margin_with_h_separation = _internal_margin[SIDE_RIGHT];
 			{ // The width reserved for internal element in derived classes (and h_separation if need).
 
-				if (!xl_text.is_empty() || h_separation_is_valid_when_no_text) {
-					if (_internal_margin[SIDE_LEFT] > 0.0f) {
-						left_internal_margin_with_h_separation += h_separation;
-					}
+				if (_internal_margin[SIDE_LEFT] > 0.0f) {
+					left_internal_margin_with_h_separation += h_separation;
+				}
 
-					if (_internal_margin[SIDE_RIGHT] > 0.0f) {
-						right_internal_margin_with_h_separation += h_separation;
-					}
+				if (_internal_margin[SIDE_RIGHT] > 0.0f) {
+					right_internal_margin_with_h_separation += h_separation;
 				}
 
 				drawable_size_remained.width -= left_internal_margin_with_h_separation + right_internal_margin_with_h_separation; // The size after the internal element is stripped.

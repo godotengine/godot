@@ -51,6 +51,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
 #include "editor/find_in_files.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_toaster.h"
@@ -866,8 +867,6 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	if (script_close_queue.is_empty()) {
 		_update_history_arrows();
 		_update_script_names();
-		_update_members_overview_visibility();
-		_update_help_overview_visibility();
 		_save_layout();
 		_update_find_replace_bar();
 	}
@@ -1670,7 +1669,6 @@ void ScriptEditor::_notification(int p_what) {
 			recent_scripts->reset_size();
 
 			if (is_inside_tree()) {
-				_update_script_colors();
 				_update_script_names();
 			}
 		} break;
@@ -1713,7 +1711,7 @@ void ScriptEditor::_notification(int p_what) {
 				find_in_files_button->show();
 			} else {
 				if (find_in_files->is_visible_in_tree()) {
-					EditorNode::get_singleton()->hide_bottom_panel();
+					EditorNode::get_bottom_panel()->hide_bottom_panel();
 				}
 				find_in_files_button->hide();
 			}
@@ -2820,7 +2818,6 @@ void ScriptEditor::_apply_editor_settings() {
 		EditorSettings::get_singleton()->load_text_editor_theme();
 	}
 
-	_update_script_colors();
 	_update_script_names();
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save"));
@@ -3814,7 +3811,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	find_in_files->set_replace_text(find_in_files_dialog->get_replace_text());
 	find_in_files->start_search();
 
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(find_in_files);
+	EditorNode::get_bottom_panel()->make_item_visible(find_in_files);
 }
 
 void ScriptEditor::_on_find_in_files_modified_files(PackedStringArray paths) {
@@ -4189,7 +4186,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(true));
 	add_child(find_in_files_dialog);
 	find_in_files = memnew(FindInFilesPanel);
-	find_in_files_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Search Results"), find_in_files);
+	find_in_files_button = EditorNode::get_bottom_panel()->add_item(TTR("Search Results"), find_in_files);
 	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));

@@ -32,7 +32,7 @@
 #define TEST_NAVIGATION_SERVER_3D_H
 
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_server_3d.h"
 
 #include "tests/test_macros.h"

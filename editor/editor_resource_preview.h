@@ -51,6 +51,16 @@ protected:
 	GDVIRTUAL0RC(bool, _generate_small_preview_automatically)
 	GDVIRTUAL0RC(bool, _can_generate_small_preview)
 
+	class DrawRequester : public Object {
+		Semaphore semaphore;
+
+		Variant _post_semaphore() const;
+
+	public:
+		void request_and_wait(RID p_viewport) const;
+		void abort() const;
+	};
+
 public:
 	virtual bool handles(const String &p_type) const;
 	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const;
@@ -132,6 +142,7 @@ public:
 
 	void start();
 	void stop();
+	bool is_threaded() const;
 
 	EditorResourcePreview();
 	~EditorResourcePreview();

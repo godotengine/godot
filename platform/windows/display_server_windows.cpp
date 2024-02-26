@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/atlas_texture.h"
@@ -51,6 +52,9 @@
 
 #include <avrt.h>
 #include <dwmapi.h>
+#include <propkey.h>
+#include <propvarutil.h>
+#include <shellapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
 #include <wbemcli.h>
@@ -1374,6 +1378,15 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	popup_close(p_window);
 
 	WindowData &wd = windows[p_window];
+
+	IPropertyStore *prop_store;
+	HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
+	if (hr == S_OK) {
+		PROPVARIANT val;
+		PropVariantInit(&val);
+		prop_store->SetValue(PKEY_AppUserModel_ID, val);
+		prop_store->Release();
+	}
 
 	while (wd.transient_children.size()) {
 		window_set_transient(*wd.transient_children.begin(), INVALID_WINDOW_ID);
@@ -4956,6 +4969,33 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		wd.last_pressure_update = 0;
 		wd.last_tilt = Vector2();
 
+		IPropertyStore *prop_store;
+		HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
+		if (hr == S_OK) {
+			PROPVARIANT val;
+			String appname;
+			if (Engine::get_singleton()->is_editor_hint()) {
+				appname = "Godot.GodotEditor." + String(VERSION_BRANCH);
+			} else {
+				String name = GLOBAL_GET("application/config/name");
+				String version = GLOBAL_GET("application/config/version");
+				if (version.is_empty()) {
+					version = "0";
+				}
+				String clean_app_name = name.to_pascal_case();
+				for (int i = 0; i < clean_app_name.length(); i++) {
+					if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
+						clean_app_name[i] = '_';
+					}
+				}
+				clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
+				appname = "Godot." + clean_app_name + "." + version;
+			}
+			InitPropVariantFromString((PCWSTR)appname.utf16().get_data(), &val);
+			prop_store->SetValue(PKEY_AppUserModel_ID, val);
+			prop_store->Release();
+		}
+
 		// IME.
 		wd.im_himc = ImmGetContext(wd.hWnd);
 		ImmAssociateContext(wd.hWnd, (HIMC)0);
@@ -5353,6 +5393,26 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		RasterizerGLES3::make_current(false);
 	}
 #endif
+
+	String appname;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		appname = "Godot.GodotEditor." + String(VERSION_BRANCH);
+	} else {
+		String name = GLOBAL_GET("application/config/name");
+		String version = GLOBAL_GET("application/config/version");
+		if (version.is_empty()) {
+			version = "0";
+		}
+		String clean_app_name = name.to_pascal_case();
+		for (int i = 0; i < clean_app_name.length(); i++) {
+			if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
+				clean_app_name[i] = '_';
+			}
+		}
+		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
+		appname = "Godot." + clean_app_name + "." + version;
+	}
+	SetCurrentProcessExplicitAppUserModelID((PCWSTR)appname.utf16().get_data());
 
 	mouse_monitor = SetWindowsHookEx(WH_MOUSE, ::MouseProc, nullptr, GetCurrentThreadId());
 

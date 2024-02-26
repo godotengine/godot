@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
@@ -46,8 +47,8 @@
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/2d/tile_set.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/tile_set.h"
 
 TilesEditorUtils *TilesEditorUtils::singleton = nullptr;
 TileMapEditorPlugin *tile_map_plugin_singleton = nullptr;
@@ -479,11 +480,11 @@ bool TileMapEditorPlugin::handles(Object *p_object) const {
 void TileMapEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(editor);
+		EditorNode::get_bottom_panel()->make_item_visible(editor);
 	} else {
 		button->hide();
 		if (editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 	}
 }
@@ -498,7 +499,7 @@ void TileMapEditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) 
 
 void TileMapEditorPlugin::hide_editor() {
 	if (editor->is_visible_in_tree()) {
-		EditorNode::get_singleton()->hide_bottom_panel();
+		EditorNode::get_bottom_panel()->hide_bottom_panel();
 	}
 }
 
@@ -519,7 +520,7 @@ TileMapEditorPlugin::TileMapEditorPlugin() {
 	editor->connect("change_selected_layer_request", callable_mp(this, &TileMapEditorPlugin::_select_layer));
 	editor->hide();
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TileMap"), editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("TileMap"), editor);
 	button->hide();
 }
 
@@ -544,12 +545,12 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
 		if (!tile_map_plugin_singleton->is_editor_visible()) {
-			EditorNode::get_singleton()->make_bottom_panel_item_visible(editor);
+			EditorNode::get_bottom_panel()->make_item_visible(editor);
 		}
 	} else {
 		button->hide();
 		if (editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 	}
 }
@@ -570,7 +571,7 @@ TileSetEditorPlugin::TileSetEditorPlugin() {
 	editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	editor->hide();
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TileSet"), editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("TileSet"), editor);
 	button->hide();
 }
 

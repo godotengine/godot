@@ -33,15 +33,11 @@
 
 #include "modules/gltf/gltf_defines.h"
 #include "modules/gltf/gltf_state.h"
-#include "modules/gltf/structures/gltf_animation.h"
-#include "modules/gltf/structures/gltf_mesh.h"
-#include "modules/gltf/structures/gltf_node.h"
 #include "modules/gltf/structures/gltf_skeleton.h"
 #include "modules/gltf/structures/gltf_skin.h"
 #include "modules/gltf/structures/gltf_texture.h"
-#include "scene/3d/importer_mesh_instance_3d.h"
 
-#include "thirdparty/ufbx/ufbx.h"
+#include <ufbx.h>
 
 class FBXState : public GLTFState {
 	GDCLASS(FBXState, GLTFState);

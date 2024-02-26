@@ -118,6 +118,7 @@ public:
 	void register_extension_wrapper();
 
 	OpenXRExtensionWrapperExtension();
+	virtual ~OpenXRExtensionWrapperExtension() override;
 };
 
 #endif // OPENXR_EXTENSION_WRAPPER_EXTENSION_H

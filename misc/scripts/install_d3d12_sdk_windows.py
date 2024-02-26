@@ -3,6 +3,7 @@
 import os
 import urllib.request
 import shutil
+import subprocess
 
 # Base Godot dependencies path
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
@@ -18,8 +19,8 @@ dxc_filename = "dxc_2023_08_14.zip"
 dxc_archive = os.path.join(deps_folder, dxc_filename)
 dxc_folder = os.path.join(deps_folder, "dxc")
 # Mesa NIR
-mesa_version = "23.1.0-devel"
-mesa_filename = "godot-nir-23.1.0-1-devel.zip"
+mesa_version = "23.1.9"
+mesa_filename = "godot-nir-23.1.9.zip"
 mesa_archive = os.path.join(deps_folder, mesa_filename)
 mesa_folder = os.path.join(deps_folder, "mesa")
 # WinPixEventRuntime
@@ -70,6 +71,16 @@ os.remove(mesa_archive)
 print(f"Mesa NIR {mesa_filename} installed successfully.\n")
 
 # WinPixEventRuntime
+
+# MinGW needs DLLs converted with dlltool.
+# We rely on finding gendef/dlltool to detect if we have MinGW.
+# Check existence of needed tools for generating mingw library.
+gendef = shutil.which("gendef") or ""
+dlltool = shutil.which("dlltool") or ""
+if dlltool == "":
+    dlltool = shutil.which("x86_64-w64-mingw32-dlltool") or ""
+has_mingw = gendef != "" and dlltool != ""
+
 print("[3/4] WinPixEventRuntime")
 if os.path.isfile(pix_archive):
     os.remove(pix_archive)
@@ -81,6 +92,23 @@ if os.path.exists(pix_folder):
 print(f"Extracting WinPixEventRuntime {pix_version} to {pix_folder} ...")
 shutil.unpack_archive(pix_archive, pix_folder, "zip")
 os.remove(pix_archive)
+if has_mingw:
+    print("Adapting WinPixEventRuntime to also support MinGW alongside MSVC.")
+    cwd = os.getcwd()
+    os.chdir(pix_folder)
+    subprocess.run([gendef, "./bin/x64/WinPixEventRuntime.dll"])
+    subprocess.run(
+        [dlltool]
+        + "--machine i386:x86-64 --no-leading-underscore -d WinPixEventRuntime.def -D WinPixEventRuntime.dll -l ./bin/x64/libWinPixEventRuntime.a".split()
+    )
+    subprocess.run([gendef, "./bin/ARM64/WinPixEventRuntime.dll"])
+    subprocess.run(
+        [dlltool]
+        + "--machine arm64 --no-leading-underscore -d WinPixEventRuntime.def -D WinPixEventRuntime.dll -l ./bin/ARM64/libWinPixEventRuntime.a".split()
+    )
+    os.chdir(cwd)
+else:
+    print("MinGW wasn't found, so only MSVC support is provided for WinPixEventRuntime.")
 print(f"WinPixEventRuntime {pix_version} installed successfully.\n")
 
 # DirectX 12 Agility SDK
@@ -100,5 +128,5 @@ os.remove(agility_sdk_archive)
 print(f"DirectX 12 Agility SDK {agility_sdk_version} installed successfully.\n")
 
 # Complete message
-print(f"All Direct3D 12 SDK components were installed to {deps_folder} successfully!")
+print(f'All Direct3D 12 SDK components were installed to "{deps_folder}" successfully!')
 print('You can now build Godot with Direct3D 12 support enabled by running "scons d3d12=yes".')

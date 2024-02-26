@@ -685,7 +685,7 @@ void Basis::set_euler(const Vector3 &p_euler, EulerOrder p_order) {
 			*this = zmat * ymat * xmat;
 		} break;
 		default: {
-			ERR_FAIL_MSG("Invalid order parameter for set_euler(vec3,order)");
+			ERR_FAIL_MSG("Invalid Euler order parameter.");
 		}
 	}
 }

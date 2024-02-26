@@ -1860,7 +1860,7 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(
 		VectorView<RDD::BufferBarrier> p_buffer_barriers,
 		VectorView<RDD::TextureBarrier> p_texture_barriers) {
 	if (p_src_stages.has_flag(PIPELINE_STAGE_ALL_COMMANDS_BIT) && p_dst_stages.has_flag(PIPELINE_STAGE_ALL_COMMANDS_BIT)) {
-		// Looks like the intent is a a full barrier.
+		// Looks like the intent is a full barrier.
 		// In the resource barriers world, we can force a full barrier by discarding some resource, as per
 		// https://microsoft.github.io/DirectX-Specs/d3d/D3D12EnhancedBarriers.html#synchronous-copy-discard-and-resolve.
 		const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
@@ -2885,7 +2885,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 					uint32_t binding = (p_register % GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER) / GODOT_NIR_BINDING_MULTIPLIER;
 
 					DEV_ASSERT(set < (uint32_t)shader_data_in.sets_bindings.size());
-					bool found = false;
+					[[maybe_unused]] bool found = false;
 					for (int j = 0; j < shader_data_in.sets_bindings[set].size(); j++) {
 						if (shader_data_in.sets_bindings[set][j].binding != binding) {
 							continue;
@@ -2903,7 +2903,6 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 						} else {
 							CRASH_NOW();
 						}
-
 						found = true;
 						break;
 					}
@@ -2913,8 +2912,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 
 			godot_nir_callbacks.report_sc_bit_offset_fn = [](uint32_t p_sc_id, uint64_t p_bit_offset, void *p_data) {
 				ShaderData &shader_data_in = *(ShaderData *)p_data;
-
-				bool found = false;
+				[[maybe_unused]] bool found = false;
 				for (int j = 0; j < shader_data_in.specialization_constants.size(); j++) {
 					if (shader_data_in.specialization_constants[j].constant_id != p_sc_id) {
 						continue;
@@ -2923,7 +2921,6 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 					uint32_t offset_idx = SHADER_STAGES_BIT_OFFSET_INDICES[shader_data_in.stage];
 					DEV_ASSERT(shader_data_in.specialization_constants.write[j].stages_bit_offsets[offset_idx] == 0);
 					shader_data_in.specialization_constants.write[j].stages_bit_offsets[offset_idx] = p_bit_offset;
-
 					found = true;
 					break;
 				}

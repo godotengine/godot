@@ -8,7 +8,8 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="allow_geometry_helper_nodes" type="PackedInt32Array" setter="set_allow_geometry_helper_nodes" getter="get_allow_geometry_helper_nodes" default="PackedInt32Array()">
+		<member name="allow_geometry_helper_nodes" type="bool" setter="set_allow_geometry_helper_nodes" getter="get_allow_geometry_helper_nodes" default="false">
+			If [code]true[/code], the import process used auxiliary nodes called geometry helper nodes. These nodes help preserve the pivots and transformations of the original 3D model during import.
 		</member>
 	</members>
 </class>

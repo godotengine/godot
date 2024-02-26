@@ -46,7 +46,7 @@ void FBXImporterManager::_notification(int p_what) {
 }
 
 void FBXImporterManager::show_dialog(bool p_exclusive) {
-	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx/fbx2gltf_path");
+	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx2gltf/fbx2gltf_path");
 	fbx_path->set_text(fbx2gltf_path);
 	_validate_path(fbx2gltf_path);
 
@@ -56,12 +56,8 @@ void FBXImporterManager::show_dialog(bool p_exclusive) {
 	set_close_on_escape(!p_exclusive);
 
 	if (is_importing) {
-		//get_cancel_button()->set_text(TTR("Disable FBX & Restart"));
-		//get_cancel_button()->set_tooltip_text(TTR("Canceling this dialog will disable the FBX importer.\nYou can re-enable it in the Project Settings under Filesystem > Import > FBX > Enabled.\n\nThe editor will restart as importers are registered when the editor starts."));
 		get_cancel_button()->set_text(TTR("Disable FBX2glTF & Restart"));
 		get_cancel_button()->set_tooltip_text(TTR("Canceling this dialog will disable the FBX2glTF importer and use the ufbx importer.\nYou can re-enable FBX2glTF in the Project Settings under Filesystem > Import > FBX > Enabled.\n\nThe editor will restart as importers are registered when the editor starts."));
-		
-	
 	} else {
 		get_cancel_button()->set_text(TTR("Cancel"));
 		get_cancel_button()->set_tooltip_text("");
@@ -109,7 +105,7 @@ void FBXImporterManager::_select_file(const String &p_path) {
 
 void FBXImporterManager::_path_confirmed() {
 	String path = fbx_path->get_text();
-	EditorSettings::get_singleton()->set("filesystem/import/fbx/fbx2gltf_path", path);
+	EditorSettings::get_singleton()->set("filesystem/import/fbx2gltf/fbx2gltf_path", path);
 	EditorSettings::get_singleton()->save();
 }
 
@@ -118,7 +114,7 @@ void FBXImporterManager::_cancel_setup() {
 		return; // No worry.
 	}
 	// No escape.
-	ProjectSettings::get_singleton()->set("filesystem/import/fbx/enabled", false);
+	ProjectSettings::get_singleton()->set("filesystem/import/fbx2gltf/enabled", false);
 	ProjectSettings::get_singleton()->save();
 	EditorNode::get_singleton()->save_all_scenes();
 	EditorNode::get_singleton()->restart_editor();

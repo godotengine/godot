@@ -56,6 +56,7 @@ private:
 	String optional_features;
 	String requested_reference_space_types;
 	String reference_space_type;
+	String enabled_features;
 
 	Size2 render_targetsize;
 	RBMap<unsigned int, RID> texture_cache;
@@ -72,6 +73,10 @@ private:
 		TargetRayMode target_ray_mode;
 		int touch_index = -1;
 	} input_sources[input_source_count];
+
+	static const int WEBXR_HAND_JOINT_MAX = 25;
+	static const int HAND_MAX = 2;
+	Ref<XRHandTracker> hand_trackers[HAND_MAX];
 
 	RID color_texture;
 	RID depth_texture;
@@ -94,8 +99,8 @@ public:
 	virtual String get_optional_features() const override;
 	virtual void set_requested_reference_space_types(String p_requested_reference_space_types) override;
 	virtual String get_requested_reference_space_types() const override;
-	void _set_reference_space_type(String p_reference_space_type);
 	virtual String get_reference_space_type() const override;
+	virtual String get_enabled_features() const override;
 	virtual bool is_input_source_active(int p_input_source_id) const override;
 	virtual Ref<XRPositionalTracker> get_input_source_tracker(int p_input_source_id) const override;
 	virtual TargetRayMode get_input_source_target_ray_mode(int p_input_source_id) const override;
@@ -128,6 +133,9 @@ public:
 	virtual void process() override;
 
 	void _on_input_event(int p_event_type, int p_input_source_id);
+
+	inline void _set_reference_space_type(String p_reference_space_type) { reference_space_type = p_reference_space_type; }
+	inline void _set_enabled_features(String p_enabled_features) { enabled_features = p_enabled_features; }
 
 	WebXRInterfaceJS();
 	~WebXRInterfaceJS();

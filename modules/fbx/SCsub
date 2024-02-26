@@ -34,8 +34,15 @@ env.modules_sources += thirdparty_obj
 
 # Godot source files
 
-env_fbx.add_source_files(env.modules_sources, "*.cpp")
-env_fbx.add_source_files(env.modules_sources, "structures/*.cpp")
+module_obj = []
+
+env_fbx.add_source_files(module_obj, "*.cpp")
+env_fbx.add_source_files(module_obj, "structures/*.cpp")
 
 if env.editor_build:
-    env_fbx.add_source_files(env.modules_sources, "editor/*.cpp")
+    env_fbx.add_source_files(module_obj, "editor/*.cpp")
+
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

@@ -46,7 +46,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 class EditorFileDialog;
 class EditorInspector;

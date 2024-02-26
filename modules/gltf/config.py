@@ -11,7 +11,6 @@ def get_doc_classes():
         "ModelState3D",
         "ModelDocument3D",
         "EditorSceneFormatImporterBlend",
-        "EditorSceneFormatImporterFBX",
         "EditorSceneFormatImporterGLTF",
         "GLTFAccessor",
         "GLTFAnimation",
