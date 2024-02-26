@@ -863,6 +863,7 @@ void EditorPropertyDictionary::update_property() {
 		if (!container) {
 			container = memnew(MarginContainer);
 			container->set_theme_type_variation("MarginContainer4px");
+			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
 
