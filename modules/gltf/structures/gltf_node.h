@@ -41,12 +41,6 @@ class GLTFNode : public Resource {
 	friend class SkinTool;
 	friend class FBXDocument;
 
-
-	friend class ModelDocument3D;
-	friend class GLTFDocument;
-	friend class SkinTool;
-	friend class FBXDocument;
-
 private:
 	String original_name;
 	GLTFNodeIndex parent = -1;
@@ -109,13 +103,6 @@ public:
 
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-
-	String get_original_name();
-	void set_original_name(String p_name);
-
-	
-	
-
 };
 
 #endif // GLTF_NODE_H

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <ufbx.h>
 #include "fbx_state.h"
 
 void FBXState::_bind_methods() {

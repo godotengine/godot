@@ -19,16 +19,16 @@
 #include "editor/editor_interface.h"
 #include "editor/editor_script.h"
 #include "core/config/engine.h"
-#include "scene/resources/height_map_shape_3d.h"
+#include "scene/resources/3d/height_map_shape_3d.h"
 #include "core/os/os.h"
 #include "core/config/project_settings.h"
 #include "servers/rendering_server.h"
 #include "scene/resources/surface_tool.h"
 #include "core/os/time.h"
 #include "scene/main/viewport.h"
-#include "scene/resources/world_3d.h"
+#include "scene/resources/3d/world_3d.h"
 #include "scene/gui/box_container.h"
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 
 

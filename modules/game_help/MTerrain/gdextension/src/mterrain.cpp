@@ -1,6 +1,6 @@
 #include "mterrain.h"
 #include "core/variant/variant.h"
-#include "scene/resources/world_3d.h"
+#include "scene/resources/3d/world_3d.h"
 #include "scene/main/viewport.h"
 #include  "scene/3d/camera_3d.h"
 #include "core/config/engine.h"

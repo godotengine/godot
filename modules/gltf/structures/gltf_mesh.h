@@ -45,9 +45,6 @@ private:
 	TypedArray<Material> instance_materials;
 	Dictionary additional_data;
 
-	String original_name;
-	Dictionary additional_data;
-
 protected:
 	static void _bind_methods();
 

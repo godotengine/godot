@@ -72,22 +72,10 @@ public:
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 	GLTFAnimation();
 
-
-	String get_original_name();
-	void set_original_name(String p_name);
-	
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-
 private:
 	String original_name;
 	bool loop = false;
 	HashMap<int, Track> tracks;
-<<<<<<< HEAD
-
-	String original_name;
-=======
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	Dictionary additional_data;
 };
 

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <ufbx.h>
 #include "fbx_document.h"
 
 #include "core/config/project_settings.h"
@@ -196,11 +197,7 @@ static uint32_t _decode_vertex_index(const Vector3 &p_vertex) {
 	return uint32_t(p_vertex.x) | uint32_t(p_vertex.y) << 16;
 }
 
-<<<<<<< HEAD
-struct ThreadPool {
-=======
 struct ThreadPoolFBX {
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	struct Group {
 		ufbx_thread_pool_context ctx = {};
 		WorkerThreadPool::GroupID task_id = {};
@@ -212,46 +209,28 @@ struct ThreadPoolFBX {
 };
 
 static void _thread_pool_task(void *user, uint32_t index) {
-<<<<<<< HEAD
-	ThreadPool::Group *group = (ThreadPool::Group *)user;
-=======
 	ThreadPoolFBX::Group *group = (ThreadPoolFBX::Group *)user;
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	ufbx_thread_pool_run_task(group->ctx, group->start_index + index);
 }
 
 static bool _thread_pool_init_fn(void *user, ufbx_thread_pool_context ctx, const ufbx_thread_pool_info *info) {
-<<<<<<< HEAD
-	ThreadPool *pool = (ThreadPool *)user;
-	for (ThreadPool::Group &group : pool->groups) {
-=======
 	ThreadPoolFBX *pool = (ThreadPoolFBX *)user;
 	for (ThreadPoolFBX::Group &group : pool->groups) {
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 		group.ctx = ctx;
 	}
 	return true;
 }
 
 static bool _thread_pool_run_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t start_index, uint32_t count) {
-<<<<<<< HEAD
-	ThreadPool *pool = (ThreadPool *)user;
-	ThreadPool::Group &pool_group = pool->groups[group];
-=======
 	ThreadPoolFBX *pool = (ThreadPoolFBX *)user;
 	ThreadPoolFBX::Group &pool_group = pool->groups[group];
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	pool_group.start_index = start_index;
 	pool_group.task_id = pool->pool->add_native_group_task(_thread_pool_task, &pool_group, (int)count, -1, true, "ufbx");
 	return true;
 }
 
 static bool _thread_pool_wait_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t max_index) {
-<<<<<<< HEAD
-	ThreadPool *pool = (ThreadPool *)user;
-=======
 	ThreadPoolFBX *pool = (ThreadPoolFBX *)user;
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	pool->pool->wait_for_group_task_completion(pool->groups[group].task_id);
 	return true;
 }
@@ -1354,34 +1333,16 @@ Error FBXDocument::_parse_animations(Ref<FBXState> p_state) {
 				track.scale_track.values.push_back(_as_vec3(key.value));
 			}
 		}
-<<<<<<< HEAD
-		for (const ufbx_baked_element &fbx_baked_element : fbx_baked_anim->elements) {
-			const ufbx_element *fbx_element = fbx_scene->elements[fbx_baked_element.element_id];
-			const GLTFNodeIndex node = fbx_element->typed_id;
-			ERR_CONTINUE(static_cast<uint32_t>(node) >= animation->get_tracks().size());
-=======
 
 		Dictionary blend_shape_animations;
 
 		for (const ufbx_baked_element &fbx_baked_element : fbx_baked_anim->elements) {
 			const ufbx_element *fbx_element = fbx_scene->elements[fbx_baked_element.element_id];
 
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 			for (const ufbx_baked_prop &fbx_baked_prop : fbx_baked_element.props) {
 				String prop_name = _as_string(fbx_baked_prop.name);
 
 				if (fbx_element->type == UFBX_ELEMENT_BLEND_CHANNEL && prop_name == UFBX_DeformPercent) {
-<<<<<<< HEAD
-					GLTFAnimation::Channel<real_t> blend_shape_track;
-					for (const ufbx_baked_vec3 &key : fbx_baked_prop.keys) {
-						blend_shape_track.times.push_back(float(key.time));
-						blend_shape_track.values.push_back(real_t(key.value.x / 100.0));
-					}
-					animation->get_tracks()[node].weight_tracks.push_back(blend_shape_track);
-				}
-			}
-		}
-=======
 					const ufbx_blend_channel *fbx_blend_channel = ufbx_as_blend_channel(fbx_element);
 
 					int blend_i = fbx_blend_channel->typed_id;
@@ -1403,7 +1364,6 @@ Error FBXDocument::_parse_animations(Ref<FBXState> p_state) {
 
 		animation->set_additional_data("GODOT_blend_shape_animations", blend_shape_animations);
 
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 		p_state->animations.push_back(animation);
 	}
 
@@ -1721,59 +1681,6 @@ void FBXDocument::_generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTF
 	}
 }
 
-<<<<<<< HEAD
-template <class T>
-struct SceneFormatImporterGLTFInterpolate {
-	T lerp(const T &a, const T &b, float c) const {
-		return a + (b - a) * c;
-	}
-
-	T catmull_rom(const T &p0, const T &p1, const T &p2, const T &p3, float t) {
-		const float t2 = t * t;
-		const float t3 = t2 * t;
-
-		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 + (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
-	}
-
-	T bezier(T start, T control_1, T control_2, T end, float t) {
-		/* Formula from Wikipedia article on Bezier curves. */
-		const real_t omt = (1.0 - t);
-		const real_t omt2 = omt * omt;
-		const real_t omt3 = omt2 * omt;
-		const real_t t2 = t * t;
-		const real_t t3 = t2 * t;
-
-		return start * omt3 + control_1 * omt2 * t * 3.0 + control_2 * omt * t2 * 3.0 + end * t3;
-	}
-};
-
-// thank you for existing, partial specialization
-template <>
-struct SceneFormatImporterGLTFInterpolate<Quaternion> {
-	Quaternion lerp(const Quaternion &a, const Quaternion &b, const float c) const {
-		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quaternion(), "The quaternion \"a\" must be normalized.");
-		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quaternion(), "The quaternion \"b\" must be normalized.");
-
-		return a.slerp(b, c).normalized();
-	}
-
-	Quaternion catmull_rom(const Quaternion &p0, const Quaternion &p1, const Quaternion &p2, const Quaternion &p3, const float c) {
-		ERR_FAIL_COND_V_MSG(!p1.is_normalized(), Quaternion(), "The quaternion \"p1\" must be normalized.");
-		ERR_FAIL_COND_V_MSG(!p2.is_normalized(), Quaternion(), "The quaternion \"p2\" must be normalized.");
-
-		return p1.slerp(p2, c).normalized();
-	}
-
-	Quaternion bezier(const Quaternion start, const Quaternion control_1, const Quaternion control_2, const Quaternion end, const float t) {
-		ERR_FAIL_COND_V_MSG(!start.is_normalized(), Quaternion(), "The start quaternion must be normalized.");
-		ERR_FAIL_COND_V_MSG(!end.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
-
-		return start.slerp(end, t).normalized();
-	}
-};
-
-=======
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming, const bool p_remove_immutable_tracks) {
 	Ref<GLTFAnimation> anim = p_state->animations[p_index];
 
@@ -1920,11 +1827,8 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 		}
 	}
 
-<<<<<<< HEAD
-=======
 	Dictionary blend_shape_animations = anim->get_additional_data("GODOT_blend_shape_animations");
 
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	for (GLTFNodeIndex node_index = 0; node_index < p_state->nodes.size(); node_index++) {
 		Ref<GLTFNode> node = p_state->nodes[node_index];
 		if (node->mesh < 0) {
@@ -1950,31 +1854,6 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 		ERR_CONTINUE(mesh.is_null());
 		ERR_CONTINUE(mesh->get_mesh().is_null());
 		ERR_CONTINUE(mesh->get_mesh()->get_mesh().is_null());
-<<<<<<< HEAD
-		GLTFAnimation::Track track = anim->get_tracks()[node_index];
-		Dictionary mesh_additional_data = mesh->get_additional_data("GODOT_mesh_blend_channels");
-		Vector<int> blend_channels = mesh_additional_data["blend_channels"];
-		for (int i = 0; i < blend_channels.size(); i++) {
-			GLTFAnimation::Track tracks = anim->get_tracks()[blend_channels[i]];
-			for (int channel_i = 0; channel_i < tracks.weight_tracks.size(); channel_i++) {
-				GLTFAnimation::Channel<real_t> weights = tracks.weight_tracks[channel_i];
-				const String blend_path = String(mesh_instance_node_path) + ":" + String(mesh->get_mesh()->get_blend_shape_name(i));
-				const int track_idx = animation->get_track_count();
-				animation->add_track(Animation::TYPE_BLEND_SHAPE);
-				animation->track_set_path(track_idx, blend_path);
-				animation->track_set_imported(track_idx, true); // Helps merging later.
-
-				animation->track_set_interpolation_type(track_idx, Animation::INTERPOLATION_LINEAR);
-				for (int j = 0; j < weights.times.size(); j++) {
-					const double t = weights.times[j] - anim_start_offset;
-					const real_t attribs = weights.values[j];
-					animation->blend_shape_track_insert_key(track_idx, t, attribs);
-				}
-			}
-		}
-	}
-	animation->set_length(double(additional_animation_data["time_end"]) - double(additional_animation_data["time_begin"]));
-=======
 
 		Dictionary mesh_additional_data = mesh->get_additional_data("GODOT_mesh_blend_channels");
 		Vector<int> blend_channels = mesh_additional_data["blend_channels"];
@@ -2009,7 +1888,6 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 	double time_end = additional_animation_data["time_end"];
 	double length = p_trimming ? time_end - time_begin : time_end;
 	animation->set_length(length);
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 
 	Ref<AnimationLibrary> library;
 	if (!p_animation_player->has_animation_library("")) {
@@ -2099,11 +1977,7 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 	}
 	opts.generate_missing_normals = true;
 
-<<<<<<< HEAD
-	ThreadPool thread_pool;
-=======
 	ThreadPoolFBX thread_pool;
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	thread_pool.pool = WorkerThreadPool::get_singleton();
 
 	opts.thread_opts.pool.init_fn = &_thread_pool_init_fn;
@@ -2134,25 +2008,7 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 void FBXDocument::_bind_methods() {
 }
 
-<<<<<<< HEAD
-void FBXDocument::_build_parent_hierarchy(Ref<FBXState> p_state) {
-	// Build the hierarchy.
-	for (GLTFNodeIndex node_i = 0; node_i < p_state->nodes.size(); node_i++) {
-		for (int j = 0; j < p_state->nodes[node_i]->children.size(); j++) {
-			GLTFNodeIndex child_i = p_state->nodes[node_i]->children[j];
-			ERR_FAIL_INDEX(child_i, p_state->nodes.size());
-			if (p_state->nodes.write[child_i]->parent != -1) {
-				continue;
-			}
-			p_state->nodes.write[child_i]->parent = node_i;
-		}
-	}
-}
-
-Node *FBXDocument::create_scene(Ref<ModelState3D> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
-=======
 Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), nullptr);
 	ERR_FAIL_NULL_V(state, nullptr);
@@ -2177,11 +2033,7 @@ Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool
 	return root;
 }
 
-<<<<<<< HEAD
-Error FBXDocument::append_data_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<ModelState3D> p_state, uint32_t p_flags) {
-=======
 Error FBXDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags) {
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_bytes.ptr(), ERR_INVALID_DATA);
@@ -2273,11 +2125,7 @@ Error FBXDocument::_parse_fbx_state(Ref<FBXState> p_state, const String &p_searc
 	return OK;
 }
 
-<<<<<<< HEAD
-Error FBXDocument::append_data_from_file(String p_path, Ref<ModelState3D> p_state, uint32_t p_flags, String p_base_path) {
-=======
 Error FBXDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags, String p_base_path) {
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_path.is_empty(), ERR_FILE_NOT_FOUND);
@@ -2496,17 +2344,6 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 	return OK;
 }
 
-<<<<<<< HEAD
-PackedByteArray FBXDocument::create_buffer(Ref<ModelState3D> p_state) {
-	return PackedByteArray();
-}
-
-Error FBXDocument::write_asset_to_filesystem(Ref<ModelState3D> p_state, const String &p_path) {
-	return ERR_UNAVAILABLE;
-}
-
-Error FBXDocument::append_data_from_scene(Node *p_node, Ref<ModelState3D> p_state, uint32_t p_flags) {
-=======
 PackedByteArray FBXDocument::generate_buffer(Ref<GLTFState> p_state) {
 	return PackedByteArray();
 }
@@ -2516,7 +2353,6 @@ Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 }
 
 Error FBXDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags) {
->>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	return ERR_UNAVAILABLE;
 }
 

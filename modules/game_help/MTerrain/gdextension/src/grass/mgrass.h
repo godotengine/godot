@@ -12,7 +12,7 @@
 #include "core/templates/hash_map.h"
 #include "scene/3d/node_3d.h"
 #include "servers/physics_server_3d.h"
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/physics_material.h"
 #include "mgrass_data.h"
 #include "mgrass_lod_setting.h"

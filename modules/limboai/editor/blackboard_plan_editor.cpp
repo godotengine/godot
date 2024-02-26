@@ -22,6 +22,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/style_box_flat.h"
 #endif // LIMBOAI_MODULE
 

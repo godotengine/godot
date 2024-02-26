@@ -73,9 +73,6 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "children"), "set_children", "get_children"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light"), "set_light", "get_light"); // GLTFLightIndex
-
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_name"), "set_original_name", "get_original_name"); // String
 }
 
 String GLTFNode::get_original_name() {
@@ -187,12 +184,4 @@ Variant GLTFNode::get_additional_data(const StringName &p_extension_name) {
 
 void GLTFNode::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
 	additional_data[p_extension_name] = p_additional_data;
-}
-
-
-String GLTFNode::get_original_name() {
-	return original_name;
-}
-void GLTFNode::set_original_name(String p_name) {
-	original_name = p_name;
 }

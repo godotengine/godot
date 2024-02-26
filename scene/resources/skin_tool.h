@@ -41,7 +41,7 @@
 #include "modules/gltf/structures/gltf_skeleton.h"
 #include "modules/gltf/structures/gltf_skin.h"
 #include "scene/main/node.h"
-#include "scene/resources/skin.h"
+#include "scene/resources/3d/skin.h"
 
 using SkinNodeIndex = int;
 using SkinSkeletonIndex = int;

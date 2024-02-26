@@ -53,8 +53,6 @@ private:
 	float outer_cone_angle = Math_TAU / 8.0f;
 	Dictionary additional_data;
 
-	Dictionary additional_data;
-
 public:
 	Color get_color();
 	void set_color(Color p_color);
