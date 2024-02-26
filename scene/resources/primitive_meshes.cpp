@@ -36,6 +36,13 @@
 #include "servers/rendering_server.h"
 #include "thirdparty/misc/polypartition.h"
 
+#include "modules/modules_enabled.gen.h" // For skia.
+
+#ifdef MODULE_SKIA_ENABLED
+#include "thirdparty/skia/include/core/SkPath.h"
+#include "thirdparty/skia/include/pathops/SkPathOps.h"
+#endif
+
 #define PADDING_REF_SIZE 1024.0
 
 /**
@@ -2719,6 +2726,83 @@ RibbonTrailMesh::RibbonTrailMesh() {
 /*  TextMesh                                                             */
 /*************************************************************************/
 
+_FORCE_INLINE_ void TextMesh::_approx_conic(double p_pixel_size, double p_curve_step, const Vector2 &p_p0, const Vector2 &p_p1, const Vector2 &p_p2, int p_index, Vector<TextMesh::ContourPoint> &r_polygon, Vector2 *r_outer, int *r_outer_index) const {
+	real_t step = CLAMP(p_curve_step / (p_p0 - p_p2).length(), 0.01, 0.5);
+	real_t t = step;
+	while (t < 1.0) {
+		real_t omt = (1.0 - t);
+		real_t omt2 = omt * omt;
+		real_t t2 = t * t;
+
+		Vector2 point = p_p1 + omt2 * (p_p0 - p_p1) + t2 * (p_p2 - p_p1);
+		Vector2 p = point * p_pixel_size;
+		if (r_outer != nullptr && r_outer_index != nullptr) {
+			if (p < *r_outer) {
+				*r_outer = p;
+				*r_outer_index = p_index;
+			}
+		}
+		if (r_polygon.size() == 0 || !p.is_equal_approx(r_polygon[r_polygon.size() - 1].point)) {
+			r_polygon.push_back(ContourPoint(p, false)); // Skip if point is too close.
+		}
+		t += step;
+	}
+}
+
+_FORCE_INLINE_ void TextMesh::_approx_cubic(double p_pixel_size, double p_curve_step, const Vector2 &p_p0, const Vector2 &p_p1, const Vector2 &p_p2, const Vector2 &p_p3, int p_index, Vector<TextMesh::ContourPoint> &r_polygon, Vector2 *r_outer, int *r_outer_index) const {
+	real_t step = CLAMP(p_curve_step / (p_p0 - p_p3).length(), 0.01, 0.5);
+	real_t t = step;
+	while (t < 1.0) {
+		real_t omt = (1.0 - t);
+		real_t omt2 = omt * omt;
+		real_t omt3 = omt2 * omt;
+		real_t t2 = t * t;
+		real_t t3 = t2 * t;
+
+		Vector2 point = p_p0 * omt3 + p_p1 * omt2 * t * 3.0 + p_p2 * omt * t2 * 3.0 + p_p3 * t3;
+		Vector2 p = point * p_pixel_size;
+		if (r_outer != nullptr && r_outer_index != nullptr) {
+			if (p < *r_outer) {
+				*r_outer = p;
+				*r_outer_index = p_index;
+			}
+		}
+		if (r_polygon.size() == 0 || !p.is_equal_approx(r_polygon[r_polygon.size() - 1].point)) {
+			r_polygon.push_back(ContourPoint(p, false)); // Skip if point is too close.
+		}
+		t += step;
+	}
+}
+
+_FORCE_INLINE_ bool TextMesh::_orient_contours(int p_outer_index, TextMesh::GlyphMeshData &r_gl_data) const {
+	// Check any outer contour orientation, and reverse all contours if it's CW.
+
+	bool outer_cw = false;
+	int numpoints = r_gl_data.contours[p_outer_index].size();
+	double area = 0.0;
+	for (int i1 = 0; i1 < numpoints; i1++) {
+		int i2 = i1 + 1;
+		if (i2 == numpoints) {
+			i2 = 0;
+		}
+		area += r_gl_data.contours[p_outer_index][i1].point.x * r_gl_data.contours[p_outer_index][i2].point.y - r_gl_data.contours[p_outer_index][i1].point.y * r_gl_data.contours[p_outer_index][i2].point.x;
+	}
+	if (area > 0) {
+		outer_cw = false;
+	} else if (area < 0) {
+		outer_cw = true;
+	} else {
+		ERR_FAIL_V_MSG(false, "Undetermined contour orientation.");
+	}
+
+	if (outer_cw) {
+		for (int i = 0; i < r_gl_data.contours.size(); i++) {
+			r_gl_data.contours.write[i].reverse();
+		}
+	}
+	return true;
+}
+
 void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph &p_gl) const {
 	if (cache.has(p_key)) {
 		return;
@@ -2730,24 +2814,41 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 
 	PackedVector3Array points = d["points"];
 	PackedInt32Array contours = d["contours"];
-	bool orientation = d["orientation"];
 
 	if (points.size() < 3 || contours.size() < 1) {
 		return; // No full contours, only glyph control points (or nothing), ignore.
 	}
 
-	// Approximate Bezier curves as polygons.
+	// Decompose FT Outline and convert to Skia path or Polygon.
 	// See https://freetype.org/freetype2/docs/glyphs/glyphs-6.html, for more info.
+#ifdef MODULE_SKIA_ENABLED
+	SkPath sk_path;
+#else
+	bool orientation = d["orientation"];
+#endif
+
 	for (int i = 0; i < contours.size(); i++) {
 		int32_t start = (i == 0) ? 0 : (contours[i - 1] + 1);
 		int32_t end = contours[i];
+#ifndef MODULE_SKIA_ENABLED
 		Vector<ContourPoint> polygon;
-
+#endif
 		for (int32_t j = start; j <= end; j++) {
 			if (points[j].z == TextServer::CONTOUR_CURVE_TAG_ON) {
 				// Point on the curve.
+#ifdef MODULE_SKIA_ENABLED
+				Vector2 p = Vector2(points[j].x, points[j].y);
+				if (j == start) {
+					sk_path.moveTo(SkPoint::Make((SkScalar)p.x, (SkScalar)p.y));
+				} else {
+					sk_path.lineTo(SkPoint::Make((SkScalar)p.x, (SkScalar)p.y));
+				}
+#else
 				Vector2 p = Vector2(points[j].x, points[j].y) * pixel_size;
-				polygon.push_back(ContourPoint(p, true));
+				if (polygon.size() == 0 || !p.is_equal_approx(polygon[polygon.size() - 1].point)) {
+					polygon.push_back(ContourPoint(p, true));
+				}
+#endif
 			} else if (points[j].z == TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
 				// Conic Bezier arc.
 				int32_t next = (j == end) ? start : (j + 1);
@@ -2771,19 +2872,14 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				} else {
 					ERR_FAIL_MSG(vformat("Invalid conic arc point sequence at %d:%d", i, j));
 				}
-
-				real_t step = CLAMP(curve_step / (p0 - p2).length(), 0.01, 0.5);
-				real_t t = step;
-				while (t < 1.0) {
-					real_t omt = (1.0 - t);
-					real_t omt2 = omt * omt;
-					real_t t2 = t * t;
-
-					Vector2 point = p1 + omt2 * (p0 - p1) + t2 * (p2 - p1);
-					Vector2 p = point * pixel_size;
-					polygon.push_back(ContourPoint(p, false));
-					t += step;
+#ifdef MODULE_SKIA_ENABLED
+				if (j == start) {
+					sk_path.moveTo(SkPoint::Make((SkScalar)p0.x, (SkScalar)p0.y));
 				}
+				sk_path.quadTo(SkPoint::Make((SkScalar)p1.x, (SkScalar)p1.y), SkPoint::Make((SkScalar)p2.x, (SkScalar)p2.y));
+#else
+				_approx_conic(pixel_size, curve_step, p0, p1, p2, gl_data.contours.size(), polygon, nullptr, nullptr);
+#endif
 			} else if (points[j].z == TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC) {
 				// Cubic Bezier arc.
 				int32_t cur = j;
@@ -2810,31 +2906,102 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				Vector2 p2 = Vector2(points[next1].x, points[next1].y);
 				Vector2 p3 = Vector2(points[next2].x, points[next2].y);
 
-				real_t step = CLAMP(curve_step / (p0 - p3).length(), 0.01, 0.5);
-				real_t t = step;
-				while (t < 1.0) {
-					Vector2 point = p0.bezier_interpolate(p1, p2, p3, t);
-					Vector2 p = point * pixel_size;
-					polygon.push_back(ContourPoint(p, false));
-					t += step;
+#ifdef MODULE_SKIA_ENABLED
+				if (j == start) {
+					sk_path.moveTo(SkPoint::Make((SkScalar)p0.x, (SkScalar)p0.y));
 				}
+				sk_path.cubicTo(SkPoint::Make((SkScalar)p1.x, (SkScalar)p1.y), SkPoint::Make((SkScalar)p2.x, (SkScalar)p2.y), SkPoint::Make((SkScalar)p3.x, (SkScalar)p3.y));
+#else
+				_approx_cubic(pixel_size, curve_step, p0, p1, p2, p3, gl_data.contours.size(), polygon, nullptr, nullptr);
+#endif
 			} else {
 				ERR_FAIL_MSG(vformat("Unknown point tag at %d:%d", i, j));
 			}
 		}
 
+#ifndef MODULE_SKIA_ENABLED
 		if (polygon.size() < 3) {
 			continue; // Skip glyph control points.
 		}
 
+		if (polygon[0].point.is_equal_approx(polygon[polygon.size() - 1].point)) {
+			polygon.remove_at(polygon.size() - 1); // Remove duplicate end point.
+		}
+
 		if (!orientation) {
-			polygon.reverse();
+			polygon.reverse(); // Fix vertex order (CCW for non-holes, CW for holes).
 		}
 
 		gl_data.contours.push_back(polygon);
+#endif
 	}
 
-	// Calculate bounds.
+#ifdef MODULE_SKIA_ENABLED
+	// Simplify path to remove self-intersections.
+	if (!Simplify(sk_path, &sk_path)) {
+		ERR_FAIL_MSG("Contour simplification failed.");
+	}
+
+	// Convert Skia path to polygon.
+	SkPath::Iter path_iterator(sk_path, true);
+	SkPoint edge_points[4];
+	Vector<ContourPoint> polygon;
+	Vector2 top_left = Vector2(INFINITY, INFINITY);
+	int outer_c_index = -1;
+	for (SkPath::Verb op; (op = path_iterator.next(edge_points)) != SkPath::kDone_Verb;) {
+		switch (op) {
+			case SkPath::kMove_Verb: {
+				if (polygon.size() >= 3) {
+					if (polygon[0].point.is_equal_approx(polygon[polygon.size() - 1].point)) {
+						polygon.remove_at(polygon.size() - 1); // Remove duplicate end point.
+					}
+					gl_data.contours.push_back(polygon);
+				}
+				polygon = Vector<ContourPoint>();
+				Vector2 p0 = Vector2(edge_points[0].x(), edge_points[0].y()) * pixel_size;
+				if (p0 < top_left) {
+					top_left = p0;
+					outer_c_index = gl_data.contours.size();
+				}
+				if (polygon.size() == 0 || !p0.is_equal_approx(polygon[polygon.size() - 1].point)) {
+					polygon.push_back(ContourPoint(p0, true));
+				}
+			} break;
+			case SkPath::kLine_Verb: {
+				Vector2 p1 = Vector2(edge_points[1].x(), edge_points[1].y());
+				polygon.push_back(ContourPoint(p1 * pixel_size, true));
+			} break;
+			case SkPath::kQuad_Verb: {
+				Vector2 p0 = Vector2(edge_points[0].x(), edge_points[0].y());
+				Vector2 p1 = Vector2(edge_points[1].x(), edge_points[1].y());
+				Vector2 p2 = Vector2(edge_points[2].x(), edge_points[2].y());
+
+				_approx_conic(pixel_size, curve_step, p0, p1, p2, gl_data.contours.size(), polygon, &top_left, &outer_c_index);
+			} break;
+			case SkPath::kCubic_Verb: {
+				Vector2 p0 = Vector2(edge_points[0].x(), edge_points[0].y());
+				Vector2 p1 = Vector2(edge_points[1].x(), edge_points[1].y());
+				Vector2 p2 = Vector2(edge_points[2].x(), edge_points[2].y());
+				Vector2 p3 = Vector2(edge_points[3].x(), edge_points[3].y());
+
+				_approx_cubic(pixel_size, curve_step, p0, p1, p2, p3, gl_data.contours.size(), polygon, &top_left, &outer_c_index);
+			} break;
+			default:;
+		}
+	}
+	if (polygon.size() >= 3) {
+		if (polygon[0].point.is_equal_approx(polygon[polygon.size() - 1].point)) {
+			polygon.remove_at(polygon.size() - 1); // Remove duplicate end point.
+		}
+		gl_data.contours.push_back(polygon); // Skip glyph control points.
+
+		if (outer_c_index >= 0) {
+			_orient_contours(outer_c_index, gl_data); // Fix vertex order (CCW for non-holes, CW for holes).
+		}
+	}
+#endif // MODULE_SKIA_ENABLED
+
+	// Calculate bounds and convert to TPPLPoly for triangulation.
 	List<TPPLPoly> in_poly;
 	for (int i = 0; i < gl_data.contours.size(); i++) {
 		TPPLPoly inp;
@@ -2861,18 +3028,19 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 
 	TPPLPartition tpart;
 
-	//Decompose and triangulate.
+	// Convex partition.
 	List<TPPLPoly> out_poly;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) {
 		ERR_FAIL_MSG("Convex decomposing failed. Make sure the font doesn't contain self-intersecting lines, as these are not supported in TextMesh.");
 	}
+
+	// Triangulate.
 	List<TPPLPoly> out_tris;
 	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
 		if (tpart.Triangulate_OPT(&(I->get()), &out_tris) == 0) {
 			ERR_FAIL_MSG("Triangulation failed. Make sure the font doesn't contain self-intersecting lines, as these are not supported in TextMesh.");
 		}
 	}
-
 	for (List<TPPLPoly>::Element *I = out_tris.front(); I; I = I->next()) {
 		TPPLPoly &tp = I->get();
 		ERR_FAIL_COND(tp.GetNumPoints() != 3); // Triangles only.

@@ -33,10 +33,20 @@ if env["builtin_msdfgen"]:
         "core/render-sdf.cpp",
         "core/sdf-error-estimation.cpp",
         "core/shape-description.cpp",
+        "ext/resolve-shape-geometry.cpp",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_msdfgen.Prepend(CPPPATH=["#thirdparty/freetype/include", "#thirdparty/msdfgen", "#thirdparty/nanosvg"])
+    env_msdfgen.Prepend(
+        CPPPATH=[
+            "#thirdparty/freetype/include",
+            "#thirdparty/msdfgen",
+            "#thirdparty/skia/",
+            "#thirdparty/skia/include",
+        ]
+    )
+    if "skia" in env.module_list:
+        env_msdfgen.Append(CPPDEFINES=["MSDFGEN_USE_SKIA"])
 
     lib = env_msdfgen.add_library("msdfgen_builtin", thirdparty_sources)
     thirdparty_obj += lib

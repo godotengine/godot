@@ -805,6 +805,95 @@ and solve conflicts and also enrich the feature set originally
 proposed by these libraries and better integrate them with Godot.
 
 
+## skia
+
+- Upstream: https://skia.googlesource.com/skia
+- Version: git (153bd188e606c7cc14b933c288075b824633bb44, 2022)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `include/config/SkUserConfig.h`
+- `include/core/SkM44.h`
+- `include/core/SkMath.h`
+- `include/core/SkMatrix.h`
+- `include/core/SkPath.h`
+- `include/core/SkPathBuilder.h`
+- `include/core/SkPathTypes.h`
+- `include/core/SkPoint.h`
+- `include/core/SkPoint3.h`
+- `include/core/SkRRect.h`
+- `include/core/SkRSXform.h`
+- `include/core/SkRect.h`
+- `include/core/SkRefCnt.h`
+- `include/core/SkScalar.h`
+- `include/core/SkSize.h`
+- `include/core/SkTypes.h`
+- `include/pathops/SkPathOps.h`
+- `include/private/SkFixed.h`
+- `include/private/SkFloatBits.h`
+- `include/private/SkFloatingPoint.h`
+- `include/private/SkIDChangeListener.h`
+- `include/private/SkMacros.h`
+- `include/private/SkMalloc.h`
+- `include/private/SkMutex.h`
+- `include/private/SkOnce.h`
+- `include/private/SkPathRef.h`
+- `include/private/SkSafe32.h`
+- `include/private/SkSafe_math.h`
+- `include/private/SkSemaphore.h`
+- `include/private/SkTArray.h`
+- `include/private/SkTDArray.h`
+- `include/private/SkTFitsIn.h`
+- `include/private/SkTLogic.h`
+- `include/private/SkTPin.h`
+- `include/private/SkTemplates.h`
+- `include/private/SkThreadAnnotations.h`
+- `include/private/SkThreadID.h`
+- `include/private/SkTo.h`
+- `include/private/SkVx.h`
+- `src/core/SkArenaAlloc.{cpp,h}`
+- `src/core/SkCubicClipper.{cpp,h}`
+- `src/core/SkEdgeClipper.{cpp,h}`
+- `src/core/SkGeometry.{cpp,h}`
+- `src/core/SkIDChangeListener.cpp`
+- `src/core/SkLeanWindows.h`
+- `src/core/SkLineClipper.{cpp,h}`
+- `src/core/SkMalloc.cpp`
+- `src/core/SkMath.cpp`
+- `src/core/SkMathPriv.h`
+- `src/core/SkMatrix.cpp`
+- `src/core/SkMatrixPriv.h`
+- `src/core/SkPath.cpp`
+- `src/core/SkPathBuilder.cpp`
+- `src/core/SkPathMakers.h`
+- `src/core/SkPathPriv.h`
+- `src/core/SkPathRef.cpp`
+- `src/core/SkPoint.cpp`
+- `src/core/SkPointPriv.h`
+- `src/core/SkRRect.cpp`
+- `src/core/SkRRectPriv.h`
+- `src/core/SkRect.cpp`
+- `src/core/SkRectPriv.h`
+- `src/core/SkSafeMath.h`
+- `src/core/SkScaleToSides.h`
+- `src/core/SkSemaphore.cpp`
+- `src/core/SkTLazy.h`
+- `src/core/SkTSort.h`
+- `src/core/SkThreadID.cpp`
+- `src/pathops` folder
+- `src/ports/SkDebug_android.cpp`
+- `src/ports/SkDebug_stdio.cpp`
+- `src/ports/SkDebug_win.cpp`
+- `src/ports/SkMemory_malloc.cpp`
+- `LICENSE`
+
+Some downstream changes have been made and are identified by
+`// -- GODOT begin --` and `// -- GODOT end --` comments.
+They can be reapplied using the patch included in the `patches`
+folder.
+
+
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect

@@ -22,6 +22,7 @@ opts = Variables([], ARGUMENTS)
 opts.Add(BoolVariable("brotli_enabled", "Use Brotli library", True))
 opts.Add(BoolVariable("freetype_enabled", "Use FreeType library", True))
 opts.Add(BoolVariable("msdfgen_enabled", "Use MSDFgen library (require FreeType)", True))
+opts.Add(BoolVariable("skia_enabled", "Use Skia library (require FreeType)", True))
 opts.Add(BoolVariable("graphite_enabled", "Use Graphite library (require FreeType)", True))
 opts.Add(BoolVariable("thorvg_enabled", "Use ThorVG library (require FreeType)", True))
 opts.Add(BoolVariable("static_icu_data", "Use built-in ICU data", True))
@@ -146,16 +147,110 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
         "core/render-sdf.cpp",
         "core/sdf-error-estimation.cpp",
         "core/shape-description.cpp",
+        "ext/resolve-shape-geometry.cpp",
     ]
     thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
 
-    env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
+    env_msdfgen.Append(
+        CPPPATH=[
+            "../../../thirdparty/freetype/include",
+            "../../../thirdparty/msdfgen",
+            "../../../thirdparty/skia/",
+            "../../../thirdparty/skia/include",
+        ]
+    )
+    if env["skia_enabled"]:
+        env_msdfgen.Append(CPPDEFINES=["MSDFGEN_USE_SKIA"])
+
     env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
         f'msdfgen_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_msdfgen_sources,
+    )
+    env.Append(LIBS=[lib])
+
+# Skia
+if env["skia_enabled"] and env["freetype_enabled"]:
+    env_skia = env.Clone()
+    env_skia.disable_warnings()
+
+    thirdparty_skia_dir = "../../../thirdparty/skia/"
+    thirdparty_skia_sources = [
+        "src/core/SkArenaAlloc.cpp",
+        "src/core/SkCubicClipper.cpp",
+        "src/core/SkEdgeClipper.cpp",
+        "src/core/SkGeometry.cpp",
+        "src/core/SkIDChangeListener.cpp",
+        "src/core/SkLineClipper.cpp",
+        "src/core/SkMalloc.cpp",
+        "src/core/SkMath.cpp",
+        "src/core/SkMatrix.cpp",
+        "src/core/SkPath.cpp",
+        "src/core/SkPathBuilder.cpp",
+        "src/core/SkPathRef.cpp",
+        "src/core/SkPoint.cpp",
+        "src/core/SkRRect.cpp",
+        "src/core/SkRect.cpp",
+        "src/core/SkSemaphore.cpp",
+        "src/core/SkThreadID.cpp",
+        "src/pathops/SkAddIntersections.cpp",
+        "src/pathops/SkDLineIntersection.cpp",
+        "src/pathops/SkOpBuilder.cpp",
+        "src/pathops/SkOpEdgeBuilder.cpp",
+        "src/pathops/SkPathOpsCommon.cpp",
+        "src/pathops/SkPathOpsDebug.cpp",
+        "src/pathops/SkPathOpsRect.cpp",
+        "src/pathops/SkPathOpsTypes.cpp",
+        "src/pathops/SkDConicLineIntersection.cpp",
+        "src/pathops/SkDQuadLineIntersection.cpp",
+        "src/pathops/SkOpCoincidence.cpp",
+        "src/pathops/SkOpSegment.cpp",
+        "src/pathops/SkPathOpsConic.cpp",
+        "src/pathops/SkPathOpsLine.cpp",
+        "src/pathops/SkPathOpsSimplify.cpp",
+        "src/pathops/SkPathOpsWinding.cpp",
+        "src/pathops/SkDCubicLineIntersection.cpp",
+        "src/pathops/SkIntersections.cpp",
+        "src/pathops/SkOpContour.cpp",
+        "src/pathops/SkOpSpan.cpp",
+        "src/pathops/SkPathOpsCubic.cpp",
+        "src/pathops/SkPathOpsOp.cpp",
+        "src/pathops/SkPathOpsTSect.cpp",
+        "src/pathops/SkPathWriter.cpp",
+        "src/pathops/SkOpAngle.cpp",
+        "src/pathops/SkOpCubicHull.cpp",
+        "src/pathops/SkPathOpsCurve.cpp",
+        "src/pathops/SkPathOpsQuad.cpp",
+        "src/pathops/SkReduceOrder.cpp",
+        "src/ports/SkMemory_malloc.cpp",
+        "src/ports/SkDebug_android.cpp",
+        "src/ports/SkDebug_stdio.cpp",
+        "src/ports/SkDebug_win.cpp",
+    ]
+    thirdparty_skia_sources = [thirdparty_skia_dir + file for file in thirdparty_skia_sources]
+
+    env_skia.Append(
+        CPPPATH=[
+            "../../../thirdparty/skia/",
+            "../../../thirdparty/skia/include",
+        ]
+    )
+    env.Append(
+        CPPPATH=[
+            "../../../thirdparty/skia/",
+        ]
+    )
+    env_skia.Append(CPPDEFINES=["SK_SUPPORT_GPU=0"])
+    if env["target"] == "debug":
+        env_skia.Append(CPPDEFINES=["SK_DEBUG"])
+    else:
+        env_skia.Append(CPPDEFINES=["SK_RELEASE"])
+
+    lib = env_skia.Library(
+        f'skia_builtin.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["LIBSUFFIX"]}',
+        thirdparty_skia_sources,
     )
     env.Append(LIBS=[lib])
 

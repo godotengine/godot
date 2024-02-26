@@ -613,6 +613,9 @@ private:
 	mutable bool dirty_font = true;
 	mutable bool dirty_cache = true;
 
+	_FORCE_INLINE_ void _approx_conic(double p_pixel_size, double p_curve_step, const Vector2 &p_p0, const Vector2 &p_p1, const Vector2 &p_p2, int p_index, Vector<ContourPoint> &r_polygon, Vector2 *r_outer, int *r_outer_index) const;
+	_FORCE_INLINE_ void _approx_cubic(double p_pixel_size, double p_curve_step, const Vector2 &p_p0, const Vector2 &p_p1, const Vector2 &p_p2, const Vector2 &p_p3, int p_index, Vector<ContourPoint> &r_polygon, Vector2 *r_outer, int *r_outer_index) const;
+	_FORCE_INLINE_ bool _orient_contours(int p_outer_index, GlyphMeshData &r_gl_data) const;
 	void _generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph &p_glyph) const;
 	void _font_changed();
 

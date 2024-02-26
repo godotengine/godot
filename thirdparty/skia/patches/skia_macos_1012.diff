@@ -1,0 +1,22 @@
+diff --git a/src/core/SkTLazy.h b/src/core/SkTLazy.h
+index 8a31d06..c70c049 100644
+--- a/src/core/SkTLazy.h
++++ b/src/core/SkTLazy.h
+@@ -80,11 +80,15 @@ public:
+      */
+     T* get() {
+         SkASSERT(fValue.has_value());
+-        return &fValue.value();
++// -- GODOT start --
++        return &(*fValue);
++// -- GODOT end --
+     }
+     const T* get() const {
+         SkASSERT(fValue.has_value());
+-        return &fValue.value();
++// -- GODOT start --
++        return &(*fValue);
++// -- GODOT end --
+     }
+ 
+     T* operator->() { return this->get(); }

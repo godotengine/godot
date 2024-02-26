@@ -471,6 +471,11 @@ Comment: RVO2
 Copyright: 2016, University of North Carolina at Chapel Hill
 License: Apache-2.0
 
+Files: ./thirdparty/skia/
+Comment: Skia
+Copyright: 2011, Google Inc.
+License: BSD-3-clause
+
 Files: ./thirdparty/spirv-reflect/
 Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.

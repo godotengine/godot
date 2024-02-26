@@ -22,6 +22,9 @@ if env["builtin_msdfgen"] and msdfgen_enabled:
     else:
         env_text_server_fb.Prepend(CPPPATH=["#thirdparty/msdfgen"])
 
+    if "skia" in env.module_list:
+        env_text_server_fb.Append(CPPDEFINES=["MSDFGEN_USE_SKIA"])
+
 if env["builtin_freetype"] and freetype_enabled:
     env_text_server_fb.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
     env_text_server_fb.Prepend(CPPPATH=["#thirdparty/freetype/include"])

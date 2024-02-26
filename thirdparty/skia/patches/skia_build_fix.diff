@@ -1,0 +1,23 @@
+diff --git a/include/private/SkTArray.h b/include/private/SkTArray.h
+index 91442bf..55bd6c4 100644
+--- a/include/private/SkTArray.h
++++ b/include/private/SkTArray.h
+@@ -469,12 +469,16 @@ private:
+     // unpredictable location in memory. Of course, SkTArray won't actually use fItemArray in this
+     // way, and we don't want to construct a T before the user requests one. There's no real risk
+     // here, so disable CFI when doing these casts.
+-    SK_ATTRIBUTE(no_sanitize("cfi"))
++// -- GODOT start --
++    //SK_ATTRIBUTE(no_sanitize("cfi"))
++// -- GODOT end --
+     void setItemArray(void* buffer) {
+         fItemArray = (T*)buffer;
+     }
+ 
+-    SK_ATTRIBUTE(no_sanitize("cfi"))
++// -- GODOT start --
++    //SK_ATTRIBUTE(no_sanitize("cfi"))
++// -- GODOT end --
+     void recreateItemArray() {
+         T* newItemArray = (T*)sk_malloc_throw((size_t)fAllocCount, sizeof(T));
+         this->move(newItemArray);
