@@ -180,17 +180,17 @@ Vector<String> OS_Unix::get_video_adapter_driver_info() const {
 }
 
 String OS_Unix::get_stdin_string() {
-    String result;
-    ssize_t size = 0;
-    char buff[BUFSIZ];
-    int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
-    if (flags != -1) {
-        while ((size = read(fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK), buff, BUFSIZ))) {
-            buff[size] = '\0';
-            result += String::utf8(buff, size);
+	ssize_t size = BUFSIZ;
+	LocalVector<char> buff;
+	int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+	if (flags != -1) {
+        buff.resize(size);
+        while ((size = read(fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK), &buff[0], size))) {
+            buff.resize(size);
         }
-    }
-    return result;
+        return String::utf8((char *)buff.ptr(), size);
+	}
+    return String();
 }
 
 Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {

@@ -1324,16 +1324,16 @@ void OS_Windows::unset_environment(const String &p_var) const {
 }
 
 String OS_Windows::get_stdin_string() {
-    LocalVector<char> buff;
-    DWORD size = 0, count = 0;
-    HANDLE pipe = GetStdHandle(STD_INPUT_HANDLE);
-    if (PeekNamedPipe(pipe, nullptr, 0, nullptr, &size, nullptr)) {
-        buff.resize(size);
-        if (PeekNamedPipe(pipe, &buff[0], size, &count, nullptr, nullptr)) {
-            return String::utf8((char *)buff.ptr(), size);
-        }
-    }
-    return String();
+	LocalVector<char> buff;
+	DWORD size = 0, count = 0;
+	HANDLE pipe = GetStdHandle(STD_INPUT_HANDLE);
+	if (PeekNamedPipe(pipe, nullptr, 0, nullptr, &size, nullptr)) {
+		buff.resize(size);
+		if (PeekNamedPipe(pipe, &buff[0], size, &count, nullptr, nullptr)) {
+			return String::utf8((char *)buff.ptr(), size);
+		}
+	}
+	return String();
 }
 
 Error OS_Windows::shell_open(const String &p_uri) {
