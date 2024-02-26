@@ -75,6 +75,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/wait.h>
@@ -179,8 +180,17 @@ Vector<String> OS_Unix::get_video_adapter_driver_info() const {
 }
 
 String OS_Unix::get_stdin_string() {
-	char buff[1024];
-	return String::utf8(fgets(buff, 1024, stdin));
+    String result;
+    ssize_t size = 0;
+    char buff[BUFSIZ];
+    int flags = fcntl(STDIN_FILENO, F_GETFL, 0); 
+    if (flags != -1) {
+        while ((size = read(fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK), buff, BUFSIZ))) {
+            buff[size] = '\0';
+            result += String(buff);
+        }
+    }
+    return result;
 }
 
 Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
