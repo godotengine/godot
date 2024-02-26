@@ -949,6 +949,9 @@ Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
 Ref<VisualShaderNode> VisualShader::get_node(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Ref<VisualShaderNode>());
 	const Graph *g = &graph[p_type];
+	if (!g->nodes.has(p_id)) {
+		return Ref<VisualShaderNode>();
+	}
 	ERR_FAIL_COND_V(!g->nodes.has(p_id), Ref<VisualShaderNode>());
 	return g->nodes[p_id].node;
 }
@@ -4241,14 +4244,6 @@ String VisualShaderNodeFrame::get_title() const {
 	return title;
 }
 
-void VisualShaderNodeFrame::set_description(const String &p_description) {
-	description = p_description;
-}
-
-String VisualShaderNodeFrame::get_description() const {
-	return description;
-}
-
 void VisualShaderNodeFrame::set_tint_color_enabled(bool p_enabled) {
 	tint_color_enabled = p_enabled;
 }
@@ -4303,9 +4298,6 @@ PackedInt32Array VisualShaderNodeFrame::get_attached_nodes() const {
 void VisualShaderNodeFrame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &VisualShaderNodeFrame::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &VisualShaderNodeFrame::get_title);
-
-	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeFrame::set_description);
-	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeFrame::get_description);
 
 	ClassDB::bind_method(D_METHOD("set_tint_color_enabled", "p_enable"), &VisualShaderNodeFrame::set_tint_color_enabled);
 	ClassDB::bind_method(D_METHOD("is_tint_color_enabled"), &VisualShaderNodeFrame::is_tint_color_enabled);

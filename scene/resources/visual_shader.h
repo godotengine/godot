@@ -723,8 +723,7 @@ class VisualShaderNodeFrame : public VisualShaderNodeResizableBase {
 	GDCLASS(VisualShaderNodeFrame, VisualShaderNodeResizableBase);
 
 protected:
-	String title = "Frame";
-	String description = "";
+	String title = "Title";
 	bool tint_color_enabled = false;
 	Color tint_color = Color(0.3, 0.3, 0.3, 0.75);
 	bool autoshrink = true;
@@ -748,9 +747,6 @@ public:
 
 	void set_title(const String &p_title);
 	String get_title() const;
-
-	void set_description(const String &p_description);
-	String get_description() const;
 
 	void set_tint_color_enabled(bool p_enable);
 	bool is_tint_color_enabled() const;

@@ -1625,7 +1625,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			const int gf_corner_width = 7 * EDSCALE;
 			const int gf_border_width = 2 * MAX(1, EDSCALE);
 
-			Ref<StyleBoxFlat> graphframe_sb = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2), gn_margin_side, 24, gn_margin_side, gn_margin_bottom, gf_corner_width);
+			Ref<StyleBoxFlat> graphframe_sb = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2), gn_margin_side, gn_margin_side, gn_margin_side, gn_margin_bottom, gf_corner_width);
 			graphframe_sb->set_expand_margin(SIDE_TOP, 38 * EDSCALE);
 			graphframe_sb->set_border_width_all(gf_border_width);
 			graphframe_sb->set_border_color(high_contrast_borders ? gn_bg_color.lightened(0.2) : gn_bg_color.darkened(0.3));

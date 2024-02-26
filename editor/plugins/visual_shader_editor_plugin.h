@@ -135,6 +135,8 @@ public:
 	void update_curve(int p_node_id);
 	void update_curve_xyz(int p_node_id);
 	void set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression);
+	void attach_node_to_frame(VisualShader::Type p_type, int p_node_id, int p_frame_id);
+	void detach_node_from_frame(VisualShader::Type p_type, int p_node_id);
 	int get_constant_index(float p_constant) const;
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_theme();
@@ -223,9 +225,6 @@ class VisualShaderEditor : public VBoxContainer {
 	PopupPanel *frame_title_change_popup = nullptr;
 	LineEdit *frame_title_change_edit = nullptr;
 
-	PopupPanel *frame_description_change_popup = nullptr;
-	TextEdit *frame_description_change_edit = nullptr;
-
 	PopupPanel *frame_tint_color_pick_popup = nullptr;
 	ColorPicker *frame_tint_color_picker = nullptr;
 
@@ -288,7 +287,6 @@ class VisualShaderEditor : public VBoxContainer {
 		UNLINK_FROM_PARENT_FRAME,
 		SEPARATOR3, // ignore
 		SET_FRAME_TITLE,
-		SET_FRAME_DESCRIPTION,
 		ENABLE_FRAME_COLOR,
 		SET_FRAME_COLOR,
 		ENABLE_FRAME_AUTOSHRINK,
@@ -430,7 +428,7 @@ class VisualShaderEditor : public VBoxContainer {
 	int selected_float_constant = -1;
 
 	void _convert_constants_to_parameters(bool p_vice_versa);
-	void _unlink_nodes_from_frame_request();
+	void _detach_nodes_from_frame_request();
 	void _detach_nodes_from_frame(int p_type, const List<int> &p_nodes);
 	void _replace_node(VisualShader::Type p_type_id, int p_node_id, const StringName &p_from, const StringName &p_to);
 	void _update_constant(VisualShader::Type p_type_id, int p_node_id, const Variant &p_var, int p_preview_port);
@@ -448,11 +446,6 @@ class VisualShaderEditor : public VBoxContainer {
 	void _frame_title_popup_focus_out();
 	void _frame_title_text_changed(const String &p_new_text);
 	void _frame_title_text_submitted(const String &p_new_text);
-
-	void _frame_desc_popup_show(const Point2 &p_position, int p_node_id);
-	void _frame_desc_popup_hide();
-	void _frame_desc_confirm();
-	void _frame_desc_text_changed();
 
 	void _frame_color_enabled_changed(int p_node_id);
 	void _frame_color_popup_show(const Point2 &p_position, int p_node_id);

@@ -33,16 +33,13 @@
 		<member name="autoshrink" type="bool" setter="set_autoshrink_enabled" getter="is_autoshrink_enabled" default="true">
 			If [code]true[/code], the frame will automatically resize to enclose all attached nodes.
 		</member>
-		<member name="description" type="String" setter="set_description" getter="get_description" default="&quot;&quot;">
-			An additional description which is placed below the title.
-		</member>
 		<member name="tint_color" type="Color" setter="set_tint_color" getter="get_tint_color" default="Color(0.3, 0.3, 0.3, 0.75)">
 			The color of the frame when [member tint_color_enabled] is [code]true[/code].
 		</member>
 		<member name="tint_color_enabled" type="bool" setter="set_tint_color_enabled" getter="is_tint_color_enabled" default="false">
 			If [code]true[/code], the frame will be tinted with the color specified in [member tint_color].
 		</member>
-		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;Frame&quot;">
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;Title&quot;">
 			The title of the node.
 		</member>
 	</members>
