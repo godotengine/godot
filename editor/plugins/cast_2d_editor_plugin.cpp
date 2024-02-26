@@ -33,8 +33,8 @@
 #include "canvas_item_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/2d/ray_cast_2d.h"
-#include "scene/2d/shape_cast_2d.h"
+#include "scene/2d/physics/ray_cast_2d.h"
+#include "scene/2d/physics/shape_cast_2d.h"
 
 void Cast2DEditor::_notification(int p_what) {
 	switch (p_what) {
