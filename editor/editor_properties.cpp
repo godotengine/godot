@@ -3341,6 +3341,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_folding(is_using_folding());
 
 				sub_inspector_vbox = memnew(VBoxContainer);
+				sub_inspector_vbox->set_mouse_filter(MOUSE_FILTER_STOP);
 				add_child(sub_inspector_vbox);
 				set_bottom_editor(sub_inspector_vbox);
 
