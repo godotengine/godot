@@ -103,9 +103,7 @@
 #define UNIX_GET_ENTROPY
 #endif
 
-#if !defined(UNIX_GET_ENTROPY) && !defined(NO_URANDOM)
 #include <fcntl.h>
-#endif
 
 /// Clock Setup function (used by get_ticks_usec)
 static uint64_t _clock_start = 0;
