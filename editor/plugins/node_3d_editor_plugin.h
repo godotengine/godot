@@ -210,7 +210,6 @@ private:
 	void _menu_option(int p_option);
 	void _set_auto_orthogonal();
 	Node3D *preview_node = nullptr;
-	bool update_preview_node = false;
 	Point2 preview_node_viewport_pos;
 	Vector3 preview_node_pos;
 	AABB *preview_bounds = nullptr;
