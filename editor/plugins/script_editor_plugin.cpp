@@ -867,8 +867,6 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	if (script_close_queue.is_empty()) {
 		_update_history_arrows();
 		_update_script_names();
-		_update_members_overview_visibility();
-		_update_help_overview_visibility();
 		_save_layout();
 		_update_find_replace_bar();
 	}
@@ -1671,7 +1669,6 @@ void ScriptEditor::_notification(int p_what) {
 			recent_scripts->reset_size();
 
 			if (is_inside_tree()) {
-				_update_script_colors();
 				_update_script_names();
 			}
 		} break;
@@ -2821,7 +2818,6 @@ void ScriptEditor::_apply_editor_settings() {
 		EditorSettings::get_singleton()->load_text_editor_theme();
 	}
 
-	_update_script_colors();
 	_update_script_names();
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save"));
