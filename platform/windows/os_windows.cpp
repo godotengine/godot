@@ -1330,7 +1330,7 @@ String OS_Windows::get_stdin_string() {
     if (PeekNamedPipe(pipe, nullptr, 0, nullptr, &size, nullptr)) {
         buff.resize(size);
         if (PeekNamedPipe(pipe, &buff[0], size, &count, nullptr, nullptr)) {
-            return String((char *)buff.ptr(), size);
+            return String::utf8((char *)buff.ptr(), size);
         }
     }
     return String();

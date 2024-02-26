@@ -187,7 +187,7 @@ String OS_Unix::get_stdin_string() {
     if (flags != -1) {
         while ((size = read(fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK), buff, BUFSIZ))) {
             buff[size] = '\0';
-            result += String(buff);
+            result += String::utf8(buff, size);
         }
     }
     return result;
