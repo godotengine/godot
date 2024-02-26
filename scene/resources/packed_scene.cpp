@@ -37,7 +37,9 @@
 #include "core/io/resource_loader.h"
 #include "core/templates/local_vector.h"
 #include "scene/2d/node_2d.h"
+#ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
+#endif // _3D_DISABLED
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/missing_node.h"

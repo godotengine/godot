@@ -31,7 +31,7 @@
 #ifndef NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
 #define NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
 
-#include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/mesh.h"
 
 class NavigationMeshSourceGeometryData3D : public Resource {
 	GDCLASS(NavigationMeshSourceGeometryData3D, Resource);
