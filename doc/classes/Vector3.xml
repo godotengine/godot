@@ -299,7 +299,8 @@
 			<return type="Vector3" />
 			<param index="0" name="b" type="Vector3" />
 			<description>
-				Returns the result of projecting the vector onto the given vector [param b].
+				Returns a new vector resulting from projecting this vector onto the given vector [param b]. The resulting new vector is parallel to [param b]. See also [method slide].
+				[b]Note:[/b] If the vector [param b] is a zero vector, the components of the resulting new vector will be [constant @GDScript.NAN].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
@@ -350,7 +351,8 @@
 			<return type="Vector3" />
 			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns a new vector slid along a plane defined by the given normal.
+				Returns a new vector resulting from sliding this vector along a plane with normal [param n]. The resulting new vector is perpendicular to [param n], and is equivalent to this vector minus its projection on [param n]. See also [method project].
+				[b]Note:[/b] The vector [param n] must be normalized. See also [method normalized].
 			</description>
 		</method>
 		<method name="snapped" qualifiers="const">
