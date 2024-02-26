@@ -75,9 +75,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -183,7 +183,7 @@ String OS_Unix::get_stdin_string() {
     String result;
     ssize_t size = 0;
     char buff[BUFSIZ];
-    int flags = fcntl(STDIN_FILENO, F_GETFL, 0); 
+    int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
     if (flags != -1) {
         while ((size = read(fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK), buff, BUFSIZ))) {
             buff[size] = '\0';
