@@ -183,7 +183,7 @@ Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_fil
 	return file_icon;
 }
 
-bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path) {
+bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, int dir_level, bool p_unfold_path) {
 	bool parent_should_expand = false;
 
 	// Create a tree item for the subdirectory.
@@ -218,7 +218,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
-	subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
+	subdirectory_item->set_icon(0, dir_level == 1 && dname == "addons" ? get_editor_theme_icon(SNAME("AddonsFolder")) : get_editor_theme_icon(SNAME("Folder")));
 	subdirectory_item->set_selectable(0, true);
 	subdirectory_item->set_metadata(0, lpath);
 	if (!p_select_in_favorites && (current_path == lpath || ((display_mode != DISPLAY_MODE_TREE_ONLY) && current_path.get_base_dir() == lpath))) {
@@ -238,11 +238,26 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	}
 
 	// Create items for all subdirectories.
+	// Keep addons folder on top.
+	int addons_dir_index = -1;
+	if (dir_level == 0) {
+		for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+			if (p_dir->get_subdir(i)->get_name() == "addons") {
+				parent_should_expand = (_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths, p_select_in_favorites, dir_level + 1, p_unfold_path) || parent_should_expand);
+				addons_dir_index = i;
+				break;
+			}
+		}
+	}
+
 	bool reversed = file_sort == FILE_SORT_NAME_REVERSE;
 	for (int i = reversed ? p_dir->get_subdir_count() - 1 : 0;
 			reversed ? i >= 0 : i < p_dir->get_subdir_count();
 			reversed ? i-- : i++) {
-		parent_should_expand = (_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths, p_select_in_favorites, p_unfold_path) || parent_should_expand);
+		if (i == addons_dir_index) {
+			continue;
+		}
+		parent_should_expand = (_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths, p_select_in_favorites, dir_level + 1, p_unfold_path) || parent_should_expand);
 	}
 
 	// Create all items for the files in the subdirectory.
@@ -447,7 +462,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	}
 
 	// Create the remaining of the tree.
-	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, p_select_in_favorites, p_unfold_path);
+	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, p_select_in_favorites, 0, p_unfold_path);
 	tree->ensure_cursor_is_visible();
 	updating_tree = false;
 }
