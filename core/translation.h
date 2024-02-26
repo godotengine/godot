@@ -82,6 +82,7 @@ class TranslationServer : public Object {
 
 	String locale;
 	String fallback;
+	StringName empty_string_marker;
 
 	Set<Ref<Translation>> translations;
 	Ref<Translation> tool_translation;

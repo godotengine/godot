@@ -553,7 +553,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 		return p_message;
 	}
 
-	return res;
+	return (empty_string_marker && (res == empty_string_marker)) ? StringName() : res;
 }
 
 TranslationServer *TranslationServer::singleton = nullptr;
@@ -589,8 +589,10 @@ void TranslationServer::setup() {
 		set_locale(OS::get_singleton()->get_locale());
 	}
 	fallback = GLOBAL_DEF("locale/fallback", "en");
+	empty_string_marker = GLOBAL_DEF("locale/empty_string_marker", "");
 #ifdef TOOLS_ENABLED
 	ProjectSettings::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_LOCALE_ID, ""));
+	ProjectSettings::get_singleton()->set_custom_property_info("locale/empty_string_marker", PropertyInfo(Variant::STRING, "locale/empty_string_marker", PROPERTY_HINT_NONE, ""));
 #endif
 }
 
