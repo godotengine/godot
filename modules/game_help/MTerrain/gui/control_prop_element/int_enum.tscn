@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://csovwghad2mro"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/control_prop_element/int_enum.gd" id="1_heunk"]
+
+[node name="int_enum" type="HBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_heunk")
+
+[node name="lable" type="Label" parent="."]
+layout_mode = 2
+text = "Enum val "
+
+[node name="values" type="OptionButton" parent="."]
+layout_mode = 2
+
+[connection signal="item_selected" from="values" to="." method="_on_values_item_selected"]

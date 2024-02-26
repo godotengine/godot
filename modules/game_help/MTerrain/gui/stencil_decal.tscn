@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://cu3koya88juu"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/stencil_decal.gd" id="1_8ow5o"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ejyee"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_cuo2h"]
+noise = SubResource("FastNoiseLite_ejyee")
+
+[node name="stencil_decal" type="Decal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.87774e-05, 0, 6.1725e-05)
+size = Vector3(8, 20000, 8)
+texture_albedo = SubResource("NoiseTexture2D_cuo2h")
+albedo_mix = 0.8
+script = ExtResource("1_8ow5o")

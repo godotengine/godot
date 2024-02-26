@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://boufyfa4ti3eb"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/control_prop_element/int.gd" id="1_wuss4"]
+
+[node name="int" type="HBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_wuss4")
+
+[node name="lable" type="Label" parent="."]
+layout_mode = 2
+text = "int name "
+
+[node name="value" type="SpinBox" parent="."]
+layout_mode = 2
+min_value = -100.0
+
+[connection signal="value_changed" from="value" to="." method="_on_value_value_changed"]

@@ -1,0 +1,29 @@
+[configuration]
+
+entry_symbol = "test_library_init"
+compatibility_minimum = 4.1
+
+[libraries]
+macos.debug = "res://addons/m_terrain/libs/libMTerrain.macos.template_debug.universal.dylib"
+macos.release = "res://addons/m_terrain/libs/libMTerrain.macos.template_release.universal.dylib"
+linux.debug.x86_64 = "res://addons/m_terrain/libs/libMTerrain.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://addons/m_terrain/libs/libMTerrain.linux.template_release.x86_64.so"
+linux.debug.x86_32 = "res://addons/m_terrain/libs/libMTerrain.linux.template_debug.x86_32.so"
+linux.release.x86_32 = "res://addons/m_terrain/libs/libMTerrain.linux.template_release.x86_32.so"
+windows.debug.x86_64 = "res://addons/m_terrain/libs/libMTerrain.windows.template_debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/m_terrain/libs/libMTerrain.windows.template_release.x86_64.dll"
+windows.debug.x86_32 = "res://addons/m_terrain/libs/libMTerrain.windows.template_debug.x86_32.dll"
+windows.release.x86_32 = "res://addons/m_terrain/libs/libMTerrain.windows.template_release.x86_32.dll"
+android.debug.arm64 = "res://addons/m_terrain/libs/libMTerrain.android.template_debug.arm64.so"
+android.release.arm64 = "res://addons/m_terrain/libs/libMTerrain.android.template_release.arm64.so"
+
+
+[icons]
+
+MTerrain = "res://addons/m_terrain/icons/M-terrain_icon.png"
+MGrass = "res://addons/m_terrain/icons/foilage_icon.png"
+MNavigationRegion3D = "res://addons/m_terrain/icons/MNavigationRegion3D.png"
+MObstacle = "res://addons/m_terrain/icons/obstacle_icon.png"
+
+
+

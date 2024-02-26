@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://bnlxve4lvi4wb"]
+
+[ext_resource type="Texture2D" uid="uid://dl46tixprq2ro" path="res://addons/m_terrain/icons/tsnap_icon.png" id="1_jxji4"]
+[ext_resource type="Texture2D" uid="uid://dow4horhd3x6v" path="res://addons/m_terrain/icons/tsnap_icon_pressed.png" id="2_yyg7b"]
+
+[node name="tsnap" type="TextureButton"]
+offset_right = 40.0
+offset_bottom = 40.0
+texture_normal = ExtResource("1_jxji4")
+texture_pressed = ExtResource("2_yyg7b")

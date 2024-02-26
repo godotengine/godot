@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://bacapwqdybi81"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/brush_layers.gd" id="1_3au4w"]
+
+[node name="brush_layers" type="ItemList"]
+custom_minimum_size = Vector2(300, 250)
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+max_columns = 4
+script = ExtResource("1_3au4w")

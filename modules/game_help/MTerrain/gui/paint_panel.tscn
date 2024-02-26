@@ -1,0 +1,161 @@
+[gd_scene load_steps=4 format=3 uid="uid://cesssdkp0wyi8"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/paint_panel.gd" id="1_udfkn"]
+[ext_resource type="PackedScene" uid="uid://b6wfdaqojnwju" path="res://addons/m_terrain/gui/brush_masks.tscn" id="2_o8i15"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iouu7"]
+bg_color = Color(0.117647, 0.180392, 0.537255, 1)
+
+[node name="paint" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+script = ExtResource("1_udfkn")
+
+[node name="brush_size" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+
+[node name="lable" type="Label" parent="brush_size"]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "brush size 50.0"
+clip_text = true
+
+[node name="brush_slider" type="HSlider" parent="brush_size"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.5
+max_value = 323.364
+step = 0.5
+value = 50.0
+
+[node name="brush_type" type="CheckButton" parent="."]
+layout_mode = 2
+text = "Height brush"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Brush Masks "
+
+[node name="invert_btn" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "Invert"
+
+[node name="Label2" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = " Hot Keys:"
+
+[node name="Label3" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_iouu7")
+text = ", . k l ; middle_mouse_btn"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Labelmask_cutt_off_label" type="Label" parent="HBoxContainer2"]
+layout_mode = 2
+text = "Mask Cutoff: 0.5"
+vertical_alignment = 1
+
+[node name="mask_cutt_off_slider" type="HSlider" parent="HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.5
+
+[node name="brush_masks" parent="." instance=ExtResource("2_o8i15")]
+layout_mode = 2
+
+[node name="grass_lable" type="Label" parent="."]
+visible = false
+layout_mode = 2
+text = "Hold Shift to revers"
+
+[node name="grass_add" type="CheckButton" parent="."]
+visible = false
+layout_mode = 2
+button_pressed = true
+text = "Grass Add"
+
+[node name="layer_buttons" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="addBT" type="Button" parent="layer_buttons"]
+layout_mode = 2
+text = "Add"
+
+[node name="addName" type="LineEdit" parent="layer_buttons"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+
+[node name="mergeBT" type="Button" parent="layer_buttons"]
+layout_mode = 2
+text = "Merge"
+
+[node name="visibiltyBT" type="Button" parent="layer_buttons"]
+layout_mode = 2
+text = "visibility"
+
+[node name="removeBT" type="Button" parent="layer_buttons"]
+layout_mode = 2
+text = "Remove"
+
+[node name="layer_note" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Note: By Changing the layer the undo data will lost"
+
+[node name="heightmap_layers" type="ItemList" parent="."]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="brush_list" type="OptionButton" parent="."]
+layout_mode = 2
+item_count = 5
+selected = 0
+popup/item_0/text = "Raise"
+popup/item_0/id = 0
+popup/item_1/text = "To Height"
+popup/item_1/id = 1
+popup/item_2/text = "Smooth"
+popup/item_2/id = 2
+popup/item_3/text = "Remove Layer"
+popup/item_3/id = 3
+popup/item_4/text = "Hole"
+popup/item_4/id = 4
+
+[node name="color_brushe_scroll" type="ScrollContainer" parent="."]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="color_brushe_root" type="VBoxContainer" parent="color_brushe_scroll"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+
+[connection signal="value_changed" from="brush_size/brush_slider" to="." method="_on_brush_slider_value_changed"]
+[connection signal="toggled" from="brush_type" to="." method="_on_brush_type_toggled"]
+[connection signal="pressed" from="HBoxContainer/invert_btn" to="brush_masks" method="invert_selected_image"]
+[connection signal="value_changed" from="HBoxContainer2/mask_cutt_off_slider" to="." method="set_mask_cutoff_value"]
+[connection signal="toggled" from="grass_add" to="." method="_on_grass_add_toggled"]
+[connection signal="pressed" from="layer_buttons/addBT" to="." method="_on_add_bt_pressed"]
+[connection signal="gui_input" from="layer_buttons/addName" to="." method="_on_add_name_gui_input"]
+[connection signal="pressed" from="layer_buttons/mergeBT" to="." method="_on_merge_bt_pressed"]
+[connection signal="pressed" from="layer_buttons/visibiltyBT" to="." method="_on_visibilty_bt_pressed"]
+[connection signal="pressed" from="layer_buttons/removeBT" to="." method="_on_remove_bt_pressed"]
+[connection signal="item_selected" from="heightmap_layers" to="." method="_on_heightmap_layer_item_selected"]
+[connection signal="item_selected" from="brush_list" to="." method="_on_brush_list_item_selected"]

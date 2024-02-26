@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://bt4wolcb7b55e"]
+
+[node name="file_compress" type="OptionButton"]
+item_count = 5
+selected = 0
+popup/item_0/text = "FILE_COMPRESSION_NONE"
+popup/item_0/id = 0
+popup/item_1/text = "FILE_COMPRESSION_FASTLZ"
+popup/item_1/id = 1
+popup/item_2/text = "FILE_COMPRESSION_DEFLATE"
+popup/item_2/id = 2
+popup/item_3/text = "FILE_COMPRESSION_ZSTD"
+popup/item_3/id = 3
+popup/item_4/text = "FILE_COMPRESSION_GZIP"
+popup/item_4/id = 4

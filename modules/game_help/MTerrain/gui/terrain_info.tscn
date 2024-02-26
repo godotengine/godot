@@ -1,0 +1,350 @@
+[gd_scene load_steps=11 format=3 uid="uid://bcvync03h4h35"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/terrain_info.gd" id="1_wd31j"]
+[ext_resource type="Script" path="res://addons/m_terrain/gui/Save config.gd" id="2_iihim"]
+[ext_resource type="StyleBox" uid="uid://cjys1hccuc4wx" path="res://addons/m_terrain/gui/styles/terrain_infor_lable_stylebox.tres" id="2_mc1wb"]
+[ext_resource type="PackedScene" uid="uid://c2pjojed3ox4q" path="res://addons/m_terrain/gui/gui_part/data_compress_option.tscn" id="3_41fbb"]
+[ext_resource type="PackedScene" uid="uid://bt4wolcb7b55e" path="res://addons/m_terrain/gui/gui_part/file_compress.tscn" id="4_cuomh"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_283b4"]
+content_margin_left = 5.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vv3ku"]
+content_margin_left = 5.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4xytc"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xq60s"]
+content_margin_left = 5.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_g3do0"]
+content_margin_left = 5.0
+
+[node name="Terrain_info" type="Window"]
+title = "M Terrain Info"
+initial_position = 1
+size = Vector2i(620, 320)
+script = ExtResource("1_wd31j")
+
+[node name="base" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TabContainer" type="TabContainer" parent="base"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Save config" type="TabBar" parent="base/TabContainer"]
+layout_mode = 2
+script = ExtResource("2_iihim")
+
+[node name="scroll" type="ScrollContainer" parent="base/TabContainer/Save config"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="base/TabContainer/Save config/scroll"]
+layout_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="hlable" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 6
+theme_override_colors/font_color = Color(1, 1, 0.219608, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxEmpty_283b4")
+text = "Heightmap"
+
+[node name="HSeparator2" type="HSeparator" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="HSeparator5" type="HSeparator" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_vv3ku")
+text = "Compress_qtq"
+
+[node name="compress_qtq" type="CheckBox" parent="base/TabContainer/Save config/scroll/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4xytc")
+button_pressed = true
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_xq60s")
+text = "Compression accuracy"
+
+[node name="LineEdit" type="LineEdit" parent="base/TabContainer/Save config/scroll/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "0.02"
+
+[node name="hfilecomrpess" type="HBoxContainer" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer/hfilecomrpess"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_g3do0")
+text = "File compress"
+
+[node name="file_compress" type="OptionButton" parent="base/TabContainer/Save config/scroll/VBoxContainer/hfilecomrpess"]
+layout_mode = 2
+item_count = 5
+selected = 0
+popup/item_0/text = "FILE_COMPRESSION_NONE"
+popup/item_0/id = 0
+popup/item_1/text = "FILE_COMPRESSION_FASTLZ"
+popup/item_1/id = 1
+popup/item_2/text = "FILE_COMPRESSION_DEFLATE"
+popup/item_2/id = 2
+popup/item_3/text = "FILE_COMPRESSION_ZSTD"
+popup/item_3/id = 3
+popup/item_4/text = "FILE_COMPRESSION_GZIP"
+popup/item_4/id = 4
+
+[node name="HSeparator3" type="HSeparator" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="Dlable2" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 6
+theme_override_colors/font_color = Color(1, 1, 0.219608, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxEmpty_283b4")
+text = "Data"
+
+[node name="HSeparator4" type="HSeparator" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="hb" type="HBoxContainer" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer/hb"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_g3do0")
+text = "Name"
+
+[node name="data_name_option" type="OptionButton" parent="base/TabContainer/Save config/scroll/VBoxContainer/hb"]
+layout_mode = 2
+
+[node name="hb2" type="HBoxContainer" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer/hb2"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_g3do0")
+text = "Compress"
+
+[node name="data_compress_option" parent="base/TabContainer/Save config/scroll/VBoxContainer/hb2" instance=ExtResource("3_41fbb")]
+layout_mode = 2
+
+[node name="hb3" type="HBoxContainer" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer/hb3"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_g3do0")
+text = "File Compress"
+
+[node name="file_compress" parent="base/TabContainer/Save config/scroll/VBoxContainer/hb3" instance=ExtResource("4_cuomh")]
+layout_mode = 2
+
+[node name="HSeparator6" type="HSeparator" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+
+[node name="warn" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.690196, 0.372549, 1)
+theme_override_styles/normal = ExtResource("2_mc1wb")
+text = "Please note that applying a lossy compression might be irreversible."
+autowrap_mode = 2
+
+[node name="Error" type="Label" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.172549, 0.219608, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = ExtResource("2_mc1wb")
+text = "Error: No Active Terrain"
+autowrap_mode = 2
+
+[node name="force_apply_all" type="CheckBox" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+text = "Force re-apply to all resources"
+
+[node name="apply" type="Button" parent="base/TabContainer/Save config/scroll/VBoxContainer"]
+layout_mode = 2
+text = "Apply Changes"
+
+[node name="Region" type="TabBar" parent="base/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="base/TabContainer/Region"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="rsizem" type="RichTextLabel" parent="base/TabContainer/Region/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[color=green]Region size in meter:[/color]"
+fit_content = true
+
+[node name="rsizepixel" type="RichTextLabel" parent="base/TabContainer/Region/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[color=green]Region size in pixel:[/color]"
+fit_content = true
+
+[node name="Warning" type="Label" parent="base/TabContainer/Region/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0.4, 1)
+theme_override_styles/normal = ExtResource("2_mc1wb")
+text = "Please note: No Active TerrainPlease note: No Active TerrainPlease note: No Active Terrain"
+autowrap_mode = 2
+
+[node name="note" type="Label" parent="base/TabContainer/Region/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.729412, 0, 1)
+theme_override_styles/normal = ExtResource("2_mc1wb")
+text = "In case you change region size after initializing terrain data you should reimport heightmap data and adjust your heightmap data to region pixel "
+autowrap_mode = 2
+
+[node name="Terrain" type="TabBar" parent="base/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="base/TabContainer/Terrain"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Error" type="Label" parent="base/TabContainer/Terrain/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.172549, 0.219608, 1)
+theme_override_styles/normal = ExtResource("2_mc1wb")
+text = "Error: No Active Terrain"
+autowrap_mode = 2
+
+[node name="tsizeg" type="RichTextLabel" parent="base/TabContainer/Terrain/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[color=green]Terrain Size in Grid unit: [/color]"
+fit_content = true
+
+[node name="tsizem" type="RichTextLabel" parent="base/TabContainer/Terrain/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[color=green]Terrain size in meter: [/color]"
+fit_content = true
+
+[node name="takm" type="RichTextLabel" parent="base/TabContainer/Terrain/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[color=green]Terrain area square km: [/color]"
+fit_content = true
+
+[node name="tsizepx" type="RichTextLabel" parent="base/TabContainer/Terrain/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[color=green]Terrain pixel size:[/color]"
+fit_content = true
+
+[node name="tregioncount" type="RichTextLabel" parent="base/TabContainer/Terrain/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[color=green]Terrain region count:[/color]"
+fit_content = true
+
+[node name="tregioncountX" type="RichTextLabel" parent="base/TabContainer/Terrain/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[color=green]Terrain region count in X direction:[/color]"
+fit_content = true
+
+[node name="tregioncountZ" type="RichTextLabel" parent="base/TabContainer/Terrain/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[color=green]Terrain region count in Z direction:[/color]"
+fit_content = true
+autowrap_mode = 2
+
+[node name="Base Size" type="TabBar" parent="base/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="base_unit" type="Label" parent="base/TabContainer/Base Size"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 29.0
+grow_horizontal = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+text = "Smallest grid unit
+
+size: %d meter
+vertex count: %d"
+
+[node name="info" type="TabBar" parent="base/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="info" type="RichTextLabel" parent="base/TabContainer/info"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 29.0
+grow_horizontal = 2
+theme_override_styles/normal = ExtResource("2_mc1wb")
+bbcode_enabled = true
+text = "[center]MTerrain %s
+
+For more information read [url=https://github.com/mohsenph69/Godot-MTerrain-plugin/wiki]wiki[/url] page
+on [url=https://github.com/mohsenph69/Godot-MTerrain-plugin]Github[/url]
+[/center]"
+fit_content = true
+
+[connection signal="close_requested" from="." to="." method="_on_close_requested"]
+[connection signal="item_selected" from="base/TabContainer/Save config/scroll/VBoxContainer/hb/data_name_option" to="base/TabContainer/Save config" method="_on_data_name_option_item_selected"]
+[connection signal="item_selected" from="base/TabContainer/Save config/scroll/VBoxContainer/hb2/data_compress_option" to="base/TabContainer/Save config" method="_on_data_compress_option_item_selected"]
+[connection signal="item_selected" from="base/TabContainer/Save config/scroll/VBoxContainer/hb3/file_compress" to="base/TabContainer/Save config" method="_on_file_compress_item_selected"]
+[connection signal="button_up" from="base/TabContainer/Save config/scroll/VBoxContainer/apply" to="base/TabContainer/Save config" method="_on_apply_button_up"]
+[connection signal="meta_clicked" from="base/TabContainer/info/info" to="." method="_on_info_meta_clicked"]

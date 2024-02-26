@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://drpc7g4qxdu8p"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/control_prop_element/bool.gd" id="1_j602s"]
+
+[node name="bool" type="HBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_j602s")
+
+[node name="lable" type="Label" parent="."]
+layout_mode = 2
+text = "bool var "
+
+[node name="CheckButton" type="CheckButton" parent="."]
+layout_mode = 2
+
+[connection signal="toggled" from="CheckButton" to="." method="_on_check_button_toggled"]

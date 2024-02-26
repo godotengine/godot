@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://dm30obl3srq6t"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_46wdk"]
+bg_color = Color(0.329412, 0.329412, 0.329412, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+
+[node name="layers_title" type="Label"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 30.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.882353, 0.905882, 0.529412, 1)
+theme_override_colors/font_shadow_color = Color(0.160784, 0.305882, 0, 1)
+theme_override_colors/font_outline_color = Color(0.0705882, 0.0627451, 0.0196078, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 5
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_46wdk")
+text = "Splatmap"
+horizontal_alignment = 1

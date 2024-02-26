@@ -200,6 +200,14 @@ class AnimationHelp : public Object
     // 自动卸载时间
     float AutoUnlodTime = 50;
 public:
+    static void setup_animation_tree(Node* node,StringName group)
+    {
+        if(singleton == nullptr || node == nullptr)
+        {
+            return;
+        }
+        singleton->load_animation_tree(node,group); 
+    }
     // 增加一个动画分组
     void add_animation_group(StringName group_name,String animation_tree_path,String animation_library_path)
     {

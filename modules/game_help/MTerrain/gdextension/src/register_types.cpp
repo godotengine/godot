@@ -1,0 +1,74 @@
+// /* godot-cpp integration testing project.
+//  *
+//  * This is free and unencumbered software released into the public domain.
+//  */
+
+// #include "register_types.h"
+
+// #include <gdextension_interface.h>
+
+// #include <godot_cpp/core/class_db.hpp>
+// #include <godot_cpp/core/defs.hpp>
+// #include <godot_cpp/godot.hpp>
+
+// #include "mterrain.h"
+// #include "mgrid.h"
+// #include "mresource.h"
+// #include "mchunk_generator.h"
+// #include "mchunks.h"
+// #include "mtool.h"
+// #include "mregion.h"
+// #include "mbrush_manager.h"
+// #include "mcollision.h"
+
+// #include "grass/mgrass.h"
+// #include "grass/mgrass_data.h"
+// #include "grass/mgrass_lod_setting.h"
+// #include "navmesh/mnavigation_region_3d.h"
+// #include "navmesh/mnavigation_mesh_data.h"
+// #include "navmesh/mobstacle.h"
+// #include "mbrush_layers.h"
+// #include "mterrain_material.h"
+
+// 
+
+// void initialize_test_module(ModuleInitializationLevel p_level) {
+// 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+// 		return;
+// 	}
+// 	ClassDB::register_class<MTerrain>();
+// 	ClassDB::register_class<MGrid>();
+// 	ClassDB::register_class<MResource>();
+// 	ClassDB::register_class<MChunkGenerator>();
+// 	ClassDB::register_class<MChunks>();
+// 	ClassDB::register_class<MRegion>();
+// 	ClassDB::register_class<MTool>();
+// 	ClassDB::register_class<MBrushManager>();
+// 	ClassDB::register_class<MCollision>();
+// 	ClassDB::register_class<MGrass>();
+// 	ClassDB::register_class<MGrassData>();
+// 	ClassDB::register_class<MGrassLodSetting>();
+// 	ClassDB::register_class<MNavigationRegion3D>();
+// 	ClassDB::register_class<MNavigationMeshData>();
+// 	ClassDB::register_class<MObstacle>();
+// 	ClassDB::register_class<MBrushLayers>();
+// 	ClassDB::register_class<MTerrainMaterial>();
+// }
+
+// void uninitialize_test_module(ModuleInitializationLevel p_level) {
+// 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {}
+
+// }
+
+// extern "C" {
+// // Initialization.
+// GDExtensionBool GDE_EXPORT test_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
+// 	GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
+
+// 	init_obj.register_initializer(initialize_test_module);
+// 	init_obj.register_terminator(uninitialize_test_module);
+// 	init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
+
+// 	return init_obj.init();
+// }
+// }

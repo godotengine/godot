@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://cgvj582ftey6e"]
+
+[ext_resource type="Texture2D" uid="uid://b5cmhvvnwshvc" path="res://addons/m_terrain/icons/brush.png" id="1_tnwak"]
+[ext_resource type="Script" path="res://addons/m_terrain/gui/brush_decal.gd" id="2_ws2n5"]
+
+[node name="brush_decal" type="Decal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.7598, 0, 20.5917)
+sorting_offset = 1.0
+size = Vector3(10, 1000, 10)
+texture_albedo = ExtResource("1_tnwak")
+modulate = Color(0, 0.435294, 0.027451, 1)
+script = ExtResource("2_ws2n5")

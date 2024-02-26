@@ -1,0 +1,68 @@
+[gd_scene load_steps=10 format=3 uid="uid://cl1dbmg2xmtro"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/mtools.gd" id="1_l6paa"]
+[ext_resource type="Texture2D" uid="uid://dok8ugsvea2hg" path="res://addons/m_terrain/icons/paint-normal.png" id="2_4m4r2"]
+[ext_resource type="Texture2D" uid="uid://cjho7a8u0ixdi" path="res://addons/m_terrain/icons/info_icon.png" id="2_gaimq"]
+[ext_resource type="Texture2D" uid="uid://cyftv3kygv5b7" path="res://addons/m_terrain/icons/info_icon_pressed.png" id="3_1h0ws"]
+[ext_resource type="Texture2D" uid="uid://dc8xvtd03qq1j" path="res://addons/m_terrain/icons/paint-pressed.png" id="3_vfilu"]
+[ext_resource type="Texture2D" uid="uid://b72iot2bj8ls" path="res://addons/m_terrain/icons/human_button_normal.png" id="4_mec0g"]
+[ext_resource type="Texture2D" uid="uid://c0lxruofvkcr" path="res://addons/m_terrain/icons/human_button_pressed.png" id="5_507tw"]
+[ext_resource type="Texture2D" uid="uid://balqs3xpw1e3p" path="res://addons/m_terrain/icons/save_active.png" id="6_22i4d"]
+[ext_resource type="Texture2D" uid="uid://vj2s60luchw7" path="res://addons/m_terrain/icons/save_deactive.png" id="7_0jks8"]
+
+[node name="mtools" type="HBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_l6paa")
+
+[node name="info_btn" type="TextureButton" parent="."]
+layout_mode = 2
+texture_normal = ExtResource("2_gaimq")
+texture_pressed = ExtResource("3_1h0ws")
+
+[node name="paint_mode" type="TextureButton" parent="."]
+layout_mode = 2
+toggle_mode = true
+texture_normal = ExtResource("2_4m4r2")
+texture_pressed = ExtResource("3_vfilu")
+
+[node name="human_male" type="TextureButton" parent="."]
+layout_mode = 2
+toggle_mode = true
+texture_normal = ExtResource("4_mec0g")
+texture_pressed = ExtResource("5_507tw")
+
+[node name="VSeparator" type="VSeparator" parent="."]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+
+[node name="save" type="TextureButton" parent="."]
+layout_mode = 2
+toggle_mode = true
+texture_normal = ExtResource("6_22i4d")
+texture_disabled = ExtResource("7_0jks8")
+
+[node name="VSeparator2" type="VSeparator" parent="."]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+
+[node name="h_lable" type="Label" parent="."]
+layout_mode = 2
+text = "H: 321m"
+
+[node name="d_lable" type="Label" parent="."]
+layout_mode = 2
+text = "D: 620m"
+
+[node name="g_lable" type="Label" parent="."]
+layout_mode = 2
+text = "G: 271543"
+
+[node name="r_lable" type="Label" parent="."]
+layout_mode = 2
+text = "R:2"
+
+[connection signal="pressed" from="info_btn" to="." method="_on_info_btn_pressed"]
+[connection signal="toggled" from="paint_mode" to="." method="_on_paint_mode_toggled"]
+[connection signal="toggled" from="human_male" to="." method="_on_human_male_toggled"]
+[connection signal="pressed" from="save" to="." method="_on_save_pressed"]

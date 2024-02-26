@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://bctt0naq7rbmu"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/control_prop_element/float.gd" id="1_ch71q"]
+
+[node name="hardness" type="HBoxContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_ch71q")
+
+[node name="lable" type="Label" parent="."]
+layout_mode = 2
+text = "name "
+
+[node name="value" type="LineEdit" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "2.3"
+virtual_keyboard_type = 3
+
+[connection signal="focus_exited" from="value" to="." method="_on_value_focus_exited"]
+[connection signal="text_submitted" from="value" to="." method="_on_value_text_submitted"]

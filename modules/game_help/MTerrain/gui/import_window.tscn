@@ -1,0 +1,495 @@
+[gd_scene load_steps=7 format=3 uid="uid://bi64wdm5e26po"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/import_window.gd" id="1_1yy7h"]
+[ext_resource type="PackedScene" uid="uid://c2pjojed3ox4q" path="res://addons/m_terrain/gui/gui_part/data_compress_option.tscn" id="2_7c003"]
+[ext_resource type="PackedScene" uid="uid://bt4wolcb7b55e" path="res://addons/m_terrain/gui/gui_part/file_compress.tscn" id="3_6huwx"]
+[ext_resource type="Script" path="res://addons/m_terrain/gui/import Godot res.gd" id="4_wj43a"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cs33g"]
+content_margin_left = 5.0
+bg_color = Color(0.337255, 0.372549, 0.266667, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_unhvj"]
+bg_color = Color(0.152941, 0.360784, 0.32549, 0.482353)
+
+[node name="import_window" type="Window"]
+title = "MTerrain Import/export"
+initial_position = 1
+size = Vector2i(560, 560)
+script = ExtResource("1_1yy7h")
+
+[node name="tab" type="TabContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="import" type="VBoxContainer" parent="tab"]
+layout_mode = 2
+
+[node name="err" type="Label" parent="tab/import"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.580392, 0.580392, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_cs33g")
+autowrap_mode = 2
+
+[node name="title" type="Label" parent="tab/import"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65098, 0.423529, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_unhvj")
+text = "Import"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="tab/import"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="tab/import/HBoxContainer"]
+layout_mode = 2
+text = "select"
+
+[node name="filepath_line" type="LineEdit" parent="tab/import/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "File Path"
+
+[node name="image_dimension" type="HBoxContainer" parent="tab/import"]
+visible = false
+layout_mode = 2
+
+[node name="Button" type="Label" parent="tab/import/image_dimension"]
+layout_mode = 2
+text = "Image Dimension "
+
+[node name="width" type="LineEdit" parent="tab/import/image_dimension"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "width"
+
+[node name="height" type="LineEdit" parent="tab/import/image_dimension"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "height"
+
+[node name="flips" type="HBoxContainer" parent="tab/import"]
+visible = false
+layout_mode = 2
+
+[node name="flip_x" type="CheckBox" parent="tab/import/flips"]
+layout_mode = 2
+text = "Flip X"
+
+[node name="flip_y" type="CheckBox" parent="tab/import/flips"]
+layout_mode = 2
+button_pressed = true
+text = "Flip Y"
+
+[node name="Label" type="Label" parent="tab/import/flips"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.878431, 0.596078, 0.172549, 1)
+theme_override_font_sizes/font_size = 14
+text = "Deactive flip if this exported from MTerrain"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="tab/import"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="tab/import/HBoxContainer2"]
+layout_mode = 2
+text = "Region Size in pixel:"
+
+[node name="region_size_line" type="LineEdit" parent="tab/import/HBoxContainer2"]
+layout_mode = 2
+text = "0"
+
+[node name="is_heightmap_checkbox" type="CheckButton" parent="tab/import"]
+layout_mode = 2
+text = "Is Heightmap"
+
+[node name="min_height" type="HBoxContainer" parent="tab/import"]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="tab/import/min_height"]
+layout_mode = 2
+text = "min height:"
+
+[node name="min_height_line" type="LineEdit" parent="tab/import/min_height"]
+layout_mode = 2
+text = "0"
+
+[node name="max_height" type="HBoxContainer" parent="tab/import"]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="tab/import/max_height"]
+layout_mode = 2
+text = "max height:"
+
+[node name="max_height_line" type="LineEdit" parent="tab/import/max_height"]
+layout_mode = 2
+text = "1"
+
+[node name="uniform_name" type="HBoxContainer" parent="tab/import"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="tab/import/uniform_name"]
+layout_mode = 2
+text = "Uniform name:"
+
+[node name="uniform_name_line" type="LineEdit" parent="tab/import/uniform_name"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="uniform_name2" type="HBoxContainer" parent="tab/import"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="tab/import/uniform_name2"]
+layout_mode = 2
+text = "Format Enum number"
+
+[node name="image_format_option" type="OptionButton" parent="tab/import/uniform_name2"]
+layout_mode = 2
+item_count = 12
+popup/item_0/text = "FORMAT_L8"
+popup/item_0/id = 0
+popup/item_1/text = "FORMAT_LA8"
+popup/item_1/id = 1
+popup/item_2/text = "FORMAT_R8"
+popup/item_2/id = 2
+popup/item_3/text = "FORMAT_RG8"
+popup/item_3/id = 3
+popup/item_4/text = "FORMAT_RGB8"
+popup/item_4/id = 4
+popup/item_5/text = "FORMAT_RGBA8"
+popup/item_5/id = 5
+popup/item_6/text = "FORMAT_RGBA4444"
+popup/item_6/id = 6
+popup/item_7/text = "FORMAT_RGB565"
+popup/item_7/id = 7
+popup/item_8/text = "FORMAT_RF"
+popup/item_8/id = 8
+popup/item_9/text = "FORMAT_RGF"
+popup/item_9/id = 9
+popup/item_10/text = "FORMAT_RGBF"
+popup/item_10/id = 10
+popup/item_11/text = "FORMAT_RGBAF"
+popup/item_11/id = 11
+
+[node name="compress_qtq" type="CheckBox" parent="tab/import"]
+visible = false
+layout_mode = 2
+button_pressed = true
+text = "compress_qtq"
+
+[node name="uniform_name3" type="HBoxContainer" parent="tab/import"]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="tab/import/uniform_name3"]
+layout_mode = 2
+text = "Accuracy"
+
+[node name="accuracy" type="LineEdit" parent="tab/import/uniform_name3"]
+layout_mode = 2
+text = "0.02"
+
+[node name="data_compress_option" parent="tab/import" instance=ExtResource("2_7c003")]
+layout_mode = 2
+
+[node name="file_compress" parent="tab/import" instance=ExtResource("3_6huwx")]
+layout_mode = 2
+
+[node name="save" type="HBoxContainer" parent="tab/import"]
+layout_mode = 2
+
+[node name="save_folder_button" type="Button" parent="tab/import/save"]
+layout_mode = 2
+text = "select"
+
+[node name="save_folder_line" type="LineEdit" parent="tab/import/save"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Save folder"
+
+[node name="import" type="Button" parent="tab/import"]
+layout_mode = 2
+text = "Import"
+
+[node name="export" type="VBoxContainer" parent="tab"]
+visible = false
+layout_mode = 2
+
+[node name="title2" type="Label" parent="tab/export"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65098, 0.423529, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_unhvj")
+text = "Export"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="export_err" type="Label" parent="tab/export"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.580392, 0.580392, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_cs33g")
+text = "No Valid Terrain, First select terrain and then reopen this"
+autowrap_mode = 2
+
+[node name="edata_name_option" type="OptionButton" parent="tab/export"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "heightmap"
+popup/item_0/id = 0
+popup/item_1/text = "splatmap"
+popup/item_1/id = 1
+popup/item_2/text = "all"
+popup/item_2/id = 2
+
+[node name="eformat_option" type="OptionButton" parent="tab/export"]
+layout_mode = 2
+
+[node name="einfo" type="Label" parent="tab/export"]
+visible = false
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="export_hc" type="HBoxContainer" parent="tab/export"]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="tab/export/export_hc"]
+layout_mode = 2
+text = "min"
+
+[node name="min" type="LineEdit" parent="tab/export/export_hc"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "0"
+
+[node name="Label2" type="Label" parent="tab/export/export_hc"]
+layout_mode = 2
+text = "max"
+
+[node name="max" type="LineEdit" parent="tab/export/export_hc"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "0"
+
+[node name="auto_min_max_detect" type="Button" parent="tab/export/export_hc"]
+layout_mode = 2
+text = "Auto"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="tab/export"]
+layout_mode = 2
+
+[node name="export_path_btn" type="Button" parent="tab/export/HBoxContainer"]
+layout_mode = 2
+text = "Path"
+
+[node name="LineEdit" type="LineEdit" parent="tab/export/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Export Folder"
+
+[node name="HSeparator" type="HSeparator" parent="tab/export"]
+layout_mode = 2
+
+[node name="export_btn" type="Button" parent="tab/export"]
+layout_mode = 2
+text = "Export"
+
+[node name="import Godot res" type="VBoxContainer" parent="tab"]
+visible = false
+layout_mode = 2
+script = ExtResource("4_wj43a")
+
+[node name="title2" type="Label" parent="tab/import Godot res"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.65098, 0.423529, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_unhvj")
+text = "Import Godot res"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="import_err" type="Label" parent="tab/import Godot res"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.580392, 0.580392, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_cs33g")
+autowrap_mode = 2
+
+[node name="einfo" type="Label" parent="tab/import Godot res"]
+visible = false
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="tab/import Godot res"]
+layout_mode = 2
+
+[node name="source_dir" type="Button" parent="tab/import Godot res/HBoxContainer"]
+layout_mode = 2
+text = "Source Dir"
+
+[node name="source_line" type="LineEdit" parent="tab/import Godot res/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Godot res Directory"
+
+[node name="hcontainer" type="VBoxContainer" parent="tab/import Godot res"]
+visible = false
+layout_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="tab/import Godot res/hcontainer"]
+layout_mode = 2
+
+[node name="HLabel" type="Label" parent="tab/import Godot res/hcontainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 0.219608, 1)
+theme_override_font_sizes/font_size = 22
+text = "Heightmap"
+
+[node name="HSeparator5" type="HSeparator" parent="tab/import Godot res/hcontainer"]
+layout_mode = 2
+
+[node name="compress_qtq_checkbox" type="CheckBox" parent="tab/import Godot res/hcontainer"]
+layout_mode = 2
+button_pressed = true
+text = "Compress_qtq"
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="tab/import Godot res/hcontainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="tab/import Godot res/hcontainer/HBoxContainer3"]
+layout_mode = 2
+text = " accuracy"
+
+[node name="accuracy_line" type="LineEdit" parent="tab/import Godot res/hcontainer/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "0.02"
+
+[node name="file_compress" parent="tab/import Godot res/hcontainer" instance=ExtResource("3_6huwx")]
+layout_mode = 2
+
+[node name="dcontainer" type="VBoxContainer" parent="tab/import Godot res"]
+visible = false
+layout_mode = 2
+
+[node name="HSeparator6" type="HSeparator" parent="tab/import Godot res/dcontainer"]
+layout_mode = 2
+
+[node name="Dlable3" type="Label" parent="tab/import Godot res/dcontainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 0.219608, 1)
+theme_override_font_sizes/font_size = 22
+text = "Data"
+
+[node name="dnames_option" type="OptionButton" parent="tab/import Godot res/dcontainer"]
+layout_mode = 2
+
+[node name="HSeparator3" type="HSeparator" parent="tab/import Godot res/dcontainer"]
+layout_mode = 2
+
+[node name="data_compress_option" parent="tab/import Godot res/dcontainer" instance=ExtResource("2_7c003")]
+layout_mode = 2
+
+[node name="dfile_compress" parent="tab/import Godot res/dcontainer" instance=ExtResource("3_6huwx")]
+layout_mode = 2
+
+[node name="HSeparator4" type="HSeparator" parent="tab/import Godot res/dcontainer"]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="tab/import Godot res"]
+layout_mode = 2
+
+[node name="save_dir" type="Button" parent="tab/import Godot res/HBoxContainer2"]
+layout_mode = 2
+text = "save"
+
+[node name="LineEdit" type="LineEdit" parent="tab/import Godot res/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Save Directory"
+
+[node name="HSeparator" type="HSeparator" parent="tab/import Godot res"]
+layout_mode = 2
+
+[node name="import_res_btn" type="Button" parent="tab/import Godot res"]
+layout_mode = 2
+text = "Import"
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open File(s)"
+initial_position = 1
+size = Vector2i(508, 450)
+ok_button_text = "Open"
+file_mode = 1
+access = 2
+filters = PackedStringArray("*.r16", "*.exr", "*.png", "*.bmp", "*.webp", "*.jpg", "*.jpeg")
+
+[node name="FileDialog_save" type="FileDialog" parent="."]
+title = "Open a Directory"
+initial_position = 1
+size = Vector2i(508, 450)
+ok_button_text = "Select Current Folder"
+file_mode = 2
+
+[node name="FileDialog_export" type="FileDialog" parent="."]
+title = "Open a Directory"
+initial_position = 1
+size = Vector2i(508, 450)
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+
+[node name="FileDialog_res_source" type="FileDialog" parent="."]
+title = "Open a Directory"
+initial_position = 1
+size = Vector2i(508, 450)
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+
+[node name="FileDialog_res_save" type="FileDialog" parent="."]
+title = "Open a Directory"
+initial_position = 1
+size = Vector2i(508, 450)
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+
+[connection signal="close_requested" from="." to="." method="_on_close_requested"]
+[connection signal="button_down" from="tab/import/HBoxContainer/Button" to="." method="_on_button_button_down"]
+[connection signal="text_changed" from="tab/import/HBoxContainer/filepath_line" to="." method="_on_filepath_line_text_changed"]
+[connection signal="toggled" from="tab/import/is_heightmap_checkbox" to="." method="_on_check_button_toggled"]
+[connection signal="pressed" from="tab/import/save/save_folder_button" to="." method="_on_save_folder_button_pressed"]
+[connection signal="text_changed" from="tab/import/save/save_folder_line" to="." method="_on_filepath_line_text_changed"]
+[connection signal="pressed" from="tab/import/import" to="." method="_on_import_pressed"]
+[connection signal="item_selected" from="tab/export/edata_name_option" to="." method="_on_edata_name_option_item_selected"]
+[connection signal="button_up" from="tab/export/export_hc/auto_min_max_detect" to="." method="_on_auto_min_max_detect_button_up"]
+[connection signal="button_up" from="tab/export/HBoxContainer/export_path_btn" to="." method="_on_export_path_btn_button_up"]
+[connection signal="button_up" from="tab/export/export_btn" to="." method="_on_export_btn_button_up"]
+[connection signal="button_up" from="tab/import Godot res/HBoxContainer/source_dir" to="tab/import Godot res" method="_on_source_dir_button_up"]
+[connection signal="text_changed" from="tab/import Godot res/HBoxContainer/source_line" to="tab/import Godot res" method="_on_source_line_text_changed"]
+[connection signal="item_selected" from="tab/import Godot res/dcontainer/dnames_option" to="tab/import Godot res" method="_on_dnames_option_item_selected"]
+[connection signal="item_selected" from="tab/import Godot res/dcontainer/data_compress_option" to="tab/import Godot res" method="_on_data_compress_option_item_selected"]
+[connection signal="item_selected" from="tab/import Godot res/dcontainer/dfile_compress" to="tab/import Godot res" method="_on_dfile_compress_item_selected"]
+[connection signal="button_up" from="tab/import Godot res/HBoxContainer2/save_dir" to="tab/import Godot res" method="_on_save_dir_button_up"]
+[connection signal="button_up" from="tab/import Godot res/import_res_btn" to="tab/import Godot res" method="_on_import_res_btn_button_up"]
+[connection signal="files_selected" from="FileDialog" to="." method="_on_file_dialog_files_selected"]
+[connection signal="dir_selected" from="FileDialog_save" to="." method="_on_file_dialog_save_dir_selected"]
+[connection signal="dir_selected" from="FileDialog_export" to="." method="_on_file_dialog_export_dir_selected"]
+[connection signal="dir_selected" from="FileDialog_res_source" to="tab/import Godot res" method="_on_file_dialog_res_source_dir_selected"]
+[connection signal="dir_selected" from="FileDialog_res_save" to="tab/import Godot res" method="_on_file_dialog_res_save_dir_selected"]

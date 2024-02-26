@@ -38,6 +38,34 @@
 
 
 #include "modules/game_help/logic/animation_help.h"
+
+
+
+
+#include "modules/game_help/MTerrain/gdextension/src/mterrain.h"
+#include "modules/game_help/MTerrain/gdextension/src/mgrid.h"
+#include "modules/game_help/MTerrain/gdextension/src/mresource.h"
+#include "modules/game_help/MTerrain/gdextension/src/mchunk_generator.h"
+#include "modules/game_help/MTerrain/gdextension/src/mchunks.h"
+#include "modules/game_help/MTerrain/gdextension/src/mtool.h"
+#include "modules/game_help/MTerrain/gdextension/src/mregion.h"
+#include "modules/game_help/MTerrain/gdextension/src/mbrush_manager.h"
+#include "modules/game_help/MTerrain/gdextension/src/mcollision.h"
+
+#include "modules/game_help/MTerrain/gdextension/src/grass/mgrass.h"
+#include "modules/game_help/MTerrain/gdextension/src/grass/mgrass_data.h"
+#include "modules/game_help/MTerrain/gdextension/src/grass/mgrass_lod_setting.h"
+#include "modules/game_help/MTerrain/gdextension/src/navmesh/mnavigation_region_3d.h"
+#include "modules/game_help/MTerrain/gdextension/src/navmesh/mnavigation_mesh_data.h"
+#include "modules/game_help/MTerrain/gdextension/src/navmesh/mobstacle.h"
+#include "modules/game_help/MTerrain/gdextension/src/mbrush_layers.h"
+#include "modules/game_help/MTerrain/gdextension/src/mterrain_material.h"
+
+
+
+
+
+
 static AnimationHelp* animation_help = nullptr;
 
 void initialize_game_help_module(ModuleInitializationLevel p_level) {
@@ -51,6 +79,26 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	animation_help = memnew(AnimationHelp);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationHelp", animation_help));
+
+
+
+	ClassDB::register_class<MTerrain>();
+	ClassDB::register_class<MGrid>();
+	ClassDB::register_class<MResource>();
+	ClassDB::register_class<MChunkGenerator>();
+	ClassDB::register_class<MChunks>();
+	ClassDB::register_class<MRegion>();
+	ClassDB::register_class<MTool>();
+	ClassDB::register_class<MBrushManager>();
+	ClassDB::register_class<MCollision>();
+	ClassDB::register_class<MGrass>();
+	ClassDB::register_class<MGrassData>();
+	ClassDB::register_class<MGrassLodSetting>();
+	ClassDB::register_class<MNavigationRegion3D>();
+	ClassDB::register_class<MNavigationMeshData>();
+	ClassDB::register_class<MObstacle>();
+	ClassDB::register_class<MBrushLayers>();
+	ClassDB::register_class<MTerrainMaterial>();
 
 }
 

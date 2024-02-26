@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6wfdaqojnwju"]
+
+[ext_resource type="Script" path="res://addons/m_terrain/gui/brush_masks.gd" id="1_mpsiw"]
+
+[node name="brush_masks" type="ItemList"]
+custom_minimum_size = Vector2(0, 160)
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 160.0
+grow_horizontal = 2
+max_columns = 8
+fixed_icon_size = Vector2i(64, 64)
+script = ExtResource("1_mpsiw")
+
+[connection signal="item_selected" from="." to="." method="_on_item_selected"]

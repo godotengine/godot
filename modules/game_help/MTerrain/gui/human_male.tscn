@@ -1,0 +1,59 @@
+[gd_scene load_steps=7 format=3 uid="uid://yt54ov6e46mm"]
+
+[ext_resource type="ArrayMesh" uid="uid://c5eueesxs7em3" path="res://addons/m_terrain/gui/human_male.obj" id="1_mmf7f"]
+[ext_resource type="Script" path="res://addons/m_terrain/gui/human_male.gd" id="2_k8mdx"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uyifb"]
+shading_mode = 2
+albedo_color = Color(0.223529, 0.317647, 1, 1)
+
+[sub_resource type="Animation" id="Animation_ma7nb"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_6agt3"]
+resource_name = "rotate"
+length = 3.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 6.28319, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_o8lca"]
+_data = {
+"RESET": SubResource("Animation_ma7nb"),
+"rotate": SubResource("Animation_6agt3")
+}
+
+[node name="human_male" type="MeshInstance3D"]
+visible = false
+material_override = SubResource("StandardMaterial3D_uyifb")
+mesh = ExtResource("1_mmf7f")
+script = ExtResource("2_k8mdx")
+
+[node name="anim" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_o8lca")
+}
+
+[connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]

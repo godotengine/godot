@@ -3,7 +3,7 @@
 #ifndef TERRAIN3D_TEXTURE_CLASS_H
 #define TERRAIN3D_TEXTURE_CLASS_H
 
-//#include <godot_cpp/classes/texture2d.hpp>
+//#include "scene/resources/texture.h"
 #include "scene/resources/texture.h"
 
 using namespace godot;
