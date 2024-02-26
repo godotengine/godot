@@ -343,7 +343,7 @@ Transform3D Node3D::get_transform() const {
 }
 
 Transform3D Node3D::get_global_transform() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform3D());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Transform3D(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	/* Due to how threads work at scene level, while this global transform won't be able to be changed from outside a thread,
 	 * it is possible that multiple threads can access it while it's dirty from previous work. Due to this, we must ensure that
@@ -976,7 +976,7 @@ bool Node3D::is_local_transform_notification_enabled() const {
 
 void Node3D::force_update_transform() {
 	ERR_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	if (!xform_change.in_list()) {
 		return; //nothing to update
 	}

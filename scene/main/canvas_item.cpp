@@ -159,7 +159,7 @@ Transform2D CanvasItem::get_global_transform_with_canvas() const {
 
 Transform2D CanvasItem::get_screen_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Transform2D(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	return get_viewport()->get_popup_base_transform() * get_global_transform_with_canvas();
 }
 
@@ -275,7 +275,7 @@ void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_MAIN_THREAD_GUARD;
-			ERR_FAIL_COND(!is_inside_tree());
+			ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 			Node *parent = get_parent();
 			if (parent) {
@@ -920,13 +920,13 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
 Rect2 CanvasItem::get_viewport_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2());
-	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Rect2(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	return get_viewport()->get_visible_rect();
 }
 
 RID CanvasItem::get_canvas() const {
 	ERR_READ_THREAD_GUARD_V(RID());
-	ERR_FAIL_COND_V(!is_inside_tree(), RID());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), RID(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	if (canvas_layer) {
 		return canvas_layer->get_canvas();
@@ -956,7 +956,7 @@ CanvasItem *CanvasItem::get_top_level() const {
 
 Ref<World2D> CanvasItem::get_world_2d() const {
 	ERR_READ_THREAD_GUARD_V(Ref<World2D>());
-	ERR_FAIL_COND_V(!is_inside_tree(), Ref<World2D>());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Ref<World2D>(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	CanvasItem *tl = get_top_level();
 
@@ -969,7 +969,7 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 
 RID CanvasItem::get_viewport_rid() const {
 	ERR_READ_THREAD_GUARD_V(RID());
-	ERR_FAIL_COND_V(!is_inside_tree(), RID());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), RID(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	return get_viewport()->get_viewport_rid();
 }
 
@@ -1026,7 +1026,7 @@ Ref<Material> CanvasItem::get_material() const {
 
 Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) const {
 	ERR_READ_THREAD_GUARD_V(Vector2());
-	ERR_FAIL_COND_V(!is_inside_tree(), screen_point);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), screen_point, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	Transform2D local_matrix = (get_canvas_transform() * get_global_transform()).affine_inverse();
 
@@ -1036,7 +1036,7 @@ Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) cons
 Ref<InputEvent> CanvasItem::make_input_local(const Ref<InputEvent> &p_event) const {
 	ERR_READ_THREAD_GUARD_V(Ref<InputEvent>());
 	ERR_FAIL_COND_V(p_event.is_null(), p_event);
-	ERR_FAIL_COND_V(!is_inside_tree(), p_event);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), p_event, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	return p_event->xformed_by((get_canvas_transform() * get_global_transform()).affine_inverse());
 }
@@ -1056,7 +1056,7 @@ Vector2 CanvasItem::get_local_mouse_position() const {
 
 void CanvasItem::force_update_transform() {
 	ERR_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	if (!xform_change.in_list()) {
 		return;
 	}
@@ -1266,7 +1266,7 @@ void CanvasItem::_bind_methods() {
 
 Transform2D CanvasItem::get_canvas_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Transform2D(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	if (canvas_layer) {
 		return canvas_layer->get_final_transform();
@@ -1279,7 +1279,7 @@ Transform2D CanvasItem::get_canvas_transform() const {
 
 Transform2D CanvasItem::get_viewport_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform2D());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Transform2D(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	if (canvas_layer) {
 		return get_viewport()->get_final_transform() * canvas_layer->get_final_transform();

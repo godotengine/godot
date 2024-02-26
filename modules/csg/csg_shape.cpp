@@ -523,7 +523,7 @@ AABB CSGShape3D::get_aabb() const {
 }
 
 Vector<Vector3> CSGShape3D::get_brush_faces() {
-	ERR_FAIL_COND_V(!is_inside_tree(), Vector<Vector3>());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector<Vector3>(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	CSGBrush *b = _get_brush();
 	if (!b) {
 		return Vector<Vector3>();

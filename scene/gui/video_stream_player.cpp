@@ -294,7 +294,7 @@ Ref<VideoStream> VideoStreamPlayer::get_stream() const {
 }
 
 void VideoStreamPlayer::play() {
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	if (playback.is_null()) {
 		return;
 	}

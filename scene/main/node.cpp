@@ -673,7 +673,7 @@ int Node::get_multiplayer_authority() const {
 }
 
 bool Node::is_multiplayer_authority() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), false);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	Ref<MultiplayerAPI> api = get_multiplayer();
 	return api.is_valid() && (api->get_unique_id() == data.multiplayer_authority);
@@ -754,7 +754,7 @@ Error Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallE
 }
 
 Error Node::rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
-	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), ERR_UNCONFIGURED, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	Ref<MultiplayerAPI> api = get_multiplayer();
 	if (api.is_null()) {
@@ -788,7 +788,7 @@ bool Node::can_process_notification(int p_what) const {
 }
 
 bool Node::can_process() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), false);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	return _can_process(get_tree()->is_paused());
 }
 
@@ -838,7 +838,7 @@ bool Node::_is_enabled() const {
 }
 
 bool Node::is_enabled() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), false);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	return _is_enabled();
 }
 
@@ -2330,7 +2330,7 @@ void Node::_propagate_reverse_notification(int p_notification) {
 }
 
 void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) {
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	data.blocked++;
 
@@ -3353,17 +3353,17 @@ Variant Node::_call_thread_safe_bind(const Variant **p_args, int p_argcount, Cal
 }
 
 void Node::call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	SceneTree::ProcessGroup *pg = (SceneTree::ProcessGroup *)data.process_group;
 	pg->call_queue.push_callp(this, p_method, p_args, p_argcount, p_show_error);
 }
 void Node::set_deferred_thread_group(const StringName &p_property, const Variant &p_value) {
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	SceneTree::ProcessGroup *pg = (SceneTree::ProcessGroup *)data.process_group;
 	pg->call_queue.push_set(this, p_property, p_value);
 }
 void Node::notify_deferred_thread_group(int p_notification) {
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	SceneTree::ProcessGroup *pg = (SceneTree::ProcessGroup *)data.process_group;
 	pg->call_queue.push_notification(this, p_notification);
 }

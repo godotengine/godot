@@ -235,7 +235,7 @@ void Camera2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			ERR_FAIL_COND(!is_inside_tree());
+			ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
 				viewport = custom_viewport;
 			} else {

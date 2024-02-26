@@ -170,7 +170,7 @@ bool PhysicsBody3D::move_and_collide(const PhysicsServer3D::MotionParameters &p_
 }
 
 bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion, const Ref<KinematicCollision3D> &r_collision, real_t p_margin, bool p_recovery_as_collision, int p_max_collisions) {
-	ERR_FAIL_COND_V(!is_inside_tree(), false);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	PhysicsServer3D::MotionResult *r = nullptr;
 	PhysicsServer3D::MotionResult temp_result;

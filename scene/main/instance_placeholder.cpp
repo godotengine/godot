@@ -71,7 +71,7 @@ String InstancePlaceholder::get_instance_path() const {
 }
 
 Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene> &p_custom_scene) {
-	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), nullptr, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	Node *base = get_parent();
 	if (!base) {

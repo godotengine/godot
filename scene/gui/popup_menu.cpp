@@ -2551,7 +2551,7 @@ void PopupMenu::clear_autohide_areas() {
 }
 
 void PopupMenu::take_mouse_focus() {
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	if (get_parent()) {
 		get_parent()->get_viewport()->pass_mouse_focus_to(this, control);

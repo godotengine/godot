@@ -114,7 +114,7 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 }
 
 Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, HTTPClient::Method p_method, const Vector<uint8_t> &p_request_data_raw) {
-	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), ERR_UNCONFIGURED, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 
 	if (timeout > 0) {
