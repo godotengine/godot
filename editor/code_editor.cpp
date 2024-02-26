@@ -517,18 +517,10 @@ void FindReplaceBar::_hide_bar(bool p_force_focus) {
 	hide();
 }
 
-void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
+void FindReplaceBar::_show_bar(bool p_replace, bool p_show_only) {
 	show();
 	if (p_show_only) {
 		return;
-	}
-
-	if (p_focus_replace) {
-		search_text->deselect();
-		callable_mp((Control *)replace_text, &Control::grab_focus).call_deferred();
-	} else {
-		replace_text->deselect();
-		callable_mp((Control *)search_text, &Control::grab_focus).call_deferred();
 	}
 
 	if (text_editor->has_selection(0) && !is_selection_only()) {
@@ -538,17 +530,22 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 	}
 
 	if (!get_search_text().is_empty()) {
-		if (p_focus_replace) {
-			replace_text->select_all();
-			replace_text->set_caret_column(replace_text->get_text().length());
-		} else {
-			search_text->select_all();
-			search_text->set_caret_column(search_text->get_text().length());
-		}
-
 		preserve_cursor = true;
 		_search_text_changed(get_search_text());
 		preserve_cursor = false;
+	}
+
+	if ((p_replace && !get_search_text().is_empty() && text_editor->has_selection(0)) ||
+			(!get_search_text().is_empty() && search_text->has_focus())) {
+		search_text->deselect();
+		replace_text->select_all();
+		replace_text->set_caret_column(replace_text->get_text().length());
+		callable_mp((Control *)replace_text, &Control::grab_focus).call_deferred();
+	} else {
+		replace_text->deselect();
+		search_text->select_all();
+		search_text->set_caret_column(search_text->get_text().length());
+		callable_mp((Control *)search_text, &Control::grab_focus).call_deferred();
 	}
 }
 
@@ -558,7 +555,7 @@ void FindReplaceBar::popup_search(bool p_show_only) {
 	hbc_option_replace->hide();
 	selection_only->set_pressed(false);
 
-	_show_search(false, p_show_only);
+	_show_bar(false, p_show_only);
 }
 
 void FindReplaceBar::popup_replace() {
@@ -570,7 +567,7 @@ void FindReplaceBar::popup_replace() {
 
 	selection_only->set_pressed((text_editor->has_selection(0) && text_editor->get_selection_from_line(0) < text_editor->get_selection_to_line(0)));
 
-	_show_search(is_visible() || text_editor->has_selection(0));
+	_show_bar(true);
 }
 
 void FindReplaceBar::_search_options_changed(bool p_pressed) {
