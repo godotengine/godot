@@ -2616,8 +2616,17 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 				}
 			}
 
-			if (p_section) {
-				ep->connect("property_can_revert_changed", callable_mp(p_section, &EditorInspectorSection::property_can_revert_changed));
+			Node *section_search = p_section;
+			while (section_search) {
+				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
+				if (section) {
+					ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+				}
+				section_search = section_search->get_parent();
+				if (Object::cast_to<EditorInspector>(section_search)) {
+					// Skip sub-resource inspectors.
+					break;
+				}
 			}
 
 			ep->set_read_only(read_only);
@@ -3311,9 +3320,17 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(current_vbox->get_parent());
-				if (section) {
-					ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+				Node *section_search = current_vbox->get_parent();
+				while (section_search) {
+					EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
+					if (section) {
+						ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+					}
+					section_search = section_search->get_parent();
+					if (Object::cast_to<EditorInspector>(section_search)) {
+						// Skip sub-resource inspectors.
+						break;
+					}
 				}
 
 				ep->set_draw_warning(draw_warning);
