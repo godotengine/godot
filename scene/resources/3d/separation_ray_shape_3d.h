@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  cylinder_shape_3d.h                                                   */
+/*  separation_ray_shape_3d.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,30 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CYLINDER_SHAPE_3D_H
-#define CYLINDER_SHAPE_3D_H
+#ifndef SEPARATION_RAY_SHAPE_3D_H
+#define SEPARATION_RAY_SHAPE_3D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-class CylinderShape3D : public Shape3D {
-	GDCLASS(CylinderShape3D, Shape3D);
-	float radius = 0.5;
-	float height = 2.0;
+class SeparationRayShape3D : public Shape3D {
+	GDCLASS(SeparationRayShape3D, Shape3D);
+	float length = 1.0;
+	bool slide_on_slope = false;
 
 protected:
 	static void _bind_methods();
 	virtual void _update_shape() override;
 
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
-	void set_height(float p_height);
-	float get_height() const;
+	void set_length(float p_length);
+	float get_length() const;
+
+	void set_slide_on_slope(bool p_active);
+	bool get_slide_on_slope() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	CylinderShape3D();
+	SeparationRayShape3D();
 };
 
-#endif // CYLINDER_SHAPE_3D_H
+#endif // SEPARATION_RAY_SHAPE_3D_H

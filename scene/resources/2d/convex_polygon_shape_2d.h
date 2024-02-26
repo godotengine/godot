@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  segment_shape_2d.h                                                    */
+/*  convex_polygon_shape_2d.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,17 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SEGMENT_SHAPE_2D_H
-#define SEGMENT_SHAPE_2D_H
+#ifndef CONVEX_POLYGON_SHAPE_2D_H
+#define CONVEX_POLYGON_SHAPE_2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
-class SegmentShape2D : public Shape2D {
-	GDCLASS(SegmentShape2D, Shape2D);
+class ConvexPolygonShape2D : public Shape2D {
+	GDCLASS(ConvexPolygonShape2D, Shape2D);
 
-	Vector2 a;
-	Vector2 b;
-
+	Vector<Vector2> points;
 	void _update_shape();
 
 protected:
@@ -47,17 +45,15 @@ protected:
 public:
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 
-	void set_a(const Vector2 &p_a);
-	void set_b(const Vector2 &p_b);
-
-	Vector2 get_a() const;
-	Vector2 get_b() const;
+	void set_point_cloud(const Vector<Vector2> &p_points);
+	void set_points(const Vector<Vector2> &p_points);
+	Vector<Vector2> get_points() const;
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
 	virtual Rect2 get_rect() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	SegmentShape2D();
+	ConvexPolygonShape2D();
 };
 
-#endif // SEGMENT_SHAPE_2D_H
+#endif // CONVEX_POLYGON_SHAPE_2D_H

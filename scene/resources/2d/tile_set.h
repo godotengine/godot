@@ -37,13 +37,11 @@
 #include "core/templates/rb_set.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/main/canvas_item.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
-#include "scene/resources/shape_2d.h"
 
 #ifndef DISABLE_DEPRECATED
 #include "scene/resources/shader.h"

@@ -31,7 +31,7 @@
 #ifndef WORLD_BOUNDARY_SHAPE_3D_H
 #define WORLD_BOUNDARY_SHAPE_3D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class WorldBoundaryShape3D : public Shape3D {
 	GDCLASS(WorldBoundaryShape3D, Shape3D);

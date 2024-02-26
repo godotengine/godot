@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  concave_polygon_shape_3d.h                                            */
+/*  rectangle_shape_2d.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,53 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONCAVE_POLYGON_SHAPE_3D_H
-#define CONCAVE_POLYGON_SHAPE_3D_H
+#ifndef RECTANGLE_SHAPE_2D_H
+#define RECTANGLE_SHAPE_2D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/2d/shape_2d.h"
 
-class ConcavePolygonShape3D : public Shape3D {
-	GDCLASS(ConcavePolygonShape3D, Shape3D);
+class RectangleShape2D : public Shape2D {
+	GDCLASS(RectangleShape2D, Shape2D);
 
-	Vector<Vector3> faces;
-	bool backface_collision = false;
-
-	struct DrawEdge {
-		Vector3 a;
-		Vector3 b;
-		static uint32_t hash(const DrawEdge &p_edge) {
-			uint32_t h = hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.a));
-			return hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.b), h);
-		}
-		bool operator==(const DrawEdge &p_edge) const {
-			return (a == p_edge.a && b == p_edge.b);
-		}
-
-		DrawEdge(const Vector3 &p_a = Vector3(), const Vector3 &p_b = Vector3()) {
-			a = p_a;
-			b = p_b;
-			if (a < b) {
-				SWAP(a, b);
-			}
-		}
-	};
+	Size2 size;
+	void _update_shape();
 
 protected:
 	static void _bind_methods();
-
-	virtual void _update_shape() override;
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
-	void set_faces(const Vector<Vector3> &p_faces);
-	Vector<Vector3> get_faces() const;
+	void set_size(const Size2 &p_size);
+	Size2 get_size() const;
 
-	void set_backface_collision_enabled(bool p_enabled);
-	bool is_backface_collision_enabled() const;
-
-	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual Rect2 get_rect() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	ConcavePolygonShape3D();
+	RectangleShape2D();
 };
 
-#endif // CONCAVE_POLYGON_SHAPE_3D_H
+#endif // RECTANGLE_SHAPE_2D_H

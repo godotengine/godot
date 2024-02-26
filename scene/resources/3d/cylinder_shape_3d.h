@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  convex_polygon_shape_3d.h                                             */
+/*  cylinder_shape_3d.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,28 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONVEX_POLYGON_SHAPE_3D_H
-#define CONVEX_POLYGON_SHAPE_3D_H
+#ifndef CYLINDER_SHAPE_3D_H
+#define CYLINDER_SHAPE_3D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-class ConvexPolygonShape3D : public Shape3D {
-	GDCLASS(ConvexPolygonShape3D, Shape3D);
-	Vector<Vector3> points;
+class CylinderShape3D : public Shape3D {
+	GDCLASS(CylinderShape3D, Shape3D);
+	float radius = 0.5;
+	float height = 2.0;
 
 protected:
 	static void _bind_methods();
-
 	virtual void _update_shape() override;
 
 public:
-	void set_points(const Vector<Vector3> &p_points);
-	Vector<Vector3> get_points() const;
+	void set_radius(float p_radius);
+	float get_radius() const;
+	void set_height(float p_height);
+	float get_height() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	ConvexPolygonShape3D();
+	CylinderShape3D();
 };
 
-#endif // CONVEX_POLYGON_SHAPE_3D_H
+#endif // CYLINDER_SHAPE_3D_H

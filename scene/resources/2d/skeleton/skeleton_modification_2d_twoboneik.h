@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  skeleton_modification_2d_physicalbones.h                              */
+/*  skeleton_modification_2d_twoboneik.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_MODIFICATION_2D_PHYSICALBONES_H
-#define SKELETON_MODIFICATION_2D_PHYSICALBONES_H
+#ifndef SKELETON_MODIFICATION_2D_TWOBONEIK_H
+#define SKELETON_MODIFICATION_2D_TWOBONEIK_H
 
 #include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
 ///////////////////////////////////////
 // SkeletonModification2DJIGGLE
 ///////////////////////////////////////
 
-class SkeletonModification2DPhysicalBones : public SkeletonModification2D {
-	GDCLASS(SkeletonModification2DPhysicalBones, SkeletonModification2D);
+class SkeletonModification2DTwoBoneIK : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DTwoBoneIK, SkeletonModification2D);
 
 private:
-	struct PhysicalBone_Data2D {
-		NodePath physical_bone_node;
-		ObjectID physical_bone_node_cache;
-	};
-	Vector<PhysicalBone_Data2D> physical_bone_chain;
+	NodePath target_node;
+	ObjectID target_node_cache;
+	float target_minimum_distance = 0;
+	float target_maximum_distance = 0;
+	bool flip_bend_direction = false;
 
-	void _physical_bone_update_cache(int p_joint_idx);
+	NodePath joint_one_bone2d_node;
+	ObjectID joint_one_bone2d_node_cache;
+	int joint_one_bone_idx = -1;
 
-	bool _simulation_state_dirty = false;
-	TypedArray<StringName> _simulation_state_dirty_names;
-	bool _simulation_state_dirty_process = false;
-	void _update_simulation_state();
+	NodePath joint_two_bone2d_node;
+	ObjectID joint_two_bone2d_node_cache;
+	int joint_two_bone_idx = -1;
+
+#ifdef TOOLS_ENABLED
+	bool editor_draw_min_max = false;
+#endif // TOOLS_ENABLED
+
+	void update_target_cache();
+	void update_joint_one_bone2d_cache();
+	void update_joint_two_bone2d_cache();
 
 protected:
 	static void _bind_methods();
@@ -64,19 +73,35 @@ protected:
 public:
 	void _execute(float p_delta) override;
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _draw_editor_gizmo() override;
 
-	int get_physical_bone_chain_length();
-	void set_physical_bone_chain_length(int p_new_length);
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
 
-	void set_physical_bone_node(int p_joint_idx, const NodePath &p_path);
-	NodePath get_physical_bone_node(int p_joint_idx) const;
+	void set_target_minimum_distance(float p_minimum_distance);
+	float get_target_minimum_distance() const;
+	void set_target_maximum_distance(float p_maximum_distance);
+	float get_target_maximum_distance() const;
+	void set_flip_bend_direction(bool p_flip_direction);
+	bool get_flip_bend_direction() const;
 
-	void fetch_physical_bones();
-	void start_simulation(const TypedArray<StringName> &p_bones);
-	void stop_simulation(const TypedArray<StringName> &p_bones);
+	void set_joint_one_bone2d_node(const NodePath &p_node);
+	NodePath get_joint_one_bone2d_node() const;
+	void set_joint_one_bone_idx(int p_bone_idx);
+	int get_joint_one_bone_idx() const;
 
-	SkeletonModification2DPhysicalBones();
-	~SkeletonModification2DPhysicalBones();
+	void set_joint_two_bone2d_node(const NodePath &p_node);
+	NodePath get_joint_two_bone2d_node() const;
+	void set_joint_two_bone_idx(int p_bone_idx);
+	int get_joint_two_bone_idx() const;
+
+#ifdef TOOLS_ENABLED
+	void set_editor_draw_min_max(bool p_draw);
+	bool get_editor_draw_min_max() const;
+#endif // TOOLS_ENABLED
+
+	SkeletonModification2DTwoBoneIK();
+	~SkeletonModification2DTwoBoneIK();
 };
 
-#endif // SKELETON_MODIFICATION_2D_PHYSICALBONES_H
+#endif // SKELETON_MODIFICATION_2D_TWOBONEIK_H

@@ -37,7 +37,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
-#include "scene/resources/rectangle_shape_2d.h"
+#include "scene/resources/2d/rectangle_shape_2d.h"
 
 #include "tests/test_macros.h"
 

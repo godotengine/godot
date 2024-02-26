@@ -34,8 +34,8 @@
 #include "core/templates/pair.h"
 #include "scene/resources/surface_tool.h"
 
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
 
 void MeshConvexDecompositionSettings::set_max_concavity(real_t p_max_concavity) {
 	max_concavity = CLAMP(p_max_concavity, 0.001, 1.0);

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  skeleton_modification_2d.h                                            */
+/*  world_boundary_shape_2d.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,62 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_MODIFICATION_2D_H
-#define SKELETON_MODIFICATION_2D_H
+#ifndef WORLD_BOUNDARY_SHAPE_2D_H
+#define WORLD_BOUNDARY_SHAPE_2D_H
 
-#include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_stack_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
-///////////////////////////////////////
-// SkeletonModification2D
-///////////////////////////////////////
+class WorldBoundaryShape2D : public Shape2D {
+	GDCLASS(WorldBoundaryShape2D, Shape2D);
 
-class SkeletonModificationStack2D;
-class Bone2D;
+	// WorldBoundaryShape2D is often used for one-way platforms, where the normal pointing up makes sense.
+	Vector2 normal = Vector2(0, -1);
+	real_t distance = 0.0;
 
-class SkeletonModification2D : public Resource {
-	GDCLASS(SkeletonModification2D, Resource);
-	friend class Skeleton2D;
-	friend class Bone2D;
+	void _update_shape();
 
 protected:
 	static void _bind_methods();
 
-	SkeletonModificationStack2D *stack = nullptr;
-	int execution_mode = 0; // 0 = process
-
-	bool enabled = true;
-	bool is_setup = false;
-
-	bool _print_execution_error(bool p_condition, String p_message);
-
-	GDVIRTUAL1(_execute, double)
-	GDVIRTUAL1(_setup_modification, Ref<SkeletonModificationStack2D>)
-	GDVIRTUAL0(_draw_editor_gizmo)
-
 public:
-	virtual void _execute(float _delta);
-	virtual void _setup_modification(SkeletonModificationStack2D *p_stack);
-	virtual void _draw_editor_gizmo();
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 
-	bool editor_draw_gizmo = false;
-	void set_editor_draw_gizmo(bool p_draw_gizmo);
-	bool get_editor_draw_gizmo() const;
+	void set_normal(const Vector2 &p_normal);
+	void set_distance(real_t p_distance);
 
-	void set_enabled(bool p_enabled);
-	bool get_enabled();
+	Vector2 get_normal() const;
+	real_t get_distance() const;
 
-	Ref<SkeletonModificationStack2D> get_modification_stack();
-	void set_is_setup(bool p_setup);
-	bool get_is_setup() const;
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual Rect2 get_rect() const override;
+	virtual real_t get_enclosing_radius() const override;
 
-	void set_execution_mode(int p_mode);
-	int get_execution_mode() const;
-
-	float clamp_angle(float p_angle, float p_min_bound, float p_max_bound, bool p_invert_clamp = false);
-	void editor_draw_angle_constraints(Bone2D *p_operation_bone, float p_min_bound, float p_max_bound, bool p_constraint_enabled, bool p_constraint_in_localspace, bool p_constraint_inverted);
-
-	SkeletonModification2D();
+	WorldBoundaryShape2D();
 };
 
-#endif // SKELETON_MODIFICATION_2D_H
+#endif // WORLD_BOUNDARY_SHAPE_2D_H

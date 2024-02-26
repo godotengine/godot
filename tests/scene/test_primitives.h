@@ -31,7 +31,7 @@
 #ifndef TEST_PRIMITIVES_H
 #define TEST_PRIMITIVES_H
 
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 #include "tests/test_macros.h"
 

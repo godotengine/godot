@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  collision_shape_3d.h                                                  */
+/*  skeleton_modification_2d_lookat.h                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,46 +28,73 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_SHAPE_3D_H
-#define COLLISION_SHAPE_3D_H
+#ifndef SKELETON_MODIFICATION_2D_LOOKAT_H
+#define SKELETON_MODIFICATION_2D_LOOKAT_H
 
-#include "scene/3d/node_3d.h"
-#include "scene/resources/3d/shape_3d.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
-class CollisionObject3D;
-class CollisionShape3D : public Node3D {
-	GDCLASS(CollisionShape3D, Node3D);
+///////////////////////////////////////
+// SkeletonModification2DLookAt
+///////////////////////////////////////
 
-	Ref<Shape3D> shape;
+class SkeletonModification2DLookAt : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DLookAt, SkeletonModification2D);
 
-	uint32_t owner_id = 0;
-	CollisionObject3D *collision_object = nullptr;
+private:
+	int bone_idx = -1;
+	NodePath bone2d_node;
+	ObjectID bone2d_node_cache;
 
-#ifndef DISABLE_DEPRECATED
-	void resource_changed(Ref<Resource> res);
-#endif
-	bool disabled = false;
+	NodePath target_node;
+	ObjectID target_node_cache;
+	Node2D *target_node_reference = nullptr;
+
+	float additional_rotation = 0;
+	bool enable_constraint = false;
+	float constraint_angle_min = 0;
+	float constraint_angle_max = (2.0 * Math_PI);
+	bool constraint_angle_invert = false;
+	bool constraint_in_localspace = true;
+
+	void update_bone2d_cache();
+	void update_target_cache();
 
 protected:
-	void _update_in_shape_owner(bool p_xform_only = false);
-
-protected:
-	void _notification(int p_what);
 	static void _bind_methods();
+	bool _set(const StringName &p_path, const Variant &p_value);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void make_convex_from_siblings();
+	void _execute(float p_delta) override;
+	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _draw_editor_gizmo() override;
 
-	void set_shape(const Ref<Shape3D> &p_shape);
-	Ref<Shape3D> get_shape() const;
+	void set_bone2d_node(const NodePath &p_target_node);
+	NodePath get_bone2d_node() const;
+	void set_bone_index(int p_idx);
+	int get_bone_index() const;
 
-	void set_disabled(bool p_disabled);
-	bool is_disabled() const;
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	void set_additional_rotation(float p_rotation);
+	float get_additional_rotation() const;
 
-	CollisionShape3D();
-	~CollisionShape3D();
+	void set_enable_constraint(bool p_constraint);
+	bool get_enable_constraint() const;
+	void set_constraint_angle_min(float p_angle_min);
+	float get_constraint_angle_min() const;
+	void set_constraint_angle_max(float p_angle_max);
+	float get_constraint_angle_max() const;
+	void set_constraint_angle_invert(bool p_invert);
+	bool get_constraint_angle_invert() const;
+	void set_constraint_in_localspace(bool p_constraint_in_localspace);
+	bool get_constraint_in_localspace() const;
+
+	SkeletonModification2DLookAt();
+	~SkeletonModification2DLookAt();
 };
 
-#endif // COLLISION_SHAPE_3D_H
+#endif // SKELETON_MODIFICATION_2D_LOOKAT_H

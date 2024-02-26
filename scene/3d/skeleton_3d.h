@@ -32,7 +32,7 @@
 #define SKELETON_3D_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/skin.h"
+#include "scene/resources/3d/skin.h"
 
 typedef int BoneId;
 

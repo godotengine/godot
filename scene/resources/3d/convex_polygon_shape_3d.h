@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  box_shape_3d.h                                                        */
+/*  convex_polygon_shape_3d.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BOX_SHAPE_3D_H
-#define BOX_SHAPE_3D_H
+#ifndef CONVEX_POLYGON_SHAPE_3D_H
+#define CONVEX_POLYGON_SHAPE_3D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-class BoxShape3D : public Shape3D {
-	GDCLASS(BoxShape3D, Shape3D);
-	Vector3 size;
+class ConvexPolygonShape3D : public Shape3D {
+	GDCLASS(ConvexPolygonShape3D, Shape3D);
+	Vector<Vector3> points;
 
 protected:
 	static void _bind_methods();
-#ifndef DISABLE_DEPRECATED
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_property) const;
-#endif // DISABLE_DEPRECATED
 
 	virtual void _update_shape() override;
 
 public:
-	void set_size(const Vector3 &p_size);
-	Vector3 get_size() const;
+	void set_points(const Vector<Vector3> &p_points);
+	Vector<Vector3> get_points() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	BoxShape3D();
+	ConvexPolygonShape3D();
 };
 
-#endif // BOX_SHAPE_3D_H
+#endif // CONVEX_POLYGON_SHAPE_3D_H

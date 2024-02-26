@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  separation_ray_shape_3d.h                                             */
+/*  concave_polygon_shape_3d.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,53 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SEPARATION_RAY_SHAPE_3D_H
-#define SEPARATION_RAY_SHAPE_3D_H
+#ifndef CONCAVE_POLYGON_SHAPE_3D_H
+#define CONCAVE_POLYGON_SHAPE_3D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
-class SeparationRayShape3D : public Shape3D {
-	GDCLASS(SeparationRayShape3D, Shape3D);
-	float length = 1.0;
-	bool slide_on_slope = false;
+class ConcavePolygonShape3D : public Shape3D {
+	GDCLASS(ConcavePolygonShape3D, Shape3D);
+
+	Vector<Vector3> faces;
+	bool backface_collision = false;
+
+	struct DrawEdge {
+		Vector3 a;
+		Vector3 b;
+		static uint32_t hash(const DrawEdge &p_edge) {
+			uint32_t h = hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.a));
+			return hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.b), h);
+		}
+		bool operator==(const DrawEdge &p_edge) const {
+			return (a == p_edge.a && b == p_edge.b);
+		}
+
+		DrawEdge(const Vector3 &p_a = Vector3(), const Vector3 &p_b = Vector3()) {
+			a = p_a;
+			b = p_b;
+			if (a < b) {
+				SWAP(a, b);
+			}
+		}
+	};
 
 protected:
 	static void _bind_methods();
+
 	virtual void _update_shape() override;
 
 public:
-	void set_length(float p_length);
-	float get_length() const;
+	void set_faces(const Vector<Vector3> &p_faces);
+	Vector<Vector3> get_faces() const;
 
-	void set_slide_on_slope(bool p_active);
-	bool get_slide_on_slope() const;
+	void set_backface_collision_enabled(bool p_enabled);
+	bool is_backface_collision_enabled() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
-	SeparationRayShape3D();
+	ConcavePolygonShape3D();
 };
 
-#endif // SEPARATION_RAY_SHAPE_3D_H
+#endif // CONCAVE_POLYGON_SHAPE_3D_H
