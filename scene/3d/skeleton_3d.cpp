@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "skeleton_3d.h"
+#include "skeleton_3d.compat.inc"
 
 #include "core/variant/type_info.h"
 #include "scene/3d/physics_body_3d.h"
@@ -409,18 +410,21 @@ uint64_t Skeleton3D::get_version() const {
 	return version;
 }
 
-void Skeleton3D::add_bone(const String &p_name) {
-	ERR_FAIL_COND(p_name.is_empty() || p_name.contains(":") || p_name.contains("/") || name_to_bone_index.has(p_name));
+int Skeleton3D::add_bone(const String &p_name) {
+	ERR_FAIL_COND_V_MSG(p_name.is_empty() || p_name.contains(":") || p_name.contains("/"), -1, vformat("Bone name cannot be empty or contain ':' or '/'.", p_name));
+	ERR_FAIL_COND_V_MSG(name_to_bone_index.has(p_name), -1, vformat("Skeleton3D \"%s\" already has a bone with name \"%s\".", to_string(), p_name));
 
 	Bone b;
 	b.name = p_name;
 	bones.push_back(b);
-	name_to_bone_index.insert(p_name, bones.size() - 1);
+	int new_idx = bones.size() - 1;
+	name_to_bone_index.insert(p_name, new_idx);
 	process_order_dirty = true;
 	version++;
 	rest_dirty = true;
 	_make_dirty();
 	update_gizmos();
+	return new_idx;
 }
 
 int Skeleton3D::find_bone(const String &p_name) const {
