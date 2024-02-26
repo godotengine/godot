@@ -104,6 +104,7 @@ void VisualShaderNodePlugin::_bind_methods() {
 ///////////////////
 
 VisualShaderGraphPlugin::VisualShaderGraphPlugin() {
+	vs_msdf_fonts_theme.instantiate();
 }
 
 void VisualShaderGraphPlugin::_bind_methods() {
@@ -358,6 +359,13 @@ void VisualShaderGraphPlugin::update_theme() {
 	vector_expanded_color[1] = editor->get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)); // green
 	vector_expanded_color[2] = editor->get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor)); // blue
 	vector_expanded_color[3] = editor->get_theme_color(SNAME("axis_w_color"), EditorStringName(Editor)); // alpha
+
+	Ref<Font> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", EditorStringName(EditorFonts));
+	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
+	vs_msdf_fonts_theme->set_font("font", "Label", label_font);
+	vs_msdf_fonts_theme->set_font("font", "GraphNodeTitleLabel", label_bold_font);
+	vs_msdf_fonts_theme->set_font("font", "LineEdit", label_font);
+	vs_msdf_fonts_theme->set_font("font", "Button", label_font);
 }
 
 bool VisualShaderGraphPlugin::is_node_has_parameter_instances_relatively(VisualShader::Type p_type, int p_node) const {
@@ -398,34 +406,35 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 	Control *offset;
 
-	static const Color type_color[] = {
-		Color(0.38, 0.85, 0.96), // scalar (float)
-		Color(0.49, 0.78, 0.94), // scalar (int)
-		Color(0.20, 0.88, 0.67), // scalar (uint)
-		Color(0.74, 0.57, 0.95), // vector2
-		Color(0.84, 0.49, 0.93), // vector3
-		Color(1.0, 0.125, 0.95), // vector4
-		Color(0.55, 0.65, 0.94), // boolean
-		Color(0.96, 0.66, 0.43), // transform
-		Color(1.0, 1.0, 0.0), // sampler
+	const Color type_color[] = {
+		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/vector2_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/vector3_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/vector4_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/boolean_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/transform_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/sampler_color"),
 	};
 
-	static const String vector_expanded_name[4] = {
-		"red",
-		"green",
-		"blue",
-		"alpha"
+	// Keep in sync with VisualShaderNode::Category.
+	const Color category_color[VisualShaderNode::Category::CATEGORY_MAX] = {
+		Color(0.0, 0.0, 0.0), // None (default, not used)
+		EDITOR_GET("editors/visual_editors/category_colors/output_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/color_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/conditional_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/input_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/scalar_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/textures_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/transform_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/utility_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/vector_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/special_color"),
+		EDITOR_GET("editors/visual_editors/category_colors/particle_color"),
 	};
 
-	// Visual shader specific theme for MSDF font.
-	Ref<Theme> vstheme;
-	vstheme.instantiate();
-	Ref<Font> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", EditorStringName(EditorFonts));
-	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
-	vstheme->set_font("font", "Label", label_font);
-	vstheme->set_font("font", "GraphNodeTitleLabel", label_bold_font);
-	vstheme->set_font("font", "LineEdit", label_font);
-	vstheme->set_font("font", "Button", label_font);
+	static const String vector_expanded_name[4] = { "red", "green", "blue", "alpha" };
 
 	Ref<VisualShaderNode> vsnode = visual_shader->get_node(p_type, p_id);
 
@@ -457,7 +466,18 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		node->connect("delete_request", callable_mp(editor, &VisualShaderEditor::_delete_node_request).bind(p_type, p_id), CONNECT_DEFERRED);
 	}
 	graph->add_child(node);
-	node->set_theme(vstheme);
+	node->set_theme(vs_msdf_fonts_theme);
+
+	// Set the node's titlebar color based on its category.
+	if (vsnode->get_category() != VisualShaderNode::CATEGORY_NONE) {
+		Ref<StyleBoxFlat> sb_colored = editor->get_theme_stylebox("titlebar", "GraphNode")->duplicate();
+		sb_colored->set_bg_color(category_color[vsnode->get_category()]);
+		node->add_theme_style_override("titlebar", sb_colored);
+
+		Ref<StyleBoxFlat> sb_colored_selected = editor->get_theme_stylebox("titlebar_selected", "GraphNode")->duplicate();
+		sb_colored_selected->set_bg_color(category_color[vsnode->get_category()].lightened(0.2));
+		node->add_theme_style_override("titlebar_selected", sb_colored_selected);
+	}
 
 	if (p_just_update) {
 		Link &link = links[p_id];
@@ -505,6 +525,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	if (is_group) {
 		port_offset += 1;
 	}
+
+	// Set the minimum width of a node based on the preview size to avoid a resize when toggling the preview.
+	Ref<StyleBoxFlat> graph_node_stylebox = graph->get_theme_stylebox("panel", "GraphNode");
+	int port_preview_size = EDITOR_GET("editors/visual_editors/visual_shader/port_preview_size");
+	node->set_custom_minimum_size(Size2((Math::ceil(graph_node_stylebox->get_minimum_size().width) + port_preview_size) * EDSCALE, 0));
 
 	Ref<VisualShaderNodeParticleEmit> emit = vsnode;
 	if (emit.is_valid()) {
@@ -4184,18 +4209,15 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
 
 				if (selected_float_constant != -1) {
-					popup_menu->add_submenu_item(TTR("Float Constants"), "FloatConstants", int(NodeMenuOptions::FLOAT_CONSTANTS));
-
 					if (!constants_submenu) {
 						constants_submenu = memnew(PopupMenu);
-						constants_submenu->set_name("FloatConstants");
 
 						for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
 							constants_submenu->add_item(float_constant_defs[i].name, i);
 						}
-						popup_menu->add_child(constants_submenu);
 						constants_submenu->connect("index_pressed", callable_mp(this, &VisualShaderEditor::_float_constant_selected));
 					}
+					popup_menu->add_submenu_node_item(TTR("Float Constants"), constants_submenu, int(NodeMenuOptions::FLOAT_CONSTANTS));
 				}
 
 				if (selected_constants.size() > 0) {
@@ -4313,7 +4335,9 @@ void VisualShaderEditor::_notification(int p_what) {
 			}
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors")) {
 				graph->set_minimap_opacity(EDITOR_GET("editors/visual_editors/minimap_opacity"));
+				graph->set_grid_pattern((GraphEdit::GridPattern) int(EDITOR_GET("editors/visual_editors/grid_pattern")));
 				graph->set_connection_lines_curvature(EDITOR_GET("editors/visual_editors/lines_curvature"));
+
 				_update_graph();
 			}
 		} break;
@@ -5424,6 +5448,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_menu_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
+	graph->set_grid_pattern(GraphEdit::GridPattern::GRID_PATTERN_DOTS);
+	int grid_pattern = EDITOR_GET("editors/visual_editors/grid_pattern");
+	graph->set_grid_pattern((GraphEdit::GridPattern)grid_pattern);
 	graph->set_show_zoom_label(true);
 	add_child(graph);
 	SET_DRAG_FORWARDING_GCD(graph, VisualShaderEditor);

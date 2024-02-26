@@ -158,6 +158,8 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 	bool s3tc_supported = RS::get_singleton()->has_os_feature("s3tc");
 	bool etc2_supported = RS::get_singleton()->has_os_feature("etc2");
 
+	bool needs_ra_rg_swap = false;
+
 	switch (*(uint32_t *)(src_ptr)) {
 		case BASIS_DECOMPRESS_RG: {
 			// RGTC transcoding is currently performed with RG_AS_RA, fail.
@@ -213,6 +215,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 				// No supported VRAM compression formats, decompress.
 				basisu_format = basist::transcoder_texture_format::cTFRGBA32;
 				image_format = Image::FORMAT_RGBA8;
+				needs_ra_rg_swap = true;
 			}
 		} break;
 	}
@@ -228,6 +231,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 	basist::basisu_image_info basisu_info;
 	transcoder.get_image_info(src_ptr, src_size, basisu_info, 0);
 
+	// Create the buffer for transcoded/decompressed data.
 	Vector<uint8_t> out_data;
 	out_data.resize(Image::get_image_data_size(basisu_info.m_width, basisu_info.m_height, image_format, basisu_info.m_total_levels > 1));
 
@@ -239,8 +243,10 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 		basist::basisu_image_level_info basisu_level;
 		transcoder.get_image_level_info(src_ptr, src_size, basisu_level, 0, i);
 
+		uint32_t mip_block_or_pixel_count = image_format >= Image::FORMAT_DXT1 ? basisu_level.m_total_blocks : basisu_level.m_orig_width * basisu_level.m_orig_height;
 		int ofs = Image::get_image_mipmap_offset(basisu_info.m_width, basisu_info.m_height, image_format, i);
-		bool result = transcoder.transcode_image_level(src_ptr, src_size, 0, i, dst + ofs, basisu_level.m_total_blocks, basisu_format);
+
+		bool result = transcoder.transcode_image_level(src_ptr, src_size, 0, i, dst + ofs, mip_block_or_pixel_count, basisu_format);
 
 		if (!result) {
 			print_line(vformat("BasisUniversal cannot unpack level %d.", i));
@@ -249,6 +255,11 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 	}
 
 	image = Image::create_from_data(basisu_info.m_width, basisu_info.m_height, basisu_info.m_total_levels > 1, image_format, out_data);
+
+	if (needs_ra_rg_swap) {
+		// Swap uncompressed RA-as-RG texture's color channels.
+		image->convert_ra_rgba8_to_rg();
+	}
 
 	return image;
 }

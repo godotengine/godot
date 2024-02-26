@@ -177,6 +177,7 @@ void NavigationRegion2D::_notification(int p_what) {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) && navigation_polygon.is_valid()) {
 				_update_debug_mesh();
 				_update_debug_edge_connections_mesh();
+				_update_debug_baking_rect();
 			}
 #endif // DEBUG_ENABLED
 		} break;
@@ -656,6 +657,18 @@ void NavigationRegion2D::_update_debug_edge_connections_mesh() {
 			draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, debug_edge_connection_color);
 			draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, debug_edge_connection_color);
 		}
+	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationRegion2D::_update_debug_baking_rect() {
+	Rect2 baking_rect = get_navigation_polygon()->get_baking_rect();
+	if (baking_rect.has_area()) {
+		Vector2 baking_rect_offset = get_navigation_polygon()->get_baking_rect_offset();
+		Rect2 debug_baking_rect = Rect2(baking_rect.position.x + baking_rect_offset.x, baking_rect.position.y + baking_rect_offset.y, baking_rect.size.x, baking_rect.size.y);
+		Color debug_baking_rect_color = Color(0.8, 0.5, 0.7, 0.1);
+		draw_rect(debug_baking_rect, debug_baking_rect_color);
 	}
 }
 #endif // DEBUG_ENABLED

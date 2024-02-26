@@ -35,14 +35,14 @@
 #include "core/io/resource_importer.h"
 #include "core/variant/dictionary.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/capsule_shape_3d.h"
+#include "scene/resources/3d/cylinder_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/skin.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/capsule_shape_3d.h"
-#include "scene/resources/cylinder_shape_3d.h"
-#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
 
 class Material;
 class AnimationPlayer;

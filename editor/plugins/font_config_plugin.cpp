@@ -33,6 +33,7 @@
 #include "editor/editor_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/margin_container.h"
 
 /*************************************************************************/
 /*  EditorPropertyFontMetaObject                                         */
@@ -723,7 +724,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 		for (int i = 0; i < FGRP_MAX; i++) {
 			if (have_sub[i]) {
-				menu->add_submenu_item(RTR(group_names[i]), "FTRMenu_" + itos(i));
+				menu->add_submenu_node_item(RTR(group_names[i]), menu_sub[i]);
 			}
 		}
 
@@ -851,7 +852,6 @@ EditorPropertyOTFeatures::EditorPropertyOTFeatures() {
 
 	for (int i = 0; i < FGRP_MAX; i++) {
 		menu_sub[i] = memnew(PopupMenu);
-		menu_sub[i]->set_name("FTRMenu_" + itos(i));
 		menu->add_child(menu_sub[i]);
 		menu_sub[i]->connect("id_pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
 	}

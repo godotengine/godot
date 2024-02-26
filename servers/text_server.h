@@ -141,6 +141,7 @@ public:
 		GRAPHEME_IS_CONNECTED = 1 << 10, // Connected to previous grapheme.
 		GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL = 1 << 11, // It is safe to insert a U+0640 before this grapheme for elongation.
 		GRAPHEME_IS_EMBEDDED_OBJECT = 1 << 12, // Grapheme is an object replacement character for the embedded object.
+		GRAPHEME_IS_SOFT_HYPHEN = 1 << 13, // Grapheme is a soft hyphen.
 	};
 
 	enum Hinting {

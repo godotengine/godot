@@ -45,6 +45,7 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"

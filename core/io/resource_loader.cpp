@@ -658,9 +658,6 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 					// resource loading that means that the task to wait for can be restarted here to break the
 					// cycle, with as much recursion into this process as needed.
 					// When the stack is eventually unrolled, the original load will have been notified to go on.
-#ifdef DEV_ENABLED
-					print_verbose("ResourceLoader: Potential for deadlock detected in task dependency. Attempting to avoid it by re-issuing the load now.");
-#endif
 					// CACHE_MODE_IGNORE is needed because, otherwise, the new request would just see there's
 					// an ongoing load for that resource and wait for it again. This value forces a new load.
 					Ref<ResourceLoader::LoadToken> token = _load_start(load_task.local_path, load_task.type_hint, LOAD_THREAD_DISTRIBUTE, ResourceFormatLoader::CACHE_MODE_IGNORE);

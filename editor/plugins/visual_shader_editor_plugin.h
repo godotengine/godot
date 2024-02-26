@@ -99,6 +99,9 @@ private:
 
 	Color vector_expanded_color[4];
 
+	// Visual shader specific theme for using MSDF fonts (on GraphNodes) which reduce aliasing at higher zoom levels.
+	Ref<Theme> vs_msdf_fonts_theme;
+
 protected:
 	static void _bind_methods();
 

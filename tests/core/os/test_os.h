@@ -93,6 +93,7 @@ TEST_CASE("[OS] Ticks") {
 }
 
 TEST_CASE("[OS] Feature tags") {
+#ifdef TOOLS_ENABLED
 	CHECK_MESSAGE(
 			OS::get_singleton()->has_feature("editor"),
 			"The binary has the \"editor\" feature tag.");
@@ -105,6 +106,29 @@ TEST_CASE("[OS] Feature tags") {
 	CHECK_MESSAGE(
 			!OS::get_singleton()->has_feature("template_release"),
 			"The binary does not have the \"template_release\" feature tag.");
+#else
+	CHECK_MESSAGE(
+			!OS::get_singleton()->has_feature("editor"),
+			"The binary does not have the \"editor\" feature tag.");
+	CHECK_MESSAGE(
+			OS::get_singleton()->has_feature("template"),
+			"The binary has the \"template\" feature tag.");
+#ifdef DEBUG_ENABLED
+	CHECK_MESSAGE(
+			OS::get_singleton()->has_feature("template_debug"),
+			"The binary has the \"template_debug\" feature tag.");
+	CHECK_MESSAGE(
+			!OS::get_singleton()->has_feature("template_release"),
+			"The binary does not have the \"template_release\" feature tag.");
+#else
+	CHECK_MESSAGE(
+			!OS::get_singleton()->has_feature("template_debug"),
+			"The binary does not have the \"template_debug\" feature tag.");
+	CHECK_MESSAGE(
+			OS::get_singleton()->has_feature("template_release"),
+			"The binary has the \"template_release\" feature tag.");
+#endif // DEBUG_ENABLED
+#endif // TOOLS_ENABLED
 }
 
 TEST_CASE("[OS] Process ID") {

@@ -31,7 +31,6 @@
 #include "register_scene_types.h"
 
 #include "core/config/project_settings.h"
-#include "core/extension/gdextension_manager.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/2d/animated_sprite_2d.h"
@@ -140,6 +139,25 @@
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/resources/2d/capsule_shape_2d.h"
+#include "scene/resources/2d/circle_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/polygon_path_finder.h"
+#include "scene/resources/2d/rectangle_shape_2d.h"
+#include "scene/resources/2d/segment_shape_2d.h"
+#include "scene/resources/2d/separation_ray_shape_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_ccdik.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_fabrik.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_jiggle.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_lookat.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_physicalbones.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_stackholder.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_twoboneik.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
+#include "scene/resources/2d/tile_set.h"
+#include "scene/resources/2d/world_boundary_shape_2d.h"
 #include "scene/resources/animated_texture.h"
 #include "scene/resources/animation_library.h"
 #include "scene/resources/atlas_texture.h"
@@ -147,25 +165,15 @@
 #include "scene/resources/audio_stream_wav.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/bone_map.h"
-#include "scene/resources/box_shape_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/camera_texture.h"
-#include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/capsule_shape_3d.h"
-#include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/compositor.h"
 #include "scene/resources/compressed_texture.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/curve_texture.h"
-#include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/gradient_texture.h"
-#include "scene/resources/height_map_shape_3d.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/label_settings.h"
@@ -181,28 +189,11 @@
 #include "scene/resources/particle_process_material.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/placeholder_textures.h"
-#include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/portable_compressed_texture.h"
-#include "scene/resources/primitive_meshes.h"
-#include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/resource_format_text.h"
-#include "scene/resources/segment_shape_2d.h"
-#include "scene/resources/separation_ray_shape_2d.h"
-#include "scene/resources/separation_ray_shape_3d.h"
 #include "scene/resources/shader_include.h"
-#include "scene/resources/skeleton_modification_2d.h"
-#include "scene/resources/skeleton_modification_2d_ccdik.h"
-#include "scene/resources/skeleton_modification_2d_fabrik.h"
-#include "scene/resources/skeleton_modification_2d_jiggle.h"
-#include "scene/resources/skeleton_modification_2d_lookat.h"
-#include "scene/resources/skeleton_modification_2d_physicalbones.h"
-#include "scene/resources/skeleton_modification_2d_stackholder.h"
-#include "scene/resources/skeleton_modification_2d_twoboneik.h"
-#include "scene/resources/skeleton_modification_stack_2d.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sky.h"
-#include "scene/resources/sky_material.h"
-#include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
@@ -215,16 +206,12 @@
 #include "scene/resources/texture.h"
 #include "scene/resources/texture_rd.h"
 #include "scene/resources/theme.h"
-#include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
-#include "scene/resources/world_3d.h"
-#include "scene/resources/world_boundary_shape_2d.h"
-#include "scene/resources/world_boundary_shape_3d.h"
 #include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
@@ -274,12 +261,24 @@
 #include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
 #include "scene/3d/xr_face_modifier_3d.h"
+#include "scene/3d/xr_hand_modifier_3d.h"
 #include "scene/3d/xr_nodes.h"
 #include "scene/animation/root_motion_view.h"
-#include "scene/resources/environment.h"
-#include "scene/resources/fog_material.h"
-#include "scene/resources/importer_mesh.h"
-#include "scene/resources/mesh_library.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/capsule_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/cylinder_shape_3d.h"
+#include "scene/resources/3d/fog_material.h"
+#include "scene/resources/3d/height_map_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/3d/separation_ray_shape_3d.h"
+#include "scene/resources/3d/sky_material.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
+#include "scene/resources/3d/world_3d.h"
+#include "scene/resources/3d/world_boundary_shape_3d.h"
 #endif // _3D_DISABLED
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
@@ -523,6 +522,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(XRController3D);
 	GDREGISTER_CLASS(XRAnchor3D);
 	GDREGISTER_CLASS(XROrigin3D);
+	GDREGISTER_CLASS(XRHandModifier3D);
 	GDREGISTER_CLASS(XRFaceModifier3D);
 	GDREGISTER_CLASS(MeshInstance3D);
 	GDREGISTER_CLASS(OccluderInstance3D);
@@ -864,12 +864,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(WorldBoundaryShape3D);
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
+	GDREGISTER_CLASS(World3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
 
 	GDREGISTER_CLASS(PhysicsMaterial);
-	GDREGISTER_CLASS(World3D);
 	GDREGISTER_CLASS(Compositor);
 	GDREGISTER_CLASS(Environment);
 	GDREGISTER_VIRTUAL_CLASS(CameraAttributes);

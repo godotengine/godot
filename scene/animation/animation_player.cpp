@@ -813,8 +813,8 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_blend_time", "sec"), &AnimationPlayer::set_default_blend_time);
 	ClassDB::bind_method(D_METHOD("get_default_blend_time"), &AnimationPlayer::get_default_blend_time);
 
-	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(""), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(StringName()), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(StringName()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("play_with_capture", "name", "duration", "custom_blend", "custom_speed", "from_end", "trans_type", "ease_type"), &AnimationPlayer::play_with_capture, DEFVAL(-1.0), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false), DEFVAL(Tween::TRANS_LINEAR), DEFVAL(Tween::EASE_IN));
 	ClassDB::bind_method(D_METHOD("pause"), &AnimationPlayer::pause);
 	ClassDB::bind_method(D_METHOD("stop", "keep_state"), &AnimationPlayer::stop, DEFVAL(false));

@@ -50,7 +50,6 @@ public:
 	template <class T>
 	struct Channel {
 		Interpolation interpolation = INTERP_LINEAR;
-
 		Vector<real_t> times;
 		Vector<T> values;
 	};
@@ -63,9 +62,14 @@ public:
 	};
 
 public:
+	String get_original_name();
+	void set_original_name(String p_name);
+
 	bool get_loop() const;
 	void set_loop(bool p_val);
 	HashMap<int, GLTFAnimation::Track> &get_tracks();
+	Variant get_additional_data(const StringName &p_extension_name);
+	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 	GLTFAnimation();
 
 
@@ -76,10 +80,14 @@ public:
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 
 private:
+	String original_name;
 	bool loop = false;
 	HashMap<int, Track> tracks;
+<<<<<<< HEAD
 
 	String original_name;
+=======
+>>>>>>> bb6b06c81343073f10cbbd2af515cf0dac1e6549
 	Dictionary additional_data;
 };
 

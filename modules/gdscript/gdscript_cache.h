@@ -37,7 +37,6 @@
 #include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
-#include "scene/resources/packed_scene.h"
 
 class GDScriptAnalyzer;
 class GDScriptParser;
@@ -81,8 +80,6 @@ class GDScriptCache {
 	HashMap<String, Ref<GDScript>> full_gdscript_cache;
 	HashMap<String, Ref<GDScript>> static_gdscript_cache;
 	HashMap<String, HashSet<String>> dependencies;
-	HashMap<String, Ref<PackedScene>> packed_scene_cache;
-	HashMap<String, HashSet<String>> packed_scene_dependencies;
 
 	friend class GDScript;
 	friend class GDScriptParserRef;
@@ -106,9 +103,6 @@ public:
 	static Error finish_compiling(const String &p_owner);
 	static void add_static_script(Ref<GDScript> p_script);
 	static void remove_static_script(const String &p_fqcn);
-
-	static Ref<PackedScene> get_packed_scene(const String &p_path, Error &r_error, const String &p_owner = "");
-	static void clear_unreferenced_packed_scenes();
 
 	static void clear();
 

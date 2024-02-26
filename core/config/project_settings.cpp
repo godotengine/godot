@@ -1093,7 +1093,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	} else if (p_path.ends_with(".binary")) {
 		return _save_settings_binary(p_path, save_props, p_custom, save_features);
 	} else {
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path + ".");
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path);
 	}
 }
 

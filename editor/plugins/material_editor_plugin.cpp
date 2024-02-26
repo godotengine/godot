@@ -43,9 +43,9 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
-#include "scene/resources/fog_material.h"
+#include "scene/resources/3d/fog_material.h"
+#include "scene/resources/3d/sky_material.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/resources/sky_material.h"
 
 void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());

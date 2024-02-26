@@ -44,18 +44,12 @@
 #include "structures/gltf_texture_sampler.h"
 
 #include "scene/3d/importer_mesh_instance_3d.h"
-#include "scene/resources/model_state_3d.h"
 
-class GLTFState : public ModelState3D {
-	GDCLASS(GLTFState, ModelState3D);
-	friend class GLTFDocument;
-
-
-	friend class ModelDocument3D;
+class GLTFState : public Resource {
+	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
 
 protected:
-
 	String base_path;
 	String filename;
 	Dictionary json;
@@ -78,7 +72,7 @@ protected:
 	Vector<Ref<GLTFBufferView>> buffer_views;
 	Vector<Ref<GLTFAccessor>> accessors;
 
-	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
+	Vector<Ref<GLTFMesh>> meshes; // Meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
 	HashMap<Ref<Material>, GLTFMaterialIndex> material_cache;
@@ -120,7 +114,7 @@ public:
 		HANDLE_BINARY_DISCARD_TEXTURES = 0,
 		HANDLE_BINARY_EXTRACT_TEXTURES,
 		HANDLE_BINARY_EMBED_AS_BASISU,
-		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // if this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
+		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
 	};
 	int32_t get_handle_binary_image() {
 		return handle_binary_image;

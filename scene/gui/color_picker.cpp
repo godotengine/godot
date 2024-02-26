@@ -36,6 +36,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/color_mode.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"

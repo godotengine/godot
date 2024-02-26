@@ -229,7 +229,7 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 	}
 	text.write[p_line].height = height;
 
-	// If this line has shrunk, this may no longer the the tallest line.
+	// If this line has shrunk, this may no longer the tallest line.
 	if (old_height == line_height && height < line_height) {
 		_calculate_line_height();
 	} else {
@@ -241,7 +241,7 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 	int line_width = get_line_width(p_line);
 	text.write[p_line].width = line_width;
 
-	// If this line has shrunk, this may no longer the the longest line.
+	// If this line has shrunk, this may no longer the longest line.
 	if (old_width == max_width && line_width < max_width) {
 		_calculate_max_line_width();
 	} else if (!is_hidden(p_line)) {
@@ -731,7 +731,7 @@ void TextEdit::_notification(int p_what) {
 
 				// Draw the minimap.
 
-				// Add visual feedback when dragging or hovering the the visible area rectangle.
+				// Add visual feedback when dragging or hovering the visible area rectangle.
 				float viewport_alpha;
 				if (dragging_minimap) {
 					viewport_alpha = 0.25;
@@ -6873,15 +6873,12 @@ void TextEdit::_generate_context_menu() {
 	add_child(menu, false, INTERNAL_MODE_FRONT);
 
 	menu_dir = memnew(PopupMenu);
-	menu_dir->set_name("DirMenu");
 	menu_dir->add_radio_check_item(RTR("Same as Layout Direction"), MENU_DIR_INHERITED);
 	menu_dir->add_radio_check_item(RTR("Auto-Detect Direction"), MENU_DIR_AUTO);
 	menu_dir->add_radio_check_item(RTR("Left-to-Right"), MENU_DIR_LTR);
 	menu_dir->add_radio_check_item(RTR("Right-to-Left"), MENU_DIR_RTL);
-	menu->add_child(menu_dir, false, INTERNAL_MODE_FRONT);
 
 	menu_ctl = memnew(PopupMenu);
-	menu_ctl->set_name("CTLMenu");
 	menu_ctl->add_item(RTR("Left-to-Right Mark (LRM)"), MENU_INSERT_LRM);
 	menu_ctl->add_item(RTR("Right-to-Left Mark (RLM)"), MENU_INSERT_RLM);
 	menu_ctl->add_item(RTR("Start of Left-to-Right Embedding (LRE)"), MENU_INSERT_LRE);
@@ -6900,7 +6897,6 @@ void TextEdit::_generate_context_menu() {
 	menu_ctl->add_item(RTR("Zero-Width Non-Joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
 	menu_ctl->add_item(RTR("Word Joiner (WJ)"), MENU_INSERT_WJ);
 	menu_ctl->add_item(RTR("Soft Hyphen (SHY)"), MENU_INSERT_SHY);
-	menu->add_child(menu_ctl, false, INTERNAL_MODE_FRONT);
 
 	menu->add_item(RTR("Cut"), MENU_CUT);
 	menu->add_item(RTR("Copy"), MENU_COPY);
@@ -6912,10 +6908,10 @@ void TextEdit::_generate_context_menu() {
 	menu->add_item(RTR("Undo"), MENU_UNDO);
 	menu->add_item(RTR("Redo"), MENU_REDO);
 	menu->add_separator();
-	menu->add_submenu_item(RTR("Text Writing Direction"), "DirMenu", MENU_SUBMENU_TEXT_DIR);
+	menu->add_submenu_node_item(RTR("Text Writing Direction"), menu_dir, MENU_SUBMENU_TEXT_DIR);
 	menu->add_separator();
 	menu->add_check_item(RTR("Display Control Characters"), MENU_DISPLAY_UCC);
-	menu->add_submenu_item(RTR("Insert Control Character"), "CTLMenu", MENU_SUBMENU_INSERT_UCC);
+	menu->add_submenu_node_item(RTR("Insert Control Character"), menu_ctl, MENU_SUBMENU_INSERT_UCC);
 
 	menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
 	menu_dir->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));

@@ -315,6 +315,8 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["scene/gui"])
     process_folder(["scene/main"])
     process_folder(["scene/resources"])
+    process_folder(["scene/resources/2d"])
+    process_folder(["scene/resources/3d"])
 
     process_folder(["servers"])
     process_folder(["servers/rendering"])

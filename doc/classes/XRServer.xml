@@ -18,6 +18,14 @@
 				Registers a new [XRFaceTracker] that tracks the blend shapes of a face.
 			</description>
 		</method>
+		<method name="add_hand_tracker">
+			<return type="void" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="hand_tracker" type="XRHandTracker" />
+			<description>
+				Registers a new [XRHandTracker] that tracks the joints of a hand.
+			</description>
+		</method>
 		<method name="add_interface">
 			<return type="void" />
 			<param index="0" name="interface" type="XRInterface" />
@@ -69,6 +77,19 @@
 			<return type="Dictionary" />
 			<description>
 				Returns a dictionary of the registered face trackers. Each element of the dictionary is a tracker name mapping to the [XRFaceTracker] instance.
+			</description>
+		</method>
+		<method name="get_hand_tracker" qualifiers="const">
+			<return type="XRHandTracker" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Returns the [XRHandTracker] with the given tracker name.
+			</description>
+		</method>
+		<method name="get_hand_trackers" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of the registered hand trackers. Each element of the dictionary is a tracker name mapping to the [XRHandTracker] instance.
 			</description>
 		</method>
 		<method name="get_hmd_transform">
@@ -123,6 +144,13 @@
 				Removes a registered [XRFaceTracker].
 			</description>
 		</method>
+		<method name="remove_hand_tracker">
+			<return type="void" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Removes a registered [XRHandTracker].
+			</description>
+		</method>
 		<method name="remove_interface">
 			<return type="void" />
 			<param index="0" name="interface" type="XRInterface" />
@@ -169,6 +197,26 @@
 			<param index="1" name="face_tracker" type="XRFaceTracker" />
 			<description>
 				Emitted when an existing face tracker is updated.
+			</description>
+		</signal>
+		<signal name="hand_tracker_added">
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="hand_tracker" type="XRHandTracker" />
+			<description>
+				Emitted when a new hand tracker is added.
+			</description>
+		</signal>
+		<signal name="hand_tracker_removed">
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Emitted when a hand tracker is removed.
+			</description>
+		</signal>
+		<signal name="hand_tracker_updated">
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="hand_tracker" type="XRHandTracker" />
+			<description>
+				Emitted when an existing hand tracker is updated.
 			</description>
 		</signal>
 		<signal name="interface_added">

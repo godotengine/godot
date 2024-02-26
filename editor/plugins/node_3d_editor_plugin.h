@@ -124,6 +124,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_AUDIO_LISTENER,
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
+		VIEW_GRID,
 		VIEW_INFORMATION,
 		VIEW_FRAME_TIME,
 
@@ -509,7 +510,7 @@ public:
 	RID sbox_instance_xray;
 	RID sbox_instance_xray_offset;
 	Ref<EditorNode3DGizmo> gizmo;
-	HashMap<int, Transform3D> subgizmos; // map ID -> initial transform
+	HashMap<int, Transform3D> subgizmos; // Key: Subgizmo ID, Value: Initial subgizmo transform.
 
 	Node3DEditorSelectedItem() {
 		sp = nullptr;

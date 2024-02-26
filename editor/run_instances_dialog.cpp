@@ -34,6 +34,7 @@
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/separator.h"
@@ -271,39 +272,28 @@ RunInstancesDialog::RunInstancesDialog() {
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 
-	{
-		Label *l = memnew(Label);
-		main_vb->add_child(l);
-		l->set_text(TTR("Main Run Args:"));
-	}
-
-	main_args_edit = memnew(LineEdit);
-	main_vb->add_child(main_args_edit);
-	_fetch_main_args();
-	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &RunInstancesDialog::_fetch_main_args));
-	main_args_edit->connect("text_changed", callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
-
-	{
-		Label *l = memnew(Label);
-		main_vb->add_child(l);
-		l->set_text(TTR("Main Feature Tags:"));
-	}
-
-	main_features_edit = memnew(LineEdit);
-	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
-	main_vb->add_child(main_features_edit);
-	main_features_edit->connect("text_changed", callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
-
-	{
-		HSeparator *sep = memnew(HSeparator);
-		main_vb->add_child(sep);
-	}
+	GridContainer *args_gc = memnew(GridContainer);
+	args_gc->set_columns(3);
+	args_gc->add_theme_constant_override("h_separation", 12 * EDSCALE);
+	main_vb->add_child(args_gc);
 
 	enable_multiple_instances_checkbox = memnew(CheckBox);
 	enable_multiple_instances_checkbox->set_text(TTR("Enable Multiple Instances"));
 	enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
-	main_vb->add_child(enable_multiple_instances_checkbox);
+	args_gc->add_child(enable_multiple_instances_checkbox);
 	enable_multiple_instances_checkbox->connect("pressed", callable_mp(this, &RunInstancesDialog::_start_main_timer));
+
+	{
+		Label *l = memnew(Label);
+		l->set_text(TTR("Main Run Args:"));
+		args_gc->add_child(l);
+	}
+
+	{
+		Label *l = memnew(Label);
+		l->set_text(TTR("Main Feature Tags:"));
+		args_gc->add_child(l);
+	}
 
 	stored_data = TypedArray<Dictionary>(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instances_config", TypedArray<Dictionary>()));
 
@@ -311,11 +301,26 @@ RunInstancesDialog::RunInstancesDialog() {
 	instance_count->set_min(1);
 	instance_count->set_max(20);
 	instance_count->set_value(stored_data.size());
-	main_vb->add_child(instance_count);
+	args_gc->add_child(instance_count);
 	instance_count->connect("value_changed", callable_mp(this, &RunInstancesDialog::_start_instance_timer).unbind(1));
 	instance_count->connect("value_changed", callable_mp(this, &RunInstancesDialog::_refresh_argument_count).unbind(1));
 	enable_multiple_instances_checkbox->connect("toggled", callable_mp(instance_count, &SpinBox::set_editable));
 	instance_count->set_editable(enable_multiple_instances_checkbox->is_pressed());
+
+	main_args_edit = memnew(LineEdit);
+	main_args_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_args_edit->set_placeholder(TTR("Space-separated arguments, example: host player1 blue"));
+	args_gc->add_child(main_args_edit);
+	_fetch_main_args();
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &RunInstancesDialog::_fetch_main_args));
+	main_args_edit->connect("text_changed", callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
+
+	main_features_edit = memnew(LineEdit);
+	main_features_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_features_edit->set_placeholder(TTR("Comma-separated tags, example: demo, steam, event"));
+	main_features_edit->set_text(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_main_feature_tags", ""));
+	args_gc->add_child(main_features_edit);
+	main_features_edit->connect("text_changed", callable_mp(this, &RunInstancesDialog::_start_main_timer).unbind(1));
 
 	{
 		Label *l = memnew(Label);

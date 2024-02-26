@@ -2851,7 +2851,22 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	ERR_FAIL_COND_V_MSG(!scr->get_path().is_empty() && scr->get_path() != p_original_path, Ref<Resource>(),
 			"The C# script path is different from the path it was registered in the C# dictionary.");
 
-	scr->set_path(p_original_path, true);
+	Ref<Resource> existing = ResourceCache::get_ref(p_path);
+	switch (p_cache_mode) {
+		case ResourceFormatLoader::CACHE_MODE_IGNORE:
+			break;
+		case ResourceFormatLoader::CACHE_MODE_REUSE:
+			if (existing.is_null()) {
+				scr->set_path(p_original_path);
+			} else {
+				scr = existing;
+			}
+			break;
+		case ResourceFormatLoader::CACHE_MODE_REPLACE:
+			scr->set_path(p_original_path, true);
+			break;
+	}
+
 	scr->reload();
 
 	if (r_error) {

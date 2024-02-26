@@ -227,6 +227,7 @@ public:
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
 	virtual String get_option_label(int p_device) const { return ""; }
 	virtual String get_option_tooltip(int p_device) const { return ""; }
+	virtual String get_device_architecture(int p_device) const { return ""; }
 
 	enum DebugFlags {
 		DEBUG_FLAG_DUMB_CLIENT = 1,

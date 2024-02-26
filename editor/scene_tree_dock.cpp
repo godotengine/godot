@@ -3263,7 +3263,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
 		if (menu->get_item_count() == 0) {
-			menu->add_submenu_item(TTR("Sub-Resources"), "SubResources");
+			menu->add_submenu_node_item(TTR("Sub-Resources"), menu_subresources);
 		}
 		menu_subresources->add_icon_item(icon, E.name.capitalize(), EDIT_SUBRESOURCE_BASE + subresources.size());
 		menu_subresources->set_item_indent(-1, p_depth);
@@ -3504,11 +3504,9 @@ void SceneTreeDock::_update_tree_menu() {
 	tree_menu->set_item_tooltip(tree_menu->get_item_index(TOOL_CENTER_PARENT), TTR("If enabled, Reparent to New Node will create the new node in the center of the selected nodes, if possible."));
 
 	PopupMenu *resource_list = memnew(PopupMenu);
-	resource_list->set_name("AllResources");
 	resource_list->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_list_all_subresources).bind(resource_list));
 	resource_list->connect("index_pressed", callable_mp(this, &SceneTreeDock::_edit_subresource).bind(resource_list));
-	tree_menu->add_child(resource_list);
-	tree_menu->add_submenu_item(TTR("All Scene Sub-Resources"), "AllResources");
+	tree_menu->add_submenu_node_item(TTR("All Scene Sub-Resources"), resource_list);
 }
 
 void SceneTreeDock::_filter_changed(const String &p_filter) {
@@ -4365,7 +4363,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
 	menu_subresources = memnew(PopupMenu);
-	menu_subresources->set_name("SubResources");
 	menu_subresources->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 	menu->add_child(menu_subresources);
 

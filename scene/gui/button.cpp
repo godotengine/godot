@@ -50,10 +50,6 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 void Button::_queue_update_size_cache() {
 }
 
-void Button::_set_h_separation_is_valid_when_no_text(bool p_h_separation_is_valid_when_no_text) {
-	h_separation_is_valid_when_no_text = p_h_separation_is_valid_when_no_text;
-}
-
 Ref<StyleBox> Button::_get_current_stylebox() const {
 	Ref<StyleBox> stylebox = theme_cache.normal;
 	const bool rtl = is_layout_rtl();
@@ -128,6 +124,15 @@ void Button::_notification(int p_what) {
 			queue_redraw();
 		} break;
 
+		case NOTIFICATION_RESIZED: {
+			if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
+				_shape();
+
+				update_minimum_size();
+				queue_redraw();
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			const RID ci = get_canvas_item();
 			const Size2 size = get_size();
@@ -171,14 +176,12 @@ void Button::_notification(int p_what) {
 			float right_internal_margin_with_h_separation = _internal_margin[SIDE_RIGHT];
 			{ // The width reserved for internal element in derived classes (and h_separation if need).
 
-				if (!xl_text.is_empty() || h_separation_is_valid_when_no_text) {
-					if (_internal_margin[SIDE_LEFT] > 0.0f) {
-						left_internal_margin_with_h_separation += h_separation;
-					}
+				if (_internal_margin[SIDE_LEFT] > 0.0f) {
+					left_internal_margin_with_h_separation += h_separation;
+				}
 
-					if (_internal_margin[SIDE_RIGHT] > 0.0f) {
-						right_internal_margin_with_h_separation += h_separation;
-					}
+				if (_internal_margin[SIDE_RIGHT] > 0.0f) {
+					right_internal_margin_with_h_separation += h_separation;
 				}
 
 				drawable_size_remained.width -= left_internal_margin_with_h_separation + right_internal_margin_with_h_separation; // The size after the internal element is stripped.
@@ -261,7 +264,7 @@ void Button::_notification(int p_what) {
 				} break;
 			}
 
-			const bool is_clipped = clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING;
+			const bool is_clipped = clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || autowrap_mode != TextServer::AUTOWRAP_OFF;
 			const Size2 custom_element_size = drawable_size_remained;
 
 			// Draw the icon.
@@ -415,7 +418,7 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 	}
 
 	Size2 minsize = paragraph->get_size();
-	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || autowrap_mode != TextServer::AUTOWRAP_OFF) {
 		minsize.width = 0;
 	}
 
@@ -468,6 +471,23 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
 		return;
 	}
 
+	BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
+	switch (autowrap_mode) {
+		case TextServer::AUTOWRAP_WORD_SMART:
+			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
+			break;
+		case TextServer::AUTOWRAP_WORD:
+			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+			break;
+		case TextServer::AUTOWRAP_ARBITRARY:
+			autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+			break;
+		case TextServer::AUTOWRAP_OFF:
+			break;
+	}
+	autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
+	p_paragraph->set_break_flags(autowrap_flags);
+
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
 		p_paragraph->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 	} else {
@@ -508,6 +528,19 @@ void Button::set_text(const String &p_text) {
 
 String Button::get_text() const {
 	return text;
+}
+
+void Button::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
+	if (autowrap_mode != p_mode) {
+		autowrap_mode = p_mode;
+		_shape();
+		queue_redraw();
+		update_minimum_size();
+	}
+}
+
+TextServer::AutowrapMode Button::get_autowrap_mode() const {
+	return autowrap_mode;
 }
 
 void Button::set_text_direction(Control::TextDirection p_text_direction) {
@@ -649,6 +682,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Button::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Button::get_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Button::set_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Button::get_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Button::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &Button::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Button::set_language);
@@ -675,6 +710,7 @@ void Button::_bind_methods() {
 	ADD_GROUP("Text Behavior", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_alignment", "get_text_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 
 	ADD_GROUP("Icon Behavior", "");

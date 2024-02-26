@@ -154,6 +154,8 @@ void FileSystemList::_bind_methods() {
 }
 
 FileSystemList::FileSystemList() {
+	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 	popup_editor = memnew(Popup);
 	add_child(popup_editor);
 
@@ -3052,11 +3054,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() == 1 && p_display_path_dependent_options) {
 		PopupMenu *new_menu = memnew(PopupMenu);
-		new_menu->set_name("New");
 		new_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
 
-		p_popup->add_child(new_menu);
-		p_popup->add_submenu_item(TTR("Create New"), "New", FILE_NEW);
+		p_popup->add_submenu_node_item(TTR("Create New"), new_menu, FILE_NEW);
 		p_popup->set_item_icon(p_popup->get_item_index(FILE_NEW), get_editor_theme_icon(SNAME("Add")));
 
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("Folder..."), FILE_NEW_FOLDER);
@@ -3079,11 +3079,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 		if (p_paths[0] != "res://") {
 			PopupMenu *folder_colors_menu = memnew(PopupMenu);
-			folder_colors_menu->set_name("FolderColor");
 			folder_colors_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_folder_color_index_pressed).bind(folder_colors_menu));
 
-			p_popup->add_child(folder_colors_menu);
-			p_popup->add_submenu_item(TTR("Set Folder Color..."), "FolderColor");
+			p_popup->add_submenu_node_item(TTR("Set Folder Color..."), folder_colors_menu);
 			p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("Paint")));
 
 			folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("Default (Reset)"));

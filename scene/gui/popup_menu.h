@@ -32,7 +32,6 @@
 #define POPUP_MENU_H
 
 #include "core/input/shortcut.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/property_list_helper.h"
@@ -68,7 +67,8 @@ class PopupMenu : public Popup {
 		bool dirty = true;
 		int id = 0;
 		Variant metadata;
-		String submenu;
+		String submenu_name; // Compatibility.
+		PopupMenu *submenu = nullptr;
 		String tooltip;
 		Key accel = Key::NONE;
 		int _ofs_cache = 0;
@@ -109,10 +109,12 @@ class PopupMenu : public Popup {
 	Vector<Item> items;
 	BitField<MouseButtonMask> initial_button_mask;
 	bool during_grabbed_click = false;
+	bool is_scrolling = false;
 	int mouse_over = -1;
 	int submenu_over = -1;
 	String _get_accel_text(const Item &p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
+	void _mouse_over_update(const Point2 &p_over);
 	virtual Size2 _get_contents_minimum_size() const override;
 
 	int _get_item_height(int p_idx) const;
@@ -141,7 +143,6 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec = 0;
 	String search_string = "";
 
-	MarginContainer *margin_container = nullptr;
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
 
@@ -194,7 +195,6 @@ class PopupMenu : public Popup {
 	} theme_cache;
 
 	void _draw_items();
-	void _draw_background();
 
 	void _minimum_lifetime_timeout();
 	void _close_pressed();
@@ -254,6 +254,7 @@ public:
 	void add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 
 	void add_submenu_item(const String &p_label, const String &p_submenu, int p_id = -1);
+	void add_submenu_node_item(const String &p_label, PopupMenu *p_submenu, int p_id = -1);
 
 	void set_item_text(int p_idx, const String &p_text);
 
@@ -268,6 +269,7 @@ public:
 	void set_item_metadata(int p_idx, const Variant &p_meta);
 	void set_item_disabled(int p_idx, bool p_disabled);
 	void set_item_submenu(int p_idx, const String &p_submenu);
+	void set_item_submenu_node(int p_idx, PopupMenu *p_submenu);
 	void set_item_as_separator(int p_idx, bool p_separator);
 	void set_item_as_checkable(int p_idx, bool p_checkable);
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
@@ -296,6 +298,7 @@ public:
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
 	String get_item_submenu(int p_idx) const;
+	PopupMenu *get_item_submenu_node(int p_idx) const;
 	bool is_item_separator(int p_idx) const;
 	bool is_item_checkable(int p_idx) const;
 	bool is_item_radio_checkable(int p_idx) const;
