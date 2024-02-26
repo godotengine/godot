@@ -117,11 +117,9 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRWMRControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRML2ControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMetaControllerExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXREyeGazeInteractionExtension));
 
 			// register gated extensions
-			if (GLOBAL_GET("xr/openxr/extensions/eye_gaze_interaction") && (!OS::get_singleton()->has_feature("mobile") || OS::get_singleton()->has_feature(XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME))) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXREyeGazeInteractionExtension));
-			}
 			if (GLOBAL_GET("xr/openxr/extensions/hand_tracking")) {
 				OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandTrackingExtension));
 			}
