@@ -185,7 +185,7 @@ String OS_Unix::get_stdin_string() {
 	int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
 	if (flags != -1) {
         buff.resize(size);
-        while ((size = read(fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK), &buff[0], size))) {
+        while ((size = read(fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK), &buff[0], size)) > 0) {
             buff.resize(size);
         }
         return String::utf8((char *)buff.ptr(), size);
