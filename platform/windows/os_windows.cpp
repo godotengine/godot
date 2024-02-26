@@ -1324,13 +1324,22 @@ void OS_Windows::unset_environment(const String &p_var) const {
 }
 
 String OS_Windows::get_stdin_string() {
+	String result;
 	LocalVector<char> buff;
 	DWORD size = 0, count = 0;
-	HANDLE pipe = GetStdHandle(STD_INPUT_HANDLE);
-	if (PeekNamedPipe(pipe, nullptr, 0, nullptr, &size, nullptr)) {
+	HANDLE handle = GetStdHandle(STD_INPUT_HANDLE);
+	if (GetFileType(handle) == FILE_TYPE_PIPE) {
+		if (PeekNamedPipe(handle, nullptr, 0, nullptr, &size, nullptr)) {
+			buff.resize(size);
+			if (PeekNamedPipe(handle, &buff[0], size, &count, nullptr, nullptr)) {
+				return String::utf8((char *)buff.ptr(), size);
+			}
+		}
+	} else {
+		size = BUFSIZ;
 		buff.resize(size);
-		if (PeekNamedPipe(pipe, &buff[0], size, &count, nullptr, nullptr)) {
-			return String::utf8((char *)buff.ptr(), size);
+		while (ReadFile(handle, &buff[0], size, &size, nullptr) && size) {
+			result += String::utf8((char *)buff.ptr(), size);
 		}
 	}
 	return String();
