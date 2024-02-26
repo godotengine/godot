@@ -551,7 +551,7 @@ void GDScriptParser::end_statement(const String &p_context) {
 
 void GDScriptParser::parse_program() {
 	head = alloc_node<ClassNode>();
-	head->fqcn = script_path;
+	head->fqcn = GDScript::canonicalize_path(script_path);
 	current_class = head;
 	bool can_have_class_or_extends = true;
 
@@ -709,7 +709,7 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 		if (n_class->outer) {
 			String fqcn = n_class->outer->fqcn;
 			if (fqcn.is_empty()) {
-				fqcn = script_path;
+				fqcn = GDScript::canonicalize_path(script_path);
 			}
 			n_class->fqcn = fqcn + "::" + n_class->identifier->name;
 		} else {
