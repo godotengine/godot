@@ -2829,17 +2829,24 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		remove_child(child);
 		if (!child->is_owned_by_parent()) {
 			// add the custom children to the p_node
+			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+			child->set_owner(nullptr);
 			p_node->add_child(child);
+			child->set_owner(child_owner);
 		}
 	}
 
 	p_node->set_owner(owner);
 	for (Node *E : owned) {
-		E->set_owner(p_node);
+		if (E->data.owner != p_node) {
+			E->set_owner(p_node);
+		}
 	}
 
 	for (Node *E : owned_by_owner) {
-		E->set_owner(owner);
+		if (E->data.owner != owner) {
+			E->set_owner(owner);
+		}
 	}
 
 	p_node->set_scene_file_path(get_scene_file_path());
