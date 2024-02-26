@@ -118,8 +118,8 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_auto_indent_code, "code", "from_line", "to_line");
 
 	GDVIRTUAL_BIND(_add_global_constant, "name", "value");
-	GDVIRTUAL_BIND(_add_named_global_constant, "name", "value");
-	GDVIRTUAL_BIND(_remove_named_global_constant, "name");
+	GDVIRTUAL_BIND(_add_named_global_variable, "name");
+	GDVIRTUAL_BIND(_remove_named_global_variable, "name");
 
 	GDVIRTUAL_BIND(_thread_enter);
 	GDVIRTUAL_BIND(_thread_exit);

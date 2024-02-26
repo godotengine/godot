@@ -276,7 +276,12 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
-		if (p_name.operator String().begins_with("autoload/")) {
+		if (p_name.operator String().begins_with("singletons/")) {
+			String node_name = p_name.operator String().split("/")[1];
+			if (global_variables.has(node_name)) {
+				remove_singleton(node_name);
+			}
+		} else if (p_name.operator String().begins_with("autoload/")) {
 			String node_name = p_name.operator String().split("/")[1];
 			if (autoloads.has(node_name)) {
 				remove_autoload(node_name);
@@ -320,7 +325,12 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
-		if (p_name.operator String().begins_with("autoload/")) {
+		if (p_name.operator String().begins_with("singletons/")) {
+			String name = p_name.operator String().split("/")[1];
+			GlobalVariableInfo singleton_info;
+			singleton_info.name = name;
+			add_singleton(singleton_info);
+		} else if (p_name.operator String().begins_with("autoload/")) {
 			String node_name = p_name.operator String().split("/")[1];
 			AutoloadInfo autoload;
 			autoload.name = node_name;
@@ -1228,6 +1238,27 @@ bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 	return custom_features.has(p_feature);
 }
 
+const HashMap<StringName, ProjectSettings::GlobalVariableInfo> &ProjectSettings::get_global_variable_list() const {
+	return global_variables;
+}
+
+void ProjectSettings::add_singleton(const GlobalVariableInfo &p_global_variable) {
+	ERR_FAIL_COND_MSG(p_global_variable.name == StringName(), "Trying to add global variable with no name.");
+	global_variables[p_global_variable.name] = p_global_variable;
+}
+
+void ProjectSettings::remove_singleton(const StringName &p_global_variable) {
+	ERR_FAIL_COND_MSG(!global_variables.has(p_global_variable), "Trying to remove non-existent global variable.");
+	global_variables.erase(p_global_variable);
+}
+
+void ProjectSettings::set_global_variable_value(const StringName &p_global_variable, const Variant &p_value) {
+	ERR_FAIL_COND_MSG(!global_variables.has(p_global_variable), "Trying to update a non-existent global variable.");
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		ScriptServer::get_language(i)->set_named_global_variable_value(p_global_variable, p_value);
+	}
+}
+
 const HashMap<StringName, ProjectSettings::AutoloadInfo> &ProjectSettings::get_autoload_list() const {
 	return autoloads;
 }
@@ -1338,6 +1369,8 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
+
+	ClassDB::bind_method(D_METHOD("set_singleton_value", "singleton", "value"), &ProjectSettings::set_global_variable_value);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 }

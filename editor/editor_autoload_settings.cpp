@@ -92,73 +92,6 @@ void EditorAutoloadSettings::_notification(int p_what) {
 	}
 }
 
-bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
-	if (!p_name.is_valid_identifier()) {
-		if (r_error) {
-			*r_error = TTR("Invalid name.") + " ";
-			if (p_name.size() > 0 && p_name.left(1).is_numeric()) {
-				*r_error += TTR("Cannot begin with a digit.");
-			} else {
-				*r_error += TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
-			}
-		}
-
-		return false;
-	}
-
-	if (ClassDB::class_exists(p_name)) {
-		if (r_error) {
-			*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing engine class name.");
-		}
-
-		return false;
-	}
-
-	if (ScriptServer::is_global_class(p_name)) {
-		if (r_error) {
-			*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing global script class name.");
-		}
-
-		return false;
-	}
-
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (Variant::get_type_name(Variant::Type(i)) == p_name) {
-			if (r_error) {
-				*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing built-in type name.");
-			}
-
-			return false;
-		}
-	}
-
-	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
-		if (CoreConstants::get_global_constant_name(i) == p_name) {
-			if (r_error) {
-				*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing global constant name.");
-			}
-
-			return false;
-		}
-	}
-
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		List<String> keywords;
-		ScriptServer::get_language(i)->get_reserved_words(&keywords);
-		for (const String &E : keywords) {
-			if (E == p_name) {
-				if (r_error) {
-					*r_error = TTR("Invalid name.") + " " + TTR("Keyword cannot be used as an Autoload name.");
-				}
-
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-
 void EditorAutoloadSettings::_autoload_add() {
 	if (autoload_add_path->get_text().is_empty()) {
 		ScriptCreateDialog *dialog = FileSystemDock::get_singleton()->get_script_create_dialog();
@@ -207,7 +140,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 		}
 
 		String error;
-		if (!_autoload_name_is_valid(name, &error)) {
+		if (!EditorGlobalVariablesSettings::global_variable_name_is_valid(name, &error)) {
 			ti->set_text(0, old_name);
 			EditorNode::get_singleton()->show_warning(error);
 			return;
@@ -383,18 +316,18 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 }
 
 void EditorAutoloadSettings::_autoload_text_submitted(const String p_name) {
-	if (!autoload_add_path->get_text().is_empty() && _autoload_name_is_valid(p_name, nullptr)) {
+	if (!autoload_add_path->get_text().is_empty() && EditorGlobalVariablesSettings::global_variable_name_is_valid(p_name, nullptr)) {
 		_autoload_add();
 	}
 }
 
 void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
-	add_autoload->set_disabled(!_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
+	add_autoload->set_disabled(!EditorGlobalVariablesSettings::global_variable_name_is_valid(autoload_add_name->get_text(), nullptr));
 }
 
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 	String error_string;
-	bool is_name_valid = _autoload_name_is_valid(p_name, &error_string);
+	bool is_name_valid = EditorGlobalVariablesSettings::global_variable_name_is_valid(p_name, &error_string);
 	add_autoload->set_disabled(!is_name_valid);
 	error_message->set_text(error_string);
 	error_message->set_visible(!autoload_add_name->get_text().is_empty() && !is_name_valid);
@@ -529,7 +462,7 @@ void EditorAutoloadSettings::update_autoload() {
 		AutoloadInfo &info = E.value;
 		if (info.is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->remove_named_global_constant(info.name);
+				ScriptServer::get_language(i)->remove_named_global_variable(info.name);
 			}
 		}
 		if (info.in_editor) {
@@ -561,7 +494,8 @@ void EditorAutoloadSettings::update_autoload() {
 
 		if (info->is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->add_named_global_constant(info->name, info->node);
+				ScriptServer::get_language(i)->add_named_global_variable(info->name);
+				ScriptServer::get_language(i)->set_named_global_variable_value(info->name, info->node);
 			}
 		}
 
@@ -743,7 +677,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 	String name = p_name;
 
 	String error;
-	if (!_autoload_name_is_valid(name, &error)) {
+	if (!EditorGlobalVariablesSettings::global_variable_name_is_valid(name, &error)) {
 		EditorNode::get_singleton()->show_warning(TTR("Can't add Autoload:") + "\n" + error);
 		return false;
 	}
@@ -846,7 +780,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		if (info.is_singleton) {
 			// Make sure name references work before parsing scripts
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->add_named_global_constant(info.name, Variant());
+				ScriptServer::get_language(i)->add_named_global_variable(info.name);
 			}
 		}
 
@@ -864,7 +798,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 		if (info.is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->add_named_global_constant(info.name, info.node);
+				ScriptServer::get_language(i)->add_named_global_variable(info.name);
+				ScriptServer::get_language(i)->set_named_global_variable_value(info.name, info.node);
 			}
 		}
 

@@ -35,6 +35,7 @@
 #include "editor/action_map_editor.h"
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
+#include "editor/editor_global_variables_settings.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
 #include "editor/group_settings_editor.h"
@@ -58,6 +59,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	ActionMapEditor *action_map_editor = nullptr;
 	LocalizationEditor *localization_editor = nullptr;
 	EditorAutoloadSettings *autoload_settings = nullptr;
+	EditorGlobalVariablesSettings *global_variables_settings = nullptr;
 	ShaderGlobalsEditor *shaders_global_shader_uniforms_editor = nullptr;
 	GroupSettingsEditor *group_settings = nullptr;
 	EditorPluginSettings *plugin_settings = nullptr;

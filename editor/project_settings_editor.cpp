@@ -63,6 +63,7 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
+	global_variables_settings->update_global_variables();
 	group_settings->update_groups();
 	plugin_settings->update_plugins();
 	import_defaults_editor->clear();
@@ -727,6 +728,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	autoload_settings->set_name(TTR("Autoload"));
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(autoload_settings);
+
+	global_variables_settings = memnew(EditorGlobalVariablesSettings);
+	global_variables_settings->set_name(TTR("Globals"));
+	global_variables_settings->connect("global_variables_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
+	tab_container->add_child(global_variables_settings);
 
 	shaders_global_shader_uniforms_editor = memnew(ShaderGlobalsEditor);
 	shaders_global_shader_uniforms_editor->set_name(TTR("Shader Globals"));

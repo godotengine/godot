@@ -397,15 +397,23 @@ public:
 	~GDScriptInstance();
 };
 
+struct GlobalVariable {
+	// TODO: Shall be used to implement global variables typing.
+	// Variant::Type type;
+	// StringName classname;
+	// bool constant;
+	Variant value;
+};
+
 class GDScriptLanguage : public ScriptLanguage {
 	friend class GDScriptFunctionState;
 
 	static GDScriptLanguage *singleton;
 
-	Variant *_global_array = nullptr;
-	Vector<Variant> global_array;
+	GlobalVariable *_global_array = nullptr;
+	Vector<GlobalVariable> global_array;
 	HashMap<StringName, int> globals;
-	HashMap<StringName, Variant> named_globals;
+	HashMap<StringName, GlobalVariable> named_globals;
 
 	struct CallLevel {
 		Variant *stack = nullptr;
@@ -526,12 +534,12 @@ public:
 	} strings;
 
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
-	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
+	_FORCE_INLINE_ GlobalVariable *get_global_array() { return _global_array; }
 	_FORCE_INLINE_ const HashMap<StringName, int> &get_global_map() const { return globals; }
-	_FORCE_INLINE_ const HashMap<StringName, Variant> &get_named_globals_map() const { return named_globals; }
+	_FORCE_INLINE_ const HashMap<StringName, GlobalVariable> &get_named_globals_map() const { return named_globals; }
 	// These two functions should be used when behavior needs to be consistent between in-editor and running the scene
-	bool has_any_global_constant(const StringName &p_name) { return named_globals.has(p_name) || globals.has(p_name); }
-	Variant get_any_global_constant(const StringName &p_name);
+	bool has_any_global_variable(const StringName &p_name) { return named_globals.has(p_name) || globals.has(p_name); }
+	GlobalVariable get_any_global_variable(const StringName &p_name);
 
 	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() { return singleton; }
 
@@ -569,8 +577,9 @@ public:
 	virtual String _get_indentation() const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override;
-	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) override;
-	virtual void remove_named_global_constant(const StringName &p_name) override;
+	virtual void add_named_global_variable(const StringName &p_name) override;
+	virtual void set_named_global_variable_value(const StringName &p_name, const Variant &p_value) override;
+	virtual void remove_named_global_variable(const StringName &p_name) override;
 
 	/* DEBUGGER FUNCTIONS */
 

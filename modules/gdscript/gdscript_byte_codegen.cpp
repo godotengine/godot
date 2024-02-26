@@ -895,8 +895,8 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 		} break;
 		case GDScriptDataType::NATIVE: {
 			int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[p_target.type.native_type];
-			Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
-			class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+			GlobalVariable gv = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
+			class_idx = get_constant_pos(gv.value) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 			append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE);
 			append(p_target);
 			append(p_source);
@@ -986,9 +986,9 @@ void GDScriptByteCodeGenerator::write_cast(const Address &p_target, const Addres
 		} break;
 		case GDScriptDataType::NATIVE: {
 			int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[p_type.native_type];
-			Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
+			GlobalVariable gv = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
 			append_opcode(GDScriptFunction::OPCODE_CAST_TO_NATIVE);
-			index = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+			index = get_constant_pos(gv.value) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 		} break;
 		case GDScriptDataType::SCRIPT:
 		case GDScriptDataType::GDSCRIPT: {
@@ -1708,8 +1708,8 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_NATIVE);
 				append(p_return_value);
 				int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[function->return_type.native_type];
-				Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
-				class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+				GlobalVariable gv = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
+				class_idx = get_constant_pos(gv.value) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 				append(class_idx);
 			} break;
 			case GDScriptDataType::GDSCRIPT:

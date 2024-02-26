@@ -60,6 +60,9 @@ public:
 	const static PackedStringArray get_required_features();
 	const static PackedStringArray get_unsupported_features(const PackedStringArray &p_project_features);
 #endif // TOOLS_ENABLED
+	struct GlobalVariableInfo {
+		StringName name;
+	};
 
 	struct AutoloadInfo {
 		StringName name;
@@ -105,6 +108,7 @@ protected:
 	HashMap<StringName, LocalVector<Pair<StringName, StringName>>> feature_overrides;
 
 	LocalVector<String> hidden_prefixes;
+	HashMap<StringName, GlobalVariableInfo> global_variables;
 	HashMap<StringName, AutoloadInfo> autoloads;
 	HashMap<StringName, String> global_groups;
 	HashMap<StringName, HashSet<StringName>> scene_groups_cache;
@@ -203,6 +207,11 @@ public:
 	bool is_project_loaded() const;
 
 	bool has_custom_feature(const String &p_feature) const;
+
+	const HashMap<StringName, GlobalVariableInfo> &get_global_variable_list() const;
+	void add_singleton(const GlobalVariableInfo &p_singleton);
+	void remove_singleton(const StringName &p_singleton);
+	void set_global_variable_value(const StringName &p_singleton, const Variant &p_value);
 
 	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
 	void add_autoload(const AutoloadInfo &p_autoload);
