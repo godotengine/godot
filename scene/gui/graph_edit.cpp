@@ -529,7 +529,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 
 		graph_element->set_scale(Vector2(zoom, zoom));
 		_graph_element_moved(graph_element);
-		graph_element->set_mouse_filter(MOUSE_FILTER_PASS);
+		graph_element->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	}
 }
 
@@ -2386,7 +2386,7 @@ GraphEdit::GraphEdit() {
 
 	connections_shader = default_connections_shader;
 
-	top_connection_layer->set_mouse_filter(MOUSE_FILTER_PASS);
+	top_connection_layer->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	top_connection_layer->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	top_connection_layer->connect("gui_input", callable_mp(this, &GraphEdit::_top_connection_layer_input));
 
@@ -2517,7 +2517,7 @@ GraphEdit::GraphEdit() {
 	top_layer->add_child(minimap);
 	minimap->set_name("_minimap");
 	minimap->set_modulate(Color(1, 1, 1, minimap_opacity));
-	minimap->set_mouse_filter(MOUSE_FILTER_PASS);
+	minimap->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	minimap->set_custom_minimum_size(Vector2(50, 50));
 	minimap->set_size(minimap_size);
 	minimap->set_anchors_preset(Control::PRESET_BOTTOM_RIGHT);

@@ -337,7 +337,7 @@ bool BoxContainer::is_vertical() const {
 
 Control *BoxContainer::add_spacer(bool p_begin) {
 	Control *c = memnew(Control);
-	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
+	c->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP); // Allow spacer to propagate mouse events.
 
 	if (vertical) {
 		c->set_v_size_flags(SIZE_EXPAND_FILL);

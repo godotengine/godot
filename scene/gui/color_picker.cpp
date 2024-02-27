@@ -1796,7 +1796,7 @@ ColorPicker::ColorPicker() {
 	uv_edit = memnew(Control);
 	hb_edit->add_child(uv_edit);
 	uv_edit->connect("gui_input", callable_mp(this, &ColorPicker::_uv_input).bind(uv_edit));
-	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
+	uv_edit->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	uv_edit->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(0, uv_edit));
@@ -1940,7 +1940,7 @@ ColorPicker::ColorPicker() {
 
 	wheel = memnew(Control);
 	wheel_margin->add_child(wheel);
-	wheel->set_mouse_filter(MOUSE_FILTER_PASS);
+	wheel->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	wheel->connect("draw", callable_mp(this, &ColorPicker::_hsv_draw).bind(2, wheel));
 
 	wheel_uv = memnew(Control);

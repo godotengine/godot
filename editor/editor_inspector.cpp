@@ -2102,7 +2102,7 @@ void EditorInspectorArray::_setup() {
 		// Panel and its hbox.
 		ae.panel = memnew(PanelContainer);
 		ae.panel->set_focus_mode(FOCUS_ALL);
-		ae.panel->set_mouse_filter(MOUSE_FILTER_PASS);
+		ae.panel->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 		SET_DRAG_FORWARDING_GCD(ae.panel, EditorInspectorArray);
 
 		int element_position = begin_array_index + i;
@@ -2116,7 +2116,7 @@ void EditorInspectorArray::_setup() {
 		elements_vbox->add_child(ae.panel);
 
 		ae.margin = memnew(MarginContainer);
-		ae.margin->set_mouse_filter(MOUSE_FILTER_PASS);
+		ae.margin->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 		if (is_inside_tree()) {
 			Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
 			ae.margin->begin_bulk_theme_override();

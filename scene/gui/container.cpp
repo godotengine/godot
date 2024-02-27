@@ -214,6 +214,6 @@ void Container::_bind_methods() {
 }
 
 Container::Container() {
-	// All containers should let mouse events pass by default.
-	set_mouse_filter(MOUSE_FILTER_PASS);
+	// All containers should let mouse events propagate up by default.
+	set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 }

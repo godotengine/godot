@@ -411,9 +411,9 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			}
 
 			SUBCASE("[Viewport][GuiInputEvent] Focus Propagation to parent items.") {
-				SUBCASE("[Viewport][GuiInputEvent] Unfocusable Control with MOUSE_FILTER_PASS propagates focus to parent CanvasItem.") {
+				SUBCASE("[Viewport][GuiInputEvent] Unfocusable Control with MOUSE_FILTER_PROPAGATE_UP propagates focus to parent CanvasItem.") {
 					node_d->set_focus_mode(Control::FOCUS_NONE);
-					node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+					node_d->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 					SEND_GUI_MOUSE_BUTTON_EVENT(on_d + Point2i(20, 20), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 					CHECK(node_b->has_focus());
@@ -421,7 +421,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 					// Verify break condition for Root Control.
 					node_a->set_focus_mode(Control::FOCUS_NONE);
-					node_a->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+					node_a->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 					SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 					SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
@@ -430,7 +430,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 				SUBCASE("[Viewport][GuiInputEvent] Top Level CanvasItem stops focus propagation.") {
 					node_d->set_focus_mode(Control::FOCUS_NONE);
-					node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+					node_d->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 					node_c->set_as_top_level(true);
 
 					SEND_GUI_MOUSE_BUTTON_EVENT(on_b, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
@@ -496,8 +496,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation.") {
-			node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_g->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_d->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+			node_g->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
 			CHECK_FALSE(node_b->mouse_over);
@@ -553,7 +553,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			Array signal_args;
 			signal_args.push_back(Array());
 
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			// Move to background.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
@@ -612,9 +612,9 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			node_i->set_as_top_level(true);
 			node_c->set_position(node_b->get_global_position());
 			node_i->set_position(node_h->get_global_position());
-			node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_d->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
 			CHECK_FALSE(node_b->mouse_over);
@@ -679,7 +679,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation with mouse filter stop.") {
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			// Move to background.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
@@ -718,7 +718,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation with mouse filter ignore.") {
 			node_i->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			// Move to background.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
@@ -761,9 +761,9 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			Array signal_args;
 			signal_args.push_back(Array());
 
-			node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_d->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			// Move to Control node_d.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::NONE, Key::NONE);
@@ -840,8 +840,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			Array signal_args;
 			signal_args.push_back(Array());
 
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			// Move to Control node_j.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
@@ -865,8 +865,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
 			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
 
-			// Change node_i to MOUSE_FILTER_PASS. node_h should receive Mouse Enter. node_i should not receive any new signals.
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			// Change node_i to MOUSE_FILTER_PROPAGATE_UP. node_h should receive Mouse Enter. node_i should not receive any new signals.
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 			CHECK(node_h->mouse_over);
 			CHECK_FALSE(node_h->mouse_over_self);
 			CHECK(node_i->mouse_over);
@@ -893,8 +893,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			Array signal_args;
 			signal_args.push_back(Array());
 
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			// Move to Control node_j.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
@@ -918,8 +918,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
 			SIGNAL_CHECK(SNAME("mouse_exited"), signal_args);
 
-			// Change node_i to MOUSE_FILTER_PASS. node_i should receive Mouse Enter.
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			// Change node_i to MOUSE_FILTER_PROPAGATE_UP. node_i should receive Mouse Enter.
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 			CHECK(node_h->mouse_over);
 			CHECK_FALSE(node_h->mouse_over_self);
 			CHECK(node_i->mouse_over);
@@ -941,8 +941,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
 			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
 
-			// Change node_j to MOUSE_FILTER_PASS. After updating the mouse motion, node_j should now have mouse_over_self.
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			// Change node_j to MOUSE_FILTER_PROPAGATE_UP. After updating the mouse motion, node_j should now have mouse_over_self.
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
 			CHECK(node_h->mouse_over);
 			CHECK_FALSE(node_h->mouse_over_self);
@@ -970,8 +970,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			Array signal_args;
 			signal_args.push_back(Array());
 
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			// Move to Control node_j.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
@@ -1024,8 +1024,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			Array signal_args;
 			signal_args.push_back(Array());
 
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			node_i->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+			node_j->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 			// Move to Control node_j.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
@@ -1226,8 +1226,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				Point2i on_ddd = on_d + Point2i(-2, 2);
 
 				SUBCASE("[Viewport][GuiInputEvent] Drag and Drop propagation to parent Controls.") {
-					node_aaa->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-					node_ddd->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+					node_aaa->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+					node_ddd->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 					SEND_GUI_MOUSE_BUTTON_EVENT(on_aaa, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 					CHECK_FALSE(root->gui_is_dragging());
@@ -1248,7 +1248,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				}
 
 				SUBCASE("[Viewport][GuiInputEvent] Drag and Drop grab-propagation stopped by Top Level.") {
-					node_aaa->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+					node_aaa->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 					node_aaa->set_as_top_level(true);
 
 					SEND_GUI_MOUSE_BUTTON_EVENT(on_aaa, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
@@ -1263,8 +1263,8 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				}
 
 				SUBCASE("[Viewport][GuiInputEvent] Drag and Drop target-propagation stopped by Top Level.") {
-					node_aaa->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-					node_ddd->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+					node_aaa->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
+					node_ddd->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 					node_ddd->set_as_top_level(true);
 					node_ddd->set_position(Point2i(30, 100));
 
@@ -1288,7 +1288,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				}
 
 				SUBCASE("[Viewport][GuiInputEvent] Drag and Drop grab-propagation stopped by non-CanvasItem.") {
-					node_g->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+					node_g->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 					SEND_GUI_MOUSE_BUTTON_EVENT(on_g, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 					SEND_GUI_MOUSE_MOTION_EVENT(on_g + Point2i(0, min_grab_movement), MouseButtonMask::LEFT, Key::NONE);
@@ -1299,7 +1299,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				}
 
 				SUBCASE("[Viewport][GuiInputEvent] Drag and Drop target-propagation stopped by non-CanvasItem.") {
-					node_g->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+					node_g->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 					SEND_GUI_MOUSE_BUTTON_EVENT(on_a - Point2i(1, 1), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE); // Offset for node_aaa.
 					SEND_GUI_MOUSE_MOTION_EVENT(on_a + Point2i(0, min_grab_movement), MouseButtonMask::LEFT, Key::NONE);

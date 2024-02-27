@@ -6581,7 +6581,7 @@ EditorNode::EditorNode() {
 	if (can_expand) {
 		// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).
 		left_menu_spacer = memnew(Control);
-		left_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		left_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 		title_bar->add_child(left_menu_spacer);
 	}
 
@@ -6749,7 +6749,7 @@ EditorNode::EditorNode() {
 
 	// Spacer to center 2D / 3D / Script buttons.
 	HBoxContainer *left_spacer = memnew(HBoxContainer);
-	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 	left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_bar->add_child(left_spacer);
 
@@ -6761,7 +6761,7 @@ EditorNode::EditorNode() {
 		project_title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		project_title->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		project_title->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		project_title->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 		left_spacer->add_child(project_title);
 	}
 
@@ -6855,7 +6855,7 @@ EditorNode::EditorNode() {
 
 	// Spacer to center 2D / 3D / Script buttons.
 	Control *right_spacer = memnew(Control);
-	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 	right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_bar->add_child(right_spacer);
 
@@ -6880,7 +6880,7 @@ EditorNode::EditorNode() {
 	if (can_expand) {
 		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
 		right_menu_spacer = memnew(Control);
-		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 		title_bar->add_child(right_menu_spacer);
 	}
 
