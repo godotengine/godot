@@ -25,7 +25,7 @@ extern "C" {
     ((((major) & 0xffffULL) << 48) | (((minor) & 0xffffULL) << 32) | ((patch) & 0xffffffffULL))
 
 // OpenXR current version number.
-#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 0, 33)
+#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 0, 34)
 
 #define XR_VERSION_MAJOR(version) (uint16_t)(((uint64_t)(version) >> 48)& 0xffffULL)
 #define XR_VERSION_MINOR(version) (uint16_t)(((uint64_t)(version) >> 32) & 0xffffULL)
@@ -549,11 +549,19 @@ typedef enum XrStructureType {
     XR_TYPE_EVENT_DATA_SPACE_LIST_SAVE_COMPLETE_FB = 1000238001,
     XR_TYPE_SPACE_USER_CREATE_INFO_FB = 1000241001,
     XR_TYPE_SYSTEM_HEADSET_ID_PROPERTIES_META = 1000245000,
+    XR_TYPE_RECOMMENDED_LAYER_RESOLUTION_META = 1000254000,
+    XR_TYPE_RECOMMENDED_LAYER_RESOLUTION_GET_INFO_META = 1000254001,
     XR_TYPE_SYSTEM_PASSTHROUGH_COLOR_LUT_PROPERTIES_META = 1000266000,
     XR_TYPE_PASSTHROUGH_COLOR_LUT_CREATE_INFO_META = 1000266001,
     XR_TYPE_PASSTHROUGH_COLOR_LUT_UPDATE_INFO_META = 1000266002,
     XR_TYPE_PASSTHROUGH_COLOR_MAP_LUT_META = 1000266100,
     XR_TYPE_PASSTHROUGH_COLOR_MAP_INTERPOLATED_LUT_META = 1000266101,
+    XR_TYPE_SPACE_TRIANGLE_MESH_GET_INFO_META = 1000269001,
+    XR_TYPE_SPACE_TRIANGLE_MESH_META = 1000269002,
+    XR_TYPE_SYSTEM_FACE_TRACKING_PROPERTIES2_FB = 1000287013,
+    XR_TYPE_FACE_TRACKER_CREATE_INFO2_FB = 1000287014,
+    XR_TYPE_FACE_EXPRESSION_INFO2_FB = 1000287015,
+    XR_TYPE_FACE_EXPRESSION_WEIGHTS2_FB = 1000287016,
     XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC = 1000317001,
     XR_TYPE_PASSTHROUGH_COLOR_HTC = 1000317002,
     XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC = 1000317003,
@@ -575,6 +583,8 @@ typedef enum XrStructureType {
     XR_TYPE_PLANE_DETECTOR_LOCATION_EXT = 1000429005,
     XR_TYPE_PLANE_DETECTOR_POLYGON_BUFFER_EXT = 1000429006,
     XR_TYPE_SYSTEM_PLANE_DETECTION_PROPERTIES_EXT = 1000429007,
+    XR_TYPE_EVENT_DATA_USER_PRESENCE_CHANGED_EXT = 1000470000,
+    XR_TYPE_SYSTEM_USER_PRESENCE_PROPERTIES_EXT = 1000470001,
     XR_TYPE_GRAPHICS_BINDING_VULKAN2_KHR = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
     XR_TYPE_SWAPCHAIN_IMAGE_VULKAN2_KHR = XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR,
     XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR,
@@ -672,6 +682,7 @@ typedef enum XrObjectType {
     XR_OBJECT_TYPE_VIRTUAL_KEYBOARD_META = 1000219000,
     XR_OBJECT_TYPE_SPACE_USER_FB = 1000241000,
     XR_OBJECT_TYPE_PASSTHROUGH_COLOR_LUT_META = 1000266000,
+    XR_OBJECT_TYPE_FACE_TRACKER2_FB = 1000287012,
     XR_OBJECT_TYPE_PASSTHROUGH_HTC = 1000317000,
     XR_OBJECT_TYPE_PLANE_DETECTOR_EXT = 1000429000,
     XR_OBJECT_TYPE_MAX_ENUM = 0x7FFFFFFF
@@ -3616,7 +3627,7 @@ typedef struct XrHandTrackingCapsulesStateFB {
 #define XR_FB_spatial_entity 1
 XR_DEFINE_ATOM(XrAsyncRequestIdFB)
 #define XR_UUID_SIZE_EXT                  16
-#define XR_FB_spatial_entity_SPEC_VERSION 2
+#define XR_FB_spatial_entity_SPEC_VERSION 3
 #define XR_FB_SPATIAL_ENTITY_EXTENSION_NAME "XR_FB_spatial_entity"
 
 typedef enum XrSpaceComponentTypeFB {
@@ -3628,6 +3639,7 @@ typedef enum XrSpaceComponentTypeFB {
     XR_SPACE_COMPONENT_TYPE_SEMANTIC_LABELS_FB = 5,
     XR_SPACE_COMPONENT_TYPE_ROOM_LAYOUT_FB = 6,
     XR_SPACE_COMPONENT_TYPE_SPACE_CONTAINER_FB = 7,
+    XR_SPACE_COMPONENT_TYPE_TRIANGLE_MESH_META = 1000269000,
     XR_SPACE_COMPONENT_TYPE_MAX_ENUM_FB = 0x7FFFFFFF
 } XrSpaceComponentTypeFB;
 // XrSystemSpatialEntityPropertiesFB extends XrSystemProperties
@@ -4330,6 +4342,11 @@ XRAPI_ATTR XrResult  XRAPI_CALL xrSetViewOffsetVARJO(
     float                                       offset);
 #endif /* XR_EXTENSION_PROTOTYPES */
 #endif /* !XR_NO_PROTOTYPES */
+
+
+#define XR_VARJO_xr4_controller_interaction 1
+#define XR_VARJO_xr4_controller_interaction_SPEC_VERSION 1
+#define XR_VARJO_XR4_CONTROLLER_INTERACTION_EXTENSION_NAME "XR_VARJO_xr4_controller_interaction"
 
 
 #define XR_ML_ml2_controller_interaction 1
@@ -5151,13 +5168,14 @@ typedef struct XrHapticAmplitudeEnvelopeVibrationFB {
 
 
 #define XR_FB_scene 1
-#define XR_FB_scene_SPEC_VERSION          3
+#define XR_FB_scene_SPEC_VERSION          4
 #define XR_FB_SCENE_EXTENSION_NAME        "XR_FB_scene"
 typedef XrFlags64 XrSemanticLabelsSupportFlagsFB;
 
 // Flag bits for XrSemanticLabelsSupportFlagsFB
 static const XrSemanticLabelsSupportFlagsFB XR_SEMANTIC_LABELS_SUPPORT_MULTIPLE_SEMANTIC_LABELS_BIT_FB = 0x00000001;
 static const XrSemanticLabelsSupportFlagsFB XR_SEMANTIC_LABELS_SUPPORT_ACCEPT_DESK_TO_TABLE_MIGRATION_BIT_FB = 0x00000002;
+static const XrSemanticLabelsSupportFlagsFB XR_SEMANTIC_LABELS_SUPPORT_ACCEPT_INVISIBLE_WALL_FACE_BIT_FB = 0x00000004;
 
 typedef struct XrExtent3DfFB {
     float    width;
@@ -5612,6 +5630,7 @@ static const XrCompositionLayerSettingsFlagsFB XR_COMPOSITION_LAYER_SETTINGS_NOR
 static const XrCompositionLayerSettingsFlagsFB XR_COMPOSITION_LAYER_SETTINGS_QUALITY_SUPER_SAMPLING_BIT_FB = 0x00000002;
 static const XrCompositionLayerSettingsFlagsFB XR_COMPOSITION_LAYER_SETTINGS_NORMAL_SHARPENING_BIT_FB = 0x00000004;
 static const XrCompositionLayerSettingsFlagsFB XR_COMPOSITION_LAYER_SETTINGS_QUALITY_SHARPENING_BIT_FB = 0x00000008;
+static const XrCompositionLayerSettingsFlagsFB XR_COMPOSITION_LAYER_SETTINGS_AUTO_LAYER_FILTER_BIT_META = 0x00000020;
 
 // XrCompositionLayerSettingsFB extends XrCompositionLayerBaseHeader
 typedef struct XrCompositionLayerSettingsFB {
@@ -6115,7 +6134,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpaceUserFB(
 
 
 #define XR_META_headset_id 1
-#define XR_META_headset_id_SPEC_VERSION   1
+#define XR_META_headset_id_SPEC_VERSION   2
 #define XR_META_HEADSET_ID_EXTENSION_NAME "XR_META_headset_id"
 // XrSystemHeadsetIdPropertiesMETA extends XrSystemProperties
 typedef struct XrSystemHeadsetIdPropertiesMETA {
@@ -6124,6 +6143,35 @@ typedef struct XrSystemHeadsetIdPropertiesMETA {
     XrUuidEXT             id;
 } XrSystemHeadsetIdPropertiesMETA;
 
+
+
+#define XR_META_recommended_layer_resolution 1
+#define XR_META_recommended_layer_resolution_SPEC_VERSION 1
+#define XR_META_RECOMMENDED_LAYER_RESOLUTION_EXTENSION_NAME "XR_META_recommended_layer_resolution"
+typedef struct XrRecommendedLayerResolutionMETA {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrExtent2Di           recommendedImageDimensions;
+    XrBool32              isValid;
+} XrRecommendedLayerResolutionMETA;
+
+typedef struct XrRecommendedLayerResolutionGetInfoMETA {
+    XrStructureType                        type;
+    const void* XR_MAY_ALIAS               next;
+    const XrCompositionLayerBaseHeader*    layer;
+    XrTime                                 predictedDisplayTime;
+} XrRecommendedLayerResolutionGetInfoMETA;
+
+typedef XrResult (XRAPI_PTR *PFN_xrGetRecommendedLayerResolutionMETA)(XrSession session, const XrRecommendedLayerResolutionGetInfoMETA* info, XrRecommendedLayerResolutionMETA* resolution);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrGetRecommendedLayerResolutionMETA(
+    XrSession                                   session,
+    const XrRecommendedLayerResolutionGetInfoMETA* info,
+    XrRecommendedLayerResolutionMETA*           resolution);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
 
 
 #define XR_META_passthrough_color_lut 1
@@ -6200,9 +6248,199 @@ XRAPI_ATTR XrResult XRAPI_CALL xrUpdatePassthroughColorLutMETA(
 #endif /* !XR_NO_PROTOTYPES */
 
 
+#define XR_META_spatial_entity_mesh 1
+#define XR_META_spatial_entity_mesh_SPEC_VERSION 1
+#define XR_META_SPATIAL_ENTITY_MESH_EXTENSION_NAME "XR_META_spatial_entity_mesh"
+typedef struct XrSpaceTriangleMeshGetInfoMETA {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrSpaceTriangleMeshGetInfoMETA;
+
+typedef struct XrSpaceTriangleMeshMETA {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    uint32_t              vertexCapacityInput;
+    uint32_t              vertexCountOutput;
+    XrVector3f*           vertices;
+    uint32_t              indexCapacityInput;
+    uint32_t              indexCountOutput;
+    uint32_t*             indices;
+} XrSpaceTriangleMeshMETA;
+
+typedef XrResult (XRAPI_PTR *PFN_xrGetSpaceTriangleMeshMETA)(XrSpace space, const XrSpaceTriangleMeshGetInfoMETA* getInfo, XrSpaceTriangleMeshMETA* triangleMeshOutput);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSpaceTriangleMeshMETA(
+    XrSpace                                     space,
+    const XrSpaceTriangleMeshGetInfoMETA*       getInfo,
+    XrSpaceTriangleMeshMETA*                    triangleMeshOutput);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+#define XR_META_automatic_layer_filter 1
+#define XR_META_automatic_layer_filter_SPEC_VERSION 1
+#define XR_META_AUTOMATIC_LAYER_FILTER_EXTENSION_NAME "XR_META_automatic_layer_filter"
+
+
 #define XR_META_touch_controller_plus 1
 #define XR_META_touch_controller_plus_SPEC_VERSION 1
 #define XR_META_TOUCH_CONTROLLER_PLUS_EXTENSION_NAME "XR_META_touch_controller_plus"
+
+
+#define XR_FB_face_tracking2 1
+XR_DEFINE_HANDLE(XrFaceTracker2FB)
+#define XR_FB_face_tracking2_SPEC_VERSION 1
+#define XR_FB_FACE_TRACKING2_EXTENSION_NAME "XR_FB_face_tracking2"
+
+typedef enum XrFaceExpression2FB {
+    XR_FACE_EXPRESSION2_BROW_LOWERER_L_FB = 0,
+    XR_FACE_EXPRESSION2_BROW_LOWERER_R_FB = 1,
+    XR_FACE_EXPRESSION2_CHEEK_PUFF_L_FB = 2,
+    XR_FACE_EXPRESSION2_CHEEK_PUFF_R_FB = 3,
+    XR_FACE_EXPRESSION2_CHEEK_RAISER_L_FB = 4,
+    XR_FACE_EXPRESSION2_CHEEK_RAISER_R_FB = 5,
+    XR_FACE_EXPRESSION2_CHEEK_SUCK_L_FB = 6,
+    XR_FACE_EXPRESSION2_CHEEK_SUCK_R_FB = 7,
+    XR_FACE_EXPRESSION2_CHIN_RAISER_B_FB = 8,
+    XR_FACE_EXPRESSION2_CHIN_RAISER_T_FB = 9,
+    XR_FACE_EXPRESSION2_DIMPLER_L_FB = 10,
+    XR_FACE_EXPRESSION2_DIMPLER_R_FB = 11,
+    XR_FACE_EXPRESSION2_EYES_CLOSED_L_FB = 12,
+    XR_FACE_EXPRESSION2_EYES_CLOSED_R_FB = 13,
+    XR_FACE_EXPRESSION2_EYES_LOOK_DOWN_L_FB = 14,
+    XR_FACE_EXPRESSION2_EYES_LOOK_DOWN_R_FB = 15,
+    XR_FACE_EXPRESSION2_EYES_LOOK_LEFT_L_FB = 16,
+    XR_FACE_EXPRESSION2_EYES_LOOK_LEFT_R_FB = 17,
+    XR_FACE_EXPRESSION2_EYES_LOOK_RIGHT_L_FB = 18,
+    XR_FACE_EXPRESSION2_EYES_LOOK_RIGHT_R_FB = 19,
+    XR_FACE_EXPRESSION2_EYES_LOOK_UP_L_FB = 20,
+    XR_FACE_EXPRESSION2_EYES_LOOK_UP_R_FB = 21,
+    XR_FACE_EXPRESSION2_INNER_BROW_RAISER_L_FB = 22,
+    XR_FACE_EXPRESSION2_INNER_BROW_RAISER_R_FB = 23,
+    XR_FACE_EXPRESSION2_JAW_DROP_FB = 24,
+    XR_FACE_EXPRESSION2_JAW_SIDEWAYS_LEFT_FB = 25,
+    XR_FACE_EXPRESSION2_JAW_SIDEWAYS_RIGHT_FB = 26,
+    XR_FACE_EXPRESSION2_JAW_THRUST_FB = 27,
+    XR_FACE_EXPRESSION2_LID_TIGHTENER_L_FB = 28,
+    XR_FACE_EXPRESSION2_LID_TIGHTENER_R_FB = 29,
+    XR_FACE_EXPRESSION2_LIP_CORNER_DEPRESSOR_L_FB = 30,
+    XR_FACE_EXPRESSION2_LIP_CORNER_DEPRESSOR_R_FB = 31,
+    XR_FACE_EXPRESSION2_LIP_CORNER_PULLER_L_FB = 32,
+    XR_FACE_EXPRESSION2_LIP_CORNER_PULLER_R_FB = 33,
+    XR_FACE_EXPRESSION2_LIP_FUNNELER_LB_FB = 34,
+    XR_FACE_EXPRESSION2_LIP_FUNNELER_LT_FB = 35,
+    XR_FACE_EXPRESSION2_LIP_FUNNELER_RB_FB = 36,
+    XR_FACE_EXPRESSION2_LIP_FUNNELER_RT_FB = 37,
+    XR_FACE_EXPRESSION2_LIP_PRESSOR_L_FB = 38,
+    XR_FACE_EXPRESSION2_LIP_PRESSOR_R_FB = 39,
+    XR_FACE_EXPRESSION2_LIP_PUCKER_L_FB = 40,
+    XR_FACE_EXPRESSION2_LIP_PUCKER_R_FB = 41,
+    XR_FACE_EXPRESSION2_LIP_STRETCHER_L_FB = 42,
+    XR_FACE_EXPRESSION2_LIP_STRETCHER_R_FB = 43,
+    XR_FACE_EXPRESSION2_LIP_SUCK_LB_FB = 44,
+    XR_FACE_EXPRESSION2_LIP_SUCK_LT_FB = 45,
+    XR_FACE_EXPRESSION2_LIP_SUCK_RB_FB = 46,
+    XR_FACE_EXPRESSION2_LIP_SUCK_RT_FB = 47,
+    XR_FACE_EXPRESSION2_LIP_TIGHTENER_L_FB = 48,
+    XR_FACE_EXPRESSION2_LIP_TIGHTENER_R_FB = 49,
+    XR_FACE_EXPRESSION2_LIPS_TOWARD_FB = 50,
+    XR_FACE_EXPRESSION2_LOWER_LIP_DEPRESSOR_L_FB = 51,
+    XR_FACE_EXPRESSION2_LOWER_LIP_DEPRESSOR_R_FB = 52,
+    XR_FACE_EXPRESSION2_MOUTH_LEFT_FB = 53,
+    XR_FACE_EXPRESSION2_MOUTH_RIGHT_FB = 54,
+    XR_FACE_EXPRESSION2_NOSE_WRINKLER_L_FB = 55,
+    XR_FACE_EXPRESSION2_NOSE_WRINKLER_R_FB = 56,
+    XR_FACE_EXPRESSION2_OUTER_BROW_RAISER_L_FB = 57,
+    XR_FACE_EXPRESSION2_OUTER_BROW_RAISER_R_FB = 58,
+    XR_FACE_EXPRESSION2_UPPER_LID_RAISER_L_FB = 59,
+    XR_FACE_EXPRESSION2_UPPER_LID_RAISER_R_FB = 60,
+    XR_FACE_EXPRESSION2_UPPER_LIP_RAISER_L_FB = 61,
+    XR_FACE_EXPRESSION2_UPPER_LIP_RAISER_R_FB = 62,
+    XR_FACE_EXPRESSION2_TONGUE_TIP_INTERDENTAL_FB = 63,
+    XR_FACE_EXPRESSION2_TONGUE_TIP_ALVEOLAR_FB = 64,
+    XR_FACE_EXPRESSION2_TONGUE_FRONT_DORSAL_PALATE_FB = 65,
+    XR_FACE_EXPRESSION2_TONGUE_MID_DORSAL_PALATE_FB = 66,
+    XR_FACE_EXPRESSION2_TONGUE_BACK_DORSAL_VELAR_FB = 67,
+    XR_FACE_EXPRESSION2_TONGUE_OUT_FB = 68,
+    XR_FACE_EXPRESSION2_TONGUE_RETREAT_FB = 69,
+    XR_FACE_EXPRESSION2_COUNT_FB = 70,
+    XR_FACE_EXPRESSION_2FB_MAX_ENUM_FB = 0x7FFFFFFF
+} XrFaceExpression2FB;
+
+typedef enum XrFaceExpressionSet2FB {
+    XR_FACE_EXPRESSION_SET2_DEFAULT_FB = 0,
+    XR_FACE_EXPRESSION_SET_2FB_MAX_ENUM_FB = 0x7FFFFFFF
+} XrFaceExpressionSet2FB;
+
+typedef enum XrFaceTrackingDataSource2FB {
+    XR_FACE_TRACKING_DATA_SOURCE2_VISUAL_FB = 0,
+    XR_FACE_TRACKING_DATA_SOURCE2_AUDIO_FB = 1,
+    XR_FACE_TRACKING_DATA_SOURCE_2FB_MAX_ENUM_FB = 0x7FFFFFFF
+} XrFaceTrackingDataSource2FB;
+
+typedef enum XrFaceConfidence2FB {
+    XR_FACE_CONFIDENCE2_LOWER_FACE_FB = 0,
+    XR_FACE_CONFIDENCE2_UPPER_FACE_FB = 1,
+    XR_FACE_CONFIDENCE2_COUNT_FB = 2,
+    XR_FACE_CONFIDENCE_2FB_MAX_ENUM_FB = 0x7FFFFFFF
+} XrFaceConfidence2FB;
+// XrSystemFaceTrackingProperties2FB extends XrSystemProperties
+typedef struct XrSystemFaceTrackingProperties2FB {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrBool32              supportsVisualFaceTracking;
+    XrBool32              supportsAudioFaceTracking;
+} XrSystemFaceTrackingProperties2FB;
+
+typedef struct XrFaceTrackerCreateInfo2FB {
+    XrStructureType                 type;
+    const void* XR_MAY_ALIAS        next;
+    XrFaceExpressionSet2FB          faceExpressionSet;
+    uint32_t                        requestedDataSourceCount;
+    XrFaceTrackingDataSource2FB*    requestedDataSources;
+} XrFaceTrackerCreateInfo2FB;
+
+typedef struct XrFaceExpressionInfo2FB {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrTime                      time;
+} XrFaceExpressionInfo2FB;
+
+typedef struct XrFaceExpressionWeights2FB {
+    XrStructureType                type;
+    void* XR_MAY_ALIAS             next;
+    uint32_t                       weightCount;
+    float*                         weights;
+    uint32_t                       confidenceCount;
+    float*                         confidences;
+    XrBool32                       isValid;
+    XrBool32                       isEyeFollowingBlendshapesValid;
+    XrFaceTrackingDataSource2FB    dataSource;
+    XrTime                         time;
+} XrFaceExpressionWeights2FB;
+
+typedef XrResult (XRAPI_PTR *PFN_xrCreateFaceTracker2FB)(XrSession session, const XrFaceTrackerCreateInfo2FB* createInfo, XrFaceTracker2FB* faceTracker);
+typedef XrResult (XRAPI_PTR *PFN_xrDestroyFaceTracker2FB)(XrFaceTracker2FB faceTracker);
+typedef XrResult (XRAPI_PTR *PFN_xrGetFaceExpressionWeights2FB)(XrFaceTracker2FB faceTracker, const XrFaceExpressionInfo2FB* expressionInfo, XrFaceExpressionWeights2FB* expressionWeights);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateFaceTracker2FB(
+    XrSession                                   session,
+    const XrFaceTrackerCreateInfo2FB*           createInfo,
+    XrFaceTracker2FB*                           faceTracker);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDestroyFaceTracker2FB(
+    XrFaceTracker2FB                            faceTracker);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetFaceExpressionWeights2FB(
+    XrFaceTracker2FB                            faceTracker,
+    const XrFaceExpressionInfo2FB*              expressionInfo,
+    XrFaceExpressionWeights2FB*                 expressionWeights);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
 
 
 #define XR_EXT_uuid 1
@@ -6665,6 +6903,25 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetPlanePolygonBufferEXT(
 #define XR_OPPO_controller_interaction 1
 #define XR_OPPO_controller_interaction_SPEC_VERSION 1
 #define XR_OPPO_CONTROLLER_INTERACTION_EXTENSION_NAME "XR_OPPO_controller_interaction"
+
+
+#define XR_EXT_user_presence 1
+#define XR_EXT_user_presence_SPEC_VERSION 1
+#define XR_EXT_USER_PRESENCE_EXTENSION_NAME "XR_EXT_user_presence"
+typedef struct XrEventDataUserPresenceChangedEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSession                   session;
+    XrBool32                    isUserPresent;
+} XrEventDataUserPresenceChangedEXT;
+
+// XrSystemUserPresencePropertiesEXT extends XrSystemProperties
+typedef struct XrSystemUserPresencePropertiesEXT {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrBool32              supportsUserPresence;
+} XrSystemUserPresencePropertiesEXT;
+
 
 
 #define XR_ML_user_calibration 1
