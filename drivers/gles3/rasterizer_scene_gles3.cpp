@@ -3969,6 +3969,10 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 	} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
 		//not much to delete, just free it
 		RSG::camera_attributes->camera_attributes_free(p_rid);
+	} else if (is_compositor(p_rid)) {
+		compositor_free(p_rid);
+	} else if (is_compositor_effect(p_rid)) {
+		compositor_effect_free(p_rid);
 	} else {
 		return false;
 	}
