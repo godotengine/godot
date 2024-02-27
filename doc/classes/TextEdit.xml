@@ -255,7 +255,7 @@
 			<return type="int" enum="TextEdit.GutterType" />
 			<param index="0" name="gutter" type="int" />
 			<description>
-				Returns the type of the gutter at the given index.
+				Returns the type of the gutter at the given index. Gutters can contain icons, text, or custom visuals. See [enum TextEdit.GutterType] for options.
 			</description>
 		</method>
 		<method name="get_gutter_width" qualifiers="const">
@@ -329,7 +329,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the icon currently in [param gutter] at [param line].
+				Returns the icon currently in [param gutter] at [param line]. This only works when the gutter type is [constant GUTTER_TYPE_ICON] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="get_line_gutter_item_color" qualifiers="const">
@@ -353,7 +353,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the text currently in [param gutter] at [param line].
+				Returns the text currently in [param gutter] at [param line]. This only works when the gutter type is [constant GUTTER_TYPE_STRING] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
@@ -897,7 +897,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="draw_callback" type="Callable" />
 			<description>
-				Set a custom draw method for the gutter. The callback method must take the following args: [code]line: int, gutter: int, Area: Rect2[/code].
+				Set a custom draw method for the gutter. The callback method must take the following args: [code]line: int, gutter: int, Area: Rect2[/code]. This only works when the gutter type is [constant GUTTER_TYPE_CUSTOM] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_gutter_draw">
@@ -929,7 +929,7 @@
 			<param index="0" name="gutter" type="int" />
 			<param index="1" name="type" type="int" enum="TextEdit.GutterType" />
 			<description>
-				Sets the type of gutter.
+				Sets the type of gutter. Gutters can contain icons, text, or custom visuals. See [enum TextEdit.GutterType] for options.
 			</description>
 		</method>
 		<method name="set_gutter_width">
@@ -995,7 +995,7 @@
 			<param index="1" name="gutter" type="int" />
 			<param index="2" name="icon" type="Texture2D" />
 			<description>
-				Sets the icon for [param gutter] on [param line] to [param icon].
+				Sets the icon for [param gutter] on [param line] to [param icon]. This only works when the gutter type is [constant GUTTER_TYPE_ICON] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_line_gutter_item_color">
@@ -1022,7 +1022,7 @@
 			<param index="1" name="gutter" type="int" />
 			<param index="2" name="text" type="String" />
 			<description>
-				Sets the text for [param gutter] on [param line] to [param text].
+				Sets the text for [param gutter] on [param line] to [param text]. This only works when the gutter type is [constant GUTTER_TYPE_STRING] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_overtype_mode_enabled">
@@ -1403,13 +1403,13 @@
 			Line wrapping occurs at the control boundary, beyond what would normally be visible.
 		</constant>
 		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
-			Draw a string.
+			When a gutter is set to string using [method set_gutter_type], it is used to contain text set via the [method set_line_gutter_text] method.
 		</constant>
 		<constant name="GUTTER_TYPE_ICON" value="1" enum="GutterType">
-			Draw an icon.
+			When a gutter is set to icon using [method set_gutter_type], it is used to contain an icon set via the [method set_line_gutter_icon] method.
 		</constant>
 		<constant name="GUTTER_TYPE_CUSTOM" value="2" enum="GutterType">
-			Custom draw.
+			When a gutter is set to custom using [method set_gutter_type], it is used to contain custom visuals controlled by a callback method set via the [method set_gutter_custom_draw] method.
 		</constant>
 	</constants>
 	<theme_items>
