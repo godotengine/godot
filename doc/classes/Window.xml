@@ -97,7 +97,7 @@
 		<method name="get_contents_minimum_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when children nodes have changed.
+				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when child nodes have changed.
 				The value returned by this method can be overridden with [method _get_contents_minimum_size].
 			</description>
 		</method>
