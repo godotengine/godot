@@ -676,6 +676,8 @@ private:
 	real_t gravity_scale = 1.0;
 	bool can_sleep = true;
 
+	bool ccd = false;
+
 	bool custom_integrator = false;
 
 	DampMode linear_damp_mode = DAMP_MODE_COMBINE;
@@ -714,6 +716,9 @@ public:
 
 	void set_use_custom_integrator(bool p_enable);
 	bool is_using_custom_integrator();
+
+	void set_use_continuous_collision_detection(bool p_enable);
+	bool is_using_continuous_collision_detection() const;
 
 #ifdef TOOLS_ENABLED
 	void _set_gizmo_move_joint(bool p_move_joint);

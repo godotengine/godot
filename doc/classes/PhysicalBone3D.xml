@@ -66,6 +66,10 @@
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body is deactivated when there is no movement, so it will not take part in the simulation until it is awakened by an external force.
 		</member>
+		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection" default="false">
+			If [code]true[/code], continuous collision detection is used.
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses fewer impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
+		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
 			If [code]true[/code], internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 		</member>

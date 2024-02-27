@@ -2237,6 +2237,15 @@ bool PhysicalBone3D::is_using_custom_integrator() {
 	return custom_integrator;
 }
 
+void PhysicalBone3D::set_use_continuous_collision_detection(bool p_enable) {
+	ccd = p_enable;
+	PhysicsServer3D::get_singleton()->body_set_enable_continuous_collision_detection(get_rid(), p_enable);
+}
+
+bool PhysicalBone3D::is_using_continuous_collision_detection() const {
+	return ccd;
+}
+
 void PhysicalBone3D::reset_physics_simulation_state() {
 	if (simulate_physics) {
 		_start_physics_simulation();
@@ -3037,6 +3046,9 @@ void PhysicalBone3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_custom_integrator", "enable"), &PhysicalBone3D::set_use_custom_integrator);
 	ClassDB::bind_method(D_METHOD("is_using_custom_integrator"), &PhysicalBone3D::is_using_custom_integrator);
 
+	ClassDB::bind_method(D_METHOD("set_use_continuous_collision_detection", "enable"), &PhysicalBone3D::set_use_continuous_collision_detection);
+	ClassDB::bind_method(D_METHOD("is_using_continuous_collision_detection"), &PhysicalBone3D::is_using_continuous_collision_detection);
+
 	ClassDB::bind_method(D_METHOD("set_can_sleep", "able_to_sleep"), &PhysicalBone3D::set_can_sleep);
 	ClassDB::bind_method(D_METHOD("is_able_to_sleep"), &PhysicalBone3D::is_able_to_sleep);
 
@@ -3053,14 +3065,18 @@ void PhysicalBone3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-8,8,0.001,or_less,or_greater"), "set_gravity_scale", "get_gravity_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
+	ADD_GROUP("Solver", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "continuous_cd"), "set_use_continuous_collision_detection", "is_using_continuous_collision_detection");
+	ADD_GROUP("Linear", "linear_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity", PROPERTY_HINT_NONE, "suffix:m/s"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
+	ADD_GROUP("Angular", "angular_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity", PROPERTY_HINT_NONE, U"radians_as_degrees,suffix:\u00B0/s"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity", PROPERTY_HINT_NONE, "suffix:m/s"), "set_linear_velocity", "get_linear_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity", PROPERTY_HINT_NONE, U"radians_as_degrees,suffix:\u00B0/s"), "set_angular_velocity", "get_angular_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
 
 	BIND_ENUM_CONSTANT(DAMP_MODE_COMBINE);
 	BIND_ENUM_CONSTANT(DAMP_MODE_REPLACE);
