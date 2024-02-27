@@ -318,9 +318,9 @@ namespace Godot
             Vector3 ofs = _position + halfExtents;
 
             return ofs + new Vector3(
-                dir.X > 0f ? -halfExtents.X : halfExtents.X,
-                dir.Y > 0f ? -halfExtents.Y : halfExtents.Y,
-                dir.Z > 0f ? -halfExtents.Z : halfExtents.Z);
+                dir.X > 0f ? halfExtents.X : -halfExtents.X,
+                dir.Y > 0f ? halfExtents.Y : -halfExtents.Y,
+                dir.Z > 0f ? halfExtents.Z : -halfExtents.Z);
         }
 
         /// <summary>
