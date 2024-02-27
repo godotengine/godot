@@ -179,7 +179,7 @@ public:
 	virtual PackedInt32Array get_breakpoints() = 0;
 	virtual void set_breakpoint(int p_line, bool p_enabled) = 0;
 	virtual void clear_breakpoints() = 0;
-	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
+	virtual void add_callback(const String &p_function, const PackedStringArray &p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
@@ -362,11 +362,11 @@ class ScriptEditor : public PanelContainer {
 
 	bool _test_script_times_on_disk(Ref<Resource> p_for_script = Ref<Resource>());
 
-	void _add_recent_script(String p_path);
+	void _add_recent_script(const String &p_path);
 	void _update_recent_scripts();
 	void _open_recent_script(int p_idx);
 
-	void _show_error_dialog(String p_path);
+	void _show_error_dialog(const String &p_path);
 
 	void _close_tab(int p_idx, bool p_save = true, bool p_history_back = true);
 	void _update_find_replace_bar();
@@ -462,7 +462,7 @@ class ScriptEditor : public PanelContainer {
 	void _script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _make_script_list_context_menu();
 
-	void _help_search(String p_text);
+	void _help_search(const String &p_text);
 
 	void _history_forward();
 	void _history_back();
@@ -481,7 +481,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _script_changed();
 	int file_dialog_option;
-	void _file_dialog_action(String p_file);
+	void _file_dialog_action(const String &p_file);
 
 	Ref<Script> _get_current_script();
 	TypedArray<Script> _get_open_scripts() const;
@@ -490,11 +490,11 @@ class ScriptEditor : public PanelContainer {
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
-	void _on_find_in_files_requested(String text);
-	void _on_replace_in_files_requested(String text);
-	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
+	void _on_find_in_files_requested(const String &text);
+	void _on_replace_in_files_requested(const String &text);
+	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
-	void _on_find_in_files_modified_files(PackedStringArray paths);
+	void _on_find_in_files_modified_files(const PackedStringArray &paths);
 
 	void _set_zoom_factor(float p_zoom_factor);
 
@@ -579,7 +579,7 @@ class ScriptEditorPlugin : public EditorPlugin {
 
 	void _focus_another_editor();
 
-	void _save_last_editor(String p_editor);
+	void _save_last_editor(const String &p_editor);
 	void _window_visibility_changed(bool p_visible);
 
 protected:

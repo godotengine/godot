@@ -144,7 +144,7 @@ void VersionControlEditorPlugin::_set_credentials() {
 	EditorSettings::get_singleton()->set_setting("version_control/ssh_private_key_path", ssh_private_key);
 }
 
-bool VersionControlEditorPlugin::_load_plugin(String p_name) {
+bool VersionControlEditorPlugin::_load_plugin(const String &p_name) {
 	Object *extension_instance = ClassDB::instantiate(p_name);
 	ERR_FAIL_NULL_V_MSG(extension_instance, false, "Received a nullptr VCS extension instance during construction.");
 
@@ -168,7 +168,7 @@ bool VersionControlEditorPlugin::_load_plugin(String p_name) {
 	return true;
 }
 
-void VersionControlEditorPlugin::_update_set_up_warning(String p_new_text) {
+void VersionControlEditorPlugin::_update_set_up_warning(const String &p_new_text) {
 	bool empty_settings = set_up_username->get_text().strip_edges().is_empty() &&
 			set_up_password->get_text().is_empty() &&
 			set_up_ssh_public_key_path->get_text().strip_edges().is_empty() &&
@@ -305,15 +305,15 @@ void VersionControlEditorPlugin::_remote_selected(int p_index) {
 	_refresh_remote_list();
 }
 
-void VersionControlEditorPlugin::_ssh_public_key_selected(String p_path) {
+void VersionControlEditorPlugin::_ssh_public_key_selected(const String &p_path) {
 	set_up_ssh_public_key_path->set_text(p_path);
 }
 
-void VersionControlEditorPlugin::_ssh_private_key_selected(String p_path) {
+void VersionControlEditorPlugin::_ssh_private_key_selected(const String &p_path) {
 	set_up_ssh_private_key_path->set_text(p_path);
 }
 
-void VersionControlEditorPlugin::_popup_file_dialog(Variant p_file_dialog_variant) {
+void VersionControlEditorPlugin::_popup_file_dialog(const Variant &p_file_dialog_variant) {
 	FileDialog *file_dialog = Object::cast_to<FileDialog>(p_file_dialog_variant);
 	ERR_FAIL_NULL(file_dialog);
 
@@ -345,11 +345,11 @@ void VersionControlEditorPlugin::_create_remote() {
 	_refresh_remote_list();
 }
 
-void VersionControlEditorPlugin::_update_branch_create_button(String p_new_text) {
+void VersionControlEditorPlugin::_update_branch_create_button(const String &p_new_text) {
 	branch_create_ok->set_disabled(p_new_text.strip_edges().is_empty());
 }
 
-void VersionControlEditorPlugin::_update_remote_create_button(String p_new_text) {
+void VersionControlEditorPlugin::_update_remote_create_button(const String &p_new_text) {
 	remote_create_ok->set_disabled(p_new_text.strip_edges().is_empty());
 }
 
@@ -384,7 +384,7 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 	version_commit_dock->set_name(commit_tab_title);
 }
 
-void VersionControlEditorPlugin::_discard_file(String p_file_path, EditorVCSInterface::ChangeType p_change) {
+void VersionControlEditorPlugin::_discard_file(const String &p_file_path, EditorVCSInterface::ChangeType p_change) {
 	CHECK_PLUGIN_INITIALIZED();
 
 	if (p_change == EditorVCSInterface::CHANGE_TYPE_NEW) {
@@ -414,7 +414,7 @@ void VersionControlEditorPlugin::_discard_all() {
 	_refresh_stage_area();
 }
 
-void VersionControlEditorPlugin::_add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType p_change) {
+void VersionControlEditorPlugin::_add_new_item(Tree *p_tree, const String &p_file_path, EditorVCSInterface::ChangeType p_change) {
 	String change_text = p_file_path + " (" + change_type_to_strings[p_change] + ")";
 
 	TreeItem *new_item = p_tree->create_item();

@@ -32,9 +32,9 @@
 #include "audio_stream_player_3d.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "scene/3d/area_3d.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/physics/area_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"

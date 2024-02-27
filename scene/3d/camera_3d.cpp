@@ -30,7 +30,6 @@
 
 #include "camera_3d.h"
 
-#include "collision_object_3d.h"
 #include "core/math/projection.h"
 #include "scene/main/viewport.h"
 

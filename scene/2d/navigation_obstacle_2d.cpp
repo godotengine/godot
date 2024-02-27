@@ -81,11 +81,17 @@ void NavigationObstacle2D::_notification(int p_what) {
 			NavigationServer2D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
 			_update_position(get_global_position());
 			set_physics_process_internal(true);
+#ifdef DEBUG_ENABLED
+			RS::get_singleton()->canvas_item_set_parent(debug_canvas_item, get_world_2d()->get_canvas());
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			set_physics_process_internal(false);
 			_update_map(RID());
+#ifdef DEBUG_ENABLED
+			RS::get_singleton()->canvas_item_set_parent(debug_canvas_item, RID());
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_PAUSED: {
@@ -108,6 +114,12 @@ void NavigationObstacle2D::_notification(int p_what) {
 				map_before_pause = RID();
 			}
 			NavigationServer2D::get_singleton()->obstacle_set_paused(obstacle, !can_process());
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+#ifdef DEBUG_ENABLED
+			RS::get_singleton()->canvas_item_set_visible(debug_canvas_item, is_visible_in_tree());
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -136,6 +148,9 @@ void NavigationObstacle2D::_notification(int p_what) {
 				}
 
 				if (is_debug_enabled) {
+					RS::get_singleton()->canvas_item_clear(debug_canvas_item);
+					Transform2D debug_transform = Transform2D(0.0, get_global_position());
+					RS::get_singleton()->canvas_item_set_transform(debug_canvas_item, debug_transform);
 					_update_fake_agent_radius_debug();
 					_update_static_obstacle_debug();
 				}
@@ -152,6 +167,10 @@ NavigationObstacle2D::NavigationObstacle2D() {
 	NavigationServer2D::get_singleton()->obstacle_set_vertices(obstacle, vertices);
 	NavigationServer2D::get_singleton()->obstacle_set_avoidance_layers(obstacle, avoidance_layers);
 	NavigationServer2D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
+
+#ifdef DEBUG_ENABLED
+	debug_canvas_item = RenderingServer::get_singleton()->canvas_item_create();
+#endif // DEBUG_ENABLED
 }
 
 NavigationObstacle2D::~NavigationObstacle2D() {
@@ -159,6 +178,13 @@ NavigationObstacle2D::~NavigationObstacle2D() {
 
 	NavigationServer2D::get_singleton()->free(obstacle);
 	obstacle = RID();
+
+#ifdef DEBUG_ENABLED
+	if (debug_canvas_item.is_valid()) {
+		RenderingServer::get_singleton()->free(debug_canvas_item);
+		debug_canvas_item = RID();
+	}
+#endif // DEBUG_ENABLED
 }
 
 void NavigationObstacle2D::set_vertices(const Vector<Vector2> &p_vertices) {
@@ -267,7 +293,8 @@ void NavigationObstacle2D::_update_position(const Vector2 p_position) {
 void NavigationObstacle2D::_update_fake_agent_radius_debug() {
 	if (radius > 0.0 && NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_radius()) {
 		Color debug_radius_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_color();
-		RS::get_singleton()->canvas_item_add_circle(get_canvas_item(), Vector2(), radius, debug_radius_color);
+
+		RS::get_singleton()->canvas_item_add_circle(debug_canvas_item, Vector2(), radius, debug_radius_color);
 	}
 }
 #endif // DEBUG_ENABLED
@@ -291,7 +318,7 @@ void NavigationObstacle2D::_update_static_obstacle_debug() {
 		debug_obstacle_polygon_colors.resize(debug_obstacle_polygon_vertices.size());
 		debug_obstacle_polygon_colors.fill(debug_static_obstacle_face_color);
 
-		RS::get_singleton()->canvas_item_add_polygon(get_canvas_item(), debug_obstacle_polygon_vertices, debug_obstacle_polygon_colors);
+		RS::get_singleton()->canvas_item_add_polygon(debug_canvas_item, debug_obstacle_polygon_vertices, debug_obstacle_polygon_colors);
 
 		Color debug_static_obstacle_edge_color;
 
@@ -309,7 +336,7 @@ void NavigationObstacle2D::_update_static_obstacle_debug() {
 		debug_obstacle_line_colors.resize(debug_obstacle_line_vertices.size());
 		debug_obstacle_line_colors.fill(debug_static_obstacle_edge_color);
 
-		RS::get_singleton()->canvas_item_add_polyline(get_canvas_item(), debug_obstacle_line_vertices, debug_obstacle_line_colors, 4.0);
+		RS::get_singleton()->canvas_item_add_polyline(debug_canvas_item, debug_obstacle_line_vertices, debug_obstacle_line_colors, 4.0);
 	}
 }
 #endif // DEBUG_ENABLED

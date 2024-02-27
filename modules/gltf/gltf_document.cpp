@@ -2796,7 +2796,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
 				for (int k = 0; k < vertex_num; k++) {
-					Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[k]);
+					Vector3 tan = Vector3(normals[i].z, -normals[i].x, normals[i].y).cross(normals[k].normalized()).normalized();
 					tangentsw[k * 4 + 0] = tan.x;
 					tangentsw[k * 4 + 1] = tan.y;
 					tangentsw[k * 4 + 2] = tan.z;
@@ -2821,6 +2821,19 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				mesh_surface_tool->generate_tangents();
 			}
 			array = mesh_surface_tool->commit_to_arrays();
+
+			if ((flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
+				// Compression is enabled, so let's validate that the normals and tangents are correct.
+				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
+				Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
+				for (int vert = 0; vert < normals.size(); vert++) {
+					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+					if (abs(tan.dot(normals[vert])) > 0.0001) {
+						// Tangent is not perpendicular to the normal, so we can't use compression.
+						flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+					}
+				}
+			}
 
 			Array morphs;
 			//blend shapes
@@ -6924,7 +6937,7 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* DETERMINE SKELETONS */
-	err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons);
+	err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, p_state->get_import_as_skeleton_bones() ? p_state->root_nodes : Vector<GLTFNodeIndex>());
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* PARSE MESHES (we have enough info now) */

@@ -3828,7 +3828,7 @@ void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_bezi
 	}
 }
 
-void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value) {
+void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value) {
 	ERR_FAIL_NULL(root);
 	ERR_FAIL_COND_MSG(
 			(p_type != Animation::TYPE_POSITION_3D && p_type != Animation::TYPE_ROTATION_3D && p_type != Animation::TYPE_SCALE_3D),
@@ -4986,7 +4986,7 @@ void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, An
 	}
 }
 
-void AnimationTrackEditor::_new_track_property_selected(String p_name) {
+void AnimationTrackEditor::_new_track_property_selected(const String &p_name) {
 	String full_path = String(adding_track_path) + ":" + p_name;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();

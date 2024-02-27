@@ -1625,8 +1625,11 @@ void TileMapLayer::_queue_internal_update() {
 	if (pending_update) {
 		return;
 	}
-	pending_update = true;
-	callable_mp(this, &TileMapLayer::_deferred_internal_update).call_deferred();
+	// Don't update when outside the tree, it doesn't do anything useful, and causes threading problems.
+	if (is_inside_tree()) {
+		pending_update = true;
+		callable_mp(this, &TileMapLayer::_deferred_internal_update).call_deferred();
+	}
 }
 
 void TileMapLayer::_deferred_internal_update() {
@@ -1695,7 +1698,8 @@ void TileMapLayer::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] = true;
-			_queue_internal_update();
+			// Update immediately on exiting.
+			update_internals();
 		} break;
 
 		case TileMap::NOTIFICATION_ENTER_CANVAS: {
@@ -1705,7 +1709,8 @@ void TileMapLayer::_notification(int p_what) {
 
 		case TileMap::NOTIFICATION_EXIT_CANVAS: {
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_CANVAS] = true;
-			_queue_internal_update();
+			// Update immediately on exiting.
+			update_internals();
 		} break;
 
 		case TileMap::NOTIFICATION_VISIBILITY_CHANGED: {

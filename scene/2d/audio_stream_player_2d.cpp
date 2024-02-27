@@ -32,8 +32,8 @@
 #include "audio_stream_player_2d.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "scene/2d/area_2d.h"
 #include "scene/2d/audio_listener_2d.h"
+#include "scene/2d/physics/area_2d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/world_2d.h"

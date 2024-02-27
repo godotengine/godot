@@ -521,7 +521,7 @@ public:
 
 	Transform3D get_root_transform() const;
 
-	int get_uv_channel(String p_name);
+	int get_uv_channel(const String &p_name);
 
 private: // private stuff
 	HashMap<String, int> channel_map;
@@ -535,11 +535,11 @@ private: // private stuff
 	void _parse_light(XMLParser &p_parser);
 	void _parse_animation_clip(XMLParser &p_parser);
 
-	void _parse_mesh_geometry(XMLParser &p_parser, String p_id, String p_name);
-	void _parse_curve_geometry(XMLParser &p_parser, String p_id, String p_name);
+	void _parse_mesh_geometry(XMLParser &p_parser, const String &p_id, const String &p_name);
+	void _parse_curve_geometry(XMLParser &p_parser, const String &p_id, const String &p_name);
 
-	void _parse_skin_controller(XMLParser &p_parser, String p_id);
-	void _parse_morph_controller(XMLParser &p_parser, String p_id);
+	void _parse_skin_controller(XMLParser &p_parser, const String &p_id);
+	void _parse_morph_controller(XMLParser &p_parser, const String &p_id);
 	void _parse_controller(XMLParser &p_parser);
 
 	Node *_parse_visual_instance_geometry(XMLParser &p_parser);

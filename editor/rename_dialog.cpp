@@ -380,7 +380,7 @@ void RenameDialog::_update_preview_int(int new_value) {
 	_update_preview();
 }
 
-void RenameDialog::_update_preview(String new_text) {
+void RenameDialog::_update_preview(const String &new_text) {
 	if (lock_preview_update || preview_node == nullptr) {
 		return;
 	}
@@ -637,7 +637,7 @@ bool RenameDialog::_is_main_field(LineEdit *line_edit) {
 			(line_edit == lne_search || line_edit == lne_replace || line_edit == lne_prefix || line_edit == lne_suffix);
 }
 
-void RenameDialog::_insert_text(String text) {
+void RenameDialog::_insert_text(const String &text) {
 	LineEdit *focus_owner = Object::cast_to<LineEdit>(get_viewport()->gui_get_focus_owner());
 
 	if (_is_main_field(focus_owner)) {

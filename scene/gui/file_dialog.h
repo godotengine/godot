@@ -120,6 +120,7 @@ private:
 		Ref<Texture2D> toggle_hidden;
 		Ref<Texture2D> folder;
 		Ref<Texture2D> file;
+		Ref<Texture2D> create_folder;
 
 		Color folder_icon_color;
 		Color file_icon_color;

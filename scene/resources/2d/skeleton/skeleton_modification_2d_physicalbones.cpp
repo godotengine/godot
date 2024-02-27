@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "skeleton_modification_2d_physicalbones.h"
-#include "scene/2d/physical_bone_2d.h"
+#include "scene/2d/physics/physical_bone_2d.h"
 #include "scene/2d/skeleton_2d.h"
 
 bool SkeletonModification2DPhysicalBones::_set(const StringName &p_path, const Variant &p_value) {

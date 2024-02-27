@@ -697,10 +697,6 @@ void RenderingDeviceDriverD3D12::_resource_transition_batch(ResourceInfo *p_reso
 		}
 	}
 
-	if (p_new_state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS) {
-		res_states->last_batch_transitioned_to_uav = res_barriers_batch;
-	}
-
 #ifdef DEBUG_COUNT_BARRIERS
 	frame_barriers_cpu_time += OS::get_singleton()->get_ticks_usec() - start;
 #endif
@@ -1416,6 +1412,9 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 			tex_info->aliasing_hack.owner_info.aliases.insert(aliases[i].first, aliases[i].second);
 		}
 	}
+	if ((p_format.usage_bits & (TEXTURE_USAGE_STORAGE_BIT | TEXTURE_USAGE_COLOR_ATTACHMENT_BIT))) {
+		textures_pending_clear.add(&tex_info->pending_clear);
+	}
 
 	return TextureID(tex_info);
 }
@@ -1510,27 +1509,28 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared_from_slice(Text
 	}
 
 	// Complete description with slicing.
-	// (Leveraging aliasing in members of the union as much as possible.)
-
-	srv_desc.Texture1D.MostDetailedMip = p_mipmap;
-	srv_desc.Texture1D.MipLevels = 1;
-
-	uav_desc.Texture1D.MipSlice = p_mipmap;
 
 	switch (p_slice_type) {
 		case TEXTURE_SLICE_2D: {
 			if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2D && p_layer == 0) {
+				srv_desc.Texture2D.MostDetailedMip = p_mipmap;
+				srv_desc.Texture2D.MipLevels = p_mipmaps;
+
 				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2D);
+				uav_desc.Texture1D.MipSlice = p_mipmap;
 			} else if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DMS && p_layer == 0) {
 				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_UNKNOWN);
 			} else if ((srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DARRAY || (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2D && p_layer)) || srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE || srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBEARRAY) {
 				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+				srv_desc.Texture2DArray.MostDetailedMip = p_mipmap;
+				srv_desc.Texture2DArray.MipLevels = p_mipmaps;
 				srv_desc.Texture2DArray.FirstArraySlice = p_layer;
 				srv_desc.Texture2DArray.ArraySize = 1;
 				srv_desc.Texture2DArray.PlaneSlice = 0;
 				srv_desc.Texture2DArray.ResourceMinLODClamp = 0.0f;
 
 				uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+				uav_desc.Texture2DArray.MipSlice = p_mipmap;
 				uav_desc.Texture2DArray.FirstArraySlice = p_layer;
 				uav_desc.Texture2DArray.ArraySize = 1;
 				uav_desc.Texture2DArray.PlaneSlice = 0;
@@ -1548,17 +1548,17 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared_from_slice(Text
 			if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE || p_layer == 0) {
 				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
 				srv_desc.TextureCube.MostDetailedMip = p_mipmap;
-				srv_desc.TextureCube.MipLevels = 1;
+				srv_desc.TextureCube.MipLevels = p_mipmaps;
 
 				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
 				uav_desc.Texture2DArray.MipSlice = p_mipmap;
-				uav_desc.Texture2DArray.FirstArraySlice = 0;
+				uav_desc.Texture2DArray.FirstArraySlice = p_layer;
 				uav_desc.Texture2DArray.ArraySize = 6;
 				uav_desc.Texture2DArray.PlaneSlice = 0;
 			} else if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBEARRAY || p_layer != 0) {
 				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
 				srv_desc.TextureCubeArray.MostDetailedMip = p_mipmap;
-				srv_desc.TextureCubeArray.MipLevels = 1;
+				srv_desc.TextureCubeArray.MipLevels = p_mipmaps;
 				srv_desc.TextureCubeArray.First2DArrayFace = p_layer;
 				srv_desc.TextureCubeArray.NumCubes = 1;
 				srv_desc.TextureCubeArray.ResourceMinLODClamp = 0.0f;
@@ -1574,16 +1574,22 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared_from_slice(Text
 		} break;
 		case TEXTURE_SLICE_3D: {
 			DEV_ASSERT(srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE3D);
+			srv_desc.Texture3D.MostDetailedMip = p_mipmap;
+			srv_desc.Texture3D.MipLevels = p_mipmaps;
 
 			DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE3D);
+			uav_desc.Texture3D.MipSlice = p_mipmap;
 			uav_desc.Texture3D.WSize = -1;
 		} break;
 		case TEXTURE_SLICE_2D_ARRAY: {
 			DEV_ASSERT(srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DARRAY);
+			srv_desc.Texture2DArray.MostDetailedMip = p_mipmap;
+			srv_desc.Texture2DArray.MipLevels = p_mipmaps;
 			srv_desc.Texture2DArray.FirstArraySlice = p_layer;
 			srv_desc.Texture2DArray.ArraySize = p_layers;
 
 			DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
+			uav_desc.Texture2DArray.MipSlice = p_mipmap;
 			uav_desc.Texture2DArray.FirstArraySlice = p_layer;
 			uav_desc.Texture2DArray.ArraySize = p_layers;
 		} break;
@@ -2352,12 +2358,50 @@ D3D12_RENDER_TARGET_VIEW_DESC RenderingDeviceDriverD3D12::_make_rtv_for_texture(
 			rtv_desc.Texture3D.FirstWSlice = 0;
 			rtv_desc.Texture3D.WSize = -1;
 		} break;
+		case D3D12_SRV_DIMENSION_TEXTURECUBE:
+		case D3D12_SRV_DIMENSION_TEXTURECUBEARRAY: {
+			rtv_desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+			rtv_desc.Texture2DArray.MipSlice = (p_add_bases ? p_texture_info->base_mip : 0) + p_mipmap_offset;
+			rtv_desc.Texture2DArray.FirstArraySlice = (p_add_bases ? p_texture_info->base_layer : 0) + p_layer_offset;
+			rtv_desc.Texture2DArray.ArraySize = p_layers == UINT32_MAX ? p_texture_info->layers : p_layers;
+			rtv_desc.Texture2DArray.PlaneSlice = 0;
+		} break;
 		default: {
 			DEV_ASSERT(false);
 		}
 	}
 
 	return rtv_desc;
+}
+
+D3D12_UNORDERED_ACCESS_VIEW_DESC RenderingDeviceDriverD3D12::_make_ranged_uav_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases) {
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = p_texture_info->aliasing_hack.main_uav_desc;
+
+	uint32_t mip = (p_add_bases ? p_texture_info->base_mip : 0) + p_mipmap_offset;
+	switch (p_texture_info->view_descs.uav.ViewDimension) {
+		case D3D12_UAV_DIMENSION_TEXTURE1D: {
+			uav_desc.Texture1DArray.MipSlice = mip;
+		} break;
+		case D3D12_UAV_DIMENSION_TEXTURE1DARRAY: {
+			uav_desc.Texture1DArray.MipSlice = mip;
+			uav_desc.Texture1DArray.FirstArraySlice = mip;
+			uav_desc.Texture1DArray.ArraySize = p_layers;
+		} break;
+		case D3D12_UAV_DIMENSION_TEXTURE2D: {
+			uav_desc.Texture2D.MipSlice = mip;
+		} break;
+		case D3D12_UAV_DIMENSION_TEXTURE2DARRAY: {
+			uav_desc.Texture2DArray.MipSlice = mip;
+			uav_desc.Texture2DArray.FirstArraySlice = (p_add_bases ? p_texture_info->base_layer : 0) + p_layer_offset;
+			uav_desc.Texture2DArray.ArraySize = p_layers;
+		} break;
+		case D3D12_UAV_DIMENSION_TEXTURE3D: {
+			uav_desc.Texture3D.MipSlice = mip;
+			uav_desc.Texture3D.WSize >>= p_mipmap_offset;
+		} break;
+	}
+
+	return uav_desc;
 }
 
 D3D12_DEPTH_STENCIL_VIEW_DESC RenderingDeviceDriverD3D12::_make_dsv_for_texture(const TextureInfo *p_texture_info) {
@@ -3779,6 +3823,21 @@ void RenderingDeviceDriverD3D12::uniform_set_free(UniformSetID p_uniform_set) {
 // ----- COMMANDS -----
 
 void RenderingDeviceDriverD3D12::command_uniform_set_prepare_for_use(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+	// Perform pending blackouts.
+	{
+		SelfList<TextureInfo> *E = textures_pending_clear.first();
+		while (E) {
+			TextureSubresourceRange subresources;
+			subresources.layer_count = E->self()->layers;
+			subresources.mipmap_count = E->self()->mipmaps;
+			command_clear_color_texture(p_cmd_buffer, TextureID(E->self()), TEXTURE_LAYOUT_GENERAL, Color(), subresources);
+
+			SelfList<TextureInfo> *next = E->next();
+			E->remove_from_list();
+			E = next;
+		}
+	}
+
 	const UniformSetInfo *uniform_set_info = (const UniformSetInfo *)p_uniform_set.id;
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 	const ShaderInfo::UniformSet &shader_set = shader_info_in->sets[p_set_index];
@@ -4312,12 +4371,27 @@ void RenderingDeviceDriverD3D12::command_resolve_texture(CommandBufferID p_cmd_b
 void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) {
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
-
 	ID3D12Resource *res_to_clear = tex_info->main_texture ? tex_info->main_texture : tex_info->resource;
+
+	auto _transition_subresources = [&](D3D12_RESOURCE_STATES p_new_state) {
+		for (uint32_t i = 0; i < p_subresources.layer_count; i++) {
+			for (uint32_t j = 0; j < p_subresources.mipmap_count; j++) {
+				UINT subresource = D3D12CalcSubresource(
+						p_subresources.base_mipmap + j,
+						p_subresources.base_layer + i,
+						0,
+						tex_info->desc.MipLevels,
+						tex_info->desc.ArraySize());
+				_resource_transition_batch(tex_info, subresource, 1, p_new_state, tex_info->main_texture);
+			}
+		}
+		_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	};
+
 	if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)) {
 		// Clear via RTV.
 
-		if (frames[frame_idx].desc_heap_walkers.rtv.is_at_eof()) {
+		if (frames[frame_idx].desc_heap_walkers.rtv.get_free_handles() < p_subresources.mipmap_count) {
 			if (!frames[frame_idx].desc_heaps_exhausted_reported.rtv) {
 				frames[frame_idx].desc_heaps_exhausted_reported.rtv = true;
 				ERR_FAIL_MSG(
@@ -4328,37 +4402,29 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 			}
 		}
 
-		D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = _make_rtv_for_texture(tex_info, p_subresources.base_mipmap, p_subresources.base_layer, p_subresources.layer_count, false);
-		rtv_desc.Format = tex_info->aliasing_hack.main_uav_desc.Format;
+		_transition_subresources(D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-		for (uint32_t i = 0; i < p_subresources.layer_count; i++) {
-			for (uint32_t j = 0; j < p_subresources.mipmap_count; j++) {
-				UINT subresource = D3D12CalcSubresource(
-						p_subresources.base_mipmap + j,
-						p_subresources.base_layer + i,
-						0,
-						tex_info->desc.MipLevels,
-						tex_info->desc.ArraySize());
-				_resource_transition_batch(tex_info, subresource, 1, D3D12_RESOURCE_STATE_RENDER_TARGET, tex_info->main_texture);
-			}
+		for (uint32_t i = 0; i < p_subresources.mipmap_count; i++) {
+			D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = _make_rtv_for_texture(tex_info, p_subresources.base_mipmap + i, p_subresources.base_layer, p_subresources.layer_count, false);
+			rtv_desc.Format = tex_info->view_descs.uav.Format;
+			device->CreateRenderTargetView(
+					res_to_clear,
+					&rtv_desc,
+					frames[frame_idx].desc_heap_walkers.rtv.get_curr_cpu_handle());
+
+			cmd_buf_info->cmd_list->ClearRenderTargetView(
+					frames[frame_idx].desc_heap_walkers.rtv.get_curr_cpu_handle(),
+					p_color.components,
+					0,
+					nullptr);
+
+			frames[frame_idx].desc_heap_walkers.rtv.advance();
 		}
-		_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
-
-		device->CreateRenderTargetView(
-				res_to_clear,
-				&rtv_desc,
-				frames[frame_idx].desc_heap_walkers.rtv.get_curr_cpu_handle());
-		cmd_buf_info->cmd_list->ClearRenderTargetView(
-				frames[frame_idx].desc_heap_walkers.rtv.get_curr_cpu_handle(),
-				p_color.components,
-				0,
-				nullptr);
-		frames[frame_idx].desc_heap_walkers.rtv.advance();
 	} else {
 		// Clear via UAV.
 		_command_check_descriptor_sets(p_cmd_buffer);
 
-		if (frames[frame_idx].desc_heap_walkers.resources.is_at_eof()) {
+		if (frames[frame_idx].desc_heap_walkers.resources.get_free_handles() < p_subresources.mipmap_count) {
 			if (!frames[frame_idx].desc_heaps_exhausted_reported.resources) {
 				frames[frame_idx].desc_heaps_exhausted_reported.resources = true;
 				ERR_FAIL_MSG(
@@ -4368,7 +4434,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 				return;
 			}
 		}
-		if (frames[frame_idx].desc_heap_walkers.aux.is_at_eof()) {
+		if (frames[frame_idx].desc_heap_walkers.aux.get_free_handles() < p_subresources.mipmap_count) {
 			if (!frames[frame_idx].desc_heaps_exhausted_reported.aux) {
 				frames[frame_idx].desc_heaps_exhausted_reported.aux = true;
 				ERR_FAIL_MSG(
@@ -4379,47 +4445,38 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 			}
 		}
 
-		for (uint32_t i = 0; i < p_subresources.layer_count; i++) {
-			for (uint32_t j = 0; j < p_subresources.mipmap_count; j++) {
-				UINT subresource = D3D12CalcSubresource(
-						p_subresources.base_mipmap + j,
-						p_subresources.base_layer + i,
-						0,
-						tex_info->desc.MipLevels,
-						tex_info->desc.ArraySize());
-				_resource_transition_batch(tex_info, subresource, 1, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, tex_info->main_texture);
-			}
+		_transition_subresources(D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+		for (uint32_t i = 0; i < p_subresources.mipmap_count; i++) {
+			D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = _make_ranged_uav_for_texture(tex_info, p_subresources.base_mipmap + i, p_subresources.base_layer, p_subresources.layer_count, false);
+			device->CreateUnorderedAccessView(
+					res_to_clear,
+					nullptr,
+					&uav_desc,
+					frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle());
+			device->CopyDescriptorsSimple(
+					1,
+					frames[frame_idx].desc_heap_walkers.resources.get_curr_cpu_handle(),
+					frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle(),
+					D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+			UINT values[4] = {
+				(UINT)p_color.get_r8(),
+				(UINT)p_color.get_g8(),
+				(UINT)p_color.get_b8(),
+				(UINT)p_color.get_a8(),
+			};
+			cmd_buf_info->cmd_list->ClearUnorderedAccessViewUint(
+					frames[frame_idx].desc_heap_walkers.resources.get_curr_gpu_handle(),
+					frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle(),
+					res_to_clear,
+					values,
+					0,
+					nullptr);
+
+			frames[frame_idx].desc_heap_walkers.resources.advance();
+			frames[frame_idx].desc_heap_walkers.aux.advance();
 		}
-		_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
-
-		device->CreateUnorderedAccessView(
-				res_to_clear,
-				nullptr,
-				&tex_info->aliasing_hack.main_uav_desc,
-				frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle());
-
-		device->CopyDescriptorsSimple(
-				1,
-				frames[frame_idx].desc_heap_walkers.resources.get_curr_cpu_handle(),
-				frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle(),
-				D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-		UINT values[4] = {
-			(UINT)p_color.get_r8(),
-			(UINT)p_color.get_g8(),
-			(UINT)p_color.get_b8(),
-			(UINT)p_color.get_a8(),
-		};
-		cmd_buf_info->cmd_list->ClearUnorderedAccessViewUint(
-				frames[frame_idx].desc_heap_walkers.resources.get_curr_gpu_handle(),
-				frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle(),
-				res_to_clear,
-				values,
-				0,
-				nullptr);
-
-		frames[frame_idx].desc_heap_walkers.resources.advance();
-		frames[frame_idx].desc_heap_walkers.aux.advance();
 	}
 }
 
@@ -6171,6 +6228,7 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 	D3D12MA::ALLOCATOR_DESC allocator_desc = {};
 	allocator_desc.pDevice = device.Get();
 	allocator_desc.pAdapter = adapter.Get();
+	allocator_desc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
 
 	HRESULT res = D3D12MA::CreateAllocator(&allocator_desc, &allocator);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");

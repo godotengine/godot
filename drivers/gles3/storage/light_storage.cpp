@@ -1044,7 +1044,7 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 			r_quadrant = qidx;
 			r_shadow = shadow_atlas->quadrants[qidx].textures.size();
@@ -1135,7 +1135,7 @@ void LightStorage::update_directional_shadow_atlas() {
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits) {

@@ -55,7 +55,7 @@ inline void pop_back(T &container) {
 	container.resize(container.size() - 1);
 }
 
-static bool find_next(const String &line, String pattern, int from, bool match_case, bool whole_words, int &out_begin, int &out_end) {
+static bool find_next(const String &line, const String &pattern, int from, bool match_case, bool whole_words, int &out_begin, int &out_end) {
 	int end = from;
 
 	while (true) {
@@ -84,7 +84,7 @@ static bool find_next(const String &line, String pattern, int from, bool match_c
 
 //--------------------------------------------------------------------------------
 
-void FindInFiles::set_search_text(String p_pattern) {
+void FindInFiles::set_search_text(const String &p_pattern) {
 	_pattern = p_pattern;
 }
 
@@ -96,7 +96,7 @@ void FindInFiles::set_match_case(bool p_match_case) {
 	_match_case = p_match_case;
 }
 
-void FindInFiles::set_folder(String folder) {
+void FindInFiles::set_folder(const String &folder) {
 	_root_dir = folder;
 }
 
@@ -213,7 +213,7 @@ float FindInFiles::get_progress() const {
 	return 0;
 }
 
-void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders, PackedStringArray &out_files_to_scan) {
+void FindInFiles::_scan_dir(const String &path, PackedStringArray &out_folders, PackedStringArray &out_files_to_scan) {
 	Ref<DirAccess> dir = DirAccess::open(path);
 	if (dir.is_null()) {
 		print_verbose("Cannot open directory! " + path);
@@ -258,7 +258,7 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders, PackedS
 	}
 }
 
-void FindInFiles::_scan_file(String fpath) {
+void FindInFiles::_scan_file(const String &fpath) {
 	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
 	if (f.is_null()) {
 		print_verbose(String("Cannot open file ") + fpath);
@@ -397,12 +397,12 @@ FindInFilesDialog::FindInFilesDialog() {
 	_mode = SEARCH_MODE;
 }
 
-void FindInFilesDialog::set_search_text(String text) {
+void FindInFilesDialog::set_search_text(const String &text) {
 	_search_text_line_edit->set_text(text);
 	_on_search_text_modified(text);
 }
 
-void FindInFilesDialog::set_replace_text(String text) {
+void FindInFilesDialog::set_replace_text(const String &text) {
 	_replace_text_line_edit->set_text(text);
 }
 
@@ -505,7 +505,7 @@ void FindInFilesDialog::custom_action(const String &p_action) {
 	}
 }
 
-void FindInFilesDialog::_on_search_text_modified(String text) {
+void FindInFilesDialog::_on_search_text_modified(const String &text) {
 	ERR_FAIL_NULL(_find_button);
 	ERR_FAIL_NULL(_replace_button);
 
@@ -513,7 +513,7 @@ void FindInFilesDialog::_on_search_text_modified(String text) {
 	_replace_button->set_disabled(get_search_text().is_empty());
 }
 
-void FindInFilesDialog::_on_search_text_submitted(String text) {
+void FindInFilesDialog::_on_search_text_submitted(const String &text) {
 	// This allows to trigger a global search without leaving the keyboard.
 	if (!_find_button->is_disabled()) {
 		if (_mode == SEARCH_MODE) {
@@ -528,7 +528,7 @@ void FindInFilesDialog::_on_search_text_submitted(String text) {
 	}
 }
 
-void FindInFilesDialog::_on_replace_text_submitted(String text) {
+void FindInFilesDialog::_on_replace_text_submitted(const String &text) {
 	// This allows to trigger a global search without leaving the keyboard.
 	if (!_replace_button->is_disabled()) {
 		if (_mode == REPLACE_MODE) {
@@ -653,7 +653,7 @@ void FindInFilesPanel::set_with_replace(bool with_replace) {
 	}
 }
 
-void FindInFilesPanel::set_replace_text(String text) {
+void FindInFilesPanel::set_replace_text(const String &text) {
 	_replace_line_edit->set_text(text);
 }
 
@@ -710,7 +710,7 @@ void FindInFilesPanel::_notification(int p_what) {
 	}
 }
 
-void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin, int end, String text) {
+void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, int begin, int end, String text) {
 	TreeItem *file_item;
 	HashMap<String, TreeItem *>::Iterator E = _file_items.find(fpath);
 
@@ -844,7 +844,7 @@ void FindInFilesPanel::_on_result_selected() {
 	emit_signal(SNAME(SIGNAL_RESULT_SELECTED), fpath, r.line_number, r.begin, r.end);
 }
 
-void FindInFilesPanel::_on_replace_text_changed(String text) {
+void FindInFilesPanel::_on_replace_text_changed(const String &text) {
 	update_replace_buttons();
 }
 
@@ -914,7 +914,7 @@ private:
 	Vector<char> _line_buffer;
 };
 
-void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text) {
+void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text) {
 	// If the file is already open, I assume the editor will reload it.
 	// If there are unsaved changes, the user will be asked on focus,
 	// however that means either losing changes or losing replaces.

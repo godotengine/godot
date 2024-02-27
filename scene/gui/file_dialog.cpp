@@ -187,6 +187,7 @@ void FileDialog::_notification(int p_what) {
 			}
 			refresh->set_icon(theme_cache.reload);
 			show_hidden->set_icon(theme_cache.toggle_hidden);
+			makedir->set_icon(theme_cache.create_folder);
 
 			dir_up->begin_bulk_theme_override();
 			dir_up->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
@@ -222,6 +223,13 @@ void FileDialog::_notification(int p_what) {
 			show_hidden->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			show_hidden->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
 			show_hidden->end_bulk_theme_override();
+
+			makedir->begin_bulk_theme_override();
+			makedir->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
+			makedir->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
+			makedir->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
+			makedir->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+			makedir->end_bulk_theme_override();
 
 			invalidate();
 		} break;
@@ -1331,6 +1339,7 @@ void FileDialog::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, toggle_hidden);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, folder);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, file);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, create_folder);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, folder_icon_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, file_icon_color);
@@ -1426,7 +1435,8 @@ FileDialog::FileDialog() {
 	hbc->add_child(shortcuts_container);
 
 	makedir = memnew(Button);
-	makedir->set_text(RTR("Create Folder"));
+	makedir->set_theme_type_variation("FlatButton");
+	makedir->set_tooltip_text(RTR("Create a new folder."));
 	makedir->connect("pressed", callable_mp(this, &FileDialog::_make_dir));
 	hbc->add_child(makedir);
 	vbox->add_child(hbc);

@@ -300,7 +300,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 	}
 }
 
-void AnimationLibraryEditor::_load_file(String p_path) {
+void AnimationLibraryEditor::_load_file(const String &p_path) {
 	switch (file_dialog_action) {
 		case FILE_DIALOG_ACTION_SAVE_LIBRARY: {
 			Ref<AnimationLibrary> al = mixer->get_animation_library(file_dialog_library);

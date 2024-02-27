@@ -285,7 +285,18 @@ void SkinTool::_recurse_children(
 Error SkinTool::_determine_skeletons(
 		Vector<Ref<GLTFSkin>> &skins,
 		Vector<Ref<GLTFNode>> &nodes,
-		Vector<Ref<GLTFSkeleton>> &skeletons) {
+		Vector<Ref<GLTFSkeleton>> &skeletons,
+		const Vector<GLTFNodeIndex> &p_single_skeleton_roots) {
+	if (!p_single_skeleton_roots.is_empty()) {
+		Ref<GLTFSkin> skin;
+		skin.instantiate();
+		skin->set_name("godot_single_skeleton_root");
+		for (GLTFNodeIndex i = 0; i < p_single_skeleton_roots.size(); i++) {
+			skin->joints.push_back(p_single_skeleton_roots[i]);
+		}
+		skins.push_back(skin);
+	}
+
 	// Using a disjoint set, we are going to potentially combine all skins that are actually branches
 	// of a main skeleton, or treat skins defining the same set of nodes as ONE skeleton.
 	// This is another unclear issue caused by the current glTF specification.

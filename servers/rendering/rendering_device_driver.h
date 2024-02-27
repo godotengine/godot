@@ -106,7 +106,7 @@ struct VersatileResourceTemplate {
 	template <class T>
 	static T *allocate(PagedAllocator<VersatileResourceTemplate> &p_allocator) {
 		T *obj = (T *)p_allocator.alloc();
-		*obj = T();
+		memnew_placement(obj, T);
 		return obj;
 	}
 

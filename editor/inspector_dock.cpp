@@ -244,7 +244,7 @@ void InspectorDock::_load_resource(const String &p_type) {
 	load_resource_dialog->popup_file_dialog();
 }
 
-void InspectorDock::_resource_file_selected(String p_file) {
+void InspectorDock::_resource_file_selected(const String &p_file) {
 	Ref<Resource> res;
 	if (ResourceLoader::exists(p_file, "")) {
 		res = ResourceLoader::load(p_file);

@@ -163,7 +163,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static StringName generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target);
+	static StringName generate_method_callback_name(Node *p_source, const String &p_signal_name, Node *p_target);
 	Node *get_source() const;
 	ConnectionData get_source_connection_data() const;
 	StringName get_signal_name() const;
@@ -184,7 +184,7 @@ public:
 
 	void init(const ConnectionData &p_cd, const PackedStringArray &p_signal_args, bool p_edit = false);
 
-	void popup_dialog(const String p_for_signal);
+	void popup_dialog(const String &p_for_signal);
 	ConnectDialog();
 	~ConnectDialog();
 };
