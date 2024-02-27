@@ -40,10 +40,12 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/atlas_texture.h"
 #include "scene/resources/color_palette.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
@@ -155,7 +157,19 @@ void ColorPicker::_notification(int p_what) {
 			if (!is_picking_color) {
 				return;
 			}
-			set_pick_color(DisplayServer::get_singleton()->screen_get_pixel(DisplayServer::get_singleton()->mouse_get_position()));
+			DisplayServer *ds = DisplayServer::get_singleton();
+			Vector2 ofs = ds->mouse_get_position();
+			picker_window->set_position(ofs - Vector2(28, 28));
+
+			Color c = DisplayServer::get_singleton()->screen_get_pixel(DisplayServer::get_singleton()->mouse_get_position());
+
+			picker_preview_style_box_color->set_bg_color(c);
+			picker_preview_style_box->set_bg_color(c.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+
+			Ref<Image> zoom_preview_img = ds->screen_get_image_rect(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
+			picker_texture_zoom->set_texture(ImageTexture::create_from_image(zoom_preview_img));
+
+			set_pick_color(c);
 		}
 	}
 }
@@ -1685,15 +1699,52 @@ void ColorPicker::_add_preset_pressed() {
 
 void ColorPicker::_pick_button_pressed() {
 	is_picking_color = true;
-	set_process_internal(true);
 
 	if (!picker_window) {
 		picker_window = memnew(Popup);
-		picker_window->set_size(Vector2i(1, 1));
+		picker_window->set_size(Vector2i(55, 72));
 		picker_window->connect(SceneStringName(visibility_changed), callable_mp(this, &ColorPicker::_pick_finished));
+		picker_window->connect(SceneStringName(window_input), callable_mp(this, &ColorPicker::_target_gui_input));
+
+		picker_window->set_flag(Window::FLAG_EXCLUDE_FROM_CAPTURE, true);
+
+		picker_preview = memnew(Panel);
+		picker_preview->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview->set_size(Vector2i(55, 72));
+		picker_window->add_child(picker_preview);
+
+		picker_preview_color = memnew(Panel);
+		picker_preview_color->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview_color->set_size(Vector2i(51, 15));
+		picker_preview_color->set_position(Vector2i(2, 55));
+		picker_preview->add_child(picker_preview_color);
+
+		picker_texture_zoom = memnew(TextureRect);
+		picker_texture_zoom->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_texture_zoom->set_custom_minimum_size(Vector2i(51, 51));
+		picker_texture_zoom->set_position(Vector2i(2, 2));
+		picker_texture_zoom->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+		picker_preview->add_child(picker_texture_zoom);
+
+		picker_preview_style_box.instantiate();
+		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
+
+		picker_preview_style_box_color.instantiate();
+		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_style_box_color);
+
 		add_child(picker_window, false, INTERNAL_MODE_FRONT);
 	}
+	set_process_internal(true);
+
 	picker_window->popup();
+}
+
+void ColorPicker::_target_gui_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> mouse_event = p_event;
+	if (mouse_event.is_valid() && mouse_event->is_pressed()) {
+		picker_window->hide();
+		_pick_finished();
+	}
 }
 
 void ColorPicker::_pick_finished() {
@@ -1825,27 +1876,46 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		picker_texture_rect = memnew(TextureRect);
 		picker_texture_rect->set_anchors_preset(Control::PRESET_FULL_RECT);
 		picker_texture_rect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+		picker_texture_rect->set_default_cursor_shape(Control::CURSOR_CROSS);
 		picker_window->add_child(picker_texture_rect);
-		picker_texture_rect->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		picker_texture_rect->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_picker_texture_input));
 
-		picker_preview_label = memnew(Label);
-		picker_preview_label->set_anchors_preset(Control::PRESET_CENTER_TOP);
-		picker_preview_label->set_text(ETR("Color Picking active"));
+		picker_preview = memnew(Panel);
+		picker_preview->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview->set_size(Vector2i(55, 72));
+		picker_window->add_child(picker_preview);
+
+		picker_preview_color = memnew(Panel);
+		picker_preview_color->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview_color->set_size(Vector2i(51, 15));
+		picker_preview_color->set_position(Vector2i(2, 55));
+		picker_preview->add_child(picker_preview_color);
+
+		picker_texture_zoom = memnew(TextureRect);
+		picker_texture_zoom->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_texture_zoom->set_custom_minimum_size(Vector2i(51, 51));
+		picker_texture_zoom->set_position(Vector2i(2, 2));
+		picker_texture_zoom->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+		picker_preview->add_child(picker_texture_zoom);
 
 		picker_preview_style_box.instantiate();
-		picker_preview_style_box->set_bg_color(Color(1.0, 1.0, 1.0));
-		picker_preview_style_box->set_content_margin_all(4.0);
-		picker_preview_label->add_theme_style_override(CoreStringName(normal), picker_preview_style_box);
+		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
 
-		picker_window->add_child(picker_preview_label);
+		picker_preview_style_box_color.instantiate();
+		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_style_box_color);
 	}
 
 	Rect2i screen_rect;
 	if (picker_window->is_embedded()) {
+		Ref<ImageTexture> tx = ImageTexture::create_from_image(picker_window->get_embedder()->get_texture()->get_image());
 		screen_rect = picker_window->get_embedder()->get_visible_rect();
 		picker_window->set_position(Point2i());
-		picker_texture_rect->set_texture(ImageTexture::create_from_image(picker_window->get_embedder()->get_texture()->get_image()));
+		picker_texture_rect->set_texture(tx);
+
+		Ref<AtlasTexture> atlas;
+		atlas.instantiate();
+		atlas->set_atlas(tx);
+		picker_texture_zoom->set_texture(atlas);
 	} else {
 		screen_rect = picker_window->get_parent_rect();
 		picker_window->set_position(screen_rect.position);
@@ -1874,7 +1944,6 @@ void ColorPicker::_pick_button_pressed_legacy() {
 	}
 
 	picker_window->set_size(screen_rect.size);
-	picker_preview_label->set_custom_minimum_size(screen_rect.size / 10); // 10% of size in each axis.
 	picker_window->popup();
 }
 
@@ -1895,9 +1964,17 @@ void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
 		Ref<Image> img = picker_texture_rect->get_texture()->get_image();
 		if (img.is_valid() && !img->is_empty()) {
 			Vector2 ofs = mev->get_position();
+			picker_preview->set_position(ofs - Vector2(28, 28));
+			Vector2 scale = picker_texture_rect->get_size() / img->get_size();
+			ofs /= scale;
 			picker_color = img->get_pixel(ofs.x, ofs.y);
-			picker_preview_style_box->set_bg_color(picker_color);
-			picker_preview_label->add_theme_color_override(SceneStringName(font_color), picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+			picker_preview_style_box_color->set_bg_color(picker_color);
+			picker_preview_style_box->set_bg_color(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+
+			Ref<AtlasTexture> atlas = picker_texture_zoom->get_texture();
+			if (atlas.is_valid()) {
+				atlas->set_region(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
+			}
 		}
 	}
 }
