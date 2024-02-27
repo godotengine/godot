@@ -1748,10 +1748,14 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> menu_transparent_style = p_config.button_style->duplicate();
 		menu_transparent_style->set_bg_color(Color(1, 1, 1, 0));
 		menu_transparent_style->set_border_width_all(0);
+		Ref<StyleBoxFlat> main_screen_button_transparent = menu_transparent_style->duplicate();
+		for (int i = 0; i < 4; i++) {
+			menu_transparent_style->set_content_margin((Side)i, p_config.button_style->get_margin((Side)i) + p_config.button_style->get_border_width((Side)i));
+		}
 		p_theme->set_stylebox("MenuTransparent", EditorStringName(EditorStyles), menu_transparent_style);
 		p_theme->set_stylebox("MenuHover", EditorStringName(EditorStyles), p_config.button_style_hover);
-		p_theme->set_stylebox("normal", "MainScreenButton", menu_transparent_style);
-		p_theme->set_stylebox("pressed", "MainScreenButton", menu_transparent_style);
+		p_theme->set_stylebox("normal", "MainScreenButton", main_screen_button_transparent);
+		p_theme->set_stylebox("pressed", "MainScreenButton", main_screen_button_transparent);
 		p_theme->set_stylebox("hover_pressed", "MainScreenButton", p_config.button_style_hover);
 
 		// Run bar.
@@ -1810,11 +1814,14 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		// Flat button variations.
 		{
 			Ref<StyleBoxEmpty> style_flat_button = make_empty_stylebox();
+			Ref<StyleBoxFlat> style_flat_button_hover = p_config.button_style_hover->duplicate();
+			Ref<StyleBoxFlat> style_flat_button_pressed = p_config.button_style_pressed->duplicate();
+
 			for (int i = 0; i < 4; i++) {
 				style_flat_button->set_content_margin((Side)i, p_config.button_style->get_margin((Side)i) + p_config.button_style->get_border_width((Side)i));
+				style_flat_button_hover->set_content_margin((Side)i, p_config.button_style->get_margin((Side)i) + p_config.button_style->get_border_width((Side)i));
+				style_flat_button_pressed->set_content_margin((Side)i, p_config.button_style->get_margin((Side)i) + p_config.button_style->get_border_width((Side)i));
 			}
-
-			Ref<StyleBoxFlat> style_flat_button_pressed = p_config.button_style_pressed->duplicate();
 			Color flat_pressed_color = p_config.dark_color_1.lightened(0.24).lerp(p_config.accent_color, 0.2) * Color(0.8, 0.8, 0.8, 0.85);
 			if (p_config.dark_theme) {
 				flat_pressed_color = p_config.dark_color_1.lerp(p_config.accent_color, 0.12) * Color(0.6, 0.6, 0.6, 0.85);
@@ -1822,12 +1829,12 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			style_flat_button_pressed->set_bg_color(flat_pressed_color);
 
 			p_theme->set_stylebox("normal", "FlatButton", style_flat_button);
-			p_theme->set_stylebox("hover", "FlatButton", p_config.button_style_hover);
+			p_theme->set_stylebox("hover", "FlatButton", style_flat_button_hover);
 			p_theme->set_stylebox("pressed", "FlatButton", style_flat_button_pressed);
 			p_theme->set_stylebox("disabled", "FlatButton", style_flat_button);
 
 			p_theme->set_stylebox("normal", "FlatMenuButton", style_flat_button);
-			p_theme->set_stylebox("hover", "FlatMenuButton", p_config.button_style_hover);
+			p_theme->set_stylebox("hover", "FlatMenuButton", style_flat_button_hover);
 			p_theme->set_stylebox("pressed", "FlatMenuButton", style_flat_button_pressed);
 			p_theme->set_stylebox("disabled", "FlatMenuButton", style_flat_button);
 
