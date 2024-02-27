@@ -2810,7 +2810,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
 				for (int k = 0; k < vertex_num; k++) {
-					Vector3 tan = Vector3(normals[i].z, -normals[i].x, normals[i].y).cross(normals[k].normalized()).normalized();
+					Vector3 tan = Vector3(normals[k].z, -normals[k].x, normals[k].y).cross(normals[k].normalized()).normalized();
 					tangentsw[k * 4 + 0] = tan.x;
 					tangentsw[k * 4 + 1] = tan.y;
 					tangentsw[k * 4 + 2] = tan.z;
