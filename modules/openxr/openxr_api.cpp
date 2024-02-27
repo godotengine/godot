@@ -460,7 +460,7 @@ bool OpenXRAPI::interaction_profile_supports_io_path(const String &p_ip_path, co
 	return true;
 }
 
-void OpenXRAPI::copy_string_to_char_buffer(const String p_string, char *p_buffer, int p_buffer_len) {
+void OpenXRAPI::copy_string_to_char_buffer(const String &p_string, char *p_buffer, int p_buffer_len) {
 	CharString char_string = p_string.utf8();
 	int len = char_string.length();
 	if (len < p_buffer_len - 1) {
@@ -2687,7 +2687,7 @@ void OpenXRAPI::parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_l
 	}
 }
 
-bool OpenXRAPI::xr_result(XrResult result, const char *format, Array args) const {
+bool OpenXRAPI::xr_result(XrResult result, const char *format, const Array &args) const {
 	if (XR_SUCCEEDED(result))
 		return true;
 
@@ -2725,7 +2725,7 @@ RID OpenXRAPI::find_tracker(const String &p_name) {
 	return RID();
 }
 
-RID OpenXRAPI::tracker_create(const String p_name) {
+RID OpenXRAPI::tracker_create(const String &p_name) {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, RID());
 
 	Tracker new_tracker;
@@ -2798,7 +2798,7 @@ void OpenXRAPI::tracker_free(RID p_tracker) {
 	tracker_owner.free(p_tracker);
 }
 
-RID OpenXRAPI::action_set_create(const String p_name, const String p_localized_name, const int p_priority) {
+RID OpenXRAPI::action_set_create(const String &p_name, const String &p_localized_name, const int p_priority) {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, RID());
 	ActionSet action_set;
 
@@ -2932,7 +2932,7 @@ RID OpenXRAPI::find_action(const String &p_name) {
 	return RID();
 }
 
-RID OpenXRAPI::action_create(RID p_action_set, const String p_name, const String p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> &p_trackers) {
+RID OpenXRAPI::action_create(RID p_action_set, const String &p_name, const String &p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> &p_trackers) {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, RID());
 
 	Action action;
@@ -3047,7 +3047,7 @@ XrPath OpenXRAPI::get_interaction_profile_path(RID p_interaction_profile) {
 	return ip->path;
 }
 
-RID OpenXRAPI::interaction_profile_create(const String p_name) {
+RID OpenXRAPI::interaction_profile_create(const String &p_name) {
 	if (!is_interaction_profile_supported(p_name)) {
 		// The extension enabling this path must not be active, we will silently skip this interaction profile
 		return RID();
@@ -3088,7 +3088,7 @@ void OpenXRAPI::interaction_profile_clear_bindings(RID p_interaction_profile) {
 	ip->bindings.clear();
 }
 
-bool OpenXRAPI::interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path) {
+bool OpenXRAPI::interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String &p_path) {
 	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
 	ERR_FAIL_NULL_V(ip, false);
 
@@ -3165,7 +3165,7 @@ void OpenXRAPI::interaction_profile_free(RID p_interaction_profile) {
 	interaction_profile_owner.free(p_interaction_profile);
 }
 
-bool OpenXRAPI::sync_action_sets(const Vector<RID> p_active_sets) {
+bool OpenXRAPI::sync_action_sets(const Vector<RID> &p_active_sets) {
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
 
 	if (!running) {

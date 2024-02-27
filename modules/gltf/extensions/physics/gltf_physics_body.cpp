@@ -94,7 +94,7 @@ String GLTFPhysicsBody::get_body_type() const {
 	return "rigid";
 }
 
-void GLTFPhysicsBody::set_body_type(String p_body_type) {
+void GLTFPhysicsBody::set_body_type(const String &p_body_type) {
 	if (p_body_type == "static") {
 		body_type = PhysicsBodyType::STATIC;
 	} else if (p_body_type == "animatable") {
@@ -253,7 +253,7 @@ CollisionObject3D *GLTFPhysicsBody::to_node() const {
 	return nullptr;
 }
 
-Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary p_dictionary) {
+Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary &p_dictionary) {
 	Ref<GLTFPhysicsBody> physics_body;
 	physics_body.instantiate();
 	Dictionary motion;

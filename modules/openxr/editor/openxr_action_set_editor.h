@@ -67,9 +67,9 @@ private:
 	OpenXRActionEditor *_add_action_editor(Ref<OpenXRAction> p_action);
 
 	void _on_toggle_expand();
-	void _on_action_set_name_changed(const String p_new_text);
-	void _on_action_set_localized_name_changed(const String p_new_text);
-	void _on_action_set_priority_changed(const String p_new_text);
+	void _on_action_set_name_changed(const String &p_new_text);
+	void _on_action_set_localized_name_changed(const String &p_new_text);
+	void _on_action_set_priority_changed(const String &p_new_text);
 	void _on_add_action();
 	void _on_remove_action_set();
 
@@ -80,8 +80,8 @@ protected:
 	void _notification(int p_what);
 
 	// used for undo/redo
-	void _do_set_name(const String p_new_text);
-	void _do_set_localized_name(const String p_new_text);
+	void _do_set_name(const String &p_new_text);
+	void _do_set_localized_name(const String &p_new_text);
 	void _do_set_priority(int64_t value);
 	void _do_add_action_editor(OpenXRActionEditor *p_action_editor);
 	void _do_remove_action_editor(OpenXRActionEditor *p_action_editor);

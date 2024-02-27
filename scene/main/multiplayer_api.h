@@ -69,8 +69,8 @@ public:
 	virtual Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) = 0;
 	virtual int get_remote_sender_id() = 0;
 
-	virtual Error object_configuration_add(Object *p_object, Variant p_config) = 0;
-	virtual Error object_configuration_remove(Object *p_object, Variant p_config) = 0;
+	virtual Error object_configuration_add(Object *p_object, const Variant &p_config) = 0;
+	virtual Error object_configuration_remove(Object *p_object, const Variant &p_config) = 0;
 
 	bool has_multiplayer_peer() { return get_multiplayer_peer().is_valid(); }
 	bool is_server() { return get_unique_id() == MultiplayerPeer::TARGET_PEER_SERVER; }
@@ -97,8 +97,8 @@ public:
 	virtual Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) override;
 	virtual int get_remote_sender_id() override;
 
-	virtual Error object_configuration_add(Object *p_object, Variant p_config) override;
-	virtual Error object_configuration_remove(Object *p_object, Variant p_config) override;
+	virtual Error object_configuration_add(Object *p_object, const Variant &p_config) override;
+	virtual Error object_configuration_remove(Object *p_object, const Variant &p_config) override;
 
 	// Extensions
 	GDVIRTUAL0R(Error, _poll);

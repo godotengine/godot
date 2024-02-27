@@ -371,13 +371,13 @@ int MultiplayerAPIExtension::get_remote_sender_id() {
 	return id;
 }
 
-Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, Variant p_config) {
+Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, const Variant &p_config) {
 	Error err = ERR_UNAVAILABLE;
 	GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err);
 	return err;
 }
 
-Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, Variant p_config) {
+Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, const Variant &p_config) {
 	Error err = ERR_UNAVAILABLE;
 	GDVIRTUAL_CALL(_object_configuration_remove, p_object, p_config, err);
 	return err;

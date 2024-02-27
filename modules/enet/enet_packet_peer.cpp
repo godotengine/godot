@@ -187,7 +187,7 @@ void ENetPacketPeer::_queue_packet(ENetPacket *p_packet) {
 	packet_queue.push_back(p_packet);
 }
 
-Error ENetPacketPeer::_send(int p_channel, PackedByteArray p_packet, int p_flags) {
+Error ENetPacketPeer::_send(int p_channel, const PackedByteArray &p_packet, int p_flags) {
 	ERR_FAIL_NULL_V_MSG(peer, ERR_UNCONFIGURED, "Peer not connected.");
 	ERR_FAIL_COND_V_MSG(p_channel < 0 || p_channel > (int)peer->channelCount, ERR_INVALID_PARAMETER, "Invalid channel");
 	ERR_FAIL_COND_V_MSG(p_flags & ~FLAG_ALLOWED, ERR_INVALID_PARAMETER, "Invalid flags");

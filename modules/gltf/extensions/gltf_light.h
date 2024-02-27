@@ -61,7 +61,7 @@ public:
 	void set_intensity(float p_intensity);
 
 	String get_light_type();
-	void set_light_type(String p_light_type);
+	void set_light_type(const String &p_light_type);
 
 	float get_range();
 	void set_range(float p_range);
@@ -75,7 +75,7 @@ public:
 	static Ref<GLTFLight> from_node(const Light3D *p_light);
 	Light3D *to_node() const;
 
-	static Ref<GLTFLight> from_dictionary(const Dictionary p_dictionary);
+	static Ref<GLTFLight> from_dictionary(const Dictionary &p_dictionary);
 	Dictionary to_dictionary() const;
 
 	Variant get_additional_data(const StringName &p_extension_name);

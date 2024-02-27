@@ -103,8 +103,8 @@ public:
 
 	String query_external_address() const;
 
-	int add_port_mapping(int port, int port_internal = 0, String desc = "", String proto = "UDP", int duration = 0) const;
-	int delete_port_mapping(int port, String proto = "UDP") const;
+	int add_port_mapping(int port, int port_internal = 0, const String &desc = "", const String &proto = "UDP", int duration = 0) const;
+	int delete_port_mapping(int port, const String &proto = "UDP") const;
 
 	void set_discover_multicast_if(const String &m_if);
 	String get_discover_multicast_if() const;

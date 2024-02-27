@@ -55,7 +55,7 @@ void GLTFDocumentExtension::_bind_methods() {
 }
 
 // Import process.
-Error GLTFDocumentExtension::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
+Error GLTFDocumentExtension::import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) {
 	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
 	Error err = OK;
 	GDVIRTUAL_CALL(_import_preflight, p_state, p_extensions, err);

@@ -2973,7 +2973,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 }
 
 #ifdef SUGGEST_GODOT4_RENAMES
-const char *get_rename_from_map(const char *map[][2], String key) {
+const char *get_rename_from_map(const char *map[][2], const String &key) {
 	for (int index = 0; map[index][0]; index++) {
 		if (map[index][0] == key) {
 			return map[index][1];
@@ -2984,7 +2984,7 @@ const char *get_rename_from_map(const char *map[][2], String key) {
 
 // Checks if an identifier/function name has been renamed in Godot 4, uses ProjectConverter3To4 for rename map.
 // Returns the new name if found, nullptr otherwise.
-const char *check_for_renamed_identifier(String identifier, GDScriptParser::Node::Type type) {
+const char *check_for_renamed_identifier(const String &identifier, GDScriptParser::Node::Type type) {
 	switch (type) {
 		case GDScriptParser::Node::IDENTIFIER: {
 			// Check properties

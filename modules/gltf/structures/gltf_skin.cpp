@@ -81,7 +81,7 @@ Vector<GLTFNodeIndex> GLTFSkin::get_joints_original() {
 	return joints_original;
 }
 
-void GLTFSkin::set_joints_original(Vector<GLTFNodeIndex> p_joints_original) {
+void GLTFSkin::set_joints_original(const Vector<GLTFNodeIndex> &p_joints_original) {
 	joints_original = p_joints_original;
 }
 
@@ -97,7 +97,7 @@ Vector<GLTFNodeIndex> GLTFSkin::get_joints() {
 	return joints;
 }
 
-void GLTFSkin::set_joints(Vector<GLTFNodeIndex> p_joints) {
+void GLTFSkin::set_joints(const Vector<GLTFNodeIndex> &p_joints) {
 	joints = p_joints;
 }
 
@@ -105,7 +105,7 @@ Vector<GLTFNodeIndex> GLTFSkin::get_non_joints() {
 	return non_joints;
 }
 
-void GLTFSkin::set_non_joints(Vector<GLTFNodeIndex> p_non_joints) {
+void GLTFSkin::set_non_joints(const Vector<GLTFNodeIndex> &p_non_joints) {
 	non_joints = p_non_joints;
 }
 
@@ -113,7 +113,7 @@ Vector<GLTFNodeIndex> GLTFSkin::get_roots() {
 	return roots;
 }
 
-void GLTFSkin::set_roots(Vector<GLTFNodeIndex> p_roots) {
+void GLTFSkin::set_roots(const Vector<GLTFNodeIndex> &p_roots) {
 	roots = p_roots;
 }
 
@@ -129,7 +129,7 @@ Dictionary GLTFSkin::get_joint_i_to_bone_i() {
 	return GLTFTemplateConvert::to_dictionary(joint_i_to_bone_i);
 }
 
-void GLTFSkin::set_joint_i_to_bone_i(Dictionary p_joint_i_to_bone_i) {
+void GLTFSkin::set_joint_i_to_bone_i(const Dictionary &p_joint_i_to_bone_i) {
 	GLTFTemplateConvert::set_from_dictionary(joint_i_to_bone_i, p_joint_i_to_bone_i);
 }
 
@@ -143,7 +143,7 @@ Dictionary GLTFSkin::get_joint_i_to_name() {
 	return ret;
 }
 
-void GLTFSkin::set_joint_i_to_name(Dictionary p_joint_i_to_name) {
+void GLTFSkin::set_joint_i_to_name(const Dictionary &p_joint_i_to_name) {
 	joint_i_to_name = HashMap<int, StringName>();
 	Array keys = p_joint_i_to_name.keys();
 	for (int i = 0; i < keys.size(); i++) {

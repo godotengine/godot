@@ -160,8 +160,8 @@ public:
 
 	virtual Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) override;
 
-	virtual Error object_configuration_add(Object *p_obj, Variant p_config) override;
-	virtual Error object_configuration_remove(Object *p_obj, Variant p_config) override;
+	virtual Error object_configuration_add(Object *p_obj, const Variant &p_config) override;
+	virtual Error object_configuration_remove(Object *p_obj, const Variant &p_config) override;
 
 	void clear();
 
@@ -171,7 +171,7 @@ public:
 
 	void disconnect_peer(int p_id);
 
-	Error send_auth(int p_to, Vector<uint8_t> p_bytes);
+	Error send_auth(int p_to, const Vector<uint8_t> &p_bytes);
 	Error complete_auth(int p_peer);
 	void set_auth_callback(Callable p_callback);
 	Callable get_auth_callback() const;
@@ -180,7 +180,7 @@ public:
 	Vector<int> get_authenticating_peer_ids();
 
 	Error send_command(int p_to, const uint8_t *p_packet, int p_packet_len); // Used internally to relay packets when needed.
-	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
+	Error send_bytes(const Vector<uint8_t> &p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
 	String get_rpc_md5(const Object *p_obj);
 
 	const HashSet<int> get_connected_peers() const { return connected_peers; }

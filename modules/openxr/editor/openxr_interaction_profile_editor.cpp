@@ -66,7 +66,7 @@ void OpenXRInteractionProfileEditorBase::_do_update_interaction_profile() {
 	}
 }
 
-void OpenXRInteractionProfileEditorBase::_add_binding(const String p_action, const String p_path) {
+void OpenXRInteractionProfileEditorBase::_add_binding(const String &p_action, const String &p_path) {
 	ERR_FAIL_COND(action_map.is_null());
 	ERR_FAIL_COND(interaction_profile.is_null());
 
@@ -91,7 +91,7 @@ void OpenXRInteractionProfileEditorBase::_add_binding(const String p_action, con
 	_do_update_interaction_profile();
 }
 
-void OpenXRInteractionProfileEditorBase::_remove_binding(const String p_action, const String p_path) {
+void OpenXRInteractionProfileEditorBase::_remove_binding(const String &p_action, const String &p_path) {
 	ERR_FAIL_COND(action_map.is_null());
 	ERR_FAIL_COND(interaction_profile.is_null());
 
@@ -164,12 +164,12 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase(Ref<OpenX
 ///////////////////////////////////////////////////////////////////////////
 // Default interaction profile editor
 
-void OpenXRInteractionProfileEditor::select_action_for(const String p_io_path) {
+void OpenXRInteractionProfileEditor::select_action_for(const String &p_io_path) {
 	selecting_for_io_path = p_io_path;
 	select_action_dialog->open();
 }
 
-void OpenXRInteractionProfileEditor::action_selected(const String p_action) {
+void OpenXRInteractionProfileEditor::action_selected(const String &p_action) {
 	undo_redo->create_action(TTR("Add binding"));
 	undo_redo->add_do_method(this, "_add_binding", p_action, selecting_for_io_path);
 	undo_redo->add_undo_method(this, "_remove_binding", p_action, selecting_for_io_path);
@@ -178,7 +178,7 @@ void OpenXRInteractionProfileEditor::action_selected(const String p_action) {
 	selecting_for_io_path = "";
 }
 
-void OpenXRInteractionProfileEditor::_on_remove_pressed(const String p_action, const String p_for_io_path) {
+void OpenXRInteractionProfileEditor::_on_remove_pressed(const String &p_action, const String &p_for_io_path) {
 	undo_redo->create_action(TTR("Remove binding"));
 	undo_redo->add_do_method(this, "_remove_binding", p_action, p_for_io_path);
 	undo_redo->add_undo_method(this, "_add_binding", p_action, p_for_io_path);

@@ -344,7 +344,7 @@ void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	// Generic string highlighting suffices as a workaround for now.
 }
 
-static String get_base_class_name(const String &p_base_class_name, const String p_class_name) {
+static String get_base_class_name(const String &p_base_class_name, const String &p_class_name) {
 	String base_class = pascal_to_pascal_case(p_base_class_name);
 	if (p_class_name == base_class) {
 		base_class = "Godot." + base_class;

@@ -136,7 +136,7 @@ void ReplicationEditor::_pick_new_property() {
 	pick_node->get_filter_line_edit()->grab_focus();
 }
 
-void ReplicationEditor::_add_sync_property(String p_path) {
+void ReplicationEditor::_add_sync_property(const String &p_path) {
 	config = current->get_replication_config();
 
 	if (config.is_valid() && config->has_property(p_path)) {
@@ -162,7 +162,7 @@ void ReplicationEditor::_add_sync_property(String p_path) {
 	undo_redo->commit_action();
 }
 
-void ReplicationEditor::_pick_node_property_selected(String p_name) {
+void ReplicationEditor::_pick_node_property_selected(const String &p_name) {
 	String adding_prop_path = String(adding_node_path) + ":" + p_name;
 
 	_add_sync_property(adding_prop_path);

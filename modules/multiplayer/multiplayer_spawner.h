@@ -60,7 +60,7 @@ private:
 	struct SpawnInfo {
 		Variant args;
 		int id = INVALID_ID;
-		SpawnInfo(Variant p_args, int p_id) {
+		SpawnInfo(const Variant &p_args, int p_id) {
 			id = p_id;
 			args = p_args;
 		}

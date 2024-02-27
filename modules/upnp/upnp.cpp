@@ -299,7 +299,7 @@ String UPNP::query_external_address() const {
 	return dev->query_external_address();
 }
 
-int UPNP::add_port_mapping(int port, int port_internal, String desc, String proto, int duration) const {
+int UPNP::add_port_mapping(int port, int port_internal, const String &desc, const String &proto, int duration) const {
 	Ref<UPNPDevice> dev = get_gateway();
 
 	if (dev == nullptr) {
@@ -309,7 +309,7 @@ int UPNP::add_port_mapping(int port, int port_internal, String desc, String prot
 	return dev->add_port_mapping(port, port_internal, desc, proto, duration);
 }
 
-int UPNP::delete_port_mapping(int port, String proto) const {
+int UPNP::delete_port_mapping(int port, const String &proto) const {
 	Ref<UPNPDevice> dev = get_gateway();
 
 	if (dev == nullptr) {
