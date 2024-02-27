@@ -97,6 +97,10 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 		return false;
 	}
 
+	if (tangent != p_vertex.tangent) {
+		return false;
+	}
+
 	if (color != p_vertex.color) {
 		return false;
 	}
