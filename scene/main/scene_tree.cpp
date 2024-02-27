@@ -1257,7 +1257,22 @@ void SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callab
 	StringName group = *p_args[1];
 	StringName method = *p_args[2];
 
-	call_group_flagsp(flags, group, method, p_args + 3, p_argcount - 3);
+	// Prevent GDScript member variables being passed by pointer, see:
+	// https://github.com/godotengine/godot/issues/88885
+	LocalVector<Variant> args;
+	LocalVector<const Variant *> argptrs;
+
+	int argc = p_argcount - 3;
+	if (argc) {
+		args.resize(argc);
+		argptrs.resize(argc);
+		for (int i = 0; i < argc; i++) {
+			args[i] = *p_args[i + 3];
+			argptrs[i] = &args[i];
+		}
+	}
+
+	call_group_flagsp(flags, group, method, argptrs.ptr(), argc);
 }
 
 void SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1270,7 +1285,22 @@ void SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable::Ca
 	StringName group = *p_args[0];
 	StringName method = *p_args[1];
 
-	call_group_flagsp(GROUP_CALL_DEFAULT, group, method, p_args + 2, p_argcount - 2);
+	// Prevent GDScript member variables being passed by pointer, see:
+	// https://github.com/godotengine/godot/issues/88885
+	LocalVector<Variant> args;
+	LocalVector<const Variant *> argptrs;
+
+	int argc = p_argcount - 2;
+	if (argc) {
+		args.resize(argc);
+		argptrs.resize(argc);
+		for (int i = 0; i < argc; i++) {
+			args[i] = *p_args[i + 2];
+			argptrs[i] = &args[i];
+		}
+	}
+
+	call_group_flagsp(GROUP_CALL_DEFAULT, group, method, argptrs.ptr(), argc);
 }
 
 int64_t SceneTree::get_frame() const {

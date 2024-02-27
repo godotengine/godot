@@ -1055,7 +1055,22 @@ struct _VariantCall {
 
 	static void func_Signal_emit(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Signal *signal = VariantGetInternalPtr<Signal>::get_ptr(v);
-		signal->emit(p_args, p_argcount);
+
+		// Prevent GDScript member variables being passed by pointer, see:
+		// https://github.com/godotengine/godot/issues/88885
+		LocalVector<Variant> args;
+		LocalVector<const Variant *> argptrs;
+
+		if (p_argcount) {
+			args.resize(p_argcount);
+			argptrs.resize(p_argcount);
+			for (int i = 0; i < p_argcount; i++) {
+				args[i] = *p_args[i];
+				argptrs[i] = &args[i];
+			}
+		}
+
+		signal->emit(argptrs.ptr(), p_argcount);
 	}
 
 	struct ConstantData {
