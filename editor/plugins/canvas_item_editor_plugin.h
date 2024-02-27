@@ -458,7 +458,7 @@ private:
 	void _draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_hover();
-	void _draw_transform_message();
+	void _draw_message();
 
 	void _draw_viewport();
 
@@ -543,6 +543,8 @@ public:
 
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
+
+	String message;
 
 	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, const List<CanvasItem *> &p_other_nodes_exceptions = List<CanvasItem *>());
 	real_t snap_angle(real_t p_target, real_t p_start = 0) const;
