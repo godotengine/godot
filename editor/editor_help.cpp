@@ -1622,9 +1622,9 @@ void EditorHelp::_update_doc() {
 				enum_line[E.key] = class_desc->get_paragraph_count() - 2;
 				class_desc->push_color(theme_cache.title_color);
 				if (E.value.size() && E.value[0].is_bitfield) {
-					class_desc->add_text("flags  ");
+					class_desc->add_text("flags ");
 				} else {
-					class_desc->add_text("enum  ");
+					class_desc->add_text("enum ");
 				}
 				class_desc->pop(); // color
 
