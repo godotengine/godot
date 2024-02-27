@@ -188,6 +188,7 @@ bool GodotHingeJoint3D::setup(real_t p_step) {
 
 	// Compute limit information
 	real_t hingeAngle = get_hinge_angle();
+	m_currentAngularDisplacement = hingeAngle;
 
 	//set bias, sign, clear accumulator
 	m_correction = real_t(0.);
@@ -384,6 +385,9 @@ void GodotHingeJoint3D::set_param(PhysicsServer3D::HingeJointParam p_param, real
 		case PhysicsServer3D::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			m_maxMotorImpulse = p_value;
 			break;
+		case PhysicsServer3D::HINGE_JOINT_CURRENT_ANGULAR_DISPLACEMENT:
+			// Read Only
+			break;
 		case PhysicsServer3D::HINGE_JOINT_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -407,6 +411,8 @@ real_t GodotHingeJoint3D::get_param(PhysicsServer3D::HingeJointParam p_param) co
 			return m_motorTargetVelocity;
 		case PhysicsServer3D::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			return m_maxMotorImpulse;
+		case PhysicsServer3D::HINGE_JOINT_CURRENT_ANGULAR_DISPLACEMENT:
+			return m_currentAngularDisplacement;
 		case PhysicsServer3D::HINGE_JOINT_MAX:
 			break; // Can't happen, but silences warning
 	}

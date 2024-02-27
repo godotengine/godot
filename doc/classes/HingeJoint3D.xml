@@ -95,7 +95,10 @@
 		<constant name="PARAM_MOTOR_MAX_IMPULSE" value="7" enum="Param">
 			Maximum acceleration for the motor.
 		</constant>
-		<constant name="PARAM_MAX" value="8" enum="Param">
+		<constant name="PARAM_CURRENT_ANGULAR_DISPLACEMENT" value="8" enum="Param">
+			Read only parameter that returns the joints offset from it's initial pose.
+		</constant>
+		<constant name="PARAM_MAX" value="9" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="FLAG_USE_LIMIT" value="0" enum="Flag">

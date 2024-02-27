@@ -88,6 +88,8 @@ class GodotHingeJoint3D : public GodotJoint3D {
 
 	real_t tau = 0.3;
 
+	real_t m_currentAngularDisplacement = 0.0;
+
 	bool m_useLimit = false;
 	bool m_angularOnly = false;
 	bool m_enableAngularMotor = false;
