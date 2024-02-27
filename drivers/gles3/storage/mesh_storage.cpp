@@ -33,6 +33,7 @@
 #include "mesh_storage.h"
 #include "config.h"
 #include "material_storage.h"
+#include "texture_storage.h"
 #include "utilities.h"
 
 using namespace GLES3;
@@ -1248,7 +1249,7 @@ void MeshStorage::update_mesh_instances() {
 	}
 
 	glEnable(GL_RASTERIZER_DISCARD);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	// Process skeletons and blend shapes using transform feedback
 	while (dirty_mesh_instance_arrays.first()) {
 		MeshInstance *mi = dirty_mesh_instance_arrays.first()->self();
