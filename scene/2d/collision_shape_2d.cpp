@@ -119,12 +119,12 @@ void CollisionShape2D::_notification(int p_what) {
 				if (disabled) {
 					draw_col = draw_col.darkened(0.25);
 				}
-				Vector2 line_to(0, 20);
+				Vector2 line_to(0, -20);
 				draw_line(Vector2(), line_to, draw_col, 2);
 				real_t tsize = 8;
 
 				Vector<Vector2> pts{
-					line_to + Vector2(0, tsize),
+					line_to + Vector2(0, -tsize),
 					line_to + Vector2(Math_SQRT12 * tsize, 0),
 					line_to + Vector2(-Math_SQRT12 * tsize, 0)
 				};

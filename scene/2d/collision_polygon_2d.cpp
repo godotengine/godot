@@ -154,12 +154,12 @@ void CollisionPolygon2D::_notification(int p_what) {
 			if (one_way_collision) {
 				Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
 				dcol.a = 1.0;
-				Vector2 line_to(0, 20);
+				Vector2 line_to(0, -20);
 				draw_line(Vector2(), line_to, dcol, 3);
 				real_t tsize = 8;
 
 				Vector<Vector2> pts = {
-					line_to + Vector2(0, tsize),
+					line_to + Vector2(0, -tsize),
 					line_to + Vector2(Math_SQRT12 * tsize, 0),
 					line_to + Vector2(-Math_SQRT12 * tsize, 0)
 				};
