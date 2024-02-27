@@ -1,7 +1,13 @@
 GDTEST_OK
-untyped 2 Red,Green,Blue
-weak_int 2 Red,Green,Blue
-weak_string 4 Red,Green,Blue
-hard_int 2 Red,Green,Blue
-hard_string 4 Red,Green,Blue
-with_values 2 Red:10,Green:20,Blue:30
+var test_untyped: int = null
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+var test_weak_int: int = 0
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+var test_weak_string: String = ""
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+var test_hard_int: int = 0
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+var test_hard_string: String = ""
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+var test_with_values: int = null
+  hint=ENUM hint_string="Red:10,Green:20,Blue:30" usage=DEFAULT|SCRIPT_VARIABLE
