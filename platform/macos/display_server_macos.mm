@@ -4905,7 +4905,7 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 	}
 
 	// Destroy all status indicators.
-	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E;) {
+	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E; ++E) {
 		[[NSStatusBar systemStatusBar] removeStatusItem:E->value.item];
 	}
 
