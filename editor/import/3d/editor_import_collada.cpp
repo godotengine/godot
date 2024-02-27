@@ -88,7 +88,7 @@ struct ColladaImport {
 	Error _create_scene(Collada::Node *p_node, Node3D *p_parent);
 	Error _create_resources(Collada::Node *p_node, bool p_use_compression);
 	Error _create_material(const String &p_target);
-	Error _create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const HashMap<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes = Vector<Ref<ImporterMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
+	Error _create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const HashMap<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, const Vector<Ref<ImporterMesh>> &p_morph_meshes = Vector<Ref<ImporterMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
 	Error load(const String &p_path, int p_flags, bool p_force_make_tangents = false, bool p_use_compression = false);
 	void _fix_param_animation_tracks();
 	void create_animation(int p_clip, bool p_import_value_tracks);
@@ -467,7 +467,7 @@ Error ColladaImport::_create_material(const String &p_target) {
 	return OK;
 }
 
-Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const HashMap<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
+Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const HashMap<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, const Vector<Ref<ImporterMesh>> &p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
 	bool local_xform_mirror = p_local_xform.basis.determinant() < 0;
 
 	if (p_morph_data) {

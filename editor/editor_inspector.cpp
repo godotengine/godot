@@ -2066,7 +2066,7 @@ void EditorInspectorArray::_new_size_spin_box_value_changed(float p_value) {
 	resize_dialog->get_ok_button()->set_disabled(int(p_value) == count);
 }
 
-void EditorInspectorArray::_new_size_spin_box_text_submitted(String p_text) {
+void EditorInspectorArray::_new_size_spin_box_text_submitted(const String &p_text) {
 	_resize_dialog_confirmed();
 }
 
@@ -2306,7 +2306,7 @@ void EditorInspectorArray::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("page_change_request"));
 }
 
-void EditorInspectorArray::setup_with_move_element_function(Object *p_object, String p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text) {
+void EditorInspectorArray::setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text) {
 	count_property = "";
 	mode = MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION;
 	array_element_prefix = p_array_element_prefix;
@@ -2320,7 +2320,7 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, St
 	_setup();
 }
 
-void EditorInspectorArray::setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
+void EditorInspectorArray::setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
 	count_property = p_count_property;
 	mode = MODE_USE_COUNT_PROPERTY;
 	array_element_prefix = p_array_element_prefix;
@@ -2412,7 +2412,7 @@ void EditorPaginator::_prev_page_button_pressed() {
 	emit_signal("page_changed", MAX(0, page - 1));
 }
 
-void EditorPaginator::_page_line_edit_text_submitted(String p_text) {
+void EditorPaginator::_page_line_edit_text_submitted(const String &p_text) {
 	if (p_text.is_valid_int()) {
 		int new_page = p_text.to_int() - 1;
 		new_page = MIN(MAX(0, new_page), max_page);
@@ -3829,7 +3829,7 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	}
 }
 
-void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing) {
+void EditorInspector::_multiple_properties_changed(const Vector<String> &p_paths, const Array &p_values, bool p_changing) {
 	ERR_FAIL_COND(p_paths.is_empty() || p_values.is_empty());
 	ERR_FAIL_COND(p_paths.size() != p_values.size());
 	String names;

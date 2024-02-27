@@ -1287,7 +1287,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 
 ///////////////////// LOCALIZABLE STRING ///////////////////////////
 
-void EditorPropertyLocalizableString::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void EditorPropertyLocalizableString::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("indices")) {
 		int index = p_property.get_slice("/", 1).to_int();
 

@@ -861,7 +861,7 @@ void CanvasItemEditor::_restore_canvas_item_state(const List<CanvasItem *> &p_ca
 	}
 }
 
-void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, String action_name, bool commit_bones) {
+void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, const String &action_name, bool commit_bones) {
 	List<CanvasItem *> modified_canvas_items;
 	for (CanvasItem *ci : p_canvas_items) {
 		Dictionary old_state = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci)->undo_state;
@@ -2708,7 +2708,7 @@ Control::CursorShape CanvasItemEditor::get_cursor_shape(const Point2 &p_pos) con
 	return c;
 }
 
-void CanvasItemEditor::_draw_text_at_position(Point2 p_position, String p_string, Side p_side) {
+void CanvasItemEditor::_draw_text_at_position(Point2 p_position, const String &p_string, Side p_side) {
 	Color color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 	color.a = 0.8;
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));

@@ -117,7 +117,7 @@ class EditorResourcePreview : public Node {
 	static void _idle_callback(); // For other rendering drivers (i.e., OpenGL).
 	void _iterate();
 
-	void _write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, String p_hash, const Dictionary &p_metadata);
+	void _write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, const String &p_hash, const Dictionary &p_metadata);
 	void _read_preview_cache(Ref<FileAccess> p_file, int *r_thumbnail_size, bool *r_has_small_texture, uint64_t *r_modified_time, String *r_hash, Dictionary *r_metadata);
 
 	Vector<Ref<EditorResourcePreviewGenerator>> preview_generators;

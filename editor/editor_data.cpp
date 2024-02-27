@@ -266,7 +266,7 @@ Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 	return sub_plugins;
 }
 
-EditorPlugin *EditorData::get_editor_by_name(String p_name) {
+EditorPlugin *EditorData::get_editor_by_name(const String &p_name) {
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
 		if (editor_plugins[i]->get_name() == p_name) {
 			return editor_plugins[i];

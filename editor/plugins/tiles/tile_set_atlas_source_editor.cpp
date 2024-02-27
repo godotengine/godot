@@ -551,7 +551,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
 }
 
-void TileSetAtlasSourceEditor::_inspector_property_selected(String p_property) {
+void TileSetAtlasSourceEditor::_inspector_property_selected(const String &p_property) {
 	selected_property = p_property;
 	_update_atlas_view();
 	_update_current_tile_data_editor();
@@ -1701,7 +1701,7 @@ void TileSetAtlasSourceEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void TileSetAtlasSourceEditor::_set_selection_from_array(Array p_selection) {
+void TileSetAtlasSourceEditor::_set_selection_from_array(const Array &p_selection) {
 	ERR_FAIL_COND((p_selection.size() % 2) != 0);
 	selection.clear();
 	for (int i = 0; i < p_selection.size() / 2; i++) {
@@ -2100,12 +2100,12 @@ void TileSetAtlasSourceEditor::_tile_set_changed() {
 	tile_set_changed_needs_update = true;
 }
 
-void TileSetAtlasSourceEditor::_tile_proxy_object_changed(String p_what) {
+void TileSetAtlasSourceEditor::_tile_proxy_object_changed(const String &p_what) {
 	tile_set_changed_needs_update = false; // Avoid updating too many things.
 	_update_atlas_view();
 }
 
-void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what) {
+void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(const String &p_what) {
 	if (p_what == "texture" && !atlas_source_proxy_object->get("texture").is_null()) {
 		atlases_to_auto_create_tiles.clear();
 		atlases_to_auto_create_tiles.append(tile_set_atlas_source);
@@ -2115,7 +2115,7 @@ void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what)
 	}
 }
 
-void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value) {
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 

@@ -194,7 +194,7 @@ void VisualShaderGraphPlugin::update_node(VisualShader::Type p_type, int p_node_
 	add_node(p_type, p_node_id, true);
 }
 
-void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, Variant p_value) {
+void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, const Variant &p_value) {
 	if (p_type != visual_shader->get_shader_type() || !links.has(p_node_id)) {
 		return;
 	}
@@ -1211,7 +1211,7 @@ void VisualShaderEditedProperty::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NIL, "edited_property", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "set_edited_property", "get_edited_property");
 }
 
-void VisualShaderEditedProperty::set_edited_property(Variant p_variant) {
+void VisualShaderEditedProperty::set_edited_property(const Variant &p_variant) {
 	edited_property = p_variant;
 }
 
@@ -3116,7 +3116,7 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 	}
 }
 
-void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, String p_resource_path, int p_node_idx) {
+void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, const String &p_resource_path, int p_node_idx) {
 	ERR_FAIL_INDEX(p_idx, add_options.size());
 
 	VisualShader::Type type = get_current_shader_type();
@@ -3799,7 +3799,7 @@ void VisualShaderEditor::_replace_node(VisualShader::Type p_type_id, int p_node_
 	undo_redo->add_undo_method(visual_shader.ptr(), "replace_node", p_type_id, p_node_id, p_from);
 }
 
-void VisualShaderEditor::_update_constant(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port) {
+void VisualShaderEditor::_update_constant(VisualShader::Type p_type_id, int p_node_id, const Variant &p_var, int p_preview_port) {
 	Ref<VisualShaderNode> node = visual_shader->get_node(p_type_id, p_node_id);
 	ERR_FAIL_COND(!node.is_valid());
 	ERR_FAIL_COND(!node->has_method("set_constant"));
@@ -3809,7 +3809,7 @@ void VisualShaderEditor::_update_constant(VisualShader::Type p_type_id, int p_no
 	}
 }
 
-void VisualShaderEditor::_update_parameter(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port) {
+void VisualShaderEditor::_update_parameter(VisualShader::Type p_type_id, int p_node_id, const Variant &p_var, int p_preview_port) {
 	Ref<VisualShaderNodeParameter> parameter = visual_shader->get_node(p_type_id, p_node_id);
 	ERR_FAIL_COND(!parameter.is_valid());
 
@@ -4715,7 +4715,7 @@ void VisualShaderEditor::_custom_mode_toggled(bool p_enabled) {
 	_update_graph();
 }
 
-void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> p_input, String p_name) {
+void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> p_input, const String &p_name) {
 	String prev_name = p_input->get_input_name();
 
 	if (p_name == prev_name) {
@@ -4787,7 +4787,7 @@ void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> p_input, 
 	undo_redo_man->commit_action();
 }
 
-void VisualShaderEditor::_parameter_ref_select_item(Ref<VisualShaderNodeParameterRef> p_parameter_ref, String p_name) {
+void VisualShaderEditor::_parameter_ref_select_item(Ref<VisualShaderNodeParameterRef> p_parameter_ref, const String &p_name) {
 	String prev_name = p_parameter_ref->get_parameter_name();
 
 	if (p_name == prev_name) {
@@ -4831,7 +4831,7 @@ void VisualShaderEditor::_parameter_ref_select_item(Ref<VisualShaderNodeParamete
 	undo_redo_man->commit_action();
 }
 
-void VisualShaderEditor::_varying_select_item(Ref<VisualShaderNodeVarying> p_varying, String p_name) {
+void VisualShaderEditor::_varying_select_item(Ref<VisualShaderNodeVarying> p_varying, const String &p_name) {
 	String prev_name = p_varying->get_varying_name();
 
 	if (p_name == prev_name) {
@@ -6780,7 +6780,7 @@ public:
 		}
 	}
 
-	void setup(VisualShaderEditor *p_editor, Ref<Resource> p_parent_resource, Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, const HashMap<StringName, String> &p_overrided_names, Ref<VisualShaderNode> p_node) {
+	void setup(VisualShaderEditor *p_editor, Ref<Resource> p_parent_resource, const Vector<EditorProperty *> &p_properties, const Vector<StringName> &p_names, const HashMap<StringName, String> &p_overrided_names, Ref<VisualShaderNode> p_node) {
 		editor = p_editor;
 		parent_resource = p_parent_resource;
 		updating = false;

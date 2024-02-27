@@ -113,7 +113,7 @@ void BoneTransformEditor::_notification(int p_what) {
 	}
 }
 
-void BoneTransformEditor::_value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void BoneTransformEditor::_value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (updating) {
 		return;
 	}

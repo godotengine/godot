@@ -156,11 +156,11 @@ Variant EditorScenePostImportPlugin::get_option_value(const StringName &p_name) 
 	}
 	return Variant();
 }
-void EditorScenePostImportPlugin::add_import_option(const String &p_name, Variant p_default_value) {
+void EditorScenePostImportPlugin::add_import_option(const String &p_name, const Variant &p_default_value) {
 	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option() can only be called from get_import_options().");
 	add_import_option_advanced(p_default_value.get_type(), p_name, p_default_value);
 }
-void EditorScenePostImportPlugin::add_import_option_advanced(Variant::Type p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint, const String &p_hint_string, int p_usage_flags) {
+void EditorScenePostImportPlugin::add_import_option_advanced(Variant::Type p_type, const String &p_name, const Variant &p_default_value, PropertyHint p_hint, const String &p_hint_string, int p_usage_flags) {
 	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option_advanced() can only be called from get_import_options().");
 	current_option_list->push_back(ResourceImporter::ImportOption(PropertyInfo(p_type, p_name, p_hint, p_hint_string, p_usage_flags), p_default_value));
 }
@@ -1445,7 +1445,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 	return p_node;
 }
 
-Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks) {
+Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, const String &p_save_to_path, bool p_keep_custom_tracks) {
 	if (!p_save_to_file || !p_save_to_path.is_resource_file()) {
 		return anim;
 	}

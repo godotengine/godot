@@ -139,7 +139,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	Node *property_drop_node = nullptr;
 	String resource_drop_path;
-	void _perform_property_drop(Node *p_node, String p_property, Ref<Resource> p_res);
+	void _perform_property_drop(Node *p_node, const String &p_property, Ref<Resource> p_res);
 
 	EditorData *editor_data = nullptr;
 	EditorSelection *editor_selection = nullptr;
@@ -238,7 +238,7 @@ class SceneTreeDock : public VBoxContainer {
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _scene_tree_gui_input(Ref<InputEvent> p_event);
 
-	void _new_scene_from(String p_file);
+	void _new_scene_from(const String &p_file);
 	void _set_node_owner_recursive(Node *p_node, Node *p_owner, const HashMap<const Node *, Node *> &p_inverse_duplimap);
 
 	bool _validate_no_foreign();
@@ -251,9 +251,9 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
 
-	void _nodes_dragged(Array p_nodes, NodePath p_to, int p_type);
-	void _files_dropped(Vector<String> p_files, NodePath p_to, int p_type);
-	void _script_dropped(String p_file, NodePath p_to);
+	void _nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type);
+	void _files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type);
+	void _script_dropped(const String &p_file, NodePath p_to);
 	void _quick_open();
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
@@ -306,7 +306,7 @@ protected:
 public:
 	String get_filter();
 	void set_filter(const String &p_filter);
-	void save_branch_to_file(String p_directory);
+	void save_branch_to_file(const String &p_directory);
 
 	void _focus_node();
 

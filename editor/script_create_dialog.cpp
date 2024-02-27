@@ -46,7 +46,7 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 
-static String _get_parent_class_of_script(String p_path) {
+static String _get_parent_class_of_script(const String &p_path) {
 	if (!ResourceLoader::exists(p_path, "Script")) {
 		return "Object"; // A script eventually inherits from Object.
 	}
@@ -73,7 +73,7 @@ static String _get_parent_class_of_script(String p_path) {
 	return _get_parent_class_of_script(base->get_path());
 }
 
-static Vector<String> _get_hierarchy(String p_class_name) {
+static Vector<String> _get_hierarchy(const String &p_class_name) {
 	Vector<String> hierarchy;
 
 	String class_name = p_class_name;

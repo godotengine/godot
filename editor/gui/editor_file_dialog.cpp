@@ -287,7 +287,7 @@ void EditorFileDialog::update_dir() {
 	}
 }
 
-void EditorFileDialog::_dir_submitted(String p_dir) {
+void EditorFileDialog::_dir_submitted(const String &p_dir) {
 	dir_access->change_dir(p_dir);
 	invalidate();
 	update_dir();

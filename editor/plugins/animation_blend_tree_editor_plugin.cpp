@@ -494,7 +494,7 @@ void AnimationNodeBlendTreeEditor::_disconnection_request(const String &p_from, 
 	updating = false;
 }
 
-void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, Array p_options, const String &p_node) {
+void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, const Array &p_options, const String &p_node) {
 	String option = p_options[p_index];
 
 	Ref<AnimationNodeAnimation> anim = blend_tree->get_node(p_node);

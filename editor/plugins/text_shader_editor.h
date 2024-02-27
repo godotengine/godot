@@ -165,7 +165,7 @@ class TextShaderEditor : public MarginContainer {
 	void _reload_shader_include_from_disk();
 	void _reload();
 	void _show_warnings_panel(bool p_show);
-	void _warning_clicked(Variant p_line);
+	void _warning_clicked(const Variant &p_line);
 	void _update_warnings(bool p_validate);
 
 	void _script_validated(bool p_valid) {

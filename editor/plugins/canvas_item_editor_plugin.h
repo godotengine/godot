@@ -394,7 +394,7 @@ private:
 
 	void _save_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool save_bones = false);
 	void _restore_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool restore_bones = false);
-	void _commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, String action_name, bool commit_bones = false);
+	void _commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, const String &action_name, bool commit_bones = false);
 
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
@@ -440,7 +440,7 @@ private:
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
 
-	void _draw_text_at_position(Point2 p_position, String p_string, Side p_side);
+	void _draw_text_at_position(Point2 p_position, const String &p_string, Side p_side);
 	void _draw_margin_at_position(int p_value, Point2 p_position, Side p_side);
 	void _draw_percentage_at_position(real_t p_value, Point2 p_position, Side p_side);
 	void _draw_straight_line(Point2 p_from, Point2 p_to, Color p_color);

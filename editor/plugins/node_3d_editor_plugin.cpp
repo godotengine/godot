@@ -2663,7 +2663,7 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 	cursor.eye_pos += motion;
 }
 
-void Node3DEditorViewport::set_message(String p_message, float p_time) {
+void Node3DEditorViewport::set_message(const String &p_message, float p_time) {
 	message = p_message;
 	message_time = p_time;
 }

@@ -64,9 +64,9 @@ private:
 
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 
-	void _generate_merged(Vector<Ref<TileSetAtlasSource>> p_atlas_sources, int p_max_columns);
+	void _generate_merged(const Vector<Ref<TileSetAtlasSource>> &p_atlas_sources, int p_max_columns);
 	void _update_texture();
-	void _merge_confirmed(String p_path);
+	void _merge_confirmed(const String &p_path);
 
 protected:
 	virtual void ok_pressed() override;
