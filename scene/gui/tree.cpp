@@ -112,6 +112,10 @@ void TreeItem::_change_tree(Tree *p_tree) {
 		}
 
 		if (tree->selected_item == this) {
+			for (int i = 0; i < tree->selected_item->cells.size(); i++) {
+				tree->selected_item->cells.write[i].selected = false;
+			}
+
 			tree->selected_item = nullptr;
 		}
 
