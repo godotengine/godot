@@ -104,6 +104,9 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 	gltf.instantiate();
 	Ref<GLTFState> state;
 	state.instantiate();
+	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
+		state->set_import_as_skeleton_bones(true);
+	}
 	print_verbose(vformat("glTF path: %s", sink));
 	Error err = gltf->append_from_file(sink, state, p_flags, p_path.get_base_dir());
 	if (err != OK) {

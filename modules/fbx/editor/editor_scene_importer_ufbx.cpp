@@ -73,6 +73,12 @@ Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t
 		int32_t enum_option = p_options["fbx/embedded_image_handling"];
 		state->set_handle_binary_image(enum_option);
 	}
+	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
+		state->set_import_as_skeleton_bones(true);
+	}
+	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
+		state->set_import_as_skeleton_bones(true);
+	}
 	p_flags |= EditorSceneFormatImporter::IMPORT_USE_NAMED_SKIN_BINDS;
 	Error err = fbx->append_from_file(path, state, p_flags, p_path.get_base_dir());
 	if (err != OK) {

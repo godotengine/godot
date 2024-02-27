@@ -96,6 +96,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Button *animation_stop_button = nullptr;
 	Animation::LoopMode animation_loop_mode = Animation::LOOP_NONE;
 	bool animation_pingpong = false;
+	bool previous_import_as_skeleton = false;
 
 	Ref<StandardMaterial3D> collider_mat;
 
