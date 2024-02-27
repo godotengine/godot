@@ -1395,6 +1395,62 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 	return img;
 }
 
+Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) const {
+	Point2i pos = p_rect.position + _get_screens_origin();
+	Size2i size = p_rect.size;
+
+	POINT p1;
+	p1.x = pos.x;
+	p1.y = pos.y;
+
+	POINT p2;
+	p2.x = pos.x + size.x;
+	p2.y = pos.y + size.y;
+	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
+	}
+
+	Ref<Image> img;
+	HDC dc = GetDC(0);
+	if (dc) {
+		HDC hdc = CreateCompatibleDC(dc);
+		int width = p2.x - p1.x;
+		int height = p2.y - p1.y;
+		if (hdc) {
+			HBITMAP hbm = CreateCompatibleBitmap(dc, width, height);
+			if (hbm) {
+				SelectObject(hdc, hbm);
+				BitBlt(hdc, 0, 0, width, height, dc, p1.x, p1.y, SRCCOPY);
+
+				BITMAPINFO bmp_info = {};
+				bmp_info.bmiHeader.biSize = sizeof(bmp_info.bmiHeader);
+				bmp_info.bmiHeader.biWidth = width;
+				bmp_info.bmiHeader.biHeight = -height;
+				bmp_info.bmiHeader.biPlanes = 1;
+				bmp_info.bmiHeader.biBitCount = 32;
+				bmp_info.bmiHeader.biCompression = BI_RGB;
+
+				Vector<uint8_t> img_data;
+				img_data.resize(width * height * 4);
+				GetDIBits(hdc, hbm, 0, height, img_data.ptrw(), &bmp_info, DIB_RGB_COLORS);
+
+				uint8_t *wr = (uint8_t *)img_data.ptrw();
+				for (int i = 0; i < width * height; i++) {
+					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]); // Swap B and R.
+				}
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+
+				DeleteObject(hbm);
+			}
+			DeleteDC(hdc);
+		}
+		ReleaseDC(NULL, dc);
+	}
+
+	return img;
+}
+
 float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1506,6 +1562,14 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	}
 	if (p_flags & WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT) {
 		wd.mpass = true;
+	}
+	if (p_flags & WINDOW_FLAG_EXCLUDE_FROM_CAPTURE_BIT) {
+		wd.hide_from_capture = true;
+		if (os_ver.dwBuildNumber >= 19041) {
+			SetWindowDisplayAffinity(wd.hWnd, WDA_EXCLUDEFROMCAPTURE);
+		} else {
+			SetWindowDisplayAffinity(wd.hWnd, WDA_MONITOR);
+		}
 	}
 	if (p_flags & WINDOW_FLAG_POPUP_BIT) {
 		wd.is_popup = true;
@@ -2395,6 +2459,18 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.mpass = p_enabled;
 			_update_window_mouse_passthrough(p_window);
 		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			wd.hide_from_capture = p_enabled;
+			if (p_enabled) {
+				if (os_ver.dwBuildNumber >= 19041) {
+					SetWindowDisplayAffinity(wd.hWnd, WDA_EXCLUDEFROMCAPTURE);
+				} else {
+					SetWindowDisplayAffinity(wd.hWnd, WDA_MONITOR);
+				}
+			} else {
+				SetWindowDisplayAffinity(wd.hWnd, WDA_NONE);
+			}
+		} break;
 		case WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
 			ERR_FAIL_COND_MSG(IsWindowVisible(wd.hWnd) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
@@ -2431,6 +2507,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		} break;
 		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			return wd.mpass;
+		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			return wd.hide_from_capture;
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
@@ -6083,7 +6162,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
 	// Load Windows version info.
-	OSVERSIONINFOW os_ver;
 	ZeroMemory(&os_ver, sizeof(OSVERSIONINFOW));
 	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
 

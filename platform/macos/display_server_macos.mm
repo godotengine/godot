@@ -50,6 +50,8 @@
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
 
+#include <AppKit/AppKit.h>
+
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
@@ -1609,35 +1611,41 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 }
 
 Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
-	Point2i position = p_position;
-	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Godot passes a positive value.
-	position.y *= -1;
-	position += _get_screens_origin();
+	HashSet<CGWindowID> exclude_windows;
+	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
+		if (E->value.hide_from_capture) {
+			exclude_windows.insert([E->value.window_object windowNumber]);
+		}
+	}
+
+	CFArrayRef on_screen_windows = CGWindowListCreate(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+	CFMutableArrayRef capture_windows = CFArrayCreateMutableCopy(nullptr, 0, on_screen_windows);
+	for (long i = CFArrayGetCount(on_screen_windows) - 1; i >= 0; i--) {
+		CGWindowID window = (CGWindowID)(uintptr_t)CFArrayGetValueAtIndex(capture_windows, i);
+		if (exclude_windows.has(window)) {
+			CFArrayRemoveValueAtIndex(capture_windows, i);
+		}
+	}
+
+	Point2i position = p_position - Vector2i(1, 1);
+	position -= screen_get_position(0); // Note: coordinates where the screen origin is in the upper-left corner of the main display and y-axis values increase downward.
 	position /= screen_get_max_scale();
 
 	Color color;
-	for (NSScreen *screen in [NSScreen screens]) {
-		NSRect frame = [screen frame];
-		if (NSMouseInRect(NSMakePoint(position.x, position.y), frame, NO)) {
-			NSDictionary *screenDescription = [screen deviceDescription];
-			CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
-			CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(position.x - frame.origin.x, frame.size.height - (position.y - frame.origin.y), 1, 1));
-			if (image) {
-				CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
-				if (color_space) {
-					uint8_t img_data[4];
-					CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-					if (context) {
-						CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image);
-						color = Color(img_data[0] / 255.0f, img_data[1] / 255.0f, img_data[2] / 255.0f, img_data[3] / 255.0f);
-						CGContextRelease(context);
-					}
-					CGColorSpaceRelease(color_space);
-				}
-				CGImageRelease(image);
+	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, 1, 1), capture_windows, kCGWindowListOptionAll);
+	if (image) {
+		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+		if (color_space) {
+			uint8_t img_data[4];
+			CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			if (context) {
+				CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image);
+				color = Color(img_data[0] / 255.0f, img_data[1] / 255.0f, img_data[2] / 255.0f, img_data[3] / 255.0f);
+				CGContextRelease(context);
 			}
+			CGColorSpaceRelease(color_space);
 		}
+		CGImageRelease(image);
 	}
 	return color;
 }
@@ -1645,42 +1653,97 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
+	HashSet<CGWindowID> exclude_windows;
+	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
+		if (E->value.hide_from_capture) {
+			exclude_windows.insert([E->value.window_object windowNumber]);
+		}
 	}
 
-	Ref<Image> img;
-	NSArray *screenArray = [NSScreen screens];
-	if ((NSUInteger)p_screen < [screenArray count]) {
-		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
-		NSDictionary *screenDescription = [[screenArray objectAtIndex:p_screen] deviceDescription];
-		CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
-		CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(0, 0, nsrect.size.width, nsrect.size.height));
-		if (image) {
-			CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
-			if (color_space) {
-				NSUInteger width = CGImageGetWidth(image);
-				NSUInteger height = CGImageGetHeight(image);
-
-				Vector<uint8_t> img_data;
-				img_data.resize(height * width * 4);
-				CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-				if (context) {
-					CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
-					img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
-					CGContextRelease(context);
-				}
-				CGColorSpaceRelease(color_space);
-			}
-			CGImageRelease(image);
+	CFArrayRef on_screen_windows = CGWindowListCreate(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+	CFMutableArrayRef capture_windows = CFArrayCreateMutableCopy(nullptr, 0, on_screen_windows);
+	for (long i = CFArrayGetCount(on_screen_windows) - 1; i >= 0; i--) {
+		CGWindowID window = (CGWindowID)(uintptr_t)CFArrayGetValueAtIndex(capture_windows, i);
+		if (exclude_windows.has(window)) {
+			CFArrayRemoveValueAtIndex(capture_windows, i);
 		}
+	}
+
+	Point2i position = screen_get_position(p_screen);
+	position -= screen_get_position(0); // Note: coordinates where the screen origin is in the upper-left corner of the main display and y-axis values increase downward.
+	position /= screen_get_max_scale();
+
+	Size2i size = screen_get_size(p_screen);
+	size /= screen_get_max_scale();
+
+	Ref<Image> img;
+	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, size.width, size.height), capture_windows, kCGWindowListOptionAll);
+	if (image) {
+		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+		if (color_space) {
+			NSUInteger width = CGImageGetWidth(image);
+			NSUInteger height = CGImageGetHeight(image);
+
+			Vector<uint8_t> img_data;
+			img_data.resize(height * width * 4);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			if (context) {
+				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+				CGContextRelease(context);
+				img->resize(screen_get_size(p_screen).x, screen_get_size(p_screen).y, Image::INTERPOLATE_NEAREST);
+			}
+			CGColorSpaceRelease(color_space);
+		}
+		CGImageRelease(image);
+	}
+	return img;
+}
+
+Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const {
+	HashSet<CGWindowID> exclude_windows;
+	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
+		if (E->value.hide_from_capture) {
+			exclude_windows.insert([E->value.window_object windowNumber]);
+		}
+	}
+
+	CFArrayRef on_screen_windows = CGWindowListCreate(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+	CFMutableArrayRef capture_windows = CFArrayCreateMutableCopy(nullptr, 0, on_screen_windows);
+	for (long i = CFArrayGetCount(on_screen_windows) - 1; i >= 0; i--) {
+		CGWindowID window = (CGWindowID)(uintptr_t)CFArrayGetValueAtIndex(capture_windows, i);
+		if (exclude_windows.has(window)) {
+			CFArrayRemoveValueAtIndex(capture_windows, i);
+		}
+	}
+
+	Point2i position = p_rect.position;
+	position -= screen_get_position(0); // Note: coordinates where the screen origin is in the upper-left corner of the main display and y-axis values increase downward.
+	position /= screen_get_max_scale();
+
+	Size2i size = p_rect.size;
+	size /= screen_get_max_scale();
+
+	Ref<Image> img;
+	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, size.width, size.height), capture_windows, kCGWindowListOptionAll);
+	if (image) {
+		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+		if (color_space) {
+			NSUInteger width = CGImageGetWidth(image);
+			NSUInteger height = CGImageGetHeight(image);
+
+			Vector<uint8_t> img_data;
+			img_data.resize_zeroed(height * width * 4);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			if (context) {
+				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+				CGContextRelease(context);
+				img->resize(p_rect.size.x, p_rect.size.y, Image::INTERPOLATE_NEAREST);
+			}
+			CGColorSpaceRelease(color_space);
+		}
+		CGImageRelease(image);
 	}
 	return img;
 }
@@ -2528,6 +2591,14 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			NSWindow *w = wd.window_object;
 			w.excludedFromWindowsMenu = wd.is_popup || wd.no_focus;
 		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			if (p_enabled) {
+				[wd.window_object setSharingType:NSWindowSharingNone];
+			} else {
+				[wd.window_object setSharingType:NSWindowSharingReadWrite];
+			}
+			wd.hide_from_capture = p_enabled;
+		} break;
 		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			wd.mpass = p_enabled;
 		} break;
@@ -2572,6 +2643,9 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			return wd.hide_from_capture;
 		} break;
 		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			return wd.mpass;

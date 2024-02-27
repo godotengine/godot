@@ -133,10 +133,14 @@ private:
 	Vector<ColorMode *> modes;
 
 	Popup *picker_window = nullptr;
+	TextureRect *picker_texture_zoom = nullptr;
+	Panel *picker_preview = nullptr;
+	Panel *picker_preview_color = nullptr;
+	Ref<StyleBoxFlat> picker_preview_style_box;
+	Ref<StyleBoxFlat> picker_preview_style_box_color;
+
 	// Legacy color picking.
 	TextureRect *picker_texture_rect = nullptr;
-	Label *picker_preview_label = nullptr;
-	Ref<StyleBoxFlat> picker_preview_style_box;
 	Color picker_color;
 	FileDialog *file_dialog = nullptr;
 	Button *menu_btn = nullptr;
@@ -297,6 +301,7 @@ private:
 	void _add_preset_pressed();
 	void _html_focus_exit();
 	void _pick_button_pressed();
+	void _target_gui_input(const Ref<InputEvent> &p_event);
 	void _pick_finished();
 	void _update_menu_items();
 	void _update_menu();
