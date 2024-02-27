@@ -1,0 +1,49 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v16.0.6
+    hooks:
+      - id: clang-format
+        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java|glsl)$
+        types_or: [text]
+        exclude: |
+          (?x)^(
+            tests/python_build.*|
+            .*thirdparty.*|
+            .*platform/android/java/lib/src/com.*|
+            .*-so_wrap.*
+          )
+
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 23.3.0
+    hooks:
+      - id: black
+        files: (\.py$|SConstruct|SCsub)
+        types_or: [text]
+        exclude: .*thirdparty.*
+        args:
+          - --line-length=120
+
+  - repo: local
+    hooks:
+      - id: make-rst
+        name: make-rst
+        entry: python3 doc/tools/make_rst.py doc/classes modules platform --dry-run --color
+        pass_filenames: false
+        language: python
+        files: ^(doc|modules|platform).*xml$
+
+      - id: copyright-headers
+        name: copyright-headers
+        language: python
+        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java)$
+        entry: python3 misc/scripts/copyright_headers.py
+        exclude: |
+          (?x)^(
+            tests/python_build.*|
+            .*thirdparty.*|
+            .*platform/android/java/lib/src/com.*|
+            .*-so_wrap.*|
+            platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView.*|
+            platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper.*|
+            platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.*
+          )

@@ -23,7 +23,7 @@ jobs:
 
       - name: Install Python dependencies and general setup
         run: |
-          pip3 install black==23.3.0 pytest==7.1.2 mypy==0.971
+          pip3 install pytest==7.1.2 mypy==0.971
           git config diff.wsErrorHighlight all
 
       - name: Get changed files
@@ -46,6 +46,9 @@ jobs:
         run: |
           bash ./misc/scripts/gitignore_check.sh
 
+      - name: Style checks via pre-commit
+        uses: pre-commit/action@v3.0.1
+
       - name: File formatting checks (file_format.sh)
         run: |
           bash ./misc/scripts/file_format.sh changed.txt
@@ -53,14 +56,6 @@ jobs:
       - name: Header guards formatting checks (header_guards.sh)
         run: |
           bash ./misc/scripts/header_guards.sh changed.txt
-
-      - name: Python style checks via black (black_format.sh)
-        run: |
-          if grep -qE '\.py$|SConstruct|SCsub' changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/black_format.sh
-          else
-            echo "Skipping Python formatting as no Python files were changed."
-          fi
 
       - name: Python scripts static analysis (mypy_check.sh)
         run: |
@@ -92,12 +87,6 @@ jobs:
       - name: Documentation checks
         run: |
           doc/tools/doc_status.py doc/classes modules/*/doc_classes platform/*/doc_classes
-          doc/tools/make_rst.py --dry-run --color doc/classes modules platform
-
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          clang-format --version
-          bash ./misc/scripts/clang_format.sh changed.txt
 
       - name: Style checks via dotnet format (dotnet_format.sh)
         run: |
