@@ -3568,7 +3568,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			itype.is_deprecated = itype.class_doc->is_deprecated;
 			itype.deprecation_message = itype.class_doc->deprecated_message;
 
-			if (itype.deprecation_message.is_empty()) {
+			if (itype.is_deprecated && itype.deprecation_message.is_empty()) {
 				WARN_PRINT("An empty deprecation message is discouraged. Type: '" + itype.proxy_name + "'.");
 				itype.deprecation_message = "This class is deprecated.";
 			}
@@ -3652,7 +3652,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				iprop.is_deprecated = iprop.prop_doc->is_deprecated;
 				iprop.deprecation_message = iprop.prop_doc->deprecated_message;
 
-				if (iprop.deprecation_message.is_empty()) {
+				if (iprop.is_deprecated && iprop.deprecation_message.is_empty()) {
 					WARN_PRINT("An empty deprecation message is discouraged. Property: '" + itype.proxy_name + "." + iprop.proxy_name + "'.");
 					iprop.deprecation_message = "This property is deprecated.";
 				}
@@ -3841,7 +3841,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.is_deprecated = imethod.method_doc->is_deprecated;
 				imethod.deprecation_message = imethod.method_doc->deprecated_message;
 
-				if (imethod.deprecation_message.is_empty()) {
+				if (imethod.is_deprecated && imethod.deprecation_message.is_empty()) {
 					WARN_PRINT("An empty deprecation message is discouraged. Method: '" + itype.proxy_name + "." + imethod.proxy_name + "'.");
 					imethod.deprecation_message = "This method is deprecated.";
 				}
@@ -3957,7 +3957,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				isignal.is_deprecated = isignal.method_doc->is_deprecated;
 				isignal.deprecation_message = isignal.method_doc->deprecated_message;
 
-				if (isignal.deprecation_message.is_empty()) {
+				if (isignal.is_deprecated && isignal.deprecation_message.is_empty()) {
 					WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + itype.proxy_name + "." + isignal.proxy_name + "'.");
 					isignal.deprecation_message = "This signal is deprecated.";
 				}
@@ -4007,7 +4007,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 					iconstant.is_deprecated = iconstant.const_doc->is_deprecated;
 					iconstant.deprecation_message = iconstant.const_doc->deprecated_message;
 
-					if (iconstant.deprecation_message.is_empty()) {
+					if (iconstant.is_deprecated && iconstant.deprecation_message.is_empty()) {
 						WARN_PRINT("An empty deprecation message is discouraged. Enum member: '" + itype.proxy_name + "." + ienum.proxy_name + "." + iconstant.proxy_name + "'.");
 						iconstant.deprecation_message = "This enum member is deprecated.";
 					}
@@ -4059,7 +4059,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				iconstant.is_deprecated = iconstant.const_doc->is_deprecated;
 				iconstant.deprecation_message = iconstant.const_doc->deprecated_message;
 
-				if (iconstant.deprecation_message.is_empty()) {
+				if (iconstant.is_deprecated && iconstant.deprecation_message.is_empty()) {
 					WARN_PRINT("An empty deprecation message is discouraged. Constant: '" + itype.proxy_name + "." + iconstant.proxy_name + "'.");
 					iconstant.deprecation_message = "This constant is deprecated.";
 				}
