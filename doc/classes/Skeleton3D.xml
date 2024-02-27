@@ -62,7 +62,7 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns an array containing the bone indexes of all the children node of the passed in bone, [param bone_idx].
+				Returns an array containing the bone indexes of all the child node of the passed in bone, [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">

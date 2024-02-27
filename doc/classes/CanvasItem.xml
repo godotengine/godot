@@ -522,7 +522,7 @@
 			<return type="void" />
 			<description>
 				Moves this node to display on top of its siblings.
-				Internally, the node is moved to the bottom of parent's children list. The method has no effect on nodes without a parent.
+				Internally, the node is moved to the bottom of parent's child list. The method has no effect on nodes without a parent.
 			</description>
 		</method>
 		<method name="queue_redraw">
@@ -562,7 +562,7 @@
 	</methods>
 	<members>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
-			Allows the current node to clip children nodes, essentially acting as a mask.
+			Allows the current node to clip child nodes, essentially acting as a mask.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
