@@ -30,6 +30,7 @@
 
 #include "editor_bottom_panel.h"
 
+#include "core/os/time.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_about.h"
@@ -253,7 +254,13 @@ EditorBottomPanel::EditorBottomPanel() {
 	// Fade out the version label to be less prominent, but still readable.
 	version_btn->set_self_modulate(Color(1, 1, 1, 0.65));
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	version_btn->set_tooltip_text(TTR("Click to copy."));
+	String build_date;
+	if (VERSION_TIMESTAMP > 0) {
+		build_date = Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC";
+	} else {
+		build_date = TTR("(unknown)");
+	}
+	version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
 	version_btn->connect("pressed", callable_mp(this, &EditorBottomPanel::_version_button_pressed));
 	version_info_vbox->add_child(version_btn);
 

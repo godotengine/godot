@@ -38,6 +38,7 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_about.h"
 #include "editor/editor_settings.h"
@@ -1350,7 +1351,13 @@ ProjectManager::ProjectManager() {
 		// Fade the version label to be less prominent, but still readable.
 		version_btn->set_self_modulate(Color(1, 1, 1, 0.6));
 		version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-		version_btn->set_tooltip_text(TTR("Click to copy the version information."));
+		String build_date;
+		if (VERSION_TIMESTAMP > 0) {
+			build_date = Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC";
+		} else {
+			build_date = TTR("(unknown)");
+		}
+		version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
 		version_btn->connect("pressed", callable_mp(this, &ProjectManager::_version_button_pressed));
 		footer_bar->add_child(version_btn);
 	}
