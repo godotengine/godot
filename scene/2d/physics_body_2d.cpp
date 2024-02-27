@@ -129,7 +129,7 @@ bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_
 }
 
 bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_motion, const Ref<KinematicCollision2D> &r_collision, real_t p_margin, bool p_recovery_as_collision) {
-	ERR_FAIL_COND_V(!is_inside_tree(), false);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	PhysicsServer2D::MotionResult *r = nullptr;
 	PhysicsServer2D::MotionResult temp_result;

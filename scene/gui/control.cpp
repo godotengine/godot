@@ -1420,7 +1420,7 @@ Point2 Control::get_global_position() const {
 
 Point2 Control::get_screen_position() const {
 	ERR_READ_THREAD_GUARD_V(Point2());
-	ERR_FAIL_COND_V(!is_inside_tree(), Point2());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Point2(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	return get_screen_transform().get_origin();
 }
 
@@ -1489,7 +1489,7 @@ Rect2 Control::get_global_rect() const {
 
 Rect2 Control::get_screen_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2());
-	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Rect2(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	Transform2D xform = get_screen_transform();
 	return Rect2(xform.get_origin(), xform.get_scale() * get_size());
@@ -1853,7 +1853,7 @@ bool Control::is_force_pass_scroll_events() const {
 
 void Control::warp_mouse(const Point2 &p_position) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	get_viewport()->warp_mouse(get_global_transform_with_canvas().xform(p_position));
 }
 
@@ -1953,7 +1953,7 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 
 void Control::force_drag(const Variant &p_data, Control *p_control) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_COND(p_data.get_type() == Variant::NIL);
 
 	get_viewport()->_gui_force_drag(this, p_data, p_control);
@@ -1961,7 +1961,7 @@ void Control::force_drag(const Variant &p_data, Control *p_control) {
 
 void Control::set_drag_preview(Control *p_control) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_COND(!get_viewport()->gui_is_dragging());
 	get_viewport()->_gui_set_drag_preview(this, p_control);
 }
@@ -1996,7 +1996,7 @@ bool Control::has_focus() const {
 
 void Control::grab_focus() {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	if (data.focus_mode == FOCUS_NONE) {
 		WARN_PRINT("This control can't grab focus. Use set_focus_mode() to allow a control to get focus.");
@@ -2008,14 +2008,14 @@ void Control::grab_focus() {
 
 void Control::grab_click_focus() {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	get_viewport()->_gui_grab_click_focus(this);
 }
 
 void Control::release_focus() {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	if (!has_focus()) {
 		return;

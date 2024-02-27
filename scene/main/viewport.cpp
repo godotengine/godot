@@ -273,7 +273,7 @@ void Viewport::_sub_window_update_order() {
 }
 
 void Viewport::_sub_window_register(Window *p_window) {
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	for (int i = 0; i < gui.sub_windows.size(); i++) {
 		ERR_FAIL_COND(gui.sub_windows[i].window == p_window);
 	}
@@ -2560,7 +2560,7 @@ void Viewport::_gui_update_mouse_over() {
 
 Window *Viewport::get_base_window() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), nullptr, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	Viewport *v = const_cast<Viewport *>(this);
 	Window *w = Object::cast_to<Window>(v);
@@ -3321,7 +3321,7 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 
 void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (disable_input) {
@@ -3368,12 +3368,12 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	}
 
 	if (!is_input_handled()) {
-		ERR_FAIL_COND(!is_inside_tree());
+		ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 		get_tree()->_call_input_pause(input_group, SceneTree::CALL_INPUT_TYPE_INPUT, ev, this); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
 	}
 
 	if (!is_input_handled()) {
-		ERR_FAIL_COND(!is_inside_tree());
+		ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 		_gui_input_event(ev);
 	} else {
 		// Cleanup internal GUI state after accepting event during _input().
@@ -3391,7 +3391,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	WARN_DEPRECATED_MSG(R"*(The "push_unhandled_input()" method is deprecated, use "push_input()" instead.)*");
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_COND(p_event.is_null());
 
 	local_input_handled = false;
@@ -3418,19 +3418,19 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 	// Shortcut Input.
 	if (Object::cast_to<InputEventKey>(*p_event) != nullptr || Object::cast_to<InputEventShortcut>(*p_event) != nullptr || Object::cast_to<InputEventJoypadButton>(*p_event) != nullptr) {
-		ERR_FAIL_COND(!is_inside_tree());
+		ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 		get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, p_event, this);
 	}
 
 	// Unhandled key Input - Used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, and to handle Unicode input with Alt / Ctrl modifiers after handling shortcuts.
 	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*p_event) != nullptr)) {
-		ERR_FAIL_COND(!is_inside_tree());
+		ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 		get_tree()->_call_input_pause(unhandled_key_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT, p_event, this);
 	}
 
 	// Unhandled Input.
 	if (!is_input_handled()) {
-		ERR_FAIL_COND(!is_inside_tree());
+		ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 		get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, p_event, this);
 	}
 
@@ -3719,7 +3719,7 @@ bool Viewport::gui_is_drag_successful() const {
 void Viewport::set_input_as_handled() {
 	ERR_MAIN_THREAD_GUARD;
 	if (!handle_input_locally) {
-		ERR_FAIL_COND(!is_inside_tree());
+		ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 		Viewport *vp = this;
 		while (true) {
 			if (Object::cast_to<Window>(vp)) {
@@ -3742,7 +3742,7 @@ void Viewport::set_input_as_handled() {
 bool Viewport::is_input_handled() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!handle_input_locally) {
-		ERR_FAIL_COND_V(!is_inside_tree(), false);
+		ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 		const Viewport *vp = this;
 		while (true) {
 			if (Object::cast_to<Window>(vp)) {
@@ -3877,7 +3877,7 @@ DisplayServer::WindowID Viewport::get_window_id() const {
 
 Viewport *Viewport::get_parent_viewport() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), nullptr, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	if (!get_parent()) {
 		return nullptr; //root viewport
 	}

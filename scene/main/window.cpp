@@ -359,7 +359,7 @@ Point2i Window::get_position() const {
 
 void Window::move_to_center() {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	Rect2 parent_rect;
 
@@ -1647,7 +1647,7 @@ Window *Window::get_parent_visible_window() const {
 
 void Window::popup_on_parent(const Rect2i &p_parent_rect) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
 	if (!is_embedded()) {
@@ -1665,7 +1665,7 @@ void Window::popup_on_parent(const Rect2i &p_parent_rect) {
 
 void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
 	// Consider the current size when calling with the default value.
@@ -1697,7 +1697,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 
 void Window::popup_centered(const Size2i &p_minsize) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
 	// Consider the current size when calling with the default value.
@@ -1726,7 +1726,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 
 void Window::popup_centered_ratio(float p_ratio) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND_MSG(!is_inside_tree(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 	ERR_FAIL_COND_MSG(p_ratio <= 0.0 || p_ratio > 1.0, "Ratio must be between 0.0 and 1.0!");
 
@@ -1915,7 +1915,7 @@ bool Window::has_focus() const {
 
 Rect2i Window::get_usable_parent_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2i());
-	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Rect2(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	Rect2i parent_rect;
 	if (is_embedded()) {
 		parent_rect = get_embedder()->get_visible_rect();
@@ -2513,7 +2513,7 @@ void Window::end_bulk_theme_override() {
 
 Rect2i Window::get_parent_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2i());
-	ERR_FAIL_COND_V(!is_inside_tree(), Rect2i());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Rect2i(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	if (is_embedded()) {
 		//viewport
 		Node *n = get_parent();

@@ -618,7 +618,7 @@ void Skeleton2D::_update_transform() {
 }
 
 int Skeleton2D::get_bone_count() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), 0);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), 0, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	if (bone_setup_dirty) {
 		const_cast<Skeleton2D *>(this)->_update_bone_setup();
@@ -628,7 +628,7 @@ int Skeleton2D::get_bone_count() const {
 }
 
 Bone2D *Skeleton2D::get_bone(int p_idx) {
-	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), nullptr, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	ERR_FAIL_INDEX_V(p_idx, bones.size(), nullptr);
 
 	return bones[p_idx].bone;

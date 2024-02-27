@@ -50,7 +50,7 @@
 #include "scene/resources/packed_scene.h"
 
 Node *SceneTreeEditor::get_scene_node() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), nullptr, vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 
 	return get_tree()->get_edited_scene_root();
 }

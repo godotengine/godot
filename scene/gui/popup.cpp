@@ -142,7 +142,7 @@ void Popup::_validate_property(PropertyInfo &p_property) const {
 }
 
 Rect2i Popup::_popup_adjust_rect() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Rect2(), vformat("Can't perform this operation on node %s that is not part of the scene tree. Add this node to the scene tree first using `add_child()` with a reference to the node as parameter.", get_name()));
 	Rect2i parent_rect = get_usable_parent_rect();
 
 	if (parent_rect == Rect2i()) {
