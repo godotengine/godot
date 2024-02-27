@@ -89,6 +89,10 @@ void CollisionObject2D::_notification(int p_what) {
 			} else {
 				PhysicsServer2D::get_singleton()->body_set_state(rid, PhysicsServer2D::BODY_STATE_TRANSFORM, gl_transform);
 			}
+
+#ifdef DEBUG_ENABLED
+			_validate_transform_scale();
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -589,8 +593,35 @@ PackedStringArray CollisionObject2D::get_configuration_warnings() const {
 		warnings.push_back(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape."));
 	}
 
+	Vector2 _scale = get_transform().get_scale();
+	if (!Math::is_zero_approx(_scale.x - _scale.y)) {
+		warnings.push_back(RTR("CollisionObject2D has a non-uniform (i. e. not the same on all axes) transform scale applied.\n\
+			Scaling a physics object non-uniformly is not supported and can cause a variety of physics bugs.\n\
+			Please make scale uniform and change the size of the used shape instead."));
+	}
+
 	return warnings;
 }
+
+#ifdef DEBUG_ENABLED
+void CollisionObject2D::_validate_transform_scale() {
+	if (is_inside_tree()) {
+		Vector2 _scale = get_global_transform().get_scale();
+		if (!Math::is_zero_approx(_scale.x - _scale.y)) {
+			WARN_PRINT(RTR("CollisionObject2D has a non-uniform (i. e. not the same on all axes) global transform scale applied.\n\
+			Scaling a physics object non-uniformly is not supported and can cause a variety of physics bugs.\n\
+			Please make scale uniform (i.e. the same on all axes), and change the size of the used shape instead."));
+		}
+	} else {
+		Vector2 _scale = get_transform().get_scale();
+		if (!Math::is_zero_approx(_scale.x - _scale.y)) {
+			WARN_PRINT(RTR("CollisionObject2D has a non-uniform (i. e. not the same on all axes) transform scale applied.\n\
+			Scaling a physics object non-uniformly is not supported and can cause a variety of physics bugs.\n\
+			Please make scale uniform (i.e. the same on all axes), and change the size of the used shape instead."));
+		}
+	}
+}
+#endif // DEBUG_ENABLED
 
 void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject2D::get_rid);

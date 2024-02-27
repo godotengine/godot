@@ -51,6 +51,10 @@ class CollisionShape2D : public Node2D {
 	void _update_in_shape_owner(bool p_xform_only = false);
 	Color _get_default_debug_color() const;
 
+#ifdef DEBUG_ENABLED
+	void _validate_transform_scale();
+#endif // DEBUG_ENABLED
+
 protected:
 	void _notification(int p_what);
 	bool _property_can_revert(const StringName &p_name) const;

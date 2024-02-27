@@ -94,6 +94,10 @@ void CollisionShape3D::_notification(int p_what) {
 			if (collision_object) {
 				_update_in_shape_owner();
 			}
+
+#ifdef DEBUG_ENABLED
+			_validate_transform_scale();
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
@@ -149,13 +153,45 @@ PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 		}
 	}
 
-	Vector3 scale = get_transform().get_basis().get_scale();
-	if (!(Math::is_zero_approx(scale.x - scale.y) && Math::is_zero_approx(scale.y - scale.z))) {
-		warnings.push_back(RTR("A non-uniformly scaled CollisionShape3D node will probably not function as expected.\nPlease make its scale uniform (i.e. the same on all axes), and change the size of its shape resource instead."));
+	Vector3 _scale = get_transform().get_basis().get_scale();
+	if (!(Math::is_zero_approx(_scale.x - _scale.y) && Math::is_zero_approx(_scale.y - _scale.z))) {
+		warnings.push_back(RTR("CollisionShape3D has a non-uniform (i. e. not the same on all axes) transform scale applied.\n\
+			Scaling a physics object non-uniformly is not supported and can cause a variety of physics bugs.\n\
+			Please make scale uniform and change the size of the used shape instead."));
 	}
 
 	return warnings;
 }
+
+void CollisionShape3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("scale")) {
+		Vector3 _scale = get_transform().get_basis().get_scale();
+		if (Math::is_zero_approx(_scale.x - _scale.y) && Math::is_zero_approx(_scale.y - _scale.z)) {
+			// Has a uniform scale, hide the property as physics nodes should not be scaled non-uniformly.
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+}
+
+#ifdef DEBUG_ENABLED
+void CollisionShape3D::_validate_transform_scale() {
+	if (is_inside_tree()) {
+		Vector3 _scale = get_global_transform().get_basis().get_scale();
+		if (!(Math::is_zero_approx(_scale.x - _scale.y) && Math::is_zero_approx(_scale.y - _scale.z))) {
+			WARN_PRINT(RTR("CollisionShape3D has a non-uniform (i. e. not the same on all axes) global transform scale applied.\n\
+			Scaling a physics object non-uniformly is not supported and can cause a variety of physics bugs.\n\
+			Please make scale uniform and change the size of the used shape instead."));
+		}
+	} else {
+		Vector3 _scale = get_transform().get_basis().get_scale();
+		if (!(Math::is_zero_approx(_scale.x - _scale.y) && Math::is_zero_approx(_scale.y - _scale.z))) {
+			WARN_PRINT(RTR("CollisionShape3D has a non-uniform (i. e. not the same on all axes) transform scale applied.\n\
+			Scaling a physics object non-uniformly is not supported and can cause a variety of physics bugs.\n\
+			Please make scale uniform and change the size of the used shape instead."));
+		}
+	}
+}
+#endif // DEBUG_ENABLED
 
 void CollisionShape3D::_bind_methods() {
 #ifndef DISABLE_DEPRECATED

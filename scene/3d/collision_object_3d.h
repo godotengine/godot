@@ -95,6 +95,10 @@ private:
 	void _apply_disabled();
 	void _apply_enabled();
 
+#ifdef DEBUG_ENABLED
+	void _validate_transform_scale();
+#endif // DEBUG_ENABLED
+
 protected:
 	CollisionObject3D(RID p_rid, bool p_area);
 

@@ -71,6 +71,10 @@ void CollisionShape2D::_notification(int p_what) {
 			if (collision_object) {
 				_update_in_shape_owner();
 			}
+
+#ifdef DEBUG_ENABLED
+			_validate_transform_scale();
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
@@ -193,6 +197,13 @@ PackedStringArray CollisionShape2D::get_configuration_warnings() const {
 		warnings.push_back(RTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead."));
 	}
 
+	Vector2 _scale = get_transform().get_scale();
+	if (!Math::is_zero_approx(_scale.x - _scale.y)) {
+		warnings.push_back(RTR("CollisionShape2D has a non-uniform (i. e. not the same on all axes) transform scale applied.\n\
+			Scaling a physics object non-uniformly is not supported and can cause a variety of physics bugs.\n\
+			Please make scale uniform and change the size of the used shape instead."));
+	}
+
 	return warnings;
 }
 
@@ -264,7 +275,35 @@ void CollisionShape2D::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_DEFAULT;
 		}
 	}
+
+	if (p_property.name.begins_with("scale")) {
+		Vector2 _scale = get_transform().get_scale();
+		if (Math::is_zero_approx(_scale.x - _scale.y)) {
+			// Has a uniform scale, hide the property as physics nodes should not be scaled non-uniformly.
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
 }
+
+#ifdef DEBUG_ENABLED
+void CollisionShape2D::_validate_transform_scale() {
+	if (is_inside_tree()) {
+		Vector2 _scale = get_global_transform().get_scale();
+		if (!Math::is_zero_approx(_scale.x - _scale.y)) {
+			WARN_PRINT(RTR("CollisionShape2D has a non-uniform (i. e. not the same on all axes) global transform scale applied.\n\
+			Scaling a physics object non-uniformly is not supported and can cause a variety of physics bugs.\n\
+			Please make scale uniform (i.e. the same on all axes), and change the size of the used shape instead."));
+		}
+	} else {
+		Vector2 _scale = get_transform().get_scale();
+		if (!Math::is_zero_approx(_scale.x - _scale.y)) {
+			WARN_PRINT(RTR("CollisionShape2D has a non-uniform (i. e. not the same on all axes) transform scale applied.\n\
+			Scaling a physics object non-uniformly is not supported and can cause a variety of physics bugs.\n\
+			Please make scale uniform (i.e. the same on all axes), and change the size of the used shape instead."));
+		}
+	}
+}
+#endif // DEBUG_ENABLED
 
 void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape2D::set_shape);

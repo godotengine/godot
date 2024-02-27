@@ -43,6 +43,10 @@ class CollisionShape3D : public Node3D {
 	uint32_t owner_id = 0;
 	CollisionObject3D *collision_object = nullptr;
 
+#ifdef DEBUG_ENABLED
+	void _validate_transform_scale();
+#endif // DEBUG_ENABLED
+
 #ifndef DISABLE_DEPRECATED
 	void resource_changed(Ref<Resource> res);
 #endif
@@ -53,6 +57,7 @@ protected:
 
 protected:
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:

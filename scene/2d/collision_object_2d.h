@@ -83,6 +83,10 @@ private:
 	void _apply_disabled();
 	void _apply_enabled();
 
+#ifdef DEBUG_ENABLED
+	void _validate_transform_scale();
+#endif // DEBUG_ENABLED
+
 protected:
 	_FORCE_INLINE_ void lock_callback() { callback_lock++; }
 	_FORCE_INLINE_ void unlock_callback() {
