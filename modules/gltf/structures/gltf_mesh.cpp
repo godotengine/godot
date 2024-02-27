@@ -78,7 +78,7 @@ Vector<float> GLTFMesh::get_blend_weights() {
 	return blend_weights;
 }
 
-void GLTFMesh::set_blend_weights(Vector<float> p_blend_weights) {
+void GLTFMesh::set_blend_weights(const Vector<float> &p_blend_weights) {
 	blend_weights = p_blend_weights;
 }
 

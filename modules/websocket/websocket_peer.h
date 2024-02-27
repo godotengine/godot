@@ -85,7 +85,7 @@ public:
 	virtual Error accept_stream(Ref<StreamPeer> p_stream) = 0;
 
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) = 0;
-	virtual void close(int p_code = 1000, String p_reason = "") = 0;
+	virtual void close(int p_code = 1000, const String &p_reason = "") = 0;
 
 	virtual IPAddress get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;

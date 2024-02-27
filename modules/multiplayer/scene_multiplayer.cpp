@@ -433,7 +433,7 @@ void SceneMultiplayer::disconnect_peer(int p_id) {
 	multiplayer_peer->disconnect_peer(p_id);
 }
 
-Error SceneMultiplayer::send_bytes(Vector<uint8_t> p_data, int p_to, MultiplayerPeer::TransferMode p_mode, int p_channel) {
+Error SceneMultiplayer::send_bytes(const Vector<uint8_t> &p_data, int p_to, MultiplayerPeer::TransferMode p_mode, int p_channel) {
 	ERR_FAIL_COND_V_MSG(p_data.is_empty(), ERR_INVALID_DATA, "Trying to send an empty raw packet.");
 	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), ERR_UNCONFIGURED, "Trying to send a raw packet while no multiplayer peer is active.");
 	ERR_FAIL_COND_V_MSG(multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a multiplayer peer which is not connected.");
@@ -451,7 +451,7 @@ Error SceneMultiplayer::send_bytes(Vector<uint8_t> p_data, int p_to, Multiplayer
 	return send_command(p_to, packet_cache.ptr(), p_data.size() + 1);
 }
 
-Error SceneMultiplayer::send_auth(int p_to, Vector<uint8_t> p_data) {
+Error SceneMultiplayer::send_auth(int p_to, const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND_V(multiplayer_peer.is_null() || multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!pending_peers.has(p_to), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_PARAMETER);
@@ -576,7 +576,7 @@ Error SceneMultiplayer::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 	return rpc->rpcp(p_obj, p_peer_id, p_method, p_arg, p_argcount);
 }
 
-Error SceneMultiplayer::object_configuration_add(Object *p_obj, Variant p_config) {
+Error SceneMultiplayer::object_configuration_add(Object *p_obj, const Variant &p_config) {
 	if (p_obj == nullptr && p_config.get_type() == Variant::NODE_PATH) {
 		set_root_path(p_config);
 		return OK;
@@ -591,7 +591,7 @@ Error SceneMultiplayer::object_configuration_add(Object *p_obj, Variant p_config
 	return ERR_INVALID_PARAMETER;
 }
 
-Error SceneMultiplayer::object_configuration_remove(Object *p_obj, Variant p_config) {
+Error SceneMultiplayer::object_configuration_remove(Object *p_obj, const Variant &p_config) {
 	if (p_obj == nullptr && p_config.get_type() == Variant::NODE_PATH) {
 		ERR_FAIL_COND_V(root_path != p_config.operator NodePath(), ERR_INVALID_PARAMETER);
 		set_root_path(NodePath());

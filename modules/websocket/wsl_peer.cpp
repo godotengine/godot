@@ -655,7 +655,7 @@ String WSLPeer::_generate_key() {
 	return CryptoCore::b64_encode_str(bkey.ptrw(), len);
 }
 
-String WSLPeer::_compute_key_response(String p_key) {
+String WSLPeer::_compute_key_response(const String &p_key) {
 	String key = p_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"; // Magic UUID as per RFC
 	Vector<uint8_t> sha = key.sha1_buffer();
 	return CryptoCore::b64_encode_str(sha.ptr(), sha.size());
@@ -758,7 +758,7 @@ int WSLPeer::get_current_outbound_buffered_amount() const {
 	return wslay_event_get_queued_msg_length(wsl_ctx);
 }
 
-void WSLPeer::close(int p_code, String p_reason) {
+void WSLPeer::close(int p_code, const String &p_reason) {
 	if (p_code < 0) {
 		// Force immediate close.
 		ready_state = STATE_CLOSED;

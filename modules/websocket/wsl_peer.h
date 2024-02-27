@@ -60,7 +60,7 @@ private:
 	static wslay_event_callbacks _wsl_callbacks;
 
 	// Helpers
-	static String _compute_key_response(String p_key);
+	static String _compute_key_response(const String &p_key);
 	static String _generate_key();
 
 	// Client IP resolver.
@@ -133,7 +133,7 @@ public:
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) override;
 	virtual Error connect_to_url(const String &p_url, Ref<TLSOptions> p_options = Ref<TLSOptions>()) override;
 	virtual Error accept_stream(Ref<StreamPeer> p_stream) override;
-	virtual void close(int p_code = 1000, String p_reason = "") override;
+	virtual void close(int p_code = 1000, const String &p_reason = "") override;
 	virtual void poll() override;
 
 	virtual State get_ready_state() const override { return ready_state; }

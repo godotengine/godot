@@ -39,7 +39,7 @@
 
 namespace TestCryptoMbedTLS {
 
-void hmac_digest_test(HashingContext::HashType ht, String expected_hex);
+void hmac_digest_test(HashingContext::HashType ht, const String &expected_hex);
 
 TEST_CASE("[CryptoMbedTLS] HMAC digest") {
 	// SHA-256
@@ -49,7 +49,7 @@ TEST_CASE("[CryptoMbedTLS] HMAC digest") {
 	hmac_digest_test(HashingContext::HashType::HASH_SHA1, "a0ac4cd68a2f4812c355983d94e8d025afe7dddf");
 }
 
-void hmac_context_digest_test(HashingContext::HashType ht, String expected_hex);
+void hmac_context_digest_test(HashingContext::HashType ht, const String &expected_hex);
 
 TEST_CASE("[HMACContext] HMAC digest") {
 	// SHA-256

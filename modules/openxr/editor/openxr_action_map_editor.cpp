@@ -126,7 +126,7 @@ void OpenXRActionMapEditor::_create_interaction_profiles() {
 	}
 }
 
-OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set(String p_name) {
+OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set(const String &p_name) {
 	ERR_FAIL_COND_V(action_map.is_null(), nullptr);
 	Ref<OpenXRActionSet> new_action_set;
 
@@ -148,7 +148,7 @@ OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set(String p_name) {
 	return action_set_editor;
 }
 
-void OpenXRActionMapEditor::_remove_action_set(String p_name) {
+void OpenXRActionMapEditor::_remove_action_set(const String &p_name) {
 	ERR_FAIL_COND(action_map.is_null());
 	Ref<OpenXRActionSet> action_set = action_map->find_action_set(p_name);
 	ERR_FAIL_COND(action_set.is_null());
@@ -227,7 +227,7 @@ void OpenXRActionMapEditor::_on_add_interaction_profile() {
 	select_interaction_profile_dialog->open(already_selected);
 }
 
-void OpenXRActionMapEditor::_on_interaction_profile_selected(const String p_path) {
+void OpenXRActionMapEditor::_on_interaction_profile_selected(const String &p_path) {
 	ERR_FAIL_COND(action_map.is_null());
 
 	Ref<OpenXRInteractionProfile> new_profile;
@@ -246,7 +246,7 @@ void OpenXRActionMapEditor::_on_interaction_profile_selected(const String p_path
 	tabs->set_current_tab(tabs->get_tab_count() - 1);
 }
 
-void OpenXRActionMapEditor::_load_action_map(const String p_path, bool p_create_new_if_missing) {
+void OpenXRActionMapEditor::_load_action_map(const String &p_path, bool p_create_new_if_missing) {
 	Error err = OK;
 	action_map = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE, &err);
 	if (err != OK) {
@@ -356,7 +356,7 @@ void OpenXRActionMapEditor::_do_remove_interaction_profile_editor(OpenXRInteract
 	action_map->remove_interaction_profile(interaction_profile);
 }
 
-void OpenXRActionMapEditor::open_action_map(String p_path) {
+void OpenXRActionMapEditor::open_action_map(const String &p_path) {
 	EditorNode::get_bottom_panel()->make_item_visible(this);
 
 	// out with the old...

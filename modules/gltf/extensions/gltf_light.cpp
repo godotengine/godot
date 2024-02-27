@@ -82,7 +82,7 @@ String GLTFLight::get_light_type() {
 	return light_type;
 }
 
-void GLTFLight::set_light_type(String p_light_type) {
+void GLTFLight::set_light_type(const String &p_light_type) {
 	light_type = p_light_type;
 }
 
@@ -169,7 +169,7 @@ Light3D *GLTFLight::to_node() const {
 	return memnew(Light3D);
 }
 
-Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary p_dictionary) {
+Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary &p_dictionary) {
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFLight>(), "Failed to parse GLTF light, missing required field 'type'.");
 	Ref<GLTFLight> light;
 	light.instantiate();

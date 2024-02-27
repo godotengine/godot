@@ -155,7 +155,7 @@ void SceneReplicationInterface::on_network_process() {
 	}
 }
 
-Error SceneReplicationInterface::on_spawn(Object *p_obj, Variant p_config) {
+Error SceneReplicationInterface::on_spawn(Object *p_obj, const Variant &p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(p_config.get_validated_object());
@@ -195,7 +195,7 @@ void SceneReplicationInterface::_node_ready(const ObjectID &p_oid) {
 	spawn_queue.clear();
 }
 
-Error SceneReplicationInterface::on_despawn(Object *p_obj, Variant p_config) {
+Error SceneReplicationInterface::on_despawn(Object *p_obj, const Variant &p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(p_config.get_validated_object());
@@ -223,7 +223,7 @@ Error SceneReplicationInterface::on_despawn(Object *p_obj, Variant p_config) {
 	return OK;
 }
 
-Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_config) {
+Error SceneReplicationInterface::on_replication_start(Object *p_obj, const Variant &p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(p_config.get_validated_object());
@@ -268,7 +268,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 	return OK;
 }
 
-Error SceneReplicationInterface::on_replication_stop(Object *p_obj, Variant p_config) {
+Error SceneReplicationInterface::on_replication_stop(Object *p_obj, const Variant &p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(p_config.get_validated_object());

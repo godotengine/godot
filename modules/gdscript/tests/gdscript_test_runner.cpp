@@ -176,7 +176,7 @@ static String strip_warnings(const String &p_expected) {
 	// On release builds we don't have warnings. Here we remove them from the output before comparison
 	// so it doesn't fail just because of difference in warnings.
 	String expected_no_warnings;
-	for (String line : p_expected.split("\n")) {
+	for (const String &line : p_expected.split("\n")) {
 		if (line.begins_with(">> ")) {
 			continue;
 		}

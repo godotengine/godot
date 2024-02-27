@@ -69,7 +69,7 @@ private:
 
 public:
 	String get_body_type() const;
-	void set_body_type(String p_body_type);
+	void set_body_type(const String &p_body_type);
 
 	PhysicsBodyType get_physics_body_type() const;
 	void set_physics_body_type(PhysicsBodyType p_body_type);
@@ -100,7 +100,7 @@ public:
 	static Ref<GLTFPhysicsBody> from_node(const CollisionObject3D *p_body_node);
 	CollisionObject3D *to_node() const;
 
-	static Ref<GLTFPhysicsBody> from_dictionary(const Dictionary p_dictionary);
+	static Ref<GLTFPhysicsBody> from_dictionary(const Dictionary &p_dictionary);
 	Dictionary to_dictionary() const;
 };
 

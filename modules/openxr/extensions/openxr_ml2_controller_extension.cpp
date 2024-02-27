@@ -51,7 +51,7 @@ void OpenXRML2ControllerExtension::on_register_metadata() {
 	// Magic Leap 2 Controller
 	const String profile_path = "/interaction_profiles/ml/ml2_controller";
 	metadata->register_interaction_profile("Magic Leap 2 controller", "/interaction_profiles/ml/ml2_controller", XR_ML_ML2_CONTROLLER_INTERACTION_EXTENSION_NAME);
-	for (const String user_path : { "/user/hand/left", "/user/hand/right" }) {
+	for (const String &user_path : { "/user/hand/left", "/user/hand/right" }) {
 		metadata->register_io_path(profile_path, "Grip pose", user_path, user_path + "/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 		metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 

@@ -83,7 +83,7 @@ Camera3D *GLTFCamera::to_node() const {
 	return camera;
 }
 
-Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary p_dictionary) {
+Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary &p_dictionary) {
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFCamera>(), "Failed to parse GLTF camera, missing required field 'type'.");
 	Ref<GLTFCamera> camera;
 	camera.instantiate();

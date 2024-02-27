@@ -60,7 +60,7 @@ private:
 
 public:
 	String get_shape_type() const;
-	void set_shape_type(String p_shape_type);
+	void set_shape_type(const String &p_shape_type);
 
 	Vector3 get_size() const;
 	void set_size(Vector3 p_size);
@@ -83,7 +83,7 @@ public:
 	static Ref<GLTFPhysicsShape> from_node(const CollisionShape3D *p_shape_node);
 	CollisionShape3D *to_node(bool p_cache_shapes = false);
 
-	static Ref<GLTFPhysicsShape> from_dictionary(const Dictionary p_dictionary);
+	static Ref<GLTFPhysicsShape> from_dictionary(const Dictionary &p_dictionary);
 	Dictionary to_dictionary() const;
 };
 

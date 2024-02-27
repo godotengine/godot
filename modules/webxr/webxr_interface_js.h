@@ -91,13 +91,13 @@ private:
 
 public:
 	virtual void is_session_supported(const String &p_session_mode) override;
-	virtual void set_session_mode(String p_session_mode) override;
+	virtual void set_session_mode(const String &p_session_mode) override;
 	virtual String get_session_mode() const override;
-	virtual void set_required_features(String p_required_features) override;
+	virtual void set_required_features(const String &p_required_features) override;
 	virtual String get_required_features() const override;
-	virtual void set_optional_features(String p_optional_features) override;
+	virtual void set_optional_features(const String &p_optional_features) override;
 	virtual String get_optional_features() const override;
-	virtual void set_requested_reference_space_types(String p_requested_reference_space_types) override;
+	virtual void set_requested_reference_space_types(const String &p_requested_reference_space_types) override;
 	virtual String get_requested_reference_space_types() const override;
 	virtual String get_reference_space_type() const override;
 	virtual String get_enabled_features() const override;
