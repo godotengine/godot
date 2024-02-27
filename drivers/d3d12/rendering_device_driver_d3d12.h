@@ -217,15 +217,20 @@ private:
 			// As many subresources as mipmaps * layers; planes (for depth-stencil) are tracked together.
 			TightLocalVector<D3D12_RESOURCE_STATES> subresource_states; // Used only if not a view.
 			uint32_t last_batch_with_uav_barrier = 0;
+			struct CrossFamillyFallback {
+				TightLocalVector<uint64_t> subresources_dirty;
+				ComPtr<ID3D12Resource> interim_buffer;
+				ComPtr<D3D12MA::Allocation> interim_buffer_alloc;
+			} xfamily_fallback; // [[CROSS_FAMILY_FALLBACK]].
 		};
 
-		ID3D12Resource *resource = nullptr; // Non-null even if a view.
+		ID3D12Resource *resource = nullptr; // Non-null even if not owned.
 		struct {
 			ComPtr<ID3D12Resource> resource;
 			ComPtr<D3D12MA::Allocation> allocation;
 			States states;
-		} owner_info; // All empty if a view.
-		States *states_ptr = nullptr; // Own or from another if a view.
+		} owner_info; // All empty if the resource is not owned.
+		States *states_ptr = nullptr; // Own or from another if it doesn't own the D3D12 resource.
 	};
 
 	struct BarrierRequest {
@@ -257,7 +262,7 @@ private:
 	uint64_t frame_barriers_cpu_time = 0;
 #endif
 
-	void _resource_transition_batch(ResourceInfo *p_resource, uint32_t p_subresource, uint32_t p_num_planes, D3D12_RESOURCE_STATES p_new_state, ID3D12Resource *p_resource_override = nullptr);
+	void _resource_transition_batch(ResourceInfo *p_resource, uint32_t p_subresource, uint32_t p_num_planes, D3D12_RESOURCE_STATES p_new_state);
 	void _resource_transitions_flush(ID3D12GraphicsCommandList *p_cmd_list);
 
 	/*****************/
@@ -298,13 +303,7 @@ private:
 			D3D12_UNORDERED_ACCESS_VIEW_DESC uav;
 		} view_descs = {};
 
-		ID3D12Resource *main_texture = nullptr;
-		struct {
-			D3D12_UNORDERED_ACCESS_VIEW_DESC main_uav_desc;
-			struct {
-				HashMap<DXGI_FORMAT, ComPtr<ID3D12Resource>> aliases; // Key is the DXGI format family.
-			} owner_info = {};
-		} aliasing_hack = {}; // [[CROSS_FAMILY_ALIASING]]
+		TextureInfo *main_texture = nullptr;
 
 		UINT mapped_subresource = UINT_MAX;
 		SelfList<TextureInfo> pending_clear{ this };
@@ -333,6 +332,10 @@ public:
 	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
 
+private:
+	TextureID _texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps);
+
+public:
 	/*****************/
 	/**** SAMPLER ****/
 	/*****************/
@@ -461,6 +464,16 @@ private:
 
 		RenderPassState render_pass_state;
 		bool descriptor_heaps_set = false;
+
+		// [[CROSS_FAMILY_FALLBACK]].
+		struct FamilyFallbackCopy {
+			TextureInfo *texture = nullptr;
+			uint32_t subresource = 0;
+			uint32_t mipmap = 0;
+			D3D12_RESOURCE_STATES dst_wanted_state = {};
+		};
+		LocalVector<FamilyFallbackCopy> family_fallback_copies;
+		uint32_t family_fallback_copy_count = 0;
 	};
 
 public:
