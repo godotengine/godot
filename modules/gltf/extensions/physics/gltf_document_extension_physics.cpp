@@ -30,7 +30,8 @@
 
 #include "gltf_document_extension_physics.h"
 
-#include "scene/3d/area_3d.h"
+#include "scene/3d/physics/area_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
 
 // Import process.
 Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {

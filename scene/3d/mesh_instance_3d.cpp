@@ -30,8 +30,9 @@
 
 #include "mesh_instance_3d.h"
 
-#include "collision_shape_3d.h"
-#include "physics_body_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 

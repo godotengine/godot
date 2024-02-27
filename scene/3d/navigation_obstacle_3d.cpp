@@ -31,8 +31,6 @@
 #include "navigation_obstacle_3d.h"
 
 #include "core/math/geometry_2d.h"
-#include "scene/3d/collision_shape_3d.h"
-#include "scene/3d/physics_body_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
