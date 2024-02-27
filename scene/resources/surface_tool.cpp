@@ -880,9 +880,9 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 			v.normal = narr[i];
 		}
 		if (lformat & RS::ARRAY_FORMAT_TANGENT) {
-			Plane p(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
-			v.tangent = p.normal;
-			v.binormal = p.normal.cross(v.tangent).normalized() * p.d;
+			v.tangent = Vector3(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2]);
+			float d = tarr[i * 4 + 3];
+			v.binormal = v.normal.cross(v.tangent).normalized() * d;
 		}
 		if (lformat & RS::ARRAY_FORMAT_COLOR) {
 			v.color = carr[i];
