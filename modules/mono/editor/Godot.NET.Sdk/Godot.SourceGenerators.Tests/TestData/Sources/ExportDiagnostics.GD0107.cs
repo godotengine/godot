@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class ExportDiagnostics_GD0107_OK : Node
+public partial class ExportDiagnosticsNodes : Node
 {
     [Export]
     public Node NodeField;
@@ -9,7 +9,7 @@ public partial class ExportDiagnostics_GD0107_OK : Node
     public Node NodeProperty { get; set; }
 }
 
-public partial class ExportDiagnostics_GD0107_KO : Resource
+public partial class ExportDiagnosticsEmpty : Resource
 {
     [Export]
     public Node {|GD0107:NodeField|};

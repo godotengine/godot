@@ -5,12 +5,22 @@ namespace Godot.SourceGenerators.Tests;
 public class ScriptPropertiesGeneratorTests
 {
     [Fact]
+    public async void DisableGenerator()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.MakeVerifier(new VerifierConfiguration()
+        {
+            Sources = new string[] { "ScriptBoilerplate.cs" },
+            DisabledGenerators = new string[] { "ScriptProperties" },
+        }).RunAsync();
+    }
+
+    [Fact]
     public async void ExportedFields()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
-            new string[] { "ExportedFields.cs", "MoreExportedFields.cs" },
-            new string[] { "ExportedFields_ScriptProperties.generated.cs" }
-        );
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.MakeVerifier()
+            .WithSources("ExportedFields.cs", "MoreExportedFields.cs")
+            .WithGeneratedSources("ExportedFields_ScriptProperties.generated.cs")
+            .RunAsync();
     }
 
     [Fact]
@@ -52,9 +62,12 @@ public class ScriptPropertiesGeneratorTests
     [Fact]
     public async void ScriptBoilerplate()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
-            "ScriptBoilerplate.cs",
-            "ScriptBoilerplate_ScriptProperties.generated.cs", "OuterClass.NestedClass_ScriptProperties.generated.cs"
-        );
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.MakeVerifier()
+            .WithSources("ScriptBoilerplate.cs")
+            .WithGeneratedSources(
+                "ScriptBoilerplate_ScriptProperties.generated.cs",
+                "OuterClass.NestedClass_ScriptProperties.generated.cs"
+            )
+            .RunAsync();
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,6 +11,16 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators.Tests;
 
+public record VerifierConfiguration
+{
+    public CompilerDiagnostics CompilerDiagnostics { get; init; } = CompilerDiagnostics.Errors;
+
+    public string[] Sources { get; init; } = Array.Empty<string>();
+    public string[] GeneratedSources { get; init; } = Array.Empty<string>();
+
+    public string[] DisabledGenerators { get; init; } = Array.Empty<string>();
+}
+
 public static class CSharpSourceGeneratorVerifier<TSourceGenerator>
 where TSourceGenerator : ISourceGenerator, new()
 {
@@ -22,59 +32,82 @@ where TSourceGenerator : ISourceGenerator, new()
 
             SolutionTransforms.Add((Solution solution, ProjectId projectId) =>
             {
-                Project project = solution.GetProject(projectId)!
-                    .AddMetadataReference(Constants.GodotSharpAssembly.CreateMetadataReference());
+                Project project = solution.GetProject(projectId)!.AddMetadataReference(
+                    Constants.GodotSharpAssembly.CreateMetadataReference()
+                );
 
                 return project.Solution;
             });
         }
+
+        public Test WithSources(params string[] filenames)
+        {
+            return WithSources(filenames.Select(filename => (
+                Filename: filename,
+                ContentFilename: filename
+            )).ToArray());
+        }
+
+        public Test WithSources(params (string Filename, string ContentFilename)[] filenames)
+        {
+            TestState.Sources.AddRange(filenames.Select(filename => (
+                filename: filename.Filename,
+                content: SourceTextFromFile(Path.Combine(Constants.SourceFolderPath, filename.ContentFilename))
+            )));
+
+            return this;
+        }
+
+        public Test WithGeneratedSources(params string[] filenames)
+        {
+            return WithGeneratedSources(filenames.Select(filename => (
+                Filename: FullGeneratedSourceFileName(filename),
+                ContentFilename: filename
+            )).ToArray());
+        }
+
+        public Test WithGeneratedSources(params (string Filename, string ContentFilename)[] filenames)
+        {
+            TestState.GeneratedSources.AddRange(filenames.Select(filename => (
+                filename: filename.Filename,
+                content: SourceTextFromFile(Path.Combine(Constants.GeneratedSourceFolderPath, filename.ContentFilename))
+            )));
+
+            return this;
+        }
     }
 
-    public static Task Verify(string source, params string[] generatedSources)
+    public static Task Verify(string source, string generatedSource)
     {
-        return Verify(new string[] { source }, generatedSources);
+        return MakeVerifier().WithSources(source).WithGeneratedSources(generatedSource).RunAsync();
     }
 
-    public static Task VerifyNoCompilerDiagnostics(string source, params string[] generatedSources)
+    public static Test MakeVerifier(VerifierConfiguration? verifierConfiguration = null)
     {
-        return VerifyNoCompilerDiagnostics(new string[] { source }, generatedSources);
-    }
+        verifierConfiguration ??= new VerifierConfiguration();
 
-    public static Task Verify(ICollection<string> sources, params string[] generatedSources)
-    {
-        return MakeVerifier(sources, generatedSources).RunAsync();
-    }
-
-    public static Task VerifyNoCompilerDiagnostics(ICollection<string> sources, params string[] generatedSources)
-    {
-        var verifier = MakeVerifier(sources, generatedSources);
-        verifier.CompilerDiagnostics = CompilerDiagnostics.None;
-        return verifier.RunAsync();
-    }
-
-    public static Test MakeVerifier(ICollection<string> sources, ICollection<string> generatedSources)
-    {
         var verifier = new Test();
 
-        verifier.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", $"""
+        verifier.TestState.AnalyzerConfigFiles.Add((Constants.GlobalConfig, $"""
         is_global = true
         build_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}
+        build_property.GodotDisabledSourceGenerators = {string.Join(";", verifierConfiguration.DisabledGenerators)}
         """));
 
-        verifier.TestState.Sources.AddRange(sources.Select(source => (
-            source,
-            SourceText.From(File.ReadAllText(Path.Combine(Constants.SourceFolderPath, source)))
-        )));
+        verifier.CompilerDiagnostics = verifierConfiguration.CompilerDiagnostics;
 
-        verifier.TestState.GeneratedSources.AddRange(generatedSources.Select(generatedSource => (
-                FullGeneratedSourceName(generatedSource),
-                SourceText.From(File.ReadAllText(Path.Combine(Constants.GeneratedSourceFolderPath, generatedSource)), Encoding.UTF8)
-        )));
+        verifier.WithSources(verifierConfiguration.Sources);
+        verifier.WithGeneratedSources(verifierConfiguration.GeneratedSources);
 
         return verifier;
     }
 
-    private static string FullGeneratedSourceName(string name)
+    private static SourceText SourceTextFromFile(string filePath)
+    {
+        return SourceText.From(File.ReadAllText(filePath), Encoding.UTF8);
+    }
+
+    private static string FullGeneratedSourceFileName(string name)
     {
         var generatorType = typeof(TSourceGenerator);
         return Path.Combine(generatorType.Namespace!, generatorType.FullName!, name);

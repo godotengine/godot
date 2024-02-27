@@ -5,13 +5,13 @@ public interface MyInterface
     public int MyProperty { get; set; }
 }
 
-public partial class ExportDiagnostics_GD0106_OK : Node, MyInterface
+public partial class ExportDiagnosticsInterface : Node, MyInterface
 {
     [Export]
     public int MyProperty { get; set; }
 }
 
-public partial class ExportDiagnostics_GD0106_KO : Node, MyInterface
+public partial class ExportDiagnosticsEmpty : Node, MyInterface
 {
     [Export]
     int MyInterface.{|GD0106:MyProperty|} { get; set; }
