@@ -1456,6 +1456,10 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 						slide_motion *= motion_length;
 					}
 
+					if (sliding_enabled) {
+						slide_motion = result.remainder.slide(collision.normal);
+					}
+
 					if (slide_motion.dot(velocity) > 0.0) {
 						motion = slide_motion;
 					} else {
