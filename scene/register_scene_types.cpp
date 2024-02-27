@@ -757,6 +757,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(StaticBody2D);
 	GDREGISTER_CLASS(AnimatableBody2D);
 	GDREGISTER_CLASS(RigidBody2D);
+	GDREGISTER_CLASS(RigidCollision2D);
 	GDREGISTER_CLASS(CharacterBody2D);
 	GDREGISTER_CLASS(KinematicCollision2D);
 	GDREGISTER_CLASS(Area2D);

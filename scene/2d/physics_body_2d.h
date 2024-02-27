@@ -37,6 +37,7 @@
 #include "servers/physics_server_2d.h"
 
 class KinematicCollision2D;
+class RigidCollision2D;
 
 class PhysicsBody2D : public CollisionObject2D {
 	GDCLASS(PhysicsBody2D, CollisionObject2D);
@@ -193,11 +194,32 @@ private:
 		ObjectID body_id;
 		ShapePair pair;
 	};
+	struct RigidBody2D_AddAction {
+		RID rid;
+		ObjectID id;
+		int shape = 0;
+		int local_shape = 0;
+		Vector2 local_pos;
+		Vector2 local_normal;
+		Vector2 local_vel_at_pos;
+		Vector2 collider_pos;
+		Vector2 collider_vel_at_pos;
+		Vector2 impulse;
+
+		RigidBody2D_AddAction() {}
+		RigidBody2D_AddAction(const PhysicsDirectBodyState2D *p_state, int p_contact_idx);
+	};
 	struct BodyState {
 		RID rid;
 		//int rc;
 		bool in_scene = false;
 		VSet<ShapePair> shapes;
+		Vector2 local_pos;
+		Vector2 local_normal;
+		Vector2 local_vel_at_pos;
+		Vector2 collider_pos;
+		Vector2 collider_vel_at_pos;
+		Vector2 impulse;
 	};
 
 	struct ContactMonitor {
@@ -209,7 +231,8 @@ private:
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
-	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
+	void _body_in(const RigidBody2D_AddAction &p_add);
+	void _body_out(const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state);
 	void _body_state_changed(PhysicsDirectBodyState2D *p_state);
@@ -311,7 +334,9 @@ public:
 	void set_constant_torque(real_t p_torque);
 	real_t get_constant_torque() const;
 
+	int get_collision_count() const;
 	TypedArray<Node2D> get_colliding_bodies() const; //function for script
+	Ref<RigidCollision2D> get_body_collision(int p_contact_idx) const;
 
 	virtual PackedStringArray get_configuration_warnings() const override;
 
@@ -326,6 +351,42 @@ VARIANT_ENUM_CAST(RigidBody2D::FreezeMode);
 VARIANT_ENUM_CAST(RigidBody2D::CenterOfMassMode);
 VARIANT_ENUM_CAST(RigidBody2D::DampMode);
 VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
+
+class RigidCollision2D : public RefCounted {
+	GDCLASS(RigidCollision2D, RefCounted);
+
+	friend class RigidBody2D;
+
+	const PhysicsBody2D *owner = nullptr;
+	TypedArray<int> local_shapes;
+	Vector2 local_pos;
+	Vector2 local_normal;
+	Vector2 local_vel_at_pos;
+	ObjectID collider_id;
+	RID collider_rid;
+	TypedArray<int> collider_shapes;
+	Vector2 collider_pos;
+	Vector2 collider_vel_at_pos;
+	Vector2 impulse;
+
+protected:
+	static void _bind_methods();
+
+public:
+	int get_shape_pair_count() const;
+	Vector2 get_local_position() const;
+	Vector2 get_local_normal() const;
+	Object *get_local_shape(int p_pair_idx) const;
+	int get_local_shape_index(int p_pair_idx) const;
+	Vector2 get_local_velocity() const;
+	Object *get_collider() const;
+	Vector2 get_collider_position() const;
+	RID get_collider_rid() const;
+	Object *get_collider_shape(int p_pair_idx) const;
+	int get_collider_shape_index(int p_pair_idx) const;
+	Vector2 get_collider_velocity() const;
+	Vector2 get_impulse() const;
+};
 
 class CharacterBody2D : public PhysicsBody2D {
 	GDCLASS(CharacterBody2D, PhysicsBody2D);

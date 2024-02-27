@@ -366,8 +366,47 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 	contact_monitor->locked = false;
 }
 
-void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape) {
-	bool body_in = p_status == 1;
+void RigidBody2D::_body_in(const RigidBody2D_AddAction &p_in) {
+	ObjectID objid = p_in.id;
+
+	Object *obj = ObjectDB::get_instance(objid);
+	Node *node = Object::cast_to<Node>(obj);
+
+	ERR_FAIL_NULL(contact_monitor);
+	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(objid);
+
+	if (!E) {
+		E = contact_monitor->body_map.insert(objid, BodyState());
+		E->value.rid = p_in.rid;
+		E->value.local_pos = p_in.local_pos;
+		E->value.local_normal = p_in.local_normal;
+		E->value.local_vel_at_pos = p_in.local_vel_at_pos;
+		E->value.collider_pos = p_in.collider_pos;
+		E->value.collider_vel_at_pos = p_in.collider_vel_at_pos;
+		E->value.impulse = p_in.impulse;
+		//E->value.rc=0;
+		E->value.in_scene = node && node->is_inside_tree();
+		if (node) {
+			node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree).bind(objid));
+			node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree).bind(objid));
+			if (E->value.in_scene) {
+				emit_signal(SceneStringNames::get_singleton()->body_entered, node);
+			}
+		}
+
+		//E->value.rc++;
+	}
+
+	if (node) {
+		E->value.shapes.insert(ShapePair(p_in.shape, p_in.local_shape));
+	}
+
+	if (E->value.in_scene) {
+		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_in.rid, node, p_in.shape, p_in.local_shape);
+	}
+}
+
+void RigidBody2D::_body_out(const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape) {
 	ObjectID objid = p_instance;
 
 	Object *obj = ObjectDB::get_instance(objid);
@@ -376,65 +415,44 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 	ERR_FAIL_NULL(contact_monitor);
 	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(objid);
 
-	ERR_FAIL_COND(!body_in && !E);
+	ERR_FAIL_COND(!E);
 
-	if (body_in) {
-		if (!E) {
-			E = contact_monitor->body_map.insert(objid, BodyState());
-			E->value.rid = p_body;
-			//E->value.rc=0;
-			E->value.in_scene = node && node->is_inside_tree();
-			if (node) {
-				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree).bind(objid));
-				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree).bind(objid));
-				if (E->value.in_scene) {
-					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
-				}
-			}
+	//E->value.rc--;
 
-			//E->value.rc++;
-		}
+	if (node) {
+		E->value.shapes.erase(ShapePair(p_body_shape, p_local_shape));
+	}
 
+	bool in_scene = E->value.in_scene;
+
+	if (E->value.shapes.is_empty()) {
 		if (node) {
-			E->value.shapes.insert(ShapePair(p_body_shape, p_local_shape));
-		}
-
-		if (E->value.in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, node, p_body_shape, p_local_shape);
-		}
-
-	} else {
-		//E->value.rc--;
-
-		if (node) {
-			E->value.shapes.erase(ShapePair(p_body_shape, p_local_shape));
-		}
-
-		bool in_scene = E->value.in_scene;
-
-		if (E->value.shapes.is_empty()) {
-			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
-				if (in_scene) {
-					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
-				}
+			node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
+			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
+			if (in_scene) {
+				emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 			}
+		}
 
-			contact_monitor->body_map.remove(E);
-		}
-		if (node && in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, node, p_body_shape, p_local_shape);
-		}
+		contact_monitor->body_map.remove(E);
+	}
+	if (node && in_scene) {
+		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, node, p_body_shape, p_local_shape);
 	}
 }
 
-struct _RigidBody2DInOut {
-	RID rid;
-	ObjectID id;
-	int shape = 0;
-	int local_shape = 0;
-};
+RigidBody2D::RigidBody2D_AddAction::RigidBody2D_AddAction(const PhysicsDirectBodyState2D *p_state, int p_contact_idx) {
+	rid = p_state->get_contact_collider(p_contact_idx);
+	id = p_state->get_contact_collider_id(p_contact_idx);
+	shape = p_state->get_contact_collider_shape(p_contact_idx);
+	local_shape = p_state->get_contact_local_shape(p_contact_idx);
+	local_pos = p_state->get_contact_local_position(p_contact_idx);
+	local_normal = p_state->get_contact_local_normal(p_contact_idx);
+	local_vel_at_pos = p_state->get_contact_local_velocity_at_position(p_contact_idx);
+	collider_pos = p_state->get_contact_collider_position(p_contact_idx);
+	collider_vel_at_pos = p_state->get_contact_collider_velocity_at_position(p_contact_idx);
+	impulse = p_state->get_contact_impulse(p_contact_idx);
+}
 
 void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
@@ -484,7 +502,7 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 			}
 		}
 
-		_RigidBody2DInOut *toadd = (_RigidBody2DInOut *)alloca(p_state->get_contact_count() * sizeof(_RigidBody2DInOut));
+		RigidBody2D_AddAction *toadd = (RigidBody2D_AddAction *)alloca(p_state->get_contact_count() * sizeof(RigidBody2D_AddAction));
 		int toadd_count = 0; //state->get_contact_count();
 		RigidBody2D_RemoveAction *toremove = (RigidBody2D_RemoveAction *)alloca(rc * sizeof(RigidBody2D_RemoveAction));
 		int toremove_count = 0;
@@ -492,17 +510,13 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 		//put the ones to add
 
 		for (int i = 0; i < p_state->get_contact_count(); i++) {
-			RID col_rid = p_state->get_contact_collider(i);
 			ObjectID col_obj = p_state->get_contact_collider_id(i);
 			int local_shape = p_state->get_contact_local_shape(i);
 			int col_shape = p_state->get_contact_collider_shape(i);
 
 			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(col_obj);
 			if (!E) {
-				toadd[toadd_count].rid = col_rid;
-				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = col_obj;
-				toadd[toadd_count].shape = col_shape;
+				toadd[toadd_count] = RigidBody2D_AddAction(p_state, i);
 				toadd_count++;
 				continue;
 			}
@@ -510,14 +524,12 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 			ShapePair sp(col_shape, local_shape);
 			int idx = E->value.shapes.find(sp);
 			if (idx == -1) {
-				toadd[toadd_count].rid = col_rid;
-				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = col_obj;
-				toadd[toadd_count].shape = col_shape;
+				toadd[toadd_count] = RigidBody2D_AddAction(p_state, i);
 				toadd_count++;
 				continue;
 			}
 
+			E->value.impulse = p_state->get_contact_impulse(i);
 			E->value.shapes[idx].tagged = true;
 		}
 
@@ -537,13 +549,13 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 		//process removals
 
 		for (int i = 0; i < toremove_count; i++) {
-			_body_inout(0, toremove[i].rid, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
+			_body_out(toremove[i].rid, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
 		}
 
 		//process additions
 
 		for (int i = 0; i < toadd_count; i++) {
-			_body_inout(1, toadd[i].rid, toadd[i].id, toadd[i].shape, toadd[i].local_shape);
+			_body_in(toadd[i]);
 		}
 
 		contact_monitor->locked = false;
@@ -863,6 +875,11 @@ RigidBody2D::CCDMode RigidBody2D::get_continuous_collision_detection_mode() cons
 	return ccd_mode;
 }
 
+int RigidBody2D::get_collision_count() const {
+	ERR_FAIL_NULL_V(contact_monitor, 0);
+	return contact_monitor->body_map.size();
+}
+
 TypedArray<Node2D> RigidBody2D::get_colliding_bodies() const {
 	ERR_FAIL_NULL_V(contact_monitor, TypedArray<Node2D>());
 
@@ -875,6 +892,43 @@ TypedArray<Node2D> RigidBody2D::get_colliding_bodies() const {
 			ret.resize(ret.size() - 1); //ops
 		} else {
 			ret[idx++] = obj;
+		}
+	}
+
+	return ret;
+}
+
+Ref<RigidCollision2D> RigidBody2D::get_body_collision(int p_collider_idx) const {
+	Ref<RigidCollision2D> ret;
+	ERR_FAIL_NULL_V(contact_monitor, ret);
+	ERR_FAIL_INDEX_V(p_collider_idx, (int)contact_monitor->body_map.size(), ret);
+
+	int idx = 0;
+	for (const KeyValue<ObjectID, BodyState> &E : contact_monitor->body_map) {
+		Object *obj = ObjectDB::get_instance(E.key);
+		if (obj) {
+			if (idx == p_collider_idx) {
+				const BodyState &bs = E.value;
+				ret.instantiate();
+				ret->owner = this;
+				ret->local_pos = bs.local_pos;
+				ret->local_normal = bs.local_normal;
+				ret->local_vel_at_pos = bs.local_vel_at_pos;
+				ret->collider_id = E.key;
+				ret->collider_rid = bs.rid;
+				ret->collider_pos = bs.collider_pos;
+				ret->collider_vel_at_pos = bs.collider_vel_at_pos;
+				ret->impulse = bs.impulse;
+				ret->local_shapes.resize(bs.shapes.size());
+				ret->collider_shapes.resize(bs.shapes.size());
+				for (int shape_idx = 0; shape_idx < bs.shapes.size(); shape_idx++) {
+					ret->local_shapes[shape_idx] = bs.shapes[shape_idx].local_shape;
+					ret->collider_shapes[shape_idx] = bs.shapes[shape_idx].body_shape;
+				}
+				break;
+			} else {
+				idx++;
+			}
 		}
 	}
 
@@ -1024,7 +1078,9 @@ void RigidBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_freeze_mode", "freeze_mode"), &RigidBody2D::set_freeze_mode);
 	ClassDB::bind_method(D_METHOD("get_freeze_mode"), &RigidBody2D::get_freeze_mode);
 
+	ClassDB::bind_method(D_METHOD("get_collision_count"), &RigidBody2D::get_collision_count);
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody2D::get_colliding_bodies);
+	ClassDB::bind_method(D_METHOD("get_body_collision", "body"), &RigidBody2D::get_body_collision);
 
 	GDVIRTUAL_BIND(_integrate_forces, "state");
 
@@ -1106,6 +1162,97 @@ void RigidBody2D::_reload_physics_characteristics() {
 		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
 		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
 	}
+}
+
+//////////////////////////
+
+int RigidCollision2D::get_shape_pair_count() const {
+	return local_shapes.size();
+}
+
+Vector2 RigidCollision2D::get_local_position() const {
+	return local_pos;
+}
+
+Vector2 RigidCollision2D::get_local_normal() const {
+	return local_normal;
+}
+
+Object *RigidCollision2D::get_local_shape(int p_pair_idx) const {
+	ERR_FAIL_INDEX_V(p_pair_idx, local_shapes.size(), nullptr);
+	if (!owner) {
+		return nullptr;
+	}
+	uint32_t ownerid = owner->shape_find_owner(local_shapes[p_pair_idx]);
+	return owner->shape_owner_get_owner(ownerid);
+}
+
+int RigidCollision2D::get_local_shape_index(int p_pair_idx) const {
+	ERR_FAIL_INDEX_V(p_pair_idx, local_shapes.size(), 0);
+	return local_shapes[p_pair_idx];
+}
+
+Vector2 RigidCollision2D::get_local_velocity() const {
+	return local_vel_at_pos;
+}
+
+Object *RigidCollision2D::get_collider() const {
+	if (collider_id.is_valid()) {
+		return ObjectDB::get_instance(collider_id);
+	}
+
+	return nullptr;
+}
+
+Vector2 RigidCollision2D::get_collider_position() const {
+	return collider_pos;
+}
+
+RID RigidCollision2D::get_collider_rid() const {
+	return collider_rid;
+}
+
+Object *RigidCollision2D::get_collider_shape(int p_pair_idx) const {
+	ERR_FAIL_INDEX_V(p_pair_idx, collider_shapes.size(), 0);
+	Object *collider = get_collider();
+	if (collider) {
+		CollisionObject2D *obj2d = Object::cast_to<CollisionObject2D>(collider);
+		if (obj2d) {
+			uint32_t ownerid = obj2d->shape_find_owner(collider_shapes[p_pair_idx]);
+			return obj2d->shape_owner_get_owner(ownerid);
+		}
+	}
+
+	return nullptr;
+}
+
+int RigidCollision2D::get_collider_shape_index(int p_pair_idx) const {
+	ERR_FAIL_INDEX_V(p_pair_idx, collider_shapes.size(), 0);
+	return collider_shapes[p_pair_idx];
+}
+
+Vector2 RigidCollision2D::get_collider_velocity() const {
+	return collider_vel_at_pos;
+}
+
+Vector2 RigidCollision2D::get_impulse() const {
+	return impulse;
+}
+
+void RigidCollision2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_shape_pair_count"), &RigidCollision2D::get_shape_pair_count);
+	ClassDB::bind_method(D_METHOD("get_local_position"), &RigidCollision2D::get_local_position);
+	ClassDB::bind_method(D_METHOD("get_local_normal"), &RigidCollision2D::get_local_normal);
+	ClassDB::bind_method(D_METHOD("get_local_shape", "pair_idx"), &RigidCollision2D::get_local_shape);
+	ClassDB::bind_method(D_METHOD("get_local_shape_index", "pair_idx"), &RigidCollision2D::get_local_shape_index);
+	ClassDB::bind_method(D_METHOD("get_local_velocity"), &RigidCollision2D::get_local_velocity);
+	ClassDB::bind_method(D_METHOD("get_collider"), &RigidCollision2D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_position"), &RigidCollision2D::get_collider_position);
+	ClassDB::bind_method(D_METHOD("get_collider_rid"), &RigidCollision2D::get_collider_rid);
+	ClassDB::bind_method(D_METHOD("get_collider_shape", "pair_idx"), &RigidCollision2D::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_collider_shape_index", "pair_idx"), &RigidCollision2D::get_collider_shape_index);
+	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &RigidCollision2D::get_collider_velocity);
+	ClassDB::bind_method(D_METHOD("get_impulse"), &RigidCollision2D::get_impulse);
 }
 
 //////////////////////////
