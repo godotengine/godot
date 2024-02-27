@@ -1612,6 +1612,9 @@
 		<constant name="AREA_PARAM_WIND_ATTENUATION_FACTOR" value="13" enum="AreaParameter">
 			Constant to set/get the exponential rate at which wind force decreases with distance from its origin.
 		</constant>
+		<constant name="AREA_PARAM_GRAVITY_APPLY_TRANSFORM" value="14" enum="AreaParameter">
+			Constant to set/get whether the area transform is applied to the gravity vector.
+		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
 			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
 		</constant>

@@ -140,6 +140,9 @@ void GodotArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Varian
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			gravity_is_point = p_value;
 			break;
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_APPLY_TRANSFORM:
+			gravity_apply_transform = p_value;
+			break;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
 			gravity_point_unit_distance = p_value;
 			break;
@@ -185,6 +188,8 @@ Variant GodotArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 			return gravity_vector;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			return gravity_is_point;
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_APPLY_TRANSFORM:
+			return gravity_apply_transform;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
 			return gravity_point_unit_distance;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
@@ -329,6 +334,8 @@ void GodotArea3D::compute_gravity(const Vector3 &p_position, Vector3 &r_gravity)
 		} else {
 			r_gravity = v.normalized() * get_gravity();
 		}
+	} else if (gravity_apply_transform) {
+		r_gravity = get_transform().get_basis().xform(get_gravity_vector()) * get_gravity();
 	} else {
 		r_gravity = get_gravity_vector() * get_gravity();
 	}
