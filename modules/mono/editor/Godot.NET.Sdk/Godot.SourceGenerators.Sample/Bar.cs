@@ -1,15 +1,15 @@
 namespace Godot.SourceGenerators.Sample
 {
-    partial class Bar : GodotObject
+    public partial class Bar : GodotObject
     {
     }
 
     // Foo in another file
-    partial class Foo
+    public partial class Foo
     {
     }
 
-    partial class NotSameNameAsFile : GodotObject
+    public partial class NotSameNameAsFile : GodotObject
     {
     }
 }

@@ -171,7 +171,7 @@ namespace Godot.SourceGenerators
 
             if (godotClassMethods.Length > 0)
             {
-                const string listType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
+                const string ListType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the method information for all the methods declared in this class.\n")
@@ -182,11 +182,11 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append(" GetGodotMethodList()\n    {\n");
 
                 source.Append("        var methods = new ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append("(")
                     .Append(godotClassMethods.Length)
                     .Append(");\n");

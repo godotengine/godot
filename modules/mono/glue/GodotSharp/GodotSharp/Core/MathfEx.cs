@@ -21,8 +21,8 @@ namespace Godot
         public const real_t Sqrt2 = (real_t)1.4142135623730950488016887242M; // 1.4142136f and 1.414213562373095
 
         // Epsilon size should depend on the precision used.
-        private const float _epsilonF = 1e-06f;
-        private const double _epsilonD = 1e-14;
+        private const float EpsilonF = 1e-06f;
+        private const double EpsilonD = 1e-14;
 
         /// <summary>
         /// A very small number used for float comparison with error tolerance.
@@ -31,7 +31,7 @@ namespace Godot
 #if REAL_T_IS_DOUBLE
         public const real_t Epsilon = _epsilonD;
 #else
-        public const real_t Epsilon = _epsilonF;
+        public const real_t Epsilon = EpsilonF;
 #endif
 
         /// <summary>
