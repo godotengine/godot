@@ -155,6 +155,7 @@ private:
 		Ref<Texture2D> favorite;
 		Ref<Texture2D> mode_thumbnails;
 		Ref<Texture2D> mode_list;
+		Ref<Texture2D> create_folder;
 		Ref<Texture2D> favorites_up;
 		Ref<Texture2D> favorites_down;
 
