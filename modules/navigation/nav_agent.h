@@ -31,7 +31,6 @@
 #ifndef NAV_AGENT_H
 #define NAV_AGENT_H
 
-#include "nav_agent.h"
 #include "nav_rid.h"
 
 #include "core/object/class_db.h"
