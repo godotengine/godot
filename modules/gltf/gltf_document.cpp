@@ -2919,7 +2919,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 			//just add it
 
-			Ref<Material3D> mat;
+			Ref<Material> mat;
 			if (p.has("material")) {
 				const int material = p["material"];
 				ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
@@ -2930,7 +2930,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				mat = mat3d;
 
 			} else if (has_vertex_color) {
-				Ref<Material3D> mat3d;
+				Ref<SpatialMaterial> mat3d;
 				mat3d.instance();
 				mat3d->set_flag(Material3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 				mat = mat3d;
@@ -3669,7 +3669,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 	for (GLTFMaterialIndex i = 0; i < materials.size(); i++) {
 		const Dictionary &d = materials[i];
 
-		Ref<Material3D> material;
+		Ref<SpatialMaterial> material;
 		material.instance();
 		if (d.has("name") && !String(d["name"]).empty()) {
 			material->set_name(d["name"]);

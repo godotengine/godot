@@ -253,7 +253,7 @@ Ref<Material3D> FBXMaterial::import_material(ImportState &state) {
 
 	const String p_fbx_current_directory = state.path;
 
-	Ref<Material3D> spatial_material;
+	Ref<SpatialMaterial> spatial_material;
 
 	// read the material file
 	// is material two sided

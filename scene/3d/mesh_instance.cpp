@@ -822,7 +822,7 @@ void MeshInstance::create_debug_tangents() {
 	}
 
 	if (lines.size()) {
-		Ref<Material3D> sm;
+		Ref<SpatialMaterial> sm;
 		sm.instance();
 
 		sm->set_flag(Material3D::FLAG_UNSHADED, true);
