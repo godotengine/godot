@@ -69,7 +69,7 @@
 			<return type="int" />
 			<param index="0" name="character" type="int" />
 			<description>
-				Returns the line number of the character position provided.
+				Returns the line number of the character position provided. Line and character numbers are both zero-indexed.
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
@@ -77,7 +77,7 @@
 			<return type="int" />
 			<param index="0" name="character" type="int" />
 			<description>
-				Returns the paragraph number of the character position provided.
+				Returns the paragraph number of the character position provided. Paragraph and character numbers are both zero-indexed.
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
