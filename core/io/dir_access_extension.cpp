@@ -33,7 +33,7 @@
 #include "core/io/dir_access.h"
 #include "core/object/object.h"
 
-String DirAccessExtension::fix_path(String p_path) const {
+String DirAccessExtension::fix_path(const String &p_path) const {
 	String path;
 	if (GDVIRTUAL_CALL(_fix_path, p_path, path)) {
 		return path;
@@ -115,7 +115,7 @@ Error DirAccessExtension::make_dir(String p_dir) {
 	return err;
 }
 
-Error DirAccessExtension::make_dir_recursive(String p_dir) {
+Error DirAccessExtension::make_dir_recursive(const String &p_dir) {
 	Error err = OK;
 	if (GDVIRTUAL_CALL(_make_dir_recursive, p_dir, err)) {
 		return err;
@@ -165,7 +165,7 @@ uint64_t DirAccessExtension::get_space_left() {
 	return space_left;
 }
 
-Error DirAccessExtension::copy(String p_from, String p_to, int p_chmod_flags) {
+Error DirAccessExtension::copy(const String &p_from, const String &p_to, int p_chmod_flags) {
 	Error err = OK;
 	if (GDVIRTUAL_CALL(_copy, p_from, p_to, p_chmod_flags, err)) {
 		return err;

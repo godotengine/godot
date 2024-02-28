@@ -39,7 +39,7 @@ class DirAccessExtension : public DirAccess {
 
 protected:
 	GDVIRTUAL1RC(String, _fix_path, String);
-	virtual String fix_path(String p_path) const override;
+	virtual String fix_path(const String &p_path) const override;
 
 public:
 	GDVIRTUAL0R(Error, _list_dir_begin);
@@ -70,7 +70,7 @@ public:
 	GDVIRTUAL1R(Error, _make_dir, String);
 	virtual Error make_dir(String p_dir) override;
 	GDVIRTUAL1R(Error, _make_dir_recursive, String);
-	virtual Error make_dir_recursive(String p_dir) override;
+	virtual Error make_dir_recursive(const String &p_dir) override;
 	GDVIRTUAL0R(Error, _erase_contents_recursive);
 	virtual Error erase_contents_recursive() override;
 
@@ -86,7 +86,7 @@ public:
 	virtual uint64_t get_space_left() override;
 
 	GDVIRTUAL3R(Error, _copy, String, String, int);
-	virtual Error copy(String p_from, String p_to, int p_chmod_flags = -1) override;
+	virtual Error copy(const String &p_from, const String &p_to, int p_chmod_flags = -1) override;
 	GDVIRTUAL2R(Error, _rename, String, String);
 	virtual Error rename(String p_from, String p_to) override;
 	GDVIRTUAL1R(Error, _remove, String);
