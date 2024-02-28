@@ -899,7 +899,11 @@ void FileAccess::map_path_to_custom_path(const String &p_prefix, const String &p
 	ERR_FAIL_COND_MSG(p_prefix.is_empty(), "`p_prefix` parameter is empty.");
 	String prefix = _get_custom_path_prefix(p_prefix);
 	ERR_FAIL_COND_MSG(prefix == "res" || prefix == "user", vformat(R"(Prefix "%s://" is a built-in path. Doing nothing.)", prefix));
+
+#ifndef TOOLS_ENABLED
 	ERR_FAIL_COND_MSG(prefix == "editor", R"(Prefix "editor://" cannot be added with as a custom path.)");
+#endif
+
 	ERR_FAIL_COND_MSG(custom_path_paths.has(prefix) || custom_path_classes.has(prefix), vformat(R"(Prefix "%s://" is already registered as a custom path.)", prefix));
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint() && prefix == "editor", R"(Prefix "editor://" cannot be registered when the editor is not running.)");
 
@@ -912,7 +916,11 @@ void FileAccess::map_classes_to_custom_path(const String &p_prefix, const String
 	ERR_FAIL_COND_MSG(p_dir_access_class.is_empty(), "`p_dir_access_class` parameter is empty.");
 	String prefix = _get_custom_path_prefix(p_prefix);
 	ERR_FAIL_COND_MSG(prefix == "res" || prefix == "user", vformat(R"(Prefix "%s://" is a built-in path. Doing nothing.)", prefix));
+
+#ifndef TOOLS_ENABLED
 	ERR_FAIL_COND_MSG(prefix == "editor", R"(Prefix "editor://" cannot be added with as a custom path.)");
+#endif
+
 	ERR_FAIL_COND_MSG(custom_path_paths.has(prefix) || custom_path_classes.has(prefix), vformat(R"(Prefix "%s://" is already registered as a custom path.)", prefix));
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint() && prefix == "editor", R"(Prefix "editor://" cannot be registered when the editor is not running.)");
 
