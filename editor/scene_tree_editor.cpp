@@ -594,9 +594,16 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	}
 
 	bool keep_for_children = false;
+
+	// Get the list of children ahead of time, as the list may be invalidated by deleting one of them.
+	LocalVector<TreeItem *> children;
 	for (TreeItem *child = p_parent->get_children(); child; child = child->get_next()) {
+		children.push_back(child);
+	}
+
+	for (uint32_t n = 0; n < children.size(); n++) {
 		// Always keep if at least one of the children are kept.
-		keep_for_children = _update_filter(child, p_scroll_to_selected) || keep_for_children;
+		keep_for_children = _update_filter(children[n], p_scroll_to_selected) || keep_for_children;
 	}
 
 	// Now find other reasons to keep this Node, too.
@@ -617,8 +624,6 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 				}
 			}
 		}
-	} else {
-		memdelete(p_parent);
 	}
 
 	if (editor_selection) {
@@ -633,6 +638,10 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 				p_parent->deselect(0);
 			}
 		}
+	}
+
+	if (!(keep || keep_for_children)) {
+		memdelete(p_parent);
 	}
 
 	return keep || keep_for_children;
