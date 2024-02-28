@@ -2129,7 +2129,7 @@ void DisplayServerMacOS::emit_system_theme_changed() {
 	}
 }
 
-Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
+Error DisplayServerMacOS::dialog_show(const String &p_title, const String &p_description, const Vector<String> &p_buttons, const Callable &p_callback) {
 	_THREAD_SAFE_METHOD_
 
 	NSAlert *window = [[NSAlert alloc] init];
@@ -2419,7 +2419,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 	return OK;
 }
 
-Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
+Error DisplayServerMacOS::dialog_input_text(const String &p_title, const String &p_description, const String &p_partial, const Callable &p_callback) {
 	_THREAD_SAFE_METHOD_
 
 	NSAlert *window = [[NSAlert alloc] init];
