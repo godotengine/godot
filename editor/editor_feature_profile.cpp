@@ -619,8 +619,8 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 			if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 				continue;
 			}
-			const String text = EditorPropertyNameProcessor::get_singleton()->process_name(name, text_style);
-			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(name, tooltip_style);
+			const String text = EditorPropertyNameProcessor::get_singleton()->process_name(name, text_style, name, class_name);
+			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(name, tooltip_style, name, class_name);
 
 			TreeItem *property = property_list->create_item(properties);
 			property->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);

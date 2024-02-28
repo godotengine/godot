@@ -185,7 +185,7 @@ public:
 	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 	void set_property_translation(const Ref<Translation> &p_translation);
-	StringName property_translate(const StringName &p_message) const;
+	StringName property_translate(const StringName &p_message, const StringName &p_context = "") const;
 
 	void setup();
 
