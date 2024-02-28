@@ -5888,6 +5888,10 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		library = p_animation_player->get_animation_library("");
 	}
 	library->add_animation(anim_name, animation);
+
+	// Give a unique scene ID to ensure that external resource references
+	// remain consistent.
+	library->set_scene_unique_id("AnimationLibrary_GlobalImport");
 }
 
 void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {

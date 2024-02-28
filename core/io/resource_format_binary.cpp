@@ -38,6 +38,7 @@
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
+#include "scene/resources/packed_scene.h"
 
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what) (void)(m_what)
@@ -924,10 +925,21 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 	for (int i = 0; i < external_resources.size(); i++) {
 		String dep;
 		String fallback_path;
+		String base_path = external_resources[i].path;
 
+		String foreign_resource_id;
 		if (external_resources[i].uid != ResourceUID::INVALID_ID) {
+			// Check if the path contains a splitter indicating it points to a foreign resource.
+			if (external_resources[i].path.contains("::")) {
+				PackedStringArray split_path = external_resources[i].path.split("::", false);
+				if (split_path.size() == 2) {
+					base_path = split_path[0];
+					foreign_resource_id = split_path[1];
+				}
+			}
+
 			dep = ResourceUID::get_singleton()->id_to_text(external_resources[i].uid);
-			fallback_path = external_resources[i].path; // Used by Dependency Editor, in case uid path fails.
+			fallback_path = base_path; // Used by Dependency Editor, in case uid path fails.
 		} else {
 			dep = external_resources[i].path;
 		}
@@ -940,6 +952,10 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 				dep += "::"; // Ensure that path comes third, even if there is no type.
 			}
 			dep += "::" + fallback_path;
+			// If we found a sub-resource ID, append it to the path now.
+			if (!foreign_resource_id.is_empty()) {
+				dep += "::" + foreign_resource_id;
+			}
 		}
 
 		p_dependencies->push_back(dep);
@@ -1043,9 +1059,19 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		ExtResource er;
 		er.type = get_unicode_string();
 		er.path = get_unicode_string();
+		String foreign_resource_id;
+
 		if (using_uids) {
 			er.uid = f->get_64();
 			if (!p_keep_uuid_paths && er.uid != ResourceUID::INVALID_ID) {
+				// Check if the path contains a splitter indicating it points to a foreign resource.
+				if (er.path.contains("::")) {
+					PackedStringArray split_path = er.path.split("::", false);
+					if (split_path.size() == 2) {
+						er.path = split_path[0];
+						foreign_resource_id = split_path[1];
+					}
+				}
 				if (ResourceUID::get_singleton()->has_id(er.uid)) {
 					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
 					er.path = ResourceUID::get_singleton()->get_id_path(er.uid);
@@ -1062,6 +1088,10 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 			}
 		}
 
+		// If we found a sub-resource ID, append it to the path now.
+		if (!foreign_resource_id.is_empty()) {
+			er.path += "::" + foreign_resource_id;
+		}
 		external_resources.push_back(er);
 	}
 
@@ -1384,6 +1414,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		String type = get_ustring(f);
 		String path = get_ustring(f);
 
+		String original_path = path;
+
 		if (using_uids) {
 			ResourceUID::ID uid = f->get_64();
 			if (uid != ResourceUID::INVALID_ID) {
@@ -1400,23 +1432,37 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 			relative = true;
 		}
 
-		if (p_map.has(path)) {
-			String np = p_map[path];
+		if (p_map.has(original_path)) {
+			String np = p_map[original_path];
 			path = np;
 		}
 
-		String full_path = path;
+		String base_path = path;
+		String foreign_resource_id;
+
+		// Check if the path contains a splitter indicating it points to a foreign resource.
+		if (path.contains("::")) {
+			PackedStringArray split_path = path.split("::", false);
+			if (split_path.size() == 2) {
+				base_path = split_path[0];
+				foreign_resource_id = split_path[1];
+			}
+		}
 
 		if (relative) {
 			//restore relative
-			path = local_path.path_to_file(path);
+			base_path = local_path.path_to_file(base_path);
+		}
+
+		if (!foreign_resource_id.is_empty()) {
+			path = base_path + "::" + foreign_resource_id;
 		}
 
 		save_ustring(fw, type);
 		save_ustring(fw, path);
 
 		if (using_uids) {
-			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(full_path);
+			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(base_path);
 			fw->store_64(uid);
 		}
 	}
@@ -1530,7 +1576,7 @@ void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_byt
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
+void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint, const String &p_base_path) {
 	switch (p_property.get_type()) {
 		case Variant::NIL: {
 			f->store_32(VARIANT_NIL);
@@ -1785,7 +1831,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 				return; // Don't save it.
 			}
 
-			if (!res->is_built_in()) {
+			if (!res->is_built_in(p_base_path)) {
 				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
 				f->store_32(external_resources[res]);
 			} else {
@@ -1818,8 +1864,8 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			d.get_key_list(&keys);
 
 			for (const Variant &E : keys) {
-				write_variant(f, E, resource_map, external_resources, string_map);
-				write_variant(f, d[E], resource_map, external_resources, string_map);
+				write_variant(f, E, resource_map, external_resources, string_map, PropertyInfo(), p_base_path);
+				write_variant(f, d[E], resource_map, external_resources, string_map, PropertyInfo(), p_base_path);
 			}
 
 		} break;
@@ -1828,7 +1874,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			Array a = p_property;
 			f->store_32(uint32_t(a.size()));
 			for (int i = 0; i < a.size(); i++) {
-				write_variant(f, a[i], resource_map, external_resources, string_map);
+				write_variant(f, a[i], resource_map, external_resources, string_map, PropertyInfo(), p_base_path);
 			}
 
 		} break;
@@ -1942,7 +1988,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant, bool p_main) {
+void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant, const String &p_base_path, bool p_main) {
 	switch (p_variant.get_type()) {
 		case Variant::OBJECT: {
 			Ref<Resource> res = p_variant;
@@ -1951,7 +1997,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				return;
 			}
 
-			if (!p_main && (!bundle_resources) && !res->is_built_in()) {
+			if (!p_main && (!bundle_resources) && !res->is_built_in(p_base_path)) {
 				if (res->get_path() == path) {
 					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
 					return;
@@ -1985,10 +2031,10 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 							resource_set.insert(sres);
 							saved_resources.push_back(sres);
 						} else {
-							_find_resources(value);
+							_find_resources(value, p_base_path);
 						}
 					} else {
-						_find_resources(value);
+						_find_resources(value, p_base_path);
 					}
 				}
 			}
@@ -2002,7 +2048,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
 				const Variant &v = varray.get(i);
-				_find_resources(v);
+				_find_resources(v, p_base_path);
 			}
 
 		} break;
@@ -2012,9 +2058,9 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			List<Variant> keys;
 			d.get_key_list(&keys);
 			for (const Variant &E : keys) {
-				_find_resources(E);
+				_find_resources(E, p_base_path);
 				Variant v = d[E];
-				_find_resources(v);
+				_find_resources(v, p_base_path);
 			}
 		} break;
 		case Variant::NODE_PATH: {
@@ -2076,6 +2122,15 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	}
 
+	String base_path = p_resource->get_path();
+	if (p_path.ends_with(".scn")) {
+		Ref<PackedScene> packed_scene = p_resource;
+		// If we're saving a scene and we don't have a resource path, attempt to derive it by the path in the SceneState.
+		if (base_path.is_empty() && packed_scene.is_valid()) {
+			base_path = packed_scene->get_state()->get_path();
+		}
+	}
+
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create file '" + p_path + "'.");
 
 	relative_paths = p_flags & ResourceSaver::FLAG_RELATIVE_PATHS;
@@ -2091,7 +2146,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	local_path = p_path.get_base_dir();
 	path = ProjectSettings::get_singleton()->localize_path(p_path);
 
-	_find_resources(p_resource, true);
+	_find_resources(p_resource, base_path, true);
 
 	if (!(p_flags & ResourceSaver::FLAG_COMPRESS)) {
 		//save header compressed
@@ -2222,7 +2277,18 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		String res_path = save_order[i]->get_path();
 		res_path = relative_paths ? local_path.path_to_file(res_path) : res_path;
 		save_unicode_string(f, res_path);
-		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(save_order[i]->get_path(), false);
+
+		// Check if the path contains a splitter indicating it points to a foreign resource.
+		String base_res_path = save_order[i]->get_path();
+		if (base_res_path.contains("::")) {
+			PackedStringArray split_path = base_res_path.split("::", false);
+			if (split_path.size() == 2) {
+				// We found a single split, so just use the base path.
+				base_res_path = split_path[0];
+			}
+		}
+
+		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(base_res_path, false);
 		f->store_64(ruid);
 	}
 	// save internal resource table
@@ -2285,7 +2351,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 		for (const Property &p : rd.properties) {
 			f->store_32(p.name_idx);
-			write_variant(f, p.value, resource_map, external_resources, string_map, p.pi);
+			write_variant(f, p.value, resource_map, external_resources, string_map, p.pi, p_path);
 		}
 	}
 

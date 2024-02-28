@@ -186,7 +186,7 @@ class ResourceFormatSaverTextInstance {
 		}
 	};
 
-	void _find_resources(const Variant &p_variant, bool p_main = false);
+	void _find_resources(const Variant &p_variant, const String &p_base_path, bool p_main = false);
 
 	static String _write_resources(void *ud, const Ref<Resource> &p_resource);
 	String _write_resource(const Ref<Resource> &res);
