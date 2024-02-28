@@ -33,7 +33,10 @@
 #include "gdscript.h"
 
 const StructInfo *GDScriptDataType::get_struct_info() const {
-	return script_type->get_struct_info(native_type);
+	if (script_type) {
+		return script_type->get_struct_info(native_type);
+	}
+	return nullptr;
 }
 
 Variant GDScriptFunction::get_constant(int p_idx) const {

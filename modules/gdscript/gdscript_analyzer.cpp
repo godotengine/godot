@@ -3702,11 +3702,13 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			return;
 		}
 	} else if (base.kind == GDScriptParser::DataType::STRUCT) {
-		if (const GDScriptParser::StructNode *struct_type = base.struct_type) {
+		if (const StructInfo *info = base.get_struct_info()) {
 			// TODO: is linear search okay here?
-			for (int i = 0; i < struct_type->members.size(); i++) {
-				if (struct_type->members[i]->identifier->name == name) {
-					p_identifier->set_datatype(struct_type->members[i]->get_datatype());
+			for (int i = 0; i < info->count; i++) {
+				if (info->names[i] == name) {
+					// TODO: probably a more efficient way to do this an constructing from default value.
+					p_identifier->set_datatype(type_from_variant(info->default_values[i], p_identifier));
+					p_identifier->is_constant = false; // TODO: this is probably wrong
 					return;
 				}
 			}
@@ -4408,7 +4410,10 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			}
 		} else {
 			reduce_identifier_from_base(p_subscript->attribute, &base_type);
+			print_line("attribute: ", p_subscript->attribute->name);
+			print_line("attribute is constant: ", p_subscript->attribute->is_constant);
 			GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
+			print_line("attribute type is constant: ", attr_type.is_constant);
 			if (attr_type.is_set()) {
 				valid = !attr_type.is_pseudo_type || p_can_be_pseudo_type;
 				result_type = attr_type;

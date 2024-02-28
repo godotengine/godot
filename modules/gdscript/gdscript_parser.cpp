@@ -4621,12 +4621,15 @@ const StructInfo *GDScriptParser::DataType::get_struct_info() {
 	if (struct_info != StructInfo()) { // if it's already been set, return a pointer to the cached value
 		return &struct_info;
 	}
-	if (!struct_type) {
+	if (kind != STRUCT) {
 		return nullptr;
 	}
 	if (const StructInfo *info = ClassDB::get_struct_info(native_type)) {
 		struct_info = *info;
 		return &struct_info;
+	}
+	if (!struct_type) {
+		return nullptr;
 	}
 	struct_info.name = struct_type->identifier->name; // TODO: strip file path from name here?
 	const int count = struct_type->members.size();
