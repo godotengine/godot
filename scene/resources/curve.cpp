@@ -409,7 +409,7 @@ Array Curve::get_data() const {
 	return output;
 }
 
-void Curve::set_data(const Array p_input) {
+void Curve::set_data(const Array &p_input) {
 	const unsigned int ELEMS = 5;
 	ERR_FAIL_COND(p_input.size() % ELEMS != 0);
 

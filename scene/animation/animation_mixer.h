@@ -356,8 +356,8 @@ protected:
 	virtual void _process_animation(double p_delta, bool p_update_only = false);
 
 	// For post process with retrieved key value during blending.
-	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
-	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
+	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, const Variant &p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
+	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, const Variant &p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	GDVIRTUAL5RC(Variant, _post_process_key_value, Ref<Animation>, int, Variant, ObjectID, int);
 
 	void _blend_init();
@@ -485,7 +485,7 @@ class AnimatedValuesBackup : public RefCounted {
 	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> data;
 
 public:
-	void set_data(const HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> p_data);
+	void set_data(const HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> &p_data);
 	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> get_data() const;
 	void clear_data();
 

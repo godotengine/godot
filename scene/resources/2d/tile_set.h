@@ -286,7 +286,7 @@ public:
 		void set_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit, int p_terrain);
 		int get_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const;
 
-		void from_array(Array p_terrains);
+		void from_array(const Array &p_terrains);
 		Array as_array() const;
 
 		TerrainsPattern(const TileSet *p_tile_set, int p_terrain_set);
@@ -464,7 +464,7 @@ public:
 	void add_terrain(int p_terrain_set, int p_index = -1);
 	void move_terrain(int p_terrain_set, int p_from_index, int p_to_pos);
 	void remove_terrain(int p_terrain_set, int p_index);
-	void set_terrain_name(int p_terrain_set, int p_terrain_index, String p_name);
+	void set_terrain_name(int p_terrain_set, int p_terrain_index, const String &p_name);
 	String get_terrain_name(int p_terrain_set, int p_terrain_index) const;
 	void set_terrain_color(int p_terrain_set, int p_terrain_index, Color p_color);
 	Color get_terrain_color(int p_terrain_set, int p_terrain_index) const;
@@ -486,8 +486,8 @@ public:
 	void add_custom_data_layer(int p_index = -1);
 	void move_custom_data_layer(int p_from_index, int p_to_pos);
 	void remove_custom_data_layer(int p_index);
-	int get_custom_data_layer_by_name(String p_value) const;
-	void set_custom_data_layer_name(int p_layer_id, String p_value);
+	int get_custom_data_layer_by_name(const String &p_value) const;
+	void set_custom_data_layer_name(int p_layer_id, const String &p_value);
 	String get_custom_data_layer_name(int p_layer_id) const;
 	void set_custom_data_layer_type(int p_layer_id, Variant::Type p_value);
 	Variant::Type get_custom_data_layer_type(int p_layer_id) const;
@@ -953,7 +953,7 @@ public:
 	int get_collision_polygons_count(int p_layer_id) const;
 	void add_collision_polygon(int p_layer_id);
 	void remove_collision_polygon(int p_layer_id, int p_polygon_index);
-	void set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon);
+	void set_collision_polygon_points(int p_layer_id, int p_polygon_index, const Vector<Vector2> &p_polygon);
 	Vector<Vector2> get_collision_polygon_points(int p_layer_id, int p_polygon_index) const;
 	void set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way);
 	bool is_collision_polygon_one_way(int p_layer_id, int p_polygon_index) const;
@@ -982,9 +982,9 @@ public:
 	float get_probability() const;
 
 	// Custom data.
-	void set_custom_data(String p_layer_name, Variant p_value);
-	Variant get_custom_data(String p_layer_name) const;
-	void set_custom_data_by_layer_id(int p_layer_id, Variant p_value);
+	void set_custom_data(const String &p_layer_name, const Variant &p_value);
+	Variant get_custom_data(const String &p_layer_name) const;
+	void set_custom_data_by_layer_id(int p_layer_id, const Variant &p_value);
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
 
 	// Polygons.

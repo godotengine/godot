@@ -277,7 +277,7 @@ Error MultiplayerAPI::decode_and_decompress_variants(Vector<Variant> &r_variants
 	return OK;
 }
 
-Error MultiplayerAPI::_rpc_bind(int p_peer, Object *p_object, const StringName &p_method, Array p_args) {
+Error MultiplayerAPI::_rpc_bind(int p_peer, Object *p_object, const StringName &p_method, const Array &p_args) {
 	Vector<Variant> args;
 	Vector<const Variant *> argsp;
 	args.resize(p_args.size());
@@ -371,13 +371,13 @@ int MultiplayerAPIExtension::get_remote_sender_id() {
 	return id;
 }
 
-Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, Variant p_config) {
+Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, const Variant &p_config) {
 	Error err = ERR_UNAVAILABLE;
 	GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err);
 	return err;
 }
 
-Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, Variant p_config) {
+Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, const Variant &p_config) {
 	Error err = ERR_UNAVAILABLE;
 	GDVIRTUAL_CALL(_object_configuration_remove, p_object, p_config, err);
 	return err;

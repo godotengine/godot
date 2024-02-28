@@ -321,7 +321,7 @@ void TileMap::remove_layer(int p_layer) {
 	update_configuration_warnings();
 }
 
-void TileMap::set_layer_name(int p_layer, String p_name) {
+void TileMap::set_layer_name(int p_layer, const String &p_name) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_name, p_name);
 }
 

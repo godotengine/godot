@@ -158,7 +158,7 @@ private:
 
 	void _select_drive(int p_idx);
 	void _tree_item_activated();
-	void _dir_submitted(String p_dir);
+	void _dir_submitted(const String &p_dir);
 	void _file_submitted(const String &p_file);
 	void _action_pressed();
 	void _save_confirm_pressed();

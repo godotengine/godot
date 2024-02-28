@@ -96,7 +96,7 @@ public:
 
 		Varying() {}
 
-		Varying(String p_name, VaryingMode p_mode, VaryingType p_type) :
+		Varying(const String &p_name, VaryingMode p_mode, VaryingType p_type) :
 				name(p_name), mode(p_mode), type(p_type) {}
 
 		bool from_string(const String &p_str) {
@@ -526,7 +526,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_input_name(String p_name);
+	void set_input_name(const String &p_name);
 	String get_input_name() const;
 	String get_input_real_name() const;
 
@@ -534,7 +534,7 @@ public:
 	PortType get_input_index_type(int p_index) const;
 	String get_input_index_name(int p_index) const;
 
-	PortType get_input_type_by_name(String p_name) const;
+	PortType get_input_type_by_name(const String &p_name) const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -949,7 +949,7 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override = 0;
 
-	void set_varying_name(String p_varying_name);
+	void set_varying_name(const String &p_varying_name);
 	String get_varying_name() const;
 
 	void set_varying_type(VisualShader::VaryingType p_varying_type);

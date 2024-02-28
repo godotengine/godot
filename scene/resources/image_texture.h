@@ -115,7 +115,7 @@ public:
 	virtual bool has_mipmaps() const override;
 	virtual LayeredType get_layered_type() const override;
 
-	Error create_from_images(Vector<Ref<Image>> p_images);
+	Error create_from_images(const Vector<Ref<Image>> &p_images);
 	void update_layer(const Ref<Image> &p_image, int p_layer);
 	virtual Ref<Image> get_layer_data(int p_layer) const override;
 

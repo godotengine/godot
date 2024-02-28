@@ -145,7 +145,7 @@ int HeightMapShape3D::get_map_depth() const {
 	return map_depth;
 }
 
-void HeightMapShape3D::set_map_data(Vector<real_t> p_new) {
+void HeightMapShape3D::set_map_data(const Vector<real_t> &p_new) {
 	int size = (map_width * map_depth);
 	if (p_new.size() != size) {
 		// fail

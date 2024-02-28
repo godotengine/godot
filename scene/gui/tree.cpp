@@ -290,7 +290,7 @@ void TreeItem::_propagate_check_through_parents(int p_column, bool p_emit_signal
 	current->_propagate_check_through_parents(p_column, p_emit_signal);
 }
 
-void TreeItem::set_text(int p_column, String p_text) {
+void TreeItem::set_text(int p_column, const String &p_text) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
 	if (cells[p_column].text == p_text) {
@@ -405,7 +405,7 @@ TextServer::StructuredTextParser TreeItem::get_structured_text_bidi_override(int
 	return cells[p_column].st_parser;
 }
 
-void TreeItem::set_structured_text_bidi_override_options(int p_column, Array p_args) {
+void TreeItem::set_structured_text_bidi_override_options(int p_column, const Array &p_args) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
 	if (cells[p_column].st_args == p_args) {
@@ -441,7 +441,7 @@ String TreeItem::get_language(int p_column) const {
 	return cells[p_column].language;
 }
 
-void TreeItem::set_suffix(int p_column, String p_suffix) {
+void TreeItem::set_suffix(int p_column, const String &p_suffix) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
 	if (cells[p_column].suffix == p_suffix) {
@@ -3217,7 +3217,7 @@ void Tree::_apply_multiline_edit() {
 	queue_redraw();
 }
 
-void Tree::_line_editor_submit(String p_text) {
+void Tree::_line_editor_submit(const String &p_text) {
 	if (popup_edit_commited) {
 		return; // Already processed by _text_editor_popup_modal_close
 	}

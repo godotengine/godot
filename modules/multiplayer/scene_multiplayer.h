@@ -160,8 +160,8 @@ public:
 
 	virtual Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) override;
 
-	virtual Error object_configuration_add(Object *p_obj, Variant p_config) override;
-	virtual Error object_configuration_remove(Object *p_obj, Variant p_config) override;
+	virtual Error object_configuration_add(Object *p_obj, const Variant &p_config) override;
+	virtual Error object_configuration_remove(Object *p_obj, const Variant &p_config) override;
 
 	void clear();
 
