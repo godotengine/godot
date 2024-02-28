@@ -99,7 +99,7 @@ String CameraFeed::get_name() const {
 	return name;
 }
 
-void CameraFeed::set_name(String p_name) {
+void CameraFeed::set_name(const String &p_name) {
 	name = p_name;
 }
 
@@ -149,7 +149,7 @@ CameraFeed::CameraFeed() {
 	texture[CameraServer::FEED_CBCR_IMAGE] = RenderingServer::get_singleton()->texture_2d_placeholder_create();
 }
 
-CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
+CameraFeed::CameraFeed(const String &p_name, FeedPosition p_position) {
 	// initialize our feed
 	id = CameraServer::get_singleton()->get_free_id();
 	base_width = 0;

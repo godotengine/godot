@@ -242,7 +242,7 @@ public:
 	float environment_get_volumetric_fog_ambient_inject(RID p_env) const;
 
 	// GLOW
-	void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map);
+	void environment_set_glow(RID p_env, bool p_enable, const Vector<float> &p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map);
 	bool environment_get_glow_enabled(RID p_env) const;
 	Vector<float> environment_get_glow_levels(RID p_env) const;
 	float environment_get_glow_intensity(RID p_env) const;

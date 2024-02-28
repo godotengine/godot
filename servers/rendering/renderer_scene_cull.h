@@ -1314,7 +1314,7 @@ public:
 	PASS1RC(float, environment_get_volumetric_fog_ambient_inject, RID)
 
 	// Glow
-	PASS13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float, float, RID)
+	PASS13(environment_set_glow, RID, bool, const Vector<float> &, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float, float, RID)
 
 	PASS1RC(bool, environment_get_glow_enabled, RID)
 	PASS1RC(Vector<float>, environment_get_glow_levels, RID)

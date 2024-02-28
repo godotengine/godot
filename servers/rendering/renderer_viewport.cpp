@@ -1506,7 +1506,7 @@ bool RendererViewport::free(RID p_rid) {
 	return false;
 }
 
-void RendererViewport::handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time) {
+void RendererViewport::handle_timestamp(const String &p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time) {
 	RID *vp = timestamp_vp_map.getptr(p_timestamp);
 	if (!vp) {
 		return;

@@ -400,7 +400,7 @@ public:
 	}
 
 	typedef String (*OpenIncludeFunction)(const String &, void *userdata);
-	Error parse_versions_from_text(const String &p_text, const String p_defines = String(), OpenIncludeFunction p_include_func = nullptr, void *p_include_func_userdata = nullptr);
+	Error parse_versions_from_text(const String &p_text, const String &p_defines = String(), OpenIncludeFunction p_include_func = nullptr, void *p_include_func_userdata = nullptr);
 
 protected:
 	Dictionary _get_versions() const {
