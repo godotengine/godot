@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 
@@ -7,7 +6,6 @@ namespace Godot;
 
 #nullable enable
 
-[SuppressMessage("ReSharper", "RedundantNameQualifier")]
 public partial struct Variant : IDisposable
 {
     internal godot_variant.movable NativeVar;

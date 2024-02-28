@@ -1,10 +1,27 @@
 GDTEST_OK
-99
-100
-101
-102
-(0, 0, 0, 1)
-(0, 0, 0, 1)
-hello
-<null>
-Array[Node]([])
+var test_weak_int: int = 1
+  hint=NONE hint_string="int" usage=DEFAULT|SCRIPT_VARIABLE
+var test_hard_int: int = 2
+  hint=NONE hint_string="int" usage=DEFAULT|SCRIPT_VARIABLE
+var test_storage_untyped: Variant = null
+  hint=NONE hint_string="" usage=STORAGE|SCRIPT_VARIABLE|NIL_IS_VARIANT
+var test_storage_weak_int: Variant = 3
+  hint=NONE hint_string="" usage=STORAGE|SCRIPT_VARIABLE|NIL_IS_VARIANT
+var test_storage_hard_int: int = 4
+  hint=NONE hint_string="" usage=STORAGE|SCRIPT_VARIABLE
+var test_range: int = 100
+  hint=RANGE hint_string="0,100" usage=DEFAULT|SCRIPT_VARIABLE
+var test_range_step: int = 101
+  hint=RANGE hint_string="0,100,1" usage=DEFAULT|SCRIPT_VARIABLE
+var test_range_step_or_greater: int = 102
+  hint=RANGE hint_string="0,100,1,or_greater" usage=DEFAULT|SCRIPT_VARIABLE
+var test_color: Color = Color(0, 0, 0, 1)
+  hint=NONE hint_string="Color" usage=DEFAULT|SCRIPT_VARIABLE
+var test_color_no_alpha: Color = Color(0, 0, 0, 1)
+  hint=COLOR_NO_ALPHA hint_string="" usage=DEFAULT|SCRIPT_VARIABLE
+var test_node_path: NodePath = NodePath("hello")
+  hint=NODE_PATH_VALID_TYPES hint_string="Sprite2D,Sprite3D,Control,Node" usage=DEFAULT|SCRIPT_VARIABLE
+var test_node: Node = null
+  hint=NODE_TYPE hint_string="Node" usage=DEFAULT|SCRIPT_VARIABLE
+var test_node_array: Array = Array[Node]([])
+  hint=TYPE_STRING hint_string="24/34:Node" usage=DEFAULT|SCRIPT_VARIABLE

@@ -312,7 +312,7 @@ def generate_sdk_package_versions():
     )
 
     # We write in ../SdkPackageVersions.props.
-    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w") as f:
+    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8") as f:
         f.write(props)
         f.close()
 
@@ -320,6 +320,8 @@ def generate_sdk_package_versions():
 
     constants = """namespace Godot.SourceGenerators
 {{
+// TODO: This is currently disabled because of https://github.com/dotnet/roslyn/issues/52904
+#pragma warning disable IDE0040 // Add accessibility modifiers.
     partial class Common
     {{
         public const string VersionDocsUrl = "https://docs.godotengine.org/en/{docs_branch}";
@@ -338,7 +340,7 @@ def generate_sdk_package_versions():
     )
     os.makedirs(generators_dir, exist_ok=True)
 
-    with open(os.path.join(generators_dir, "Common.Constants.cs"), "w") as f:
+    with open(os.path.join(generators_dir, "Common.Constants.cs"), "w", newline="\n", encoding="utf-8") as f:
         f.write(constants)
         f.close()
 

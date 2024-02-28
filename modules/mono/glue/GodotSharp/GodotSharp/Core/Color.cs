@@ -38,7 +38,9 @@ namespace Godot
         public float B;
 
         /// <summary>
-        /// The color's alpha (transparency) component, typically on the range of 0 to 1.
+        /// The color's alpha component, typically on the range of 0 to 1.
+		/// A value of 0 means that the color is fully transparent.
+		/// A value of 1 means that the color is fully opaque.
         /// </summary>
         public float A;
 
@@ -534,7 +536,11 @@ namespace Godot
         /// <param name="r">The color's red component, typically on the range of 0 to 1.</param>
         /// <param name="g">The color's green component, typically on the range of 0 to 1.</param>
         /// <param name="b">The color's blue component, typically on the range of 0 to 1.</param>
-        /// <param name="a">The color's alpha (transparency) value, typically on the range of 0 to 1. Default: 1.</param>
+        /// <param name="a">
+		/// The color's alpha value, typically on the range of 0 to 1.
+		/// A value of 0 means that the color is fully transparent.
+		/// A value of 1 means that the color is fully opaque.
+		/// </param>
         public Color(float r, float g, float b, float a = 1.0f)
         {
             R = r;
@@ -547,7 +553,11 @@ namespace Godot
         /// Constructs a <see cref="Color"/> from an existing color and an alpha value.
         /// </summary>
         /// <param name="c">The color to construct from. Only its RGB values are used.</param>
-        /// <param name="a">The color's alpha (transparency) value, typically on the range of 0 to 1. Default: 1.</param>
+        /// <param name="a">
+		/// The color's alpha value, typically on the range of 0 to 1.
+		/// A value of 0 means that the color is fully transparent.
+		/// A value of 1 means that the color is fully opaque.
+		/// </param>
         public Color(Color c, float a = 1.0f)
         {
             R = c.R;
@@ -784,7 +794,7 @@ namespace Godot
             name = name.Replace(".", string.Empty, StringComparison.Ordinal);
             name = name.ToUpperInvariant();
 
-            return Colors.namedColors.TryGetValue(name, out color);
+            return Colors.NamedColors.TryGetValue(name, out color);
         }
 
         /// <summary>

@@ -629,8 +629,6 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 			state.canvas_instance_batches[state.current_batch_index].material_data = material_data;
 			if (shader_data_cache) {
 				state.canvas_instance_batches[state.current_batch_index].vertex_input_mask = shader_data_cache->vertex_input_mask;
-			} else {
-				state.canvas_instance_batches[state.current_batch_index].vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_COLOR | RS::ARRAY_TEX_UV;
 			}
 		}
 

@@ -246,7 +246,7 @@ namespace Godot.SourceGenerators
                 }
                 // Generate GetGodotPropertyList
 
-                const string dictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
+                const string DictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the property information for all the properties declared in this class.\n")
@@ -257,11 +257,11 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
-                    .Append(dictionaryType)
+                    .Append(DictionaryType)
                     .Append(" GetGodotPropertyList()\n    {\n");
 
                 source.Append("        var properties = new ")
-                    .Append(dictionaryType)
+                    .Append(DictionaryType)
                     .Append("();\n");
 
                 // To retain the definition order (and display categories correctly), we want to

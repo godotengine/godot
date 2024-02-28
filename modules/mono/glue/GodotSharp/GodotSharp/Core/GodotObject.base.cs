@@ -10,8 +10,8 @@ namespace Godot
 {
     public partial class GodotObject : IDisposable
     {
-        private bool _disposed = false;
-        private static readonly Type CachedType = typeof(GodotObject);
+        private bool _disposed;
+        private static readonly Type _cachedType = typeof(GodotObject);
 
         internal IntPtr NativePtr;
         private bool _memoryOwn;
@@ -25,11 +25,11 @@ namespace Godot
         {
             unsafe
             {
-                _ConstructAndInitialize(NativeCtor, NativeName, CachedType, refCounted: false);
+                ConstructAndInitialize(NativeCtor, NativeName, _cachedType, refCounted: false);
             }
         }
 
-        internal unsafe void _ConstructAndInitialize(
+        internal unsafe void ConstructAndInitialize(
             delegate* unmanaged<IntPtr> nativeCtor,
             StringName nativeName,
             Type cachedType,

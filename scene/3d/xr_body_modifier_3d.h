@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  world_2d.h                                                            */
+/*  xr_body_modifier_3d.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,43 +28,75 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_2D_H
-#define WORLD_2D_H
+#ifndef XR_BODY_MODIFIER_3D_H
+#define XR_BODY_MODIFIER_3D_H
 
-#include "core/io/resource.h"
-#include "servers/physics_server_2d.h"
+#include "scene/3d/node_3d.h"
+#include "servers/xr/xr_body_tracker.h"
 
-class VisibleOnScreenNotifier2D;
-class Viewport;
-struct SpatialIndexer2D;
+class Skeleton3D;
 
-class World2D : public Resource {
-	GDCLASS(World2D, Resource);
+/**
+	The XRBodyModifier3D node drives a body skeleton using body tracking
+	data from an XRBodyTracker instance.
+ */
 
-	RID canvas;
-	mutable RID space;
-	mutable RID navigation_map;
+class XRBodyModifier3D : public Node3D {
+	GDCLASS(XRBodyModifier3D, Node3D);
 
-	HashSet<Viewport *> viewports;
+public:
+	enum BodyUpdate {
+		BODY_UPDATE_UPPER_BODY = 1,
+		BODY_UPDATE_LOWER_BODY = 2,
+		BODY_UPDATE_HANDS = 4,
+	};
+
+	enum BoneUpdate {
+		BONE_UPDATE_FULL,
+		BONE_UPDATE_ROTATION_ONLY,
+		BONE_UPDATE_MAX
+	};
+
+	void set_body_tracker(const StringName &p_tracker_name);
+	StringName get_body_tracker() const;
+
+	void set_target(const NodePath &p_target);
+	NodePath get_target() const;
+
+	void set_body_update(BitField<BodyUpdate> p_body_update);
+	BitField<BodyUpdate> get_body_update() const;
+
+	void set_bone_update(BoneUpdate p_bone_update);
+	BoneUpdate get_bone_update() const;
+
+	void set_show_when_tracked(bool p_show_when_tracked);
+	bool get_show_when_tracked() const;
+
+	void _notification(int p_what);
 
 protected:
 	static void _bind_methods();
-	friend class Viewport;
 
-public:
-	RID get_canvas() const;
-	RID get_space() const;
-	RID get_navigation_map() const;
+private:
+	struct JointData {
+		int bone = -1;
+		int parent_joint = -1;
+	};
 
-	PhysicsDirectSpaceState2D *get_direct_space_state();
+	StringName tracker_name = "/user/body";
+	NodePath target;
+	BitField<BodyUpdate> body_update = BODY_UPDATE_UPPER_BODY | BODY_UPDATE_LOWER_BODY | BODY_UPDATE_HANDS;
+	BoneUpdate bone_update = BONE_UPDATE_FULL;
+	bool show_when_tracked = true;
+	JointData joints[XRBodyTracker::JOINT_MAX];
 
-	void register_viewport(Viewport *p_viewport);
-	void remove_viewport(Viewport *p_viewport);
-
-	_FORCE_INLINE_ const HashSet<Viewport *> &get_viewports() { return viewports; }
-
-	World2D();
-	~World2D();
+	Skeleton3D *get_skeleton();
+	void _get_joint_data();
+	void _update_skeleton();
+	void _tracker_changed(const StringName &p_tracker_name, const Ref<XRBodyTracker> &p_tracker);
 };
 
-#endif // WORLD_2D_H
+VARIANT_BITFIELD_CAST(XRBodyModifier3D::BodyUpdate)
+VARIANT_ENUM_CAST(XRBodyModifier3D::BoneUpdate)
+
+#endif // XR_BODY_MODIFIER_3D_H

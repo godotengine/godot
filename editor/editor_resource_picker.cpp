@@ -467,6 +467,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
+			// Prevent freeing of the object until the end of the update of the resource (GH-88286).
+			Ref<Resource> old_edited_resource = edited_resource;
 			edited_resource = Ref<Resource>(resp);
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();

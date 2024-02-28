@@ -279,6 +279,7 @@
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
+#include "scene/3d/xr_body_modifier_3d.h"
 #include "scene/3d/xr_face_modifier_3d.h"
 #include "scene/3d/xr_hand_modifier_3d.h"
 #include "scene/3d/xr_nodes.h"
@@ -541,6 +542,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(XRController3D);
 	GDREGISTER_CLASS(XRAnchor3D);
 	GDREGISTER_CLASS(XROrigin3D);
+	GDREGISTER_CLASS(XRBodyModifier3D);
 	GDREGISTER_CLASS(XRHandModifier3D);
 	GDREGISTER_CLASS(XRFaceModifier3D);
 	GDREGISTER_CLASS(MeshInstance3D);
