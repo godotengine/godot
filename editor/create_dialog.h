@@ -31,6 +31,8 @@
 #ifndef CREATE_DIALOG_H
 #define CREATE_DIALOG_H
 
+#include "core/os/mutex.h"
+#include "core/os/thread.h"
 #include "editor/editor_help.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -46,6 +48,21 @@ class CreateDialog : public ConfirmationDialog {
 		PATH_TYPE,
 		OTHER_TYPE
 	};
+
+	struct SearchOptionItem {
+		String search_text;
+		String inherits;
+		String type;
+		TypeCategory type_category;
+		SearchOptionItem(const String &p_inherits, const String &p_type, const TypeCategory p_type_category) :
+				inherits(p_inherits), type(p_type), type_category(p_type_category) {}
+	};
+	Mutex search_mutex;
+	Thread search_thread;
+	SafeFlag search_abort;
+	SafeFlag search_invalidate;
+	List<SearchOptionItem *> search_option_item_list;
+	bool use_threads = false;
 
 	LineEdit *search_box = nullptr;
 	Tree *search_options = nullptr;
@@ -66,6 +83,10 @@ class CreateDialog : public ConfirmationDialog {
 	HashMap<String, int> custom_type_indices;
 	List<StringName> type_list;
 	HashSet<StringName> type_blacklist;
+
+	static void _search_thread_func(void *p_userdata);
+	void _create_search_option_items(const Vector<String> &p_candidates, const String &p_search_text);
+	void _clear_search_option_items();
 
 	void _update_search();
 	bool _should_hide_type(const String &p_type) const;

@@ -32,6 +32,8 @@
 
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/mutex.h"
+#include "core/os/thread.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -169,7 +171,94 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 	return false;
 }
 
-void CreateDialog::_update_search() {
+void CreateDialog::_search_thread_func(void *p_userdata) {
+	CreateDialog *dialog = (CreateDialog *)p_userdata;
+	while (true) {
+		dialog->search_invalidate.clear();
+		bool search_invalidated = false;
+
+		const String search_text = dialog->search_box->get_text();
+		bool empty_search = search_text.is_empty();
+
+		// Filter all candidate results.
+		Vector<String> candidates;
+		for (List<StringName>::Element *I = dialog->type_list.front(); I; I = I->next()) {
+			if (dialog->search_abort.is_set())
+				return;
+			if (dialog->search_invalidate.is_set()) {
+				search_invalidated = true;
+				break;
+			}
+			if (empty_search || search_text.is_subsequence_ofn(I->get())) {
+				candidates.push_back(I->get());
+			}
+		}
+		if (search_invalidated) {
+			continue;
+		}
+
+		// Build the type tree.
+		for (int i = 0; i < candidates.size(); i++) {
+			if (dialog->search_abort.is_set())
+				return;
+			if (dialog->search_invalidate.is_set()) {
+				search_invalidated = true;
+				break;
+			}
+			dialog->_add_type(candidates[i], ClassDB::class_exists(candidates[i]) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
+		}
+		if (search_invalidated) {
+			continue;
+		}
+
+		// Configure search items.
+		callable_mp(dialog, &CreateDialog::_create_search_option_items).bind(candidates, search_text).call_deferred();
+
+		while (true) {
+			if (dialog->search_abort.is_set())
+				return;
+			if (dialog->search_invalidate.is_set()) {
+				break;
+			}
+			OS::get_singleton()->delay_usec(1000);
+		}
+	}
+}
+
+void CreateDialog::_create_search_option_items(const Vector<String> &p_candidates, const String &p_search_text) {
+	if (search_abort.is_set() || search_invalidate.is_set()) {
+		return;
+	}
+
+	_clear_search_option_items();
+
+	{
+		MutexLock lock(search_mutex);
+		for (SearchOptionItem *option_item : search_option_item_list) {
+			TreeItem *item = search_options->create_item(search_options_types[option_item->inherits]);
+			search_options_types[option_item->type] = item;
+			_configure_search_option_item(item, option_item->type, option_item->type_category);
+		}
+		search_option_item_list.clear();
+	}
+
+	bool empty_search = p_search_text.is_empty();
+
+	// Select the best result.
+	if (empty_search) {
+		select_type(base_type);
+	} else if (p_candidates.size() > 0) {
+		select_type(_top_result(p_candidates, p_search_text));
+	} else {
+		favorite->set_disabled(true);
+		help_bit->set_text(vformat(TTR("No results for \"%s\"."), p_search_text));
+		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
+		get_ok_button()->set_disabled(true);
+		search_options->deselect_all();
+	}
+}
+
+void CreateDialog::_clear_search_option_items() {
 	search_options->clear();
 	search_options_types.clear();
 
@@ -178,9 +267,18 @@ void CreateDialog::_update_search() {
 	root->set_icon(0, search_options->get_editor_theme_icon(icon_fallback));
 	search_options_types[base_type] = root;
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
+}
+
+void CreateDialog::_update_search() {
+	_clear_search_option_items();
 
 	const String search_text = search_box->get_text();
 	bool empty_search = search_text.is_empty();
+
+	if (use_threads) {
+		search_invalidate.set();
+		return;
+	}
 
 	// Filter all candidate results.
 	Vector<String> candidates;
@@ -195,18 +293,8 @@ void CreateDialog::_update_search() {
 		_add_type(candidates[i], ClassDB::class_exists(candidates[i]) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
 	}
 
-	// Select the best result.
-	if (empty_search) {
-		select_type(base_type);
-	} else if (candidates.size() > 0) {
-		select_type(_top_result(candidates, search_text));
-	} else {
-		favorite->set_disabled(true);
-		help_bit->set_text(vformat(TTR("No results for \"%s\"."), search_text));
-		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
-		get_ok_button()->set_disabled(true);
-		search_options->deselect_all();
-	}
+	// Configure search items.
+	_create_search_option_items(candidates, search_text);
 }
 
 void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_category) {
@@ -272,9 +360,10 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 
 	_add_type(inherits, inherited_type);
 
-	TreeItem *item = search_options->create_item(search_options_types[inherits]);
-	search_options_types[p_type] = item;
-	_configure_search_option_item(item, p_type, p_type_category);
+	{
+		MutexLock lock(search_mutex);
+		search_option_item_list.push_back(new SearchOptionItem(inherits, p_type, p_type_category));
+	}
 }
 
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category) {
@@ -474,9 +563,17 @@ void CreateDialog::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
+				if (use_threads) {
+					search_abort.clear();
+					search_thread.start(_search_thread_func, this);
+				}
 				callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(); // Still not visible.
 				search_box->select_all();
 			} else {
+				if (use_threads) {
+					search_abort.set();
+					search_thread.wait_to_finish();
+				}
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
 			}
 		} break;
@@ -761,6 +858,10 @@ void CreateDialog::_bind_methods() {
 }
 
 CreateDialog::CreateDialog() {
+#ifdef THREADS_ENABLED
+	use_threads = true;
+#endif
+
 	base_type = "Object";
 	preferred_search_result_type = "";
 
