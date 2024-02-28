@@ -3023,6 +3023,8 @@ void TileMap::_notification(int p_what) {
 			for (Ref<TileMapLayer> &layer : layers) {
 				layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_IN_TREE);
 			}
+			// Update on exit to prevent threading problems.
+			_internal_update();
 		} break;
 
 		case TileMap::NOTIFICATION_ENTER_CANVAS: {
@@ -3035,6 +3037,8 @@ void TileMap::_notification(int p_what) {
 			for (Ref<TileMapLayer> &layer : layers) {
 				layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_IN_CANVAS);
 			}
+			// Update on exit to prevent threading problems.
+			_internal_update();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -3109,8 +3113,11 @@ void TileMap::queue_internal_update() {
 	if (pending_update) {
 		return;
 	}
-	pending_update = true;
-	callable_mp(this, &TileMap::_internal_update).call_deferred();
+	// Don't update when outside the tree, it doesn't do anything useful, and causes threading problems.
+	if (is_inside_tree()) {
+		pending_update = true;
+		callable_mp(this, &TileMap::_internal_update).call_deferred();
+	}
 }
 
 void TileMap::_internal_update() {

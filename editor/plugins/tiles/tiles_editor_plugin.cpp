@@ -68,9 +68,6 @@ void TilesEditorUtils::_thread_func(void *ud) {
 }
 
 void TilesEditorUtils::_thread() {
-	CallQueue queue;
-	MessageQueue::set_thread_singleton_override(&queue);
-
 	pattern_thread_exited.clear();
 	while (!pattern_thread_exit.is_set()) {
 		pattern_preview_sem.wait();
@@ -130,8 +127,6 @@ void TilesEditorUtils::_thread() {
 				// Add the viewport at the last moment to avoid rendering too early.
 				EditorNode::get_singleton()->call_deferred("add_child", viewport);
 
-				MessageQueue::get_singleton()->flush();
-
 				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorUtils *>(this), &TilesEditorUtils::_preview_frame_started), Object::CONNECT_ONE_SHOT);
 
 				pattern_preview_done.wait();
@@ -144,11 +139,7 @@ void TilesEditorUtils::_thread() {
 				viewport->queue_free();
 			}
 		}
-
-		MessageQueue::get_singleton()->flush();
 	}
-
-	MessageQueue::get_singleton()->flush();
 	pattern_thread_exited.set();
 }
 
