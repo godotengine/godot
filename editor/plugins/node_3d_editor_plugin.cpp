@@ -2380,6 +2380,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/reset_fov", p_event)) {
 			reset_fov();
 		}
+
+		if (ED_IS_SHORTCUT("spatial_editor/align_selected_camera_to_view", p_event)) {
+			align_selected_camera_to_view();
+		}
 	}
 
 	// freelook uses most of the useful shortcuts, like save, so its ok
@@ -4614,6 +4618,17 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 	}
 }
 
+void Node3DEditorViewport::align_selected_camera_to_view() {
+	Camera3D *selected_camera = nullptr;
+	const List<Node *> &selection = editor_selection->get_selected_node_list();
+	if (selection.size() == 1) {
+		selected_camera = cast_to<Camera3D>(selection[0]);
+		if (selected_camera) {
+			selected_camera->set_global_transform(camera->get_global_transform());
+		}
+	}
+}
+
 // Apply the current transform operation.
 void Node3DEditorViewport::commit_transform() {
 	ERR_FAIL_COND(_edit.mode == TRANSFORM_NONE);
@@ -5222,6 +5237,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ED_SHORTCUT("spatial_editor/instant_translate", TTR("Begin Translate Transformation"));
 	ED_SHORTCUT("spatial_editor/instant_rotate", TTR("Begin Rotate Transformation"));
 	ED_SHORTCUT("spatial_editor/instant_scale", TTR("Begin Scale Transformation"));
+
+	ED_SHORTCUT("spatial_editor/align_selected_camera_to_view", TTR("Align Selected Camera to View"), KeyModifierMask::CTRL | KeyModifierMask::ALT | Key::KEY_0);
 
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTR("Preview"));

@@ -456,6 +456,7 @@ private:
 	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal);
 
 	void begin_transform(TransformMode p_mode, bool instant);
+	void align_selected_camera_to_view(); 
 	void commit_transform();
 	void apply_transform(Vector3 p_motion, double p_snap);
 	void update_transform(bool p_shift);
