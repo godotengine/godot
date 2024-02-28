@@ -113,6 +113,7 @@
 				func _ready():
 				    grab_focus.call_deferred()
 				[/codeblock]
+				[b]Note:[/b] Deferred calls are processed at idle time. Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. This means you should not call a method deferred from itself (or from a method called by it), as this causes infinite recursion the same way as if you had called the method directly.
 				See also [method Object.call_deferred].
 			</description>
 		</method>
