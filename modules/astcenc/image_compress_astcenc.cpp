@@ -41,7 +41,7 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	// TODO: See how to handle lossy quality.
 
 	Image::Format img_format = r_img->get_format();
-	if (img_format >= Image::FORMAT_DXT1) {
+	if (img_format > Image::FORMAT_RGBE9995) {
 		return; // Do not compress, already compressed.
 	}
 

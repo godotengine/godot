@@ -92,7 +92,7 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	Image::Format img_format = r_img->get_format();
-	if (img_format >= Image::FORMAT_DXT1) {
+	if (img_format > Image::FORMAT_RGBE9995) {
 		return; // Do not compress, already compressed.
 	}
 	if (img_format > Image::FORMAT_RGBA8) {
