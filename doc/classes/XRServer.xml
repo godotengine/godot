@@ -10,6 +10,14 @@
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="add_body_tracker">
+			<return type="void" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="body_tracker" type="XRBodyTracker" />
+			<description>
+				Registers a new [XRBodyTracker] that tracks the joints of a body.
+			</description>
+		</method>
 		<method name="add_face_tracker">
 			<return type="void" />
 			<param index="0" name="tracker_name" type="StringName" />
@@ -64,6 +72,19 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Finds an interface by its [param name]. For example, if your project uses capabilities of an AR/VR platform, you can find the interface for that platform by name and initialize it.
+			</description>
+		</method>
+		<method name="get_body_tracker" qualifiers="const">
+			<return type="XRBodyTracker" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Returns the [XRBodyTracker] with the given tracker name.
+			</description>
+		</method>
+		<method name="get_body_trackers" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary of the registered body trackers. Each element of the dictionary is a tracker name mapping to the [XRBodyTracker] instance.
 			</description>
 		</method>
 		<method name="get_face_tracker" qualifiers="const">
@@ -137,6 +158,13 @@
 				Returns a dictionary of trackers for [param tracker_types].
 			</description>
 		</method>
+		<method name="remove_body_tracker">
+			<return type="void" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Removes a registered [XRBodyTracker].
+			</description>
+		</method>
 		<method name="remove_face_tracker">
 			<return type="void" />
 			<param index="0" name="tracker_name" type="StringName" />
@@ -179,6 +207,26 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="body_tracker_added">
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="body_tracker" type="XRBodyTracker" />
+			<description>
+				Emitted when a new body tracker is added.
+			</description>
+		</signal>
+		<signal name="body_tracker_removed">
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Emitted when a body tracker is removed.
+			</description>
+		</signal>
+		<signal name="body_tracker_updated">
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="body_tracker" type="XRBodyTracker" />
+			<description>
+				Emitted when an existing body tracker is updated.
+			</description>
+		</signal>
 		<signal name="face_tracker_added">
 			<param index="0" name="tracker_name" type="StringName" />
 			<param index="1" name="face_tracker" type="XRFaceTracker" />

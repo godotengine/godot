@@ -30,6 +30,7 @@
 
 #include "xr_server.h"
 #include "core/config/project_settings.h"
+#include "xr/xr_body_tracker.h"
 #include "xr/xr_face_tracker.h"
 #include "xr/xr_hand_tracker.h"
 #include "xr/xr_interface.h"
@@ -86,6 +87,11 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_face_trackers"), &XRServer::get_face_trackers);
 	ClassDB::bind_method(D_METHOD("get_face_tracker", "tracker_name"), &XRServer::get_face_tracker);
 
+	ClassDB::bind_method(D_METHOD("add_body_tracker", "tracker_name", "body_tracker"), &XRServer::add_body_tracker);
+	ClassDB::bind_method(D_METHOD("remove_body_tracker", "tracker_name"), &XRServer::remove_body_tracker);
+	ClassDB::bind_method(D_METHOD("get_body_trackers"), &XRServer::get_body_trackers);
+	ClassDB::bind_method(D_METHOD("get_body_tracker", "tracker_name"), &XRServer::get_body_tracker);
+
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &XRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &XRServer::set_primary_interface);
 
@@ -117,6 +123,10 @@ void XRServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("face_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "face_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRFaceTracker")));
 	ADD_SIGNAL(MethodInfo("face_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "face_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRFaceTracker")));
 	ADD_SIGNAL(MethodInfo("face_tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name")));
+
+	ADD_SIGNAL(MethodInfo("body_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "body_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRBodyTracker")));
+	ADD_SIGNAL(MethodInfo("body_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "body_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRBodyTracker")));
+	ADD_SIGNAL(MethodInfo("body_tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name")));
 };
 
 double XRServer::get_world_scale() const {
@@ -446,6 +456,44 @@ Ref<XRFaceTracker> XRServer::get_face_tracker(const StringName &p_tracker_name) 
 	}
 
 	return face_trackers[p_tracker_name];
+}
+
+void XRServer::add_body_tracker(const StringName &p_tracker_name, Ref<XRBodyTracker> p_body_tracker) {
+	ERR_FAIL_COND(p_body_tracker.is_null());
+
+	if (!body_trackers.has(p_tracker_name)) {
+		// We don't have a tracker with this name, we're going to add it.
+		body_trackers[p_tracker_name] = p_body_tracker;
+		emit_signal(SNAME("body_tracker_added"), p_tracker_name, p_body_tracker);
+	} else if (body_trackers[p_tracker_name] != p_body_tracker) {
+		// We already have a tracker with this name, we're going to replace it.
+		body_trackers[p_tracker_name] = p_body_tracker;
+		emit_signal(SNAME("body_tracker_updated"), p_tracker_name, p_body_tracker);
+	}
+}
+
+void XRServer::remove_body_tracker(const StringName &p_tracker_name) {
+	// Skip if no face tracker is found.
+	if (!body_trackers.has(p_tracker_name)) {
+		return;
+	}
+
+	// Send the removed signal, then remove the face tracker.
+	emit_signal(SNAME("body_tracker_removed"), p_tracker_name);
+	body_trackers.erase(p_tracker_name);
+}
+
+Dictionary XRServer::get_body_trackers() const {
+	return body_trackers;
+}
+
+Ref<XRBodyTracker> XRServer::get_body_tracker(const StringName &p_tracker_name) const {
+	// Skip if no tracker is found.
+	if (!body_trackers.has(p_tracker_name)) {
+		return Ref<XRBodyTracker>();
+	}
+
+	return body_trackers[p_tracker_name];
 }
 
 void XRServer::_process() {
