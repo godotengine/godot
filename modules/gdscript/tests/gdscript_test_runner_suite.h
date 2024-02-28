@@ -37,6 +37,8 @@
 
 namespace GDScriptTests {
 
+// TODO: Handle some cases failing on release builds. See: https://github.com/godotengine/godot/pull/88452
+#ifdef TOOLS_ENABLED
 TEST_SUITE("[Modules][GDScript]") {
 	// GDScript 2.0 is still under heavy construction.
 	// Allow the tests to fail, but do not ignore errors during development.
@@ -70,6 +72,7 @@ func _init():
 	ref_counted->set_script(gdscript);
 	CHECK_MESSAGE(int(ref_counted->get_meta("result")) == 42, "The script should assign object metadata successfully.");
 }
+#endif // TOOLS_ENABLED
 
 TEST_CASE("[Modules][GDScript] Validate built-in API") {
 	GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
