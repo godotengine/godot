@@ -55,7 +55,7 @@ protected:
 	bool enabled = true;
 	bool is_setup = false;
 
-	bool _print_execution_error(bool p_condition, String p_message);
+	bool _print_execution_error(bool p_condition, const String &p_message);
 
 	GDVIRTUAL1(_execute, double)
 	GDVIRTUAL1(_setup_modification, Ref<SkeletonModificationStack2D>)

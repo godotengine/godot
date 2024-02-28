@@ -107,7 +107,7 @@ public:
 	bool has_keyword_color(const String &p_keyword) const;
 	Color get_keyword_color(const String &p_keyword) const;
 
-	void set_keyword_colors(const Dictionary p_keywords);
+	void set_keyword_colors(const Dictionary &p_keywords);
 	void clear_keyword_colors();
 	Dictionary get_keyword_colors() const;
 

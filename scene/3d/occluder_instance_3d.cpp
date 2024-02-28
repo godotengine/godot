@@ -145,18 +145,18 @@ Occluder3D::~Occluder3D() {
 
 /////////////////////////////////////////////////
 
-void ArrayOccluder3D::set_arrays(PackedVector3Array p_vertices, PackedInt32Array p_indices) {
+void ArrayOccluder3D::set_arrays(const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) {
 	vertices = p_vertices;
 	indices = p_indices;
 	_update();
 }
 
-void ArrayOccluder3D::set_vertices(PackedVector3Array p_vertices) {
+void ArrayOccluder3D::set_vertices(const PackedVector3Array &p_vertices) {
 	vertices = p_vertices;
 	_update();
 }
 
-void ArrayOccluder3D::set_indices(PackedInt32Array p_indices) {
+void ArrayOccluder3D::set_indices(const PackedInt32Array &p_indices) {
 	indices = p_indices;
 	_update();
 }
@@ -515,7 +515,7 @@ bool OccluderInstance3D::_bake_material_check(Ref<Material> p_material) {
 	return true;
 }
 
-void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_surface_arrays, Ref<Material> p_material, float p_simplification_dist, PackedVector3Array &r_vertices, PackedInt32Array &r_indices) {
+void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, const Array &p_surface_arrays, Ref<Material> p_material, float p_simplification_dist, PackedVector3Array &r_vertices, PackedInt32Array &r_indices) {
 	if (!_bake_material_check(p_material)) {
 		return;
 	}

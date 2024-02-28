@@ -141,7 +141,7 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 	}
 }
 
-void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, Vector<AudioFrame> direct_path_vol, Vector<AudioFrame> &reverb_vol) {
+void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, const Vector<AudioFrame> &direct_path_vol, Vector<AudioFrame> &reverb_vol) {
 	reverb_vol.resize(4);
 	reverb_vol.write[0] = AudioFrame(0, 0);
 	reverb_vol.write[1] = AudioFrame(0, 0);

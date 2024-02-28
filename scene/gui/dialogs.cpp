@@ -145,7 +145,7 @@ String AcceptDialog::get_text() const {
 	return message_label->get_text();
 }
 
-void AcceptDialog::set_text(String p_text) {
+void AcceptDialog::set_text(const String &p_text) {
 	if (message_label->get_text() == p_text) {
 		return;
 	}
@@ -182,7 +182,7 @@ bool AcceptDialog::has_autowrap() {
 	return message_label->get_autowrap_mode() != TextServer::AUTOWRAP_OFF;
 }
 
-void AcceptDialog::set_ok_button_text(String p_ok_button_text) {
+void AcceptDialog::set_ok_button_text(const String &p_ok_button_text) {
 	ok_button->set_text(p_ok_button_text);
 
 	child_controls_changed();
@@ -436,7 +436,7 @@ AcceptDialog::~AcceptDialog() {
 
 // ConfirmationDialog
 
-void ConfirmationDialog::set_cancel_button_text(String p_cancel_button_text) {
+void ConfirmationDialog::set_cancel_button_text(const String &p_cancel_button_text) {
 	cancel->set_text(p_cancel_button_text);
 }
 

@@ -5435,12 +5435,12 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 }
 
 // Helper math functions for Variant.
-bool Animation::is_variant_interpolatable(const Variant p_value) {
+bool Animation::is_variant_interpolatable(const Variant &p_value) {
 	Variant::Type type = p_value.get_type();
 	return (type >= Variant::BOOL && type <= Variant::STRING_NAME) || type == Variant::ARRAY || type >= Variant::PACKED_INT32_ARRAY; // PackedByteArray is unsigned, so it would be better to ignore since blending uses float.
 }
 
-Variant Animation::cast_to_blendwise(const Variant p_value) {
+Variant Animation::cast_to_blendwise(const Variant &p_value) {
 	switch (p_value.get_type()) {
 		case Variant::BOOL:
 		case Variant::INT: {
@@ -5474,7 +5474,7 @@ Variant Animation::cast_to_blendwise(const Variant p_value) {
 	return p_value;
 }
 
-Variant Animation::cast_from_blendwise(const Variant p_value, const Variant::Type p_type) {
+Variant Animation::cast_from_blendwise(const Variant &p_value, const Variant::Type p_type) {
 	switch (p_type) {
 		case Variant::BOOL: {
 			return p_value.operator real_t() >= 0.5;
@@ -5524,7 +5524,7 @@ Variant Animation::cast_from_blendwise(const Variant p_value, const Variant::Typ
 	return p_value;
 }
 
-Variant Animation::string_to_array(const Variant p_value) {
+Variant Animation::string_to_array(const Variant &p_value) {
 	if (!p_value.is_string()) {
 		return p_value;
 	};
@@ -5536,7 +5536,7 @@ Variant Animation::string_to_array(const Variant p_value) {
 	return arr;
 }
 
-Variant Animation::array_to_string(const Variant p_value) {
+Variant Animation::array_to_string(const Variant &p_value) {
 	if (!p_value.is_array()) {
 		return p_value;
 	};

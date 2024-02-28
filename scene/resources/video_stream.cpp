@@ -144,7 +144,7 @@ int VideoStreamPlayback::get_mix_rate() const {
 	return 0;
 }
 
-int VideoStreamPlayback::mix_audio(int num_frames, PackedFloat32Array buffer, int offset) {
+int VideoStreamPlayback::mix_audio(int num_frames, const PackedFloat32Array &buffer, int offset) {
 	if (num_frames <= 0) {
 		return 0;
 	}

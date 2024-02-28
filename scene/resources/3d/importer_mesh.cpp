@@ -269,7 +269,7 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	}                                                                                                              \
 	write_array[vert_idx] = transformed_vert;
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, const Array &p_bone_transform_array) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}

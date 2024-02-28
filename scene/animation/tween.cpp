@@ -137,7 +137,7 @@ Ref<CallbackTweener> Tween::tween_callback(const Callable &p_callback) {
 	return tweener;
 }
 
-Ref<MethodTweener> Tween::tween_method(const Callable &p_callback, const Variant p_from, Variant p_to, double p_duration) {
+Ref<MethodTweener> Tween::tween_method(const Callable &p_callback, const Variant &p_from, Variant p_to, double p_duration) {
 	CHECK_VALID();
 
 	if (!_validate_type_match(p_from, p_to)) {

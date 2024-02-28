@@ -125,7 +125,7 @@ public:
 	void update_auto_tangents(int i);
 
 	Array get_data() const;
-	void set_data(Array input);
+	void set_data(const Array &input);
 
 	void bake();
 	int get_bake_resolution() const { return _bake_resolution; }

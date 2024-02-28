@@ -142,7 +142,7 @@ public:
 	Ref<PropertyTweener> tween_property(const Object *p_target, const NodePath &p_property, Variant p_to, double p_duration);
 	Ref<IntervalTweener> tween_interval(double p_time);
 	Ref<CallbackTweener> tween_callback(const Callable &p_callback);
-	Ref<MethodTweener> tween_method(const Callable &p_callback, const Variant p_from, Variant p_to, double p_duration);
+	Ref<MethodTweener> tween_method(const Callable &p_callback, const Variant &p_from, Variant p_to, double p_duration);
 	void append(Ref<Tweener> p_tweener);
 
 	bool custom_step(double p_delta);

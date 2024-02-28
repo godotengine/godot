@@ -931,7 +931,7 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 	}
 }
 
-void SurfaceTool::_create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat) {
+void SurfaceTool::_create_list_from_arrays(const Array &arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat) {
 	create_vertex_array_from_triangle_arrays(arr, *r_vertex, &lformat);
 	ERR_FAIL_COND(r_vertex->size() == 0);
 

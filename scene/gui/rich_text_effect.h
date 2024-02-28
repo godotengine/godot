@@ -95,7 +95,7 @@ public:
 	void set_font(RID p_font) { font = p_font; };
 
 	Dictionary get_environment() { return environment; }
-	void set_environment(Dictionary p_environment) { environment = p_environment; }
+	void set_environment(const Dictionary &p_environment) { environment = p_environment; }
 };
 
 class RichTextEffect : public Resource {
