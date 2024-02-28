@@ -298,6 +298,7 @@ private:
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
+	HBoxContainer *renderer_hb = nullptr;
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
@@ -340,6 +341,8 @@ private:
 	Control *left_menu_spacer = nullptr;
 	Control *right_menu_spacer = nullptr;
 	EditorTitleBar *title_bar = nullptr;
+	HBoxContainer *title_bar_left_spacer = nullptr;
+	Control *title_bar_right_spacer = nullptr;
 	EditorRunBar *project_run_bar = nullptr;
 	VBoxContainer *main_screen_vbox = nullptr;
 	MenuBar *main_menu = nullptr;
