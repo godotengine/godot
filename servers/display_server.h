@@ -37,6 +37,7 @@
 #include "core/variant/callable.h"
 
 class Texture2D;
+class Image;
 
 class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
@@ -85,6 +86,8 @@ private:
 
 protected:
 	static void _bind_methods();
+
+	static Ref<Image> _get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot, Rect2 &r_atlas_rect);
 
 	enum {
 		MAX_SERVERS = 64
