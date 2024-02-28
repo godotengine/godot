@@ -85,7 +85,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 	*/
 
 	double magn, phase, tmp, window, real, imag;
-	double freqPerBin, expct;
+	double freqPerBin, expect;
 	long i,k, qpd, index, inFifoLatency, stepSize, fftFrameSize2;
 	unsigned long fftFrameBufferSize;
 
@@ -94,7 +94,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 	fftFrameSize2 = fftFrameSize/2;
 	stepSize = fftFrameSize/osamp;
 	freqPerBin = sampleRate/(double)fftFrameSize;
-	expct = 2.*Math_PI*(double)stepSize/(double)fftFrameSize;
+	expect = 2.*Math_PI*(double)stepSize/(double)fftFrameSize;
 	inFifoLatency = fftFrameSize-stepSize;
 	if (gRover == 0) { gRover = inFifoLatency;
 }
@@ -139,7 +139,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				gLastPhase[k] = phase;
 
 				/* subtract expected phase difference */
-				tmp -= (double)k*expct;
+				tmp -= (double)k*expect;
 
 				/* map delta phase into +/- Pi interval */
 				qpd = tmp/Math_PI;
@@ -189,7 +189,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				tmp = 2.*Math_PI*tmp/osamp;
 
 				/* add the overlap phase advance back in */
-				tmp += (double)k*expct;
+				tmp += (double)k*expect;
 
 				/* accumulate delta phase to get bin phase */
 				gSumPhase[k] += tmp;

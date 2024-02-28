@@ -23,6 +23,32 @@ repos:
         args:
           - --line-length=120
 
+  - repo: https://github.com/codespell-project/codespell
+    rev: 9061d95aa
+    hooks:
+      - id: codespell
+        types_or: [text]
+        exclude: |
+          (?x)^(
+            \..*|
+            .*thirdparty.*|
+            .*\.desktop|
+            .*\.po|
+            AUTHORS\.md|
+            DONORS\.md|
+            core/input/gamecontrollerdb\.txt|
+            core/string/locales\.h|
+            misc/scripts/codespell_ignore_list.txt|
+            platform/android/java/lib/src/com/.*|
+            platform/web/node_modules/.*|
+            platform/web/package-lock\.json
+          )
+        args:
+          - -w
+          - -q 8
+          - -Imisc/scripts/codespell_ignore_list.txt
+          - --builtin "clear,rare,en-GB_to_en-US"
+
   - repo: local
     hooks:
       - id: make-rst
