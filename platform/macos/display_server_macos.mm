@@ -2686,7 +2686,7 @@ Ref<Image> DisplayServerMacOS::clipboard_get_image() const {
 		return image;
 	}
 	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
-	NSData *pngData = [bitmap representationUsingType:NSPNGFileType properties:@{}];
+	NSData *pngData = [bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
 	image.instantiate();
 	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
 	return image;
