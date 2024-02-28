@@ -57,7 +57,7 @@ class Performance : public Object {
 		Vector<Variant> _arguments;
 
 	public:
-		MonitorCall(Callable p_callable, Vector<Variant> p_arguments);
+		MonitorCall(Callable p_callable, const Vector<Variant> &p_arguments);
 		MonitorCall();
 		Variant call(bool &r_error, String &r_error_message);
 	};
