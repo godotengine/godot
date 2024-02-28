@@ -568,7 +568,7 @@
 	</methods>
 	<members>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
-			Allows the current node to clip children nodes, essentially acting as a mask.
+			If one of the Clip Children modes is active, any parts of direct child nodes that extend outside this parent's visible region are hidden. The child nodes must be at the same Z Index as the parent in order for the clipping effect to occur.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
