@@ -338,9 +338,6 @@ public:
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
-#ifdef DEBUG_ENABLED
-		Vector<GDScriptWarning::Code> ignored_warnings;
-#endif
 
 		DataType datatype;
 
@@ -900,9 +897,10 @@ public:
 
 		union {
 			ParameterNode *parameter_source = nullptr;
-			ConstantNode *constant_source;
-			VariableNode *variable_source;
 			IdentifierNode *bind_source;
+			VariableNode *variable_source;
+			ConstantNode *constant_source;
+			SignalNode *signal_source;
 		};
 		FunctionNode *source_function = nullptr;
 
@@ -1050,6 +1048,8 @@ public:
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
+
+		int usages = 0;
 
 		SignalNode() {
 			type = SIGNAL;
@@ -1334,9 +1334,17 @@ private:
 	List<ParserError> errors;
 
 #ifdef DEBUG_ENABLED
+	struct PendingWarning {
+		const Node *source = nullptr;
+		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
+		bool treated_as_error = false;
+		Vector<String> symbols;
+	};
+
 	bool is_ignoring_warnings = false;
 	List<GDScriptWarning> warnings;
-	HashSet<GDScriptWarning::Code> ignored_warnings;
+	List<PendingWarning> pending_warnings;
+	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
 #endif
 
@@ -1368,7 +1376,7 @@ private:
 			FUNCTION = 1 << 5,
 			STATEMENT = 1 << 6,
 			STANDALONE = 1 << 7,
-			CLASS_LEVEL = CLASS | VARIABLE | FUNCTION,
+			CLASS_LEVEL = CLASS | VARIABLE | CONSTANT | SIGNAL | FUNCTION,
 		};
 		uint32_t target_kind = 0; // Flags.
 		AnnotationAction apply = nullptr;
@@ -1438,6 +1446,7 @@ private:
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
 		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
 	}
+	void apply_pending_warnings();
 #endif
 
 	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);
