@@ -199,7 +199,7 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 		// emit signals to let the rest of the world know
 		switch (p_value.get_type()) {
 			case Variant::BOOL: {
-				bool pressed = inputs[p_action_name];
+				bool pressed = p_value;
 				if (pressed) {
 					emit_signal(SNAME("button_pressed"), p_action_name);
 				} else {
@@ -209,12 +209,12 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 				// TODO discuss whether we also want to create and emit an InputEventXRButton event
 			} break;
 			case Variant::FLOAT: {
-				emit_signal(SNAME("input_float_changed"), p_action_name, inputs[p_action_name], p_value);
+				emit_signal(SNAME("input_float_changed"), p_action_name, p_value, inputs[p_action_name]);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRValue event
 			} break;
 			case Variant::VECTOR2: {
-				emit_signal(SNAME("input_vector2_changed"), p_action_name, inputs[p_action_name], p_value);
+				emit_signal(SNAME("input_vector2_changed"), p_action_name, p_value, inputs[p_action_name]);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRAxis event
 			} break;
