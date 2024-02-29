@@ -68,8 +68,8 @@ public:
 	void add_mesh_array(const Array &p_mesh_array, const Transform3D &p_xform);
 	void add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform);
 
-	NavigationMeshSourceGeometryData3D();
-	~NavigationMeshSourceGeometryData3D();
+	NavigationMeshSourceGeometryData3D() {}
+	~NavigationMeshSourceGeometryData3D() { clear(); }
 };
 
 #endif // NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
