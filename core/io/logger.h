@@ -126,7 +126,7 @@ class UserLogManagerLogger : public Logger {
 		STATE_PASSTHROUGH, // log messages are processed but sent straight to non_thread_safe
 		STATE_BUFFERING, // log messages are processed and buffered until the next flush (and maybe sent straight to non_thread_safe also)
 	};
-	std::atomic<State> state;
+	SafeNumeric<State> state;
 
 	// whether we're in the first-frame Prebuffering mode or not
 	std::atomic<bool> prebuffering;

@@ -281,7 +281,7 @@ UserLogManagerLogger::UserLogManagerLogger() {
 	prebuffering = true;
 
 	// this is about to get overwritten by `recalculate_state`
-	state = STATE_OFF;
+	state.set(STATE_OFF);
 
 	// we don't technically have to lock the mutex here but I'd rather preserve the formal recalculate_state mandatory-mutex invariant
 	MutexLock lock(mutex);
@@ -298,7 +298,7 @@ UserLogManagerLogger::~UserLogManagerLogger() {
 }
 
 void UserLogManagerLogger::logv(const char *p_format, va_list p_list, bool p_err) {
-	if (state == STATE_OFF) {
+	if (state.get() == STATE_OFF) {
 		// don't jump through the formatting hoops, just drop the message
 		// if there's a hook active (or we're in the buffering zone), `state` will never transition through STATE_OFF
 		// if at any point there isn't a hook active, dropping messages is valid
@@ -324,7 +324,7 @@ void UserLogManagerLogger::logv(const char *p_format, va_list p_list, bool p_err
 }
 
 void UserLogManagerLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
-	if (state == STATE_OFF) {
+	if (state.get() == STATE_OFF) {
 		// don't jump through the formatting hoops, just drop the message
 		// if there's a hook active (or we're in the buffering zone), `state` will never transition through STATE_OFF
 		// if at any point there isn't a hook active, dropping messages is valid
@@ -449,7 +449,7 @@ void UserLogManagerLogger::flush() {
 
 	// This flushes our buffer and recycles it for the next frame.
 	// If we don't have a buffer, we have nothing to do.
-	if (state != STATE_BUFFERING) {
+	if (state.get() != STATE_BUFFERING) {
 		return;
 	}
 
@@ -512,7 +512,7 @@ void UserLogManagerLogger::process(const Dictionary &p_message) {
 		// so we do the same thing here, adding a message to the log atomically with copying the handlers
 		// Vector COW behavior prevents this from being expensive in the common case
 		MutexLock lock(mutex);
-		if (state == STATE_BUFFERING) {
+		if (state.get() == STATE_BUFFERING) {
 			buffered_logs.append(p_message);
 		}
 		captures_non_thread_safe_mirror = captures_non_thread_safe;
@@ -562,7 +562,7 @@ void UserLogManagerLogger::recalculate_state() {
 	// Otherwise, we're off
 
 	// if we're transitioning from buffering to anything else, we need to clear the buffer
-	if (state == STATE_BUFFERING && new_state != STATE_BUFFERING) {
+	if (state.get() == STATE_BUFFERING && new_state != STATE_BUFFERING) {
 		// NOTE: this line is why the register/unregister functions are locked to the main thread!
 
 		// imagine this set of events:
@@ -590,7 +590,7 @@ void UserLogManagerLogger::recalculate_state() {
 		buffered_logs.clear();
 	}
 
-	state = new_state;
+	state.set(new_state);
 }
 
 void UserLogManagerLogger::register_callable(Vector<Callable> &p_vector, const Callable &p_callable) {
