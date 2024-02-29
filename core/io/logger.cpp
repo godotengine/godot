@@ -417,6 +417,7 @@ void UserLogManagerLogger::register_log_capture_non_thread_safe(const Callable &
 		recalculate_state();
 	}
 }
+
 void UserLogManagerLogger::unregister_log_capture_non_thread_safe(const Callable &p_callable) {
 	// It gets *extremely* hard to guarantee the proper semantics if you're allowed to call this from other threads.
 	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
@@ -425,6 +426,7 @@ void UserLogManagerLogger::unregister_log_capture_non_thread_safe(const Callable
 	unregister_callable(captures_non_thread_safe, p_callable);
 	recalculate_state();
 }
+
 void UserLogManagerLogger::register_log_capture_buffered(const Callable &p_callable) {
 	// It gets *extremely* hard to guarantee the proper semantics if you're allowed to call this from other threads.
 	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
@@ -433,6 +435,7 @@ void UserLogManagerLogger::register_log_capture_buffered(const Callable &p_calla
 	register_callable(captures_buffered, p_callable);
 	recalculate_state();
 }
+
 void UserLogManagerLogger::unregister_log_capture_buffered(const Callable &p_callable) {
 	// It gets *extremely* hard to guarantee the proper semantics if you're allowed to call this from other threads.
 	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
