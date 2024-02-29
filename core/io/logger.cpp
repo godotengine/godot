@@ -274,7 +274,7 @@ CompositeLogger::~CompositeLogger() {
 UserLogManagerLogger *UserLogManagerLogger::singleton = nullptr;
 
 UserLogManagerLogger::UserLogManagerLogger() {
-	ERR_FAIL_COND_MSG(singleton != nullptr, "Somehow created two UserLogManagerLoggers");
+	ERR_FAIL_COND_MSG(singleton != nullptr, "Somehow created two UserLogManagerLoggers.");
 
 	singleton = this;
 
@@ -289,7 +289,7 @@ UserLogManagerLogger::UserLogManagerLogger() {
 }
 
 UserLogManagerLogger::~UserLogManagerLogger() {
-	ERR_FAIL_COND_MSG(singleton != this, "UserLogManagerLogger::singleton not correct on exit");
+	ERR_FAIL_COND_MSG(singleton != this, "UserLogManagerLogger::singleton not correct on exit.");
 
 	singleton = nullptr;
 

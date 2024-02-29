@@ -1907,13 +1907,13 @@ void EngineDebugger::_bind_methods() {
 LogManager *LogManager::singleton = nullptr;
 
 LogManager::LogManager() {
-	ERR_FAIL_COND_MSG(singleton != nullptr, "Somehow created two LogManagers");
+	ERR_FAIL_COND_MSG(singleton != nullptr, "Somehow created two LogManagers.");
 
 	singleton = this;
 }
 
 LogManager::~LogManager() {
-	ERR_FAIL_COND_MSG(singleton != this, "LogManager::singleton not correct on exit");
+	ERR_FAIL_COND_MSG(singleton != this, "LogManager::singleton not correct on exit.");
 
 	singleton = nullptr;
 }
