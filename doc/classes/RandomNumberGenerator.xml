@@ -17,6 +17,13 @@
 		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
+		<method name="create_from_seed" qualifiers="static">
+			<return type="RandomNumberGenerator" />
+			<param index="0" name="seed" type="int" />
+			<description>
+				Creates a new [RandomNumberGenerator] with a given [param seed].
+			</description>
+		</method>
 		<method name="randf">
 			<return type="float" />
 			<description>
