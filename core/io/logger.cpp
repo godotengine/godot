@@ -278,7 +278,7 @@ UserLogManagerLogger::UserLogManagerLogger() {
 
 	singleton = this;
 
-	prebuffering = true;
+	pre_buffering.set();
 
 	// this is about to get overwritten by `recalculate_state`
 	state.set(STATE_OFF);
@@ -365,7 +365,7 @@ void UserLogManagerLogger::register_log_capture_non_thread_safe(const Callable &
 	// It gets *extremely* hard to guarantee the proper semantics if you're allowed to call this from other threads.
 	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
 
-	if (prebuffering) {
+	if (pre_buffering.is_set()) {
 		// Time to dispatch our messages! This catches this particular hook up to "realtime", replaying all buffered messages in fast-forward.
 
 		// We can be certain nobody is *removing* things from the buffer right now
@@ -487,12 +487,12 @@ void UserLogManagerLogger::flush() {
 		}
 	}
 
-	if (prebuffering) {
+	if (pre_buffering.is_set()) {
 		// Buffering is done!
 		// Read the comment near the bottom of recalculate_state for a possible race condition and how it's dealt with.
 		// IT IS REALLY IMPORTANT THAT THIS HAPPENS ONLY ON THE MAIN THREAD.
 		MutexLock lock(mutex);
-		prebuffering = false;
+		pre_buffering.clear();
 		recalculate_state();
 	}
 }
@@ -549,7 +549,7 @@ void UserLogManagerLogger::recalculate_state() {
 
 	State new_state = STATE_OFF;
 
-	if (prebuffering) {
+	if (pre_buffering.is_set()) {
 		// We always buffer on the first frame, in case someone hooks to us and expects a replay
 		new_state = STATE_BUFFERING;
 	} else if (!captures_buffered.is_empty()) {

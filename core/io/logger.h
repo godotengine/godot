@@ -129,7 +129,7 @@ class UserLogManagerLogger : public Logger {
 	SafeNumeric<State> state;
 
 	// whether we're in the first-frame Prebuffering mode or not
-	std::atomic<bool> prebuffering;
+	SafeFlag pre_buffering;
 
 	// This is expected to be called from multiple threads.
 	// Right now we have a single mutex that applies to any access of any collection, as well as `state` transitions.
