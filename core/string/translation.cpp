@@ -772,6 +772,20 @@ StringName TranslationServer::tool_translate_plural(const StringName &p_message,
 	return p_message_plural;
 }
 
+void TranslationServer::set_property_translation(const Ref<Translation> &p_translation) {
+	property_translation = p_translation;
+}
+
+StringName TranslationServer::property_translate(const StringName &p_message) const {
+	if (property_translation.is_valid()) {
+		StringName r = property_translation->get_message(p_message);
+		if (r) {
+			return r;
+		}
+	}
+	return p_message;
+}
+
 void TranslationServer::set_doc_translation(const Ref<Translation> &p_translation) {
 	doc_translation = p_translation;
 }
@@ -800,18 +814,32 @@ StringName TranslationServer::doc_translate_plural(const StringName &p_message, 
 	return p_message_plural;
 }
 
-void TranslationServer::set_property_translation(const Ref<Translation> &p_translation) {
-	property_translation = p_translation;
+void TranslationServer::set_extractable_translation(const Ref<Translation> &p_translation) {
+	extractable_translation = p_translation;
 }
 
-StringName TranslationServer::property_translate(const StringName &p_message) const {
-	if (property_translation.is_valid()) {
-		StringName r = property_translation->get_message(p_message);
+StringName TranslationServer::extractable_translate(const StringName &p_message, const StringName &p_context) const {
+	if (extractable_translation.is_valid()) {
+		StringName r = extractable_translation->get_message(p_message, p_context);
 		if (r) {
 			return r;
 		}
 	}
 	return p_message;
+}
+
+StringName TranslationServer::extractable_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
+	if (extractable_translation.is_valid()) {
+		StringName r = extractable_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
+		if (r) {
+			return r;
+		}
+	}
+
+	if (p_n == 1) {
+		return p_message;
+	}
+	return p_message_plural;
 }
 
 bool TranslationServer::is_pseudolocalization_enabled() const {
