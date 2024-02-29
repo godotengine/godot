@@ -57,10 +57,12 @@ public:
 	StringName get_name(int p_idx) const;
 	int get_subname_count() const;
 	StringName get_subname(int p_idx) const;
+	int get_total_name_count() const;
 	Vector<StringName> get_names() const;
 	Vector<StringName> get_subnames() const;
 	StringName get_concatenated_names() const;
 	StringName get_concatenated_subnames() const;
+	NodePath slice(int p_begin, int p_end = INT_MAX) const;
 
 	NodePath rel_path_to(const NodePath &p_np) const;
 	NodePath get_as_property_path() const;

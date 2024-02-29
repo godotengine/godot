@@ -199,6 +199,16 @@
 				Returns [code]true[/code] if the node path has been constructed from an empty [String] ([code]""[/code]).
 			</description>
 		</method>
+		<method name="slice" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="begin" type="int" />
+			<param index="1" name="end" type="int" default="2147483647" />
+			<description>
+				Returns the slice of the [NodePath], from [param begin] (inclusive) to [param end] (exclusive), as a new [NodePath].
+				The absolute value of [param begin] and [param end] will be clamped to the sum of [method get_name_count] and [method get_subname_count], so the default value for [param end] makes it slice to the end of the [NodePath] by default (i.e. [code]path.slice(1)[/code] is a shorthand for [code]path.slice(1, path.get_name_count() + path.get_subname_count())[/code]).
+				If either [param begin] or [param end] are negative, they will be relative to the end of the [NodePath] (i.e. [code]path.slice(0, -2)[/code] is a shorthand for [code]path.slice(0, path.get_name_count() + path.get_subname_count() - 2)[/code]).
+			</description>
+		</method>
 	</methods>
 	<operators>
 		<operator name="operator !=">
