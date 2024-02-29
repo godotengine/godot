@@ -89,6 +89,10 @@ private:
 		uint64_t open_pass = 0;
 		uint64_t closed_pass = 0;
 
+		// Used for getting last_closest_point.
+		real_t abs_g_score = 0;
+		real_t abs_f_score = 0;
+
 		Point() {}
 
 		Point(const Vector2i &p_id, const Vector2 &p_pos) :
@@ -109,6 +113,7 @@ private:
 
 	LocalVector<LocalVector<Point>> points;
 	Point *end = nullptr;
+	Point *last_closest_point = nullptr;
 
 	uint64_t pass = 1;
 
@@ -151,6 +156,12 @@ protected:
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, Vector2i, Vector2i)
 	GDVIRTUAL2RC(real_t, _compute_cost, Vector2i, Vector2i)
+
+#ifndef DISABLE_DEPRECATED
+	TypedArray<Vector2i> _get_id_path_bind_compat_88047(const Vector2i &p_from, const Vector2i &p_to);
+	Vector<Vector2> _get_point_path_bind_compat_88047(const Vector2i &p_from, const Vector2i &p_to);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	void set_region(const Rect2i &p_region);
@@ -198,8 +209,8 @@ public:
 	void clear();
 
 	Vector2 get_point_position(const Vector2i &p_id) const;
-	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to);
-	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to);
+	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
+	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
 };
 
 VARIANT_ENUM_CAST(AStarGrid2D::DiagonalMode);

@@ -224,3 +224,16 @@ Validate extension JSON: JSON file: Field was added in a way that breaks compati
 Added a return value for add_bone.
 Should not affect existing regular use - the return value would just be unused.
 Compatibility method registered.
+
+
+GH-88047
+--------
+Validate extension JSON: Error: Field 'classes/AStar2D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStar2D/methods/get_point_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStar3D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStar3D/methods/get_point_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStarGrid2D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStarGrid2D/methods/get_point_path/arguments': size changed value in new API, from 2 to 3.
+
+Added optional "allow_partial_path" argument to get_id_path and get_point_path methods in AStar classes.
+Compatibility methods registered.
