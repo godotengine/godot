@@ -1920,7 +1920,7 @@ LogManager::~LogManager() {
 
 void LogManager::register_log_capture_non_thread_safe(const Callable &p_callable) {
 	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
-	ERR_FAIL_COND_MSG(log_manager == nullptr, "log_manager not yet initialized; this shouldn't be possible");
+	ERR_FAIL_NULL_MSG(log_manager, "log_manager not yet initialized. This shouldn't be possible.");
 	if (log_manager != nullptr) {
 		log_manager->register_log_capture_non_thread_safe(p_callable);
 	}
@@ -1928,7 +1928,7 @@ void LogManager::register_log_capture_non_thread_safe(const Callable &p_callable
 
 void LogManager::unregister_log_capture_non_thread_safe(const Callable &p_callable) {
 	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
-	ERR_FAIL_COND_MSG(log_manager == nullptr, "log_manager not yet initialized; this shouldn't be possible");
+	ERR_FAIL_NULL_MSG(log_manager, "log_manager not yet initialized. This shouldn't be possible.");
 	if (log_manager != nullptr) {
 		log_manager->unregister_log_capture_non_thread_safe(p_callable);
 	}
@@ -1936,7 +1936,7 @@ void LogManager::unregister_log_capture_non_thread_safe(const Callable &p_callab
 
 void LogManager::register_log_capture_buffered(const Callable &p_callable) {
 	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
-	ERR_FAIL_COND_MSG(log_manager == nullptr, "log_manager not yet initialized; this shouldn't be possible");
+	ERR_FAIL_NULL_MSG(log_manager, "log_manager not yet initialized. This shouldn't be possible.");
 	if (log_manager != nullptr) {
 		log_manager->register_log_capture_buffered(p_callable);
 	}
@@ -1944,7 +1944,7 @@ void LogManager::register_log_capture_buffered(const Callable &p_callable) {
 
 void LogManager::unregister_log_capture_buffered(const Callable &p_callable) {
 	UserLogManagerLogger *log_manager = UserLogManagerLogger::get_singleton();
-	ERR_FAIL_COND_MSG(log_manager == nullptr, "log_manager not yet initialized; this shouldn't be possible");
+	ERR_FAIL_NULL_MSG(log_manager, "log_manager not yet initialized. This shouldn't be possible.");
 	if (log_manager != nullptr) {
 		log_manager->unregister_log_capture_buffered(p_callable);
 	}
