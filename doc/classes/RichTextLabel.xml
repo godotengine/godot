@@ -428,8 +428,10 @@
 		<method name="push_meta">
 			<return type="void" />
 			<param index="0" name="data" type="Variant" />
+			<param index="1" name="underline_mode" type="int" enum="RichTextLabel.MetaUnderline" default="1" />
 			<description>
 				Adds a meta tag to the tag stack. Similar to the BBCode [code skip-lint][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+				If [member meta_underlined] is [code]true[/code], meta tags display an underline. This behavior can be customized with [param underline_mode].
 				[b]Note:[/b] Meta tags do nothing by default when clicked. To assign behavior when clicked, connect [signal meta_clicked] to a function that is called when the meta tag is clicked.
 			</description>
 		</method>
@@ -722,6 +724,15 @@
 		</constant>
 		<constant name="MENU_MAX" value="2" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
+		</constant>
+		<constant name="META_UNDERLINE_NEVER" value="0" enum="MetaUnderline">
+			Meta tag does not display an underline, even if [member meta_underlined] is [code]true[/code].
+		</constant>
+		<constant name="META_UNDERLINE_ALWAYS" value="1" enum="MetaUnderline">
+			If [member meta_underlined] is [code]true[/code], meta tag always display an underline.
+		</constant>
+		<constant name="META_UNDERLINE_ON_HOVER" value="2" enum="MetaUnderline">
+			If [member meta_underlined] is [code]true[/code], meta tag display an underline when the mouse cursor is over it.
 		</constant>
 		<constant name="UPDATE_TEXTURE" value="1" enum="ImageUpdateMask" is_bitfield="true">
 			If this bit is set, [method update_image] changes image texture.

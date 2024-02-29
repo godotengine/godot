@@ -1223,8 +1223,25 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		for (int i = 0; i < gl_size; i++) {
 			bool selected = selection.active && (sel_start != -1) && (glyphs[i].start >= sel_start) && (glyphs[i].end <= sel_end);
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
+			bool has_ul = _find_underline(it);
+			if (!has_ul && underline_meta) {
+				ItemMeta *meta = nullptr;
+				if (_find_meta(it, nullptr, &meta) && meta) {
+					switch (meta->underline) {
+						case META_UNDERLINE_ALWAYS: {
+							has_ul = true;
+						} break;
+						case META_UNDERLINE_NEVER: {
+							has_ul = false;
+						} break;
+						case META_UNDERLINE_ON_HOVER: {
+							has_ul = (meta == meta_hovering);
+						} break;
+					}
+				}
+			}
 			Color font_color = _find_color(it, p_base_color);
-			if (_find_underline(it) || (_find_meta(it, nullptr) && underline_meta)) {
+			if (has_ul) {
 				if (ul_started && font_color != ul_color_prev) {
 					float y_off = TS->shaped_text_get_underline_position(rid);
 					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
@@ -2242,6 +2259,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 		Variant meta;
 		ItemMeta *item_meta;
+		ItemMeta *prev_meta = meta_hovering;
 		if (c_item && !outside && _find_meta(c_item, &meta, &item_meta)) {
 			if (meta_hovering != item_meta) {
 				if (meta_hovering) {
@@ -2250,11 +2268,17 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				meta_hovering = item_meta;
 				current_meta = meta;
 				emit_signal(SNAME("meta_hover_started"), meta);
+				if ((item_meta && item_meta->underline == META_UNDERLINE_ON_HOVER) || (prev_meta && prev_meta->underline == META_UNDERLINE_ON_HOVER)) {
+					queue_redraw();
+				}
 			}
 		} else if (meta_hovering) {
 			meta_hovering = nullptr;
 			emit_signal(SNAME("meta_hover_ended"), current_meta);
 			current_meta = false;
+			if (prev_meta->underline == META_UNDERLINE_ON_HOVER) {
+				queue_redraw();
+			}
 		}
 	}
 }
@@ -3650,7 +3674,7 @@ void RichTextLabel::push_list(int p_level, ListType p_list, bool p_capitalize, c
 	_add_item(item, true, true);
 }
 
-void RichTextLabel::push_meta(const Variant &p_meta) {
+void RichTextLabel::push_meta(const Variant &p_meta, MetaUnderline p_underline_mode) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3659,6 +3683,7 @@ void RichTextLabel::push_meta(const Variant &p_meta) {
 	item->owner = get_instance_id();
 	item->rid = items.make_rid(item);
 	item->meta = p_meta;
+	item->underline = p_underline_mode;
 	_add_item(item, true);
 }
 
@@ -4573,14 +4598,14 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				end = p_bbcode.length();
 			}
 			String url = p_bbcode.substr(brk_end + 1, end - brk_end - 1).unquote();
-			push_meta(url);
+			push_meta(url, META_UNDERLINE_ALWAYS);
 
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 
 		} else if (tag.begins_with("url=")) {
 			String url = tag.substr(4, tag.length()).unquote();
-			push_meta(url);
+			push_meta(url, META_UNDERLINE_ALWAYS);
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
 		} else if (tag.begins_with("hint=")) {
@@ -5891,7 +5916,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser", "justification_flags", "tab_stops"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT), DEFVAL(TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE), DEFVAL(PackedFloat32Array()));
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
 	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet"), &RichTextLabel::push_list, DEFVAL(String::utf8("•")));
-	ClassDB::bind_method(D_METHOD("push_meta", "data"), &RichTextLabel::push_meta);
+	ClassDB::bind_method(D_METHOD("push_meta", "data", "underline_mode"), &RichTextLabel::push_meta, DEFVAL(META_UNDERLINE_ALWAYS));
 	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
 	ClassDB::bind_method(D_METHOD("push_language", "language"), &RichTextLabel::push_language);
 	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);
@@ -6080,6 +6105,10 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_COPY);
 	BIND_ENUM_CONSTANT(MENU_SELECT_ALL);
 	BIND_ENUM_CONSTANT(MENU_MAX);
+
+	BIND_ENUM_CONSTANT(META_UNDERLINE_NEVER);
+	BIND_ENUM_CONSTANT(META_UNDERLINE_ALWAYS);
+	BIND_ENUM_CONSTANT(META_UNDERLINE_ON_HOVER);
 
 	BIND_BITFIELD_FLAG(UPDATE_TEXTURE);
 	BIND_BITFIELD_FLAG(UPDATE_SIZE);
