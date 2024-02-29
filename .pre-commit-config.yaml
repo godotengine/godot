@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v16.0.6
+    rev: v17.0.6
     hooks:
       - id: clang-format
         files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java|glsl)$
@@ -14,7 +14,7 @@ repos:
           )
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.3.0
+    rev: 24.2.0
     hooks:
       - id: black
         files: (\.py$|SConstruct|SCsub)

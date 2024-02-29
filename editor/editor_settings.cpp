@@ -1060,6 +1060,9 @@ void EditorSettings::setup_language() {
 
 	// Load class reference translation.
 	load_doc_translations(lang);
+
+	// Load extractable translation for projects.
+	load_extractable_translations(lang);
 }
 
 void EditorSettings::setup_network() {

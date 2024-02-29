@@ -97,7 +97,7 @@
 		<method name="get_contents_minimum_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when children nodes have changed.
+				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when child nodes have changed.
 				The value returned by this method can be overridden with [method _get_contents_minimum_size].
 			</description>
 		</method>
@@ -902,7 +902,7 @@
 		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The color of the title's text.
 		</theme_item>
-		<theme_item name="title_outline_modulate" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="title_outline_modulate" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The color of the title's text outline.
 		</theme_item>
 		<theme_item name="close_h_offset" data_type="constant" type="int" default="18">

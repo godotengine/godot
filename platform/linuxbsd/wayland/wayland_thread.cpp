@@ -448,14 +448,11 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 			zwp_primary_selection_device_v1_add_listener(ss->wp_primary_selection_device, &wp_primary_selection_device_listener, ss);
 		}
 
-#if 0
-		// FIXME: Broken.
 		if (!ss->wp_tablet_seat && registry->wp_tablet_manager) {
 			// Tablet.
 			ss->wp_tablet_seat = zwp_tablet_manager_v2_get_tablet_seat(registry->wp_tablet_manager, wl_seat);
 			zwp_tablet_seat_v2_add_listener(ss->wp_tablet_seat, &wp_tablet_seat_listener, ss);
 		}
-#endif
 
 		registry->wl_seats.push_back(wl_seat);
 
@@ -541,13 +538,11 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
-#if 0
-	// FIXME: Broken.
 	if (strcmp(interface, zwp_tablet_manager_v2_interface.name) == 0) {
 		registry->wp_tablet_manager = (struct zwp_tablet_manager_v2 *)wl_registry_bind(wl_registry, name, &zwp_tablet_manager_v2_interface, 1);
 		registry->wp_tablet_manager_name = name;
 
-		// This global creates some seats data. Let's do that for the ones already available.
+		// This global creates some seat data. Let's do that for the ones already available.
 		for (struct wl_seat *wl_seat : registry->wl_seats) {
 			SeatState *ss = wl_seat_get_seat_state(wl_seat);
 			ERR_FAIL_NULL(ss);
@@ -558,7 +553,6 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 
 		return;
 	}
-#endif
 }
 
 void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
@@ -820,8 +814,6 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		return;
 	}
 
-#if 0
-	// FIXME: Broken.
 	if (name == registry->wp_tablet_manager_name) {
 		if (registry->wp_tablet_manager) {
 			zwp_tablet_manager_v2_destroy(registry->wp_tablet_manager);
@@ -835,25 +827,27 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 			SeatState *ss = wl_seat_get_seat_state(wl_seat);
 			ERR_FAIL_NULL(ss);
 
-			List<struct zwp_tablet_tool_v2 *>::Element *it = ss->tablet_tools.front();
+			for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
+				TabletToolState *state = wp_tablet_tool_get_state(tool);
+				if (state) {
+					memdelete(state);
+				}
 
-			while (it) {
-				zwp_tablet_tool_v2_destroy(it->get());
-				ss->tablet_tools.erase(it);
-
-				it = it->next();
+				zwp_tablet_tool_v2_destroy(tool);
 			}
+
+			ss->tablet_tools.clear();
 		}
 
 		return;
 	}
-#endif
 
 	{
 		// Iterate through all of the seats to find if any got removed.
-		List<struct wl_seat *>::Element *it = registry->wl_seats.front();
-		while (it) {
-			struct wl_seat *wl_seat = it->get();
+		List<struct wl_seat *>::Element *E = registry->wl_seats.front();
+		while (E) {
+			struct wl_seat *wl_seat = E->get();
+			List<struct wl_seat *>::Element *N = E->next();
 
 			SeatState *ss = wl_seat_get_seat_state(wl_seat);
 			ERR_FAIL_NULL(ss);
@@ -867,28 +861,26 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 					wl_data_device_destroy(ss->wl_data_device);
 				}
 
-#if 0
-				// FIXME: Broken.
 				if (ss->wp_tablet_seat) {
 					zwp_tablet_seat_v2_destroy(ss->wp_tablet_seat);
 
 					for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
+						TabletToolState *state = wp_tablet_tool_get_state(tool);
+						if (state) {
+							memdelete(state);
+						}
+
 						zwp_tablet_tool_v2_destroy(tool);
 					}
 				}
 
-				// Let's destroy all tools.
-				for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
-					zwp_tablet_tool_v2_destroy(tool);
-				}
-
 				memdelete(ss);
-				registry->wl_seats.erase(it);
-#endif
+
+				registry->wl_seats.erase(E);
 				return;
 			}
 
-			it = it->next();
+			E = N;
 		}
 	}
 
@@ -2160,82 +2152,80 @@ void WaylandThread::_wp_primary_selection_source_on_cancelled(void *data, struct
 }
 
 void WaylandThread::_wp_tablet_seat_on_tablet_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_v2 *id) {
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet seat %x on tablet %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
 }
 
 void WaylandThread::_wp_tablet_seat_on_tool_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_tool_v2 *id) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	TabletToolState *state = memnew(TabletToolState);
+	state->wl_seat = ss->wl_seat;
+
+	wl_proxy_tag_godot((struct wl_proxy *)id);
+	zwp_tablet_tool_v2_add_listener(id, &wp_tablet_tool_listener, state);
+
 	ss->tablet_tools.push_back(id);
-
-	zwp_tablet_tool_v2_add_listener(id, &wp_tablet_tool_listener, ss);
-
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet seat %x on tool %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
 }
 
 void WaylandThread::_wp_tablet_seat_on_pad_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_pad_v2 *id) {
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet seat %x on pad %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
 }
 
 void WaylandThread::_wp_tablet_tool_on_type(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t tool_type) {
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on type %d", (size_t)zwp_tablet_tool_v2, tool_type));
+	TabletToolState *state = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+
+	if (state && tool_type == ZWP_TABLET_TOOL_V2_TYPE_ERASER) {
+		state->is_eraser = true;
+	}
 }
 
 void WaylandThread::_wp_tablet_tool_on_hardware_serial(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_serial_hi, uint32_t hardware_serial_lo) {
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on hardware serial %x%x", (size_t)zwp_tablet_tool_v2, hardware_serial_hi, hardware_serial_lo));
 }
 
 void WaylandThread::_wp_tablet_tool_on_hardware_id_wacom(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_id_hi, uint32_t hardware_id_lo) {
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on hardware id wacom hardware id %x%x", (size_t)zwp_tablet_tool_v2, hardware_id_hi, hardware_id_lo));
 }
 
 void WaylandThread::_wp_tablet_tool_on_capability(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t capability) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	if (capability == ZWP_TABLET_TOOL_V2_TYPE_ERASER) {
-		ss->tablet_tool_data_buffer.is_eraser = true;
-	}
-
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on capability %d", (size_t)zwp_tablet_tool_v2, capability));
 }
 
 void WaylandThread::_wp_tablet_tool_on_done(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on done", (size_t)zwp_tablet_tool_v2));
 }
 
 void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
 
-	List<struct zwp_tablet_tool_v2 *>::Element *it = ss->tablet_tools.front();
-
-	while (it) {
-		struct zwp_tablet_tool_v2 *tool = it->get();
-
-		if (tool == zwp_tablet_tool_v2) {
-			zwp_tablet_tool_v2_destroy(tool);
-			ss->tablet_tools.erase(it);
-			break;
-		}
+	if (!ts || !ss) {
+		return;
 	}
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on removed", (size_t)zwp_tablet_tool_v2));
+	List<struct zwp_tablet_tool_v2 *>::Element *E = ss->tablet_tools.find(zwp_tablet_tool_v2);
+
+	if (E && E->get()) {
+		struct zwp_tablet_tool_v2 *tool = E->get();
+		TabletToolState *state = wp_tablet_tool_get_state(tool);
+		if (state) {
+			memdelete(state);
+		}
+
+		zwp_tablet_tool_v2_destroy(tool);
+		ss->tablet_tools.erase(E);
+	}
 }
 
 void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
+
+	if (!ts || !ss) {
+		return;
+	}
 
 	WaylandThread *wayland_thread = ss->wayland_thread;
 	ERR_FAIL_NULL(wayland_thread);
 
-	ss->tablet_tool_data_buffer.in_proximity = true;
-
-	ss->pointer_enter_serial = serial;
-	ss->pointed_surface = surface;
-	ss->last_pointed_surface = surface;
+	ts->data_pending.proximity_serial = serial;
+	ts->data_pending.proximal_surface = surface;
+	ts->last_surface = surface;
 
 	Ref<WindowEventMessage> msg;
 	msg.instantiate();
@@ -2243,21 +2233,20 @@ void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_table
 	wayland_thread->push_message(msg);
 
 	DEBUG_LOG_WAYLAND_THREAD("Tablet tool entered window.");
-
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on proximity in serial %d tablet %x surface %x", (size_t)zwp_tablet_tool_v2, serial, (size_t)tablet, (size_t)surface));
 }
 
 void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
+
+	if (!ts || !ss) {
+		return;
+	}
 
 	WaylandThread *wayland_thread = ss->wayland_thread;
 	ERR_FAIL_NULL(wayland_thread);
 
-	ss->pointed_surface = nullptr;
-	ss->tablet_tool_data_buffer.in_proximity = false;
-
-	DEBUG_LOG_WAYLAND_THREAD("Tablet tool left window.");
+	ts->data_pending.proximal_surface = nullptr;
 
 	Ref<WindowEventMessage> msg;
 	msg.instantiate();
@@ -2265,16 +2254,18 @@ void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tabl
 
 	wayland_thread->push_message(msg);
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on proximity out", (size_t)zwp_tablet_tool_v2));
+	DEBUG_LOG_WAYLAND_THREAD("Tablet tool left window.");
 }
 
 void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
 
-	TabletToolData &td = ss->tablet_tool_data_buffer;
+	if (!ts) {
+		return;
+	}
 
-	td.touching = true;
+	TabletToolData &td = ts->data_pending;
+
 	td.pressed_button_mask.set_flag(mouse_button_to_mask(MouseButton::LEFT));
 	td.last_button_pressed = MouseButton::LEFT;
 	td.double_click_begun = true;
@@ -2282,45 +2273,53 @@ void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v
 	// The protocol doesn't cover this, but we can use this funky hack to make
 	// double clicking work.
 	td.button_time = OS::get_singleton()->get_ticks_msec();
-
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on down serial %x", (size_t)zwp_tablet_tool_v2, serial));
 }
 
 void WaylandThread::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
 
-	TabletToolData &td = ss->tablet_tool_data_buffer;
+	if (!ts) {
+		return;
+	}
 
-	td.touching = false;
+	TabletToolData &td = ts->data_pending;
+
 	td.pressed_button_mask.clear_flag(mouse_button_to_mask(MouseButton::LEFT));
 
 	// The protocol doesn't cover this, but we can use this funky hack to make
 	// double clicking work.
 	td.button_time = OS::get_singleton()->get_ticks_msec();
-
-	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on up", (size_t)zwp_tablet_tool_v2));
 }
 
 void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t x, wl_fixed_t y) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
 
-	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
+	if (!ts) {
+		return;
+	}
+
+	WindowState *ws = wl_surface_get_window_state(ts->data_pending.proximal_surface);
 	ERR_FAIL_NULL(ws);
+
+	TabletToolData &td = ts->data_pending;
 
 	double scale_factor = window_state_get_scale_factor(ws);
 
-	TabletToolData &td = ss->tablet_tool_data_buffer;
-
+	td.position.x = wl_fixed_to_int(x);
+	td.position.y = wl_fixed_to_int(y);
 	td.position = scale_vector2i(td.position, scale_factor);
+
+	td.motion_time = OS::get_singleton()->get_ticks_msec();
 }
 
 void WaylandThread::_wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t pressure) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
 
-	ss->tablet_tool_data_buffer.pressure = pressure;
+	if (!ts) {
+		return;
+	}
+
+	ts->data_pending.pressure = pressure;
 }
 
 void WaylandThread::_wp_tablet_tool_on_distance(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t distance) {
@@ -2328,11 +2327,16 @@ void WaylandThread::_wp_tablet_tool_on_distance(void *data, struct zwp_tablet_to
 }
 
 void WaylandThread::_wp_tablet_tool_on_tilt(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t tilt_x, wl_fixed_t tilt_y) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
 
-	ss->tablet_tool_data_buffer.tilt.x = wl_fixed_to_double(tilt_x);
-	ss->tablet_tool_data_buffer.tilt.y = wl_fixed_to_double(tilt_y);
+	if (!ts) {
+		return;
+	}
+
+	TabletToolData &td = ts->data_pending;
+
+	td.tilt.x = wl_fixed_to_double(tilt_x);
+	td.tilt.y = wl_fixed_to_double(tilt_y);
 }
 
 void WaylandThread::_wp_tablet_tool_on_rotation(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t degrees) {
@@ -2348,10 +2352,13 @@ void WaylandThread::_wp_tablet_tool_on_wheel(void *data, struct zwp_tablet_tool_
 }
 
 void WaylandThread::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, uint32_t button, uint32_t state) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
 
-	TabletToolData &td = ss->tablet_tool_data_buffer;
+	if (!ts) {
+		return;
+	}
+
+	TabletToolData &td = ts->data_pending;
 
 	MouseButton mouse_button = MouseButton::NONE;
 
@@ -2381,14 +2388,18 @@ void WaylandThread::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool
 }
 
 void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t time) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
+	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
+
+	if (!ts || !ss) {
+		return;
+	}
 
 	WaylandThread *wayland_thread = ss->wayland_thread;
 	ERR_FAIL_NULL(wayland_thread);
 
-	TabletToolData &old_td = ss->tablet_tool_data;
-	TabletToolData &td = ss->tablet_tool_data_buffer;
+	TabletToolData &old_td = ts->data;
+	TabletToolData &td = ts->data_pending;
 
 	if (old_td.position != td.position || old_td.tilt != td.tilt || old_td.pressure != td.pressure) {
 		Ref<InputEventMouseMotion> mm;
@@ -2411,25 +2422,25 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		// straight from the compositor, so we have to normalize them here.
 
 		// According to the tablet proto spec, tilt is expressed in degrees relative
-		// to the Z axis of the tablet, so it shouldn't go over 90 degrees, I think.
-		// TODO: Investigate whether the tilt can go over 90 degrees (it shouldn't).
+		// to the Z axis of the tablet, so it shouldn't go over 90 degrees either way,
+		// I think. We'll clamp it just in case.
+		td.tilt.x = CLAMP(td.tilt.x, -90, 90);
+		td.tilt.y = CLAMP(td.tilt.x, -90, 90);
+
 		mm->set_tilt(td.tilt / 90);
 
 		// The tablet proto spec explicitly says that pressure is defined as a value
 		// between 0 to 65535.
 		mm->set_pressure(td.pressure / (float)65535);
 
-		// FIXME: Tool handling is broken.
-		mm->set_pen_inverted(td.is_eraser);
+		mm->set_pen_inverted(ts->is_eraser);
 
 		mm->set_relative(td.position - old_td.position);
 		mm->set_relative_screen_position(mm->get_relative());
 
-		// FIXME: Stop doing this to calculate speed.
-		// FIXME2: It has been done, port this from the pointer logic once this works again.
-		Input::get_singleton()->set_mouse_position(td.position);
-		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
-		mm->set_screen_velocity(mm->get_velocity());
+		Vector2i pos_delta = td.position - old_td.position;
+		uint32_t time_delta = td.motion_time - td.motion_time;
+		mm->set_velocity((Vector2)pos_delta / time_delta);
 
 		Ref<InputEventMessage> inputev_msg;
 		inputev_msg.instantiate();
@@ -2618,6 +2629,15 @@ WaylandThread::SeatState *WaylandThread::wl_seat_get_seat_state(struct wl_seat *
 	return nullptr;
 }
 
+// Returns the wp_tablet_tool's `TabletToolState`, otherwise `nullptr`.
+// NOTE: This will fail if the output isn't tagged as ours.
+WaylandThread::TabletToolState *WaylandThread::wp_tablet_tool_get_state(struct zwp_tablet_tool_v2 *p_tool) {
+	if (p_tool && wl_proxy_is_godot((wl_proxy *)p_tool)) {
+		return (TabletToolState *)zwp_tablet_tool_v2_get_user_data(p_tool);
+	}
+
+	return nullptr;
+}
 // Returns the wl_data_offer's `OfferState`, otherwise `nullptr`.
 // NOTE: This will fail if the output isn't tagged as ours.
 WaylandThread::OfferState *WaylandThread::wl_data_offer_get_offer_state(struct wl_data_offer *p_offer) {
@@ -4070,14 +4090,16 @@ void WaylandThread::destroy() {
 			zwp_confined_pointer_v1_destroy(ss->wp_confined_pointer);
 		}
 
-#if 0
-		// FIXME: Broken.
 		if (ss->wp_tablet_seat) {
 			zwp_tablet_seat_v2_destroy(ss->wp_tablet_seat);
 		}
-#endif
 
 		for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
+			TabletToolState *state = wp_tablet_tool_get_state(tool);
+			if (state) {
+				memdelete(state);
+			}
+
 			zwp_tablet_tool_v2_destroy(tool);
 		}
 

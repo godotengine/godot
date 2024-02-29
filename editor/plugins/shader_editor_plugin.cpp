@@ -625,12 +625,37 @@ void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
 	}
 }
 
+void ShaderEditorPlugin::_res_saved_callback(const Ref<Resource> &p_res) {
+	if (p_res.is_null()) {
+		return;
+	}
+	const String &path = p_res->get_path();
+
+	for (EditedShader &edited : edited_shaders) {
+		Ref<Resource> shader_res = edited.shader;
+		if (shader_res.is_null()) {
+			shader_res = edited.shader_inc;
+		}
+		ERR_FAIL_COND(shader_res.is_null());
+
+		if (!edited.shader_editor || !shader_res->is_built_in()) {
+			continue;
+		}
+
+		if (shader_res->get_path().get_slice("::", 0) == path) {
+			edited.shader_editor->tag_saved_version();
+			_update_shader_list();
+		}
+	}
+}
+
 void ShaderEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), CONNECT_DEFERRED);
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ShaderEditorPlugin::_close_builtin_shaders_from_scene));
 			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ShaderEditorPlugin::_file_removed));
+			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ShaderEditorPlugin::_res_saved_callback));
 		} break;
 	}
 }

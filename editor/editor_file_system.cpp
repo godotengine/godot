@@ -2016,6 +2016,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 }
 
 Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters) {
+	print_verbose(vformat("EditorFileSystem: Importing file: %s", p_file));
+	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
+
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 	bool found = _find_file(p_file, &fs, cpos);
@@ -2267,6 +2270,8 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	}
 
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+
+	print_verbose(vformat("EditorFileSystem: \"%s\" import took %d ms.", p_file, OS::get_singleton()->get_ticks_msec() - start_time));
 
 	return OK;
 }
