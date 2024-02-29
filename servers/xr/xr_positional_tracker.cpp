@@ -186,6 +186,7 @@ Variant XRPositionalTracker::get_input(const StringName &p_action_name) const {
 
 void XRPositionalTracker::set_input(const StringName &p_action_name, const Variant &p_value) {
 	bool changed = false;
+	bool first_value = false;
 
 	// XR inputs
 
@@ -193,6 +194,7 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 		changed = inputs[p_action_name] != p_value;
 	} else {
 		changed = true;
+		first_value = true; // to avoid nil conversion
 	}
 
 	if (changed) {
@@ -209,11 +211,17 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 				// TODO discuss whether we also want to create and emit an InputEventXRButton event
 			} break;
 			case Variant::FLOAT: {
+				if (first_value) {
+					inputs[p_action_name] = 0.0f;
+				}
 				emit_signal(SNAME("input_float_changed"), p_action_name, p_value, inputs[p_action_name]);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRValue event
 			} break;
 			case Variant::VECTOR2: {
+				if (first_value) {
+					inputs[p_action_name] = Vector2(0.0f, 0.0f);
+				}
 				emit_signal(SNAME("input_vector2_changed"), p_action_name, p_value, inputs[p_action_name]);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRAxis event
