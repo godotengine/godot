@@ -188,6 +188,8 @@ void ResourceFormatLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REUSE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
+	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE_DEEP);
+	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE_DEEP);
 
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 	GDVIRTUAL_BIND(_recognize_path, "path", "type");
@@ -339,9 +341,11 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		load_task.cond_var = nullptr;
 	}
 
+	bool ignoring = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
+	bool replacing = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP;
 	if (load_task.resource.is_valid()) {
-		if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-			if (load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE) {
+		if (!ignoring) {
+			if (replacing) {
 				Ref<Resource> old_res = ResourceCache::get_ref(load_task.local_path);
 				if (old_res.is_valid() && old_res != load_task.resource) {
 					// If resource is already loaded, only replace its data, to avoid existing invalidating instances.
@@ -349,8 +353,8 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 					load_task.resource = old_res;
 				}
 			}
-			load_task.resource->set_path(load_task.local_path, load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
-		} else if (!load_task.local_path.is_resource_file()) {
+			load_task.resource->set_path(load_task.local_path, replacing);
+		} else {
 			load_task.resource->set_path_cache(load_task.local_path);
 		}
 
@@ -370,7 +374,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		if (_loaded_callback) {
 			_loaded_callback(load_task.resource, load_task.local_path);
 		}
-	} else if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+	} else if (!ignoring) {
 		Ref<Resource> existing = ResourceCache::get_ref(load_task.local_path);
 		if (existing.is_valid()) {
 			load_task.resource = existing;

@@ -1001,6 +1001,11 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 		}
 	}
 
+	if (p_res.is_valid()) {
+		// In case the Resource has built-in scripts.
+		_mark_built_in_scripts_as_saved(p_res->get_path());
+	}
+
 	_update_script_names();
 	Ref<Script> scr = p_res;
 	if (scr.is_valid()) {
@@ -1010,6 +1015,10 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 void ScriptEditor::_scene_saved_callback(const String &p_path) {
 	// If scene was saved, mark all built-in scripts from that scene as saved.
+	_mark_built_in_scripts_as_saved(p_path);
+}
+
+void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (!se) {
@@ -1022,7 +1031,7 @@ void ScriptEditor::_scene_saved_callback(const String &p_path) {
 			continue; // External script, who cares.
 		}
 
-		if (edited_res->get_path().get_slice("::", 0) == p_path) {
+		if (edited_res->get_path().get_slice("::", 0) == p_parent_path) {
 			se->tag_saved_version();
 		}
 

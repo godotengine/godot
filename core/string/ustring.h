@@ -556,6 +556,43 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 String RTR(const String &p_text, const String &p_context = "");
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
 
+/**
+ * "Extractable TRanslate". Used for strings that can appear inside an exported
+ * project (such as the ones in nodes like `FileDialog`), which are made possible
+ * to add in the POT generator. A translation context can optionally be specified
+ * to disambiguate between identical source strings in translations.
+ * When placeholders are desired, use vformat(ETR("Example: %s"), some_string)`.
+ * If a string mentions a quantity (and may therefore need a dynamic plural form),
+ * use `ETRN()` instead of `ETR()`.
+ *
+ * NOTE: This function is for string extraction only, and will just return the
+ * string it was given. The translation itself should be done internally by nodes
+ * with `atr()` instead.
+ */
+_FORCE_INLINE_ String ETR(const String &p_text, const String &p_context = "") {
+	return p_text;
+}
+
+/**
+ * "Extractable TRanslate for N items". Used for strings that can appear inside an
+ * exported project (such as the ones in nodes like `FileDialog`), which are made
+ * possible to add in the POT generator. A translation context can optionally be
+ * specified to disambiguate between identical source strings in translations.
+ * Use `ETR()` if the string doesn't need dynamic plural form. When placeholders
+ * are desired, use `vformat(ETRN("%d item", "%d items", some_integer), some_integer)`.
+ * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
+ *
+ * NOTE: This function is for string extraction only, and will just return the
+ * string it was given. The translation itself should be done internally by nodes
+ * with `atr()` instead.
+ */
+_FORCE_INLINE_ String ETRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "") {
+	if (p_n == 1) {
+		return p_text;
+	}
+	return p_text_plural;
+}
+
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
 _FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {

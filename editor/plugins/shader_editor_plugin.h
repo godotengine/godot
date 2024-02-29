@@ -96,6 +96,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _close_shader(int p_index);
 	void _close_builtin_shaders_from_scene(const String &p_scene);
 	void _file_removed(const String &p_removed_file);
+	void _res_saved_callback(const Ref<Resource> &p_res);
 
 	void _shader_created(Ref<Shader> p_shader);
 	void _shader_include_created(Ref<ShaderInclude> p_shader_inc);

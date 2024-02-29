@@ -53,7 +53,7 @@ void TileMapLayerGroup::_tile_set_changed() {
 	for (int i = 0; i < get_child_count(); i++) {
 		TileMapLayer *layer = Object::cast_to<TileMapLayer>(get_child(i));
 		if (layer) {
-			layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_LAYER_GROUP_TILE_SET);
+			layer->notify_tile_map_layer_group_change(TileMapLayer::DIRTY_FLAGS_LAYER_GROUP_TILE_SET);
 		}
 	}
 
@@ -70,7 +70,7 @@ void TileMapLayerGroup::set_selected_layers(Vector<StringName> p_layer_names) {
 	for (int i = 0; i < get_child_count(); i++) {
 		TileMapLayer *layer = Object::cast_to<TileMapLayer>(get_child(i));
 		if (layer) {
-			layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_LAYER_GROUP_SELECTED_LAYERS);
+			layer->notify_tile_map_layer_group_change(TileMapLayer::DIRTY_FLAGS_LAYER_GROUP_SELECTED_LAYERS);
 		}
 	}
 }
@@ -89,7 +89,7 @@ void TileMapLayerGroup::set_highlight_selected_layer(bool p_highlight_selected_l
 	for (int i = 0; i < get_child_count(); i++) {
 		TileMapLayer *layer = Object::cast_to<TileMapLayer>(get_child(i));
 		if (layer) {
-			layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_LAYER_GROUP_HIGHLIGHT_SELECTED);
+			layer->notify_tile_map_layer_group_change(TileMapLayer::DIRTY_FLAGS_LAYER_GROUP_HIGHLIGHT_SELECTED);
 		}
 	}
 }
@@ -132,7 +132,7 @@ void TileMapLayerGroup::set_tileset(const Ref<TileSet> &p_tileset) {
 	for (int i = 0; i < get_child_count(); i++) {
 		TileMapLayer *layer = Object::cast_to<TileMapLayer>(get_child(i));
 		if (layer) {
-			layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_LAYER_GROUP_TILE_SET);
+			layer->notify_tile_map_layer_group_change(TileMapLayer::DIRTY_FLAGS_LAYER_GROUP_TILE_SET);
 		}
 	}
 }

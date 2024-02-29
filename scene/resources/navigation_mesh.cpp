@@ -625,5 +625,3 @@ bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 #endif // DISABLE_DEPRECATED
-
-NavigationMesh::NavigationMesh() {}

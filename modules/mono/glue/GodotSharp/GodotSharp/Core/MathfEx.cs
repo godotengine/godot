@@ -29,7 +29,7 @@ namespace Godot
         /// 1e-06 with single-precision floats, but 1e-14 if <c>REAL_T_IS_DOUBLE</c>.
         /// </summary>
 #if REAL_T_IS_DOUBLE
-        public const real_t Epsilon = _epsilonD;
+        public const real_t Epsilon = EpsilonD;
 #else
         public const real_t Epsilon = EpsilonF;
 #endif

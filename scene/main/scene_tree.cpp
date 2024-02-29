@@ -1810,7 +1810,7 @@ SceneTree::SceneTree() {
 	bool snap_2d_transforms = GLOBAL_DEF_BASIC("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 
-	bool snap_2d_vertices = GLOBAL_DEF_BASIC("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
+	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
 	// We setup VRS for the main viewport here, in the editor this will have little effect.

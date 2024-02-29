@@ -3,6 +3,7 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+
 import os.path
 from typing import Optional, Iterable
 
