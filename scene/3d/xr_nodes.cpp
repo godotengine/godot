@@ -459,8 +459,8 @@ void XRController3D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
-	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
+	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value"), PropertyInfo(Variant::FLOAT, "prev_value")));
+	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value"), PropertyInfo(Variant::VECTOR2, "prev_value")));
 };
 
 void XRController3D::_bind_tracker() {
@@ -496,14 +496,14 @@ void XRController3D::_button_released(const String &p_name) {
 	emit_signal(SNAME("button_released"), p_name);
 }
 
-void XRController3D::_input_float_changed(const String &p_name, float p_value) {
+void XRController3D::_input_float_changed(const String &p_name, float p_value, float p_value_prev) {
 	// just pass it on...
-	emit_signal(SNAME("input_float_changed"), p_name, p_value);
+	emit_signal(SNAME("input_float_changed"), p_name, p_value, p_value_prev);
 }
 
-void XRController3D::_input_vector2_changed(const String &p_name, Vector2 p_value) {
+void XRController3D::_input_vector2_changed(const String &p_name, Vector2 p_value, Vector2 p_value_prev) {
 	// just pass it on...
-	emit_signal(SNAME("input_vector2_changed"), p_name, p_value);
+	emit_signal(SNAME("input_vector2_changed"), p_name, p_value, p_value_prev);
 }
 
 bool XRController3D::is_button_pressed(const StringName &p_name) const {

@@ -68,8 +68,8 @@ void XRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_input", "name", "value"), &XRPositionalTracker::set_input);
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
-	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "vector")));
+	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value"), PropertyInfo(Variant::FLOAT, "prev_value")));
+	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "vector"), PropertyInfo(Variant::VECTOR2, "prev_vector")));
 	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(Variant::STRING, "role")));
 };
 
@@ -196,13 +196,10 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 	}
 
 	if (changed) {
-		// store the new value
-		inputs[p_action_name] = p_value;
-
 		// emit signals to let the rest of the world know
 		switch (p_value.get_type()) {
 			case Variant::BOOL: {
-				bool pressed = p_value;
+				bool pressed = inputs[p_action_name];
 				if (pressed) {
 					emit_signal(SNAME("button_pressed"), p_action_name);
 				} else {
@@ -212,12 +209,12 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 				// TODO discuss whether we also want to create and emit an InputEventXRButton event
 			} break;
 			case Variant::FLOAT: {
-				emit_signal(SNAME("input_float_changed"), p_action_name, p_value);
+				emit_signal(SNAME("input_float_changed"), p_action_name, inputs[p_action_name], p_value);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRValue event
 			} break;
 			case Variant::VECTOR2: {
-				emit_signal(SNAME("input_vector2_changed"), p_action_name, p_value);
+				emit_signal(SNAME("input_vector2_changed"), p_action_name, inputs[p_action_name], p_value);
 
 				// TODO discuss whether we also want to create and emit an InputEventXRAxis event
 			} break;
@@ -225,6 +222,9 @@ void XRPositionalTracker::set_input(const StringName &p_action_name, const Varia
 				// ???
 			} break;
 		}
+
+		// store the new value
+		inputs[p_action_name] = p_value;
 	}
 }
 
