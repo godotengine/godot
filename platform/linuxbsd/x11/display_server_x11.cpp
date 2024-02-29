@@ -3333,13 +3333,11 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
-BitField<MouseButtonMask> DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
-	MouseButtonMask mask = mouse_button_to_mask(p_x11_button);
-
+BitField<MouseButtonMask> DisplayServerX11::_get_mouse_button_state(MouseButtonMask p_button_mask, int p_x11_type) {
 	if (p_x11_type == ButtonPress) {
-		last_button_state.set_flag(mask);
+		last_button_state.set_flag(p_button_mask);
 	} else {
-		last_button_state.clear_flag(mask);
+		last_button_state.clear_flag(p_button_mask);
 	}
 
 	return last_button_state;
@@ -4740,7 +4738,8 @@ void DisplayServerX11::process_events() {
 				} else if (mb->get_button_index() == MouseButton::MIDDLE) {
 					mb->set_button_index(MouseButton::RIGHT);
 				}
-				mb->set_button_mask(_get_mouse_button_state(mb->get_button_index(), event.xbutton.type));
+				MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
+				mb->set_button_mask(_get_mouse_button_state(button_mask, event.xbutton.type));
 				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
 				mb->set_global_position(mb->get_position());
 
@@ -4764,6 +4763,7 @@ void DisplayServerX11::process_events() {
 						if (diff < 400 && Vector2(last_click_pos).distance_to(Vector2(event.xbutton.x, event.xbutton.y)) < 5) {
 							last_click_ms = 0;
 							last_click_pos = Point2i(-100, -100);
+							last_double_click_button_mask.set_flag(button_mask);
 							last_click_button_index = MouseButton::NONE;
 							mb->set_double_click(true);
 						}
@@ -4778,6 +4778,11 @@ void DisplayServerX11::process_events() {
 					}
 				} else {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
+
+					if (last_double_click_button_mask.has_flag(button_mask)) {
+						mb->set_double_click(true);
+						last_double_click_button_mask.clear_flag(button_mask);
+					}
 
 					WindowID window_id_other = INVALID_WINDOW_ID;
 					Window wd_other_x11_window;
