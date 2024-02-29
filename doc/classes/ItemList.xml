@@ -483,7 +483,7 @@
 			The size of the item text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
-		<theme_item name="v_separation" data_type="constant" type="int" default="2">
+		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical spacing between items.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
