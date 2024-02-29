@@ -87,6 +87,10 @@ public:
 		return pcg32_boundedrand_r(&pcg, bounds);
 	}
 
+	_FORCE_INLINE_ bool randb(double p_chance) {
+		return randf() < p_chance;
+	}
+
 	// Obtaining floating point numbers in [0, 1] range with "good enough" uniformity.
 	// These functions sample the output of rand() as the fraction part of an infinite binary number,
 	// with some tricks applied to reduce ops and branching:
