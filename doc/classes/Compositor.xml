@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Compositor" inherits="Resource" experimental="More customisation of the rendering pipeline will be added in the future." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		The compositor resource holds the configuration with which rendering of a viewport can be customised.
+		Stores attributes used to customize how a Viewport is rendered.
 	</brief_description>
 	<description>
-		The compositor resource holds the configuration with which rendering of a viewport can be customised.
+		The compositor resource stores attributes used to customize how a [Viewport] is rendered.
 	</description>
 	<tutorials>
 	</tutorials>

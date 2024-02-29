@@ -700,7 +700,7 @@
 			Texture will repeat normally.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MIRROR" value="3" enum="TextureRepeat">
-			Texture will repeat in a 2x2 tiled mode, where elements at even positions are mirrored.
+			Texture will repeat in a 2×2 tiled mode, where elements at even positions are mirrored.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MAX" value="4" enum="TextureRepeat">
 			Represents the size of the [enum TextureRepeat] enum.

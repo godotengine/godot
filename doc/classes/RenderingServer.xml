@@ -2385,7 +2385,7 @@
 			<return type="PackedFloat32Array" />
 			<param index="0" name="multimesh" type="RID" />
 			<description>
-				Returns the MultiMesh data (such as instance transforms, colors, etc). See [method multimesh_set_buffer] for a description of the returned data.
+				Returns the MultiMesh data (such as instance transforms, colors, etc.). See [method multimesh_set_buffer] for details on the returned data.
 				[b]Note:[/b] If the buffer is in the engine's internal cache, it will have to be fetched from GPU memory and possibly decompressed. This means [method multimesh_get_buffer] is potentially a slow operation and should be avoided whenever possible.
 			</description>
 		</method>
@@ -3605,7 +3605,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="canvas" type="RID" />
 			<description>
-				Detaches a viewport from a canvas and vice versa.
+				Detaches a viewport from a canvas.
 			</description>
 		</method>
 		<method name="viewport_set_active">

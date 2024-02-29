@@ -239,7 +239,7 @@
 			<description>
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
 				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
-				Ideally, the plugin icon should be white with a transparent background and 16x16 pixels in size.
+				Ideally, the plugin icon should be white with a transparent background and 16×16 pixels in size.
 				[codeblocks]
 				[gdscript]
 				func _get_plugin_icon():
@@ -410,7 +410,8 @@
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="title" type="String" />
 			<description>
-				Adds a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
+				Adds a control to the bottom panel (together with [b]Output[/b], [b]Debug[/b], [b]Animation[/b], etc.). Returns the button added to the tab bar. It's up to you to manage the button's visibility as needed.
+				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
 			</description>
 		</method>
 		<method name="add_control_to_container">
