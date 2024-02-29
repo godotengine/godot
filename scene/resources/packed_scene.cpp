@@ -2101,6 +2101,11 @@ void PackedScene::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 }
 
+void PackedScene::set_path_cache(const String &p_path) {
+	state->set_path(p_path);
+	Resource::set_path_cache(p_path);
+}
+
 void PackedScene::reset_state() {
 	clear();
 }
