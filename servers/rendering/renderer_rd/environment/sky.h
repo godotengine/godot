@@ -133,6 +133,12 @@ private:
 	};
 
 	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier);
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// update uniform buffers
+	void _render_sky_prepare_params(float p_time, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier);
+// </TF>
 
 public:
 	struct SkySceneState {
@@ -175,6 +181,13 @@ public:
 		RID uniform_buffer;
 		RID fog_uniform_set;
 		RID default_fog_uniform_set;
+
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+		SkyPushConstant params;
+		RID params_uniform_buffer;
+// </TF>
 
 		RID fog_shader;
 		RID fog_material;
@@ -283,6 +296,12 @@ public:
 	mutable RID_Owner<Sky, true> sky_owner;
 	int roughness_layers;
 
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+	bool use_push_constants = true;
+	void draw_sky_prepare_params(RID p_env, double p_time, float p_luminance_multiplier = 1.0);
+// </TF>
 	RendererRD::MaterialStorage::ShaderData *_create_sky_shader_func();
 	static RendererRD::MaterialStorage::ShaderData *_create_sky_shader_funcs();
 
