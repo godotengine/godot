@@ -33,16 +33,42 @@
 				Adds an [Array] the size of [constant Mesh.ARRAY_MAX] and with vertices at index [constant Mesh.ARRAY_VERTEX] and indices at index [constant Mesh.ARRAY_INDEX] to the navigation mesh baking data. The array must have valid triangulated mesh data to be considered. Since [NavigationMesh] resources have no transform, all vertex positions need to be offset by the node's transform using [param xform].
 			</description>
 		</method>
+		<method name="add_projected_obstruction">
+			<return type="void" />
+			<param index="0" name="vertices" type="PackedVector3Array" />
+			<param index="1" name="elevation" type="float" />
+			<param index="2" name="height" type="float" />
+			<param index="3" name="carve" type="bool" />
+			<description>
+				Adds a projected obstruction shape to the source geometry. The [param vertices] are considered projected on a xz-axes plane, placed at the global y-axis [param elevation] and extruded by [param height]. If [param carve] is [code]true[/code] the carved shape will not be affected by additional offsets (e.g. agent radius) of the navigation mesh baking process.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
 				Clears the internal data.
 			</description>
 		</method>
+		<method name="clear_projected_obstructions">
+			<return type="void" />
+			<description>
+				Clears all projected obstructions.
+			</description>
+		</method>
 		<method name="get_indices" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<description>
 				Returns the parsed source geometry data indices array.
+			</description>
+		</method>
+		<method name="get_projected_obstructions" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns the projected obstructions as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
+				- [code]vertices[/code] - A [PackedFloat32Array] that defines the outline points of the projected shape.
+				- [code]elevation[/code] - A [float] that defines the projected shape placement on the y-axis.
+				- [code]height[/code] - A [float] that defines how much the projected shape is extruded along the y-axis.
+				- [code]carve[/code] - A [bool] that defines how the obstacle affects the navigation mesh baking. If [code]true[/code] the projected shape will not be affected by addition offsets, e.g. agent radius.
 			</description>
 		</method>
 		<method name="get_vertices" qualifiers="const">
@@ -70,6 +96,21 @@
 			<description>
 				Sets the parsed source geometry data indices. The indices need to be matched with appropriated vertices.
 				[b]Warning:[/b] Inappropriate data can crash the baking process of the involved third-party libraries.
+			</description>
+		</method>
+		<method name="set_projected_obstructions">
+			<return type="void" />
+			<param index="0" name="projected_obstructions" type="Array" />
+			<description>
+				Sets the projected obstructions with an Array of Dictionaries with the following key value pairs:
+				[codeblocks]
+				[gdscript]
+				"vertices" : PackedFloat32Array
+				"elevation" : float
+				"height" : float
+				"carve" : bool
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_vertices">

@@ -31,19 +31,36 @@
 #ifndef NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
 #define NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
 
+#include "core/os/rw_lock.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_polygon.h"
 
 class NavigationMeshSourceGeometryData2D : public Resource {
 	GDCLASS(NavigationMeshSourceGeometryData2D, Resource);
+	RWLock geometry_rwlock;
 
 	Vector<Vector<Vector2>> traversable_outlines;
 	Vector<Vector<Vector2>> obstruction_outlines;
 
+public:
+	struct ProjectedObstruction;
+
+private:
+	Vector<ProjectedObstruction> _projected_obstructions;
+
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
 	static void _bind_methods();
 
 public:
+	struct ProjectedObstruction {
+		static inline uint32_t VERSION = 1; // Increase when format changes so we can detect outdated formats and provide compatibility.
+
+		Vector<float> vertices;
+		bool carve = false;
+	};
+
 	void _set_traversable_outlines(const Vector<Vector<Vector2>> &p_traversable_outlines);
 	const Vector<Vector<Vector2>> &_get_traversable_outlines() const { return traversable_outlines; }
 
@@ -70,6 +87,13 @@ public:
 
 	bool has_data() { return traversable_outlines.size(); };
 	void clear();
+	void clear_projected_obstructions();
+
+	void add_projected_obstruction(const Vector<Vector2> &p_vertices, bool p_carve);
+	Vector<ProjectedObstruction> _get_projected_obstructions() const;
+
+	void set_projected_obstructions(const Array &p_array);
+	Array get_projected_obstructions() const;
 
 	void merge(const Ref<NavigationMeshSourceGeometryData2D> &p_other_geometry);
 
