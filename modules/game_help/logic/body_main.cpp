@@ -1,13 +1,13 @@
 #include "body_main.h"
 
 
-void BodyMain::_bind_methods()
+void CharacterBodyMain::_bind_methods()
 {
     
 }
 
 // 初始化身體
-void BodyMain::init_main_body(String p_mesh_file_path,StringName p_animation_group)
+void CharacterBodyMain::init_main_body(String p_mesh_file_path,StringName p_animation_group)
 {
     if(root)
     {

@@ -9,7 +9,7 @@
 
 #include "core/variant/variant.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "core/io/resource_saver.h"
 #include "scene/main/scene_tree.h"

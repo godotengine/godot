@@ -38,6 +38,7 @@
 
 
 #include "modules/game_help/logic/animation_help.h"
+#include "modules/game_help/logic/body_main.h"
 
 
 
@@ -75,6 +76,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	initialize_terrain_3d(p_level);
 	initialize_filiage_manager(p_level);
 	ClassDB::register_class<AnimationHelp>();
+	ClassDB::register_class<CharacterBodyMain>();
 
 	animation_help = memnew(AnimationHelp);
 

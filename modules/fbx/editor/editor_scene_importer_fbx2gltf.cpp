@@ -60,6 +60,7 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 			return nullptr;
 		}
 	}
+
 	// Get global paths for source and sink.
 
 	// Don't use `c_escape()` as it can generate broken paths. These paths will be

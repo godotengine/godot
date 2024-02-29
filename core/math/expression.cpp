@@ -1458,7 +1458,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			}
 
 			if (ce.error != Callable::CallError::CALL_OK) {
-				r_error_str = vformat(RTR("On call to '%s':"), String(call->method));
+				r_error_str = vformat(RTR("On call to '%s': %d"), String(call->method),ce.error);
 				return true;
 			}
 

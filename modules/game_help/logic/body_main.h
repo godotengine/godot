@@ -1,10 +1,12 @@
 
-
+#ifndef BODY_MAIN_H
+#define BODY_MAIN_H
 #include "scene/resources/packed_scene.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/3d/physics/character_body_3d.h"
 #include "body_part.h"
 #include "animation_help.h"
 
@@ -20,9 +22,9 @@ class BodySocket
     }
 
 };
-
-class BodyMain : public Node3D {
-    GDCLASS(BodyMain, Node3D);
+// 身体主要部件部分
+class CharacterBodyMain : public CharacterBody3D {
+    GDCLASS(CharacterBodyMain, CharacterBody3D);
     static void _bind_methods();
 
 public:
@@ -41,3 +43,4 @@ protected:
 
 
 };
+#endif

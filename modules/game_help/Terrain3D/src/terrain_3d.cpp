@@ -15,7 +15,7 @@
 // #include <godot_cpp/classes/world3d.hpp>
 // #include <godot_cpp/core/class_db.hpp>
 
-#include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_script.h"
 #include "core/config/engine.h"

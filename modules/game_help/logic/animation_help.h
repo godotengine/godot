@@ -1,5 +1,7 @@
 
 
+#ifndef ANIMATION_HELP_H
+#define ANIMATION_HELP_H
 #include "scene/resources/packed_scene.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
@@ -356,3 +358,4 @@ public:
     }
 
 };
+#endif
