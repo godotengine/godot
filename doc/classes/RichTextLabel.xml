@@ -428,6 +428,7 @@
 		<method name="push_meta">
 			<return type="void" />
 			<param index="0" name="data" type="Variant" />
+			<param index="1" name="no_underline" type="bool" default="false" />
 			<description>
 				Adds a meta tag to the tag stack. Similar to the BBCode [code skip-lint][url=something]{text}[/url][/code], but supports non-[String] metadata types.
 			</description>

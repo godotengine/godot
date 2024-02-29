@@ -117,6 +117,7 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	void _push_meta_bind_compat_89000(const Variant &p_meta);
 	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
 	static void _bind_compatibility_methods();
 #endif
@@ -271,6 +272,7 @@ private:
 
 	struct ItemMeta : public Item {
 		Variant meta;
+		bool no_underline = false;
 		ItemMeta() { type = ITEM_META; }
 	};
 
@@ -668,7 +670,7 @@ public:
 	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
-	void push_meta(const Variant &p_meta);
+	void push_meta(const Variant &p_meta, bool p_no_underline = false);
 	void push_hint(const String &p_string);
 	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP, int p_align_to_row = -1);
 	void push_fade(int p_start_index, int p_length);
