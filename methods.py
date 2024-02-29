@@ -1155,6 +1155,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
     # This lets projects be regenerated even if there are build errors.
     filtered_args.pop("vsproj_gen_only", None)
 
+    # This flag allows users to regenerate only the props file without touching the sln or vcxproj files.
+    # This preserves any customizations users have done to the solution, while still updating the file list
+    # and build commands.
+    filtered_args.pop("vsproj_props_only", None)
+
     # The "progress" option is ignored as the current compilation progress indication doesn't work in VS
     filtered_args.pop("progress", None)
 
@@ -1347,27 +1352,30 @@ def generate_vs_project(env, original_args, project_name="godot"):
     set_sources = set(sources_active)
     set_others = set(others_active)
     for file in headers:
+        base_path = os.path.dirname(file).replace("\\", "_")
         all_items.append(f'<ClInclude Include="{file}">')
         all_items.append(
-            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList.Contains(';{file};'))\">true</ExcludedFromBuild>"
+            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
         )
         all_items.append("</ClInclude>")
         if file in set_headers:
             activeItems.append(file)
 
     for file in sources:
+        base_path = os.path.dirname(file).replace("\\", "_")
         all_items.append(f'<ClCompile Include="{file}">')
         all_items.append(
-            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList.Contains(';{file};'))\">true</ExcludedFromBuild>"
+            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
         )
         all_items.append("</ClCompile>")
         if file in set_sources:
             activeItems.append(file)
 
     for file in others:
+        base_path = os.path.dirname(file).replace("\\", "_")
         all_items.append(f'<None Include="{file}">')
         all_items.append(
-            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList.Contains(';{file};'))\">true</ExcludedFromBuild>"
+            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
         )
         all_items.append("</None>")
         if file in set_others:
@@ -1381,7 +1389,18 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 break
 
         condition = "'$(GodotConfiguration)|$(GodotPlatform)'=='" + vsconf + "'"
-        properties.append("<ActiveProjectItemList>;" + ";".join(activeItems) + ";</ActiveProjectItemList>")
+        itemlist = {}
+        for item in activeItems:
+            key = os.path.dirname(item).replace("\\", "_")
+            if not key in itemlist:
+                itemlist[key] = [item]
+            else:
+                itemlist[key] += [item]
+
+        for x in itemlist.keys():
+            properties.append(
+                "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
+            )
         output = f'bin\\godot{env["PROGSUFFIX"]}'
 
         props_template = open("misc/msvs/props.template", "r").read()
@@ -1419,6 +1438,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         cmd_rebuild = [
             "vsproj=yes",
+            "vsproj_props_only=yes",
+            "vsproj_gen_only=no",
             f"vsproj_name={project_name}",
         ] + common_build_postfix
 
@@ -1536,25 +1557,27 @@ def generate_vs_project(env, original_args, project_name="godot"):
     section1 = sorted(section1)
     section2 = sorted(section2)
 
-    proj_template = open("misc/msvs/vcxproj.template", "r").read()
+    if not get_bool(original_args, "vsproj_props_only", False):
+        proj_template = open("misc/msvs/vcxproj.template", "r").read()
+        proj_template = proj_template.replace("%%UUID%%", proj_uuid)
+        proj_template = proj_template.replace("%%CONFS%%", "\n    ".join(configurations))
+        proj_template = proj_template.replace("%%IMPORTS%%", "\n  ".join(imports))
+        proj_template = proj_template.replace("%%DEFAULT_ITEMS%%", "\n    ".join(all_items))
+        proj_template = proj_template.replace("%%PROPERTIES%%", "\n  ".join(properties))
 
-    proj_template = proj_template.replace("%%UUID%%", proj_uuid)
-    proj_template = proj_template.replace("%%CONFS%%", "\n    ".join(configurations))
-    proj_template = proj_template.replace("%%IMPORTS%%", "\n  ".join(imports))
-    proj_template = proj_template.replace("%%DEFAULT_ITEMS%%", "\n    ".join(all_items))
-    proj_template = proj_template.replace("%%PROPERTIES%%", "\n  ".join(properties))
+        with open(f"{project_name}.vcxproj", "w") as f:
+            f.write(proj_template)
 
-    with open(f"{project_name}.vcxproj", "w") as f:
-        f.write(proj_template)
+    if not get_bool(original_args, "vsproj_props_only", False):
+        sln_template = open("misc/msvs/sln.template", "r").read()
+        sln_template = sln_template.replace("%%NAME%%", project_name)
+        sln_template = sln_template.replace("%%UUID%%", proj_uuid)
+        sln_template = sln_template.replace("%%SLNUUID%%", sln_uuid)
+        sln_template = sln_template.replace("%%SECTION1%%", "\n    ".join(section1))
+        sln_template = sln_template.replace("%%SECTION2%%", "\n    ".join(section2))
 
-    sln_template = open("misc/msvs/sln.template", "r").read()
-    sln_template = sln_template.replace("%%NAME%%", project_name)
-    sln_template = sln_template.replace("%%UUID%%", proj_uuid)
-    sln_template = sln_template.replace("%%SLNUUID%%", sln_uuid)
-    sln_template = sln_template.replace("%%SECTION1%%", "\n    ".join(section1))
-    sln_template = sln_template.replace("%%SECTION2%%", "\n    ".join(section2))
-    with open(f"{project_name}.sln", "w") as f:
-        f.write(sln_template)
+        with open(f"{project_name}.sln", "w") as f:
+            f.write(sln_template)
 
     if get_bool(original_args, "vsproj_gen_only", True):
         sys.exit()
