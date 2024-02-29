@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Color" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Color" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd" keywords="colour">
 	<brief_description>
 		A color represented in RGBA format.
 	</brief_description>
@@ -97,7 +97,7 @@
 		</constructor>
 	</constructors>
 	<methods>
-		<method name="blend" qualifiers="const">
+		<method name="blend" qualifiers="const" keywords="mix">
 			<return type="Color" />
 			<param index="0" name="over" type="Color" />
 			<description>
@@ -141,7 +141,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="from_hsv" qualifiers="static">
+		<method name="from_hsv" qualifiers="static" keywords="hue, saturation, value">
 			<return type="Color" />
 			<param index="0" name="h" type="float" />
 			<param index="1" name="s" type="float" />
@@ -159,7 +159,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="from_ok_hsl" qualifiers="static">
+		<method name="from_ok_hsl" qualifiers="static" keywords="hue, saturation, lightness">
 			<return type="Color" />
 			<param index="0" name="h" type="float" />
 			<param index="1" name="s" type="float" />
@@ -472,37 +472,37 @@
 		</method>
 	</methods>
 	<members>
-		<member name="a" type="float" setter="" getter="" default="1.0">
+		<member name="a" type="float" setter="" getter="" default="1.0" keywords="alpha, transparency, opacity">
 			The color's alpha component, typically on the range of 0 to 1. A value of 0 means that the color is fully transparent. A value of 1 means that the color is fully opaque.
 		</member>
-		<member name="a8" type="int" setter="" getter="" default="255">
+		<member name="a8" type="int" setter="" getter="" default="255" keywords="alpha, transparency, opacity">
 			Wrapper for [member a] that uses the range 0 to 255, instead of 0 to 1.
 		</member>
-		<member name="b" type="float" setter="" getter="" default="0.0">
+		<member name="b" type="float" setter="" getter="" default="0.0" keywords="blue">
 			The color's blue component, typically on the range of 0 to 1.
 		</member>
-		<member name="b8" type="int" setter="" getter="" default="0">
+		<member name="b8" type="int" setter="" getter="" default="0" keywords="blue">
 			Wrapper for [member b] that uses the range 0 to 255, instead of 0 to 1.
 		</member>
-		<member name="g" type="float" setter="" getter="" default="0.0">
+		<member name="g" type="float" setter="" getter="" default="0.0" keywords="green">
 			The color's green component, typically on the range of 0 to 1.
 		</member>
-		<member name="g8" type="int" setter="" getter="" default="0">
+		<member name="g8" type="int" setter="" getter="" default="0" keywords="green">
 			Wrapper for [member g] that uses the range 0 to 255, instead of 0 to 1.
 		</member>
-		<member name="h" type="float" setter="" getter="" default="0.0">
+		<member name="h" type="float" setter="" getter="" default="0.0" keywords="hue, tint, tone">
 			The HSV hue of this color, on the range 0 to 1.
 		</member>
-		<member name="r" type="float" setter="" getter="" default="0.0">
+		<member name="r" type="float" setter="" getter="" default="0.0" keywords="red">
 			The color's red component, typically on the range of 0 to 1.
 		</member>
-		<member name="r8" type="int" setter="" getter="" default="0">
+		<member name="r8" type="int" setter="" getter="" default="0" keywords="red">
 			Wrapper for [member r] that uses the range 0 to 255, instead of 0 to 1.
 		</member>
-		<member name="s" type="float" setter="" getter="" default="0.0">
+		<member name="s" type="float" setter="" getter="" default="0.0" keywords="saturation">
 			The HSV saturation of this color, on the range 0 to 1.
 		</member>
-		<member name="v" type="float" setter="" getter="" default="0.0">
+		<member name="v" type="float" setter="" getter="" default="0.0" keywords="value, brightness">
 			The HSV value (brightness) of this color, on the range 0 to 1.
 		</member>
 	</members>
