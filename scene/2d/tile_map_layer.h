@@ -218,6 +218,12 @@ class TileMapLayer : public Node2D {
 	GDCLASS(TileMapLayer, Node2D);
 
 public:
+	enum VisibilityMode {
+		VISIBILITY_MODE_DEFAULT,
+		VISIBILITY_MODE_FORCE_SHOW,
+		VISIBILITY_MODE_FORCE_HIDE,
+	};
+
 	enum DirtyFlags {
 		DIRTY_FLAGS_LAYER_ENABLED = 0,
 		DIRTY_FLAGS_LAYER_IN_TREE,
@@ -228,24 +234,23 @@ public:
 		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
+		DIRTY_FLAGS_LAYER_LIGHT_MASK,
+		DIRTY_FLAGS_LAYER_TEXTURE_FILTER,
+		DIRTY_FLAGS_LAYER_TEXTURE_REPEAT,
+		DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE,
 		DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES,
+		DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE,
 		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
-		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE,
+		DIRTY_FLAGS_LAYER_NAVIGATION_MAP,
+		DIRTY_FLAGS_LAYER_NAVIGATION_VISIBILITY_MODE,
+		DIRTY_FLAGS_LAYER_RUNTIME_UPDATE,
+
+		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE, // For compatibility.
 
 		DIRTY_FLAGS_LAYER_GROUP_SELECTED_LAYERS,
 		DIRTY_FLAGS_LAYER_GROUP_HIGHLIGHT_SELECTED,
 		DIRTY_FLAGS_LAYER_GROUP_TILE_SET,
 
-		DIRTY_FLAGS_TILE_MAP_LIGHT_MASK,
-		DIRTY_FLAGS_TILE_MAP_MATERIAL,
-		DIRTY_FLAGS_TILE_MAP_USE_PARENT_MATERIAL,
-		DIRTY_FLAGS_TILE_MAP_TEXTURE_FILTER,
-		DIRTY_FLAGS_TILE_MAP_TEXTURE_REPEAT,
-		DIRTY_FLAGS_TILE_MAP_QUADRANT_SIZE,
-		DIRTY_FLAGS_TILE_MAP_COLLISION_VISIBILITY_MODE,
-		DIRTY_FLAGS_TILE_MAP_NAVIGATION_VISIBILITY_MODE,
-		DIRTY_FLAGS_TILE_MAP_Y_SORT_ENABLED,
-		DIRTY_FLAGS_TILE_MAP_RUNTIME_UPDATE,
 		DIRTY_FLAGS_MAX,
 	};
 
@@ -253,15 +258,22 @@ private:
 	// Exposed properties.
 	bool enabled = true;
 	int y_sort_origin = 0;
+	int rendering_quadrant_size = 16;
+
 	bool use_kinematic_bodies = false;
+	VisibilityMode collision_visibility_mode = VISIBILITY_MODE_DEFAULT;
+
 	bool navigation_enabled = true;
-	RID navigation_map;
-	bool uses_world_navigation_map = false;
+	RID navigation_map_override;
+	VisibilityMode navigation_visibility_mode = VISIBILITY_MODE_DEFAULT;
 
 	// Internal.
-	int layer_index_in_tile_map_node = -1;
 	HashMap<Vector2i, CellData> tile_map;
 	bool pending_update = false;
+
+	// For keeping compatibility with TileMap.
+	TileMap *tile_map_node = nullptr;
+	int layer_index_in_tile_map_node = -1;
 
 	// Dirty flag. Allows knowing what was modified since the last update.
 	struct {
@@ -276,13 +288,10 @@ private:
 	mutable Rect2i used_rect_cache;
 	mutable bool used_rect_cache_dirty = true;
 
-	// Method to fetch the TileSet to use
-	TileMap *_fetch_tilemap() const;
-
 	// Runtime tile data.
 	bool _runtime_update_tile_data_was_cleaned_up = false;
 	void _build_runtime_update_tile_data();
-	void _build_runtime_update_tile_data_for_cell(CellData &r_cell_data, bool p_auto_add_to_dirty_list = false);
+	void _build_runtime_update_tile_data_for_cell(CellData &r_cell_data, bool p_use_tilemap_for_runtime, bool p_auto_add_to_dirty_list = false);
 	bool _runtime_update_needs_all_cells_cleaned_up = false;
 	void _clear_runtime_update_tile_data();
 	void _clear_runtime_update_tile_data_for_cell(CellData &r_cell_data);
@@ -353,7 +362,7 @@ protected:
 
 public:
 	// TileMap node.
-	void set_layer_index_in_tile_map_node(int p_index);
+	void set_as_tile_map_internal_node(int p_index);
 
 	// Rect caching.
 	Rect2 get_rect(bool &r_changed) const;
@@ -370,9 +379,10 @@ public:
 	// For TileMap node's use.
 	void set_tile_data(TileMapDataFormat p_format, const Vector<int> &p_data);
 	Vector<int> get_tile_data() const;
-	void notify_tile_map_change(DirtyFlags p_what);
+	void notify_tile_map_layer_group_change(DirtyFlags p_what);
 
 	void update_internals();
+	void notify_runtime_tile_data_update();
 
 	// --- Exposed in TileMap ---
 	// Cells manipulation.
@@ -406,12 +416,23 @@ public:
 	void set_y_sort_origin(int p_y_sort_origin);
 	int get_y_sort_origin() const;
 	virtual void set_z_index(int p_z_index) override;
+	virtual void set_light_mask(int p_light_mask) override;
+	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
+	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
+	void set_rendering_quadrant_size(int p_size);
+	int get_rendering_quadrant_size() const;
+
 	void set_use_kinematic_bodies(bool p_use_kinematic_bodies);
 	bool is_using_kinematic_bodies() const;
+	void set_collision_visibility_mode(VisibilityMode p_show_collision);
+	VisibilityMode get_collision_visibility_mode() const;
+
 	void set_navigation_enabled(bool p_enabled);
 	bool is_navigation_enabled() const;
 	void set_navigation_map(RID p_map);
 	RID get_navigation_map() const;
+	void set_navigation_visibility_mode(VisibilityMode p_show_navigation);
+	VisibilityMode get_navigation_visibility_mode() const;
 
 	// Fixing and clearing methods.
 	void fix_invalid_tiles();
@@ -423,6 +444,9 @@ public:
 	// Helper.
 	Ref<TileSet> get_effective_tile_set() const;
 
+	// Virtual function to modify the TileData at runtime.
+	GDVIRTUAL1R(bool, _use_tile_data_runtime_update, Vector2i);
+	GDVIRTUAL2(_tile_data_runtime_update, Vector2i, TileData *);
 	// ---
 
 	TileMapLayer();
