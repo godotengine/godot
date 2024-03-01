@@ -242,7 +242,6 @@ ResourceLoader::LoadToken::~LoadToken() {
 }
 
 Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
-	print_line("_load", p_path);
 	load_nesting++;
 	if (load_paths_stack->size()) {
 		thread_load_mutex.lock();
@@ -261,14 +260,12 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		if (!loader[i]->recognize_path(p_path, p_type_hint)) {
 			continue;
 		}
-		print_line("found a resource loader", loader[i]->get_class_name(), p_path);
 		found = true;
 		res = loader[i]->load(p_path, !p_original_path.is_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
 		if (!res.is_null()) {
 			break;
 		}
 	}
-	print_line("end looking for resource loaders", p_path);
 
 	load_paths_stack->resize(load_paths_stack->size() - 1);
 	load_nesting--;
@@ -291,14 +288,11 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 void ResourceLoader::_thread_load_function(void *p_userdata) {
 	ThreadLoadTask &load_task = *(ThreadLoadTask *)p_userdata;
 
-	print_line("_thread_load_function", load_task.remapped_path);
-
 	thread_load_mutex.lock();
 	caller_task_id = load_task.task_id;
 	if (cleaning_tasks) {
 		load_task.status = THREAD_LOAD_FAILED;
 		thread_load_mutex.unlock();
-		print_line("_thread_load_function aborting 1", load_task.remapped_path);
 		return;
 	}
 	thread_load_mutex.unlock();
@@ -440,18 +434,12 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 }
 
 Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error) {
-	for (int i = 0; i < loader_count; i++) {
-		print_line("Handles GDScript:", loader[i]->handles_type("GDScript"));
-	}
-
-	print_line("loading", p_path);
 	if (r_error) {
 		*r_error = OK;
 	}
 
 	Ref<LoadToken> load_token = _load_start(p_path, p_type_hint, LOAD_THREAD_FROM_CURRENT, p_cache_mode);
 	if (!load_token.is_valid()) {
-		print_line("load token invalid", p_path);
 		if (r_error) {
 			*r_error = FAILED;
 		}
@@ -463,7 +451,6 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 }
 
 Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode) {
-	print_line("_load_start", p_path, p_cache_mode);
 	String local_path = _validate_local_path(p_path);
 
 	Ref<LoadToken> load_token;
@@ -475,7 +462,6 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 		MutexLock thread_load_lock(thread_load_mutex);
 
 		if (thread_load_tasks.has(local_path)) {
-			print_line("_load_start token already exists", p_path);
 			load_token = Ref<LoadToken>(thread_load_tasks[local_path].load_token);
 			if (!load_token.is_valid()) {
 				// The token is dying (reached 0 on another thread).
@@ -483,7 +469,6 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 				thread_load_tasks[local_path].load_token->clear();
 			} else {
 				if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-					print_line("_load_start token already exists return", p_path);
 					return load_token;
 				}
 			}
@@ -505,7 +490,6 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 			if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
 				Ref<Resource> existing = ResourceCache::get_ref(local_path);
 				if (existing.is_valid()) {
-					print_line("existing is valid", p_path);
 					//referencing is fine
 					load_task.resource = existing;
 					load_task.status = THREAD_LOAD_LOADED;
@@ -528,7 +512,6 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 		}
 
 		run_on_current_thread = must_not_register || p_thread_mode == LOAD_THREAD_FROM_CURRENT;
-		print_line("_load_start run on current thread", run_on_current_thread, p_path);
 
 		if (run_on_current_thread) {
 			load_task_ptr->thread_id = Thread::get_caller_id();

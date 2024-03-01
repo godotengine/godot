@@ -283,7 +283,6 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 }
 
 Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner, bool p_update_from_disk) {
-	print_line("get full script", p_path);
 	MutexLock lock(singleton->mutex);
 
 	if (!p_owner.is_empty()) {
