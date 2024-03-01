@@ -532,7 +532,7 @@
 			When enabled, using a property, enum, or function that was renamed since Godot 3 will produce a hint if an error occurs.
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). These return values are sometimes used to indicate possible errors using the [enum Error] enum.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
@@ -626,7 +626,7 @@
 			If [code]true[/code], enables specific shader warnings (see [code]debug/shader_language/warnings/*[/code] settings). If [code]false[/code], disables all shader warnings.
 		</member>
 		<member name="debug/shader_language/warnings/float_comparison" type="bool" setter="" getter="" default="true">
-			When set to [code]true[/code], produces a warning when two floating point numbers are compared directly with the [code]==[/code] operator or the [code]!=[/code] operator.
+			When set to [code]true[/code], produces a warning when two floating-point numbers are compared directly with the [code]==[/code] operator or the [code]!=[/code] operator.
 		</member>
 		<member name="debug/shader_language/warnings/formatting_error" type="bool" setter="" getter="" default="true">
 			When set to [code]true[/code], produces a warning upon encountering certain formatting errors. Currently this only checks for empty statements. More formatting errors may be added over time.
@@ -1426,7 +1426,7 @@
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
-			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
+			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc.). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
@@ -2797,7 +2797,7 @@
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normal maps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4x4 block size).
+			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normal maps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4×4 block size).
 			[b]Note:[/b] This setting is an override. The texture importer will always import the format the host platform needs, even if this is set to [code]false[/code].
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
@@ -2825,16 +2825,16 @@
 			If [member rendering/vrs/mode] is set to [b]Texture[/b], this is the path to default texture loaded as the VRS image.
 			The texture [i]must[/i] use a lossless compression format so that colors can be matched precisely. The following VRS densities are mapped to various colors, with brighter colors representing a lower level of shading precision:
 			[codeblock]
-			- 1x1 = rgb(0, 0, 0)     - #000000
-			- 1x2 = rgb(0, 85, 0)    - #005500
-			- 2x1 = rgb(85, 0, 0)    - #550000
-			- 2x2 = rgb(85, 85, 0)   - #555500
-			- 2x4 = rgb(85, 170, 0)  - #55aa00
-			- 4x2 = rgb(170, 85, 0)  - #aa5500
-			- 4x4 = rgb(170, 170, 0) - #aaaa00
-			- 4x8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
-			- 8x4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
-			- 8x8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
+			- 1×1 = rgb(0, 0, 0)     - #000000
+			- 1×2 = rgb(0, 85, 0)    - #005500
+			- 2×1 = rgb(85, 0, 0)    - #550000
+			- 2×2 = rgb(85, 85, 0)   - #555500
+			- 2×4 = rgb(85, 170, 0)  - #55aa00
+			- 4×2 = rgb(170, 85, 0)  - #aa5500
+			- 4×4 = rgb(170, 170, 0) - #aaaa00
+			- 4×8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
+			- 8×4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
+			- 8×8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
 			[/codeblock]
 		</member>
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">

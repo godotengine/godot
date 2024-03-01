@@ -323,7 +323,7 @@
 		<signal name="bone_pose_changed">
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				This signal is emitted when one of the bones in the Skeleton3D node have changed their pose. This is used to inform nodes that rely on bone positions that one of the bones in the Skeleton3D have changed their transform/pose.
+				Emitted when the bone at [param bone_idx] changes its transform/pose. This can be used to update other nodes that rely on bone positions.
 			</description>
 		</signal>
 		<signal name="pose_updated">

@@ -26,13 +26,13 @@
 		<method name="get_name" qualifiers="const">
 			<return type="StringName" />
 			<description>
-				Returns the name of this interface (OpenXR, OpenVR, OpenHMD, ARKit, etc).
+				Returns the name of this interface ([code]"OpenXR"[/code], [code]"OpenVR"[/code], [code]"OpenHMD"[/code], [code]"ARKit"[/code], etc.).
 			</description>
 		</method>
 		<method name="get_play_area" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns an array of vectors that denotes the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
+				Returns an array of vectors that represent the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
 			</description>
 		</method>
 		<method name="get_projection_for_view">

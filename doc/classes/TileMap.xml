@@ -375,7 +375,7 @@
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Enables or disables the layer [param layer]. A disabled layer is not processed at all (no rendering, no physics, etc...).
+				Enables or disables the layer [param layer]. A disabled layer is not processed at all (no rendering, no physics, etc.).
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>

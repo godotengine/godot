@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 4D vector using floating point coordinates.
+		A 4D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 4-element structure that can be used to represent 4D coordinates or any other quadruplet of numeric values.
