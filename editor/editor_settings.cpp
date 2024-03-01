@@ -1785,6 +1785,35 @@ void EditorSettings::notify_changes() {
 	root->propagate_notification(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 }
 
+#ifdef TOOLS_ENABLED
+void EditorSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "has_setting" || pf == "set_setting" || pf == "get_setting" || pf == "erase" ||
+				pf == "set_initial_value" || pf == "set_as_basic" || pf == "mark_setting_changed") {
+			for (const KeyValue<String, VariantContainer> &E : props) {
+				if (E.value.hide_from_editor) {
+					continue;
+				}
+
+				r_options->push_back(E.key.quote());
+			}
+		} else if (pf == "get_project_metadata" && project_metadata.is_valid()) {
+			List<String> sections;
+			project_metadata->get_sections(&sections);
+			for (const String &section : sections) {
+				r_options->push_back(section.quote());
+			}
+		} else if (pf == "set_builtin_action_override") {
+			for (const StringName &action : InputMap::get_singleton()->get_actions()) {
+				r_options->push_back(String(action).quote());
+			}
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &EditorSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &EditorSettings::set_setting);
