@@ -5,12 +5,8 @@
 
 set -uo pipefail
 
-# Create dummy generated files.
+# Create dummy generated file.
 echo "<Project />" > modules/mono/SdkPackageVersions.props
-mkdir -p modules/mono/glue/GodotSharp/GodotSharp/Generated
-echo "<Project />" > modules/mono/glue/GodotSharp/GodotSharp/Generated/GeneratedIncludes.props
-mkdir -p modules/mono/glue/GodotSharp/GodotSharpEditor/Generated
-echo "<Project />" > modules/mono/glue/GodotSharp/GodotSharpEditor/Generated/GeneratedIncludes.props
 
 # Loops through all C# projects tracked by Git.
 git ls-files -- '*.csproj' \
