@@ -37,7 +37,6 @@
 #include "editor/editor_properties_array_dict.h"
 #include "editor/editor_properties_vector.h"
 #include "editor/editor_resource_picker.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -48,6 +47,7 @@
 #include "editor/project_settings_editor.h"
 #include "editor/property_selector.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
@@ -254,7 +254,7 @@ void EditorPropertyTextEnum::_set_read_only(bool p_read_only) {
 	edit_button->set_disabled(p_read_only);
 }
 
-void EditorPropertyTextEnum::_emit_changed_value(String p_string) {
+void EditorPropertyTextEnum::_emit_changed_value(const String &p_string) {
 	if (string_name) {
 		emit_changed(get_edited_property(), StringName(p_string));
 	} else {
@@ -272,7 +272,7 @@ void EditorPropertyTextEnum::_edit_custom_value() {
 	custom_value_edit->grab_focus();
 }
 
-void EditorPropertyTextEnum::_custom_value_submitted(String p_value) {
+void EditorPropertyTextEnum::_custom_value_submitted(const String &p_value) {
 	edit_custom_layout->hide();
 	default_layout->show();
 
@@ -374,7 +374,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
 	option_button->set_flat(true);
-	option_button->set_auto_translate(false);
+	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
 	option_button->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
 
@@ -728,7 +728,7 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
-	options->set_auto_translate(false);
+	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(options);
 	add_focusable(options);
 	options->connect("item_selected", callable_mp(this, &EditorPropertyEnum::_option_selected));
@@ -992,12 +992,12 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 			const int bsize = (grid_size.height * 80 / 100) / 2;
 			const int h = bsize * 2 + 1;
 
-			Color color = get_theme_color(read_only ? SNAME("disabled_highlight_color") : SNAME("highlight_color"), EditorStringName(Editor));
+			Color color = get_theme_color(read_only ? SNAME("highlight_disabled_color") : SNAME("highlight_color"), EditorStringName(Editor));
 
-			Color text_color = get_theme_color(read_only ? SNAME("disabled_font_color") : SNAME("font_color"), EditorStringName(Editor));
+			Color text_color = get_theme_color(read_only ? SNAME("font_disabled_color") : SNAME("font_color"), EditorStringName(Editor));
 			text_color.a *= 0.5;
 
-			Color text_color_on = get_theme_color(read_only ? SNAME("disabled_font_color") : SNAME("font_hover_color"), EditorStringName(Editor));
+			Color text_color_on = get_theme_color(read_only ? SNAME("font_disabled_color") : SNAME("font_hover_color"), EditorStringName(Editor));
 			text_color_on.a *= 0.7;
 
 			const int vofs = (grid_size.height - h) / 2;
@@ -2073,7 +2073,7 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 				euler[i]->add_theme_color_override("label_color", colors[i]);
 			}
 			edit_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
-			euler_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("property_color"), EditorStringName(Editor)));
+			euler_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 			warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			warning->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
@@ -2897,7 +2897,7 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
 }
 
-void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
+void EditorPropertyNodePath::setup(const NodePath &p_base_hint, const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
 	base_hint = p_base_hint;
 	valid_types = p_valid_types;
 	editing_node = p_editing_node;
@@ -2955,7 +2955,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->set_auto_translate(false);
+	assign->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	assign->set_expand_icon(true);
 	assign->connect("pressed", callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
@@ -3013,7 +3013,7 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 			if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() != parent)) {
 				// If the resource belongs to another (non-imported) scene, edit it in that scene instead.
 				if (!FileAccess::exists(parent + ".import")) {
-					EditorNode::get_singleton()->call_deferred("edit_foreign_resource", p_resource);
+					callable_mp(EditorNode::get_singleton(), &EditorNode::edit_foreign_resource).call_deferred(p_resource);
 					return;
 				}
 			}
@@ -3341,6 +3341,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_folding(is_using_folding());
 
 				sub_inspector_vbox = memnew(VBoxContainer);
+				sub_inspector_vbox->set_mouse_filter(MOUSE_FILTER_STOP);
 				add_child(sub_inspector_vbox);
 				set_bottom_editor(sub_inspector_vbox);
 

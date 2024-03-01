@@ -3,6 +3,7 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+
 import os
 from platform_methods import subprocess_main
 

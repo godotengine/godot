@@ -31,9 +31,9 @@
 #include "editor_visual_profiler.h"
 
 #include "core/os/os.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
 void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
@@ -70,7 +70,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	updating_frame = true;
 	clear_button->set_disabled(false);
 	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
-	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0u));
+	cursor_metric_edit->set_min(MAX(int64_t(frame_metrics[last_metric].frame_number) - frame_metrics.size(), 0));
 
 	if (!seeking) {
 		cursor_metric_edit->set_value(frame_metrics[last_metric].frame_number);

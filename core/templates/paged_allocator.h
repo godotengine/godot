@@ -40,7 +40,7 @@
 #include <type_traits>
 #include <typeinfo>
 
-template <class T, bool thread_safe = false>
+template <class T, bool thread_safe = false, uint32_t DEFAULT_PAGE_SIZE = 4096>
 class PagedAllocator {
 	T **page_pool = nullptr;
 	T ***available_pool = nullptr;
@@ -53,10 +53,6 @@ class PagedAllocator {
 	SpinLock spin_lock;
 
 public:
-	enum {
-		DEFAULT_PAGE_SIZE = 4096
-	};
-
 	template <class... Args>
 	T *alloc(Args &&...p_args) {
 		if (thread_safe) {
@@ -105,7 +101,7 @@ public:
 
 private:
 	void _reset(bool p_allow_unfreed) {
-		if (!p_allow_unfreed || !std::is_trivially_destructible<T>::value) {
+		if (!p_allow_unfreed || !std::is_trivially_destructible_v<T>) {
 			ERR_FAIL_COND(allocs_available < pages_allocated * page_size);
 		}
 		if (pages_allocated) {

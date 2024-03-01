@@ -30,7 +30,6 @@
 
 #include "canvas_item.h"
 
-#include "core/object/message_queue.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
@@ -315,6 +314,7 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
+			_set_global_invalid(true);
 			_enter_canvas();
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
@@ -407,7 +407,7 @@ void CanvasItem::queue_redraw() {
 
 	pending_update = true;
 
-	MessageQueue::get_singleton()->push_callable(callable_mp(this, &CanvasItem::_redraw_callback));
+	callable_mp(this, &CanvasItem::_redraw_callback).call_deferred();
 }
 
 void CanvasItem::move_to_front() {
@@ -904,7 +904,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 					get_tree()->xform_change_list.add(&p_node->xform_change);
 				} else {
 					// Should be rare, but still needs to be handled.
-					MessageQueue::get_singleton()->push_callable(callable_mp(p_node, &CanvasItem::_notify_transform_deferred));
+					callable_mp(p_node, &CanvasItem::_notify_transform_deferred).call_deferred();
 				}
 			}
 		}
@@ -1169,6 +1169,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_mouse_position"), &CanvasItem::get_local_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
+	ClassDB::bind_method(D_METHOD("get_canvas_layer_node"), &CanvasItem::get_canvas_layer_node);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);
 
@@ -1323,6 +1324,11 @@ int CanvasItem::get_canvas_layer() const {
 	} else {
 		return 0;
 	}
+}
+
+CanvasLayer *CanvasItem::get_canvas_layer_node() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
+	return canvas_layer;
 }
 
 void CanvasItem::set_visibility_layer(uint32_t p_visibility_layer) {

@@ -429,7 +429,7 @@ struct HashMapComparatorDefault<Vector3> {
 
 constexpr uint32_t HASH_TABLE_SIZE_MAX = 29;
 
-const uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
+inline constexpr uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
 	5,
 	13,
 	23,
@@ -462,7 +462,7 @@ const uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
 };
 
 // Computed with elem_i = UINT64_C (0 x FFFFFFFF FFFFFFFF ) / d_i + 1, where d_i is the i-th element of the above array.
-const uint64_t hash_table_size_primes_inv[HASH_TABLE_SIZE_MAX] = {
+inline constexpr uint64_t hash_table_size_primes_inv[HASH_TABLE_SIZE_MAX] = {
 	3689348814741910324,
 	1418980313362273202,
 	802032351030850071,

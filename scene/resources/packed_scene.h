@@ -157,6 +157,10 @@ public:
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state) const;
 
+	Array setup_resources_in_array(Array &array_to_scan, const SceneState::NodeData &n, HashMap<Ref<Resource>, Ref<Resource>> &resources_local_to_sub_scene, Node *node, const StringName sname, HashMap<Ref<Resource>, Ref<Resource>> &resources_local_to_scene, int i, Node **ret_nodes, SceneState::GenEditState p_edit_state) const;
+	Variant make_local_resource(Variant &value, const SceneState::NodeData &p_node_data, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
+	bool has_local_resource(const Array &p_array) const;
+
 	Ref<SceneState> get_base_scene_state() const;
 
 	void update_instance_resource(String p_path, Ref<PackedScene> p_packed_scene);
@@ -258,6 +262,8 @@ public:
 	virtual void reload_from_file() override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	virtual void set_path_cache(const String &p_path) override;
+
 #ifdef TOOLS_ENABLED
 	virtual void set_last_modified_time(uint64_t p_time) override {
 		Resource::set_last_modified_time(p_time);

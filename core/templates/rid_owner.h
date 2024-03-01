@@ -270,7 +270,7 @@ public:
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
-			ERR_FAIL_MSG("Attempted to free an uninitialized or invalid RID");
+			ERR_FAIL_MSG("Attempted to free an uninitialized or invalid RID.");
 		} else if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
 			if (THREAD_SAFE) {
 				spin_lock.unlock();

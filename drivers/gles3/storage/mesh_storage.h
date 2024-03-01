@@ -142,6 +142,8 @@ struct Mesh {
 	RID shadow_mesh;
 	HashSet<Mesh *> shadow_owners;
 
+	String path;
+
 	Dependency dependency;
 };
 
@@ -187,6 +189,7 @@ struct MultiMesh {
 	bool uses_custom_data = false;
 	int visible_instances = -1;
 	AABB aabb;
+	AABB custom_aabb;
 	bool aabb_dirty = false;
 	bool buffer_set = false;
 	uint32_t stride_cache = 0;
@@ -304,8 +307,11 @@ public:
 
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) override;
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const override;
-
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override;
+
+	virtual void mesh_set_path(RID p_mesh, const String &p_path) override;
+	virtual String mesh_get_path(RID p_mesh) const override;
+
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override;
 	virtual void mesh_clear(RID p_mesh) override;
 
@@ -500,6 +506,8 @@ public:
 	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) override;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const override;
+	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) override;
+	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const override;
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const override;
 
 	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const override;

@@ -65,7 +65,9 @@ int main(int argc, char **argv) {
 	// We must override main when testing is enabled.
 	TEST_MAIN_OVERRIDE
 
-	err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
+	@autoreleasepool {
+		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
+	}
 
 	if (err == ERR_HELP) { // Returned by --help and --version, so success.
 		return 0;
@@ -73,11 +75,17 @@ int main(int argc, char **argv) {
 		return 255;
 	}
 
-	if (Main::start()) {
+	bool ok;
+	@autoreleasepool {
+		ok = Main::start();
+	}
+	if (ok) {
 		os.run(); // It is actually the OS that decides how to run.
 	}
 
-	Main::cleanup();
+	@autoreleasepool {
+		Main::cleanup();
+	}
 
 	return os.get_exit_code();
 }

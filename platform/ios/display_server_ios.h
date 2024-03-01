@@ -39,7 +39,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "vulkan_context_ios.h"
+#import "rendering_context_driver_vulkan_ios.h"
 
 #ifdef USE_VOLK
 #include <volk.h>
@@ -62,7 +62,7 @@ class DisplayServerIOS : public DisplayServer {
 	_THREAD_SAFE_CLASS_
 
 #if defined(RD_ENABLED)
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
 
@@ -76,6 +76,8 @@ class DisplayServerIOS : public DisplayServer {
 	Callable window_resize_callback;
 	Callable input_event_callback;
 	Callable input_text_callback;
+
+	Callable system_theme_changed;
 
 	int virtual_keyboard_height = 0;
 
@@ -109,6 +111,8 @@ public:
 	void send_window_event(DisplayServer::WindowEvent p_event) const;
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
 
+	void emit_system_theme_changed();
+
 	// MARK: - Input
 
 	// MARK: Touches and Apple Pencil
@@ -119,7 +123,7 @@ public:
 
 	// MARK: Keyboard
 
-	void key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, NSInteger p_modifier, bool p_pressed);
+	void key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, NSInteger p_modifier, bool p_pressed, KeyLocation p_location);
 	bool is_keyboard_active() const;
 
 	// MARK: Motion
@@ -145,6 +149,7 @@ public:
 
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Rect2i get_display_safe_area() const override;
 
@@ -159,8 +164,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID
-	get_window_at_screen_position(const Point2i &p_position) const override;
+	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 

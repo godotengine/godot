@@ -3,7 +3,7 @@
 ; It also helps for opening Godot to edit the scripts, but please don't
 ; let the editor changes be saved.
 
-config_version=4
+config_version=5
 
 [application]
 

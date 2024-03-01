@@ -4,7 +4,7 @@
 		Abstract base class for viewports. Encapsulates drawing and interaction with a game world.
 	</brief_description>
 	<description>
-		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera3D 3D nodes will render on it too.
+		A [Viewport] creates a different view into the screen, or a sub-view inside another viewport. Child 2D nodes will display on it, and child Camera3D 3D nodes will render on it too.
 		Optionally, a viewport can have its own 2D or 3D world, so it doesn't share what it draws with other viewports.
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
 		Also, viewports can be assigned to different screens in case the devices have multiple screens.
@@ -187,14 +187,13 @@
 				Helper method which calls the [code]set_text()[/code] method on the currently focused [Control], provided that it is defined (e.g. if the focused Control is [Button] or [LineEdit]).
 			</description>
 		</method>
-		<method name="push_unhandled_input" is_deprecated="true">
+		<method name="push_unhandled_input" deprecated="Use [method push_input] instead.">
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<param index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
-				Triggers the given [InputEvent] in this [Viewport]. This can be used to pass input events between viewports, or to locally apply inputs that were sent over the network or saved to a file.
+				Triggers the given [param event] in this [Viewport]. This can be used to pass an [InputEvent] between viewports, or to locally apply inputs that were sent over the network or saved to a file.
 				If [param in_local_coords] is [code]false[/code], the event's position is in the embedder's coordinates and will be converted to viewport coordinates. If [param in_local_coords] is [code]true[/code], the event's position is in viewport coordinates.
-				While this method serves a similar purpose as [method Input.parse_input_event], it does not remap the specified [param event] based on project settings like [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
 				Calling this method will propagate calls to child nodes for following methods in the given order:
 				- [method Node._shortcut_input]
 				- [method Node._unhandled_key_input]
@@ -202,7 +201,6 @@
 				If an earlier method marks the input as handled via [method set_input_as_handled], any later method in this list will not be called.
 				If none of the methods handle the event and [member physics_object_picking] is [code]true[/code], the event is used for physics object picking.
 				[b]Note:[/b] This method doesn't propagate input events to embedded [Window]s or [SubViewport]s.
-				[i]Deprecated.[/i] Use [method push_input] instead.
 			</description>
 		</method>
 		<method name="set_canvas_cull_mask_bit">
@@ -306,6 +304,11 @@
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 			[b]Note:[/b] The number of simultaneously pickable objects is limited to 64 and they are selected in a non-deterministic order, which can be different in each picking process.
+		</member>
+		<member name="physics_object_picking_first_only" type="bool" setter="set_physics_object_picking_first_only" getter="get_physics_object_picking_first_only" default="false">
+			If [code]true[/code], the input_event signal will only be sent to one physics object in the mouse picking process. If you want to get the top object only, you must also enable [member physics_object_picking_sort].
+			If [code]false[/code], an input_event signal will be sent to all physics objects in the mouse picking process.
+			This applies to 2D CanvasItem object picking only.
 		</member>
 		<member name="physics_object_picking_sort" type="bool" setter="set_physics_object_picking_sort" getter="get_physics_object_picking_sort" default="false">
 			If [code]true[/code], objects receive mouse picking events sorted primarily by their [member CanvasItem.z_index] and secondarily by their position in the scene tree. If [code]false[/code], the order is undetermined.
@@ -411,6 +414,7 @@
 			<param index="0" name="node" type="Control" />
 			<description>
 				Emitted when a Control node grabs keyboard focus.
+				[b]Note:[/b] A Control node losing focus doesn't cause this signal to be emitted.
 			</description>
 		</signal>
 		<signal name="size_changed">

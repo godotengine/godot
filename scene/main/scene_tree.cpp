@@ -55,12 +55,14 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
-#include "scene/resources/world_3d.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
+#ifndef _3D_DISABLED
+#include "scene/resources/3d/world_3d.h"
 #include "servers/physics_server_3d.h"
+#endif // _3D_DISABLED
 #include "window.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -884,7 +886,9 @@ void SceneTree::set_pause(bool p_enabled) {
 		return;
 	}
 	paused = p_enabled;
+#ifndef _3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
+#endif // _3D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
 	if (get_root()) {
 		get_root()->_propagate_pause_notification(p_enabled);
@@ -1755,6 +1759,7 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
+	root->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
 	root->set_name("root");
 	root->set_title(GLOBAL_GET("application/config/name"));
 
@@ -1802,7 +1807,7 @@ SceneTree::SceneTree() {
 	float mesh_lod_threshold = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"), 1.0);
 	root->set_mesh_lod_threshold(mesh_lod_threshold);
 
-	bool snap_2d_transforms = GLOBAL_DEF("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
+	bool snap_2d_transforms = GLOBAL_DEF_BASIC("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 
 	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);

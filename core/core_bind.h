@@ -63,9 +63,11 @@ public:
 	};
 
 	enum CacheMode {
-		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
-		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
-		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
+		CACHE_MODE_IGNORE,
+		CACHE_MODE_REUSE,
+		CACHE_MODE_REPLACE,
+		CACHE_MODE_IGNORE_DEEP,
+		CACHE_MODE_REPLACE_DEEP,
 	};
 
 	static ResourceLoader *get_singleton() { return singleton; }
@@ -157,8 +159,8 @@ public:
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
-	Error shell_open(String p_uri);
-	Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
+	Error shell_open(const String &p_uri);
+	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
@@ -435,17 +437,17 @@ public:
 	bool can_instantiate(const StringName &p_class) const;
 	Variant instantiate(const StringName &p_class) const;
 
-	bool class_has_signal(StringName p_class, StringName p_signal) const;
-	Dictionary class_get_signal(StringName p_class, StringName p_signal) const;
-	TypedArray<Dictionary> class_get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
+	bool class_has_signal(const StringName &p_class, const StringName &p_signal) const;
+	Dictionary class_get_signal(const StringName &p_class, const StringName &p_signal) const;
+	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> class_get_property_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
-	bool class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
+	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> class_get_method_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool class_has_integer_constant(const StringName &p_class, const StringName &p_name) const;
@@ -456,7 +458,7 @@ public:
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
-	bool is_class_enabled(StringName p_class) const;
+	bool is_class_enabled(const StringName &p_class) const;
 
 	ClassDB() {}
 	~ClassDB() {}

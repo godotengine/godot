@@ -118,6 +118,14 @@
 				Sets the camera_attributes created with [method camera_attributes_create] to the given camera.
 			</description>
 		</method>
+		<method name="camera_set_compositor">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="compositor" type="RID" />
+			<description>
+				Sets the compositor used by this camera. Equivalent to [member Camera3D.compositor].
+			</description>
+		</method>
 		<method name="camera_set_cull_mask">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
@@ -918,6 +926,54 @@
 				Sets the texture [param repeat] mode to use for the canvas texture specified by the [param canvas_texture] RID.
 			</description>
 		</method>
+		<method name="compositor_create">
+			<return type="RID" />
+			<description>
+				Creates a new compositor and adds it to the RenderingServer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+			</description>
+		</method>
+		<method name="compositor_effect_create">
+			<return type="RID" />
+			<description>
+				Creates a new rendering effect and adds it to the RenderingServer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+			</description>
+		</method>
+		<method name="compositor_effect_set_callback">
+			<return type="void" />
+			<param index="0" name="effect" type="RID" />
+			<param index="1" name="callback_type" type="int" enum="RenderingServer.CompositorEffectCallbackType" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Sets the callback type ([param callback_type]) and callback method([param callback]) for this rendering effect.
+			</description>
+		</method>
+		<method name="compositor_effect_set_enabled">
+			<return type="void" />
+			<param index="0" name="effect" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Enables/disables this rendering effect.
+			</description>
+		</method>
+		<method name="compositor_effect_set_flag">
+			<return type="void" />
+			<param index="0" name="effect" type="RID" />
+			<param index="1" name="flag" type="int" enum="RenderingServer.CompositorEffectFlags" />
+			<param index="2" name="set" type="bool" />
+			<description>
+				Sets the flag ([param flag]) for this rendering effect to [code]true[/code] or [code]false[/code] ([param set]).
+			</description>
+		</method>
+		<method name="compositor_set_compositor_effects">
+			<return type="void" />
+			<param index="0" name="compositor" type="RID" />
+			<param index="1" name="effects" type="RID[]" />
+			<description>
+				Sets the compositor effects for the specified compositor RID. [param effects] should be an array containing RIDs created with [method compositor_effect_create].
+			</description>
+		</method>
 		<method name="create_local_rendering_device" qualifiers="const">
 			<return type="RenderingDevice" />
 			<description>
@@ -958,7 +1014,7 @@
 				Sets the cull [param mask] in the decal specified by the [param decal] RID. Equivalent to [member Decal.cull_mask].
 			</description>
 		</method>
-		<method name="decal_set_distance_fade">
+		<method name="decal_set_distance_fade" keywords="decal_set_lod">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="enabled" type="bool" />
@@ -1145,6 +1201,7 @@
 			<param index="7" name="height_density" type="float" />
 			<param index="8" name="aerial_perspective" type="float" />
 			<param index="9" name="sky_affect" type="float" />
+			<param index="10" name="fog_mode" type="int" enum="RenderingServer.EnvironmentFogMode" default="0" />
 			<description>
 				Configures fog for the specified environment RID. See [code]fog_*[/code] properties in [Environment] for more information.
 			</description>
@@ -1556,11 +1613,11 @@
 				Returns [code]true[/code] if changes have been made to the RenderingServer's data. [method force_draw] is usually called if this happens.
 			</description>
 		</method>
-		<method name="has_feature" qualifiers="const">
+		<method name="has_feature" qualifiers="const" deprecated="This method has not been used since Godot 3.0.">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="RenderingServer.Features" />
 			<description>
-				Not yet implemented. Always returns [code]false[/code].
+				This method does nothing and always returns [code]false[/code].
 			</description>
 		</method>
 		<method name="has_os_feature" qualifiers="const">
@@ -1901,7 +1958,7 @@
 				Sets the cull mask for this 3D light. Lights only affect objects in the selected layers. Equivalent to [member Light3D.light_cull_mask].
 			</description>
 		</method>
-		<method name="light_set_distance_fade">
+		<method name="light_set_distance_fade" keywords="light_set_lod">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="enabled" type="bool" />
@@ -1937,7 +1994,7 @@
 				Sets the specified 3D light parameter. See [enum LightParam] for options. Equivalent to [method Light3D.set_param].
 			</description>
 		</method>
-		<method name="light_set_projector">
+		<method name="light_set_projector" keywords="light_set_cookie">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="texture" type="RID" />
@@ -2332,6 +2389,13 @@
 				[b]Note:[/b] If the buffer is in the engine's internal cache, it will have to be fetched from GPU memory and possibly decompressed. This means [method multimesh_get_buffer] is potentially a slow operation and should be avoided whenever possible.
 			</description>
 		</method>
+		<method name="multimesh_get_custom_aabb" qualifiers="const">
+			<return type="AABB" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Returns the custom AABB defined for this MultiMesh resource.
+			</description>
+		</method>
 		<method name="multimesh_get_instance_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="multimesh" type="RID" />
@@ -2440,6 +2504,14 @@
 				  - Position + Custom data: 16 floats (12 floats for Transform3D, 4 floats of custom data)
 				  - Position + Vertex color + Custom data: 20 floats (12 floats for Transform3D, 4 floats for Color, 4 floats of custom data)
 				[/codeblock]
+			</description>
+		</method>
+		<method name="multimesh_set_custom_aabb">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="aabb" type="AABB" />
+			<description>
+				Sets the custom AABB for this MultiMesh resource.
 			</description>
 		</method>
 		<method name="multimesh_set_mesh">
@@ -2894,7 +2966,7 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="layers" type="int" />
 			<description>
-				Sets the render cull mask for this reflection probe. Only instances with a matching cull mask will be rendered by this probe. Equivalent to [member ReflectionProbe.cull_mask].
+				Sets the render cull mask for this reflection probe. Only instances with a matching layer will be reflected by this probe. Equivalent to [member ReflectionProbe.cull_mask].
 			</description>
 		</method>
 		<method name="reflection_probe_set_enable_box_projection">
@@ -2945,6 +3017,14 @@
 				Sets the origin offset to be used when this reflection probe is in box project mode. Equivalent to [member ReflectionProbe.origin_offset].
 			</description>
 		</method>
+		<method name="reflection_probe_set_reflection_mask">
+			<return type="void" />
+			<param index="0" name="probe" type="RID" />
+			<param index="1" name="layers" type="int" />
+			<description>
+				Sets the render reflection mask for this reflection probe. Only instances with a matching layer will have reflections applied from this probe. Equivalent to [member ReflectionProbe.reflection_mask].
+			</description>
+		</method>
 		<method name="reflection_probe_set_resolution">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
@@ -2990,6 +3070,14 @@
 			<param index="1" name="effects" type="RID" />
 			<description>
 				Sets the camera attributes ([param effects]) that will be used with this scenario. See also [CameraAttributes].
+			</description>
+		</method>
+		<method name="scenario_set_compositor">
+			<return type="void" />
+			<param index="0" name="scenario" type="RID" />
+			<param index="1" name="compositor" type="RID" />
+			<description>
+				Sets the compositor ([param compositor]) that will be used with this scenario. See also [Compositor].
 			</description>
 		</method>
 		<method name="scenario_set_environment">
@@ -3363,19 +3451,19 @@
 				Returns a texture [RID] that can be used with [RenderingDevice].
 			</description>
 		</method>
-		<method name="texture_proxy_create" is_deprecated="true">
+		<method name="texture_proxy_create" deprecated="ProxyTexture was removed in Godot 4.">
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />
 			<description>
-				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method does nothing when called and always returns a null [RID].
+				This method does nothing and always returns an invalid [RID].
 			</description>
 		</method>
-		<method name="texture_proxy_update" is_deprecated="true">
+		<method name="texture_proxy_update" deprecated="ProxyTexture was removed in Godot 4.">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="proxy_to" type="RID" />
 			<description>
-				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method cannot be used anymore.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="texture_rd_create">
@@ -4036,8 +4124,7 @@
 		<constant name="MAX_GLOW_LEVELS" value="7">
 			The maximum number of glow levels that can be used with the glow post-processing effect.
 		</constant>
-		<constant name="MAX_CURSORS" value="8" is_deprecated="true">
-			[i]Deprecated.[/i] This constant is unused internally.
+		<constant name="MAX_CURSORS" value="8" deprecated="This constant is not used by the engine.">
 		</constant>
 		<constant name="MAX_2D_DIRECTIONAL_LIGHTS" value="8">
 			The maximum number of directional lights that can be rendered at a given time in 2D.
@@ -4809,6 +4896,38 @@
 			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times. If you need better quality, but still need to update the sky every frame, consider turning on [member ProjectSettings.rendering/reflections/sky_reflections/fast_filter_high_quality].
 			[b]Note:[/b] The fast filtering algorithm is limited to 256×256 cubemaps, so [method sky_set_radiance_size] must be set to [code]256[/code]. Otherwise, a warning is printed and the overridden radiance size is ignored.
 		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR" value="1" enum="CompositorEffectFlags">
+			The rendering effect requires the color buffer to be resolved if MSAA is enabled.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH" value="2" enum="CompositorEffectFlags">
+			The rendering effect requires the depth buffer to be resolved if MSAA is enabled.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS" value="4" enum="CompositorEffectFlags">
+			The rendering effect requires motion vectors to be produced.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS" value="8" enum="CompositorEffectFlags">
+			The rendering effect requires normals and roughness g-buffer to be produced (Forward+ only).
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR" value="16" enum="CompositorEffectFlags">
+			The rendering effect requires specular data to be separated out (Forward+ only).
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE" value="0" enum="CompositorEffectCallbackType">
+			The callback is called before our opaque rendering pass, but after depth prepass (if applicable).
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE" value="1" enum="CompositorEffectCallbackType">
+			The callback is called after our opaque rendering pass, but before our sky is rendered.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_SKY" value="2" enum="CompositorEffectCallbackType">
+			The callback is called after our sky is rendered, but before our back buffers are created (and if enabled, before subsurface scattering and/or screen space reflections).
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT" value="3" enum="CompositorEffectCallbackType">
+			The callback is called before our transparent rendering pass, but after our sky is rendered and we've created our back buffers.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT" value="4" enum="CompositorEffectCallbackType">
+			The callback is called after our transparent rendering pass, but before any build in post effects and output to our render target.
+		</constant>
+		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY" value="-1" enum="CompositorEffectCallbackType">
+		</constant>
 		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
 			Use the clear color as background.
 		</constant>
@@ -4865,6 +4984,12 @@
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_MIX" value="4" enum="EnvironmentGlowBlendMode">
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
+		</constant>
+		<constant name="ENV_FOG_MODE_EXPONENTIAL" value="0" enum="EnvironmentFogMode">
+			Use a physically-based fog model defined primarily by fog density.
+		</constant>
+		<constant name="ENV_FOG_MODE_DEPTH" value="1" enum="EnvironmentFogMode">
+			Use a simple fog model defined by start and end positions and a custom curve. While not physically accurate, this model can be useful when you need more artistic control.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
 			Output color as they came in. This can cause bright lighting to look blown out, with noticeable clipping in the output colors.
@@ -5098,13 +5223,13 @@
 		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
 			Only render the shadows from the object. The object itself will not be drawn.
 		</constant>
-		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode">
+		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode" keywords="LOD_FADE_DISABLED">
 			Disable visibility range fading for the given instance.
 		</constant>
-		<constant name="VISIBILITY_RANGE_FADE_SELF" value="1" enum="VisibilityRangeFadeMode">
+		<constant name="VISIBILITY_RANGE_FADE_SELF" value="1" enum="VisibilityRangeFadeMode" keywords="LOD_FADE_SELF">
 			Fade-out the given instance when it approaches its visibility range limits.
 		</constant>
-		<constant name="VISIBILITY_RANGE_FADE_DEPENDENCIES" value="2" enum="VisibilityRangeFadeMode">
+		<constant name="VISIBILITY_RANGE_FADE_DEPENDENCIES" value="2" enum="VisibilityRangeFadeMode" keywords="LOD_FADE_DEPENDENCIES">
 			Fade-in the given instance's dependencies when reaching its visibility range limits.
 		</constant>
 		<constant name="BAKE_CHANNEL_ALBEDO_ALPHA" value="0" enum="BakeChannels">
@@ -5332,11 +5457,9 @@
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
 			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
 		</constant>
-		<constant name="FEATURE_SHADERS" value="0" enum="Features">
-			Hardware supports shaders. This enum is currently unused in Godot 3.x.
+		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>
-		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features">
-			Hardware supports multithreading. This enum is currently unused in Godot 3.x.
+		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>
 	</constants>
 </class>

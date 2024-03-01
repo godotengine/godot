@@ -41,8 +41,8 @@ void TranslationPO::print_translation_map() {
 		return;
 	}
 
-	file->store_line("NPlural : " + String::num_int64(this->get_plural_forms()));
-	file->store_line("Plural rule : " + this->get_plural_rule());
+	file->store_line("NPlural : " + String::num_int64(get_plural_forms()));
+	file->store_line("Plural rule : " + get_plural_rule());
 	file->store_line("");
 
 	List<StringName> context_l;

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "object.h"
+#include "object.compat.inc"
 
 #include "core/core_string_names.h"
 #include "core/extension/gdextension_manager.h"
@@ -492,14 +493,22 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 			ClassDB::get_property_list(current_extension->class_name, p_list, true, this);
 
 			if (current_extension->get_property_list) {
-				uint32_t pcount;
-				const GDExtensionPropertyInfo *pinfo = current_extension->get_property_list(_extension_instance, &pcount);
-				for (uint32_t i = 0; i < pcount; i++) {
-					p_list->push_back(PropertyInfo(pinfo[i]));
+#ifdef TOOLS_ENABLED
+				// If this is a placeholder, we can't call into the GDExtension on the parent class,
+				// because we don't have a real instance of the class to give it.
+				if (likely(!_extension->is_placeholder)) {
+#endif
+					uint32_t pcount;
+					const GDExtensionPropertyInfo *pinfo = current_extension->get_property_list(_extension_instance, &pcount);
+					for (uint32_t i = 0; i < pcount; i++) {
+						p_list->push_back(PropertyInfo(pinfo[i]));
+					}
+					if (current_extension->free_property_list) {
+						current_extension->free_property_list(_extension_instance, pinfo);
+					}
+#ifdef TOOLS_ENABLED
 				}
-				if (current_extension->free_property_list) {
-					current_extension->free_property_list(_extension_instance, pinfo);
-				}
+#endif
 			}
 
 			current_extension = current_extension->parent;
@@ -728,7 +737,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 			r_error.expected = 0;
 			return Variant();
 		}
-		if (Object::cast_to<RefCounted>(this)) {
+		if (is_ref_counted()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
 		}
@@ -1464,6 +1473,7 @@ void Object::initialize_class() {
 	}
 	ClassDB::_add_class<Object>();
 	_bind_methods();
+	_bind_compatibility_methods();
 	initialized = true;
 }
 
@@ -1473,10 +1483,15 @@ String Object::tr(const StringName &p_message, const StringName &p_context) cons
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
+		String tr_msg = TranslationServer::get_singleton()->extractable_translate(p_message, p_context);
+		if (!tr_msg.is_empty()) {
+			return tr_msg;
+		}
+
 		return TranslationServer::get_singleton()->tool_translate(p_message, p_context);
-	} else {
-		return TranslationServer::get_singleton()->translate(p_message, p_context);
 	}
+
+	return TranslationServer::get_singleton()->translate(p_message, p_context);
 }
 
 String Object::tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -1489,10 +1504,15 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
+		String tr_msg = TranslationServer::get_singleton()->extractable_translate_plural(p_message, p_message_plural, p_n, p_context);
+		if (!tr_msg.is_empty()) {
+			return tr_msg;
+		}
+
 		return TranslationServer::get_singleton()->tool_translate_plural(p_message, p_message_plural, p_n, p_context);
-	} else {
-		return TranslationServer::get_singleton()->translate_plural(p_message, p_message_plural, p_n, p_context);
 	}
+
+	return TranslationServer::get_singleton()->translate_plural(p_message, p_message_plural, p_n, p_context);
 }
 
 void Object::_clear_internal_resource_paths(const Variant &p_var) {
@@ -1639,8 +1659,8 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_message_translation", "enable"), &Object::set_message_translation);
 	ClassDB::bind_method(D_METHOD("can_translate_messages"), &Object::can_translate_messages);
-	ClassDB::bind_method(D_METHOD("tr", "message", "context"), &Object::tr, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("tr_n", "message", "plural_message", "n", "context"), &Object::tr_n, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("tr", "message", "context"), &Object::tr, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("tr_n", "message", "plural_message", "n", "context"), &Object::tr_n, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
 	ClassDB::bind_method(D_METHOD("cancel_free"), &Object::cancel_free);
@@ -1683,6 +1703,7 @@ void Object::_bind_methods() {
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);
+	BIND_CONSTANT(NOTIFICATION_EXTENSION_RELOADED);
 
 	BIND_ENUM_CONSTANT(CONNECT_DEFERRED);
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
@@ -1791,6 +1812,16 @@ uint32_t Object::get_edited_version() const {
 #endif
 
 StringName Object::get_class_name_for_extension(const GDExtension *p_library) const {
+#ifdef TOOLS_ENABLED
+	// If this is the library this extension comes from and it's a placeholder, we
+	// have to return the closest native parent's class name, so that it doesn't try to
+	// use this like the real object.
+	if (unlikely(_extension && _extension->library == p_library && _extension->is_placeholder)) {
+		const StringName *class_name = _get_class_namev();
+		return *class_name;
+	}
+#endif
+
 	// Only return the class name per the extension if it matches the given p_library.
 	if (_extension && _extension->library == p_library) {
 		return _extension->class_name;
@@ -1918,13 +1949,15 @@ void Object::clear_internal_extension() {
 
 	// Clear the instance bindings.
 	_instance_binding_mutex.lock();
-	if (_instance_bindings[0].free_callback) {
-		_instance_bindings[0].free_callback(_instance_bindings[0].token, this, _instance_bindings[0].binding);
+	if (_instance_bindings) {
+		if (_instance_bindings[0].free_callback) {
+			_instance_bindings[0].free_callback(_instance_bindings[0].token, this, _instance_bindings[0].binding);
+		}
+		_instance_bindings[0].binding = nullptr;
+		_instance_bindings[0].token = nullptr;
+		_instance_bindings[0].free_callback = nullptr;
+		_instance_bindings[0].reference_callback = nullptr;
 	}
-	_instance_bindings[0].binding = nullptr;
-	_instance_bindings[0].token = nullptr;
-	_instance_bindings[0].free_callback = nullptr;
-	_instance_bindings[0].reference_callback = nullptr;
 	_instance_binding_mutex.unlock();
 
 	// Clear the virtual methods.

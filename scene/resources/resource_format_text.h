@@ -69,6 +69,7 @@ class ResourceLoaderText {
 	VariantParser::Tag next_tag;
 
 	ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
+	ResourceFormatLoader::CacheMode cache_mode_for_external = ResourceFormatLoader::CACHE_MODE_REUSE;
 
 	bool use_sub_threads = false;
 	float *progress = nullptr;

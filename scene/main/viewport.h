@@ -256,6 +256,7 @@ private:
 
 	bool physics_object_picking = false;
 	bool physics_object_picking_sort = false;
+	bool physics_object_picking_first_only = false;
 	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
@@ -276,7 +277,6 @@ private:
 	Ref<World2D> world_2d;
 
 	StringName input_group;
-	StringName gui_input_group;
 	StringName shortcut_input_group;
 	StringName unhandled_input_group;
 	StringName unhandled_key_input_group;
@@ -352,7 +352,7 @@ private:
 
 	struct GUI {
 		bool forced_mouse_focus = false; //used for menu buttons
-		bool mouse_in_viewport = true;
+		bool mouse_in_viewport = false;
 		bool key_event_accepted = false;
 		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
@@ -602,6 +602,8 @@ public:
 	bool get_physics_object_picking();
 	void set_physics_object_picking_sort(bool p_enable);
 	bool get_physics_object_picking_sort();
+	void set_physics_object_picking_first_only(bool p_enable);
+	bool get_physics_object_picking_first_only();
 
 	Variant gui_get_drag_data() const;
 

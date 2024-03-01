@@ -272,6 +272,8 @@ void register_editor_types() {
 	GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
 	GLOBAL_DEF("editor/import/use_multiple_threads", true);
 
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/import/atlas_max_width", PROPERTY_HINT_RANGE, "128,8192,1,or_greater"), 2048);
+
 	GLOBAL_DEF("editor/export/convert_text_resources_to_binary", true);
 
 	GLOBAL_DEF("editor/version_control/plugin_name", "");
@@ -281,6 +283,10 @@ void register_editor_types() {
 	Engine::Singleton ei_singleton = Engine::Singleton("EditorInterface", EditorInterface::get_singleton());
 	ei_singleton.editor_only = true;
 	Engine::get_singleton()->add_singleton(ei_singleton);
+
+	// Required as GDExtensions can register docs at init time way before this
+	// class is actually instantiated.
+	EditorHelp::init_gdext_pointers();
 
 	OS::get_singleton()->benchmark_end_measure("Editor", "Register Types");
 }

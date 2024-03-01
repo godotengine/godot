@@ -666,7 +666,7 @@ struct _VariantCall {
 			CharString cs;
 			cs.resize(p_instance->size() + 1);
 			memcpy(cs.ptrw(), r, p_instance->size());
-			cs[p_instance->size()] = 0;
+			cs[(int)p_instance->size()] = 0;
 
 			s = cs.get_data();
 		}
@@ -885,7 +885,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(int32_t), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit integer) to convert to PackedInt32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(int32_t));
 		return dest;
 	}
@@ -899,7 +899,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(int64_t), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit integer) to convert to PackedInt64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(int64_t));
 		return dest;
 	}
@@ -913,7 +913,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(float), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit float) to convert to PackedFloat32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(float));
 		return dest;
 	}
@@ -927,7 +927,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(double), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit double) to convert to PackedFloat64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
 		return dest;
 	}
@@ -1071,14 +1071,14 @@ struct _VariantCall {
 
 	static ConstantData *constant_data;
 
-	static void add_constant(int p_type, StringName p_constant_name, int64_t p_constant_value) {
+	static void add_constant(int p_type, const StringName &p_constant_name, int64_t p_constant_value) {
 		constant_data[p_type].value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].value_ordered.push_back(p_constant_name);
 #endif
 	}
 
-	static void add_variant_constant(int p_type, StringName p_constant_name, const Variant &p_constant_value) {
+	static void add_variant_constant(int p_type, const StringName &p_constant_name, const Variant &p_constant_value) {
 		constant_data[p_type].variant_value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].variant_value_ordered.push_back(p_constant_name);
@@ -1091,7 +1091,7 @@ struct _VariantCall {
 
 	static EnumData *enum_data;
 
-	static void add_enum_constant(int p_type, StringName p_enum_type_name, StringName p_enumeration_name, int p_enum_value) {
+	static void add_enum_constant(int p_type, const StringName &p_enum_type_name, const StringName &p_enumeration_name, int p_enum_value) {
 		enum_data[p_type].value[p_enum_type_name][p_enumeration_name] = p_enum_value;
 	}
 };
@@ -1504,7 +1504,7 @@ void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums
 	}
 }
 
-void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations) {
+void Variant::get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
 	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
@@ -1516,7 +1516,7 @@ void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_
 	}
 }
 
-int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid) {
+int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid) {
 	if (r_valid) {
 		*r_valid = false;
 	}
@@ -2033,11 +2033,13 @@ static void _register_variant_builtin_methods() {
 	bind_method(NodePath, get_subname, sarray("idx"), varray());
 	bind_method(NodePath, get_concatenated_names, sarray(), varray());
 	bind_method(NodePath, get_concatenated_subnames, sarray(), varray());
+	bind_method(NodePath, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(NodePath, get_as_property_path, sarray(), varray());
 	bind_method(NodePath, is_empty, sarray(), varray());
 
 	/* Callable */
 
+	bind_static_method(Callable, create, sarray("variant", "method"), varray());
 	bind_method(Callable, callv, sarray("arguments"), varray());
 	bind_method(Callable, is_null, sarray(), varray());
 	bind_method(Callable, is_custom, sarray(), varray());

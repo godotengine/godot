@@ -57,6 +57,11 @@ public:
 		Vector<String> install_files;
 	};
 
+	enum NetworkMode {
+		NETWORK_OFFLINE,
+		NETWORK_ONLINE,
+	};
+
 private:
 	struct VariantContainer {
 		int order = 0;
@@ -105,8 +110,9 @@ private:
 
 	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
 	void _load_godot2_text_editor_theme();
-	bool _save_text_editor_theme(String p_file);
-	bool _is_default_text_editor_theme(String p_theme_name);
+	void _load_default_visual_shader_editor_theme();
+	bool _save_text_editor_theme(const String &p_file);
+	bool _is_default_text_editor_theme(const String &p_theme_name);
 	const String _get_project_metadata_path() const;
 
 protected:
@@ -149,8 +155,8 @@ public:
 	void set_resource_clipboard(const Ref<Resource> &p_resource) { clipboard = p_resource; }
 	Ref<Resource> get_resource_clipboard() const { return clipboard; }
 
-	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
-	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;
+	void set_project_metadata(const String &p_section, const String &p_key, const Variant &p_data);
+	Variant get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const;
 
 	void set_favorites(const Vector<String> &p_favorites);
 	Vector<String> get_favorites() const;
@@ -158,11 +164,9 @@ public:
 	Vector<String> get_recent_dirs() const;
 	void load_favorites_and_recent_dirs();
 
-	bool is_dark_theme();
-
 	void list_text_editor_themes();
 	void load_text_editor_theme();
-	bool import_text_editor_theme(String p_file);
+	bool import_text_editor_theme(const String &p_file);
 	bool save_text_editor_theme();
 	bool save_text_editor_theme_as(String p_file);
 	bool is_default_text_editor_theme();

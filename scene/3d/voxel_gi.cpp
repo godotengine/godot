@@ -79,7 +79,7 @@ Dictionary VoxelGIData::_get_data() const {
 	if (otsize != Vector3i()) {
 		Ref<Image> img = Image::create_from_data(otsize.x * otsize.y, otsize.z, false, Image::FORMAT_L8, get_distance_field());
 		Vector<uint8_t> df_png = img->save_png_to_buffer();
-		ERR_FAIL_COND_V(df_png.size() == 0, Dictionary());
+		ERR_FAIL_COND_V(df_png.is_empty(), Dictionary());
 		d["octree_df_png"] = df_png;
 	} else {
 		d["octree_df"] = Vector<uint8_t>();

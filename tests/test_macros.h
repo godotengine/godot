@@ -161,11 +161,11 @@ int register_test_command(String p_command, TestFunc p_function);
 		MessageQueue::get_singleton()->flush();                              \
 	}
 
-#define _UPDATE_EVENT_MODIFERS(m_event, m_modifers)                                 \
-	m_event->set_shift_pressed(((m_modifers)&KeyModifierMask::SHIFT) != Key::NONE); \
-	m_event->set_alt_pressed(((m_modifers)&KeyModifierMask::ALT) != Key::NONE);     \
-	m_event->set_ctrl_pressed(((m_modifers)&KeyModifierMask::CTRL) != Key::NONE);   \
-	m_event->set_meta_pressed(((m_modifers)&KeyModifierMask::META) != Key::NONE);
+#define _UPDATE_EVENT_MODIFERS(m_event, m_modifers)                                   \
+	m_event->set_shift_pressed(((m_modifers) & KeyModifierMask::SHIFT) != Key::NONE); \
+	m_event->set_alt_pressed(((m_modifers) & KeyModifierMask::ALT) != Key::NONE);     \
+	m_event->set_ctrl_pressed(((m_modifers) & KeyModifierMask::CTRL) != Key::NONE);   \
+	m_event->set_meta_pressed(((m_modifers) & KeyModifierMask::META) != Key::NONE);
 
 #define _CREATE_GUI_MOUSE_EVENT(m_screen_pos, m_input, m_mask, m_modifers) \
 	Ref<InputEventMouseButton> event;                                      \

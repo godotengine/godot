@@ -36,11 +36,12 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/menu_button.h"
@@ -238,6 +239,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			MenuButton *mb = memnew(MenuButton);
 			mb->set_text(anim->get_animation());
 			mb->set_icon(get_editor_theme_icon(SNAME("Animation")));
+			mb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			mb->set_disabled(read_only);
 			Array options;
 
@@ -492,7 +494,7 @@ void AnimationNodeBlendTreeEditor::_disconnection_request(const String &p_from, 
 	updating = false;
 }
 
-void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, Array p_options, const String &p_node) {
+void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, const Array &p_options, const String &p_node) {
 	String option = p_options[p_index];
 
 	Ref<AnimationNodeAnimation> anim = blend_tree->get_node(p_node);
@@ -938,7 +940,9 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			_update_editor_settings();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				_update_editor_settings();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

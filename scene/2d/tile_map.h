@@ -31,8 +31,8 @@
 #ifndef TILE_MAP_H
 #define TILE_MAP_H
 
-#include "scene/2d/node_2d.h"
-#include "scene/resources/tile_set.h"
+#include "scene/2d/tile_map_layer_group.h"
+#include "scene/resources/2d/tile_set.h"
 
 class Control;
 class TileMapLayer;
@@ -45,10 +45,11 @@ enum TileMapDataFormat {
 	FORMAT_MAX,
 };
 
-class TileMap : public Node2D {
-	GDCLASS(TileMap, Node2D);
+class TileMap : public TileMapLayerGroup {
+	GDCLASS(TileMap, TileMapLayerGroup)
 
 public:
+	// Kept for compatibility, but should use TileMapLayer::VisibilityMode instead.
 	enum VisibilityMode {
 		VISIBILITY_MODE_DEFAULT,
 		VISIBILITY_MODE_FORCE_SHOW,
@@ -64,24 +65,20 @@ private:
 	static constexpr float FP_ADJUST = 0.00001;
 
 	// Properties.
-	Ref<TileSet> tile_set;
 	int rendering_quadrant_size = 16;
 	bool collision_animatable = false;
 	VisibilityMode collision_visibility_mode = VISIBILITY_MODE_DEFAULT;
 	VisibilityMode navigation_visibility_mode = VISIBILITY_MODE_DEFAULT;
 
 	// Layers.
-	LocalVector<Ref<TileMapLayer>> layers;
-	Ref<TileMapLayer> default_layer; // Dummy layer to fetch default values.
-	int selected_layer = -1;
-	bool pending_update = false;
+	LocalVector<TileMapLayer *> layers;
+	TileMapLayer *default_layer; // Dummy layer to fetch default values.
 
+	// Transforms for collision_animatable.
 	Transform2D last_valid_transform;
 	Transform2D new_transform;
 
-	void _tile_set_changed();
-
-	void _update_notify_local_transform();
+	void _emit_changed();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -97,13 +94,13 @@ protected:
 	Rect2i _get_used_rect_bind_compat_78328();
 	void _set_quadrant_size_compat_81070(int p_quadrant_size);
 	int _get_quadrant_size_compat_81070() const;
+	VisibilityMode _get_collision_visibility_mode_bind_compat_87115();
+	VisibilityMode _get_navigation_visibility_mode_bind_compat_87115();
 
 	static void _bind_compatibility_methods();
 #endif
 
 public:
-	static Vector2i transform_coords_layout(const Vector2i &p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout);
-
 #ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 #endif
@@ -112,17 +109,10 @@ public:
 	void force_update(int p_layer);
 #endif
 
-	// Called by TileMapLayers.
-	void queue_internal_update();
-	void _internal_update();
-
-	void set_tileset(const Ref<TileSet> &p_tileset);
-	Ref<TileSet> get_tileset() const;
-
 	void set_rendering_quadrant_size(int p_size);
 	int get_rendering_quadrant_size() const;
 
-	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_animation_offset = 0.0);
+	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
 
 	// Layers management.
 	int get_layers_count() const;
@@ -147,18 +137,15 @@ public:
 	void set_layer_navigation_map(int p_layer, RID p_map);
 	RID get_layer_navigation_map(int p_layer) const;
 
-	void set_selected_layer(int p_layer_id); // For editor use.
-	int get_selected_layer() const;
-
-	void set_collision_animatable(bool p_enabled);
+	void set_collision_animatable(bool p_collision_animatable);
 	bool is_collision_animatable() const;
 
 	// Debug visibility modes.
 	void set_collision_visibility_mode(VisibilityMode p_show_collision);
-	VisibilityMode get_collision_visibility_mode();
+	VisibilityMode get_collision_visibility_mode() const;
 
 	void set_navigation_visibility_mode(VisibilityMode p_show_navigation);
-	VisibilityMode get_navigation_visibility_mode();
+	VisibilityMode get_navigation_visibility_mode() const;
 
 	// Cells accessors.
 	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
@@ -192,7 +179,6 @@ public:
 
 	Vector2 map_to_local(const Vector2i &p_pos) const;
 	Vector2i local_to_map(const Vector2 &p_pos) const;
-
 	bool is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const;
 	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
 
@@ -202,8 +188,7 @@ public:
 
 	// Override some methods of the CanvasItem class to pass the changes to the quadrants CanvasItems.
 	virtual void set_light_mask(int p_light_mask) override;
-	virtual void set_material(const Ref<Material> &p_material) override;
-	virtual void set_use_parent_material(bool p_use_parent_material) override;
+	virtual void set_self_modulate(const Color &p_self_modulate) override;
 	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
 	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
 
@@ -224,8 +209,7 @@ public:
 	void notify_runtime_tile_data_update(int p_layer = -1);
 
 	// Helpers?
-	TypedArray<Vector2i> get_surrounding_cells(const Vector2i &coords);
-	void draw_cells_outline(Control *p_control, const RBSet<Vector2i> &p_cells, Color p_color, Transform2D p_transform = Transform2D());
+	TypedArray<Vector2i> get_surrounding_cells(const Vector2i &p_coords);
 
 	// Virtual function to modify the TileData at runtime.
 	GDVIRTUAL2R(bool, _use_tile_data_runtime_update, int, Vector2i);

@@ -202,7 +202,7 @@ public:
 		uint32_t page = count >> page_size_shift;
 		uint32_t offset = count & page_size_mask;
 
-		if (!std::is_trivially_constructible<T>::value) {
+		if constexpr (!std::is_trivially_constructible_v<T>) {
 			memnew_placement(&page_data[page][offset], T(p_value));
 		} else {
 			page_data[page][offset] = p_value;
@@ -214,7 +214,7 @@ public:
 	_FORCE_INLINE_ void pop_back() {
 		ERR_FAIL_COND(count == 0);
 
-		if (!std::is_trivially_destructible<T>::value) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
 			uint32_t page = (count - 1) >> page_size_shift;
 			uint32_t offset = (count - 1) & page_size_mask;
 			page_data[page][offset].~T();
@@ -229,9 +229,15 @@ public:
 		count--;
 	}
 
+	void remove_at_unordered(uint64_t p_index) {
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
+		(*this)[p_index] = (*this)[count - 1];
+		pop_back();
+	}
+
 	void clear() {
 		//destruct if needed
-		if (!std::is_trivially_destructible<T>::value) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
 			for (uint64_t i = 0; i < count; i++) {
 				uint32_t page = i >> page_size_shift;
 				uint32_t offset = i & page_size_mask;
@@ -312,13 +318,13 @@ public:
 				uint32_t to_copy = MIN(page_size - new_remainder, remainder);
 
 				for (uint32_t i = 0; i < to_copy; i++) {
-					if (!std::is_trivially_constructible<T>::value) {
+					if constexpr (!std::is_trivially_constructible_v<T>) {
 						memnew_placement(&dst_page[i + new_remainder], T(remainder_page[i + remainder - to_copy]));
 					} else {
 						dst_page[i + new_remainder] = remainder_page[i + remainder - to_copy];
 					}
 
-					if (!std::is_trivially_destructible<T>::value) {
+					if constexpr (!std::is_trivially_destructible_v<T>) {
 						remainder_page[i + remainder - to_copy].~T();
 					}
 				}

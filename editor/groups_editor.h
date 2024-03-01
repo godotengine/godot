@@ -78,14 +78,14 @@ class GroupsEditor : public VBoxContainer {
 	Button *add = nullptr;
 	Tree *tree = nullptr;
 
-	HashMap<Node *, HashMap<StringName, bool>> scene_groups_cache;
+	HashMap<ObjectID, HashMap<StringName, bool>> scene_groups_cache;
 	HashMap<StringName, bool> scene_groups_for_caching;
 
 	HashMap<StringName, bool> scene_groups;
 	HashMap<StringName, String> global_groups;
 
-	void _update_scene_groups(Node *p_node);
-	void _cache_scene_groups(Node *p_node);
+	void _update_scene_groups(const ObjectID &p_id);
+	void _cache_scene_groups(const ObjectID &p_id);
 
 	void _show_add_group_dialog();
 	void _show_rename_group_dialog();

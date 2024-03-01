@@ -41,6 +41,10 @@
 #include "editor/editor_settings.h"
 #include "servers/rendering/rendering_device_binds.h"
 
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#endif
+
 //uncomment this if you want to see textures from all the process saved
 //#define DEBUG_TEXTURES
 
@@ -49,7 +53,7 @@ void LightmapperRD::add_mesh(const MeshData &p_mesh) {
 	ERR_FAIL_COND(p_mesh.emission_on_uv2.is_null() || p_mesh.emission_on_uv2->is_empty());
 	ERR_FAIL_COND(p_mesh.albedo_on_uv2->get_width() != p_mesh.emission_on_uv2->get_width());
 	ERR_FAIL_COND(p_mesh.albedo_on_uv2->get_height() != p_mesh.emission_on_uv2->get_height());
-	ERR_FAIL_COND(p_mesh.points.size() == 0);
+	ERR_FAIL_COND(p_mesh.points.is_empty());
 	MeshInstance mi;
 	mi.data = p_mesh;
 	mesh_instances.push_back(mi);
@@ -703,7 +707,7 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 		raster_push_constant.uv_offset[0] = -0.5f / float(atlas_size.x);
 		raster_push_constant.uv_offset[1] = -0.5f / float(atlas_size.y);
 
-		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
 		//draw opaque
 		rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline);
 		rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
@@ -769,7 +773,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 
 #ifdef DEBUG_TEXTURES
 	for (int i = 0; i < atlas_slices; i++) {
-		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+		Vector<uint8_t> s = rd->texture_get_data(source_light_tex, i);
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->convert(Image::FORMAT_RGBA8);
 		img->save_png("res://5_dilated_" + itos(i) + ".png");
@@ -1017,7 +1021,35 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 #endif
 
-	RenderingDevice *rd = RenderingDevice::get_singleton()->create_local_device();
+	// Attempt to create a local device by requesting it from rendering server first.
+	// If that fails because the current renderer is not implemented on top of RD, we fall back to creating
+	// a local rendering device manually depending on the current platform.
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
+	if (rd == nullptr) {
+#if defined(RD_ENABLED)
+#if defined(VULKAN_ENABLED)
+		rcd = memnew(RenderingContextDriverVulkan);
+		rd = memnew(RenderingDevice);
+#endif
+#endif
+		if (rcd != nullptr && rd != nullptr) {
+			err = rcd->initialize();
+			if (err == OK) {
+				err = rd->initialize(rcd);
+			}
+
+			if (err != OK) {
+				memdelete(rd);
+				memdelete(rcd);
+				rd = nullptr;
+				rcd = nullptr;
+			}
+		}
+	}
+
+	ERR_FAIL_NULL_V(rd, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
 	RID albedo_array_tex;
 	RID emission_array_tex;
@@ -1187,7 +1219,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	//shaders
 	Ref<RDShaderFile> raster_shader;
 	raster_shader.instantiate();
-	Error err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
+	err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
 	if (err != OK) {
 		raster_shader->print_errors("raster_shader");
 
@@ -1195,6 +1227,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_BUFFERS
 
 		memdelete(rd);
+
+		if (rcd != nullptr) {
+			memdelete(rcd);
+		}
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
@@ -1367,6 +1403,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_BUFFERS
 		FREE_RASTER_RESOURCES
 		memdelete(rd);
+
+		if (rcd != nullptr) {
+			memdelete(rcd);
+		}
+
 		compute_shader->print_errors("compute_shader");
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -1711,7 +1752,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			push_constant.ray_from = i * max_rays;
 			push_constant.ray_to = MIN((i + 1) * max_rays, int32_t(push_constant.ray_count));
 			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, Math::division_round_up(probe_positions.size(), 64), 1, 1);
+			rd->compute_list_dispatch(compute_list, Math::division_round_up((int)probe_positions.size(), 64), 1, 1);
 
 			rd->compute_list_end(); //done
 			rd->submit();
@@ -1789,6 +1830,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_RASTER_RESOURCES
 		FREE_COMPUTE_RESOURCES
 		memdelete(rd);
+
+		if (rcd != nullptr) {
+			memdelete(rcd);
+		}
+
 		blendseams_shader->print_errors("blendseams_shader");
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -1863,7 +1909,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				seams_push_constant.slice = uint32_t(i * subslices + k);
 				seams_push_constant.debug = debug;
 
-				RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
+				RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
 
 				rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
 				rd->draw_list_bind_uniform_set(draw_list, blendseams_raster_uniform, 1);
@@ -1964,6 +2010,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	memdelete(rd);
 
+	if (rcd != nullptr) {
+		memdelete(rcd);
+	}
+
 	return BAKE_OK;
 }
 
@@ -1986,7 +2036,7 @@ Variant LightmapperRD::get_bake_mesh_userdata(int p_index) const {
 }
 
 Rect2 LightmapperRD::get_bake_mesh_uv_scale(int p_index) const {
-	ERR_FAIL_COND_V(bake_textures.size() == 0, Rect2());
+	ERR_FAIL_COND_V(bake_textures.is_empty(), Rect2());
 	Rect2 uv_ofs;
 	Vector2 atlas_size = Vector2(bake_textures[0]->get_width(), bake_textures[0]->get_height());
 	uv_ofs.position = Vector2(mesh_instances[p_index].offset) / atlas_size;

@@ -115,7 +115,7 @@ void ZipArchive::close_handle(unzFile p_file) const {
 	unzClose(p_file);
 }
 
-unzFile ZipArchive::get_file_handle(String p_file) const {
+unzFile ZipArchive::get_file_handle(const String &p_file) const {
 	ERR_FAIL_COND_V_MSG(!file_exists(p_file), nullptr, "File '" + p_file + " doesn't exist.");
 	File file = files[p_file];
 
@@ -206,7 +206,7 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint6
 	return true;
 }
 
-bool ZipArchive::file_exists(String p_name) const {
+bool ZipArchive::file_exists(const String &p_name) const {
 	return files.has(p_name);
 }
 

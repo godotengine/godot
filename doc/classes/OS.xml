@@ -39,7 +39,7 @@
 			<param index="0" name="arguments" type="PackedStringArray" />
 			<description>
 				Creates a new instance of Godot that runs independently. The [param arguments] are used in the given order and separated by a space.
-				If the process is successfully created, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, the method will return [code]-1[/code].
+				If the process is successfully created, this method returns the new process' ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
 				See [method create_process] if you wish to run a different process.
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
@@ -125,6 +125,7 @@
 				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
+				[b]Note:[/b] On Android, system commands such as [code]dumpsys[/code] can only be run on a rooted device.
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
@@ -204,7 +205,7 @@
 				Returns the command-line user arguments passed to the engine. User arguments are ignored by the engine and reserved for the user. They are passed after the double dash [code]--[/code] argument. [code]++[/code] may be used when [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				[codeblock]
 				# Godot has been executed with the following command:
-				# godot --fullscreen -- --level=2 --hardcore 
+				# godot --fullscreen -- --level=2 --hardcore
 
 				OS.get_cmdline_args()      # Returns ["--fullscreen", "--level=2", "--hardcore"]
 				OS.get_cmdline_user_args() # Returns ["--level=2", "--hardcore"]
@@ -341,7 +342,7 @@
 				- On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
 				- On Android, this is [code]"Android"[/code].
 				- On iOS, this is [code]"iOS"[/code].
-				- On the web, this is [code]"Web"[/code].
+				- On Web, this is [code]"Web"[/code].
 				[b]Note:[/b] Custom builds of the engine may support additional platforms, such as consoles, possibly returning other names.
 				[codeblocks]
 				[gdscript]
@@ -537,7 +538,7 @@
 			<description>
 				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
-				[b]Note:[/b] On the Web platform, one of the following additional tags is defined to indicate host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
+				[b]Note:[/b] On the Web platform, one of the following additional tags is defined to indicate the host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
 			</description>
 		</method>
 		<method name="is_debug_build" qualifiers="const">
@@ -644,6 +645,7 @@
 			<description>
 				Reads a user input string from the standard input (usually the terminal). This operation is [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread. The thread calling [method read_string_from_stdin] will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. Otherwise, the standard input will not work correctly. If you need a single executable with console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
 		<method name="request_permission">

@@ -45,7 +45,7 @@
 
 class EGLManager {
 private:
-	// An EGL-side rappresentation of a display with its own rendering
+	// An EGL-side representation of a display with its own rendering
 	// context.
 	struct GLDisplay {
 		void *display = nullptr;

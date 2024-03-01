@@ -80,6 +80,7 @@ class Path2DEditor : public HBoxContainer {
 	enum Action {
 		ACTION_NONE,
 		ACTION_MOVING_POINT,
+		ACTION_MOVING_NEW_POINT,
 		ACTION_MOVING_IN,
 		ACTION_MOVING_OUT,
 	};

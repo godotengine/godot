@@ -250,7 +250,7 @@ GeometryInstance3D::VisibilityRangeFadeMode GeometryInstance3D::get_visibility_r
 	return visibility_range_fade_mode;
 }
 
-const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringName p_name) const {
+const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringName &p_name) const {
 	StringName *r = instance_shader_parameter_property_remap.getptr(p_name);
 	if (!r) {
 		String s = p_name;

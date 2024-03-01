@@ -253,8 +253,9 @@ void CodeEdit::_notification(int p_what) {
 void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
 	if (mb.is_valid()) {
-		/* Ignore mouse clicks in IME input mode. */
+		// Ignore mouse clicks in IME input mode, let TextEdit handle it.
 		if (has_ime_text()) {
+			TextEdit::gui_input(p_gui_input);
 			return;
 		}
 
@@ -1823,14 +1824,14 @@ void CodeEdit::create_code_region() {
 		}
 		int to_line = get_selection_to_line(caret_idx);
 		set_line(to_line, get_line(to_line) + "\n" + code_region_end_string);
-		insert_line_at(from_line, code_region_start_string + " " + RTR("New Code Region"));
+		insert_line_at(from_line, code_region_start_string + " " + atr(ETR("New Code Region")));
 		fold_line(from_line);
 	}
 
 	// Select name of the first region to allow quick edit.
 	remove_secondary_carets();
 	set_caret_line(first_region_start);
-	int tag_length = code_region_start_string.length() + RTR("New Code Region").length() + 1;
+	int tag_length = code_region_start_string.length() + atr(ETR("New Code Region")).length() + 1;
 	set_caret_column(tag_length);
 	select(first_region_start, code_region_start_string.length() + 1, first_region_start, tag_length);
 
@@ -2635,7 +2636,7 @@ void CodeEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_text_for_code_completion"), &CodeEdit::get_text_for_code_completion);
 	ClassDB::bind_method(D_METHOD("request_code_completion", "force"), &CodeEdit::request_code_completion, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant::NIL), DEFVAL(LOCATION_OTHER));
+	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant()), DEFVAL(LOCATION_OTHER));
 	ClassDB::bind_method(D_METHOD("update_code_completion_options", "force"), &CodeEdit::update_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_options"), &CodeEdit::get_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_option", "index"), &CodeEdit::get_code_completion_option);

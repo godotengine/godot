@@ -379,6 +379,7 @@ public:
 		TEXTURE_SLICE_CUBEMAP,
 		TEXTURE_SLICE_3D,
 		TEXTURE_SLICE_2D_ARRAY,
+		TEXTURE_SLICE_MAX
 	};
 
 	/*****************/
@@ -819,6 +820,17 @@ public:
 		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
 	};
 
+	enum SubgroupOperations {
+		SUBGROUP_BASIC_BIT = 1,
+		SUBGROUP_VOTE_BIT = 2,
+		SUBGROUP_ARITHMETIC_BIT = 4,
+		SUBGROUP_BALLOT_BIT = 8,
+		SUBGROUP_SHUFFLE_BIT = 16,
+		SUBGROUP_SHUFFLE_RELATIVE_BIT = 32,
+		SUBGROUP_CLUSTERED_BIT = 64,
+		SUBGROUP_QUAD_BIT = 128,
+	};
+
 	////////////////////////////////////////////
 	// PROTECTED STUFF
 	// Not exposed by RenderingDevice, but shared
@@ -910,6 +922,7 @@ protected:
 
 		Vector<Vector<ShaderUniform>> uniform_sets;
 		Vector<ShaderSpecializationConstant> specialization_constants;
+		Vector<ShaderStage> stages;
 	};
 
 	struct ShaderReflection : public ShaderDescription {

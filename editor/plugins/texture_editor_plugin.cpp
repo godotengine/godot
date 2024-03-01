@@ -30,8 +30,8 @@
 
 #include "texture_editor_plugin.h"
 
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/animated_texture.h"

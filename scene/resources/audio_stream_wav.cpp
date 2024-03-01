@@ -213,8 +213,8 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 			final_r = final; //copy to right channel if stereo
 		}
 
-		p_dst->l = final / 32767.0;
-		p_dst->r = final_r / 32767.0;
+		p_dst->left = final / 32767.0;
+		p_dst->right = final_r / 32767.0;
 		p_dst++;
 
 		p_offset += p_increment;

@@ -31,6 +31,7 @@
 #include "display_server.h"
 
 #include "core/input/input.h"
+#include "scene/resources/atlas_texture.h"
 #include "scene/resources/texture.h"
 #include "servers/display_server_headless.h"
 
@@ -46,6 +47,10 @@ DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[Displa
 };
 
 int DisplayServer::server_create_count = 1;
+
+void DisplayServer::help_set_search_callbacks(const Callable &p_search_callback, const Callable &p_action_callback) {
+	WARN_PRINT("Native help is not supported by this display server.");
+}
 
 int DisplayServer::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	WARN_PRINT("Global menus not supported by this display server.");
@@ -532,6 +537,11 @@ Error DisplayServer::file_dialog_show(const String &p_title, const String &p_cur
 	return OK;
 }
 
+Error DisplayServer::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	WARN_PRINT("Native dialogs not supported by this display server.");
+	return OK;
+}
+
 int DisplayServer::keyboard_get_layout_count() const {
 	return 0;
 }
@@ -582,6 +592,27 @@ void DisplayServer::set_icon(const Ref<Image> &p_icon) {
 	WARN_PRINT("Icon not supported by this display server.");
 }
 
+DisplayServer::IndicatorID DisplayServer::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+	WARN_PRINT("Status indicator not supported by this display server.");
+	return INVALID_INDICATOR_ID;
+}
+
+void DisplayServer::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
+void DisplayServer::status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) {
+	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
+void DisplayServer::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
+	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
+void DisplayServer::delete_status_indicator(IndicatorID p_id) {
+	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
 int64_t DisplayServer::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
 	WARN_PRINT("Native handle not supported by this display server.");
 	return 0;
@@ -596,12 +627,18 @@ DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window)
 	return VSyncMode::VSYNC_ENABLED;
 }
 
+DisplayServer::WindowID DisplayServer::get_focused_window() const {
+	return MAIN_WINDOW_ID; // Proper value for single windows.
+}
+
 void DisplayServer::set_context(Context p_context) {
 }
 
 void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
+
+	ClassDB::bind_method(D_METHOD("help_set_search_callbacks", "search_callback", "action_callback"), &DisplayServer::help_set_search_callbacks);
 
 	ClassDB::bind_method(D_METHOD("global_menu_set_popup_callbacks", "menu_root", "open_callback", "close_callback"), &DisplayServer::global_menu_set_popup_callbacks);
 	ClassDB::bind_method(D_METHOD("global_menu_add_submenu_item", "menu_root", "label", "submenu", "index"), &DisplayServer::global_menu_add_submenu_item, DEFVAL(-1));
@@ -675,6 +712,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_dark_mode_supported"), &DisplayServer::is_dark_mode_supported);
 	ClassDB::bind_method(D_METHOD("is_dark_mode"), &DisplayServer::is_dark_mode);
 	ClassDB::bind_method(D_METHOD("get_accent_color"), &DisplayServer::get_accent_color);
+	ClassDB::bind_method(D_METHOD("get_base_color"), &DisplayServer::get_base_color);
+	ClassDB::bind_method(D_METHOD("set_system_theme_change_callback", "callable"), &DisplayServer::set_system_theme_change_callback);
 
 	ClassDB::bind_method(D_METHOD("mouse_set_mode", "mouse_mode"), &DisplayServer::mouse_set_mode);
 	ClassDB::bind_method(D_METHOD("mouse_get_mode"), &DisplayServer::mouse_get_mode);
@@ -800,6 +839,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
 
 	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::file_dialog_show);
+	ClassDB::bind_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback"), &DisplayServer::file_dialog_with_options_show);
 
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_count"), &DisplayServer::keyboard_get_layout_count);
 	ClassDB::bind_method(D_METHOD("keyboard_get_current_layout"), &DisplayServer::keyboard_get_current_layout);
@@ -814,6 +854,12 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &DisplayServer::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "image"), &DisplayServer::set_icon);
+
+	ClassDB::bind_method(D_METHOD("create_status_indicator", "icon", "tooltip", "callback"), &DisplayServer::create_status_indicator);
+	ClassDB::bind_method(D_METHOD("status_indicator_set_icon", "id", "icon"), &DisplayServer::status_indicator_set_icon);
+	ClassDB::bind_method(D_METHOD("status_indicator_set_tooltip", "id", "tooltip"), &DisplayServer::status_indicator_set_tooltip);
+	ClassDB::bind_method(D_METHOD("status_indicator_set_callback", "id", "callback"), &DisplayServer::status_indicator_set_callback);
+	ClassDB::bind_method(D_METHOD("delete_status_indicator", "id"), &DisplayServer::delete_status_indicator);
 
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_count"), &DisplayServer::tablet_get_driver_count);
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_name", "idx"), &DisplayServer::tablet_get_driver_name);
@@ -841,6 +887,8 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_TEXT_TO_SPEECH);
 	BIND_ENUM_CONSTANT(FEATURE_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(FEATURE_SCREEN_CAPTURE);
+	BIND_ENUM_CONSTANT(FEATURE_STATUS_INDICATOR);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_HELP);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -855,6 +903,7 @@ void DisplayServer::_bind_methods() {
 
 	BIND_CONSTANT(MAIN_WINDOW_ID);
 	BIND_CONSTANT(INVALID_WINDOW_ID);
+	BIND_CONSTANT(INVALID_INDICATOR_ID);
 
 	BIND_ENUM_CONSTANT(SCREEN_LANDSCAPE);
 	BIND_ENUM_CONSTANT(SCREEN_PORTRAIT);
@@ -937,6 +986,43 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_ENDED);
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_CANCELED);
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_BOUNDARY);
+}
+
+Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot, Rect2 &r_atlas_rect) {
+	Ref<Image> image;
+	ERR_FAIL_COND_V_MSG(p_hotspot.x < 0 || p_hotspot.y < 0, image, "Hotspot outside cursor image.");
+
+	Size2 texture_size;
+
+	Ref<Texture2D> texture = p_cursor;
+	if (texture.is_valid()) {
+		Ref<AtlasTexture> atlas_texture = p_cursor;
+
+		if (atlas_texture.is_valid()) {
+			texture = atlas_texture->get_atlas();
+			r_atlas_rect.size = texture->get_size();
+			r_atlas_rect.position = atlas_texture->get_region().position;
+			texture_size = atlas_texture->get_region().size;
+		} else {
+			texture_size = texture->get_size();
+		}
+		image = texture->get_image();
+	} else {
+		image = p_cursor;
+		ERR_FAIL_COND_V(image.is_null(), image);
+		texture_size = image->get_size();
+	}
+
+	ERR_FAIL_COND_V_MSG(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height, image, "Hotspot outside cursor image.");
+	ERR_FAIL_COND_V_MSG(texture_size.width > 256 || texture_size.height > 256, image, "Cursor image too big. Max supported size is 256x256.");
+
+	ERR_FAIL_COND_V(image.is_null(), image);
+	if (image->is_compressed()) {
+		image = image->duplicate(true);
+		Error err = image->decompress();
+		ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
+	}
+	return image;
 }
 
 void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers) {

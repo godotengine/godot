@@ -150,13 +150,13 @@ float CSGShape3D::get_snap() const {
 
 void CSGShape3D::_make_dirty(bool p_parent_removing) {
 	if ((p_parent_removing || is_root_shape()) && !dirty) {
-		call_deferred(SNAME("_update_shape")); // Must be deferred; otherwise, is_root_shape() will use the previous parent
+		callable_mp(this, &CSGShape3D::_update_shape).call_deferred(); // Must be deferred; otherwise, is_root_shape() will use the previous parent.
 	}
 
 	if (!is_root_shape()) {
 		parent_shape->_make_dirty();
 	} else if (!dirty) {
-		call_deferred(SNAME("_update_shape"));
+		callable_mp(this, &CSGShape3D::_update_shape).call_deferred();
 	}
 
 	dirty = true;
@@ -800,7 +800,7 @@ CSGBrush *CSGMesh3D::_build_brush() {
 
 		if (arrays.size() == 0) {
 			_make_dirty();
-			ERR_FAIL_COND_V(arrays.size() == 0, memnew(CSGBrush));
+			ERR_FAIL_COND_V(arrays.is_empty(), memnew(CSGBrush));
 		}
 
 		Vector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
@@ -1826,11 +1826,13 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			if (path) {
 				path->disconnect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
 				path->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
+				path->set_update_callback(Callable());
 			}
 			path = current_path;
 			if (path) {
 				path->connect("tree_exited", callable_mp(this, &CSGPolygon3D::_path_exited));
 				path->connect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
+				path->set_update_callback(callable_mp(this, &CSGPolygon3D::_path_changed));
 			}
 		}
 

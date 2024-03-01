@@ -138,13 +138,19 @@
 			The resource was loaded successfully and can be accessed via [method load_threaded_get].
 		</constant>
 		<constant name="CACHE_MODE_IGNORE" value="0" enum="CacheMode">
-			The resource is always loaded from disk, even if a cache entry exists for its path, and the newly loaded copy will not be cached. Instances loaded with this mode will exist independently.
+			Neither the main resource (the one requested to be loaded) nor any of its subresources are retrieved from cache nor stored into it. Dependencies (external resources) are loaded with [constant CACHE_MODE_REUSE].
 		</constant>
 		<constant name="CACHE_MODE_REUSE" value="1" enum="CacheMode">
-			If a resource is cached, returns the cached reference. Otherwise it's loaded from disk.
+			The main resource (the one requested to be loaded), its subresources, and its dependencies (external resources) are retrieved from cache if present, instead of loaded. Those not cached are loaded and then stored into the cache. The same rules are propagated recursively down the tree of dependencies (external resources).
 		</constant>
 		<constant name="CACHE_MODE_REPLACE" value="2" enum="CacheMode">
-			The resource is always loaded from disk, even if a cache entry exists for its path. The cached entry will be replaced by the newly loaded copy.
+			Like [constant CACHE_MODE_REUSE], but the cache is checked for the main resource (the one requested to be loaded) as well as for each of its subresources. Those already in the cache, as long as the loaded and cached types match, have their data refreshed from storage into the already existing instances. Otherwise, they are recreated as completely new objects.
+		</constant>
+		<constant name="CACHE_MODE_IGNORE_DEEP" value="3" enum="CacheMode">
+			Like [constant CACHE_MODE_IGNORE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="CACHE_MODE_REPLACE_DEEP" value="4" enum="CacheMode">
+			Like [constant CACHE_MODE_REPLACE], but propagated recursively down the tree of dependencies (external resources).
 		</constant>
 	</constants>
 </class>

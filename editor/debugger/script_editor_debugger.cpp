@@ -44,7 +44,6 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -52,6 +51,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
@@ -72,7 +72,7 @@
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
 
-void ScriptEditorDebugger::_put_msg(String p_message, Array p_data, uint64_t p_thread_id) {
+void ScriptEditorDebugger::_put_msg(const String &p_message, const Array &p_data, uint64_t p_thread_id) {
 	ERR_FAIL_COND(p_thread_id == Thread::UNASSIGNED_ID);
 	if (is_session_active()) {
 		Array msg;
@@ -387,7 +387,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		}
 
 	} else if (p_msg == "set_pid") {
-		ERR_FAIL_COND(p_data.size() < 1);
+		ERR_FAIL_COND(p_data.is_empty());
 		remote_pid = p_data[0];
 	} else if (p_msg == "scene:click_ctrl") {
 		ERR_FAIL_COND(p_data.size() < 2);
@@ -806,7 +806,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		}
 		performance_profiler->update_monitors(monitors);
 	} else if (p_msg == "filesystem:update_file") {
-		ERR_FAIL_COND(p_data.size() < 1);
+		ERR_FAIL_COND(p_data.is_empty());
 		if (EditorFileSystem::get_singleton()) {
 			EditorFileSystem::get_singleton()->update_file(p_data[0]);
 		}
@@ -1518,8 +1518,12 @@ void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool
 	}
 }
 
-void ScriptEditorDebugger::reload_scripts() {
-	_put_msg("reload_scripts", Array(), debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
+void ScriptEditorDebugger::reload_all_scripts() {
+	_put_msg("reload_all_scripts", Array(), debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
+}
+
+void ScriptEditorDebugger::reload_scripts(const Vector<String> &p_script_paths) {
+	_put_msg("reload_scripts", Variant(p_script_paths).operator Array(), debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
 }
 
 bool ScriptEditorDebugger::is_skip_breakpoints() {

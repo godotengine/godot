@@ -32,7 +32,7 @@
 #define SKELETON_3D_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/skin.h"
+#include "scene/resources/3d/skin.h"
 
 typedef int BoneId;
 
@@ -138,6 +138,12 @@ private:
 
 	void _update_process_order();
 
+#ifndef DISABLE_DEPRECATED
+	void _add_bone_bind_compat_88791(const String &p_name);
+
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -153,7 +159,7 @@ public:
 
 	// skeleton creation api
 	uint64_t get_version() const;
-	void add_bone(const String &p_name);
+	int add_bone(const String &p_name);
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
 	void set_bone_name(int p_bone, const String &p_name);

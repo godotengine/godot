@@ -129,6 +129,9 @@ public:
 	void set_slot_color_left(int p_slot_index, const Color &p_color);
 	Color get_slot_color_left(int p_slot_index) const;
 
+	void set_slot_custom_icon_left(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
+	Ref<Texture2D> get_slot_custom_icon_left(int p_slot_index) const;
+
 	bool is_slot_enabled_right(int p_slot_index) const;
 	void set_slot_enabled_right(int p_slot_index, bool p_enable);
 
@@ -137,6 +140,9 @@ public:
 
 	void set_slot_color_right(int p_slot_index, const Color &p_color);
 	Color get_slot_color_right(int p_slot_index) const;
+
+	void set_slot_custom_icon_right(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
+	Ref<Texture2D> get_slot_custom_icon_right(int p_slot_index) const;
 
 	bool is_slot_draw_stylebox(int p_slot_index) const;
 	void set_slot_draw_stylebox(int p_slot_index, bool p_enable);

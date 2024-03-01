@@ -34,6 +34,7 @@
 #include "core/templates/hash_set.h"
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/typed_array.h"
 
 namespace GLTFTemplateConvert {
 template <class T>
@@ -73,7 +74,7 @@ static void set_from_array(HashSet<T> &r_out, const TypedArray<T> &p_inp) {
 }
 
 template <class K, class V>
-static Dictionary to_dict(const HashMap<K, V> &p_inp) {
+static Dictionary to_dictionary(const HashMap<K, V> &p_inp) {
 	Dictionary ret;
 	for (const KeyValue<K, V> &E : p_inp) {
 		ret[E.key] = E.value;
@@ -82,7 +83,7 @@ static Dictionary to_dict(const HashMap<K, V> &p_inp) {
 }
 
 template <class K, class V>
-static void set_from_dict(HashMap<K, V> &r_out, const Dictionary &p_inp) {
+static void set_from_dictionary(HashMap<K, V> &r_out, const Dictionary &p_inp) {
 	r_out.clear();
 	Array keys = p_inp.keys();
 	for (int i = 0; i < keys.size(); i++) {

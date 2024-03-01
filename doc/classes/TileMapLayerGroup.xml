@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileMapLayerGroup" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Groups a set of tile map layers together, allowing them to share a provided [TileSet].
+	</brief_description>
+	<description>
+		Groups together tile map layers as part or the same map, replacing the [TileMap] node. Child layers will use this node's [member tile_set].
+		The editor also uses [TileMapLayerGroup] as a way to store which layers are selected in a given group. This allows highlighting the currently selected layers.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
+			The assigned [TileSet]. This TileSet will be applied to all child layers.
+		</member>
+	</members>
+</class>

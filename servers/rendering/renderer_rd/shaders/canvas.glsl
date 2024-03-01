@@ -9,6 +9,14 @@ layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
+#if defined(CUSTOM0_USED)
+layout(location = 6) in vec4 custom0_attrib;
+#endif
+
+#if defined(CUSTOM1_USED)
+layout(location = 7) in vec4 custom1_attrib;
+#endif
+
 layout(location = 10) in uvec4 bone_attrib;
 layout(location = 11) in vec4 weight_attrib;
 
@@ -44,6 +52,13 @@ vec3 srgb_to_linear(vec3 color) {
 
 void main() {
 	vec4 instance_custom = vec4(0.0);
+#if defined(CUSTOM0_USED)
+	vec4 custom0 = vec4(0.0);
+#endif
+#if defined(CUSTOM1_USED)
+	vec4 custom1 = vec4(0.0);
+#endif
+
 #ifdef USE_PRIMITIVE
 
 	//weird bug,
@@ -78,9 +93,17 @@ void main() {
 	color *= draw_data.modulation;
 	vec2 uv = uv_attrib;
 
+#if defined(CUSTOM0_USED)
+	custom0 = custom0_attrib;
+#endif
+
+#if defined(CUSTOM1_USED)
+	custom1 = custom1_attrib;
+#endif
+
 	uvec4 bones = bone_attrib;
 	vec4 bone_weights = weight_attrib;
-#else
+#else // !USE_ATTRIBUTES
 
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	vec2 vertex_base = vertex_base_arr[gl_VertexIndex];
@@ -90,7 +113,7 @@ void main() {
 	vec2 vertex = draw_data.dst_rect.xy + abs(draw_data.dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data.src_rect.zw, vec2(0.0, 0.0)));
 	uvec4 bones = uvec4(0, 0, 0, 0);
 
-#endif
+#endif // USE_ATTRIBUTES
 
 	mat4 model_matrix = mat4(vec4(draw_data.world_x, 0.0, 0.0), vec4(draw_data.world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data.world_ofs, 0.0, 1.0));
 
@@ -516,6 +539,9 @@ void main() {
 
 	if (normal_used || (using_light && bool(draw_data.flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(sampler2D(normal_texture, texture_sampler), uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
+		if (bool(draw_data.flags & FLAGS_TRANSPOSE_RECT)) {
+			normal.xy = normal.yx;
+		}
 		if (bool(draw_data.flags & FLAGS_FLIP_H)) {
 			normal.x = -normal.x;
 		}

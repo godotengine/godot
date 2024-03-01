@@ -33,6 +33,25 @@
 
 #include "core/typedefs.h"
 
+#if defined(__APPLE__)
+
+#include <os/lock.h>
+
+class SpinLock {
+	mutable os_unfair_lock _lock = OS_UNFAIR_LOCK_INIT;
+
+public:
+	_ALWAYS_INLINE_ void lock() const {
+		os_unfair_lock_lock(&_lock);
+	}
+
+	_ALWAYS_INLINE_ void unlock() const {
+		os_unfair_lock_unlock(&_lock);
+	}
+};
+
+#else
+
 #include <atomic>
 
 class SpinLock {
@@ -48,5 +67,7 @@ public:
 		locked.clear(std::memory_order_release);
 	}
 };
+
+#endif // __APPLE__
 
 #endif // SPIN_LOCK_H

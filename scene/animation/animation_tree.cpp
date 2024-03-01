@@ -140,6 +140,7 @@ double AnimationNode::blend_input(int p_input, AnimationMixer::PlaybackInfo p_pl
 	}
 
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
+	ERR_FAIL_COND_V(node.is_null(), 0);
 
 	real_t activity = 0.0;
 	Vector<AnimationTree::Activity> *activity_ptr = process_state->tree->input_activity_map.getptr(node_state.base_path);
@@ -153,12 +154,13 @@ double AnimationNode::blend_input(int p_input, AnimationMixer::PlaybackInfo p_pl
 }
 
 double AnimationNode::blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter, bool p_sync, bool p_test_only) {
+	ERR_FAIL_COND_V(p_node.is_null(), 0);
+
 	p_node->node_state.connections.clear();
 	return _blend_node(p_node, p_subpath, this, p_playback_info, p_filter, p_sync, p_test_only, nullptr);
 }
 
 double AnimationNode::_blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter, bool p_sync, bool p_test_only, real_t *r_activity) {
-	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_NULL_V(process_state, 0);
 
 	int blend_count = node_state.track_weights.size();
@@ -568,10 +570,11 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 			pi.seeked = true;
 			root_animation_node->_pre_process(&process_state, pi, false);
 			started = false;
+		} else {
+			pi.seeked = false;
+			pi.time = p_delta;
+			root_animation_node->_pre_process(&process_state, pi, false);
 		}
-		pi.seeked = false;
-		pi.time = p_delta;
-		root_animation_node->_pre_process(&process_state, pi, false);
 	}
 
 	if (!process_state.valid) {
@@ -619,7 +622,7 @@ void AnimationTree::_tree_changed() {
 		return;
 	}
 
-	call_deferred(SNAME("_update_properties"));
+	callable_mp(this, &AnimationTree::_update_properties).call_deferred();
 	properties_dirty = true;
 }
 
@@ -886,8 +889,6 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_player", "path"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
 
-	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
-
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
@@ -899,6 +900,7 @@ void AnimationTree::_bind_methods() {
 
 AnimationTree::AnimationTree() {
 	deterministic = true;
+	callback_mode_discrete = ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
 }
 
 AnimationTree::~AnimationTree() {

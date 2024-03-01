@@ -30,7 +30,7 @@
 
 #include "soft_body_3d.h"
 
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/physics/physics_body_3d.h"
 
 SoftBodyRenderingServerHandler::SoftBodyRenderingServerHandler() {}
 
@@ -82,7 +82,10 @@ void SoftBodyRenderingServerHandler::commit_changes() {
 }
 
 void SoftBodyRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
-	memcpy(&write_buffer[p_vertex_id * stride + offset_vertices], &p_vertex, sizeof(Vector3));
+	float *vertex_buffer = reinterpret_cast<float *>(write_buffer + p_vertex_id * stride + offset_vertices);
+	*vertex_buffer++ = (float)p_vertex.x;
+	*vertex_buffer++ = (float)p_vertex.y;
+	*vertex_buffer++ = (float)p_vertex.z;
 }
 
 void SoftBodyRenderingServerHandler::set_normal(int p_vertex_id, const Vector3 &p_normal) {
@@ -416,8 +419,8 @@ void SoftBody3D::_draw_soft_mesh() {
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
-		call_deferred(SNAME("set_as_top_level"), true);
-		call_deferred(SNAME("set_transform"), Transform3D());
+		callable_mp((Node3D *)this, &Node3D::set_as_top_level).call_deferred(true);
+		callable_mp((Node3D *)this, &Node3D::set_transform).call_deferred(Transform3D());
 	}
 
 	_update_physics_server();
@@ -713,9 +716,6 @@ void SoftBody3D::_update_cache_pin_points_datas() {
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
 		if (!w[i].spatial_attachment_path.is_empty()) {
 			w[i].spatial_attachment = Object::cast_to<Node3D>(get_node(w[i].spatial_attachment_path));
-		}
-		if (!w[i].spatial_attachment) {
-			ERR_PRINT("Node3D node not defined in the pinned point, this is undefined behavior for SoftBody3D!");
 		}
 	}
 }
