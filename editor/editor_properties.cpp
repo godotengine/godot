@@ -2997,6 +2997,52 @@ EditorPropertyRID::EditorPropertyRID() {
 	add_child(label);
 }
 
+///////////////////// Button /////////////////////////
+
+void EditorPropertyButton::update_property() {	
+	button->set_text(lable);
+	
+	Ref<StyleBoxFlat> style = button->get_theme_stylebox("normal", "Button")->duplicate();
+	style->set_bg_color(color);
+	button->add_theme_style_override("normal", style);
+
+	style = button->get_theme_stylebox("hover", "Button")->duplicate();
+	style->set_bg_color(color.blend(Color(1.0, 1.0, 1.0, 0.2)));
+	button->add_theme_style_override("hover", style);
+}
+
+void EditorPropertyButton::setup(const String &p_hit_string)
+{
+	Vector<String> sv = p_hit_string.split(";", false);
+	if(sv.size() == 3) {
+		color = Color::html(sv[0]);
+		lable = sv[1];
+		expression = sv[2];
+		expr.instantiate();
+		expr->parse(expression);
+	}
+	else
+	{
+		color = Color(0, 1, 1, 1);
+		lable = "none_name";
+	}
+
+}
+void EditorPropertyButton::_button_pressed()
+{
+	if(expr.is_valid())
+	{
+		expr->execute(Array(), get_edited_object(), true);
+	}
+}
+
+EditorPropertyButton::EditorPropertyButton() {
+	button = memnew(Button);
+	button->set_h_size_flags(SIZE_EXPAND_FILL);
+	button->connect("pressed", callable_mp(this, &EditorPropertyButton::_button_pressed));
+	add_child(button);
+}
+
 ////////////// RESOURCE //////////////////////
 
 void EditorPropertyResource::_set_read_only(bool p_read_only) {
@@ -3529,8 +3575,15 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 }
 
 EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
-	double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
+	
 
+	if (p_hint == PROPERTY_HINT_BUTTON) {
+		EditorPropertyButton *editor = memnew(EditorPropertyButton);
+		editor->setup(p_hint_text);
+		return editor;
+	}
+	
+	double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
 	switch (p_type) {
 		// atomic types
 		case Variant::NIL: {
@@ -3663,7 +3716,8 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 					editor->set_save_mode();
 				}
 				return editor;
-			} else {
+			}
+			 else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
 					editor->set_placeholder(p_hint_text);

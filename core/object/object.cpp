@@ -2253,6 +2253,7 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 		}
 	}
 }
+#endif
 ObjectDB::CreateMasterFunc ObjectDB::s_create_master_func = nullptr;
 SpinLock ObjectDB::spin_lock;
 uint32_t ObjectDB::slot_count = 0;

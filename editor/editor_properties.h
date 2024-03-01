@@ -32,6 +32,7 @@
 #define EDITOR_PROPERTIES_H
 
 #include "editor/editor_inspector.h"
+#include "core/math/expression.h"
 
 class CheckBox;
 class ColorPickerButton;
@@ -688,6 +689,22 @@ class EditorPropertyRID : public EditorProperty {
 public:
 	virtual void update_property() override;
 	EditorPropertyRID();
+};
+
+
+class EditorPropertyButton : public EditorProperty {
+	GDCLASS(EditorPropertyButton, EditorProperty);
+	Button *button = nullptr;
+	Color color;
+	String lable;
+	String expression;
+	Ref<Expression> expr;
+
+	void _button_pressed();
+public:
+	void setup(const String &p_hit_string);
+	virtual void update_property() override;
+	EditorPropertyButton();
 };
 
 class EditorPropertyResource : public EditorProperty {
