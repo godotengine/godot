@@ -1,0 +1,39 @@
+{
+    "name": "spirvls",
+    "description": "Language support for SPIR-V disassembly files",
+    "author": "Google",
+    "license": "Apache-2.0",
+    "version": "0.0.1",
+    "private": true,
+    "publisher": "Google",
+    "engines": {
+        "vscode": "^0.10.10"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "spirv",
+                "extensions": [
+                    "spvasm"
+                ]
+            }
+        ],
+        "grammars": [
+            {
+                "language": "spirv",
+                "scopeName": "source.spirv",
+                "path": "spirv.json"
+            }
+        ]
+    },
+    "dependencies": {
+        "vscode-languageclient": "~4.3.0"
+    },
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./extension.js"
+}

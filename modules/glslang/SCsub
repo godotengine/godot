@@ -1,9 +1,21 @@
 #!/usr/bin/env python
+import glob
+import os
 
 Import("env")
 Import("env_modules")
 
 env_glslang = env_modules.Clone()
+
+def get_cpp_files(directory):
+    print(os.getcwd())
+    ret = []
+
+    for file in os.listdir("../../thirdparty/glslang/" + directory):
+        filename = os.fsdecode(file)
+        if filename.endswith(".cpp"):
+            ret += [filename]
+    return ret
 
 # Thirdparty source files
 
@@ -52,6 +64,9 @@ if env["builtin_glslang"]:
         "SPIRV/SpvPostProcess.cpp",
         "SPIRV/SPVRemapper.cpp",
         "SPIRV/SpvTools.cpp",
+        "External/spirv-tools/source/util/string_utils.cpp",
+        "External/spirv-tools/source/util/bit_vector.cpp",
+        "External/spirv-tools/source/util/parse_number.cpp",
     ]
 
     if env["platform"] == "windows":
@@ -59,17 +74,32 @@ if env["builtin_glslang"]:
     else:
         thirdparty_sources.append("glslang/OSDependent/Unix/ossource.cpp")
 
+    opt_files =     [thirdparty_dir + "External/spirv-tools/source/opt/" + file for file in get_cpp_files("External/spirv-tools/source/opt/")]
+    val_files =     [thirdparty_dir + "External/spirv-tools/source/val/" + file for file in get_cpp_files("External/spirv-tools/source/val/")]
+    source_files =  [thirdparty_dir + "External/spirv-tools/source/" + file for file in get_cpp_files("External/spirv-tools/source/")]
+
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+    thirdparty_sources += opt_files
+    thirdparty_sources += val_files
+    thirdparty_sources += source_files
 
     # Treat glslang headers as system headers to avoid raising warnings. Not supported on MSVC.
     # Include `#thirdparty` to workaround mismatch between location of `SPIRV` in library source
     # and in installed public headers.
     if not env.msvc:
         env_glslang.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path, "-isystem", Dir("#thirdparty").path])
+        env_glslang.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path, "-isystem", Dir("#thirdparty/glslang/External/spirv-tools").path])
+        env_glslang.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path, "-isystem", Dir("#thirdparty/glslang/SPIRV-Headers/spirv/unified1").path])
+        env_glslang.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path, "-isystem", Dir("#thirdparty/glslang/SPIRV-Headers/").path])
+        env_glslang.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path, "-isystem", Dir("#thirdparty/glslang/External/spirv-tools/include").path])
     else:
         env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty"])
+        env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty/glslang/External/spirv-tools"])
+        env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty/glslang/SPIRV-Headers/spirv/unified1"])
+        env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty/glslang/SPIRV-Headers/"])
+        env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty/glslang/External/spirv-tools/include"])
 
-    env_glslang.Append(CPPDEFINES=["ENABLE_OPT=0"])
+    env_glslang.Append(CPPDEFINES=["ENABLE_OPT=1"])
 
     env_thirdparty = env_glslang.Clone()
     env_thirdparty.disable_warnings()
