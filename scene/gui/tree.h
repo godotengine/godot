@@ -62,6 +62,7 @@ private:
 		Ref<Texture2D> icon;
 		Rect2i icon_region;
 		String text;
+		String xl_text;
 		bool edit_multiline = false;
 		String suffix;
 		Ref<TextParagraph> text_buf;
@@ -457,6 +458,7 @@ private:
 		bool expand = true;
 		bool clip_content = false;
 		String title;
+		String xl_title;
 		HorizontalAlignment title_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 		Ref<TextParagraph> text_buf;
 		String language;
