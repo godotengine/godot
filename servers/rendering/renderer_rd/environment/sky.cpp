@@ -1388,6 +1388,13 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 				Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
 				RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_CUBEMAP_HALF_RES, sky_shader.default_shader_rd, p_render_buffers);
 
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// preparing uniform buffer in uniform set
+				_render_sky_prepare_params(p_time, cm, local_view, p_global_pos, p_luminance_multiplier);
+// </TF>
+
 				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[1].framebuffers[i], RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
 				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[1].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, p_luminance_multiplier);
 				RD::get_singleton()->draw_list_end();
