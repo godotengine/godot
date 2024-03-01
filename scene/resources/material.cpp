@@ -457,9 +457,10 @@ void ShaderMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
 }
 
+#ifdef TOOLS_ENABLED
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String f = p_function.operator String();
-	if ((f == "get_shader_parameter" || f == "set_shader_parameter") && p_idx == 0) {
+	const String pf = p_function;
+	if (p_idx == 0 && (pf == "get_shader_parameter" || pf == "set_shader_parameter")) {
 		if (shader.is_valid()) {
 			List<PropertyInfo> pl;
 			shader->get_shader_uniform_list(&pl);
@@ -470,6 +471,7 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 	}
 	Material::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 bool ShaderMaterial::_can_do_next_pass() const {
 	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;

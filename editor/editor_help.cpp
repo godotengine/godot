@@ -35,6 +35,7 @@
 #include "core/input/input.h"
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/string/string_builder.h"
 #include "core/version.h"
 #include "editor/doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
@@ -2384,6 +2385,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 	List<String> tag_stack;
 	bool code_tag = false;
 	bool codeblock_tag = false;
+	const bool using_tab_indent = int(EDITOR_GET("text_editor/behavior/indent/type")) == 0;
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
@@ -2395,6 +2397,25 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 		if (brk_pos > pos) {
 			String text = bbcode.substr(pos, brk_pos - pos);
+			if (codeblock_tag && using_tab_indent) {
+				// Replace the code block's space indentation with tabs.
+				StringBuilder builder;
+				PackedStringArray text_lines = text.split("\n");
+				for (const String &line : text_lines) {
+					String stripped_line = line.dedent();
+					int space_count = line.length() - stripped_line.length();
+
+					if (builder.num_strings_appended() > 0) {
+						builder.append("\n");
+					}
+					if (space_count > 0) {
+						builder.append(String("\t").repeat(MAX(space_count / 4, 1)) + stripped_line);
+					} else {
+						builder.append(line);
+					}
+				}
+				text = builder.as_string();
+			}
 			if (!code_tag && !codeblock_tag) {
 				text = text.replace("\n", "\n\n");
 			}
@@ -2934,6 +2955,7 @@ EditorHelp::EditorHelp() {
 	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
 
 	class_desc = memnew(RichTextLabel);
+	class_desc->set_tab_size(8);
 	add_child(class_desc);
 	class_desc->set_threaded(true);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);

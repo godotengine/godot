@@ -1690,8 +1690,10 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 	idle_callbacks[idle_callback_count++] = p_callback;
 }
 
+#ifdef TOOLS_ENABLED
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	if (p_function == "change_scene_to_file") {
+	const String pf = p_function;
+	if (pf == "change_scene_to_file") {
 		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		List<String> directories;
 		directories.push_back(dir_access->get_current_dir());
@@ -1721,9 +1723,9 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 	} else {
 		bool add_options = false;
 		if (p_idx == 0) {
-			add_options = p_function == "get_nodes_in_group" || p_function == "has_group" || p_function == "get_first_node_in_group" || p_function == "set_group" || p_function == "notify_group" || p_function == "call_group" || p_function == "add_to_group";
+			add_options = pf == "get_nodes_in_group" || pf == "has_group" || pf == "get_first_node_in_group" || pf == "set_group" || pf == "notify_group" || pf == "call_group" || pf == "add_to_group";
 		} else if (p_idx == 1) {
-			add_options = p_function == "set_group_flags" || p_function == "call_group_flags" || p_function == "notify_group_flags";
+			add_options = pf == "set_group_flags" || pf == "call_group_flags" || pf == "notify_group_flags";
 		}
 		if (add_options) {
 			HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
@@ -1734,6 +1736,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 	}
 	MainLoop::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void SceneTree::set_disable_node_threading(bool p_disable) {
 	node_threading_disabled = p_disable;

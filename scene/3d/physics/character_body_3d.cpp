@@ -56,8 +56,15 @@ bool CharacterBody3D::move_and_slide() {
 			excluded = (platform_wall_layers & platform_layer) == 0;
 		}
 		if (!excluded) {
-			//this approach makes sure there is less delay between the actual body velocity and the one we saved
-			PhysicsDirectBodyState3D *bs = PhysicsServer3D::get_singleton()->body_get_direct_state(platform_rid);
+			PhysicsDirectBodyState3D *bs = nullptr;
+
+			// We need to check the platform_rid object still exists before accessing.
+			// A valid RID is no guarantee that the object has not been deleted.
+			if (ObjectDB::get_instance(platform_object_id)) {
+				//this approach makes sure there is less delay between the actual body velocity and the one we saved
+				bs = PhysicsServer3D::get_singleton()->body_get_direct_state(platform_rid);
+			}
+
 			if (bs) {
 				Vector3 local_position = gt.origin - bs->get_transform().origin;
 				current_platform_velocity = bs->get_velocity_at_local_position(local_position);
