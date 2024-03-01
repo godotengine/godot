@@ -60,6 +60,7 @@ public:
 	void _set_skeleton_bone_name(const StringName &p_profile_bone_name, const StringName &p_skeleton_bone_name); // Avoid to emit signal for editor.
 
 	StringName find_profile_bone_name(const StringName &p_skeleton_bone_name) const;
+	StringName get_bone_counterpart_name(const StringName &p_skeleton_bone_name) const;
 
 	BoneMap();
 	~BoneMap();

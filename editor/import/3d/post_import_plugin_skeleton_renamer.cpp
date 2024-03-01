@@ -45,7 +45,7 @@ void PostImportPluginSkeletonRenamer::get_internal_import_options(InternalImport
 	}
 }
 
-void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options, const HashMap<String, String> &p_rename_map) {
+void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options, const HashMap<String, BoneRenameMapEntry> &p_rename_map) {
 	// Prepare objects.
 	Object *map = p_options["retarget/bone_map"].get_validated_object();
 	if (!map || !bool(p_options["retarget/bone_renamer/rename_bones"])) {
@@ -57,9 +57,9 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 		int len = skeleton->get_bone_count();
 		for (int i = 0; i < len; i++) {
 			String current_bone_name = skeleton->get_bone_name(i);
-			const HashMap<String, String>::ConstIterator new_bone_name = p_rename_map.find(current_bone_name);
+			const HashMap<String, BoneRenameMapEntry>::ConstIterator new_bone_name = p_rename_map.find(current_bone_name);
 			if (new_bone_name) {
-				skeleton->set_bone_name(i, new_bone_name->value);
+				skeleton->set_bone_name(i, new_bone_name->value.bone_name, new_bone_name->value.bone_counterpart_name);
 			}
 		}
 	}
@@ -79,10 +79,10 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 
 						for (int i = 0; i < len; i++) {
 							String current_bone_name = skin->get_bind_name(i);
-							const HashMap<String, String>::ConstIterator new_bone_name = p_rename_map.find(current_bone_name);
+							const HashMap<String, BoneRenameMapEntry>::ConstIterator new_bone_name = p_rename_map.find(current_bone_name);
 
 							if (new_bone_name) {
-								skin->set_bind_name(i, new_bone_name->value);
+								skin->set_bind_name(i, new_bone_name->value.bone_name);
 							}
 						}
 					}
@@ -111,9 +111,9 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 						Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
 						if (track_skeleton && track_skeleton == skeleton) {
 							String current_bone_name = anim->track_get_path(i).get_subname(0);
-							const HashMap<String, String>::ConstIterator new_bone_name = p_rename_map.find(current_bone_name);
+							const HashMap<String, BoneRenameMapEntry>::ConstIterator new_bone_name = p_rename_map.find(current_bone_name);
 							if (new_bone_name) {
-								String new_track_path = track_path + ":" + new_bone_name->value;
+								String new_track_path = track_path + ":" + new_bone_name->value.bone_name;
 								anim->track_set_path(i, new_track_path);
 							}
 						}
@@ -126,8 +126,8 @@ void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p
 	// Rename bones in all Nodes by calling method.
 	{
 		Dictionary rename_map_dict;
-		for (HashMap<String, String>::ConstIterator E = p_rename_map.begin(); E; ++E) {
-			rename_map_dict[E->key] = E->value;
+		for (HashMap<String, BoneRenameMapEntry>::ConstIterator E = p_rename_map.begin(); E; ++E) {
+			rename_map_dict[E->key] = E->value.bone_name;
 		}
 
 		TypedArray<Node> nodes = p_base_scene->find_children("*", "BoneAttachment3D");
@@ -152,18 +152,18 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 		int len = skeleton->get_bone_count();
 
 		// First, prepare main rename map.
-		HashMap<String, String> main_rename_map;
+		HashMap<String, BoneRenameMapEntry> main_rename_map;
 		for (int i = 0; i < len; i++) {
 			String bone_name = skeleton->get_bone_name(i);
 			String target_name = bone_map->find_profile_bone_name(bone_name);
 			if (target_name.is_empty()) {
 				continue;
 			}
-			main_rename_map.insert(bone_name, target_name);
+			main_rename_map.insert(bone_name, { target_name, bone_map->get_bone_counterpart_name(target_name) });
 		}
 
 		// Preprocess of renaming bones to avoid to conflict with original bone name.
-		HashMap<String, String> pre_rename_map; // HashMap<skeleton bone name, target(profile) bone name>
+		HashMap<String, BoneRenameMapEntry> pre_rename_map; // HashMap<skeleton bone name, target(profile) bone name>
 		{
 			Vector<String> solved_name_stack;
 			for (int i = 0; i < len; i++) {
@@ -180,7 +180,7 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 					solved_name = target_name + itos(j);
 				}
 				solved_name_stack.push_back(solved_name);
-				pre_rename_map.insert(target_name, solved_name);
+				pre_rename_map.insert(target_name, { solved_name, bone_map->get_bone_counterpart_name(solved_name) });
 			}
 			_internal_process(p_category, p_base_scene, p_node, p_resource, p_options, pre_rename_map);
 		}
@@ -189,13 +189,13 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 		{
 			// Apply pre-renaming result to prepared main rename map.
 			Vector<String> remove_queue;
-			for (HashMap<String, String>::Iterator E = main_rename_map.begin(); E; ++E) {
+			for (HashMap<String, BoneRenameMapEntry>::Iterator E = main_rename_map.begin(); E; ++E) {
 				if (pre_rename_map.has(E->key)) {
 					remove_queue.push_back(E->key);
 				}
 			}
 			for (int i = 0; i < remove_queue.size(); i++) {
-				main_rename_map.insert(pre_rename_map[remove_queue[i]], main_rename_map[remove_queue[i]]);
+				main_rename_map.insert(pre_rename_map[remove_queue[i]].bone_name, main_rename_map[remove_queue[i]]);
 				main_rename_map.erase(remove_queue[i]);
 			}
 			_internal_process(p_category, p_base_scene, p_node, p_resource, p_options, main_rename_map);

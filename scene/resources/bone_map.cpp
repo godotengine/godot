@@ -105,6 +105,15 @@ StringName BoneMap::find_profile_bone_name(const StringName &p_skeleton_bone_nam
 	return profile_bone_name;
 }
 
+StringName BoneMap::get_bone_counterpart_name(const StringName &p_skeleton_bone_name) const {
+	const auto bone_index = profile->find_bone(p_skeleton_bone_name);
+	if (bone_index < 0) {
+		return StringName();
+	}
+
+	return profile->get_bone_counterpart_name(bone_index);
+}
+
 int BoneMap::get_skeleton_bone_name_count(const StringName &p_skeleton_bone_name) const {
 	int count = 0;
 	HashMap<StringName, StringName>::ConstIterator E = bone_map.begin();

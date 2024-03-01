@@ -56,6 +56,7 @@ protected:
 	struct SkeletonProfileBone {
 		StringName bone_name;
 		StringName bone_parent;
+		StringName bone_counterpart;
 		TailDirection tail_direction = TAIL_DIRECTION_AVERAGE_CHILDREN;
 		StringName bone_tail;
 		Transform3D reference_pose;
@@ -99,6 +100,9 @@ public:
 
 	StringName get_bone_name(int p_bone_idx) const;
 	void set_bone_name(int p_bone_idx, const StringName &p_bone_name);
+
+	StringName get_bone_counterpart_name(int p_bone_idx) const;
+	void set_bone_counterpart_name(int p_bone_idx, const StringName &p_bone_name);
 
 	StringName get_bone_parent(int p_bone_idx) const;
 	void set_bone_parent(int p_bone_idx, const StringName &p_bone_parent);
