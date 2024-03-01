@@ -1356,7 +1356,7 @@ void SceneTreeDock::_property_selected(int p_idx) {
 	property_drop_node = nullptr;
 }
 
-void SceneTreeDock::_perform_property_drop(Node *p_node, String p_property, Ref<Resource> p_res) {
+void SceneTreeDock::_perform_property_drop(Node *p_node, const String &p_property, Ref<Resource> p_res) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Set %s"), p_property));
 	undo_redo->add_do_property(p_node, p_property, p_res);
@@ -2957,7 +2957,7 @@ void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 	scene_tree->set_selected(p_node, p_emit_selected);
 }
 
-void SceneTreeDock::_new_scene_from(String p_file) {
+void SceneTreeDock::_new_scene_from(const String &p_file) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	if (selection.size() != 1) {
@@ -3105,7 +3105,7 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 	}
 }
 
-void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_type) {
+void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type) {
 	Node *node = get_node(p_to);
 	ERR_FAIL_NULL(node);
 
@@ -3156,7 +3156,7 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 	}
 }
 
-void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
+void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 	Ref<Script> scr = ResourceLoader::load(p_file);
 	ERR_FAIL_COND(!scr.is_valid());
 	Node *n = get_node(p_to);
@@ -3206,7 +3206,7 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	}
 }
 
-void SceneTreeDock::_nodes_dragged(Array p_nodes, NodePath p_to, int p_type) {
+void SceneTreeDock::_nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type) {
 	if (!_validate_no_foreign()) {
 		return;
 	}
@@ -3581,7 +3581,7 @@ void SceneTreeDock::set_filter(const String &p_filter) {
 	scene_tree->set_filter(p_filter);
 }
 
-void SceneTreeDock::save_branch_to_file(String p_directory) {
+void SceneTreeDock::save_branch_to_file(const String &p_directory) {
 	new_scene_from_dialog->set_current_dir(p_directory);
 	_tool_selected(TOOL_NEW_SCENE_FROM);
 }

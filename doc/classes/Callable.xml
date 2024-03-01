@@ -4,7 +4,7 @@
 		A built-in type representing a method or a standalone function.
 	</brief_description>
 	<description>
-		[Callable] is a built-in [Variant] type that represents a function. It can either be a method within an [Object] instance, or a standalone function not related to any object, like a lambda function. Like all [Variant] types, it can be stored in variables and passed to other functions. It is most commonly used for signal callbacks.
+		[Callable] is a built-in [Variant] type that represents a function. It can either be a method within an [Object] instance, or a custom callable used for different purposes (see [method is_custom]). Like all [Variant] types, it can be stored in variables and passed to other functions. It is most commonly used for signal callbacks.
 		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
@@ -46,6 +46,22 @@
 		    # Prints "Attack!", when the button_pressed signal is emitted.
 		    button_pressed.connect(func(): print("Attack!"))
 		[/codeblock]
+		In GDScript, you can access methods and global functions as [Callable]s:
+		[codeblock]
+		tween.tween_callback(node.queue_free)  # Object methods.
+		tween.tween_callback(array.clear)  # Methods of built-in types.
+		tween.tween_callback(print.bind("Test"))  # Global functions.
+		[/codeblock]
+		[b]Note:[/b] [Dictionary] does not support the above due to ambiguity with keys.
+		[codeblock]
+		var dictionary = {"hello": "world"}
+
+		# This will not work, `clear` is treated as a key.
+		tween.tween_callback(dictionary.clear)
+
+		# This will work.
+		tween.tween_callback(Callable.create(dictionary, "clear"))
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -69,6 +85,7 @@
 			<param index="1" name="method" type="StringName" />
 			<description>
 				Creates a new [Callable] for the method named [param method] in the specified [param object].
+				[b]Note:[/b] For methods of built-in [Variant] types, use [method create] instead.
 			</description>
 		</constructor>
 	</constructors>
@@ -110,6 +127,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Deferred calls are processed at idle time. Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. This means you should not call a method deferred from itself (or from a method called by it), as this causes infinite recursion the same way as if you had called the method directly.
 				See also [method Object.call_deferred].
 			</description>
 		</method>
@@ -118,6 +136,15 @@
 			<param index="0" name="arguments" type="Array" />
 			<description>
 				Calls the method represented by this [Callable]. Unlike [method call], this method expects all arguments to be contained inside the [param arguments] [Array].
+			</description>
+		</method>
+		<method name="create" qualifiers="static">
+			<return type="Callable" />
+			<param index="0" name="variant" type="Variant" />
+			<param index="1" name="method" type="StringName" />
+			<description>
+				Creates a new [Callable] for the method named [param method] in the specified [param variant]. To represent a method of a built-in [Variant] type, a custom callable is used (see [method is_custom]). If [param variant] is [Object], then a standard callable will be created instead.
+				[b]Note:[/b] This method is always necessary for the [Dictionary] type, as property syntax is used to access its entries. You may also use this method when [param variant]'s type is not known in advance (for polymorphism).
 			</description>
 		</method>
 		<method name="get_bound_arguments" qualifiers="const">
@@ -160,7 +187,11 @@
 		<method name="is_custom" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this [Callable] is a custom callable. Custom callables are created from [method bind] or [method unbind]. In GDScript, lambda functions are also custom callables.
+				Returns [code]true[/code] if this [Callable] is a custom callable. Custom callables are used:
+				- for binding/unbinding arguments (see [method bind] and [method unbind]);
+				- for representing methods of built-in [Variant] types (see [method create]);
+				- for representing global, lambda, and RPC functions in GDScript;
+				- for other purposes in the core, GDExtension, and C#.
 			</description>
 		</method>
 		<method name="is_null" qualifiers="const">

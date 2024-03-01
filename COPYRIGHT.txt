@@ -165,7 +165,7 @@ License: BSD-3-clause
 
 Files: ./thirdparty/astcenc/
 Comment: Arm ASTC Encoder
-Copyright: 2011-2023, Arm Limited
+Copyright: 2011-2024, Arm Limited
 License: Apache-2.0
 
 Files: ./thirdparty/basis_universal/

@@ -772,6 +772,20 @@ StringName TranslationServer::tool_translate_plural(const StringName &p_message,
 	return p_message_plural;
 }
 
+void TranslationServer::set_property_translation(const Ref<Translation> &p_translation) {
+	property_translation = p_translation;
+}
+
+StringName TranslationServer::property_translate(const StringName &p_message) const {
+	if (property_translation.is_valid()) {
+		StringName r = property_translation->get_message(p_message);
+		if (r) {
+			return r;
+		}
+	}
+	return p_message;
+}
+
 void TranslationServer::set_doc_translation(const Ref<Translation> &p_translation) {
 	doc_translation = p_translation;
 }
@@ -800,18 +814,32 @@ StringName TranslationServer::doc_translate_plural(const StringName &p_message, 
 	return p_message_plural;
 }
 
-void TranslationServer::set_property_translation(const Ref<Translation> &p_translation) {
-	property_translation = p_translation;
+void TranslationServer::set_extractable_translation(const Ref<Translation> &p_translation) {
+	extractable_translation = p_translation;
 }
 
-StringName TranslationServer::property_translate(const StringName &p_message) const {
-	if (property_translation.is_valid()) {
-		StringName r = property_translation->get_message(p_message);
+StringName TranslationServer::extractable_translate(const StringName &p_message, const StringName &p_context) const {
+	if (extractable_translation.is_valid()) {
+		StringName r = extractable_translation->get_message(p_message, p_context);
 		if (r) {
 			return r;
 		}
 	}
 	return p_message;
+}
+
+StringName TranslationServer::extractable_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
+	if (extractable_translation.is_valid()) {
+		StringName r = extractable_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
+		if (r) {
+			return r;
+		}
+	}
+
+	if (p_n == 1) {
+		return p_message;
+	}
+	return p_message_plural;
 }
 
 bool TranslationServer::is_pseudolocalization_enabled() const {
@@ -983,6 +1011,29 @@ bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
 			(p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
 					p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
 }
+
+#ifdef TOOLS_ENABLED
+void TranslationServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0) {
+		HashMap<String, String> *target_hash_map = nullptr;
+		if (pf == "get_language_name") {
+			target_hash_map = &language_map;
+		} else if (pf == "get_script_name") {
+			target_hash_map = &script_map;
+		} else if (pf == "get_country_name") {
+			target_hash_map = &country_name_map;
+		}
+
+		if (target_hash_map) {
+			for (const KeyValue<String, String> &E : *target_hash_map) {
+				r_options->push_back(E.key.quote());
+			}
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif // TOOLS_ENABLED
 
 void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &TranslationServer::set_locale);

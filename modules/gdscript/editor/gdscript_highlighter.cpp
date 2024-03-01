@@ -532,12 +532,14 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				}
 			}
 
-			in_function_declaration = false;
-			in_var_const_declaration = false;
-			in_signal_declaration = false;
-			in_function_name = false;
-			in_lambda = false;
-			in_member_variable = false;
+			if (!is_whitespace(str[j])) {
+				in_function_declaration = false;
+				in_var_const_declaration = false;
+				in_signal_declaration = false;
+				in_function_name = false;
+				in_lambda = false;
+				in_member_variable = false;
+			}
 		}
 
 		if (!in_raw_string && in_region == -1 && str[j] == 'r' && j < line_length - 1 && (str[j + 1] == '"' || str[j + 1] == '\'')) {

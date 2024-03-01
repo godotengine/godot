@@ -343,7 +343,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	}
 }
 
-String CreateDialog::_top_result(const Vector<String> p_candidates, const String &p_search_text) const {
+String CreateDialog::_top_result(const Vector<String> &p_candidates, const String &p_search_text) const {
 	float highest_score = 0;
 	int highest_index = 0;
 	for (int i = 0; i < p_candidates.size(); i++) {

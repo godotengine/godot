@@ -63,9 +63,11 @@ public:
 	};
 
 	enum CacheMode {
-		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
-		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
-		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
+		CACHE_MODE_IGNORE,
+		CACHE_MODE_REUSE,
+		CACHE_MODE_REPLACE,
+		CACHE_MODE_IGNORE_DEEP,
+		CACHE_MODE_REPLACE_DEEP,
 	};
 
 	static ResourceLoader *get_singleton() { return singleton; }
@@ -458,6 +460,10 @@ public:
 
 	bool is_class_enabled(const StringName &p_class) const;
 
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
 	ClassDB() {}
 	~ClassDB() {}
 };
@@ -528,7 +534,9 @@ public:
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
 
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	Engine() { singleton = this; }
 };

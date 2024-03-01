@@ -125,6 +125,8 @@ public:
 
 	operator String() const;
 
+	static Callable create(const Variant &p_variant, const StringName &p_method);
+
 	Callable(const Object *p_object, const StringName &p_method);
 	Callable(ObjectID p_object, const StringName &p_method);
 	Callable(CallableCustom *p_custom);

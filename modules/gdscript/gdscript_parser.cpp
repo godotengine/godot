@@ -101,6 +101,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
+		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
 		register_annotation(MethodInfo("@export_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FILE, Variant::STRING>, varray(""), true);
 		register_annotation(MethodInfo("@export_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_DIR, Variant::STRING>);
@@ -4085,11 +4086,11 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		}
 		hint_string += arg_string;
 	}
-
 	variable->export_info.hint_string = hint_string;
 
 	// This is called after the analyzer is done finding the type, so this should be set here.
 	DataType export_type = variable->get_datatype();
+	bool use_default_variable_type_check = true;
 
 	if (p_annotation->name == SNAME("@export_range")) {
 		if (export_type.builtin_type == Variant::INT) {
@@ -4121,11 +4122,9 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 			return true;
 		}
-	}
+	} else if (p_annotation->name == SNAME("@export")) {
+		use_default_variable_type_check = false;
 
-	// WARNING: Do not merge with the previous `else if`! Otherwise `else` (default variable type check)
-	// will not work for the above annotations. `@export` and `@export_enum` validate the type separately.
-	if (p_annotation->name == SNAME("@export")) {
 		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
 			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
 			return false;
@@ -4243,6 +4242,8 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			variable->export_info.type = Variant::ARRAY;
 		}
 	} else if (p_annotation->name == SNAME("@export_enum")) {
+		use_default_variable_type_check = false;
+
 		Variant::Type enum_type = Variant::INT;
 
 		if (export_type.kind == DataType::BUILTIN && export_type.builtin_type == Variant::STRING) {
@@ -4260,7 +4261,15 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			push_error(vformat(R"("@export_enum" annotation requires a variable of type "int" or "String" but type "%s" was given instead.)", export_type.to_string()), variable);
 			return false;
 		}
-	} else {
+	} else if (p_annotation->name == SNAME("@export_storage")) {
+		use_default_variable_type_check = false; // Can be applied to a variable of any type.
+
+		// Save the info because the compiler uses export info for overwriting member info.
+		variable->export_info = export_type.to_property_info(variable->identifier->name);
+		variable->export_info.usage |= PROPERTY_USAGE_STORAGE;
+	}
+
+	if (use_default_variable_type_check) {
 		// Validate variable type with export.
 		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != t_type)) {
 			// Allow float/int conversion.

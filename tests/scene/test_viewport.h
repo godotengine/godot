@@ -31,8 +31,8 @@
 #ifndef TEST_VIEWPORT_H
 #define TEST_VIEWPORT_H
 
-#include "scene/2d/area_2d.h"
-#include "scene/2d/collision_shape_2d.h"
+#include "scene/2d/physics/area_2d.h"
+#include "scene/2d/physics/collision_shape_2d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"

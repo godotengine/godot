@@ -104,6 +104,15 @@ if env.editor_build:
         env.Run(editor_builders.make_doc_translations_header, "Generating translations header."),
     )
 
+    # Extractable translations
+    tlist = glob.glob(env.Dir("#editor/translations/extractable").abspath + "/*.po")
+    env.Depends("#editor/extractable_translations.gen.h", tlist)
+    env.CommandNoCache(
+        "#editor/extractable_translations.gen.h",
+        tlist,
+        env.Run(editor_builders.make_extractable_translations_header, "Generating extractable translations header."),
+    )
+
     env.add_source_files(env.editor_sources, "*.cpp")
     env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
 

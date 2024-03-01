@@ -30,7 +30,7 @@ func test():
 	var b := B.new()
 	for property in (B as GDScript).get_property_list():
 		if str(property.name).begins_with("test_"):
-			print(Utils.get_property_signature(property, true))
+			print(Utils.get_property_signature(property, null, true))
 	print("---")
 	for property in b.get_property_list():
 		if str(property.name).begins_with("test_"):

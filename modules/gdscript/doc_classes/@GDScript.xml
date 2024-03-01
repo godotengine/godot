@@ -597,6 +597,17 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_storage">
+			<return type="void" />
+			<description>
+				Export a property with [constant PROPERTY_USAGE_STORAGE] flag. The property is not displayed in the editor, but it is serialized and stored in the scene or resource file. This can be useful for [annotation @tool] scripts. Also the property value is copied when [method Resource.duplicate] or [method Node.duplicate] is called, unlike non-exported variables.
+				[codeblock]
+				var a # Not stored in the file, not displayed in the editor.
+				@export_storage var b # Stored in the file, not displayed in the editor.
+				@export var c: int # Stored in the file, displayed in the editor.
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_subgroup">
 			<return type="void" />
 			<param index="0" name="name" type="String" />

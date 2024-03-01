@@ -432,6 +432,16 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 	if (!is_visible()) {
 		return;
 	}
+	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
+	if (main_settings.has("nodes/import_as_skeleton_bones")) {
+		bool new_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
+		if (new_import_as_skeleton != previous_import_as_skeleton) {
+			previous_import_as_skeleton = new_import_as_skeleton;
+			_re_import();
+			open_settings(base_path);
+		}
+		return;
+	}
 	for (const KeyValue<String, NodeData> &e : node_map) {
 		bool show_collider_view = false;
 		if (e.value.settings.has(SNAME("generate/physics"))) {
@@ -591,6 +601,7 @@ void SceneImportSettingsDialog::update_view() {
 
 void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_animation) {
 	if (scene) {
+		_cleanup();
 		memdelete(scene);
 		scene = nullptr;
 	}
@@ -667,6 +678,10 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_a
 		first_aabb = false;
 	}
 
+	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
+	if (main_settings.has("nodes/import_as_skeleton_bones")) {
+		previous_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
+	}
 	popup_centered_ratio();
 	_update_view_gizmos();
 	_update_camera();
@@ -694,7 +709,7 @@ Node *SceneImportSettingsDialog::get_selected_node() {
 	return node_map[selected_id].node;
 }
 
-void SceneImportSettingsDialog::_select(Tree *p_from, String p_type, String p_id) {
+void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, const String &p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
 
@@ -1137,6 +1152,7 @@ void SceneImportSettingsDialog::_re_import() {
 		main_settings["_subresources"] = subresources;
 	}
 
+	_cleanup(); // Prevent skeletons and other pointers from pointing to dangling references.
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
 }
 

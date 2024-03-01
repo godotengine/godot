@@ -524,7 +524,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	return false; //nothing changed
 }
 
-bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
+bool EditorFileSystem::_scan_import_support(const Vector<String> &reimports) {
 	if (import_support_queries.size() == 0) {
 		return false;
 	}
@@ -1161,7 +1161,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 	}
 }
 
-void EditorFileSystem::_delete_internal_files(String p_file) {
+void EditorFileSystem::_delete_internal_files(const String &p_file) {
 	if (FileAccess::exists(p_file + ".import")) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
@@ -2016,6 +2016,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 }
 
 Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters) {
+	print_verbose(vformat("EditorFileSystem: Importing file: %s", p_file));
+	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
+
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 	bool found = _find_file(p_file, &fs, cpos);
@@ -2267,6 +2270,8 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	}
 
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+
+	print_verbose(vformat("EditorFileSystem: \"%s\" import took %d ms.", p_file, OS::get_singleton()->get_ticks_msec() - start_time));
 
 	return OK;
 }

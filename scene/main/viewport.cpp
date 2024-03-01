@@ -37,11 +37,11 @@
 #include "core/templates/sort_array.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/2d/camera_2d.h"
-#include "scene/2d/collision_object_2d.h"
+#include "scene/2d/physics/collision_object_2d.h"
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/collision_object_3d.h"
+#include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/world_environment.h"
 #endif // _3D_DISABLED
 #include "scene/gui/control.h"
@@ -1447,7 +1447,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 	String tooltip;
 
 	while (p_control) {
-		tooltip = p_control->get_tooltip(pos);
+		tooltip = p_control->atr(p_control->get_tooltip(pos));
 
 		// Temporary solution for PopupMenus.
 		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
@@ -3158,9 +3158,6 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 							gui.subwindow_over->_mouse_leave_viewport();
 						}
 						gui.subwindow_over = sw;
-						if (!sw->is_input_disabled()) {
-							sw->_propagate_window_notification(sw, NOTIFICATION_WM_MOUSE_ENTER);
-						}
 					}
 					if (!sw->is_input_disabled()) {
 						sw->_update_mouse_over(sw->get_final_transform().affine_inverse().xform(p_pos - sw->get_position()));

@@ -132,7 +132,7 @@
 		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the menu item is being hovered and pressed.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the menu item.
 		</theme_item>
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">

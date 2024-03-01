@@ -39,16 +39,18 @@ class Node;
 class Tweener : public RefCounted {
 	GDCLASS(Tweener, RefCounted);
 
+	ObjectID tween_id;
+
 public:
 	virtual void set_tween(const Ref<Tween> &p_tween);
 	virtual void start() = 0;
 	virtual bool step(double &r_delta) = 0;
-	void clear_tween();
 
 protected:
 	static void _bind_methods();
 
-	Ref<Tween> tween;
+	Ref<Tween> _get_tween();
+
 	double elapsed_time = 0;
 	bool finished = false;
 };
@@ -291,7 +293,6 @@ private:
 	Tween::TransitionType trans_type = Tween::TRANS_MAX;
 	Tween::EaseType ease_type = Tween::EASE_MAX;
 
-	Ref<Tween> tween;
 	Variant initial_val;
 	Variant delta_val;
 	Variant final_val;

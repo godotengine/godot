@@ -41,6 +41,7 @@ class XRInterface;
 class XRPositionalTracker;
 class XRHandTracker;
 class XRFaceTracker;
+class XRBodyTracker;
 
 /**
 	The XR server is a singleton object that gives access to the various
@@ -89,6 +90,7 @@ private:
 	Dictionary trackers;
 	Dictionary hand_trackers;
 	Dictionary face_trackers;
+	Dictionary body_trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
 
@@ -202,6 +204,14 @@ public:
 	void remove_face_tracker(const StringName &p_tracker_name);
 	Dictionary get_face_trackers() const;
 	Ref<XRFaceTracker> get_face_tracker(const StringName &p_tracker_name) const;
+
+	/*
+		Body trackers are objects that expose the tracked joints of a body.
+	 */
+	void add_body_tracker(const StringName &p_tracker_name, Ref<XRBodyTracker> p_face_tracker);
+	void remove_body_tracker(const StringName &p_tracker_name);
+	Dictionary get_body_trackers() const;
+	Ref<XRBodyTracker> get_body_tracker(const StringName &p_tracker_name) const;
 
 	// Process is called before we handle our physics process and game process. This is where our interfaces will update controller data and such.
 	void _process();

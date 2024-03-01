@@ -56,6 +56,7 @@ class NavigationObstacle2D : public Node2D {
 
 #ifdef DEBUG_ENABLED
 private:
+	RID debug_canvas_item;
 	void _update_fake_agent_radius_debug();
 	void _update_static_obstacle_debug();
 #endif // DEBUG_ENABLED

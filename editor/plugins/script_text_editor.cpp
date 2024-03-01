@@ -46,7 +46,7 @@
 void ConnectionInfoDialog::ok_pressed() {
 }
 
-void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_nodes) {
+void ConnectionInfoDialog::popup_connections(const String &p_method, const Vector<Node *> &p_nodes) {
 	method->set_text(p_method);
 
 	tree->clear();
@@ -269,7 +269,7 @@ void ScriptTextEditor::_show_warnings_panel(bool p_show) {
 	warnings_panel->set_visible(p_show);
 }
 
-void ScriptTextEditor::_warning_clicked(Variant p_line) {
+void ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		goto_line_centered(p_line.operator int64_t());
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
@@ -300,7 +300,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 	}
 }
 
-void ScriptTextEditor::_error_clicked(Variant p_line) {
+void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		code_editor->get_text_editor()->remove_secondary_carets();
 		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
@@ -344,7 +344,7 @@ void ScriptTextEditor::reload_text() {
 	_validate_script();
 }
 
-void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
+void ScriptTextEditor::add_callback(const String &p_function, const PackedStringArray &p_args) {
 	ScriptLanguage *language = script->get_language();
 	if (!language->can_make_function()) {
 		return;

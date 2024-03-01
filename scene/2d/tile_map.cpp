@@ -105,7 +105,7 @@ void TileMap::set_rendering_quadrant_size(int p_size) {
 
 	rendering_quadrant_size = p_size;
 	for (TileMapLayer *layer : layers) {
-		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_QUADRANT_SIZE);
+		layer->set_rendering_quadrant_size(p_size);
 	}
 	_emit_changed();
 }
@@ -214,11 +214,10 @@ void TileMap::add_layer(int p_to_pos) {
 	TileMapLayer *new_layer = memnew(TileMapLayer);
 	layers.insert(p_to_pos, new_layer);
 	add_child(new_layer, false, INTERNAL_MODE_FRONT);
-	new_layer->force_parent_owned();
 	new_layer->set_name(vformat("Layer%d", p_to_pos));
 	move_child(new_layer, p_to_pos);
 	for (uint32_t i = 0; i < layers.size(); i++) {
-		layers[i]->set_layer_index_in_tile_map_node(i);
+		layers[i]->set_as_tile_map_internal_node(i);
 	}
 	new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
 
@@ -239,7 +238,7 @@ void TileMap::move_layer(int p_layer, int p_to_pos) {
 	layers.remove_at(p_to_pos < p_layer ? p_layer + 1 : p_layer);
 	for (uint32_t i = 0; i < layers.size(); i++) {
 		move_child(layers[i], i);
-		layers[i]->set_layer_index_in_tile_map_node(i);
+		layers[i]->set_as_tile_map_internal_node(i);
 	}
 	notify_property_list_changed();
 
@@ -255,7 +254,7 @@ void TileMap::remove_layer(int p_layer) {
 	layers[p_layer]->queue_free();
 	layers.remove_at(p_layer);
 	for (uint32_t i = 0; i < layers.size(); i++) {
-		layers[i]->set_layer_index_in_tile_map_node(i);
+		layers[i]->set_as_tile_map_internal_node(i);
 	}
 	notify_property_list_changed();
 
@@ -350,7 +349,7 @@ void TileMap::set_collision_visibility_mode(TileMap::VisibilityMode p_show_colli
 	}
 	collision_visibility_mode = p_show_collision;
 	for (TileMapLayer *layer : layers) {
-		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_COLLISION_VISIBILITY_MODE);
+		layer->set_collision_visibility_mode(TileMapLayer::VisibilityMode(p_show_collision));
 	}
 	_emit_changed();
 }
@@ -365,7 +364,7 @@ void TileMap::set_navigation_visibility_mode(TileMap::VisibilityMode p_show_navi
 	}
 	navigation_visibility_mode = p_show_navigation;
 	for (TileMapLayer *layer : layers) {
-		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_NAVIGATION_VISIBILITY_MODE);
+		layer->set_navigation_visibility_mode(TileMapLayer::VisibilityMode(p_show_navigation));
 	}
 	_emit_changed();
 }
@@ -380,7 +379,7 @@ void TileMap::set_y_sort_enabled(bool p_enable) {
 	}
 	Node2D::set_y_sort_enabled(p_enable);
 	for (TileMapLayer *layer : layers) {
-		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_Y_SORT_ENABLED);
+		layer->set_y_sort_enabled(p_enable);
 	}
 	_emit_changed();
 	update_configuration_warnings();
@@ -497,10 +496,10 @@ void TileMap::update_internals() {
 
 void TileMap::notify_runtime_tile_data_update(int p_layer) {
 	if (p_layer >= 0) {
-		TILEMAP_CALL_FOR_LAYER(p_layer, notify_tile_map_change, TileMapLayer::DIRTY_FLAGS_TILE_MAP_RUNTIME_UPDATE);
+		TILEMAP_CALL_FOR_LAYER(p_layer, notify_runtime_tile_data_update);
 	} else {
 		for (TileMapLayer *layer : layers) {
-			layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_RUNTIME_UPDATE);
+			layer->notify_runtime_tile_data_update();
 		}
 	}
 }
@@ -539,9 +538,8 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 			if (layers.size() == 0) {
 				TileMapLayer *new_layer = memnew(TileMapLayer);
 				add_child(new_layer, false, INTERNAL_MODE_FRONT);
-				new_layer->force_parent_owned();
+				new_layer->set_as_tile_map_internal_node(0);
 				new_layer->set_name("Layer0");
-				new_layer->set_layer_index_in_tile_map_node(0);
 				new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
 				layers.push_back(new_layer);
 			}
@@ -565,9 +563,8 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 			while (index >= (int)layers.size()) {
 				TileMapLayer *new_layer = memnew(TileMapLayer);
 				add_child(new_layer, false, INTERNAL_MODE_FRONT);
-				new_layer->force_parent_owned();
+				new_layer->set_as_tile_map_internal_node(index);
 				new_layer->set_name(vformat("Layer%d", index));
-				new_layer->set_layer_index_in_tile_map_node(index);
 				new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
 				layers.push_back(new_layer);
 			}
@@ -795,46 +792,34 @@ Rect2i TileMap::get_used_rect() const {
 // --- Override some methods of the CanvasItem class to pass the changes to the quadrants CanvasItems ---
 
 void TileMap::set_light_mask(int p_light_mask) {
-	// Occlusion: set light mask.
+	// Set light mask for occlusion and applies it to all layers too.
 	CanvasItem::set_light_mask(p_light_mask);
 	for (TileMapLayer *layer : layers) {
-		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_LIGHT_MASK);
+		layer->set_light_mask(p_light_mask);
 	}
 }
 
-void TileMap::set_material(const Ref<Material> &p_material) {
-	// Set material for the whole tilemap.
-	CanvasItem::set_material(p_material);
-
-	// Update material for the whole tilemap.
+void TileMap::set_self_modulate(const Color &p_self_modulate) {
+	// Set self_modulation and applies it to all layers too.
+	CanvasItem::set_self_modulate(p_self_modulate);
 	for (TileMapLayer *layer : layers) {
-		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_MATERIAL);
-	}
-}
-
-void TileMap::set_use_parent_material(bool p_use_parent_material) {
-	// Set use_parent_material for the whole tilemap.
-	CanvasItem::set_use_parent_material(p_use_parent_material);
-
-	// Update use_parent_material for the whole tilemap.
-	for (TileMapLayer *layer : layers) {
-		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_USE_PARENT_MATERIAL);
+		layer->set_self_modulate(p_self_modulate);
 	}
 }
 
 void TileMap::set_texture_filter(TextureFilter p_texture_filter) {
-	// Set a default texture filter for the whole tilemap.
+	// Set a default texture filter and applies it to all layers too.
 	CanvasItem::set_texture_filter(p_texture_filter);
 	for (TileMapLayer *layer : layers) {
-		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_TEXTURE_FILTER);
+		layer->set_texture_filter(p_texture_filter);
 	}
 }
 
 void TileMap::set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) {
-	// Set a default texture repeat for the whole tilemap.
+	// Set a default texture repeat and applies it to all layers too.
 	CanvasItem::set_texture_repeat(p_texture_repeat);
 	for (TileMapLayer *layer : layers) {
-		layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_TEXTURE_REPEAT);
+		layer->set_texture_repeat(p_texture_repeat);
 	}
 }
 
@@ -1003,11 +988,10 @@ void TileMap::_bind_methods() {
 TileMap::TileMap() {
 	TileMapLayer *new_layer = memnew(TileMapLayer);
 	add_child(new_layer, false, INTERNAL_MODE_FRONT);
+	new_layer->set_as_tile_map_internal_node(0);
 	new_layer->set_name("Layer0");
-	new_layer->set_layer_index_in_tile_map_node(0);
 	new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
 	layers.push_back(new_layer);
-
 	default_layer = memnew(TileMapLayer);
 }
 

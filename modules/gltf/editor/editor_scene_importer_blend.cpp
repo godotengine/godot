@@ -287,6 +287,9 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
 		base_dir = sink.get_base_dir();
 	}
+	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
+		state->set_import_as_skeleton_bones(true);
+	}
 	state->set_scene_name(blend_basename);
 	err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
 	if (err != OK) {

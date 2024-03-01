@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Godot.SourceGenerators
 {
-    static class ExtensionMethods
+    internal static class ExtensionMethods
     {
         public static bool TryGetGlobalAnalyzerProperty(
             this GeneratorExecutionContext context, string property, out string? value

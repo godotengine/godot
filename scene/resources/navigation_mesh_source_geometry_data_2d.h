@@ -71,8 +71,8 @@ public:
 	bool has_data() { return traversable_outlines.size(); };
 	void clear();
 
-	NavigationMeshSourceGeometryData2D();
-	~NavigationMeshSourceGeometryData2D();
+	NavigationMeshSourceGeometryData2D() {}
+	~NavigationMeshSourceGeometryData2D() { clear(); }
 };
 
 #endif // NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H

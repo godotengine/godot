@@ -3,6 +3,7 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+
 import os
 from detect import get_mingw_bin_prefix
 from detect import try_cmd

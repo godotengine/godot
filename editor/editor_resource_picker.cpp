@@ -467,6 +467,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			EditorNode::get_editor_data().instantiate_object_properties(obj);
 
+			// Prevent freeing of the object until the end of the update of the resource (GH-88286).
+			Ref<Resource> old_edited_resource = edited_resource;
 			edited_resource = Ref<Resource>(resp);
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
@@ -654,7 +656,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	return false;
 }
 
-bool EditorResourcePicker::_is_type_valid(const String p_type_name, const HashSet<StringName> &p_allowed_types) const {
+bool EditorResourcePicker::_is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const {
 	for (const StringName &E : p_allowed_types) {
 		String at = E;
 		if (p_type_name == at || ClassDB::is_parent_class(p_type_name, at) || EditorNode::get_editor_data().script_class_is_parent(p_type_name, at)) {

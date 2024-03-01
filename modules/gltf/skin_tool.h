@@ -84,7 +84,8 @@ public:
 	static Error _determine_skeletons(
 			Vector<Ref<GLTFSkin>> &r_skins,
 			Vector<Ref<GLTFNode>> &r_nodes,
-			Vector<Ref<GLTFSkeleton>> &r_skeletons);
+			Vector<Ref<GLTFSkeleton>> &r_skeletons,
+			const Vector<GLTFNodeIndex> &p_single_skeleton_roots);
 	static Error _create_skeletons(
 			HashSet<String> &r_unique_names,
 			Vector<Ref<GLTFSkin>> &r_skins,

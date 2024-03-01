@@ -47,15 +47,15 @@
 #include "modules/regex/regex.h"
 
 // Find "OS.set_property(x)", capturing x into $1.
-static String make_regex_gds_os_property_set(String name_set) {
+static String make_regex_gds_os_property_set(const String &name_set) {
 	return String("\\bOS\\.") + name_set + "\\s*\\((.*)\\)";
 }
 // Find "OS.property = x", capturing x into $1 or $2.
-static String make_regex_gds_os_property_assign(String name) {
+static String make_regex_gds_os_property_assign(const String &name) {
 	return String("\\bOS\\.") + name + "\\s*=\\s*([^#]+)";
 }
 // Find "OS.property" OR "OS.get_property()" / "OS.is_property()".
-static String make_regex_gds_os_property_get(String name, String get) {
+static String make_regex_gds_os_property_get(const String &name, const String &get) {
 	return String("\\bOS\\.(") + get + "_)?" + name + "(\\s*\\(\\s*\\))?";
 }
 
@@ -746,7 +746,7 @@ Vector<SourceLine> ProjectConverter3To4::split_lines(const String &text) {
 }
 
 // Test expected results of gdscript
-bool ProjectConverter3To4::test_conversion_gdscript_builtin(String name, String expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin_script) {
+bool ProjectConverter3To4::test_conversion_gdscript_builtin(const String &name, const String &expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &, bool), const String &what, const RegExContainer &reg_container, bool builtin_script) {
 	Vector<SourceLine> got = split_lines(name);
 
 	(this->*func)(got, reg_container, builtin_script);
@@ -756,7 +756,7 @@ bool ProjectConverter3To4::test_conversion_gdscript_builtin(String name, String 
 	return true;
 }
 
-bool ProjectConverter3To4::test_conversion_with_regex(String name, String expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &), String what, const RegExContainer &reg_container) {
+bool ProjectConverter3To4::test_conversion_with_regex(const String &name, const String &expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &), const String &what, const RegExContainer &reg_container) {
 	Vector<SourceLine> got = split_lines(name);
 
 	(this->*func)(got, reg_container);
@@ -766,7 +766,7 @@ bool ProjectConverter3To4::test_conversion_with_regex(String name, String expect
 	return true;
 }
 
-bool ProjectConverter3To4::test_conversion_basic(String name, String expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, String what) {
+bool ProjectConverter3To4::test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, const String &what) {
 	Vector<SourceLine> got = split_lines(name);
 
 	rename_common(array, regex_cache, got);
@@ -1638,7 +1638,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 	return found_renames;
 }
 
-bool ProjectConverter3To4::contains_function_call(String &line, String function) const {
+bool ProjectConverter3To4::contains_function_call(const String &line, const String &function) const {
 	// We want to convert the function only if it is completely standalone.
 	// For example, when we search for "connect(", we don't want to accidentally convert "reconnect(".
 	if (!line.contains(function)) {
@@ -2834,7 +2834,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_input_map_scancode(Vector<
 	return found_renames;
 }
 
-void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, String from, String to) {
+void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, const String &from, const String &to) {
 	RegEx reg = RegEx(String("\\b") + from + "\\b");
 	CRASH_COND(!reg.is_valid());
 	for (SourceLine &source_line : source_lines) {
@@ -2849,7 +2849,7 @@ void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, Strin
 	}
 };
 
-Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lines, String from, String to) {
+Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lines, const String &from, const String &to) {
 	Vector<String> found_renames;
 
 	RegEx reg = RegEx(String("\\b") + from + "\\b");

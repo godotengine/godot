@@ -152,7 +152,7 @@ private:
 public:
 	EditorPlugin *get_handling_main_editor(Object *p_object);
 	Vector<EditorPlugin *> get_handling_sub_editors(Object *p_object);
-	EditorPlugin *get_editor_by_name(String p_name);
+	EditorPlugin *get_editor_by_name(const String &p_name);
 
 	void copy_object_params(Object *p_object);
 	void paste_object_params(Object *p_object);

@@ -32,7 +32,7 @@
 
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/spring_arm_3d.h"
+#include "scene/3d/physics/spring_arm_3d.h"
 #include "scene/resources/3d/shape_3d.h"
 
 void SpringArm3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {

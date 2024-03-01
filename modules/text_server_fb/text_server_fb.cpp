@@ -73,7 +73,7 @@ using namespace godot;
 
 /*************************************************************************/
 
-#define OT_TAG(c1, c2, c3, c4) ((int32_t)((((uint32_t)(c1)&0xff) << 24) | (((uint32_t)(c2)&0xff) << 16) | (((uint32_t)(c3)&0xff) << 8) | ((uint32_t)(c4)&0xff)))
+#define OT_TAG(c1, c2, c3, c4) ((int32_t)((((uint32_t)(c1) & 0xff) << 24) | (((uint32_t)(c2) & 0xff) << 16) | (((uint32_t)(c3) & 0xff) << 8) | ((uint32_t)(c4) & 0xff)))
 
 bool TextServerFallback::_has_feature(Feature p_feature) const {
 	switch (p_feature) {

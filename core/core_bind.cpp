@@ -145,6 +145,8 @@ void ResourceLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REUSE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
+	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE_DEEP);
+	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE_DEEP);
 }
 
 ////// ResourceSaver //////
@@ -1517,6 +1519,30 @@ bool ClassDB::is_class_enabled(const StringName &p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
 
+#ifdef TOOLS_ENABLED
+void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	bool first_argument_is_class = false;
+	if (p_idx == 0) {
+		first_argument_is_class = (pf == "get_inheriters_from_class" || pf == "get_parent_class" ||
+				pf == "class_exists" || pf == "can_instantiate" || pf == "instantiate" ||
+				pf == "class_has_signal" || pf == "class_get_signal" || pf == "class_get_signal_list" ||
+				pf == "class_get_property_list" || pf == "class_get_property" || pf == "class_set_property" ||
+				pf == "class_has_method" || pf == "class_get_method_list" ||
+				pf == "class_get_integer_constant_list" || pf == "class_has_integer_constant" || pf == "class_get_integer_constant" ||
+				pf == "class_has_enum" || pf == "class_get_enum_list" || pf == "class_get_enum_constants" || pf == "class_get_integer_constant_enum" ||
+				pf == "is_class_enabled");
+	}
+	if (first_argument_is_class || pf == "is_parent_class") {
+		for (const String &E : get_class_list()) {
+			r_options->push_back(E.quote());
+		}
+	}
+
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("get_class_list"), &ClassDB::get_class_list);
 	::ClassDB::bind_method(D_METHOD("get_inheriters_from_class", "class"), &ClassDB::get_inheriters_from_class);
@@ -1723,8 +1749,9 @@ bool Engine::is_printing_error_messages() const {
 	return ::Engine::get_singleton()->is_printing_error_messages();
 }
 
+#ifdef TOOLS_ENABLED
 void Engine::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0 && (pf == "has_singleton" || pf == "get_singleton" || pf == "unregister_singleton")) {
 		for (const String &E : get_singleton_list()) {
 			r_options->push_back(E.quote());
@@ -1732,6 +1759,7 @@ void Engine::get_argument_options(const StringName &p_function, int p_idx, List<
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_ticks_per_second", "physics_ticks_per_second"), &Engine::set_physics_ticks_per_second);

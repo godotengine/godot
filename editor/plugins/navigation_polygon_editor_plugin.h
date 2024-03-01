@@ -56,6 +56,10 @@ class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 	Button *button_reset = nullptr;
 	Label *bake_info = nullptr;
 
+	Timer *rebake_timer = nullptr;
+	float _rebake_timer_delay = 1.5;
+	void _rebake_timer_timeout();
+
 	void _bake_pressed();
 	void _clear_pressed();
 

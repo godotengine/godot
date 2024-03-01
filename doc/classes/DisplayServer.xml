@@ -78,6 +78,7 @@
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Sets a custom mouse cursor image for the defined [param shape]. This means the user's operating system and mouse cursor theme will no longer influence the mouse cursor's appearance. The image must be [code]256x256[/code] or smaller for correct appearance. [param hotspot] can optionally be set to define the area where the cursor will click. By default, [param hotspot] is set to [code]Vector2(0, 0)[/code], which is the top-left corner of the image. See also [method cursor_set_shape].
+				[param cursor] can be either [Texture2D] or [Image].
 			</description>
 		</method>
 		<method name="cursor_set_shape">

@@ -861,7 +861,7 @@ void CanvasItemEditor::_restore_canvas_item_state(const List<CanvasItem *> &p_ca
 	}
 }
 
-void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, String action_name, bool commit_bones) {
+void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, const String &action_name, bool commit_bones) {
 	List<CanvasItem *> modified_canvas_items;
 	for (CanvasItem *ci : p_canvas_items) {
 		Dictionary old_state = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci)->undo_state;
@@ -2708,7 +2708,7 @@ Control::CursorShape CanvasItemEditor::get_cursor_shape(const Point2 &p_pos) con
 	return c;
 }
 
-void CanvasItemEditor::_draw_text_at_position(Point2 p_position, String p_string, Side p_side) {
+void CanvasItemEditor::_draw_text_at_position(Point2 p_position, const String &p_string, Side p_side) {
 	Color color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 	color.a = 0.8;
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
@@ -3684,65 +3684,63 @@ void CanvasItemEditor::_draw_hover() {
 	}
 }
 
-void CanvasItemEditor::_draw_transform_message() {
-	if (drag_type == DRAG_NONE || drag_selection.is_empty() || !drag_selection.front()->get()) {
-		return;
-	}
-	String transform_message;
-	Transform2D current_transform = drag_selection.front()->get()->get_global_transform();
+void CanvasItemEditor::_draw_message() {
+	if (drag_type != DRAG_NONE && !drag_selection.is_empty() && drag_selection.front()->get()) {
+		Transform2D current_transform = drag_selection.front()->get()->get_global_transform();
 
-	double snap = EDITOR_GET("interface/inspector/default_float_step");
-	int snap_step_decimals = Math::range_step_decimals(snap);
+		double snap = EDITOR_GET("interface/inspector/default_float_step");
+		int snap_step_decimals = Math::range_step_decimals(snap);
 #define FORMAT(value) (TS->format_number(String::num(value, snap_step_decimals)))
 
-	switch (drag_type) {
-		case DRAG_MOVE:
-		case DRAG_MOVE_X:
-		case DRAG_MOVE_Y: {
-			Vector2 delta = current_transform.get_origin() - original_transform.get_origin();
-			if (drag_type == DRAG_MOVE) {
-				transform_message = TTR("Moving:") + " (" + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ") px";
-			} else if (drag_type == DRAG_MOVE_X) {
-				transform_message = TTR("Moving:") + " " + FORMAT(delta.x) + " px";
-			} else if (drag_type == DRAG_MOVE_Y) {
-				transform_message = TTR("Moving:") + " " + FORMAT(delta.y) + " px";
-			}
-		} break;
+		switch (drag_type) {
+			case DRAG_MOVE:
+			case DRAG_MOVE_X:
+			case DRAG_MOVE_Y: {
+				Vector2 delta = current_transform.get_origin() - original_transform.get_origin();
+				if (drag_type == DRAG_MOVE) {
+					message = TTR("Moving:") + " (" + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ") px";
+				} else if (drag_type == DRAG_MOVE_X) {
+					message = TTR("Moving:") + " " + FORMAT(delta.x) + " px";
+				} else if (drag_type == DRAG_MOVE_Y) {
+					message = TTR("Moving:") + " " + FORMAT(delta.y) + " px";
+				}
+			} break;
 
-		case DRAG_ROTATE: {
-			real_t delta = Math::rad_to_deg(current_transform.get_rotation() - original_transform.get_rotation());
-			transform_message = TTR("Rotating:") + " " + FORMAT(delta) + String::utf8(" °");
-		} break;
+			case DRAG_ROTATE: {
+				real_t delta = Math::rad_to_deg(current_transform.get_rotation() - original_transform.get_rotation());
+				message = TTR("Rotating:") + " " + FORMAT(delta) + String::utf8(" °");
+			} break;
 
-		case DRAG_SCALE_X:
-		case DRAG_SCALE_Y:
-		case DRAG_SCALE_BOTH: {
-			Vector2 original_scale = (Math::is_zero_approx(original_transform.get_scale().x) || Math::is_zero_approx(original_transform.get_scale().y)) ? Vector2(CMP_EPSILON, CMP_EPSILON) : original_transform.get_scale();
-			Vector2 delta = current_transform.get_scale() / original_scale;
-			if (drag_type == DRAG_SCALE_BOTH) {
-				transform_message = TTR("Scaling:") + String::utf8(" ×(") + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ")";
-			} else if (drag_type == DRAG_SCALE_X) {
-				transform_message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.x);
-			} else if (drag_type == DRAG_SCALE_Y) {
-				transform_message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.y);
-			}
-		} break;
+			case DRAG_SCALE_X:
+			case DRAG_SCALE_Y:
+			case DRAG_SCALE_BOTH: {
+				Vector2 original_scale = (Math::is_zero_approx(original_transform.get_scale().x) || Math::is_zero_approx(original_transform.get_scale().y)) ? Vector2(CMP_EPSILON, CMP_EPSILON) : original_transform.get_scale();
+				Vector2 delta = current_transform.get_scale() / original_scale;
+				if (drag_type == DRAG_SCALE_BOTH) {
+					message = TTR("Scaling:") + String::utf8(" ×(") + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ")";
+				} else if (drag_type == DRAG_SCALE_X) {
+					message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.x);
+				} else if (drag_type == DRAG_SCALE_Y) {
+					message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.y);
+				}
+			} break;
 
-		default:
-			break;
-	}
+			default:
+				break;
+		}
 #undef FORMAT
+	}
 
-	if (transform_message.is_empty()) {
+	if (message.is_empty()) {
 		return;
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	Point2 msgpos = Point2(RULER_WIDTH + 5 * EDSCALE, viewport->get_size().y - 20 * EDSCALE);
-	viewport->draw_string(font, msgpos + Point2(1, 1), transform_message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-	viewport->draw_string(font, msgpos + Point2(-1, -1), transform_message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-	viewport->draw_string(font, msgpos, transform_message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
+	viewport->draw_string(font, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	viewport->draw_string(font, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	viewport->draw_string(font, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
 }
 
 void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
@@ -3856,7 +3854,7 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_smart_snapping();
 	_draw_focus();
 	_draw_hover();
-	_draw_transform_message();
+	_draw_message();
 }
 
 void CanvasItemEditor::update_viewport() {
@@ -4740,6 +4738,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 }
 
 void CanvasItemEditor::_reset_drag() {
+	message = "";
 	drag_type = DRAG_NONE;
 	drag_selection.clear();
 }
@@ -5693,6 +5692,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 
 void CanvasItemEditorViewport::_remove_preview() {
 	if (preview_node->get_parent()) {
+		canvas_item_editor->message = "";
 		for (int i = preview_node->get_child_count() - 1; i >= 0; i--) {
 			Node *node = preview_node->get_child(i);
 			node->queue_free();
@@ -5938,7 +5938,19 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				}
 				Transform2D trans = canvas_item_editor->get_canvas_transform();
 				preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
-				label->set_text(vformat(TTR("Adding %s..."), default_texture_node_type));
+				String scene_file_path = preview_node->get_child(0)->get_scene_file_path();
+				if (scene_file_path.is_empty() || preview_node->get_tree()->get_edited_scene_root()) {
+					double snap = EDITOR_GET("interface/inspector/default_float_step");
+					int snap_step_decimals = Math::range_step_decimals(snap);
+#define FORMAT(value) (TS->format_number(String::num(value, snap_step_decimals)))
+					Vector2 preview_node_pos = preview_node->get_global_position();
+					canvas_item_editor->message = TTR("Instantiating:") + " (" + FORMAT(preview_node_pos.x) + ", " + FORMAT(preview_node_pos.y) + ") px";
+					label->set_text(vformat(TTR("Adding %s..."), default_texture_node_type));
+				} else {
+					canvas_item_editor->message = TTR("Creating inherited scene from: ") + scene_file_path;
+				}
+
+				canvas_item_editor->update_viewport();
 			}
 			return can_instantiate;
 		}
