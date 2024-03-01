@@ -2209,15 +2209,15 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 
 #ifdef TOOLS_ENABLED
 void RenderingServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "global_shader_parameter_set" || pf == "global_shader_parameter_set_override" ||
 				pf == "global_shader_parameter_get" || pf == "global_shader_parameter_get_type" || pf == "global_shader_parameter_remove") {
-			for (StringName E : global_shader_parameter_get_list()) {
+			for (const StringName &E : global_shader_parameter_get_list()) {
 				r_options->push_back(E.operator String().quote());
 			}
 		} else if (pf == "has_os_feature") {
-			for (String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"" }) {
+			for (const String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"" }) {
 				r_options->push_back(E);
 			}
 		}

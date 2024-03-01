@@ -725,9 +725,10 @@ double AnimationPlayer::get_blend_time(const StringName &p_animation1, const Str
 	}
 }
 
+#ifdef TOOLS_ENABLED
 void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
-	if (p_idx == 0 && (p_function == "play" || p_function == "play_backwards" || p_function == "has_animation" || p_function == "queue")) {
+	const String pf = p_function;
+	if (p_idx == 0 && (pf == "play" || pf == "play_backwards" || pf == "has_animation" || pf == "queue")) {
 		List<StringName> al;
 		get_animation_list(&al);
 		for (const StringName &name : al) {
@@ -736,6 +737,7 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 	}
 	AnimationMixer::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void AnimationPlayer::_animation_removed(const StringName &p_name, const StringName &p_library) {
 	AnimationMixer::_animation_removed(p_name, p_library);

@@ -626,6 +626,7 @@ public:
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);
 	String prevalidate_child_name(Node *p_child, StringName p_name);
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
 	static String adjust_name_casing(const String &p_name);
 
@@ -640,8 +641,6 @@ public:
 	NodePath get_import_path() const;
 
 	bool is_owned_by_parent() const;
-
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	void clear_internal_tree_resource_paths();
 

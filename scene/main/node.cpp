@@ -3174,6 +3174,7 @@ NodePath Node::get_import_path() const {
 #endif
 }
 
+#ifdef TOOLS_ENABLED
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
@@ -3190,7 +3191,7 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 }
 
 void Node::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0 && (pf == "has_node" || pf == "get_node" || pf == "get_node_or_null")) {
 		_add_nodes_to_options(this, this, r_options);
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
@@ -3201,6 +3202,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void Node::clear_internal_tree_resource_paths() {
 	clear_internal_resource_paths();

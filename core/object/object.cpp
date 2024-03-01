@@ -2096,15 +2096,17 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 	spin_lock.unlock();
 }
 
+#ifdef TOOLS_ENABLED
 void Object::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
 	if (p_idx == 0) {
-		if (p_function == "connect" || p_function == "is_connected" || p_function == "disconnect" || p_function == "emit_signal" || p_function == "has_signal") {
+		if (pf == "connect" || pf == "is_connected" || pf == "disconnect" || pf == "emit_signal" || pf == "has_signal") {
 			List<MethodInfo> signals;
 			get_signal_list(&signals);
 			for (const MethodInfo &E : signals) {
 				r_options->push_back(E.name.quote());
 			}
-		} else if (p_function == "call" || p_function == "call_deferred" || p_function == "callv" || p_function == "has_method") {
+		} else if (pf == "call" || pf == "call_deferred" || pf == "callv" || pf == "has_method") {
 			List<MethodInfo> methods;
 			get_method_list(&methods);
 			for (const MethodInfo &E : methods) {
@@ -2113,7 +2115,7 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 				}
 				r_options->push_back(E.name.quote());
 			}
-		} else if (p_function == "set" || p_function == "set_deferred" || p_function == "get") {
+		} else if (pf == "set" || pf == "set_deferred" || pf == "get") {
 			List<PropertyInfo> properties;
 			get_property_list(&properties);
 			for (const PropertyInfo &E : properties) {
@@ -2121,13 +2123,13 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 					r_options->push_back(E.name.quote());
 				}
 			}
-		} else if (p_function == "set_meta" || p_function == "get_meta" || p_function == "has_meta" || p_function == "remove_meta") {
+		} else if (pf == "set_meta" || pf == "get_meta" || pf == "has_meta" || pf == "remove_meta") {
 			for (const KeyValue<StringName, Variant> &K : metadata) {
 				r_options->push_back(String(K.key).quote());
 			}
 		}
 	} else if (p_idx == 2) {
-		if (p_function == "connect") {
+		if (pf == "connect") {
 			// Ideally, the constants should be inferred by the parameter.
 			// But a parameter's PropertyInfo does not store the enum they come from, so this will do for now.
 			List<StringName> constants;
@@ -2138,6 +2140,7 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 		}
 	}
 }
+#endif
 
 SpinLock ObjectDB::spin_lock;
 uint32_t ObjectDB::slot_count = 0;
