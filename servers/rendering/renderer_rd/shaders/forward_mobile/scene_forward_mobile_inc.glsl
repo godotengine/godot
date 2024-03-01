@@ -16,7 +16,17 @@
 
 #define USING_MOBILE_RENDERER
 
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// Was:
+//layout(push_constant, std430) uniform DrawCall {
+#ifdef USE_PUSH_CONSTANTS
 layout(push_constant, std430) uniform DrawCall {
+#else
+layout(set = 4, binding = 0, std140) uniform DrawCall {
+#endif
+
 	vec2 uv_offset;
 	uint instance_index;
 	uint pad;

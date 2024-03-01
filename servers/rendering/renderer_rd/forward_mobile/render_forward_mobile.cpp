@@ -987,6 +987,15 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 // <TF>
 // @ShadyTF 
 // replacing push constants with uniform buffer
+// prepare the params for draw call and update buffers
+		if (render_list[RENDER_LIST_OPAQUE].elements.size() > 0) {
+			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+			_render_list_prepare_params(&render_list_params, 0, render_list_params.element_count, false);
+		}
+		if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
+			RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+			_render_list_prepare_params(&render_list_params, 0, render_list_params.element_count, false);
+		}
 		if (draw_sky || draw_sky_fog_only) {
 			sky.draw_sky_prepare_params(p_render_data->environment, time, sky_energy_multiplier);
 		}
@@ -1436,6 +1445,12 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 
 	{
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, 0);
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// prepare draw call params
+		_render_list_prepare_params(&render_list_params, 0, render_list_params.element_count, true);
+// </TF>
 		//regular forward for now
 		Vector<Color> clear = {
 			Color(0, 0, 0, 0),
@@ -1490,6 +1505,12 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 			Color(0, 0, 0, 0)
 		};
 
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// prepare draw call params
+		_render_list_prepare_params(&render_list_params, 0, render_list_params.element_count, true);
+// </TF>
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, clear, 1.0, 0, p_region);
 
 		const int uv_offset_count = 9;
@@ -2024,10 +2045,54 @@ void RenderForwardMobile::_render_list_with_draw_list(RenderListParameters *p_pa
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(p_framebuffer);
 	p_params->framebuffer_format = fb_format;
 
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// prepare the params for draw call and update buffers
+	_render_list_prepare_params( p_params, 0, p_params->element_count, false );
+// </TF>
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region);
 	_render_list(draw_list, fb_format, p_params, 0, p_params->element_count);
 	RD::get_singleton()->draw_list_end();
 }
+
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// function to prepare the params for draw call and update buffers
+void RenderForwardMobile::_render_list_prepare_params( RenderListParameters* p_params, uint32_t p_from_element, uint32_t p_to_element, bool p_depth_material ) {
+
+	List<RID> updated;
+		for (uint32_t i = p_from_element; i < p_to_element; i++) {
+		const GeometryInstanceSurfaceDataCache *surf = p_params->elements[i];
+		const GeometryInstanceForwardMobile *inst = surf->owner;
+
+		if (inst->instance_count == 0) {
+			continue;
+		}
+
+		SceneState::PushConstant push_constant;
+		push_constant.base_index = i + p_params->element_offset;
+
+		if  (p_depth_material) {
+			push_constant.uv_offset[0] = p_params->uv_offset.x;
+			push_constant.uv_offset[1] = p_params->uv_offset.y;
+		} else {
+			push_constant.uv_offset[0] = 0.0;
+			push_constant.uv_offset[1] = 0.0;
+		}
+
+		if (updated.find(surf->params_uniform_buffer) != nullptr) {
+			updated.push_back(surf->params_uniform_buffer);
+		} else {
+			updated.push_back(surf->params_uniform_buffer);
+		}
+		
+
+		RD::RenderingDevice::get_singleton()->buffer_update(surf->params_uniform_buffer, 0, sizeof(SceneState::PushConstant), &push_constant);
+	}
+}
+// </TF>
 
 template <RenderForwardMobile::PassMode p_pass_mode>
 void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element) {
@@ -2062,6 +2127,11 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 		uint32_t base_spec_constants = p_params->spec_constant_base_flags;
 
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// Removed :
+/*
 		SceneState::PushConstant push_constant;
 		push_constant.base_index = i + p_params->element_offset;
 
@@ -2073,6 +2143,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			push_constant.uv_offset[1] = 0.0;
 		}
 
+*/
+// </TF>
 		RID material_uniform_set;
 		SceneShaderForwardMobile::ShaderData *shader;
 		void *mesh_surface;
@@ -2225,7 +2297,14 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			prev_material_uniform_set = material_uniform_set;
 		}
 
-		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(SceneState::PushConstant));
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// Was:
+// RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(SceneState::PushConstant));
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, surf->params_uniform_set, PARAMS_UNIFORM_SET);
+// </TF>
+		
 
 		uint32_t instance_count = surf->owner->instance_count > 1 ? surf->owner->instance_count : 1;
 		if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS) {
@@ -2293,6 +2372,17 @@ void RenderForwardMobile::geometry_instance_free(RenderGeometryInstance *p_geome
 	}
 	GeometryInstanceSurfaceDataCache *surf = ginstance->surface_caches;
 	while (surf) {
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// cleanup uniform set and buffer
+		if (surf->params_uniform_set.is_valid()) {
+			RD::RenderingDevice::get_singleton()->free(surf->params_uniform_set);
+		}
+		if (surf->params_uniform_buffer.is_valid()) {
+			RD::RenderingDevice::get_singleton()->free(surf->params_uniform_buffer);
+		}
+// </TF>
 		GeometryInstanceSurfaceDataCache *next = surf->next;
 		geometry_instance_surface_alloc.free(surf);
 		surf = next;
@@ -2441,6 +2531,19 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->surface = mesh_storage->mesh_get_surface(p_mesh, p_surface);
 	sdcache->primitive = mesh_storage->mesh_surface_get_primitive(sdcache->surface);
 	sdcache->surface_index = p_surface;
+
+// <TF>
+// @ShadyTF 
+// prepare uniform set and buffer
+	sdcache->params_uniform_buffer = RD::RenderingDevice::get_singleton()->uniform_buffer_create( sizeof(SceneState::PushConstant) );
+	Vector<RD::Uniform> params_uniforms;
+	RD::Uniform u;
+	u.binding = 0;
+	u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+	u.append_id(sdcache->params_uniform_buffer);
+	params_uniforms.push_back(u);
+	sdcache->params_uniform_set = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, scene_shader.default_shader_rd, PARAMS_UNIFORM_SET);
+// </TF>
 
 	if (ginstance->data->dirty_dependencies) {
 		RSG::utilities->base_update_dependency(p_mesh, &ginstance->data->dependency_tracker);
