@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rename_dialog.cpp                                                     */
+/*  filesystem_dock_rename_dialog.cpp                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "rename_dialog.h"
+#include "filesystem_dock_rename_dialog.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
@@ -51,9 +51,12 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
 
-RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
-	scene_tree_editor = p_scene_tree_editor;
-	preview_node = nullptr;
+#ifdef MODULE_REGEX_ENABLED
+#include "editor/filesystem_dock_rename_dialog.h"
+#endif // MODULE_REGEX_ENABLED
+
+FileSystemRenameDialog::FileSystemRenameDialog(FileSystemDock *p_file_system_dock) {
+	file_system_dock = p_file_system_dock;
 
 	set_title(TTR("Batch Rename"));
 
@@ -145,7 +148,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_name->set_text("NAME");
 	but_insert_name->set_tooltip_text(String("${NAME}\n") + TTR("Node name."));
 	but_insert_name->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_name->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${NAME}"));
+	but_insert_name->connect("pressed", callable_mp(this, &FileSystemRenameDialog::_insert_text).bind("${NAME}"));
 	but_insert_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_name);
 
@@ -155,39 +158,9 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_parent->set_text("PARENT");
 	but_insert_parent->set_tooltip_text(String("${PARENT}\n") + TTR("Node's parent name, if available."));
 	but_insert_parent->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_parent->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${PARENT}"));
+	but_insert_parent->connect("pressed", callable_mp(this, &FileSystemRenameDialog::_insert_text).bind("${PARENT}"));
 	but_insert_parent->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_parent);
-
-	// Type
-
-	but_insert_type = memnew(Button);
-	but_insert_type->set_text("TYPE");
-	but_insert_type->set_tooltip_text(String("${TYPE}\n") + TTR("Node type."));
-	but_insert_type->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_type->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${TYPE}"));
-	but_insert_type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	grd_substitute->add_child(but_insert_type);
-
-	// Scene
-
-	but_insert_scene = memnew(Button);
-	but_insert_scene->set_text("SCENE");
-	but_insert_scene->set_tooltip_text(String("${SCENE}\n") + TTR("Current scene name."));
-	but_insert_scene->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_scene->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${SCENE}"));
-	but_insert_scene->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	grd_substitute->add_child(but_insert_scene);
-
-	// Root
-
-	but_insert_root = memnew(Button);
-	but_insert_root->set_text("ROOT");
-	but_insert_root->set_tooltip_text(String("${ROOT}\n") + TTR("Root node name."));
-	but_insert_root->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_root->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${ROOT}"));
-	but_insert_root->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	grd_substitute->add_child(but_insert_root);
 
 	// Count
 
@@ -195,7 +168,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_count->set_text("COUNTER");
 	but_insert_count->set_tooltip_text(String("${COUNTER}\n") + TTR("Sequential integer counter.\nCompare counter options."));
 	but_insert_count->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_count->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${COUNTER}"));
+	but_insert_count->connect("pressed", callable_mp(this, &FileSystemRenameDialog::_insert_text).bind("${COUNTER}"));
 	but_insert_count->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_count);
 
@@ -303,98 +276,88 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 
 	// ---- Connections
 
-	cbut_collapse_features->connect("toggled", callable_mp(this, &RenameDialog::_features_toggled));
+	cbut_collapse_features->connect("toggled", callable_mp(this, &FileSystemRenameDialog::_features_toggled));
 
 	// Substitute Buttons
 
-	lne_search->connect("focus_entered", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_search->connect("focus_exited", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_replace->connect("focus_entered", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_replace->connect("focus_exited", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_prefix->connect("focus_entered", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_prefix->connect("focus_exited", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_suffix->connect("focus_entered", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_suffix->connect("focus_exited", callable_mp(this, &RenameDialog::_update_substitute));
+	lne_search->connect("focus_entered", callable_mp(this, &FileSystemRenameDialog::_update_substitute));
+	lne_search->connect("focus_exited", callable_mp(this, &FileSystemRenameDialog::_update_substitute));
+	lne_replace->connect("focus_entered", callable_mp(this, &FileSystemRenameDialog::_update_substitute));
+	lne_replace->connect("focus_exited", callable_mp(this, &FileSystemRenameDialog::_update_substitute));
+	lne_prefix->connect("focus_entered", callable_mp(this, &FileSystemRenameDialog::_update_substitute));
+	lne_prefix->connect("focus_exited", callable_mp(this, &FileSystemRenameDialog::_update_substitute));
+	lne_suffix->connect("focus_entered", callable_mp(this, &FileSystemRenameDialog::_update_substitute));
+	lne_suffix->connect("focus_exited", callable_mp(this, &FileSystemRenameDialog::_update_substitute));
 
 	// Preview
 
-	lne_prefix->connect("text_changed", callable_mp(this, &RenameDialog::_update_preview));
-	lne_suffix->connect("text_changed", callable_mp(this, &RenameDialog::_update_preview));
-	lne_search->connect("text_changed", callable_mp(this, &RenameDialog::_update_preview));
-	lne_replace->connect("text_changed", callable_mp(this, &RenameDialog::_update_preview));
-	spn_count_start->connect("value_changed", callable_mp(this, &RenameDialog::_update_preview_int));
-	spn_count_step->connect("value_changed", callable_mp(this, &RenameDialog::_update_preview_int));
-	spn_count_padding->connect("value_changed", callable_mp(this, &RenameDialog::_update_preview_int));
-	opt_style->connect("item_selected", callable_mp(this, &RenameDialog::_update_preview_int));
-	opt_case->connect("item_selected", callable_mp(this, &RenameDialog::_update_preview_int));
-	cbut_substitute->connect("pressed", callable_mp(this, &RenameDialog::_update_preview).bind(""));
-	cbut_regex->connect("pressed", callable_mp(this, &RenameDialog::_update_preview).bind(""));
-	cbut_process->connect("pressed", callable_mp(this, &RenameDialog::_update_preview).bind(""));
+	lne_prefix->connect("text_changed", callable_mp(this, &FileSystemRenameDialog::_update_preview));
+	lne_suffix->connect("text_changed", callable_mp(this, &FileSystemRenameDialog::_update_preview));
+	lne_search->connect("text_changed", callable_mp(this, &FileSystemRenameDialog::_update_preview));
+	lne_replace->connect("text_changed", callable_mp(this, &FileSystemRenameDialog::_update_preview));
+	spn_count_start->connect("value_changed", callable_mp(this, &FileSystemRenameDialog::_update_preview_int));
+	spn_count_step->connect("value_changed", callable_mp(this, &FileSystemRenameDialog::_update_preview_int));
+	spn_count_padding->connect("value_changed", callable_mp(this, &FileSystemRenameDialog::_update_preview_int));
+	opt_style->connect("item_selected", callable_mp(this, &FileSystemRenameDialog::_update_preview_int));
+	opt_case->connect("item_selected", callable_mp(this, &FileSystemRenameDialog::_update_preview_int));
+	cbut_substitute->connect("pressed", callable_mp(this, &FileSystemRenameDialog::_update_preview).bind(""));
+	cbut_regex->connect("pressed", callable_mp(this, &FileSystemRenameDialog::_update_preview).bind(""));
+	cbut_process->connect("pressed", callable_mp(this, &FileSystemRenameDialog::_update_preview).bind(""));
 
-	but_reset->connect("pressed", callable_mp(this, &RenameDialog::reset));
+	but_reset->connect("pressed", callable_mp(this, &FileSystemRenameDialog::reset));
 
 	reset();
 	_features_toggled(false);
 }
 
-void RenameDialog::_bind_methods() {
-	ClassDB::bind_method("rename", &RenameDialog::rename);
+void FileSystemRenameDialog::_bind_methods() {
+	ClassDB::bind_method("rename", &FileSystemRenameDialog::rename);
 }
 
-void RenameDialog::_update_substitute() {
+void FileSystemRenameDialog::_update_substitute() {
 	LineEdit *focus_owner_line_edit = Object::cast_to<LineEdit>(get_viewport()->gui_get_focus_owner());
 	bool is_main_field = _is_main_field(focus_owner_line_edit);
 
 	but_insert_name->set_disabled(!is_main_field);
 	but_insert_parent->set_disabled(!is_main_field);
-	but_insert_type->set_disabled(!is_main_field);
-	but_insert_scene->set_disabled(!is_main_field);
-	but_insert_root->set_disabled(!is_main_field);
 	but_insert_count->set_disabled(!is_main_field);
 
 	// The focus mode seems to be reset when disabling/re-enabling
 	but_insert_name->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_parent->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_type->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_scene->set_focus_mode(Control::FOCUS_NONE);
-	but_insert_root->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_count->set_focus_mode(Control::FOCUS_NONE);
 }
 
-void RenameDialog::_post_popup() {
+void FileSystemRenameDialog::_post_popup() {
 	ConfirmationDialog::_post_popup();
 
-	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	preview_node = nullptr;
+	ERR_FAIL_COND(selected_files.is_empty());
 
-	Array selected_node_list = editor_selection->get_selected_nodes();
-	ERR_FAIL_COND(selected_node_list.is_empty());
-
-	preview_node = Object::cast_to<Node>(selected_node_list[0]);
+	preview_file = selected_files[0];
 
 	_update_preview();
 	_update_substitute();
 }
 
-void RenameDialog::_update_preview_int(int new_value) {
+void FileSystemRenameDialog::_update_preview_int(int new_value) {
 	_update_preview();
 }
 
-void RenameDialog::_update_preview(const String &new_text) {
-	if (lock_preview_update || preview_node == nullptr) {
+void FileSystemRenameDialog::_update_preview(const String &new_text) {
+	if (lock_preview_update || preview_file.is_empty()) {
 		return;
 	}
 
 	has_errors = false;
 	add_error_handler(&eh);
 
-	String new_name = _apply_rename(preview_node, spn_count_start->get_value());
+	String new_name = _apply_rename(preview_file, spn_count_start->get_value()).get_basename();
 
 	if (!has_errors) {
 		lbl_preview_title->set_text(TTR("Preview:"));
 		lbl_preview->set_text(new_name);
 
-		if (new_name == preview_node->get_name()) {
+		if (new_name == preview_file) {
 			// New name is identical to the old one. Don't color it as much to avoid distracting the user.
 			const Color accent_color = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("accent_color"), EditorStringName(Editor));
 			const Color text_color = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("default_color"), SNAME("RichTextLabel"));
@@ -407,18 +370,18 @@ void RenameDialog::_update_preview(const String &new_text) {
 	remove_error_handler(&eh);
 }
 
-String RenameDialog::_apply_rename(const Node *node, int count) {
+String FileSystemRenameDialog::_apply_rename(const String &p_filepath, int p_count) {
 	String search = lne_search->get_text();
 	String replace = lne_replace->get_text();
 	String prefix = lne_prefix->get_text();
 	String suffix = lne_suffix->get_text();
-	String new_name = node->get_name();
+	String new_name = p_filepath.get_file();
 
 	if (cbut_substitute->is_pressed()) {
-		search = _substitute(search, node, count);
-		replace = _substitute(replace, node, count);
-		prefix = _substitute(prefix, node, count);
-		suffix = _substitute(suffix, node, count);
+		search = _substitute(search, p_filepath, p_count);
+		replace = _substitute(replace, p_filepath, p_count);
+		prefix = _substitute(prefix, p_filepath, p_count);
+		suffix = _substitute(suffix, p_filepath, p_count);
 	}
 
 	if (cbut_regex->is_pressed()) {
@@ -436,40 +399,22 @@ String RenameDialog::_apply_rename(const Node *node, int count) {
 	return new_name;
 }
 
-String RenameDialog::_substitute(const String &subject, const Node *node, int count) {
-	String result = subject.replace("${COUNTER}", vformat("%0" + itos(spn_count_padding->get_value()) + "d", count));
+String FileSystemRenameDialog::_substitute(const String &p_subject, const String &p_filepath, int p_count) {
+	String result = p_subject.replace("${COUNTER}", vformat("%0" + itos(spn_count_padding->get_value()) + "d", p_count));
 
-	if (node) {
-		result = result.replace("${NAME}", node->get_name());
-		result = result.replace("${TYPE}", node->get_class());
+	result = result.replace("${NAME}", p_filepath.get_file().get_basename());
+
+	PackedStringArray subpath = p_filepath.replace(p_filepath.get_file(), "").split("/");
+	if (subpath.size()) {
+		String parent_folder = subpath[subpath.size() - 2];
+		result = result.replace("${PARENT}", parent_folder);
 	}
 
-	int current = EditorNode::get_editor_data().get_edited_scene();
-	// Always request the scene title with the extension stripped.
-	// Otherwise, the result could vary depending on whether a scene with the same name
-	// (but different extension) is currently open.
-	result = result.replace("${SCENE}", EditorNode::get_editor_data().get_scene_title(current, true));
-
-	Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
-	if (root_node) {
-		result = result.replace("${ROOT}", root_node->get_name());
-	}
-	if (node) {
-		Node *parent_node = node->get_parent();
-		if (parent_node) {
-			if (node == root_node) {
-				// Can not substitute parent of root.
-				result = result.replace("${PARENT}", "");
-			} else {
-				result = result.replace("${PARENT}", parent_node->get_name());
-			}
-		}
-	}
 	return result;
 }
 
-void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
-	RenameDialog *self = (RenameDialog *)p_self;
+void FileSystemRenameDialog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
+	FileSystemRenameDialog *self = (FileSystemRenameDialog *)p_self;
 	String source_file = String::utf8(p_file);
 
 	// Only show first error that is related to "regex"
@@ -490,16 +435,16 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 	self->lbl_preview->set_text(vformat(TTR("At character %s"), err_str));
 }
 
-String RenameDialog::_regex(const String &pattern, const String &subject, const String &replacement) {
-	RegEx regex(pattern);
+String FileSystemRenameDialog::_regex(const String &p_pattern, const String &p_subject, const String &p_replacement) {
+	RegEx regex(p_pattern);
 
-	return regex.sub(subject, replacement, true);
+	return regex.sub(p_subject, p_replacement, true);
 }
 
-String RenameDialog::_postprocess(const String &subject) {
+String FileSystemRenameDialog::_postprocess(const String &p_subject) {
 	int style_id = opt_style->get_selected();
 
-	String result = subject;
+	String result = p_subject;
 
 	if (style_id == 1) {
 		// PascalCase to snake_case
@@ -542,71 +487,51 @@ String RenameDialog::_postprocess(const String &subject) {
 	return result;
 }
 
-void RenameDialog::_iterate_scene(const Node *node, const Array &selection, int *counter) {
-	if (!node) {
-		return;
-	}
+void FileSystemRenameDialog::_iterate_files(const Vector<String> &p_selection, int *p_counter) {
+	for (int i = 0; i != p_selection.size(); ++i) {
+		String new_name = _apply_rename(p_selection[i], *p_counter);
 
-	if (selection.has(node)) {
-		String new_name = _apply_rename(node, *counter);
-
-		if (node->get_name() != new_name) {
-			Pair<NodePath, String> rename_item;
-			rename_item.first = node->get_path();
+		if (p_selection[i].get_file() != new_name) {
+			Pair<String, String> rename_item;
+			rename_item.first = p_selection[i];
 			rename_item.second = new_name;
 			to_rename.push_back(rename_item);
 		}
 
-		*counter += spn_count_step->get_value();
-	}
-
-	int *cur_counter = counter;
-	int level_counter = spn_count_start->get_value();
-
-	if (chk_per_level_counter->is_pressed()) {
-		cur_counter = &level_counter;
-	}
-
-	for (int i = 0; i < node->get_child_count(); ++i) {
-		_iterate_scene(node->get_child(i), selection, cur_counter);
+		*p_counter += spn_count_step->get_value();
 	}
 }
 
-void RenameDialog::rename() {
-	// Editor selection is not ordered via scene tree. Instead iterate
-	// over scene tree until all selected nodes are found in order.
+void FileSystemRenameDialog::set_selected_files(const Vector<String> &p_paths, const bool &p_is_tree) {
+	selected_files = p_paths;
+	is_tree = p_is_tree;
+}
 
-	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	Array selected_node_list = editor_selection->get_selected_nodes();
-	Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
-
+void FileSystemRenameDialog::rename() {
 	global_count = spn_count_start->get_value();
 	to_rename.clear();
 
-	// Forward recursive as opposed to the actual renaming.
-	_iterate_scene(root_node, selected_node_list, &global_count);
+	_iterate_files(selected_files, &global_count);
 
 	if (!to_rename.is_empty()) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Batch Rename"), UndoRedo::MERGE_DISABLE, root_node, true);
+		undo_redo->create_action(TTR("Batch Rename"));
 
-		// Make sure to iterate reversed so that child nodes will find parents.
-		for (int i = to_rename.size() - 1; i >= 0; --i) {
-			Node *n = root_node->get_node(to_rename[i].first);
-			const String &new_name = to_rename[i].second;
+		for (int i = 0; i != to_rename.size(); ++i) {
+			const String &filepath = to_rename[i].first;
+			const String &new_filename = to_rename[i].second;
 
-			if (!n) {
-				ERR_PRINT("Skipping missing node: " + to_rename[i].first.get_concatenated_subnames());
-				continue;
-			}
-			scene_tree_editor->rename_node(n, new_name);
+			const String &old_filename = to_rename[i].first.get_file();
+			const String &undo_filepath = to_rename[i].first.replace(old_filename, new_filename);
+			undo_redo->add_do_method(file_system_dock, "_batch_rename", filepath, new_filename, is_tree);
+			undo_redo->add_undo_method(file_system_dock, "_batch_rename", undo_filepath, old_filename, is_tree);
 		}
 
 		undo_redo->commit_action();
 	}
 }
 
-void RenameDialog::reset() {
+void FileSystemRenameDialog::reset() {
 	lock_preview_update = true;
 
 	lne_prefix->clear();
@@ -631,23 +556,23 @@ void RenameDialog::reset() {
 	_update_preview();
 }
 
-bool RenameDialog::_is_main_field(LineEdit *line_edit) {
-	return line_edit &&
-			(line_edit == lne_search || line_edit == lne_replace || line_edit == lne_prefix || line_edit == lne_suffix);
+bool FileSystemRenameDialog::_is_main_field(LineEdit *p_line_edit) {
+	return p_line_edit &&
+			(p_line_edit == lne_search || p_line_edit == lne_replace || p_line_edit == lne_prefix || p_line_edit == lne_suffix);
 }
 
-void RenameDialog::_insert_text(const String &text) {
+void FileSystemRenameDialog::_insert_text(const String &p_text) {
 	LineEdit *focus_owner = Object::cast_to<LineEdit>(get_viewport()->gui_get_focus_owner());
 
 	if (_is_main_field(focus_owner)) {
 		focus_owner->selection_delete();
-		focus_owner->insert_text_at_caret(text);
+		focus_owner->insert_text_at_caret(p_text);
 		_update_preview();
 	}
 }
 
-void RenameDialog::_features_toggled(bool pressed) {
-	if (pressed) {
+void FileSystemRenameDialog::_features_toggled(bool p_pressed) {
+	if (p_pressed) {
 		tabc_features->show();
 	} else {
 		tabc_features->hide();

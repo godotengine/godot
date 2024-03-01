@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rename_dialog.h                                                       */
+/*  scene_tree_rename_dialog.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENAME_DIALOG_H
-#define RENAME_DIALOG_H
+#ifndef SCENE_TREE_RENAME_DIALOG_H
+#define SCENE_TREE_RENAME_DIALOG_H
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
@@ -46,8 +46,8 @@ class OptionButton;
 class SpinBox;
 class TabContainer;
 
-class RenameDialog : public ConfirmationDialog {
-	GDCLASS(RenameDialog, ConfirmationDialog);
+class SceneTreeRenameDialog : public ConfirmationDialog {
+	GDCLASS(SceneTreeRenameDialog, ConfirmationDialog);
 
 	virtual void ok_pressed() override { rename(); };
 	void _cancel_pressed() {}
@@ -111,9 +111,9 @@ public:
 	void reset();
 	void rename();
 
-	RenameDialog(SceneTreeEditor *p_scene_tree_editor);
+	SceneTreeRenameDialog(SceneTreeEditor *p_scene_tree_editor);
 };
 
 #endif // MODULE_REGEX_ENABLED
 
-#endif // RENAME_DIALOG_H
+#endif // SCENE_TREE_RENAME_DIALOG_H
