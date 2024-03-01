@@ -386,7 +386,7 @@ void ParticleProcessMaterialMinMaxPropertyEditor::setup(float p_min, float p_max
 }
 
 void ParticleProcessMaterialMinMaxPropertyEditor::update_property() {
-	const Vector2i value = get_edited_property_value();
+	const Vector2 value = get_edited_property_value();
 	min_range->set_value(value.x);
 	max_range->set_value(value.y);
 	_update_slider_values();
