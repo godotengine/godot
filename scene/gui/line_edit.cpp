@@ -332,6 +332,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 								selection.begin = words[i];
 								selection.end = words[i + 1];
 								selection.double_click = true;
+								selection.creating = true;
+								selection.start_column = caret_column;
 								set_caret_column(selection.end);
 								break;
 							}
@@ -406,6 +408,27 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (selection.creating) {
 				set_caret_at_pixel_pos(m->get_position().x);
 				selection_fill_at_caret();
+
+				if (selection.double_click) {
+					// Expand selection to whole words.
+
+					PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
+					for (int i = 0; i < words.size(); i = i + 2) {
+						if ((words[i] < selection.begin && words[i + 1] > selection.begin) || (i == words.size() - 2 && selection.begin == words[i + 1])) {
+							selection.begin = words[i];
+						}
+						if ((words[i] < selection.end && words[i + 1] > selection.end) || (i == words.size() - 2 && selection.end == words[i + 1])) {
+							selection.end = words[i + 1];
+							selection.enabled = true;
+							break;
+						}
+					}
+					if (caret_column < selection.start_column) {
+						set_caret_column(selection.begin);
+					} else {
+						set_caret_column(selection.end);
+					}
+				}
 			}
 		}
 
