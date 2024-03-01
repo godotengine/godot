@@ -311,13 +311,13 @@
 	</methods>
 	<members>
 		<member name="max_fps" type="int" setter="set_max_fps" getter="get_max_fps" default="0">
-			The maximum number of frames per second (FPS) that can be rendered. A value of [code]0[/code] means the framerate is uncapped.
+			The maximum number of frames that can be rendered every second (FPS). A value of [code]0[/code] means the framerate is uncapped.
 			Limiting the FPS can be useful to reduce the host machine's power consumption, which reduces heat, noise emissions, and improves battery life.
-			If [member ProjectSettings.display/window/vsync/vsync_mode] is [code]Enabled[/code] or [code]Adaptive[/code], the setting takes precedence and the max FPS number cannot exceed the monitor's refresh rate.
-			If [member ProjectSettings.display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
+			If [member ProjectSettings.display/window/vsync/vsync_mode] is [b]Enabled[/b] or [b]Adaptive[/b], the setting takes precedence and the max FPS number cannot exceed the monitor's refresh rate.
+			If [member ProjectSettings.display/window/vsync/vsync_mode] is [b]Enabled[/b], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
 			See also [member physics_ticks_per_second] and [member ProjectSettings.application/run/max_fps].
 			[b]Note:[/b] The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project's logic and rendering.
-			[b]Note:[/b] If [member ProjectSettings.display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
+			[b]Note:[/b] If [member ProjectSettings.display/window/vsync/vsync_mode] is [b]Disabled[/b], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
 		</member>
 		<member name="max_physics_steps_per_frame" type="int" setter="set_max_physics_steps_per_frame" getter="get_max_physics_steps_per_frame" default="8">
 			The maximum number of physics steps that can be simulated each rendered frame.

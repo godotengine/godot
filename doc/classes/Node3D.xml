@@ -272,7 +272,7 @@
 	</methods>
 	<members>
 		<member name="basis" type="Basis" setter="set_basis" getter="get_basis">
-			Direct access to the 3x3 basis of the [member transform] property.
+			Basis of the [member transform] property. Represents the rotation, scale, and shear of this node.
 		</member>
 		<member name="global_basis" type="Basis" setter="set_global_basis" getter="get_global_basis">
 			Global basis of this node. This is equivalent to [code]global_transform.basis[/code].

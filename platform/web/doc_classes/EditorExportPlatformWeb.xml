@@ -83,8 +83,8 @@
 			If [code]true[/code] enables [GDExtension] support for this web build.
 		</member>
 		<member name="variant/thread_support" type="bool" setter="" getter="">
-			If enabled, the exported game will support threads. It requires [url=https://web.dev/articles/coop-coep]a "cross-origin isolated" website[/url], which can be difficult to setup and brings some limitations (e.g. not being able to communicate with third-party websites).
-			If disabled, the exported game will not support threads. As a result, it is more prone to performance and audio issues, but will only require to be run on a HTTPS website.
+			If [code]true[/code], the exported game will support threads. It requires [url=https://web.dev/articles/coop-coep]a "cross-origin isolated" website[/url], which may be difficult to set up and is limited for security reasons (such as not being able to communicate with third-party websites).
+			If [code]false[/code], the exported game will not support threads. As a result, it is more prone to performance and audio issues, but will only require to be run on a HTTPS website.
 		</member>
 		<member name="vram_texture_compression/for_desktop" type="bool" setter="" getter="">
 			If [code]true[/code], allows textures to be optimized for desktop through the S3TC algorithm.

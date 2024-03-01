@@ -310,7 +310,7 @@
 		</signal>
 		<signal name="tree_changed">
 			<description>
-				Emitted any time the tree's hierarchy changes (nodes being moved, renamed, etc).
+				Emitted any time the tree's hierarchy changes (nodes being moved, renamed, etc.).
 			</description>
 		</signal>
 		<signal name="tree_process_mode_changed">

@@ -4,7 +4,7 @@
 		An input field for numbers.
 	</brief_description>
 	<description>
-		[SpinBox] is a numerical input text field. It allows entering integers and floating point numbers.
+		[SpinBox] is a numerical input text field. It allows entering integers and floating-point numbers.
 		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]

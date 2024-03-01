@@ -999,7 +999,7 @@
 		<method name="randf">
 			<return type="float" />
 			<description>
-				Returns a random floating point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				Returns a random floating-point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 				[codeblocks]
 				[gdscript]
 				randf() # Returns e.g. 0.375671
@@ -1015,7 +1015,7 @@
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
 			<description>
-				Returns a random floating point value between [param from] and [param to] (inclusive).
+				Returns a random floating-point value between [param from] and [param to] (inclusive).
 				[codeblocks]
 				[gdscript]
 				randf_range(0, 20.5) # Returns e.g. 7.45315
@@ -1033,7 +1033,8 @@
 			<param index="0" name="mean" type="float" />
 			<param index="1" name="deviation" type="float" />
 			<description>
-				Returns a normally-distributed pseudo-random floating point value using Box-Muller transform with the specified [param mean] and a standard [param deviation]. This is also called Gaussian distribution.
+				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url], pseudo-random floating-point value from the specified [param mean] and a standard [param deviation]. This is also known as a Gaussian distribution.
+				[b]Note:[/b] This method uses the [url=https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform]Box-Muller transform[/url] algorithm.
 			</description>
 		</method>
 		<method name="randi">
@@ -1261,7 +1262,7 @@
 			<param index="0" name="x" type="Variant" />
 			<param index="1" name="step" type="Variant" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				The returned value is the same type of [Variant] as [param step]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				snapped(100, 32)  # Returns 96
@@ -1278,7 +1279,7 @@
 			<param index="0" name="x" type="float" />
 			<param index="1" name="step" type="float" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				A type-safe version of [method snapped], returning a [float].
 				[codeblock]
 				snappedf(32.0, 2.5)  # Returns 32.5

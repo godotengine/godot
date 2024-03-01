@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 2D vector using floating point coordinates.
+		A 2D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 2-element structure that can be used to represent 2D coordinates or any other pair of numeric values.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 3D vector using floating point coordinates.
+		A 3D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 3-element structure that can be used to represent 3D coordinates or any other triplet of numeric values.
