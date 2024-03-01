@@ -480,7 +480,8 @@ typedef void *GDExtensionScriptInstanceDataPtr; // Pointer to custom ScriptInsta
 typedef GDExtensionBool (*GDExtensionScriptInstanceSet)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value);
 typedef GDExtensionBool (*GDExtensionScriptInstanceGet)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
 typedef const GDExtensionPropertyInfo *(*GDExtensionScriptInstanceGetPropertyList)(GDExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
-typedef void (*GDExtensionScriptInstanceFreePropertyList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionPropertyInfo *p_list);
+typedef void (*GDExtensionScriptInstanceFreePropertyList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionPropertyInfo *p_list); // Deprecated. Use GDExtensionScriptInstanceFreePropertyList2 instead.
+typedef void (*GDExtensionScriptInstanceFreePropertyList2)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionPropertyInfo *p_list, uint32_t p_count);
 typedef GDExtensionBool (*GDExtensionScriptInstanceGetClassCategory)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionPropertyInfo *p_class_category);
 
 typedef GDExtensionVariantType (*GDExtensionScriptInstanceGetPropertyType)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionBool *r_is_valid);
@@ -494,7 +495,8 @@ typedef void (*GDExtensionScriptInstancePropertyStateAdd)(GDExtensionConstString
 typedef void (*GDExtensionScriptInstanceGetPropertyState)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionScriptInstancePropertyStateAdd p_add_func, void *p_userdata);
 
 typedef const GDExtensionMethodInfo *(*GDExtensionScriptInstanceGetMethodList)(GDExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
-typedef void (*GDExtensionScriptInstanceFreeMethodList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionMethodInfo *p_list);
+typedef void (*GDExtensionScriptInstanceFreeMethodList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionMethodInfo *p_list); // Deprecated. Use GDExtensionScriptInstanceFreeMethodList2 instead.
+typedef void (*GDExtensionScriptInstanceFreeMethodList2)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionMethodInfo *p_list, uint32_t p_count);
 
 typedef GDExtensionBool (*GDExtensionScriptInstanceHasMethod)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name);
 
@@ -554,7 +556,7 @@ typedef struct {
 
 	GDExtensionScriptInstanceFree free_func;
 
-} GDExtensionScriptInstanceInfo; // Deprecated. Use GDExtensionScriptInstanceInfo2 instead.
+} GDExtensionScriptInstanceInfo; // Deprecated. Use GDExtensionScriptInstanceInfo3 instead.
 
 typedef struct {
 	GDExtensionScriptInstanceSet set_func;
@@ -595,7 +597,48 @@ typedef struct {
 
 	GDExtensionScriptInstanceFree free_func;
 
-} GDExtensionScriptInstanceInfo2;
+} GDExtensionScriptInstanceInfo2; // Deprecated. Use GDExtensionScriptInstanceInfo3 instead.
+
+typedef struct {
+	GDExtensionScriptInstanceSet set_func;
+	GDExtensionScriptInstanceGet get_func;
+	GDExtensionScriptInstanceGetPropertyList get_property_list_func;
+	GDExtensionScriptInstanceFreePropertyList2 free_property_list_func;
+	GDExtensionScriptInstanceGetClassCategory get_class_category_func; // Optional. Set to NULL for the default behavior.
+
+	GDExtensionScriptInstancePropertyCanRevert property_can_revert_func;
+	GDExtensionScriptInstancePropertyGetRevert property_get_revert_func;
+
+	GDExtensionScriptInstanceGetOwner get_owner_func;
+	GDExtensionScriptInstanceGetPropertyState get_property_state_func;
+
+	GDExtensionScriptInstanceGetMethodList get_method_list_func;
+	GDExtensionScriptInstanceFreeMethodList2 free_method_list_func;
+	GDExtensionScriptInstanceGetPropertyType get_property_type_func;
+	GDExtensionScriptInstanceValidateProperty validate_property_func;
+
+	GDExtensionScriptInstanceHasMethod has_method_func;
+
+	GDExtensionScriptInstanceCall call_func;
+	GDExtensionScriptInstanceNotification2 notification_func;
+
+	GDExtensionScriptInstanceToString to_string_func;
+
+	GDExtensionScriptInstanceRefCountIncremented refcount_incremented_func;
+	GDExtensionScriptInstanceRefCountDecremented refcount_decremented_func;
+
+	GDExtensionScriptInstanceGetScript get_script_func;
+
+	GDExtensionScriptInstanceIsPlaceholder is_placeholder_func;
+
+	GDExtensionScriptInstanceSet set_fallback_func;
+	GDExtensionScriptInstanceGet get_fallback_func;
+
+	GDExtensionScriptInstanceGetLanguage get_language_func;
+
+	GDExtensionScriptInstanceFree free_func;
+
+} GDExtensionScriptInstanceInfo3;
 
 /* INITIALIZATION */
 
@@ -2380,7 +2423,7 @@ typedef void (*GDExtensionInterfaceRefSetObject)(GDExtensionRefPtr p_ref, GDExte
 /**
  * @name script_instance_create
  * @since 4.1
- * @deprecated in Godot 4.2. Use `script_instance_create2` instead.
+ * @deprecated in Godot 4.2. Use `script_instance_create3` instead.
  *
  * Creates a script instance that contains the given info and instance data.
  *
@@ -2394,6 +2437,7 @@ typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate)
 /**
  * @name script_instance_create2
  * @since 4.2
+ * @deprecated in Godot 4.3. Use `script_instance_create3` instead.
  *
  * Creates a script instance that contains the given info and instance data.
  *
@@ -2403,6 +2447,19 @@ typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate)
  * @return A pointer to a ScriptInstanceExtension object.
  */
 typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate2)(const GDExtensionScriptInstanceInfo2 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data);
+
+/**
+ * @name script_instance_create3
+ * @since 4.3
+ *
+ * Creates a script instance that contains the given info and instance data.
+ *
+ * @param p_info A pointer to a GDExtensionScriptInstanceInfo3 struct.
+ * @param p_instance_data A pointer to a data representing the script instance in the GDExtension. This will be passed to all the function pointers on p_info.
+ *
+ * @return A pointer to a ScriptInstanceExtension object.
+ */
+typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate3)(const GDExtensionScriptInstanceInfo3 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data);
 
 /**
  * @name placeholder_script_instance_create
