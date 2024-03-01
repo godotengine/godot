@@ -142,6 +142,7 @@ private:
 	Vector2 drag_start_mouse_pos;
 	Vector2 drag_last_mouse_pos;
 	HashMap<Vector2i, TileMapCell> drag_modified;
+	Vector<HashMap<Vector2i, TileMapCell>> drag_modified_layers;
 
 	TileMapCell _pick_random_tile(Ref<TileMapPattern> p_pattern);
 	HashMap<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase);

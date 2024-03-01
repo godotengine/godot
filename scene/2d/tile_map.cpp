@@ -2144,7 +2144,7 @@ int TileMapLayer::get_cell_source_id(const Vector2i &p_coords, bool p_use_proxie
 		Array proxyed = tile_set->map_tile_proxy(E->value.cell.source_id, E->value.cell.get_atlas_coords(), E->value.cell.alternative_tile);
 		return proxyed[0];
 	}
-
+	
 	return E->value.cell.source_id;
 }
 
@@ -2206,7 +2206,6 @@ void TileMapLayer::clear() {
 }
 
 Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPattern> p_pattern, TypedArray<Vector2i> p_coords_array) {
-	print_line("get_pattern layer called");
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 	ERR_FAIL_COND_V(!tile_set.is_valid(), nullptr);
 	Vector2i min = p_pattern->get_pattern_start_position();
@@ -2216,7 +2215,7 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPat
 	}
 	// Single layer pattern.
 	if (p_pattern->get_is_single_layer()) {
-		print_line("get_pattern layer single layer called");
+		print_line("get_pattern_layer single layer called, the number of coords is", p_coords_array.size());
 		Vector<Vector2i> coords_in_pattern_array;
 		coords_in_pattern_array.resize(p_coords_array.size());
 		Vector2i ensure_positive_offset;
@@ -2252,13 +2251,12 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPat
 			Vector2i coords_in_pattern = coords_in_pattern_array[i];
 			p_pattern->set_cell(0, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords));
 		}
-		p_pattern->set_size(max - min);
-		print_line(p_pattern->get_size());
+		p_pattern->set_size((max + Vector2i(1,1)) - min);
 	}
 
 	// Multi layer pattern.
 	else {
-		
+		print_line("get_pattern_layer multi layer called, the number of coords is", p_coords_array.size());
 		Vector<Vector2i> coords_in_pattern_array;
 		coords_in_pattern_array.resize(p_coords_array.size());
 
@@ -2294,15 +2292,16 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPat
 			Vector2i coords = p_coords_array[i];
 			Vector2i coords_in_pattern = coords_in_pattern_array[i];
 			p_pattern->set_cell(p_layer, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords));
+			//print_line("The source id after the cell was set is...", p_pattern->get_cell_source_id(p_layer, coords_in_pattern + ensure_positive_offset));
 		}
-		p_pattern->set_size(max-min);
+		p_pattern->set_size((max+Vector2i(1,1))-min);
 	}
 
 	return p_pattern;
 }
 
 void TileMapLayer::set_pattern_layer(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
-
+	print_line("set_pattern_layer called");
 	int pattern_read = p_pattern->get_number_of_layers();
 	int layer_number = p_layer;
 	print_line(layer_number);
@@ -3541,16 +3540,15 @@ TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, boo
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, nullptr, get_cell_tile_data, p_coords, p_use_proxies);
 }
 
-Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
-	print_line("get_pattern");
+Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array, bool is_single_layer) {
 	Ref<TileMapPattern> output;
 	output.instantiate();
 	if (p_coords_array.is_empty()) {
 		return output;
 	}
-
-	// If the pattern is single layer as indicated by p_layer being something other than -1.
-	if (p_layer < 0) {
+	
+	// If the pattern is single layer 
+	if (is_single_layer == true) {
 		print_line("get_pattern single layer called");
 		output->set_is_single_layer(true);
 		output->set_number_of_layers(1);
@@ -3561,10 +3559,7 @@ Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coo
 			min = min.min(p_coords_array[i]);
 		}
 		output->set_pattern_start_position(min);
-		
-		if (p_layer < 0) {
-			p_layer = layers.size() + p_layer;
-		};
+
 		if ((p_layer) < 0 || (p_layer) >= ((int)layers.size())) {
 			_err_print_index_error(__FUNCTION__, "C:\\Users\\LPC\\source\\repos\\Godot Extension Project\\Godot Engine Fork\\godot\\scene\\2d\\tile_map.cpp", 3224, p_layer, (int)layers.size(), "p_layer", "(int)layers.size()");
 			return Ref<TileMapPattern>();
@@ -3575,19 +3570,18 @@ Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coo
 
 	// If the pattern is multi layer.
 	else {
+		print_line("get_pattern multi layer called");
 		output->set_is_single_layer(false);
 		output->set_number_of_layers(layers.size());
 
 		// Find the minimum and maximum of the entire pattern on every layer.
-		Vector2i max = Vector2i(p_coords_array[0]);
 		Vector2i min = Vector2i(p_coords_array[0]);
 		for (int i = 1; i < p_coords_array.size(); i++) {
 			min = min.min(p_coords_array[i]);
-			max = max.max(p_coords_array[i]);
 		}
 			output->set_pattern_start_position(min);
 
-		// Pass the pattern to get_pattern_layer for modification and setting of data for every layer.
+		// Pass the pattern to get_pattern_layer for modification and setting of tilemapcell data for every layer.
 		for (int pattern_layer = 0; pattern_layer < output->get_number_of_layers(); pattern_layer++) {
 			layers[pattern_layer]->get_pattern_layer(pattern_layer, output, p_coords_array );
 		}
@@ -3620,7 +3614,9 @@ Vector2i TileMap::map_pattern(const Vector2i &p_position_in_tilemap, const Vecto
 }
 
 void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
+	
 	if (p_pattern->get_is_single_layer()) {
+		print_line("set_pattern single layer called");
 		if (p_layer < 0) {
 			p_layer = layers.size() + p_layer;
 		};
@@ -3633,11 +3629,15 @@ void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<Til
 	}
 
 	else {
-		for (int pattern_layer = 0; pattern_layer < get_layers_count(); pattern_layer++) {
-			layers[pattern_layer]->set_pattern_layer(pattern_layer, p_position, p_pattern);
+		print_line("set_pattern multi layer called");
+		if (p_layer < 0) {
+			for (int pattern_layer = 0; pattern_layer < get_layers_count(); pattern_layer++) {
+				layers[pattern_layer]->set_pattern_layer(pattern_layer, p_position, p_pattern);
+			}
 		}
 	}
 }
+
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) {
 	HashMap<Vector2i, TileSet::TerrainsPattern> err_value;
@@ -4860,7 +4860,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
 	ClassDB::bind_method(D_METHOD("get_layer_for_body_rid", "body"), &TileMap::get_layer_for_body_rid);
 
-	ClassDB::bind_method(D_METHOD("get_pattern", "layer", "coords_array"), &TileMap::get_pattern);
+	ClassDB::bind_method(D_METHOD("get_pattern", "layer", "coords_array", "is_single_layer"), &TileMap::get_pattern);
 	ClassDB::bind_method(D_METHOD("map_pattern", "position_in_tilemap", "coords_in_pattern", "pattern"), &TileMap::map_pattern);
 	ClassDB::bind_method(D_METHOD("set_pattern", "layer", "position", "pattern"), &TileMap::set_pattern);
 

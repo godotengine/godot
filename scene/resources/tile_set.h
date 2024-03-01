@@ -124,11 +124,8 @@ class TileMapPattern : public Resource {
 
 	void _set_tile_data(int p_layer, const Vector<int> &p_data);
 	Vector<int> _get_tile_data(int p_layer) const;
-	struct PatternLayer {
-		HashMap<Vector2i, TileMapCell> pattern_layer;
-	};
-	
-	Vector<PatternLayer> pattern;
+	HashMap<Vector2i, TileMapCell> pattern_layer;
+	Vector<HashMap<Vector2i, TileMapCell>> pattern;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -149,11 +146,11 @@ public:
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords) const;
 	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords) const;
 
-	const HashMap<Vector2i, TileMapCell> &get_pattern() const { return pattern[0].pattern_layer; }
-	TypedArray<Vector2i> get_used_cells_on_layer(int p_layer) const;
+	// CHECK ME: does get_pattern work for multilayer patterns too?
+	const Vector<HashMap<Vector2i, TileMapCell>> &get_pattern_multi_layer();
+	const HashMap<Vector2i, TileMapCell> &get_pattern_single_layer(int p_layer = 0);
 	TypedArray<Vector2i> get_used_cells();
-
-	HashMap<Vector2i, TileMapCell> get_pattern_layer(int p_layer);
+	TypedArray<Vector2i> get_used_cells_on_layer(int p_layer = 0);
 
 	int get_number_of_layers() const;
 	void set_number_of_layers(int p_number_of_layers);
@@ -169,7 +166,7 @@ public:
 	void clear_layer(int p_layer);
 
 	TileMapPattern() :
-			Resource() {
+		Resource() {
 		pattern.resize(1);
 	}
 };
