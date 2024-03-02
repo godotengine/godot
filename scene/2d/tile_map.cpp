@@ -3591,8 +3591,9 @@ Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coo
 
 Vector2i TileMap::map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern) {
 	ERR_FAIL_COND_V(p_pattern.is_null(), Vector2i());
-	ERR_FAIL_COND_V(!p_pattern->has_cell(p_coords_in_pattern), Vector2i());
-
+	if (p_pattern->get_is_single_layer()) {
+		ERR_FAIL_COND_V(!p_pattern->has_cell(p_coords_in_pattern), Vector2i());
+	}
 	Vector2i output = p_position_in_tilemap + p_coords_in_pattern;
 	if (tile_set->get_tile_shape() != TileSet::TILE_SHAPE_SQUARE) {
 		if (tile_set->get_tile_layout() == TileSet::TILE_LAYOUT_STACKED) {

@@ -101,10 +101,11 @@ void TileMapEditorTilesPlugin::_update_toolbar() {
 
 
 void TileMapEditorTilesPlugin::_update_transform_buttons() {
-	if (multi_layer_selection_mode == true) {
-		WARN_PRINT_ED("Multilayer mode is not yet implemented for transforms and rotations. Please turn off the multilayer mode button in the toolbar.");
+	if (selection_pattern->get_is_single_layer() == false) {
+		WARN_PRINT_ED("Transforms are not implemented for multilayer patterns.");
 		return;
 	}
+
 	TileMap* tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return;
@@ -116,6 +117,7 @@ void TileMapEditorTilesPlugin::_update_transform_buttons() {
 	}
 
 	bool has_scene_tile = false;
+	
 	for (const KeyValue<Vector2i, TileMapCell> &E : selection_pattern->get_pattern_single_layer()) {
 		if (Object::cast_to<TileSetScenesCollectionSource>(tile_set->get_source(E.value.source_id).ptr())) {
 			has_scene_tile = true;
@@ -2189,7 +2191,11 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 }
 
 void TileMapEditorTilesPlugin::_apply_transform(int p_type) {
-	print_line("apply_transform called");
+	if (multi_layer_selection_mode == true) {
+		WARN_PRINT_ED("Multilayer mode is not yet implemented for transforms and rotations.");
+		return;
+	}
+
 	if (selection_pattern.is_null() || selection_pattern->is_empty()) {
 		return;
 	}

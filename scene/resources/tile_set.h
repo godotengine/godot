@@ -118,7 +118,7 @@ class TileMapPattern : public Resource {
 	bool is_single_layer = true;
 	int pattern_set_index;
 	int number_of_layers = 1;
-	Size2i size = Vector2i(1, 1);
+	Size2i size;
 	Vector2i pattern_start_position;
 	
 
