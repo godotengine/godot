@@ -75,7 +75,7 @@ real_t Vector4::length() const {
 void Vector4::normalize() {
 	real_t lenghtsq = length_squared();
 	if (lenghtsq != 0) {
-		lenghtsq = 1 / Math::sqrt(l);
+		lenghtsq = 1 / Math::sqrt(lenghtsq);
 		x *= lenghtsq;
 		y *= lenghtsq;
 		z *= lenghtsq;
