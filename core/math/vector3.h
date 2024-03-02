@@ -478,15 +478,13 @@ real_t Vector3::length_squared() const {
 	return x2 + y2 + z2;
 }
 
-void Vector3::normalize() {
-	real_t lengthsq = length_squared();
-	if (lengthsq == 0) {
-		x = y = z = 0;
-	} else {
-		real_t length = Math::sqrt(lengthsq);
-		x /= length;
-		y /= length;
-		z /= length;
+_FORCE_INLINE_ void Vector3::normalize() {
+	real_t l = length_squared();
+	if (l != 0) {
+		l = 1 / Math::sqrt(l);
+		x *= l;
+		y *= l;
+		z *= l;
 	}
 }
 
