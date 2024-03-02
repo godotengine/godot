@@ -39,6 +39,7 @@
 
 #include "modules/game_help/logic/animation_help.h"
 #include "modules/game_help/logic/body_main.h"
+#include "modules/game_help/logic/body_part.h"
 
 
 
@@ -77,6 +78,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	initialize_filiage_manager(p_level);
 	ClassDB::register_class<AnimationHelp>();
 	ClassDB::register_class<CharacterBodyMain>();
+	ClassDB::register_class<CharacterBodyPart>();
 
 	animation_help = memnew(AnimationHelp);
 

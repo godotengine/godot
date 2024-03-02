@@ -39,7 +39,7 @@ protected:
     // 插槽信息
     HashMap<StringName,BodySocket> socket;
     // 身体部件信息
-    HashMap<StringName,Ref<BodyPart>> bodyPart;
+    HashMap<StringName,Ref<CharacterBodyPart>> bodyPart;
 
 
 };
