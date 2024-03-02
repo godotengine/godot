@@ -43,16 +43,16 @@ def no_verbose(sys, env):
         colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
 
-    env.Append(CXXCOMSTR=[compile_source_message])
-    env.Append(CCCOMSTR=[compile_source_message])
-    env.Append(SHCCCOMSTR=[compile_shared_source_message])
-    env.Append(SHCXXCOMSTR=[compile_shared_source_message])
-    env.Append(ARCOMSTR=[link_library_message])
-    env.Append(RANLIBCOMSTR=[ranlib_library_message])
-    env.Append(SHLINKCOMSTR=[link_shared_library_message])
-    env.Append(LINKCOMSTR=[link_program_message])
-    env.Append(JARCOMSTR=[java_library_message])
-    env.Append(JAVACCOMSTR=[java_compile_source_message])
+    env.Append(CXXCOMSTR=compile_source_message)
+    env.Append(CCCOMSTR=compile_source_message)
+    env.Append(SHCCCOMSTR=compile_shared_source_message)
+    env.Append(SHCXXCOMSTR=compile_shared_source_message)
+    env.Append(ARCOMSTR=link_library_message)
+    env.Append(RANLIBCOMSTR=ranlib_library_message)
+    env.Append(SHLINKCOMSTR=link_shared_library_message)
+    env.Append(LINKCOMSTR=link_program_message)
+    env.Append(JARCOMSTR=java_library_message)
+    env.Append(JAVACCOMSTR=java_compile_source_message)
 
 
 def disable_warnings(self):

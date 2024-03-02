@@ -36,4 +36,4 @@ env_main.CommandNoCache(
 )
 
 lib = env_main.add_library("main", env.main_sources)
-env.Prepend(LIBS=[lib])
+env.Prepend(LIBS=lib)

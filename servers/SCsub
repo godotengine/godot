@@ -19,4 +19,4 @@ SConscript("navigation/SCsub")
 
 lib = env.add_library("servers", env.servers_sources)
 
-env.Prepend(LIBS=[lib])
+env.Prepend(LIBS=lib)

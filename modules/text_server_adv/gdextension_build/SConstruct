@@ -118,7 +118,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         f'tvg_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_tvg_sources,
     )
-    env.Append(LIBS=[lib])
+    env.Append(LIBS=lib)
 
 # MSDFGEN
 if env["msdfgen_enabled"] and env["freetype_enabled"]:
@@ -157,7 +157,7 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
         f'msdfgen_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_msdfgen_sources,
     )
-    env.Append(LIBS=[lib])
+    env.Append(LIBS=lib)
 
 # FreeType
 if env["freetype_enabled"]:
@@ -286,7 +286,7 @@ if env["freetype_enabled"]:
         f'freetype_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_freetype_sources,
     )
-    env.Append(LIBS=[lib])
+    env.Append(LIBS=lib)
 
 # HarfBuzz
 env_harfbuzz = env.Clone()
@@ -416,7 +416,7 @@ lib = env_harfbuzz.Library(
     f'harfbuzz_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
     thirdparty_harfbuzz_sources,
 )
-env.Prepend(LIBS=[lib])
+env.Prepend(LIBS=lib)
 
 # Graphite
 if env["graphite_enabled"] and env["freetype_enabled"]:
@@ -476,7 +476,7 @@ if env["graphite_enabled"] and env["freetype_enabled"]:
         f'graphite_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_graphite_sources,
     )
-    env.Append(LIBS=[lib])
+    env.Append(LIBS=lib)
 
 # ICU
 env_icu = env.Clone()
@@ -736,7 +736,7 @@ if env["platform"] == "windows":
     env.Append(LIBS=["advapi32"])
 
 lib = env_icu.Library(f'icu_builtin{env["suffix"]}{env["LIBSUFFIX"]}', thirdparty_icu_sources)
-env.Append(LIBS=[lib])
+env.Append(LIBS=lib)
 
 env.Append(CPPDEFINES=["GDEXTENSION"])
 env.Append(CPPPATH=["../"])

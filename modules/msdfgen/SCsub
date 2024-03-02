@@ -52,7 +52,7 @@ if env["builtin_msdfgen"]:
             inserted = True
             break
     if not inserted:
-        env.Append(LIBS=[lib])
+        env.Append(LIBS=lib)
 
 
 # Godot source files

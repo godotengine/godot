@@ -113,7 +113,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         f'tvg_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_tvg_sources,
     )
-    env.Append(LIBS=[lib])
+    env.Append(LIBS=lib)
 
 # MSDFGEN
 if env["msdfgen_enabled"] and env["freetype_enabled"]:
@@ -152,7 +152,7 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
         f'msdfgen_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_msdfgen_sources,
     )
-    env.Append(LIBS=[lib])
+    env.Append(LIBS=lib)
 
 # FreeType
 if env["freetype_enabled"]:
@@ -281,7 +281,7 @@ if env["freetype_enabled"]:
         f'freetype_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_freetype_sources,
     )
-    env.Append(LIBS=[lib])
+    env.Append(LIBS=lib)
 
 
 env.Append(CPPDEFINES=["GDEXTENSION"])

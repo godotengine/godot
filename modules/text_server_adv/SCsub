@@ -181,7 +181,7 @@ if env["builtin_harfbuzz"]:
             inserted = True
             break
     if not inserted:
-        env.Append(LIBS=[lib])
+        env.Append(LIBS=lib)
 
 
 if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
@@ -251,7 +251,7 @@ if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
             inserted = True
             break
     if not inserted:
-        env.Append(LIBS=[lib])
+        env.Append(LIBS=lib)
 
 
 if env["builtin_icu4c"]:
@@ -523,7 +523,7 @@ if env["builtin_icu4c"]:
             inserted = True
             break
     if not inserted:
-        env.Append(LIBS=[lib])
+        env.Append(LIBS=lib)
 
 
 # Godot source files

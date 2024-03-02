@@ -27,4 +27,4 @@ with open("register_platform_apis.gen.cpp", "w", encoding="utf-8") as f:
 env.add_source_files(env.platform_sources, "register_platform_apis.gen.cpp")
 
 lib = env.add_library("platform", env.platform_sources)
-env.Prepend(LIBS=[lib])
+env.Prepend(LIBS=lib)
