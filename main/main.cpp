@@ -3410,7 +3410,6 @@ bool Main::start() {
 	}
 #endif
 
-	
 	List<Node *> autoloads_to_add;
 
 	if (!project_manager && !editor) { // game
@@ -3429,7 +3428,7 @@ bool Main::start() {
 					}
 				}
 			}
-			
+
 			//second pass, load into global constants
 			for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 				const ProjectSettings::AutoloadInfo &info = E.value;
@@ -3475,7 +3474,7 @@ bool Main::start() {
 						ScriptServer::get_language(i)->add_global_constant(info.name, n);
 					}
 				}
-			}			
+			}
 		}
 	}
 
@@ -3601,7 +3600,7 @@ bool Main::start() {
 		ResourceSaver::add_custom_savers();
 
 		if (!project_manager && !editor) { // game
-			if (!game_path.is_empty() || !script.is_empty()) {				
+			if (!game_path.is_empty() || !script.is_empty()) {
 				for (Node *E : autoloads_to_add) {
 					sml->get_root()->add_child(E);
 				}
