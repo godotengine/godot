@@ -142,5 +142,5 @@
   We can't use wildcards as there may be undesired old files still hanging around.
   Fortunately code completion, go to definition and such still work.
   -->
-  <Import Project="Generated\GeneratedIncludes.props" />
+  <Import Condition=" '$(GodotSkipGenerated)' == '' " Project="Generated\GeneratedIncludes.props" />
 </Project>
