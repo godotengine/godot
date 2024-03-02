@@ -24,13 +24,13 @@
 				Returns a random index with non-uniform weights. Prints an error and returns [code]-1[/code] if the array is empty.
 				[codeblocks]
 				[gdscript]
-				var rnd = RandomNumberGenerator.new()
+				var rng = RandomNumberGenerator.new()
 
-				var my_array = ["one", "two", "three, "four"]
+				var my_array = ["one", "two", "three", "four"]
 				var weights = PackedFloat32Array([0.5, 1, 1, 2])
 
 				# Prints one of the four elements in `my_array`.
-				# It is more likely to print "four", and less likely to print "two".
+				# It is more likely to print "four", and less likely to print "one".
 				print(my_array[rng.rand_weighted(weights)])
 				[/gdscript]
 				[/codeblocks]
