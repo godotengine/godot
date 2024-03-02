@@ -555,22 +555,10 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 
 	Variant md = item->get_metadata(0);
 	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
-		String text = description_bit->get_class_description(md);
-		if (!text.is_empty()) {
-			// Display both class name and description, since the help bit may be displayed
-			// far away from the location (especially if the dialog was resized to be taller).
-			description_bit->set_text(vformat("[b]%s[/b]: %s", md, text));
-			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
-		} else {
-			// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
-			description_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", md)));
-			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
-		}
+		description_bit->parse_symbol("class|" + md.operator String() + "|");
 	} else if (md.get_type() == Variant::INT) {
 		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature((int)md));
-		description_bit->set_text(vformat("[b]%s[/b]: %s", TTR(item->get_text(0)), TTRGET(feature_description)));
-		description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
-
+		description_bit->set_custom_text(vformat("[b]%s[/b]: %s", TTR(item->get_text(0)), TTRGET(feature_description)));
 		return;
 	} else {
 		return;

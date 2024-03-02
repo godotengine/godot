@@ -191,7 +191,7 @@ public:
 
 //////////////////////////////////////////
 
-// Custom `Tree` needed to use `EditorHelpTooltip` to display signal documentation.
+// Custom `Tree` needed to use `EditorHelpBit` to display signal documentation.
 class ConnectionsDockTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };
