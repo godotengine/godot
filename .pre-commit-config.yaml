@@ -47,3 +47,9 @@ repos:
             platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper.*|
             platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.*
           )
+
+      - id: dotnet-format
+        name: dotnet-format
+        language: python
+        entry: python3 misc/scripts/dotnet_format.py
+        types_or: [c#]
