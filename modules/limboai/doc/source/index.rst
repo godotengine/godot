@@ -42,9 +42,10 @@ the other any time. For more information on this topic, see :ref:`gdextension`.
    getting-started/introduction
    getting-started/custom-tasks
    getting-started/using-blackboard
+   getting-started/accessing-nodes
+   getting-started/hsm
    getting-started/gdextension
    getting-started/c-sharp
-   getting-started/accessing-nodes
    getting-started/featured-classes
 
 .. toctree::

@@ -61,6 +61,7 @@ private:
 	void _draw_failure_status(Object *p_obj, Rect2 p_rect);
 	void _draw_fresh(Object *p_obj, Rect2 p_rect) {}
 	void _item_collapsed(Object *p_obj);
+	void _item_selected();
 	double _get_editor_scale() const;
 
 	void _update_tree(const Ref<BehaviorTreeData> &p_data);

@@ -54,6 +54,7 @@ protected:
 	void _notification(int p_what);
 
 	virtual void _initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard);
+	virtual bool _dispatch(const String &p_event, const Variant &p_cargo = Variant());
 
 	virtual void _setup();
 	virtual void _enter();
@@ -67,8 +68,6 @@ protected:
 	GDVIRTUAL1(_update, double);
 #endif // LIMBOAI_MODULE
 
-	void add_event_handler(const String &p_event, const Callable &p_handler);
-
 public:
 	void set_blackboard_plan(const Ref<BlackboardPlan> p_plan) { blackboard_plan = p_plan; }
 	Ref<BlackboardPlan> get_blackboard_plan() const { return blackboard_plan; }
@@ -78,12 +77,13 @@ public:
 	Node *get_agent() const { return agent; }
 	void set_agent(Node *p_agent) { agent = p_agent; }
 
-	virtual bool dispatch(const String &p_event, const Variant &p_cargo = Variant());
-
 	LimboState *named(String p_name);
 	LimboState *call_on_enter(const Callable &p_callable);
 	LimboState *call_on_exit(const Callable &p_callable);
 	LimboState *call_on_update(const Callable &p_callable);
+
+	void add_event_handler(const String &p_event, const Callable &p_handler);
+	bool dispatch(const String &p_event, const Variant &p_cargo = Variant());
 
 	_FORCE_INLINE_ String event_finished() const { return LW_NAME(EVENT_FINISHED); }
 	LimboState *get_root() const;

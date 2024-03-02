@@ -270,7 +270,7 @@ Called during the update. Implement your state's behavior with this method.
 
 void **add_event_handler** **(** String p_event, Callable p_handler **)**
 
-Registers a ``p_handler`` to be called when ``p_event`` is dispatched. The method must belong to the state.
+Registers a ``p_handler`` to be called when ``p_event`` is dispatched.
 
 .. rst-class:: classref-item-separator
 

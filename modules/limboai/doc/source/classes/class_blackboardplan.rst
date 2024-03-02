@@ -14,6 +14,49 @@ BlackboardPlan
 
 Stores and manages variables that will be used in constructing new :ref:`Blackboard<class_Blackboard>` instances.
 
+.. rst-class:: classref-reftable-group
+
+Methods
+-------
+
+.. table::
+   :widths: auto
+
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Blackboard<class_Blackboard>` | :ref:`create_blackboard<class_BlackboardPlan_method_create_blackboard>` **(** **)**                                                                        |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`populate_blackboard<class_BlackboardPlan_method_populate_blackboard>` **(** :ref:`Blackboard<class_Blackboard>` p_blackboard, bool p_overwrite **)** |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+.. rst-class:: classref-section-separator
+
+----
+
+.. rst-class:: classref-descriptions-group
+
+Method Descriptions
+-------------------
+
+.. _class_BlackboardPlan_method_create_blackboard:
+
+.. rst-class:: classref-method
+
+:ref:`Blackboard<class_Blackboard>` **create_blackboard** **(** **)**
+
+Constructs a new instance of a :ref:`Blackboard<class_Blackboard>` using this plan.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BlackboardPlan_method_populate_blackboard:
+
+.. rst-class:: classref-method
+
+void **populate_blackboard** **(** :ref:`Blackboard<class_Blackboard>` p_blackboard, bool p_overwrite **)**
+
+Populates ``p_blackboard`` with the variables from this plan. If ``p_override`` is ``true``, existing variables with the same names will be overwritten.
+
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`
 .. |vararg| replace:: :abbr:`vararg (This method accepts any number of arguments after the ones described here.)`

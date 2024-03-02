@@ -132,7 +132,7 @@ using namespace godot;
 #define EDIT_RESOURCE(m_res) EditorInterface::get_singleton()->edit_resource(m_res)
 #define INSPECTOR_GET_EDITED_OBJECT() (EditorInterface::get_singleton()->get_inspector()->get_edited_object())
 #define SET_MAIN_SCREEN_EDITOR(m_name) (EditorInterface::get_singleton()->set_main_screen_editor(m_name))
-#define FILE_EXISTS(m_path) FileAccess::exists(m_path)
+#define FILE_EXISTS(m_path) FileAccess::file_exists(m_path)
 #define DIR_ACCESS_CREATE() DirAccess::open("res://")
 #define PERFORMANCE_ADD_CUSTOM_MONITOR(m_id, m_callable) (Performance::get_singleton()->add_custom_monitor(m_id, m_callable))
 #define GET_SCRIPT(m_obj) (m_obj->get_script())

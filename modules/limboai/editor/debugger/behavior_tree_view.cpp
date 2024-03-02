@@ -34,6 +34,22 @@
 #include <godot_cpp/classes/time.hpp>
 #endif // LIMBOAI_GDEXTENSION
 
+inline static uint64_t item_get_task_id(TreeItem *p_item) {
+	return p_item->get_metadata(0);
+}
+
+inline static BTTask::Status item_get_task_status(TreeItem *p_item) {
+	return VariantCaster<BTTask::Status>::cast(p_item->get_metadata(1));
+}
+
+inline static String item_get_task_type(TreeItem *p_item) {
+	return ((String)p_item->get_metadata(2)).get_slicec('|', 0);
+}
+
+inline static String item_get_task_script_path(TreeItem *p_item) {
+	return ((String)p_item->get_metadata(2)).get_slicec('|', 1);
+}
+
 void BehaviorTreeView::_draw_running_status(Object *p_obj, Rect2 p_rect) {
 	p_rect = p_rect.grow_side(SIDE_LEFT, p_rect.get_position().x);
 	theme_cache.sbf_running->draw(tree->get_canvas_item(), p_rect);
@@ -54,13 +70,19 @@ void BehaviorTreeView::_item_collapsed(Object *p_obj) {
 	if (!item) {
 		return;
 	}
-	uint64_t id = item->get_metadata(0);
+	uint64_t id = item_get_task_id(item);
 	bool collapsed = item->is_collapsed();
 	if (!collapsed_ids.has(id) && collapsed) {
-		collapsed_ids.push_back(item->get_metadata(0));
+		collapsed_ids.push_back(item_get_task_id(item));
 	} else if (collapsed_ids.has(id) && !collapsed) {
 		collapsed_ids.erase(id);
 	}
+}
+
+void BehaviorTreeView::_item_selected() {
+	TreeItem *item = tree->get_selected();
+	ERR_FAIL_NULL(item);
+	emit_signal(LW_NAME(task_selected), item_get_task_type(item), item_get_task_script_path(item));
 }
 
 double BehaviorTreeView::_get_editor_scale() const {
@@ -85,7 +107,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 	// Remember selected.
 	uint64_t selected_id = 0;
 	if (tree->get_selected()) {
-		selected_id = tree->get_selected()->get_metadata(0);
+		selected_id = item_get_task_id(tree->get_selected());
 	}
 
 	if (last_root_id != 0 && p_data->tasks.size() > 0 && last_root_id == (uint64_t)p_data->tasks[0].id) {
@@ -98,7 +120,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 			ERR_FAIL_COND(idx >= p_data->tasks.size());
 
 			const BTTask::Status current_status = (BTTask::Status)p_data->tasks[idx].status;
-			const BTTask::Status last_status = VariantCaster<BTTask::Status>::cast(item->get_metadata(1));
+			const BTTask::Status last_status = item_get_task_status(item);
 			const bool status_changed = last_status != p_data->tasks[idx].status;
 
 			if (status_changed) {
@@ -166,6 +188,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 
 			item->set_metadata(0, task_data.id);
 			item->set_metadata(1, task_data.status);
+			item->set_metadata(2, task_data.type_name + String("|") + task_data.script_path);
 
 			item->set_text(0, task_data.name);
 			if (task_data.is_custom_name) {
@@ -262,6 +285,7 @@ void BehaviorTreeView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			tree->connect(LW_NAME(item_collapsed), callable_mp(this, &BehaviorTreeView::_item_collapsed));
+			tree->connect(LW_NAME(item_selected), callable_mp(this, &BehaviorTreeView::_item_selected));
 		} break;
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -292,6 +316,8 @@ void BehaviorTreeView::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_interval_msec", "p_milliseconds"), &BehaviorTreeView::set_update_interval_msec);
 	ClassDB::bind_method(D_METHOD("get_update_interval_msec"), &BehaviorTreeView::get_update_interval_msec);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_interval_msec"), "set_update_interval_msec", "get_update_interval_msec");
+
+	ADD_SIGNAL(MethodInfo("task_selected", PropertyInfo(Variant::STRING, "p_type_name"), PropertyInfo(Variant::STRING, "p_script_path")));
 }
 
 BehaviorTreeView::BehaviorTreeView() {

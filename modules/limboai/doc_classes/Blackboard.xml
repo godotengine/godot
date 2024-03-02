@@ -27,7 +27,7 @@
 				Removes a variable by its name.
 			</description>
 		</method>
-		<method name="get_parent_scope" qualifiers="const">
+		<method name="get_parent" qualifiers="const">
 			<return type="Blackboard" />
 			<description>
 				Returns a Blackboard that serves as the parent scope for this instance.
@@ -56,7 +56,7 @@
 				If [code]true[/code], any [NodePath] variables in the [Blackboard] are replaced with [Node] references when the tree is instantiated. References are retrieved by calling [method Node.get_node] on the agent instance.
 			</description>
 		</method>
-		<method name="set_parent_scope">
+		<method name="set_parent">
 			<return type="void" />
 			<param index="0" name="p_blackboard" type="Blackboard" />
 			<description>

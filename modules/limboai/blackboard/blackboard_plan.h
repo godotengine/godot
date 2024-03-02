@@ -37,7 +37,7 @@ private:
 	Ref<BlackboardPlan> base;
 
 protected:
-	static void _bind_methods() {}
+	static void _bind_methods();
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;

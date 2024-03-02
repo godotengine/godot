@@ -38,7 +38,7 @@ Methods
    +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
    | void                                | :ref:`erase_var<class_Blackboard_method_erase_var>` **(** String p_name **)**                                                               |
    +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Blackboard<class_Blackboard>` | :ref:`get_parent_scope<class_Blackboard_method_get_parent_scope>` **(** **)** |const|                                                       |
+   | :ref:`Blackboard<class_Blackboard>` | :ref:`get_parent<class_Blackboard_method_get_parent>` **(** **)** |const|                                                                   |
    +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
    | Variant                             | :ref:`get_var<class_Blackboard_method_get_var>` **(** String p_name, Variant p_default=null, bool p_complain=true **)** |const|             |
    +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
@@ -46,7 +46,7 @@ Methods
    +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
    | void                                | :ref:`prefetch_nodepath_vars<class_Blackboard_method_prefetch_nodepath_vars>` **(** Node p_node **)**                                       |
    +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`set_parent_scope<class_Blackboard_method_set_parent_scope>` **(** :ref:`Blackboard<class_Blackboard>` p_blackboard **)**              |
+   | void                                | :ref:`set_parent<class_Blackboard_method_set_parent>` **(** :ref:`Blackboard<class_Blackboard>` p_blackboard **)**                          |
    +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
    | void                                | :ref:`set_var<class_Blackboard_method_set_var>` **(** String p_name, Variant p_value **)**                                                  |
    +-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------+
@@ -88,11 +88,11 @@ Removes a variable by its name.
 
 ----
 
-.. _class_Blackboard_method_get_parent_scope:
+.. _class_Blackboard_method_get_parent:
 
 .. rst-class:: classref-method
 
-:ref:`Blackboard<class_Blackboard>` **get_parent_scope** **(** **)** |const|
+:ref:`Blackboard<class_Blackboard>` **get_parent** **(** **)** |const|
 
 Returns a Blackboard that serves as the parent scope for this instance.
 
@@ -136,11 +136,11 @@ If ``true``, any ``NodePath`` variables in the **Blackboard** are replaced with 
 
 ----
 
-.. _class_Blackboard_method_set_parent_scope:
+.. _class_Blackboard_method_set_parent:
 
 .. rst-class:: classref-method
 
-void **set_parent_scope** **(** :ref:`Blackboard<class_Blackboard>` p_blackboard **)**
+void **set_parent** **(** :ref:`Blackboard<class_Blackboard>` p_blackboard **)**
 
 Assigns the parent scope. If a value isn't in the current Blackboard scope, it will look in the parent scope Blackboard to find it.
 

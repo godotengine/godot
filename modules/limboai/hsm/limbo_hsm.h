@@ -43,6 +43,7 @@ protected:
 	void _notification(int p_what);
 
 	virtual void _initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) override;
+	virtual bool _dispatch(const String &p_event, const Variant &p_cargo = Variant()) override;
 
 	virtual void _enter() override;
 	virtual void _exit() override;
@@ -62,7 +63,6 @@ public:
 	LimboState *get_initial_state() const { return initial_state; }
 
 	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_parent_scope = nullptr);
-	virtual bool dispatch(const String &p_event, const Variant &p_cargo = Variant()) override;
 
 	void update(double p_delta);
 	void add_transition(LimboState *p_from_state, LimboState *p_to_state, const String &p_event);

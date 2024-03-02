@@ -80,7 +80,7 @@ void LimboState::_initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard)
 	_setup();
 }
 
-bool LimboState::dispatch(const String &p_event, const Variant &p_cargo) {
+bool LimboState::_dispatch(const String &p_event, const Variant &p_cargo) {
 	ERR_FAIL_COND_V(p_event.is_empty(), false);
 	if (handlers.size() > 0 && handlers.has(p_event)) {
 		Variant ret;
@@ -124,6 +124,10 @@ void LimboState::add_event_handler(const String &p_event, const Callable &p_hand
 	ERR_FAIL_COND(p_event.is_empty());
 	ERR_FAIL_COND(!p_handler.is_valid());
 	handlers.insert(p_event, p_handler);
+}
+
+bool LimboState::dispatch(const String &p_event, const Variant &p_cargo) {
+	return get_root()->_dispatch(p_event, p_cargo);
 }
 
 LimboState *LimboState::call_on_enter(const Callable &p_callable) {

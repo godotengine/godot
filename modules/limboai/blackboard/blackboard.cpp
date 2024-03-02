@@ -96,8 +96,8 @@ void Blackboard::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_var", "p_name", "p_default", "p_complain"), &Blackboard::get_var, Variant(), true);
 	ClassDB::bind_method(D_METHOD("set_var", "p_name", "p_value"), &Blackboard::set_var);
 	ClassDB::bind_method(D_METHOD("has_var", "p_name"), &Blackboard::has_var);
-	ClassDB::bind_method(D_METHOD("set_parent_scope", "p_blackboard"), &Blackboard::set_parent);
-	ClassDB::bind_method(D_METHOD("get_parent_scope"), &Blackboard::get_parent);
+	ClassDB::bind_method(D_METHOD("set_parent", "p_blackboard"), &Blackboard::set_parent);
+	ClassDB::bind_method(D_METHOD("get_parent"), &Blackboard::get_parent);
 	ClassDB::bind_method(D_METHOD("erase_var", "p_name"), &Blackboard::erase_var);
 	ClassDB::bind_method(D_METHOD("prefetch_nodepath_vars", "p_node"), &Blackboard::prefetch_nodepath_vars);
 	ClassDB::bind_method(D_METHOD("top"), &Blackboard::top);

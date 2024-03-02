@@ -41,7 +41,7 @@
 			<param index="0" name="p_event" type="String" />
 			<param index="1" name="p_handler" type="Callable" />
 			<description>
-				Registers a [param p_handler] to be called when [param p_event] is dispatched. The method must belong to the state.
+				Registers a [param p_handler] to be called when [param p_event] is dispatched.
 			</description>
 		</method>
 		<method name="call_on_enter">

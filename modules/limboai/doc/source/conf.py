@@ -8,14 +8,15 @@
 
 project = 'LimboAI'
 copyright = '2021-present Serhii Snitsaruk and the LimboAI contributors'
-author = 'Serhii Snitsaruk'
+author = 'Serhii Snitsaruk and the LimboAI contributors'
 release = '1.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['myst_parser', 'sphinx_markdown_builder', 'sphinx_rtd_dark_mode']
+extensions = ['sphinx_rtd_dark_mode', 'sphinx_copybutton']
 
+master_doc = 'index'
 templates_path = ['_templates']
 exclude_patterns = ['_build']
 
@@ -38,5 +39,6 @@ html_logo = "logo.png"
 html_theme_options = {
     'logo_only': True,
     'display_version': True,
+    "collapse_navigation": True,
 }
 

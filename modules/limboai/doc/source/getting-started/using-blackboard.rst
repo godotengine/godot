@@ -66,9 +66,93 @@ To modify these values:
 2. In the Inspector, locate the "Blackboard Plan" property.
 3. Override the desired values to tailor the blackboard variables for the specific scene.
 
+Task parameters
+---------------
+
+In some cases, it can be beneficial to allow behavior tree tasks to export parameters
+that can either be **bound to a blackboard variable or specified directly** by the user.
+For this purpose, LimboAI provides special parameter types that begin with "BB",
+such as :ref:`BBInt<class_BBInt>`, :ref:`BBBool<class_BBBool>`, :ref:`BBString<class_BBString>`,
+:ref:`BBFloat<class_BBFloat>`, :ref:`BBNode<class_BBNode>`, and more.
+For a complete list, please refer to the :ref:`BBParam<class_BBParam>` class reference.
+
+Usage example:
+
+.. code:: gdscript
+
+    extends BTAction
+
+    @export var speed: BBFloat
+
+    func _tick(delta: float) -> Status:
+        var current_speed: float = speed.get_value(agent, blackboard, 0.0)
+        ...
+
 Advanced topic: Blackboard scopes
 ---------------------------------
 
-    **🛈 Note:** This section is not finished.
+The :ref:`Blackboard<class_Blackboard>` in LimboAI can act as a parent scope
+for another :ref:`Blackboard<class_Blackboard>`.
+This means that if a specific variable is not found in the active scope,
+the system will look in the parent :ref:`Blackboard<class_Blackboard>` to find it.
+This creates a "blackboard scope chain," where each :ref:`Blackboard<class_Blackboard>` can have its own parent scope,
+and there is no limit to how many blackboards can be in this chain.
+It's important to note that the :ref:`Blackboard<class_Blackboard>` doesn't modify values in the parent scopes.
 
-    **🛈 Note:** Blackboard scopes isolate variable namespaces and enable advanced techniques like sharing data between agents in a group.
+Some scopes are created automatically. For instance, when using the :ref:`BTNewScope<class_BTNewScope>`
+and :ref:`BTSubtree<class_BTSubtree>` decorators, or when a :ref:`LimboState<class_LimboState>`
+has non-empty blackboard plan defined, or when a root-level :ref:`LimboHSM<class_LimboHSM>`
+node is used. Such scopes prevent naming collisions between contextually separate environments.
+
+Sharing data between several agents
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The blackboard scope mechanism can also be used for sharing data between several agents.
+In the following example, we have a group of agents, and we want to share a common target between them:
+
+.. code:: gdscript
+
+    extends BTAction
+
+    @export var group_target_var: String = "group_target"
+
+    func _tick(delta: float) -> Status:
+        if not blackboard.has_var(group_target_var):
+            var new_target: Node = acquire_target()
+            # Set common target shared between agents in a group:
+            blackboard.top().set_var(group_target_var, new_target)
+
+        # Access common target shared between agents in a group:
+        var target: Node = blackboard.get_var(group_target_var)
+
+
+In this example, :ref:`blackboard.top()<class_Blackboard_method_top>` accesses the root scope of the
+:ref:`Blackboard<class_Blackboard>` chain.
+We assign that scope to each agent in a group through code:
+
+.. code:: gdscript
+
+    class_name AgentGroup
+    extends Node2D
+    ## AgentGroup node: Manages the shared Blackboard for agents in a group.
+    ## Children of this node are assumed to be agents that belong to a common group.
+    ## This implementation assumes that each agent has a "BTPlayer" node for AI.
+
+    @export var blackboard_plan: BlackboardPlan
+
+    var shared_scope: Blackboard
+
+    func _ready() -> void:
+        if blackboard_plan == null:
+            shared_scope = Blackboard.new()
+        else:
+            shared_scope = blackboard_plan.create_blackboard()
+
+        for child in get_children():
+            var bt_player: BTPlayer = child.find_child("BTPlayer")
+            if is_instance_valid(bt_player):
+                bt_player.blackboard.set_parent(shared_scope)
+
+In conclusion, the :ref:`Blackboard<class_Blackboard>` scope chain not only
+prevents naming conflicts that can occur between state machines, behavior trees, and sub-trees,
+but it can also be used to share data between several agents.

@@ -51,6 +51,23 @@ Methods
 
 .. rst-class:: classref-descriptions-group
 
+Signals
+-------
+
+.. _class_BehaviorTreeView_signal_task_selected:
+
+.. rst-class:: classref-signal
+
+**task_selected** **(** String p_type_name, String p_script_path **)**
+
+Emitted when a task item is selected in **BehaviorTreeView**.
+
+.. rst-class:: classref-section-separator
+
+----
+
+.. rst-class:: classref-descriptions-group
+
 Property Descriptions
 ---------------------
 

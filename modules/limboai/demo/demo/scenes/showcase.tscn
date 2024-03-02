@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://b3ae14mc2ty3y"]
+[gd_scene load_steps=16 format=3 uid="uid://b3ae14mc2ty3y"]
 
 [ext_resource type="Script" path="res://demo/scenes/showcase.gd" id="1_l12ql"]
 [ext_resource type="Theme" uid="uid://boqtjf88xcpu4" path="res://demo/assets/ui.theme" id="2_3d7dj"]
@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://bjakugmqbbtw7" path="res://demo/assets/arrow_right.png" id="7_5do2y"]
 [ext_resource type="PackedScene" uid="uid://bsig1usigbbuy" path="res://demo/scenes/base/arena.tscn" id="7_42nq6"]
 [ext_resource type="PackedScene" uid="uid://c5fhe3tulhlco" path="res://demo/props/dummy.tscn" id="8_apshw"]
+[ext_resource type="Script" path="res://demo/scenes/base/code_edit.gd" id="9_txke7"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_rdr7a"]
 font = ExtResource("3_7vli5")
@@ -242,6 +243,27 @@ bbcode_enabled = true
 text = "[b]Behavior Trees[/b] are composed of tasks that represent specific actions or decision-making rules. Tasks can be broadly categorized into two main types: control tasks and leaf tasks. Control tasks determine the execution flow within the tree. They include Sequence, Selector, and Invert. Leaf tasks represent specific actions to perform, like moving or attacking, or conditions that need to be checked. The BTTask class provides the foundation for various building blocks of the Behavior Trees. BT tasks can share data with the help of the Blackboard."
 fit_content = true
 
+[node name="CodePopup" type="PopupPanel" parent="UI Layer/Control"]
+unique_name_in_owner = true
+position = Vector2i(135, 60)
+size = Vector2i(1024, 708)
+visible = true
+
+[node name="CodeEdit" type="CodeEdit" parent="UI Layer/Control/CodePopup"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(800, 700)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+gutters_draw_line_numbers = true
+script = ExtResource("9_txke7")
+
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(400, 0)
 zoom = Vector2(0.88, 0.88)
@@ -262,4 +284,5 @@ position = Vector2(1106, 423)
 
 [connection signal="pressed" from="UI Layer/Control/Toolbar/HBoxContainer/SwitchToGame" to="." method="_on_switch_to_game_pressed"]
 [connection signal="pressed" from="UI Layer/Control/Toolbar/HBoxContainer/BeginTutorial" to="." method="_on_tutorial_pressed"]
+[connection signal="task_selected" from="UI Layer/Control/BehaviorInspector/VBoxContainer/BehaviorTreeView" to="." method="_on_behavior_tree_view_task_selected"]
 [connection signal="button_down" from="UI Layer/Control/PanelContainer/Control/Header/MinimizeDescription" to="." method="_on_minimize_description_button_down"]

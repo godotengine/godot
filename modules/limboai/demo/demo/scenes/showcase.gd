@@ -1,3 +1,14 @@
+#*
+#* showcase.gd
+#* =============================================================================
+#* Copyright 2024 Serhii Snitsaruk
+#*
+#* Use of this source code is governed by an MIT-style
+#* license that can be found in the LICENSE file or at
+#* https://opensource.org/licenses/MIT.
+#* =============================================================================
+#*
+
 extends Node2D
 
 @onready var behavior_tree_view: BehaviorTreeView = %BehaviorTreeView
@@ -10,12 +21,15 @@ extends Node2D
 @onready var begin_tutorial: Button = %BeginTutorial
 @onready var navigation_hint: Label = %NavigationHint
 @onready var scene_title: Label = %SceneTitle
+@onready var code_popup = %CodePopup
+@onready var code_edit = %CodeEdit
 
 var bt_player: BTPlayer
 var selected_tree_index: int = -1
 var agent_files: Array[String]
 var agents_dir: String
 var is_tutorial: bool = false
+
 
 func _ready() -> void:
 	agent_selection.get_popup().id_pressed.connect(_on_agent_selection_id_pressed)
@@ -116,12 +130,11 @@ func _on_agent_selection_id_pressed(id: int) -> void:
 		# Treat filename as a title
 		agent_selection.text = agent_selection.text.trim_suffix(".tres")
 	previous.disabled = id == 0
-	next.disabled = id == (agent_files.size()-1)
+	next.disabled = id == (agent_files.size() - 1)
 
 
 func _on_switch_to_game_pressed() -> void:
 	get_tree().change_scene_to_file("res://demo/scenes/game.tscn")
-
 
 
 func _on_minimize_description_button_down() -> void:
@@ -132,3 +145,10 @@ func _on_minimize_description_button_down() -> void:
 func _on_tutorial_pressed() -> void:
 	is_tutorial = not is_tutorial
 	_initialize()
+
+
+func _on_behavior_tree_view_task_selected(_type_name: String, p_script_path: String) -> void:
+	if not p_script_path.is_empty():
+		var sc: Script = load(p_script_path)
+		code_edit.set_source_code(sc.source_code)
+		code_popup.popup.call_deferred()
