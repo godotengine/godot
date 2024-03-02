@@ -226,6 +226,14 @@ opts.Add(
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
+opts.Add(
+    EnumVariable(
+        "simd_type",
+        "Explicitly specify SIMD(Single Instruction Multiple Data) type of godot vector math",
+        "none",
+        ("none", "sse", "sse4_1", "sse4_2", "avx", "avx2", "avx512", "neon"),
+    )
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -1029,6 +1037,41 @@ if "env" in locals():
     # TODO: replace this with `env.Dump(format="json")`
     # once we start requiring SCons 4.0 as min version.
     methods.dump(env)
+
+# Hands SIMD option.
+simd_type = env["simd_type"]
+x86_x64_simd_types = ["sse", "sse4_1", "sse4_2", "avx", "avx2", "avx512"]
+if not simd_type in (["none", "neon"] + x86_x64_simd_types):
+    print(f"\nInvalid SIMD type: {simd_type}. Please select a valid SIMD type: simd_type=<string>.")
+    Exit(255)
+elif simd_type != "none":
+    error_msg = (
+        '\nSIMD type "{0}" only available on "{1}".  Please select a valid SIMD type or change target architecture.'
+    )
+    if simd_type == "neon":
+        if env["arch"] != "arm64":
+            print(error_msg.format(simd_type, "arm64"))
+            Exit(255)
+        env.Append(CPPDEFINES=["NEON_ENABLED"])
+    if simd_type == "sse":
+        if not env["arch"] in ["x86_32", "x86_64"]:
+            print(error_msg.format(simd_type, 'x86_32", "x86_64'))
+            Exit(255)
+        env.Append(CPPDEFINES=["SSE2_ENABLED"])
+    else:
+        if env["arch"] != "x86_64":
+            print(error_msg.format(simd_type, "x86_64"))
+            Exit(255)
+        for i in range(len(x86_x64_simd_types) - 1, -1, -1):
+            if simd_type == x86_x64_simd_types[i]:
+                for j in range(i + 1):
+                    env.Append(CPPDEFINES=[f"{x86_x64_simd_types[j].upper()}_ENABLED"])
+                if not env.msvc:
+                    if simd_type == "avx512":
+                        env.Append(CCFLAGS=["-mavx512f", "-mavx512vl", "-mavx512dq"])
+                    else:
+                        env.Append(CCFLAGS=["-m" + x86_x64_simd_types[j].lower().replace("_", ".")])
+                break
 
 
 def print_elapsed_time():

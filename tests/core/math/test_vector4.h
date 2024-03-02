@@ -34,6 +34,10 @@
 #include "core/math/vector4.h"
 #include "tests/test_macros.h"
 
+// Should be removed before mergering https://github.com/godotengine/godot/pull/86340.
+#include "core/math/random_pcg.h"
+#include "core/os/time.h"
+
 #define Math_SQRT3 1.7320508075688772935274463415059
 
 namespace TestVector4 {
@@ -399,6 +403,95 @@ TEST_CASE("[Vector4] Finite number checks") {
 		}
 	}
 }
+
+// Should be removed before mergering https://github.com/godotengine/godot/pull/86340.
+TEST_CASE("[Vector4] Performance") {
+	auto rng = RandomPCG();
+	rng.seed(20231318);
+
+	const size_t size = 1000000000;
+	LocalVector<Vector4> data;
+	data.reserve(size);
+
+	String test_title = "|unit:us|";
+	String test_sep = "|:-:|";
+	String exe = OS::get_singleton()->get_executable_path().get_file();
+	String test_result = vformat("|%s|",
+			exe.substr(exe.find("v4test_") + String("v4test_").length()).trim_suffix(".exe"));
+
+	auto ctor_timer = Time::get_singleton()->get_ticks_usec();
+	for (size_t i = 0; i < size; ++i) {
+		data.push_back(
+				Vector4(
+						rng.randf() * rng.rand(),
+						rng.randf() * rng.rand(),
+						rng.randf() * rng.rand(),
+						rng.randf() * rng.rand()));
+	}
+	test_result += itos(Time::get_singleton()->get_ticks_usec() - ctor_timer) + "|";
+	test_title += "Construct|";
+	test_sep += ":-:|";
+
+	// Avoids over optimization of the test loop body.
+	union TempVal {
+		real_t real;
+#ifdef REAL_T_IS_DOUBLE
+		using integer_t = uint64_t;
+#else //  REAL_T_IS_DOUBLE
+		using integer_t = uint32_t;
+#endif //  REAL_T_IS_DOUBLE
+		integer_t integer = 0;
+
+		TempVal(real_t p_real) :
+				real(p_real) {}
+		TempVal(integer_t p_int) :
+				integer(p_int) {}
+		TempVal(Vector4 p_vec4) :
+				real(p_vec4.x) {}
+	} tmp_val(TempVal::integer_t(0));
+
+#define TEST(test_name, loop_body)                               \
+	{                                                            \
+		uint64_t cost = Time::get_singleton()->get_ticks_usec(); \
+		for (size_t i = 0; i < size - 2; ++i) {                  \
+			loop_body;                                           \
+			tmp_val.integer |= TempVal(res).integer;             \
+		}                                                        \
+		cost = Time::get_singleton()->get_ticks_usec() - cost;   \
+		test_title += #test_name "|";                            \
+		test_sep += ":-:|";                                      \
+		test_result += itos(cost) + "|";                         \
+	}
+
+	TEST(add_vec4, Vector4 res = data[i] + data[i + 1])
+	TEST(sub_vec4, Vector4 res = data[i] - data[i + 1])
+	TEST(mul_vec4, Vector4 res = data[i] * data[i + 1])
+	TEST(div_vec4, Vector4 res = data[i] / data[i + 1])
+	TEST(mul_real, Vector4 res = data[i] * data[i + 1].x)
+	TEST(div_real, Vector4 res = data[i] / data[i + 1].x)
+	TEST(assignment, Vector4 res; res = data[i])
+	TEST(dot, real_t res = data[i].dot(data[i + 1]))
+	TEST(min, Vector4 res = data[i].min(data[i + 1]))
+	TEST(max, Vector4 res = data[i].max(data[i + 1]))
+	TEST(length, real_t res = data[i].length())
+	TEST(normalize, Vector4 res = data[i]; res.normalize())
+	TEST(abs, Vector4 res = data[i].abs())
+	TEST(sign, Vector4 res = data[i].sign())
+	TEST(floor, Vector4 res = data[i].floor())
+	TEST(ceil, Vector4 res = data[i].ceil())
+	TEST(round, Vector4 res = data[i].round())
+	TEST(lerp, Vector4 res = data[i].lerp(data[i + 1], 0.5))
+	TEST(snap, Vector4 res = data[i]; res.snap(data[i + 1]))
+	TEST(inverse, Vector4 res = data[i].inverse())
+	TEST(clamp, Vector4 res = data[i].clamp(data[i + 1], data[i + 2]))
+
+	print_line(itos(tmp_val.integer).substr(0, 0));
+
+	print_line(test_title);
+	print_line(test_sep);
+	print_line(test_result);
+
+} //namespace TestVector4
 
 } // namespace TestVector4
 
