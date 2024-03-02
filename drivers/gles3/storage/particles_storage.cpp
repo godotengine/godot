@@ -728,8 +728,10 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	ParticlesShaderGLES3::ShaderVariant variant = ParticlesShaderGLES3::MODE_DEFAULT;
 
 	uint32_t specialization = 0;
-	for (uint32_t i = 0; i < p_particles->userdata_count; i++) {
-		specialization |= (1 << i);
+	for (uint32_t i = 0; i < PARTICLES_MAX_USERDATAS; i++) {
+		if (m->shader_data->userdatas_used[i]) {
+			specialization |= ParticlesShaderGLES3::USERDATA1_USED << i;
+		}
 	}
 
 	if (p_particles->mode == RS::ParticlesMode::PARTICLES_MODE_3D) {
