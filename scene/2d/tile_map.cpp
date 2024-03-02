@@ -89,9 +89,7 @@ void TileMap::_notification(int p_what) {
 				set_notify_local_transform(true);
 			}
 		} break;
-		case NOTIFICATION_DISABLED: {
-			update_internals();
-		} break;
+		case NOTIFICATION_DISABLED:
 		case NOTIFICATION_ENABLED: {
 			update_internals();
 		} break;

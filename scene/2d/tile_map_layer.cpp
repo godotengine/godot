@@ -677,7 +677,7 @@ void TileMapLayer::_physics_update() {
 	const Ref<TileSet> &tile_set = get_effective_tile_set();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_enabled();
+	bool forced_cleanup = in_destructor || !enabled || !is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_enabled();
 	if (forced_cleanup) {
 		// Clean everything.
 		for (KeyValue<Vector2i, CellData> &kv : tile_map) {
