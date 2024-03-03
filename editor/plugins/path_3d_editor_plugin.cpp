@@ -117,7 +117,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		if (p.intersects_ray(ray_from, ray_dir, &inters)) {
 			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 				float snap = Node3DEditor::get_singleton()->get_translate_snap();
-				inters.snap(Vector3(snap, snap, snap));
+				inters.snapf(snap);
 			}
 
 			Vector3 local = gi.xform(inters);
@@ -146,7 +146,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 				Vector3 local = gi.xform(inters) - base;
 				if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 					float snap = Node3DEditor::get_singleton()->get_translate_snap();
-					local.snap(Vector3(snap, snap, snap));
+					local.snapf(snap);
 				}
 
 				if (info.type == HandleType::HANDLE_TYPE_IN) {

@@ -328,7 +328,7 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 
 					drag_from = mtx.affine_inverse().xform(mb->get_position());
 					if (snap_mode == SNAP_PIXEL) {
-						drag_from = drag_from.snapped(Vector2(1, 1));
+						drag_from = drag_from.snappedf(1);
 					} else if (snap_mode == SNAP_GRID) {
 						drag_from = snap_point(drag_from);
 					}
@@ -566,7 +566,7 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 			} else {
 				Vector2 new_pos = mtx.affine_inverse().xform(mm->get_position());
 				if (snap_mode == SNAP_PIXEL) {
-					new_pos = new_pos.snapped(Vector2(1, 1));
+					new_pos = new_pos.snappedf(1);
 				} else if (snap_mode == SNAP_GRID) {
 					new_pos = snap_point(new_pos);
 				}

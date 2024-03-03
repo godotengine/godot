@@ -150,6 +150,25 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between
+        /// <paramref name="min"/> and <paramref name="max"/> using
+        /// <see cref="Mathf.Clamp(int, int, int)"/>.
+        /// </summary>
+        /// <param name="min">The minimum allowed value.</param>
+        /// <param name="max">The maximum allowed value.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public readonly Vector4I Clamp(int min, int max)
+        {
+            return new Vector4I
+            (
+                Mathf.Clamp(X, min, max),
+                Mathf.Clamp(Y, min, max),
+                Mathf.Clamp(Z, min, max),
+                Mathf.Clamp(W, min, max)
+            );
+        }
+
+        /// <summary>
         /// Returns the squared distance between this vector and <paramref name="to"/>.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.
@@ -252,6 +271,36 @@ namespace Godot
         public readonly Vector4I Sign()
         {
             return new Vector4I(Mathf.Sign(X), Mathf.Sign(Y), Mathf.Sign(Z), Mathf.Sign(W));
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of the corresponding component in <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">A vector value representing the step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector4I Snapped(Vector4I step)
+        {
+            return new Vector4I(
+                (int)Mathf.Snapped((double)X, (double)step.X),
+                (int)Mathf.Snapped((double)Y, (double)step.Y),
+                (int)Mathf.Snapped((double)Z, (double)step.Z),
+                (int)Mathf.Snapped((double)W, (double)step.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">The step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector4I Snapped(int step)
+        {
+            return new Vector4I(
+                (int)Mathf.Snapped((double)X, (double)step),
+                (int)Mathf.Snapped((double)Y, (double)step),
+                (int)Mathf.Snapped((double)Z, (double)step),
+                (int)Mathf.Snapped((double)W, (double)step)
+            );
         }
 
         // Constants

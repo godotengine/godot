@@ -1804,7 +1804,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, abs, sarray(), varray());
 	bind_method(Vector2, sign, sarray(), varray());
 	bind_method(Vector2, clamp, sarray("min", "max"), varray());
+	bind_method(Vector2, clampf, sarray("min", "max"), varray());
 	bind_method(Vector2, snapped, sarray("step"), varray());
+	bind_method(Vector2, snappedf, sarray("step"), varray());
 
 	bind_static_method(Vector2, from_angle, sarray("angle"), varray());
 
@@ -1820,7 +1822,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
 	bind_method(Vector2i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector2i, clampi, sarray("min", "max"), varray());
 	bind_method(Vector2i, snapped, sarray("step"), varray());
+	bind_method(Vector2i, snappedi, sarray("step"), varray());
 
 	/* Rect2 */
 
@@ -1875,7 +1879,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, is_finite, sarray(), varray());
 	bind_method(Vector3, inverse, sarray(), varray());
 	bind_method(Vector3, clamp, sarray("min", "max"), varray());
+	bind_method(Vector3, clampf, sarray("min", "max"), varray());
 	bind_method(Vector3, snapped, sarray("step"), varray());
+	bind_method(Vector3, snappedf, sarray("step"), varray());
 	bind_method(Vector3, rotated, sarray("axis", "angle"), varray());
 	bind_method(Vector3, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector3, slerp, sarray("to", "weight"), varray());
@@ -1912,7 +1918,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3i, sign, sarray(), varray());
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector3i, clampi, sarray("min", "max"), varray());
 	bind_method(Vector3i, snapped, sarray("step"), varray());
+	bind_method(Vector3i, snappedi, sarray("step"), varray());
 
 	/* Vector4 */
 
@@ -1931,7 +1939,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, posmod, sarray("mod"), varray());
 	bind_method(Vector4, posmodv, sarray("modv"), varray());
 	bind_method(Vector4, snapped, sarray("step"), varray());
+	bind_method(Vector4, snappedf, sarray("step"), varray());
 	bind_method(Vector4, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4, clampf, sarray("min", "max"), varray());
 	bind_method(Vector4, normalized, sarray(), varray());
 	bind_method(Vector4, is_normalized, sarray(), varray());
 	bind_method(Vector4, direction_to, sarray("to"), varray());
@@ -1952,7 +1962,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4i, sign, sarray(), varray());
 	bind_method(Vector4i, abs, sarray(), varray());
 	bind_method(Vector4i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4i, clampi, sarray("min", "max"), varray());
 	bind_method(Vector4i, snapped, sarray("step"), varray());
+	bind_method(Vector4i, snappedi, sarray("step"), varray());
 	bind_method(Vector4i, distance_to, sarray("to"), varray());
 	bind_method(Vector4i, distance_squared_to, sarray("to"), varray());
 

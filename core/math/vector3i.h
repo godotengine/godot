@@ -73,8 +73,16 @@ struct _NO_DISCARD_ Vector3i {
 		return Vector3i(MIN(x, p_vector3i.x), MIN(y, p_vector3i.y), MIN(z, p_vector3i.z));
 	}
 
+	Vector3i mini(int32_t p_scalar) const {
+		return Vector3i(MIN(x, p_scalar), MIN(y, p_scalar), MIN(z, p_scalar));
+	}
+
 	Vector3i max(const Vector3i &p_vector3i) const {
 		return Vector3i(MAX(x, p_vector3i.x), MAX(y, p_vector3i.y), MAX(z, p_vector3i.z));
+	}
+
+	Vector3i maxi(int32_t p_scalar) const {
+		return Vector3i(MAX(x, p_scalar), MAX(y, p_scalar), MAX(z, p_scalar));
 	}
 
 	_FORCE_INLINE_ int64_t length_squared() const;
@@ -85,7 +93,9 @@ struct _NO_DISCARD_ Vector3i {
 	_FORCE_INLINE_ Vector3i abs() const;
 	_FORCE_INLINE_ Vector3i sign() const;
 	Vector3i clamp(const Vector3i &p_min, const Vector3i &p_max) const;
+	Vector3i clampi(int32_t p_min, int32_t p_max) const;
 	Vector3i snapped(const Vector3i &p_step) const;
+	Vector3i snappedi(int32_t p_step) const;
 
 	_FORCE_INLINE_ double distance_to(const Vector3i &p_to) const;
 	_FORCE_INLINE_ int64_t distance_squared_to(const Vector3i &p_to) const;
