@@ -3243,6 +3243,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	GDScriptParser::DataType base_type;
 	call_type.kind = GDScriptParser::DataType::VARIANT;
 	bool is_self = false;
+	bool is_global = false;
 
 	if (p_call->is_super) {
 		base_type = parser->current_class->base_type;
@@ -3281,6 +3282,12 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		GDScriptParser::IdentifierNode *base_id = nullptr;
 		if (subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
 			base_id = static_cast<GDScriptParser::IdentifierNode *>(subscript->base);
+			if (ProjectSettings::get_singleton()->has_autoload(base_id->name)) {
+				const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(base_id->name);
+				if (autoload.is_singleton) {
+					is_global = true;
+				}
+			}
 		}
 		if (base_id && GDScriptParser::get_builtin_type(base_id->name) < Variant::VARIANT_MAX) {
 			base_type = make_builtin_meta_type(GDScriptParser::get_builtin_type(base_id->name));
@@ -3360,7 +3367,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			parser->push_warning(p_call, GDScriptWarning::RETURN_VALUE_DISCARDED, p_call->function_name);
 		}
 
-		if (method_flags.has_flag(METHOD_FLAG_STATIC) && !is_constructor && !base_type.is_meta_type && !(is_self && static_context)) {
+		if (method_flags.has_flag(METHOD_FLAG_STATIC) && !is_constructor && !base_type.is_meta_type && !(is_self && static_context) && !is_global) {
 			String caller_type = String(base_type.native_type);
 
 			if (caller_type.is_empty()) {
