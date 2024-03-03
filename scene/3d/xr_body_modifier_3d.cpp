@@ -353,8 +353,9 @@ void XRBodyModifier3D::_update_skeleton() {
 		const int parent_joint = joints[joint].parent_joint;
 		const Transform3D relative_transform = inv_transforms[parent_joint] * transforms[joint];
 
-		// Update the bone position if enabled by update mode.
-		if (bone_update == BONE_UPDATE_FULL) {
+		// Update the bone position if enabled by update mode, or if the joint is the hips to allow
+		// for climbing or crouching.
+		if (bone_update == BONE_UPDATE_FULL || joint == XRBodyTracker::JOINT_HIPS) {
 			skeleton->set_bone_pose_position(joints[joint].bone, relative_transform.origin);
 		}
 
