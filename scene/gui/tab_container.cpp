@@ -871,8 +871,7 @@ Size2 TabContainer::get_minimum_size() const {
 		}
 
 		Size2 cms = c->get_combined_minimum_size();
-		largest_child_min_size.x = MAX(largest_child_min_size.x, cms.x);
-		largest_child_min_size.y = MAX(largest_child_min_size.y, cms.y);
+		largest_child_min_size = largest_child_min_size.max(cms);
 	}
 	ms.y += largest_child_min_size.y;
 

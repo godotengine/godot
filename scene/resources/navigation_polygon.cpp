@@ -251,8 +251,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 		}
 		const Vector2 *r = ol.ptr();
 		for (int j = 0; j < olsize; j++) {
-			outside_point.x = MAX(r[j].x, outside_point.x);
-			outside_point.y = MAX(r[j].y, outside_point.y);
+			outside_point = outside_point.max(r[j]);
 		}
 	}
 

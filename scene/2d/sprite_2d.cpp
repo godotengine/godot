@@ -374,8 +374,7 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 			q.y = texture->get_size().height - q.y - 1;
 		}
 	} else {
-		q.x = MIN(q.x, texture->get_size().width - 1);
-		q.y = MIN(q.y, texture->get_size().height - 1);
+		q = q.min(texture->get_size() - Vector2(1, 1));
 	}
 
 	return texture->is_pixel_opaque((int)q.x, (int)q.y);

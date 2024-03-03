@@ -2845,10 +2845,8 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 		for (int j = 0; j < gl_data.contours[i].size(); j++) {
 			int next = (j + 1 == gl_data.contours[i].size()) ? 0 : (j + 1);
 
-			gl_data.min_p.x = MIN(gl_data.min_p.x, gl_data.contours[i][j].point.x);
-			gl_data.min_p.y = MIN(gl_data.min_p.y, gl_data.contours[i][j].point.y);
-			gl_data.max_p.x = MAX(gl_data.max_p.x, gl_data.contours[i][j].point.x);
-			gl_data.max_p.y = MAX(gl_data.max_p.y, gl_data.contours[i][j].point.y);
+			gl_data.min_p = gl_data.min_p.min(gl_data.contours[i][j].point);
+			gl_data.max_p = gl_data.max_p.max(gl_data.contours[i][j].point);
 			length += (gl_data.contours[i][next].point - gl_data.contours[i][j].point).length();
 
 			inp.GetPoint(j) = gl_data.contours[i][j].point;
