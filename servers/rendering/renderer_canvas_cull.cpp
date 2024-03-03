@@ -421,14 +421,15 @@ void RendererCanvasCull::canvas_initialize(RID p_rid) {
 	canvas_owner.initialize_rid(p_rid);
 }
 
-void RendererCanvasCull::canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring) {
-	Canvas *canvas = canvas_owner.get_or_null(p_canvas);
-	ERR_FAIL_NULL(canvas);
+void RendererCanvasCull::canvas_set_item_mirroring(RID p_item, const Point2 &p_mirroring) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
+	RID parent = canvas_item->parent;
+	Canvas *canvas = canvas_owner.get_or_null(parent);
+	ERR_FAIL_NULL_MSG(canvas, "Item must be a direct child of Canvas.");
+
 	int idx = canvas->find_item(canvas_item);
-	ERR_FAIL_COND(idx == -1);
 	canvas->child_items.write[idx].mirror = p_mirroring;
 }
 

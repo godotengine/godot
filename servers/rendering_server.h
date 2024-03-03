@@ -1377,7 +1377,7 @@ public:
 	/* CANVAS (2D) */
 
 	virtual RID canvas_create() = 0;
-	virtual void canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring) = 0;
+	virtual void canvas_set_item_mirroring(RID p_item, const Point2 &p_mirroring) = 0;
 	virtual void canvas_set_modulate(RID p_canvas, const Color &p_color) = 0;
 	virtual void canvas_set_parent(RID p_canvas, RID p_parent, float p_scale) = 0;
 

@@ -851,7 +851,7 @@ public:
 	/* CANVAS (2D) */
 
 	FUNCRIDSPLIT(canvas)
-	FUNC3(canvas_set_item_mirroring, RID, RID, const Point2 &)
+	FUNC2(canvas_set_item_mirroring, RID, const Point2 &)
 	FUNC2(canvas_set_modulate, RID, const Color &)
 	FUNC3(canvas_set_parent, RID, RID, float)
 	FUNC1(canvas_set_disable_scale, bool)

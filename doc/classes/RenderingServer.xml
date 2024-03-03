@@ -862,11 +862,10 @@
 		</method>
 		<method name="canvas_set_item_mirroring">
 			<return type="void" />
-			<param index="0" name="canvas" type="RID" />
-			<param index="1" name="item" type="RID" />
-			<param index="2" name="mirroring" type="Vector2" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="mirroring" type="Vector2" />
 			<description>
-				A copy of the canvas item will be drawn with a local offset of the mirroring [Vector2].
+				A copy of the canvas item will be drawn with a local offset of the mirroring [Vector2]. The item must be a direct child of parent canvas. The item will be mirrored three times based on mirroring's x, y, x and y.
 			</description>
 		</method>
 		<method name="canvas_set_modulate">
