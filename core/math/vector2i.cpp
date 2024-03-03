@@ -39,10 +39,22 @@ Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
 			CLAMP(y, p_min.y, p_max.y));
 }
 
+Vector2i Vector2i::clampi(int32_t p_min, int32_t p_max) const {
+	return Vector2i(
+			CLAMP(x, p_min, p_max),
+			CLAMP(y, p_min, p_max));
+}
+
 Vector2i Vector2i::snapped(const Vector2i &p_step) const {
 	return Vector2i(
 			Math::snapped(x, p_step.x),
 			Math::snapped(y, p_step.y));
+}
+
+Vector2i Vector2i::snappedi(int32_t p_step) const {
+	return Vector2i(
+			Math::snapped(x, p_step),
+			Math::snapped(y, p_step));
 }
 
 int64_t Vector2i::length_squared() const {
