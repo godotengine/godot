@@ -5936,6 +5936,10 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				if (!preview_node->get_parent()) { // create preview only once
 					_create_preview(files);
 				}
+				if (preview_node->get_child_count() == 0) {
+					return false;
+				}
+
 				Transform2D trans = canvas_item_editor->get_canvas_transform();
 				preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
 				String scene_file_path = preview_node->get_child(0)->get_scene_file_path();
