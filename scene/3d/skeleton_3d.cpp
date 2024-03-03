@@ -253,6 +253,51 @@ void Skeleton3D::_update_process_order() {
 	process_order_dirty = false;
 }
 
+// func getq0q1():
+// 	var i = 0
+// 	var _sk = _skeleton as Skeleton3D
+	
+// 	while (i < _sk.get_bone_count()):
+// 		var Mjt = _sk.get_bone_global_pose(i)
+// 		var Mj0 = _sk.get_bone_global_rest(i)
+// 		var Mj = Mjt * Mj0.affine_inverse()
+// 		var t = Mj.origin
+// 		var q0 = null
+// 		if array_q0[i] != null:
+// 			q0 = avoidJumps(Mj.basis.get_rotation_quaternion(), array_q0[i])
+// 		else:
+// 			q0 = Mj.basis.get_rotation_quaternion()
+// 		var q1 = QuatTrans2UDQ(q0, t)
+// 		array_q0[i] = q0
+// 		array_q1[i] = q1
+// 		bone_transforms[i] = Mj
+// 		i = i + 1
+
+// func avoidJumps(q_Current: Quaternion, q_Prev: Quaternion) -> Quaternion:
+// 	if ((q_Prev - q_Current).length_squared() < (q_Prev + q_Current).length_squared()):
+// 		return -q_Current
+// 	else:
+// 		return q_Current
+
+
+Quaternion avoid_jumps(Quaternion q_current, Quaternion q_prev) {
+	if((q_prev - q_current).length_squared() < (q_prev + q_current).length_squared()) {
+		return -q_current;
+	} else {
+		return q_current;
+	}
+}
+
+Quaternion quat_trans_2UDQ(Quaternion q0, Vector3 t) {
+	//Original version of this function is in https://users.cs.utah.edu/~ladislav/dq/dqconv.c
+	Quaternion q1 = Quaternion();
+	q1.w = -0.5*(t.x*q0.x + t.y*q0.y + t.z*q0.z);
+	q1.x = 0.5*( t.x*q0.w + t.y*q0.z - t.z*q0.y);
+	q1.y = 0.5*(-t.x*q0.z + t.y*q0.w + t.z*q0.x);
+	q1.z = 0.5*( t.x*q0.y - t.y*q0.x + t.z*q0.w);
+	return q1;
+}
+
 void Skeleton3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -322,7 +367,21 @@ void Skeleton3D::_notification(int p_what) {
 				for (uint32_t i = 0; i < bind_count; i++) {
 					uint32_t bone_index = E->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
-					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].pose_global * skin->get_bind_pose(i));
+					// TODO maybe write quaternion data here instead of 4x4 matrix?
+					Transform3D Mj = bonesptr[bone_index].pose_global * skin->get_bind_pose(i);
+					Vector3 t = Mj.origin;
+
+					Transform3D M0 = rs->skeleton_bone_get_transform(skeleton, i);
+					Quaternion q0 = avoid_jumps(Mj.basis.get_rotation_quaternion(), M0.basis.get_rotation_quaternion());
+					Quaternion q1 = quat_trans_2UDQ(q0, t);
+
+					Mj.set(
+						q0.x, q0.y, q0.z, 
+						q0.w, q1.x, q1.y, 
+						q1.z, q1.w, 0.0,
+						0.0,  0.0,  0.0
+					);
+					rs->skeleton_bone_set_transform(skeleton, i, Mj);
 				}
 			}
 			emit_signal(SceneStringNames::get_singleton()->pose_updated);

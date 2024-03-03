@@ -113,6 +113,48 @@ uint encode_tang_to_uint_oct(vec4 base) {
 	return vec2_to_uint(oct);
 }
 
+
+mat4 dual_quaternion_to_matrix(vec4 Qn, vec4 Qd)
+{
+	//Original version of this function is in https://users.cs.utah.edu/~ladislav/dq/dqs.cg
+	mat4 M = mat4(0.0);
+	float len2 = dot(Qn, Qn);
+	float w = Qn.w, x = Qn.x, y = Qn.y, z = Qn.z;
+	
+	float t0 = Qd.w, t1 = Qd.x, t2 = Qd.y, t3 = Qd.z;
+
+	M[0][0] = w*w + x*x - y*y - z*z;
+	M[1][0] = 2.0*x*y - 2.0*w*z; 
+	M[2][0] = 2.0*x*z + 2.0*w*y;
+	M[0][1] = (2.0*x*y + 2.0*w*z); 
+	M[1][1] = (w*w + y*y - x*x - z*z); 
+	M[2][1] = (2.0*y*z - 2.0*w*x); 
+	M[0][2] = 2.0*x*z - 2.0*w*y; 
+	M[1][2] = 2.0*y*z + 2.0*w*x; 
+	M[2][2] = w*w + z*z - x*x - y*y;
+	
+	M[3][0] = -2.0*t0*x + 2.0*w*t1 - 2.0*t2*z + 2.0*y*t3;
+	M[3][1] = -2.0*t0*y + 2.0*t1*z - 2.0*x*t3 + 2.0*w*t2;
+	M[3][2] = -2.0*t0*z + 2.0*x*t2 + 2.0*w*t3 - 2.0*t1*y;
+	
+	M /= len2;
+	
+	return M;
+}
+
+vec4 unpack_q0(uint index) {
+	vec3 row1 = bone_transforms.data[index];
+	vec3 row2 = bone_transforms.data[index + 1];
+	return vec4(row1, row2.x);
+}
+
+vec4 unpack_q1(uint index) {
+	vec3 row2 = bone_transforms.data[index + 1];
+	vec3 row3 = bone_transforms.data[index + 2];
+	return vec4(row2.y, row2.z, row3.x, row3.y);
+}
+
+
 void main() {
 	uint index = gl_GlobalInvocationID.x;
 	if (index >= params.vertex_count) {
@@ -252,10 +294,17 @@ void main() {
 		vec2 weights_01 = unpackUnorm2x16(weights.x);
 		vec2 weights_23 = unpackUnorm2x16(weights.y);
 
-		mat4 m = mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
-		m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
-		m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
-		m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
+		// TODO rewrite this part for dual quat
+		//mat4 m = mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
+		//m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
+		//m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
+		//m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
+		//end TODO
+
+		vec4 blend_q0 = weights_01.x * unpack_q0(bones_01.x) + weights_01.y * unpack_q0(bones_01.y) + weights_23.x * unpack_q0(bones_23.x) + weights_23.y * unpack_q0(bones_23.y);
+		vec4 blend_q1 = weights_01.x * unpack_q1(bones_01.x) + weights_01.y * unpack_q1(bones_01.y) + weights_23.x * unpack_q1(bones_23.x) + weights_23.y * unpack_q1(bones_23.y);
+	
+		mat4 m = dual_quaternion_to_matrix(blend_q0, blend_q1);
 
 		if (params.skin_weight_offset == 4) {
 			//using 8 bones/weights
@@ -272,10 +321,12 @@ void main() {
 			weights_01 = unpackUnorm2x16(weights.x);
 			weights_23 = unpackUnorm2x16(weights.y);
 
+			// TODO maybe even support 8 bones dual quaternion 
 			m += mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
 			m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
 			m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
 			m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
+			//end TODO
 		}
 
 		//reverse order because its transposed
