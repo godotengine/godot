@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  test_jsonrpc.cpp                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,26 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#include <iostream>
 
-#include "jsonrpc.h"
+#include "core/io/json.h"
 
-#include "core/object/class_db.h"
+#include "test_jsonrpc.h"
 
-#ifdef TESTS_ENABLED
-#include "tests/test_jsonrpc.h"
-#endif
+#include "../jsonrpc.h"
 
-void initialize_jsonrpc_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+#include "tests/test_macros.h"
+#include "tests/test_utils.h"
 
-	GDREGISTER_CLASS(JSONRPC);
+namespace TestJSONRPC {
+
+void check_error_code(const Dictionary &p_dict, const JSONRPC::ErrorCode &p_code) {
+	CHECK(p_dict["jsonrpc"] == "2.0");
+	REQUIRE(p_dict.has("error"));
+	const Dictionary &err_body = p_dict["error"];
+	const int &code = err_body["code"];
+	CHECK(code == p_code);
 }
 
-void uninitialize_jsonrpc_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+void check_invalid(const Dictionary &p_dict) {
+	check_error_code(p_dict, JSONRPC::INVALID_REQUEST);
 }
+
+void check_invalid_string(const String &p_str) {
+	JSON json;
+	REQUIRE(json.parse(p_str) == OK);
+	const Dictionary &dict = json.get_data();
+	check_invalid(dict);
+}
+
+String TestClassJSONRPC::something(const String &p_in) {
+	return p_in + ", please";
+}
+
+void TestClassJSONRPC::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("something", "in"), &TestClassJSONRPC::something);
+}
+
+void test_process_action(const Variant &p_in, const Variant &p_expected, bool p_process_array_elements) {
+	TestClassJSONRPC json_rpc = TestClassJSONRPC();
+	const Variant &observed = json_rpc.process_action(p_in, p_process_array_elements);
+	CHECK(observed == p_expected);
+}
+
+void test_process_string(const String &p_in, const String &p_expected) {
+	TestClassJSONRPC json_rpc = TestClassJSONRPC();
+	const String &out_str = json_rpc.process_string(p_in);
+	CHECK(out_str == p_expected);
+}
+
+void check_error_no_method(const Dictionary &p_dict) {
+	check_error_code(p_dict, JSONRPC::METHOD_NOT_FOUND);
+}
+
+void test_process_action_bad_method(const Dictionary &p_in) {
+	TestClassJSONRPC json_rpc = TestClassJSONRPC();
+	const Dictionary &out_dict = json_rpc.process_action(p_in);
+	check_error_no_method(out_dict);
+}
+
+} // namespace TestJSONRPC
