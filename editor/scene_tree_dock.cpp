@@ -3296,6 +3296,16 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	menu->clear(false);
 
+	bool foreign_node_is_in_selection = false;
+	if (profile_allow_editing) {
+		for (Node *node : full_selection) {
+			if ((node->get_owner() != EditorNode::get_singleton()->get_edited_scene() && node->get_owner() != nullptr) || (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(node)) >= 0)) {
+				foreign_node_is_in_selection = true;
+				break;
+			}
+		}
+	}
+
 	Ref<Script> existing_script;
 	bool existing_script_removable = true;
 	if (selection.size() == 1) {
@@ -3324,7 +3334,9 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 
 	if (profile_allow_editing) {
-		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCut")), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
+		if (!foreign_node_is_in_selection) {
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCut")), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
+		}
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
 		if (selection.size() == 1 && !node_clipboard.is_empty()) {
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
@@ -3364,7 +3376,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			}
 		}
 
-		if (add_separator && profile_allow_editing) {
+		if (add_separator && profile_allow_editing && (!foreign_node_is_in_selection || scene_tree->get_selected() != edited_scene)) {
 			menu->add_separator();
 		}
 	}
@@ -3372,20 +3384,12 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (profile_allow_editing) {
 		bool add_separator = false;
 
-		if (full_selection.size() == 1) {
+		if (full_selection.size() == 1 && (!foreign_node_is_in_selection || scene_tree->get_selected() == edited_scene)) {
 			add_separator = true;
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
 		}
 
-		bool can_replace = true;
-		for (Node *E : selection) {
-			if (E != edited_scene && (E->get_owner() != edited_scene || !E->get_scene_file_path().is_empty())) {
-				can_replace = false;
-				break;
-			}
-		}
-
-		if (can_replace) {
+		if (!foreign_node_is_in_selection) {
 			add_separator = true;
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
 		}
@@ -3394,13 +3398,17 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			if (add_separator) {
 				menu->add_separator();
 			}
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveUp")), ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveDown")), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
+			if (!foreign_node_is_in_selection) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveUp")), ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveDown")), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
+			}
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Duplicate")), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reparent")), ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ReparentToNewNode")), ED_GET_SHORTCUT("scene_tree/reparent_to_new_node"), TOOL_REPARENT_TO_NEW_NODE);
-			if (selection.size() == 1) {
-				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("NewRoot")), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
+			if (!foreign_node_is_in_selection) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reparent")), ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ReparentToNewNode")), ED_GET_SHORTCUT("scene_tree/reparent_to_new_node"), TOOL_REPARENT_TO_NEW_NODE);
+				if (selection.size() == 1) {
+					menu->add_icon_shortcut(get_editor_theme_icon(SNAME("NewRoot")), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
+				}
 			}
 		}
 	}
@@ -3466,7 +3474,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 
 #ifdef MODULE_REGEX_ENABLED
-	if (profile_allow_editing && selection.size() > 1) {
+	if (profile_allow_editing && !foreign_node_is_in_selection && selection.size() > 1) {
 		//this is not a commonly used action, it makes no sense for it to be where it was nor always present.
 		menu->add_separator();
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
@@ -3480,7 +3488,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), TTR("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
 
-	if (profile_allow_editing) {
+	if (profile_allow_editing && !foreign_node_is_in_selection) {
 		menu->add_separator();
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), Key::KEY_DELETE), TOOL_ERASE);
 	}
