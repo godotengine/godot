@@ -249,7 +249,7 @@ Point2 TextureProgressBar::get_relative_center() {
 	p += rad_center_off;
 	p.x /= progress->get_width();
 	p.y /= progress->get_height();
-	p = p.clamp(Point2(), Point2(1, 1));
+	p = p.clampf(0, 1);
 	return p;
 }
 

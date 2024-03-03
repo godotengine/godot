@@ -163,9 +163,9 @@ void OccluderInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo,
 		if (p_id == 2) {
 			Vector2 s = Vector2(intersection.x, intersection.y) * 2.0f;
 			if (snap_enabled) {
-				s = s.snapped(Vector2(snap, snap));
+				s = s.snappedf(snap);
 			}
-			s = s.max(Vector2(0.001, 0.001));
+			s = s.maxf(0.001);
 			qo->set_size(s);
 		} else {
 			float d = intersection[p_id];

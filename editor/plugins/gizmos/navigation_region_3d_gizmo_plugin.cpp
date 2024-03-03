@@ -108,8 +108,8 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			for (int j = 0; j < 3; j++) {
 				tw[tidx++] = f.vertex[j];
 				_EdgeKey ek;
-				ek.from = f.vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-				ek.to = f.vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
+				ek.from = f.vertex[j].snappedf(CMP_EPSILON);
+				ek.to = f.vertex[(j + 1) % 3].snappedf(CMP_EPSILON);
 				if (ek.from < ek.to) {
 					SWAP(ek.from, ek.to);
 				}
