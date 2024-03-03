@@ -468,6 +468,7 @@ Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
 
 	String value = EditorDebuggerNode::get_singleton()->get_var_value(args["expression"]);
 	body["result"] = value;
+	body["variablesReference"] = 0;
 
 	return response;
 }
