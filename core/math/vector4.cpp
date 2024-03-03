@@ -171,9 +171,22 @@ void Vector4::snap(const Vector4 &p_step) {
 	w = Math::snapped(w, p_step.w);
 }
 
+void Vector4::snapf(real_t p_step) {
+	x = Math::snapped(x, p_step);
+	y = Math::snapped(y, p_step);
+	z = Math::snapped(z, p_step);
+	w = Math::snapped(w, p_step);
+}
+
 Vector4 Vector4::snapped(const Vector4 &p_step) const {
 	Vector4 v = *this;
 	v.snap(p_step);
+	return v;
+}
+
+Vector4 Vector4::snappedf(real_t p_step) const {
+	Vector4 v = *this;
+	v.snapf(p_step);
 	return v;
 }
 
@@ -187,6 +200,14 @@ Vector4 Vector4::clamp(const Vector4 &p_min, const Vector4 &p_max) const {
 			CLAMP(y, p_min.y, p_max.y),
 			CLAMP(z, p_min.z, p_max.z),
 			CLAMP(w, p_min.w, p_max.w));
+}
+
+Vector4 Vector4::clampf(real_t p_min, real_t p_max) const {
+	return Vector4(
+			CLAMP(x, p_min, p_max),
+			CLAMP(y, p_min, p_max),
+			CLAMP(z, p_min, p_max),
+			CLAMP(w, p_min, p_max));
 }
 
 Vector4::operator String() const {

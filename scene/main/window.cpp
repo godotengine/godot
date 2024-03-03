@@ -415,7 +415,7 @@ Size2i Window::_clamp_limit_size(const Size2i &p_limit_size) {
 	if (max_window_size != Size2i()) {
 		return p_limit_size.clamp(Vector2i(), max_window_size);
 	} else {
-		return p_limit_size.max(Vector2i());
+		return p_limit_size.maxi(0);
 	}
 }
 
@@ -1036,7 +1036,7 @@ void Window::_update_window_size() {
 	}
 
 	if (embedder) {
-		size = size.max(Size2i(1, 1));
+		size = size.maxi(1);
 
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {

@@ -1448,7 +1448,7 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 	switch (p_mode) {
 		case TRANSFORM_SCALE: {
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
-				p_motion.snap(Vector3(p_extra, p_extra, p_extra));
+				p_motion.snapf(p_extra);
 			}
 			Transform3D s;
 			if (p_local) {
@@ -1469,7 +1469,7 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 		}
 		case TRANSFORM_TRANSLATE: {
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
-				p_motion.snap(Vector3(p_extra, p_extra, p_extra));
+				p_motion.snapf(p_extra);
 			}
 
 			if (p_local) {
@@ -4786,7 +4786,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				snap = spatial_editor->get_scale_snap() / 100;
 			}
 			Vector3 motion_snapped = motion;
-			motion_snapped.snap(Vector3(snap, snap, snap));
+			motion_snapped.snapf(snap);
 			// This might not be necessary anymore after issue #288 is solved (in 4.0?).
 			// TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 			set_message(TTR("Scaling:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
@@ -4858,7 +4858,7 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				snap = spatial_editor->get_translate_snap();
 			}
 			Vector3 motion_snapped = motion;
-			motion_snapped.snap(Vector3(snap, snap, snap));
+			motion_snapped.snapf(snap);
 			// TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 			set_message(TTR("Translating:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
@@ -8997,7 +8997,7 @@ void Node3DEditorPlugin::set_state(const Dictionary &p_state) {
 Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 	if (is_snap_enabled()) {
 		real_t snap = get_translate_snap();
-		p_target.snap(Vector3(snap, snap, snap));
+		p_target.snapf(snap);
 	}
 	return p_target;
 }

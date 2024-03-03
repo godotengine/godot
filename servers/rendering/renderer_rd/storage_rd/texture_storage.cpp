@@ -2681,8 +2681,7 @@ void TextureStorage::update_decal_atlas() {
 			mm.size = s;
 			decal_atlas.texture_mipmaps.push_back(mm);
 
-			s.width = MAX(1, s.width >> 1);
-			s.height = MAX(1, s.height >> 1);
+			s = Vector2i(s.width >> 1, s.height >> 1).maxi(1);
 		}
 		{
 			//create the SRGB variant
@@ -3637,7 +3636,7 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 	}
 
 	rt->process_size = size * scale / 100;
-	rt->process_size = rt->process_size.max(Size2i(1, 1));
+	rt->process_size = rt->process_size.maxi(1);
 
 	tformat.format = RD::DATA_FORMAT_R16G16_SINT;
 	tformat.width = rt->process_size.width;
@@ -3838,10 +3837,8 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
-		region.size.x = MAX(1, region.size.x >> 1);
-		region.size.y = MAX(1, region.size.y >> 1);
-		texture_size.x = MAX(1, texture_size.x >> 1);
-		texture_size.y = MAX(1, texture_size.y >> 1);
+		region.size = Size2i(region.size.x >> 1, region.size.y >> 1).maxi(1);
+		texture_size = Size2i(texture_size.x >> 1, texture_size.y >> 1).maxi(1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
@@ -3911,10 +3908,8 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
-		region.size.x = MAX(1, region.size.x >> 1);
-		region.size.y = MAX(1, region.size.y >> 1);
-		texture_size.x = MAX(1, texture_size.x >> 1);
-		texture_size.y = MAX(1, texture_size.y >> 1);
+		region.size = Size2i(region.size.x >> 1, region.size.y >> 1).maxi(1);
+		texture_size = Size2i(texture_size.x >> 1, texture_size.y >> 1).maxi(1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 

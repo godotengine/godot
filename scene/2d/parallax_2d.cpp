@@ -144,7 +144,7 @@ void Parallax2D::set_repeat_size(const Size2 &p_repeat_size) {
 		return;
 	}
 
-	repeat_size = p_repeat_size.max(Vector2(0, 0));
+	repeat_size = p_repeat_size.maxf(0);
 
 	_update_process();
 	_update_repeat();

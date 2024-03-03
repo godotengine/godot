@@ -2461,7 +2461,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		// According to the tablet proto spec, tilt is expressed in degrees relative
 		// to the Z axis of the tablet, so it shouldn't go over 90 degrees either way,
 		// I think. We'll clamp it just in case.
-		td.tilt = td.tilt.clamp(Vector2(-90, -90), Vector2(90, 90));
+		td.tilt = td.tilt.clampf(-90, 90);
 
 		mm->set_tilt(td.tilt / 90);
 
