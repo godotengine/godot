@@ -125,6 +125,23 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// <paramref name="min"/> and <paramref name="max"/> using
+        /// <see cref="Mathf.Clamp(int, int, int)"/>.
+        /// </summary>
+        /// <param name="min">The minimum allowed value.</param>
+        /// <param name="max">The maximum allowed value.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public readonly Vector2I Clamp(int min, int max)
+        {
+            return new Vector2I
+            (
+                Mathf.Clamp(X, min, max),
+                Mathf.Clamp(Y, min, max)
+            );
+        }
+
+        /// <summary>
         /// Returns the squared distance between this vector and <paramref name="to"/>.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.
@@ -206,6 +223,34 @@ namespace Godot
             v.X = Mathf.Sign(v.X);
             v.Y = Mathf.Sign(v.Y);
             return v;
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of the corresponding component in <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">A vector value representing the step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector2I Snapped(Vector2I step)
+        {
+            return new Vector2I
+            (
+                (int)Mathf.Snapped((double)X, (double)step.X),
+                (int)Mathf.Snapped((double)Y, (double)step.Y)
+            );
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">The step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector2I Snapped(int step)
+        {
+            return new Vector2I
+            (
+                (int)Mathf.Snapped((double)X, (double)step),
+                (int)Mathf.Snapped((double)Y, (double)step)
+            );
         }
 
         // Constants
