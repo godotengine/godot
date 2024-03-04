@@ -136,6 +136,7 @@
 			<param index="6" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
+				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
@@ -157,6 +158,7 @@
 			<param index="8" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system with additional user selectable options.
+				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
 				[param options] is array of [Dictionary]s with the following keys:
 				- [code]"name"[/code] - option's name [String].
 				- [code]"values"[/code] - [PackedStringArray] of values. If empty, boolean option (check box) is used.
