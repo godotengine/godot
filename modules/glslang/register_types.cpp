@@ -188,8 +188,10 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	spv_optimizer_options_t optOptions;
 	optOptions.run_validator_ = false;
 	optOptions.preserve_bindings_ = true;
+	optOptions.preserve_spec_constants_ = true;
 
 	optimizer.RegisterPassFromFlag("-O");
+
 #if !defined(DEBUG_ENABLED) && !defined(DEV_ENABLED)
 	optimizer.RegisterPassFromFlag("-Os");
 #endif
@@ -197,20 +199,18 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		print_error("Optimization pass failed.");
 	}
 	
-	//static SafeNumeric<uint32_t> shader_idx;
+	static SafeNumeric<uint32_t> shader_idx;
 
 	ret.resize(SpirV.size() * sizeof(uint32_t));
 	{
 		uint8_t *w = ret.ptrw();
 		memcpy(w, &SpirV[0], SpirV.size() * sizeof(uint32_t));
-		/*
 		char buffer[256];
 		sprintf(buffer, "D:\\dev\\Shaders\\%d.spirv", shader_idx.increment());
 
 		FILE *f = fopen(buffer, "w");
 		fwrite(&SpirV[0], sizeof(uint32_t), SpirV.size(), f);
 		fclose(f);
-		*/
 	}
 
 	return ret;
