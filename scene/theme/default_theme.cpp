@@ -613,7 +613,41 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// SpinBox
 
-	theme->set_icon("updown", "SpinBox", icons["updown"]);
+	theme->set_icon("updown", "SpinBox", empty_icon);
+	theme->set_icon("up", "SpinBox", icons["value_up"]);
+	theme->set_icon("up_hover", "SpinBox", icons["value_up"]);
+	theme->set_icon("up_pressed", "SpinBox", icons["value_up"]);
+	theme->set_icon("up_disabled", "SpinBox", icons["value_up"]);
+	theme->set_icon("down", "SpinBox", icons["value_down"]);
+	theme->set_icon("down_hover", "SpinBox", icons["value_down"]);
+	theme->set_icon("down_pressed", "SpinBox", icons["value_down"]);
+	theme->set_icon("down_disabled", "SpinBox", icons["value_down"]);
+
+	theme->set_stylebox("up_background", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("up_background_hovered", "SpinBox", button_hover);
+	theme->set_stylebox("up_background_pressed", "SpinBox", button_pressed);
+	theme->set_stylebox("up_background_disabled", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("down_background", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("down_background_hovered", "SpinBox", button_hover);
+	theme->set_stylebox("down_background_pressed", "SpinBox", button_pressed);
+	theme->set_stylebox("down_background_disabled", "SpinBox", make_empty_stylebox());
+
+	theme->set_color("up_icon_modulate", "SpinBox", control_font_color);
+	theme->set_color("up_hover_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("up_pressed_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("up_disabled_icon_modulate", "SpinBox", control_font_disabled_color);
+	theme->set_color("down_icon_modulate", "SpinBox", control_font_color);
+	theme->set_color("down_hover_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("down_pressed_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("down_disabled_icon_modulate", "SpinBox", control_font_disabled_color);
+
+	theme->set_stylebox("field_and_buttons_separator", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("up_down_buttons_separator", "SpinBox", make_empty_stylebox());
+
+	theme->set_constant("buttons_vertical_separation", "SpinBox", 0);
+	theme->set_constant("field_and_buttons_separation", "SpinBox", 2);
+	theme->set_constant("buttons_width", "SpinBox", 16);
+	theme->set_constant("set_min_buttons_width_from_icons", "SpinBox", 1);
 
 	// ScrollContainer
 
