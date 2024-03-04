@@ -37,6 +37,8 @@
 #include <glslang/Public/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
+#include <spirv-tools/optimizer.hpp>
+#include <glslang/External/spirv-tools/source/spirv_optimizer_options.h>
 
 static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage, const String &p_source_code, RenderingDevice::ShaderLanguage p_language, String *r_error, const RenderingDevice *p_render_device) {
 	const RDD::Capabilities &capabilities = p_render_device->get_device_capabilities();
@@ -174,12 +176,41 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		spvOptions.emitNonSemanticShaderDebugSource = true;
 	}
 
+#if !defined(DEBUG_ENABLED) && !defined(DEV_ENABLED)
+	spvOptions.stripDebugInfo = true;
+#endif
+	spvOptions.disableOptimizer = false;
+
 	glslang::GlslangToSpv(*program.getIntermediate(stages[p_stage]), SpirV, &logger, &spvOptions);
+
+	spv_target_env target_env = MapToSpirvToolsEnv(program.getIntermediate(stages[p_stage])->getSpv(), &logger);
+	spvtools::Optimizer optimizer(target_env);
+	spv_optimizer_options_t optOptions;
+	optOptions.run_validator_ = false;
+	optOptions.preserve_bindings_ = true;
+
+	optimizer.RegisterPassFromFlag("-O");
+#if !defined(DEBUG_ENABLED) && !defined(DEV_ENABLED)
+	optimizer.RegisterPassFromFlag("-Os");
+#endif
+	if (!optimizer.Run(&SpirV[0], SpirV.size(), &SpirV, &optOptions)) {
+		print_error("Optimization pass failed.");
+	}
+	
+	//static SafeNumeric<uint32_t> shader_idx;
 
 	ret.resize(SpirV.size() * sizeof(uint32_t));
 	{
 		uint8_t *w = ret.ptrw();
 		memcpy(w, &SpirV[0], SpirV.size() * sizeof(uint32_t));
+		/*
+		char buffer[256];
+		sprintf(buffer, "D:\\dev\\Shaders\\%d.spirv", shader_idx.increment());
+
+		FILE *f = fopen(buffer, "w");
+		fwrite(&SpirV[0], sizeof(uint32_t), SpirV.size(), f);
+		fclose(f);
+		*/
 	}
 
 	return ret;
