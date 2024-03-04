@@ -208,7 +208,7 @@ void Label3D::_notification(int p_what) {
 			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = tr(text);
+			String new_text = atr(text);
 			if (new_text == xl_text) {
 				return; // Nothing new.
 			}
@@ -636,7 +636,7 @@ void Label3D::_shape() {
 
 void Label3D::set_text(const String &p_string) {
 	text = p_string;
-	xl_text = tr(p_string);
+	xl_text = atr(p_string);
 	dirty_text = true;
 	_queue_update();
 }

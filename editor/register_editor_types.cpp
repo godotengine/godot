@@ -101,6 +101,7 @@
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/plugins/occluder_instance_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_editor_plugin.h"
+#include "editor/plugins/parallax_background_editor_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
@@ -252,6 +253,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<NavigationLink2DEditorPlugin>();
 	EditorPlugins::add_by_type<NavigationObstacle2DEditorPlugin>();
 	EditorPlugins::add_by_type<NavigationPolygonEditorPlugin>();
+	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 	EditorPlugins::add_by_type<Path2DEditorPlugin>();
 	EditorPlugins::add_by_type<Polygon2DEditorPlugin>();
 	EditorPlugins::add_by_type<Cast2DEditorPlugin>();

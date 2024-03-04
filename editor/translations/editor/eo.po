@@ -20,19 +20,24 @@
 # Omicron <omicron666.dev@gmail.com>, 2023.
 # aligator <johannes.hoermann@t-online.de>, 2023.
 # lassr8 <lassr8@proton.me>, 2023.
+# clement lee <leeclement455@gmail.com>, 2024.
+# casuallyblue <sierra@casuallyblue.dev>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-09-20 03:24+0000\n"
-"Last-Translator: lassr8 <lassr8@proton.me>\n"
+"PO-Revision-Date: 2024-02-26 06:02+0000\n"
+"Last-Translator: casuallyblue <sierra@casuallyblue.dev>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "Main Thread"
+msgstr "Ĉefa Fadeno"
 
 msgid "Unset"
 msgstr "malŝalti"
@@ -97,6 +102,12 @@ msgstr "Stirstanga moviĝo sur akso %d (%s) kun valoro %.2f"
 msgid "Joypad Button %d"
 msgstr "Butono de ludstrilo %d"
 
+msgid "touched"
+msgstr "tuŝita"
+
+msgid "Accept"
+msgstr "Akceptu"
+
 msgid "Select"
 msgstr "Elekti"
 
@@ -108,6 +119,9 @@ msgstr "Alŝuta"
 
 msgid "Down"
 msgstr "Elŝuta"
+
+msgid "Home"
+msgstr "Hejmo"
 
 msgid "End"
 msgstr "Fino"
@@ -127,8 +141,14 @@ msgstr "Malfari"
 msgid "Redo"
 msgstr "Refari"
 
+msgid "New Line"
+msgstr "Nova Linio"
+
 msgid "Delete"
 msgstr "Forigi"
+
+msgid "Delete Word"
+msgstr "Forigi Vorton"
 
 msgid "Select All"
 msgstr "Elekti tutan"
@@ -914,9 +934,6 @@ msgstr "Krei dosierujon"
 msgid "Thanks from the Godot community!"
 msgstr "Dankon de la komunumo de Godot!"
 
-msgid "Click to copy."
-msgstr "Alklaku por kopii."
-
 msgid "Godot Engine contributors"
 msgstr "Kontribuantoj de Godot Engine"
 
@@ -1225,6 +1242,9 @@ msgstr "Doko de dosiersistemo"
 
 msgid "Import Dock"
 msgstr "Doko de enporto"
+
+msgid "History Dock"
+msgstr "Doko de historio"
 
 msgid "Allows to view and edit 3D scenes."
 msgstr "Permesas vidi kaj redakti 3D-scenojn."
@@ -1919,8 +1939,8 @@ msgstr "Inspektoro"
 msgid "Node"
 msgstr "Nodo"
 
-msgid "Expand Bottom Panel"
-msgstr "Etendi suban panelon"
+msgid "History"
+msgstr "Historio"
 
 msgid "Output"
 msgstr "Eligo"
@@ -2384,6 +2404,9 @@ msgstr "Aldoni al grupo"
 
 msgid "Remove from Group"
 msgstr "Forigi el grupo"
+
+msgid "Expand Bottom Panel"
+msgstr "Etendi suban panelon"
 
 msgid "Move"
 msgstr "Movi"
@@ -3284,12 +3307,6 @@ msgstr "Kapti relative"
 msgid "Use Pixel Snap"
 msgstr "Uzi kaptadon per rastrumero"
 
-msgid "Smart Snapping"
-msgstr "Inteligenta kaptado"
-
-msgid "Configure Snap..."
-msgstr "Agordi kaptadon..."
-
 msgid "Snap to Parent"
 msgstr "Kapti al patro"
 
@@ -3307,6 +3324,12 @@ msgstr "Kapti al aliaj nodoj"
 
 msgid "Snap to Guides"
 msgstr "Kapti al gvidiloj"
+
+msgid "Smart Snapping"
+msgstr "Inteligenta kaptado"
+
+msgid "Configure Snap..."
+msgstr "Agordi kaptadon..."
 
 msgid "Skeleton Options"
 msgstr "Opcioj de ostaro"
@@ -3737,23 +3760,74 @@ msgstr "Konservi dosieron kiel..."
 msgid "Save Theme As..."
 msgstr "Konservi etoson kiel..."
 
+msgid "Find Next"
+msgstr "Trovu Sekva"
+
+msgid "Find Previous"
+msgstr "Trovu Antaŭa"
+
+msgid "Filter Scripts"
+msgstr "Filtru Skriptoj"
+
+msgid "Toggle alphabetical sorting of the method list."
+msgstr "Baskuli alfabetan ordigon de la metodolisto."
+
+msgid "Sort"
+msgstr "Ordigi"
+
+msgid "Next Script"
+msgstr "Sekva Skripto"
+
+msgid "Previous Script"
+msgstr "Antaŭa Skripto"
+
 msgid "File"
 msgstr "Dosiero"
 
+msgid "Open..."
+msgstr "Malfermi..."
+
+msgid "Reopen Closed Script"
+msgstr "Remalfermu Fermita Skripto"
+
 msgid "Save All"
 msgstr "Konservi tuton"
+
+msgid "Import Theme..."
+msgstr "Importi Temo..."
+
+msgid "Reload Theme"
+msgstr "Reŝargi Temo"
+
+msgid "Theme"
+msgstr "Temo"
+
+msgid "Save Theme"
+msgstr "Savi Temo"
+
+msgid "Close All"
+msgstr "Fermu Ĉion"
+
+msgid "Close Docs"
+msgstr "Fermu Dokumentaron"
 
 msgid "Run"
 msgstr "Ruli"
 
 msgid "Search"
-msgstr "Serĉo"
+msgstr "Serĉi"
 
 msgid "Online Docs"
-msgstr "Enreta dokumentaro"
+msgstr "Enreta Dokumentaro"
 
 msgid "Open Godot online documentation."
 msgstr "Malfermi enretan dokumentaron de Godot."
+
+msgid "Go to previous edited document."
+msgstr "Iru al la antaŭa redaktita dokumento."
+
+msgid "Go to next edited document."
+msgstr "Iru al la sekva redaktita dokumento."
 
 msgid "Search Results"
 msgstr "Rezultoj de serĉo"
@@ -3832,6 +3906,9 @@ msgstr "Konverti krommarĝenon al taboj"
 
 msgid "Contextual Help"
 msgstr "Kunteksta Helpo"
+
+msgid "Close File"
+msgstr "Fermu Dosiero"
 
 msgid "Delete Animation?"
 msgstr "Forigi animacion?"
@@ -4184,9 +4261,6 @@ msgstr "Forigi atributon?"
 msgid "Run in Browser"
 msgstr "Ruli en foliumilo"
 
-msgid "(Other)"
-msgstr "(Alia)"
-
 msgid "Invalid source for shader."
 msgstr "Nevalida fonto por ombrigilo."
 
@@ -4216,3 +4290,10 @@ msgstr "La konstanto '%s' estas deklarita sed neniam uzita."
 
 msgid "The function '%s' is declared but never used."
 msgstr "La funkcio '%s' estas deklarita sed neniam uzita."
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded (%d/"
+"%d). The shader may not work correctly."
+msgstr ""
+"La entute grandeco de la %s por ĉi tio ombrigilo sur ĉi tiu aparato estis "
+"superita (%d/%d). La ombrigilo majo ne funkcias ĝuste."

@@ -350,6 +350,9 @@ public:
 		ViewportRender *vp_render = nullptr;
 		bool distance_field;
 		bool light_masked;
+		bool repeat_source;
+		Point2 repeat_size;
+		int repeat_times = 1;
 
 		Rect2 global_rect_cache;
 
@@ -468,6 +471,7 @@ public:
 			z_final = 0;
 			texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 			texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
+			repeat_source = false;
 		}
 		virtual ~Item() {
 			clear();

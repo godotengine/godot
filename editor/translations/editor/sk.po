@@ -1481,9 +1481,6 @@ msgstr "Názov priečinku je platný."
 msgid "Thanks from the Godot community!"
 msgstr "Vďaka z Godot komunity!"
 
-msgid "Click to copy."
-msgstr "Klikni na skopírovanie."
-
 msgid "Godot Engine contributors"
 msgstr "Godot Engine prispievatelia"
 
@@ -3029,9 +3026,6 @@ msgstr "Node"
 msgid "History"
 msgstr "História"
 
-msgid "Expand Bottom Panel"
-msgstr "Expandovať Spodný Panel"
-
 msgid "Output"
 msgstr "Výstup"
 
@@ -3642,19 +3636,6 @@ msgstr "Spravovať exportovacie šablóny"
 msgid "Export With Debug"
 msgstr "Exportovať s ladením"
 
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"Zatvorením tohto vyskakovacieho okna sa vypne FBX importer.\n"
-"Je možné ho zapnúť v nastaveniach projektu pod sekciou Súborovy systém > "
-"Import > FBX > Zapnutý.\n"
-"\n"
-"Editor sa reštartuje, nakoľko importéry sa registrujú keď sa editor spúšťa."
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Cesta ku spustiteľnému súboru FBX2glTF je prázdna."
 
@@ -3664,13 +3645,6 @@ msgstr "Cesta ku spustiteľnému súboru FBX2glTF je neplatná."
 msgid "Error executing this file (wrong version or architecture)."
 msgstr ""
 "Chyba pri vykonávaní tohto súboru (nesprávna verzia alebo architektúra)."
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX2glTF je potrebný pre importovanie FBX súborov.\n"
-"Prosím stiahnite a uveďte platnú cestu ku binárnemu súboru:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "Pre stiahnutie FBX2glTF, kliknite na tento link"
@@ -3879,6 +3853,9 @@ msgstr "Pridať do Skupiny"
 
 msgid "Remove from Group"
 msgstr "Vymazať zo Skupiny"
+
+msgid "Expand Bottom Panel"
+msgstr "Expandovať Spodný Panel"
 
 msgid "Move"
 msgstr "Presunúť"
@@ -4949,12 +4926,6 @@ msgstr "Prichytiť Relatívne"
 msgid "Use Pixel Snap"
 msgstr "Použiť Pixelové Prichytávanie"
 
-msgid "Smart Snapping"
-msgstr "Smart Prichytávanie"
-
-msgid "Configure Snap..."
-msgstr "Konfigurovať Prichytávanie..."
-
 msgid "Snap to Parent"
 msgstr "Prichytiť na Rodiča"
 
@@ -4972,6 +4943,12 @@ msgstr "Prichytiť sa na Ostatné Nody"
 
 msgid "Snap to Guides"
 msgstr "Prichytiť na Návody"
+
+msgid "Smart Snapping"
+msgstr "Smart Prichytávanie"
+
+msgid "Configure Snap..."
+msgstr "Konfigurovať Prichytávanie..."
 
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Zamknúť vybrané nody, zabraní vyberaniu a presúvaniu."
@@ -5823,6 +5800,9 @@ msgstr "Zobraziť Prostredie"
 msgid "View Gizmos"
 msgstr "Zobraziť Gizmá"
 
+msgid "View Grid"
+msgstr "Zobraziť Mriežku"
+
 msgid "View Information"
 msgstr "Zobraziť Informácie"
 
@@ -5986,9 +5966,6 @@ msgstr "4 Viewporty"
 
 msgid "View Origin"
 msgstr "Zobraziť Pôvod"
-
-msgid "View Grid"
-msgstr "Zobraziť Mriežku"
 
 msgid "Settings..."
 msgstr "Nastavenia..."
@@ -6164,9 +6141,6 @@ msgstr "Zrkadliť Dĺžky Rukoväti"
 msgid "Curve Point #"
 msgstr "Body Krivky #"
 
-msgid "Set Curve Point Position"
-msgstr "Nastaviť Pozíciu Bodu Krivky"
-
 msgid "Split Path"
 msgstr "Rozdeliť Cestu"
 
@@ -6175,6 +6149,9 @@ msgstr "Vymazať Bod Cesty"
 
 msgid "Split Segment (in curve)"
 msgstr "Rozdeliť Segment (v krivke)"
+
+msgid "Set Curve Point Position"
+msgstr "Nastaviť Pozíciu Bodu Krivky"
 
 msgid "Move Joint"
 msgstr "Presunúť Kĺb"
@@ -6977,6 +6954,34 @@ msgid "Failed to remove temporary file \"%s\"."
 msgstr "Nepodarilo sa vymazať dočasný súbor \"%s\"."
 
 msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"Okluzorový polygón musí byť nastavený (alebo vykreslený) aby sa okluzor "
+"prejavil."
+
+msgid ""
+"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
+msgstr ""
+"NavigationAgent2D môže byť použitý iba pod rodičkovským nodom, ktorý dedí "
+"Node2D."
+
+msgid ""
+"A NavigationMesh resource must be set or created for this node to work. "
+"Please set a property or draw a polygon."
+msgstr ""
+"Prostriedok NavigationMesh musí byť nastavený alebo vytvorený, aby tento node "
+"mohol pracovať. Prosím nastavte vlastnosť alebo nakreslite polygón."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"Node ParallaxLayer funguje iba keď je nastavený ako dieťa nodu "
+"ParallaxBackground."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D funguje iba keď je nastavený ako dieťa nodu Path2D."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -7026,34 +7031,6 @@ msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Noda A a Node B musia byť odlišné PhysicsBody2D"
 
 msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"Okluzorový polygón musí byť nastavený (alebo vykreslený) aby sa okluzor "
-"prejavil."
-
-msgid ""
-"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
-msgstr ""
-"NavigationAgent2D môže byť použitý iba pod rodičkovským nodom, ktorý dedí "
-"Node2D."
-
-msgid ""
-"A NavigationMesh resource must be set or created for this node to work. "
-"Please set a property or draw a polygon."
-msgstr ""
-"Prostriedok NavigationMesh musí byť nastavený alebo vytvorený, aby tento node "
-"mohol pracovať. Prosím nastavte vlastnosť alebo nakreslite polygón."
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"Node ParallaxLayer funguje iba keď je nastavený ako dieťa nodu "
-"ParallaxBackground."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D funguje iba keď je nastavený ako dieťa nodu Path2D."
-
-msgid ""
 "A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
 "parent node!"
 msgstr ""
@@ -7075,14 +7052,14 @@ msgstr ""
 "zanechal kosti pripojené! Prosím pridajte node založený na Joint2D ako dieťa "
 "k tomuto nodu!"
 
-msgid "Path property must point to a valid Node2D node to work."
-msgstr "Vlastnosť cesty musí smerovať k platnému nodu Node2D, aby fungoval."
-
 msgid ""
 "This node cannot interact with other objects unless a Shape2D is assigned."
 msgstr ""
 "Tento node nemôže interagovať s inými objektmi, pokiaľ Shape2D nie je "
 "priradený."
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr "Vlastnosť cesty musí smerovať k platnému nodu Node2D, aby fungoval."
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "Táto Bone2D reťaz by mala končiť so Skeleton2D nodom."
@@ -7125,6 +7102,15 @@ msgid ""
 msgstr ""
 "Node BoneAttachment3D nie je viazaný k žiadnym kostiam! Prosím vyberte kosť "
 "na priloženie do tohto nodu."
+
+msgid ""
+"The NavigationAgent3D can be used only under a Node3D inheriting parent node."
+msgstr ""
+"NavigationAgent3D môže byť použitý iba pod rodičovským nodom, ktorý dedí "
+"Node3D."
+
+msgid "PathFollow3D only works when set as a child of a Path3D node."
+msgstr "PathFollow3D funguje iba keď je dieťaťom Path3D node."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -7203,13 +7189,10 @@ msgid "Node A and Node B must be different PhysicsBody3Ds"
 msgstr "Node A a Node B musia byť rozličné PhysicsBody3D"
 
 msgid ""
-"The NavigationAgent3D can be used only under a Node3D inheriting parent node."
+"This node cannot interact with other objects unless a Shape3D is assigned."
 msgstr ""
-"NavigationAgent3D môže byť použitý iba pod rodičovským nodom, ktorý dedí "
-"Node3D."
-
-msgid "PathFollow3D only works when set as a child of a Path3D node."
-msgstr "PathFollow3D funguje iba keď je dieťaťom Path3D node."
+"Tento node nemôže interagovať s inými objektmi, pokiaľ Shape3D nie je "
+"priradený."
 
 msgid ""
 "The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
@@ -7217,19 +7200,6 @@ msgid ""
 msgstr ""
 "Vlastnosť \"Vzdialená Cesta\" musí smerovať do platného Node3D alebo Node3D "
 "odovodeného nodu, aby fungovala."
-
-msgid ""
-"This node cannot interact with other objects unless a Shape3D is assigned."
-msgstr ""
-"Tento node nemôže interagovať s inými objektmi, pokiaľ Shape3D nie je "
-"priradený."
-
-msgid ""
-"VisibleOnScreenNotifier3D nodes are not supported when using the GL "
-"Compatibility backend yet. Support will be added in a future release."
-msgstr ""
-"Nody VisibleOnScreenNotifier3D zatiaľ nie sú podporované počas používania "
-"backendu GL Kompatibility. Podpora bude pridaná v budúcich verziách."
 
 msgid ""
 "VoxelGI nodes are not supported when using the GL Compatibility backend yet. "

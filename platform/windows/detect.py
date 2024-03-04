@@ -202,6 +202,7 @@ def get_opts():
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
+        BoolVariable("silence_msvc", "Silence MSVC's stdout. Decreases output log bloat by roughly half.", True),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         # Direct3D 12 support.
         (
@@ -391,6 +392,20 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
 
     ## Compile/link flags
+
+    env["MAXLINELENGTH"] = 8192  # Windows Vista and beyond, so always applicable.
+
+    if env["silence_msvc"]:
+        env.Prepend(CCFLAGS=[">", "NUL"])
+        env.Prepend(LINKFLAGS=[">", "NUL"])
+
+        # "> NUL" fails if using a tempfile, circumvent by removing the argument altogether.
+        old_esc_func = env["TEMPFILEARGESCFUNC"]
+
+        def trim_nul(arg):
+            return "" if arg in [">", "NUL"] else old_esc_func(arg)
+
+        env["TEMPFILEARGESCFUNC"] = trim_nul
 
     if env["debug_crt"]:
         # Always use dynamic runtime, static debug CRT breaks thread_local.

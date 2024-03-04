@@ -1151,9 +1151,6 @@ msgstr "Izveidot mapi"
 msgid "Thanks from the Godot community!"
 msgstr "Paldies no Godot sabiedrības!"
 
-msgid "Click to copy."
-msgstr "Klikšķini, lai kopētu."
-
 msgid "Godot Engine contributors"
 msgstr "Godot Dzinēja ieguldītāji"
 
@@ -2203,9 +2200,6 @@ msgstr "Inspektors"
 msgid "Node"
 msgstr "Mezgls"
 
-msgid "Expand Bottom Panel"
-msgstr "Izvērst apakšējo paneli"
-
 msgid "Output"
 msgstr "Izeja"
 
@@ -2540,6 +2534,9 @@ msgstr "Meklē..."
 
 msgid "Rename Group"
 msgstr "Pārsaukt Grupu"
+
+msgid "Expand Bottom Panel"
+msgstr "Izvērst apakšējo paneli"
 
 msgid "Move"
 msgstr "Kustināt"
@@ -3729,14 +3726,8 @@ msgstr "Animācija netika atrasta: '%s'"
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nekas nav savienots ar ieeju '%s' mezglam '%s'."
 
-msgid "Add current color as a preset."
-msgstr "Pievienot pašreizējo krāsu kā iepriekšnoteiktu krāsu."
-
 msgid "Alert!"
 msgstr "Brīdinājums!"
-
-msgid "(Other)"
-msgstr "(Cits(i))"
 
 msgid "Invalid source for preview."
 msgstr "Nederīgs avots priekšskatījumam."
