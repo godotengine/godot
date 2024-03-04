@@ -3482,8 +3482,13 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 
 	if (p_step == 0) {
 		if (!RSG::light_storage->reflection_probe_instance_begin_render(reflection_probe->instance, scenario->reflection_atlas)) {
-			return true; //all full
+			return true; // All full, no atlas entry to render to.
 		}
+	} else if (!RSG::light_storage->reflection_probe_has_atlas_index(reflection_probe->instance)) {
+		// We don't have an atlas to render to, just round off.
+		// This is likely due to the atlas being reset.
+		// If so the probe will be marked as dirty and start over.
+		return true;
 	}
 
 	if (p_step >= 0 && p_step < 6) {
@@ -3558,6 +3563,7 @@ void RendererSceneCull::render_probes() {
 	/* REFLECTION PROBES */
 
 	SelfList<InstanceReflectionProbeData> *ref_probe = reflection_probe_render_list.first();
+	Vector<SelfList<InstanceReflectionProbeData> *> done_list;
 
 	bool busy = false;
 
@@ -3573,7 +3579,7 @@ void RendererSceneCull::render_probes() {
 
 				bool done = _render_reflection_probe_step(ref_probe->self()->owner, ref_probe->self()->render_step);
 				if (done) {
-					reflection_probe_render_list.remove(ref_probe);
+					done_list.push_back(ref_probe);
 				} else {
 					ref_probe->self()->render_step++;
 				}
@@ -3588,11 +3594,16 @@ void RendererSceneCull::render_probes() {
 					step++;
 				}
 
-				reflection_probe_render_list.remove(ref_probe);
+				done_list.push_back(ref_probe);
 			} break;
 		}
 
 		ref_probe = next;
+	}
+
+	// Now remove from our list
+	for (SelfList<InstanceReflectionProbeData> *rp : done_list) {
+		reflection_probe_render_list.remove(rp);
 	}
 
 	/* VOXEL GIS */
