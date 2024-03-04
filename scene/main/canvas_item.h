@@ -212,6 +212,8 @@ public:
 	virtual Point2 _edit_get_pivot() const { return Point2(); };
 
 	virtual Transform2D _edit_get_transform() const;
+
+	static void _bind_editor_methods();
 #endif
 
 	void update_draw_order();

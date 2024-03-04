@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "canvas_item.h"
+#include "canvas_item.tools.inc"
 
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
@@ -39,20 +40,6 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
-
-#ifdef TOOLS_ENABLED
-bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	if (_edit_use_rect()) {
-		return _edit_get_rect().has_point(p_point);
-	} else {
-		return p_point.length() < p_tolerance;
-	}
-}
-
-Transform2D CanvasItem::_edit_get_transform() const {
-	return Transform2D(_edit_get_rotation(), _edit_get_position() + _edit_get_pivot());
-}
-#endif
 
 bool CanvasItem::is_visible_in_tree() const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -1074,25 +1061,6 @@ void CanvasItem::_validate_property(PropertyInfo &p_property) const {
 
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
-
-#ifdef TOOLS_ENABLED
-	ClassDB::bind_method(D_METHOD("_edit_set_state", "state"), &CanvasItem::_edit_set_state);
-	ClassDB::bind_method(D_METHOD("_edit_get_state"), &CanvasItem::_edit_get_state);
-	ClassDB::bind_method(D_METHOD("_edit_set_position", "position"), &CanvasItem::_edit_set_position);
-	ClassDB::bind_method(D_METHOD("_edit_get_position"), &CanvasItem::_edit_get_position);
-	ClassDB::bind_method(D_METHOD("_edit_set_scale", "scale"), &CanvasItem::_edit_set_scale);
-	ClassDB::bind_method(D_METHOD("_edit_get_scale"), &CanvasItem::_edit_get_scale);
-	ClassDB::bind_method(D_METHOD("_edit_set_rect", "rect"), &CanvasItem::_edit_set_rect);
-	ClassDB::bind_method(D_METHOD("_edit_get_rect"), &CanvasItem::_edit_get_rect);
-	ClassDB::bind_method(D_METHOD("_edit_use_rect"), &CanvasItem::_edit_use_rect);
-	ClassDB::bind_method(D_METHOD("_edit_set_rotation", "degrees"), &CanvasItem::_edit_set_rotation);
-	ClassDB::bind_method(D_METHOD("_edit_get_rotation"), &CanvasItem::_edit_get_rotation);
-	ClassDB::bind_method(D_METHOD("_edit_use_rotation"), &CanvasItem::_edit_use_rotation);
-	ClassDB::bind_method(D_METHOD("_edit_set_pivot", "pivot"), &CanvasItem::_edit_set_pivot);
-	ClassDB::bind_method(D_METHOD("_edit_get_pivot"), &CanvasItem::_edit_get_pivot);
-	ClassDB::bind_method(D_METHOD("_edit_use_pivot"), &CanvasItem::_edit_use_pivot);
-	ClassDB::bind_method(D_METHOD("_edit_get_transform"), &CanvasItem::_edit_get_transform);
-#endif
 
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &CanvasItem::get_canvas_item);
 
