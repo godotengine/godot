@@ -31,7 +31,6 @@
 #ifndef DISJOINT_SET_H
 #define DISJOINT_SET_H
 
-
 /* This DisjointSet class uses Find with path compression and Union by rank */
 template <typename T, class H = HashMapHasherDefault, class C = HashMapComparatorDefault<T>, class AL = DefaultAllocator>
 class DisjointSet {
