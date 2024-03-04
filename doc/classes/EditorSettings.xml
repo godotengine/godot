@@ -654,8 +654,8 @@
 			The subpixel positioning mode to use when rendering editor font glyphs. This affects both the main and code fonts. [b]Disabled[/b] is the fastest to render and uses the least memory. [b]Auto[/b] only uses subpixel positioning for small font sizes (where the benefit is the most noticeable). [b]One Half of a Pixel[/b] and [b]One Quarter of a Pixel[/b] force the same subpixel positioning mode for all editor fonts, regardless of their size (with [b]One Quarter of a Pixel[/b] being the highest-quality option).
 		</member>
 		<member name="interface/editor/localize_settings" type="bool" setter="" getter="">
-			If [code]true[/code], setting names in the Editor Settings are localized when possible. This is disabled by default, since localization can make it difficult to look up setting names online.
-			[b]Note:[/b] This setting does not control property name localization in the inspector. To show translated property names in the inspector, set [member interface/inspector/default_property_name_style] to [b]Localized[/b].
+			If [code]true[/code], setting names in the editor are localized when possible.
+			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.
 		</member>
 		<member name="interface/editor/low_processor_mode_sleep_usec" type="int" setter="" getter="">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
@@ -732,11 +732,11 @@
 			The floating-point precision to use for properties that don't define an explicit precision step. Lower values allow entering more precise values.
 		</member>
 		<member name="interface/inspector/default_property_name_style" type="int" setter="" getter="">
-			The property name style to display in the inspector.
-			- [b]Raw:[/b] Displays properties as they are defined in the script (typically in [code]snake_case[/code] for GDScript and [code]PascalCase[/code] for C#).
-			- [b]Capitalized:[/b] Displays properties using [method String.capitalize].
+			The default property name style to display in the Inspector dock. This style can be temporarily adjusted in the Inspector dock's menu.
+			- [b]Raw:[/b] Displays properties in [code]snake_case[/code].
+			- [b]Capitalized:[/b] Displays properties capitalized.
 			- [b]Localized:[/b] Displays the localized string for the current editor language if a translation is available for the given property. If no translation is available, falls back to [b]Capitalized[/b].
-			[b]Note:[/b] This setting does not control editor setting name display. To display translated editor setting names, enable [member interface/editor/localize_settings] instead.
+			[b]Note:[/b] To display translated setting names in Project Settings and Editor Settings, use [member interface/editor/localize_settings] instead.
 		</member>
 		<member name="interface/inspector/disable_folding" type="bool" setter="" getter="">
 			If [code]true[/code], forces all property groups to be expanded in the Inspector dock and prevents collapsing them.
