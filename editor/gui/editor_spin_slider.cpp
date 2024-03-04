@@ -35,6 +35,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/theme/theme_db.h"
 
 bool EditorSpinSlider::is_text_field() const {
 	return true;
@@ -383,7 +384,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	if (!hide_slider) {
 		if (get_step() == 1) {
-			Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
+			Ref<Texture2D> updown2 = is_read_only() ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
 			int updown_vofs = (size.height - updown2->get_height()) / 2;
 			if (rtl) {
 				updown_offset = sb->get_margin(SIDE_LEFT);
@@ -701,6 +702,9 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("ungrabbed"));
 	ADD_SIGNAL(MethodInfo("value_focus_entered"));
 	ADD_SIGNAL(MethodInfo("value_focus_exited"));
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_icon, "updown");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_disabled_icon, "updown_disabled");
 }
 
 void EditorSpinSlider::_ensure_input_popup() {
