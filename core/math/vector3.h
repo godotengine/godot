@@ -131,7 +131,6 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;
 
-
 	Vector3 posmod(real_t p_mod) const;
 	Vector3 posmodv(const Vector3 &p_modv) const;
 
