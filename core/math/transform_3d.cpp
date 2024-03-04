@@ -197,23 +197,23 @@ Transform3D Transform3D::operator*(const Transform3D &p_transform) const {
 	return t;
 }
 
-void Transform3D::operator*=(const real_t p_val) {
+void Transform3D::operator*=(real_t p_val) {
 	origin *= p_val;
 	basis *= p_val;
 }
 
-Transform3D Transform3D::operator*(const real_t p_val) const {
+Transform3D Transform3D::operator*(real_t p_val) const {
 	Transform3D ret(*this);
 	ret *= p_val;
 	return ret;
 }
 
-void Transform3D::operator/=(const real_t p_val) {
+void Transform3D::operator/=(real_t p_val) {
 	basis /= p_val;
 	origin /= p_val;
 }
 
-Transform3D Transform3D::operator/(const real_t p_val) const {
+Transform3D Transform3D::operator/(real_t p_val) const {
 	Transform3D ret(*this);
 	ret /= p_val;
 	return ret;
