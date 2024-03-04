@@ -143,15 +143,25 @@ mat4 dual_quaternion_to_matrix(vec4 Qn, vec4 Qd)
 }
 
 vec4 unpack_q0(uint index) {
-	vec3 row1 = bone_transforms.data[index];
-	vec3 row2 = bone_transforms.data[index + 1];
-	return vec4(row1, row2.x);
+	mat4 mat_data = mat4(bone_transforms.data[index], bone_transforms.data[index + 1], bone_transforms.data[index + 2], vec4(0.0, 0.0, 0.0, 1.0));
+	vec4 row1 = mat_data[0];
+	vec4 row2 = mat_data[1];
+	return vec4(row1.x, row1.y, row1.z, row2.x);
 }
 
 vec4 unpack_q1(uint index) {
-	vec3 row2 = bone_transforms.data[index + 1];
-	vec3 row3 = bone_transforms.data[index + 2];
+	mat4 mat_data = mat4(bone_transforms.data[index], bone_transforms.data[index + 1], bone_transforms.data[index + 2], vec4(0.0, 0.0, 0.0, 1.0));
+	vec4 row2 = mat_data[1];
+	vec4 row3 = mat_data[2];
 	return vec4(row2.y, row2.z, row3.x, row3.y);
+}
+
+vec3 unpack_scale(uint index) {
+	mat4 mat_data = mat4(bone_transforms.data[index], bone_transforms.data[index + 1], bone_transforms.data[index + 2], vec4(0.0, 0.0, 0.0, 1.0));
+	vec4 row1 = mat_data[0];
+	vec4 row2 = mat_data[1];
+	vec4 row3 = mat_data[2];
+	return vec3(row1.w, row2.w, row3.w);
 }
 
 
@@ -294,17 +304,14 @@ void main() {
 		vec2 weights_01 = unpackUnorm2x16(weights.x);
 		vec2 weights_23 = unpackUnorm2x16(weights.y);
 
-		// TODO rewrite this part for dual quat
 		//mat4 m = mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
 		//m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
 		//m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
 		//m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
-		//end TODO
 
 		vec4 blend_q0 = weights_01.x * unpack_q0(bones_01.x) + weights_01.y * unpack_q0(bones_01.y) + weights_23.x * unpack_q0(bones_23.x) + weights_23.y * unpack_q0(bones_23.y);
 		vec4 blend_q1 = weights_01.x * unpack_q1(bones_01.x) + weights_01.y * unpack_q1(bones_01.y) + weights_23.x * unpack_q1(bones_23.x) + weights_23.y * unpack_q1(bones_23.y);
-	
-		mat4 m = dual_quaternion_to_matrix(blend_q0, blend_q1);
+		//vec3 scale = weights_01.x * unpack_scale(bones_01.x) + weights_01.y * unpack_scale(bones_01.y) + weights_23.x * unpack_scale(bones_23.x) + weights_23.y * unpack_scale(bones_23.y);
 
 		if (params.skin_weight_offset == 4) {
 			//using 8 bones/weights
@@ -321,18 +328,27 @@ void main() {
 			weights_01 = unpackUnorm2x16(weights.x);
 			weights_23 = unpackUnorm2x16(weights.y);
 
-			// TODO maybe even support 8 bones dual quaternion 
-			m += mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
-			m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
-			m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
-			m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
-			//end TODO
+			//m += mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
+			//m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
+			//m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
+			//m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
+
+			blend_q0 += weights_01.x * unpack_q0(bones_01.x) + weights_01.y * unpack_q0(bones_01.y) + weights_23.x * unpack_q0(bones_23.x) + weights_23.y * unpack_q0(bones_23.y);
+			blend_q1 += weights_01.x * unpack_q1(bones_01.x) + weights_01.y * unpack_q1(bones_01.y) + weights_23.x * unpack_q1(bones_23.x) + weights_23.y * unpack_q1(bones_23.y);
+			//scale += weights_01.x * unpack_scale(bones_01.x) + weights_01.y * unpack_scale(bones_01.y) + weights_23.x * unpack_scale(bones_23.x) + weights_23.y * unpack_scale(bones_23.y);
 		}
 
+		mat4 m = dual_quaternion_to_matrix(blend_q0, blend_q1);
+		// TODO how to conserve local scale?
+		//m[0].xyz *= scale.x;
+		//m[1].xyz *= scale.y;
+		//m[2].xyz *= scale.z;
+
 		//reverse order because its transposed
-		vertex = (vec4(vertex, 1.0) * m).xyz;
-		normal = normalize((vec4(normal, 0.0) * m).xyz);
-		tangent.xyz = normalize((vec4(tangent.xyz, 0.0) * m).xyz);
+		//dual quaternion however is not transposed. To restore this, swap the * operator ordering
+		vertex = (m * vec4(vertex, 1.0)).xyz;
+		normal = normalize(m * vec4(normal, 0.0)).xyz;
+		tangent.xyz = normalize(m * vec4(tangent.xyz, 0.0)).xyz;
 	}
 
 	uint dst_offset = index * params.vertex_stride;

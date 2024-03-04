@@ -715,19 +715,10 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 					const float *dataptr = baseptr + j * 12;
 
 					Transform3D mtx;
-
-					mtx.basis.rows[0][0] = dataptr[0];
-					mtx.basis.rows[0][1] = dataptr[1];
-					mtx.basis.rows[0][2] = dataptr[2];
 					mtx.origin.x = dataptr[3];
-					mtx.basis.rows[1][0] = dataptr[4];
-					mtx.basis.rows[1][1] = dataptr[5];
-					mtx.basis.rows[1][2] = dataptr[6];
 					mtx.origin.y = dataptr[7];
-					mtx.basis.rows[2][0] = dataptr[8];
-					mtx.basis.rows[2][1] = dataptr[9];
-					mtx.basis.rows[2][2] = dataptr[10];
 					mtx.origin.z = dataptr[11];
+					mtx.basis = Basis(Quaternion(dataptr[0], dataptr[1], dataptr[2], dataptr[4])); // unpack q0
 
 					// Transform bounds to skeleton's space before applying animation data.
 					AABB baabb = surface.mesh_to_skeleton_xform.xform(skbones[j]);

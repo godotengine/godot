@@ -253,35 +253,45 @@ void Skeleton3D::_update_process_order() {
 	process_order_dirty = false;
 }
 
-// func getq0q1():
-// 	var i = 0
-// 	var _sk = _skeleton as Skeleton3D
+Transform3D dual_quaternion_to_matrix(Quaternion Qn, Quaternion Qd)
+{
+	//Original version of this function is in https://users.cs.utah.edu/~ladislav/dq/dqs.cg
+	Transform3D M = Transform3D();
+	float len2 = Qn.dot(Qn);
+	float w = Qn.w;
+	float x = Qn.x;
+	float y = Qn.y;
+	float z = Qn.z;
 	
-// 	while (i < _sk.get_bone_count()):
-// 		var Mjt = _sk.get_bone_global_pose(i)
-// 		var Mj0 = _sk.get_bone_global_rest(i)
-// 		var Mj = Mjt * Mj0.affine_inverse()
-// 		var t = Mj.origin
-// 		var q0 = null
-// 		if array_q0[i] != null:
-// 			q0 = avoidJumps(Mj.basis.get_rotation_quaternion(), array_q0[i])
-// 		else:
-// 			q0 = Mj.basis.get_rotation_quaternion()
-// 		var q1 = QuatTrans2UDQ(q0, t)
-// 		array_q0[i] = q0
-// 		array_q1[i] = q1
-// 		bone_transforms[i] = Mj
-// 		i = i + 1
+	float t0 = Qd.w;
+	float t1 = Qd.x;
+	float t2 = Qd.y;
+	float t3 = Qd.z;
 
-// func avoidJumps(q_Current: Quaternion, q_Prev: Quaternion) -> Quaternion:
-// 	if ((q_Prev - q_Current).length_squared() < (q_Prev + q_Current).length_squared()):
-// 		return -q_Current
-// 	else:
-// 		return q_Current
-
+	M.basis.rows[0][0] = w*w + x*x - y*y - z*z;
+	M.basis.rows[0][1] = 2.0*x*y - 2.0*w*z; 
+	M.basis.rows[0][2] = 2.0*x*z + 2.0*w*y;
+	M.basis.rows[1][0] = (2.0*x*y + 2.0*w*z); 
+	M.basis.rows[1][1] = (w*w + y*y - x*x - z*z); 
+	M.basis.rows[1][2] = (2.0*y*z - 2.0*w*x); 
+	M.basis.rows[2][0] = 2.0*x*z - 2.0*w*y; 
+	M.basis.rows[2][1] = 2.0*y*z + 2.0*w*x; 
+	M.basis.rows[2][2] = w*w + z*z - x*x - y*y;
+	
+	M.origin.x = -2.0*t0*x + 2.0*w*t1 - 2.0*t2*z + 2.0*y*t3;
+	M.origin.y = -2.0*t0*y + 2.0*t1*z - 2.0*x*t3 + 2.0*w*t2;
+	M.origin.z = -2.0*t0*z + 2.0*x*t2 + 2.0*w*t3 - 2.0*t1*y;
+	
+	M *= 1 / len2;
+	
+	return M;
+}
 
 Quaternion avoid_jumps(Quaternion q_current, Quaternion q_prev) {
-	if((q_prev - q_current).length_squared() < (q_prev + q_current).length_squared()) {
+	// Avoid the quaternion taking the longest path for this versions's new rotation vs the last
+	float len1 = (q_prev - q_current).length_squared();
+	float len2 = (q_prev + q_current).length_squared();
+	if(len1 < len2) {
 		return -q_current;
 	} else {
 		return q_current;
@@ -290,12 +300,12 @@ Quaternion avoid_jumps(Quaternion q_current, Quaternion q_prev) {
 
 Quaternion quat_trans_2UDQ(Quaternion q0, Vector3 t) {
 	//Original version of this function is in https://users.cs.utah.edu/~ladislav/dq/dqconv.c
-	Quaternion q1 = Quaternion();
-	q1.w = -0.5*(t.x*q0.x + t.y*q0.y + t.z*q0.z);
-	q1.x = 0.5*( t.x*q0.w + t.y*q0.z - t.z*q0.y);
-	q1.y = 0.5*(-t.x*q0.z + t.y*q0.w + t.z*q0.x);
-	q1.z = 0.5*( t.x*q0.y - t.y*q0.x + t.z*q0.w);
-	return q1;
+	return Quaternion(
+		0.5*( t.x*q0.w + t.y*q0.z - t.z*q0.y),
+		0.5*(-t.x*q0.z + t.y*q0.w + t.z*q0.x),
+		0.5*( t.x*q0.y - t.y*q0.x + t.z*q0.w),
+		-0.5*(t.x*q0.x + t.y*q0.y + t.z*q0.z)
+	);
 }
 
 void Skeleton3D::_notification(int p_what) {
@@ -367,20 +377,37 @@ void Skeleton3D::_notification(int p_what) {
 				for (uint32_t i = 0; i < bind_count; i++) {
 					uint32_t bone_index = E->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
-					// TODO maybe write quaternion data here instead of 4x4 matrix?
-					Transform3D Mj = bonesptr[bone_index].pose_global * skin->get_bind_pose(i);
-					Vector3 t = Mj.origin;
 
+					Transform3D M1 = Transform3D(bonesptr[bone_index].pose_global);
+					Vector3 m_scale = M1.basis.get_scale_local();
+					M1.basis.scale(m_scale.inverse()); // remove scaling from the basis. This seems to still have some scale? minor
+					Transform3D Mj = M1 * skin->get_bind_pose(i);
+					Vector3 t = Mj.origin;
 					Transform3D M0 = rs->skeleton_bone_get_transform(skeleton, i);
-					Quaternion q0 = avoid_jumps(Mj.basis.get_rotation_quaternion(), M0.basis.get_rotation_quaternion());
+					Quaternion previous_q0 = Quaternion(  // unpack from previous calculation
+						M0.basis.rows[0][0], M0.basis.rows[0][1], M0.basis.rows[0][2], M0.basis.rows[1][0]
+					);
+					// TODO here there is a problem it seems it can get permanently locked into the wrong rotation
+					// when objects fly very far. Not using this causes rotations to snap at certain angles.
+
+					Quaternion q0 = avoid_jumps(Mj.basis.get_rotation_quaternion(), previous_q0);
 					Quaternion q1 = quat_trans_2UDQ(q0, t);
 
-					Mj.set(
-						q0.x, q0.y, q0.z, 
-						q0.w, q1.x, q1.y, 
-						q1.z, q1.w, 0.0,
-						0.0,  0.0,  0.0
-					);
+					// pack the quaternions into the matrix
+					// TODO we can pack this better.
+					Mj.basis.rows[0][0] = q0.x;
+					Mj.basis.rows[0][1] = q0.y;
+					Mj.basis.rows[0][2] = q0.z;
+					Mj.origin.x = t.x;
+					Mj.basis.rows[1][0] = q0.w;
+					Mj.basis.rows[1][1] = q1.x;
+					Mj.basis.rows[1][2] = q1.y;
+					Mj.origin.y = t.y;
+					Mj.basis.rows[2][0] = q1.z;
+					Mj.basis.rows[2][1] = q1.w;
+					Mj.basis.rows[2][2] = 0.0;
+					Mj.origin.z = t.z;
+
 					rs->skeleton_bone_set_transform(skeleton, i, Mj);
 				}
 			}
