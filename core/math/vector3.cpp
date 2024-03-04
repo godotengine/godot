@@ -153,7 +153,7 @@ Vector3::operator Vector3i() const {
 	return Vector3i(x, y, z);
 }
 
-Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
+Vector3 Vector3::slerp(const Vector3 &p_to, real_t p_weight) const {
 	// This method seems more complicated than it really is, since we write out
 	// the internals of some methods for efficiency (mainly, checking length).
 	real_t start_length_sq = length_squared();
@@ -175,35 +175,35 @@ Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
 	return rotated(axis, angle * p_weight) * (result_length / start_length);
 }
 
-Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
+Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const {
 	return Vector3(
 			Math::cubic_interpolate(x, p_b.x, p_pre_a.x, p_post_b.x, p_weight),
 			Math::cubic_interpolate(y, p_b.y, p_pre_a.y, p_post_b.y, p_weight),
 			Math::cubic_interpolate(z, p_b.z, p_pre_a.z, p_post_b.z, p_weight));
 }
 
-Vector3 Vector3::cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const {
+Vector3 Vector3::cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const {
 	return Vector3(
 			Math::cubic_interpolate_in_time(x, p_b.x, p_pre_a.x, p_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t),
 			Math::cubic_interpolate_in_time(y, p_b.y, p_pre_a.y, p_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t),
 			Math::cubic_interpolate_in_time(z, p_b.z, p_pre_a.z, p_post_b.z, p_weight, p_b_t, p_pre_a_t, p_post_b_t));
 }
 
-Vector3 Vector3::bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const {
+Vector3 Vector3::bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, real_t p_t) const {
 	return Vector3(
 			Math::bezier_interpolate(x, p_control_1.x, p_control_2.x, p_end.x, p_t),
 			Math::bezier_interpolate(y, p_control_1.y, p_control_2.y, p_end.y, p_t),
 			Math::bezier_interpolate(z, p_control_1.z, p_control_2.z, p_end.z, p_t));
 }
 
-Vector3 Vector3::bezier_derivative(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const {
+Vector3 Vector3::bezier_derivative(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, real_t p_t) const {
 	return Vector3(
 			Math::bezier_derivative(x, p_control_1.x, p_control_2.x, p_end.x, p_t),
 			Math::bezier_derivative(y, p_control_1.y, p_control_2.y, p_end.y, p_t),
 			Math::bezier_derivative(z, p_control_1.z, p_control_2.z, p_end.z, p_t));
 }
 
-Vector3 Vector3::posmod(const real_t p_mod) const {
+Vector3 Vector3::posmod(real_t p_mod) const {
 	return Vector3(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod), Math::fposmod(z, p_mod));
 }
 
