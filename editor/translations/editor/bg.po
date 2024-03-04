@@ -1031,9 +1031,6 @@ msgstr "Създаване на папка"
 msgid "Thanks from the Godot community!"
 msgstr "Благодарности от общността на Godot!"
 
-msgid "Click to copy."
-msgstr "Натисни за да копираш."
-
 msgid "Project Founders"
 msgstr "Основатели на проекта"
 
@@ -1787,9 +1784,6 @@ msgstr "Инспектор"
 msgid "Node"
 msgstr "Връх"
 
-msgid "Expand Bottom Panel"
-msgstr "Разширяване на долния панел"
-
 msgid "Don't Save"
 msgstr "Без запазване"
 
@@ -2240,6 +2234,9 @@ msgstr "Преименуване на групата"
 
 msgid "Global"
 msgstr "Глобална"
+
+msgid "Expand Bottom Panel"
+msgstr "Разширяване на долния панел"
 
 msgid "Network"
 msgstr "Мрежа"
@@ -3611,6 +3608,9 @@ msgstr "Показване на обкръжението"
 msgid "View Gizmos"
 msgstr "Показване на гизмота"
 
+msgid "View Grid"
+msgstr "Показване на решетката"
+
 msgid "View Information"
 msgstr "Показване на информация"
 
@@ -3795,9 +3795,6 @@ msgstr "4 прозореца за изглед"
 msgid "View Origin"
 msgstr "Показване на отправната точка"
 
-msgid "View Grid"
-msgstr "Показване на решетката"
-
 msgid "Settings..."
 msgstr "Настройки…"
 
@@ -3957,14 +3954,14 @@ msgstr "Назад в историята"
 msgid "History Next"
 msgstr "Напред в историята"
 
-msgid "Theme"
-msgstr "Тема"
-
 msgid "Import Theme..."
 msgstr "Внасяне на тема…"
 
 msgid "Reload Theme"
 msgstr "Презареждане на темата"
+
+msgid "Theme"
+msgstr "Тема"
 
 msgid "Save Theme"
 msgstr "Запазване на темата"
@@ -4149,12 +4146,6 @@ msgstr "Изображенията не могат да бъдат зареде�
 
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "ГРЕШКА: Не може да се зареди ресурсът с кадъра!"
-
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Буферът за обмен на ресурси е празен или не съдържа текстура!"
-
-msgid "Paste Frame"
-msgstr "Поставяне на кадър"
 
 msgid "Add Empty"
 msgstr "Добавяне на празен"
@@ -5325,25 +5316,6 @@ msgid "Failed to remove temporary file \"%s\"."
 msgstr "Временният файл „%s“ не може да бъде премахнат."
 
 msgid ""
-"CollisionPolygon2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon2D служи само, за да даде форма за колизии на обект основан "
-"на CollisionObject2D. Използвайте го само като под-обект на Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D и т.н., за да им дадете форма."
-
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "Празен CollisionPolygon2D не влияе на колизиите."
-
-msgid ""
-"A shape must be provided for CollisionShape2D to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"За да работи CollisionShape2D, е необходимо да се зададе форма. Моля, "
-"създайте ресурс с форма за него!"
-
-msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr ""
@@ -5370,10 +5342,43 @@ msgstr ""
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr "PathFollow2D работи само, когато е дъщерен на обект от тип Path2D."
 
+msgid ""
+"CollisionPolygon2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon2D служи само, за да даде форма за колизии на обект основан "
+"на CollisionObject2D. Използвайте го само като под-обект на Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D и т.н., за да им дадете форма."
+
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "Празен CollisionPolygon2D не влияе на колизиите."
+
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"За да работи CollisionShape2D, е необходимо да се зададе форма. Моля, "
+"създайте ресурс с форма за него!"
+
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
 "Свойството „Path“ трябва да сочи към действителен обект от тип Node2D, за да "
 "работи."
+
+msgid "Nothing is visible because no mesh has been assigned."
+msgstr "Не се вижда нищо, той като няма зададена полигонна мрежа."
+
+msgid "Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+"Не се вижда нищо, тъй като полигонните мрежи не са били свързани към стъпки "
+"на изчертаване."
+
+msgid "Creating probes"
+msgstr "Създаване на сонди"
+
+msgid "Generating Probe Volumes"
+msgstr "Създаване на обеми за сонди"
 
 msgid ""
 "CollisionPolygon3D only serves to provide a collision shape to a "
@@ -5397,20 +5402,6 @@ msgstr ""
 "Използвайте го само като под-обект на Area3D, StaticBody3D, RigidBody3D, "
 "KinematicBody3D, и т.н., за да им дадете форма."
 
-msgid "Nothing is visible because no mesh has been assigned."
-msgstr "Не се вижда нищо, той като няма зададена полигонна мрежа."
-
-msgid "Nothing is visible because meshes have not been assigned to draw passes."
-msgstr ""
-"Не се вижда нищо, тъй като полигонните мрежи не са били свързани към стъпки "
-"на изчертаване."
-
-msgid "Creating probes"
-msgstr "Създаване на сонди"
-
-msgid "Generating Probe Volumes"
-msgstr "Създаване на обеми за сонди"
-
 msgid "This body will be ignored until you set a mesh."
 msgstr "Това тяло ще бъде игнорирано, докато не зададете полигонна мрежа."
 
@@ -5426,9 +5417,6 @@ msgstr "Построяване на полигонните мрежи"
 
 msgid "Alert!"
 msgstr "Тревога!"
-
-msgid "(Other)"
-msgstr "(Други)"
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

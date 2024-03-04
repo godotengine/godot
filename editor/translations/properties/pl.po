@@ -90,8 +90,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-15 10:11+0000\n"
-"Last-Translator: damian <damian2779898@gmail.com>\n"
+"PO-Revision-Date: 2024-02-29 19:48+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
 "Language: pl\n"
@@ -100,7 +100,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -131,6 +131,9 @@ msgstr "Wyłączenie stdout"
 
 msgid "Disable stderr"
 msgstr "Wyłączenie stderr"
+
+msgid "Print Header"
+msgstr "Wyświetl nagłówek"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Użyj ukrytego katalogu danych projektu"
@@ -215,6 +218,12 @@ msgstr "Animacja"
 
 msgid "Warnings"
 msgstr "Ostrzeżenia"
+
+msgid "Check Invalid Track Paths"
+msgstr "Sprawdź nieprawidłowe ścieżki animacji"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "Sprawdź konflikt typu interpolacji kąta"
 
 msgid "Audio"
 msgstr "Audio"
@@ -372,6 +381,15 @@ msgstr "Zastosuj nadpróbkowanie"
 msgid "Rendering Device"
 msgstr "Urządzenie renderujące"
 
+msgid "V-Sync"
+msgstr "Synchronizacja pionowa (V-Sync)"
+
+msgid "Frame Queue Size"
+msgstr "Rozmiar kolejki klatki"
+
+msgid "Swapchain Image Count"
+msgstr "Liczba obrazków łańcucha wymiany"
+
 msgid "Staging Buffer"
 msgstr "Bufor przejściowy"
 
@@ -395,6 +413,21 @@ msgstr "Vulkan (API)"
 
 msgid "Max Descriptors per Pool"
 msgstr "Maks. liczba deskryptorów na pulę"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Max Resource Descriptors per Frame"
+msgstr "Maks. liczba deskryptorów zasobów na klatkę"
+
+msgid "Max Sampler Descriptors per Frame"
+msgstr "Maks. liczba deskryptorów samplerów na klatkę"
+
+msgid "Max Misc Descriptors per Frame"
+msgstr "Maks. liczba różnych deskryptorów na klatkę"
+
+msgid "Agility SDK Version"
+msgstr "Wersja Agility SDK"
 
 msgid "Textures"
 msgstr "Tekstury"
@@ -459,11 +492,17 @@ msgstr "Urządzenia wejściowe"
 msgid "Compatibility"
 msgstr "Kompatybilny"
 
+msgid "Legacy Just Pressed Behavior"
+msgstr "Stare zachowanie Just Pressed"
+
 msgid "Device"
 msgstr "Urządzenie"
 
 msgid "Window ID"
 msgstr "ID Okna"
+
+msgid "Command or Control Autoremap"
+msgstr "Automatyczne przemapowanie Command i Control"
 
 msgid "Alt Pressed"
 msgstr "Alt Wciśnięty"
@@ -473,6 +512,9 @@ msgstr "Shift Wciśnięty"
 
 msgid "Ctrl Pressed"
 msgstr "Ctrl Wciśnięty"
+
+msgid "Meta Pressed"
+msgstr "Meta wciśnięty"
 
 msgid "Pressed"
 msgstr "Wciśnięty"
@@ -528,8 +570,14 @@ msgstr "Odwrócone pióro"
 msgid "Relative"
 msgstr "Względny"
 
+msgid "Screen Relative"
+msgstr "Względem ekranu"
+
 msgid "Velocity"
 msgstr "Prędkość"
+
+msgid "Screen Velocity"
+msgstr "Prędkość ekranowa"
 
 msgid "Axis"
 msgstr "Oś"
@@ -572,6 +620,9 @@ msgstr "Skrót"
 
 msgid "Events"
 msgstr "Zdarzenia"
+
+msgid "Include Navigational"
+msgstr "Dołącz nawigacyjne"
 
 msgid "Include Hidden"
 msgstr "Zawrzyj ukryte"
@@ -624,6 +675,9 @@ msgstr "Przesunięcie"
 msgid "Cell Size"
 msgstr "Rozmiar Komórki"
 
+msgid "Cell Shape"
+msgstr "Kształt komórki"
+
 msgid "Jumping Enabled"
 msgstr "Skakanie włączone"
 
@@ -632,6 +686,9 @@ msgstr "Domyślna Heurystyka Obliczeniowa"
 
 msgid "Default Estimate Heuristic"
 msgstr "Domyślna Heurystyka Szacunkowa"
+
+msgid "Diagonal Mode"
+msgstr "Tryb przekątny"
 
 msgid "Seed"
 msgstr "Ziarno"
@@ -647,6 +704,9 @@ msgstr "Limity"
 
 msgid "Message Queue"
 msgstr "Kolejka wiadomości"
+
+msgid "Max Steps"
+msgstr "Maksymalne kroki"
 
 msgid "Network"
 msgstr "Sieć"
@@ -829,16 +889,19 @@ msgid "Disable Folding"
 msgstr "Wyłącz zwijanie"
 
 msgid "Auto Unfold Foreign Scenes"
-msgstr "Automatyczne rozwijanie zagranicznych scen"
+msgstr "Automatyczne rozwijanie obcych scen"
 
 msgid "Horizontal Vector2 Editing"
-msgstr "Edycja pozioma Vector2"
+msgstr "Pozioma edycja Vector2"
 
 msgid "Horizontal Vector Types Editing"
-msgstr "Edycja poziomych typów wektorów"
+msgstr "Pozioma edycja typów wektorowych"
 
 msgid "Default Color Picker Mode"
-msgstr "Domyślny tryb pobieracza kolorów"
+msgstr "Domyślny tryb próbnika kolorów"
+
+msgid "Default Color Picker Shape"
+msgstr "Domyślny kształt próbnika kolorów"
 
 msgid "Theme"
 msgstr "Motyw"
@@ -911,9 +974,6 @@ msgstr "Rozmiar miniaturki"
 
 msgid "Import"
 msgstr "Zaimportuj"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "Ścieżka do FBX2glTF"
@@ -1446,6 +1506,9 @@ msgstr "Osadź PCK"
 msgid "Texture Format"
 msgstr "Format tekstury"
 
+msgid "ETC2 ASTC"
+msgstr "ETC2 ASTC"
+
 msgid "Export"
 msgstr "Eksportuj"
 
@@ -1876,7 +1939,7 @@ msgid "stdout"
 msgstr "stdout"
 
 msgid "Print GPU Profile"
-msgstr "Wydrukuj profil GPU"
+msgstr "Wyświetl profil GPU"
 
 msgid "Verbose stdout"
 msgstr "Werbalne stdout"
@@ -2021,6 +2084,9 @@ msgstr "Ścieżka dołączona"
 
 msgid "CSG"
 msgstr "CSG"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "GDScript"
 msgstr "GDScript"
@@ -2289,9 +2355,6 @@ msgstr "Klatka"
 msgid "Centered"
 msgstr "Wyśrodkowana"
 
-msgid "Point"
-msgstr "Punkt"
-
 msgid "Left"
 msgstr "Lewo"
 
@@ -2300,12 +2363,6 @@ msgstr "Góra"
 
 msgid "Right"
 msgstr "Prawo"
-
-msgid "Input"
-msgstr "Wejście"
-
-msgid "Disabled"
-msgstr "Wyłączony"
 
 msgid "Time"
 msgstr "Czas"
@@ -2355,11 +2412,26 @@ msgstr "Tryb tekstury"
 msgid "Navigation Layers"
 msgstr "Warstwy nawigacji"
 
-msgid "Linear"
-msgstr "Liniowy"
+msgid "Repeat"
+msgstr "Powtórz"
+
+msgid "End"
+msgstr "Koniec"
+
+msgid "Point"
+msgstr "Punkt"
 
 msgid "Max Angle"
 msgstr "Maksymalny kąt"
+
+msgid "Input"
+msgstr "Wejście"
+
+msgid "Disabled"
+msgstr "Wyłączony"
+
+msgid "Linear"
+msgstr "Liniowy"
 
 msgid "UV"
 msgstr "UV"
@@ -2391,9 +2463,6 @@ msgstr "Maska usuwania"
 msgid "Modulate"
 msgstr "Moduluj"
 
-msgid "End"
-msgstr "Koniec"
-
 msgid "Flags"
 msgstr "Flagi"
 
@@ -2421,6 +2490,12 @@ msgstr "Maksymalny rozmiar tekstury"
 msgid "Bounce"
 msgstr "Odbijanie"
 
+msgid "Wheel"
+msgstr "Koło"
+
+msgid "Travel"
+msgstr "Przejdź"
+
 msgid "Bones"
 msgstr "Kości"
 
@@ -2429,12 +2504,6 @@ msgstr "Cel"
 
 msgid "Simulation Precision"
 msgstr "Precyzja symulacji"
-
-msgid "Wheel"
-msgstr "Koło"
-
-msgid "Travel"
-msgstr "Przejdź"
 
 msgid "Ignore Occlusion Culling"
 msgstr "Ignoruj usuwanie niewidocznych powierzchni"
@@ -2523,9 +2592,6 @@ msgstr "Rozszerz"
 msgid "Z Index"
 msgstr "Indeks Z"
 
-msgid "Repeat"
-msgstr "Powtórz"
-
 msgid "NormalMap"
 msgstr "NormalMap"
 
@@ -2556,6 +2622,45 @@ msgstr "Fizyka 2D"
 msgid "3D Physics"
 msgstr "Fizyka 3D"
 
+msgid "B"
+msgstr "B"
+
+msgid "Terrains"
+msgstr "Tereny"
+
+msgid "Custom Data"
+msgstr "Własne dane"
+
+msgid "Transpose"
+msgstr "Transpozycja"
+
+msgid "Texture Origin"
+msgstr "Początek tekstury"
+
+msgid "Y Sort Origin"
+msgstr "Początek sortowania Y"
+
+msgid "Miscellaneous"
+msgstr "Różne"
+
+msgid "Probability"
+msgstr "Prawdopodobieństwo"
+
+msgid "Density Texture"
+msgstr "Tekstura gęstości"
+
+msgid "Item"
+msgstr "Element"
+
+msgid "Preview"
+msgstr "Podgląd"
+
+msgid "Sky"
+msgstr "Niebo"
+
+msgid "Ground Color"
+msgstr "Kolor podłoża"
+
 msgid "Atlas"
 msgstr "Atlas"
 
@@ -2567,9 +2672,6 @@ msgstr "Dalekie przejście"
 
 msgid "Near Transition"
 msgstr "Bliskie przejście"
-
-msgid "Sky"
-msgstr "Niebo"
 
 msgid "Source"
 msgstr "Źródło"
@@ -2597,9 +2699,6 @@ msgstr "Mgła"
 
 msgid "Color Correction"
 msgstr "Korekcja koloru"
-
-msgid "Density Texture"
-msgstr "Tekstura gęstości"
 
 msgid "Features"
 msgstr "Funkcje"
@@ -2634,12 +2733,6 @@ msgstr "Próbkowanie"
 msgid "MSDF"
 msgstr "MSDF"
 
-msgid "Item"
-msgstr "Element"
-
-msgid "Preview"
-msgstr "Podgląd"
-
 msgid "Base Texture"
 msgstr "Bazowa tekstura"
 
@@ -2651,12 +2744,6 @@ msgstr "Format transformacji"
 
 msgid "Parsed Geometry Type"
 msgstr "Parsowany typ geometrii"
-
-msgid "B"
-msgstr "B"
-
-msgid "Ground Color"
-msgstr "Kolor podłoża"
 
 msgid "Blend"
 msgstr "Mieszanie"
@@ -2675,27 +2762,6 @@ msgstr "Lewy dolny róg"
 
 msgid "Texture Margins"
 msgstr "Marginesy tekstury"
-
-msgid "Terrains"
-msgstr "Tereny"
-
-msgid "Custom Data"
-msgstr "Własne dane"
-
-msgid "Transpose"
-msgstr "Transpozycja"
-
-msgid "Texture Origin"
-msgstr "Początek tekstury"
-
-msgid "Y Sort Origin"
-msgstr "Początek sortowania Y"
-
-msgid "Miscellaneous"
-msgstr "Różne"
-
-msgid "Probability"
-msgstr "Prawdopodobieństwo"
 
 msgid "File"
 msgstr "Plik"
@@ -2813,6 +2879,15 @@ msgstr "Zredukuj"
 
 msgid "Ensure Correct Normals"
 msgstr "Zapewnij prawidłowe wartości normalnych"
+
+msgid "VRAM Compression"
+msgstr "Kompresja VRAM"
+
+msgid "Import S3TC BPTC"
+msgstr "Importuj S3TC BPTC"
+
+msgid "Import ETC2 ASTC"
+msgstr "Importuj ETC2 ASTC"
 
 msgid "Shadow Atlas"
 msgstr "Atlas cieni"

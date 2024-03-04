@@ -68,7 +68,7 @@ if env.editor_build:
     env.CommandNoCache(
         "#editor/doc_data_compressed.gen.h",
         docs,
-        env.Run(editor_builders.make_doc_header, "Generating documentation header."),
+        env.Run(editor_builders.make_doc_header),
     )
 
     # Editor interface and class reference translations incur a significant size
@@ -83,7 +83,7 @@ if env.editor_build:
     env.CommandNoCache(
         "#editor/editor_translations.gen.h",
         tlist,
-        env.Run(editor_builders.make_editor_translations_header, "Generating editor translations header."),
+        env.Run(editor_builders.make_editor_translations_header),
     )
 
     # Property translations
@@ -92,7 +92,7 @@ if env.editor_build:
     env.CommandNoCache(
         "#editor/property_translations.gen.h",
         tlist,
-        env.Run(editor_builders.make_property_translations_header, "Generating property translations header."),
+        env.Run(editor_builders.make_property_translations_header),
     )
 
     # Documentation translations
@@ -101,7 +101,7 @@ if env.editor_build:
     env.CommandNoCache(
         "#editor/doc_translations.gen.h",
         tlist,
-        env.Run(editor_builders.make_doc_translations_header, "Generating translations header."),
+        env.Run(editor_builders.make_doc_translations_header),
     )
 
     # Extractable translations
@@ -110,7 +110,7 @@ if env.editor_build:
     env.CommandNoCache(
         "#editor/extractable_translations.gen.h",
         tlist,
-        env.Run(editor_builders.make_extractable_translations_header, "Generating extractable translations header."),
+        env.Run(editor_builders.make_extractable_translations_header),
     )
 
     env.add_source_files(env.editor_sources, "*.cpp")

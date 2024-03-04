@@ -890,9 +890,6 @@ msgstr "Blender"
 msgid "RPC Port"
 msgstr "RPC: პორტი"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "Tools"
 msgstr "ხელსაწყოები"
 
@@ -1931,6 +1928,9 @@ msgstr "ბილიკი შეერთდა"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "GDScript"
 msgstr "GDScript"
 
@@ -2708,27 +2708,6 @@ msgstr "სიჩქარის მასშტაბი"
 msgid "Centered"
 msgstr "შუაზე გასწორებული"
 
-msgid "Monitoring"
-msgstr "მონიტორინგი"
-
-msgid "Gravity"
-msgstr "მიზიდულობა"
-
-msgid "Point"
-msgstr "წერტილი"
-
-msgid "Point Unit Distance"
-msgstr "წერტილის ერთეულის დაშორება"
-
-msgid "Point Center"
-msgstr "ცენტრზე მითითება"
-
-msgid "Direction"
-msgstr "მიმართულება"
-
-msgid "Audio Bus"
-msgstr "აუდიომატარებელი"
-
 msgid "Current"
 msgstr "მიმდინარე"
 
@@ -2819,27 +2798,6 @@ msgstr "საზღვრის გასუფთავება"
 msgid "Use Mipmaps"
 msgstr "მინირუკების გამოყენება"
 
-msgid "Disable Mode"
-msgstr "რეჟიმის გათიშვა"
-
-msgid "Input"
-msgstr "შეყვანა"
-
-msgid "Build Mode"
-msgstr "აგების რეჟიმი"
-
-msgid "Disabled"
-msgstr "გამოირთო"
-
-msgid "One Way Collision"
-msgstr "ერთმხრივი დაჯახება"
-
-msgid "One Way Collision Margin"
-msgstr "ერთმხრივი დაჯახების საზღვარი"
-
-msgid "Debug Color"
-msgstr "გამართვის ფერი"
-
 msgid "Emitting"
 msgstr "გამომსხივებელი"
 
@@ -2864,8 +2822,14 @@ msgstr "ფერები"
 msgid "Particle Flags"
 msgstr "ნაწილაკის ალმები"
 
+msgid "Direction"
+msgstr "მიმართულება"
+
 msgid "Spread"
 msgstr "გავრცელება"
+
+msgid "Gravity"
+msgstr "მიზიდულობა"
 
 msgid "Initial Velocity"
 msgstr "საწყისი სიჩქარე"
@@ -2971,36 +2935,6 @@ msgstr "კვალები"
 
 msgid "Sections"
 msgstr "ჭრილები"
-
-msgid "Node A"
-msgstr "კვანძი A"
-
-msgid "Node B"
-msgstr "კვანძი B"
-
-msgid "Disable Collision"
-msgstr "შეჯახების გათიშვა"
-
-msgid "Softness"
-msgstr "სირბილე"
-
-msgid "Lower"
-msgstr "დაწევა"
-
-msgid "Upper"
-msgstr "ზედა"
-
-msgid "Motor"
-msgstr "მოტორი"
-
-msgid "Target Velocity"
-msgstr "სამიზნის სიჩქარე"
-
-msgid "Length"
-msgstr "სიგრძე"
-
-msgid "Stiffness"
-msgstr "სიმყიფე"
 
 msgid "Editor Only"
 msgstr "მხოლოდ, რედაქტორი"
@@ -3128,6 +3062,15 @@ msgstr "შეზღუდვის თავიდან აცილება"
 msgid "Skew"
 msgstr "გადახრა"
 
+msgid "Repeat"
+msgstr "გამეორება"
+
+msgid "Begin"
+msgstr "დაწყება"
+
+msgid "End"
+msgstr "დასასრული"
+
 msgid "Scroll"
 msgstr "ჩამოქაჩვა"
 
@@ -3155,14 +3098,107 @@ msgstr "მიმდინარეობის შეფარდება"
 msgid "Rotates"
 msgstr "ბრუნავს"
 
+msgid "Monitoring"
+msgstr "მონიტორინგი"
+
+msgid "Point"
+msgstr "წერტილი"
+
+msgid "Point Unit Distance"
+msgstr "წერტილის ერთეულის დაშორება"
+
+msgid "Point Center"
+msgstr "ცენტრზე მითითება"
+
+msgid "Audio Bus"
+msgstr "აუდიომატარებელი"
+
+msgid "Motion Mode"
+msgstr "მოძრაობის რეჟიმი"
+
+msgid "Up Direction"
+msgstr "მიმართულება მაღლა"
+
+msgid "Slide on Ceiling"
+msgstr "სახურავზე გადაცურება"
+
+msgid "Floor"
+msgstr "სართული"
+
+msgid "Constant Speed"
+msgstr "მუდმივი სიჩქარე"
+
+msgid "Block on Wall"
+msgstr "ბლოკი კედელზე"
+
+msgid "Snap Length"
+msgstr "მიბმის სიგრძე"
+
+msgid "Floor Layers"
+msgstr "სართულის ფენები"
+
+msgid "Wall Layers"
+msgstr "კედლის ფენები"
+
+msgid "Disable Mode"
+msgstr "რეჟიმის გათიშვა"
+
+msgid "Input"
+msgstr "შეყვანა"
+
+msgid "Build Mode"
+msgstr "აგების რეჟიმი"
+
+msgid "Disabled"
+msgstr "გამოირთო"
+
+msgid "One Way Collision"
+msgstr "ერთმხრივი დაჯახება"
+
+msgid "One Way Collision Margin"
+msgstr "ერთმხრივი დაჯახების საზღვარი"
+
+msgid "Debug Color"
+msgstr "გამართვის ფერი"
+
+msgid "Length"
+msgstr "სიგრძე"
+
+msgid "Stiffness"
+msgstr "სიმყიფე"
+
+msgid "Node A"
+msgstr "კვანძი A"
+
+msgid "Node B"
+msgstr "კვანძი B"
+
+msgid "Disable Collision"
+msgstr "შეჯახების გათიშვა"
+
+msgid "Softness"
+msgstr "სირბილე"
+
+msgid "Lower"
+msgstr "დაწევა"
+
+msgid "Upper"
+msgstr "ზედა"
+
+msgid "Motor"
+msgstr "მოტორი"
+
+msgid "Target Velocity"
+msgstr "სამიზნის სიჩქარე"
+
 msgid "Bone 2D Index"
 msgstr "ძვლის 2D ინდექსი"
 
-msgid "Constant Linear Velocity"
-msgstr "მუდმივი წრფივი სიჩქარე"
+msgid "Target Position"
+msgstr "სამიზნის მდებარეობა"
 
-msgid "Constant Angular Velocity"
-msgstr "მუდმივი კუთხური სიჩქარე"
+msgid "Areas"
+msgstr "ადგილები"
 
 msgid "Mass Distribution"
 msgstr "მასის განაწილება"
@@ -3200,44 +3236,23 @@ msgstr "ხაზოვანი"
 msgid "Constant Forces"
 msgstr "მუდმივი ძალები"
 
-msgid "Motion Mode"
-msgstr "მოძრაობის რეჟიმი"
+msgid "Margin"
+msgstr "ზღვარი"
 
-msgid "Up Direction"
-msgstr "მიმართულება მაღლა"
+msgid "Max Results"
+msgstr "მაქს. შედეგები"
 
-msgid "Slide on Ceiling"
-msgstr "სახურავზე გადაცურება"
+msgid "Constant Linear Velocity"
+msgstr "მუდმივი წრფივი სიჩქარე"
 
-msgid "Floor"
-msgstr "სართული"
-
-msgid "Constant Speed"
-msgstr "მუდმივი სიჩქარე"
-
-msgid "Block on Wall"
-msgstr "ბლოკი კედელზე"
-
-msgid "Snap Length"
-msgstr "მიბმის სიგრძე"
-
-msgid "Floor Layers"
-msgstr "სართულის ფენები"
-
-msgid "Wall Layers"
-msgstr "კედლის ფენები"
+msgid "Constant Angular Velocity"
+msgstr "მუდმივი კუთხური სიჩქარე"
 
 msgid "UV"
 msgstr "ულტრაიისფერი გამოსხივება"
 
 msgid "Polygons"
 msgstr "მრავალკუთხედები"
-
-msgid "Target Position"
-msgstr "სამიზნის მდებარეობა"
-
-msgid "Areas"
-msgstr "ადგილები"
 
 msgid "Remote Path"
 msgstr "დაშორებული ბილიკი"
@@ -3247,12 +3262,6 @@ msgstr "გლობალური კოორდინატების გ�
 
 msgid "Update"
 msgstr "განახლება"
-
-msgid "Margin"
-msgstr "ზღვარი"
-
-msgid "Max Results"
-msgstr "მაქს. შედეგები"
 
 msgid "Bone Angle"
 msgstr "ძვლის კუთხე"
@@ -3292,15 +3301,6 @@ msgstr "ჩართვა"
 
 msgid "Node Path"
 msgstr "კვანძის ბილიკი"
-
-msgid "Wind"
-msgstr "ქარი"
-
-msgid "Attenuation Factor"
-msgstr "ატენუაციის ფაქტორი"
-
-msgid "Source Path"
-msgstr "წყაროს ბილიკი"
 
 msgid "Attenuation Model"
 msgstr "ატენუაციის მოდელი"
@@ -3347,9 +3347,6 @@ msgstr "ახლოს"
 msgid "Far"
 msgstr "შორს"
 
-msgid "Capture on Drag"
-msgstr "გადაღება გადათრევისას"
-
 msgid "Ring Radius"
 msgstr "რგოლის რადიუსი"
 
@@ -3386,9 +3383,6 @@ msgstr "ზედა მინავლება"
 msgid "Lower Fade"
 msgstr "ქვედა მინავლება"
 
-msgid "Begin"
-msgstr "დაწყება"
-
 msgid "Transform Align"
 msgstr "გადაყვანის სწორება"
 
@@ -3416,77 +3410,11 @@ msgstr "ფენის ნიღაბი"
 msgid "Begin Margin"
 msgstr "დაწყების ზღვარი"
 
-msgid "End"
-msgstr "დასასრული"
-
 msgid "End Margin"
 msgstr "დასასრულის საზღვარი"
 
 msgid "Fade Mode"
 msgstr "მინავლების რეჟიმი"
-
-msgid "Solver Priority"
-msgstr "ამომხსნელის პრიორიტეტი"
-
-msgid "Exclude Nodes From Collision"
-msgstr "კვანძების გამორიცხვა შეჯახებიდან"
-
-msgid "Params"
-msgstr "პარამეტრები"
-
-msgid "Relaxation"
-msgstr "მოშვება"
-
-msgid "Max Impulse"
-msgstr "მაქს იმპულსი"
-
-msgid "Linear Limit"
-msgstr "წრფივი შეზღუდვა"
-
-msgid "Upper Distance"
-msgstr "ზედა დაშორება"
-
-msgid "Lower Distance"
-msgstr "ქვედა დაშორება"
-
-msgid "Restitution"
-msgstr "დაბრუნება"
-
-msgid "Linear Motion"
-msgstr "წრფივი გადაადგილება"
-
-msgid "Linear Ortho"
-msgstr "წრფივი ორთო"
-
-msgid "Angular Motion"
-msgstr "კუთხოვანი მოძრაობა"
-
-msgid "Angular Ortho"
-msgstr "კუთხოვანი ორთო"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
-
-msgid "Linear Motor"
-msgstr "წრფივი ძრავა"
-
-msgid "Linear Spring"
-msgstr "წრფივი ზამბარა"
-
-msgid "ERP"
-msgstr "ERP"
-
-msgid "Angular Motor"
-msgstr "კუთხოვანი ძრავა"
-
-msgid "Angular Spring"
-msgstr "კუთხოვანი ზამბარა"
 
 msgid "Pixel Size"
 msgstr "პიქსელის ზომა"
@@ -3650,14 +3578,80 @@ msgstr "მობრუნების რეჟიმი"
 msgid "Tilt Enabled"
 msgstr "მოხრა ჩართულია"
 
-msgid "Linear X"
-msgstr "წრფივი X"
+msgid "Wind"
+msgstr "ქარი"
 
-msgid "Linear Y"
-msgstr "წრფივი Y"
+msgid "Attenuation Factor"
+msgstr "ატენუაციის ფაქტორი"
 
-msgid "Linear Z"
-msgstr "წრფივი Z"
+msgid "Source Path"
+msgstr "წყაროს ბილიკი"
+
+msgid "Capture on Drag"
+msgstr "გადაღება გადათრევისას"
+
+msgid "Relaxation"
+msgstr "მოშვება"
+
+msgid "Linear Limit"
+msgstr "წრფივი შეზღუდვა"
+
+msgid "X"
+msgstr "X"
+
+msgid "Upper Distance"
+msgstr "ზედა დაშორება"
+
+msgid "Lower Distance"
+msgstr "ქვედა დაშორება"
+
+msgid "Restitution"
+msgstr "დაბრუნება"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Linear Motor"
+msgstr "წრფივი ძრავა"
+
+msgid "Linear Spring"
+msgstr "წრფივი ზამბარა"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Angular Motor"
+msgstr "კუთხოვანი ძრავა"
+
+msgid "Angular Spring"
+msgstr "კუთხოვანი ზამბარა"
+
+msgid "Params"
+msgstr "პარამეტრები"
+
+msgid "Max Impulse"
+msgstr "მაქს იმპულსი"
+
+msgid "Solver Priority"
+msgstr "ამომხსნელის პრიორიტეტი"
+
+msgid "Exclude Nodes From Collision"
+msgstr "კვანძების გამორიცხვა შეჯახებიდან"
+
+msgid "Linear Motion"
+msgstr "წრფივი გადაადგილება"
+
+msgid "Linear Ortho"
+msgstr "წრფივი ორთო"
+
+msgid "Angular Motion"
+msgstr "კუთხოვანი მოძრაობა"
+
+msgid "Angular Ortho"
+msgstr "კუთხოვანი ორთო"
 
 msgid "Joint Constraints"
 msgstr "შეერთების შეზღუდვები"
@@ -3719,6 +3713,33 @@ msgstr "ხახუნი"
 msgid "Bounce"
 msgstr "ხტუნვა"
 
+msgid "Linear X"
+msgstr "წრფივი X"
+
+msgid "Linear Y"
+msgstr "წრფივი Y"
+
+msgid "Linear Z"
+msgstr "წრფივი Z"
+
+msgid "Use as Traction"
+msgstr "გასათრევად გამოყენება"
+
+msgid "Wheel"
+msgstr "ბორბალი"
+
+msgid "Friction Slip"
+msgstr "ხახუნი სრიალი"
+
+msgid "Suspension"
+msgstr "სუსპენზია"
+
+msgid "Travel"
+msgstr "მოგზაურობა"
+
+msgid "Max Force"
+msgstr "მაქს ძალა"
+
 msgid "Box Projection"
 msgstr "ყუთის პროექცია"
 
@@ -3775,24 +3796,6 @@ msgstr "წერტილის ინდექსი"
 
 msgid "Parent Collision Ignore"
 msgstr "მშობლის შეჯახების გამოტოვება"
-
-msgid "Use as Traction"
-msgstr "გასათრევად გამოყენება"
-
-msgid "Wheel"
-msgstr "ბორბალი"
-
-msgid "Friction Slip"
-msgstr "ხახუნი სრიალი"
-
-msgid "Suspension"
-msgstr "სუსპენზია"
-
-msgid "Travel"
-msgstr "მოგზაურობა"
-
-msgid "Max Force"
-msgstr "მაქს ძალა"
 
 msgid "Sorting"
 msgstr "დალაგება"
@@ -4460,9 +4463,6 @@ msgstr "დალაგება"
 msgid "Y Sort Enabled"
 msgstr "Y დალაგება ჩართულია"
 
-msgid "Repeat"
-msgstr "გამეორება"
-
 msgid "Diffuse"
 msgstr "დიფუზია"
 
@@ -4634,6 +4634,246 @@ msgstr "3D ფიზიკა"
 msgid "3D Navigation"
 msgstr "3D ნავიგაცია"
 
+msgid "Segments"
+msgstr "სეგმენტები"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Slide on Slope"
+msgstr "დახრაზე დაცურება"
+
+msgid "Execution Mode"
+msgstr "შესრულების რეჟიმი"
+
+msgid "Default Joint Settings"
+msgstr "ნაგულისხმევი საერთო პარამეტრები"
+
+msgid "Bone Index"
+msgstr "ძვლების ინდექსი"
+
+msgid "Bone 2D Node"
+msgstr "ძვლის 2D კვანძი"
+
+msgid "Physical Bone Chain Length"
+msgstr "ფიზიკური ძვლის ჯაჭვის სიგრძე"
+
+msgid "Target Minimum Distance"
+msgstr "სამიზნის მინ. დაშორება"
+
+msgid "Target Maximum Distance"
+msgstr "სამიზნის მაქს. დაშორება"
+
+msgid "Flip Bend Direction"
+msgstr "გადაბრუნების მიმართულება"
+
+msgid "Modification Count"
+msgstr "ცვლილების რაოდენობა"
+
+msgid "Right Side"
+msgstr "მარჯვენა მხარე"
+
+msgid "Right Corner"
+msgstr "მარჯვენა კუთხე"
+
+msgid "Bottom Right Side"
+msgstr "ქვედა მარჯვენა მხარე"
+
+msgid "Bottom Right Corner"
+msgstr "ქვედა მარჯვენა კუთხე"
+
+msgid "Bottom Side"
+msgstr "ქვედა მხარე"
+
+msgid "Bottom Corner"
+msgstr "ფსკერის კუთხე"
+
+msgid "Bottom Left Side"
+msgstr "ქვედა მარცხენა მხარე"
+
+msgid "Bottom Left Corner"
+msgstr "ქვედა მარცხენა კუთხე"
+
+msgid "Left Side"
+msgstr "მარცხენა მხარე"
+
+msgid "Left Corner"
+msgstr "მარცხენა კუთხე"
+
+msgid "Top Left Side"
+msgstr "ზედა მარცხენა"
+
+msgid "Top Left Corner"
+msgstr "ზედა მარცხენა კუთხე"
+
+msgid "Top Side"
+msgstr "ზედა მხარე"
+
+msgid "Top Corner"
+msgstr "ზედა კუთხე"
+
+msgid "Top Right Side"
+msgstr "ზედა მარჯვენა მხარე"
+
+msgid "Top Right Corner"
+msgstr "ზედა მარჯვენა კუთხე"
+
+msgid "Custom Data"
+msgstr "მომხმარებლის მონაცემები"
+
+msgid "Tile Proxies"
+msgstr "ფილის პროქსიები"
+
+msgid "Source Level"
+msgstr "წყაროს დონე"
+
+msgid "Coords Level"
+msgstr "კოორდინატების დონე"
+
+msgid "Tile Shape"
+msgstr "ფილის მოხაზულობა"
+
+msgid "Tile Layout"
+msgstr "ფილების განლაგება"
+
+msgid "Tile Offset Axis"
+msgstr "ფილის წანაცვლების ღერძი"
+
+msgid "Tile Size"
+msgstr "ფილის ზომა"
+
+msgid "Occlusion Layers"
+msgstr "ოკლუზიის ფენები"
+
+msgid "Physics Layers"
+msgstr "ფიზიკის ფენები"
+
+msgid "Custom Data Layers"
+msgstr "მორგებული მონაცემის ფენები"
+
+msgid "Scenes"
+msgstr "სცენები"
+
+msgid "Scene"
+msgstr "სცენა"
+
+msgid "Display Placeholder"
+msgstr "ადგილმჭერის ჩვენება"
+
+msgid "Polygons Count"
+msgstr "მრავალკუთხედების რაოდენობა"
+
+msgid "One Way Margin"
+msgstr "ერთმხრივი საზღვარი"
+
+msgid "Transpose"
+msgstr "ტრანსპოზიცია"
+
+msgid "Texture Origin"
+msgstr "ტექსტურის წყარო"
+
+msgid "Y Sort Origin"
+msgstr "Y დალაგების წყარო"
+
+msgid "Terrain"
+msgstr "რელიეფი"
+
+msgid "Miscellaneous"
+msgstr "სხვადასხვა"
+
+msgid "Probability"
+msgstr "ალბათობა"
+
+msgid "Distance"
+msgstr "მანძილი"
+
+msgid "Density"
+msgstr "სიმკვრივე"
+
+msgid "Density Texture"
+msgstr "სიმკვრივის ტექსტურა"
+
+msgid "Item"
+msgstr "ელემენტი"
+
+msgid "Mesh Transform"
+msgstr "ბადის გარდაქმნა"
+
+msgid "Navigation Mesh Transform"
+msgstr "ნავიგაციის ბადის გარდაქმნა"
+
+msgid "Preview"
+msgstr "მინიატურა"
+
+msgid "Left to Right"
+msgstr "მარცხნიდან მარჯვნივ"
+
+msgid "Radial Steps"
+msgstr "რადიალური ნაბიჯები"
+
+msgid "Section Length"
+msgstr "კვეთის სიგრძე"
+
+msgid "Section Rings"
+msgstr "კვეთის რგოლები"
+
+msgid "Section Segments"
+msgstr "კვეთის სეგმენტები"
+
+msgid "Curve Step"
+msgstr "Curve Step"
+
+msgid "Bind Count"
+msgstr "მიბმების რაოდენობა"
+
+msgid "Bind"
+msgstr "აკინძვა"
+
+msgid "Bone"
+msgstr "ძვალი"
+
+msgid "Sky"
+msgstr "ცა"
+
+msgid "Top Color"
+msgstr "ზედა ფერი"
+
+msgid "Horizon Color"
+msgstr "ჰორიზონტის ფერი"
+
+msgid "Cover"
+msgstr "ყდა"
+
+msgid "Ground"
+msgstr "მიწა"
+
+msgid "Bottom Color"
+msgstr "ფსკერის ფერი"
+
+msgid "Sun"
+msgstr "მზე"
+
+msgid "Panorama"
+msgstr "პანორამა"
+
+msgid "Coefficient"
+msgstr "კოეფიციენტი"
+
+msgid "Mie"
+msgstr "მიე"
+
+msgid "Ground Color"
+msgstr "მიწის ფერი"
+
+msgid "Night Sky"
+msgstr "ღამის ცა"
+
+msgid "Plane"
+msgstr "სიბრტყე"
+
 msgid "Frames"
 msgstr "კადრები"
 
@@ -4712,9 +4952,6 @@ msgstr "ნაწილაკების ანიმაცია"
 msgid "Load Path"
 msgstr "ბილიკის ჩატვირთვა"
 
-msgid "Segments"
-msgstr "სეგმენტები"
-
 msgid "Bake Resolution"
 msgstr "ცხობის გაფართოება"
 
@@ -4729,9 +4966,6 @@ msgstr "მრუდის Z"
 
 msgid "Background"
 msgstr "ფონი"
-
-msgid "Sky"
-msgstr "ცა"
 
 msgid "Custom FOV"
 msgstr "ხედვის არეს მორგება"
@@ -4850,9 +5084,6 @@ msgstr "სინათლის ფერი"
 msgid "Light Energy"
 msgstr "სინათლის ენერგია"
 
-msgid "Density"
-msgstr "სიმკვრივე"
-
 msgid "Sky Affect"
 msgstr "ცა ზემოქმედებს"
 
@@ -4879,9 +5110,6 @@ msgstr "გაჯერებულობა"
 
 msgid "Color Correction"
 msgstr "ფერების კორექცია"
-
-msgid "Density Texture"
-msgstr "სიმკვრივის ტექსტურა"
 
 msgid "Base Font"
 msgstr "საბაზისო ფონტი"
@@ -5015,9 +5243,6 @@ msgstr "წერტილის ზომის გამოყენება"
 msgid "Point Size"
 msgstr "წერტილის ზომა"
 
-msgid "Distance"
-msgstr "მანძილი"
-
 msgid "MSDF"
 msgstr "MSDF"
 
@@ -5032,18 +5257,6 @@ msgstr "შერევის ფორმის რეჟიმი"
 
 msgid "Shadow Mesh"
 msgstr "ჩრდილის ბადე"
-
-msgid "Item"
-msgstr "ელემენტი"
-
-msgid "Mesh Transform"
-msgstr "ბადის გარდაქმნა"
-
-msgid "Navigation Mesh Transform"
-msgstr "ნავიგაციის ბადის გარდაქმნა"
-
-msgid "Preview"
-msgstr "მინიატურა"
 
 msgid "Base Texture"
 msgstr "საბაზისო ტექსტურა"
@@ -5210,60 +5423,6 @@ msgstr "უხეში"
 msgid "Size Override"
 msgstr "ზომის გადაფარვა"
 
-msgid "Left to Right"
-msgstr "მარცხნიდან მარჯვნივ"
-
-msgid "Radial Steps"
-msgstr "რადიალური ნაბიჯები"
-
-msgid "Section Length"
-msgstr "კვეთის სიგრძე"
-
-msgid "Section Rings"
-msgstr "კვეთის რგოლები"
-
-msgid "Section Segments"
-msgstr "კვეთის სეგმენტები"
-
-msgid "Curve Step"
-msgstr "Curve Step"
-
-msgid "A"
-msgstr "A"
-
-msgid "B"
-msgstr "B"
-
-msgid "Slide on Slope"
-msgstr "დახრაზე დაცურება"
-
-msgid "Execution Mode"
-msgstr "შესრულების რეჟიმი"
-
-msgid "Default Joint Settings"
-msgstr "ნაგულისხმევი საერთო პარამეტრები"
-
-msgid "Bone Index"
-msgstr "ძვლების ინდექსი"
-
-msgid "Bone 2D Node"
-msgstr "ძვლის 2D კვანძი"
-
-msgid "Physical Bone Chain Length"
-msgstr "ფიზიკური ძვლის ჯაჭვის სიგრძე"
-
-msgid "Target Minimum Distance"
-msgstr "სამიზნის მინ. დაშორება"
-
-msgid "Target Maximum Distance"
-msgstr "სამიზნის მაქს. დაშორება"
-
-msgid "Flip Bend Direction"
-msgstr "გადაბრუნების მიმართულება"
-
-msgid "Modification Count"
-msgstr "ცვლილების რაოდენობა"
-
 msgid "Scale Base Bone"
 msgstr "საბაზისო ძვლის მასშტაბი"
 
@@ -5273,53 +5432,11 @@ msgstr "ჯგუფის ზომა"
 msgid "Bone Size"
 msgstr "ძვლის ზომა"
 
-msgid "Bind Count"
-msgstr "მიბმების რაოდენობა"
-
-msgid "Bind"
-msgstr "აკინძვა"
-
-msgid "Bone"
-msgstr "ძვალი"
-
 msgid "Sky Material"
 msgstr "ცის მასალა"
 
 msgid "Process Mode"
 msgstr "დამუშავების რეჟიმი"
-
-msgid "Top Color"
-msgstr "ზედა ფერი"
-
-msgid "Horizon Color"
-msgstr "ჰორიზონტის ფერი"
-
-msgid "Cover"
-msgstr "ყდა"
-
-msgid "Ground"
-msgstr "მიწა"
-
-msgid "Bottom Color"
-msgstr "ფსკერის ფერი"
-
-msgid "Sun"
-msgstr "მზე"
-
-msgid "Panorama"
-msgstr "პანორამა"
-
-msgid "Coefficient"
-msgstr "კოეფიციენტი"
-
-msgid "Mie"
-msgstr "მიე"
-
-msgid "Ground Color"
-msgstr "მიწის ფერი"
-
-msgid "Night Sky"
-msgstr "ღამის ცა"
 
 msgid "Content Margins"
 msgstr "შემცველობის საზღვრები"
@@ -5368,120 +5485,6 @@ msgstr "ნაგულისხმევი ფონტი"
 
 msgid "Default Font Size"
 msgstr "ნაგულისხმევი ფონტის ზომა"
-
-msgid "Right Side"
-msgstr "მარჯვენა მხარე"
-
-msgid "Right Corner"
-msgstr "მარჯვენა კუთხე"
-
-msgid "Bottom Right Side"
-msgstr "ქვედა მარჯვენა მხარე"
-
-msgid "Bottom Right Corner"
-msgstr "ქვედა მარჯვენა კუთხე"
-
-msgid "Bottom Side"
-msgstr "ქვედა მხარე"
-
-msgid "Bottom Corner"
-msgstr "ფსკერის კუთხე"
-
-msgid "Bottom Left Side"
-msgstr "ქვედა მარცხენა მხარე"
-
-msgid "Bottom Left Corner"
-msgstr "ქვედა მარცხენა კუთხე"
-
-msgid "Left Side"
-msgstr "მარცხენა მხარე"
-
-msgid "Left Corner"
-msgstr "მარცხენა კუთხე"
-
-msgid "Top Left Side"
-msgstr "ზედა მარცხენა"
-
-msgid "Top Left Corner"
-msgstr "ზედა მარცხენა კუთხე"
-
-msgid "Top Side"
-msgstr "ზედა მხარე"
-
-msgid "Top Corner"
-msgstr "ზედა კუთხე"
-
-msgid "Top Right Side"
-msgstr "ზედა მარჯვენა მხარე"
-
-msgid "Top Right Corner"
-msgstr "ზედა მარჯვენა კუთხე"
-
-msgid "Custom Data"
-msgstr "მომხმარებლის მონაცემები"
-
-msgid "Tile Proxies"
-msgstr "ფილის პროქსიები"
-
-msgid "Source Level"
-msgstr "წყაროს დონე"
-
-msgid "Coords Level"
-msgstr "კოორდინატების დონე"
-
-msgid "Tile Shape"
-msgstr "ფილის მოხაზულობა"
-
-msgid "Tile Layout"
-msgstr "ფილების განლაგება"
-
-msgid "Tile Offset Axis"
-msgstr "ფილის წანაცვლების ღერძი"
-
-msgid "Tile Size"
-msgstr "ფილის ზომა"
-
-msgid "Occlusion Layers"
-msgstr "ოკლუზიის ფენები"
-
-msgid "Physics Layers"
-msgstr "ფიზიკის ფენები"
-
-msgid "Custom Data Layers"
-msgstr "მორგებული მონაცემის ფენები"
-
-msgid "Scenes"
-msgstr "სცენები"
-
-msgid "Scene"
-msgstr "სცენა"
-
-msgid "Display Placeholder"
-msgstr "ადგილმჭერის ჩვენება"
-
-msgid "Polygons Count"
-msgstr "მრავალკუთხედების რაოდენობა"
-
-msgid "One Way Margin"
-msgstr "ერთმხრივი საზღვარი"
-
-msgid "Transpose"
-msgstr "ტრანსპოზიცია"
-
-msgid "Texture Origin"
-msgstr "ტექსტურის წყარო"
-
-msgid "Y Sort Origin"
-msgstr "Y დალაგების წყარო"
-
-msgid "Terrain"
-msgstr "რელიეფი"
-
-msgid "Miscellaneous"
-msgstr "სხვადასხვა"
-
-msgid "Probability"
-msgstr "ალბათობა"
 
 msgid "File"
 msgstr "ფაილი"
@@ -5551,9 +5554,6 @@ msgstr "ზედაპირის ინდექსი"
 
 msgid "Degrees Mode"
 msgstr "გრადუსების რეჟიმი"
-
-msgid "Plane"
-msgstr "სიბრტყე"
 
 msgid "Panel"
 msgstr "პანელი"
@@ -6542,14 +6542,14 @@ msgstr "შეიდერები"
 msgid "Shader Language"
 msgstr "შეიდერის ენა"
 
+msgid "Has Tracking Data"
+msgstr "აქვს ტრეკინგის მონაცემები"
+
 msgid "Play Area Mode"
 msgstr "დაკვრის ადგილის რეჟიმი"
 
 msgid "AR"
 msgstr "AR"
-
-msgid "Has Tracking Data"
-msgstr "აქვს ტრეკინგის მონაცემები"
 
 msgid "World Origin"
 msgstr "სამყაროს წყარო"

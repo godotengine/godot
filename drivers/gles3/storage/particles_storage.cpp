@@ -395,7 +395,7 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 		bool first = true;
 
 		const uint8_t *data_ptr = (const uint8_t *)buffer.ptr();
-		uint32_t particle_data_size = sizeof(ParticleInstanceData3D) + sizeof(float) * particles->userdata_count;
+		uint32_t particle_data_size = sizeof(ParticleInstanceData3D);
 
 		for (int i = 0; i < total_amount; i++) {
 			const ParticleInstanceData3D &particle_data = *(const ParticleInstanceData3D *)&data_ptr[particle_data_size * i];

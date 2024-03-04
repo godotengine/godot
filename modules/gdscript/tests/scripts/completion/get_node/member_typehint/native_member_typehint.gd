@@ -2,5 +2,5 @@ extends Node
 
 var test: AnimationPlayer = $AnimationPlayer
 
-func _ready():
+func a():
     test.➡

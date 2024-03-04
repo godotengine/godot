@@ -1081,9 +1081,6 @@ msgstr "RPC 埠"
 msgid "RPC Server Uptime"
 msgstr "RPC 伺服器上線時間"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF 路徑"
 
@@ -2815,6 +2812,12 @@ msgstr "路徑接合"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "FBX"
+msgstr "FBX"
+
+msgid "Embedded Image Handling"
+msgstr "嵌入影像處理"
+
 msgid "GDScript"
 msgstr "GDScript"
 
@@ -2880,9 +2883,6 @@ msgstr "版權"
 
 msgid "glTF"
 msgstr "glTF"
-
-msgid "Embedded Image Handling"
-msgstr "嵌入影像處理"
 
 msgid "Color"
 msgstr "顏色"
@@ -4153,39 +4153,6 @@ msgstr "水準翻轉"
 msgid "Flip V"
 msgstr "垂直翻轉"
 
-msgid "Monitoring"
-msgstr "監視"
-
-msgid "Monitorable"
-msgstr "可被監視"
-
-msgid "Gravity"
-msgstr "重力"
-
-msgid "Space Override"
-msgstr "空間覆蓋"
-
-msgid "Point"
-msgstr "點"
-
-msgid "Point Unit Distance"
-msgstr "點單位距離"
-
-msgid "Point Center"
-msgstr "點中心"
-
-msgid "Direction"
-msgstr "方向"
-
-msgid "Linear Damp"
-msgstr "線性阻尼"
-
-msgid "Angular Damp"
-msgstr "角度阻尼"
-
-msgid "Audio Bus"
-msgstr "音訊匯流排"
-
 msgid "Current"
 msgstr "目前"
 
@@ -4303,30 +4270,6 @@ msgstr "清除邊距"
 msgid "Use Mipmaps"
 msgstr "使用 Mipmap"
 
-msgid "Disable Mode"
-msgstr "停用模式"
-
-msgid "Input"
-msgstr "輸入"
-
-msgid "Pickable"
-msgstr "可拾取"
-
-msgid "Build Mode"
-msgstr "建構模式"
-
-msgid "Disabled"
-msgstr "已停用的專案"
-
-msgid "One Way Collision"
-msgstr "單向碰撞"
-
-msgid "One Way Collision Margin"
-msgstr "單向碰撞邊距"
-
-msgid "Debug Color"
-msgstr "除錯顏色"
-
 msgid "Emitting"
 msgstr "發射"
 
@@ -4390,8 +4333,14 @@ msgstr "粒子旗標"
 msgid "Align Y"
 msgstr "對齊 Y"
 
+msgid "Direction"
+msgstr "方向"
+
 msgid "Spread"
 msgstr "發散"
+
+msgid "Gravity"
+msgstr "重力"
 
 msgid "Initial Velocity"
 msgstr "初速度"
@@ -4524,48 +4473,6 @@ msgstr "節"
 
 msgid "Section Subdivisions"
 msgstr "節細分"
-
-msgid "Node A"
-msgstr "節點 A"
-
-msgid "Node B"
-msgstr "節點 B"
-
-msgid "Bias"
-msgstr "偏置"
-
-msgid "Disable Collision"
-msgstr "停用碰撞"
-
-msgid "Softness"
-msgstr "柔軟度"
-
-msgid "Angular Limit"
-msgstr "角度極限"
-
-msgid "Lower"
-msgstr "下端"
-
-msgid "Upper"
-msgstr "上端"
-
-msgid "Motor"
-msgstr "馬達"
-
-msgid "Target Velocity"
-msgstr "目標速度"
-
-msgid "Length"
-msgstr "長度"
-
-msgid "Initial Offset"
-msgstr "初始偏移"
-
-msgid "Rest Length"
-msgstr "放鬆長度"
-
-msgid "Stiffness"
-msgstr "硬度"
 
 msgid "Editor Only"
 msgstr "僅編輯器"
@@ -4753,6 +4660,21 @@ msgstr "約束避障"
 msgid "Skew"
 msgstr "偏斜"
 
+msgid "Scroll Offset"
+msgstr "滾動偏移"
+
+msgid "Repeat"
+msgstr "重覆"
+
+msgid "Begin"
+msgstr "起點"
+
+msgid "End"
+msgstr "頁尾"
+
+msgid "Follow Viewport"
+msgstr "跟隨檢視區"
+
 msgid "Scroll"
 msgstr "滾動"
 
@@ -4798,6 +4720,147 @@ msgstr "旋轉"
 msgid "Cubic Interp"
 msgstr "三次插值"
 
+msgid "Sync to Physics"
+msgstr "與物理同步"
+
+msgid "Monitoring"
+msgstr "監視"
+
+msgid "Monitorable"
+msgstr "可被監視"
+
+msgid "Space Override"
+msgstr "空間覆蓋"
+
+msgid "Point"
+msgstr "點"
+
+msgid "Point Unit Distance"
+msgstr "點單位距離"
+
+msgid "Point Center"
+msgstr "點中心"
+
+msgid "Linear Damp"
+msgstr "線性阻尼"
+
+msgid "Angular Damp"
+msgstr "角度阻尼"
+
+msgid "Audio Bus"
+msgstr "音訊匯流排"
+
+msgid "Motion Mode"
+msgstr "運動模式"
+
+msgid "Up Direction"
+msgstr "向上方向"
+
+msgid "Slide on Ceiling"
+msgstr "在天花板上滑動"
+
+msgid "Wall Min Slide Angle"
+msgstr "牆體最小滑動角度"
+
+msgid "Floor"
+msgstr "地面"
+
+msgid "Stop on Slope"
+msgstr "在斜坡上停止"
+
+msgid "Constant Speed"
+msgstr "恒定速度"
+
+msgid "Block on Wall"
+msgstr "阻止上牆"
+
+msgid "Max Angle"
+msgstr "最大角度"
+
+msgid "Snap Length"
+msgstr "吸附長度"
+
+msgid "Moving Platform"
+msgstr "可移動平臺"
+
+msgid "On Leave"
+msgstr "離開時"
+
+msgid "Floor Layers"
+msgstr "地面圖層"
+
+msgid "Wall Layers"
+msgstr "牆體圖層"
+
+msgid "Safe Margin"
+msgstr "安全邊距"
+
+msgid "Disable Mode"
+msgstr "停用模式"
+
+msgid "Input"
+msgstr "輸入"
+
+msgid "Pickable"
+msgstr "可拾取"
+
+msgid "Build Mode"
+msgstr "建構模式"
+
+msgid "Disabled"
+msgstr "已停用的專案"
+
+msgid "One Way Collision"
+msgstr "單向碰撞"
+
+msgid "One Way Collision Margin"
+msgstr "單向碰撞邊距"
+
+msgid "Debug Color"
+msgstr "除錯顏色"
+
+msgid "Length"
+msgstr "長度"
+
+msgid "Rest Length"
+msgstr "放鬆長度"
+
+msgid "Stiffness"
+msgstr "硬度"
+
+msgid "Initial Offset"
+msgstr "初始偏移"
+
+msgid "Node A"
+msgstr "節點 A"
+
+msgid "Node B"
+msgstr "節點 B"
+
+msgid "Bias"
+msgstr "偏置"
+
+msgid "Disable Collision"
+msgstr "停用碰撞"
+
+msgid "Softness"
+msgstr "柔軟度"
+
+msgid "Angular Limit"
+msgstr "角度極限"
+
+msgid "Lower"
+msgstr "下端"
+
+msgid "Upper"
+msgstr "上端"
+
+msgid "Motor"
+msgstr "馬達"
+
+msgid "Target Velocity"
+msgstr "目標速度"
+
 msgid "Bone 2D Nodepath"
 msgstr "骨骼 2D 節點路徑"
 
@@ -4813,14 +4876,23 @@ msgstr "類比物理"
 msgid "Follow Bone When Simulating"
 msgstr "模擬時跟隨骨骼"
 
-msgid "Constant Linear Velocity"
-msgstr "常線速度"
+msgid "Exclude Parent"
+msgstr "排除父節點"
 
-msgid "Constant Angular Velocity"
-msgstr "常角速度"
+msgid "Target Position"
+msgstr "目標位置"
 
-msgid "Sync to Physics"
-msgstr "與物理同步"
+msgid "Hit From Inside"
+msgstr "從內部命中"
+
+msgid "Collide With"
+msgstr "參與碰撞"
+
+msgid "Areas"
+msgstr "區域"
+
+msgid "Bodies"
+msgstr "實體"
 
 msgid "Gravity Scale"
 msgstr "重力縮放"
@@ -4885,50 +4957,17 @@ msgstr "恆定的力"
 msgid "Torque"
 msgstr "力矩"
 
-msgid "Motion Mode"
-msgstr "運動模式"
+msgid "Margin"
+msgstr "邊距"
 
-msgid "Up Direction"
-msgstr "向上方向"
+msgid "Max Results"
+msgstr "最大結果"
 
-msgid "Slide on Ceiling"
-msgstr "在天花板上滑動"
+msgid "Constant Linear Velocity"
+msgstr "常線速度"
 
-msgid "Wall Min Slide Angle"
-msgstr "牆體最小滑動角度"
-
-msgid "Floor"
-msgstr "地面"
-
-msgid "Stop on Slope"
-msgstr "在斜坡上停止"
-
-msgid "Constant Speed"
-msgstr "恒定速度"
-
-msgid "Block on Wall"
-msgstr "阻止上牆"
-
-msgid "Max Angle"
-msgstr "最大角度"
-
-msgid "Snap Length"
-msgstr "吸附長度"
-
-msgid "Moving Platform"
-msgstr "可移動平臺"
-
-msgid "On Leave"
-msgstr "離開時"
-
-msgid "Floor Layers"
-msgstr "地面圖層"
-
-msgid "Wall Layers"
-msgstr "牆體圖層"
-
-msgid "Safe Margin"
-msgstr "安全邊距"
+msgid "Constant Angular Velocity"
+msgstr "常角速度"
 
 msgid "UV"
 msgstr "UV"
@@ -4942,24 +4981,6 @@ msgstr "多邊形"
 msgid "Internal Vertex Count"
 msgstr "內部頂點數"
 
-msgid "Exclude Parent"
-msgstr "排除父節點"
-
-msgid "Target Position"
-msgstr "目標位置"
-
-msgid "Hit From Inside"
-msgstr "從內部命中"
-
-msgid "Collide With"
-msgstr "參與碰撞"
-
-msgid "Areas"
-msgstr "區域"
-
-msgid "Bodies"
-msgstr "實體"
-
 msgid "Remote Path"
 msgstr "遠端路徑"
 
@@ -4968,12 +4989,6 @@ msgstr "使用全域座標"
 
 msgid "Update"
 msgstr "更新"
-
-msgid "Margin"
-msgstr "邊距"
-
-msgid "Max Results"
-msgstr "最大結果"
 
 msgid "Auto Calculate Length and Angle"
 msgstr "自動計算長度和角度"
@@ -5047,24 +5062,6 @@ msgstr "啟用"
 msgid "Node Path"
 msgstr "節點路徑"
 
-msgid "Wind"
-msgstr "風"
-
-msgid "Force Magnitude"
-msgstr "力量大小"
-
-msgid "Attenuation Factor"
-msgstr "衰減係數"
-
-msgid "Source Path"
-msgstr "資源路徑"
-
-msgid "Reverb Bus"
-msgstr "混響匯流排"
-
-msgid "Uniformity"
-msgstr "均勻性"
-
 msgid "Attenuation Model"
 msgstr "衰減模型"
 
@@ -5130,12 +5127,6 @@ msgstr "近平面"
 
 msgid "Far"
 msgstr "遠平面"
-
-msgid "Ray Pickable"
-msgstr "射線可拾取"
-
-msgid "Capture on Drag"
-msgstr "拖曳時捕獲"
 
 msgid "Visibility AABB"
 msgstr "切換 AABB 可見／隱藏"
@@ -5206,9 +5197,6 @@ msgstr "下側淡出"
 msgid "Distance Fade"
 msgstr "距離淡出"
 
-msgid "Begin"
-msgstr "起點"
-
 msgid "Transform Align"
 msgstr "變換對齊"
 
@@ -5245,98 +5233,11 @@ msgstr "能見度範圍"
 msgid "Begin Margin"
 msgstr "起始邊距"
 
-msgid "End"
-msgstr "頁尾"
-
 msgid "End Margin"
 msgstr "結束邊距"
 
 msgid "Fade Mode"
 msgstr "淡入淡出模式"
-
-msgid "Solver Priority"
-msgstr "求解優先級"
-
-msgid "Exclude Nodes From Collision"
-msgstr "從碰撞中排除節點"
-
-msgid "Params"
-msgstr "參數"
-
-msgid "Impulse Clamp"
-msgstr "脈衝極限"
-
-msgid "Relaxation"
-msgstr "鬆弛"
-
-msgid "Max Impulse"
-msgstr "最大脈衝"
-
-msgid "Linear Limit"
-msgstr "線性極限"
-
-msgid "Upper Distance"
-msgstr "距離上限"
-
-msgid "Lower Distance"
-msgstr "距離下限"
-
-msgid "Restitution"
-msgstr "復原"
-
-msgid "Linear Motion"
-msgstr "線性運動"
-
-msgid "Linear Ortho"
-msgstr "線性正交"
-
-msgid "Upper Angle"
-msgstr "上端角"
-
-msgid "Lower Angle"
-msgstr "下端角"
-
-msgid "Angular Motion"
-msgstr "角度運動"
-
-msgid "Angular Ortho"
-msgstr "角度正交"
-
-msgid "Swing Span"
-msgstr "擺動範圍"
-
-msgid "Twist Span"
-msgstr "扭轉範圍"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
-
-msgid "Linear Motor"
-msgstr "線性馬達"
-
-msgid "Force Limit"
-msgstr "力量極限"
-
-msgid "Linear Spring"
-msgstr "線性彈簧"
-
-msgid "Equilibrium Point"
-msgstr "平衡點"
-
-msgid "ERP"
-msgstr "ERP"
-
-msgid "Angular Motor"
-msgstr "角度馬達"
-
-msgid "Angular Spring"
-msgstr "角度彈簧"
 
 msgid "Pixel Size"
 msgstr "像素大小"
@@ -5590,26 +5491,113 @@ msgstr "使用模型正面"
 msgid "Tilt Enabled"
 msgstr "啟用傾斜"
 
-msgid "Axis Lock"
-msgstr "軸鎖定"
+msgid "Wind"
+msgstr "風"
 
-msgid "Linear X"
-msgstr "線性 X"
+msgid "Force Magnitude"
+msgstr "力量大小"
 
-msgid "Linear Y"
-msgstr "線性 Y"
+msgid "Attenuation Factor"
+msgstr "衰減係數"
 
-msgid "Linear Z"
-msgstr "線性 Z"
+msgid "Source Path"
+msgstr "資源路徑"
 
-msgid "Angular X"
-msgstr "角度 X"
+msgid "Reverb Bus"
+msgstr "混響匯流排"
 
-msgid "Angular Y"
-msgstr "角度 Y"
+msgid "Uniformity"
+msgstr "均勻性"
 
-msgid "Angular Z"
-msgstr "角度 Z"
+msgid "Ray Pickable"
+msgstr "射線可拾取"
+
+msgid "Capture on Drag"
+msgstr "拖曳時捕獲"
+
+msgid "Swing Span"
+msgstr "擺動範圍"
+
+msgid "Twist Span"
+msgstr "扭轉範圍"
+
+msgid "Relaxation"
+msgstr "鬆弛"
+
+msgid "Linear Limit"
+msgstr "線性極限"
+
+msgid "X"
+msgstr "X"
+
+msgid "Upper Distance"
+msgstr "距離上限"
+
+msgid "Lower Distance"
+msgstr "距離下限"
+
+msgid "Restitution"
+msgstr "復原"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Linear Motor"
+msgstr "線性馬達"
+
+msgid "Force Limit"
+msgstr "力量極限"
+
+msgid "Linear Spring"
+msgstr "線性彈簧"
+
+msgid "Equilibrium Point"
+msgstr "平衡點"
+
+msgid "Upper Angle"
+msgstr "上端角"
+
+msgid "Lower Angle"
+msgstr "下端角"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Angular Motor"
+msgstr "角度馬達"
+
+msgid "Angular Spring"
+msgstr "角度彈簧"
+
+msgid "Params"
+msgstr "參數"
+
+msgid "Max Impulse"
+msgstr "最大脈衝"
+
+msgid "Solver Priority"
+msgstr "求解優先級"
+
+msgid "Exclude Nodes From Collision"
+msgstr "從碰撞中排除節點"
+
+msgid "Impulse Clamp"
+msgstr "脈衝極限"
+
+msgid "Linear Motion"
+msgstr "線性運動"
+
+msgid "Linear Ortho"
+msgstr "線性正交"
+
+msgid "Angular Motion"
+msgstr "角度運動"
+
+msgid "Angular Ortho"
+msgstr "角度正交"
 
 msgid "Joint Constraints"
 msgstr "關節約束"
@@ -5707,11 +5695,74 @@ msgstr "線性阻尼模式"
 msgid "Angular Damp Mode"
 msgstr "角度阻尼模式"
 
+msgid "Axis Lock"
+msgstr "軸鎖定"
+
+msgid "Linear X"
+msgstr "線性 X"
+
+msgid "Linear Y"
+msgstr "線性 Y"
+
+msgid "Linear Z"
+msgstr "線性 Z"
+
+msgid "Angular X"
+msgstr "角度 X"
+
+msgid "Angular Y"
+msgstr "角度 Y"
+
+msgid "Angular Z"
+msgstr "角度 Z"
+
 msgid "Hit Back Faces"
 msgstr "命中背面"
 
 msgid "Debug Shape"
 msgstr "除錯形狀"
+
+msgid "Spring Length"
+msgstr "彈簧長度"
+
+msgid "Per-Wheel Motion"
+msgstr "單輪運動"
+
+msgid "Engine Force"
+msgstr "引擎力度"
+
+msgid "Brake"
+msgstr "剎車"
+
+msgid "Steering"
+msgstr "轉向控制"
+
+msgid "VehicleBody3D Motion"
+msgstr "VehicleBody3D 運動"
+
+msgid "Use as Traction"
+msgstr "用作牽引"
+
+msgid "Use as Steering"
+msgstr "用作轉向"
+
+msgid "Wheel"
+msgstr "車輪"
+
+msgid "Roll Influence"
+msgstr "翻滾影響"
+
+msgid "Friction Slip"
+msgstr "摩擦滑動"
+
+msgid "Suspension"
+msgstr "懸架"
+
+msgid "Travel"
+msgstr "行程"
+
+msgid "Max Force"
+msgstr "最大力度"
 
 msgid "Origin Offset"
 msgstr "原點偏移"
@@ -5805,48 +5856,6 @@ msgstr "阻尼係數"
 
 msgid "Drag Coefficient"
 msgstr "阻力係數"
-
-msgid "Spring Length"
-msgstr "彈簧長度"
-
-msgid "Per-Wheel Motion"
-msgstr "單輪運動"
-
-msgid "Engine Force"
-msgstr "引擎力度"
-
-msgid "Brake"
-msgstr "剎車"
-
-msgid "Steering"
-msgstr "轉向控制"
-
-msgid "VehicleBody3D Motion"
-msgstr "VehicleBody3D 運動"
-
-msgid "Use as Traction"
-msgstr "用作牽引"
-
-msgid "Use as Steering"
-msgstr "用作轉向"
-
-msgid "Wheel"
-msgstr "車輪"
-
-msgid "Roll Influence"
-msgstr "翻滾影響"
-
-msgid "Friction Slip"
-msgstr "摩擦滑動"
-
-msgid "Suspension"
-msgstr "懸架"
-
-msgid "Travel"
-msgstr "行程"
-
-msgid "Max Force"
-msgstr "最大力度"
 
 msgid "Track Physics Step"
 msgstr "追蹤物理反覆運算"
@@ -6327,9 +6336,6 @@ msgstr "根部子資料夾"
 
 msgid "Use Native Dialog"
 msgstr "使用原生對話方塊"
-
-msgid "Scroll Offset"
-msgstr "滾動偏移"
 
 msgid "Show Grid"
 msgstr "顯示網格"
@@ -6904,9 +6910,6 @@ msgstr "Z 為相對量"
 msgid "Y Sort Enabled"
 msgstr "啟用 Y 排序"
 
-msgid "Repeat"
-msgstr "重覆"
-
 msgid "Use Parent Material"
 msgstr "使用父級材質"
 
@@ -6918,9 +6921,6 @@ msgstr "法線貼圖"
 
 msgid "Shininess"
 msgstr "光澤度"
-
-msgid "Follow Viewport"
-msgstr "跟隨檢視區"
 
 msgid "Download File"
 msgstr "下載檔案"
@@ -7261,6 +7261,360 @@ msgstr "3D 物理"
 msgid "3D Navigation"
 msgstr "3D 導航"
 
+msgid "Segments"
+msgstr "分段"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Slide on Slope"
+msgstr "斜坡滑動"
+
+msgid "Custom Solver Bias"
+msgstr "自訂求解器偏置"
+
+msgid "Execution Mode"
+msgstr "執行模式"
+
+msgid "Target Nodepath"
+msgstr "目標節點路徑"
+
+msgid "Tip Nodepath"
+msgstr "尖端節點路徑"
+
+msgid "CCDIK Data Chain Length"
+msgstr "CCDIK 資料鏈長度"
+
+msgid "FABRIK Data Chain Length"
+msgstr "FABRIK 資料鏈長度"
+
+msgid "Jiggle Data Chain Length"
+msgstr "Jiggle 資料鏈長度"
+
+msgid "Default Joint Settings"
+msgstr "預設關節設定"
+
+msgid "Use Gravity"
+msgstr "使用重力"
+
+msgid "Bone Index"
+msgstr "骨骼索引"
+
+msgid "Bone 2D Node"
+msgstr "Bone2D 節點"
+
+msgid "Physical Bone Chain Length"
+msgstr "物理骨鏈長度"
+
+msgid "Target Minimum Distance"
+msgstr "目標最小距離"
+
+msgid "Target Maximum Distance"
+msgstr "目標最大距離"
+
+msgid "Flip Bend Direction"
+msgstr "翻轉彎曲方向"
+
+msgid "Modification Count"
+msgstr "修改數"
+
+msgid "Right Side"
+msgstr "右側邊緣"
+
+msgid "Right Corner"
+msgstr "右側角落"
+
+msgid "Bottom Right Side"
+msgstr "右下邊緣"
+
+msgid "Bottom Right Corner"
+msgstr "右下角落"
+
+msgid "Bottom Side"
+msgstr "下側邊緣"
+
+msgid "Bottom Corner"
+msgstr "下側角落"
+
+msgid "Bottom Left Side"
+msgstr "左下邊緣"
+
+msgid "Bottom Left Corner"
+msgstr "左下角落"
+
+msgid "Left Side"
+msgstr "左側邊緣"
+
+msgid "Left Corner"
+msgstr "左側角落"
+
+msgid "Top Left Side"
+msgstr "左上邊緣"
+
+msgid "Top Left Corner"
+msgstr "左上角落"
+
+msgid "Top Side"
+msgstr "上側邊緣"
+
+msgid "Top Corner"
+msgstr "上側角落"
+
+msgid "Top Right Side"
+msgstr "右上邊緣"
+
+msgid "Top Right Corner"
+msgstr "右上角落"
+
+msgid "Terrains"
+msgstr "地形"
+
+msgid "Custom Data"
+msgstr "自訂資料"
+
+msgid "Tile Proxies"
+msgstr "圖塊代理"
+
+msgid "Source Level"
+msgstr "原始碼等級"
+
+msgid "Coords Level"
+msgstr "座標級別"
+
+msgid "Alternative Level"
+msgstr "備選級別"
+
+msgid "Tile Shape"
+msgstr "圖塊形狀"
+
+msgid "Tile Layout"
+msgstr "圖塊佈局"
+
+msgid "Tile Offset Axis"
+msgstr "圖塊偏移軸"
+
+msgid "Tile Size"
+msgstr "圖塊大小"
+
+msgid "UV Clipping"
+msgstr "UV 裁剪"
+
+msgid "Occlusion Layers"
+msgstr "遮擋圖層"
+
+msgid "Physics Layers"
+msgstr "實體圖層"
+
+msgid "Terrain Sets"
+msgstr "地形集"
+
+msgid "Custom Data Layers"
+msgstr "自訂資料層"
+
+msgid "Scenes"
+msgstr "場景"
+
+msgid "Scene"
+msgstr "場景"
+
+msgid "Display Placeholder"
+msgstr "顯示預留位置"
+
+msgid "Polygons Count"
+msgstr "多邊形數"
+
+msgid "One Way"
+msgstr "單向"
+
+msgid "One Way Margin"
+msgstr "單向邊距"
+
+msgid "Terrains Peering Bit"
+msgstr "地形臨接位"
+
+msgid "Transpose"
+msgstr "轉置"
+
+msgid "Texture Origin"
+msgstr "紋理原點"
+
+msgid "Y Sort Origin"
+msgstr "Y 排序原點"
+
+msgid "Terrain Set"
+msgstr "地形集"
+
+msgid "Terrain"
+msgstr "地形"
+
+msgid "Miscellaneous"
+msgstr "雜項"
+
+msgid "Probability"
+msgstr "概率"
+
+msgid "Distance"
+msgstr "距離"
+
+msgid "Backface Collision"
+msgstr "背面碰撞"
+
+msgid "Density"
+msgstr "密度"
+
+msgid "Height Falloff"
+msgstr "高度衰減"
+
+msgid "Edge Fade"
+msgstr "邊緣淡化"
+
+msgid "Density Texture"
+msgstr "密度紋理"
+
+msgid "Map Width"
+msgstr "貼圖寬度"
+
+msgid "Map Depth"
+msgstr "貼圖深度"
+
+msgid "Map Data"
+msgstr "地圖資料"
+
+msgid "Item"
+msgstr "項目"
+
+msgid "Mesh Transform"
+msgstr "網格變換"
+
+msgid "Navigation Mesh Transform"
+msgstr "導航網格變換"
+
+msgid "Preview"
+msgstr "預覽"
+
+msgid "Add UV2"
+msgstr "新增 UV2"
+
+msgid "UV2 Padding"
+msgstr "UV2 填充"
+
+msgid "Subdivide Width"
+msgstr "細分寬度"
+
+msgid "Subdivide Height"
+msgstr "細分高度"
+
+msgid "Subdivide Depth"
+msgstr "細分深度"
+
+msgid "Top Radius"
+msgstr "頂部半徑"
+
+msgid "Bottom Radius"
+msgstr "底部半徑"
+
+msgid "Cap Top"
+msgstr "頂蓋"
+
+msgid "Cap Bottom"
+msgstr "底蓋"
+
+msgid "Left to Right"
+msgstr "從左到右"
+
+msgid "Is Hemisphere"
+msgstr "是否半球"
+
+msgid "Ring Segments"
+msgstr "環段數"
+
+msgid "Radial Steps"
+msgstr "徑向步數"
+
+msgid "Section Length"
+msgstr "節長度"
+
+msgid "Section Rings"
+msgstr "節環數"
+
+msgid "Section Segments"
+msgstr "節段數"
+
+msgid "Curve Step"
+msgstr "曲線步長"
+
+msgid "Bind Count"
+msgstr "綁定數"
+
+msgid "Bind"
+msgstr "綁定"
+
+msgid "Bone"
+msgstr "骨骼"
+
+msgid "Sky"
+msgstr "天空"
+
+msgid "Top Color"
+msgstr "頂部顏色"
+
+msgid "Horizon Color"
+msgstr "地平線顏色"
+
+msgid "Energy Multiplier"
+msgstr "能量倍數"
+
+msgid "Cover"
+msgstr "天穹"
+
+msgid "Cover Modulate"
+msgstr "天穹調變"
+
+msgid "Ground"
+msgstr "地面"
+
+msgid "Bottom Color"
+msgstr "底部顏色"
+
+msgid "Sun"
+msgstr "太陽"
+
+msgid "Panorama"
+msgstr "全景"
+
+msgid "Rayleigh"
+msgstr "瑞利散射"
+
+msgid "Coefficient"
+msgstr "係數"
+
+msgid "Mie"
+msgstr "米氏散射"
+
+msgid "Eccentricity"
+msgstr "偏心率"
+
+msgid "Turbidity"
+msgstr "濁度"
+
+msgid "Sun Disk Scale"
+msgstr "太陽盤縮放"
+
+msgid "Ground Color"
+msgstr "地面顏色"
+
+msgid "Night Sky"
+msgstr "夜空"
+
+msgid "Fallback Environment"
+msgstr "退回環境"
+
+msgid "Plane"
+msgstr "平面"
+
 msgid "Frames"
 msgstr "影格"
 
@@ -7378,12 +7732,6 @@ msgstr "粒子動畫迴圈"
 msgid "Load Path"
 msgstr "載入路徑"
 
-msgid "Segments"
-msgstr "分段"
-
-msgid "Backface Collision"
-msgstr "背面碰撞"
-
 msgid "Bake Resolution"
 msgstr "烘焙解析度"
 
@@ -7405,14 +7753,8 @@ msgstr "曲線 Z"
 msgid "Background"
 msgstr "背景"
 
-msgid "Energy Multiplier"
-msgstr "能量倍數"
-
 msgid "Canvas Max Layer"
 msgstr "畫布最大圖層"
-
-msgid "Sky"
-msgstr "天空"
 
 msgid "Custom FOV"
 msgstr "自訂 FOV"
@@ -7561,9 +7903,6 @@ msgstr "光線能量"
 msgid "Sun Scatter"
 msgstr "太陽散射"
 
-msgid "Density"
-msgstr "密度"
-
 msgid "Aerial Perspective"
 msgstr "空氣透視"
 
@@ -7602,15 +7941,6 @@ msgstr "飽和度"
 
 msgid "Color Correction"
 msgstr "顏色校正"
-
-msgid "Height Falloff"
-msgstr "高度衰減"
-
-msgid "Edge Fade"
-msgstr "邊緣淡化"
-
-msgid "Density Texture"
-msgstr "密度紋理"
 
 msgid "Base Font"
 msgstr "基礎字體"
@@ -7656,15 +7986,6 @@ msgstr "起點"
 
 msgid "To"
 msgstr "終點"
-
-msgid "Map Width"
-msgstr "貼圖寬度"
-
-msgid "Map Depth"
-msgstr "貼圖深度"
-
-msgid "Map Data"
-msgstr "地圖資料"
 
 msgid "Next Pass"
 msgstr "下一階段"
@@ -7831,9 +8152,6 @@ msgstr "使用粒子尾跡"
 msgid "Proximity Fade"
 msgstr "鄰近淡出"
 
-msgid "Distance"
-msgstr "距離"
-
 msgid "MSDF"
 msgstr "MSDF"
 
@@ -7854,18 +8172,6 @@ msgstr "混合形狀模式"
 
 msgid "Shadow Mesh"
 msgstr "陰影網格"
-
-msgid "Item"
-msgstr "項目"
-
-msgid "Mesh Transform"
-msgstr "網格變換"
-
-msgid "Navigation Mesh Transform"
-msgstr "導航網格變換"
-
-msgid "Preview"
-msgstr "預覽"
 
 msgid "Base Texture"
 msgstr "基礎紋理"
@@ -8008,114 +8314,6 @@ msgstr "尺寸覆蓋"
 msgid "Keep Compressed Buffer"
 msgstr "保持壓縮緩衝"
 
-msgid "Add UV2"
-msgstr "新增 UV2"
-
-msgid "UV2 Padding"
-msgstr "UV2 填充"
-
-msgid "Subdivide Width"
-msgstr "細分寬度"
-
-msgid "Subdivide Height"
-msgstr "細分高度"
-
-msgid "Subdivide Depth"
-msgstr "細分深度"
-
-msgid "Top Radius"
-msgstr "頂部半徑"
-
-msgid "Bottom Radius"
-msgstr "底部半徑"
-
-msgid "Cap Top"
-msgstr "頂蓋"
-
-msgid "Cap Bottom"
-msgstr "底蓋"
-
-msgid "Left to Right"
-msgstr "從左到右"
-
-msgid "Is Hemisphere"
-msgstr "是否半球"
-
-msgid "Ring Segments"
-msgstr "環段數"
-
-msgid "Radial Steps"
-msgstr "徑向步數"
-
-msgid "Section Length"
-msgstr "節長度"
-
-msgid "Section Rings"
-msgstr "節環數"
-
-msgid "Section Segments"
-msgstr "節段數"
-
-msgid "Curve Step"
-msgstr "曲線步長"
-
-msgid "A"
-msgstr "A"
-
-msgid "B"
-msgstr "B"
-
-msgid "Slide on Slope"
-msgstr "斜坡滑動"
-
-msgid "Custom Solver Bias"
-msgstr "自訂求解器偏置"
-
-msgid "Execution Mode"
-msgstr "執行模式"
-
-msgid "Target Nodepath"
-msgstr "目標節點路徑"
-
-msgid "Tip Nodepath"
-msgstr "尖端節點路徑"
-
-msgid "CCDIK Data Chain Length"
-msgstr "CCDIK 資料鏈長度"
-
-msgid "FABRIK Data Chain Length"
-msgstr "FABRIK 資料鏈長度"
-
-msgid "Jiggle Data Chain Length"
-msgstr "Jiggle 資料鏈長度"
-
-msgid "Default Joint Settings"
-msgstr "預設關節設定"
-
-msgid "Use Gravity"
-msgstr "使用重力"
-
-msgid "Bone Index"
-msgstr "骨骼索引"
-
-msgid "Bone 2D Node"
-msgstr "Bone2D 節點"
-
-msgid "Physical Bone Chain Length"
-msgstr "物理骨鏈長度"
-
-msgid "Target Minimum Distance"
-msgstr "目標最小距離"
-
-msgid "Target Maximum Distance"
-msgstr "目標最大距離"
-
-msgid "Flip Bend Direction"
-msgstr "翻轉彎曲方向"
-
-msgid "Modification Count"
-msgstr "修改數"
-
 msgid "Scale Base Bone"
 msgstr "縮放基礎骨骼"
 
@@ -8125,15 +8323,6 @@ msgstr "分組大小"
 msgid "Bone Size"
 msgstr "骨骼大小"
 
-msgid "Bind Count"
-msgstr "綁定數"
-
-msgid "Bind"
-msgstr "綁定"
-
-msgid "Bone"
-msgstr "骨骼"
-
 msgid "Sky Material"
 msgstr "天空材質"
 
@@ -8142,54 +8331,6 @@ msgstr "處理模式"
 
 msgid "Radiance Size"
 msgstr "輻射大小"
-
-msgid "Top Color"
-msgstr "頂部顏色"
-
-msgid "Horizon Color"
-msgstr "地平線顏色"
-
-msgid "Cover"
-msgstr "天穹"
-
-msgid "Cover Modulate"
-msgstr "天穹調變"
-
-msgid "Ground"
-msgstr "地面"
-
-msgid "Bottom Color"
-msgstr "底部顏色"
-
-msgid "Sun"
-msgstr "太陽"
-
-msgid "Panorama"
-msgstr "全景"
-
-msgid "Rayleigh"
-msgstr "瑞利散射"
-
-msgid "Coefficient"
-msgstr "係數"
-
-msgid "Mie"
-msgstr "米氏散射"
-
-msgid "Eccentricity"
-msgstr "偏心率"
-
-msgid "Turbidity"
-msgstr "濁度"
-
-msgid "Sun Disk Scale"
-msgstr "太陽盤縮放"
-
-msgid "Ground Color"
-msgstr "地面顏色"
-
-msgid "Night Sky"
-msgstr "夜空"
 
 msgid "Content Margins"
 msgstr "內容邊距"
@@ -8256,141 +8397,6 @@ msgstr "預設字體"
 
 msgid "Default Font Size"
 msgstr "預設字體大小"
-
-msgid "Right Side"
-msgstr "右側邊緣"
-
-msgid "Right Corner"
-msgstr "右側角落"
-
-msgid "Bottom Right Side"
-msgstr "右下邊緣"
-
-msgid "Bottom Right Corner"
-msgstr "右下角落"
-
-msgid "Bottom Side"
-msgstr "下側邊緣"
-
-msgid "Bottom Corner"
-msgstr "下側角落"
-
-msgid "Bottom Left Side"
-msgstr "左下邊緣"
-
-msgid "Bottom Left Corner"
-msgstr "左下角落"
-
-msgid "Left Side"
-msgstr "左側邊緣"
-
-msgid "Left Corner"
-msgstr "左側角落"
-
-msgid "Top Left Side"
-msgstr "左上邊緣"
-
-msgid "Top Left Corner"
-msgstr "左上角落"
-
-msgid "Top Side"
-msgstr "上側邊緣"
-
-msgid "Top Corner"
-msgstr "上側角落"
-
-msgid "Top Right Side"
-msgstr "右上邊緣"
-
-msgid "Top Right Corner"
-msgstr "右上角落"
-
-msgid "Terrains"
-msgstr "地形"
-
-msgid "Custom Data"
-msgstr "自訂資料"
-
-msgid "Tile Proxies"
-msgstr "圖塊代理"
-
-msgid "Source Level"
-msgstr "原始碼等級"
-
-msgid "Coords Level"
-msgstr "座標級別"
-
-msgid "Alternative Level"
-msgstr "備選級別"
-
-msgid "Tile Shape"
-msgstr "圖塊形狀"
-
-msgid "Tile Layout"
-msgstr "圖塊佈局"
-
-msgid "Tile Offset Axis"
-msgstr "圖塊偏移軸"
-
-msgid "Tile Size"
-msgstr "圖塊大小"
-
-msgid "UV Clipping"
-msgstr "UV 裁剪"
-
-msgid "Occlusion Layers"
-msgstr "遮擋圖層"
-
-msgid "Physics Layers"
-msgstr "實體圖層"
-
-msgid "Terrain Sets"
-msgstr "地形集"
-
-msgid "Custom Data Layers"
-msgstr "自訂資料層"
-
-msgid "Scenes"
-msgstr "場景"
-
-msgid "Scene"
-msgstr "場景"
-
-msgid "Display Placeholder"
-msgstr "顯示預留位置"
-
-msgid "Polygons Count"
-msgstr "多邊形數"
-
-msgid "One Way"
-msgstr "單向"
-
-msgid "One Way Margin"
-msgstr "單向邊距"
-
-msgid "Terrains Peering Bit"
-msgstr "地形臨接位"
-
-msgid "Transpose"
-msgstr "轉置"
-
-msgid "Texture Origin"
-msgstr "紋理原點"
-
-msgid "Y Sort Origin"
-msgstr "Y 排序原點"
-
-msgid "Terrain Set"
-msgstr "地形集"
-
-msgid "Terrain"
-msgstr "地形"
-
-msgid "Miscellaneous"
-msgstr "雜項"
-
-msgid "Probability"
-msgstr "概率"
 
 msgid "File"
 msgstr "檔案"
@@ -8469,12 +8475,6 @@ msgstr "表面索引"
 
 msgid "Degrees Mode"
 msgstr "度數模式"
-
-msgid "Fallback Environment"
-msgstr "退回環境"
-
-msgid "Plane"
-msgstr "平面"
 
 msgid "Panel"
 msgstr "面板"
@@ -9985,6 +9985,9 @@ msgstr "著色器語言"
 msgid "Treat Warnings as Errors"
 msgstr "將警告當作錯誤"
 
+msgid "Has Tracking Data"
+msgstr "有追蹤資料"
+
 msgid "Is Primary"
 msgstr "是否主要"
 
@@ -9996,9 +9999,6 @@ msgstr "AR"
 
 msgid "Is Anchor Detection Enabled"
 msgstr "錨點檢測是否啟用"
-
-msgid "Has Tracking Data"
-msgstr "有追蹤資料"
 
 msgid "Tracking Confidence"
 msgstr "追蹤置信度"

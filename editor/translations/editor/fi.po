@@ -1194,6 +1194,9 @@ msgstr "Varoitukset"
 msgid "Line and column numbers."
 msgstr "Rivi- ja sarakenumerot."
 
+msgid "Indentation"
+msgstr "Sisennys"
+
 msgid "Method in target node must be specified."
 msgstr "Kohdesolmun metodi täytyy määrittää."
 
@@ -1787,9 +1790,6 @@ msgstr "Kansion nimi on validi."
 
 msgid "Thanks from the Godot community!"
 msgstr "Kiitos Godot-yhteisöltä!"
-
-msgid "Click to copy."
-msgstr "Napsauta kopioidaksesi."
 
 msgid "Godot Engine contributors"
 msgstr "Godot moottorin kehittäjät"
@@ -3485,9 +3485,6 @@ msgstr "Solmu"
 msgid "History"
 msgstr "Historia"
 
-msgid "Expand Bottom Panel"
-msgstr "Laajenna alapaneeli"
-
 msgid "Output"
 msgstr "Tuloste"
 
@@ -3539,9 +3536,6 @@ msgstr "Lataa uudelleen"
 
 msgid "Resave"
 msgstr "Tallenna uudelleen"
-
-msgid "Create Version Control Metadata..."
-msgstr "Luo Versionhallintajärjestelmän Metadata..."
 
 msgid "Version Control Settings..."
 msgstr "Versionhallintajärjestelmän Asetukset..."
@@ -4335,13 +4329,6 @@ msgstr "Polku FBX2glTF-sovellukseen on tyhjä."
 msgid "Error executing this file (wrong version or architecture)."
 msgstr "Virhe suorittaessa tätä tiedostoa (väärä versio tai arkkitehtuuri)."
 
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX2glTF vaaditaan FBX-tiedostojen viemiseen.\n"
-"Lataa se internetistä ja syötä binääritiedoston polku:"
-
 msgid "Click this link to download FBX2glTF"
 msgstr "Paina tästä ladataksesi FBX2glTF"
 
@@ -4661,6 +4648,9 @@ msgstr "Poista ryhmästä"
 
 msgid "Global"
 msgstr "Globaali"
+
+msgid "Expand Bottom Panel"
+msgstr "Laajenna alapaneeli"
 
 msgid "Move"
 msgstr "Siirrä"
@@ -6308,12 +6298,6 @@ msgstr "Suhteellinen tarttuminen"
 msgid "Use Pixel Snap"
 msgstr "Tartu pikseleihin"
 
-msgid "Smart Snapping"
-msgstr "Älykäs tarttuminen"
-
-msgid "Configure Snap..."
-msgstr "Määrittele tarttuminen..."
-
 msgid "Snap to Parent"
 msgstr "Tartu isäntään"
 
@@ -6331,6 +6315,12 @@ msgstr "Tartu muihin solmuihin"
 
 msgid "Snap to Guides"
 msgstr "Tartu apuviivoihin"
+
+msgid "Smart Snapping"
+msgstr "Älykäs tarttuminen"
+
+msgid "Configure Snap..."
+msgstr "Määrittele tarttuminen..."
 
 msgid "Lock Selected Node(s)"
 msgstr "Lukitse valitut solmut"
@@ -7318,6 +7308,9 @@ msgstr "Näytä ympäristö"
 msgid "View Gizmos"
 msgstr "Näytä vempaimet"
 
+msgid "View Grid"
+msgstr "Näytä ruudukko"
+
 msgid "View Information"
 msgstr "Näytä tiedot"
 
@@ -7500,9 +7493,6 @@ msgstr "4 Näyttöruutua"
 msgid "View Origin"
 msgstr "Näytä origo"
 
-msgid "View Grid"
-msgstr "Näytä ruudukko"
-
 msgid "Settings..."
 msgstr "Asetukset..."
 
@@ -7650,9 +7640,6 @@ msgstr "Peilaa kahvojen pituudet"
 msgid "Curve Point #"
 msgstr "Käyrän piste #"
 
-msgid "Set Curve Point Position"
-msgstr "Aseta käyräpisteen sijainti"
-
 msgid "Set Curve Out Position"
 msgstr "Aseta käyrän lopetussijainti"
 
@@ -7667,6 +7654,9 @@ msgstr "Poista polun piste"
 
 msgid "Split Segment (in curve)"
 msgstr "Puolita osa (käyrässä)"
+
+msgid "Set Curve Point Position"
+msgstr "Aseta käyräpisteen sijainti"
 
 msgid "Move Joint"
 msgstr "Siirrä liitosta"
@@ -7943,14 +7933,14 @@ msgstr "Edellinen historiassa"
 msgid "History Next"
 msgstr "Seuraava historiassa"
 
-msgid "Theme"
-msgstr "Teema"
-
 msgid "Import Theme..."
 msgstr "Tuo teema..."
 
 msgid "Reload Theme"
 msgstr "Lataa teema uudelleen"
+
+msgid "Theme"
+msgstr "Teema"
 
 msgid "Save Theme"
 msgstr "Tallenna teema"
@@ -8041,9 +8031,6 @@ msgstr "Poimi väri"
 
 msgid "Folding"
 msgstr "Taittaminen"
-
-msgid "Indentation"
-msgstr "Sisennys"
 
 msgid "Uppercase"
 msgstr "Isot kirjaimet"
@@ -8255,12 +8242,6 @@ msgstr "Kuvaa ei voitu ladata"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "VIRHE: Ei voitu ladata ruudun resurssia!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Resurssileikepöytä on tyhjä tai ei sisällä tekstuuria!"
-
-msgid "Paste Frame"
-msgstr "Liitä ruutu"
-
 msgid "Add Empty"
 msgstr "Lisää tyhjä"
 
@@ -8302,9 +8283,6 @@ msgstr "Lisää ruudut sprite-arkista"
 
 msgid "Delete Frame"
 msgstr "Poista Ruutu"
-
-msgid "Copy Frame"
-msgstr "Kopioi Ruutu"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "Syötä tyhjä (Valinnan Edelle)"
@@ -11062,6 +11040,51 @@ msgstr ""
 "aktiivinen ei ole määritelty."
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"CPUParticles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
+"\"Particles Animation\" on kytketty päälle."
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+"Materiaalia partikkeleiden käsittelemiseksi ei ole määritetty, joten mitään "
+"ei tapahdu."
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Particles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
+"\"Particles Animation\" on kytketty päälle."
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr ""
+"Tekstuuri, jolta löytyy valon muoto, täytyy antaa \"texture\" ominaisuudelle."
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"Jotta tämä peittäjä toimisi, sille on asetettava (tai piirrettävä) "
+"peittopolygoni."
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "Tämän peittäjän peittopolygoni on tyhjä. Ole hyvä ja piirrä polygoni."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"ParallaxLayer solmu toimii ainoastaan, jos se on ParallaxBackground solmun "
+"alla."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D toimii ainoastaan ollessaan asetettuna Path2D solmun alle."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -11099,27 +11122,6 @@ msgstr ""
 "CollisionShape2D solmun kautta. Ole hyvä ja käytä sen sijaan "
 "CollisionPolygon2D solmua."
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"CPUParticles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
-"\"Particles Animation\" on kytketty päälle."
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-"Materiaalia partikkeleiden käsittelemiseksi ei ole määritetty, joten mitään "
-"ei tapahdu."
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Particles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
-"\"Particles Animation\" on kytketty päälle."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Solmujen A ja B tulee olla PhysicsBody2D tyyppisiä"
 
@@ -11134,30 +11136,6 @@ msgstr "Liitos ei ole yhdistetty kahteen PhysicsBody2D solmuun"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Solmujen A ja B tulee olla eri PhysicsBody2D solmut"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr ""
-"Tekstuuri, jolta löytyy valon muoto, täytyy antaa \"texture\" ominaisuudelle."
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"Jotta tämä peittäjä toimisi, sille on asetettava (tai piirrettävä) "
-"peittopolygoni."
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "Tämän peittäjän peittopolygoni on tyhjä. Ole hyvä ja piirrä polygoni."
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"ParallaxLayer solmu toimii ainoastaan, jos se on ParallaxBackground solmun "
-"alla."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D toimii ainoastaan ollessaan asetettuna Path2D solmun alle."
 
 msgid ""
 "A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
@@ -11183,6 +11161,14 @@ msgstr ""
 "Tältä luulta puuttuu kunnollinen lepoasento (REST). Mene Skeleton2D solmuun "
 "ja aseta sellainen."
 
+msgid "Nothing is visible because no mesh has been assigned."
+msgstr "Mitään ei näy, koska meshiä ei ole asetettu."
+
+msgid "Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+"Mitään ei näy, koska mesheille ei ole asetettu piirtopyyhkäisyjä (draw "
+"passes)."
+
 msgid ""
 "CollisionPolygon3D only serves to provide a collision shape to a "
 "CollisionObject3D derived node.\n"
@@ -11204,14 +11190,6 @@ msgstr ""
 "perityille solmuille.\n"
 "Käytä sitä ainoastaan Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, "
 "jne. alla antaaksesi niille muodon."
-
-msgid "Nothing is visible because no mesh has been assigned."
-msgstr "Mitään ei näy, koska meshiä ei ole asetettu."
-
-msgid "Nothing is visible because meshes have not been assigned to draw passes."
-msgstr ""
-"Mitään ei näy, koska mesheille ei ole asetettu piirtopyyhkäisyjä (draw "
-"passes)."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Tämä kappale sivuutetaan, kunnes asetat meshin."
@@ -11241,33 +11219,8 @@ msgstr "Mitään ei ole yhdistetty syötteeseen '%s' solmussa '%s'."
 msgid "No root AnimationNode for the graph is set."
 msgstr "Graafille ei ole asetettu AnimationNode juurisolmua."
 
-msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
-msgstr "Syötä hex koodi (\"#ff0000\") tai nimetty väri (\"red\")."
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Väri: #%s\n"
-"Vasen hiirenkorva: Aseta väri\n"
-"Oikea hiirenkorva: Poista esiasetus"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Väri: #%s\n"
-"Vasen hiiren painike: Aseta väri"
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Vaihda heksadesimaali- ja koodiarvojen välillä."
-
-msgid "Hex code or named color"
-msgstr "Hex koodi tai nimetty väri"
-
-msgid "Add current color as a preset."
-msgstr "Lisää nykyinen väri esiasetukseksi."
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -11290,12 +11243,6 @@ msgstr ""
 msgid "Alert!"
 msgstr "Huomio!"
 
-msgid "You don't have permission to access contents of this folder."
-msgstr "Sinulla ei ole oikeuksia tämän kansio sisältöön."
-
-msgid "Right-to-Left"
-msgstr "Oikealta-Vasemmalle"
-
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Jos \"Exp Edit\" on päällä, \"Min Value\" täytyy olla suurempi kuin 0."
 
@@ -11307,9 +11254,6 @@ msgstr ""
 "ScrollContainer on tarkoitettu toimimaan yhdellä alikontrollilla.\n"
 "Käytä alisolmuna jotakin säilöä (VBox, HBox, jne), tai Control solmua ja "
 "aseta haluttu minimikoko käsin."
-
-msgid "(Other)"
-msgstr "(Muu)"
 
 msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "

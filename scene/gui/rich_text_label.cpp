@@ -1901,7 +1901,11 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_apply_translation();
+			// If `text` is empty, it could mean that the tag stack is being used instead. Leave it be.
+			if (!text.is_empty()) {
+				_apply_translation();
+			}
+
 			queue_redraw();
 		} break;
 
@@ -5667,19 +5671,16 @@ int RichTextLabel::get_selection_to() const {
 }
 
 void RichTextLabel::set_text(const String &p_bbcode) {
-	if (text == p_bbcode) {
+	// Allow clearing the tag stack.
+	if (!p_bbcode.is_empty() && text == p_bbcode) {
 		return;
 	}
+
 	text = p_bbcode;
 	_apply_translation();
 }
 
 void RichTextLabel::_apply_translation() {
-	// If `text` is empty, it could mean that the tag stack is being used instead. Leave it be.
-	if (text.is_empty()) {
-		return;
-	}
-
 	String xl_text = atr(text);
 	if (use_bbcode) {
 		parse_bbcode(xl_text);
@@ -5700,7 +5701,10 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	use_bbcode = p_enable;
 	notify_property_list_changed();
 
-	_apply_translation();
+	// If `text` is empty, it could mean that the tag stack is being used instead. Leave it be.
+	if (!text.is_empty()) {
+		_apply_translation();
+	}
 }
 
 bool RichTextLabel::is_using_bbcode() const {

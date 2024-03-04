@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-18 23:39+0000\n"
+"PO-Revision-Date: 2024-02-23 09:02+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ka/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Unset"
 msgstr "მოხსნა"
@@ -250,6 +250,9 @@ msgstr "მოვლენის ჩასწორება"
 msgid "Remove Event"
 msgstr "მოვლენის წაშლა"
 
+msgid "Filter by Name"
+msgstr "სახელით გაფილტვრა"
+
 msgid "Clear All"
 msgstr "ყველას გასუფთავება"
 
@@ -315,6 +318,30 @@ msgstr "ანიმაცია ბევრი გამოძახები�
 
 msgid "Change Animation Length"
 msgstr "ანიმაციის სიგრძის შეცვლა"
+
+msgid "Property Track..."
+msgstr "თვისების ტრეკი..."
+
+msgid "3D Position Track..."
+msgstr "3D მდებარეობის ბილიკი..."
+
+msgid "3D Rotation Track..."
+msgstr "3D შებრუნების ბილიკი..."
+
+msgid "3D Scale Track..."
+msgstr "3D მასშტაბის ბილიკი..."
+
+msgid "Blend Shape Track..."
+msgstr "შერევა ფორმა ტრეკი..."
+
+msgid "Call Method Track..."
+msgstr "მეთოდის გამოძახების ტრეკი..."
+
+msgid "Bezier Curve Track..."
+msgstr "ბეზიეს ტრეკის დამატება..."
+
+msgid "Animation Playback Track..."
+msgstr "ანიმ ჩაყენება..."
 
 msgid "Animation length (frames)"
 msgstr "ანიმაციის ხანგრძლივობა (კადრები)"
@@ -405,6 +432,9 @@ msgstr "წრფივი კუთხე"
 
 msgid "Cubic Angle"
 msgstr "კუბური კუთხე"
+
+msgid "Insert Key..."
+msgstr "ჩასვით გასაღები..."
 
 msgid "Duplicate Key(s)"
 msgstr "გასაღებ(ებ)-ის დუბლირება"
@@ -676,6 +706,9 @@ msgstr "შედომები"
 
 msgid "Warnings"
 msgstr "გაფრთხილებები"
+
+msgid "Indentation"
+msgstr "სწორება"
 
 msgid "Method in target node must be specified."
 msgstr "სამიზნე კვანძში მეთოდის მითითება აუცილებელია."
@@ -1578,9 +1611,6 @@ msgstr "ბიბლიოთეკის გატანა"
 
 msgid "Reload"
 msgstr "თავიდან ჩატვირთვა"
-
-msgid "Create Version Control Metadata..."
-msgstr "ვერსიის კონტროლის მეტამონაცემების შექმნა..."
 
 msgid "Version Control Settings..."
 msgstr "ვერსიის კონტროლის მორგება..."
@@ -2604,6 +2634,9 @@ msgstr "%s-ის მასშტაბი."
 msgid "Display Advanced..."
 msgstr "დამატებით ჩვენება..."
 
+msgid "View Grid"
+msgstr "ბადის ნახვა"
+
 msgid "View Frame Time"
 msgstr "კადრის დროის ნახვა"
 
@@ -2618,9 +2651,6 @@ msgstr "ფოკუსის არჩევა"
 
 msgid "Transform"
 msgstr "ტრასფორმირება"
-
-msgid "View Grid"
-msgstr "ბადის ნახვა"
 
 msgid "Snap Settings"
 msgstr "მიბმის მორგება"
@@ -2730,14 +2760,14 @@ msgstr "გახსნა..."
 msgid "Save All"
 msgstr "ყველას შენახვა"
 
-msgid "Theme"
-msgstr "თემა"
-
 msgid "Import Theme..."
 msgstr "თემის შემოტანა.."
 
 msgid "Reload Theme"
 msgstr "თემის გადატვირთვა"
+
+msgid "Theme"
+msgstr "თემა"
 
 msgid "Close All"
 msgstr "ყველას დახურვა"
@@ -2773,9 +2803,6 @@ msgstr "ხაზი"
 
 msgid "Pick Color"
 msgstr "აირჩიეთ ფერი"
-
-msgid "Indentation"
-msgstr "სწორება"
 
 msgid "Uppercase"
 msgstr "მაღალირეგისტრი"
@@ -3850,15 +3877,6 @@ msgstr "ანიმაცია ვერ ვიპოვე: '%s'"
 
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "არაფერია შეერთებული შეყვანაში '%s' კვანძისთვის '%s'."
-
-msgid "Auto-Detect Direction"
-msgstr "მიმართულების ავტომატური დადგენა"
-
-msgid "Left-to-Right"
-msgstr "მარცხნიდან-მარჯვნივ"
-
-msgid "Right-to-Left"
-msgstr "მარჯვნიდან-მარცხნივ"
 
 msgid "Default Color"
 msgstr "ნაგულისხმები ფერი"

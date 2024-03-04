@@ -164,13 +164,15 @@
 # Daniel <blenderevd@gmail.com>, 2024.
 # suprohub <suprohub@gmail.com>, 2024.
 # msun_ <gmchofen@gmail.com>, 2024.
+# ShaniZ <dmitry.prihodko2007@mail.ru>, 2024.
+# Artem <artemka.hvostov@yandex.ru>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-08 17:45+0000\n"
-"Last-Translator: Ruslan <vovavalenkov15@gmail.com>\n"
+"PO-Revision-Date: 2024-03-02 14:19+0000\n"
+"Last-Translator: Artem <artemka.hvostov@yandex.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -179,7 +181,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -210,6 +212,9 @@ msgstr "Отключить стандартный вывод"
 
 msgid "Disable stderr"
 msgstr "Отключить стандартный вывод ошибок"
+
+msgid "Print Header"
+msgstr "Заголовок печати"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Использовать скрытую директорию данных проекта"
@@ -477,6 +482,9 @@ msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "Макс. дескрипторов на пул"
+
+msgid "Agility SDK Version"
+msgstr "Версия Agility SDK"
 
 msgid "Textures"
 msgstr "Текстуры"
@@ -1189,14 +1197,14 @@ msgstr "RPC-порт"
 msgid "RPC Server Uptime"
 msgstr "Время работы сервера RPC"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF Путь"
 
 msgid "Tools"
 msgstr "Инструменты"
+
+msgid "OIDN Denoise Path"
+msgstr "Путь к OIDN Denoise"
 
 msgid "Docks"
 msgstr "Панели"
@@ -1205,7 +1213,7 @@ msgid "Scene Tree"
 msgstr "Дерево сцены"
 
 msgid "Start Create Dialog Fully Expanded"
-msgstr "Начальный диалог создания полностью развёрнут"
+msgstr "Начинать создание диалога в полностью развёрнутом окне"
 
 msgid "Auto Expand to Selected"
 msgstr "Авто-раскрыть дерево до выбранного элемента"
@@ -1235,7 +1243,7 @@ msgid "Caret Blink"
 msgstr "Мигающий курсор"
 
 msgid "Caret Blink Interval"
-msgstr "Интервал мигания курсор"
+msgstr "Интервал мигания курсора"
 
 msgid "Highlight Current Line"
 msgstr "Подсвечивать текущую строку"
@@ -2473,6 +2481,12 @@ msgstr "Путь присоединен"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "FBX"
+msgstr "FBX"
+
+msgid "Embedded Image Handling"
+msgstr "Обработка встроенных изображений"
+
 msgid "GDScript"
 msgstr "GDScript код"
 
@@ -2502,9 +2516,6 @@ msgstr "Авторские права"
 
 msgid "glTF"
 msgstr "glTF"
-
-msgid "Embedded Image Handling"
-msgstr "Обработка встроенных изображений"
 
 msgid "Color"
 msgstr "Цвет"
@@ -3271,27 +3282,6 @@ msgstr "Повернуть по горизонтали"
 msgid "Flip V"
 msgstr "Повернуть по вертикали"
 
-msgid "Monitoring"
-msgstr "Наблюдение"
-
-msgid "Monitorable"
-msgstr "Наблюдаемый"
-
-msgid "Gravity"
-msgstr "Гравитация"
-
-msgid "Space Override"
-msgstr "Переопределение пространства"
-
-msgid "Point"
-msgstr "Точка"
-
-msgid "Direction"
-msgstr "Направление"
-
-msgid "Audio Bus"
-msgstr "Аудио шина"
-
 msgid "Current"
 msgstr "Текущая"
 
@@ -3342,24 +3332,6 @@ msgstr "Тащить"
 
 msgid "Tweaks"
 msgstr "Tweaks (надстройки)"
-
-msgid "Input"
-msgstr "Вход"
-
-msgid "Pickable"
-msgstr "Выбираемый"
-
-msgid "Build Mode"
-msgstr "Режим сборки"
-
-msgid "Disabled"
-msgstr "Отключённый"
-
-msgid "One Way Collision"
-msgstr "Одностороннее столкновение"
-
-msgid "One Way Collision Margin"
-msgstr "Отступ одностороннего полигона столкновений"
 
 msgid "Emitting"
 msgstr "Излучающий"
@@ -3415,8 +3387,14 @@ msgstr "Цвета"
 msgid "Align Y"
 msgstr "Выравнивать по Y"
 
+msgid "Direction"
+msgstr "Направление"
+
 msgid "Spread"
 msgstr "Разброс"
+
+msgid "Gravity"
+msgstr "Гравитация"
 
 msgid "Initial Velocity"
 msgstr "Начальная скорость"
@@ -3471,45 +3449,6 @@ msgstr "Кривая смещения"
 
 msgid "Visibility Rect"
 msgstr "Видимый прямоугольник"
-
-msgid "Node A"
-msgstr "Узел А"
-
-msgid "Node B"
-msgstr "Узел B"
-
-msgid "Bias"
-msgstr "Смещение"
-
-msgid "Disable Collision"
-msgstr "Отключить столкновения"
-
-msgid "Softness"
-msgstr "Мягкость"
-
-msgid "Angular Limit"
-msgstr "Угловой Предел"
-
-msgid "Lower"
-msgstr "Нижний"
-
-msgid "Upper"
-msgstr "Верхний"
-
-msgid "Motor"
-msgstr "Мотор"
-
-msgid "Length"
-msgstr "Длина"
-
-msgid "Initial Offset"
-msgstr "Начальное смещение"
-
-msgid "Rest Length"
-msgstr "Длина остатка"
-
-msgid "Stiffness"
-msgstr "Жесткость"
 
 msgid "Energy"
 msgstr "Энергия"
@@ -3592,6 +3531,15 @@ msgstr "Макс соседей"
 msgid "Max Speed"
 msgstr "Макс скорость"
 
+msgid "Scroll Offset"
+msgstr "Смещение прокрутки"
+
+msgid "Repeat"
+msgstr "Повторить"
+
+msgid "End"
+msgstr "Конец"
+
 msgid "Scroll"
 msgstr "Прокрутка"
 
@@ -3628,14 +3576,110 @@ msgstr "В смещение"
 msgid "Cubic Interp"
 msgstr "Кубическая интерполяция"
 
+msgid "Monitoring"
+msgstr "Наблюдение"
+
+msgid "Monitorable"
+msgstr "Наблюдаемый"
+
+msgid "Space Override"
+msgstr "Переопределение пространства"
+
+msgid "Point"
+msgstr "Точка"
+
+msgid "Audio Bus"
+msgstr "Аудио шина"
+
+msgid "Wall Min Slide Angle"
+msgstr "Мин. угол скольжения у стены"
+
+msgid "Stop on Slope"
+msgstr "Остановиться на склоне"
+
+msgid "Max Angle"
+msgstr "Максимальный Угол"
+
+msgid "On Leave"
+msgstr "При покидании"
+
+msgid "Safe Margin"
+msgstr "Безопасный отступ"
+
+msgid "Input"
+msgstr "Вход"
+
+msgid "Pickable"
+msgstr "Выбираемый"
+
+msgid "Build Mode"
+msgstr "Режим сборки"
+
+msgid "Disabled"
+msgstr "Отключённый"
+
+msgid "One Way Collision"
+msgstr "Одностороннее столкновение"
+
+msgid "One Way Collision Margin"
+msgstr "Отступ одностороннего полигона столкновений"
+
+msgid "Length"
+msgstr "Длина"
+
+msgid "Rest Length"
+msgstr "Длина остатка"
+
+msgid "Stiffness"
+msgstr "Жесткость"
+
+msgid "Initial Offset"
+msgstr "Начальное смещение"
+
+msgid "Node A"
+msgstr "Узел А"
+
+msgid "Node B"
+msgstr "Узел B"
+
+msgid "Bias"
+msgstr "Смещение"
+
+msgid "Disable Collision"
+msgstr "Отключить столкновения"
+
+msgid "Softness"
+msgstr "Мягкость"
+
+msgid "Angular Limit"
+msgstr "Угловой Предел"
+
+msgid "Lower"
+msgstr "Нижний"
+
+msgid "Upper"
+msgstr "Верхний"
+
+msgid "Motor"
+msgstr "Мотор"
+
 msgid "Follow Bone When Simulating"
 msgstr "Следование кости при симуляции"
 
-msgid "Constant Linear Velocity"
-msgstr "Постоянная линейная скорость"
+msgid "Exclude Parent"
+msgstr "Исключить родителя"
 
-msgid "Constant Angular Velocity"
-msgstr "Постоянная угловая скорость"
+msgid "Hit From Inside"
+msgstr "Удар изнутри"
+
+msgid "Collide With"
+msgstr "Сталкиваться с"
+
+msgid "Areas"
+msgstr "Области"
+
+msgid "Bodies"
+msgstr "Тела"
 
 msgid "Gravity Scale"
 msgstr "Масштаб гравитации"
@@ -3664,20 +3708,14 @@ msgstr "Угловой"
 msgid "Torque"
 msgstr "Крутящий момент"
 
-msgid "Wall Min Slide Angle"
-msgstr "Мин. угол скольжения у стены"
+msgid "Margin"
+msgstr "Отступ"
 
-msgid "Stop on Slope"
-msgstr "Остановиться на склоне"
+msgid "Constant Linear Velocity"
+msgstr "Постоянная линейная скорость"
 
-msgid "Max Angle"
-msgstr "Максимальный Угол"
-
-msgid "On Leave"
-msgstr "При покидании"
-
-msgid "Safe Margin"
-msgstr "Безопасный отступ"
+msgid "Constant Angular Velocity"
+msgstr "Постоянная угловая скорость"
 
 msgid "UV"
 msgstr "UV"
@@ -3691,21 +3729,6 @@ msgstr "Полигоны"
 msgid "Internal Vertex Count"
 msgstr "Внутренний счет вершин"
 
-msgid "Exclude Parent"
-msgstr "Исключить родителя"
-
-msgid "Hit From Inside"
-msgstr "Удар изнутри"
-
-msgid "Collide With"
-msgstr "Сталкиваться с"
-
-msgid "Areas"
-msgstr "Области"
-
-msgid "Bodies"
-msgstr "Тела"
-
 msgid "Remote Path"
 msgstr "Удаленный путь"
 
@@ -3714,9 +3737,6 @@ msgstr "Использовать глобальные координаты"
 
 msgid "Update"
 msgstr "Обновить"
-
-msgid "Margin"
-msgstr "Отступ"
 
 msgid "Auto Calculate Length and Angle"
 msgstr "Авторасчет длины и угла"
@@ -3747,9 +3767,6 @@ msgstr "Режим видимости"
 
 msgid "Node Path"
 msgstr "Путь узла"
-
-msgid "Reverb Bus"
-msgstr "Шина реверба"
 
 msgid "Attenuation Model"
 msgstr "Модель затухания"
@@ -3843,48 +3860,6 @@ msgstr "Толщина"
 
 msgid "Update Mode"
 msgstr "Режим обновления"
-
-msgid "End"
-msgstr "Конец"
-
-msgid "Impulse Clamp"
-msgstr "Ограничение импульса"
-
-msgid "Linear Limit"
-msgstr "Линейный лимит"
-
-msgid "Upper Distance"
-msgstr "Верхняя дистанция"
-
-msgid "Linear Motion"
-msgstr "Линейное движение"
-
-msgid "Linear Ortho"
-msgstr "Линейный ортогональный"
-
-msgid "Upper Angle"
-msgstr "Верхний Угол"
-
-msgid "Lower Angle"
-msgstr "Нижний угол"
-
-msgid "Angular Motion"
-msgstr "Угловое движение"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
-
-msgid "Force Limit"
-msgstr "Форсировать лимиты"
-
-msgid "Equilibrium Point"
-msgstr "Точка Равновесия"
 
 msgid "Pixel Size"
 msgstr "Размер пикселя"
@@ -4000,26 +3975,47 @@ msgstr "Видимость"
 msgid "Visible"
 msgstr "Видимый"
 
-msgid "Axis Lock"
-msgstr "Заблокировать ось"
+msgid "Reverb Bus"
+msgstr "Шина реверба"
 
-msgid "Linear X"
-msgstr "Линейный X"
+msgid "Linear Limit"
+msgstr "Линейный лимит"
 
-msgid "Linear Y"
-msgstr "Линейный Y"
+msgid "X"
+msgstr "X"
 
-msgid "Linear Z"
-msgstr "Линейный Z"
+msgid "Upper Distance"
+msgstr "Верхняя дистанция"
 
-msgid "Angular X"
-msgstr "Угловая скорость X"
+msgid "Y"
+msgstr "Y"
 
-msgid "Angular Y"
-msgstr "Угловая скорость Y"
+msgid "Z"
+msgstr "Z"
 
-msgid "Angular Z"
-msgstr "Угловая скорость Z"
+msgid "Force Limit"
+msgstr "Форсировать лимиты"
+
+msgid "Equilibrium Point"
+msgstr "Точка Равновесия"
+
+msgid "Upper Angle"
+msgstr "Верхний Угол"
+
+msgid "Lower Angle"
+msgstr "Нижний угол"
+
+msgid "Impulse Clamp"
+msgstr "Ограничение импульса"
+
+msgid "Linear Motion"
+msgstr "Линейное движение"
+
+msgid "Linear Ortho"
+msgstr "Линейный ортогональный"
+
+msgid "Angular Motion"
+msgstr "Угловое движение"
 
 msgid "Joint Constraints"
 msgstr "Ограничения соединений"
@@ -4054,8 +4050,50 @@ msgstr "Трение"
 msgid "Bounce"
 msgstr "Отскок"
 
+msgid "Axis Lock"
+msgstr "Заблокировать ось"
+
+msgid "Linear X"
+msgstr "Линейный X"
+
+msgid "Linear Y"
+msgstr "Линейный Y"
+
+msgid "Linear Z"
+msgstr "Линейный Z"
+
+msgid "Angular X"
+msgstr "Угловая скорость X"
+
+msgid "Angular Y"
+msgstr "Угловая скорость Y"
+
+msgid "Angular Z"
+msgstr "Угловая скорость Z"
+
 msgid "Debug Shape"
 msgstr "Форма отладчика"
+
+msgid "Spring Length"
+msgstr "Длина пружины"
+
+msgid "Engine Force"
+msgstr "Сила движка"
+
+msgid "Wheel"
+msgstr "Колесо"
+
+msgid "Roll Influence"
+msgstr "Влияние поворота"
+
+msgid "Suspension"
+msgstr "Подвеска"
+
+msgid "Travel"
+msgstr "Переместится"
+
+msgid "Max Force"
+msgstr "Макс Сила"
 
 msgid "Enable Shadows"
 msgstr "Включить тени"
@@ -4116,27 +4154,6 @@ msgstr "Коэффициент ослабления"
 
 msgid "Drag Coefficient"
 msgstr "Коэффициент сопротивления"
-
-msgid "Spring Length"
-msgstr "Длина пружины"
-
-msgid "Engine Force"
-msgstr "Сила движка"
-
-msgid "Wheel"
-msgstr "Колесо"
-
-msgid "Roll Influence"
-msgstr "Влияние поворота"
-
-msgid "Suspension"
-msgstr "Подвеска"
-
-msgid "Travel"
-msgstr "Переместится"
-
-msgid "Max Force"
-msgstr "Макс Сила"
 
 msgid "Geometry"
 msgstr "Геометрия"
@@ -4308,9 +4325,6 @@ msgstr "Диалог"
 
 msgid "Autowrap"
 msgstr "Автоперенос"
-
-msgid "Scroll Offset"
-msgstr "Смещение прокрутки"
 
 msgid "Show Grid"
 msgstr "Показать сетку"
@@ -4588,9 +4602,6 @@ msgstr "Маска света"
 msgid "Z Index"
 msgstr "Z-позиция"
 
-msgid "Repeat"
-msgstr "Повторить"
-
 msgid "Use Parent Material"
 msgstr "Использовать материал родителя"
 
@@ -4720,6 +4731,129 @@ msgstr "3D Физика"
 msgid "3D Navigation"
 msgstr "3D Навигация"
 
+msgid "Segments"
+msgstr "Сегменты"
+
+msgid "A"
+msgstr "А"
+
+msgid "B"
+msgstr "Б"
+
+msgid "Custom Solver Bias"
+msgstr "Смещение пользовательского вычислителя"
+
+msgid "Terrains"
+msgstr "Местность"
+
+msgid "Custom Data"
+msgstr "Пользовательские данные"
+
+msgid "Alternative Level"
+msgstr "Альтернативный слой"
+
+msgid "UV Clipping"
+msgstr "UV отсечение"
+
+msgid "Transpose"
+msgstr "Транспонировать"
+
+msgid "Texture Origin"
+msgstr "Центр координат текстуры"
+
+msgid "Y Sort Origin"
+msgstr "Y сортировочный центр координат"
+
+msgid "Terrain"
+msgstr "Ландшафт"
+
+msgid "Miscellaneous"
+msgstr "Прочее"
+
+msgid "Probability"
+msgstr "Вероятность"
+
+msgid "Distance"
+msgstr "Расстояние"
+
+msgid "Map Width"
+msgstr "Ширина карты"
+
+msgid "Map Depth"
+msgstr "Глубина карты"
+
+msgid "Map Data"
+msgstr "Данные карты"
+
+msgid "Item"
+msgstr "Элемент"
+
+msgid "Mesh Transform"
+msgstr "Преобразование меша"
+
+msgid "Preview"
+msgstr "Предпросмотр"
+
+msgid "Subdivide Width"
+msgstr "Ширина подразделения(Subdiv)"
+
+msgid "Subdivide Height"
+msgstr "Высота подразделения(Subdiv)"
+
+msgid "Subdivide Depth"
+msgstr "Глубина подразделения(Subdiv)"
+
+msgid "Bottom Radius"
+msgstr "Нижний радиус"
+
+msgid "Is Hemisphere"
+msgstr "Является полусферическим"
+
+msgid "Curve Step"
+msgstr "Шаг кривой"
+
+msgid "Bone"
+msgstr "Кость"
+
+msgid "Sky"
+msgstr "Небо"
+
+msgid "Top Color"
+msgstr "Верхний цвет"
+
+msgid "Horizon Color"
+msgstr "Цвет горизонта"
+
+msgid "Cover"
+msgstr "Покрытие"
+
+msgid "Ground"
+msgstr "Земля"
+
+msgid "Bottom Color"
+msgstr "Нижний цвет"
+
+msgid "Sun"
+msgstr "Солнце"
+
+msgid "Panorama"
+msgstr "Панорама"
+
+msgid "Coefficient"
+msgstr "Коэффициент"
+
+msgid "Eccentricity"
+msgstr "Эксцентриситет"
+
+msgid "Turbidity"
+msgstr "Затуманенность"
+
+msgid "Ground Color"
+msgstr "Цвет земли"
+
+msgid "Plane"
+msgstr "Плоскость"
+
 msgid "Frames"
 msgstr "Кадры"
 
@@ -4747,9 +4881,6 @@ msgstr "Цикл анимации частиц"
 msgid "Load Path"
 msgstr "Загрузить путь"
 
-msgid "Segments"
-msgstr "Сегменты"
-
 msgid "Bake Resolution"
 msgstr "Запечь разрешение"
 
@@ -4761,9 +4892,6 @@ msgstr "Фон"
 
 msgid "Canvas Max Layer"
 msgstr "Макс. слой холста"
-
-msgid "Sky"
-msgstr "Небо"
 
 msgid "Ambient Light"
 msgstr "Рассеянный свет"
@@ -4855,15 +4983,6 @@ msgstr "От"
 msgid "To"
 msgstr "До"
 
-msgid "Map Width"
-msgstr "Ширина карты"
-
-msgid "Map Depth"
-msgstr "Глубина карты"
-
-msgid "Map Data"
-msgstr "Данные карты"
-
 msgid "Next Pass"
 msgstr "Следующий проход"
 
@@ -4939,20 +5058,8 @@ msgstr "Использовать размер точки"
 msgid "Point Size"
 msgstr "Размер точки"
 
-msgid "Distance"
-msgstr "Расстояние"
-
 msgid "MSDF"
 msgstr "МПРсЗ"
-
-msgid "Item"
-msgstr "Элемент"
-
-msgid "Mesh Transform"
-msgstr "Преобразование меша"
-
-msgid "Preview"
-msgstr "Предпросмотр"
 
 msgid "Base Texture"
 msgstr "Базовая текстура"
@@ -5023,69 +5130,6 @@ msgstr "Поглощающий"
 msgid "Keep Compressed Buffer"
 msgstr "Сохранять буфер сжатым"
 
-msgid "Subdivide Width"
-msgstr "Ширина подразделения(Subdiv)"
-
-msgid "Subdivide Height"
-msgstr "Высота подразделения(Subdiv)"
-
-msgid "Subdivide Depth"
-msgstr "Глубина подразделения(Subdiv)"
-
-msgid "Bottom Radius"
-msgstr "Нижний радиус"
-
-msgid "Is Hemisphere"
-msgstr "Является полусферическим"
-
-msgid "Curve Step"
-msgstr "Шаг кривой"
-
-msgid "A"
-msgstr "А"
-
-msgid "B"
-msgstr "Б"
-
-msgid "Custom Solver Bias"
-msgstr "Смещение пользовательского вычислителя"
-
-msgid "Bone"
-msgstr "Кость"
-
-msgid "Top Color"
-msgstr "Верхний цвет"
-
-msgid "Horizon Color"
-msgstr "Цвет горизонта"
-
-msgid "Cover"
-msgstr "Покрытие"
-
-msgid "Ground"
-msgstr "Земля"
-
-msgid "Bottom Color"
-msgstr "Нижний цвет"
-
-msgid "Sun"
-msgstr "Солнце"
-
-msgid "Panorama"
-msgstr "Панорама"
-
-msgid "Coefficient"
-msgstr "Коэффициент"
-
-msgid "Eccentricity"
-msgstr "Эксцентриситет"
-
-msgid "Turbidity"
-msgstr "Затуманенность"
-
-msgid "Ground Color"
-msgstr "Цвет земли"
-
 msgid "Blend"
 msgstr "Смешивание"
 
@@ -5106,36 +5150,6 @@ msgstr "Детали в углах"
 
 msgid "Default Font"
 msgstr "Шрифт по умолчанию"
-
-msgid "Terrains"
-msgstr "Местность"
-
-msgid "Custom Data"
-msgstr "Пользовательские данные"
-
-msgid "Alternative Level"
-msgstr "Альтернативный слой"
-
-msgid "UV Clipping"
-msgstr "UV отсечение"
-
-msgid "Transpose"
-msgstr "Транспонировать"
-
-msgid "Texture Origin"
-msgstr "Центр координат текстуры"
-
-msgid "Y Sort Origin"
-msgstr "Y сортировочный центр координат"
-
-msgid "Terrain"
-msgstr "Ландшафт"
-
-msgid "Miscellaneous"
-msgstr "Прочее"
-
-msgid "Probability"
-msgstr "Вероятность"
 
 msgid "File"
 msgstr "Файл"
@@ -5181,9 +5195,6 @@ msgstr "Использовать все поверхности"
 
 msgid "Surface Index"
 msgstr "Индекс поверхности"
-
-msgid "Plane"
-msgstr "Плоскость"
 
 msgid "Panel"
 msgstr "Панель"

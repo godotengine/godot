@@ -121,6 +121,10 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 // This must be kept in sync with `ignored_types` in csharp_script.cpp
 const Vector<String> ignored_types = {};
 
+// Special [code] keywords to wrap with <see langword="code"/> instead of <c>code</c>.
+// Don't check against all C# reserved words, as many cases are GDScript-specific.
+const Vector<String> langword_check = { "true", "false", "null" };
+
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
 	// any of the changes done here to the 'uint32_t' type interface as well.
@@ -670,11 +674,24 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code" || tag.begins_with("code ")) {
-			xml_output.append("<c>");
+			int end = bbcode.find("[", brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String code = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			if (langword_check.has(code)) {
+				xml_output.append("<see langword=\"");
+				xml_output.append(code);
+				xml_output.append("\"/>");
 
-			code_tag = true;
-			pos = brk_end + 1;
-			tag_stack.push_front("code");
+				pos = brk_end + code.length() + 8;
+			} else {
+				xml_output.append("<c>");
+
+				code_tag = true;
+				pos = brk_end + 1;
+				tag_stack.push_front("code");
+			}
 		} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
 			xml_output.append("<code>");
 

@@ -1286,9 +1286,6 @@ msgstr "สร้างโฟลเดอร์"
 msgid "Thanks from the Godot community!"
 msgstr "ขอขอบคุณจากชุมชนผู้ใช้ Godot!"
 
-msgid "Click to copy."
-msgstr "คลิกเพื่อคัดลอก"
-
 msgid "Godot Engine contributors"
 msgstr "ผู้ช่วยพัฒนา Godot Engine"
 
@@ -2217,9 +2214,6 @@ msgstr "คุณสมบัติ"
 msgid "Node"
 msgstr "โนด"
 
-msgid "Expand Bottom Panel"
-msgstr "ขยายแผงด้านล่าง"
-
 msgid "Output"
 msgstr "ข้อความ"
 
@@ -2746,6 +2740,9 @@ msgstr "เพิ่มไปยังกลุ่ม"
 
 msgid "Remove from Group"
 msgstr "ลบออกจากกลุ่ม"
+
+msgid "Expand Bottom Panel"
+msgstr "ขยายแผงด้านล่าง"
 
 msgid "Move"
 msgstr "ย้าย"
@@ -3707,12 +3704,6 @@ msgstr "จำกัดโดยใช้ตำแหน่งปัจจุบ
 msgid "Use Pixel Snap"
 msgstr "จำกัดให้ย้ายเป็นพิกเซล"
 
-msgid "Smart Snapping"
-msgstr "สแนปอัจฉริยะ"
-
-msgid "Configure Snap..."
-msgstr "ตั้งค่าการจำกัด..."
-
 msgid "Snap to Parent"
 msgstr "สแนปโหนดแม่"
 
@@ -3730,6 +3721,12 @@ msgstr "สแนปโหนดอื่น"
 
 msgid "Snap to Guides"
 msgstr "สแนปเส้นไกด์"
+
+msgid "Smart Snapping"
+msgstr "สแนปอัจฉริยะ"
+
+msgid "Configure Snap..."
+msgstr "ตั้งค่าการจำกัด..."
 
 msgid "Skeleton Options"
 msgstr "ตั้งค่าโครง"
@@ -4384,6 +4381,9 @@ msgstr "แสดงสภาพแวดล้อม"
 msgid "View Gizmos"
 msgstr "แสดงสัญลักษณ์"
 
+msgid "View Grid"
+msgstr "แสดงเส้นตาราง"
+
 msgid "View Information"
 msgstr "แสดงข้อมูล"
 
@@ -4518,9 +4518,6 @@ msgstr "4 วิวพอร์ต"
 msgid "View Origin"
 msgstr "แสดงจุดกำเนิด"
 
-msgid "View Grid"
-msgstr "แสดงเส้นตาราง"
-
 msgid "Settings..."
 msgstr "ตั้งค่า..."
 
@@ -4629,9 +4626,6 @@ msgstr "ความยาวตัวสะท้อน"
 msgid "Curve Point #"
 msgstr "จุดเส้นโค้ง #"
 
-msgid "Set Curve Point Position"
-msgstr "กำหนดพิกัดจุดเส้นโค้ง"
-
 msgid "Set Curve Out Position"
 msgstr "กำหนดเส้นโค้งขาออก"
 
@@ -4646,6 +4640,9 @@ msgstr "ลบจุด"
 
 msgid "Split Segment (in curve)"
 msgstr "แยกส่วน (ในเส้นโค้ง)"
+
+msgid "Set Curve Point Position"
+msgstr "กำหนดพิกัดจุดเส้นโค้ง"
 
 msgid "Move Joint"
 msgstr "เลื่อนข้อต่อ"
@@ -4900,14 +4897,14 @@ msgstr "ประวัติก่อนหน้า"
 msgid "History Next"
 msgstr "ประวัติถัดไป"
 
-msgid "Theme"
-msgstr "ธีม"
-
 msgid "Import Theme..."
 msgstr "นำเข้าธีม..."
 
 msgid "Reload Theme"
 msgstr "โหลดธีมใหม่"
+
+msgid "Theme"
+msgstr "ธีม"
 
 msgid "Save Theme"
 msgstr "บันทึกธีม"
@@ -5162,12 +5159,6 @@ msgstr "โหลดรูปไม่ได้"
 
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "ผิดพลาด: โหลดรีซอร์สเฟรมไม่ได้!"
-
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "คลิปบอร์ดว่าง หรือไม่ใช่ texture!"
-
-msgid "Paste Frame"
-msgstr "วางเฟรม"
 
 msgid "Add Empty"
 msgstr "เพิ่มแบบว่างเปล่า"
@@ -6621,6 +6612,44 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "รันไฟล์ HTML ที่ส่งออกในเบราเซอร์"
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"แอนิเมชัน CPUParticles2D จำเป็นต้องใช้ CanvasItemMaterial โดยเปิดการทำงาน "
+"\"Particles Animation\""
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr "ไม่ได้กำหนดวัสดุให้กับอนุภาค"
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"แอนิเมชัน Particles2D จำเป็นต้องใช้ CanvasItemMaterial โดยเปิดใช้งาน \"Particles "
+"Animation\""
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr "ต้องระบุเทกเจอร์ที่มีรูปร่างของแสงให้กับคุณสมบัติ \"Texture\"'"
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr "ต้องมีรูปหลายเหลี่ยมเพื่อให้ตัวบังแสงนี้ทำงานได้"
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "รูปหลายเหลี่ยมของตัวบังแสงนี้ว่างเปล่า กรุณาวาดโพลีกอน"
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr "ParallaxLayer จะทำงานได้ต้องเป็นโหนดลูกของโหนด ParallaxBackground"
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D จะทำงานได้ต้องเป็นโหนดลูกของโหนด Path2D"
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -6650,25 +6679,6 @@ msgstr ""
 "รูปร่างโพลีกอนไม่สามารถใช้หรือแก้ไขโดยตรงจากโหนด CollisionShape2D กรุณาใช้โหนด "
 "CollisionPolygon2D แทน"
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"แอนิเมชัน CPUParticles2D จำเป็นต้องใช้ CanvasItemMaterial โดยเปิดการทำงาน "
-"\"Particles Animation\""
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr "ไม่ได้กำหนดวัสดุให้กับอนุภาค"
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"แอนิเมชัน Particles2D จำเป็นต้องใช้ CanvasItemMaterial โดยเปิดใช้งาน \"Particles "
-"Animation\""
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "โหนด A และ โหนด B จะต้องเป็น PhysicsBody2D"
 
@@ -6683,25 +6693,6 @@ msgstr "ข้อต่อไม่ได้เชื่อมโยงกับ
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "โหนด A และโหนด B จะต้องเป็น PhysicsBody2D ที่แตกต่างกัน"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr "ต้องระบุเทกเจอร์ที่มีรูปร่างของแสงให้กับคุณสมบัติ \"Texture\"'"
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr "ต้องมีรูปหลายเหลี่ยมเพื่อให้ตัวบังแสงนี้ทำงานได้"
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "รูปหลายเหลี่ยมของตัวบังแสงนี้ว่างเปล่า กรุณาวาดโพลีกอน"
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr "ParallaxLayer จะทำงานได้ต้องเป็นโหนดลูกของโหนด ParallaxBackground"
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D จะทำงานได้ต้องเป็นโหนดลูกของโหนด Path2D"
 
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "ต้องแก้ไข Path ให้ชี้ไปยังโหนด Node2D จึงจะทำงานได้"
@@ -6756,9 +6747,6 @@ msgstr "ไม่มีรากสำหรับ AnimationNode สำหรั
 msgid "Switch between hexadecimal and code values."
 msgstr "สลับระหว่างค่าฐานสิบหกและโค้ด"
 
-msgid "Add current color as a preset."
-msgstr "เพิ่มสีปัจจุบันเป็นพรีเซ็ต"
-
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
 "placement behavior.\n"
@@ -6787,9 +6775,6 @@ msgid ""
 msgstr ""
 "ScrollContainer ทำงานได้เมื่อมีโหนดลูกเพียงหนึ่งโหนดเท่านั้น\n"
 "ใช้ container เป็นโหนดลูก (VBox,HBox,ฯลฯ) หรือ Control และปรับขนาดเล็กสุดด้วยตนเอง"
-
-msgid "(Other)"
-msgstr "(อื่น)"
 
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "

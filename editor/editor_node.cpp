@@ -6191,7 +6191,9 @@ EditorNode::EditorNode() {
 			// Only if no touchscreen ui hint, disable emulation just in case.
 			Input::get_singleton()->set_emulate_touch_from_mouse(false);
 		}
-		DisplayServer::get_singleton()->cursor_set_custom_image(Ref<Resource>());
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CUSTOM_CURSOR_SHAPE)) {
+			DisplayServer::get_singleton()->cursor_set_custom_image(Ref<Resource>());
+		}
 	}
 
 	SceneState::set_disable_placeholders(true);
@@ -6700,6 +6702,7 @@ EditorNode::EditorNode() {
 	file_menu->add_separator();
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTR("Reload Saved Scene")), EDIT_RELOAD_SAVED_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/close_scene", TTR("Close Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::W), FILE_CLOSE);
+	ED_SHORTCUT_OVERRIDE("editor/close_scene", "macos", KeyModifierMask::CMD_OR_CTRL + Key::W);
 
 	if (!global_menu || !OS::get_singleton()->has_feature("macos")) {
 		// On macOS  "Quit" and "About" options are in the "app" menu.

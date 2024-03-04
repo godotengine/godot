@@ -1242,6 +1242,9 @@ msgstr "Peringatan"
 msgid "Line and column numbers."
 msgstr "Nomor baris dan kolom."
 
+msgid "Indentation"
+msgstr "Indentasi"
+
 msgid "Method in target node must be specified."
 msgstr "Method dalam node target harus ditentukan."
 
@@ -1848,9 +1851,6 @@ msgstr "Nama berkas sudah valid."
 
 msgid "Thanks from the Godot community!"
 msgstr "Terimakasih dari komunitas Godot!"
-
-msgid "Click to copy."
-msgstr "Klik untuk salin."
 
 msgid "Godot Engine contributors"
 msgstr "Kontributor Godot Engine"
@@ -3661,9 +3661,6 @@ msgstr "Node"
 msgid "History"
 msgstr "Riwayat"
 
-msgid "Expand Bottom Panel"
-msgstr "Perluas Panel Bawah"
-
 msgid "Output"
 msgstr "Luaran"
 
@@ -3715,9 +3712,6 @@ msgstr "Muat Ulang"
 
 msgid "Resave"
 msgstr "Simpan Ulang"
-
-msgid "Create Version Control Metadata..."
-msgstr "Membuat Metadata Kontrol Versi..."
 
 msgid "Version Control Settings..."
 msgstr "Pengaturan Kontrol Versi..."
@@ -4538,22 +4532,6 @@ msgstr "Mengatur Templat Ekspor"
 msgid "Export With Debug"
 msgstr "Ekspor dengan Awakutu"
 
-msgid "Disable FBX & Restart"
-msgstr "Nonaktifkan FBX & Mulai Ulang"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"Membatalkan dialog ini akan menonaktifkan importir FBX.\n"
-"Anda dapat mengaktifkannya kembali di Pengaturan Proyek di bawah Sistem "
-"Berkas > Impor > FBX > Diaktifkan.\n"
-"\n"
-"Editor akan memulai ulang saat importir terdaftar saat editor dimulai."
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Path ke eksekusi FBX2glTF kosong."
 
@@ -4569,13 +4547,6 @@ msgstr "Eksekusi FBX2glTF valid."
 
 msgid "Configure FBX Importer"
 msgstr "Konfigurasikan Importir FBX"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX2glTF diperlukan untuk mengimpor file FBX.\n"
-"Silakan unduh dan berikan path yang valid ke biner:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "Klik tautan ini untuk mengunduh FBX2glTF"
@@ -4854,6 +4825,9 @@ msgstr "Hapus dari Grup"
 
 msgid "Global"
 msgstr "Global"
+
+msgid "Expand Bottom Panel"
+msgstr "Perluas Panel Bawah"
 
 msgid "Move"
 msgstr "Pindahkan"
@@ -6844,12 +6818,6 @@ msgstr "Snap Relatif"
 msgid "Use Pixel Snap"
 msgstr "Gunakan Snap Piksel"
 
-msgid "Smart Snapping"
-msgstr "Pengancingan Pintar"
-
-msgid "Configure Snap..."
-msgstr "Atur Snap..."
-
 msgid "Snap to Parent"
 msgstr "Kancingkan ke Orangtuanya"
 
@@ -6867,6 +6835,12 @@ msgstr "Kancing ke Node Lain"
 
 msgid "Snap to Guides"
 msgstr "Kancing ke Panduan"
+
+msgid "Smart Snapping"
+msgstr "Pengancingan Pintar"
+
+msgid "Configure Snap..."
+msgstr "Atur Snap..."
 
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Mengunci simpul yang dipilih, mencegah pemilihan dan pergerakan."
@@ -8153,6 +8127,9 @@ msgstr "Tampilkan Lingkungan"
 msgid "View Gizmos"
 msgstr "Tampilkan Gizmo"
 
+msgid "View Grid"
+msgstr "Tampilkan Kisi"
+
 msgid "View Information"
 msgstr "Tampilkan Informasi"
 
@@ -8405,9 +8382,6 @@ msgstr "4 Penampil"
 msgid "View Origin"
 msgstr "Tampilkan Titik Asal"
 
-msgid "View Grid"
-msgstr "Tampilkan Kisi"
-
 msgid "Settings..."
 msgstr "Pengaturan…"
 
@@ -8616,9 +8590,6 @@ msgstr "Cermin Pengatur Panjang"
 msgid "Curve Point #"
 msgstr "Titik Kurva #"
 
-msgid "Set Curve Point Position"
-msgstr "Atur Posisi Titik Kurva"
-
 msgid "Set Curve Out Position"
 msgstr "Atur Posisi Kurva Luar"
 
@@ -8633,6 +8604,9 @@ msgstr "Hapus Titik Tapak"
 
 msgid "Split Segment (in curve)"
 msgstr "Pisahkan Segmen (dalam kurva)"
+
+msgid "Set Curve Point Position"
+msgstr "Atur Posisi Titik Kurva"
 
 msgid "Move Joint"
 msgstr "Geser Persendian"
@@ -8910,14 +8884,14 @@ msgstr "Riwayat Sebelumnya"
 msgid "History Next"
 msgstr "Riwayat Selanjutnya"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Import Theme..."
 msgstr "Impor Tema..."
 
 msgid "Reload Theme"
 msgstr "Muat Ulang Tema"
+
+msgid "Theme"
+msgstr "Tema"
 
 msgid "Save Theme"
 msgstr "Simpan Tema"
@@ -9015,9 +8989,6 @@ msgstr "Pilih Warna"
 
 msgid "Folding"
 msgstr "Melipat"
-
-msgid "Indentation"
-msgstr "Indentasi"
 
 msgid "Uppercase"
 msgstr "Huruf Besar"
@@ -9313,12 +9284,6 @@ msgstr "Tidak dapat memuat gambar"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "GALAT: Tidak dapat memuat resource frame!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Papan klip resource kosong atau memang bukan tekstur!"
-
-msgid "Paste Frame"
-msgstr "Rekat Frame"
-
 msgid "Add Empty"
 msgstr "Tambah Kosong"
 
@@ -9369,9 +9334,6 @@ msgstr "Tambahkan bingkai dari lembar sprite"
 
 msgid "Delete Frame"
 msgstr "Hapus Bingkai"
-
-msgid "Copy Frame"
-msgstr "Salin Bingkai"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "Sisipkan Kosong (Sebelum Dipilih)"
@@ -11770,6 +11732,54 @@ msgid "No identity found."
 msgstr "Identitas tidak ditemukan."
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Animasi CPUParticles2D membutuhkan penggunaan CanvasItemMaterial dengan "
+"\"Animasi Partikel\" diaktifkan."
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+"Material untuk memproses partikel belum ditetapkan, jadi tidak ada perilaku "
+"yang dimunculkan."
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Animasi Particles2D membutuhkan penggunaan CanvasItemMaterial dengan "
+"\"Animasi Partikel\" diaktifkan."
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr ""
+"Sebuah tekstur dengan bentuk cahaya harus disuplai ke properti \"Tekstur\"."
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"Sebuah polygon occluder harus diatur (atau digambar) untuk occluder ini "
+"berpengaruh."
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr ""
+"Polygon occluder untuk occluder ini kosong. Mohon gambar dulu sebuah poligon."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"Node ParallaxLayer hanya bekerja ketika diatur sebagai child dari sebuah node "
+"ParallaxBackground."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr ""
+"PathFollow2D hanya bekerja ketika diatur sebagai sebuah child dari sebuah "
+"node Path2D."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -11808,27 +11818,6 @@ msgstr ""
 "melalui node CollisionShape2D. Gunakan node CollisionPolygon2D sebagai "
 "gantinya."
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Animasi CPUParticles2D membutuhkan penggunaan CanvasItemMaterial dengan "
-"\"Animasi Partikel\" diaktifkan."
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-"Material untuk memproses partikel belum ditetapkan, jadi tidak ada perilaku "
-"yang dimunculkan."
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Animasi Particles2D membutuhkan penggunaan CanvasItemMaterial dengan "
-"\"Animasi Partikel\" diaktifkan."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Node A dan Node B harus berupa PhysicsBody2D"
 
@@ -11843,33 +11832,6 @@ msgstr "Persendian tidak terkoneksi dengan 2 PhysicsBody2D"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Node A dan Node B harus PhysicsBody2D yang berbeda"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr ""
-"Sebuah tekstur dengan bentuk cahaya harus disuplai ke properti \"Tekstur\"."
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"Sebuah polygon occluder harus diatur (atau digambar) untuk occluder ini "
-"berpengaruh."
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr ""
-"Polygon occluder untuk occluder ini kosong. Mohon gambar dulu sebuah poligon."
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"Node ParallaxLayer hanya bekerja ketika diatur sebagai child dari sebuah node "
-"ParallaxBackground."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
-"PathFollow2D hanya bekerja ketika diatur sebagai sebuah child dari sebuah "
-"node Path2D."
 
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
@@ -11887,6 +11849,17 @@ msgid ""
 msgstr ""
 "Tulang ini tidak memiliki pose REST yang sesuai. Pergi ke node Skeleton2D dan "
 "tetapkan."
+
+msgid "Nothing is visible because no mesh has been assigned."
+msgstr "Tidak ada yang tampil karena tidak ada mesh yang ditetapkan."
+
+msgid "Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+"Tidak ada yang ditampilkan karena mesh tidak ditetapkan untuk menggambar "
+"lintasan."
+
+msgid "Generating Probe Volumes"
+msgstr "Menghasilkan Volume Probe"
 
 msgid ""
 "CollisionPolygon3D only serves to provide a collision shape to a "
@@ -11909,17 +11882,6 @@ msgstr ""
 "turunan CollisionObject3D.\n"
 "Harap gunakan hanya sebagai anak dari Area3D, StaticBody3D, RigidBody3D, "
 "CharacterBody3D, dll. untuk memberikan bentuk."
-
-msgid "Nothing is visible because no mesh has been assigned."
-msgstr "Tidak ada yang tampil karena tidak ada mesh yang ditetapkan."
-
-msgid "Nothing is visible because meshes have not been assigned to draw passes."
-msgstr ""
-"Tidak ada yang ditampilkan karena mesh tidak ditetapkan untuk menggambar "
-"lintasan."
-
-msgid "Generating Probe Volumes"
-msgstr "Menghasilkan Volume Probe"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Body ini akan diabaikan hingga Anda mengatur mesh-nya."
@@ -11949,18 +11911,8 @@ msgstr "Tidak ada yang terhubung ke input '%s' dari node '%s'."
 msgid "No root AnimationNode for the graph is set."
 msgstr "Akar AnimationNode untuk grafik belum diatur."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Warna: #%s\n"
-"LMB: Terapkan warna"
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Beralih antara nilai heksadesimal dan kode."
-
-msgid "Add current color as a preset."
-msgstr "Tambahkan warna yang sekarang sebagai preset."
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -11994,9 +11946,6 @@ msgstr ""
 "ScrollContainer dimaksudkan untuk bekerja dengan kontrol anak tunggal.\n"
 "Gunakan satu kontainer sebagai anak (VBox,HBox,dkk), atau Control, dan atur "
 "manual ukuran minimumnya."
-
-msgid "(Other)"
-msgstr "(Yang Lain)"
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

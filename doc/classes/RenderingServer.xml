@@ -869,6 +869,15 @@
 				A copy of the canvas item will be drawn with a local offset of the mirroring [Vector2].
 			</description>
 		</method>
+		<method name="canvas_set_item_repeat">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="repeat_size" type="Vector2" />
+			<param index="2" name="repeat_times" type="int" />
+			<description>
+				A copy of the canvas item will be drawn with a local offset of the [param repeat_size] by the number of times of the [param repeat_times]. As the [param repeat_times] increases, the copies will spread away from the origin texture.
+			</description>
+		</method>
 		<method name="canvas_set_modulate">
 			<return type="void" />
 			<param index="0" name="canvas" type="RID" />

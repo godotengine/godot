@@ -1004,9 +1004,6 @@ msgstr "יצירת תיקייה"
 msgid "Thanks from the Godot community!"
 msgstr "תודה רבה מקהילת Godot!"
 
-msgid "Click to copy."
-msgstr "לחץ להעתקה."
-
 msgid "Godot Engine contributors"
 msgstr "מתנדבי מנוע גודו"
 
@@ -2050,9 +2047,6 @@ msgstr "מפקח"
 msgid "Node"
 msgstr "מפרק"
 
-msgid "Expand Bottom Panel"
-msgstr "הרחבת הפאנל התחתון"
-
 msgid "Output"
 msgstr "פלט"
 
@@ -2395,6 +2389,9 @@ msgstr "הוספה לקבוצה"
 
 msgid "Remove from Group"
 msgstr "הסרה מקבוצה"
+
+msgid "Expand Bottom Panel"
+msgstr "הרחבת הפאנל התחתון"
 
 msgid "Move"
 msgstr "העברה"
@@ -3934,30 +3931,6 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "הפעלת ה־HTML המיוצא בדפדפן בררת המחדל של המערכת."
 
 msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
-"its shape."
-msgstr ""
-"למפרק זה אין צורה ולכן הוא לא יכול להתנגש או לקיים אינטראקציה עם אובייקטים "
-"אחרים.\n"
-"הוספת CollisionShape2D או CollisionPolygon2D כילד תגדיר את צורתו."
-
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "ל־CollisionPolygon2D ריק אין השפעה על התנגשות."
-
-msgid ""
-"A shape must be provided for CollisionShape2D to function. Please create a "
-"shape resource for it!"
-msgstr "יש לספק צורה כדי ש-CollisionShape2D יתפקד. יש ליצור משאב צורה עבורו!"
-
-msgid ""
-"Polygon-based shapes are not meant be used nor edited directly through the "
-"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
-msgstr ""
-"צורות מבוססות מצולע אינן מיועדות לשימוש או לעריכה ישירות דרך מפרק "
-"CollisionShape2D. במקום זאת יש להשתמש במפרק מסוג CollisionPolygon2D."
-
-msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
@@ -3988,6 +3961,30 @@ msgstr ""
 
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr "PathFollow2D עובד רק כאשר הוא מוגדר כצאצא של מפרק Path2D."
+
+msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
+"its shape."
+msgstr ""
+"למפרק זה אין צורה ולכן הוא לא יכול להתנגש או לקיים אינטראקציה עם אובייקטים "
+"אחרים.\n"
+"הוספת CollisionShape2D או CollisionPolygon2D כילד תגדיר את צורתו."
+
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "ל־CollisionPolygon2D ריק אין השפעה על התנגשות."
+
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr "יש לספק צורה כדי ש-CollisionShape2D יתפקד. יש ליצור משאב צורה עבורו!"
+
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"צורות מבוססות מצולע אינן מיועדות לשימוש או לעריכה ישירות דרך מפרק "
+"CollisionShape2D. במקום זאת יש להשתמש במפרק מסוג CollisionPolygon2D."
 
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "מאפיין הנתיב חייב להצביע על מפרק Node2D חוקי כדי לעבוד."
@@ -4039,9 +4036,6 @@ msgstr "לא נקבע שורש AnimationNode עבור הגרף."
 msgid "Switch between hexadecimal and code values."
 msgstr "מעבר בין ערכים הקסדצימלים לערכי קוד."
 
-msgid "Add current color as a preset."
-msgstr "הוספת הצבע הנוכחי לערכת הצבעים."
-
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
 "placement behavior.\n"
@@ -4071,9 +4065,6 @@ msgstr ""
 "ScrollContainer מיועד לעבודה עם בקר צאצא יחיד.\n"
 "יש להשתמש במיכל כצאצא (VBox, HBox וכו'), או בבקר ולקבוע את הגודל המינימלי "
 "המותאם אישית באופן ידני."
-
-msgid "(Other)"
-msgstr "(אחר)"
 
 msgid "Invalid source for preview."
 msgstr "מקור לא תקין לתצוגה מקדימה."

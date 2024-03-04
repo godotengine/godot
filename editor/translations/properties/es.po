@@ -101,13 +101,14 @@
 # Chimi <tximi.sysaad@gmail.com>, 2023.
 # BIBALLO <dmoraleda11@gmail.com>, 2024.
 # Miguel de Dios Matias <tres.14159@gmail.com>, 2024.
+# Zeerats <scbmediasolutions@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-02 09:31+0000\n"
-"Last-Translator: Miguel de Dios Matias <tres.14159@gmail.com>\n"
+"PO-Revision-Date: 2024-02-26 06:02+0000\n"
+"Last-Translator: Zeerats <scbmediasolutions@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -115,7 +116,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -230,6 +231,12 @@ msgstr "Animación"
 
 msgid "Warnings"
 msgstr "Advertencias"
+
+msgid "Check Invalid Track Paths"
+msgstr "Comprobar Trazados No Válidos"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "Comprobar Conflictos de Tipo de Interpolación Angular"
 
 msgid "Audio"
 msgstr "Audio"
@@ -390,6 +397,12 @@ msgstr "Dispositivo de Renderizado"
 msgid "V-Sync"
 msgstr "Sincronización Vertical"
 
+msgid "Frame Queue Size"
+msgstr "Tamaño de Cola de Fotogramas"
+
+msgid "Swapchain Image Count"
+msgstr "Número de Imágenes Swapchain"
+
 msgid "Staging Buffer"
 msgstr "Buffer de preparación"
 
@@ -413,6 +426,21 @@ msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "Descriptores Máximos por Grupo"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Max Resource Descriptors per Frame"
+msgstr "Máximo de Descriptores de Recursos por Fotograma"
+
+msgid "Max Sampler Descriptors per Frame"
+msgstr "Máximo de Descriptores de Muestreo por Fotograma"
+
+msgid "Max Misc Descriptors per Frame"
+msgstr "Máximo de Descriptores Variados por Fotograma"
+
+msgid "Agility SDK Version"
+msgstr "Versión de SDK Agility"
 
 msgid "Textures"
 msgstr "Texturas"
@@ -555,6 +583,9 @@ msgstr "Relativo"
 msgid "Velocity"
 msgstr "Velocidad"
 
+msgid "Screen Velocity"
+msgstr "Velocidad de Pantalla"
+
 msgid "Axis"
 msgstr "Eje"
 
@@ -649,7 +680,10 @@ msgid "Offset"
 msgstr "Desplazamiento"
 
 msgid "Cell Size"
-msgstr "Tamaño de la casilla"
+msgstr "Tamaño de la Celda"
+
+msgid "Cell Shape"
+msgstr "Forma de la Celda"
 
 msgid "Jumping Enabled"
 msgstr "Salto Habilitado"
@@ -658,7 +692,7 @@ msgid "Default Compute Heuristic"
 msgstr "Cálculo Heurístico Predeterminado"
 
 msgid "Default Estimate Heuristic"
-msgstr "Heuristica Estimación Predeterminada"
+msgstr "Estimación Heurística por Defecto"
 
 msgid "Diagonal Mode"
 msgstr "Modo Diagonal"
@@ -688,7 +722,7 @@ msgid "TCP"
 msgstr "TCP"
 
 msgid "Connect Timeout Seconds"
-msgstr "Segundos de tiempo de espera de conexión"
+msgstr "Segundos de Espera de Conexión"
 
 msgid "Packet Peer Stream"
 msgstr "Transmisión de Paquetes entre Pares"
@@ -1139,9 +1173,6 @@ msgstr "Puerto RPC"
 
 msgid "RPC Server Uptime"
 msgstr "Tiempo de actividad del servidor RPC"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "Ruta FBX2glTF"
@@ -2877,6 +2908,12 @@ msgstr "Ruta Unida"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "FBX"
+msgstr "FBX"
+
+msgid "Embedded Image Handling"
+msgstr "Manejo de Imágenes Embebidas"
+
 msgid "GDScript"
 msgstr "GDScript"
 
@@ -2942,9 +2979,6 @@ msgstr "Copyright"
 
 msgid "glTF"
 msgstr "glTF"
-
-msgid "Embedded Image Handling"
-msgstr "Manejo de Imágenes Embebidas"
 
 msgid "Color"
 msgstr "Color"
@@ -4215,39 +4249,6 @@ msgstr "Voltear H"
 msgid "Flip V"
 msgstr "Voltear V"
 
-msgid "Monitoring"
-msgstr "Monitorización"
-
-msgid "Monitorable"
-msgstr "Monitorizable"
-
-msgid "Gravity"
-msgstr "Gravedad"
-
-msgid "Space Override"
-msgstr "Anulación de Espacio"
-
-msgid "Point"
-msgstr "Punto"
-
-msgid "Point Unit Distance"
-msgstr "Distancia de Unidad de Punto"
-
-msgid "Point Center"
-msgstr "Centrar Punto"
-
-msgid "Direction"
-msgstr "Dirección"
-
-msgid "Linear Damp"
-msgstr "Amortiguación Lineal"
-
-msgid "Angular Damp"
-msgstr "Amortiguación Angular"
-
-msgid "Audio Bus"
-msgstr "Bus de Audio"
-
 msgid "Current"
 msgstr "Actual"
 
@@ -4365,30 +4366,6 @@ msgstr "Limpiar Margen"
 msgid "Use Mipmaps"
 msgstr "Usar Mipmaps"
 
-msgid "Disable Mode"
-msgstr "Modo Desactivado"
-
-msgid "Input"
-msgstr "Entrada"
-
-msgid "Pickable"
-msgstr "Seleccionable"
-
-msgid "Build Mode"
-msgstr "Modo de Compilación"
-
-msgid "Disabled"
-msgstr "Desactivado"
-
-msgid "One Way Collision"
-msgstr "Colisión en Una Dirección"
-
-msgid "One Way Collision Margin"
-msgstr "Margen de Colisión en Una Dirección"
-
-msgid "Debug Color"
-msgstr "Color de Depuración"
-
 msgid "Emitting"
 msgstr "Emitiendo"
 
@@ -4452,8 +4429,14 @@ msgstr "Marcador de Partículas"
 msgid "Align Y"
 msgstr "Alineación Y"
 
+msgid "Direction"
+msgstr "Dirección"
+
 msgid "Spread"
 msgstr "Propagación"
+
+msgid "Gravity"
+msgstr "Gravedad"
 
 msgid "Initial Velocity"
 msgstr "Velocidad Inicial"
@@ -4586,48 +4569,6 @@ msgstr "Secciones"
 
 msgid "Section Subdivisions"
 msgstr "Subdivisiones de Sección"
-
-msgid "Node A"
-msgstr "Nodo A"
-
-msgid "Node B"
-msgstr "Nodo B"
-
-msgid "Bias"
-msgstr "Tendencia"
-
-msgid "Disable Collision"
-msgstr "Desactivar Colisión"
-
-msgid "Softness"
-msgstr "Suavidad"
-
-msgid "Angular Limit"
-msgstr "Límite Angular"
-
-msgid "Lower"
-msgstr "Inferior"
-
-msgid "Upper"
-msgstr "Superior"
-
-msgid "Motor"
-msgstr "Motor"
-
-msgid "Target Velocity"
-msgstr "Velocidad del Objetivo"
-
-msgid "Length"
-msgstr "Longitud"
-
-msgid "Initial Offset"
-msgstr "Offset Inicial"
-
-msgid "Rest Length"
-msgstr "Duración de Reposo"
-
-msgid "Stiffness"
-msgstr "Rigidez"
 
 msgid "Editor Only"
 msgstr "Sólo para el Editor"
@@ -4815,6 +4756,21 @@ msgstr "Restricciones de Evasión"
 msgid "Skew"
 msgstr "Sesgo"
 
+msgid "Scroll Offset"
+msgstr "Offset de Scroll"
+
+msgid "Repeat"
+msgstr "Repetir"
+
+msgid "Begin"
+msgstr "Comienzo"
+
+msgid "End"
+msgstr "Fin"
+
+msgid "Follow Viewport"
+msgstr "Seguir el Viewport"
+
 msgid "Scroll"
 msgstr "Scroll"
 
@@ -4860,6 +4816,147 @@ msgstr "Rotar"
 msgid "Cubic Interp"
 msgstr "Interp. Cúbica"
 
+msgid "Sync to Physics"
+msgstr "Sincronizar con la Física\""
+
+msgid "Monitoring"
+msgstr "Monitorización"
+
+msgid "Monitorable"
+msgstr "Monitorizable"
+
+msgid "Space Override"
+msgstr "Anulación de Espacio"
+
+msgid "Point"
+msgstr "Punto"
+
+msgid "Point Unit Distance"
+msgstr "Distancia de Unidad de Punto"
+
+msgid "Point Center"
+msgstr "Centrar Punto"
+
+msgid "Linear Damp"
+msgstr "Amortiguación Lineal"
+
+msgid "Angular Damp"
+msgstr "Amortiguación Angular"
+
+msgid "Audio Bus"
+msgstr "Bus de Audio"
+
+msgid "Motion Mode"
+msgstr "Modo de Locomocion"
+
+msgid "Up Direction"
+msgstr "Dirección Arriba"
+
+msgid "Slide on Ceiling"
+msgstr "Deslizamiento en Techo"
+
+msgid "Wall Min Slide Angle"
+msgstr "Angulo Mínimo de Deslizamiento en Muro"
+
+msgid "Floor"
+msgstr "Suelo"
+
+msgid "Stop on Slope"
+msgstr "Detener en Pendiente"
+
+msgid "Constant Speed"
+msgstr "Velocidad Constante"
+
+msgid "Block on Wall"
+msgstr "Bloque en Muro"
+
+msgid "Max Angle"
+msgstr "Ángulo Máximo"
+
+msgid "Snap Length"
+msgstr "Longitud de Ajuste"
+
+msgid "Moving Platform"
+msgstr "Plataforma Móvil"
+
+msgid "On Leave"
+msgstr "Al Dejar"
+
+msgid "Floor Layers"
+msgstr "Capas de Suelo"
+
+msgid "Wall Layers"
+msgstr "Capas de Muro"
+
+msgid "Safe Margin"
+msgstr "Margen de Seguridad"
+
+msgid "Disable Mode"
+msgstr "Modo Desactivado"
+
+msgid "Input"
+msgstr "Entrada"
+
+msgid "Pickable"
+msgstr "Seleccionable"
+
+msgid "Build Mode"
+msgstr "Modo de Compilación"
+
+msgid "Disabled"
+msgstr "Desactivado"
+
+msgid "One Way Collision"
+msgstr "Colisión en Una Dirección"
+
+msgid "One Way Collision Margin"
+msgstr "Margen de Colisión en Una Dirección"
+
+msgid "Debug Color"
+msgstr "Color de Depuración"
+
+msgid "Length"
+msgstr "Longitud"
+
+msgid "Rest Length"
+msgstr "Duración de Reposo"
+
+msgid "Stiffness"
+msgstr "Rigidez"
+
+msgid "Initial Offset"
+msgstr "Offset Inicial"
+
+msgid "Node A"
+msgstr "Nodo A"
+
+msgid "Node B"
+msgstr "Nodo B"
+
+msgid "Bias"
+msgstr "Tendencia"
+
+msgid "Disable Collision"
+msgstr "Desactivar Colisión"
+
+msgid "Softness"
+msgstr "Suavidad"
+
+msgid "Angular Limit"
+msgstr "Límite Angular"
+
+msgid "Lower"
+msgstr "Inferior"
+
+msgid "Upper"
+msgstr "Superior"
+
+msgid "Motor"
+msgstr "Motor"
+
+msgid "Target Velocity"
+msgstr "Velocidad del Objetivo"
+
 msgid "Bone 2D Nodepath"
 msgstr "Ruta del nodo de Hueso 2D"
 
@@ -4875,14 +4972,23 @@ msgstr "Simular Físicas"
 msgid "Follow Bone When Simulating"
 msgstr "Seguimiento de Hueso Durante la Simulación"
 
-msgid "Constant Linear Velocity"
-msgstr "Velocidad Lineal Constante"
+msgid "Exclude Parent"
+msgstr "Excluir Padre"
 
-msgid "Constant Angular Velocity"
-msgstr "Velocidad Angular Constante"
+msgid "Target Position"
+msgstr "Posición del Objetivo"
 
-msgid "Sync to Physics"
-msgstr "Sincronizar con la Física\""
+msgid "Hit From Inside"
+msgstr "Golpea desde dentro"
+
+msgid "Collide With"
+msgstr "Colisionar con"
+
+msgid "Areas"
+msgstr "Áreas"
+
+msgid "Bodies"
+msgstr "Cuerpos"
 
 msgid "Gravity Scale"
 msgstr "Escala de gravedad"
@@ -4947,50 +5053,17 @@ msgstr "Fuerzas Constantes"
 msgid "Torque"
 msgstr "Torsión"
 
-msgid "Motion Mode"
-msgstr "Modo de Locomocion"
+msgid "Margin"
+msgstr "Margen"
 
-msgid "Up Direction"
-msgstr "Dirección Arriba"
+msgid "Max Results"
+msgstr "Resultados Máximos"
 
-msgid "Slide on Ceiling"
-msgstr "Deslizamiento en Techo"
+msgid "Constant Linear Velocity"
+msgstr "Velocidad Lineal Constante"
 
-msgid "Wall Min Slide Angle"
-msgstr "Angulo Mínimo de Deslizamiento en Muro"
-
-msgid "Floor"
-msgstr "Suelo"
-
-msgid "Stop on Slope"
-msgstr "Detener en Pendiente"
-
-msgid "Constant Speed"
-msgstr "Velocidad Constante"
-
-msgid "Block on Wall"
-msgstr "Bloque en Muro"
-
-msgid "Max Angle"
-msgstr "Ángulo Máximo"
-
-msgid "Snap Length"
-msgstr "Longitud de Ajuste"
-
-msgid "Moving Platform"
-msgstr "Plataforma Móvil"
-
-msgid "On Leave"
-msgstr "Al Dejar"
-
-msgid "Floor Layers"
-msgstr "Capas de Suelo"
-
-msgid "Wall Layers"
-msgstr "Capas de Muro"
-
-msgid "Safe Margin"
-msgstr "Margen de Seguridad"
+msgid "Constant Angular Velocity"
+msgstr "Velocidad Angular Constante"
 
 msgid "UV"
 msgstr "UV"
@@ -5004,24 +5077,6 @@ msgstr "Polígonos"
 msgid "Internal Vertex Count"
 msgstr "Conteo de Vértices Internos"
 
-msgid "Exclude Parent"
-msgstr "Excluir Padre"
-
-msgid "Target Position"
-msgstr "Posición del Objetivo"
-
-msgid "Hit From Inside"
-msgstr "Golpea desde dentro"
-
-msgid "Collide With"
-msgstr "Colisionar con"
-
-msgid "Areas"
-msgstr "Áreas"
-
-msgid "Bodies"
-msgstr "Cuerpos"
-
 msgid "Remote Path"
 msgstr "Ruta Remota"
 
@@ -5030,12 +5085,6 @@ msgstr "Usar Coordenadas Globales"
 
 msgid "Update"
 msgstr "Actualizar"
-
-msgid "Margin"
-msgstr "Margen"
-
-msgid "Max Results"
-msgstr "Resultados Máximos"
 
 msgid "Auto Calculate Length and Angle"
 msgstr "Auto Calcular la Longitud y el Ángulo"
@@ -5109,24 +5158,6 @@ msgstr "Habilitando"
 msgid "Node Path"
 msgstr "Ruta del Nodo"
 
-msgid "Wind"
-msgstr "Viento"
-
-msgid "Force Magnitude"
-msgstr "Magnitud de Fuerza"
-
-msgid "Attenuation Factor"
-msgstr "Factor de atenuación"
-
-msgid "Source Path"
-msgstr "Ruta de la Fuente"
-
-msgid "Reverb Bus"
-msgstr "Bus de reverberación"
-
-msgid "Uniformity"
-msgstr "Uniformidad"
-
 msgid "Attenuation Model"
 msgstr "Modelo de Atenuación"
 
@@ -5192,12 +5223,6 @@ msgstr "Cercano"
 
 msgid "Far"
 msgstr "Lejos"
-
-msgid "Ray Pickable"
-msgstr "Seleccionable por Rayo"
-
-msgid "Capture on Drag"
-msgstr "Captura Al Arrastrar"
 
 msgid "Visibility AABB"
 msgstr "Visibilidad AABB"
@@ -5268,9 +5293,6 @@ msgstr "Fundido Inferior"
 msgid "Distance Fade"
 msgstr "Fade al Distanciarse"
 
-msgid "Begin"
-msgstr "Comienzo"
-
 msgid "Transform Align"
 msgstr "Transformacion de Alineamiento"
 
@@ -5307,98 +5329,11 @@ msgstr "Rango de Visibilidad"
 msgid "Begin Margin"
 msgstr "Margen Inicial"
 
-msgid "End"
-msgstr "Fin"
-
 msgid "End Margin"
 msgstr "Margen al Final"
 
 msgid "Fade Mode"
 msgstr "Modo de Fundido"
-
-msgid "Solver Priority"
-msgstr "Prioridad del Solucionador"
-
-msgid "Exclude Nodes From Collision"
-msgstr "Excluir Nodos Desde la Colisión"
-
-msgid "Params"
-msgstr "Parámetros"
-
-msgid "Impulse Clamp"
-msgstr "Restricción de Impulso"
-
-msgid "Relaxation"
-msgstr "Relajación"
-
-msgid "Max Impulse"
-msgstr "Impulso Máximo"
-
-msgid "Linear Limit"
-msgstr "Límite Lineal"
-
-msgid "Upper Distance"
-msgstr "Distancia Superior"
-
-msgid "Lower Distance"
-msgstr "Distancia Inferior"
-
-msgid "Restitution"
-msgstr "Restitución"
-
-msgid "Linear Motion"
-msgstr "Movimiento Lineal"
-
-msgid "Linear Ortho"
-msgstr "Ortogonal Lineal"
-
-msgid "Upper Angle"
-msgstr "Ángulo Superior"
-
-msgid "Lower Angle"
-msgstr "Ángulo Inferior"
-
-msgid "Angular Motion"
-msgstr "Movimiento Angular"
-
-msgid "Angular Ortho"
-msgstr "Ortogonal Angular"
-
-msgid "Swing Span"
-msgstr "Expansión de Swing"
-
-msgid "Twist Span"
-msgstr "Extensión de Torsión"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
-
-msgid "Linear Motor"
-msgstr "Motor Lineal"
-
-msgid "Force Limit"
-msgstr "Forzar Límite"
-
-msgid "Linear Spring"
-msgstr "Resorte Lineal"
-
-msgid "Equilibrium Point"
-msgstr "Punto de Equilibrio"
-
-msgid "ERP"
-msgstr "ERP"
-
-msgid "Angular Motor"
-msgstr "Motor Angular"
-
-msgid "Angular Spring"
-msgstr "Resorte Angular"
 
 msgid "Pixel Size"
 msgstr "Tamaño de Píxeles"
@@ -5652,26 +5587,113 @@ msgstr "Usar Model Frontal"
 msgid "Tilt Enabled"
 msgstr "Activado de Inclinado"
 
-msgid "Axis Lock"
-msgstr "Bloquear Ejes"
+msgid "Wind"
+msgstr "Viento"
 
-msgid "Linear X"
-msgstr "Lineal X"
+msgid "Force Magnitude"
+msgstr "Magnitud de Fuerza"
 
-msgid "Linear Y"
-msgstr "Lineal Y"
+msgid "Attenuation Factor"
+msgstr "Factor de atenuación"
 
-msgid "Linear Z"
-msgstr "Lineal Z"
+msgid "Source Path"
+msgstr "Ruta de la Fuente"
 
-msgid "Angular X"
-msgstr "Angular X"
+msgid "Reverb Bus"
+msgstr "Bus de reverberación"
 
-msgid "Angular Y"
-msgstr "Angular Y"
+msgid "Uniformity"
+msgstr "Uniformidad"
 
-msgid "Angular Z"
-msgstr "Angular Z"
+msgid "Ray Pickable"
+msgstr "Seleccionable por Rayo"
+
+msgid "Capture on Drag"
+msgstr "Captura Al Arrastrar"
+
+msgid "Swing Span"
+msgstr "Expansión de Swing"
+
+msgid "Twist Span"
+msgstr "Extensión de Torsión"
+
+msgid "Relaxation"
+msgstr "Relajación"
+
+msgid "Linear Limit"
+msgstr "Límite Lineal"
+
+msgid "X"
+msgstr "X"
+
+msgid "Upper Distance"
+msgstr "Distancia Superior"
+
+msgid "Lower Distance"
+msgstr "Distancia Inferior"
+
+msgid "Restitution"
+msgstr "Restitución"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Linear Motor"
+msgstr "Motor Lineal"
+
+msgid "Force Limit"
+msgstr "Forzar Límite"
+
+msgid "Linear Spring"
+msgstr "Resorte Lineal"
+
+msgid "Equilibrium Point"
+msgstr "Punto de Equilibrio"
+
+msgid "Upper Angle"
+msgstr "Ángulo Superior"
+
+msgid "Lower Angle"
+msgstr "Ángulo Inferior"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Angular Motor"
+msgstr "Motor Angular"
+
+msgid "Angular Spring"
+msgstr "Resorte Angular"
+
+msgid "Params"
+msgstr "Parámetros"
+
+msgid "Max Impulse"
+msgstr "Impulso Máximo"
+
+msgid "Solver Priority"
+msgstr "Prioridad del Solucionador"
+
+msgid "Exclude Nodes From Collision"
+msgstr "Excluir Nodos Desde la Colisión"
+
+msgid "Impulse Clamp"
+msgstr "Restricción de Impulso"
+
+msgid "Linear Motion"
+msgstr "Movimiento Lineal"
+
+msgid "Linear Ortho"
+msgstr "Ortogonal Lineal"
+
+msgid "Angular Motion"
+msgstr "Movimiento Angular"
+
+msgid "Angular Ortho"
+msgstr "Ortogonal Angular"
 
 msgid "Joint Constraints"
 msgstr "Restringir Articulaciones"
@@ -5769,11 +5791,74 @@ msgstr "Modo de Amortiguación Lineal"
 msgid "Angular Damp Mode"
 msgstr "Modo de Amortiguación Angular"
 
+msgid "Axis Lock"
+msgstr "Bloquear Ejes"
+
+msgid "Linear X"
+msgstr "Lineal X"
+
+msgid "Linear Y"
+msgstr "Lineal Y"
+
+msgid "Linear Z"
+msgstr "Lineal Z"
+
+msgid "Angular X"
+msgstr "Angular X"
+
+msgid "Angular Y"
+msgstr "Angular Y"
+
+msgid "Angular Z"
+msgstr "Angular Z"
+
 msgid "Hit Back Faces"
 msgstr "Golpear Caras Traseras"
 
 msgid "Debug Shape"
 msgstr "Depurar Shape"
+
+msgid "Spring Length"
+msgstr "Cantidad de Amortiguación"
+
+msgid "Per-Wheel Motion"
+msgstr "Movimiento por Rueda"
+
+msgid "Engine Force"
+msgstr "Fuerza del Motor"
+
+msgid "Brake"
+msgstr "Freno"
+
+msgid "Steering"
+msgstr "Dirección"
+
+msgid "VehicleBody3D Motion"
+msgstr "Movimiento del VehicleBody 3D"
+
+msgid "Use as Traction"
+msgstr "Usar Como Tracción"
+
+msgid "Use as Steering"
+msgstr "Usar Como Dirección"
+
+msgid "Wheel"
+msgstr "Rueda"
+
+msgid "Roll Influence"
+msgstr "Influencia del Rodaje"
+
+msgid "Friction Slip"
+msgstr "Deslizamiento por Fricción"
+
+msgid "Suspension"
+msgstr "Suspensión"
+
+msgid "Travel"
+msgstr "Viaje"
+
+msgid "Max Force"
+msgstr "Fuerza Máxima"
 
 msgid "Origin Offset"
 msgstr "Offset de Origen"
@@ -5867,48 +5952,6 @@ msgstr "Coeficiente de amortización"
 
 msgid "Drag Coefficient"
 msgstr "Coeficiente de resistencia"
-
-msgid "Spring Length"
-msgstr "Cantidad de Amortiguación"
-
-msgid "Per-Wheel Motion"
-msgstr "Movimiento por Rueda"
-
-msgid "Engine Force"
-msgstr "Fuerza del Motor"
-
-msgid "Brake"
-msgstr "Freno"
-
-msgid "Steering"
-msgstr "Dirección"
-
-msgid "VehicleBody3D Motion"
-msgstr "Movimiento del VehicleBody 3D"
-
-msgid "Use as Traction"
-msgstr "Usar Como Tracción"
-
-msgid "Use as Steering"
-msgstr "Usar Como Dirección"
-
-msgid "Wheel"
-msgstr "Rueda"
-
-msgid "Roll Influence"
-msgstr "Influencia del Rodaje"
-
-msgid "Friction Slip"
-msgstr "Deslizamiento por Fricción"
-
-msgid "Suspension"
-msgstr "Suspensión"
-
-msgid "Travel"
-msgstr "Viaje"
-
-msgid "Max Force"
-msgstr "Fuerza Máxima"
 
 msgid "Track Physics Step"
 msgstr "Paso de Física de Pistas"
@@ -6389,9 +6432,6 @@ msgstr "Subcarpeta raíz"
 
 msgid "Use Native Dialog"
 msgstr "Usar diálogo nativo"
-
-msgid "Scroll Offset"
-msgstr "Offset de Scroll"
 
 msgid "Show Grid"
 msgstr "Mostrar Cuadrícula"
@@ -6966,9 +7006,6 @@ msgstr "Z Como Relativo"
 msgid "Y Sort Enabled"
 msgstr "Orden Y Habilitado"
 
-msgid "Repeat"
-msgstr "Repetir"
-
 msgid "Use Parent Material"
 msgstr "Usar el material del padre"
 
@@ -6980,9 +7017,6 @@ msgstr "Mapa Normal"
 
 msgid "Shininess"
 msgstr "Luminosidad"
-
-msgid "Follow Viewport"
-msgstr "Seguir el Viewport"
 
 msgid "Download File"
 msgstr "Descargar Archivo"
@@ -7323,6 +7357,360 @@ msgstr "Física 3D"
 msgid "3D Navigation"
 msgstr "Navegación 3D"
 
+msgid "Segments"
+msgstr "Segmentos"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Slide on Slope"
+msgstr "Deslizar en Pendiente"
+
+msgid "Custom Solver Bias"
+msgstr "Bias de Solución Personalizado"
+
+msgid "Execution Mode"
+msgstr "Modo de Ejecución"
+
+msgid "Target Nodepath"
+msgstr "ruta de Nodo Objetivo"
+
+msgid "Tip Nodepath"
+msgstr "Pista de ruta de Nodo"
+
+msgid "CCDIK Data Chain Length"
+msgstr "Longitud de Cadena de Datos CCDIK"
+
+msgid "FABRIK Data Chain Length"
+msgstr "Longitud de Cadena de Datos FABRIK"
+
+msgid "Jiggle Data Chain Length"
+msgstr "Longitud de Cadena de Datos de Sacudida"
+
+msgid "Default Joint Settings"
+msgstr "Ajustes de Juntas por Defecto"
+
+msgid "Use Gravity"
+msgstr "Usar Gravedad"
+
+msgid "Bone Index"
+msgstr "Índice de Hueso"
+
+msgid "Bone 2D Node"
+msgstr "Nodo de Hueso 2D"
+
+msgid "Physical Bone Chain Length"
+msgstr "Longitud de Cadena de Huesos Físicos"
+
+msgid "Target Minimum Distance"
+msgstr "Distancia Mínima del Objetivo"
+
+msgid "Target Maximum Distance"
+msgstr "Distancia Máxima del Objetivo"
+
+msgid "Flip Bend Direction"
+msgstr "Invertir Dirección de Curvatura"
+
+msgid "Modification Count"
+msgstr "Conteo de Modificación"
+
+msgid "Right Side"
+msgstr "Lado Derecho"
+
+msgid "Right Corner"
+msgstr "Esquina Derecha"
+
+msgid "Bottom Right Side"
+msgstr "Lado Inferior Derecho"
+
+msgid "Bottom Right Corner"
+msgstr "Esquina Inferior Derecha"
+
+msgid "Bottom Side"
+msgstr "Lado Inferior"
+
+msgid "Bottom Corner"
+msgstr "Esquina Inferior"
+
+msgid "Bottom Left Side"
+msgstr "Lado Inferior Izquierdo"
+
+msgid "Bottom Left Corner"
+msgstr "Esquina Inferior Izquierda"
+
+msgid "Left Side"
+msgstr "Lado Izquierdo"
+
+msgid "Left Corner"
+msgstr "Esquina Izquierda"
+
+msgid "Top Left Side"
+msgstr "Lado Superior Izquierdo"
+
+msgid "Top Left Corner"
+msgstr "Esquina Superior Izquierda"
+
+msgid "Top Side"
+msgstr "Lado Superior"
+
+msgid "Top Corner"
+msgstr "Esquina Superior"
+
+msgid "Top Right Side"
+msgstr "Lado Superior Derecho"
+
+msgid "Top Right Corner"
+msgstr "Esquina Superior Derecha"
+
+msgid "Terrains"
+msgstr "Terrenos"
+
+msgid "Custom Data"
+msgstr "Datos Personalizados"
+
+msgid "Tile Proxies"
+msgstr "Proxys de Tiles"
+
+msgid "Source Level"
+msgstr "Nivel de la Fuente"
+
+msgid "Coords Level"
+msgstr "Nivel de Coordenadas"
+
+msgid "Alternative Level"
+msgstr "Nivel Alternativo"
+
+msgid "Tile Shape"
+msgstr "Forma del Tile"
+
+msgid "Tile Layout"
+msgstr "Distribución de Tile"
+
+msgid "Tile Offset Axis"
+msgstr "Eje de Ajuste de Tile"
+
+msgid "Tile Size"
+msgstr "Tamaño de Tile"
+
+msgid "UV Clipping"
+msgstr "Recorte de UV"
+
+msgid "Occlusion Layers"
+msgstr "Capas de Oclusión"
+
+msgid "Physics Layers"
+msgstr "Capas Físicas"
+
+msgid "Terrain Sets"
+msgstr "Conjuntos de Terrenos"
+
+msgid "Custom Data Layers"
+msgstr "Capas de Datos Personalizados"
+
+msgid "Scenes"
+msgstr "Escenas"
+
+msgid "Scene"
+msgstr "Escena"
+
+msgid "Display Placeholder"
+msgstr "Mostrar Marcador"
+
+msgid "Polygons Count"
+msgstr "Conteo de Polígonos"
+
+msgid "One Way"
+msgstr "Unico Sentido"
+
+msgid "One Way Margin"
+msgstr "Margen de Unico Sentido"
+
+msgid "Terrains Peering Bit"
+msgstr "Bit de Emparejamiento de Terrenos"
+
+msgid "Transpose"
+msgstr "Transponer"
+
+msgid "Texture Origin"
+msgstr "Origen de Textura"
+
+msgid "Y Sort Origin"
+msgstr "Origen de Ordenación Y"
+
+msgid "Terrain Set"
+msgstr "Conjunto de Terreno"
+
+msgid "Terrain"
+msgstr "Terreno"
+
+msgid "Miscellaneous"
+msgstr "Miscelaneo"
+
+msgid "Probability"
+msgstr "Probabilidad"
+
+msgid "Distance"
+msgstr "Distancia"
+
+msgid "Backface Collision"
+msgstr "Colisión de Cara Trasera"
+
+msgid "Density"
+msgstr "Densidad"
+
+msgid "Height Falloff"
+msgstr "Atenuación de Altura"
+
+msgid "Edge Fade"
+msgstr "Fundido de Borde"
+
+msgid "Density Texture"
+msgstr "Densidad de Textura"
+
+msgid "Map Width"
+msgstr "Anchura del Mapa"
+
+msgid "Map Depth"
+msgstr "Mapa de Profundidad"
+
+msgid "Map Data"
+msgstr "Datos del Mapa"
+
+msgid "Item"
+msgstr "Elemento"
+
+msgid "Mesh Transform"
+msgstr "Transformación de Mesh"
+
+msgid "Navigation Mesh Transform"
+msgstr "Transformación de Malla de Navegación"
+
+msgid "Preview"
+msgstr "Vista Previa"
+
+msgid "Add UV2"
+msgstr "Añadir UV2"
+
+msgid "UV2 Padding"
+msgstr "Relleno UV2"
+
+msgid "Subdivide Width"
+msgstr "Anchura de Subdivisión"
+
+msgid "Subdivide Height"
+msgstr "Altura de Subdivisión"
+
+msgid "Subdivide Depth"
+msgstr "Profundidad de Subdivisión"
+
+msgid "Top Radius"
+msgstr "Radio Superior"
+
+msgid "Bottom Radius"
+msgstr "Radio Inferior"
+
+msgid "Cap Top"
+msgstr "Tapa Superior"
+
+msgid "Cap Bottom"
+msgstr "Tapa Inferior"
+
+msgid "Left to Right"
+msgstr "De Izquierda a Derecha"
+
+msgid "Is Hemisphere"
+msgstr "Es Hemisfera"
+
+msgid "Ring Segments"
+msgstr "Segmentos en Anillo"
+
+msgid "Radial Steps"
+msgstr "Pasos Radiales"
+
+msgid "Section Length"
+msgstr "Longitud de Sección"
+
+msgid "Section Rings"
+msgstr "Anillos de Sección"
+
+msgid "Section Segments"
+msgstr "Segmentos de Sección"
+
+msgid "Curve Step"
+msgstr "Paso de Curva"
+
+msgid "Bind Count"
+msgstr "Conteo de Vinculaciones"
+
+msgid "Bind"
+msgstr "Vinculación"
+
+msgid "Bone"
+msgstr "Hueso"
+
+msgid "Sky"
+msgstr "Cielo"
+
+msgid "Top Color"
+msgstr "Color Superior"
+
+msgid "Horizon Color"
+msgstr "Color del Horizonte"
+
+msgid "Energy Multiplier"
+msgstr "Multiplicador de Energía"
+
+msgid "Cover"
+msgstr "Cubierta"
+
+msgid "Cover Modulate"
+msgstr "Modulación de Cubierta"
+
+msgid "Ground"
+msgstr "Suelo"
+
+msgid "Bottom Color"
+msgstr "Color Inferior"
+
+msgid "Sun"
+msgstr "Sol"
+
+msgid "Panorama"
+msgstr "Panorama"
+
+msgid "Rayleigh"
+msgstr "Rayleigh"
+
+msgid "Coefficient"
+msgstr "Coeficiente"
+
+msgid "Mie"
+msgstr "Mie"
+
+msgid "Eccentricity"
+msgstr "Excentricidad"
+
+msgid "Turbidity"
+msgstr "Turbidez"
+
+msgid "Sun Disk Scale"
+msgstr "Escala de Disco Solar"
+
+msgid "Ground Color"
+msgstr "Color del Suelo"
+
+msgid "Night Sky"
+msgstr "Cielo Nocturno"
+
+msgid "Fallback Environment"
+msgstr "Entorno de Retorno"
+
+msgid "Plane"
+msgstr "Plano"
+
 msgid "Frames"
 msgstr "Fotogramas"
 
@@ -7440,12 +7828,6 @@ msgstr "Bucle de Animación de Partículas"
 msgid "Load Path"
 msgstr "Ruta de Carga"
 
-msgid "Segments"
-msgstr "Segmentos"
-
-msgid "Backface Collision"
-msgstr "Colisión de Cara Trasera"
-
 msgid "Bake Resolution"
 msgstr "Bakear Resolución"
 
@@ -7467,14 +7849,8 @@ msgstr "Curva Z"
 msgid "Background"
 msgstr "Fondo"
 
-msgid "Energy Multiplier"
-msgstr "Multiplicador de Energía"
-
 msgid "Canvas Max Layer"
 msgstr "Max de Capas del Lienzo"
-
-msgid "Sky"
-msgstr "Cielo"
 
 msgid "Custom FOV"
 msgstr "FOV Personalizado"
@@ -7623,9 +7999,6 @@ msgstr "Energía de Luz"
 msgid "Sun Scatter"
 msgstr "Dispersión Solar"
 
-msgid "Density"
-msgstr "Densidad"
-
 msgid "Aerial Perspective"
 msgstr "Perspectiva Atmosferica"
 
@@ -7664,15 +8037,6 @@ msgstr "Saturación"
 
 msgid "Color Correction"
 msgstr "Corrección del Color"
-
-msgid "Height Falloff"
-msgstr "Atenuación de Altura"
-
-msgid "Edge Fade"
-msgstr "Fundido de Borde"
-
-msgid "Density Texture"
-msgstr "Densidad de Textura"
 
 msgid "Base Font"
 msgstr "Fuente Base"
@@ -7718,15 +8082,6 @@ msgstr "Desde"
 
 msgid "To"
 msgstr "A"
-
-msgid "Map Width"
-msgstr "Anchura del Mapa"
-
-msgid "Map Depth"
-msgstr "Mapa de Profundidad"
-
-msgid "Map Data"
-msgstr "Datos del Mapa"
 
 msgid "Next Pass"
 msgstr "Siguiente Paso"
@@ -7893,9 +8248,6 @@ msgstr "Usar Estelas de Partículas"
 msgid "Proximity Fade"
 msgstr "Desvanecimiento de Proximidad"
 
-msgid "Distance"
-msgstr "Distancia"
-
 msgid "MSDF"
 msgstr "MSDF"
 
@@ -7916,18 +8268,6 @@ msgstr "Modo de Mezcla de Forma"
 
 msgid "Shadow Mesh"
 msgstr "Malla de Sombra"
-
-msgid "Item"
-msgstr "Elemento"
-
-msgid "Mesh Transform"
-msgstr "Transformación de Mesh"
-
-msgid "Navigation Mesh Transform"
-msgstr "Transformación de Malla de Navegación"
-
-msgid "Preview"
-msgstr "Vista Previa"
 
 msgid "Base Texture"
 msgstr "Textura Base"
@@ -8070,114 +8410,6 @@ msgstr "Anulación de Tamaño"
 msgid "Keep Compressed Buffer"
 msgstr "Mantener Buffer Comprimido"
 
-msgid "Add UV2"
-msgstr "Añadir UV2"
-
-msgid "UV2 Padding"
-msgstr "Relleno UV2"
-
-msgid "Subdivide Width"
-msgstr "Anchura de Subdivisión"
-
-msgid "Subdivide Height"
-msgstr "Altura de Subdivisión"
-
-msgid "Subdivide Depth"
-msgstr "Profundidad de Subdivisión"
-
-msgid "Top Radius"
-msgstr "Radio Superior"
-
-msgid "Bottom Radius"
-msgstr "Radio Inferior"
-
-msgid "Cap Top"
-msgstr "Tapa Superior"
-
-msgid "Cap Bottom"
-msgstr "Tapa Inferior"
-
-msgid "Left to Right"
-msgstr "De Izquierda a Derecha"
-
-msgid "Is Hemisphere"
-msgstr "Es Hemisfera"
-
-msgid "Ring Segments"
-msgstr "Segmentos en Anillo"
-
-msgid "Radial Steps"
-msgstr "Pasos Radiales"
-
-msgid "Section Length"
-msgstr "Longitud de Sección"
-
-msgid "Section Rings"
-msgstr "Anillos de Sección"
-
-msgid "Section Segments"
-msgstr "Segmentos de Sección"
-
-msgid "Curve Step"
-msgstr "Paso de Curva"
-
-msgid "A"
-msgstr "A"
-
-msgid "B"
-msgstr "B"
-
-msgid "Slide on Slope"
-msgstr "Deslizar en Pendiente"
-
-msgid "Custom Solver Bias"
-msgstr "Bias de Solución Personalizado"
-
-msgid "Execution Mode"
-msgstr "Modo de Ejecución"
-
-msgid "Target Nodepath"
-msgstr "ruta de Nodo Objetivo"
-
-msgid "Tip Nodepath"
-msgstr "Pista de ruta de Nodo"
-
-msgid "CCDIK Data Chain Length"
-msgstr "Longitud de Cadena de Datos CCDIK"
-
-msgid "FABRIK Data Chain Length"
-msgstr "Longitud de Cadena de Datos FABRIK"
-
-msgid "Jiggle Data Chain Length"
-msgstr "Longitud de Cadena de Datos de Sacudida"
-
-msgid "Default Joint Settings"
-msgstr "Ajustes de Juntas por Defecto"
-
-msgid "Use Gravity"
-msgstr "Usar Gravedad"
-
-msgid "Bone Index"
-msgstr "Índice de Hueso"
-
-msgid "Bone 2D Node"
-msgstr "Nodo de Hueso 2D"
-
-msgid "Physical Bone Chain Length"
-msgstr "Longitud de Cadena de Huesos Físicos"
-
-msgid "Target Minimum Distance"
-msgstr "Distancia Mínima del Objetivo"
-
-msgid "Target Maximum Distance"
-msgstr "Distancia Máxima del Objetivo"
-
-msgid "Flip Bend Direction"
-msgstr "Invertir Dirección de Curvatura"
-
-msgid "Modification Count"
-msgstr "Conteo de Modificación"
-
 msgid "Scale Base Bone"
 msgstr "Escala del Hueso Base"
 
@@ -8187,15 +8419,6 @@ msgstr "Tamaño del Grupo"
 msgid "Bone Size"
 msgstr "Tamaño del Hueso"
 
-msgid "Bind Count"
-msgstr "Conteo de Vinculaciones"
-
-msgid "Bind"
-msgstr "Vinculación"
-
-msgid "Bone"
-msgstr "Hueso"
-
 msgid "Sky Material"
 msgstr "Material del Cielo"
 
@@ -8204,54 +8427,6 @@ msgstr "Modo de Proceso"
 
 msgid "Radiance Size"
 msgstr "Tamaño de Resplandor"
-
-msgid "Top Color"
-msgstr "Color Superior"
-
-msgid "Horizon Color"
-msgstr "Color del Horizonte"
-
-msgid "Cover"
-msgstr "Cubierta"
-
-msgid "Cover Modulate"
-msgstr "Modulación de Cubierta"
-
-msgid "Ground"
-msgstr "Suelo"
-
-msgid "Bottom Color"
-msgstr "Color Inferior"
-
-msgid "Sun"
-msgstr "Sol"
-
-msgid "Panorama"
-msgstr "Panorama"
-
-msgid "Rayleigh"
-msgstr "Rayleigh"
-
-msgid "Coefficient"
-msgstr "Coeficiente"
-
-msgid "Mie"
-msgstr "Mie"
-
-msgid "Eccentricity"
-msgstr "Excentricidad"
-
-msgid "Turbidity"
-msgstr "Turbidez"
-
-msgid "Sun Disk Scale"
-msgstr "Escala de Disco Solar"
-
-msgid "Ground Color"
-msgstr "Color del Suelo"
-
-msgid "Night Sky"
-msgstr "Cielo Nocturno"
 
 msgid "Content Margins"
 msgstr "Margenes de Contenido"
@@ -8318,141 +8493,6 @@ msgstr "Fuente Predeterminada"
 
 msgid "Default Font Size"
 msgstr "Tamaño Fuente Predeterminada"
-
-msgid "Right Side"
-msgstr "Lado Derecho"
-
-msgid "Right Corner"
-msgstr "Esquina Derecha"
-
-msgid "Bottom Right Side"
-msgstr "Lado Inferior Derecho"
-
-msgid "Bottom Right Corner"
-msgstr "Esquina Inferior Derecha"
-
-msgid "Bottom Side"
-msgstr "Lado Inferior"
-
-msgid "Bottom Corner"
-msgstr "Esquina Inferior"
-
-msgid "Bottom Left Side"
-msgstr "Lado Inferior Izquierdo"
-
-msgid "Bottom Left Corner"
-msgstr "Esquina Inferior Izquierda"
-
-msgid "Left Side"
-msgstr "Lado Izquierdo"
-
-msgid "Left Corner"
-msgstr "Esquina Izquierda"
-
-msgid "Top Left Side"
-msgstr "Lado Superior Izquierdo"
-
-msgid "Top Left Corner"
-msgstr "Esquina Superior Izquierda"
-
-msgid "Top Side"
-msgstr "Lado Superior"
-
-msgid "Top Corner"
-msgstr "Esquina Superior"
-
-msgid "Top Right Side"
-msgstr "Lado Superior Derecho"
-
-msgid "Top Right Corner"
-msgstr "Esquina Superior Derecha"
-
-msgid "Terrains"
-msgstr "Terrenos"
-
-msgid "Custom Data"
-msgstr "Datos Personalizados"
-
-msgid "Tile Proxies"
-msgstr "Proxys de Tiles"
-
-msgid "Source Level"
-msgstr "Nivel de la Fuente"
-
-msgid "Coords Level"
-msgstr "Nivel de Coordenadas"
-
-msgid "Alternative Level"
-msgstr "Nivel Alternativo"
-
-msgid "Tile Shape"
-msgstr "Forma del Tile"
-
-msgid "Tile Layout"
-msgstr "Distribución de Tile"
-
-msgid "Tile Offset Axis"
-msgstr "Eje de Ajuste de Tile"
-
-msgid "Tile Size"
-msgstr "Tamaño de Tile"
-
-msgid "UV Clipping"
-msgstr "Recorte de UV"
-
-msgid "Occlusion Layers"
-msgstr "Capas de Oclusión"
-
-msgid "Physics Layers"
-msgstr "Capas Físicas"
-
-msgid "Terrain Sets"
-msgstr "Conjuntos de Terrenos"
-
-msgid "Custom Data Layers"
-msgstr "Capas de Datos Personalizados"
-
-msgid "Scenes"
-msgstr "Escenas"
-
-msgid "Scene"
-msgstr "Escena"
-
-msgid "Display Placeholder"
-msgstr "Mostrar Marcador"
-
-msgid "Polygons Count"
-msgstr "Conteo de Polígonos"
-
-msgid "One Way"
-msgstr "Unico Sentido"
-
-msgid "One Way Margin"
-msgstr "Margen de Unico Sentido"
-
-msgid "Terrains Peering Bit"
-msgstr "Bit de Emparejamiento de Terrenos"
-
-msgid "Transpose"
-msgstr "Transponer"
-
-msgid "Texture Origin"
-msgstr "Origen de Textura"
-
-msgid "Y Sort Origin"
-msgstr "Origen de Ordenación Y"
-
-msgid "Terrain Set"
-msgstr "Conjunto de Terreno"
-
-msgid "Terrain"
-msgstr "Terreno"
-
-msgid "Miscellaneous"
-msgstr "Miscelaneo"
-
-msgid "Probability"
-msgstr "Probabilidad"
 
 msgid "File"
 msgstr "Archivo"
@@ -8531,12 +8571,6 @@ msgstr "Índice de Superficie"
 
 msgid "Degrees Mode"
 msgstr "Modo de Grados"
-
-msgid "Fallback Environment"
-msgstr "Entorno de Retorno"
-
-msgid "Plane"
-msgstr "Plano"
 
 msgid "Panel"
 msgstr "Panel"
@@ -10047,6 +10081,9 @@ msgstr "Lenguaje de Shader"
 msgid "Treat Warnings as Errors"
 msgstr "Tratar las Advertencias como Errores"
 
+msgid "Has Tracking Data"
+msgstr "Tiene Datos de Seguimiento"
+
 msgid "Is Primary"
 msgstr "Es Primario"
 
@@ -10058,9 +10095,6 @@ msgstr "AR"
 
 msgid "Is Anchor Detection Enabled"
 msgstr "Detección de Anclaje Está Activada"
-
-msgid "Has Tracking Data"
-msgstr "Tiene Datos de Seguimiento"
 
 msgid "Tracking Confidence"
 msgstr "Confianza de Seguimiento"

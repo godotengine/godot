@@ -1222,6 +1222,9 @@ msgstr "警告"
 msgid "Line and column numbers."
 msgstr "行號與列號。"
 
+msgid "Indentation"
+msgstr "縮排"
+
 msgid "Method in target node must be specified."
 msgstr "必須指定目標節點方法。"
 
@@ -1818,9 +1821,6 @@ msgstr "資料夾名稱為空。"
 
 msgid "Thanks from the Godot community!"
 msgstr "Godot 社群感謝你！"
-
-msgid "Click to copy."
-msgstr "按一下以複製。"
 
 msgid "Godot Engine contributors"
 msgstr "Godot Engine 貢獻者"
@@ -3590,9 +3590,6 @@ msgstr "節點"
 msgid "History"
 msgstr "歷史記錄"
 
-msgid "Expand Bottom Panel"
-msgstr "展開底部面板"
-
 msgid "Output"
 msgstr "輸出"
 
@@ -3644,9 +3641,6 @@ msgstr "重新載入"
 
 msgid "Resave"
 msgstr "重新儲存"
-
-msgid "Create Version Control Metadata..."
-msgstr "建立版本控管 Metadata..."
 
 msgid "Version Control Settings..."
 msgstr "版本控制系統設定..."
@@ -4462,21 +4456,6 @@ msgstr "管理匯出樣板"
 msgid "Export With Debug"
 msgstr "以偵錯模式匯出"
 
-msgid "Disable FBX & Restart"
-msgstr "不啟用FBX並重新啟動"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"關掉這個對話框會不啟用FBX匯入器。\n"
-"你可以重新在專案設定的 Filesystem > Import > FBX > Enabled 這樣重新啟用\n"
-"\n"
-"這個編輯器會重啟，因為導入器已經在編輯器開啟時註冊。"
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "FBX2glTF執行檔的路徑是空的。"
 
@@ -4491,13 +4470,6 @@ msgstr "無效的FBX2glTF執行檔。"
 
 msgid "Configure FBX Importer"
 msgstr "設定FBX匯入"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"需要FBX2glTF來導入FBX檔案。\n"
-"請下載並提供有效的執行檔路徑："
 
 msgid "Click this link to download FBX2glTF"
 msgstr "點擊這個連結以下載FBX2glTF"
@@ -4812,6 +4784,9 @@ msgstr "自群組中移除"
 
 msgid "Global"
 msgstr "全域"
+
+msgid "Expand Bottom Panel"
+msgstr "展開底部面板"
 
 msgid "Move"
 msgstr "移動"
@@ -6814,12 +6789,6 @@ msgstr "相對吸附"
 msgid "Use Pixel Snap"
 msgstr "使用像素吸附"
 
-msgid "Smart Snapping"
-msgstr "智慧型吸附"
-
-msgid "Configure Snap..."
-msgstr "設定吸附..."
-
 msgid "Snap to Parent"
 msgstr "吸附至父級"
 
@@ -6837,6 +6806,12 @@ msgstr "吸附至其他節點"
 
 msgid "Snap to Guides"
 msgstr "吸附至參考線"
+
+msgid "Smart Snapping"
+msgstr "智慧型吸附"
+
+msgid "Configure Snap..."
+msgstr "設定吸附..."
 
 msgid "Lock selected node, preventing selection and movement."
 msgstr "鎖定選定的節點，防止選擇和移動。"
@@ -8161,6 +8136,9 @@ msgstr "檢視環境"
 msgid "View Gizmos"
 msgstr "檢視 Gizmo"
 
+msgid "View Grid"
+msgstr "顯示網格"
+
 msgid "View Information"
 msgstr "檢視資訊"
 
@@ -8414,9 +8392,6 @@ msgstr "4 個檢視區"
 msgid "View Origin"
 msgstr "顯示原點"
 
-msgid "View Grid"
-msgstr "顯示網格"
-
 msgid "Settings..."
 msgstr "設定..."
 
@@ -8630,9 +8605,6 @@ msgstr "處理輸出#"
 msgid "Handle Tilt #"
 msgstr "處理傾斜#"
 
-msgid "Set Curve Point Position"
-msgstr "設定曲線控制點位置"
-
 msgid "Set Curve Out Position"
 msgstr "設定曲線外控制點位置"
 
@@ -8659,6 +8631,9 @@ msgstr "重置頂點傾斜"
 
 msgid "Split Segment (in curve)"
 msgstr "拆分線段（在曲線中）"
+
+msgid "Set Curve Point Position"
+msgstr "設定曲線控制點位置"
 
 msgid "Move Joint"
 msgstr "移動關節"
@@ -8962,14 +8937,14 @@ msgstr "上一個歷史記錄"
 msgid "History Next"
 msgstr "下一個歷史記錄"
 
-msgid "Theme"
-msgstr "主題"
-
 msgid "Import Theme..."
 msgstr "匯入主題..."
 
 msgid "Reload Theme"
 msgstr "重新載入主題"
+
+msgid "Theme"
+msgstr "主題"
 
 msgid "Save Theme"
 msgstr "儲存主題"
@@ -9084,9 +9059,6 @@ msgstr "選擇顏色"
 
 msgid "Folding"
 msgstr "折疊"
-
-msgid "Indentation"
-msgstr "縮排"
 
 msgid "Uppercase"
 msgstr "大寫"
@@ -9393,12 +9365,6 @@ msgstr "無法載入圖片"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "錯誤：無法載入影格資源！"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "資源剪貼簿為空或非紋理貼圖！"
-
-msgid "Paste Frame"
-msgstr "貼上影格"
-
 msgid "Add Empty"
 msgstr "新增空白"
 
@@ -9449,9 +9415,6 @@ msgstr "自 Sprite 表新增影格"
 
 msgid "Delete Frame"
 msgstr "刪除影格"
-
-msgid "Copy Frame"
-msgstr "複製影格"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "在選擇前面插入空白"
@@ -13549,13 +13512,6 @@ msgstr "生成"
 msgid "Replicate"
 msgstr "複製"
 
-msgid ""
-"Add properties using the options above, or\n"
-"drag them them from the inspector and drop them here."
-msgstr ""
-"請使用上面的選項添加屬性或\n"
-"將屬性從屬性面板中拖放到這裡。"
-
 msgid "Please select a MultiplayerSynchronizer first."
 msgstr "請先選擇一個 MultiplayerSynchronizer。"
 
@@ -14594,6 +14550,70 @@ msgstr ""
 "當有多於一個時，它們當中只有一個會生效。至於是哪一個則未定。"
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"CPUParticles2D 動畫需要使用有啟用「Particles Animation（粒子動畫）」的 "
+"CanvasItemMaterial。"
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr "尚未指定要處理粒子的材料，故未產生任何行為。"
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Particles2D 動畫需要使用開啟了「Particles Animation（粒子動畫）」的 "
+"CanvasItemMaterial。"
+
+msgid ""
+"Particle trails are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr "粒子軌跡僅在使用 Forward+ 或 Mobile 算繪後端時可用。"
+
+msgid ""
+"Particle sub-emitters are not available when using the GL Compatibility "
+"rendering backend."
+msgstr "使用 GL 相容性算繪後端時，粒子子發射器不可用。"
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr "有光照形狀的紋理必須提供「Texture」（紋理）屬性。"
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr "該遮光體必須要有設定（或繪製）遮光體形狀才會有作用。"
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "遮光體無遮光體多邊形。請先繪製一個多邊形。"
+
+msgid ""
+"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
+msgstr "NavigationAgent2D 只能在繼承Node2D 的父節點下使用。"
+
+msgid ""
+"NavigationLink2D start position should be different than the end position to "
+"be useful."
+msgstr "NavigationLink2D 的開始位置應與結束位置不同，才能發揮作用。"
+
+msgid ""
+"A NavigationMesh resource must be set or created for this node to work. "
+"Please set a property or draw a polygon."
+msgstr ""
+"必須先在該節點上設定或建立 NavigationPolygon 才可以使用。請設定屬性或繪製多邊"
+"形。"
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr "ParallaxLayer 節點僅在當其被設為 ParallaxBackground 的子節點時有效。"
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D 僅在其為 Path2D 的子節點時有效。"
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -14636,35 +14656,6 @@ msgstr ""
 "基於多邊形的形狀不應該被 CollisionShape2D 節點直接使用或編輯。請使用 "
 "CollisionPolygon2D 節點。"
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"CPUParticles2D 動畫需要使用有啟用「Particles Animation（粒子動畫）」的 "
-"CanvasItemMaterial。"
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr "尚未指定要處理粒子的材料，故未產生任何行為。"
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Particles2D 動畫需要使用開啟了「Particles Animation（粒子動畫）」的 "
-"CanvasItemMaterial。"
-
-msgid ""
-"Particle trails are only available when using the Forward+ or Mobile "
-"rendering backends."
-msgstr "粒子軌跡僅在使用 Forward+ 或 Mobile 算繪後端時可用。"
-
-msgid ""
-"Particle sub-emitters are not available when using the GL Compatibility "
-"rendering backend."
-msgstr "使用 GL 相容性算繪後端時，粒子子發射器不可用。"
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Node A 與 Node B 必須為 PhysicsBody2D"
 
@@ -14679,41 +14670,6 @@ msgstr "Joint 未連結至 2 個 PhysicsBody2D"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Node A 與 Node B 必須為不同的 PhysicsBody2D"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr "有光照形狀的紋理必須提供「Texture」（紋理）屬性。"
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr "該遮光體必須要有設定（或繪製）遮光體形狀才會有作用。"
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "遮光體無遮光體多邊形。請先繪製一個多邊形。"
-
-msgid ""
-"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
-msgstr "NavigationAgent2D 只能在繼承Node2D 的父節點下使用。"
-
-msgid ""
-"NavigationLink2D start position should be different than the end position to "
-"be useful."
-msgstr "NavigationLink2D 的開始位置應與結束位置不同，才能發揮作用。"
-
-msgid ""
-"A NavigationMesh resource must be set or created for this node to work. "
-"Please set a property or draw a polygon."
-msgstr ""
-"必須先在該節點上設定或建立 NavigationPolygon 才可以使用。請設定屬性或繪製多邊"
-"形。"
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr "ParallaxLayer 節點僅在當其被設為 ParallaxBackground 的子節點時有效。"
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D 僅在其為 Path2D 的子節點時有效。"
 
 msgid ""
 "A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
@@ -14743,12 +14699,12 @@ msgstr ""
 "對 RigidBody2D 大小的修改，將會在運行時被物理引擎所覆蓋。\n"
 "建議修改子節點的碰撞體形狀大小。"
 
-msgid "Path property must point to a valid Node2D node to work."
-msgstr "路徑屬性必須指向一個有效的 Node2D 才可用。"
-
 msgid ""
 "This node cannot interact with other objects unless a Shape2D is assigned."
 msgstr "除非指定 Shape2D，否則該節點不能與其他物件交互作用。"
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr "路徑屬性必須指向一個有效的 Node2D 才可用。"
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "該 Bone2D 鏈必須以 Skeleton2D 節點結尾。"
@@ -14798,72 +14754,6 @@ msgid ""
 "BoneAttachment3D node is not bound to any bones! Please select a bone to "
 "attach this node."
 msgstr "BoneAttachment3D 節點未綁定至任何骨骼！請選擇一個骨骼來連接此節點。"
-
-msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
-"its shape."
-msgstr ""
-"該節點無形狀，故無法與其他物件碰撞或互動。\n"
-"建議您新增 CollisionShape2D 或 CollisionPolygon2D 作為其子節點以定義其形狀。"
-
-msgid ""
-"With a non-uniform scale this node will probably not function as expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size in children collision shapes instead."
-msgstr ""
-"在縮放不一致的情況下，此節點可能無法按預期運作。\n"
-"請使其縮放比例一致（即所有軸上都相同），並改為更改子碰撞形狀的大小。"
-
-msgid ""
-"CollisionPolygon3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon3D 僅可為 CollisionObject3D 衍生的節點提供碰撞形狀資訊。\n"
-"請僅於 Area3D, StaticBody3D, RigidBody3D, CharacterBody3D…等節點下作為子節點使"
-"用。"
-
-msgid "An empty CollisionPolygon3D has no effect on collision."
-msgstr "空白的 CollisionPolygon2D 不會產生任何碰撞效果。"
-
-msgid ""
-"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change its "
-"polygon's vertices instead."
-msgstr ""
-"非縮放一致的碰撞多邊形 3D 節點可能無法按預期運作。\n"
-"請使其縮放比例一致（即在所有軸上都相同），並改為更改其多邊形的頂點。"
-
-msgid ""
-"CollisionShape3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionShape3D 僅可為 CollisionObject3D 衍生的節點提供碰撞形狀資訊。\n"
-"請僅於 Area3D, StaticBody3D, RigidBody3D, CharacterBody3D…等節點下作為子節點使"
-"用以提供形狀。"
-
-msgid ""
-"A shape must be provided for CollisionShape3D to function. Please create a "
-"shape resource for it."
-msgstr "CollisionShape 必須被賦予形狀才能運作。請先建立形狀資源。"
-
-msgid ""
-"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
-msgstr "WorldBoundaryShape3D 不支援靜態模式以外的 RigidBody3D。"
-
-msgid ""
-"A non-uniformly scaled CollisionShape3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size of its shape resource instead."
-msgstr ""
-"非縮放一致的 CollisionShape3D 節點可能無法按預期運作。\n"
-"請使其縮放比例一致（即在所有軸上都相同），並更改其形狀資源的大小。"
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "由於尚未指定網格，未顯示任何東西。"
@@ -14952,21 +14842,6 @@ msgstr ""
 "烘培 Mask 沒有啟用任何位元，這意味著烘焙不會為此 GPUParticlesCollisionSDF3D 生"
 "成任何碰撞。\n"
 "要解決此問題，請在烘培 Mask屬性中至少啟用一個位元。"
-
-msgid "Node A and Node B must be PhysicsBody3Ds"
-msgstr "Node A 與 Node B 必須為 PhysicsBody3D"
-
-msgid "Node A must be a PhysicsBody3D"
-msgstr "Node A 必須為 PhysicsBody3D"
-
-msgid "Node B must be a PhysicsBody3D"
-msgstr "Node B 必須為 PhysicsBody3D"
-
-msgid "Joint is not connected to any PhysicsBody3Ds"
-msgstr "Joint 尚未連結至任何 PhysicsBody3D"
-
-msgid "Node A and Node B must be different PhysicsBody3Ds"
-msgstr "Node A 與 Node B 必須為不同的 PhysicsBody3D"
 
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "光源的縮放不會影響燈光的視覺尺寸。"
@@ -15077,12 +14952,109 @@ msgstr ""
 "「Up Vector」。"
 
 msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
+"its shape."
+msgstr ""
+"該節點無形狀，故無法與其他物件碰撞或互動。\n"
+"建議您新增 CollisionShape2D 或 CollisionPolygon2D 作為其子節點以定義其形狀。"
+
+msgid ""
+"With a non-uniform scale this node will probably not function as expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size in children collision shapes instead."
+msgstr ""
+"在縮放不一致的情況下，此節點可能無法按預期運作。\n"
+"請使其縮放比例一致（即所有軸上都相同），並改為更改子碰撞形狀的大小。"
+
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon3D 僅可為 CollisionObject3D 衍生的節點提供碰撞形狀資訊。\n"
+"請僅於 Area3D, StaticBody3D, RigidBody3D, CharacterBody3D…等節點下作為子節點使"
+"用。"
+
+msgid "An empty CollisionPolygon3D has no effect on collision."
+msgstr "空白的 CollisionPolygon2D 不會產生任何碰撞效果。"
+
+msgid ""
+"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change its "
+"polygon's vertices instead."
+msgstr ""
+"非縮放一致的碰撞多邊形 3D 節點可能無法按預期運作。\n"
+"請使其縮放比例一致（即在所有軸上都相同），並改為更改其多邊形的頂點。"
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape3D 僅可為 CollisionObject3D 衍生的節點提供碰撞形狀資訊。\n"
+"請僅於 Area3D, StaticBody3D, RigidBody3D, CharacterBody3D…等節點下作為子節點使"
+"用以提供形狀。"
+
+msgid ""
+"A shape must be provided for CollisionShape3D to function. Please create a "
+"shape resource for it."
+msgstr "CollisionShape 必須被賦予形狀才能運作。請先建立形狀資源。"
+
+msgid ""
+"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
+msgstr "WorldBoundaryShape3D 不支援靜態模式以外的 RigidBody3D。"
+
+msgid ""
+"A non-uniformly scaled CollisionShape3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size of its shape resource instead."
+msgstr ""
+"非縮放一致的 CollisionShape3D 節點可能無法按預期運作。\n"
+"請使其縮放比例一致（即在所有軸上都相同），並更改其形狀資源的大小。"
+
+msgid "Node A and Node B must be PhysicsBody3Ds"
+msgstr "Node A 與 Node B 必須為 PhysicsBody3D"
+
+msgid "Node A must be a PhysicsBody3D"
+msgstr "Node A 必須為 PhysicsBody3D"
+
+msgid "Node B must be a PhysicsBody3D"
+msgstr "Node B 必須為 PhysicsBody3D"
+
+msgid "Joint is not connected to any PhysicsBody3Ds"
+msgstr "Joint 尚未連結至任何 PhysicsBody3D"
+
+msgid "Node A and Node B must be different PhysicsBody3Ds"
+msgstr "Node A 與 Node B 必須為不同的 PhysicsBody3D"
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
 msgstr ""
 "對 RigidBody3D 尺寸的修改將會在運作時被物理引擎所覆蓋。\n"
 "請改為修改子節點的碰撞形狀的尺寸。"
+
+msgid ""
+"This node cannot interact with other objects unless a Shape3D is assigned."
+msgstr "除非指定 Shape3D，否則該節點不能與其他物件互動。"
+
+msgid ""
+"ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be "
+"reported."
+msgstr "ShapeCast3D 不支援 ConcavePolygonShape3D。將無法報告碰撞。"
+
+msgid ""
+"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
+"use it as a child of a VehicleBody3D."
+msgstr ""
+"VehicleWheel3D旨在為 VehicleBody3D提供 Wheel System。請將其作為 VehicleBody3D"
+"的子節點。"
 
 msgid ""
 "ReflectionProbes are not supported when using the GL Compatibility backend "
@@ -15096,15 +15068,6 @@ msgid ""
 msgstr ""
 "「Remote Path」屬性必須指向一個有效的 Node3D 或 Node3D 衍生之節點才可運作。"
 
-msgid ""
-"This node cannot interact with other objects unless a Shape3D is assigned."
-msgstr "除非指定 Shape3D，否則該節點不能與其他物件互動。"
-
-msgid ""
-"ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be "
-"reported."
-msgstr "ShapeCast3D 不支援 ConcavePolygonShape3D。將無法報告碰撞。"
-
 msgid "This body will be ignored until you set a mesh."
 msgstr "該形體在設定網格前都將被忽略。"
 
@@ -15114,20 +15077,6 @@ msgid ""
 msgstr ""
 "必須先為「Frames」屬性建立或設定 SpriteFrames 資源以令 AnimatedSprite3D 顯示影"
 "格。"
-
-msgid ""
-"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
-"use it as a child of a VehicleBody3D."
-msgstr ""
-"VehicleWheel3D旨在為 VehicleBody3D提供 Wheel System。請將其作為 VehicleBody3D"
-"的子節點。"
-
-msgid ""
-"VisibleOnScreenNotifier3D nodes are not supported when using the GL "
-"Compatibility backend yet. Support will be added in a future release."
-msgstr ""
-"目前 GL Compatibility 後端尚不支援 VisibleOnScreenNotifier3D 節點。將在後續版"
-"本中加入。"
 
 msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
@@ -15229,51 +15178,11 @@ msgid ""
 "set to true."
 msgstr "ButtonGroup 的目的是只用於那些將 toggle_mode 設置為 true 的按鈕。"
 
-msgid "New Code Region"
-msgstr "新建程式碼區域"
-
 msgid "Copy this constructor in a script."
 msgstr "複製腳本中此建構式。"
 
-msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
-msgstr "輸入十六進位碼（“#ff0000”）或顏色名稱（“red”）。"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"色彩： #%s\n"
-"滑鼠左鍵：設定色彩\n"
-"滑鼠右鍵：刪除預設設定"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"色彩： #%s\n"
-"左鍵點擊：設定色彩"
-
-msgid "Pick a color from the screen."
-msgstr "從螢幕上選擇一種顏色。"
-
-msgid "Pick a color from the application window."
-msgstr "從應用程式視窗中選擇一種顏色。"
-
-msgid "Select a picker shape."
-msgstr "選擇選取器形狀。"
-
-msgid "Select a picker mode."
-msgstr "選擇選取氣模式。"
-
 msgid "Switch between hexadecimal and code values."
 msgstr "在 16 進位與代碼值之間切換。"
-
-msgid "Hex code or named color"
-msgstr "十六進位碼或顏色名稱"
-
-msgid "Add current color as a preset."
-msgstr "將目前的顏色加入預設設定。"
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -15299,12 +15208,6 @@ msgstr "改變控件的Z索引只影響繪圖順序，不影響輸入事件的�
 msgid "Alert!"
 msgstr "警告！"
 
-msgid "You don't have permission to access contents of this folder."
-msgstr "你無權存取此資料夾的內容。"
-
-msgid "Invalid extension, or empty filename."
-msgstr "無效的副檔名，或空白的檔名。"
-
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
 "refactoring in a future 4.x version involving compatibility-breaking API "
@@ -15313,94 +15216,10 @@ msgstr ""
 "請注意，GraphEdit 和 GraphNode 將在未來的 4.x 版本中進行重構，會涉及大量破壞相"
 "容性的 API 更改。"
 
-msgid "Toggle the visual grid."
-msgstr "顯示／取消可視網格。"
-
-msgid "Toggle snapping to the grid."
-msgstr "開啟／關閉網格吸附。"
-
-msgid "Change the snapping distance."
-msgstr "修改吸附距離。"
-
-msgid "Toggle the graph minimap."
-msgstr "開關迷你地圖。。"
-
-msgid "Automatically arrange selected nodes."
-msgstr "自動排列所選節點。"
-
 msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr "當前字體不支援算繪該標籤字串中使用的一個或多個字元。"
-
-msgid "Same as Layout Direction"
-msgstr "與佈局方向一致"
-
-msgid "Auto-Detect Direction"
-msgstr "自動檢測方向"
-
-msgid "Left-to-Right"
-msgstr "由左至右"
-
-msgid "Right-to-Left"
-msgstr "由右至左"
-
-msgid "Left-to-Right Mark (LRM)"
-msgstr "由左至右標記（LRM）"
-
-msgid "Right-to-Left Mark (RLM)"
-msgstr "由右至左標記（RLM）"
-
-msgid "Start of Left-to-Right Embedding (LRE)"
-msgstr "開始由左至右嵌入（LRE）"
-
-msgid "Start of Right-to-Left Embedding (RLE)"
-msgstr "開始由右至左嵌入（RLE）"
-
-msgid "Start of Left-to-Right Override (LRO)"
-msgstr "開始由左至右強制（LRO）"
-
-msgid "Start of Right-to-Left Override (RLO)"
-msgstr "開始由右至左強制（RLO）"
-
-msgid "Pop Direction Formatting (PDF)"
-msgstr "離開方向格式化（PDF）"
-
-msgid "Arabic Letter Mark (ALM)"
-msgstr "阿拉伯字父標記（ALM）"
-
-msgid "Left-to-Right Isolate (LRI)"
-msgstr "由左至右隔離（LRI）"
-
-msgid "Right-to-Left Isolate (RLI)"
-msgstr "由右至左隔離（RLI）"
-
-msgid "First Strong Isolate (FSI)"
-msgstr "第一個強隔離（FSI）"
-
-msgid "Pop Direction Isolate (PDI)"
-msgstr "離開方向隔離（PDI）"
-
-msgid "Zero-Width Joiner (ZWJ)"
-msgstr "零寬度連接符（ZWJ）"
-
-msgid "Zero-Width Non-Joiner (ZWNJ)"
-msgstr "零寬度非連接符（ZWNJ）"
-
-msgid "Word Joiner (WJ)"
-msgstr "文字連接符（WJ）"
-
-msgid "Soft Hyphen (SHY)"
-msgstr "軟連字元（SHY）"
-
-msgid "Text Writing Direction"
-msgstr "文字書寫方向"
-
-msgid "Display Control Characters"
-msgstr "顯示控制字元"
-
-msgid "Insert Control Character"
-msgstr "插入控制字元"
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "若啟用「Exp Edit」，則「Min Value」必須大於 0。"
@@ -15427,9 +15246,6 @@ msgid ""
 msgstr ""
 "SubViewportContainer 的預設滑鼠指標形狀無效。\n"
 "請考慮保持預設的 『CURSOR_ARROW』。"
-
-msgid "(Other)"
-msgstr "（其它）"
 
 msgid ""
 "This node was saved as class type '%s', which was no longer available when "

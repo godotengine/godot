@@ -1750,9 +1750,6 @@ msgstr "Inspektør"
 msgid "Node"
 msgstr "Node"
 
-msgid "Expand Bottom Panel"
-msgstr "Utvid Nederste Panel"
-
 msgid "Output"
 msgstr "Utgang"
 
@@ -2113,6 +2110,9 @@ msgstr "Legg til i Gruppe"
 
 msgid "Remove from Group"
 msgstr "Fjern fra Gruppe"
+
+msgid "Expand Bottom Panel"
+msgstr "Utvid Nederste Panel"
 
 msgid "Move"
 msgstr "Flytt"
@@ -3032,11 +3032,11 @@ msgstr "Kopier Skript-Sti"
 msgid "History Previous"
 msgstr "Historie Forrige"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Reload Theme"
 msgstr "Gjeninnlast drakt"
+
+msgid "Theme"
+msgstr "Tema"
 
 msgid "Save Theme"
 msgstr "Lagre drakt"
@@ -3455,9 +3455,6 @@ msgstr "Velg enhet fra listen"
 
 msgid "Uninstalling..."
 msgstr "Avinstallerer …"
-
-msgid "(Other)"
-msgstr "(Annet)"
 
 msgid "Invalid comparison function for that type."
 msgstr "Ugyldig sammenligningsfunksjon for den typen."

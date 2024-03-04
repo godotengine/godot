@@ -79,6 +79,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	virtual void reset_state() override; // Required since we use variable amount of properties.
+
 	TypedArray<NodePath> get_properties() const;
 
 	void add_property(const NodePath &p_path, int p_index = -1);
