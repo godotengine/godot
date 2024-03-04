@@ -66,8 +66,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-15 16:46+0000\n"
-"Last-Translator: Minhyeok Lee <tracertw@gmail.com>\n"
+"PO-Revision-Date: 2024-02-23 09:02+0000\n"
+"Last-Translator: nulta <un5450@outlook.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -75,7 +75,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
 msgstr "메인 스레드"
@@ -515,6 +515,9 @@ msgstr "이벤트 수정"
 msgid "Remove Event"
 msgstr "이벤트 제거"
 
+msgid "Filter by Name"
+msgstr "이름으로 필터링"
+
 msgid "Clear All"
 msgstr "모두 지우기"
 
@@ -548,6 +551,15 @@ msgstr "여기에 키 삽입"
 msgid "Duplicate Selected Key(s)"
 msgstr "선택한 키 복제"
 
+msgid "Cut Selected Key(s)"
+msgstr "선택한 키 잘라내기"
+
+msgid "Copy Selected Key(s)"
+msgstr "선택한 키 복사"
+
+msgid "Paste Key(s)"
+msgstr "키 붙여넣기"
+
 msgid "Delete Selected Key(s)"
 msgstr "선택한 키 삭제"
 
@@ -577,6 +589,12 @@ msgstr "베지어 점 이동"
 
 msgid "Animation Duplicate Keys"
 msgstr "애니메이션 키프레임 복제"
+
+msgid "Animation Cut Keys"
+msgstr "애니메이션 키 잘라내기"
+
+msgid "Animation Paste Keys"
+msgstr "애니메이션 키 붙여넣기"
 
 msgid "Animation Delete Keys"
 msgstr "애니메이션 키프레임 삭제"
@@ -637,6 +655,33 @@ msgstr "가져온 씬에서 인스턴스화된 애니메이션의 루프 모드�
 
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "다른 장면에 임베드된 애니메이션의 루프 모드를 변경할 수 없습니다."
+
+msgid "Property Track..."
+msgstr "속성 트랙..."
+
+msgid "3D Position Track..."
+msgstr "3D 위치 트랙..."
+
+msgid "3D Rotation Track..."
+msgstr "3D 회전 트랙..."
+
+msgid "3D Scale Track..."
+msgstr "3D 크기 트랙..."
+
+msgid "Blend Shape Track..."
+msgstr "블렌드 모양 트랙..."
+
+msgid "Call Method Track..."
+msgstr "메서드 호출 트랙..."
+
+msgid "Bezier Curve Track..."
+msgstr "베지어 곡선 트랙..."
+
+msgid "Audio Playback Track..."
+msgstr "오디오 재생 트랙..."
+
+msgid "Animation Playback Track..."
+msgstr "애니메이션 재생 트랙..."
 
 msgid "Animation length (frames)"
 msgstr "애니메이션 길이 (프레임)"
@@ -770,8 +815,17 @@ msgstr "루프 보간 고정"
 msgid "Wrap Loop Interp"
 msgstr "루프 보간 래핑"
 
+msgid "Insert Key..."
+msgstr "키 삽입..."
+
 msgid "Duplicate Key(s)"
 msgstr "키 복제"
+
+msgid "Cut Key(s)"
+msgstr "키 잘라내기"
+
+msgid "Copy Key(s)"
+msgstr "키 복사"
 
 msgid "Add RESET Value(s)"
 msgstr "초기화 값 추가"
@@ -927,6 +981,12 @@ msgstr "트랙 붙여 넣기"
 msgid "Animation Scale Keys"
 msgstr "애니메이션 스케일 키"
 
+msgid "Animation Set Start Offset"
+msgstr "애니메이션 시작 오프셋 설정"
+
+msgid "Animation Set End Offset"
+msgstr "애니메이션 종료 오프셋 설정"
+
 msgid "Make Easing Keys"
 msgstr "이징 키 만들기"
 
@@ -1019,6 +1079,33 @@ msgstr "편집"
 msgid "Animation properties."
 msgstr "애니메이션 속성입니다."
 
+msgid "Copy Tracks..."
+msgstr "트랙 복사..."
+
+msgid "Scale Selection..."
+msgstr "선택 항목 스케일 조절..."
+
+msgid "Scale From Cursor..."
+msgstr "커서 위치에서 스케일 조절..."
+
+msgid "Set Start Offset (Audio)"
+msgstr "시작 오프셋 설정 (오디오)"
+
+msgid "Set End Offset (Audio)"
+msgstr "종료 오프셋 설정 (오디오)"
+
+msgid "Make Easing Selection..."
+msgstr "선택 항목에 이징 만들기..."
+
+msgid "Duplicate Selected Keys"
+msgstr "선택한 키 복제"
+
+msgid "Cut Selected Keys"
+msgstr "선택한 키 잘라내기"
+
+msgid "Paste Keys"
+msgstr "키 붙여넣기"
+
 msgid "Delete Selection"
 msgstr "선택 항목 삭제"
 
@@ -1030,6 +1117,15 @@ msgstr "이전 단계로 이동"
 
 msgid "Apply Reset"
 msgstr "재설정 적용"
+
+msgid "Bake Animation..."
+msgstr "애니메이션 굽기..."
+
+msgid "Optimize Animation (no undo)..."
+msgstr "애니메이션 최적화 (되돌릴 수 없음)..."
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "애니메이션 정리 (되돌릴 수 없음)..."
 
 msgid "Pick a node to animate:"
 msgstr "애니메이션을 줄 노드를 선택하세요:"
@@ -1242,6 +1338,9 @@ msgstr "경고"
 
 msgid "Line and column numbers."
 msgstr "행 및 열 번호."
+
+msgid "Indentation"
+msgstr "들여쓰기"
 
 msgid "Method in target node must be specified."
 msgstr "대상 노드에 있는 메서드는 반드시 지정해야 합니다."
@@ -1534,6 +1633,9 @@ msgstr ""
 "자체: 해당 함수에 의해 호출된 다른 함수에서가 아닌, 함수 자체에서 보낸 시간만 "
 "계산합니다.\n"
 "이를 사용하여 최적화할 개별 함수를 찾습니다."
+
+msgid "Display internal functions"
+msgstr "내부 함수 보이기"
 
 msgid "Frame #:"
 msgstr "프레임 #:"
@@ -1843,11 +1945,11 @@ msgstr "폴더 만들기"
 msgid "Folder name is valid."
 msgstr "폴더 이름이 올바릅니다."
 
+msgid "Double-click to open in browser."
+msgstr "더블 클릭하여 브라우저에서 엽니다."
+
 msgid "Thanks from the Godot community!"
 msgstr "Godot 커뮤니티에서 감사드립니다!"
-
-msgid "Click to copy."
-msgstr "클릭하여 복사합니다."
 
 msgid "Godot Engine contributors"
 msgstr "Godot Engine 기여자"
@@ -2346,6 +2448,9 @@ msgstr "프로필 가져오기"
 msgid "Export Profile"
 msgstr "프로필 내보내기"
 
+msgid "Forced Classes on Detect:"
+msgstr "감지 시 강제할 클래스:"
+
 msgid "Edit Build Configuration Profile"
 msgstr "빌드 설정 프로필 편집"
 
@@ -2385,6 +2490,12 @@ msgstr "독 위치"
 
 msgid "Make Floating"
 msgstr "창 띄우기"
+
+msgid "Make this dock floating."
+msgstr "이 독을 창으로 띄웁니다."
+
+msgid "Move to Bottom"
+msgstr "아래로 이동"
 
 msgid "3D Editor"
 msgstr "3D 에디터"
@@ -2563,6 +2674,12 @@ msgstr "사용되지 않음"
 msgid "Experimental"
 msgstr "실험적"
 
+msgid "Deprecated:"
+msgstr "사용되지 않음:"
+
+msgid "Experimental:"
+msgstr "실험적:"
+
 msgid "This method supports a variable number of arguments."
 msgstr "이 메서드는 다양한 인수를 지원합니다."
 
@@ -2602,6 +2719,15 @@ msgstr "생성자 설명"
 msgid "Operator Descriptions"
 msgstr "연산자 설명"
 
+msgid "This method may be changed or removed in future versions."
+msgstr "이 메서드는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
+msgid "This constructor may be changed or removed in future versions."
+msgstr "이 생성자는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
+msgid "This operator may be changed or removed in future versions."
+msgstr "이 연산자는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
 msgid "Error codes returned:"
 msgstr "반환된 오류 코드:"
 
@@ -2640,6 +2766,9 @@ msgstr "위쪽"
 
 msgid "Class:"
 msgstr "클래스:"
+
+msgid "This class may be changed or removed in future versions."
+msgstr "이 클래스는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
 
 msgid "Inherits:"
 msgstr "상속:"
@@ -2706,8 +2835,37 @@ msgstr "아이콘"
 msgid "Styles"
 msgstr "스타일"
 
+msgid "There is currently no description for this theme property."
+msgstr "현재 이 테마 속성에 대한 설명이 없습니다."
+
+msgid ""
+"There is currently no description for this theme property. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"현재 이 테마 속성의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여"
+"하여[/url][/color] 개선할 수 있도록 도와주세요!"
+
+msgid "This signal may be changed or removed in future versions."
+msgstr "이 시그널은 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
+msgid "There is currently no description for this signal."
+msgstr "현재 이 시그널에 대한 설명이 없습니다."
+
+msgid ""
+"There is currently no description for this signal. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"현재 이 시그널의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여하여"
+"[/url][/color] 개선할 수 있도록 도와주세요!"
+
 msgid "Enumerations"
 msgstr "열거형"
+
+msgid "This enumeration may be changed or removed in future versions."
+msgstr "이 열거형은 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
+msgid "This constant may be changed or removed in future versions."
+msgstr "이 상수는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
 
 msgid "Annotations"
 msgstr "어노테이션"
@@ -2728,6 +2886,9 @@ msgstr "속성 설명"
 msgid "(value)"
 msgstr "(값)"
 
+msgid "This property may be changed or removed in future versions."
+msgstr "이 속성은 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
 msgid "There is currently no description for this property."
 msgstr "현재 이 속성에 대한 설명이 없습니다."
 
@@ -2737,6 +2898,9 @@ msgid ""
 msgstr ""
 "현재 이 속성의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여하여[/"
 "url][/color] 개선할 수 있도록 도와주세요!"
+
+msgid "This property can only be set in the Inspector."
+msgstr "이 속성은 인스펙터에서만 설정할 수 있습니다."
 
 msgid "Metadata:"
 msgstr "메타데이터:"
@@ -2750,6 +2914,9 @@ msgstr "메서드:"
 msgid "Signal:"
 msgstr "시그널:"
 
+msgid "Theme Property:"
+msgstr "테마 속성:"
+
 msgid "No description available."
 msgstr "사용 가능한 설명이 없습니다."
 
@@ -2759,8 +2926,14 @@ msgstr "%d개 일치."
 msgid "%d matches."
 msgstr "%d개 일치."
 
+msgid "Constructor"
+msgstr "생성자"
+
 msgid "Method"
 msgstr "메서드"
+
+msgid "Operator"
+msgstr "연산자"
 
 msgid "Signal"
 msgstr "시그널"
@@ -2821,6 +2994,9 @@ msgstr "멤버 타입"
 
 msgid "(constructors)"
 msgstr "(생성자)"
+
+msgid "Keywords"
+msgstr "키워드"
 
 msgid "Class"
 msgstr "클래스"
@@ -3377,6 +3553,32 @@ msgstr ""
 msgid "Scene '%s' has broken dependencies:"
 msgstr "씬 '%s'의 종속 항목이 망가짐:"
 
+msgid ""
+"Multi-window support is not available because the `--single-window` command "
+"line argument was used to start the editor."
+msgstr ""
+"에디터에 `--single-window` 명령줄 인자가 있기 때문에 다중 창을 사용할 수 없습"
+"니다."
+
+msgid ""
+"Multi-window support is not available because the current platform doesn't "
+"support multiple windows."
+msgstr "현재 플랫폼에서는 다중 창을 지원하지 않습니다."
+
+msgid ""
+"Multi-window support is not available because Interface > Editor > Single "
+"Window Mode is enabled in the editor settings."
+msgstr ""
+"에디터 설정의 인터페이스 > 에디터 > 단일 창 모드 속성이 켜져 있기 때문에 다중 "
+"창을 사용할 수 없습니다."
+
+msgid ""
+"Multi-window support is not available because Interface > Multi Window > "
+"Enable is disabled in the editor settings."
+msgstr ""
+"에디터 설정의 인터페이스 > 다중 창 > 활성화 속성이 꺼져 있기 때문에 다중 창을 "
+"사용할 수 없습니다."
+
 msgid "Clear Recent Scenes"
 msgstr "최근 씬 지우기"
 
@@ -3406,6 +3608,12 @@ msgid ""
 msgstr ""
 "선택한 씬 '%s'은(는) 씬 파일이 아닙니다, 다른 씬으로 정할까요?\n"
 "이건 나중에 \"프로젝트 설정\"의 'application' 카테고리에서 바꿀 수 있습니다."
+
+msgid "Save Layout..."
+msgstr "레이아웃 저장..."
+
+msgid "Delete Layout..."
+msgstr "레이아웃 삭제..."
 
 msgid "Default"
 msgstr "기본값"
@@ -3481,6 +3689,9 @@ msgstr "모바일"
 
 msgid "Compatibility"
 msgstr "호환성"
+
+msgid "(Overridden)"
+msgstr "(오버라이드)"
 
 msgid "Pan View"
 msgstr "팬 보기"
@@ -3623,6 +3834,9 @@ msgstr "FBX 가져오기 설정..."
 msgid "Help"
 msgstr "도움말"
 
+msgid "Search Help..."
+msgstr "도움말 검색..."
+
 msgid "Online Documentation"
 msgstr "온라인 문서"
 
@@ -3646,6 +3860,9 @@ msgstr "기능 제안"
 
 msgid "Send Docs Feedback"
 msgstr "문서 피드백 보내기"
+
+msgid "About Godot..."
+msgstr "Godot 정보..."
 
 msgid "Support Godot Development"
 msgstr "Godot 개발 지원"
@@ -3684,9 +3901,6 @@ msgstr "노드"
 
 msgid "History"
 msgstr "작업 내역"
-
-msgid "Expand Bottom Panel"
-msgstr "아래쪽 패널 확장"
 
 msgid "Output"
 msgstr "출력"
@@ -3740,9 +3954,6 @@ msgstr "새로고침"
 msgid "Resave"
 msgstr "다시 저장"
 
-msgid "Create Version Control Metadata..."
-msgstr "버전 관리 메타데이터 생성..."
-
 msgid "Version Control Settings..."
 msgstr "버전 관리 설정..."
 
@@ -3779,6 +3990,19 @@ msgstr "확인"
 msgid "Warning!"
 msgstr "경고!"
 
+msgid ""
+"Name: %s\n"
+"Path: %s\n"
+"Main Script: %s\n"
+"\n"
+"%s"
+msgstr ""
+"이름: %s\n"
+"경로: %s\n"
+"메인 스크립트: %s\n"
+"\n"
+"%s"
+
 msgid "On"
 msgstr "사용"
 
@@ -3790,6 +4014,9 @@ msgstr "설치된 플러그인:"
 
 msgid "Create New Plugin"
 msgstr "새 플러그인 만들기"
+
+msgid "Enabled"
+msgstr "활성화"
 
 msgid "Version"
 msgstr "버전"
@@ -3928,6 +4155,9 @@ msgid ""
 "(%s)."
 msgstr "선택한 리소스(%s)가 이 속성(%s)에 적합한 모든 타입에 맞지 않습니다."
 
+msgid "Quick Load..."
+msgstr "빠른 불러오기..."
+
 msgid "Load..."
 msgstr "불러오기..."
 
@@ -3960,6 +4190,9 @@ msgstr "새 스크립트..."
 
 msgid "Extend Script..."
 msgstr "스크립트 상속..."
+
+msgid "New Shader..."
+msgstr "새 셰이더..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "원격 디버그 내보내기 프리셋이 구성되지 않았습니다."
@@ -4093,6 +4326,12 @@ msgstr "모든 기기"
 msgid "Device"
 msgstr "기기"
 
+msgid "Listening for Input"
+msgstr "입력 대기 중"
+
+msgid "Filter by Event"
+msgstr "이벤트로 필터링"
+
 msgid "Project export for platform:"
 msgstr "플랫폼용 프로젝트 내보내기:"
 
@@ -4104,6 +4343,9 @@ msgstr "성공적으로 완료되었습니다."
 
 msgid "Failed."
 msgstr "실패했습니다."
+
+msgid "Unknown Error"
+msgstr "알 수 없는 오류"
 
 msgid "Storing File: %s"
 msgstr "파일 저장: %s"
@@ -4535,6 +4777,21 @@ msgstr ""
 msgid "More Info..."
 msgstr "추가 정보..."
 
+msgid "Scripts"
+msgstr "스크립트"
+
+msgid "GDScript Export Mode:"
+msgstr "GDScript 내보내기 모드:"
+
+msgid "Text (easier debugging)"
+msgstr "텍스트 (쉬운 디버깅)"
+
+msgid "Binary tokens (faster loading)"
+msgstr "바이너리 토큰 (빠른 로딩)"
+
+msgid "Compressed binary tokens (smaller files)"
+msgstr "압축된 바이너리 토큰 (작은 크기)"
+
 msgid "Export PCK/ZIP..."
 msgstr "PCK/ZIP 내보내기..."
 
@@ -4568,22 +4825,6 @@ msgstr "내보내기 템플릿 관리"
 msgid "Export With Debug"
 msgstr "디버그와 함께 내보내기"
 
-msgid "Disable FBX & Restart"
-msgstr "FBX 비활성화 & 다시 시작"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"취소하면 FBX 임포터를 비활성화할 것입니다.\n"
-"프로젝트 설정의 파일시스템 > 가져오기 > FBX > 활성화됨 에서 다시 활성화할 수 "
-"있습니다.\n"
-"\n"
-"임포터는 에디터가 새로 시작될 때 등록되기 때문에, 에디터를 재시작할 것입니다."
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "FBX2glTF 실행 파일 경로가 비어 있습니다."
 
@@ -4599,13 +4840,6 @@ msgstr "FBX2glTF 실행 파일이 올바릅니다."
 
 msgid "Configure FBX Importer"
 msgstr "FBX 임포터 설정"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX 파일을 가져오려면 FBX2glTF가 필요합니다.\n"
-"다운로드하고 바이너리의 유효한 경로를 제공하세요:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "이 링크를 클릭하여 FBX2glTF를 다운로드하세요"
@@ -4761,6 +4995,12 @@ msgstr "다시 가져오기"
 msgid "Open in File Manager"
 msgstr "파일 매니저에서 열기"
 
+msgid "Open in Terminal"
+msgstr "터미널에서 열기"
+
+msgid "Open Containing Folder in Terminal"
+msgstr "폴더를 터미널에서 열기"
+
 msgid "New Folder..."
 msgstr "새 폴더..."
 
@@ -4913,6 +5153,9 @@ msgstr "%d개 매치가 %d개 파일 중 있음"
 msgid "%d matches in %d files"
 msgstr "%d개 매치가 %d개 파일 중 있음"
 
+msgid "Set Group Description"
+msgstr "그룹 설명 설정"
+
 msgid "Rename Group"
 msgstr "그룹 이름 바꾸기"
 
@@ -4924,6 +5167,9 @@ msgstr "그룹에서 제거"
 
 msgid "Global"
 msgstr "전역"
+
+msgid "Expand Bottom Panel"
+msgstr "아래쪽 패널 확장"
 
 msgid "Move"
 msgstr "이동"
@@ -6973,12 +7219,6 @@ msgstr "상대적인 스냅"
 msgid "Use Pixel Snap"
 msgstr "픽셀 스냅 사용"
 
-msgid "Smart Snapping"
-msgstr "스마트 스냅"
-
-msgid "Configure Snap..."
-msgstr "스냅 구성..."
-
 msgid "Snap to Parent"
 msgstr "부모에 스냅"
 
@@ -6996,6 +7236,12 @@ msgstr "다른 노드에 스냅"
 
 msgid "Snap to Guides"
 msgstr "가이드에 스냅"
+
+msgid "Smart Snapping"
+msgstr "스마트 스냅"
+
+msgid "Configure Snap..."
+msgstr "스냅 구성..."
 
 msgid "Lock selected node, preventing selection and movement."
 msgstr "선택된 노드를 잠그어 선택하거나 이동하지 못하게 합니다."
@@ -8370,6 +8616,9 @@ msgstr "환경 보기"
 msgid "View Gizmos"
 msgstr "기즈모 보기"
 
+msgid "View Grid"
+msgstr "격자 보기"
+
 msgid "View Information"
 msgstr "정보 보기"
 
@@ -8623,9 +8872,6 @@ msgstr "뷰포트 4개"
 msgid "View Origin"
 msgstr "원점 보기"
 
-msgid "View Grid"
-msgstr "격자 보기"
-
 msgid "Settings..."
 msgstr "설정..."
 
@@ -8839,9 +9085,6 @@ msgstr "핸들 아웃 #"
 msgid "Handle Tilt #"
 msgstr "핸들 틸트 #"
 
-msgid "Set Curve Point Position"
-msgstr "곡선 점 위치 설정"
-
 msgid "Set Curve Out Position"
 msgstr "곡선의 아웃 위치 설정"
 
@@ -8868,6 +9111,9 @@ msgstr "점 틸트 초기화"
 
 msgid "Split Segment (in curve)"
 msgstr "(곡선에서) 세그먼트 가르기"
+
+msgid "Set Curve Point Position"
+msgstr "곡선 점 위치 설정"
 
 msgid "Move Joint"
 msgstr "관절 이동"
@@ -9178,14 +9424,14 @@ msgstr "이전 기록"
 msgid "History Next"
 msgstr "다음 기록"
 
-msgid "Theme"
-msgstr "테마"
-
 msgid "Import Theme..."
 msgstr "테마 가져오기..."
 
 msgid "Reload Theme"
 msgstr "테마 새로고침"
+
+msgid "Theme"
+msgstr "테마"
 
 msgid "Save Theme"
 msgstr "테마 저장"
@@ -9302,9 +9548,6 @@ msgstr "색상 선택"
 
 msgid "Folding"
 msgstr "접기"
-
-msgid "Indentation"
-msgstr "들여쓰기"
 
 msgid "Uppercase"
 msgstr "대문자로"
@@ -9614,12 +9857,6 @@ msgstr "이미지를 불러올 수 없음"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "오류: 프레임 리소스를 불러올 수 없습니다!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "리소스 클립보드가 비었거나 텍스처가 아닙니다!"
-
-msgid "Paste Frame"
-msgstr "프레임 붙여넣기"
-
 msgid "Add Empty"
 msgstr "빈 프레임 추가"
 
@@ -9670,9 +9907,6 @@ msgstr "스프라이트 시트에서 프레임 추가"
 
 msgid "Delete Frame"
 msgstr "프레임 삭제"
-
-msgid "Copy Frame"
-msgstr "프레임 복사"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "빈 프레임 삽입 (앞에)"
@@ -13874,13 +14108,6 @@ msgstr "소환"
 msgid "Replicate"
 msgstr "리플리케이트"
 
-msgid ""
-"Add properties using the options above, or\n"
-"drag them them from the inspector and drop them here."
-msgstr ""
-"위의 버튼을 이용하여 속성을 추가하거나\n"
-"인스펙터에서 끌어와서 여기에 놓으세요."
-
 msgid "Please select a MultiplayerSynchronizer first."
 msgstr "MultiplayerSynchronizer를 먼저 선택해 주세요."
 
@@ -14725,6 +14952,77 @@ msgstr ""
 "알 수 없습니다."
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"CPUParticles2D 애니메이션에는 \"Particles Animation\"이 활성화된 "
+"CanvasItemMaterial을 사용해야 합니다."
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+"파티클을 처리할 머티리얼이 할당되지 않았으므로, 아무런 동작도 찍히지 않습니다."
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Particles2D 애니메이션은 \"Particles Animation\"이 활성화되어 있는 "
+"CanvasItemMaterial을 사용해야 합니다."
+
+msgid ""
+"Particle trails are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr ""
+"파티클 트레일은 Forward+ 또는 모바일 렌더링 백엔드를 사용할 경우에만 쓸 수 있"
+"습니다."
+
+msgid ""
+"Particle sub-emitters are not available when using the GL Compatibility "
+"rendering backend."
+msgstr "파티클 서브이미터는 GL 호환성 백엔드를 사용할 때는 쓸 수 없습니다."
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr "라이트 모양의 텍스처는 반드시 \"Texture\" 속성에 지정해야 합니다."
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"이 Occluder를 반영하려면 Occluder 폴리곤을 설정해야 (혹은 그려야) 합니다."
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "Occluder 폴리곤이 비어있습니다. 폴리곤을 그려주세요."
+
+msgid ""
+"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
+msgstr ""
+"NavigationAgent2D는 Node2D 기반의 부모 노드 아래에서만 사용할 수 있습니다."
+
+msgid ""
+"NavigationLink2D start position should be different than the end position to "
+"be useful."
+msgstr ""
+"NavigationLink2D의 시작점은 끝점과 다르게 설정하는 편이 유용할 것입니다."
+
+msgid ""
+"A NavigationMesh resource must be set or created for this node to work. "
+"Please set a property or draw a polygon."
+msgstr ""
+"이 노드가 작동하려면 NavigationMesh 리소스를 설정하거나 만들어야 합니다. 속성"
+"을 설정하거나 폴리곤을 그려주세요."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"ParallaxLayer는 ParallaxBackground 노드의 자식 노드로 있을 때만 작동합니다."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D는 Path2D 노드의 자식 노드로 있을 때만 작동합니다."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -14770,38 +15068,6 @@ msgstr ""
 "폴리곤 기반 모양은 CollisionShape2D에 추가하거나 거기서 편집하게끔 설계하지 않"
 "았습니다. 대신 CollisionPolygon2D 노드를 사용하십시오."
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"CPUParticles2D 애니메이션에는 \"Particles Animation\"이 활성화된 "
-"CanvasItemMaterial을 사용해야 합니다."
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-"파티클을 처리할 머티리얼이 할당되지 않았으므로, 아무런 동작도 찍히지 않습니다."
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Particles2D 애니메이션은 \"Particles Animation\"이 활성화되어 있는 "
-"CanvasItemMaterial을 사용해야 합니다."
-
-msgid ""
-"Particle trails are only available when using the Forward+ or Mobile "
-"rendering backends."
-msgstr ""
-"파티클 트레일은 Forward+ 또는 모바일 렌더링 백엔드를 사용할 경우에만 쓸 수 있"
-"습니다."
-
-msgid ""
-"Particle sub-emitters are not available when using the GL Compatibility "
-"rendering backend."
-msgstr "파티클 서브이미터는 GL 호환성 백엔드를 사용할 때는 쓸 수 없습니다."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "노드 A와 노드 B는 PhysicsBody2D여야 합니다"
 
@@ -14816,45 +15082,6 @@ msgstr "관절이 PhysicsBody2D 두 곳과 연결되어 있지 않습니다"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "노드 A와 노드 B는 서로 다른 PhysicsBody2D여야 합니다"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr "라이트 모양의 텍스처는 반드시 \"Texture\" 속성에 지정해야 합니다."
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"이 Occluder를 반영하려면 Occluder 폴리곤을 설정해야 (혹은 그려야) 합니다."
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "Occluder 폴리곤이 비어있습니다. 폴리곤을 그려주세요."
-
-msgid ""
-"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
-msgstr ""
-"NavigationAgent2D는 Node2D 기반의 부모 노드 아래에서만 사용할 수 있습니다."
-
-msgid ""
-"NavigationLink2D start position should be different than the end position to "
-"be useful."
-msgstr ""
-"NavigationLink2D의 시작점은 끝점과 다르게 설정하는 편이 유용할 것입니다."
-
-msgid ""
-"A NavigationMesh resource must be set or created for this node to work. "
-"Please set a property or draw a polygon."
-msgstr ""
-"이 노드가 작동하려면 NavigationMesh 리소스를 설정하거나 만들어야 합니다. 속성"
-"을 설정하거나 폴리곤을 그려주세요."
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"ParallaxLayer는 ParallaxBackground 노드의 자식 노드로 있을 때만 작동합니다."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D는 Path2D 노드의 자식 노드로 있을 때만 작동합니다."
 
 msgid ""
 "A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
@@ -14885,13 +15112,13 @@ msgstr ""
 "실행 중에 RigidBody2D의 크기 변경은 물리 엔진에 의해 오버라이드됩니다.\n"
 "대신 자식 콜리전 모양의 크기를 변경하세요."
 
-msgid "Path property must point to a valid Node2D node to work."
-msgstr "Path 속성은 올바른 Node2D 노드를 가리켜야 합니다."
-
 msgid ""
 "This node cannot interact with other objects unless a Shape2D is assigned."
 msgstr ""
 "이 노드는 Shape2D를 할당하지 않는 이상 다른 오브젝트와 상호작용하지 못합니다."
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr "Path 속성은 올바른 Node2D 노드를 가리켜야 합니다."
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "이 Bone2D 체인은 Skeleton2D 노드에서 끝나야 합니다."
@@ -14961,84 +15188,6 @@ msgid ""
 msgstr ""
 "BoneAttachment3D 노드가 어떠한 본과도 엮여 있지 않습니다! 이 노드를 부착할 본"
 "을 선택해 주세요."
-
-msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
-"its shape."
-msgstr ""
-"이 노드는 모양이 없어서 다른 물체와 충돌하거나 상호 작용할 수 없습니다.\n"
-"CollisionShape3D 또는 CollisionPolygon3D를 자식 노드로 추가하여 모양을 정의하"
-"는 것을 고려하세요."
-
-msgid ""
-"With a non-uniform scale this node will probably not function as expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size in children collision shapes instead."
-msgstr ""
-"이 노드의 크기가 일관적이지 않아서 생각한 대로 작동하지 않을 것입니다.\n"
-"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 자식 "
-"충돌 모양의 크기를 변경하세요."
-
-msgid ""
-"CollisionPolygon3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon3D는 CollisionObject3D 기반 노드에 콜리전 모양을 지정하는 용도"
-"로만 사용됩니다.\n"
-"모양을 정의해야 하는 Area3D, StaticBody3D, RigidBody23D, CharacterBody3D 등의 "
-"자식으로만 사용해주세요."
-
-msgid "An empty CollisionPolygon3D has no effect on collision."
-msgstr "빈 CollisionPolygon3D는 콜리전에 영향을 주지 않습니다."
-
-msgid ""
-"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change its "
-"polygon's vertices instead."
-msgstr ""
-"일관적인 크기가 아닌 CollisionPolygon3D 노드는 아마 생각한 대로 작동하지 않을 "
-"것입니다.\n"
-"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 폴리"
-"곤의 모양을 변경하세요."
-
-msgid ""
-"CollisionShape3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionShape3D는 CollisionObject3D 기반 노드에 콜리전 모양을 지정하는 용도로"
-"만 사용됩니다.\n"
-"모양을 정의해야 하는 Area3D, StaticBody3D, RigidBody3D, CharacterBody3D 등의 "
-"자식으로만 사용해주세요."
-
-msgid ""
-"A shape must be provided for CollisionShape3D to function. Please create a "
-"shape resource for it."
-msgstr ""
-"CollisionShape3D가 제 기능을 하려면 모양이 있어야 합니다. 모양 리소스를 만들어"
-"주세요."
-
-msgid ""
-"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
-msgstr ""
-"WorldBoundaryShape3D는 static 외의 모드가 설정된 RigidBody3D를 지원하지 않습니"
-"다."
-
-msgid ""
-"A non-uniformly scaled CollisionShape3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size of its shape resource instead."
-msgstr ""
-"일관적인 크기가 아닌 CollisionShape3D 노드는 아마 생각한 대로 작동하지 않을 것"
-"입니다.\n"
-"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 모양 "
-"리소스의 크기를 변경하세요."
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "지정한 메시가 없어서 아무 것도 보이지 않습니다."
@@ -15142,21 +15291,6 @@ msgstr ""
 "GPUParticlesCollisionSDF3D에 대해 어떤 충돌도 만들어내지 않을 것입니다.\n"
 "굽기 마스크 속성에서 하나 이상의 비트를 설정해 주세요."
 
-msgid "Node A and Node B must be PhysicsBody3Ds"
-msgstr "노드 A와 노드 B는 PhysicsBody3D여야 합니다"
-
-msgid "Node A must be a PhysicsBody3D"
-msgstr "노드 A는 PhysicsBody3D여야 합니다"
-
-msgid "Node B must be a PhysicsBody3D"
-msgstr "노드 B는 PhysicsBody3D여야 합니다"
-
-msgid "Joint is not connected to any PhysicsBody3Ds"
-msgstr "Joint가 어떠한 PhysicsBody3D에도 연결되어 있지 않습니다"
-
-msgid "Node A and Node B must be different PhysicsBody3Ds"
-msgstr "노드 A와 노드 B는 서로 다른 PhysicsBody3D여야 합니다"
-
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "빛의 크기는 실제로 보이는 빛의 크기에 영향을 미치지 않습니다."
 
@@ -15230,12 +15364,117 @@ msgstr ""
 "Vector\"가 켜져 있어야 합니다."
 
 msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
+"its shape."
+msgstr ""
+"이 노드는 모양이 없어서 다른 물체와 충돌하거나 상호 작용할 수 없습니다.\n"
+"CollisionShape3D 또는 CollisionPolygon3D를 자식 노드로 추가하여 모양을 정의하"
+"는 것을 고려하세요."
+
+msgid ""
+"With a non-uniform scale this node will probably not function as expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size in children collision shapes instead."
+msgstr ""
+"이 노드의 크기가 일관적이지 않아서 생각한 대로 작동하지 않을 것입니다.\n"
+"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 자식 "
+"충돌 모양의 크기를 변경하세요."
+
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon3D는 CollisionObject3D 기반 노드에 콜리전 모양을 지정하는 용도"
+"로만 사용됩니다.\n"
+"모양을 정의해야 하는 Area3D, StaticBody3D, RigidBody23D, CharacterBody3D 등의 "
+"자식으로만 사용해주세요."
+
+msgid "An empty CollisionPolygon3D has no effect on collision."
+msgstr "빈 CollisionPolygon3D는 콜리전에 영향을 주지 않습니다."
+
+msgid ""
+"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change its "
+"polygon's vertices instead."
+msgstr ""
+"일관적인 크기가 아닌 CollisionPolygon3D 노드는 아마 생각한 대로 작동하지 않을 "
+"것입니다.\n"
+"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 폴리"
+"곤의 모양을 변경하세요."
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape3D는 CollisionObject3D 기반 노드에 콜리전 모양을 지정하는 용도로"
+"만 사용됩니다.\n"
+"모양을 정의해야 하는 Area3D, StaticBody3D, RigidBody3D, CharacterBody3D 등의 "
+"자식으로만 사용해주세요."
+
+msgid ""
+"A shape must be provided for CollisionShape3D to function. Please create a "
+"shape resource for it."
+msgstr ""
+"CollisionShape3D가 제 기능을 하려면 모양이 있어야 합니다. 모양 리소스를 만들어"
+"주세요."
+
+msgid ""
+"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
+msgstr ""
+"WorldBoundaryShape3D는 static 외의 모드가 설정된 RigidBody3D를 지원하지 않습니"
+"다."
+
+msgid ""
+"A non-uniformly scaled CollisionShape3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size of its shape resource instead."
+msgstr ""
+"일관적인 크기가 아닌 CollisionShape3D 노드는 아마 생각한 대로 작동하지 않을 것"
+"입니다.\n"
+"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 모양 "
+"리소스의 크기를 변경하세요."
+
+msgid "Node A and Node B must be PhysicsBody3Ds"
+msgstr "노드 A와 노드 B는 PhysicsBody3D여야 합니다"
+
+msgid "Node A must be a PhysicsBody3D"
+msgstr "노드 A는 PhysicsBody3D여야 합니다"
+
+msgid "Node B must be a PhysicsBody3D"
+msgstr "노드 B는 PhysicsBody3D여야 합니다"
+
+msgid "Joint is not connected to any PhysicsBody3Ds"
+msgstr "Joint가 어떠한 PhysicsBody3D에도 연결되어 있지 않습니다"
+
+msgid "Node A and Node B must be different PhysicsBody3Ds"
+msgstr "노드 A와 노드 B는 서로 다른 PhysicsBody3D여야 합니다"
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
 msgstr ""
 "실행 중에 RigidBody3D의 크기 변경은 물리 엔진에 의해 오버라이드됩니다.\n"
 "대신 자식 콜리전 모양의 크기를 변경하세요."
+
+msgid ""
+"This node cannot interact with other objects unless a Shape3D is assigned."
+msgstr ""
+"이 노드는 Shape3D를 할당하지 않는 이상 다른 오브젝트와 상호작용하지 못합니다."
+
+msgid ""
+"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
+"use it as a child of a VehicleBody3D."
+msgstr ""
+"VehicleWheel3D는 VehicleBody3D에 바퀴 시스템을 제공하는 역할입니다. "
+"VehicleBody3D의 자식으로 사용해주세요."
 
 msgid ""
 "ReflectionProbes are not supported when using the GL Compatibility backend "
@@ -15251,11 +15490,6 @@ msgstr ""
 "\"원격 경로(Remote Path)\" 속성이 작동하려면 유효한 Node3D 또는 Node3D 파생 노"
 "드를 가리켜야 합니다."
 
-msgid ""
-"This node cannot interact with other objects unless a Shape3D is assigned."
-msgstr ""
-"이 노드는 Shape3D를 할당하지 않는 이상 다른 오브젝트와 상호작용하지 못합니다."
-
 msgid "This body will be ignored until you set a mesh."
 msgstr "이 바디는 메시를 설정할 때까지 무시됩니다."
 
@@ -15265,20 +15499,6 @@ msgid ""
 msgstr ""
 "AnimatedSprite3D가 프레임을 보여주기 위해서는 \"Frames\" 속성에 SpriteFrames "
 "리소스를 만들거나 설정해야 합니다."
-
-msgid ""
-"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
-"use it as a child of a VehicleBody3D."
-msgstr ""
-"VehicleWheel3D는 VehicleBody3D에 바퀴 시스템을 제공하는 역할입니다. "
-"VehicleBody3D의 자식으로 사용해주세요."
-
-msgid ""
-"VisibleOnScreenNotifier3D nodes are not supported when using the GL "
-"Compatibility backend yet. Support will be added in a future release."
-msgstr ""
-"VisibleOnScreenNotifier3D 노드는 아직 GL 호환성 백엔드에서 지원되지 않습니다. "
-"추후 릴리즈에서 지원될 예정입니다."
 
 msgid "Plotting Meshes"
 msgstr "메시 구분"
@@ -15353,51 +15573,11 @@ msgid ""
 msgstr ""
 "ButtonGroup은 오직 toggle_mode가 참인 버튼들만 함께 사용하도록 되어 있습니다."
 
-msgid "New Code Region"
-msgstr "새 코드 구역"
-
 msgid "Copy this constructor in a script."
 msgstr "이 생성자를 스크립트 안으로 복사합니다."
 
-msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
-msgstr "헥스 코드(\"#ff0000\") 또는 영어 색상 이름(\"red\")을 넣어 주세요."
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"색상: #%s\n"
-"좌클릭: 색상 지정\n"
-"우클릭: 프리셋 제거"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"색상: #%s\n"
-"좌클릭: 색상 지정"
-
-msgid "Pick a color from the screen."
-msgstr "화면에서 색상을 고르세요."
-
-msgid "Pick a color from the application window."
-msgstr "프로그램 창에서 색상을 고르세요."
-
-msgid "Select a picker shape."
-msgstr "피커 모양을 고르세요."
-
-msgid "Select a picker mode."
-msgstr "피커 모드를 고르세요."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "헥스 코드와 코드 값의 사이를 전환합니다."
-
-msgid "Hex code or named color"
-msgstr "헥스 코드 또는 색상 이름"
-
-msgid "Add current color as a preset."
-msgstr "현재 색상을 프리셋으로 추가합니다."
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -15424,12 +15604,6 @@ msgstr ""
 msgid "Alert!"
 msgstr "경고!"
 
-msgid "You don't have permission to access contents of this folder."
-msgstr "이 폴더에 접근할 권한이 없습니다."
-
-msgid "Invalid extension, or empty filename."
-msgstr "잘못된 확장자이거나 파일명이 비어 있습니다."
-
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
 "refactoring in a future 4.x version involving compatibility-breaking API "
@@ -15437,21 +15611,6 @@ msgid ""
 msgstr ""
 "GraphEdit과 GraphNode는 이후의 4.x 버전에서 하위 호환성 없는 API 변경을 포함"
 "한 큰 리팩터링을 거칠 것임을 유의해 주세요."
-
-msgid "Toggle the visual grid."
-msgstr "배경 격자판을 보이거나 숨깁니다."
-
-msgid "Toggle snapping to the grid."
-msgstr "격자 스냅을 켜거나 끕니다."
-
-msgid "Change the snapping distance."
-msgstr "스냅의 거리를 변경합니다."
-
-msgid "Toggle the graph minimap."
-msgstr "그래프 미니맵을 활성화합니다."
-
-msgid "Automatically arrange selected nodes."
-msgstr "선택된 노드들을 자동으로 정렬합니다."
 
 msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
@@ -15466,33 +15625,6 @@ msgid ""
 msgstr ""
 "이 레이블에는 현재 글꼴이 렌더링하지 못하는 글자가 하나 이상 포함되어 있습니"
 "다."
-
-msgid "Same as Layout Direction"
-msgstr "레이아웃 방향과 같음"
-
-msgid "Auto-Detect Direction"
-msgstr "방향 자동 감지"
-
-msgid "Left-to-Right"
-msgstr "좌-우 방향으로"
-
-msgid "Right-to-Left"
-msgstr "우-좌 방향으로"
-
-msgid "Left-to-Right Mark (LRM)"
-msgstr "좌-우 방향 표식 (LRM)"
-
-msgid "Right-to-Left Mark (RLM)"
-msgstr "우-좌 방향 표식 (RLM)"
-
-msgid "Text Writing Direction"
-msgstr "텍스트 쓰기 방향"
-
-msgid "Display Control Characters"
-msgstr "제어 문자 표시"
-
-msgid "Insert Control Character"
-msgstr "제어 문자 삽입"
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "\"Exp Edit\"을 활성화하면, \"Min Value\"는 반드시 0보다 커야 합니다."
@@ -15513,9 +15645,6 @@ msgid ""
 msgstr ""
 "이 노드에는 SubViewport 자식이 없어서, 의도된 내용물을 표시하지 못합니다.\n"
 "무언가를 표시할 수 있게 SubViewport 자식을 추가하는 것을 고려해 보세요."
-
-msgid "(Other)"
-msgstr "(기타)"
 
 msgid ""
 "This node was saved as class type '%s', which was no longer available when "

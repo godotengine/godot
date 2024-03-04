@@ -1045,9 +1045,6 @@ msgstr "RPCポート"
 msgid "RPC Server Uptime"
 msgstr "RPCサーバーの稼働時間"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "FBX2glTF Path"
 msgstr "FBX2glTFのパス"
 
@@ -2398,6 +2395,9 @@ msgstr "パスの角度を容易にする"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "GDScript"
 msgstr "GDScript"
 
@@ -2899,30 +2899,6 @@ msgstr "水平反転"
 msgid "Flip V"
 msgstr "垂直反転"
 
-msgid "Monitoring"
-msgstr "モニタリング"
-
-msgid "Monitorable"
-msgstr "モニター可能"
-
-msgid "Gravity"
-msgstr "重力"
-
-msgid "Space Override"
-msgstr "領域のオーバーライド"
-
-msgid "Point"
-msgstr "点"
-
-msgid "Linear Damp"
-msgstr "線形減衰"
-
-msgid "Angular Damp"
-msgstr "角度減衰"
-
-msgid "Audio Bus"
-msgstr "オーディオバス"
-
 msgid "Current"
 msgstr "現在"
 
@@ -2983,15 +2959,6 @@ msgstr "限界を描画する"
 msgid "Draw Drag Margin"
 msgstr "ドラッグマージンを描画する"
 
-msgid "Input"
-msgstr "入力"
-
-msgid "Pickable"
-msgstr "ピック可能"
-
-msgid "Build Mode"
-msgstr "ビルドモード"
-
 msgid "Time"
 msgstr "時間"
 
@@ -3022,6 +2989,9 @@ msgstr "カラー"
 msgid "Spread"
 msgstr "広がり"
 
+msgid "Gravity"
+msgstr "重力"
+
 msgid "Initial Velocity"
 msgstr "初期速度"
 
@@ -3048,18 +3018,6 @@ msgstr "オフセット曲線"
 
 msgid "Visibility Rect"
 msgstr "可視領域矩形(Visibility Rect)"
-
-msgid "Node A"
-msgstr "ノード A"
-
-msgid "Node B"
-msgstr "ノード B"
-
-msgid "Bias"
-msgstr "バイアス"
-
-msgid "Length"
-msgstr "長さ"
 
 msgid "Editor Only"
 msgstr "エディターのみ"
@@ -3088,6 +3046,12 @@ msgstr "ボーダー"
 msgid "Round Precision"
 msgstr "丸め精度"
 
+msgid "Repeat"
+msgstr "繰り返し"
+
+msgid "End"
+msgstr "End"
+
 msgid "Ignore Camera Zoom"
 msgstr "カメラのズームを無視"
 
@@ -3096,6 +3060,54 @@ msgstr "水平オフセット"
 
 msgid "V Offset"
 msgstr "垂直オフセット"
+
+msgid "Monitoring"
+msgstr "モニタリング"
+
+msgid "Monitorable"
+msgstr "モニター可能"
+
+msgid "Space Override"
+msgstr "領域のオーバーライド"
+
+msgid "Point"
+msgstr "点"
+
+msgid "Linear Damp"
+msgstr "線形減衰"
+
+msgid "Angular Damp"
+msgstr "角度減衰"
+
+msgid "Audio Bus"
+msgstr "オーディオバス"
+
+msgid "Max Angle"
+msgstr "最大角度"
+
+msgid "Safe Margin"
+msgstr "セーフマージン"
+
+msgid "Input"
+msgstr "入力"
+
+msgid "Pickable"
+msgstr "ピック可能"
+
+msgid "Build Mode"
+msgstr "ビルドモード"
+
+msgid "Length"
+msgstr "長さ"
+
+msgid "Node A"
+msgstr "ノード A"
+
+msgid "Node B"
+msgstr "ノード B"
+
+msgid "Bias"
+msgstr "バイアス"
 
 msgid "Inertia"
 msgstr "慣性"
@@ -3114,12 +3126,6 @@ msgstr "リニア"
 
 msgid "Torque"
 msgstr "トルク"
-
-msgid "Max Angle"
-msgstr "最大角度"
-
-msgid "Safe Margin"
-msgstr "セーフマージン"
 
 msgid "UV"
 msgstr "UV"
@@ -3172,9 +3178,6 @@ msgstr "パラメーター"
 msgid "Modulate"
 msgstr "変調"
 
-msgid "End"
-msgstr "End"
-
 msgid "Flags"
 msgstr "フラグ"
 
@@ -3208,6 +3211,9 @@ msgstr "ノイズ除去を使用"
 msgid "Visibility"
 msgstr "可視性"
 
+msgid "Friction"
+msgstr "摩擦"
+
 msgid "Angular X"
 msgstr "角度X"
 
@@ -3217,8 +3223,11 @@ msgstr "角度Y"
 msgid "Angular Z"
 msgstr "角度Z"
 
-msgid "Friction"
-msgstr "摩擦"
+msgid "Wheel"
+msgstr "ホイール"
+
+msgid "Travel"
+msgstr "トラベル"
 
 msgid "Enable Shadows"
 msgstr "シャドウを有効化"
@@ -3240,12 +3249,6 @@ msgstr "圧力係数"
 
 msgid "Damping Coefficient"
 msgstr "減衰係数"
-
-msgid "Wheel"
-msgstr "ホイール"
-
-msgid "Travel"
-msgstr "トラベル"
 
 msgid "Track Physics Step"
 msgstr "物理ステップの追跡"
@@ -3337,9 +3340,6 @@ msgstr "拡大"
 msgid "Z Index"
 msgstr "Zインデックス"
 
-msgid "Repeat"
-msgstr "繰り返し"
-
 msgid "Use Parent Material"
 msgstr "親のマテリアルを使用"
 
@@ -3385,6 +3385,51 @@ msgstr "2D物理"
 msgid "3D Physics"
 msgstr "3D物理"
 
+msgid "B"
+msgstr "B"
+
+msgid "Terrains"
+msgstr "地形"
+
+msgid "Custom Data"
+msgstr "カスタムデータ"
+
+msgid "Transpose"
+msgstr "行列(縦横)入れ替え"
+
+msgid "Texture Origin"
+msgstr "テクスチャの原点"
+
+msgid "Y Sort Origin"
+msgstr "Yソート原点"
+
+msgid "Probability"
+msgstr "確率"
+
+msgid "Item"
+msgstr "アイテム"
+
+msgid "Preview"
+msgstr "プレビュー"
+
+msgid "Sky"
+msgstr "空"
+
+msgid "Ground"
+msgstr "地面"
+
+msgid "Sun"
+msgstr "太陽"
+
+msgid "Panorama"
+msgstr "パノラマ"
+
+msgid "Rayleigh"
+msgstr "レイリー"
+
+msgid "Ground Color"
+msgstr "地面の色"
+
 msgid "Frames"
 msgstr "フレーム"
 
@@ -3399,9 +3444,6 @@ msgstr "ライトモード"
 
 msgid "Background"
 msgstr "背景"
-
-msgid "Sky"
-msgstr "空"
 
 msgid "Source"
 msgstr "ソース"
@@ -3463,38 +3505,14 @@ msgstr "シャドウ"
 msgid "MSDF"
 msgstr "MSDF"
 
-msgid "Item"
-msgstr "アイテム"
-
-msgid "Preview"
-msgstr "プレビュー"
-
 msgid "Transform Format"
 msgstr "変換形式"
 
 msgid "Parsed Geometry Type"
 msgstr "解析されたジオメトリ型"
 
-msgid "B"
-msgstr "B"
-
 msgid "Process Mode"
 msgstr "処理モード"
-
-msgid "Ground"
-msgstr "地面"
-
-msgid "Sun"
-msgstr "太陽"
-
-msgid "Panorama"
-msgstr "パノラマ"
-
-msgid "Rayleigh"
-msgstr "レイリー"
-
-msgid "Ground Color"
-msgstr "地面の色"
 
 msgid "Blend"
 msgstr "ブレンド"
@@ -3510,24 +3528,6 @@ msgstr "右下"
 
 msgid "Bottom Left"
 msgstr "左下"
-
-msgid "Terrains"
-msgstr "地形"
-
-msgid "Custom Data"
-msgstr "カスタムデータ"
-
-msgid "Transpose"
-msgstr "行列(縦横)入れ替え"
-
-msgid "Texture Origin"
-msgstr "テクスチャの原点"
-
-msgid "Y Sort Origin"
-msgstr "Yソート原点"
-
-msgid "Probability"
-msgstr "確率"
 
 msgid "File"
 msgstr "ファイル"

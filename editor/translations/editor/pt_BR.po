@@ -179,14 +179,14 @@
 # Otávio Burato <otavioburato42@gmail.com>, 2024.
 # Augusto Renan <augustorenanss@gmail.com>, 2024.
 # João Vitor da Silva Matos <joaovitordasilvamatos21@gmail.com>, 2024.
+# Gleydson Araujo <gleydsonaraujoos@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2024-02-16 00:31+0000\n"
-"Last-Translator: João Vitor da Silva Matos <joaovitordasilvamatos21@gmail."
-"com>\n"
+"PO-Revision-Date: 2024-02-28 10:05+0000\n"
+"Last-Translator: Gleydson Araujo <gleydsonaraujoos@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -194,7 +194,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.4\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread principal"
@@ -668,6 +668,9 @@ msgstr "Inserir Chave Aqui"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplicar Chave(s) Selecionada(s)"
+
+msgid "Copy Selected Key(s)"
+msgstr "Copiar Chave(s) Selecionada(s)"
 
 msgid "Delete Selected Key(s)"
 msgstr "Excluir Chave(s) Selecionada(s)"
@@ -1371,6 +1374,9 @@ msgstr "Avisos"
 msgid "Line and column numbers."
 msgstr "Números de linha e coluna."
 
+msgid "Indentation"
+msgstr "Recuo"
+
 msgid "Method in target node must be specified."
 msgstr "O método no nó de destino deve ser especificado."
 
@@ -1975,9 +1981,6 @@ msgstr "O nome da pasta é válido."
 
 msgid "Thanks from the Godot community!"
 msgstr "Agradecimentos da comunidade Godot!"
-
-msgid "Click to copy."
-msgstr "Clique para copiar."
 
 msgid "Godot Engine contributors"
 msgstr "Contribuidores do Godot Engine"
@@ -3794,9 +3797,6 @@ msgstr "Nó"
 msgid "History"
 msgstr "Histórico"
 
-msgid "Expand Bottom Panel"
-msgstr "Expandir Painel Inferior"
-
 msgid "Output"
 msgstr "Saída"
 
@@ -4666,23 +4666,6 @@ msgstr "Gerenciar Modelos de Exportação"
 msgid "Export With Debug"
 msgstr "Exportar Com Depuração"
 
-msgid "Disable FBX & Restart"
-msgstr "Desabilitar FBX & Reiniciar"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"Cancelar este diálogo desabilitará o importador FBX.\n"
-"Você pode reativá-lo nas Configurações do Projeto em "
-"Arquivos>Importar>FBX>Habilitado.\n"
-"\n"
-"O editor será reiniciado à medida que os importadores forem registrados "
-"quando o editor for iniciado."
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "O caminho para o executável FBX2glTF está vazio."
 
@@ -4697,13 +4680,6 @@ msgstr "O executável FBX2glTF é válido."
 
 msgid "Configure FBX Importer"
 msgstr "Configurar Importador FBX"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX2glTF é necessário para importar arquivos FBX.\n"
-"Faça o download e forneça um caminho válido para o binário:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "Clique neste link para baixar o FBX2glTF"
@@ -5006,6 +4982,9 @@ msgstr "Remover do Grupo"
 
 msgid "Global"
 msgstr "Global"
+
+msgid "Expand Bottom Panel"
+msgstr "Expandir Painel Inferior"
 
 msgid "Move"
 msgstr "Mover"
@@ -7048,12 +7027,6 @@ msgstr "Encaixe Relativo"
 msgid "Use Pixel Snap"
 msgstr "Usar Encaixe de Pixel"
 
-msgid "Smart Snapping"
-msgstr "Encaixe Inteligente"
-
-msgid "Configure Snap..."
-msgstr "Configurar Encaixe..."
-
 msgid "Snap to Parent"
 msgstr "Encaixar no Pai"
 
@@ -7071,6 +7044,12 @@ msgstr "Encaixar em Outros Nós"
 
 msgid "Snap to Guides"
 msgstr "Encaixar nas Guias"
+
+msgid "Smart Snapping"
+msgstr "Encaixe Inteligente"
+
+msgid "Configure Snap..."
+msgstr "Configurar Encaixe..."
 
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Travar Nó selecionado, prevenindo sua seleção e movimentação."
@@ -8386,6 +8365,9 @@ msgstr "Visualizar Ambiente"
 msgid "View Gizmos"
 msgstr "Visualizar Gizmos"
 
+msgid "View Grid"
+msgstr "Ver Grade"
+
 msgid "View Information"
 msgstr "Visualizar Informações"
 
@@ -8637,9 +8619,6 @@ msgstr "4 Viewports"
 msgid "View Origin"
 msgstr "Ver Origem"
 
-msgid "View Grid"
-msgstr "Ver Grade"
-
 msgid "Settings..."
 msgstr "Configurações..."
 
@@ -8852,9 +8831,6 @@ msgstr "Ponto da Curva #"
 msgid "Handle In #"
 msgstr "Manipulador"
 
-msgid "Set Curve Point Position"
-msgstr "Definir Posição do Ponto da Curva"
-
 msgid "Set Curve Out Position"
 msgstr "Definir Posição de Saída da Curva"
 
@@ -8869,6 +8845,9 @@ msgstr "Remover Ponto do Caminho"
 
 msgid "Split Segment (in curve)"
 msgstr "Dividir Segmentos (na curva)"
+
+msgid "Set Curve Point Position"
+msgstr "Definir Posição do Ponto da Curva"
 
 msgid "Move Joint"
 msgstr "Mover Junta"
@@ -9168,14 +9147,14 @@ msgstr "Anterior no Histórico"
 msgid "History Next"
 msgstr "Próximo no Histórico"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Import Theme..."
 msgstr "Importar Tema..."
 
 msgid "Reload Theme"
 msgstr "Recarregar Tema"
+
+msgid "Theme"
+msgstr "Tema"
 
 msgid "Save Theme"
 msgstr "Salvar Tema"
@@ -9282,9 +9261,6 @@ msgstr "Escolher Cor"
 
 msgid "Folding"
 msgstr "Dobramento de Código (Folding)"
-
-msgid "Indentation"
-msgstr "Recuo"
 
 msgid "Uppercase"
 msgstr "Maiúscula"
@@ -9581,12 +9557,6 @@ msgstr "Não foi possível carregar as imagens"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "ERRO: Não foi possível carregar o recurso de quadro!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Recurso da área de transferência está vazio ou não é uma textura!"
-
-msgid "Paste Frame"
-msgstr "Colar Quadro"
-
 msgid "Add Empty"
 msgstr "Adicionar Vazio"
 
@@ -9637,9 +9607,6 @@ msgstr "Adicionar Quadros de uma folha de Sprite"
 
 msgid "Delete Frame"
 msgstr "Excluir Quadro"
-
-msgid "Copy Frame"
-msgstr "Copiar Quadro"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "Inserir Vazio (Antes da Seleção)"
@@ -14895,6 +14862,84 @@ msgstr ""
 "criado ficará ativo, enquanto os outros serão ignorados."
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"A animação CPUParticles2D requer o uso de um CanvasItemMaterial com "
+"\"Animação de Partículas\" ativada."
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+"Um material para processar partículas não foi atribuído, então nenhum "
+"comportamento será aplicado."
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Animação Particles2D requer o uso de um CanvasItemMaterial com \"Animação de "
+"Partículas\" ativada."
+
+msgid ""
+"Particle trails are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr ""
+"As trilhas de partículas estão disponíveis apenas ao usar o módulo de "
+"renderização Avançado+ ou Mobile."
+
+msgid ""
+"Particle sub-emitters are not available when using the GL Compatibility "
+"rendering backend."
+msgstr ""
+"Os subemissores de partículas não estão disponíveis ao usar o back-end de "
+"renderização de compatibilidade com GL."
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr ""
+"Uma textura de iluminação deve ser fornecida na propriedade \"Textura\"."
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"Um polígono oclusor deve ser definido (ou desenhado) para que esse oclusor "
+"entre em vigor."
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "O polígono para este oclusor está vazio. Por favor desenhe um polígono."
+
+msgid ""
+"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
+msgstr ""
+"O nó NavigationAgent2D pode ser usado apenas em um nó pai herdeiro de Node2D."
+
+msgid ""
+"NavigationLink2D start position should be different than the end position to "
+"be useful."
+msgstr ""
+"A posição inicial do nó NavigationLink2D deve ser diferente da posição final "
+"para ser utilizado."
+
+msgid ""
+"A NavigationMesh resource must be set or created for this node to work. "
+"Please set a property or draw a polygon."
+msgstr ""
+"Um recurso NavigationMesh deve ser definido ou criado para que este nó "
+"funcione. Defina uma propriedade ou desenhe um polígono."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"O nó ParallaxLayer só funciona quando definido como filho de um nó "
+"ParallaxBackground."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D só funciona quando definido como filho de um nó Path2D."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -14947,41 +14992,6 @@ msgstr ""
 "Formas baseadas em polígonos não foram feitas para serem diretamente editadas "
 "no nó CollisionShape2D. Em vez disso use o nó CollisionPolygon2D."
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"A animação CPUParticles2D requer o uso de um CanvasItemMaterial com "
-"\"Animação de Partículas\" ativada."
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-"Um material para processar partículas não foi atribuído, então nenhum "
-"comportamento será aplicado."
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Animação Particles2D requer o uso de um CanvasItemMaterial com \"Animação de "
-"Partículas\" ativada."
-
-msgid ""
-"Particle trails are only available when using the Forward+ or Mobile "
-"rendering backends."
-msgstr ""
-"As trilhas de partículas estão disponíveis apenas ao usar o módulo de "
-"renderização Avançado+ ou Mobile."
-
-msgid ""
-"Particle sub-emitters are not available when using the GL Compatibility "
-"rendering backend."
-msgstr ""
-"Os subemissores de partículas não estão disponíveis ao usar o back-end de "
-"renderização de compatibilidade com GL."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "O Nó A e o Nó B devem ser PhysicsBody2Ds"
 
@@ -14996,49 +15006,6 @@ msgstr "A Junta não está conectada a dois PhysicsBody2Ds"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "O Nó A e o Nó B devem ser diferentes PhysicsBody2Ds"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr ""
-"Uma textura de iluminação deve ser fornecida na propriedade \"Textura\"."
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"Um polígono oclusor deve ser definido (ou desenhado) para que esse oclusor "
-"entre em vigor."
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "O polígono para este oclusor está vazio. Por favor desenhe um polígono."
-
-msgid ""
-"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
-msgstr ""
-"O nó NavigationAgent2D pode ser usado apenas em um nó pai herdeiro de Node2D."
-
-msgid ""
-"NavigationLink2D start position should be different than the end position to "
-"be useful."
-msgstr ""
-"A posição inicial do nó NavigationLink2D deve ser diferente da posição final "
-"para ser utilizado."
-
-msgid ""
-"A NavigationMesh resource must be set or created for this node to work. "
-"Please set a property or draw a polygon."
-msgstr ""
-"Um recurso NavigationMesh deve ser definido ou criado para que este nó "
-"funcione. Defina uma propriedade ou desenhe um polígono."
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"O nó ParallaxLayer só funciona quando definido como filho de um nó "
-"ParallaxBackground."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D só funciona quando definido como filho de um nó Path2D."
 
 msgid ""
 "A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
@@ -15070,15 +15037,15 @@ msgstr ""
 "física durante a execução.\n"
 "Em vez disso, altere o tamanho nas formas de colisão dos filhos."
 
-msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
-"A propriedade Caminho deve apontar para um nó Node2D válido para funcionar."
-
 msgid ""
 "This node cannot interact with other objects unless a Shape2D is assigned."
 msgstr ""
 "Este nó não pode interagir com outros objetos, a menos que um Shape2D seja "
 "atribuído."
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr ""
+"A propriedade Caminho deve apontar para um nó Node2D válido para funcionar."
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "Esta cadeia Bone2D deve terminar em um nó Skeleton2D."
@@ -15137,86 +15104,6 @@ msgid ""
 msgstr ""
 "O nó BoneAttachment3D não está vinculado a nenhum osso! Selecione um osso "
 "para anexar este nó."
-
-msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
-"its shape."
-msgstr ""
-"Este nó não tem forma, então não pode colidir ou interagir com outros "
-"objetos.\n"
-"Considere adicionar um CollisionShape3D ou CollisionPolygon3D como filho para "
-"definir sua forma."
-
-msgid ""
-"With a non-uniform scale this node will probably not function as expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size in children collision shapes instead."
-msgstr ""
-"Com uma escala não uniforme, este nó provavelmente não funcionará como "
-"esperado.\n"
-"Torne sua escala uniforme (ou seja, a mesma em todos os eixos) e, em vez "
-"disso, altere o tamanho nas formas de colisão dos filhos."
-
-msgid ""
-"CollisionPolygon3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon3D serve apenas para fornecer uma forma de colisão para um nó "
-"derivado de CollisionObject3D.\n"
-"Use-o apenas como filho de Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc... para dar-lhes uma forma."
-
-msgid "An empty CollisionPolygon3D has no effect on collision."
-msgstr "Um CollisionPolygon3D vazio não tem efeito na colisão."
-
-msgid ""
-"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change its "
-"polygon's vertices instead."
-msgstr ""
-"Um nó CollisionPolygon3D com escala não uniforme provavelmente não funcionará "
-"como esperado.\n"
-"Por favor, torne sua escala uniforme (ou seja, a mesma em todos os eixos) e "
-"altere os vértices de seu polígono."
-
-msgid ""
-"CollisionShape3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionShape2D apenas serve para fornecer a forma de colisão para um nó "
-"derivado de CollisionObject2D.\n"
-"Por favor use-o apenas como filho de Area2D, StaticBody2D, RigidBody2D, "
-"KinematicBody2D, etc. para dá-los forma."
-
-msgid ""
-"A shape must be provided for CollisionShape3D to function. Please create a "
-"shape resource for it."
-msgstr ""
-"Uma forma deve ser fornecida para que CollisionShape3D funcione. Por favor, "
-"crie um recurso de forma para ele."
-
-msgid ""
-"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
-msgstr ""
-"WorldBoundaryShape3D não oferece suporte a RigidBody3D em outro modo que não "
-"seja estático."
-
-msgid ""
-"A non-uniformly scaled CollisionShape3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size of its shape resource instead."
-msgstr ""
-"Um nó CollisionShape3D com escala não uniforme provavelmente não funcionará "
-"como esperado.\n"
-"Torne sua escala uniforme (ou seja, a mesma em todos os eixos) e altere o "
-"tamanho de seu recurso de forma."
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Nada é visível porque nenhuma malha foi atribuída."
@@ -15324,21 +15211,6 @@ msgstr ""
 "A Bake Mask não tem bits ativados, o que significa que o 'baking' não "
 "produzirá nenhuma colisão para este nó GPUParticlesCollisionSDF3D.\n"
 "Para resolver isso, habilite pelo menos um bit na propriedade Bake Mask."
-
-msgid "Node A and Node B must be PhysicsBody3Ds"
-msgstr "O nó A e o nó B devem ser PhysicsBody3Ds"
-
-msgid "Node A must be a PhysicsBody3D"
-msgstr "O nó A deve ser um PhysicsBody3D"
-
-msgid "Node B must be a PhysicsBody3D"
-msgstr "O nó B deve ser um PhysicsBody3D"
-
-msgid "Joint is not connected to any PhysicsBody3Ds"
-msgstr "Junção não está conectado a nenhum PhysicsBody3Ds"
-
-msgid "Node A and Node B must be different PhysicsBody3Ds"
-msgstr "Nó A e Nó B devem ser diferentes PhysicsBody3Ds"
 
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "A escala da iluminação não afeta o tamanho visual da luz."
@@ -15460,6 +15332,101 @@ msgstr ""
 "recurso Curve do Path3D pai."
 
 msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
+"its shape."
+msgstr ""
+"Este nó não tem forma, então não pode colidir ou interagir com outros "
+"objetos.\n"
+"Considere adicionar um CollisionShape3D ou CollisionPolygon3D como filho para "
+"definir sua forma."
+
+msgid ""
+"With a non-uniform scale this node will probably not function as expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size in children collision shapes instead."
+msgstr ""
+"Com uma escala não uniforme, este nó provavelmente não funcionará como "
+"esperado.\n"
+"Torne sua escala uniforme (ou seja, a mesma em todos os eixos) e, em vez "
+"disso, altere o tamanho nas formas de colisão dos filhos."
+
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon3D serve apenas para fornecer uma forma de colisão para um nó "
+"derivado de CollisionObject3D.\n"
+"Use-o apenas como filho de Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc... para dar-lhes uma forma."
+
+msgid "An empty CollisionPolygon3D has no effect on collision."
+msgstr "Um CollisionPolygon3D vazio não tem efeito na colisão."
+
+msgid ""
+"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change its "
+"polygon's vertices instead."
+msgstr ""
+"Um nó CollisionPolygon3D com escala não uniforme provavelmente não funcionará "
+"como esperado.\n"
+"Por favor, torne sua escala uniforme (ou seja, a mesma em todos os eixos) e "
+"altere os vértices de seu polígono."
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D apenas serve para fornecer a forma de colisão para um nó "
+"derivado de CollisionObject2D.\n"
+"Por favor use-o apenas como filho de Area2D, StaticBody2D, RigidBody2D, "
+"KinematicBody2D, etc. para dá-los forma."
+
+msgid ""
+"A shape must be provided for CollisionShape3D to function. Please create a "
+"shape resource for it."
+msgstr ""
+"Uma forma deve ser fornecida para que CollisionShape3D funcione. Por favor, "
+"crie um recurso de forma para ele."
+
+msgid ""
+"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
+msgstr ""
+"WorldBoundaryShape3D não oferece suporte a RigidBody3D em outro modo que não "
+"seja estático."
+
+msgid ""
+"A non-uniformly scaled CollisionShape3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size of its shape resource instead."
+msgstr ""
+"Um nó CollisionShape3D com escala não uniforme provavelmente não funcionará "
+"como esperado.\n"
+"Torne sua escala uniforme (ou seja, a mesma em todos os eixos) e altere o "
+"tamanho de seu recurso de forma."
+
+msgid "Node A and Node B must be PhysicsBody3Ds"
+msgstr "O nó A e o nó B devem ser PhysicsBody3Ds"
+
+msgid "Node A must be a PhysicsBody3D"
+msgstr "O nó A deve ser um PhysicsBody3D"
+
+msgid "Node B must be a PhysicsBody3D"
+msgstr "O nó B deve ser um PhysicsBody3D"
+
+msgid "Joint is not connected to any PhysicsBody3Ds"
+msgstr "Junção não está conectado a nenhum PhysicsBody3Ds"
+
+msgid "Node A and Node B must be different PhysicsBody3Ds"
+msgstr "Nó A e Nó B devem ser diferentes PhysicsBody3Ds"
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
@@ -15467,6 +15434,26 @@ msgstr ""
 "As alterações de escala para RigidBody3D serão substituídas pelo engine de "
 "física durante a execução.\n"
 "Em vez disso, altere o tamanho nas formas de colisão dos filhos."
+
+msgid ""
+"This node cannot interact with other objects unless a Shape3D is assigned."
+msgstr ""
+"Este nó não pode interagir com outros objetos, a menos que um nó Shape3D seja "
+"atribuído."
+
+msgid ""
+"ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be "
+"reported."
+msgstr ""
+"O nó ShapeCast3D não suporta nó ConcavePolygonShape3D. Colisões não serão "
+"relatadas."
+
+msgid ""
+"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
+"use it as a child of a VehicleBody3D."
+msgstr ""
+"VehicleWheel3D serve para fornecer um sistema de rodas para um VehicleBody3D. "
+"Use-o como filho de um VehicleBody3D."
 
 msgid ""
 "ReflectionProbes are not supported when using the GL Compatibility backend "
@@ -15482,19 +15469,6 @@ msgstr ""
 "A propriedade \"Caminho Remoto\" deve apontar para um Node3D válido ou nó "
 "derivado de Node3D para funcionar."
 
-msgid ""
-"This node cannot interact with other objects unless a Shape3D is assigned."
-msgstr ""
-"Este nó não pode interagir com outros objetos, a menos que um nó Shape3D seja "
-"atribuído."
-
-msgid ""
-"ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be "
-"reported."
-msgstr ""
-"O nó ShapeCast3D não suporta nó ConcavePolygonShape3D. Colisões não serão "
-"relatadas."
-
 msgid "This body will be ignored until you set a mesh."
 msgstr "Este corpo será ignorado até você definir uma malha."
 
@@ -15504,20 +15478,6 @@ msgid ""
 msgstr ""
 "Um recurso SpriteFrames deve ser criado ou definido na propriedade "
 "\"Quadros\" para que o nó AnimatedSprite3D mostre quadros."
-
-msgid ""
-"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
-"use it as a child of a VehicleBody3D."
-msgstr ""
-"VehicleWheel3D serve para fornecer um sistema de rodas para um VehicleBody3D. "
-"Use-o como filho de um VehicleBody3D."
-
-msgid ""
-"VisibleOnScreenNotifier3D nodes are not supported when using the GL "
-"Compatibility backend yet. Support will be added in a future release."
-msgstr ""
-"Os nós VisibleOnScreenNotifier3D ainda não são suportados ao usar o Módulo de "
-"Compatibilidade GL. O suporte será adicionado em uma versão futura."
 
 msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
@@ -15639,46 +15599,8 @@ msgstr ""
 msgid "Copy this constructor in a script."
 msgstr "Copiar este construtor em um script."
 
-msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
-msgstr ""
-"Insira um código hexadecimal (\"#ff0000\") ou uma cor nomeada (\"vermelho\")."
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Cor: #%s\n"
-"LMB: Aplica cor\n"
-"RMB: Remove predefinição"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Cor: #%s\n"
-"LMB: Aplica cor"
-
-msgid "Pick a color from the screen."
-msgstr "Escolha uma cor na tela."
-
-msgid "Pick a color from the application window."
-msgstr "Escolha uma cor na janela do aplicativo."
-
-msgid "Select a picker shape."
-msgstr "Selecione a forma do seletor."
-
-msgid "Select a picker mode."
-msgstr "Selecione o modo do seletor."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Alterne entre valores hexadecimais e de código."
-
-msgid "Hex code or named color"
-msgstr "Código hexadecimal ou cor nomeada"
-
-msgid "Add current color as a preset."
-msgstr "Adicionar cor atual como uma predefinição."
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -15707,12 +15629,6 @@ msgstr ""
 msgid "Alert!"
 msgstr "Alerta!"
 
-msgid "You don't have permission to access contents of this folder."
-msgstr "Você não tem permissão para acessar o conteúdo desta pasta."
-
-msgid "Invalid extension, or empty filename."
-msgstr "Extensão inválida ou nome de arquivo vazio."
-
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
 "refactoring in a future 4.x version involving compatibility-breaking API "
@@ -15722,84 +15638,12 @@ msgstr ""
 "reformulação em uma futura versão 4.x envolvendo alterações de API de quebra "
 "de compatibilidade."
 
-msgid "Automatically arrange selected nodes."
-msgstr "Arranjar automaticamente os nós selecionados."
-
 msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr ""
 "A fonte atual não suporta a renderização de um ou mais caracteres usados no "
 "texto deste Rótulo."
-
-msgid "Same as Layout Direction"
-msgstr "Mesma Direção do Layout"
-
-msgid "Auto-Detect Direction"
-msgstr "Auto Detectar Direção"
-
-msgid "Left-to-Right"
-msgstr "Esquerda para Direita"
-
-msgid "Right-to-Left"
-msgstr "Direita para Esquerda"
-
-msgid "Left-to-Right Mark (LRM)"
-msgstr "Marca da Esquerda para a Direita (LRM)"
-
-msgid "Right-to-Left Mark (RLM)"
-msgstr "Marca da Direita para a Esquerda (RLM)"
-
-msgid "Start of Left-to-Right Embedding (LRE)"
-msgstr "Iniciar Incorporação da Esquerda para a Direita (LRE)"
-
-msgid "Start of Right-to-Left Embedding (RLE)"
-msgstr "Iniciar Incorporação da Direita para a Esquerda (RLE)"
-
-msgid "Start of Left-to-Right Override (LRO)"
-msgstr "Iniciar Substituição da Esquerda para a Direita (LRO)"
-
-msgid "Start of Right-to-Left Override (RLO)"
-msgstr "Iniciar Substituição da Direita para a Esquerda (RLO)"
-
-msgid "Pop Direction Formatting (PDF)"
-msgstr "Formatação de Direção Pop (PDF)"
-
-msgid "Arabic Letter Mark (ALM)"
-msgstr "Alinhamento de Letras Árabes (ALM)"
-
-msgid "Left-to-Right Isolate (LRI)"
-msgstr "Isolado da Esquerda para a Direita (LRI)"
-
-msgid "Right-to-Left Isolate (RLI)"
-msgstr "Isolado da Direita para a Esquerda (RLI)"
-
-msgid "First Strong Isolate (FSI)"
-msgstr "Primeiro Isolado Forte (FSI)"
-
-msgid "Pop Direction Isolate (PDI)"
-msgstr "Direção Pop Isolada (PDI)"
-
-msgid "Zero-Width Joiner (ZWJ)"
-msgstr "Junta Largura-Zero (ZWU)"
-
-msgid "Zero-Width Non-Joiner (ZWNJ)"
-msgstr "Largura-Zero Não-Junta (ZWNJ)"
-
-msgid "Word Joiner (WJ)"
-msgstr "Juntador de Palavras (WJ)"
-
-msgid "Soft Hyphen (SHY)"
-msgstr "Hífen Suave (SHY)"
-
-msgid "Text Writing Direction"
-msgstr "Direção da Escrita do Texto"
-
-msgid "Display Control Characters"
-msgstr "Exibir Caracteres de Controle"
-
-msgid "Insert Control Character"
-msgstr "Inserir Caractere de Controle"
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Se \"Exp Edit\" estiver habilitado, \"Min Value\" deve ser maior que 0."
@@ -15822,9 +15666,6 @@ msgstr ""
 "conteúdo pretendido.\n"
 "Considere adicionar um SubViewport como filho para fornecer algo que possa "
 "ser exibido."
-
-msgid "(Other)"
-msgstr "(Outro)"
 
 msgid ""
 "This node was saved as class type '%s', which was no longer available when "

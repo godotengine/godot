@@ -1181,9 +1181,6 @@ msgstr "Δημιουργία φακέλου"
 msgid "Thanks from the Godot community!"
 msgstr "Ευχαριστίες από την κοινότητα της Godot!"
 
-msgid "Click to copy."
-msgstr "Πατήστε για αντιγραφή."
-
 msgid "Godot Engine contributors"
 msgstr "Συνεισφέροντες στην Godot Engine"
 
@@ -2195,9 +2192,6 @@ msgstr "Επιθεωρητής"
 msgid "Node"
 msgstr "Κόμβος"
 
-msgid "Expand Bottom Panel"
-msgstr "Ανάπτυξη κάτω πλαισίου"
-
 msgid "Output"
 msgstr "Έξοδος"
 
@@ -2760,6 +2754,9 @@ msgstr "Προσθήκη σε Ομάδα"
 
 msgid "Remove from Group"
 msgstr "Κατάργηση από την ομάδα"
+
+msgid "Expand Bottom Panel"
+msgstr "Ανάπτυξη κάτω πλαισίου"
 
 msgid "Move"
 msgstr "Μετακίνηση"
@@ -3712,12 +3709,6 @@ msgstr "Σχετική Προσκόλληση"
 msgid "Use Pixel Snap"
 msgstr "Χρήση Προσκόλλησης Εικονοστοιχείου"
 
-msgid "Smart Snapping"
-msgstr "Έξυπνη Προσκόλληση"
-
-msgid "Configure Snap..."
-msgstr "Ρύθμιση Προσκόλλησης..."
-
 msgid "Snap to Parent"
 msgstr "Προσκόλληση σε Γονέα"
 
@@ -3735,6 +3726,12 @@ msgstr "Προσκόλληση σε Άλλους Κόμβους"
 
 msgid "Snap to Guides"
 msgstr "Προσκόλληση σε Οδηγούς"
+
+msgid "Smart Snapping"
+msgstr "Έξυπνη Προσκόλληση"
+
+msgid "Configure Snap..."
+msgstr "Ρύθμιση Προσκόλλησης..."
 
 msgid "Skeleton Options"
 msgstr "Επιλογές Σκελετού"
@@ -4396,6 +4393,9 @@ msgstr "Εμφάνιση περιβάλλοντος"
 msgid "View Gizmos"
 msgstr "Εμφάνιση μαραφετιών"
 
+msgid "View Grid"
+msgstr "Προβολή πλέγματος"
+
 msgid "View Information"
 msgstr "Εμφάνιση πληροφοριών"
 
@@ -4527,9 +4527,6 @@ msgstr "4 Οπτικές γωνίες"
 msgid "View Origin"
 msgstr "Προβολή Αρχής"
 
-msgid "View Grid"
-msgstr "Προβολή πλέγματος"
-
 msgid "Settings..."
 msgstr "Ρυθμίσεις..."
 
@@ -4638,9 +4635,6 @@ msgstr "Καθρεπτισμός Μηκών Λαβών"
 msgid "Curve Point #"
 msgstr "Σημείο καμπύλης #"
 
-msgid "Set Curve Point Position"
-msgstr "Ορισμός θέσης σημείου καμπύλης"
-
 msgid "Set Curve Out Position"
 msgstr "Ορισμός θέσης εξόδου καμπύλης"
 
@@ -4655,6 +4649,9 @@ msgstr "Αφαίρεση σημείου διαδρομής"
 
 msgid "Split Segment (in curve)"
 msgstr "Διαχωρισμός τμήματος (στην καμπύλη)"
+
+msgid "Set Curve Point Position"
+msgstr "Ορισμός θέσης σημείου καμπύλης"
 
 msgid "Move Joint"
 msgstr "Μετακίνηση Άρθρωσης"
@@ -4908,14 +4905,14 @@ msgstr "Προηγούμενο Ιστορικού"
 msgid "History Next"
 msgstr "Επόμενο Ιστορικού"
 
-msgid "Theme"
-msgstr "Θέμα"
-
 msgid "Import Theme..."
 msgstr "Εισαγωγή θέματος..."
 
 msgid "Reload Theme"
 msgstr "Επαναφόρτωση θέματος"
+
+msgid "Theme"
+msgstr "Θέμα"
 
 msgid "Save Theme"
 msgstr "Αποθήκευση θέματος"
@@ -5164,12 +5161,6 @@ msgstr "Αδυναμία φόρτωσης εικόνων"
 
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "ΣΦΑΛΜΑ: Δεν ήταν δυνατή η φόρτωση πόρου τύπου καρέ!"
-
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Το πρόχειρο πόρων είναι άδειο ή δεν είναι υφή!"
-
-msgid "Paste Frame"
-msgstr "Επικόλληση καρέ"
 
 msgid "Add Empty"
 msgstr "Προσθήκη άδειου"
@@ -6701,6 +6692,52 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Εκτέλεση εξαγόμενης HTMP στον προεπιλεγμένο περιηγητή του συστήματος."
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Η κίνηση CPUParticles2D απαιτεί την χρήση CanvasItemMaterial με το «Particles "
+"Animation» ενεργό."
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+"Δεν έχει οριστεί υλικό για να επεξεργαστεί τα σωματίδια, οπότε η συμπεριφορά "
+"θα εκτυπώνεται."
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Η κίνηση Particles2D απαιτεί την χρήση ενός CanvasItemMaterial με το "
+"«Particles Animation» ενεργό."
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr "Μία υφή με το σχήμα του φωτός πρέπει να τεθεί στην ιδιότητα «Texture»."
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"Ένα πολύγωνο εμποδίου πρέπει να οριστεί (ή ζωγραφιστεί) για να λειτουργήσει "
+"αυτό το εμπόδιο."
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr ""
+"Το πολύγωνο εμποδίου για αυτό το εμπόδιο είναι άδειο. Παρακαλούμε ζωγραφίστε "
+"ένα πολύγωνο."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"Ένας κόμβος ParallaxLayer δουλεύει μόνο όταν κληρονομεί έναν κόμβο τύπου "
+"ParallaxBackground."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "Το PathFollow2D δουλεύει μόνο όταν κληρονομεί έναν κόμβο Path2D."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -6732,27 +6769,6 @@ msgstr ""
 "Τα σχήματα βασισμένα σε πολύγωνα δεν σχεδιάστικαν ώστε να είναι επεξεργάσιμα "
 "από τον κόμβο CollisionShape2D. Χρησιμοποιήστε τον κόμβο CollisionPolygon2D."
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Η κίνηση CPUParticles2D απαιτεί την χρήση CanvasItemMaterial με το «Particles "
-"Animation» ενεργό."
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-"Δεν έχει οριστεί υλικό για να επεξεργαστεί τα σωματίδια, οπότε η συμπεριφορά "
-"θα εκτυπώνεται."
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Η κίνηση Particles2D απαιτεί την χρήση ενός CanvasItemMaterial με το "
-"«Particles Animation» ενεργό."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Ο Κόμβος Α και ο Κόμβος Β πρέπει να είναι του τύπου PhysicsBody2Ds"
 
@@ -6761,31 +6777,6 @@ msgstr "Ο Κόμβος Α πρέπει να είναι του τύπου Physic
 
 msgid "Node B must be a PhysicsBody2D"
 msgstr "Ο κόμβος Β πρέπει να είναι του τύπου PhysicsBody2D"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr "Μία υφή με το σχήμα του φωτός πρέπει να τεθεί στην ιδιότητα «Texture»."
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"Ένα πολύγωνο εμποδίου πρέπει να οριστεί (ή ζωγραφιστεί) για να λειτουργήσει "
-"αυτό το εμπόδιο."
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr ""
-"Το πολύγωνο εμποδίου για αυτό το εμπόδιο είναι άδειο. Παρακαλούμε ζωγραφίστε "
-"ένα πολύγωνο."
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"Ένας κόμβος ParallaxLayer δουλεύει μόνο όταν κληρονομεί έναν κόμβο τύπου "
-"ParallaxBackground."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "Το PathFollow2D δουλεύει μόνο όταν κληρονομεί έναν κόμβο Path2D."
 
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
@@ -6843,9 +6834,6 @@ msgstr "Δεν έχει οριστεί ριζικό AnimationNode για το γ
 msgid "Switch between hexadecimal and code values."
 msgstr "Εναλλαγή δεκαεξαδικών και κωδικοποιημένων τιμών."
 
-msgid "Add current color as a preset."
-msgstr "Προσθήκη τρέχοντος χρώματος στα προκαθορισμένα."
-
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
 "placement behavior.\n"
@@ -6881,9 +6869,6 @@ msgstr ""
 "Control.\n"
 "Χρησιμοποιήστε ένα Container ως παιδί (VBox, HBox, κτλ), ή ένα Control με "
 "προσαρμοσμένο ελάχιστο μέγεθος."
-
-msgid "(Other)"
-msgstr "(Άλλο)"
 
 msgid "Invalid source for preview."
 msgstr "Άκυρη πηγή για προεπισκόπηση."

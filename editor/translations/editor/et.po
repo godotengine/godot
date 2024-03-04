@@ -594,6 +594,9 @@ msgstr "Hoiatused"
 msgid "Line and column numbers."
 msgstr "Rea- ja veerunumbrid."
 
+msgid "Indentation"
+msgstr "Treppimine"
+
 msgid "Method in target node must be specified."
 msgstr "Tuleb täpsustada siht-node'i meetod."
 
@@ -1049,9 +1052,6 @@ msgstr "Kausta nimi on kehtiv."
 
 msgid "Thanks from the Godot community!"
 msgstr "Suur tänu Godot kogukonnalt!"
-
-msgid "Click to copy."
-msgstr "Klõpsa, et kopeerida."
 
 msgid "Godot Engine contributors"
 msgstr "Godot mängumootori panustajad"
@@ -2507,9 +2507,6 @@ msgstr "Sõlm"
 msgid "History"
 msgstr "Ajalugu"
 
-msgid "Expand Bottom Panel"
-msgstr "Laienda alumist paneeli"
-
 msgid "Output"
 msgstr "Väljund"
 
@@ -3249,23 +3246,6 @@ msgstr "Halda Ekspordi Malle"
 msgid "Export With Debug"
 msgstr "Ekspordi Koos Silujaga"
 
-msgid "Disable FBX & Restart"
-msgstr "Keela FBX ja taaskäivitage"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"Selle dialoogi tühistamine lülitab välja FBX-i importija.\n"
-"Saate selle uuesti sisse lülitada projekti seadetes jaotises Failisüsteem > "
-"Import > FBX > Lubatud.\n"
-"\n"
-"Redaktor käivitub uuesti, kuna importijad on redaktori käivitamisel "
-"registreeritud."
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Tee FBX2glTF programmini on tühi."
 
@@ -3280,13 +3260,6 @@ msgstr "Käivitatav FBX2glTF programm on korrektne."
 
 msgid "Configure FBX Importer"
 msgstr "Konfigureerige FBX Importija"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX-failide importimiseks on vajalik FBX2glTF.\n"
-"Laadige see alla ja sisestage binaarfaili kehtiv tee:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "FBX2glTF allalaadimiseks klõpsake sellel lingil"
@@ -3562,6 +3535,9 @@ msgstr "Eemalda Grupist"
 
 msgid "Global"
 msgstr "Globaalne"
+
+msgid "Expand Bottom Panel"
+msgstr "Laienda alumist paneeli"
 
 msgid "Move"
 msgstr "Liiguta"
@@ -6367,6 +6343,9 @@ msgstr "Kuva Keskkond"
 msgid "View Gizmos"
 msgstr "Kuva Gizmos"
 
+msgid "View Grid"
+msgstr "Kuva ruudustik"
+
 msgid "View Information"
 msgstr "Kuva Informatsioon"
 
@@ -6611,9 +6590,6 @@ msgstr "4 Aaateakent"
 msgid "View Origin"
 msgstr "Kuva lähtekoht"
 
-msgid "View Grid"
-msgstr "Kuva ruudustik"
-
 msgid "Settings..."
 msgstr "Sätted..."
 
@@ -6800,9 +6776,6 @@ msgstr "Peegelda Käepideme Pikkusi"
 msgid "Curve Point #"
 msgstr "Kõvera Punkt #"
 
-msgid "Set Curve Point Position"
-msgstr "Määra Kõvera Punkti Asukoht"
-
 msgid "Set Curve Out Position"
 msgstr "Seadke Kõver Positsioonist Välja"
 
@@ -6817,6 +6790,9 @@ msgstr "Eemalda Tee Punkt"
 
 msgid "Split Segment (in curve)"
 msgstr "Tükelda Segment (Kõveras)"
+
+msgid "Set Curve Point Position"
+msgstr "Määra Kõvera Punkti Asukoht"
 
 msgid "Move Joint"
 msgstr "Liiguta Liigendit"
@@ -7091,14 +7067,14 @@ msgstr "Ajalugu Eelmine"
 msgid "History Next"
 msgstr "Ajalugu Järgmine"
 
-msgid "Theme"
-msgstr "Teema"
-
 msgid "Import Theme..."
 msgstr "Impordi Teema..."
 
 msgid "Reload Theme"
 msgstr "Laadi Teema uuesti"
+
+msgid "Theme"
+msgstr "Teema"
 
 msgid "Save Theme"
 msgstr "Salvesta Teema"
@@ -7189,9 +7165,6 @@ msgstr "Otsingusümbol"
 
 msgid "Pick Color"
 msgstr "Vali Värv"
-
-msgid "Indentation"
-msgstr "Treppimine"
 
 msgid "Uppercase"
 msgstr "Suurtähed"
@@ -7474,12 +7447,6 @@ msgstr "Pilte ei saa laadida"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "VIGA: Kaadri ressurssi ei saanud laadida!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Ressursi lõikelaud on tühi või pole tekstuur!"
-
-msgid "Paste Frame"
-msgstr "Kleebi Kaader"
-
 msgid "Add Empty"
 msgstr "Lisa Tühi"
 
@@ -7530,9 +7497,6 @@ msgstr "Lisa Kaadrid Sprite-Lehelt"
 
 msgid "Delete Frame"
 msgstr "Kustuta Kaader"
-
-msgid "Copy Frame"
-msgstr "Kopeeri Kaader"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "Sisesta Tühi (Enne Valitud)"
@@ -9583,15 +9547,6 @@ msgstr "Animatsiooni '%s' ei leitud"
 
 msgid "Alert!"
 msgstr "Tähelepanu!"
-
-msgid "Display Control Characters"
-msgstr "Kuva Juhtmärgid"
-
-msgid "Insert Control Character"
-msgstr "Sisesta Juhtmärk"
-
-msgid "(Other)"
-msgstr "(Muu)"
 
 msgid "Invalid source for preview."
 msgstr "Vigane eelvaate lähe."
