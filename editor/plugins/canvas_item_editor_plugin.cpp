@@ -5901,62 +5901,59 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 
 bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 	Dictionary d = p_data;
-	if (d.has("type")) {
-		if (String(d["type"]) == "files") {
-			Vector<String> files = d["files"];
-			bool can_instantiate = false;
+	if (!d.has("type") || (String(d["type"]) != "files")) {
+		label->hide();
+		return false;
+	}
 
-			List<String> scene_extensions;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
-			List<String> texture_extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Texture2D", &texture_extensions);
+	Vector<String> files = d["files"];
+	bool can_instantiate = false;
 
-			for (int i = 0; i < files.size(); i++) {
-				String extension = files[i].get_extension().to_lower();
+	// Check if at least one of the dragged files is a texture or scene.
+	for (int i = 0; i < files.size(); i++) {
+		bool is_scene = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "PackedScene");
+		bool is_texture = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "Texture2D");
 
-				// Check if dragged files with texture or scene extension can be created at least once.
-				if (texture_extensions.find(extension) || scene_extensions.find(extension)) {
-					Ref<Resource> res = ResourceLoader::load(files[i]);
-					if (res.is_null()) {
-						continue;
-					}
-					Ref<PackedScene> scn = res;
-					if (scn.is_valid()) {
-						Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
-						if (!instantiated_scene) {
-							continue;
-						}
-						memdelete(instantiated_scene);
-					}
-					can_instantiate = true;
-					break;
-				}
+		if (is_scene || is_texture) {
+			Ref<Resource> res = ResourceLoader::load(files[i]);
+			if (res.is_null()) {
+				continue;
 			}
-			if (can_instantiate) {
-				if (!preview_node->get_parent()) { // create preview only once
-					_create_preview(files);
+			Ref<PackedScene> scn = res;
+			if (scn.is_valid()) {
+				Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+				if (!instantiated_scene) {
+					continue;
 				}
-				Transform2D trans = canvas_item_editor->get_canvas_transform();
-				preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
-				String scene_file_path = preview_node->get_child(0)->get_scene_file_path();
-				if (scene_file_path.is_empty() || preview_node->get_tree()->get_edited_scene_root()) {
-					double snap = EDITOR_GET("interface/inspector/default_float_step");
-					int snap_step_decimals = Math::range_step_decimals(snap);
-#define FORMAT(value) (TS->format_number(String::num(value, snap_step_decimals)))
-					Vector2 preview_node_pos = preview_node->get_global_position();
-					canvas_item_editor->message = TTR("Instantiating:") + " (" + FORMAT(preview_node_pos.x) + ", " + FORMAT(preview_node_pos.y) + ") px";
-					label->set_text(vformat(TTR("Adding %s..."), default_texture_node_type));
-				} else {
-					canvas_item_editor->message = TTR("Creating inherited scene from: ") + scene_file_path;
-				}
-
-				canvas_item_editor->update_viewport();
+				memdelete(instantiated_scene);
 			}
-			return can_instantiate;
+			can_instantiate = true;
+			break;
 		}
 	}
-	label->hide();
-	return false;
+	if (can_instantiate) {
+		if (!preview_node->get_parent()) { // create preview only once
+			_create_preview(files);
+		}
+		ERR_FAIL_COND_V(preview_node->get_child_count() == 0, false);
+
+		Transform2D trans = canvas_item_editor->get_canvas_transform();
+		preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
+		String scene_file_path = preview_node->get_child(0)->get_scene_file_path();
+		if (scene_file_path.is_empty() || preview_node->get_tree()->get_edited_scene_root()) {
+			double snap = EDITOR_GET("interface/inspector/default_float_step");
+			int snap_step_decimals = Math::range_step_decimals(snap);
+#define FORMAT(value) (TS->format_number(String::num(value, snap_step_decimals)))
+			Vector2 preview_node_pos = preview_node->get_global_position();
+			canvas_item_editor->message = TTR("Instantiating:") + " (" + FORMAT(preview_node_pos.x) + ", " + FORMAT(preview_node_pos.y) + ") px";
+			label->set_text(vformat(TTR("Adding %s..."), default_texture_node_type));
+		} else {
+			canvas_item_editor->message = TTR("Creating inherited scene from: ") + scene_file_path;
+		}
+
+		canvas_item_editor->update_viewport();
+	}
+	return can_instantiate;
 }
 
 void CanvasItemEditorViewport::_show_resource_type_selector() {
