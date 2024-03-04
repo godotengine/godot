@@ -32,10 +32,6 @@
 #define PROJECT_SETTINGS_H
 
 #include "core/object/class_db.h"
-#include "core/os/thread_safe.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/local_vector.h"
-#include "core/templates/rb_set.h"
 
 template <typename T>
 class TypedArray;
