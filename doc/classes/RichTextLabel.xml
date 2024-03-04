@@ -55,8 +55,8 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears the tag stack.
-				[b]Note:[/b] This method will not modify [member text], but setting [member text] to an empty string also clears the stack.
+				Clears the tag stack, causing the label to display nothing.
+				[b]Note:[/b] This method does not affect [member text], and its contents will show again if the label is redrawn. However, setting [member text] to an empty [String] also clears the stack.
 			</description>
 		</method>
 		<method name="deselect">
@@ -594,6 +594,7 @@
 		</member>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
 			If [code]true[/code], the label uses BBCode formatting.
+			[b]Note:[/b] This only affects the contents of [member text], not the tag stack.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="false">
