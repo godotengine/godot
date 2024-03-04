@@ -278,7 +278,11 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (found != -1) {
-				set_current_tab(found);
+				if (deselect_enabled && get_current_tab() == found) {
+					set_current_tab(-1);
+				} else {
+					set_current_tab(found);
+				}
 
 				if (mb->get_button_index() == MouseButton::RIGHT) {
 					// Right mouse button clicked.
@@ -372,6 +376,7 @@ void TabBar::_notification(int p_what) {
 			}
 
 			queue_redraw();
+			update_minimum_size();
 
 			[[fallthrough]];
 		}
@@ -616,18 +621,29 @@ void TabBar::set_tab_count(int p_count) {
 	if (p_count == 0) {
 		offset = 0;
 		max_drawn_tab = 0;
-		current = 0;
-		previous = 0;
+		current = -1;
+		previous = -1;
 	} else {
 		offset = MIN(offset, p_count - 1);
 		max_drawn_tab = MIN(max_drawn_tab, p_count - 1);
 		current = MIN(current, p_count - 1);
+		// Fix range if unable to deselect.
+		if (current == -1 && !_can_deselect()) {
+			current = 0;
+		}
 
 		_update_cache();
 		_ensure_no_over_offset();
 		if (scroll_to_selected) {
 			ensure_tab_visible(current);
 		}
+	}
+
+	if (!initialized) {
+		if (queued_current != current) {
+			current = queued_current;
+		}
+		initialized = true;
 	}
 
 	queue_redraw();
@@ -640,7 +656,16 @@ int TabBar::get_tab_count() const {
 }
 
 void TabBar::set_current_tab(int p_current) {
-	ERR_FAIL_INDEX(p_current, get_tab_count());
+	if (p_current == -1) {
+		// An index of -1 is only valid if deselecting is enabled or there are no valid tabs.
+		ERR_FAIL_COND_MSG(!_can_deselect(), "Cannot deselect tabs, deselection is not enabled.");
+	} else {
+		if (!initialized && p_current >= get_tab_count()) {
+			queued_current = p_current;
+			return;
+		}
+		ERR_FAIL_INDEX(p_current, get_tab_count());
+	}
 
 	previous = current;
 	current = p_current;
@@ -1069,8 +1094,13 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	queue_redraw();
 	update_minimum_size();
 
-	if (tabs.size() == 1 && is_inside_tree()) {
-		emit_signal(SNAME("tab_changed"), 0);
+	if (tabs.size() == 1) {
+		if (is_inside_tree()) {
+			set_current_tab(0);
+		} else {
+			current = 0;
+			previous = -1;
+		}
 	}
 }
 
@@ -1082,8 +1112,8 @@ void TabBar::clear_tabs() {
 	tabs.clear();
 	offset = 0;
 	max_drawn_tab = 0;
-	current = 0;
-	previous = 0;
+	current = -1;
+	previous = -1;
 
 	queue_redraw();
 	update_minimum_size();
@@ -1094,34 +1124,43 @@ void TabBar::remove_tab(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, tabs.size());
 	tabs.remove_at(p_idx);
 
-	bool is_tab_changing = current == p_idx && !tabs.is_empty();
+	bool is_tab_changing = current == p_idx;
 
 	if (current >= p_idx && current > 0) {
 		current--;
+	}
+	if (previous >= p_idx && previous > 0) {
+		previous--;
 	}
 
 	if (tabs.is_empty()) {
 		offset = 0;
 		max_drawn_tab = 0;
-		previous = 0;
+		current = -1;
+		previous = -1;
 	} else {
-		// Try to change to a valid tab if possible (without firing the `tab_selected` signal).
-		for (int i = current; i < tabs.size(); i++) {
-			if (!is_tab_disabled(i) && !is_tab_hidden(i)) {
-				current = i;
-				break;
-			}
-		}
-		// If nothing, try backwards.
-		if (is_tab_disabled(current) || is_tab_hidden(current)) {
-			for (int i = current - 1; i >= 0; i--) {
+		if (current != -1) {
+			// Try to change to a valid tab if possible (without firing the `tab_selected` signal).
+			for (int i = current; i < tabs.size(); i++) {
 				if (!is_tab_disabled(i) && !is_tab_hidden(i)) {
 					current = i;
 					break;
 				}
 			}
+			// If nothing, try backwards.
+			if (is_tab_disabled(current) || is_tab_hidden(current)) {
+				for (int i = current - 1; i >= 0; i--) {
+					if (!is_tab_disabled(i) && !is_tab_hidden(i)) {
+						current = i;
+						break;
+					}
+				}
+			}
+			// If still no valid tab, deselect.
+			if (is_tab_disabled(current) || is_tab_hidden(current)) {
+				current = -1;
+			}
 		}
-
 		offset = MIN(offset, tabs.size() - 1);
 		max_drawn_tab = MIN(max_drawn_tab, tabs.size() - 1);
 
@@ -1301,17 +1340,9 @@ void TabBar::_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_in
 
 	if (!is_tab_disabled(p_to_index)) {
 		set_current_tab(p_to_index);
-		if (tabs.size() == 1) {
-			_update_cache();
-			queue_redraw();
-			emit_signal(SNAME("tab_changed"), 0);
-		}
 	} else {
 		_update_cache();
 		queue_redraw();
-		if (tabs.size() == 1) {
-			emit_signal(SNAME("tab_changed"), 0);
-		}
 	}
 
 	update_minimum_size();
@@ -1398,9 +1429,9 @@ void TabBar::move_tab(int p_from, int p_to) {
 
 	if (previous == p_from) {
 		previous = p_to;
-	} else if (previous > p_from && previous >= p_to) {
+	} else if (previous > p_from && previous <= p_to) {
 		previous--;
-	} else if (previous < p_from && previous <= p_to) {
+	} else if (previous < p_from && previous >= p_to) {
 		previous++;
 	}
 
@@ -1516,8 +1547,21 @@ void TabBar::_ensure_no_over_offset() {
 	}
 }
 
+bool TabBar::_can_deselect() const {
+	if (deselect_enabled) {
+		return true;
+	}
+	// All tabs must be disabled or hidden.
+	for (const Tab &tab : tabs) {
+		if (!tab.disabled && !tab.hidden) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void TabBar::ensure_tab_visible(int p_idx) {
-	if (!is_inside_tree() || !buttons_visible) {
+	if (p_idx == -1 || !is_inside_tree() || !buttons_visible) {
 		return;
 	}
 	ERR_FAIL_INDEX(p_idx, tabs.size());
@@ -1662,6 +1706,20 @@ bool TabBar::get_select_with_rmb() const {
 	return select_with_rmb;
 }
 
+void TabBar::set_deselect_enabled(bool p_enabled) {
+	if (deselect_enabled == p_enabled) {
+		return;
+	}
+	deselect_enabled = p_enabled;
+	if (!deselect_enabled && current == -1 && !tabs.is_empty()) {
+		select_next_available();
+	}
+}
+
+bool TabBar::get_deselect_enabled() const {
+	return deselect_enabled;
+}
+
 bool TabBar::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("tab_") && components[0].trim_prefix("tab_").is_valid_int()) {
@@ -1766,6 +1824,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scroll_to_selected"), &TabBar::get_scroll_to_selected);
 	ClassDB::bind_method(D_METHOD("set_select_with_rmb", "enabled"), &TabBar::set_select_with_rmb);
 	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &TabBar::get_select_with_rmb);
+	ClassDB::bind_method(D_METHOD("set_deselect_enabled", "enabled"), &TabBar::set_deselect_enabled);
+	ClassDB::bind_method(D_METHOD("get_deselect_enabled"), &TabBar::get_deselect_enabled);
 	ClassDB::bind_method(D_METHOD("clear_tabs"), &TabBar::clear_tabs);
 
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
@@ -1777,9 +1837,6 @@ void TabBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 
-	// "current_tab" property must come after "tab_count", otherwise the property isn't loaded correctly.
-	ADD_ARRAY_COUNT("Tabs", "tab_count", "set_tab_count", "get_tab_count", "tab_");
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
@@ -1790,6 +1847,9 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_to_selected"), "set_scroll_to_selected", "get_scroll_to_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
+
+	ADD_ARRAY_COUNT("Tabs", "tab_count", "set_tab_count", "get_tab_count", "tab_");
 
 	BIND_ENUM_CONSTANT(ALIGNMENT_LEFT);
 	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);

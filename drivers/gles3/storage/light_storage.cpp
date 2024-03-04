@@ -468,6 +468,9 @@ void LightStorage::reflection_probe_set_enable_shadows(RID p_probe, bool p_enabl
 void LightStorage::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
 }
 
+void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) {
+}
+
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
 }
 
@@ -480,6 +483,10 @@ RS::ReflectionProbeUpdateMode LightStorage::reflection_probe_get_update_mode(RID
 }
 
 uint32_t LightStorage::reflection_probe_get_cull_mask(RID p_probe) const {
+	return 0;
+}
+
+uint32_t LightStorage::reflection_probe_get_reflection_mask(RID p_probe) const {
 	return 0;
 }
 
@@ -1037,7 +1044,7 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 			r_quadrant = qidx;
 			r_shadow = shadow_atlas->quadrants[qidx].textures.size();
@@ -1128,7 +1135,7 @@ void LightStorage::update_directional_shadow_atlas() {
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits) {

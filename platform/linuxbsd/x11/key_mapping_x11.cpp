@@ -1113,6 +1113,20 @@ void KeyMappingX11::initialize() {
 	xkeysym_unicode_map[0x13BD] = 0x0153;
 	xkeysym_unicode_map[0x13BE] = 0x0178;
 	xkeysym_unicode_map[0x20AC] = 0x20AC;
+
+	// Scancode to physical location map.
+	// Ctrl.
+	location_map[0x25] = KeyLocation::LEFT;
+	location_map[0x69] = KeyLocation::RIGHT;
+	// Shift.
+	location_map[0x32] = KeyLocation::LEFT;
+	location_map[0x3E] = KeyLocation::RIGHT;
+	// Alt.
+	location_map[0x40] = KeyLocation::LEFT;
+	location_map[0x6C] = KeyLocation::RIGHT;
+	// Meta.
+	location_map[0x85] = KeyLocation::LEFT;
+	location_map[0x86] = KeyLocation::RIGHT;
 }
 
 Key KeyMappingX11::get_keycode(KeySym p_keysym) {
@@ -1172,4 +1186,12 @@ char32_t KeyMappingX11::get_unicode_from_keysym(KeySym p_keysym) {
 		return *c;
 	}
 	return 0;
+}
+
+KeyLocation KeyMappingX11::get_location(unsigned int p_code) {
+	const KeyLocation *location = location_map.getptr(p_code);
+	if (location) {
+		return *location;
+	}
+	return KeyLocation::UNSPECIFIED;
 }

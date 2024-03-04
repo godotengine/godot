@@ -34,6 +34,8 @@
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_resource_preview.h"
 
+class ScriptLanguage;
+
 void post_process_preview(Ref<Image> p_image);
 
 class EditorTexturePreviewPlugin : public EditorResourcePreviewGenerator {
@@ -94,10 +96,7 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light_instance2;
 	RID camera;
 	RID camera_attributes;
-	Semaphore preview_done;
-
-	void _generate_frame_started();
-	void _preview_done();
+	DrawRequester draw_requester;
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -112,9 +111,12 @@ public:
 class EditorScriptPreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorScriptPreviewPlugin, EditorResourcePreviewGenerator);
 
+	Ref<Texture2D> _generate_from_source_code(const ScriptLanguage *p_language, const String &p_source_code, const Size2 &p_size, Dictionary &p_metadata) const;
+
 public:
 	virtual bool handles(const String &p_type) const override;
 	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const override;
+	virtual Ref<Texture2D> generate_from_path(const String &p_path, const Size2 &p_size, Dictionary &p_metadata) const override;
 
 	EditorScriptPreviewPlugin();
 };
@@ -142,10 +144,7 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light_instance2;
 	RID camera;
 	RID camera_attributes;
-	Semaphore preview_done;
-
-	void _generate_frame_started();
-	void _preview_done();
+	DrawRequester draw_requester;
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -163,10 +162,7 @@ class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID viewport_texture;
 	RID canvas;
 	RID canvas_item;
-	Semaphore preview_done;
-
-	void _generate_frame_started();
-	void _preview_done();
+	DrawRequester draw_requester;
 
 public:
 	virtual bool handles(const String &p_type) const override;

@@ -36,6 +36,7 @@ doc_classes/*                       @godotengine/documentation
 /drivers/xaudio2/                   @godotengine/audio
 
 ## Rendering
+/drivers/d3d12/                     @godotengine/rendering
 /drivers/dummy/                     @godotengine/rendering
 /drivers/gles3/                     @godotengine/rendering
 /drivers/spirv-reflect/             @godotengine/rendering

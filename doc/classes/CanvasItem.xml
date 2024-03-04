@@ -411,6 +411,12 @@
 				Returns the canvas item RID used by [RenderingServer] for this item.
 			</description>
 		</method>
+		<method name="get_canvas_layer_node" qualifiers="const">
+			<return type="CanvasLayer" />
+			<description>
+				Returns the [CanvasLayer] that contains this node, or [code]null[/code] if the node is not in any [CanvasLayer].
+			</description>
+		</method>
 		<method name="get_canvas_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
@@ -522,7 +528,7 @@
 			<return type="void" />
 			<description>
 				Moves this node to display on top of its siblings.
-				Internally, the node is moved to the bottom of parent's children list. The method has no effect on nodes without a parent.
+				Internally, the node is moved to the bottom of parent's child list. The method has no effect on nodes without a parent.
 			</description>
 		</method>
 		<method name="queue_redraw">
@@ -562,7 +568,7 @@
 	</methods>
 	<members>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
-			Allows the current node to clip children nodes, essentially acting as a mask.
+			Allows the current node to clip child nodes, essentially acting as a mask.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
@@ -570,7 +576,7 @@
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material applied to this [CanvasItem].
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			The color applied to this [CanvasItem]. This property does affect child [CanvasItem]s, unlike [member self_modulate] which only affects the node itself.
 		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" default="Color(1, 1, 1, 1)">
@@ -600,7 +606,7 @@
 			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 		<member name="y_sort_enabled" type="bool" setter="set_y_sort_enabled" getter="is_y_sort_enabled" default="false">
-			If [code]true[/code], child nodes with the lowest Y position are drawn before those with a higher Y position. If [code]false[/code], Y-sorting is disabled. Y-sorting only affects children that inherit from [CanvasItem].
+			If [code]true[/code], this [CanvasItem] and its [CanvasItem] child nodes are sorted according to the Y position. Nodes with a lower Y position are drawn before those with a higher Y position. If [code]false[/code], Y-sorting is disabled.
 			You can nest nodes with Y-sorting. Child Y-sorted nodes are sorted in the same space as the parent Y-sort. This feature allows you to organize a scene better or divide it into multiple ones without changing your scene tree.
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative" default="true">
@@ -694,7 +700,7 @@
 			Texture will repeat normally.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MIRROR" value="3" enum="TextureRepeat">
-			Texture will repeat in a 2x2 tiled mode, where elements at even positions are mirrored.
+			Texture will repeat in a 2×2 tiled mode, where elements at even positions are mirrored.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MAX" value="4" enum="TextureRepeat">
 			Represents the size of the [enum TextureRepeat] enum.

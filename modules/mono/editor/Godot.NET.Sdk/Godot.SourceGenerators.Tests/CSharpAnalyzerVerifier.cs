@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
@@ -12,8 +13,10 @@ using Microsoft.CodeAnalysis.Text;
 namespace Godot.SourceGenerators.Tests;
 
 public static class CSharpAnalyzerVerifier<TAnalyzer>
-where TAnalyzer : DiagnosticAnalyzer, new()
+    where TAnalyzer : DiagnosticAnalyzer, new()
 {
+    public const LanguageVersion LangVersion = LanguageVersion.CSharp11;
+
     public class Test : CSharpAnalyzerTest<TAnalyzer, XUnitVerifier>
     {
         public Test()
@@ -24,7 +27,7 @@ where TAnalyzer : DiagnosticAnalyzer, new()
             {
                 Project project =
                     solution.GetProject(projectId)!.AddMetadataReference(Constants.GodotSharpAssembly
-                        .CreateMetadataReference());
+                        .CreateMetadataReference()).WithParseOptions(new CSharpParseOptions(LangVersion));
 
                 return project.Solution;
             });

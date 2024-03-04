@@ -64,12 +64,16 @@ static void _outlineEnd(SwOutline& outline)
 {
     if (outline.pts.empty()) return;
     outline.cntrs.push(outline.pts.count - 1);
+    outline.closed.push(false);
 }
 
 
 static void _outlineMoveTo(SwOutline& outline, const Point* to, const Matrix* transform)
 {
-    if (outline.pts.count > 0) outline.cntrs.push(outline.pts.count - 1);
+    if (outline.pts.count > 0) {
+        outline.cntrs.push(outline.pts.count - 1);
+        outline.closed.push(false);
+    }
 
     outline.pts.push(mathTransform(to, transform));
     outline.types.push(SW_CURVE_TYPE_POINT);
@@ -118,7 +122,9 @@ static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix* trans
     Line cur = {dash.ptCur, *to};
     auto len = _lineLength(cur.pt1, cur.pt2);
 
-    if (len < dash.curLen) {
+    if (mathZero(len)) {
+        _outlineMoveTo(*dash.outline, &dash.ptCur, transform);
+    } else if (len < dash.curLen) {
         dash.curLen -= len;
         if (!dash.curOpGap) {
             if (dash.move) {
@@ -128,7 +134,7 @@ static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix* trans
             _outlineLineTo(*dash.outline, to, transform);
         }
     } else {
-        while (len > dash.curLen) {
+        while (len - dash.curLen > 0.0001f) {
             Line left, right;
             if (dash.curLen > 0) {
                 len -= dash.curLen;
@@ -175,7 +181,9 @@ static void _dashCubicTo(SwDashStroke& dash, const Point* ctrl1, const Point* ct
     Bezier cur = {dash.ptCur, *ctrl1, *ctrl2, *to};
     auto len = bezLength(cur);
 
-    if (len < dash.curLen) {
+    if (mathZero(len)) {
+        _outlineMoveTo(*dash.outline, &dash.ptCur, transform);
+    } else if (len < dash.curLen) {
         dash.curLen -= len;
         if (!dash.curOpGap) {
             if (dash.move) {
@@ -185,7 +193,7 @@ static void _dashCubicTo(SwDashStroke& dash, const Point* ctrl1, const Point* ct
             _outlineCubicTo(*dash.outline, ctrl1, ctrl2, to, transform);
         }
     } else {
-        while (len > dash.curLen) {
+        while ((len - dash.curLen) > 0.0001f) {
             Bezier left, right;
             if (dash.curLen > 0) {
                 len -= dash.curLen;
@@ -315,21 +323,6 @@ static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix* trans
 
     dash.outline = mpoolReqDashOutline(mpool, tid);
 
-    //smart reservation
-    auto closeCnt = 0;
-    auto moveCnt = 0;
-
-    for (auto cmd = rshape->path.cmds.data; cmd < rshape->path.cmds.end(); ++cmd) {
-        if (*cmd == PathCommand::Close) ++closeCnt;
-        else if (*cmd == PathCommand::MoveTo) ++moveCnt;
-    }
-
-    //No idea exact count.... Reserve Approximitely 20x...
-    //OPTIMIZE: we can directly copy the path points when the close is occupied with a point.
-    dash.outline->pts.grow(20 * (closeCnt + ptsCnt + 1));
-    dash.outline->types.grow(20 * (closeCnt + ptsCnt + 1));
-    dash.outline->cntrs.grow(20 * (moveCnt + 1));
-
     while (cmdCnt-- > 0) {
         switch (*cmds) {
             case PathCommand::Close: {
@@ -435,28 +428,8 @@ static bool _genOutline(SwShape* shape, const RenderShape* rshape, const Matrix*
     //No actual shape data
     if (cmdCnt == 0 || ptsCnt == 0) return false;
 
-    //smart reservation
-    auto moveCnt = 0;
-    auto closeCnt = 0;
-
-    for (auto cmd = rshape->path.cmds.data; cmd < rshape->path.cmds.end(); ++cmd) {
-        if (*cmd == PathCommand::Close) ++closeCnt;
-        else if (*cmd == PathCommand::MoveTo) ++moveCnt;
-    }
-
     shape->outline = mpoolReqOutline(mpool, tid);
     auto outline = shape->outline;
-
-    //OPTIMIZE: we can directly copy the path points when the close is occupied with a point.
-    outline->pts.grow(ptsCnt + closeCnt + 1);
-    outline->types.grow(ptsCnt + closeCnt + 1);
-    outline->cntrs.grow(moveCnt + 1);
-
-    //Dash outlines are always opened.
-    //Only normal outlines use this information, it sholud be same to their contour counts.
-    outline->closed.reserve(outline->cntrs.reserved);
-
-    memset(outline->closed.data, 0x0, sizeof(bool) * outline->closed.reserved);
 
     //Generate Outlines
     while (cmdCnt-- > 0) {

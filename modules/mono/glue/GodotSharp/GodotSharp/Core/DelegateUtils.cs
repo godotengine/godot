@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -140,7 +141,6 @@ namespace Godot
                         return true;
                     }
                 }
-                // ReSharper disable once RedundantNameQualifier
                 case GodotObject godotObject:
                 {
                     using (var stream = new MemoryStream())
@@ -413,7 +413,6 @@ namespace Godot
                     case TargetKind.GodotObject:
                     {
                         ulong objectId = reader.ReadUInt64();
-                        // ReSharper disable once RedundantNameQualifier
                         GodotObject? godotObject = GodotObject.InstanceFromId(objectId);
                         if (godotObject == null)
                             return false;
@@ -494,7 +493,7 @@ namespace Godot
 
             string methodName = reader.ReadString();
 
-            int flags = reader.ReadInt32();
+            BindingFlags flags = (BindingFlags)reader.ReadInt32();
 
             bool hasReturn = reader.ReadBoolean();
             Type? returnType = hasReturn ? DeserializeType(reader) : typeof(void);
@@ -510,7 +509,11 @@ namespace Godot
                 parameterTypes[i] = parameterType;
             }
 
-            methodInfo = declaringType.GetMethod(methodName, (BindingFlags)flags, null, parameterTypes, null);
+#pragma warning disable REFL045 // These flags are insufficient to match any members
+            // TODO: Suppressing invalid warning, remove when issue is fixed
+            // https://github.com/DotNetAnalyzers/ReflectionAnalyzers/issues/209
+            methodInfo = declaringType.GetMethod(methodName, flags, null, parameterTypes, null);
+#pragma warning restore REFL045
             return methodInfo != null && methodInfo.ReturnType == returnType;
         }
 
@@ -587,7 +590,6 @@ namespace Godot
 
         internal static class RuntimeTypeConversionHelper
         {
-            [SuppressMessage("ReSharper", "RedundantNameQualifier")]
             public static godot_variant ConvertToVariant(object? obj)
             {
                 if (obj == null)
@@ -698,7 +700,7 @@ namespace Godot
                     case GodotObject godotObject:
                         return VariantUtils.CreateFrom(godotObject);
                     case Enum @enum:
-                        return VariantUtils.CreateFrom(Convert.ToInt64(@enum));
+                        return VariantUtils.CreateFrom(Convert.ToInt64(@enum, CultureInfo.InvariantCulture));
                     case Collections.IGenericGodotDictionary godotDictionary:
                         return VariantUtils.CreateFrom(godotDictionary.UnderlyingDictionary);
                     case Collections.IGenericGodotArray godotArray:
@@ -712,10 +714,8 @@ namespace Godot
 
             private delegate object? ConvertToSystemObjectFunc(in godot_variant managed);
 
-            [SuppressMessage("ReSharper", "RedundantNameQualifier")]
-            // ReSharper disable once RedundantNameQualifier
             private static readonly System.Collections.Generic.Dictionary<Type, ConvertToSystemObjectFunc>
-                ToSystemObjectFuncByType = new()
+                _toSystemObjectFuncByType = new()
                 {
                     [typeof(bool)] = (in godot_variant variant) => VariantUtils.ConvertTo<bool>(variant),
                     [typeof(char)] = (in godot_variant variant) => VariantUtils.ConvertTo<char>(variant),
@@ -770,14 +770,13 @@ namespace Godot
                     [typeof(Variant)] = (in godot_variant variant) => VariantUtils.ConvertTo<Variant>(variant),
                 };
 
-            [SuppressMessage("ReSharper", "RedundantNameQualifier")]
             public static object? ConvertToObjectOfType(in godot_variant variant, Type type)
             {
-                if (ToSystemObjectFuncByType.TryGetValue(type, out var func))
+                if (_toSystemObjectFuncByType.TryGetValue(type, out var func))
                     return func(variant);
 
                 if (typeof(GodotObject).IsAssignableFrom(type))
-                    return Convert.ChangeType(VariantUtils.ConvertTo<GodotObject>(variant), type);
+                    return Convert.ChangeType(VariantUtils.ConvertTo<GodotObject>(variant), type, CultureInfo.InvariantCulture);
 
                 if (typeof(GodotObject[]).IsAssignableFrom(type))
                 {
@@ -796,7 +795,7 @@ namespace Godot
                     }
 
                     using var godotArray = NativeFuncs.godotsharp_variant_as_array(variant);
-                    return Convert.ChangeType(ConvertToSystemArrayOfGodotObject(godotArray, type), type);
+                    return Convert.ChangeType(ConvertToSystemArrayOfGodotObject(godotArray, type), type, CultureInfo.InvariantCulture);
                 }
 
                 if (type.IsEnum)
@@ -837,8 +836,7 @@ namespace Godot
 
                     if (genericTypeDef == typeof(Godot.Collections.Dictionary<,>))
                     {
-                        var ctor = type.GetConstructor(BindingFlags.Default,
-                            new[] { typeof(Godot.Collections.Dictionary) });
+                        var ctor = type.GetConstructor(new[] { typeof(Godot.Collections.Dictionary) });
 
                         if (ctor == null)
                             throw new InvalidOperationException("Dictionary constructor not found");
@@ -851,8 +849,7 @@ namespace Godot
 
                     if (genericTypeDef == typeof(Godot.Collections.Array<>))
                     {
-                        var ctor = type.GetConstructor(BindingFlags.Default,
-                            new[] { typeof(Godot.Collections.Array) });
+                        var ctor = type.GetConstructor(new[] { typeof(Godot.Collections.Array) });
 
                         if (ctor == null)
                             throw new InvalidOperationException("Array constructor not found");

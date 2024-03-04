@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Godot.SourceGenerators
 {
-    static class ExtensionMethods
+    internal static class ExtensionMethods
     {
         public static bool TryGetGlobalAnalyzerProperty(
             this GeneratorExecutionContext context, string property, out string? value
@@ -327,6 +327,11 @@ namespace Godot.SourceGenerators
 
                 yield return new GodotFieldData(field, marshalType.Value);
             }
+        }
+
+        public static Location? FirstLocationWithSourceTreeOrDefault(this IEnumerable<Location> locations)
+        {
+            return locations.FirstOrDefault(location => location.SourceTree != null) ?? locations.FirstOrDefault();
         }
 
         public static string Path(this Location location)

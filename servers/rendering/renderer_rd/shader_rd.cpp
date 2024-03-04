@@ -138,7 +138,7 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 
 RID ShaderRD::version_create() {
 	//initialize() was never called
-	ERR_FAIL_COND_V(group_to_variant_map.size() == 0, RID());
+	ERR_FAIL_COND_V(group_to_variant_map.is_empty(), RID());
 
 	Version version;
 	version.dirty = true;
@@ -301,7 +301,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 
 	Vector<uint8_t> shader_data = RD::get_singleton()->shader_compile_binary_from_spirv(stages, name + ":" + itos(variant));
 
-	ERR_FAIL_COND(shader_data.size() == 0);
+	ERR_FAIL_COND(shader_data.is_empty());
 
 	{
 		MutexLock lock(variant_set_mutex);
@@ -395,10 +395,15 @@ String ShaderRD::_version_get_sha1(Version *p_version) const {
 static const char *shader_file_header = "GDSC";
 static const uint32_t cache_file_version = 3;
 
-bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
-	String sha1 = _version_get_sha1(p_version);
-	String path = shader_cache_dir.path_join(name).path_join(group_sha256[p_group]).path_join(sha1) + ".cache";
+String ShaderRD::_get_cache_file_path(Version *p_version, int p_group) {
+	const String &sha1 = _version_get_sha1(p_version);
+	const String &api_safe_name = String(RD::get_singleton()->get_device_api_name()).validate_filename().to_lower();
+	const String &path = shader_cache_dir.path_join(name).path_join(group_sha256[p_group]).path_join(sha1) + "." + api_safe_name + ".cache";
+	return path;
+}
 
+bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
+	const String &path = _get_cache_file_path(p_version, p_group);
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
 	if (f.is_null()) {
 		return false;
@@ -464,9 +469,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 
 void ShaderRD::_save_to_cache(Version *p_version, int p_group) {
 	ERR_FAIL_COND(!shader_cache_dir_valid);
-	String sha1 = _version_get_sha1(p_version);
-	String path = shader_cache_dir.path_join(name).path_join(group_sha256[p_group]).path_join(sha1) + ".cache";
-
+	const String &path = _get_cache_file_path(p_version, p_group);
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 	f->store_buffer((const uint8_t *)shader_file_header, 4);
@@ -714,7 +717,7 @@ ShaderRD::ShaderRD() {
 
 void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines) {
 	ERR_FAIL_COND(variant_defines.size());
-	ERR_FAIL_COND(p_variant_defines.size() == 0);
+	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
 
@@ -776,7 +779,7 @@ void ShaderRD::_initialize_cache() {
 // Same as above, but allows specifying shader compilation groups.
 void ShaderRD::initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines) {
 	ERR_FAIL_COND(variant_defines.size());
-	ERR_FAIL_COND(p_variant_defines.size() == 0);
+	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
 

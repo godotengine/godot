@@ -492,7 +492,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector projected onto another vector <paramref name="onNormal"/>.
+        /// Returns a new vector resulting from projecting this vector onto the given vector <paramref name="onNormal"/>.
+        /// The resulting new vector is parallel to <paramref name="onNormal"/>.
+        /// See also <see cref="Slide(Vector2)"/>.
+        /// Note: If the vector <paramref name="onNormal"/> is a zero vector, the components of the resulting new vector will be <see cref="real_t.NaN"/>.
         /// </summary>
         /// <param name="onNormal">The vector to project onto.</param>
         /// <returns>The projected vector.</returns>
@@ -583,9 +586,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector slid along a plane defined by the given <paramref name="normal"/>.
+        /// Returns a new vector resulting from sliding this vector along a line with normal <paramref name="normal"/>.
+        /// The resulting new vector is perpendicular to <paramref name="normal"/>, and is equivalent to this vector minus its projection on <paramref name="normal"/>.
+        /// See also <see cref="Project(Vector2)"/>.
+        /// Note: The vector <paramref name="normal"/> must be normalized. See also <see cref="Normalized()"/>.
         /// </summary>
-        /// <param name="normal">The normal vector defining the plane to slide on.</param>
+        /// <param name="normal">The normal vector of the plane to slide on.</param>
         /// <returns>The slid vector.</returns>
         public readonly Vector2 Slide(Vector2 normal)
         {
@@ -1021,7 +1027,9 @@ namespace Godot
         /// <returns>A string representation of this vector.</returns>
         public readonly string ToString(string? format)
         {
+#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
             return $"({X.ToString(format)}, {Y.ToString(format)})";
+#pragma warning restore CA1305
         }
     }
 }

@@ -107,7 +107,6 @@ Ref<FontVariation> make_bold_font(const Ref<Font> &p_font, double p_embolden, Ty
 }
 
 void editor_register_fonts(const Ref<Theme> &p_theme) {
-	OS::get_singleton()->benchmark_begin_measure("EditorTheme", "Register Fonts");
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)EDITOR_GET("interface/editor/font_antialiasing");
@@ -371,6 +370,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontVariation> italic_fc = default_fc->duplicate();
 	italic_fc->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
 
+	Ref<FontVariation> bold_italic_fc = bold_fc->duplicate();
+	bold_italic_fc->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+
 	// Setup theme.
 
 	p_theme->set_default_font(default_fc); // Default theme font config.
@@ -386,13 +388,19 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font("main_bold_msdf", EditorStringName(EditorFonts), bold_fc_msdf);
 	p_theme->set_font_size("bold_size", EditorStringName(EditorFonts), default_font_size);
 
+	p_theme->set_font("italic", EditorStringName(EditorFonts), italic_fc);
+	p_theme->set_font_size("italic_size", EditorStringName(EditorFonts), default_font_size);
+
 	// Title font.
 
 	p_theme->set_font("title", EditorStringName(EditorFonts), bold_fc);
 	p_theme->set_font_size("title_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
 
-	p_theme->set_font("main_button_font", EditorStringName(EditorFonts), bold_fc);
-	p_theme->set_font_size("main_button_font_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
+	p_theme->set_type_variation("MainScreenButton", "Button");
+	p_theme->set_font("font", "MainScreenButton", bold_fc);
+	p_theme->set_font_size("font_size", "MainScreenButton", default_font_size + 2 * EDSCALE);
+
+	// Labels.
 
 	p_theme->set_font("font", "Label", default_fc);
 
@@ -407,6 +415,11 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_type_variation("HeaderLarge", "Label");
 	p_theme->set_font("font", "HeaderLarge", bold_fc);
 	p_theme->set_font_size("font_size", "HeaderLarge", default_font_size + 3 * EDSCALE);
+
+	p_theme->set_font("normal_font", "RichTextLabel", default_fc);
+	p_theme->set_font("bold_font", "RichTextLabel", bold_fc);
+	p_theme->set_font("italics_font", "RichTextLabel", italic_fc);
+	p_theme->set_font("bold_italics_font", "RichTextLabel", bold_italic_fc);
 
 	// Documentation fonts
 	p_theme->set_font_size("doc_size", EditorStringName(EditorFonts), int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
@@ -444,6 +457,4 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 
 	p_theme->set_font_size("status_source_size", EditorStringName(EditorFonts), default_font_size);
 	p_theme->set_font("status_source", EditorStringName(EditorFonts), mono_other_fc);
-
-	OS::get_singleton()->benchmark_end_measure("EditorTheme", "Register Fonts");
 }

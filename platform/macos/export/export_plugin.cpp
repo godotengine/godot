@@ -354,6 +354,9 @@ List<String> EditorExportPlatformMacOS::get_binary_extensions(const Ref<EditorEx
 			list.push_back("dmg");
 #endif
 			list.push_back("zip");
+#ifndef WINDOWS_ENABLED
+			list.push_back("app");
+#endif
 		} else if (dist_type == 2) {
 #ifdef MACOS_ENABLED
 			list.push_back("pkg");
@@ -497,65 +500,49 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, 
 	int src_len = p_size * p_size;
 
 	Vector<uint8_t> result;
-	result.resize(src_len * 1.25); //temp vector for rle encoded data, make it 25% larger for worst case scenario
-	int res_size = 0;
-
-	uint8_t buf[128];
-	int buf_size = 0;
 
 	int i = 0;
+	const uint8_t *src = p_source.ptr();
 	while (i < src_len) {
-		uint8_t cur = p_source.ptr()[i * 4 + p_ch];
+		Vector<uint8_t> seq;
 
-		if (i < src_len - 2) {
-			if ((p_source.ptr()[(i + 1) * 4 + p_ch] == cur) && (p_source.ptr()[(i + 2) * 4 + p_ch] == cur)) {
-				if (buf_size > 0) {
-					result.write[res_size++] = (uint8_t)(buf_size - 1);
-					memcpy(&result.write[res_size], &buf, buf_size);
-					res_size += buf_size;
-					buf_size = 0;
-				}
-
-				uint8_t lim = i + 130 >= src_len ? src_len - i - 1 : 130;
-				bool hit_lim = true;
-
-				for (int j = 3; j <= lim; j++) {
-					if (p_source.ptr()[(i + j) * 4 + p_ch] != cur) {
-						hit_lim = false;
-						i = i + j - 1;
-						result.write[res_size++] = (uint8_t)(j - 3 + 0x80);
-						result.write[res_size++] = cur;
-						break;
-					}
-				}
-				if (hit_lim) {
-					result.write[res_size++] = (uint8_t)(lim - 3 + 0x80);
-					result.write[res_size++] = cur;
-					i = i + lim;
-				}
-			} else {
-				buf[buf_size++] = cur;
-				if (buf_size == 128) {
-					result.write[res_size++] = (uint8_t)(buf_size - 1);
-					memcpy(&result.write[res_size], &buf, buf_size);
-					res_size += buf_size;
-					buf_size = 0;
-				}
+		uint8_t count = 0;
+		while (count <= 0x7f && i < src_len) {
+			if (i + 2 < src_len && src[i * 4 + p_ch] == src[(i + 1) * 4 + p_ch] && src[i] == src[(i + 2) * 4 + p_ch]) {
+				break;
 			}
-		} else {
-			buf[buf_size++] = cur;
-			result.write[res_size++] = (uint8_t)(buf_size - 1);
-			memcpy(&result.write[res_size], &buf, buf_size);
-			res_size += buf_size;
-			buf_size = 0;
+			seq.push_back(src[i * 4 + p_ch]);
+			i++;
+			count++;
+		}
+		if (!seq.is_empty()) {
+			result.push_back(count - 1);
+			result.append_array(seq);
+		}
+		if (i >= src_len) {
+			break;
 		}
 
-		i++;
+		uint8_t rep = src[i * 4 + p_ch];
+		count = 0;
+		while (count <= 0x7f && i < src_len && src[i * 4 + p_ch] == rep) {
+			i++;
+			count++;
+		}
+		if (count >= 3) {
+			result.push_back(0x80 + count - 3);
+			result.push_back(rep);
+		} else {
+			result.push_back(count - 1);
+			for (int j = 0; j < count; j++) {
+				result.push_back(rep);
+			}
+		}
 	}
 
 	int ofs = p_dest.size();
-	p_dest.resize(p_dest.size() + res_size);
-	memcpy(&p_dest.write[ofs], result.ptr(), res_size);
+	p_dest.resize(p_dest.size() + result.size());
+	memcpy(&p_dest.write[ofs], result.ptr(), result.size());
 }
 
 void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
@@ -617,6 +604,9 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 				_rgba8_to_packbits_encode(0, icon_infos[i].size, src_data, data); // Encode R.
 				_rgba8_to_packbits_encode(1, icon_infos[i].size, src_data, data); // Encode G.
 				_rgba8_to_packbits_encode(2, icon_infos[i].size, src_data, data); // Encode B.
+
+				// Note: workaround for macOS icon decoder bug corrupting last RLE encoded value.
+				data.push_back(0x00);
 
 				int len = data.size() - ofs;
 				len = BSWAP32(len);
@@ -1116,9 +1106,72 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 		add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Relative symlinks are not supported, exported \"%s\" might be broken!"), p_src_path.get_file()));
 #endif
 		print_verbose("export framework: " + p_src_path + " -> " + p_in_app_path);
+
+		bool plist_misssing = false;
+		Ref<PList> plist;
+		plist.instantiate();
+		plist->load_file(p_src_path.path_join("Resources").path_join("Info.plist"));
+
+		Ref<PListNode> root_node = plist->get_root();
+		if (root_node.is_null()) {
+			plist_misssing = true;
+		} else {
+			Dictionary root = root_node->get_value();
+			if (!root.has("CFBundleExecutable") || !root.has("CFBundleIdentifier") || !root.has("CFBundlePackageType") || !root.has("CFBundleInfoDictionaryVersion") || !root.has("CFBundleName") || !root.has("CFBundleSupportedPlatforms")) {
+				plist_misssing = true;
+			}
+		}
+
 		err = dir_access->make_dir_recursive(p_in_app_path);
 		if (err == OK) {
 			err = dir_access->copy_dir(p_src_path, p_in_app_path, -1, true);
+		}
+		if (err == OK && plist_misssing) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\": Info.plist missing or invalid, new Info.plist generated."), p_src_path.get_file()));
+			// Generate Info.plist
+			String lib_name = p_src_path.get_basename().get_file();
+			String lib_id = p_preset->get("application/bundle_identifier");
+			String lib_clean_name = lib_name;
+			for (int i = 0; i < lib_clean_name.length(); i++) {
+				if (!is_ascii_alphanumeric_char(lib_clean_name[i]) && lib_clean_name[i] != '.' && lib_clean_name[i] != '-') {
+					lib_clean_name[i] = '-';
+				}
+			}
+
+			String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+									   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+									   "<plist version=\"1.0\">\n"
+									   "  <dict>\n"
+									   "    <key>CFBundleExecutable</key>\n"
+									   "    <string>$name</string>\n"
+									   "    <key>CFBundleIdentifier</key>\n"
+									   "    <string>$id.framework.$cl_name</string>\n"
+									   "    <key>CFBundleInfoDictionaryVersion</key>\n"
+									   "    <string>6.0</string>\n"
+									   "    <key>CFBundleName</key>\n"
+									   "    <string>$name</string>\n"
+									   "    <key>CFBundlePackageType</key>\n"
+									   "    <string>FMWK</string>\n"
+									   "    <key>CFBundleShortVersionString</key>\n"
+									   "    <string>1.0.0</string>\n"
+									   "    <key>CFBundleSupportedPlatforms</key>\n"
+									   "    <array>\n"
+									   "      <string>MacOSX</string>\n"
+									   "    </array>\n"
+									   "    <key>CFBundleVersion</key>\n"
+									   "    <string>1.0.0</string>\n"
+									   "    <key>LSMinimumSystemVersion</key>\n"
+									   "    <string>10.12</string>\n"
+									   "  </dict>\n"
+									   "</plist>";
+
+			String info_plist = info_plist_format.replace("$id", lib_id).replace("$name", lib_name).replace("$cl_name", lib_clean_name);
+
+			err = dir_access->make_dir_recursive(p_in_app_path.path_join("Resources"));
+			Ref<FileAccess> f = FileAccess::open(p_in_app_path.path_join("Resources").path_join("Info.plist"), FileAccess::WRITE);
+			if (f.is_valid()) {
+				f->store_string(info_plist);
+			}
 		}
 	} else {
 		print_verbose("export dylib: " + p_src_path + " -> " + p_in_app_path);
@@ -1954,6 +2007,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			err = _code_sign(p_preset, tmp_app_path_name, ent_path);
 		}
 
+		String noto_path = p_path;
+		bool noto_enabled = (p_preset->get("notarization/notarization").operator int() > 0);
 		if (export_format == "dmg") {
 			// Create a DMG.
 			if (err == OK) {
@@ -1995,17 +2050,36 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 				zipClose(zip, nullptr);
 			}
+		} else if (export_format == "app" && noto_enabled) {
+			// Create temporary ZIP.
+			if (err == OK) {
+				noto_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + ".zip");
+
+				if (ep.step(TTR("Making ZIP"), 3)) {
+					return ERR_SKIP;
+				}
+				if (FileAccess::exists(noto_path)) {
+					OS::get_singleton()->move_to_trash(noto_path);
+				}
+
+				Ref<FileAccess> io_fa_dst;
+				zlib_filefunc_def io_dst = zipio_create_io(&io_fa_dst);
+				zipFile zip = zipOpen2(noto_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
+
+				zip_folder_recursive(zip, tmp_base_path_name, tmp_app_dir_name, pkg_name);
+
+				zipClose(zip, nullptr);
+			}
 		}
 
-		bool noto_enabled = (p_preset->get("notarization/notarization").operator int() > 0);
 		if (err == OK && noto_enabled) {
-			if (export_format == "app" || export_format == "pkg") {
+			if (export_format == "pkg") {
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("Notarization requires the app to be archived first, select the DMG or ZIP export format instead."));
 			} else {
 				if (ep.step(TTR("Sending archive for notarization"), 4)) {
 					return ERR_SKIP;
 				}
-				err = _notarize(p_preset, p_path);
+				err = _notarize(p_preset, noto_path);
 			}
 		}
 
@@ -2023,6 +2097,10 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				tmp_app_dir->erase_contents_recursive();
 				tmp_app_dir->change_dir("..");
 				tmp_app_dir->remove(pkg_name);
+			}
+		} else if (noto_path != p_path) {
+			if (FileAccess::exists(noto_path)) {
+				DirAccess::remove_file_or_error(noto_path);
 			}
 		}
 	}

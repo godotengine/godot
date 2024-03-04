@@ -36,6 +36,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/control.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
 
 EditorCommandPalette *EditorCommandPalette::singleton = nullptr;
@@ -63,7 +64,7 @@ float EditorCommandPalette::_score_path(const String &p_search, const String &p_
 }
 
 void EditorCommandPalette::_update_command_search(const String &search_text) {
-	ERR_FAIL_COND(commands.size() == 0);
+	ERR_FAIL_COND(commands.is_empty());
 
 	HashMap<String, TreeItem *> sections;
 	TreeItem *first_section = nullptr;

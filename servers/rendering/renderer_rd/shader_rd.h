@@ -143,6 +143,7 @@ private:
 	void _add_stage(const char *p_code, StageType p_stage_type);
 
 	String _version_get_sha1(Version *p_version) const;
+	String _get_cache_file_path(Version *p_version, int p_group);
 	bool _load_from_cache(Version *p_version, int p_group);
 	void _save_to_cache(Version *p_version, int p_group);
 	void _initialize_cache();

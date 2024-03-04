@@ -52,32 +52,58 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 	Ref<SceneState> state = Ref<PackedScene>(loaded_res)->get_state();
 
 	Vector<String> parsed_strings;
-	List<String> tabcontainer_paths;
+	Vector<Pair<NodePath, bool>> atr_owners;
+	Vector<String> tabcontainer_paths;
 	for (int i = 0; i < state->get_node_count(); i++) {
 		String node_type = state->get_node_type(i);
-		bool is_control = ClassDB::is_parent_class(node_type, "Control");
-		if (!is_control && !ClassDB::is_parent_class(node_type, "Window")) {
-			continue;
+		String parent_path = state->get_node_path(i, true);
+
+		// Find the `auto_translate_mode` property.
+		bool auto_translating = true;
+		bool auto_translate_mode_found = false;
+		for (int j = 0; j < state->get_node_property_count(i); j++) {
+			if (state->get_node_property_name(i, j) != "auto_translate_mode") {
+				continue;
+			}
+
+			auto_translate_mode_found = true;
+
+			int idx_last = atr_owners.size() - 1;
+			if (idx_last > 0 && !parent_path.begins_with(atr_owners[idx_last].first)) {
+				// Switch to the previous auto translation owner this was nested in, if that was the case.
+				atr_owners.remove_at(idx_last);
+				idx_last -= 1;
+			}
+
+			int auto_translate_mode = (int)state->get_node_property_value(i, j);
+			if (auto_translate_mode == Node::AUTO_TRANSLATE_MODE_DISABLED) {
+				auto_translating = false;
+			}
+
+			atr_owners.push_back(Pair(state->get_node_path(i), auto_translating));
+
+			break;
 		}
 
-		// Find the `auto_translate` property, and abort the string parsing of the node if disabled.
-		bool auto_translating = true;
-		for (int j = 0; j < state->get_node_property_count(i); j++) {
-			if (state->get_node_property_name(i, j) == "auto_translate" && (bool)state->get_node_property_value(i, j) == false) {
-				auto_translating = false;
-				break;
+		// If `auto_translate_mode` wasn't found, that means it is set to its default value (`AUTO_TRANSLATE_MODE_INHERIT`).
+		if (!auto_translate_mode_found) {
+			int idx_last = atr_owners.size() - 1;
+			if (idx_last > 0 && atr_owners[idx_last].first == parent_path) {
+				auto_translating = atr_owners[idx_last].second;
+			} else {
+				atr_owners.push_back(Pair(state->get_node_path(i), true));
 			}
 		}
 
 		// Parse the names of children of `TabContainer`s, as they are used for tab titles.
 		if (!tabcontainer_paths.is_empty()) {
-			String parent_path = state->get_node_path(i, true);
 			if (!parent_path.begins_with(tabcontainer_paths[tabcontainer_paths.size() - 1])) {
 				// Switch to the previous `TabContainer` this was nested in, if that was the case.
-				tabcontainer_paths.pop_back();
+				tabcontainer_paths.remove_at(tabcontainer_paths.size() - 1);
 			}
 
-			if (is_control && auto_translating && !tabcontainer_paths.is_empty() && parent_path == tabcontainer_paths[tabcontainer_paths.size() - 1]) {
+			if (auto_translating && !tabcontainer_paths.is_empty() && ClassDB::is_parent_class(node_type, "Control") &&
+					parent_path == tabcontainer_paths[tabcontainer_paths.size() - 1]) {
 				parsed_strings.push_back(state->get_node_name(i));
 			}
 		}

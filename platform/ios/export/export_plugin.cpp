@@ -124,6 +124,16 @@ String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPres
 	return String();
 }
 
+void EditorExportPlatformIOS::_notification(int p_what) {
+#ifdef MACOS_ENABLED
+	if (p_what == NOTIFICATION_POSTINITIALIZE) {
+		if (EditorExport::get_singleton()) {
+			EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformIOS::_update_preset_status));
+		}
+	}
+#endif
+}
+
 bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	return true;
 }
@@ -1007,6 +1017,12 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 
 		// Creating Info.plist
 		{
+			String lib_clean_name = file_name;
+			for (int i = 0; i < lib_clean_name.length(); i++) {
+				if (!is_ascii_alphanumeric_char(lib_clean_name[i]) && lib_clean_name[i] != '.' && lib_clean_name[i] != '-') {
+					lib_clean_name[i] = '-';
+				}
+			}
 			String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 									   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
 									   "<plist version=\"1.0\">\n"
@@ -1014,7 +1030,7 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 									   "    <key>CFBundleShortVersionString</key>\n"
 									   "    <string>1.0</string>\n"
 									   "    <key>CFBundleIdentifier</key>\n"
-									   "    <string>$id.framework.$name</string>\n"
+									   "    <string>$id.framework.$cl_name</string>\n"
 									   "    <key>CFBundleName</key>\n"
 									   "    <string>$name</string>\n"
 									   "    <key>CFBundleExecutable</key>\n"
@@ -1032,7 +1048,7 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 									   "  </dict>\n"
 									   "</plist>";
 
-			String info_plist = info_plist_format.replace("$id", p_id).replace("$name", file_name);
+			String info_plist = info_plist_format.replace("$id", p_id).replace("$name", file_name).replace("$cl_name", lib_clean_name);
 
 			Ref<FileAccess> f = FileAccess::open(p_destination.path_join("Info.plist"), FileAccess::WRITE);
 			if (f.is_valid()) {
@@ -2228,7 +2244,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 
 		// Enum real devices (via ios_deploy, pre Xcode 15).
 		String idepl = EDITOR_GET("export/ios/ios_deploy");
-		if (!idepl.is_empty()) {
+		if (ea->has_runnable_preset.is_set() && !idepl.is_empty()) {
 			String devices;
 			List<String> args;
 			args.push_back("-c");
@@ -2266,7 +2282,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 		}
 
 		// Enum simulators.
-		if (_check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
+		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
 			{
 				String devices;
 				List<String> args;
@@ -2304,7 +2320,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 			}
 
 			// Enum simulators.
-			{
+			if (ea->has_runnable_preset.is_set()) {
 				String devices;
 				List<String> args;
 				args.push_back("simctl");
@@ -2371,6 +2387,25 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 				break;
 			}
 		}
+	}
+}
+
+void EditorExportPlatformIOS::_update_preset_status() {
+	const int preset_count = EditorExport::get_singleton()->get_export_preset_count();
+	bool has_runnable = false;
+
+	for (int i = 0; i < preset_count; i++) {
+		const Ref<EditorExportPreset> &preset = EditorExport::get_singleton()->get_export_preset(i);
+		if (preset->get_platform() == this && preset->is_runnable()) {
+			has_runnable = true;
+			break;
+		}
+	}
+
+	if (has_runnable) {
+		has_runnable_preset.set();
+	} else {
+		has_runnable_preset.clear();
 	}
 }
 #endif
@@ -2637,6 +2672,7 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 		plugins_changed.set();
 		devices_changed.set();
 #ifdef MACOS_ENABLED
+		_update_preset_status();
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif
 	}

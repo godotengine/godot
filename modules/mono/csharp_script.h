@@ -61,12 +61,87 @@ class CSharpScript : public Script {
 	friend class CSharpInstance;
 	friend class CSharpLanguage;
 
-	bool tool = false;
-	bool global_class = false;
-	bool abstract_class = false;
+public:
+	struct TypeInfo {
+		/**
+		 * Name of the C# class.
+		 */
+		String class_name;
+
+		/**
+		 * Path to the icon that will be used for this class by the editor.
+		 */
+		String icon_path;
+
+		/**
+		 * Script is marked as tool and runs in the editor.
+		 */
+		bool is_tool = false;
+
+		/**
+		 * Script is marked as global class and will be registered in the editor.
+		 * Registered classes can be created using certain editor dialogs and
+		 * can be referenced by name from other languages that support the feature.
+		 */
+		bool is_global_class = false;
+
+		/**
+		 * Script is declared abstract.
+		 */
+		bool is_abstract = false;
+
+		/**
+		 * The C# type that corresponds to this script is a constructed generic type.
+		 * E.g.: `Dictionary<int, string>`
+		 */
+		bool is_constructed_generic_type = false;
+
+		/**
+		 * The C# type that corresponds to this script is a generic type definition.
+		 * E.g.: `Dictionary<,>`
+		 */
+		bool is_generic_type_definition = false;
+
+		/**
+		 * The C# type that corresponds to this script contains generic type parameters,
+		 * regardless of whether the type parameters are bound or not.
+		 */
+		bool is_generic() const {
+			return is_constructed_generic_type || is_generic_type_definition;
+		}
+
+		/**
+		 * Check if the script can be instantiated.
+		 * C# types can't be instantiated if they are abstract or contain generic
+		 * type parameters, but a CSharpScript is still created for them.
+		 */
+		bool can_instantiate() const {
+			return !is_abstract && !is_generic_type_definition;
+		}
+	};
+
+private:
+	/**
+	 * Contains the C# type information for this script.
+	 */
+	TypeInfo type_info;
+
+	/**
+	 * Scripts are valid when the corresponding C# class is found and used
+	 * to extract the script info using the [update_script_class_info] method.
+	 */
 	bool valid = false;
+	/**
+	 * Scripts extract info from the C# class in the reload methods but,
+	 * if the reload is not invalidated, then the current extracted info
+	 * is still valid and there's no need to reload again.
+	 */
 	bool reload_invalidated = false;
 
+	/**
+	 * Base script that this script derives from, or null if it derives from a
+	 * native Godot class.
+	 */
 	Ref<CSharpScript> base_script;
 
 	HashSet<Object *> instances;
@@ -87,9 +162,10 @@ class CSharpScript : public Script {
 	HashSet<ObjectID> pending_replace_placeholders;
 #endif
 
+	/**
+	 * Script source code.
+	 */
 	String source;
-	String class_name;
-	String icon_path;
 
 	SelfList<CSharpScript> script_list = this;
 
@@ -166,7 +242,7 @@ public:
 		return docs;
 	}
 	virtual String get_class_icon_path() const override {
-		return icon_path;
+		return type_info.icon_path;
 	}
 #endif // TOOLS_ENABLED
 
@@ -184,13 +260,13 @@ public:
 	void get_members(HashSet<StringName> *p_members) override;
 
 	bool is_tool() const override {
-		return tool;
+		return type_info.is_tool;
 	}
 	bool is_valid() const override {
 		return valid;
 	}
 	bool is_abstract() const override {
-		return abstract_class;
+		return type_info.is_abstract;
 	}
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
@@ -417,7 +493,7 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	void get_reserved_words(List<String> *p_words) const override;
-	bool is_control_flow_keyword(String p_keyword) const override;
+	bool is_control_flow_keyword(const String &p_keyword) const override;
 	void get_comment_delimiters(List<String> *p_delimiters) const override;
 	void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
 	void get_string_delimiters(List<String> *p_delimiters) const override;
@@ -438,6 +514,7 @@ public:
 		return -1;
 	}
 	String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
+	virtual bool can_make_function() const override { return false; }
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}

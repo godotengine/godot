@@ -36,6 +36,102 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
+
+bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
+	for (int i = 0; i < p_terms.size(); i++) {
+		if (p_name.findn(p_terms[i]) < 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void EditorHelpSearch::_match_method_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::MethodDoc> &p_methods, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const {
+	// Constructors, Methods, Operators...
+	for (int i = 0; i < p_methods.size(); i++) {
+		String method_name = p_methods[i].name.to_lower();
+		if (_all_terms_in_name(p_terms, method_name) ||
+				(p_term.begins_with(".") && method_name.begins_with(p_term.substr(1))) ||
+				(p_term.ends_with("(") && method_name.ends_with(p_term.left(p_term.length() - 1).strip_edges())) ||
+				(p_term.begins_with(".") && p_term.ends_with("(") && method_name == p_term.substr(1, p_term.length() - 2).strip_edges())) {
+			r_result[vformat("class_%s:%s:%s", p_metatype, p_class_name, p_methods[i].name)] = vformat("%s > %s: %s", p_class_name, p_type, p_methods[i].name);
+		}
+	}
+}
+
+void EditorHelpSearch::_match_const_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::ConstantDoc> &p_constants, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const {
+	for (int i = 0; i < p_constants.size(); i++) {
+		String method_name = p_constants[i].name.to_lower();
+		if (_all_terms_in_name(p_terms, method_name) ||
+				(p_term.begins_with(".") && method_name.begins_with(p_term.substr(1))) ||
+				(p_term.ends_with("(") && method_name.ends_with(p_term.left(p_term.length() - 1).strip_edges())) ||
+				(p_term.begins_with(".") && p_term.ends_with("(") && method_name == p_term.substr(1, p_term.length() - 2).strip_edges())) {
+			r_result[vformat("class_%s:%s:%s", p_metatype, p_class_name, p_constants[i].name)] = vformat("%s > %s: %s", p_class_name, p_type, p_constants[i].name);
+		}
+	}
+}
+
+void EditorHelpSearch::_match_property_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::PropertyDoc> &p_properties, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const {
+	for (int i = 0; i < p_properties.size(); i++) {
+		String method_name = p_properties[i].name.to_lower();
+		if (_all_terms_in_name(p_terms, method_name) ||
+				(p_term.begins_with(".") && method_name.begins_with(p_term.substr(1))) ||
+				(p_term.ends_with("(") && method_name.ends_with(p_term.left(p_term.length() - 1).strip_edges())) ||
+				(p_term.begins_with(".") && p_term.ends_with("(") && method_name == p_term.substr(1, p_term.length() - 2).strip_edges())) {
+			r_result[vformat("class_%s:%s:%s", p_metatype, p_class_name, p_properties[i].name)] = vformat("%s > %s: %s", p_class_name, p_type, p_properties[i].name);
+		}
+	}
+}
+
+void EditorHelpSearch::_match_theme_property_name_and_push_back(const String &p_term, const Vector<String> &p_terms, Vector<DocData::ThemeItemDoc> &p_properties, const String &p_type, const String &p_metatype, const String &p_class_name, Dictionary &r_result) const {
+	for (int i = 0; i < p_properties.size(); i++) {
+		String method_name = p_properties[i].name.to_lower();
+		if (_all_terms_in_name(p_terms, method_name) ||
+				(p_term.begins_with(".") && method_name.begins_with(p_term.substr(1))) ||
+				(p_term.ends_with("(") && method_name.ends_with(p_term.left(p_term.length() - 1).strip_edges())) ||
+				(p_term.begins_with(".") && p_term.ends_with("(") && method_name == p_term.substr(1, p_term.length() - 2).strip_edges())) {
+			r_result[vformat("class_%s:%s:%s", p_metatype, p_class_name, p_properties[i].name)] = vformat("%s > %s: %s", p_class_name, p_type, p_properties[i].name);
+		}
+	}
+}
+
+Dictionary EditorHelpSearch::_native_search_cb(const String &p_search_string, int p_result_limit) {
+	Dictionary ret;
+	const String &term = p_search_string.strip_edges().to_lower();
+	Vector<String> terms = term.split_spaces();
+	if (terms.is_empty()) {
+		terms.append(term);
+	}
+
+	for (HashMap<String, DocData::ClassDoc>::Iterator iterator_doc = EditorHelp::get_doc_data()->class_list.begin(); iterator_doc; ++iterator_doc) {
+		DocData::ClassDoc &class_doc = iterator_doc->value;
+		if (class_doc.name.is_empty()) {
+			continue;
+		}
+		if (class_doc.name.findn(term) > -1) {
+			ret[vformat("class_name:%s", class_doc.name)] = class_doc.name;
+		}
+		if (term.length() > 1 || term == "@") {
+			_match_method_name_and_push_back(term, terms, class_doc.constructors, TTRC("Constructor"), "method", class_doc.name, ret);
+			_match_method_name_and_push_back(term, terms, class_doc.methods, TTRC("Method"), "method", class_doc.name, ret);
+			_match_method_name_and_push_back(term, terms, class_doc.operators, TTRC("Operator"), "method", class_doc.name, ret);
+			_match_method_name_and_push_back(term, terms, class_doc.signals, TTRC("Signal"), "signal", class_doc.name, ret);
+			_match_const_name_and_push_back(term, terms, class_doc.constants, TTRC("Constant"), "constant", class_doc.name, ret);
+			_match_property_name_and_push_back(term, terms, class_doc.properties, TTRC("Property"), "property", class_doc.name, ret);
+			_match_theme_property_name_and_push_back(term, terms, class_doc.theme_properties, TTRC("Theme Property"), "theme_item", class_doc.name, ret);
+			_match_method_name_and_push_back(term, terms, class_doc.annotations, TTRC("Annotation"), "annotation", class_doc.name, ret);
+		}
+		if (ret.size() > p_result_limit) {
+			break;
+		}
+	}
+	return ret;
+}
+
+void EditorHelpSearch::_native_action_cb(const String &p_item_string) {
+	emit_signal(SNAME("go_to_help"), p_item_string);
+}
 
 void EditorHelpSearch::_update_results() {
 	String term = search_box->get_text();
@@ -94,6 +190,18 @@ void EditorHelpSearch::_confirmed() {
 
 void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_HELP)) {
+				DisplayServer::get_singleton()->help_set_search_callbacks(callable_mp(this, &EditorHelpSearch::_native_search_cb), callable_mp(this, &EditorHelpSearch::_native_action_cb));
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_HELP)) {
+				DisplayServer::get_singleton()->help_set_search_callbacks();
+			}
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				tree_cache.clear();
@@ -107,7 +215,12 @@ void EditorHelpSearch::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorThemeManager::is_generated_theme_outdated()) {
+				break;
+			}
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED: {
 			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			results_tree->add_theme_constant_override("icon_max_width", icon_width);
@@ -370,6 +483,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 			// a double-quotation. This will ensure that only C++ classes and explicitly named classes will
 			// be added.
 			match.name = (term.is_empty() && (!class_doc->is_script_doc || class_doc->name[0] != '\"')) || _match_string(term, class_doc->name);
+			match.keyword = _match_keywords(term, class_doc->keywords);
 		}
 
 		// Match members only if the term is long enough, to avoid slow performance from building a large tree.
@@ -386,36 +500,56 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 			}
 			if (search_flags & SEARCH_SIGNALS) {
 				for (int i = 0; i < class_doc->signals.size(); i++) {
-					if (_all_terms_in_name(class_doc->signals[i].name)) {
-						match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc->signals[i]));
+					MemberMatch<DocData::MethodDoc> signal;
+					signal.name = _all_terms_in_name(class_doc->signals[i].name);
+					signal.keyword = _match_keywords_in_all_terms(class_doc->signals[i].keywords);
+					if (signal.name || !signal.keyword.is_empty()) {
+						signal.doc = const_cast<DocData::MethodDoc *>(&class_doc->signals[i]);
+						match.signals.push_back(signal);
 					}
 				}
 			}
 			if (search_flags & SEARCH_CONSTANTS) {
 				for (int i = 0; i < class_doc->constants.size(); i++) {
-					if (_all_terms_in_name(class_doc->constants[i].name)) {
-						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc->constants[i]));
+					MemberMatch<DocData::ConstantDoc> constant;
+					constant.name = _all_terms_in_name(class_doc->constants[i].name);
+					constant.keyword = _match_keywords_in_all_terms(class_doc->constants[i].keywords);
+					if (constant.name || !constant.keyword.is_empty()) {
+						constant.doc = const_cast<DocData::ConstantDoc *>(&class_doc->constants[i]);
+						match.constants.push_back(constant);
 					}
 				}
 			}
 			if (search_flags & SEARCH_PROPERTIES) {
 				for (int i = 0; i < class_doc->properties.size(); i++) {
-					if (_all_terms_in_name(class_doc->properties[i].name)) {
-						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc->properties[i]));
+					MemberMatch<DocData::PropertyDoc> property;
+					property.name = _all_terms_in_name(class_doc->properties[i].name);
+					property.keyword = _match_keywords_in_all_terms(class_doc->properties[i].keywords);
+					if (property.name || !property.keyword.is_empty()) {
+						property.doc = const_cast<DocData::PropertyDoc *>(&class_doc->properties[i]);
+						match.properties.push_back(property);
 					}
 				}
 			}
 			if (search_flags & SEARCH_THEME_ITEMS) {
 				for (int i = 0; i < class_doc->theme_properties.size(); i++) {
-					if (_all_terms_in_name(class_doc->theme_properties[i].name)) {
-						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc->theme_properties[i]));
+					MemberMatch<DocData::ThemeItemDoc> theme_property;
+					theme_property.name = _all_terms_in_name(class_doc->theme_properties[i].name);
+					theme_property.keyword = _match_keywords_in_all_terms(class_doc->theme_properties[i].keywords);
+					if (theme_property.name || !theme_property.keyword.is_empty()) {
+						theme_property.doc = const_cast<DocData::ThemeItemDoc *>(&class_doc->theme_properties[i]);
+						match.theme_properties.push_back(theme_property);
 					}
 				}
 			}
 			if (search_flags & SEARCH_ANNOTATIONS) {
 				for (int i = 0; i < class_doc->annotations.size(); i++) {
-					if (_match_string(term, class_doc->annotations[i].name)) {
-						match.annotations.push_back(const_cast<DocData::MethodDoc *>(&class_doc->annotations[i]));
+					MemberMatch<DocData::MethodDoc> annotation;
+					annotation.name = _all_terms_in_name(class_doc->annotations[i].name);
+					annotation.keyword = _match_keywords_in_all_terms(class_doc->annotations[i].keywords);
+					if (annotation.name || !annotation.keyword.is_empty()) {
+						annotation.doc = const_cast<DocData::MethodDoc *>(&class_doc->annotations[i]);
+						match.annotations.push_back(annotation);
 					}
 				}
 			}
@@ -445,6 +579,9 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 }
 
 void EditorHelpSearch::Runner::_populate_cache() {
+	// Deselect to prevent re-selection issues.
+	results_tree->deselect_all();
+
 	root_item = results_tree->get_root();
 
 	if (root_item) {
@@ -496,8 +633,8 @@ bool EditorHelpSearch::Runner::_phase_class_items() {
 			_create_class_hierarchy(match);
 		}
 	} else {
-		if (match.name) {
-			_create_class_item(root_item, match.doc, false);
+		if (match.name || !match.keyword.is_empty()) {
+			_create_class_item(root_item, match.doc, false, match.name ? String() : match.keyword);
 		}
 	}
 
@@ -526,14 +663,14 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 	TreeItem *parent_item = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	bool constructor_created = false;
 	for (int i = 0; i < match.methods.size(); i++) {
-		String text = match.methods[i]->name;
+		String text = match.methods[i].doc->name;
 		if (!constructor_created) {
-			if (match.doc->name == match.methods[i]->name) {
+			if (match.doc->name == match.methods[i].doc->name) {
 				text += " " + TTR("(constructors)");
 				constructor_created = true;
 			}
 		} else {
-			if (match.doc->name == match.methods[i]->name) {
+			if (match.doc->name == match.methods[i].doc->name) {
 				continue;
 			}
 		}
@@ -552,8 +689,7 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 		_create_theme_property_item(parent_item, match.doc, match.theme_properties[i]);
 	}
 	for (int i = 0; i < match.annotations.size(); i++) {
-		// Hide the redundant leading @ symbol.
-		_create_annotation_item(parent_item, match.doc, match.annotations[i]->name.substr(1), match.annotations[i]);
+		_create_annotation_item(parent_item, match.doc, match.annotations[i]);
 	}
 
 	++iterator_match;
@@ -567,26 +703,42 @@ bool EditorHelpSearch::Runner::_phase_select_match() {
 	return true;
 }
 
-void EditorHelpSearch::Runner::_match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<DocData::MethodDoc *> *r_match_methods) {
+void EditorHelpSearch::Runner::_match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<MemberMatch<DocData::MethodDoc>> *r_match_methods) {
 	// Constructors, Methods, Operators...
 	for (int i = 0; i < p_methods.size(); i++) {
 		String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? p_methods[i].name : p_methods[i].name.to_lower();
-		if (_all_terms_in_name(method_name) ||
+		String keywords = (search_flags & SEARCH_CASE_SENSITIVE) ? p_methods[i].keywords : p_methods[i].keywords.to_lower();
+		MemberMatch<DocData::MethodDoc> method;
+		method.name = _all_terms_in_name(method_name);
+		method.keyword = _match_keywords_in_all_terms(keywords);
+		if (method.name || !method.keyword.is_empty() ||
 				(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 				(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 				(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-			r_match_methods->push_back(const_cast<DocData::MethodDoc *>(&p_methods[i]));
+			method.doc = const_cast<DocData::MethodDoc *>(&p_methods[i]);
+			r_match_methods->push_back(method);
 		}
 	}
 }
 
-bool EditorHelpSearch::Runner::_all_terms_in_name(String name) {
+bool EditorHelpSearch::Runner::_all_terms_in_name(const String &p_name) const {
 	for (int i = 0; i < terms.size(); i++) {
-		if (!_match_string(terms[i], name)) {
+		if (!_match_string(terms[i], p_name)) {
 			return false;
 		}
 	}
 	return true;
+}
+
+String EditorHelpSearch::Runner::_match_keywords_in_all_terms(const String &p_keywords) const {
+	String matching_keyword;
+	for (int i = 0; i < terms.size(); i++) {
+		matching_keyword = _match_keywords(terms[i], p_keywords);
+		if (matching_keyword.is_empty()) {
+			return String();
+		}
+	}
+	return matching_keyword;
 }
 
 bool EditorHelpSearch::Runner::_match_string(const String &p_term, const String &p_string) const {
@@ -597,7 +749,21 @@ bool EditorHelpSearch::Runner::_match_string(const String &p_term, const String 
 	}
 }
 
-void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_text) {
+String EditorHelpSearch::Runner::_match_keywords(const String &p_term, const String &p_keywords) const {
+	for (const String &k : p_keywords.split(",")) {
+		const String keyword = k.strip_edges();
+		if (_match_string(p_term, keyword)) {
+			return keyword;
+		}
+	}
+	return String();
+}
+
+void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_text, bool p_is_keywords) {
+	if (p_text.is_empty()) {
+		return;
+	}
+
 	float inverse_length = 1.f / float(p_text.length());
 
 	// Favor types where search term is a substring close to the start of the type.
@@ -608,6 +774,11 @@ void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_tex
 	// Favor shorter items: they resemble the search term more.
 	w = 0.1f;
 	score *= (1 - w) + w * (term.length() * inverse_length);
+
+	// Reduce the score of keywords, since they are an indirect match.
+	if (p_is_keywords) {
+		score *= 0.9f;
+	}
 
 	if (match_highest_score == 0 || score > match_highest_score) {
 		matched_item = p_item;
@@ -628,7 +799,24 @@ String EditorHelpSearch::Runner::_build_method_tooltip(const DocData::ClassDoc *
 		}
 	}
 	tooltip += ")";
+	tooltip += _build_keywords_tooltip(p_doc->keywords);
 	return tooltip;
+}
+
+String EditorHelpSearch::Runner::_build_keywords_tooltip(const String &p_keywords) const {
+	String tooltip;
+	if (p_keywords.is_empty()) {
+		return tooltip;
+	}
+
+	tooltip = "\n\n" + TTR("Keywords") + ": ";
+
+	for (const String &keyword : p_keywords.split(",")) {
+		tooltip += keyword.strip_edges().quote() + ", ";
+	}
+
+	// Remove trailing comma and space.
+	return tooltip.left(-2);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_match) {
@@ -652,7 +840,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 		}
 	}
 
-	TreeItem *class_item = _create_class_item(parent_item, p_match.doc, !p_match.name);
+	TreeItem *class_item = _create_class_item(parent_item, p_match.doc, !p_match.name && p_match.keyword.is_empty(), p_match.name ? String() : p_match.keyword);
 	class_items[p_match.doc->name] = class_item;
 	return class_item;
 }
@@ -677,15 +865,15 @@ bool EditorHelpSearch::Runner::_find_or_create_item(TreeItem *p_parent, const St
 	}
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
+TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray, const String &p_matching_keyword) {
 	String tooltip = DTR(p_doc->brief_description.strip_edges());
+	tooltip += _build_keywords_tooltip(p_doc->keywords);
 
 	const String item_meta = "class_name:" + p_doc->name;
 
 	TreeItem *item = nullptr;
 	if (_find_or_create_item(p_parent, item_meta, item)) {
 		item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_doc->name));
-		item->set_text(0, p_doc->name);
 		item->set_text(1, TTR("Class"));
 		item->set_tooltip_text(0, tooltip);
 		item->set_tooltip_text(1, tooltip);
@@ -707,44 +895,58 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 		item->clear_custom_color(1);
 	}
 
+	if (p_matching_keyword.is_empty()) {
+		item->set_text(0, p_doc->name);
+	} else {
+		item->set_text(0, p_doc->name + "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword)));
+	}
+
 	_match_item(item, p_doc->name);
+	for (const String &keyword : p_doc->keywords.split(",")) {
+		_match_item(item, keyword.strip_edges(), true);
+	}
 
 	return item;
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc) {
-	String tooltip = _build_method_tooltip(p_class_doc, p_doc);
-	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, p_text, TTRC("Method"), "method", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
+TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const MemberMatch<DocData::MethodDoc> &p_match) {
+	String tooltip = _build_method_tooltip(p_class_doc, p_match.doc);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_match.doc->name, p_text, TTRC("Method"), "method", tooltip, p_match.doc->keywords, p_match.doc->is_deprecated, p_match.doc->is_experimental, p_match.name ? String() : p_match.keyword);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) {
-	String tooltip = _build_method_tooltip(p_class_doc, p_doc);
-	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, p_doc->name, TTRC("Signal"), "signal", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
+TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match) {
+	String tooltip = _build_method_tooltip(p_class_doc, p_match.doc);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_match.doc->name, p_match.doc->name, TTRC("Signal"), "signal", tooltip, p_match.doc->keywords, p_match.doc->is_deprecated, p_match.doc->is_experimental, p_match.name ? String() : p_match.keyword);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_annotation_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc) {
-	String tooltip = _build_method_tooltip(p_class_doc, p_doc);
-	return _create_member_item(p_parent, p_class_doc->name, "MemberAnnotation", p_doc->name, p_text, TTRC("Annotation"), "annotation", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
+TreeItem *EditorHelpSearch::Runner::_create_annotation_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::MethodDoc> &p_match) {
+	String tooltip = _build_method_tooltip(p_class_doc, p_match.doc);
+	// Hide the redundant leading @ symbol.
+	String text = p_match.doc->name.substr(1);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberAnnotation", p_match.doc->name, text, TTRC("Annotation"), "annotation", tooltip, p_match.doc->keywords, p_match.doc->is_deprecated, p_match.doc->is_experimental, p_match.name ? String() : p_match.keyword);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc) {
-	String tooltip = p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, p_doc->name, TTRC("Constant"), "constant", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
+TreeItem *EditorHelpSearch::Runner::_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::ConstantDoc> &p_match) {
+	String tooltip = p_class_doc->name + "." + p_match.doc->name;
+	tooltip += _build_keywords_tooltip(p_match.doc->keywords);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_match.doc->name, p_match.doc->name, TTRC("Constant"), "constant", tooltip, p_match.doc->keywords, p_match.doc->is_deprecated, p_match.doc->is_experimental, p_match.name ? String() : p_match.keyword);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
-	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
-	tooltip += "\n    " + p_class_doc->name + "." + p_doc->setter + "(value) setter";
-	tooltip += "\n    " + p_class_doc->name + "." + p_doc->getter + "() getter";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
+TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::PropertyDoc> &p_match) {
+	String tooltip = p_match.doc->type + " " + p_class_doc->name + "." + p_match.doc->name;
+	tooltip += "\n    " + p_class_doc->name + "." + p_match.doc->setter + "(value) setter";
+	tooltip += "\n    " + p_class_doc->name + "." + p_match.doc->getter + "() getter";
+	tooltip += _build_keywords_tooltip(p_match.doc->keywords);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_match.doc->name, p_match.doc->name, TTRC("Property"), "property", tooltip, p_match.doc->keywords, p_match.doc->is_deprecated, p_match.doc->is_experimental, p_match.name ? String() : p_match.keyword);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc) {
-	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip, false, false);
+TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const MemberMatch<DocData::ThemeItemDoc> &p_match) {
+	String tooltip = p_match.doc->type + " " + p_class_doc->name + "." + p_match.doc->name;
+	tooltip += _build_keywords_tooltip(p_match.doc->keywords);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_match.doc->name, p_match.doc->name, TTRC("Theme Property"), "theme_item", p_match.doc->keywords, tooltip, false, false, p_match.name ? String() : p_match.keyword);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, bool is_deprecated, bool is_experimental) {
+TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, const String &p_keywords, bool p_is_deprecated, bool p_is_experimental, const String &p_matching_keyword) {
 	const String item_meta = "class_" + p_metatype + ":" + p_class_name + ":" + p_name;
 
 	TreeItem *item = nullptr;
@@ -755,22 +957,30 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 		item->set_tooltip_text(1, p_tooltip);
 		item->set_metadata(0, item_meta);
 
-		if (is_deprecated) {
+		if (p_is_deprecated) {
 			Ref<Texture2D> error_icon = ui_service->get_editor_theme_icon(SNAME("StatusError"));
 			item->add_button(0, error_icon, 0, false, TTR("This member is marked as deprecated."));
-		} else if (is_experimental) {
+		} else if (p_is_experimental) {
 			Ref<Texture2D> warning_icon = ui_service->get_editor_theme_icon(SNAME("NodeWarning"));
 			item->add_button(0, warning_icon, 0, false, TTR("This member is marked as experimental."));
 		}
 	}
 
+	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
-		item->set_text(0, p_text);
+		text = p_text;
 	} else {
-		item->set_text(0, p_class_name + "." + p_text);
+		text = p_class_name + "." + p_text;
 	}
+	if (!p_matching_keyword.is_empty()) {
+		text += "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword));
+	}
+	item->set_text(0, text);
 
 	_match_item(item, p_name);
+	for (const String &keyword : p_keywords.split(",")) {
+		_match_item(item, keyword.strip_edges(), true);
+	}
 
 	return item;
 }

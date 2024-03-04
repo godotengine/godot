@@ -34,7 +34,7 @@
 #include <openxr/openxr_platform.h>
 #endif  // XR_USE_PLATFORM_ANDROID
 
-#ifdef XR_USE_PLATFORM_ANDROID
+#if defined(XR_KHR_LOADER_INIT_SUPPORT) && defined(XR_USE_PLATFORM_ANDROID)
 XrResult GetPlatformRuntimeVirtualManifest(Json::Value& out_manifest) {
     using wrap::android::content::Context;
     auto& initData = LoaderInitData::instance();
@@ -52,7 +52,7 @@ XrResult GetPlatformRuntimeVirtualManifest(Json::Value& out_manifest) {
     out_manifest = virtualManifest;
     return XR_SUCCESS;
 }
-#endif  // XR_USE_PLATFORM_ANDROID
+#endif  // defined(XR_USE_PLATFORM_ANDROID) && defined(XR_KHR_LOADER_INIT_SUPPORT)
 
 XrResult RuntimeInterface::TryLoadingSingleRuntime(const std::string& openxr_command,
                                                    std::unique_ptr<RuntimeManifestFile>& manifest_file) {
@@ -227,7 +227,6 @@ XrResult RuntimeInterface::LoadRuntime(const std::string& openxr_command) {
         return XR_SUCCESS;
     }
 #ifdef XR_KHR_LOADER_INIT_SUPPORT
-
     if (!LoaderInitData::instance().initialized()) {
         LoaderLogger::LogErrorMessage(
             openxr_command, "RuntimeInterface::LoadRuntime cannot run because xrInitializeLoaderKHR was not successfully called.");
@@ -238,7 +237,7 @@ XrResult RuntimeInterface::LoadRuntime(const std::string& openxr_command) {
     std::vector<std::unique_ptr<RuntimeManifestFile>> runtime_manifest_files = {};
 
     // Find the available runtimes which we may need to report information for.
-    XrResult last_error = RuntimeManifestFile::FindManifestFiles(runtime_manifest_files);
+    XrResult last_error = RuntimeManifestFile::FindManifestFiles(openxr_command, runtime_manifest_files);
     if (XR_FAILED(last_error)) {
         LoaderLogger::LogErrorMessage(openxr_command, "RuntimeInterface::LoadRuntimes - unknown error");
     } else {

@@ -9,209 +9,209 @@ partial class ExportedProperties
     /// </summary>
     public new class PropertyName : global::Godot.GodotObject.PropertyName {
         /// <summary>
-        /// Cached name for the 'NotGenerate_Complex_Lamda_Property' property.
+        /// Cached name for the 'NotGenerateComplexLamdaProperty' property.
         /// </summary>
-        public new static readonly global::Godot.StringName NotGenerate_Complex_Lamda_Property = "NotGenerate_Complex_Lamda_Property";
+        public new static readonly global::Godot.StringName NotGenerateComplexLamdaProperty = "NotGenerateComplexLamdaProperty";
         /// <summary>
-        /// Cached name for the 'NotGenerate_Lamda_NoField_Property' property.
+        /// Cached name for the 'NotGenerateLamdaNoFieldProperty' property.
         /// </summary>
-        public new static readonly global::Godot.StringName NotGenerate_Lamda_NoField_Property = "NotGenerate_Lamda_NoField_Property";
+        public new static readonly global::Godot.StringName NotGenerateLamdaNoFieldProperty = "NotGenerateLamdaNoFieldProperty";
         /// <summary>
-        /// Cached name for the 'NotGenerate_Complex_Return_Property' property.
+        /// Cached name for the 'NotGenerateComplexReturnProperty' property.
         /// </summary>
-        public new static readonly global::Godot.StringName NotGenerate_Complex_Return_Property = "NotGenerate_Complex_Return_Property";
+        public new static readonly global::Godot.StringName NotGenerateComplexReturnProperty = "NotGenerateComplexReturnProperty";
         /// <summary>
-        /// Cached name for the 'NotGenerate_Returns_Property' property.
+        /// Cached name for the 'NotGenerateReturnsProperty' property.
         /// </summary>
-        public new static readonly global::Godot.StringName NotGenerate_Returns_Property = "NotGenerate_Returns_Property";
+        public new static readonly global::Godot.StringName NotGenerateReturnsProperty = "NotGenerateReturnsProperty";
         /// <summary>
-        /// Cached name for the 'FullProperty_String' property.
+        /// Cached name for the 'FullPropertyString' property.
         /// </summary>
-        public new static readonly global::Godot.StringName FullProperty_String = "FullProperty_String";
+        public new static readonly global::Godot.StringName FullPropertyString = "FullPropertyString";
         /// <summary>
-        /// Cached name for the 'FullProperty_String_Complex' property.
+        /// Cached name for the 'FullPropertyString_Complex' property.
         /// </summary>
-        public new static readonly global::Godot.StringName FullProperty_String_Complex = "FullProperty_String_Complex";
+        public new static readonly global::Godot.StringName FullPropertyString_Complex = "FullPropertyString_Complex";
         /// <summary>
-        /// Cached name for the 'LamdaProperty_String' property.
+        /// Cached name for the 'LamdaPropertyString' property.
         /// </summary>
-        public new static readonly global::Godot.StringName LamdaProperty_String = "LamdaProperty_String";
+        public new static readonly global::Godot.StringName LamdaPropertyString = "LamdaPropertyString";
         /// <summary>
-        /// Cached name for the 'property_Boolean' property.
+        /// Cached name for the 'PropertyBoolean' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Boolean = "property_Boolean";
+        public new static readonly global::Godot.StringName PropertyBoolean = "PropertyBoolean";
         /// <summary>
-        /// Cached name for the 'property_Char' property.
+        /// Cached name for the 'PropertyChar' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Char = "property_Char";
+        public new static readonly global::Godot.StringName PropertyChar = "PropertyChar";
         /// <summary>
-        /// Cached name for the 'property_SByte' property.
+        /// Cached name for the 'PropertySByte' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_SByte = "property_SByte";
+        public new static readonly global::Godot.StringName PropertySByte = "PropertySByte";
         /// <summary>
-        /// Cached name for the 'property_Int16' property.
+        /// Cached name for the 'PropertyInt16' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Int16 = "property_Int16";
+        public new static readonly global::Godot.StringName PropertyInt16 = "PropertyInt16";
         /// <summary>
-        /// Cached name for the 'property_Int32' property.
+        /// Cached name for the 'PropertyInt32' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Int32 = "property_Int32";
+        public new static readonly global::Godot.StringName PropertyInt32 = "PropertyInt32";
         /// <summary>
-        /// Cached name for the 'property_Int64' property.
+        /// Cached name for the 'PropertyInt64' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Int64 = "property_Int64";
+        public new static readonly global::Godot.StringName PropertyInt64 = "PropertyInt64";
         /// <summary>
-        /// Cached name for the 'property_Byte' property.
+        /// Cached name for the 'PropertyByte' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Byte = "property_Byte";
+        public new static readonly global::Godot.StringName PropertyByte = "PropertyByte";
         /// <summary>
-        /// Cached name for the 'property_UInt16' property.
+        /// Cached name for the 'PropertyUInt16' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_UInt16 = "property_UInt16";
+        public new static readonly global::Godot.StringName PropertyUInt16 = "PropertyUInt16";
         /// <summary>
-        /// Cached name for the 'property_UInt32' property.
+        /// Cached name for the 'PropertyUInt32' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_UInt32 = "property_UInt32";
+        public new static readonly global::Godot.StringName PropertyUInt32 = "PropertyUInt32";
         /// <summary>
-        /// Cached name for the 'property_UInt64' property.
+        /// Cached name for the 'PropertyUInt64' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_UInt64 = "property_UInt64";
+        public new static readonly global::Godot.StringName PropertyUInt64 = "PropertyUInt64";
         /// <summary>
-        /// Cached name for the 'property_Single' property.
+        /// Cached name for the 'PropertySingle' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Single = "property_Single";
+        public new static readonly global::Godot.StringName PropertySingle = "PropertySingle";
         /// <summary>
-        /// Cached name for the 'property_Double' property.
+        /// Cached name for the 'PropertyDouble' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Double = "property_Double";
+        public new static readonly global::Godot.StringName PropertyDouble = "PropertyDouble";
         /// <summary>
-        /// Cached name for the 'property_String' property.
+        /// Cached name for the 'PropertyString' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_String = "property_String";
+        public new static readonly global::Godot.StringName PropertyString = "PropertyString";
         /// <summary>
-        /// Cached name for the 'property_Vector2' property.
+        /// Cached name for the 'PropertyVector2' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Vector2 = "property_Vector2";
+        public new static readonly global::Godot.StringName PropertyVector2 = "PropertyVector2";
         /// <summary>
-        /// Cached name for the 'property_Vector2I' property.
+        /// Cached name for the 'PropertyVector2I' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Vector2I = "property_Vector2I";
+        public new static readonly global::Godot.StringName PropertyVector2I = "PropertyVector2I";
         /// <summary>
-        /// Cached name for the 'property_Rect2' property.
+        /// Cached name for the 'PropertyRect2' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Rect2 = "property_Rect2";
+        public new static readonly global::Godot.StringName PropertyRect2 = "PropertyRect2";
         /// <summary>
-        /// Cached name for the 'property_Rect2I' property.
+        /// Cached name for the 'PropertyRect2I' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Rect2I = "property_Rect2I";
+        public new static readonly global::Godot.StringName PropertyRect2I = "PropertyRect2I";
         /// <summary>
-        /// Cached name for the 'property_Transform2D' property.
+        /// Cached name for the 'PropertyTransform2D' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Transform2D = "property_Transform2D";
+        public new static readonly global::Godot.StringName PropertyTransform2D = "PropertyTransform2D";
         /// <summary>
-        /// Cached name for the 'property_Vector3' property.
+        /// Cached name for the 'PropertyVector3' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Vector3 = "property_Vector3";
+        public new static readonly global::Godot.StringName PropertyVector3 = "PropertyVector3";
         /// <summary>
-        /// Cached name for the 'property_Vector3I' property.
+        /// Cached name for the 'PropertyVector3I' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Vector3I = "property_Vector3I";
+        public new static readonly global::Godot.StringName PropertyVector3I = "PropertyVector3I";
         /// <summary>
-        /// Cached name for the 'property_Basis' property.
+        /// Cached name for the 'PropertyBasis' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Basis = "property_Basis";
+        public new static readonly global::Godot.StringName PropertyBasis = "PropertyBasis";
         /// <summary>
-        /// Cached name for the 'property_Quaternion' property.
+        /// Cached name for the 'PropertyQuaternion' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Quaternion = "property_Quaternion";
+        public new static readonly global::Godot.StringName PropertyQuaternion = "PropertyQuaternion";
         /// <summary>
-        /// Cached name for the 'property_Transform3D' property.
+        /// Cached name for the 'PropertyTransform3D' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Transform3D = "property_Transform3D";
+        public new static readonly global::Godot.StringName PropertyTransform3D = "PropertyTransform3D";
         /// <summary>
-        /// Cached name for the 'property_Vector4' property.
+        /// Cached name for the 'PropertyVector4' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Vector4 = "property_Vector4";
+        public new static readonly global::Godot.StringName PropertyVector4 = "PropertyVector4";
         /// <summary>
-        /// Cached name for the 'property_Vector4I' property.
+        /// Cached name for the 'PropertyVector4I' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Vector4I = "property_Vector4I";
+        public new static readonly global::Godot.StringName PropertyVector4I = "PropertyVector4I";
         /// <summary>
-        /// Cached name for the 'property_Projection' property.
+        /// Cached name for the 'PropertyProjection' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Projection = "property_Projection";
+        public new static readonly global::Godot.StringName PropertyProjection = "PropertyProjection";
         /// <summary>
-        /// Cached name for the 'property_Aabb' property.
+        /// Cached name for the 'PropertyAabb' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Aabb = "property_Aabb";
+        public new static readonly global::Godot.StringName PropertyAabb = "PropertyAabb";
         /// <summary>
-        /// Cached name for the 'property_Color' property.
+        /// Cached name for the 'PropertyColor' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Color = "property_Color";
+        public new static readonly global::Godot.StringName PropertyColor = "PropertyColor";
         /// <summary>
-        /// Cached name for the 'property_Plane' property.
+        /// Cached name for the 'PropertyPlane' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Plane = "property_Plane";
+        public new static readonly global::Godot.StringName PropertyPlane = "PropertyPlane";
         /// <summary>
-        /// Cached name for the 'property_Callable' property.
+        /// Cached name for the 'PropertyCallable' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Callable = "property_Callable";
+        public new static readonly global::Godot.StringName PropertyCallable = "PropertyCallable";
         /// <summary>
-        /// Cached name for the 'property_Signal' property.
+        /// Cached name for the 'PropertySignal' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Signal = "property_Signal";
+        public new static readonly global::Godot.StringName PropertySignal = "PropertySignal";
         /// <summary>
-        /// Cached name for the 'property_Enum' property.
+        /// Cached name for the 'PropertyEnum' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Enum = "property_Enum";
+        public new static readonly global::Godot.StringName PropertyEnum = "PropertyEnum";
         /// <summary>
-        /// Cached name for the 'property_FlagsEnum' property.
+        /// Cached name for the 'PropertyFlagsEnum' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_FlagsEnum = "property_FlagsEnum";
+        public new static readonly global::Godot.StringName PropertyFlagsEnum = "PropertyFlagsEnum";
         /// <summary>
-        /// Cached name for the 'property_ByteArray' property.
+        /// Cached name for the 'PropertyByteArray' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_ByteArray = "property_ByteArray";
+        public new static readonly global::Godot.StringName PropertyByteArray = "PropertyByteArray";
         /// <summary>
-        /// Cached name for the 'property_Int32Array' property.
+        /// Cached name for the 'PropertyInt32Array' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Int32Array = "property_Int32Array";
+        public new static readonly global::Godot.StringName PropertyInt32Array = "PropertyInt32Array";
         /// <summary>
-        /// Cached name for the 'property_Int64Array' property.
+        /// Cached name for the 'PropertyInt64Array' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Int64Array = "property_Int64Array";
+        public new static readonly global::Godot.StringName PropertyInt64Array = "PropertyInt64Array";
         /// <summary>
-        /// Cached name for the 'property_SingleArray' property.
+        /// Cached name for the 'PropertySingleArray' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_SingleArray = "property_SingleArray";
+        public new static readonly global::Godot.StringName PropertySingleArray = "PropertySingleArray";
         /// <summary>
-        /// Cached name for the 'property_DoubleArray' property.
+        /// Cached name for the 'PropertyDoubleArray' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_DoubleArray = "property_DoubleArray";
+        public new static readonly global::Godot.StringName PropertyDoubleArray = "PropertyDoubleArray";
         /// <summary>
-        /// Cached name for the 'property_StringArray' property.
+        /// Cached name for the 'PropertyStringArray' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_StringArray = "property_StringArray";
+        public new static readonly global::Godot.StringName PropertyStringArray = "PropertyStringArray";
         /// <summary>
-        /// Cached name for the 'property_StringArrayEnum' property.
+        /// Cached name for the 'PropertyStringArrayEnum' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_StringArrayEnum = "property_StringArrayEnum";
+        public new static readonly global::Godot.StringName PropertyStringArrayEnum = "PropertyStringArrayEnum";
         /// <summary>
-        /// Cached name for the 'property_Vector2Array' property.
+        /// Cached name for the 'PropertyVector2Array' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Vector2Array = "property_Vector2Array";
+        public new static readonly global::Godot.StringName PropertyVector2Array = "PropertyVector2Array";
         /// <summary>
-        /// Cached name for the 'property_Vector3Array' property.
+        /// Cached name for the 'PropertyVector3Array' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Vector3Array = "property_Vector3Array";
+        public new static readonly global::Godot.StringName PropertyVector3Array = "PropertyVector3Array";
         /// <summary>
-        /// Cached name for the 'property_ColorArray' property.
+        /// Cached name for the 'PropertyColorArray' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_ColorArray = "property_ColorArray";
+        public new static readonly global::Godot.StringName PropertyColorArray = "PropertyColorArray";
         /// <summary>
-        /// Cached name for the 'property_GodotObjectOrDerivedArray' property.
+        /// Cached name for the 'PropertyGodotObjectOrDerivedArray' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_GodotObjectOrDerivedArray = "property_GodotObjectOrDerivedArray";
+        public new static readonly global::Godot.StringName PropertyGodotObjectOrDerivedArray = "PropertyGodotObjectOrDerivedArray";
         /// <summary>
         /// Cached name for the 'field_StringNameArray' property.
         /// </summary>
@@ -225,272 +225,272 @@ partial class ExportedProperties
         /// </summary>
         public new static readonly global::Godot.StringName field_RidArray = "field_RidArray";
         /// <summary>
-        /// Cached name for the 'property_Variant' property.
+        /// Cached name for the 'PropertyVariant' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Variant = "property_Variant";
+        public new static readonly global::Godot.StringName PropertyVariant = "PropertyVariant";
         /// <summary>
-        /// Cached name for the 'property_GodotObjectOrDerived' property.
+        /// Cached name for the 'PropertyGodotObjectOrDerived' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_GodotObjectOrDerived = "property_GodotObjectOrDerived";
+        public new static readonly global::Godot.StringName PropertyGodotObjectOrDerived = "PropertyGodotObjectOrDerived";
         /// <summary>
-        /// Cached name for the 'property_GodotResourceTexture' property.
+        /// Cached name for the 'PropertyGodotResourceTexture' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_GodotResourceTexture = "property_GodotResourceTexture";
+        public new static readonly global::Godot.StringName PropertyGodotResourceTexture = "PropertyGodotResourceTexture";
         /// <summary>
-        /// Cached name for the 'property_StringName' property.
+        /// Cached name for the 'PropertyStringName' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_StringName = "property_StringName";
+        public new static readonly global::Godot.StringName PropertyStringName = "PropertyStringName";
         /// <summary>
-        /// Cached name for the 'property_NodePath' property.
+        /// Cached name for the 'PropertyNodePath' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_NodePath = "property_NodePath";
+        public new static readonly global::Godot.StringName PropertyNodePath = "PropertyNodePath";
         /// <summary>
-        /// Cached name for the 'property_Rid' property.
+        /// Cached name for the 'PropertyRid' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_Rid = "property_Rid";
+        public new static readonly global::Godot.StringName PropertyRid = "PropertyRid";
         /// <summary>
-        /// Cached name for the 'property_GodotDictionary' property.
+        /// Cached name for the 'PropertyGodotDictionary' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_GodotDictionary = "property_GodotDictionary";
+        public new static readonly global::Godot.StringName PropertyGodotDictionary = "PropertyGodotDictionary";
         /// <summary>
-        /// Cached name for the 'property_GodotArray' property.
+        /// Cached name for the 'PropertyGodotArray' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_GodotArray = "property_GodotArray";
+        public new static readonly global::Godot.StringName PropertyGodotArray = "PropertyGodotArray";
         /// <summary>
-        /// Cached name for the 'property_GodotGenericDictionary' property.
+        /// Cached name for the 'PropertyGodotGenericDictionary' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_GodotGenericDictionary = "property_GodotGenericDictionary";
+        public new static readonly global::Godot.StringName PropertyGodotGenericDictionary = "PropertyGodotGenericDictionary";
         /// <summary>
-        /// Cached name for the 'property_GodotGenericArray' property.
+        /// Cached name for the 'PropertyGodotGenericArray' property.
         /// </summary>
-        public new static readonly global::Godot.StringName property_GodotGenericArray = "property_GodotGenericArray";
+        public new static readonly global::Godot.StringName PropertyGodotGenericArray = "PropertyGodotGenericArray";
         /// <summary>
-        /// Cached name for the '_notGenerate_Property_String' field.
+        /// Cached name for the '_notGeneratePropertyString' field.
         /// </summary>
-        public new static readonly global::Godot.StringName _notGenerate_Property_String = "_notGenerate_Property_String";
+        public new static readonly global::Godot.StringName _notGeneratePropertyString = "_notGeneratePropertyString";
         /// <summary>
-        /// Cached name for the '_notGenerate_Property_Int' field.
+        /// Cached name for the '_notGeneratePropertyInt' field.
         /// </summary>
-        public new static readonly global::Godot.StringName _notGenerate_Property_Int = "_notGenerate_Property_Int";
+        public new static readonly global::Godot.StringName _notGeneratePropertyInt = "_notGeneratePropertyInt";
         /// <summary>
-        /// Cached name for the '_fullProperty_String' field.
+        /// Cached name for the '_fullPropertyString' field.
         /// </summary>
-        public new static readonly global::Godot.StringName _fullProperty_String = "_fullProperty_String";
+        public new static readonly global::Godot.StringName _fullPropertyString = "_fullPropertyString";
         /// <summary>
-        /// Cached name for the '_fullProperty_String_Complex' field.
+        /// Cached name for the '_fullPropertyStringComplex' field.
         /// </summary>
-        public new static readonly global::Godot.StringName _fullProperty_String_Complex = "_fullProperty_String_Complex";
+        public new static readonly global::Godot.StringName _fullPropertyStringComplex = "_fullPropertyStringComplex";
         /// <summary>
-        /// Cached name for the '_lamdaProperty_String' field.
+        /// Cached name for the '_lamdaPropertyString' field.
         /// </summary>
-        public new static readonly global::Godot.StringName _lamdaProperty_String = "_lamdaProperty_String";
+        public new static readonly global::Godot.StringName _lamdaPropertyString = "_lamdaPropertyString";
     }
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
     {
-        if (name == PropertyName.NotGenerate_Complex_Lamda_Property) {
-            this.NotGenerate_Complex_Lamda_Property = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        if (name == PropertyName.NotGenerateComplexLamdaProperty) {
+            this.NotGenerateComplexLamdaProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.NotGenerate_Lamda_NoField_Property) {
-            this.NotGenerate_Lamda_NoField_Property = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName.NotGenerateLamdaNoFieldProperty) {
+            this.NotGenerateLamdaNoFieldProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.NotGenerate_Complex_Return_Property) {
-            this.NotGenerate_Complex_Return_Property = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName.NotGenerateComplexReturnProperty) {
+            this.NotGenerateComplexReturnProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.NotGenerate_Returns_Property) {
-            this.NotGenerate_Returns_Property = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName.NotGenerateReturnsProperty) {
+            this.NotGenerateReturnsProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.FullProperty_String) {
-            this.FullProperty_String = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName.FullPropertyString) {
+            this.FullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.FullProperty_String_Complex) {
-            this.FullProperty_String_Complex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName.FullPropertyString_Complex) {
+            this.FullPropertyString_Complex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.LamdaProperty_String) {
-            this.LamdaProperty_String = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName.LamdaPropertyString) {
+            this.LamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.property_Boolean) {
-            this.property_Boolean = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+        else if (name == PropertyName.PropertyBoolean) {
+            this.PropertyBoolean = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
             return true;
         }
-        else if (name == PropertyName.property_Char) {
-            this.property_Char = global::Godot.NativeInterop.VariantUtils.ConvertTo<char>(value);
+        else if (name == PropertyName.PropertyChar) {
+            this.PropertyChar = global::Godot.NativeInterop.VariantUtils.ConvertTo<char>(value);
             return true;
         }
-        else if (name == PropertyName.property_SByte) {
-            this.property_SByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<sbyte>(value);
+        else if (name == PropertyName.PropertySByte) {
+            this.PropertySByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<sbyte>(value);
             return true;
         }
-        else if (name == PropertyName.property_Int16) {
-            this.property_Int16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<short>(value);
+        else if (name == PropertyName.PropertyInt16) {
+            this.PropertyInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<short>(value);
             return true;
         }
-        else if (name == PropertyName.property_Int32) {
-            this.property_Int32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+        else if (name == PropertyName.PropertyInt32) {
+            this.PropertyInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
             return true;
         }
-        else if (name == PropertyName.property_Int64) {
-            this.property_Int64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<long>(value);
+        else if (name == PropertyName.PropertyInt64) {
+            this.PropertyInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<long>(value);
             return true;
         }
-        else if (name == PropertyName.property_Byte) {
-            this.property_Byte = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte>(value);
+        else if (name == PropertyName.PropertyByte) {
+            this.PropertyByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte>(value);
             return true;
         }
-        else if (name == PropertyName.property_UInt16) {
-            this.property_UInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ushort>(value);
+        else if (name == PropertyName.PropertyUInt16) {
+            this.PropertyUInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ushort>(value);
             return true;
         }
-        else if (name == PropertyName.property_UInt32) {
-            this.property_UInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<uint>(value);
+        else if (name == PropertyName.PropertyUInt32) {
+            this.PropertyUInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<uint>(value);
             return true;
         }
-        else if (name == PropertyName.property_UInt64) {
-            this.property_UInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ulong>(value);
+        else if (name == PropertyName.PropertyUInt64) {
+            this.PropertyUInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ulong>(value);
             return true;
         }
-        else if (name == PropertyName.property_Single) {
-            this.property_Single = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+        else if (name == PropertyName.PropertySingle) {
+            this.PropertySingle = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
             return true;
         }
-        else if (name == PropertyName.property_Double) {
-            this.property_Double = global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(value);
+        else if (name == PropertyName.PropertyDouble) {
+            this.PropertyDouble = global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(value);
             return true;
         }
-        else if (name == PropertyName.property_String) {
-            this.property_String = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName.PropertyString) {
+            this.PropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.property_Vector2) {
-            this.property_Vector2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2>(value);
+        else if (name == PropertyName.PropertyVector2) {
+            this.PropertyVector2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2>(value);
             return true;
         }
-        else if (name == PropertyName.property_Vector2I) {
-            this.property_Vector2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2I>(value);
+        else if (name == PropertyName.PropertyVector2I) {
+            this.PropertyVector2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2I>(value);
             return true;
         }
-        else if (name == PropertyName.property_Rect2) {
-            this.property_Rect2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2>(value);
+        else if (name == PropertyName.PropertyRect2) {
+            this.PropertyRect2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2>(value);
             return true;
         }
-        else if (name == PropertyName.property_Rect2I) {
-            this.property_Rect2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2I>(value);
+        else if (name == PropertyName.PropertyRect2I) {
+            this.PropertyRect2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2I>(value);
             return true;
         }
-        else if (name == PropertyName.property_Transform2D) {
-            this.property_Transform2D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform2D>(value);
+        else if (name == PropertyName.PropertyTransform2D) {
+            this.PropertyTransform2D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform2D>(value);
             return true;
         }
-        else if (name == PropertyName.property_Vector3) {
-            this.property_Vector3 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3>(value);
+        else if (name == PropertyName.PropertyVector3) {
+            this.PropertyVector3 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3>(value);
             return true;
         }
-        else if (name == PropertyName.property_Vector3I) {
-            this.property_Vector3I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3I>(value);
+        else if (name == PropertyName.PropertyVector3I) {
+            this.PropertyVector3I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3I>(value);
             return true;
         }
-        else if (name == PropertyName.property_Basis) {
-            this.property_Basis = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Basis>(value);
+        else if (name == PropertyName.PropertyBasis) {
+            this.PropertyBasis = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Basis>(value);
             return true;
         }
-        else if (name == PropertyName.property_Quaternion) {
-            this.property_Quaternion = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Quaternion>(value);
+        else if (name == PropertyName.PropertyQuaternion) {
+            this.PropertyQuaternion = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Quaternion>(value);
             return true;
         }
-        else if (name == PropertyName.property_Transform3D) {
-            this.property_Transform3D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform3D>(value);
+        else if (name == PropertyName.PropertyTransform3D) {
+            this.PropertyTransform3D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform3D>(value);
             return true;
         }
-        else if (name == PropertyName.property_Vector4) {
-            this.property_Vector4 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4>(value);
+        else if (name == PropertyName.PropertyVector4) {
+            this.PropertyVector4 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4>(value);
             return true;
         }
-        else if (name == PropertyName.property_Vector4I) {
-            this.property_Vector4I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4I>(value);
+        else if (name == PropertyName.PropertyVector4I) {
+            this.PropertyVector4I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4I>(value);
             return true;
         }
-        else if (name == PropertyName.property_Projection) {
-            this.property_Projection = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Projection>(value);
+        else if (name == PropertyName.PropertyProjection) {
+            this.PropertyProjection = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Projection>(value);
             return true;
         }
-        else if (name == PropertyName.property_Aabb) {
-            this.property_Aabb = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Aabb>(value);
+        else if (name == PropertyName.PropertyAabb) {
+            this.PropertyAabb = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Aabb>(value);
             return true;
         }
-        else if (name == PropertyName.property_Color) {
-            this.property_Color = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color>(value);
+        else if (name == PropertyName.PropertyColor) {
+            this.PropertyColor = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color>(value);
             return true;
         }
-        else if (name == PropertyName.property_Plane) {
-            this.property_Plane = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Plane>(value);
+        else if (name == PropertyName.PropertyPlane) {
+            this.PropertyPlane = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Plane>(value);
             return true;
         }
-        else if (name == PropertyName.property_Callable) {
-            this.property_Callable = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+        else if (name == PropertyName.PropertyCallable) {
+            this.PropertyCallable = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
             return true;
         }
-        else if (name == PropertyName.property_Signal) {
-            this.property_Signal = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Signal>(value);
+        else if (name == PropertyName.PropertySignal) {
+            this.PropertySignal = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Signal>(value);
             return true;
         }
-        else if (name == PropertyName.property_Enum) {
-            this.property_Enum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyEnum>(value);
+        else if (name == PropertyName.PropertyEnum) {
+            this.PropertyEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyEnum>(value);
             return true;
         }
-        else if (name == PropertyName.property_FlagsEnum) {
-            this.property_FlagsEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyFlagsEnum>(value);
+        else if (name == PropertyName.PropertyFlagsEnum) {
+            this.PropertyFlagsEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyFlagsEnum>(value);
             return true;
         }
-        else if (name == PropertyName.property_ByteArray) {
-            this.property_ByteArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte[]>(value);
+        else if (name == PropertyName.PropertyByteArray) {
+            this.PropertyByteArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_Int32Array) {
-            this.property_Int32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
+        else if (name == PropertyName.PropertyInt32Array) {
+            this.PropertyInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_Int64Array) {
-            this.property_Int64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
+        else if (name == PropertyName.PropertyInt64Array) {
+            this.PropertyInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_SingleArray) {
-            this.property_SingleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<float[]>(value);
+        else if (name == PropertyName.PropertySingleArray) {
+            this.PropertySingleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<float[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_DoubleArray) {
-            this.property_DoubleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<double[]>(value);
+        else if (name == PropertyName.PropertyDoubleArray) {
+            this.PropertyDoubleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<double[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_StringArray) {
-            this.property_StringArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
+        else if (name == PropertyName.PropertyStringArray) {
+            this.PropertyStringArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_StringArrayEnum) {
-            this.property_StringArrayEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
+        else if (name == PropertyName.PropertyStringArrayEnum) {
+            this.PropertyStringArrayEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_Vector2Array) {
-            this.property_Vector2Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2[]>(value);
+        else if (name == PropertyName.PropertyVector2Array) {
+            this.PropertyVector2Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_Vector3Array) {
-            this.property_Vector3Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3[]>(value);
+        else if (name == PropertyName.PropertyVector3Array) {
+            this.PropertyVector3Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_ColorArray) {
-            this.property_ColorArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color[]>(value);
+        else if (name == PropertyName.PropertyColorArray) {
+            this.PropertyColorArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_GodotObjectOrDerivedArray) {
-            this.property_GodotObjectOrDerivedArray = global::Godot.NativeInterop.VariantUtils.ConvertToSystemArrayOfGodotObject<global::Godot.GodotObject>(value);
+        else if (name == PropertyName.PropertyGodotObjectOrDerivedArray) {
+            this.PropertyGodotObjectOrDerivedArray = global::Godot.NativeInterop.VariantUtils.ConvertToSystemArrayOfGodotObject<global::Godot.GodotObject>(value);
             return true;
         }
         else if (name == PropertyName.field_StringNameArray) {
@@ -505,64 +505,64 @@ partial class ExportedProperties
             this.field_RidArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid[]>(value);
             return true;
         }
-        else if (name == PropertyName.property_Variant) {
-            this.property_Variant = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Variant>(value);
+        else if (name == PropertyName.PropertyVariant) {
+            this.PropertyVariant = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Variant>(value);
             return true;
         }
-        else if (name == PropertyName.property_GodotObjectOrDerived) {
-            this.property_GodotObjectOrDerived = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.GodotObject>(value);
+        else if (name == PropertyName.PropertyGodotObjectOrDerived) {
+            this.PropertyGodotObjectOrDerived = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.GodotObject>(value);
             return true;
         }
-        else if (name == PropertyName.property_GodotResourceTexture) {
-            this.property_GodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
+        else if (name == PropertyName.PropertyGodotResourceTexture) {
+            this.PropertyGodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
             return true;
         }
-        else if (name == PropertyName.property_StringName) {
-            this.property_StringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
+        else if (name == PropertyName.PropertyStringName) {
+            this.PropertyStringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
             return true;
         }
-        else if (name == PropertyName.property_NodePath) {
-            this.property_NodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
+        else if (name == PropertyName.PropertyNodePath) {
+            this.PropertyNodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
             return true;
         }
-        else if (name == PropertyName.property_Rid) {
-            this.property_Rid = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid>(value);
+        else if (name == PropertyName.PropertyRid) {
+            this.PropertyRid = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid>(value);
             return true;
         }
-        else if (name == PropertyName.property_GodotDictionary) {
-            this.property_GodotDictionary = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Dictionary>(value);
+        else if (name == PropertyName.PropertyGodotDictionary) {
+            this.PropertyGodotDictionary = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Dictionary>(value);
             return true;
         }
-        else if (name == PropertyName.property_GodotArray) {
-            this.property_GodotArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Array>(value);
+        else if (name == PropertyName.PropertyGodotArray) {
+            this.PropertyGodotArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Array>(value);
             return true;
         }
-        else if (name == PropertyName.property_GodotGenericDictionary) {
-            this.property_GodotGenericDictionary = global::Godot.NativeInterop.VariantUtils.ConvertToDictionary<string, bool>(value);
+        else if (name == PropertyName.PropertyGodotGenericDictionary) {
+            this.PropertyGodotGenericDictionary = global::Godot.NativeInterop.VariantUtils.ConvertToDictionary<string, bool>(value);
             return true;
         }
-        else if (name == PropertyName.property_GodotGenericArray) {
-            this.property_GodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
+        else if (name == PropertyName.PropertyGodotGenericArray) {
+            this.PropertyGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
             return true;
         }
-        else if (name == PropertyName._notGenerate_Property_String) {
-            this._notGenerate_Property_String = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName._notGeneratePropertyString) {
+            this._notGeneratePropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName._notGenerate_Property_Int) {
-            this._notGenerate_Property_Int = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+        else if (name == PropertyName._notGeneratePropertyInt) {
+            this._notGeneratePropertyInt = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
             return true;
         }
-        else if (name == PropertyName._fullProperty_String) {
-            this._fullProperty_String = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName._fullPropertyString) {
+            this._fullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName._fullProperty_String_Complex) {
-            this._fullProperty_String_Complex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName._fullPropertyStringComplex) {
+            this._fullPropertyStringComplex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName._lamdaProperty_String) {
-            this._lamdaProperty_String = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+        else if (name == PropertyName._lamdaPropertyString) {
+            this._lamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
         return base.SetGodotClassPropertyValue(name, value);
@@ -571,208 +571,208 @@ partial class ExportedProperties
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
     {
-        if (name == PropertyName.NotGenerate_Complex_Lamda_Property) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerate_Complex_Lamda_Property);
+        if (name == PropertyName.NotGenerateComplexLamdaProperty) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerateComplexLamdaProperty);
             return true;
         }
-        else if (name == PropertyName.NotGenerate_Lamda_NoField_Property) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerate_Lamda_NoField_Property);
+        else if (name == PropertyName.NotGenerateLamdaNoFieldProperty) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerateLamdaNoFieldProperty);
             return true;
         }
-        else if (name == PropertyName.NotGenerate_Complex_Return_Property) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerate_Complex_Return_Property);
+        else if (name == PropertyName.NotGenerateComplexReturnProperty) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerateComplexReturnProperty);
             return true;
         }
-        else if (name == PropertyName.NotGenerate_Returns_Property) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerate_Returns_Property);
+        else if (name == PropertyName.NotGenerateReturnsProperty) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerateReturnsProperty);
             return true;
         }
-        else if (name == PropertyName.FullProperty_String) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.FullProperty_String);
+        else if (name == PropertyName.FullPropertyString) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.FullPropertyString);
             return true;
         }
-        else if (name == PropertyName.FullProperty_String_Complex) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.FullProperty_String_Complex);
+        else if (name == PropertyName.FullPropertyString_Complex) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.FullPropertyString_Complex);
             return true;
         }
-        else if (name == PropertyName.LamdaProperty_String) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.LamdaProperty_String);
+        else if (name == PropertyName.LamdaPropertyString) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.LamdaPropertyString);
             return true;
         }
-        else if (name == PropertyName.property_Boolean) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.property_Boolean);
+        else if (name == PropertyName.PropertyBoolean) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.PropertyBoolean);
             return true;
         }
-        else if (name == PropertyName.property_Char) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<char>(this.property_Char);
+        else if (name == PropertyName.PropertyChar) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<char>(this.PropertyChar);
             return true;
         }
-        else if (name == PropertyName.property_SByte) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<sbyte>(this.property_SByte);
+        else if (name == PropertyName.PropertySByte) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<sbyte>(this.PropertySByte);
             return true;
         }
-        else if (name == PropertyName.property_Int16) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<short>(this.property_Int16);
+        else if (name == PropertyName.PropertyInt16) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<short>(this.PropertyInt16);
             return true;
         }
-        else if (name == PropertyName.property_Int32) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.property_Int32);
+        else if (name == PropertyName.PropertyInt32) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.PropertyInt32);
             return true;
         }
-        else if (name == PropertyName.property_Int64) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long>(this.property_Int64);
+        else if (name == PropertyName.PropertyInt64) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long>(this.PropertyInt64);
             return true;
         }
-        else if (name == PropertyName.property_Byte) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte>(this.property_Byte);
+        else if (name == PropertyName.PropertyByte) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte>(this.PropertyByte);
             return true;
         }
-        else if (name == PropertyName.property_UInt16) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ushort>(this.property_UInt16);
+        else if (name == PropertyName.PropertyUInt16) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ushort>(this.PropertyUInt16);
             return true;
         }
-        else if (name == PropertyName.property_UInt32) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<uint>(this.property_UInt32);
+        else if (name == PropertyName.PropertyUInt32) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<uint>(this.PropertyUInt32);
             return true;
         }
-        else if (name == PropertyName.property_UInt64) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ulong>(this.property_UInt64);
+        else if (name == PropertyName.PropertyUInt64) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ulong>(this.PropertyUInt64);
             return true;
         }
-        else if (name == PropertyName.property_Single) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.property_Single);
+        else if (name == PropertyName.PropertySingle) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.PropertySingle);
             return true;
         }
-        else if (name == PropertyName.property_Double) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double>(this.property_Double);
+        else if (name == PropertyName.PropertyDouble) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double>(this.PropertyDouble);
             return true;
         }
-        else if (name == PropertyName.property_String) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.property_String);
+        else if (name == PropertyName.PropertyString) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.PropertyString);
             return true;
         }
-        else if (name == PropertyName.property_Vector2) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2>(this.property_Vector2);
+        else if (name == PropertyName.PropertyVector2) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2>(this.PropertyVector2);
             return true;
         }
-        else if (name == PropertyName.property_Vector2I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2I>(this.property_Vector2I);
+        else if (name == PropertyName.PropertyVector2I) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2I>(this.PropertyVector2I);
             return true;
         }
-        else if (name == PropertyName.property_Rect2) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2>(this.property_Rect2);
+        else if (name == PropertyName.PropertyRect2) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2>(this.PropertyRect2);
             return true;
         }
-        else if (name == PropertyName.property_Rect2I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2I>(this.property_Rect2I);
+        else if (name == PropertyName.PropertyRect2I) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2I>(this.PropertyRect2I);
             return true;
         }
-        else if (name == PropertyName.property_Transform2D) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform2D>(this.property_Transform2D);
+        else if (name == PropertyName.PropertyTransform2D) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform2D>(this.PropertyTransform2D);
             return true;
         }
-        else if (name == PropertyName.property_Vector3) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3>(this.property_Vector3);
+        else if (name == PropertyName.PropertyVector3) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3>(this.PropertyVector3);
             return true;
         }
-        else if (name == PropertyName.property_Vector3I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3I>(this.property_Vector3I);
+        else if (name == PropertyName.PropertyVector3I) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3I>(this.PropertyVector3I);
             return true;
         }
-        else if (name == PropertyName.property_Basis) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Basis>(this.property_Basis);
+        else if (name == PropertyName.PropertyBasis) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Basis>(this.PropertyBasis);
             return true;
         }
-        else if (name == PropertyName.property_Quaternion) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Quaternion>(this.property_Quaternion);
+        else if (name == PropertyName.PropertyQuaternion) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Quaternion>(this.PropertyQuaternion);
             return true;
         }
-        else if (name == PropertyName.property_Transform3D) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform3D>(this.property_Transform3D);
+        else if (name == PropertyName.PropertyTransform3D) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform3D>(this.PropertyTransform3D);
             return true;
         }
-        else if (name == PropertyName.property_Vector4) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4>(this.property_Vector4);
+        else if (name == PropertyName.PropertyVector4) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4>(this.PropertyVector4);
             return true;
         }
-        else if (name == PropertyName.property_Vector4I) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4I>(this.property_Vector4I);
+        else if (name == PropertyName.PropertyVector4I) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4I>(this.PropertyVector4I);
             return true;
         }
-        else if (name == PropertyName.property_Projection) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Projection>(this.property_Projection);
+        else if (name == PropertyName.PropertyProjection) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Projection>(this.PropertyProjection);
             return true;
         }
-        else if (name == PropertyName.property_Aabb) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Aabb>(this.property_Aabb);
+        else if (name == PropertyName.PropertyAabb) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Aabb>(this.PropertyAabb);
             return true;
         }
-        else if (name == PropertyName.property_Color) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color>(this.property_Color);
+        else if (name == PropertyName.PropertyColor) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color>(this.PropertyColor);
             return true;
         }
-        else if (name == PropertyName.property_Plane) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Plane>(this.property_Plane);
+        else if (name == PropertyName.PropertyPlane) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Plane>(this.PropertyPlane);
             return true;
         }
-        else if (name == PropertyName.property_Callable) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.property_Callable);
+        else if (name == PropertyName.PropertyCallable) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.PropertyCallable);
             return true;
         }
-        else if (name == PropertyName.property_Signal) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Signal>(this.property_Signal);
+        else if (name == PropertyName.PropertySignal) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Signal>(this.PropertySignal);
             return true;
         }
-        else if (name == PropertyName.property_Enum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyEnum>(this.property_Enum);
+        else if (name == PropertyName.PropertyEnum) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyEnum>(this.PropertyEnum);
             return true;
         }
-        else if (name == PropertyName.property_FlagsEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyFlagsEnum>(this.property_FlagsEnum);
+        else if (name == PropertyName.PropertyFlagsEnum) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyFlagsEnum>(this.PropertyFlagsEnum);
             return true;
         }
-        else if (name == PropertyName.property_ByteArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte[]>(this.property_ByteArray);
+        else if (name == PropertyName.PropertyByteArray) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte[]>(this.PropertyByteArray);
             return true;
         }
-        else if (name == PropertyName.property_Int32Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(this.property_Int32Array);
+        else if (name == PropertyName.PropertyInt32Array) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(this.PropertyInt32Array);
             return true;
         }
-        else if (name == PropertyName.property_Int64Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(this.property_Int64Array);
+        else if (name == PropertyName.PropertyInt64Array) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(this.PropertyInt64Array);
             return true;
         }
-        else if (name == PropertyName.property_SingleArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float[]>(this.property_SingleArray);
+        else if (name == PropertyName.PropertySingleArray) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float[]>(this.PropertySingleArray);
             return true;
         }
-        else if (name == PropertyName.property_DoubleArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double[]>(this.property_DoubleArray);
+        else if (name == PropertyName.PropertyDoubleArray) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double[]>(this.PropertyDoubleArray);
             return true;
         }
-        else if (name == PropertyName.property_StringArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.property_StringArray);
+        else if (name == PropertyName.PropertyStringArray) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.PropertyStringArray);
             return true;
         }
-        else if (name == PropertyName.property_StringArrayEnum) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.property_StringArrayEnum);
+        else if (name == PropertyName.PropertyStringArrayEnum) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.PropertyStringArrayEnum);
             return true;
         }
-        else if (name == PropertyName.property_Vector2Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2[]>(this.property_Vector2Array);
+        else if (name == PropertyName.PropertyVector2Array) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2[]>(this.PropertyVector2Array);
             return true;
         }
-        else if (name == PropertyName.property_Vector3Array) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3[]>(this.property_Vector3Array);
+        else if (name == PropertyName.PropertyVector3Array) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3[]>(this.PropertyVector3Array);
             return true;
         }
-        else if (name == PropertyName.property_ColorArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color[]>(this.property_ColorArray);
+        else if (name == PropertyName.PropertyColorArray) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color[]>(this.PropertyColorArray);
             return true;
         }
-        else if (name == PropertyName.property_GodotObjectOrDerivedArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromSystemArrayOfGodotObject(this.property_GodotObjectOrDerivedArray);
+        else if (name == PropertyName.PropertyGodotObjectOrDerivedArray) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFromSystemArrayOfGodotObject(this.PropertyGodotObjectOrDerivedArray);
             return true;
         }
         else if (name == PropertyName.field_StringNameArray) {
@@ -787,64 +787,64 @@ partial class ExportedProperties
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid[]>(this.field_RidArray);
             return true;
         }
-        else if (name == PropertyName.property_Variant) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(this.property_Variant);
+        else if (name == PropertyName.PropertyVariant) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(this.PropertyVariant);
             return true;
         }
-        else if (name == PropertyName.property_GodotObjectOrDerived) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.GodotObject>(this.property_GodotObjectOrDerived);
+        else if (name == PropertyName.PropertyGodotObjectOrDerived) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.GodotObject>(this.PropertyGodotObjectOrDerived);
             return true;
         }
-        else if (name == PropertyName.property_GodotResourceTexture) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.property_GodotResourceTexture);
+        else if (name == PropertyName.PropertyGodotResourceTexture) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.PropertyGodotResourceTexture);
             return true;
         }
-        else if (name == PropertyName.property_StringName) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(this.property_StringName);
+        else if (name == PropertyName.PropertyStringName) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(this.PropertyStringName);
             return true;
         }
-        else if (name == PropertyName.property_NodePath) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this.property_NodePath);
+        else if (name == PropertyName.PropertyNodePath) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this.PropertyNodePath);
             return true;
         }
-        else if (name == PropertyName.property_Rid) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid>(this.property_Rid);
+        else if (name == PropertyName.PropertyRid) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid>(this.PropertyRid);
             return true;
         }
-        else if (name == PropertyName.property_GodotDictionary) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Dictionary>(this.property_GodotDictionary);
+        else if (name == PropertyName.PropertyGodotDictionary) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Dictionary>(this.PropertyGodotDictionary);
             return true;
         }
-        else if (name == PropertyName.property_GodotArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Array>(this.property_GodotArray);
+        else if (name == PropertyName.PropertyGodotArray) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Array>(this.PropertyGodotArray);
             return true;
         }
-        else if (name == PropertyName.property_GodotGenericDictionary) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromDictionary(this.property_GodotGenericDictionary);
+        else if (name == PropertyName.PropertyGodotGenericDictionary) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFromDictionary(this.PropertyGodotGenericDictionary);
             return true;
         }
-        else if (name == PropertyName.property_GodotGenericArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.property_GodotGenericArray);
+        else if (name == PropertyName.PropertyGodotGenericArray) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.PropertyGodotGenericArray);
             return true;
         }
-        else if (name == PropertyName._notGenerate_Property_String) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._notGenerate_Property_String);
+        else if (name == PropertyName._notGeneratePropertyString) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._notGeneratePropertyString);
             return true;
         }
-        else if (name == PropertyName._notGenerate_Property_Int) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this._notGenerate_Property_Int);
+        else if (name == PropertyName._notGeneratePropertyInt) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this._notGeneratePropertyInt);
             return true;
         }
-        else if (name == PropertyName._fullProperty_String) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._fullProperty_String);
+        else if (name == PropertyName._fullPropertyString) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._fullPropertyString);
             return true;
         }
-        else if (name == PropertyName._fullProperty_String_Complex) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._fullProperty_String_Complex);
+        else if (name == PropertyName._fullPropertyStringComplex) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._fullPropertyStringComplex);
             return true;
         }
-        else if (name == PropertyName._lamdaProperty_String) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._lamdaProperty_String);
+        else if (name == PropertyName._lamdaPropertyString) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._lamdaPropertyString);
             return true;
         }
         return base.GetGodotClassPropertyValue(name, out value);
@@ -858,75 +858,75 @@ partial class ExportedProperties
     internal new static global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo> GetGodotPropertyList()
     {
         var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName._notGenerate_Property_String, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.NotGenerate_Complex_Lamda_Property, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.NotGenerate_Lamda_NoField_Property, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.NotGenerate_Complex_Return_Property, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName._notGenerate_Property_Int, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.NotGenerate_Returns_Property, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName._fullProperty_String, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.FullProperty_String, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName._fullProperty_String_Complex, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.FullProperty_String_Complex, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName._lamdaProperty_String, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.LamdaProperty_String, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)1, name: PropertyName.property_Boolean, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_Char, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_SByte, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_Int16, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_Int32, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_Int64, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_Byte, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_UInt16, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_UInt32, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_UInt64, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.property_Single, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.property_Double, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.property_String, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)5, name: PropertyName.property_Vector2, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)6, name: PropertyName.property_Vector2I, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)7, name: PropertyName.property_Rect2, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)8, name: PropertyName.property_Rect2I, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)11, name: PropertyName.property_Transform2D, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)9, name: PropertyName.property_Vector3, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)10, name: PropertyName.property_Vector3I, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)17, name: PropertyName.property_Basis, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)15, name: PropertyName.property_Quaternion, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)18, name: PropertyName.property_Transform3D, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)12, name: PropertyName.property_Vector4, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)13, name: PropertyName.property_Vector4I, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)19, name: PropertyName.property_Projection, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)16, name: PropertyName.property_Aabb, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)20, name: PropertyName.property_Color, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)14, name: PropertyName.property_Plane, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)25, name: PropertyName.property_Callable, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)26, name: PropertyName.property_Signal, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_Enum, hint: (global::Godot.PropertyHint)2, hintString: "A,B,C", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.property_FlagsEnum, hint: (global::Godot.PropertyHint)6, hintString: "A:0,B:1,C:2", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)29, name: PropertyName.property_ByteArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)30, name: PropertyName.property_Int32Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)31, name: PropertyName.property_Int64Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)32, name: PropertyName.property_SingleArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)33, name: PropertyName.property_DoubleArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)34, name: PropertyName.property_StringArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)34, name: PropertyName.property_StringArrayEnum, hint: (global::Godot.PropertyHint)23, hintString: "4/2:A,B,C", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)35, name: PropertyName.property_Vector2Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)36, name: PropertyName.property_Vector3Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)37, name: PropertyName.property_ColorArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.property_GodotObjectOrDerivedArray, hint: (global::Godot.PropertyHint)23, hintString: "24/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName._notGeneratePropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.NotGenerateComplexLamdaProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.NotGenerateLamdaNoFieldProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.NotGenerateComplexReturnProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName._notGeneratePropertyInt, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.NotGenerateReturnsProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName._fullPropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.FullPropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName._fullPropertyStringComplex, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.FullPropertyString_Complex, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName._lamdaPropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.LamdaPropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)1, name: PropertyName.PropertyBoolean, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyChar, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertySByte, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyInt16, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyInt32, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyInt64, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyByte, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyUInt16, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyUInt32, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyUInt64, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.PropertySingle, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.PropertyDouble, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.PropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)5, name: PropertyName.PropertyVector2, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)6, name: PropertyName.PropertyVector2I, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)7, name: PropertyName.PropertyRect2, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)8, name: PropertyName.PropertyRect2I, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)11, name: PropertyName.PropertyTransform2D, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)9, name: PropertyName.PropertyVector3, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)10, name: PropertyName.PropertyVector3I, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)17, name: PropertyName.PropertyBasis, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)15, name: PropertyName.PropertyQuaternion, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)18, name: PropertyName.PropertyTransform3D, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)12, name: PropertyName.PropertyVector4, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)13, name: PropertyName.PropertyVector4I, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)19, name: PropertyName.PropertyProjection, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)16, name: PropertyName.PropertyAabb, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)20, name: PropertyName.PropertyColor, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)14, name: PropertyName.PropertyPlane, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)25, name: PropertyName.PropertyCallable, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)26, name: PropertyName.PropertySignal, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyEnum, hint: (global::Godot.PropertyHint)2, hintString: "A,B,C", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.PropertyFlagsEnum, hint: (global::Godot.PropertyHint)6, hintString: "A:0,B:1,C:2", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)29, name: PropertyName.PropertyByteArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)30, name: PropertyName.PropertyInt32Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)31, name: PropertyName.PropertyInt64Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)32, name: PropertyName.PropertySingleArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)33, name: PropertyName.PropertyDoubleArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)34, name: PropertyName.PropertyStringArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)34, name: PropertyName.PropertyStringArrayEnum, hint: (global::Godot.PropertyHint)23, hintString: "4/2:A,B,C", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)35, name: PropertyName.PropertyVector2Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)36, name: PropertyName.PropertyVector3Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)37, name: PropertyName.PropertyColorArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.PropertyGodotObjectOrDerivedArray, hint: (global::Godot.PropertyHint)23, hintString: "24/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.field_StringNameArray, hint: (global::Godot.PropertyHint)23, hintString: "21/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.field_NodePathArray, hint: (global::Godot.PropertyHint)23, hintString: "22/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.field_RidArray, hint: (global::Godot.PropertyHint)23, hintString: "23/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)0, name: PropertyName.property_Variant, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)135174, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)24, name: PropertyName.property_GodotObjectOrDerived, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)24, name: PropertyName.property_GodotResourceTexture, hint: (global::Godot.PropertyHint)17, hintString: "Texture", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)21, name: PropertyName.property_StringName, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)22, name: PropertyName.property_NodePath, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)23, name: PropertyName.property_Rid, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)27, name: PropertyName.property_GodotDictionary, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.property_GodotArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)27, name: PropertyName.property_GodotGenericDictionary, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.property_GodotGenericArray, hint: (global::Godot.PropertyHint)23, hintString: "2/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)0, name: PropertyName.PropertyVariant, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)135174, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)24, name: PropertyName.PropertyGodotObjectOrDerived, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)24, name: PropertyName.PropertyGodotResourceTexture, hint: (global::Godot.PropertyHint)17, hintString: "Texture", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)21, name: PropertyName.PropertyStringName, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)22, name: PropertyName.PropertyNodePath, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)23, name: PropertyName.PropertyRid, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)27, name: PropertyName.PropertyGodotDictionary, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.PropertyGodotArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)27, name: PropertyName.PropertyGodotGenericDictionary, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.PropertyGodotGenericArray, hint: (global::Godot.PropertyHint)23, hintString: "2/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         return properties;
     }
 #pragma warning restore CS0109

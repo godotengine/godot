@@ -31,8 +31,6 @@
 #include "navigation_obstacle_3d.h"
 
 #include "core/math/geometry_2d.h"
-#include "scene/3d/collision_shape_3d.h"
-#include "scene/3d/physics_body_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
@@ -133,6 +131,19 @@ void NavigationObstacle3D::_notification(int p_what) {
 			}
 			NavigationServer3D::get_singleton()->obstacle_set_paused(obstacle, !can_process());
 		} break;
+
+#ifdef DEBUG_ENABLED
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_inside_tree()) {
+				if (fake_agent_radius_debug_instance.is_valid()) {
+					RS::get_singleton()->instance_set_visible(fake_agent_radius_debug_instance, is_visible_in_tree());
+				}
+				if (static_obstacle_debug_instance.is_valid()) {
+					RS::get_singleton()->instance_set_visible(static_obstacle_debug_instance, is_visible_in_tree());
+				}
+			}
+		} break;
+#endif // DEBUG_ENABLED
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (is_inside_tree()) {

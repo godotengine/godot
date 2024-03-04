@@ -99,6 +99,24 @@ void Node::_notification(int p_notification) {
 				}
 			}
 
+			// Update auto translate mode.
+			if (data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT && !data.parent) {
+				ERR_PRINT("The root node can't be set to Inherit auto translate mode, reverting to Always instead.");
+				data.auto_translate_mode = AUTO_TRANSLATE_MODE_ALWAYS;
+			}
+			data.is_auto_translate_dirty = true;
+
+#ifdef TOOLS_ENABLED
+			// Don't translate UI elements when they're being edited.
+			if (is_part_of_edited_scene()) {
+				set_message_translation(false);
+			}
+#endif
+
+			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+				notification(NOTIFICATION_TRANSLATION_CHANGED);
+			}
+
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -136,11 +154,11 @@ void Node::_notification(int p_notification) {
 				remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
 			}
 
-			// Remove from processing first
+			// Remove from processing first.
 			if (_is_any_processing()) {
 				_remove_from_process_thread_group();
 			}
-			// Remove the process group
+			// Remove the process group.
 			if (data.process_thread_group_owner == this) {
 				_remove_process_group();
 			}
@@ -215,6 +233,12 @@ void Node::_notification(int p_notification) {
 			while (data.children.size()) {
 				Node *child = data.children.last()->value; // begin from the end because its faster and more consistent with creation
 				memdelete(child);
+			}
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (data.inside_tree) {
+				data.is_auto_translate_dirty = true;
 			}
 		} break;
 	}
@@ -1149,6 +1173,49 @@ bool Node::is_processing_unhandled_key_input() const {
 	return data.unhandled_key_input;
 }
 
+void Node::set_auto_translate_mode(AutoTranslateMode p_mode) {
+	ERR_THREAD_GUARD
+	if (data.auto_translate_mode == p_mode) {
+		return;
+	}
+
+	if (p_mode == AUTO_TRANSLATE_MODE_INHERIT && data.inside_tree && !data.parent) {
+		ERR_FAIL_MSG("The root node can't be set to Inherit auto translate mode.");
+	}
+
+	data.auto_translate_mode = p_mode;
+	data.is_auto_translating = p_mode != AUTO_TRANSLATE_MODE_DISABLED;
+	data.is_auto_translate_dirty = true;
+
+	propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
+}
+
+Node::AutoTranslateMode Node::get_auto_translate_mode() const {
+	return data.auto_translate_mode;
+}
+
+bool Node::can_auto_translate() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!data.is_auto_translate_dirty || data.auto_translate_mode != AUTO_TRANSLATE_MODE_INHERIT) {
+		return data.is_auto_translating;
+	}
+
+	data.is_auto_translate_dirty = false;
+
+	Node *parent = data.parent;
+	while (parent) {
+		if (parent->data.auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
+			parent = parent->data.parent;
+			continue;
+		}
+
+		data.is_auto_translating = parent->data.auto_translate_mode == AUTO_TRANSLATE_MODE_ALWAYS;
+		break;
+	}
+
+	return data.is_auto_translating;
+}
+
 StringName Node::get_name() const {
 	return data.name;
 }
@@ -1213,6 +1280,11 @@ String Node::validate_child_name(Node *p_child) {
 	StringName name = p_child->data.name;
 	_generate_serial_child_name(p_child, name);
 	return name;
+}
+
+String Node::prevalidate_child_name(Node *p_child, StringName p_name) {
+	_generate_serial_child_name(p_child, p_name);
+	return p_name;
 }
 #endif
 
@@ -2321,8 +2393,14 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 
 Ref<Tween> Node::create_tween() {
 	ERR_THREAD_GUARD_V(Ref<Tween>());
-	ERR_FAIL_NULL_V_MSG(data.tree, nullptr, "Can't create Tween when not inside scene tree.");
-	Ref<Tween> tween = get_tree()->create_tween();
+
+	SceneTree *tree = data.tree;
+	if (!tree) {
+		tree = SceneTree::get_singleton();
+	}
+	ERR_FAIL_NULL_V_MSG(tree, Ref<Tween>(), "No available SceneTree to create the Tween.");
+
+	Ref<Tween> tween = tree->create_tween();
 	tween->bind_node(this);
 	return tween;
 }
@@ -2426,7 +2504,7 @@ StringName Node::get_property_store_alias(const StringName &p_property) const {
 
 bool Node::is_part_of_edited_scene() const {
 	return Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->get_edited_scene_root() &&
-			(get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this));
+			get_tree()->get_edited_scene_root()->get_parent()->is_ancestor_of(this);
 }
 #endif
 
@@ -2538,6 +2616,11 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
 			for (int i = 0; i < N->get()->get_child_count(); ++i) {
 				Node *descendant = N->get()->get_child(i);
+
+				if (!descendant->get_owner()) {
+					continue; // Internal nodes or nodes added by scripts.
+				}
+
 				// Skip nodes not really belonging to the instantiated hierarchy; they'll be processed normally later
 				// but remember non-instantiated nodes that are hidden below instantiated ones
 				if (!instance_roots.has(descendant->get_owner())) {
@@ -2875,17 +2958,24 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		remove_child(child);
 		if (!child->is_owned_by_parent()) {
 			// add the custom children to the p_node
+			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+			child->set_owner(nullptr);
 			p_node->add_child(child);
+			child->set_owner(child_owner);
 		}
 	}
 
 	p_node->set_owner(owner);
-	for (int i = 0; i < owned.size(); i++) {
-		owned[i]->set_owner(p_node);
+	for (Node *E : owned) {
+		if (E->data.owner != p_node) {
+			E->set_owner(p_node);
+		}
 	}
 
-	for (int i = 0; i < owned_by_owner.size(); i++) {
-		owned_by_owner[i]->set_owner(owner);
+	for (Node *E : owned_by_owner) {
+		if (E->data.owner != owner) {
+			E->set_owner(owner);
+		}
 	}
 
 	p_node->set_scene_file_path(get_scene_file_path());
@@ -2942,9 +3032,9 @@ Array Node::_get_node_and_resource(const NodePath &p_path) {
 
 Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property) const {
 	ERR_THREAD_GUARD_V(nullptr);
-	Node *node = get_node(p_path);
 	r_res = Ref<Resource>();
 	r_leftover_subpath = Vector<StringName>();
+	Node *node = get_node_or_null(p_path);
 	if (!node) {
 		return nullptr;
 	}
@@ -3084,6 +3174,7 @@ NodePath Node::get_import_path() const {
 #endif
 }
 
+#ifdef TOOLS_ENABLED
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
@@ -3100,7 +3191,7 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 }
 
 void Node::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0 && (pf == "has_node" || pf == "get_node" || pf == "get_node_or_null")) {
 		_add_nodes_to_options(this, this, r_options);
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
@@ -3111,6 +3202,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void Node::clear_internal_tree_resource_paths() {
 	clear_internal_resource_paths();
@@ -3129,20 +3221,6 @@ PackedStringArray Node::get_configuration_warnings() const {
 	}
 
 	return ret;
-}
-
-String Node::get_configuration_warnings_as_string() const {
-	PackedStringArray warnings = get_configuration_warnings();
-	String all_warnings;
-	for (int i = 0; i < warnings.size(); i++) {
-		if (i > 0) {
-			all_warnings += "\n\n";
-		}
-		// Format as a bullet point list to make multiple warnings easier to distinguish
-		// from each other.
-		all_warnings += String::utf8("•  ") + warnings[i];
-	}
-	return all_warnings;
 }
 
 void Node::update_configuration_warnings() {
@@ -3411,6 +3489,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process_internal", "enable"), &Node::set_physics_process_internal);
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
+	ClassDB::bind_method(D_METHOD("set_auto_translate_mode", "mode"), &Node::set_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_auto_translate_mode"), &Node::get_auto_translate_mode);
+
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
@@ -3447,6 +3528,9 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
 	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
+
+	ClassDB::bind_method(D_METHOD("atr", "message", "context"), &Node::atr, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("atr_n", "message", "plural_message", "n", "context"), &Node::atr_n, DEFVAL(""));
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
@@ -3558,6 +3642,10 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_FRONT);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_BACK);
 
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_ALWAYS);
+	BIND_ENUM_CONSTANT(AUTO_TRANSLATE_MODE_DISABLED);
+
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
 	ADD_SIGNAL(MethodInfo("tree_entered"));
@@ -3580,10 +3668,14 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_physics_priority"), "set_physics_process_priority", "get_physics_process_priority");
+
 	ADD_SUBGROUP("Thread Group", "process_thread");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group", PROPERTY_HINT_ENUM, "Inherit,Main Thread,Sub Thread"), "set_process_thread_group", "get_process_thread_group");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group_order"), "set_process_thread_group_order", "get_process_thread_group_order");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_messages", PROPERTY_HINT_FLAGS, "Process,Physics Process"), "set_process_thread_messages", "get_process_thread_messages");
+
+	ADD_GROUP("Auto Translate", "auto_translate_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
 
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");

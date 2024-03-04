@@ -54,6 +54,15 @@
 		r_path_owners->push_back(poly->owner->get_owner_id()); \
 	}
 
+#ifdef DEBUG_ENABLED
+#define NAVMAP_ITERATION_ZERO_ERROR_MSG() \
+	ERR_PRINT_ONCE("NavigationServer navigation map query failed because it was made before first map synchronization.\n\
+	NavigationServer 'map_changed' signal can be used to receive update notifications.\n\
+	NavigationServer 'map_get_iteration_id()' can be used to check if a map has finished its newest iteration.");
+#else
+#define NAVMAP_ITERATION_ZERO_ERROR_MSG()
+#endif // DEBUG_ENABLED
+
 void NavMap::set_up(Vector3 p_up) {
 	if (up == p_up) {
 		return;
@@ -67,6 +76,7 @@ void NavMap::set_cell_size(real_t p_cell_size) {
 		return;
 	}
 	cell_size = p_cell_size;
+	_update_merge_rasterizer_cell_dimensions();
 	regenerate_polygons = true;
 }
 
@@ -75,6 +85,16 @@ void NavMap::set_cell_height(real_t p_cell_height) {
 		return;
 	}
 	cell_height = p_cell_height;
+	_update_merge_rasterizer_cell_dimensions();
+	regenerate_polygons = true;
+}
+
+void NavMap::set_merge_rasterizer_cell_scale(float p_value) {
+	if (merge_rasterizer_cell_scale == p_value) {
+		return;
+	}
+	merge_rasterizer_cell_scale = p_value;
+	_update_merge_rasterizer_cell_dimensions();
 	regenerate_polygons = true;
 }
 
@@ -103,9 +123,9 @@ void NavMap::set_link_connection_radius(real_t p_link_connection_radius) {
 }
 
 gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
-	const int x = static_cast<int>(Math::floor(p_pos.x / cell_size));
-	const int y = static_cast<int>(Math::floor(p_pos.y / cell_height));
-	const int z = static_cast<int>(Math::floor(p_pos.z / cell_size));
+	const int x = static_cast<int>(Math::floor(p_pos.x / merge_rasterizer_cell_size));
+	const int y = static_cast<int>(Math::floor(p_pos.y / merge_rasterizer_cell_height));
+	const int z = static_cast<int>(Math::floor(p_pos.z / merge_rasterizer_cell_size));
 
 	gd::PointKey p;
 	p.key = 0;
@@ -116,7 +136,12 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 }
 
 Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector<Vector3>(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector<Vector3>();
+	}
+
 	// Clear metadata outputs.
 	if (r_path_types) {
 		r_path_types->clear();
@@ -576,7 +601,12 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 }
 
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector3();
+	}
+
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
 	real_t closest_point_d = FLT_MAX;
@@ -624,24 +654,38 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 }
 
 Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector3();
+	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.point;
 }
 
 Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return Vector3();
+	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.normal;
 }
 
 RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
-	ERR_FAIL_COND_V_MSG(map_update_id == 0, RID(), "NavigationServer map query failed because it was made before first map synchronization.");
+	RWLockRead read_lock(map_rwlock);
+	if (iteration_id == 0) {
+		NAVMAP_ITERATION_ZERO_ERROR_MSG();
+		return RID();
+	}
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.owner;
 }
 
 gd::ClosestPointQueryResult NavMap::get_closest_point_info(const Vector3 &p_point) const {
+	RWLockRead read_lock(map_rwlock);
+
 	gd::ClosestPointQueryResult result;
 	real_t closest_point_ds = FLT_MAX;
 
@@ -770,6 +814,8 @@ void NavMap::remove_agent_as_controlled(NavAgent *agent) {
 }
 
 Vector3 NavMap::get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const {
+	RWLockRead read_lock(map_rwlock);
+
 	const LocalVector<NavRegion *> map_regions = get_regions();
 
 	if (map_regions.is_empty()) {
@@ -834,6 +880,8 @@ Vector3 NavMap::get_random_point(uint32_t p_navigation_layers, bool p_uniformly)
 }
 
 void NavMap::sync() {
+	RWLockWrite write_lock(map_rwlock);
+
 	// Performance Monitor
 	int _new_pm_region_count = regions.size();
 	int _new_pm_agent_count = agents.size();
@@ -923,7 +971,7 @@ void NavMap::sync() {
 					connections[ek].push_back(new_connection);
 				} else {
 					// The edge is already connected with another edge, skip.
-					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'.");
+					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'. If you're certain none of above is the case, change 'navigation/3d/merge_rasterizer_cell_scale' to 0.001.");
 				}
 			}
 		}
@@ -1126,9 +1174,8 @@ void NavMap::sync() {
 			}
 		}
 
-		// Update the update ID.
-		// Some code treats 0 as a failure case, so we avoid returning 0.
-		map_update_id = map_update_id % 9999999 + 1;
+		// Some code treats 0 as a failure case, so we avoid returning 0 and modulo wrap UINT32_MAX manually.
+		iteration_id = iteration_id % UINT32_MAX + 1;
 	}
 
 	// Do we have modified obstacle positions?
@@ -1363,6 +1410,11 @@ void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys
 			}
 		}
 	}
+}
+
+void NavMap::_update_merge_rasterizer_cell_dimensions() {
+	merge_rasterizer_cell_size = cell_size * merge_rasterizer_cell_scale;
+	merge_rasterizer_cell_height = cell_height * merge_rasterizer_cell_scale;
 }
 
 NavMap::NavMap() {

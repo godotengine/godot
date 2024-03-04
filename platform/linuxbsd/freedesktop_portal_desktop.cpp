@@ -142,6 +142,54 @@ void FreeDesktopPortalDesktop::append_dbus_string(DBusMessageIter *p_iter, const
 	}
 }
 
+void FreeDesktopPortalDesktop::append_dbus_dict_options(DBusMessageIter *p_iter, const TypedArray<Dictionary> &p_options) {
+	DBusMessageIter dict_iter;
+	DBusMessageIter var_iter;
+	DBusMessageIter arr_iter;
+	const char *choices_key = "choices";
+
+	dbus_message_iter_open_container(p_iter, DBUS_TYPE_DICT_ENTRY, nullptr, &dict_iter);
+	dbus_message_iter_append_basic(&dict_iter, DBUS_TYPE_STRING, &choices_key);
+	dbus_message_iter_open_container(&dict_iter, DBUS_TYPE_VARIANT, "a(ssa(ss)s)", &var_iter);
+	dbus_message_iter_open_container(&var_iter, DBUS_TYPE_ARRAY, "(ss(ss)s)", &arr_iter);
+
+	for (int i = 0; i < p_options.size(); i++) {
+		const Dictionary &item = p_options[i];
+		if (!item.has("name") || !item.has("values") || !item.has("default")) {
+			continue;
+		}
+		const String &name = item["name"];
+		const Vector<String> &options = item["values"];
+		int default_idx = item["default"];
+
+		DBusMessageIter struct_iter;
+		DBusMessageIter array_iter;
+		DBusMessageIter array_struct_iter;
+		dbus_message_iter_open_container(&arr_iter, DBUS_TYPE_STRUCT, nullptr, &struct_iter);
+		append_dbus_string(&struct_iter, name); // ID.
+		append_dbus_string(&struct_iter, name); // User visible name.
+
+		dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "(ss)", &array_iter);
+		for (int j = 0; j < options.size(); j++) {
+			dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, nullptr, &array_struct_iter);
+			append_dbus_string(&array_struct_iter, itos(j));
+			append_dbus_string(&array_struct_iter, options[j]);
+			dbus_message_iter_close_container(&array_iter, &array_struct_iter);
+		}
+		dbus_message_iter_close_container(&struct_iter, &array_iter);
+		if (options.is_empty()) {
+			append_dbus_string(&struct_iter, (default_idx) ? "true" : "false"); // Default selection.
+		} else {
+			append_dbus_string(&struct_iter, itos(default_idx)); // Default selection.
+		}
+
+		dbus_message_iter_close_container(&arr_iter, &struct_iter);
+	}
+	dbus_message_iter_close_container(&var_iter, &arr_iter);
+	dbus_message_iter_close_container(&dict_iter, &var_iter);
+	dbus_message_iter_close_container(p_iter, &dict_iter);
+}
+
 void FreeDesktopPortalDesktop::append_dbus_dict_filters(DBusMessageIter *p_iter, const Vector<String> &p_filter_names, const Vector<String> &p_filter_exts) {
 	DBusMessageIter dict_iter;
 	DBusMessageIter var_iter;
@@ -223,7 +271,7 @@ void FreeDesktopPortalDesktop::append_dbus_dict_bool(DBusMessageIter *p_iter, co
 	dbus_message_iter_close_container(p_iter, &dict_iter);
 }
 
-bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_iter, const Vector<String> &p_names, bool &r_cancel, Vector<String> &r_urls, int &r_index) {
+bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_iter, const Vector<String> &p_names, bool &r_cancel, Vector<String> &r_urls, int &r_index, Dictionary &r_options) {
 	ERR_FAIL_COND_V(dbus_message_iter_get_arg_type(p_iter) != DBUS_TYPE_UINT32, false);
 
 	dbus_uint32_t resp_code;
@@ -262,6 +310,34 @@ bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_it
 							}
 						}
 					}
+				} else if (strcmp(key, "choices") == 0) { // a(ss) {
+					if (dbus_message_iter_get_arg_type(&var_iter) == DBUS_TYPE_ARRAY) {
+						DBusMessageIter struct_iter;
+						dbus_message_iter_recurse(&var_iter, &struct_iter);
+						while (dbus_message_iter_get_arg_type(&struct_iter) == DBUS_TYPE_STRUCT) {
+							DBusMessageIter opt_iter;
+							dbus_message_iter_recurse(&struct_iter, &opt_iter);
+							const char *opt_key = nullptr;
+							dbus_message_iter_get_basic(&opt_iter, &opt_key);
+							String opt_skey = String::utf8(opt_key);
+
+							dbus_message_iter_next(&opt_iter);
+							const char *opt_val = nullptr;
+							dbus_message_iter_get_basic(&opt_iter, &opt_val);
+							String opt_sval = String::utf8(opt_val);
+							if (opt_sval == "true") {
+								r_options[opt_skey] = true;
+							} else if (opt_sval == "false") {
+								r_options[opt_skey] = false;
+							} else {
+								r_options[opt_skey] = opt_sval.to_int();
+							}
+
+							if (!dbus_message_iter_next(&struct_iter)) {
+								break;
+							}
+						}
+					}
 				} else if (strcmp(key, "uris") == 0) { // as
 					if (dbus_message_iter_get_arg_type(&var_iter) == DBUS_TYPE_ARRAY) {
 						DBusMessageIter uri_iter;
@@ -285,7 +361,7 @@ bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_it
 	return true;
 }
 
-Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
 	if (unsupported) {
 		return FAILED;
 	}
@@ -322,6 +398,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	fd.callback = p_callback;
 	fd.prev_focus = p_window_id;
 	fd.filter_names = filter_names;
+	fd.opt_in_cb = p_options_in_cb;
 
 	CryptoCore::RandomGenerator rng;
 	ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
@@ -373,6 +450,8 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 		append_dbus_dict_bool(&arr_iter, "multiple", p_mode == DisplayServer::FILE_DIALOG_MODE_OPEN_FILES);
 		append_dbus_dict_bool(&arr_iter, "directory", p_mode == DisplayServer::FILE_DIALOG_MODE_OPEN_DIR);
 		append_dbus_dict_filters(&arr_iter, filter_names, filter_exts);
+
+		append_dbus_dict_options(&arr_iter, p_options);
 		append_dbus_dict_string(&arr_iter, "current_folder", p_current_directory, true);
 		if (p_mode == DisplayServer::FILE_DIALOG_MODE_SAVE_FILE) {
 			append_dbus_dict_string(&arr_iter, "current_name", p_filename);
@@ -427,21 +506,32 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	return OK;
 }
 
-void FreeDesktopPortalDesktop::_file_dialog_callback(const Callable &p_callable, const Variant &p_status, const Variant &p_list, const Variant &p_index) {
-	Variant ret;
-	Callable::CallError ce;
-	const Variant *args[3] = { &p_status, &p_list, &p_index };
+void FreeDesktopPortalDesktop::_file_dialog_callback(const Callable &p_callable, const Variant &p_status, const Variant &p_list, const Variant &p_index, const Variant &p_options, bool p_opt_in_cb) {
+	if (p_opt_in_cb) {
+		Variant ret;
+		Callable::CallError ce;
+		const Variant *args[4] = { &p_status, &p_list, &p_index, &p_options };
 
-	p_callable.callp(args, 3, ret, ce);
-	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callable, args, 3, ce)));
+		p_callable.callp(args, 4, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callable, args, 4, ce)));
+		}
+	} else {
+		Variant ret;
+		Callable::CallError ce;
+		const Variant *args[3] = { &p_status, &p_list, &p_index };
+
+		p_callable.callp(args, 3, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(p_callable, args, 3, ce)));
+		}
 	}
 }
 
-void FreeDesktopPortalDesktop::_thread_file_dialog_monitor(void *p_ud) {
+void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)p_ud;
 
-	while (!portal->file_dialog_thread_abort.is_set()) {
+	while (!portal->monitor_thread_abort.is_set()) {
 		{
 			MutexLock lock(portal->file_dialog_mutex);
 			for (int i = portal->file_dialogs.size() - 1; i >= 0; i--) {
@@ -458,11 +548,12 @@ void FreeDesktopPortalDesktop::_thread_file_dialog_monitor(void *p_ud) {
 								if (dbus_message_iter_init(msg, &iter)) {
 									bool cancel = false;
 									Vector<String> uris;
+									Dictionary options;
 									int index = 0;
-									file_chooser_parse_response(&iter, fd.filter_names, cancel, uris, index);
+									file_chooser_parse_response(&iter, fd.filter_names, cancel, uris, index, options);
 
 									if (fd.callback.is_valid()) {
-										callable_mp(portal, &FreeDesktopPortalDesktop::_file_dialog_callback).call_deferred(fd.callback, !cancel, uris, index);
+										callable_mp(portal, &FreeDesktopPortalDesktop::_file_dialog_callback).call_deferred(fd.callback, !cancel, uris, index, options, fd.opt_in_cb);
 									}
 									if (fd.prev_focus != DisplayServer::INVALID_WINDOW_ID) {
 										callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.prev_focus);
@@ -488,7 +579,41 @@ void FreeDesktopPortalDesktop::_thread_file_dialog_monitor(void *p_ud) {
 				}
 			}
 		}
+
+		if (portal->theme_connection) {
+			while (true) {
+				DBusMessage *msg = dbus_connection_pop_message(portal->theme_connection);
+				if (!msg) {
+					break;
+				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Settings", "SettingChanged")) {
+					DBusMessageIter iter;
+					if (dbus_message_iter_init(msg, &iter)) {
+						const char *value;
+						dbus_message_iter_get_basic(&iter, &value);
+						String name_space = String::utf8(value);
+						dbus_message_iter_next(&iter);
+						dbus_message_iter_get_basic(&iter, &value);
+						String key = String::utf8(value);
+
+						if (name_space == "org.freedesktop.appearance" && key == "color-scheme") {
+							callable_mp(portal, &FreeDesktopPortalDesktop::_system_theme_changed_callback).call_deferred();
+						}
+					}
+					dbus_message_unref(msg);
+					break;
+				}
+				dbus_message_unref(msg);
+			}
+			dbus_connection_read_write(portal->theme_connection, 0);
+		}
+
 		usleep(50000);
+	}
+}
+
+void FreeDesktopPortalDesktop::_system_theme_changed_callback() {
+	if (system_theme_changed.is_valid()) {
+		system_theme_changed.call();
 	}
 }
 
@@ -520,17 +645,34 @@ FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
 		unsupported = true;
 	}
 
+	DBusError err;
+	dbus_error_init(&err);
+	theme_connection = dbus_bus_get(DBUS_BUS_SESSION, &err);
+	if (dbus_error_is_set(&err)) {
+		dbus_error_free(&err);
+	} else {
+		theme_path = "type='signal',sender='org.freedesktop.portal.Desktop',interface='org.freedesktop.portal.Settings',member='SettingChanged'";
+		dbus_bus_add_match(theme_connection, theme_path.utf8().get_data(), &err);
+		if (dbus_error_is_set(&err)) {
+			dbus_error_free(&err);
+			dbus_connection_unref(theme_connection);
+			theme_connection = nullptr;
+		}
+		dbus_connection_read_write(theme_connection, 0);
+	}
+
 	if (!unsupported) {
-		file_dialog_thread_abort.clear();
-		file_dialog_thread.start(FreeDesktopPortalDesktop::_thread_file_dialog_monitor, this);
+		monitor_thread_abort.clear();
+		monitor_thread.start(FreeDesktopPortalDesktop::_thread_monitor, this);
 	}
 }
 
 FreeDesktopPortalDesktop::~FreeDesktopPortalDesktop() {
-	file_dialog_thread_abort.set();
-	if (file_dialog_thread.is_started()) {
-		file_dialog_thread.wait_to_finish();
+	monitor_thread_abort.set();
+	if (monitor_thread.is_started()) {
+		monitor_thread.wait_to_finish();
 	}
+
 	for (FreeDesktopPortalDesktop::FileDialogData &fd : file_dialogs) {
 		if (fd.connection) {
 			DBusError err;
@@ -539,6 +681,13 @@ FreeDesktopPortalDesktop::~FreeDesktopPortalDesktop() {
 			dbus_error_free(&err);
 			dbus_connection_unref(fd.connection);
 		}
+	}
+	if (theme_connection) {
+		DBusError err;
+		dbus_error_init(&err);
+		dbus_bus_remove_match(theme_connection, theme_path.utf8().get_data(), &err);
+		dbus_error_free(&err);
+		dbus_connection_unref(theme_connection);
 	}
 }
 

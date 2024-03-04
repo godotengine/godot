@@ -32,7 +32,7 @@
 #define COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "scene/2d/collision_shape_2d.h"
+#include "scene/2d/physics/collision_shape_2d.h"
 
 class CanvasItemEditor;
 

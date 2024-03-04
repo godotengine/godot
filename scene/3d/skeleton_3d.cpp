@@ -29,9 +29,11 @@
 /**************************************************************************/
 
 #include "skeleton_3d.h"
+#include "skeleton_3d.compat.inc"
 
 #include "core/variant/type_info.h"
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/physics/physical_bone_3d.h"
+#include "scene/3d/physics/physics_body_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 
@@ -94,6 +96,34 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 		set_bone_pose_rotation(which, p_value);
 	} else if (what == "scale") {
 		set_bone_pose_scale(which, p_value);
+#ifndef DISABLE_DEPRECATED
+	} else if (what == "pose" || what == "bound_children") {
+		// Kept for compatibility from 3.x to 4.x.
+		WARN_DEPRECATED_MSG("Skeleton uses old pose format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene." +
+				(is_inside_tree() ? vformat(" Path: \"%s\"", get_path()) : String()));
+		if (what == "pose") {
+			// Old Skeleton poses were relative to rest, new ones are absolute, so we need to recompute the pose.
+			// Skeleton3D nodes were always written with rest before pose, so this *SHOULD* work...
+			Transform3D rest = get_bone_rest(which);
+			Transform3D pose = rest * (Transform3D)p_value;
+			set_bone_pose_position(which, pose.origin);
+			set_bone_pose_rotation(which, pose.basis.get_rotation_quaternion());
+			set_bone_pose_scale(which, pose.basis.get_scale());
+		} else { // bound_children
+			// This handles the case where the pose was set to the rest position; the pose property would == Transform() and would not be saved to the scene by default.
+			// However, the bound_children property was always saved regardless of value, and it was always saved after both pose and rest.
+			// We don't do anything else with bound_children, as it's not present on Skeleton3D.
+			Vector3 pos = get_bone_pose_position(which);
+			Quaternion rot = get_bone_pose_rotation(which);
+			Vector3 scale = get_bone_pose_scale(which);
+			Transform3D rest = get_bone_rest(which);
+			if (rest != Transform3D() && pos == Vector3() && rot == Quaternion() && scale == Vector3(1, 1, 1)) {
+				set_bone_pose_position(which, rest.origin);
+				set_bone_pose_rotation(which, rest.basis.get_rotation_quaternion());
+				set_bone_pose_scale(which, rest.basis.get_scale());
+			}
+		}
+#endif
 	} else {
 		return false;
 	}
@@ -381,18 +411,21 @@ uint64_t Skeleton3D::get_version() const {
 	return version;
 }
 
-void Skeleton3D::add_bone(const String &p_name) {
-	ERR_FAIL_COND(p_name.is_empty() || p_name.contains(":") || p_name.contains("/") || name_to_bone_index.has(p_name));
+int Skeleton3D::add_bone(const String &p_name) {
+	ERR_FAIL_COND_V_MSG(p_name.is_empty() || p_name.contains(":") || p_name.contains("/"), -1, vformat("Bone name cannot be empty or contain ':' or '/'.", p_name));
+	ERR_FAIL_COND_V_MSG(name_to_bone_index.has(p_name), -1, vformat("Skeleton3D \"%s\" already has a bone with name \"%s\".", to_string(), p_name));
 
 	Bone b;
 	b.name = p_name;
 	bones.push_back(b);
-	name_to_bone_index.insert(p_name, bones.size() - 1);
+	int new_idx = bones.size() - 1;
+	name_to_bone_index.insert(p_name, new_idx);
 	process_order_dirty = true;
 	version++;
 	rest_dirty = true;
 	_make_dirty();
 	update_gizmos();
+	return new_idx;
 }
 
 int Skeleton3D::find_bone(const String &p_name) const {

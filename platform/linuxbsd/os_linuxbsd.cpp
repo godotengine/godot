@@ -34,9 +34,14 @@
 #include "core/io/dir_access.h"
 #include "main/main.h"
 #include "servers/display_server.h"
+#include "servers/rendering_server.h"
 
 #ifdef X11_ENABLED
 #include "x11/display_server_x11.h"
+#endif
+
+#ifdef WAYLAND_ENABLED
+#include "wayland/display_server_wayland.h"
 #endif
 
 #include "modules/modules_enabled.gen.h" // For regex.
@@ -474,7 +479,7 @@ Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_
 	return values;
 }
 
-Error OS_LinuxBSD::shell_open(String p_uri) {
+Error OS_LinuxBSD::shell_open(const String &p_uri) {
 	Error ok;
 	int err_code;
 	List<String> args;
@@ -1164,6 +1169,10 @@ OS_LinuxBSD::OS_LinuxBSD() {
 
 #ifdef X11_ENABLED
 	DisplayServerX11::register_x11_driver();
+#endif
+
+#ifdef WAYLAND_ENABLED
+	DisplayServerWayland::register_wayland_driver();
 #endif
 
 #ifdef FONTCONFIG_ENABLED

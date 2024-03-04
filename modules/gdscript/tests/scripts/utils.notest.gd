@@ -20,24 +20,32 @@ static func get_type(property: Dictionary, is_return: bool = false) -> String:
 	return type_string(property.type)
 
 
-static func get_property_signature(property: Dictionary, is_static: bool = false) -> String:
+static func get_property_signature(property: Dictionary, base: Object = null, is_static: bool = false) -> String:
+	if property.usage & PROPERTY_USAGE_CATEGORY:
+		return '@export_category("%s")' % str(property.name).c_escape()
+	if property.usage & PROPERTY_USAGE_GROUP:
+		return '@export_group("%s")' % str(property.name).c_escape()
+	if property.usage & PROPERTY_USAGE_SUBGROUP:
+		return '@export_subgroup("%s")' % str(property.name).c_escape()
+
 	var result: String = ""
 	if not (property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE):
 		printerr("Missing `PROPERTY_USAGE_SCRIPT_VARIABLE` flag.")
-	if property.usage & PROPERTY_USAGE_DEFAULT:
-		result += "@export "
 	if is_static:
 		result += "static "
 	result += "var " + property.name + ": " + get_type(property)
+	if is_instance_valid(base):
+		result += " = " + var_to_str(base.get(property.name))
 	return result
 
 
-static func get_property_additional_info(property: Dictionary) -> String:
-	return 'hint=%s hint_string="%s" usage=%s' % [
+static func print_property_extended_info(property: Dictionary, base: Object = null, is_static: bool = false) -> void:
+	print(get_property_signature(property, base, is_static))
+	print('  hint=%s hint_string="%s" usage=%s' % [
 		get_property_hint_name(property.hint).trim_prefix("PROPERTY_HINT_"),
 		str(property.hint_string).c_escape(),
 		get_property_usage_string(property.usage).replace("PROPERTY_USAGE_", ""),
-	]
+	])
 
 
 static func get_method_signature(method: Dictionary, is_signal: bool = false) -> String:
@@ -153,7 +161,6 @@ static func get_property_usage_string(usage: int) -> String:
 		return "PROPERTY_USAGE_NONE"
 
 	const FLAGS: Array[Array] = [
-		[PROPERTY_USAGE_DEFAULT, "PROPERTY_USAGE_DEFAULT"],
 		[PROPERTY_USAGE_STORAGE, "PROPERTY_USAGE_STORAGE"],
 		[PROPERTY_USAGE_EDITOR, "PROPERTY_USAGE_EDITOR"],
 		[PROPERTY_USAGE_INTERNAL, "PROPERTY_USAGE_INTERNAL"],
@@ -186,6 +193,10 @@ static func get_property_usage_string(usage: int) -> String:
 	]
 
 	var result: String = ""
+
+	if (usage & PROPERTY_USAGE_DEFAULT) == PROPERTY_USAGE_DEFAULT:
+		result += "PROPERTY_USAGE_DEFAULT|"
+		usage &= ~PROPERTY_USAGE_DEFAULT
 
 	for flag in FLAGS:
 		if usage & flag[0]:

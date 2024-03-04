@@ -2,11 +2,11 @@ using Godot;
 
 public partial class MixedReadOnlyWriteOnly : GodotObject
 {
-    public readonly string readonly_field = "foo";
-    public string readonly_auto_property { get; } = "foo";
-    public string readonly_property { get => "foo"; }
-    public string initonly_auto_property { get; init; }
+    public readonly string ReadOnlyField = "foo";
+    public string ReadOnlyAutoProperty { get; } = "foo";
+    public string ReadOnlyProperty { get => "foo"; }
+    public string InitOnlyAutoProperty { get; init; }
 
-    bool writeonly_backing_field = false;
-    public bool writeonly_property { set => writeonly_backing_field = value; }
+    bool _writeOnlyBackingField = false;
+    public bool WriteOnlyProperty { set => _writeOnlyBackingField = value; }
 }

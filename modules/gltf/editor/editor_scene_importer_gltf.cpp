@@ -93,4 +93,13 @@ void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringN
 	}
 }
 
+Variant EditorSceneFormatImporterGLTF::get_option_visibility(const String &p_path, bool p_for_animation,
+		const String &p_option, const HashMap<StringName, Variant> &p_options) {
+	String file_extension = p_path.get_extension().to_lower();
+	if ((file_extension != "gltf" && file_extension != "glb") && p_option.begins_with("gltf/")) {
+		return false;
+	}
+	return true;
+}
+
 #endif // TOOLS_ENABLED

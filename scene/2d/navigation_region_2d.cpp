@@ -177,6 +177,7 @@ void NavigationRegion2D::_notification(int p_what) {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) && navigation_polygon.is_valid()) {
 				_update_debug_mesh();
 				_update_debug_edge_connections_mesh();
+				_update_debug_baking_rect();
 			}
 #endif // DEBUG_ENABLED
 		} break;
@@ -253,6 +254,10 @@ void NavigationRegion2D::_bake_finished(Ref<NavigationPolygon> p_navigation_poly
 	emit_signal(SNAME("bake_finished"));
 }
 
+bool NavigationRegion2D::is_baking() const {
+	return NavigationServer2D::get_singleton()->is_baking_navigation_polygon(navigation_polygon);
+}
+
 void NavigationRegion2D::_navigation_polygon_changed() {
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		queue_redraw();
@@ -266,6 +271,14 @@ void NavigationRegion2D::_navigation_polygon_changed() {
 #ifdef DEBUG_ENABLED
 void NavigationRegion2D::_navigation_map_changed(RID p_map) {
 	if (is_inside_tree() && get_world_2d()->get_navigation_map() == p_map) {
+		queue_redraw();
+	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationRegion2D::_navigation_debug_changed() {
+	if (is_inside_tree()) {
 		queue_redraw();
 	}
 }
@@ -320,6 +333,7 @@ void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_travel_cost"), &NavigationRegion2D::get_travel_cost);
 
 	ClassDB::bind_method(D_METHOD("bake_navigation_polygon", "on_thread"), &NavigationRegion2D::bake_navigation_polygon, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_baking"), &NavigationRegion2D::is_baking);
 
 	ClassDB::bind_method(D_METHOD("_navigation_polygon_changed"), &NavigationRegion2D::_navigation_polygon_changed);
 
@@ -369,7 +383,7 @@ NavigationRegion2D::NavigationRegion2D() {
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->connect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
-	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
+	NavigationServer2D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_debug_changed));
 #endif // DEBUG_ENABLED
 }
 
@@ -386,7 +400,7 @@ NavigationRegion2D::~NavigationRegion2D() {
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
-	NavigationServer2D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
+	NavigationServer2D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_debug_changed));
 #endif // DEBUG_ENABLED
 }
 
@@ -643,6 +657,18 @@ void NavigationRegion2D::_update_debug_edge_connections_mesh() {
 			draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, debug_edge_connection_color);
 			draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, debug_edge_connection_color);
 		}
+	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationRegion2D::_update_debug_baking_rect() {
+	Rect2 baking_rect = get_navigation_polygon()->get_baking_rect();
+	if (baking_rect.has_area()) {
+		Vector2 baking_rect_offset = get_navigation_polygon()->get_baking_rect_offset();
+		Rect2 debug_baking_rect = Rect2(baking_rect.position.x + baking_rect_offset.x, baking_rect.position.y + baking_rect_offset.y, baking_rect.size.x, baking_rect.size.y);
+		Color debug_baking_rect_color = Color(0.8, 0.5, 0.7, 0.1);
+		draw_rect(debug_baking_rect, debug_baking_rect_color);
 	}
 }
 #endif // DEBUG_ENABLED

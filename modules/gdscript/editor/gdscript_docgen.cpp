@@ -32,21 +32,29 @@
 
 #include "../gdscript.h"
 
-String GDScriptDocGen::_get_script_path(const String &p_path) {
+#include "core/config/project_settings.h"
+
+HashMap<String, String> GDScriptDocGen::singletons;
+
+String GDScriptDocGen::_get_script_name(const String &p_path) {
+	const HashMap<String, String>::ConstIterator E = singletons.find(p_path);
+	if (E) {
+		return E->value;
+	}
 	return p_path.trim_prefix("res://").quote();
 }
 
 String GDScriptDocGen::_get_class_name(const GDP::ClassNode &p_class) {
 	const GDP::ClassNode *curr_class = &p_class;
 	if (!curr_class->identifier) { // All inner classes have an identifier, so this is the outer class.
-		return _get_script_path(curr_class->fqcn);
+		return _get_script_name(curr_class->fqcn);
 	}
 
 	String full_name = curr_class->identifier->name;
 	while (curr_class->outer) {
 		curr_class = curr_class->outer;
 		if (!curr_class->identifier) { // All inner classes have an identifier, so this is the outer class.
-			return vformat("%s.%s", _get_script_path(curr_class->fqcn), full_name);
+			return vformat("%s.%s", _get_script_name(curr_class->fqcn), full_name);
 		}
 		full_name = vformat("%s.%s", curr_class->identifier->name, full_name);
 	}
@@ -97,12 +105,12 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 					return;
 				}
 				if (!p_gdtype.script_type->get_path().is_empty()) {
-					r_type = _get_script_path(p_gdtype.script_type->get_path());
+					r_type = _get_script_name(p_gdtype.script_type->get_path());
 					return;
 				}
 			}
 			if (!p_gdtype.script_path.is_empty()) {
-				r_type = _get_script_path(p_gdtype.script_path);
+				r_type = _get_script_name(p_gdtype.script_path);
 				return;
 			}
 			r_type = "Object";
@@ -221,24 +229,25 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 	}
 }
 
-void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
+void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
 	p_script->_clear_doc();
 
 	DocData::ClassDoc &doc = p_script->doc;
 
-	doc.script_path = _get_script_path(p_script->get_script_path());
-	if (p_script->local_name == StringName()) {
-		doc.name = doc.script_path;
-	} else {
-		doc.name = p_script->local_name;
-	}
-
-	if (p_script->_owner) {
-		doc.name = p_script->_owner->doc.name + "." + doc.name;
-		doc.script_path = doc.script_path + "." + doc.name;
-	}
-
 	doc.is_script_doc = true;
+
+	if (p_script->local_name == StringName()) {
+		// This is an outer unnamed class.
+		doc.name = _get_script_name(p_script->get_script_path());
+	} else {
+		// This is an inner or global outer class.
+		doc.name = p_script->local_name;
+		if (p_script->_owner) {
+			doc.name = p_script->_owner->doc.name + "." + doc.name;
+		}
+	}
+
+	doc.script_path = p_script->get_script_path();
 
 	if (p_script->base.is_valid() && p_script->base->is_valid()) {
 		if (!p_script->base->doc.name.is_empty()) {
@@ -259,7 +268,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 		doc.tutorials.append(td);
 	}
 	doc.is_deprecated = p_class->doc_data.is_deprecated;
+	doc.deprecated_message = p_class->doc_data.deprecated_message;
 	doc.is_experimental = p_class->doc_data.is_experimental;
+	doc.experimental_message = p_class->doc_data.experimental_message;
 
 	for (const GDP::ClassNode::Member &member : p_class->members) {
 		switch (member.type) {
@@ -271,7 +282,7 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 				// Recursively generate inner class docs.
 				// Needs inner GDScripts to exist: previously generated in GDScriptCompiler::make_scripts().
-				GDScriptDocGen::generate_docs(*p_script->subclasses[class_name], inner_class);
+				GDScriptDocGen::_generate_docs(*p_script->subclasses[class_name], inner_class);
 			} break;
 
 			case GDP::ClassNode::Member::CONSTANT: {
@@ -286,7 +297,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				const_doc.is_value_valid = true;
 				const_doc.description = m_const->doc_data.description;
 				const_doc.is_deprecated = m_const->doc_data.is_deprecated;
+				const_doc.deprecated_message = m_const->doc_data.deprecated_message;
 				const_doc.is_experimental = m_const->doc_data.is_experimental;
+				const_doc.experimental_message = m_const->doc_data.experimental_message;
 				doc.constants.push_back(const_doc);
 			} break;
 
@@ -300,7 +313,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				method_doc.name = func_name;
 				method_doc.description = m_func->doc_data.description;
 				method_doc.is_deprecated = m_func->doc_data.is_deprecated;
+				method_doc.deprecated_message = m_func->doc_data.deprecated_message;
 				method_doc.is_experimental = m_func->doc_data.is_experimental;
+				method_doc.experimental_message = m_func->doc_data.experimental_message;
 				method_doc.qualifiers = m_func->is_static ? "static" : "";
 
 				if (m_func->return_type) {
@@ -340,7 +355,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				signal_doc.name = signal_name;
 				signal_doc.description = m_signal->doc_data.description;
 				signal_doc.is_deprecated = m_signal->doc_data.is_deprecated;
+				signal_doc.deprecated_message = m_signal->doc_data.deprecated_message;
 				signal_doc.is_experimental = m_signal->doc_data.is_experimental;
+				signal_doc.experimental_message = m_signal->doc_data.experimental_message;
 
 				for (const GDScriptParser::ParameterNode *p : m_signal->parameters) {
 					DocData::ArgumentDoc arg_doc;
@@ -362,7 +379,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				prop_doc.name = var_name;
 				prop_doc.description = m_var->doc_data.description;
 				prop_doc.is_deprecated = m_var->doc_data.is_deprecated;
+				prop_doc.deprecated_message = m_var->doc_data.deprecated_message;
 				prop_doc.is_experimental = m_var->doc_data.is_experimental;
+				prop_doc.experimental_message = m_var->doc_data.experimental_message;
 				_doctype_from_gdtype(m_var->get_datatype(), prop_doc.type, prop_doc.enumeration);
 
 				switch (m_var->property) {
@@ -408,7 +427,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				DocData::EnumDoc enum_doc;
 				enum_doc.description = m_enum->doc_data.description;
 				enum_doc.is_deprecated = m_enum->doc_data.is_deprecated;
+				enum_doc.deprecated_message = m_enum->doc_data.deprecated_message;
 				enum_doc.is_experimental = m_enum->doc_data.is_experimental;
+				enum_doc.experimental_message = m_enum->doc_data.experimental_message;
 				doc.enums[name] = enum_doc;
 
 				for (const GDP::EnumNode::Value &val : m_enum->values) {
@@ -419,7 +440,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 					const_doc.enumeration = name;
 					const_doc.description = val.doc_data.description;
 					const_doc.is_deprecated = val.doc_data.is_deprecated;
+					const_doc.deprecated_message = val.doc_data.deprecated_message;
 					const_doc.is_experimental = val.doc_data.is_experimental;
+					const_doc.experimental_message = val.doc_data.experimental_message;
 
 					doc.constants.push_back(const_doc);
 				}
@@ -439,7 +462,9 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 				const_doc.enumeration = "@unnamed_enums";
 				const_doc.description = m_enum_val.doc_data.description;
 				const_doc.is_deprecated = m_enum_val.doc_data.is_deprecated;
+				const_doc.deprecated_message = m_enum_val.doc_data.deprecated_message;
 				const_doc.is_experimental = m_enum_val.doc_data.is_experimental;
+				const_doc.experimental_message = m_enum_val.doc_data.experimental_message;
 				doc.constants.push_back(const_doc);
 			} break;
 
@@ -450,4 +475,14 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 
 	// Add doc to the outer-most class.
 	p_script->_add_doc(doc);
+}
+
+void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
+		if (E.value.is_singleton) {
+			singletons[E.value.path] = E.key;
+		}
+	}
+	_generate_docs(p_script, p_class);
+	singletons.clear();
 }

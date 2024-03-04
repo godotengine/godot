@@ -34,17 +34,13 @@
 #include "scene/resources/image_texture.h"
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	if (p_preset->get("texture_format/bptc")) {
+	if (p_preset->get("texture_format/s3tc_bptc")) {
+		r_features->push_back("s3tc");
 		r_features->push_back("bptc");
 	}
-	if (p_preset->get("texture_format/s3tc")) {
-		r_features->push_back("s3tc");
-	}
-	if (p_preset->get("texture_format/etc")) {
-		r_features->push_back("etc");
-	}
-	if (p_preset->get("texture_format/etc2")) {
+	if (p_preset->get("texture_format/etc2_astc")) {
 		r_features->push_back("etc2");
+		r_features->push_back("astc");
 	}
 	// PC platforms only have one architecture per export, since
 	// we export a single executable instead of a bundle.
@@ -60,10 +56,8 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/bptc"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc_bptc"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2_astc"), false));
 }
 
 String EditorExportPlatformPC::get_name() const {
@@ -102,6 +96,14 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
+
+	bool uses_s3tc_bptc = p_preset->get("texture_format/s3tc_bptc");
+	bool uses_etc2_astc = p_preset->get("texture_format/etc2_astc");
+
+	if (!uses_s3tc_bptc && !uses_etc2_astc) {
+		valid = false;
+		err += TTR("A texture format must be selected to export the project. Please select at least one texture format.");
+	}
 
 	if (!err.is_empty()) {
 		r_error = err;
@@ -237,9 +239,8 @@ void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 }
 
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) const {
-	r_features->push_back("pc"); //all pcs support "pc"
-	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
-	r_features->push_back(get_os_name().to_lower()); //OS name is a feature
+	r_features->push_back("pc"); // Identify PC platforms as such.
+	r_features->push_back(get_os_name().to_lower()); // OS name is a feature.
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {

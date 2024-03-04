@@ -99,6 +99,9 @@ private:
 
 	OptionButton *key_mode = nullptr;
 
+	HBoxContainer *location_container = nullptr;
+	OptionButton *key_location = nullptr;
+
 	void _set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection = true);
 	void _on_listen_input_changed(const Ref<InputEvent> &p_event);
 	void _on_listen_focus_changed();
@@ -110,6 +113,7 @@ private:
 	void _mod_toggled(bool p_checked, int p_index);
 	void _autoremap_command_or_control_toggled(bool p_checked);
 	void _key_mode_selected(int p_mode);
+	void _key_location_selected(int p_location);
 
 	void _device_selection_changed(int p_option_button_index);
 	void _set_current_device(int p_device);

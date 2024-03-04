@@ -72,10 +72,10 @@ XrResult ApiLayerInterface::GetApiLayerProperties(const std::string& openxr_comm
     }
 
     // Find any implicit layers which we may need to report information for.
-    XrResult result = ApiLayerManifestFile::FindManifestFiles(MANIFEST_TYPE_IMPLICIT_API_LAYER, manifest_files);
+    XrResult result = ApiLayerManifestFile::FindManifestFiles(openxr_command, MANIFEST_TYPE_IMPLICIT_API_LAYER, manifest_files);
     if (XR_SUCCEEDED(result)) {
         // Find any explicit layers which we may need to report information for.
-        result = ApiLayerManifestFile::FindManifestFiles(MANIFEST_TYPE_EXPLICIT_API_LAYER, manifest_files);
+        result = ApiLayerManifestFile::FindManifestFiles(openxr_command, MANIFEST_TYPE_EXPLICIT_API_LAYER, manifest_files);
     }
     if (XR_FAILED(result)) {
         LoaderLogger::LogErrorMessage(openxr_command,
@@ -126,10 +126,10 @@ XrResult ApiLayerInterface::GetInstanceExtensionProperties(const std::string& op
 
     // If a layer name is supplied, only use the information out of that one layer
     if (nullptr != layer_name && 0 != strlen(layer_name)) {
-        XrResult result = ApiLayerManifestFile::FindManifestFiles(MANIFEST_TYPE_IMPLICIT_API_LAYER, manifest_files);
+        XrResult result = ApiLayerManifestFile::FindManifestFiles(openxr_command, MANIFEST_TYPE_IMPLICIT_API_LAYER, manifest_files);
         if (XR_SUCCEEDED(result)) {
             // Find any explicit layers which we may need to report information for.
-            result = ApiLayerManifestFile::FindManifestFiles(MANIFEST_TYPE_EXPLICIT_API_LAYER, manifest_files);
+            result = ApiLayerManifestFile::FindManifestFiles(openxr_command, MANIFEST_TYPE_EXPLICIT_API_LAYER, manifest_files);
             if (XR_FAILED(result)) {
                 LoaderLogger::LogErrorMessage(
                     openxr_command,
@@ -155,7 +155,7 @@ XrResult ApiLayerInterface::GetInstanceExtensionProperties(const std::string& op
         }
         // Otherwise, we want to add only implicit API layers and explicit API layers enabled using the environment variables
     } else {
-        XrResult result = ApiLayerManifestFile::FindManifestFiles(MANIFEST_TYPE_IMPLICIT_API_LAYER, manifest_files);
+        XrResult result = ApiLayerManifestFile::FindManifestFiles(openxr_command, MANIFEST_TYPE_IMPLICIT_API_LAYER, manifest_files);
         if (XR_SUCCEEDED(result)) {
             // Find any environmentally enabled explicit layers.  If they're present, treat them like implicit layers
             // since we know that they're going to be enabled.
@@ -163,7 +163,8 @@ XrResult ApiLayerInterface::GetInstanceExtensionProperties(const std::string& op
             AddEnvironmentApiLayers(env_enabled_layers);
             if (!env_enabled_layers.empty()) {
                 std::vector<std::unique_ptr<ApiLayerManifestFile>> exp_layer_man_files = {};
-                result = ApiLayerManifestFile::FindManifestFiles(MANIFEST_TYPE_EXPLICIT_API_LAYER, exp_layer_man_files);
+                result =
+                    ApiLayerManifestFile::FindManifestFiles(openxr_command, MANIFEST_TYPE_EXPLICIT_API_LAYER, exp_layer_man_files);
                 if (XR_SUCCEEDED(result)) {
                     for (auto& exp_layer_man_file : exp_layer_man_files) {
                         for (std::string& enabled_layer : env_enabled_layers) {
@@ -197,8 +198,8 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
     std::vector<std::unique_ptr<ApiLayerManifestFile>> enabled_layer_manifest_files_in_init_order = {};
 
     // Find any implicit layers.
-    XrResult result =
-        ApiLayerManifestFile::FindManifestFiles(MANIFEST_TYPE_IMPLICIT_API_LAYER, enabled_layer_manifest_files_in_init_order);
+    XrResult result = ApiLayerManifestFile::FindManifestFiles(openxr_command, MANIFEST_TYPE_IMPLICIT_API_LAYER,
+                                                              enabled_layer_manifest_files_in_init_order);
 
     for (const auto& enabled_layer_manifest_file : enabled_layer_manifest_files_in_init_order) {
         layers_already_found.insert(enabled_layer_manifest_file->LayerName());
@@ -208,7 +209,8 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
     std::vector<std::unique_ptr<ApiLayerManifestFile>> explicit_layer_manifest_files = {};
 
     if (XR_SUCCEEDED(result)) {
-        result = ApiLayerManifestFile::FindManifestFiles(MANIFEST_TYPE_EXPLICIT_API_LAYER, explicit_layer_manifest_files);
+        result = ApiLayerManifestFile::FindManifestFiles(openxr_command, MANIFEST_TYPE_EXPLICIT_API_LAYER,
+                                                         explicit_layer_manifest_files);
     }
 
     bool found_all_layers = true;

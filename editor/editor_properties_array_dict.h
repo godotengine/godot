@@ -214,7 +214,7 @@ class EditorPropertyLocalizableString : public EditorProperty {
 	void _page_changed(int p_page);
 	void _edit_pressed();
 	void _remove_item(Object *p_button, int p_index);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 
 	void _add_locale_popup();
 	void _add_locale(const String &p_locale);

@@ -34,6 +34,8 @@
 #include "godot_content_view.h"
 #include "godot_menu_delegate.h"
 #include "godot_menu_item.h"
+#include "godot_open_save_delegate.h"
+#include "godot_status_item.h"
 #include "godot_window.h"
 #include "godot_window_delegate.h"
 #include "key_mapping_macos.h"
@@ -46,7 +48,6 @@
 #include "core/os/keyboard.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
-#include "scene/resources/atlas_texture.h"
 #include "scene/resources/image_texture.h"
 
 #if defined(GLES3_ENABLED)
@@ -159,6 +160,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 							  defer:NO];
 		ERR_FAIL_NULL_V_MSG(wd.window_object, INVALID_WINDOW_ID, "Can't create a window");
 		[wd.window_object setWindowID:window_id_counter];
+		[wd.window_object setReleasedWhenClosed:NO];
 
 		wd.window_view = [[GodotContentView alloc] init];
 		ERR_FAIL_NULL_V_MSG(wd.window_view, INVALID_WINDOW_ID, "Can't create a window view");
@@ -193,19 +195,22 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		}
 
 #if defined(RD_ENABLED)
-		if (context_rd) {
+		if (rendering_context) {
 			union {
 #ifdef VULKAN_ENABLED
-				VulkanContextMacOS::WindowPlatformData vulkan;
+				RenderingContextDriverVulkanMacOS::WindowPlatformData vulkan;
 #endif
 			} wpd;
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
-				wpd.vulkan.view_ptr = &wd.window_view;
+				wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
 			}
 #endif
-			Error err = context_rd->window_create(window_id_counter, p_vsync_mode, p_rect.size.width, p_rect.size.height, &wpd);
-			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s context", context_rd->get_api_name()));
+			Error err = rendering_context->window_create(window_id_counter, &wpd);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, vformat("Can't create a %s context", rendering_driver));
+
+			rendering_context->window_set_size(window_id_counter, p_rect.size.width, p_rect.size.height);
+			rendering_context->window_set_vsync_mode(window_id_counter, p_vsync_mode);
 		}
 #endif
 #if defined(GLES3_ENABLED)
@@ -253,11 +258,6 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 	}
 	if (gl_manager_angle) {
 		gl_manager_angle->window_resize(id, wd.size.width, wd.size.height);
-	}
-#endif
-#if defined(RD_ENABLED)
-	if (context_rd) {
-		context_rd->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
 
@@ -477,6 +477,7 @@ void DisplayServerMacOS::_process_key_events() {
 			k->set_physical_keycode(ke.physical_keycode);
 			k->set_key_label(ke.key_label);
 			k->set_unicode(ke.unicode);
+			k->set_location(ke.location);
 
 			_push_input(k);
 		} else {
@@ -505,6 +506,7 @@ void DisplayServerMacOS::_process_key_events() {
 				k->set_keycode(ke.keycode);
 				k->set_physical_keycode(ke.physical_keycode);
 				k->set_key_label(ke.key_label);
+				k->set_location(ke.location);
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].keycode == Key::NONE) {
 					k->set_unicode(key_event_buffer[i + 1].unicode);
@@ -696,10 +698,12 @@ DisplayServerMacOS::WindowData &DisplayServerMacOS::get_window(WindowID p_window
 }
 
 void DisplayServerMacOS::send_event(NSEvent *p_event) {
-	// Special case handling of command-period, which is traditionally a special
-	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
+	// Special case handling of shortcuts that don't arrive at the regular keyDown handler
 	if ([p_event type] == NSEventTypeKeyDown) {
-		if ((([p_event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask) == NSEventModifierFlagCommand) && [p_event keyCode] == 0x2f) {
+		NSEventModifierFlags flags = [p_event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask;
+
+		// Command-period
+		if ((flags == NSEventModifierFlagCommand) && [p_event keyCode] == 0x2f) {
 			Ref<InputEventKey> k;
 			k.instantiate();
 
@@ -712,6 +716,24 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 			k->set_echo([p_event isARepeat]);
 
 			Input::get_singleton()->parse_input_event(k);
+			return;
+		}
+
+		// Ctrl+Tab and Ctrl+Shift+Tab
+		if (((flags == NSEventModifierFlagControl) || (flags == (NSEventModifierFlagControl | NSEventModifierFlagShift))) && [p_event keyCode] == 0x30) {
+			Ref<InputEventKey> k;
+			k.instantiate();
+
+			get_key_modifier_state([p_event modifierFlags], k);
+			k->set_window_id(DisplayServerMacOS::INVALID_WINDOW_ID);
+			k->set_pressed(true);
+			k->set_keycode(Key::TAB);
+			k->set_physical_keycode(Key::TAB);
+			k->set_key_label(Key::TAB);
+			k->set_echo([p_event isARepeat]);
+
+			Input::get_singleton()->parse_input_event(k);
+			return;
 		}
 	}
 }
@@ -787,8 +809,12 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 	}
 #endif
 #ifdef RD_ENABLED
-	if (context_rd) {
-		context_rd->window_destroy(p_window);
+	if (rendering_device) {
+		rendering_device->screen_free(p_window);
+	}
+
+	if (rendering_context) {
+		rendering_context->window_destroy(p_window);
 	}
 #endif
 	windows.erase(p_window);
@@ -796,17 +822,17 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 }
 
 void DisplayServerMacOS::window_resize(WindowID p_window, int p_width, int p_height) {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_size(p_window, p_width, p_height);
+	}
+#endif
 #if defined(GLES3_ENABLED)
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_resize(p_window, p_width, p_height);
 	}
 	if (gl_manager_angle) {
 		gl_manager_angle->window_resize(p_window, p_width, p_height);
-	}
-#endif
-#if defined(VULKAN_ENABLED)
-	if (context_rd) {
-		context_rd->window_resize(p_window, p_width, p_height);
 	}
 #endif
 }
@@ -832,6 +858,8 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_EXTEND_TO_TITLE:
 		case FEATURE_SCREEN_CAPTURE:
+		case FEATURE_STATUS_INDICATOR:
+		case FEATURE_NATIVE_HELP:
 			return true;
 		default: {
 		}
@@ -841,6 +869,19 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 
 String DisplayServerMacOS::get_name() const {
 	return "macOS";
+}
+
+void DisplayServerMacOS::help_set_search_callbacks(const Callable &p_search_callback, const Callable &p_action_callback) {
+	help_search_callback = p_search_callback;
+	help_action_callback = p_action_callback;
+}
+
+Callable DisplayServerMacOS::_help_get_search_callback() const {
+	return help_search_callback;
+}
+
+Callable DisplayServerMacOS::_help_get_action_callback() const {
+	return help_action_callback;
 }
 
 bool DisplayServerMacOS::_is_menu_opened(NSMenu *p_menu) const {
@@ -1672,6 +1713,10 @@ void DisplayServerMacOS::global_menu_set_item_text(const String &p_menu_root, in
 		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
 		if (menu_item) {
 			[menu_item setTitle:[NSString stringWithUTF8String:p_text.utf8().get_data()]];
+			NSMenu *sub_menu = [menu_item submenu];
+			if (sub_menu) {
+				[sub_menu setTitle:[NSString stringWithUTF8String:p_text.utf8().get_data()]];
+			}
 		}
 	}
 }
@@ -2025,7 +2070,17 @@ bool DisplayServerMacOS::is_dark_mode() const {
 
 Color DisplayServerMacOS::get_accent_color() const {
 	if (@available(macOS 10.14, *)) {
-		NSColor *color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+		__block NSColor *color = nullptr;
+		if (@available(macOS 11.0, *)) {
+			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+				color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			}];
+		} else {
+			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
+			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
+			color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			[NSAppearance setCurrentAppearance:saved_appearance];
+		}
 		if (color) {
 			CGFloat components[4];
 			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
@@ -2035,6 +2090,41 @@ Color DisplayServerMacOS::get_accent_color() const {
 		}
 	} else {
 		return Color(0, 0, 0, 0);
+	}
+}
+
+Color DisplayServerMacOS::get_base_color() const {
+	if (@available(macOS 10.14, *)) {
+		__block NSColor *color = nullptr;
+		if (@available(macOS 11.0, *)) {
+			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+				color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			}];
+		} else {
+			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
+			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
+			color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+			[NSAppearance setCurrentAppearance:saved_appearance];
+		}
+		if (color) {
+			CGFloat components[4];
+			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
+			return Color(components[0], components[1], components[2], components[3]);
+		} else {
+			return Color(0, 0, 0, 0);
+		}
+	} else {
+		return Color(0, 0, 0, 0);
+	}
+}
+
+void DisplayServerMacOS::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
+}
+
+void DisplayServerMacOS::emit_system_theme_changed() {
+	if (system_theme_changed.is_valid()) {
+		system_theme_changed.call();
 	}
 }
 
@@ -2079,139 +2169,37 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	return OK;
 }
 
-@interface FileDialogDropdown : NSObject {
-	NSSavePanel *dialog;
-	NSMutableArray *allowed_types;
-	int cur_index;
-}
-
-- (instancetype)initWithDialog:(NSSavePanel *)p_dialog fileTypes:(NSMutableArray *)p_allowed_types;
-- (void)popupAction:(id)sender;
-- (int)getIndex;
-
-@end
-
-@implementation FileDialogDropdown
-
-- (int)getIndex {
-	return cur_index;
-}
-
-- (instancetype)initWithDialog:(NSSavePanel *)p_dialog fileTypes:(NSMutableArray *)p_allowed_types {
-	if ((self = [super init])) {
-		dialog = p_dialog;
-		allowed_types = p_allowed_types;
-		cur_index = 0;
-	}
-	return self;
-}
-
-- (void)popupAction:(id)sender {
-	NSUInteger index = [sender indexOfSelectedItem];
-	if (index < [allowed_types count]) {
-		[dialog setAllowedFileTypes:[allowed_types objectAtIndex:index]];
-		cur_index = index;
-	} else {
-		[dialog setAllowedFileTypes:@[]];
-		cur_index = -1;
-	}
-}
-
-@end
-
-FileDialogDropdown *_make_accessory_view(NSSavePanel *p_panel, const Vector<String> &p_filters) {
-	NSView *group = [[NSView alloc] initWithFrame:NSZeroRect];
-	group.translatesAutoresizingMaskIntoConstraints = NO;
-
-	NSTextField *label = [NSTextField labelWithString:[NSString stringWithUTF8String:RTR("Format").utf8().get_data()]];
-	label.translatesAutoresizingMaskIntoConstraints = NO;
-	if (@available(macOS 10.14, *)) {
-		label.textColor = NSColor.secondaryLabelColor;
-	}
-	if (@available(macOS 11.10, *)) {
-		label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-	}
-	[group addSubview:label];
-
-	NSPopUpButton *popup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
-	popup.translatesAutoresizingMaskIntoConstraints = NO;
-
-	NSMutableArray *allowed_types = [[NSMutableArray alloc] init];
-	bool allow_other = false;
-	for (int i = 0; i < p_filters.size(); i++) {
-		Vector<String> tokens = p_filters[i].split(";");
-		if (tokens.size() >= 1) {
-			String flt = tokens[0].strip_edges();
-			int filter_slice_count = flt.get_slice_count(",");
-
-			NSMutableArray *type_filters = [[NSMutableArray alloc] init];
-			for (int j = 0; j < filter_slice_count; j++) {
-				String str = (flt.get_slice(",", j).strip_edges());
-				if (str.strip_edges() == "*.*" || str.strip_edges() == "*") {
-					allow_other = true;
-				} else if (!str.is_empty()) {
-					[type_filters addObject:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
-				}
-			}
-
-			if ([type_filters count] > 0) {
-				NSString *name_str = [NSString stringWithUTF8String:((tokens.size() == 1) ? tokens[0] : vformat("%s (%s)", tokens[1], tokens[0])).strip_edges().utf8().get_data()];
-				[allowed_types addObject:type_filters];
-				[popup addItemWithTitle:name_str];
-			}
-		}
-	}
-	FileDialogDropdown *handler = [[FileDialogDropdown alloc] initWithDialog:p_panel fileTypes:allowed_types];
-	popup.target = handler;
-	popup.action = @selector(popupAction:);
-
-	[group addSubview:popup];
-
-	NSView *view = [[NSView alloc] initWithFrame:NSZeroRect];
-	view.translatesAutoresizingMaskIntoConstraints = NO;
-	[view addSubview:group];
-
-	NSMutableArray *constraints = [NSMutableArray array];
-	[constraints addObject:[popup.topAnchor constraintEqualToAnchor:group.topAnchor constant:10]];
-	[constraints addObject:[label.leadingAnchor constraintEqualToAnchor:group.leadingAnchor constant:10]];
-	[constraints addObject:[popup.leadingAnchor constraintEqualToAnchor:label.trailingAnchor constant:10]];
-	[constraints addObject:[popup.firstBaselineAnchor constraintEqualToAnchor:label.firstBaselineAnchor]];
-	[constraints addObject:[group.trailingAnchor constraintEqualToAnchor:popup.trailingAnchor constant:10]];
-	[constraints addObject:[group.bottomAnchor constraintEqualToAnchor:popup.bottomAnchor constant:10]];
-	[constraints addObject:[group.topAnchor constraintEqualToAnchor:view.topAnchor]];
-	[constraints addObject:[group.centerXAnchor constraintEqualToAnchor:view.centerXAnchor]];
-	[constraints addObject:[view.bottomAnchor constraintEqualToAnchor:group.bottomAnchor]];
-	[NSLayoutConstraint activateConstraints:constraints];
-
-	[p_panel setAllowsOtherFileTypes:allow_other];
-	if ([allowed_types count] > 0) {
-		[p_panel setAccessoryView:view];
-		[p_panel setAllowedFileTypes:[allowed_types objectAtIndex:0]];
-	}
-
-	return handler;
-}
-
 Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+}
+
+Error DisplayServerMacOS::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true);
+}
+
+Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
 
 	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
-	FileDialogDropdown *handler = nullptr;
-
 	WindowID prev_focus = last_focused_window;
 
+	GodotOpenSaveDelegate *panel_delegate = [[GodotOpenSaveDelegate alloc] init];
+	if (p_root.length() > 0) {
+		[panel_delegate setRootPath:p_root];
+	}
 	Callable callback = p_callback; // Make a copy for async completion handler.
 	if (p_mode == FILE_DIALOG_MODE_SAVE_FILE) {
 		NSSavePanel *panel = [NSSavePanel savePanel];
 
 		[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
-		handler = _make_accessory_view(panel, p_filters);
+		[panel_delegate makeAccessoryView:panel filters:p_filters options:p_options];
 		[panel setExtensionHidden:YES];
 		[panel setCanSelectHiddenExtension:YES];
 		[panel setCanCreateDirectories:YES];
 		[panel setShowsHiddenFiles:p_show_hidden];
+		[panel setDelegate:panel_delegate];
 		if (p_filename != "") {
 			NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
 			[panel setNameFieldStringValue:fileurl];
@@ -2248,30 +2236,60 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 							  url.parse_utf8([[[panel URL] path] UTF8String]);
 							  files.push_back(url);
 							  if (!callback.is_null()) {
-								  Variant v_result = true;
-								  Variant v_files = files;
-								  Variant v_index = [handler getIndex];
-								  Variant ret;
-								  Callable::CallError ce;
-								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+								  if (p_options_in_cb) {
+									  Variant v_result = true;
+									  Variant v_files = files;
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant v_opt = [panel_delegate getSelection];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-								  callback.callp(args, 3, ret, ce);
-								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  callback.callp(args, 4, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+									  }
+								  } else {
+									  Variant v_result = true;
+									  Variant v_files = files;
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+									  callback.callp(args, 3, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  }
 								  }
 							  }
 						  } else {
 							  if (!callback.is_null()) {
-								  Variant v_result = false;
-								  Variant v_files = Vector<String>();
-								  Variant v_index = [handler getIndex];
-								  Variant ret;
-								  Callable::CallError ce;
-								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+								  if (p_options_in_cb) {
+									  Variant v_result = false;
+									  Variant v_files = Vector<String>();
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant v_opt = [panel_delegate getSelection];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-								  callback.callp(args, 3, ret, ce);
-								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  callback.callp(args, 4, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+									  }
+								  } else {
+									  Variant v_result = false;
+									  Variant v_files = Vector<String>();
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+									  callback.callp(args, 3, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  }
 								  }
 							  }
 						  }
@@ -2283,13 +2301,14 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 		NSOpenPanel *panel = [NSOpenPanel openPanel];
 
 		[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
-		handler = _make_accessory_view(panel, p_filters);
+		[panel_delegate makeAccessoryView:panel filters:p_filters options:p_options];
 		[panel setExtensionHidden:YES];
 		[panel setCanSelectHiddenExtension:YES];
 		[panel setCanCreateDirectories:YES];
 		[panel setCanChooseFiles:(p_mode != FILE_DIALOG_MODE_OPEN_DIR)];
 		[panel setCanChooseDirectories:(p_mode == FILE_DIALOG_MODE_OPEN_DIR || p_mode == FILE_DIALOG_MODE_OPEN_ANY)];
 		[panel setShowsHiddenFiles:p_show_hidden];
+		[panel setDelegate:panel_delegate];
 		if (p_filename != "") {
 			NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
 			[panel setNameFieldStringValue:fileurl];
@@ -2333,30 +2352,60 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 								  files.push_back(url);
 							  }
 							  if (!callback.is_null()) {
-								  Variant v_result = true;
-								  Variant v_files = files;
-								  Variant v_index = [handler getIndex];
-								  Variant ret;
-								  Callable::CallError ce;
-								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+								  if (p_options_in_cb) {
+									  Variant v_result = true;
+									  Variant v_files = files;
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant v_opt = [panel_delegate getSelection];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-								  callback.callp(args, 3, ret, ce);
-								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  callback.callp(args, 4, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+									  }
+								  } else {
+									  Variant v_result = true;
+									  Variant v_files = files;
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+									  callback.callp(args, 3, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  }
 								  }
 							  }
 						  } else {
 							  if (!callback.is_null()) {
-								  Variant v_result = false;
-								  Variant v_files = Vector<String>();
-								  Variant v_index = [handler getIndex];
-								  Variant ret;
-								  Callable::CallError ce;
-								  const Variant *args[3] = { &v_result, &v_files, &v_index };
+								  if (p_options_in_cb) {
+									  Variant v_result = false;
+									  Variant v_files = Vector<String>();
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant v_opt = [panel_delegate getSelection];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-								  callback.callp(args, 3, ret, ce);
-								  if (ce.error != Callable::CallError::CALL_OK) {
-									  ERR_PRINT(vformat("Failed to execute file dialogs callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  callback.callp(args, 4, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+									  }
+								  } else {
+									  Variant v_result = false;
+									  Variant v_files = Vector<String>();
+									  Variant v_index = [panel_delegate getIndex];
+									  Variant ret;
+									  Callable::CallError ce;
+									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+									  callback.callp(args, 3, ret, ce);
+									  if (ce.error != Callable::CallError::CALL_OK) {
+										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+									  }
 								  }
 							  }
 						  }
@@ -2509,7 +2558,7 @@ bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, N
 		}
 
 		// Confine mouse position to the window, and update delta.
-		NSRect frame = [p_wd.window_object frame];
+		NSRect frame = [p_wd.window_view frame];
 		NSPoint conf_pos = r_mpos;
 		conf_pos.x = CLAMP(conf_pos.x + r_delta.x, 0.f, frame.size.width);
 		conf_pos.y = CLAMP(conf_pos.y - r_delta.y, 0.f, frame.size.height);
@@ -2636,7 +2685,7 @@ Ref<Image> DisplayServerMacOS::clipboard_get_image() const {
 		return image;
 	}
 	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
-	NSData *pngData = [bitmap representationUsingType:NSPNGFileType properties:@{}];
+	NSData *pngData = [bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
 	image.instantiate();
 	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
 	return image;
@@ -2767,6 +2816,7 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 	position += _get_screens_origin();
 	position /= screen_get_max_scale();
 
+	Color color;
 	for (NSScreen *screen in [NSScreen screens]) {
 		NSRect frame = [screen frame];
 		if (NSMouseInRect(NSMakePoint(position.x, position.y), frame, NO)) {
@@ -2774,18 +2824,22 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 			CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
 			CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(position.x - frame.origin.x, frame.size.height - (position.y - frame.origin.y), 1, 1));
 			if (image) {
-				NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithCGImage:image];
-				CGImageRelease(image);
-				NSColor *color = [bitmap colorAtX:0 y:0];
-				if (color) {
-					CGFloat components[4];
-					[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
-					return Color(components[0], components[1], components[2], components[3]);
+				CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+				if (color_space) {
+					uint8_t img_data[4];
+					CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+					if (context) {
+						CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image);
+						color = Color(img_data[0] / 255.0f, img_data[1] / 255.0f, img_data[2] / 255.0f, img_data[3] / 255.0f);
+						CGContextRelease(context);
+					}
+					CGColorSpaceRelease(color_space);
 				}
+				CGImageRelease(image);
 			}
 		}
 	}
-	return Color();
+	return color;
 }
 
 Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
@@ -2883,7 +2937,11 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 			window_set_flag(WindowFlags(i), true, id);
 		}
 	}
-
+#ifdef RD_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_create(id);
+	}
+#endif
 	return id;
 }
 
@@ -3844,8 +3902,8 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (context_rd) {
-		context_rd->set_vsync_mode(p_window, p_vsync_mode);
+	if (rendering_context) {
+		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
 }
@@ -3861,8 +3919,8 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (context_rd) {
-		return context_rd->get_vsync_mode(p_window);
+	if (rendering_context) {
+		return rendering_context->window_get_vsync_mode(p_window);
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
@@ -3978,39 +4036,10 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 			cursors_cache.erase(p_shape);
 		}
 
-		Ref<Texture2D> texture = p_cursor;
-		ERR_FAIL_COND(!texture.is_valid());
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Size2 texture_size;
 		Rect2 atlas_rect;
-
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-
-			atlas_rect.size.width = texture->get_width();
-			atlas_rect.size.height = texture->get_height();
-			atlas_rect.position.x = atlas_texture->get_region().position.x;
-			atlas_rect.position.y = atlas_texture->get_region().position.y;
-
-			texture_size.width = atlas_texture->get_region().size.x;
-			texture_size.height = atlas_texture->get_region().size.y;
-		} else {
-			texture_size.width = texture->get_width();
-			texture_size.height = texture->get_height();
-		}
-
-		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
-		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
-		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
-
-		Ref<Image> image = texture->get_image();
-
-		ERR_FAIL_COND(!image.is_valid());
-		if (image->is_compressed()) {
-			image = image->duplicate(true);
-			Error err = image->decompress();
-			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
-		}
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		ERR_FAIL_COND(image.is_null());
+		Vector2i texture_size = image->get_size();
 
 		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
 				initWithBitmapDataPlanes:nullptr
@@ -4033,7 +4062,7 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 			int row_index = floor(i / texture_size.width) + atlas_rect.position.y;
 			int column_index = (i % int(texture_size.width)) + atlas_rect.position.x;
 
-			if (atlas_texture.is_valid()) {
+			if (atlas_rect.has_area()) {
 				column_index = MIN(column_index, atlas_rect.size.width - 1);
 				row_index = MIN(row_index, atlas_rect.size.height - 1);
 			}
@@ -4043,7 +4072,7 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 			uint8_t alpha = (color >> 24) & 0xFF;
 			pixels[i * 4 + 0] = ((color >> 16) & 0xFF) * alpha / 255;
 			pixels[i * 4 + 1] = ((color >> 8) & 0xFF) * alpha / 255;
-			pixels[i * 4 + 2] = ((color)&0xFF) * alpha / 255;
+			pixels[i * 4 + 2] = ((color) & 0xFF) * alpha / 255;
 			pixels[i * 4 + 3] = alpha;
 		}
 
@@ -4321,6 +4350,124 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 	} else {
 		[NSApp setApplicationIconImage:nil];
 	}
+}
+
+DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+	NSImage *nsimg = nullptr;
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+		Ref<Image> img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
+
+		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
+				initWithBitmapDataPlanes:nullptr
+							  pixelsWide:img->get_width()
+							  pixelsHigh:img->get_height()
+						   bitsPerSample:8
+						 samplesPerPixel:4
+								hasAlpha:YES
+								isPlanar:NO
+						  colorSpaceName:NSDeviceRGBColorSpace
+							 bytesPerRow:img->get_width() * 4
+							bitsPerPixel:32];
+		if (imgrep) {
+			uint8_t *pixels = [imgrep bitmapData];
+
+			int len = img->get_width() * img->get_height();
+			const uint8_t *r = img->get_data().ptr();
+
+			/* Premultiply the alpha channel */
+			for (int i = 0; i < len; i++) {
+				uint8_t alpha = r[i * 4 + 3];
+				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
+				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
+				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
+				pixels[i * 4 + 3] = alpha;
+			}
+
+			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
+			if (nsimg) {
+				[nsimg addRepresentation:imgrep];
+			}
+		}
+	}
+
+	IndicatorData idat;
+
+	idat.item = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
+	idat.view = [[GodotStatusItemView alloc] init];
+
+	[idat.view setToolTip:[NSString stringWithUTF8String:p_tooltip.utf8().get_data()]];
+	[idat.view setImage:nsimg];
+	[idat.view setCallback:p_callback];
+	[idat.item setView:idat.view];
+
+	IndicatorID iid = indicator_id_counter++;
+	indicators[iid] = idat;
+
+	return iid;
+}
+
+void DisplayServerMacOS::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	NSImage *nsimg = nullptr;
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+		Ref<Image> img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
+
+		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
+				initWithBitmapDataPlanes:nullptr
+							  pixelsWide:img->get_width()
+							  pixelsHigh:img->get_height()
+						   bitsPerSample:8
+						 samplesPerPixel:4
+								hasAlpha:YES
+								isPlanar:NO
+						  colorSpaceName:NSDeviceRGBColorSpace
+							 bytesPerRow:img->get_width() * 4
+							bitsPerPixel:32];
+		if (imgrep) {
+			uint8_t *pixels = [imgrep bitmapData];
+
+			int len = img->get_width() * img->get_height();
+			const uint8_t *r = img->get_data().ptr();
+
+			/* Premultiply the alpha channel */
+			for (int i = 0; i < len; i++) {
+				uint8_t alpha = r[i * 4 + 3];
+				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
+				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
+				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
+				pixels[i * 4 + 3] = alpha;
+			}
+
+			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
+			if (nsimg) {
+				[nsimg addRepresentation:imgrep];
+			}
+		}
+	}
+
+	[indicators[p_id].view setImage:nsimg];
+}
+
+void DisplayServerMacOS::status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	[indicators[p_id].view setToolTip:[NSString stringWithUTF8String:p_tooltip.utf8().get_data()]];
+}
+
+void DisplayServerMacOS::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	[indicators[p_id].view setCallback:p_callback];
+}
+
+void DisplayServerMacOS::delete_status_indicator(IndicatorID p_id) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	[[NSStatusBar systemStatusBar] removeStatusItem:indicators[p_id].item];
+	indicators.erase(p_id);
 }
 
 DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
@@ -4665,16 +4812,16 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		context_rd = memnew(VulkanContextMacOS);
+		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}
 #endif
 
-	if (context_rd) {
-		if (context_rd->initialize() != OK) {
-			memdelete(context_rd);
-			context_rd = nullptr;
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			memdelete(rendering_context);
+			rendering_context = nullptr;
 			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG("Could not initialize Vulkan");
+			ERR_FAIL_MSG("Could not initialize " + rendering_driver);
 		}
 	}
 #endif
@@ -4709,9 +4856,10 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 #endif
 #if defined(RD_ENABLED)
-	if (context_rd) {
+	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(context_rd);
+		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
@@ -4724,6 +4872,11 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 	if (screen_keep_on_assertion) {
 		IOPMAssertionRelease(screen_keep_on_assertion);
 		screen_keep_on_assertion = kIOPMNullAssertionID;
+	}
+
+	// Destroy all status indicators.
+	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E; ++E) {
+		[[NSStatusBar systemStatusBar] removeStatusItem:E->value.item];
 	}
 
 	// Destroy all windows.
@@ -4747,14 +4900,13 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 #endif
 #if defined(RD_ENABLED)
 	if (rendering_device) {
-		rendering_device->finalize();
 		memdelete(rendering_device);
 		rendering_device = nullptr;
 	}
 
-	if (context_rd) {
-		memdelete(context_rd);
-		context_rd = nullptr;
+	if (rendering_context) {
+		memdelete(rendering_context);
+		rendering_context = nullptr;
 	}
 #endif
 

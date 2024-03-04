@@ -182,10 +182,3 @@ void NavigationMeshSourceGeometryData3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_indices", "get_indices");
 }
-
-NavigationMeshSourceGeometryData3D::NavigationMeshSourceGeometryData3D() {
-}
-
-NavigationMeshSourceGeometryData3D::~NavigationMeshSourceGeometryData3D() {
-	clear();
-}

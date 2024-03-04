@@ -4,6 +4,9 @@
 
 // This header is generated from the Khronos Vulkan XML API Registry.
 
+#ifndef VULKAN_VIDEO_HPP
+#define VULKAN_VIDEO_HPP
+
 #include <vk_video/vulkan_video_codec_h264std.h>
 #include <vk_video/vulkan_video_codec_h264std_decode.h>
 #include <vk_video/vulkan_video_codec_h264std_encode.h>

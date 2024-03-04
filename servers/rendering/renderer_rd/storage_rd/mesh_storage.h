@@ -162,6 +162,8 @@ private:
 		RID shadow_mesh;
 		HashSet<Mesh *> shadow_owners;
 
+		String path;
+
 		Dependency dependency;
 	};
 
@@ -218,6 +220,7 @@ private:
 		bool uses_custom_data = false;
 		int visible_instances = -1;
 		AABB aabb;
+		AABB custom_aabb;
 		bool aabb_dirty = false;
 		bool buffer_set = false;
 		bool motion_vectors_enabled = false;
@@ -377,6 +380,9 @@ public:
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override;
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override;
+
+	virtual void mesh_set_path(RID p_mesh, const String &p_path) override;
+	virtual String mesh_get_path(RID p_mesh) const override;
 
 	virtual void mesh_clear(RID p_mesh) override;
 
@@ -640,6 +646,9 @@ public:
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) override;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const override;
+
+	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) override;
+	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const override;
 
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const override;
 

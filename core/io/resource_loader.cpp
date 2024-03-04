@@ -36,6 +36,7 @@
 #include "core/object/script_language.h"
 #include "core/os/condition_variable.h"
 #include "core/os/os.h"
+#include "core/os/safe_binary_mutex.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
@@ -187,6 +188,8 @@ void ResourceFormatLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REUSE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
+	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE_DEEP);
+	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE_DEEP);
 
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 	GDVIRTUAL_BIND(_recognize_path, "path", "type");
@@ -244,11 +247,11 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		thread_load_mutex.lock();
 		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(load_paths_stack->get(load_paths_stack->size() - 1));
 		if (E) {
-			E->value.sub_tasks.insert(p_path);
+			E->value.sub_tasks.insert(p_original_path);
 		}
 		thread_load_mutex.unlock();
 	}
-	load_paths_stack->push_back(p_path);
+	load_paths_stack->push_back(p_original_path);
 
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
@@ -338,10 +341,20 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		load_task.cond_var = nullptr;
 	}
 
+	bool ignoring = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
+	bool replacing = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP;
 	if (load_task.resource.is_valid()) {
-		if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-			load_task.resource->set_path(load_task.local_path);
-		} else if (!load_task.local_path.is_resource_file()) {
+		if (!ignoring) {
+			if (replacing) {
+				Ref<Resource> old_res = ResourceCache::get_ref(load_task.local_path);
+				if (old_res.is_valid() && old_res != load_task.resource) {
+					// If resource is already loaded, only replace its data, to avoid existing invalidating instances.
+					old_res->copy_from(load_task.resource);
+					load_task.resource = old_res;
+				}
+			}
+			load_task.resource->set_path(load_task.local_path, replacing);
+		} else {
 			load_task.resource->set_path_cache(load_task.local_path);
 		}
 
@@ -360,6 +373,17 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 		if (_loaded_callback) {
 			_loaded_callback(load_task.resource, load_task.local_path);
+		}
+	} else if (!ignoring) {
+		Ref<Resource> existing = ResourceCache::get_ref(load_task.local_path);
+		if (existing.is_valid()) {
+			load_task.resource = existing;
+			load_task.status = THREAD_LOAD_LOADED;
+			load_task.progress = 1.0;
+
+			if (_loaded_callback) {
+				_loaded_callback(load_task.resource, load_task.local_path);
+			}
 		}
 	}
 
@@ -463,7 +487,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 			load_task.type_hint = p_type_hint;
 			load_task.cache_mode = p_cache_mode;
 			load_task.use_sub_threads = p_thread_mode == LOAD_THREAD_DISTRIBUTE;
-			if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
 				Ref<Resource> existing = ResourceCache::get_ref(local_path);
 				if (existing.is_valid()) {
 					//referencing is fine
@@ -509,20 +533,20 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 float ResourceLoader::_dependency_get_progress(const String &p_path) {
 	if (thread_load_tasks.has(p_path)) {
 		ThreadLoadTask &load_task = thread_load_tasks[p_path];
+		float current_progress = 0.0;
 		int dep_count = load_task.sub_tasks.size();
 		if (dep_count > 0) {
-			float dep_progress = 0;
 			for (const String &E : load_task.sub_tasks) {
-				dep_progress += _dependency_get_progress(E);
+				current_progress += _dependency_get_progress(E);
 			}
-			dep_progress /= float(dep_count);
-			dep_progress *= 0.5;
-			dep_progress += load_task.progress * 0.5;
-			return dep_progress;
+			current_progress /= float(dep_count);
+			current_progress *= 0.5;
+			current_progress += load_task.progress * 0.5;
 		} else {
-			return load_task.progress;
+			current_progress = load_task.progress;
 		}
-
+		load_task.max_reported_progress = MAX(load_task.max_reported_progress, current_progress);
+		return load_task.max_reported_progress;
 	} else {
 		return 1.0; //assume finished loading it so it no longer exists
 	}
@@ -638,9 +662,6 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 					// resource loading that means that the task to wait for can be restarted here to break the
 					// cycle, with as much recursion into this process as needed.
 					// When the stack is eventually unrolled, the original load will have been notified to go on.
-#ifdef DEV_ENABLED
-					print_verbose("ResourceLoader: Potential for deadlock detected in task dependency. Attempting to avoid it by re-issuing the load now.");
-#endif
 					// CACHE_MODE_IGNORE is needed because, otherwise, the new request would just see there's
 					// an ongoing load for that resource and wait for it again. This value forces a new load.
 					Ref<ResourceLoader::LoadToken> token = _load_start(load_task.local_path, load_task.type_hint, LOAD_THREAD_DISTRIBUTE, ResourceFormatLoader::CACHE_MODE_IGNORE);
@@ -1094,7 +1115,7 @@ void ResourceLoader::set_load_callback(ResourceLoadedCallback p_callback) {
 
 ResourceLoadedCallback ResourceLoader::_loaded_callback = nullptr;
 
-Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(String path) {
+Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(const String &path) {
 	for (int i = 0; i < loader_count; ++i) {
 		if (loader[i]->get_script_instance() && loader[i]->get_script_instance()->get_script()->get_path() == path) {
 			return loader[i];
@@ -1103,7 +1124,7 @@ Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(St
 	return Ref<ResourceFormatLoader>();
 }
 
-bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
+bool ResourceLoader::add_custom_resource_format_loader(const String &script_path) {
 	if (_find_custom_resource_format_loader(script_path).is_valid()) {
 		return false;
 	}

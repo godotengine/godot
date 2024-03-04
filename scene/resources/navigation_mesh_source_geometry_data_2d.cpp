@@ -129,10 +129,3 @@ void NavigationMeshSourceGeometryData2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "traversable_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_traversable_outlines", "get_traversable_outlines");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "obstruction_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_obstruction_outlines", "get_obstruction_outlines");
 }
-
-NavigationMeshSourceGeometryData2D::NavigationMeshSourceGeometryData2D() {
-}
-
-NavigationMeshSourceGeometryData2D::~NavigationMeshSourceGeometryData2D() {
-	clear();
-}

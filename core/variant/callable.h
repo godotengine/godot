@@ -99,7 +99,7 @@ public:
 	bool is_valid() const;
 
 	template <typename... VarArgs>
-	Callable bind(VarArgs... p_args);
+	Callable bind(VarArgs... p_args) const;
 	Callable bindv(const Array &p_arguments);
 
 	Callable bindp(const Variant **p_arguments, int p_argcount) const;
@@ -124,6 +124,8 @@ public:
 	void operator=(const Callable &p_callable);
 
 	operator String() const;
+
+	static Callable create(const Variant &p_variant, const StringName &p_method);
 
 	Callable(const Object *p_object, const StringName &p_method);
 	Callable(ObjectID p_object, const StringName &p_method);

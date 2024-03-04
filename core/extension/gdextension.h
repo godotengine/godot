@@ -59,7 +59,12 @@ class GDExtension : public Resource {
 		bool is_reloading = false;
 		HashMap<StringName, GDExtensionMethodBind *> methods;
 		HashSet<ObjectID> instances;
-		HashMap<ObjectID, List<Pair<String, Variant>>> instance_state;
+
+		struct InstanceState {
+			List<Pair<String, Variant>> properties;
+			bool is_placeholder = false;
+		};
+		HashMap<ObjectID, InstanceState> instance_state;
 #endif
 	};
 
@@ -73,10 +78,12 @@ class GDExtension : public Resource {
 
 #ifndef DISABLE_DEPRECATED
 	static void _register_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo *p_extension_funcs);
-#endif // DISABLE_DEPRECATED
 	static void _register_extension_class2(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs);
-	static void _register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs = nullptr);
+#endif // DISABLE_DEPRECATED
+	static void _register_extension_class3(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo3 *p_extension_funcs);
+	static void _register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo3 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs = nullptr);
 	static void _register_extension_class_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassMethodInfo *p_method_info);
+	static void _register_extension_class_virtual_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassVirtualMethodInfo *p_method_info);
 	static void _register_extension_class_integer_constant(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_enum_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionInt p_constant_value, GDExtensionBool p_is_bitfield);
 	static void _register_extension_class_property(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionPropertyInfo *p_info, GDExtensionConstStringNamePtr p_setter, GDExtensionConstStringNamePtr p_getter);
 	static void _register_extension_class_property_indexed(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionPropertyInfo *p_info, GDExtensionConstStringNamePtr p_setter, GDExtensionConstStringNamePtr p_getter, GDExtensionInt p_index);
@@ -197,6 +204,26 @@ public:
 		return extension_classes;
 	}
 };
+
+class GDExtensionEditorHelp {
+protected:
+	friend class EditorHelp;
+
+	// Similarly to EditorNode above, we need to be able to ask EditorHelp to parse
+	// new documentation data. Note though that, differently from EditorHelp, this
+	// is initialized even _before_ it gets instantiated, as we need to rely on
+	// this method while initializing the engine.
+	typedef void (*EditorHelpLoadXmlBufferFunc)(const uint8_t *p_buffer, int p_size);
+	static EditorHelpLoadXmlBufferFunc editor_help_load_xml_buffer;
+
+	typedef void (*EditorHelpRemoveClassFunc)(const String &p_class);
+	static EditorHelpRemoveClassFunc editor_help_remove_class;
+
+public:
+	static void load_xml_buffer(const uint8_t *p_buffer, int p_size);
+	static void remove_class(const String &p_class);
+};
+
 #endif // TOOLS_ENABLED
 
 #endif // GDEXTENSION_H

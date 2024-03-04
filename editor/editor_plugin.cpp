@@ -39,6 +39,7 @@
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/editor_import_plugin.h"
@@ -80,7 +81,7 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 
 Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
 	ERR_FAIL_NULL_V(p_control, nullptr);
-	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
+	return EditorNode::get_bottom_panel()->add_item(p_title, p_control);
 }
 
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control) {
@@ -95,7 +96,7 @@ void EditorPlugin::remove_control_from_docks(Control *p_control) {
 
 void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->remove_bottom_panel_item(p_control);
+	EditorNode::get_bottom_panel()->remove_item(p_control);
 }
 
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location, Control *p_control) {
@@ -247,6 +248,10 @@ void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
 
 void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 	emit_signal(SNAME("resource_saved"), p_resource);
+}
+
+void EditorPlugin::notify_scene_saved(const String &p_scene_filepath) {
+	emit_signal(SNAME("scene_saved"), p_scene_filepath);
 }
 
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
@@ -501,11 +506,11 @@ void EditorPlugin::queue_save_layout() {
 }
 
 void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(p_item);
+	EditorNode::get_bottom_panel()->make_item_visible(p_item);
 }
 
 void EditorPlugin::hide_bottom_panel() {
-	EditorNode::get_singleton()->hide_bottom_panel();
+	EditorNode::get_bottom_panel()->hide_bottom_panel();
 }
 
 EditorInterface *EditorPlugin::get_editor_interface() {
@@ -632,6 +637,7 @@ void EditorPlugin::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 
 	BIND_ENUM_CONSTANT(CONTAINER_TOOLBAR);

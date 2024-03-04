@@ -345,7 +345,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	vbox_container->add_child(source_level_label);
 
 	source_level_list = memnew(ItemList);
-	source_level_list->set_auto_translate(false);
+	source_level_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	source_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	source_level_list->set_allow_rmb_select(true);
@@ -357,7 +357,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	vbox_container->add_child(coords_level_label);
 
 	coords_level_list = memnew(ItemList);
-	coords_level_list->set_auto_translate(false);
+	coords_level_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	coords_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	coords_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	coords_level_list->set_allow_rmb_select(true);
@@ -369,7 +369,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	vbox_container->add_child(alternative_level_label);
 
 	alternative_level_list = memnew(ItemList);
-	alternative_level_list->set_auto_translate(false);
+	alternative_level_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	alternative_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	alternative_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	alternative_level_list->set_allow_rmb_select(true);

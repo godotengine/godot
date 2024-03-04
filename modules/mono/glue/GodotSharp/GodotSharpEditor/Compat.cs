@@ -7,6 +7,9 @@ using System.ComponentModel;
 
 namespace Godot;
 
+// TODO: This is currently disabled because of https://github.com/dotnet/roslyn/issues/52904
+#pragma warning disable IDE0040 // Add accessibility modifiers.
+
 partial class EditorUndoRedoManager
 {
     /// <inheritdoc cref="CreateAction(string, UndoRedo.MergeMode, GodotObject, bool)"/>

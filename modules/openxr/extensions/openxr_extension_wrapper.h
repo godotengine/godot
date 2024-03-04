@@ -35,6 +35,7 @@
 #include "core/math/projection.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid.h"
+#include "core/variant/variant.h"
 
 #include <openxr/openxr.h>
 
@@ -60,6 +61,9 @@ public:
 	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when we create our OpenXR instance.
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when we create our OpenXR session.
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when creating OpenXR swap chains.
+	virtual void *set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer) { return p_next_pointer; }
+
+	virtual PackedStringArray get_suggested_tracker_names() { return PackedStringArray(); }
 
 	// `on_register_metadata` allows extensions to register additional controller metadata.
 	// This function is called even when OpenXRApi is not constructured as the metadata

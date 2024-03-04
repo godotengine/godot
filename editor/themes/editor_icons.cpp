@@ -78,9 +78,8 @@ Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float p_satur
 	return ImageTexture::create_from_image(img);
 }
 
-float get_gizmo_handle_scale(const String &gizmo_handle_name = "") {
-	const float scale_gizmo_handles_for_touch = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
-	if (scale_gizmo_handles_for_touch > 1.0f) {
+float get_gizmo_handle_scale(const String &p_gizmo_handle_name, float p_gizmo_handle_scale) {
+	if (p_gizmo_handle_scale > 1.0f) {
 		// The names of the icons that require additional scaling.
 		static HashSet<StringName> gizmo_to_scale;
 		if (gizmo_to_scale.is_empty()) {
@@ -92,18 +91,15 @@ float get_gizmo_handle_scale(const String &gizmo_handle_name = "") {
 			gizmo_to_scale.insert("EditorPathSmoothHandle");
 		}
 
-		if (gizmo_to_scale.has(gizmo_handle_name)) {
-			return EDSCALE * scale_gizmo_handles_for_touch;
+		if (gizmo_to_scale.has(p_gizmo_handle_name)) {
+			return EDSCALE * p_gizmo_handle_scale;
 		}
 	}
 
 	return EDSCALE;
 }
 
-void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p_icon_saturation, int p_thumb_size, bool p_only_thumbs) {
-	const String benchmark_key = vformat("Generate Icons (%s)", (p_only_thumbs ? "Only Thumbs" : "All"));
-	OS::get_singleton()->benchmark_begin_measure("EditorTheme", benchmark_key);
-
+void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p_icon_saturation, int p_thumb_size, float p_gizmo_handle_scale) {
 	// Before we register the icons, we adjust their colors and saturation.
 	// Most icons follow the standard rules for color conversion to follow the editor
 	// theme's polarity (dark/light). We also adjust the saturation for most icons,
@@ -158,13 +154,13 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	accent_color_icons.insert("PlayOverlay");
 
 	// Generate icons.
-	if (!p_only_thumbs) {
+	{
 		for (int i = 0; i < editor_icons_count; i++) {
 			Ref<ImageTexture> icon;
 
 			const String &editor_icon_name = editor_icons_names[i];
 			if (accent_color_icons.has(editor_icon_name)) {
-				icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name), 1.0, accent_color_map);
+				icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), 1.0, accent_color_map);
 			} else {
 				float saturation = p_icon_saturation;
 				if (saturation_exceptions.has(editor_icon_name)) {
@@ -172,9 +168,9 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 				}
 
 				if (conversion_exceptions.has(editor_icon_name)) {
-					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name), saturation);
+					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation);
 				} else {
-					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name), saturation, color_conversion_map);
+					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map);
 				}
 			}
 
@@ -231,7 +227,6 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 			p_theme->set_icon(editor_icons_names[index], EditorStringName(EditorIcons), icon);
 		}
 	}
-	OS::get_singleton()->benchmark_end_measure("EditorTheme", benchmark_key);
 }
 
 void editor_copy_icons(const Ref<Theme> &p_theme, const Ref<Theme> &p_old_theme) {

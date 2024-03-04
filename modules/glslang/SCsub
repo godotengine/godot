@@ -43,7 +43,6 @@ if env["builtin_glslang"]:
         "glslang/MachineIndependent/SymbolTable.cpp",
         "glslang/MachineIndependent/Versions.cpp",
         "glslang/ResourceLimits/ResourceLimits.cpp",
-        "OGLCompilersDLL/InitializeDll.cpp",
         "SPIRV/disassemble.cpp",
         "SPIRV/doc.cpp",
         "SPIRV/GlslangToSpv.cpp",

@@ -7,6 +7,8 @@ from pathlib import Path
 from platform_methods import run_in_subprocess
 import platform_windows_builders
 
+sources = []
+
 common_win = [
     "godot_windows.cpp",
     "crash_handler_windows.cpp",
@@ -16,10 +18,10 @@ common_win = [
     "joypad_windows.cpp",
     "tts_windows.cpp",
     "windows_terminal_logger.cpp",
-    "vulkan_context_win.cpp",
     "gl_manager_windows_native.cpp",
     "gl_manager_windows_angle.cpp",
     "wgl_detect_version.cpp",
+    "rendering_context_driver_vulkan_windows.cpp",
 ]
 
 common_win_wrap = [
@@ -43,7 +45,8 @@ res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 
-sources = common_win + res_obj
+env.add_source_files(sources, common_win)
+sources += res_obj
 
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 arrange_program_clean(prog)
@@ -65,6 +68,7 @@ if env["windows_subsystem"] == "gui":
     prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
     arrange_program_clean(prog_wrap)
     env_wrap.Depends(prog_wrap, prog)
+    sources += common_win_wrap + res_wrap_obj
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:
@@ -97,7 +101,7 @@ if env["d3d12"]:
     arch_bin_dir = "#bin/" + env["arch"]
 
     # DXC
-    if env["dxc_path"] != "":
+    if env["dxc_path"] != "" and os.path.exists(env["dxc_path"]):
         dxc_dll = "dxil.dll"
         # Whether this one is loaded from arch-specific directory or not can be determined at runtime.
         # Let's copy to both and let the user decide the distribution model.
@@ -109,7 +113,7 @@ if env["d3d12"]:
             )
 
     # Agility SDK
-    if env["agility_sdk_path"] != "":
+    if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
         agility_dlls = ["D3D12Core.dll", "d3d12SDKLayers.dll"]
         # Whether these are loaded from arch-specific directory or not has to be known at build time.
         target_dir = arch_bin_dir if env["agility_sdk_multiarch"] else "#bin"
@@ -121,7 +125,7 @@ if env["d3d12"]:
             )
 
     # PIX
-    if env["pix_path"] != "":
+    if env["use_pix"]:
         pix_dll = "WinPixEventRuntime.dll"
         env.Command(
             "#bin/" + pix_dll,
@@ -130,7 +134,9 @@ if env["d3d12"]:
         )
 
 if not os.getenv("VCINSTALLDIR"):
-    if env["debug_symbols"] and env["separate_debug_symbols"]:
+    if env["debug_symbols"]:
         env.AddPostAction(prog, run_in_subprocess(platform_windows_builders.make_debug_mingw))
         if env["windows_subsystem"] == "gui":
             env.AddPostAction(prog_wrap, run_in_subprocess(platform_windows_builders.make_debug_mingw))
+
+env.platform_sources += sources

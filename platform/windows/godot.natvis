@@ -2,9 +2,9 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 	<Type Name="Vector&lt;*&gt;">
 		<Expand>
-			<Item Name="[size]">_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Item>
+			<Item Name="[size]">_cowdata._ptr ? (((const unsigned long long *)(_cowdata._ptr))[-1]) : 0</Item>
 			<ArrayItems>
-				<Size>_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Size>
+				<Size>_cowdata._ptr ? (((const unsigned long long *)(_cowdata._ptr))[-1]) : 0</Size>
 				<ValuePointer>($T1 *) _cowdata._ptr</ValuePointer>
 			</ArrayItems>
 		</Expand>
@@ -12,9 +12,9 @@
 
 	<Type Name="Array">
 		<Expand>
-			<Item Name="[size]">_p->array._cowdata._ptr ? (((const unsigned int *)(_p->array._cowdata._ptr))[-1]) : 0</Item>
+			<Item Name="[size]">_p->array._cowdata._ptr ? (((const unsigned long long *)(_p->array._cowdata._ptr))[-1]) : 0</Item>
 			<ArrayItems>
-				<Size>_p->array._cowdata._ptr ? (((const unsigned int *)(_p->array._cowdata._ptr))[-1]) : 0</Size>
+				<Size>_p->array._cowdata._ptr ? (((const unsigned long long *)(_p->array._cowdata._ptr))[-1]) : 0</Size>
 				<ValuePointer>(Variant *) _p->array._cowdata._ptr</ValuePointer> 
 			</ArrayItems>
 		</Expand>
@@ -22,9 +22,9 @@
 
 	<Type Name="TypedArray&lt;*&gt;">
 		<Expand>
-			<Item Name="[size]"> _p->array._cowdata._ptr ? (((const unsigned int *)(_p->array._cowdata._ptr))[-1]) : 0</Item>
+			<Item Name="[size]"> _p->array._cowdata._ptr ? (((const unsigned long long *)(_p->array._cowdata._ptr))[-1]) : 0</Item>
 			<ArrayItems>
-				<Size>_p->array._cowdata._ptr ? (((const unsigned int *)(_p->array._cowdata._ptr))[-1]) : 0</Size>
+				<Size>_p->array._cowdata._ptr ? (((const unsigned long long *)(_p->array._cowdata._ptr))[-1]) : 0</Size>
 				<ValuePointer >(Variant *) _p->array._cowdata._ptr</ValuePointer>
 			</ArrayItems>
 		</Expand>
@@ -77,7 +77,7 @@
 	<Type Name="Vector&lt;StringName&gt;" IncludeView="NodePathHelper">
 		<Expand>
 			<ArrayItems>
-				<Size>_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Size>
+				<Size>_cowdata._ptr ? (((const unsigned long long *)(_cowdata._ptr))[-1]) : 0</Size>
 				<ValuePointer>((StringName *)_cowdata._ptr),view(NodePathHelper)</ValuePointer>
 			</ArrayItems>
 		</Expand>
@@ -140,9 +140,9 @@
 
 	<Type Name="VMap&lt;*,*&gt;">
 		<Expand>
-			<Item Condition="_cowdata._ptr" Name="[size]">*(reinterpret_cast&lt;int*&gt;(_cowdata._ptr) - 1)</Item>
+			<Item Condition="_cowdata._ptr" Name="[size]">*(reinterpret_cast&lt;long long*&gt;(_cowdata._ptr) - 1)</Item>
 			<ArrayItems Condition="_cowdata._ptr">
-				<Size>*(reinterpret_cast&lt;int*&gt;(_cowdata._ptr) - 1)</Size>
+				<Size>*(reinterpret_cast&lt;long long*&gt;(_cowdata._ptr) - 1)</Size>
 				<ValuePointer>reinterpret_cast&lt;VMap&lt;$T1,$T2&gt;::Pair*&gt;(_cowdata._ptr)</ValuePointer>
 			</ArrayItems>
 		</Expand>

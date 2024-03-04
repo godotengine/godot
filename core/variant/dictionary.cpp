@@ -251,7 +251,7 @@ void Dictionary::clear() {
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
 	for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 		if (p_overwrite || !has(E.key)) {
-			this->operator[](E.key) = E.value;
+			operator[](E.key) = E.value;
 		}
 	}
 }

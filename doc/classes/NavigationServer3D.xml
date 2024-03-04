@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationServer3D" inherits="Object" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationServer3D" inherits="Object" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A server interface for low-level 3D navigation access.
 	</brief_description>
 	<description>
 		NavigationServer3D is the server that handles navigation maps, regions and agents. It does not handle A* navigation from [AStar3D].
-		Maps are made up of regions, which are made of navigation meshes. Together, they define the navigable areas in the 3D world.
+		Maps are divided into regions, which are composed of navigation meshes. Together, they define the navigable areas in the 3D world.
 		[b]Note:[/b] Most [NavigationServer3D] changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation-related nodes in the scene tree or made through scripts.
 		For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
 		You may assign navigation layers to regions with [method NavigationServer3D.region_set_navigation_layers], which then can be checked upon when requesting a path with [method NavigationServer3D.map_get_path]. This can be used to allow or deny certain areas for some objects.
@@ -189,7 +189,7 @@
 			<param index="1" name="priority" type="float" />
 			<description>
 				Set the agent's [code]avoidance_priority[/code] with a [param priority] between 0.0 (lowest priority) to 1.0 (highest priority).
-				The specified [param agent] does not adjust the velocity for other agents that would match the [code]avoidance_mask[/code] but have a lower [code] avoidance_priority[/code]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
+				The specified [param agent] does not adjust the velocity for other agents that would match the [code]avoidance_mask[/code] but have a lower [code]avoidance_priority[/code]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
 			</description>
 		</method>
 		<method name="agent_set_height">
@@ -340,6 +340,13 @@
 			<param index="0" name="process_info" type="int" enum="NavigationServer3D.ProcessInfo" />
 			<description>
 				Returns information about the current state of the NavigationServer. See [enum ProcessInfo] for a list of available states.
+			</description>
+		</method>
+		<method name="is_baking_navigation_mesh" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<description>
+				Returns [code]true[/code] when the provided navigation mesh is being baked on a background thread.
 			</description>
 		</method>
 		<method name="link_create">
@@ -561,6 +568,14 @@
 				Returns the edge connection margin of the map. This distance is the minimum vertex distance needed to connect two edges from different regions.
 			</description>
 		</method>
+		<method name="map_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns the current iteration id of the navigation map. Every time the navigation map changes and synchronizes the iteration id increases. An iteration id of 0 means the navigation map has never synchronized.
+				[b]Note:[/b] The iteration id will wrap back to 1 after reaching its range limit.
+			</description>
+		</method>
 		<method name="map_get_link_connection_radius" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="map" type="RID" />
@@ -573,6 +588,13 @@
 			<param index="0" name="map" type="RID" />
 			<description>
 				Returns all navigation link [RID]s that are currently assigned to the requested navigation [param map].
+			</description>
+		</method>
+		<method name="map_get_merge_rasterizer_cell_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns map's internal merge rasterizer cell scale.
 			</description>
 		</method>
 		<method name="map_get_obstacles" qualifiers="const">
@@ -670,6 +692,14 @@
 			<param index="1" name="radius" type="float" />
 			<description>
 				Set the map's link connection radius used to connect links to navigation polygons.
+			</description>
+		</method>
+		<method name="map_set_merge_rasterizer_cell_scale">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="scale" type="float" />
+			<description>
+				Set the map's internal merge rasterizer cell scale used to control merging sensitivity.
 			</description>
 		</method>
 		<method name="map_set_up">
@@ -864,13 +894,12 @@
 				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query.
 			</description>
 		</method>
-		<method name="region_bake_navigation_mesh" is_deprecated="true">
+		<method name="region_bake_navigation_mesh" deprecated="This method is deprecated due to core threading changes. To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the [SceneTree] for nodes that should contribute to the navigation mesh baking. The [SceneTree] parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="root_node" type="Node" />
 			<description>
 				Bakes the [param navigation_mesh] with bake source geometry collected starting from the [param root_node].
-				[i]Deprecated.[/i] This function is deprecated due to core threading changes. To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.
 			</description>
 		</method>
 		<method name="region_create">

@@ -152,7 +152,7 @@ env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
-env_base.SConsignFile(".sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL))
+env_base.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
 
 # Build options
 
@@ -182,7 +182,7 @@ opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
-opts.Add(BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False))
+opts.Add(BoolVariable("threads", "Enable threading support", True))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
@@ -259,13 +259,16 @@ opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
 
 # Compilation environment setup
-opts.Add("CXX", "C++ compiler")
-opts.Add("CC", "C compiler")
-opts.Add("LINK", "Linker")
-opts.Add("CCFLAGS", "Custom flags for both the C and C++ compilers")
-opts.Add("CFLAGS", "Custom flags for the C compiler")
-opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
-opts.Add("LINKFLAGS", "Custom flags for the linker")
+# CXX, CC, and LINK directly set the equivalent `env` values (which may still
+# be overridden for a specific platform), the lowercase ones are appended.
+opts.Add("CXX", "C++ compiler binary")
+opts.Add("CC", "C compiler binary")
+opts.Add("LINK", "Linker binary")
+opts.Add("cppdefines", "Custom defines for the pre-processor")
+opts.Add("ccflags", "Custom flags for both the C and C++ compilers")
+opts.Add("cxxflags", "Custom flags for the C++ compiler")
+opts.Add("cflags", "Custom flags for the C compiler")
+opts.Add("linkflags", "Custom flags for the linker")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
@@ -507,21 +510,11 @@ if selected_platform in platform_list:
         env.extra_suffix += "." + env["extra_suffix"]
 
     # Environment flags
-    CCFLAGS = env.get("CCFLAGS", "")
-    env["CCFLAGS"] = ""
-    env.Append(CCFLAGS=str(CCFLAGS).split())
-
-    CFLAGS = env.get("CFLAGS", "")
-    env["CFLAGS"] = ""
-    env.Append(CFLAGS=str(CFLAGS).split())
-
-    CXXFLAGS = env.get("CXXFLAGS", "")
-    env["CXXFLAGS"] = ""
-    env.Append(CXXFLAGS=str(CXXFLAGS).split())
-
-    LINKFLAGS = env.get("LINKFLAGS", "")
-    env["LINKFLAGS"] = ""
-    env.Append(LINKFLAGS=str(LINKFLAGS).split())
+    env.Append(CPPDEFINES=env.get("cppdefines", "").split())
+    env.Append(CCFLAGS=env.get("ccflags", "").split())
+    env.Append(CXXFLAGS=env.get("cxxflags", "").split())
+    env.Append(CFLAGS=env.get("cflags", "").split())
+    env.Append(LINKFLAGS=env.get("linkflags", "").split())
 
     # Feature build profile
     disabled_classes = []
@@ -832,6 +825,10 @@ if selected_platform in platform_list:
         suffix += ".double"
 
     suffix += "." + env["arch"]
+
+    if not env["threads"]:
+        suffix += ".nothreads"
+
     suffix += env.extra_suffix
 
     sys.path.remove(tmppath)
@@ -972,6 +969,9 @@ if selected_platform in platform_list:
         env.Tool("compilation_db")
         env.Alias("compiledb", env.CompilationDatabase())
 
+    if env["threads"]:
+        env.Append(CPPDEFINES=["THREADS_ENABLED"])
+
     Export("env")
 
     # Build subdirs, the build order is dependent on link order.
@@ -992,9 +992,6 @@ if selected_platform in platform_list:
 
     # Microsoft Visual Studio Project Generation
     if env["vsproj"]:
-        if os.name != "nt":
-            print("Error: The `vsproj` option is only usable on Windows with Visual Studio.")
-            Exit(255)
         env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
         methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
         methods.generate_cpp_hint_file("cpp.hint")

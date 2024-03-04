@@ -32,7 +32,7 @@
 #define TILE_MAP_LAYER_H
 
 #include "scene/2d/tile_map.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class TileSetAtlasSource;
 
@@ -218,6 +218,12 @@ class TileMapLayer : public Node2D {
 	GDCLASS(TileMapLayer, Node2D);
 
 public:
+	enum VisibilityMode {
+		VISIBILITY_MODE_DEFAULT,
+		VISIBILITY_MODE_FORCE_SHOW,
+		VISIBILITY_MODE_FORCE_HIDE,
+	};
+
 	enum DirtyFlags {
 		DIRTY_FLAGS_LAYER_ENABLED = 0,
 		DIRTY_FLAGS_LAYER_IN_TREE,
@@ -228,22 +234,23 @@ public:
 		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
+		DIRTY_FLAGS_LAYER_LIGHT_MASK,
+		DIRTY_FLAGS_LAYER_TEXTURE_FILTER,
+		DIRTY_FLAGS_LAYER_TEXTURE_REPEAT,
+		DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE,
 		DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES,
+		DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE,
 		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
-		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE,
+		DIRTY_FLAGS_LAYER_NAVIGATION_MAP,
+		DIRTY_FLAGS_LAYER_NAVIGATION_VISIBILITY_MODE,
+		DIRTY_FLAGS_LAYER_RUNTIME_UPDATE,
 
-		DIRTY_FLAGS_TILE_MAP_SELECTED_LAYER,
-		DIRTY_FLAGS_TILE_MAP_LIGHT_MASK,
-		DIRTY_FLAGS_TILE_MAP_MATERIAL,
-		DIRTY_FLAGS_TILE_MAP_USE_PARENT_MATERIAL,
-		DIRTY_FLAGS_TILE_MAP_TEXTURE_FILTER,
-		DIRTY_FLAGS_TILE_MAP_TEXTURE_REPEAT,
-		DIRTY_FLAGS_TILE_MAP_TILE_SET,
-		DIRTY_FLAGS_TILE_MAP_QUADRANT_SIZE,
-		DIRTY_FLAGS_TILE_MAP_COLLISION_VISIBILITY_MODE,
-		DIRTY_FLAGS_TILE_MAP_NAVIGATION_VISIBILITY_MODE,
-		DIRTY_FLAGS_TILE_MAP_Y_SORT_ENABLED,
-		DIRTY_FLAGS_TILE_MAP_RUNTIME_UPDATE,
+		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE, // For compatibility.
+
+		DIRTY_FLAGS_LAYER_GROUP_SELECTED_LAYERS,
+		DIRTY_FLAGS_LAYER_GROUP_HIGHLIGHT_SELECTED,
+		DIRTY_FLAGS_LAYER_GROUP_TILE_SET,
+
 		DIRTY_FLAGS_MAX,
 	};
 
@@ -251,14 +258,22 @@ private:
 	// Exposed properties.
 	bool enabled = true;
 	int y_sort_origin = 0;
+	int rendering_quadrant_size = 16;
+
 	bool use_kinematic_bodies = false;
+	VisibilityMode collision_visibility_mode = VISIBILITY_MODE_DEFAULT;
+
 	bool navigation_enabled = true;
-	RID navigation_map;
-	bool uses_world_navigation_map = false;
+	RID navigation_map_override;
+	VisibilityMode navigation_visibility_mode = VISIBILITY_MODE_DEFAULT;
 
 	// Internal.
-	int layer_index_in_tile_map_node = -1;
 	HashMap<Vector2i, CellData> tile_map;
+	bool pending_update = false;
+
+	// For keeping compatibility with TileMap.
+	TileMap *tile_map_node = nullptr;
+	int layer_index_in_tile_map_node = -1;
 
 	// Dirty flag. Allows knowing what was modified since the last update.
 	struct {
@@ -273,15 +288,13 @@ private:
 	mutable Rect2i used_rect_cache;
 	mutable bool used_rect_cache_dirty = true;
 
-	// Method to fetch the TileSet to use
-	TileMap *_fetch_tilemap() const;
-	Ref<TileSet> _fetch_tileset() const;
-
 	// Runtime tile data.
 	bool _runtime_update_tile_data_was_cleaned_up = false;
 	void _build_runtime_update_tile_data();
-	void _build_runtime_update_tile_data_for_cell(CellData &r_cell_data, bool p_auto_add_to_dirty_list = false);
+	void _build_runtime_update_tile_data_for_cell(CellData &r_cell_data, bool p_use_tilemap_for_runtime, bool p_auto_add_to_dirty_list = false);
+	bool _runtime_update_needs_all_cells_cleaned_up = false;
 	void _clear_runtime_update_tile_data();
+	void _clear_runtime_update_tile_data_for_cell(CellData &r_cell_data);
 
 	// Per-system methods.
 #ifdef DEBUG_ENABLED
@@ -331,28 +344,34 @@ private:
 #endif // DEBUG_ENABLED
 
 	// Terrains.
-	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern);
+	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) const;
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
 	void _renamed();
 	void _update_notify_local_transform();
 
+	// Internal updates.
+	void _queue_internal_update();
+	void _deferred_internal_update();
+	void _internal_update();
+
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	// TileMap node.
-	void set_layer_index_in_tile_map_node(int p_index);
+	void set_as_tile_map_internal_node(int p_index);
 
 	// Rect caching.
 	Rect2 get_rect(bool &r_changed) const;
 
 	// Terrains.
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints); // Not exposed.
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true); // Not exposed.
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_pattern(const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains = true); // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) const; // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true) const; // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true) const; // Not exposed.
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_pattern(const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains = true) const; // Not exposed.
 
 	// Not exposed to users.
 	TileMapCell get_cell(const Vector2i &p_coords, bool p_use_proxies = false) const;
@@ -360,11 +379,12 @@ public:
 	// For TileMap node's use.
 	void set_tile_data(TileMapDataFormat p_format, const Vector<int> &p_data);
 	Vector<int> get_tile_data() const;
-	void notify_tile_map_change(DirtyFlags p_what);
-	void internal_update();
+	void notify_tile_map_layer_group_change(DirtyFlags p_what);
+
+	void update_internals();
+	void notify_runtime_tile_data_update();
 
 	// --- Exposed in TileMap ---
-
 	// Cells manipulation.
 	void set_cell(const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
 	void erase_cell(const Vector2i &p_coords);
@@ -396,12 +416,23 @@ public:
 	void set_y_sort_origin(int p_y_sort_origin);
 	int get_y_sort_origin() const;
 	virtual void set_z_index(int p_z_index) override;
+	virtual void set_light_mask(int p_light_mask) override;
+	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
+	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
+	void set_rendering_quadrant_size(int p_size);
+	int get_rendering_quadrant_size() const;
+
 	void set_use_kinematic_bodies(bool p_use_kinematic_bodies);
 	bool is_using_kinematic_bodies() const;
+	void set_collision_visibility_mode(VisibilityMode p_show_collision);
+	VisibilityMode get_collision_visibility_mode() const;
+
 	void set_navigation_enabled(bool p_enabled);
 	bool is_navigation_enabled() const;
 	void set_navigation_map(RID p_map);
 	RID get_navigation_map() const;
+	void set_navigation_visibility_mode(VisibilityMode p_show_navigation);
+	VisibilityMode get_navigation_visibility_mode() const;
 
 	// Fixing and clearing methods.
 	void fix_invalid_tiles();
@@ -409,6 +440,14 @@ public:
 	// Find coords for body.
 	bool has_body_rid(RID p_physics_body) const;
 	Vector2i get_coords_for_body_rid(RID p_physics_body) const; // For finding tiles from collision.
+
+	// Helper.
+	Ref<TileSet> get_effective_tile_set() const;
+
+	// Virtual function to modify the TileData at runtime.
+	GDVIRTUAL1R(bool, _use_tile_data_runtime_update, Vector2i);
+	GDVIRTUAL2(_tile_data_runtime_update, Vector2i, TileData *);
+	// ---
 
 	TileMapLayer();
 	~TileMapLayer();

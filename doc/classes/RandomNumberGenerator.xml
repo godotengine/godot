@@ -17,6 +17,25 @@
 		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
+		<method name="rand_weighted">
+			<return type="int" />
+			<param index="0" name="weights" type="PackedFloat32Array" />
+			<description>
+				Returns a random index with non-uniform weights. Prints an error and returns [code]-1[/code] if the array is empty.
+				[codeblocks]
+				[gdscript]
+				var rnd = RandomNumberGenerator.new()
+
+				var my_array = ["one", "two", "three, "four"]
+				var weights = PackedFloat32Array([0.5, 1, 1, 2])
+
+				# Prints one of the four elements in `my_array`.
+				# It is more likely to print "four", and less likely to print "two".
+				print(my_array[rng.rand_weighted(weights)])
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="randf">
 			<return type="float" />
 			<description>
@@ -36,7 +55,8 @@
 			<param index="0" name="mean" type="float" default="0.0" />
 			<param index="1" name="deviation" type="float" default="1.0" />
 			<description>
-				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url] pseudo-random number, using Box-Muller transform with the specified [param mean] and a standard [param deviation]. This is also called Gaussian distribution.
+				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url], pseudo-random floating-point number from the specified [param mean] and a standard [param deviation]. This is also known as a Gaussian distribution.
+				[b]Note:[/b] This method uses the [url=https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform]Box-Muller transform[/url] algorithm.
 			</description>
 		</method>
 		<method name="randi">

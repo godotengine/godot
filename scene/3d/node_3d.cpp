@@ -148,7 +148,11 @@ void Node3D::_notification(int p_what) {
 
 			if (data.top_level && !Engine::get_singleton()->is_editor_hint()) {
 				if (data.parent) {
-					data.local_transform = data.parent->get_global_transform() * get_transform();
+					if (!data.top_level) {
+						data.local_transform = data.parent->get_global_transform() * get_transform();
+					} else {
+						data.local_transform = get_transform();
+					}
 					_replace_dirty_mask(DIRTY_EULER_ROTATION_AND_SCALE); // As local transform was updated, rot/scale should be dirty.
 				}
 			}
@@ -715,10 +719,12 @@ void Node3D::set_disable_gizmos(bool p_enabled) {
 
 void Node3D::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD;
-	Transform3D temp = get_global_transform();
-	Node::reparent(p_parent);
 	if (p_keep_global_transform) {
+		Transform3D temp = get_global_transform();
+		Node::reparent(p_parent);
 		set_global_transform(temp);
+	} else {
+		Node::reparent(p_parent);
 	}
 }
 
@@ -737,7 +743,7 @@ void Node3D::set_as_top_level(bool p_enabled) {
 	if (data.top_level == p_enabled) {
 		return;
 	}
-	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
+	if (is_inside_tree()) {
 		if (p_enabled) {
 			set_transform(get_global_transform());
 		} else if (data.parent) {

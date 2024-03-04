@@ -64,7 +64,7 @@ private:
 
 		LogMessage() {}
 
-		LogMessage(const String p_text, MessageType p_type, bool p_clear) :
+		LogMessage(const String &p_text, MessageType p_type, bool p_clear) :
 				text(p_text),
 				type(p_type),
 				clear(p_clear) {

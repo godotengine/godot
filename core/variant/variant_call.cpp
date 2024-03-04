@@ -666,7 +666,7 @@ struct _VariantCall {
 			CharString cs;
 			cs.resize(p_instance->size() + 1);
 			memcpy(cs.ptrw(), r, p_instance->size());
-			cs[p_instance->size()] = 0;
+			cs[(int)p_instance->size()] = 0;
 
 			s = cs.get_data();
 		}
@@ -885,7 +885,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(int32_t), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit integer) to convert to PackedInt32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(int32_t));
 		return dest;
 	}
@@ -899,7 +899,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(int64_t), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit integer) to convert to PackedInt64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(int64_t));
 		return dest;
 	}
@@ -913,7 +913,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(float), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit float) to convert to PackedFloat32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(float));
 		return dest;
 	}
@@ -927,7 +927,7 @@ struct _VariantCall {
 		ERR_FAIL_COND_V_MSG(size % sizeof(double), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit double) to convert to PackedFloat64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
-		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
 		return dest;
 	}
@@ -2033,11 +2033,13 @@ static void _register_variant_builtin_methods() {
 	bind_method(NodePath, get_subname, sarray("idx"), varray());
 	bind_method(NodePath, get_concatenated_names, sarray(), varray());
 	bind_method(NodePath, get_concatenated_subnames, sarray(), varray());
+	bind_method(NodePath, slice, sarray("begin", "end"), varray(INT_MAX));
 	bind_method(NodePath, get_as_property_path, sarray(), varray());
 	bind_method(NodePath, is_empty, sarray(), varray());
 
 	/* Callable */
 
+	bind_static_method(Callable, create, sarray("variant", "method"), varray());
 	bind_method(Callable, callv, sarray("arguments"), varray());
 	bind_method(Callable, is_null, sarray(), varray());
 	bind_method(Callable, is_custom, sarray(), varray());

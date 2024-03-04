@@ -372,6 +372,12 @@ ktxTexture2_transcodeUastc(ktxTexture2* This,
         This->dataSize = prototype->dataSize;
         prototype->pData = 0;
         prototype->dataSize = 0;
+        // Free SGD data
+        This->_private->_sgdByteLength = 0;
+        if (This->_private->_supercompressionGlobalData) {
+            free(This->_private->_supercompressionGlobalData);
+            This->_private->_supercompressionGlobalData = NULL;
+        }
     }
     ktxTexture2_Destroy(prototype);
     return result;

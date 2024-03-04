@@ -37,7 +37,7 @@
 #include "editor/themes/editor_scale.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
-	if (grabber->is_visible()) {
+	if (!read_only && grabber->is_visible()) {
 		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
 		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
 	}
@@ -68,27 +68,15 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					}
 					return;
 				} else {
-					grabbing_spinner_attempt = true;
-					grabbing_spinner_dist_cache = 0;
-					pre_grab_value = get_value();
-					grabbing_spinner = false;
-					grabbing_spinner_mouse_pos = get_global_mouse_position();
-					emit_signal("grabbed");
+					_grab_start();
 				}
 			} else {
-				if (grabbing_spinner_attempt) {
-					if (grabbing_spinner) {
-						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-						Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
-						queue_redraw();
-						emit_signal("ungrabbed");
-					} else {
-						_focus_entered();
-					}
-
-					grabbing_spinner = false;
-					grabbing_spinner_attempt = false;
-				}
+				_grab_end();
+			}
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
+			if (mb->is_pressed() && is_grabbing()) {
+				_grab_end();
+				set_value(pre_grab_value);
 			}
 		} else if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (grabber->is_visible()) {
@@ -142,8 +130,47 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && k->is_action("ui_accept", true)) {
-		_focus_entered();
+	if (k.is_valid() && k->is_pressed()) {
+		if (k->is_action("ui_accept", true)) {
+			_focus_entered();
+		} else if (is_grabbing()) {
+			if (k->is_action("ui_cancel", true)) {
+				_grab_end();
+				set_value(pre_grab_value);
+			}
+			accept_event();
+		}
+	}
+}
+
+void EditorSpinSlider::_grab_start() {
+	grabbing_spinner_attempt = true;
+	grabbing_spinner_dist_cache = 0;
+	pre_grab_value = get_value();
+	grabbing_spinner = false;
+	grabbing_spinner_mouse_pos = get_global_mouse_position();
+	emit_signal("grabbed");
+}
+
+void EditorSpinSlider::_grab_end() {
+	if (grabbing_spinner_attempt) {
+		if (grabbing_spinner) {
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
+			queue_redraw();
+			grabbing_spinner = false;
+			emit_signal("ungrabbed");
+		} else {
+			_focus_entered();
+		}
+
+		grabbing_spinner_attempt = false;
+	}
+
+	if (grabbing_grabber) {
+		grabbing_grabber = false;
+		mousewheel_over_grabber = false;
+		emit_signal("ungrabbed");
 	}
 }
 
@@ -173,14 +200,23 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			grabbing_grabber = true;
+			pre_grab_value = get_value();
 			if (!mousewheel_over_grabber) {
 				grabbing_ratio = get_as_ratio();
 				grabbing_from = grabber->get_transform().xform(mb->get_position()).x;
 			}
+			grab_focus();
 			emit_signal("grabbed");
 		} else {
 			grabbing_grabber = false;
 			mousewheel_over_grabber = false;
+			emit_signal("ungrabbed");
+		}
+	} else if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT) {
+		if (mb->is_pressed() && grabbing_grabber) {
+			grabbing_grabber = false;
+			mousewheel_over_grabber = false;
+			set_value(pre_grab_value);
 			emit_signal("ungrabbed");
 		}
 	}
@@ -390,13 +426,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
-			bool display_grabber = (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
 			if (grabber->is_visible() != display_grabber) {
-				if (display_grabber) {
-					grabber->show();
-				} else {
-					grabber->hide();
-				}
+				grabber->set_visible(display_grabber);
 			}
 
 			if (display_grabber) {

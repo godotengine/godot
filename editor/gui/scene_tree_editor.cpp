@@ -132,20 +132,32 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
-		String config_err = n->get_configuration_warnings_as_string();
-		if (config_err.is_empty()) {
+		const PackedStringArray warnings = n->get_configuration_warnings();
+
+		if (warnings.is_empty()) {
 			return;
 		}
 
-		const PackedInt32Array boundaries = TS->string_get_word_breaks(config_err, "", 80);
+		// Improve looks on tooltip, extra spacing on non-bullet point newlines.
+		const String bullet_point = U"•  ";
+		String all_warnings;
+		for (const String &w : warnings) {
+			all_warnings += "\n" + bullet_point + w;
+		}
+
+		// Limit the line width while keeping some padding.
+		// It is not efficient, but it does not have to be.
+		const PackedInt32Array boundaries = TS->string_get_word_breaks(all_warnings, "", 80);
 		PackedStringArray lines;
 		for (int i = 0; i < boundaries.size(); i += 2) {
 			const int start = boundaries[i];
 			const int end = boundaries[i + 1];
-			lines.append(config_err.substr(start, end - start + 1));
+			const String line = all_warnings.substr(start, end - start);
+			lines.append(line);
 		}
+		all_warnings = String("\n").join(lines).indent("    ").replace(U"    •", U"\n•").substr(2); // We don't want the first two newlines.
 
-		warning->set_text(String("\n").join(lines));
+		warning->set_text(all_warnings);
 		warning->popup_centered();
 
 	} else if (p_id == BUTTON_SIGNALS) {
@@ -282,9 +294,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 	if (can_rename) { //should be can edit..
 
-		String conf_warning = p_node->get_configuration_warnings_as_string();
-		if (!conf_warning.is_empty()) {
-			const int num_warnings = p_node->get_configuration_warnings().size();
+		const PackedStringArray warnings = p_node->get_configuration_warnings();
+		const int num_warnings = warnings.size();
+		if (num_warnings > 0) {
 			String warning_icon;
 			if (num_warnings == 1) {
 				warning_icon = SNAME("NodeWarning");
@@ -296,17 +308,15 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 			// Improve looks on tooltip, extra spacing on non-bullet point newlines.
 			const String bullet_point = U"•  ";
-			int next_newline = 0;
-			while (next_newline != -1) {
-				next_newline = conf_warning.find("\n", next_newline + 2);
-				if (conf_warning.substr(next_newline + 1, bullet_point.length()) != bullet_point) {
-					conf_warning = conf_warning.insert(next_newline + 1, "    ");
-				}
+			String all_warnings;
+			for (const String &w : warnings) {
+				all_warnings += "\n\n" + bullet_point + w.replace("\n", "\n    ");
+			}
+			if (num_warnings == 1) {
+				all_warnings.remove_at(0); // With only one warning, two newlines do not look great.
 			}
 
-			String newline = (num_warnings == 1 ? "\n" : "\n\n");
-
-			item->add_button(0, get_editor_theme_icon(warning_icon), BUTTON_WARNING, false, TTR("Node configuration warning:") + newline + conf_warning);
+			item->add_button(0, get_editor_theme_icon(warning_icon), BUTTON_WARNING, false, TTR("Node configuration warning:") + all_warnings);
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
@@ -740,7 +750,7 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	return p_parent->is_visible();
 }
 
-bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArray p_terms) {
+bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStringArray &p_terms) {
 	if (p_terms.is_empty()) {
 		return true;
 	}
@@ -757,7 +767,7 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 				// Filter by Type.
 				String type = get_node(p_item->get_metadata(0))->get_class();
 				bool term_in_inherited_class = false;
-				// Every Node is is a Node, duh!
+				// Every Node is a Node, duh!
 				while (type != "Node") {
 					if (type.to_lower().contains(argument)) {
 						term_in_inherited_class = true;
@@ -1051,10 +1061,9 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 		}
 	}
 
+	new_name = p_node->get_parent()->prevalidate_child_name(p_node, new_name);
 	if (new_name == p_node->get_name()) {
-		if (item->get_text(0).is_empty()) {
-			item->set_text(0, new_name);
-		}
+		item->set_text(0, new_name);
 		return;
 	}
 
@@ -1545,6 +1554,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	warning = memnew(AcceptDialog);
 	add_child(warning);
 	warning->set_title(TTR("Node Configuration Warning!"));
+	warning->set_flag(Window::FLAG_POPUP, true);
 
 	last_hash = 0;
 	blocked = 0;
@@ -1627,7 +1637,7 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 		Label *label = memnew(Label);
 		hb->add_child(label);
 		label->set_text(name);
-		label->set_auto_translate(false);
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	}
 
 	show_all_nodes->show();

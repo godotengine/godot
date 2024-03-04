@@ -353,9 +353,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	test_menu_button->get_popup()->add_separator(TTR("Named Separator"));
 
 	PopupMenu *test_submenu = memnew(PopupMenu);
-	test_menu_button->get_popup()->add_child(test_submenu);
-	test_submenu->set_name("SubMenu");
-	test_menu_button->get_popup()->add_submenu_item(TTR("Submenu"), "SubMenu");
+	test_menu_button->get_popup()->add_submenu_node_item(TTR("Submenu"), test_submenu);
 	test_submenu->add_item(TTR("Subitem 1"));
 	test_submenu->add_item(TTR("Subitem 2"));
 	first_vb->add_child(test_menu_button);

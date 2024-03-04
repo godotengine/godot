@@ -140,5 +140,9 @@ def make_doc_translations_header(target, source, env):
     make_translations_header(target, source, env, "doc")
 
 
+def make_extractable_translations_header(target, source, env):
+    make_translations_header(target, source, env, "extractable")
+
+
 if __name__ == "__main__":
     subprocess_main(globals())

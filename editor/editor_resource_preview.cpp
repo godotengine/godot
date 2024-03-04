@@ -95,7 +95,34 @@ void EditorResourcePreviewGenerator::_bind_methods() {
 EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
 }
 
+void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewport) const {
+	if (EditorResourcePreview::get_singleton()->is_threaded()) {
+		Callable request_vp_update_once = callable_mp(RS::get_singleton(), &RS::viewport_set_update_mode).bind(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
+		RS::get_singleton()->connect(SNAME("frame_pre_draw"), request_vp_update_once, Object::CONNECT_ONE_SHOT);
+		RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorResourcePreviewGenerator::DrawRequester *>(this), &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
+
+		semaphore.wait();
+	} else {
+		RS::get_singleton()->draw(false);
+	}
+}
+
+void EditorResourcePreviewGenerator::DrawRequester::abort() const {
+	if (EditorResourcePreview::get_singleton()->is_threaded()) {
+		semaphore.post();
+	}
+}
+
+Variant EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() const {
+	semaphore.post();
+	return Variant(); // Needed because of how the callback is used.
+}
+
 EditorResourcePreview *EditorResourcePreview::singleton = nullptr;
+
+bool EditorResourcePreview::is_threaded() const {
+	return RSG::texture_storage->can_create_resources_async();
+}
 
 void EditorResourcePreview::_thread_func(void *ud) {
 	EditorResourcePreview *erp = (EditorResourcePreview *)ud;
@@ -129,6 +156,8 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base, Dictionary &p_metadata) {
 	String type;
 
+	uint64_t started_at = OS::get_singleton()->get_ticks_usec();
+
 	if (p_item.resource.is_valid()) {
 		type = p_item.resource->get_class();
 	} else {
@@ -138,6 +167,10 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	if (type.is_empty()) {
 		r_texture = Ref<ImageTexture>();
 		r_small_texture = Ref<ImageTexture>();
+
+		if (is_print_verbose_enabled()) {
+			print_line(vformat("Generated '%s' preview in %d usec", p_item.path, OS::get_singleton()->get_ticks_usec() - started_at));
+		}
 		return; //could not guess type
 	}
 
@@ -195,6 +228,10 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
 			_write_preview_cache(f, thumbnail_size, has_small_texture, FileAccess::get_modified_time(p_item.path), FileAccess::get_md5(p_item.path), p_metadata);
 		}
+	}
+
+	if (is_print_verbose_enabled()) {
+		print_line(vformat("Generated '%s' preview in %d usec", p_item.path, OS::get_singleton()->get_ticks_usec() - started_at));
 	}
 }
 
@@ -314,7 +351,7 @@ void EditorResourcePreview::_iterate() {
 	_preview_ready(item.path, 0, texture, small_texture, item.id, item.function, item.userdata, preview_metadata);
 }
 
-void EditorResourcePreview::_write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, String p_hash, const Dictionary &p_metadata) {
+void EditorResourcePreview::_write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, const String &p_hash, const Dictionary &p_metadata) {
 	p_file->store_line(itos(p_thumbnail_size));
 	p_file->store_line(itos(p_has_small_texture));
 	p_file->store_line(itos(p_modified_time));
@@ -460,17 +497,18 @@ void EditorResourcePreview::start() {
 		return;
 	}
 
-	if (RSG::texture_storage->can_create_resources_async()) {
+	if (is_threaded()) {
 		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
 		thread.start(_thread_func, this);
 	} else {
 		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 		ERR_FAIL_NULL_MSG(st, "Editor's MainLoop is not a SceneTree. This is a bug.");
+		st->add_idle_callback(&_idle_callback);
 	}
 }
 
 void EditorResourcePreview::stop() {
-	if (RSG::texture_storage->can_create_resources_async()) {
+	if (is_threaded()) {
 		if (thread.is_started()) {
 			exiting.set();
 			preview_sem.post();
