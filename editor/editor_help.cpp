@@ -291,6 +291,8 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		}
 	} else if (p_select.begins_with("http")) {
 		OS::get_singleton()->shell_open(p_select);
+	} else if (p_select.begins_with("^")) {
+		DisplayServer::get_singleton()->clipboard_set(p_select.trim_prefix("^"));
 	}
 }
 
@@ -2386,6 +2388,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 	bool code_tag = false;
 	bool codeblock_tag = false;
 	const bool using_tab_indent = int(EDITOR_GET("text_editor/behavior/indent/type")) == 0;
+	StringBuilder codeblock_text;
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
@@ -2418,6 +2421,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			}
 			if (!code_tag && !codeblock_tag) {
 				text = text.replace("\n", "\n\n");
+			}
+			if (codeblock_tag) {
+				codeblock_text.append(text);
 			}
 			p_rt->add_text(text);
 		}
@@ -2452,22 +2458,33 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			tag_stack.pop_front();
 			pos = brk_end + 1;
 			if (tag != "/img") {
-				p_rt->pop();
 				if (code_tag) {
+					p_rt->pop(); // color
+					p_rt->pop(); // background color
 					p_rt->pop(); // font size
-					// Pop both color and background color.
-					p_rt->pop();
-					p_rt->pop();
 				} else if (codeblock_tag) {
+					p_rt->pop(); // color
+					p_rt->pop(); // cell
+
+					// Copy codeblock button.
+					p_rt->push_cell();
+					p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
+					p_rt->set_cell_padding(Rect2(0, 10 * EDSCALE, 0, 10 * EDSCALE));
+					p_rt->set_cell_size_override(Vector2(1, 1), Vector2(10, 10) * EDSCALE);
+					p_rt->push_meta("^" + codeblock_text.as_string(), RichTextLabel::META_UNDERLINE_ON_HOVER);
+					codeblock_text = StringBuilder();
+					p_rt->add_image(p_owner_node->get_editor_theme_icon(SNAME("ActionCopy")), 24 * EDSCALE, 24 * EDSCALE, Color(link_property_color, 0.3), INLINE_ALIGNMENT_BOTTOM_TO, Rect2(), Variant(), false, TTR("Click to copy."));
+					p_rt->pop(); // meta
+					p_rt->pop(); // cell
+
+					p_rt->pop(); // table
 					p_rt->pop(); // font size
-					// Pop color, cell and table.
-					p_rt->pop();
-					p_rt->pop();
-					p_rt->pop();
+
 					if (pos < bbcode.length()) {
 						p_rt->add_newline();
 					}
 				}
+				p_rt->pop(); // Pops font for codetags & codeblocks, anything else for other tags.
 			}
 			code_tag = false;
 			codeblock_tag = false;
@@ -2475,7 +2492,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 		} else if (code_tag || codeblock_tag) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
-
+			if (codeblock_tag) {
+				codeblock_text.append("[");
+			}
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
 			const int tag_end = tag.find_char(' ');
 			const String link_tag = tag.substr(0, tag_end);
@@ -2575,7 +2594,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
 
-			p_rt->push_table(1);
+			p_rt->push_table(2);
 			p_rt->push_cell();
 			p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
 			p_rt->set_cell_padding(Rect2(10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE));
