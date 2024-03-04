@@ -62,7 +62,7 @@
 			<return type="Transform3D" />
 			<description>
 				Returns the inverted version of this transform. Unlike [method inverse], this method works with almost any [member basis], including non-uniform ones, but is slower. See also [method Basis.inverse].
-				[b]Note:[/b] For this method to return correctly, the transform's [member basis] needs to not have a determinant of exactly [code]0[/code] (see [method Basis.determinant]).
+				[b]Note:[/b] For this method to return correctly, the transform's [member basis] needs to have a determinant that is not exactly [code]0[/code] (see [method Basis.determinant]).
 			</description>
 		</method>
 		<method name="interpolate_with" qualifiers="const">
@@ -71,7 +71,7 @@
 			<param index="1" name="weight" type="float" />
 			<description>
 				Returns the result of the linear interpolation between this transform and [param xform] by the given [param weight].
-				The [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). Values outside this range are allowed and can be used to perform [i]extrapolation[/i], instead.
+				The [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). Values outside this range are allowed and can be used to perform [i]extrapolation[/i] instead.
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
@@ -172,7 +172,7 @@
 	</methods>
 	<members>
 		<member name="basis" type="Basis" setter="" getter="" default="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
-			The [Basis] of this transform. It is composed by 3 axes ([member Basis.x], [member Basis.y], and [member Basis.z]). Together, these represent the transform's rotation, scale, and shearing.
+			The [Basis] of this transform. It is composed by 3 axes ([member Basis.x], [member Basis.y], and [member Basis.z]). Together, these represent the transform's rotation, scale, and shear.
 		</member>
 		<member name="origin" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
 			The translation offset of this transform. In 3D space, this can be seen as the position.
@@ -247,14 +247,14 @@
 			<return type="Transform3D" />
 			<param index="0" name="right" type="float" />
 			<description>
-				Multiplies all components of the [Transform3D] by the given [float], including the [member origin]. This affects the transform's scale uniformly, also resizing the [member basis].
+				Multiplies all components of the [Transform3D] by the given [float], including the [member origin]. This affects the transform's scale uniformly, scaling the [member basis].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform3D" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Multiplies all components of the [Transform3D] by the given [int], including the [member origin]. This affects the transform's scale uniformly, also resizing the [member basis].
+				Multiplies all components of the [Transform3D] by the given [int], including the [member origin]. This affects the transform's scale uniformly, scaling the [member basis].
 			</description>
 		</operator>
 		<operator name="operator ==">
