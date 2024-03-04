@@ -72,7 +72,7 @@ void CPUParticles3DEditor::_menu_option(int p_option) {
 			gpu_particles->set_process_mode(node->get_process_mode());
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Convert to GPUParticles3D"));
+			ur->create_action(TTR("Convert to GPUParticles3D"), UndoRedo::MERGE_DISABLE, node);
 			SceneTreeDock::get_singleton()->replace_node(node, gpu_particles);
 			ur->commit_action(false);
 
