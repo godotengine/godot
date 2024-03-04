@@ -32,7 +32,6 @@
 #define GEOMETRY_2D_H
 
 #include "core/math/delaunay_2d.h"
-#include "core/math/math_funcs.h"
 #include "core/math/triangulate.h"
 #include "core/math/vector2.h"
 #include "core/math/vector2i.h"

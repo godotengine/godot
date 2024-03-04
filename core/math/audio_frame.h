@@ -32,7 +32,6 @@
 #define AUDIO_FRAME_H
 
 #include "core/math/vector2.h"
-#include "core/typedefs.h"
 
 static inline float undenormalize(volatile float f) {
 	union {

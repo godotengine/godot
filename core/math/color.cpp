@@ -31,9 +31,7 @@
 #include "color.h"
 
 #include "color_names.inc"
-#include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
-#include "core/templates/rb_map.h"
 
 #include "thirdparty/misc/ok_color.h"
 
