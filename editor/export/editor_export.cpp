@@ -210,6 +210,10 @@ void EditorExport::load_config() {
 		}
 
 		String platform = config->get_value(section, "platform");
+		// Forward compatibility with Linux platform after 4.3.
+		if (platform == "Linux") {
+			platform = "Linux/X11";
+		}
 
 		Ref<EditorExportPreset> preset;
 
