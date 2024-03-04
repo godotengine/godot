@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  parallax_background.h                                                 */
+/*  parallax_background_editor_plugin.h                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARALLAX_BACKGROUND_H
-#define PARALLAX_BACKGROUND_H
+#ifndef PARALLAX_BACKGROUND_EDITOR_PLUGIN_H
+#define PARALLAX_BACKGROUND_EDITOR_PLUGIN_H
 
-#include "scene/main/canvas_layer.h"
+#include "editor/editor_plugin.h"
 
-class ParallaxBackground : public CanvasLayer {
-	GDCLASS(ParallaxBackground, CanvasLayer);
+class HBoxContainer;
+class MenuButton;
+class ParallaxBackground;
 
-	Point2 offset;
-	real_t scale = 1.0;
-	Point2 base_offset;
-	Point2 base_scale = Vector2(1, 1);
-	Point2 screen_offset;
-	String group_name;
-	Point2 limit_begin;
-	Point2 limit_end;
-	Point2 final_offset;
-	bool ignore_camera_zoom = false;
+class ParallaxBackgroundEditorPlugin : public EditorPlugin {
+	GDCLASS(ParallaxBackgroundEditorPlugin, EditorPlugin);
 
-	void _update_scroll();
+	enum {
+		MENU_CONVERT_TO_PARALLAX_2D,
+	};
+
+	ParallaxBackground *parallax_background = nullptr;
+	HBoxContainer *toolbar = nullptr;
+	MenuButton *menu = nullptr;
+
+	void _menu_callback(int p_idx);
+	void convert_to_parallax2d();
 
 protected:
-	void _camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_offset);
-
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
-	void set_scroll_offset(const Point2 &p_ofs);
-	Point2 get_scroll_offset() const;
+	virtual String get_name() const override { return "ParallaxBackground"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
-	void set_scroll_scale(real_t p_scale);
-	real_t get_scroll_scale() const;
-
-	void set_scroll_base_offset(const Point2 &p_ofs);
-	Point2 get_scroll_base_offset() const;
-
-	void set_scroll_base_scale(const Point2 &p_ofs);
-	Point2 get_scroll_base_scale() const;
-
-	void set_limit_begin(const Point2 &p_ofs);
-	Point2 get_limit_begin() const;
-
-	void set_limit_end(const Point2 &p_ofs);
-	Point2 get_limit_end() const;
-
-	void set_ignore_camera_zoom(bool ignore);
-	bool is_ignore_camera_zoom();
-
-	Vector2 get_final_offset() const;
-
-	ParallaxBackground();
+	ParallaxBackgroundEditorPlugin();
 };
 
-#endif // PARALLAX_BACKGROUND_H
+#endif // PARALLAX_BACKGROUND_EDITOR_PLUGIN_H

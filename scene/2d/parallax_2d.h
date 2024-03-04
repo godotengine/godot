@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  parallax_background.h                                                 */
+/*  parallax_2d.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,74 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARALLAX_BACKGROUND_H
-#define PARALLAX_BACKGROUND_H
+#ifndef PARALLAX_2D_H
+#define PARALLAX_2D_H
 
-#include "scene/main/canvas_layer.h"
+#include "scene/2d/node_2d.h"
 
-class ParallaxBackground : public CanvasLayer {
-	GDCLASS(ParallaxBackground, CanvasLayer);
+class Parallax2D : public Node2D {
+	GDCLASS(Parallax2D, Node2D);
 
-	Point2 offset;
-	real_t scale = 1.0;
-	Point2 base_offset;
-	Point2 base_scale = Vector2(1, 1);
-	Point2 screen_offset;
+	static constexpr real_t DEFAULT_LIMIT = 10000000;
+
 	String group_name;
-	Point2 limit_begin;
-	Point2 limit_end;
-	Point2 final_offset;
-	bool ignore_camera_zoom = false;
+	Size2 scroll_scale = Size2(1, 1);
+	Point2 scroll_offset;
+	Point2 screen_offset;
+	Vector2 repeat_size;
+	int repeat_times = 1;
+	Point2 limit_begin = Point2(-DEFAULT_LIMIT, -DEFAULT_LIMIT);
+	Point2 limit_end = Point2(DEFAULT_LIMIT, DEFAULT_LIMIT);
+	Point2 autoscroll;
+	Point2 autoscroll_offset;
+	bool follow_viewport = true;
+	bool ignore_camera_scroll = false;
 
+	void _update_process();
+	void _update_repeat();
 	void _update_scroll();
 
 protected:
+#ifdef TOOLS_ENABLED
+	void _edit_set_position(const Point2 &p_position) override;
+#endif // TOOLS_ENABLED
+	void _validate_property(PropertyInfo &p_property) const;
 	void _camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_offset);
-
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_scroll_offset(const Point2 &p_ofs);
+	void set_scroll_scale(const Size2 &p_scale);
+	Size2 get_scroll_scale() const;
+
+	void set_repeat_size(const Size2 &p_repeat_size);
+	Size2 get_repeat_size() const;
+
+	void set_repeat_times(int p_repeat_times);
+	int get_repeat_times() const;
+
+	void set_autoscroll(const Point2 &p_autoscroll);
+	Point2 get_autoscroll() const;
+
+	void set_scroll_offset(const Point2 &p_offset);
 	Point2 get_scroll_offset() const;
 
-	void set_scroll_scale(real_t p_scale);
-	real_t get_scroll_scale() const;
+	void set_screen_offset(const Point2 &p_offset);
+	Point2 get_screen_offset() const;
 
-	void set_scroll_base_offset(const Point2 &p_ofs);
-	Point2 get_scroll_base_offset() const;
-
-	void set_scroll_base_scale(const Point2 &p_ofs);
-	Point2 get_scroll_base_scale() const;
-
-	void set_limit_begin(const Point2 &p_ofs);
+	void set_limit_begin(const Point2 &p_offset);
 	Point2 get_limit_begin() const;
 
-	void set_limit_end(const Point2 &p_ofs);
+	void set_limit_end(const Point2 &p_offset);
 	Point2 get_limit_end() const;
 
-	void set_ignore_camera_zoom(bool ignore);
-	bool is_ignore_camera_zoom();
+	void set_follow_viewport(bool p_follow);
+	bool get_follow_viewport();
 
-	Vector2 get_final_offset() const;
+	void set_ignore_camera_scroll(bool p_ignore);
+	bool is_ignore_camera_scroll();
 
-	ParallaxBackground();
+	Parallax2D();
 };
 
-#endif // PARALLAX_BACKGROUND_H
+#endif // PARALLAX_2D_H
