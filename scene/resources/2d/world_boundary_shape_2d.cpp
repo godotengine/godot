@@ -86,10 +86,41 @@ void WorldBoundaryShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector2 point = distance * normal;
 	real_t line_width = 3.0;
 
-	Vector2 l1[2] = { point - normal.orthogonal() * 100, point + normal.orthogonal() * 100 };
-	RS::get_singleton()->canvas_item_add_line(p_to_rid, l1[0], l1[1], p_color, line_width);
-	Vector2 l2[2] = { point + normal.normalized() * (0.5 * line_width), point + normal * 30 };
-	RS::get_singleton()->canvas_item_add_line(p_to_rid, l2[0], l2[1], p_color, line_width);
+	// Draw collision shape line.
+	PackedVector2Array line_points = {
+		point - normal.orthogonal() * 100,
+		point - normal.orthogonal() * 60,
+		point + normal.orthogonal() * 60,
+		point + normal.orthogonal() * 100
+	};
+
+	Color transparent_color = Color(p_color, 0);
+	PackedColorArray line_colors = {
+		transparent_color,
+		p_color,
+		p_color,
+		transparent_color
+	};
+
+	RS::get_singleton()->canvas_item_add_polyline(p_to_rid, line_points, line_colors, line_width);
+
+	// Draw arrow.
+	Color arrow_color = p_color.inverted();
+
+	Transform2D xf;
+	xf.rotate(normal.angle());
+
+	Vector<Vector2> arrow_points = {
+		xf.xform(Vector2(distance + line_width / 2, -2.5)),
+		xf.xform(Vector2(distance + 20, -2.5)),
+		xf.xform(Vector2(distance + 20, -10)),
+		xf.xform(Vector2(distance + 40, 0)),
+		xf.xform(Vector2(distance + 20, 10)),
+		xf.xform(Vector2(distance + 20, 2.5)),
+		xf.xform(Vector2(distance + line_width / 2, 2.5)),
+	};
+
+	RS::get_singleton()->canvas_item_add_polyline(p_to_rid, arrow_points, { arrow_color }, line_width / 2);
 }
 
 Rect2 WorldBoundaryShape2D::get_rect() const {
