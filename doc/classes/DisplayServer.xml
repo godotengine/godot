@@ -102,8 +102,8 @@
 			<param index="2" name="existing_text" type="String" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
-				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] will be called with a [String] argument equal to the text field's contents when the dialog is closed for any reason.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [String] parameter which contains the text field's contents.
+				[b]Note:[/b] This method is implemented only on macOS and Windows.
 			</description>
 		</method>
 		<method name="dialog_show">
@@ -113,8 +113,8 @@
 			<param index="2" name="buttons" type="PackedStringArray" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
-				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] will be called when the dialog is closed for any reason.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [int] parameter which corresponds to the index of the pressed button.
+				[b]Note:[/b] This method is implemented only on macOS and Windows.
 			</description>
 		</method>
 		<method name="enable_for_stealing_focus">

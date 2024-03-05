@@ -644,6 +644,9 @@ public:
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 
+	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
+	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
+
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
 	virtual void keyboard_set_current_layout(int p_index) override;

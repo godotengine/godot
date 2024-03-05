@@ -2490,6 +2490,299 @@ void DisplayServerWindows::enable_for_stealing_focus(OS::ProcessID pid) {
 	AllowSetForegroundWindow(pid);
 }
 
+static HRESULT CALLBACK win32_task_dialog_callback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LONG_PTR lpRefData) {
+	if (msg == TDN_CREATED) {
+		// To match the input text dialog.
+		SendMessageW(hwnd, WM_SETICON, ICON_BIG, 0);
+		SendMessageW(hwnd, WM_SETICON, ICON_SMALL, 0);
+	}
+
+	return 0;
+}
+
+Error DisplayServerWindows::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
+	_THREAD_SAFE_METHOD_
+
+	TASKDIALOGCONFIG config;
+	ZeroMemory(&config, sizeof(TASKDIALOGCONFIG));
+	config.cbSize = sizeof(TASKDIALOGCONFIG);
+
+	Char16String title = p_title.utf16();
+	Char16String message = p_description.utf16();
+	List<Char16String> buttons;
+	for (String s : p_buttons) {
+		buttons.push_back(s.utf16());
+	}
+
+	config.pszWindowTitle = (LPCWSTR)(title.get_data());
+	config.pszContent = (LPCWSTR)(message.get_data());
+
+	const int button_count = MIN(buttons.size(), 8);
+	config.cButtons = button_count;
+
+	// No dynamic stack array size :(
+	TASKDIALOG_BUTTON *tbuttons = button_count != 0 ? (TASKDIALOG_BUTTON *)alloca(sizeof(TASKDIALOG_BUTTON) * button_count) : nullptr;
+	if (tbuttons) {
+		for (int i = 0; i < button_count; i++) {
+			tbuttons[i].nButtonID = i;
+			tbuttons[i].pszButtonText = (LPCWSTR)(buttons[i].get_data());
+		}
+	}
+	config.pButtons = tbuttons;
+	config.pfCallback = win32_task_dialog_callback;
+
+	HMODULE comctl = LoadLibraryW(L"comctl32.dll");
+	if (comctl) {
+		typedef HRESULT(WINAPI * TaskDialogIndirectPtr)(const TASKDIALOGCONFIG *pTaskConfig, int *pnButton, int *pnRadioButton, BOOL *pfVerificationFlagChecked);
+
+		TaskDialogIndirectPtr task_dialog_indirect = (TaskDialogIndirectPtr)GetProcAddress(comctl, "TaskDialogIndirect");
+		if (task_dialog_indirect) {
+			int button_pressed;
+			if (FAILED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
+				return FAILED;
+			}
+
+			if (!p_callback.is_null()) {
+				Variant button = button_pressed;
+				const Variant *args[1] = { &button };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp(args, 1, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute dialog callback: %s.", Variant::get_callable_error_text(p_callback, args, 1, ce)));
+				}
+			}
+
+			return OK;
+		}
+		FreeLibrary(comctl);
+	}
+
+	ERR_PRINT("Unable to create native dialog.");
+	return FAILED;
+}
+
+struct Win32InputTextDialogInit {
+	const char16_t *title;
+	const char16_t *description;
+	const char16_t *partial;
+	const Callable &callback;
+};
+
+static constexpr int scale_with_dpi(int p_pos, int p_dpi) {
+	return IsProcessDPIAware() ? (p_pos * p_dpi / 96) : p_pos;
+}
+
+static INT_PTR input_text_dialog_init(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam) {
+	Win32InputTextDialogInit init = *(Win32InputTextDialogInit *)lParam;
+	SetWindowLongPtrW(hWnd, GWLP_USERDATA, (LONG_PTR)&init.callback); // Set dialog callback.
+
+	SetWindowTextW(hWnd, (LPCWSTR)init.title);
+
+	const int dpi = DisplayServerWindows::get_singleton()->screen_get_dpi();
+
+	const int margin = scale_with_dpi(7, dpi);
+	const SIZE dlg_size = { scale_with_dpi(300, dpi), scale_with_dpi(50, dpi) };
+
+	int str_len = lstrlenW((LPCWSTR)init.description);
+	SIZE str_size = { dlg_size.cx, 0 };
+	if (str_len > 0) {
+		HDC hdc = GetDC(nullptr);
+		RECT trect = { margin, margin, margin + dlg_size.cx, margin + dlg_size.cy };
+		SelectObject(hdc, (HFONT)SendMessageW(hWnd, WM_GETFONT, 0, 0));
+
+		// `+ margin` adds some space between the static text and the edit field.
+		// Don't scale this with DPI because DPI is already handled by DrawText.
+		str_size.cy = DrawTextW(hdc, (LPCWSTR)init.description, str_len, &trect, DT_LEFT | DT_WORDBREAK | DT_CALCRECT) + margin;
+
+		ReleaseDC(nullptr, hdc);
+	}
+
+	RECT crect, wrect;
+	GetClientRect(hWnd, &crect);
+	GetWindowRect(hWnd, &wrect);
+	int sw = GetSystemMetrics(SM_CXSCREEN);
+	int sh = GetSystemMetrics(SM_CYSCREEN);
+	int new_width = dlg_size.cx + margin * 2 + wrect.right - wrect.left - crect.right;
+	int new_height = dlg_size.cy + margin * 2 + wrect.bottom - wrect.top - crect.bottom + str_size.cy;
+
+	MoveWindow(hWnd, (sw - new_width) / 2, (sh - new_height) / 2, new_width, new_height, true);
+
+	HWND ok_button = GetDlgItem(hWnd, 1);
+	MoveWindow(ok_button,
+			dlg_size.cx + margin - scale_with_dpi(65, dpi),
+			dlg_size.cy + str_size.cy + margin - scale_with_dpi(20, dpi),
+			scale_with_dpi(65, dpi), scale_with_dpi(20, dpi), true);
+
+	HWND description = GetDlgItem(hWnd, 3);
+	MoveWindow(description, margin, margin, dlg_size.cx, str_size.cy, true);
+	SetWindowTextW(description, (LPCWSTR)init.description);
+
+	HWND text_edit = GetDlgItem(hWnd, 2);
+	MoveWindow(text_edit, margin, str_size.cy + margin, dlg_size.cx, scale_with_dpi(20, dpi), true);
+	SetWindowTextW(text_edit, (LPCWSTR)init.partial);
+
+	return TRUE;
+}
+
+static INT_PTR input_text_dialog_cmd_proc(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam) {
+	if (LOWORD(wParam) == 1) {
+		HWND text_edit = GetDlgItem(hWnd, 2);
+		ERR_FAIL_NULL_V(text_edit, false);
+
+		Char16String text;
+		text.resize(GetWindowTextLengthW(text_edit) + 1);
+		GetWindowTextW(text_edit, (LPWSTR)text.get_data(), text.size());
+
+		const Callable *callback = (const Callable *)GetWindowLongPtrW(hWnd, GWLP_USERDATA);
+		if (callback && callback->is_valid()) {
+			Variant v_result = String((const wchar_t *)text.get_data());
+			Variant ret;
+			Callable::CallError ce;
+			const Variant *args[1] = { &v_result };
+
+			callback->callp(args, 1, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Failed to execute input dialog callback: %s.", Variant::get_callable_error_text(*callback, args, 1, ce)));
+			}
+		}
+
+		return EndDialog(hWnd, 0);
+	}
+
+	return false;
+}
+
+static INT_PTR CALLBACK input_text_dialog_proc(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam) {
+	switch (code) {
+		case WM_INITDIALOG:
+			return input_text_dialog_init(hWnd, code, wParam, lParam);
+
+		case WM_COMMAND:
+			return input_text_dialog_cmd_proc(hWnd, code, wParam, lParam);
+
+		default:
+			return FALSE;
+	}
+}
+
+Error DisplayServerWindows::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
+#pragma pack(push, 1)
+
+	// NOTE: Use default/placeholder coordinates here. Windows uses its own coordinate system
+	//       specifically for dialogs which relies on font sizes instead of pixels.
+	const struct {
+		WORD dlgVer; // must be 1
+		WORD signature; // must be 0xFFFF
+		DWORD helpID;
+		DWORD exStyle;
+		DWORD style;
+		WORD cDlgItems;
+		short x;
+		short y;
+		short cx;
+		short cy;
+		WCHAR menu[1]; // must be 0
+		WCHAR windowClass[7]; // must be "#32770" -- the default window class for dialogs
+		WCHAR title[1]; // must be 0
+		WORD pointsize;
+		WORD weight;
+		BYTE italic;
+		BYTE charset;
+		WCHAR font[13]; // must be "MS Shell Dlg"
+	} template_base = {
+		1, 0xFFFF, 0, 0,
+		DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU,
+		3, 0, 0, 20, 20, L"", L"#32770", L"", 8, FW_NORMAL, 0, DEFAULT_CHARSET, L"MS Shell Dlg"
+	};
+
+	const struct {
+		DWORD helpID;
+		DWORD exStyle;
+		DWORD style;
+		short x;
+		short y;
+		short cx;
+		short cy;
+		DWORD id;
+		WCHAR windowClass[7]; // must be "Button"
+		WCHAR title[3]; // must be "OK"
+		WORD extraCount;
+	} ok_button = {
+		0, 0, WS_VISIBLE | BS_DEFPUSHBUTTON, 0, 0, 50, 14, 1, WC_BUTTONW, L"OK", 0
+	};
+	const struct {
+		DWORD helpID;
+		DWORD exStyle;
+		DWORD style;
+		short x;
+		short y;
+		short cx;
+		short cy;
+		DWORD id;
+		WCHAR windowClass[5]; // must be "Edit"
+		WCHAR title[1]; // must be 0
+		WORD extraCount;
+	} text_field = {
+		0, 0, WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 0, 0, 250, 14, 2, WC_EDITW, L"", 0
+	};
+	const struct {
+		DWORD helpID;
+		DWORD exStyle;
+		DWORD style;
+		short x;
+		short y;
+		short cx;
+		short cy;
+		DWORD id;
+		WCHAR windowClass[7]; // must be "Static"
+		WCHAR title[1]; // must be 0
+		WORD extraCount;
+	} static_text = {
+		0, 0, WS_VISIBLE, 0, 0, 250, 14, 3, WC_STATICW, L"", 0
+	};
+
+#pragma pack(pop)
+
+	// Dialog template
+	const size_t data_size = sizeof(template_base) + (sizeof(template_base) % 4) +
+			sizeof(ok_button) + (sizeof(ok_button) % 4) +
+			sizeof(text_field) + (sizeof(text_field) % 4) +
+			sizeof(static_text) + (sizeof(static_text) % 4);
+
+	void *data_template = memalloc(data_size);
+	ERR_FAIL_NULL_V_MSG(data_template, FAILED, "Unable to allocate memory for the dialog template.");
+	ZeroMemory(data_template, data_size);
+
+	char *current_block = (char *)data_template;
+	CopyMemory(current_block, &template_base, sizeof(template_base));
+	current_block += sizeof(template_base) + (sizeof(template_base) % 4);
+	CopyMemory(current_block, &ok_button, sizeof(ok_button));
+	current_block += sizeof(ok_button) + (sizeof(ok_button) % 4);
+	CopyMemory(current_block, &text_field, sizeof(text_field));
+	current_block += sizeof(text_field) + (sizeof(text_field) % 4);
+	CopyMemory(current_block, &static_text, sizeof(static_text));
+
+	Char16String title16 = p_title.utf16();
+	Char16String description16 = p_description.utf16();
+	Char16String partial16 = p_partial.utf16();
+
+	Win32InputTextDialogInit init = {
+		title16.get_data(), description16.get_data(), partial16.get_data(), p_callback
+	};
+
+	// No modal dialogs for specific windows? Assume main window here.
+	INT_PTR ret = DialogBoxIndirectParamW(hInstance, (LPDLGTEMPLATEW)data_template, nullptr, (DLGPROC)input_text_dialog_proc, (LPARAM)(&init));
+
+	Error result = ret != -1 ? OK : FAILED;
+	memfree(data_template);
+
+	if (result == FAILED) {
+		ERR_PRINT("Unable to create native dialog.");
+	}
+	return result;
+}
+
 int DisplayServerWindows::keyboard_get_layout_count() const {
 	return GetKeyboardLayoutList(0, nullptr);
 }
@@ -5254,6 +5547,23 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
 			}
 		}
+	}
+
+	HMODULE comctl32 = LoadLibraryW(L"comctl32.dll");
+	if (comctl32) {
+		typedef BOOL(WINAPI * InitCommonControlsExPtr)(_In_ const INITCOMMONCONTROLSEX *picce);
+		InitCommonControlsExPtr init_common_controls_ex = (InitCommonControlsExPtr)GetProcAddress(comctl32, "InitCommonControlsEx");
+
+		// Fails if the incorrect version was loaded. Probably not a big enough deal to print an error about.
+		if (init_common_controls_ex) {
+			INITCOMMONCONTROLSEX icc = {};
+			icc.dwICC = ICC_STANDARD_CLASSES;
+			icc.dwSize = sizeof(INITCOMMONCONTROLSEX);
+			if (!init_common_controls_ex(&icc)) {
+				WARN_PRINT("Unable to initialize Windows common controls. Native dialogs may not work properly.");
+			}
+		}
+		FreeLibrary(comctl32);
 	}
 
 	memset(&wc, 0, sizeof(WNDCLASSEXW));
