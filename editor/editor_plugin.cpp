@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "editor_plugin.h"
+#include "editor_plugin.compat.inc"
 
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_dock_manager.h"
@@ -79,14 +80,14 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_remove(p_name);
 }
 
-Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
+Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL_V(p_control, nullptr);
-	return EditorNode::get_bottom_panel()->add_item(p_title, p_control);
+	return EditorNode::get_bottom_panel()->add_item(p_title, p_control, p_shortcut);
 }
 
-void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control) {
+void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL(p_control);
-	EditorDockManager::get_singleton()->add_control_to_dock(EditorDockManager::DockSlot(p_slot), p_control);
+	EditorDockManager::get_singleton()->add_control_to_dock(EditorDockManager::DockSlot(p_slot), p_control, String(), p_shortcut);
 }
 
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
@@ -559,8 +560,8 @@ void EditorPlugin::_notification(int p_what) {
 
 void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
-	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::add_control_to_bottom_panel);
-	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::add_control_to_dock);
+	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title", "shortcut"), &EditorPlugin::add_control_to_bottom_panel, DEFVAL(Ref<Shortcut>()));
+	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control", "shortcut"), &EditorPlugin::add_control_to_dock, DEFVAL(Ref<Shortcut>()));
 	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
 	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
 	ClassDB::bind_method(D_METHOD("remove_control_from_container", "container", "control"), &EditorPlugin::remove_control_from_container);

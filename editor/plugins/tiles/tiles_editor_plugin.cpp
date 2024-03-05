@@ -34,6 +34,7 @@
 
 #include "core/os/mutex.h"
 
+#include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -511,7 +512,7 @@ TileMapEditorPlugin::TileMapEditorPlugin() {
 	editor->connect("change_selected_layer_request", callable_mp(this, &TileMapEditorPlugin::_select_layer));
 	editor->hide();
 
-	button = EditorNode::get_bottom_panel()->add_item(TTR("TileMap"), editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("TileMap"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTR("Toggle TileMap Bottom Panel")));
 	button->hide();
 }
 
@@ -562,7 +563,7 @@ TileSetEditorPlugin::TileSetEditorPlugin() {
 	editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	editor->hide();
 
-	button = EditorNode::get_bottom_panel()->add_item(TTR("TileSet"), editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("TileSet"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_set_bottom_panel", TTR("Toggle TileSet Bottom Panel")));
 	button->hide();
 }
 

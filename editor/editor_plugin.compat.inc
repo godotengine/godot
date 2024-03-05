@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_bottom_panel.h                                                 */
+/*  editor_plugin.compat.inc                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,59 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_BOTTOM_PANEL_H
-#define EDITOR_BOTTOM_PANEL_H
+#ifndef DISABLE_DEPRECATED
 
-#include "scene/gui/panel_container.h"
+Button *EditorPlugin::_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title) {
+	return add_control_to_bottom_panel(p_control, p_title, nullptr);
+}
 
-class Button;
-class ConfigFile;
-class EditorToaster;
-class HBoxContainer;
-class LinkButton;
-class VBoxContainer;
+void EditorPlugin::_add_control_to_dock_compat_88081(DockSlot p_slot, Control *p_control) {
+	return add_control_to_dock(p_slot, p_control, nullptr);
+}
 
-class EditorBottomPanel : public PanelContainer {
-	GDCLASS(EditorBottomPanel, PanelContainer);
+void EditorPlugin::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::_add_control_to_bottom_panel_compat_88081);
+	ClassDB::bind_compatibility_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::_add_control_to_dock_compat_88081);
+}
 
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
-	};
-
-	Vector<BottomPanelItem> items;
-
-	VBoxContainer *item_vbox = nullptr;
-	HBoxContainer *bottom_hbox = nullptr;
-	HBoxContainer *button_hbox = nullptr;
-	EditorToaster *editor_toaster = nullptr;
-	LinkButton *version_btn = nullptr;
-	Button *expand_button = nullptr;
-	Control *last_opened_control = nullptr;
-
-	void _switch_by_control(bool p_visible, Control *p_control);
-	void _switch_to_item(bool p_visible, int p_idx);
-	void _expand_button_toggled(bool p_pressed);
-	void _version_button_pressed();
-
-	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
-
-protected:
-	void _notification(int p_what);
-
-public:
-	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
-
-	Button *add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut = nullptr, bool p_at_front = false);
-	void remove_item(Control *p_item);
-	void make_item_visible(Control *p_item, bool p_visible = true);
-	void move_item_to_end(Control *p_item);
-	void hide_bottom_panel();
-	void toggle_last_opened_bottom_panel();
-
-	EditorBottomPanel();
-};
-
-#endif // EDITOR_BOTTOM_PANEL_H
+#endif
