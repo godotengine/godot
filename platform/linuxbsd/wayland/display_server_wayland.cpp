@@ -193,18 +193,29 @@ void DisplayServerWayland::_show_window() {
 bool DisplayServerWayland::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_MOUSE:
+		case FEATURE_MOUSE_WARP:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CURSOR_SHAPE:
+		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
-		case FEATURE_CLIPBOARD_PRIMARY:
-#ifdef DBUS_ENABLED
-		case FEATURE_NATIVE_DIALOG:
-#endif
-		case FEATURE_HIDPI: {
+		case FEATURE_CLIPBOARD_PRIMARY: {
 			return true;
 		} break;
+
+#ifdef DBUS_ENABLED
+		case FEATURE_NATIVE_DIALOG: {
+			return true;
+		} break;
+#endif
+
+#ifdef SPEECHD_ENABLED
+		case FEATURE_TEXT_TO_SPEECH: {
+			return true;
+		} break;
+#endif
 
 		default: {
 			return false;
