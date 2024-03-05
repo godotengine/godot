@@ -541,6 +541,10 @@ void LightStorage::reflection_probe_instance_free(RID p_instance) {
 void LightStorage::reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) {
 }
 
+bool LightStorage::reflection_probe_has_atlas_index(RID p_instance) {
+	return false;
+}
+
 void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 }
 
