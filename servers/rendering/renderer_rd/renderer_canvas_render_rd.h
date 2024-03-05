@@ -417,7 +417,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	RS::CanvasItemTextureFilter default_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	RS::CanvasItemTextureRepeat default_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
-	RID _create_base_uniform_set(RID p_to_render_target, bool p_backbuffer);
+	RID _create_base_uniform_set(RID p_to_render_target, bool p_backbuffer, const Ref<RenderSceneBuffers> &p_render_buffers);
 
 	bool debug_redraw = false;
 	Color debug_redraw_color;
@@ -425,7 +425,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	inline void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size, bool p_texture_is_data = false); //recursive, so regular inline used instead.
 	void _render_item(RenderingDevice::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used, const Point2 &p_offset, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, const Ref<RenderSceneBuffers> &p_render_buffers, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
@@ -451,7 +451,7 @@ public:
 	void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) override;
 	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) override;
 
-	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, const Ref<RenderSceneBuffers> &p_render_buffers, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
 
 	virtual void set_shadow_texture_size(int p_size) override;
 

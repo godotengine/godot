@@ -8857,7 +8857,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									new_hint = ShaderNode::Uniform::HINT_DEPTH_TEXTURE;
 									--texture_uniforms;
 									--texture_binding;
-									if (String(shader_type_identifier) != "spatial") {
+									if (String(shader_type_identifier) != "spatial" && String(shader_type_identifier) != "canvas_item") {
 										_set_error(vformat(RTR("'hint_depth_texture' is not supported in '%s' shaders."), shader_type_identifier));
 										return ERR_PARSE_ERROR;
 									}
