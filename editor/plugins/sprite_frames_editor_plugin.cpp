@@ -526,18 +526,21 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 		split_sheet_offset_x->set_max(size.x);
 		split_sheet_offset_y->set_max(size.y);
 
-		// Different texture, reset to 4x4.
-		dominant_param = PARAM_FRAME_COUNT;
-		updating_split_settings = true;
-		split_sheet_h->set_value(4);
-		split_sheet_v->set_value(4);
-		split_sheet_size_x->set_value(size.x / 4);
-		split_sheet_size_y->set_value(size.y / 4);
-		split_sheet_sep_x->set_value(0);
-		split_sheet_sep_y->set_value(0);
-		split_sheet_offset_x->set_value(0);
-		split_sheet_offset_y->set_value(0);
-		updating_split_settings = false;
+		if (size != previous_texture_size) {
+			// Different texture, reset to 4x4.
+			dominant_param = PARAM_FRAME_COUNT;
+			updating_split_settings = true;
+			split_sheet_h->set_value(4);
+			split_sheet_v->set_value(4);
+			split_sheet_size_x->set_value(size.x / 4);
+			split_sheet_size_y->set_value(size.y / 4);
+			split_sheet_sep_x->set_value(0);
+			split_sheet_sep_y->set_value(0);
+			split_sheet_offset_x->set_value(0);
+			split_sheet_offset_y->set_value(0);
+			updating_split_settings = false;
+		}
+		previous_texture_size = size;
 
 		// Reset zoom.
 		_sheet_zoom_reset();
