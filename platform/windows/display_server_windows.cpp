@@ -2531,17 +2531,15 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 	config.pButtons = tbuttons;
 	config.pfCallback = win32_task_dialog_callback;
 
+	Error result = FAILED;
 	HMODULE comctl = LoadLibraryW(L"comctl32.dll");
 	if (comctl) {
 		typedef HRESULT(WINAPI * TaskDialogIndirectPtr)(const TASKDIALOGCONFIG *pTaskConfig, int *pnButton, int *pnRadioButton, BOOL *pfVerificationFlagChecked);
 
 		TaskDialogIndirectPtr task_dialog_indirect = (TaskDialogIndirectPtr)GetProcAddress(comctl, "TaskDialogIndirect");
-		if (task_dialog_indirect) {
-			int button_pressed;
-			if (FAILED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
-				return FAILED;
-			}
+		int button_pressed;
 
+		if (task_dialog_indirect && SUCCEEDED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
 			if (!p_callback.is_null()) {
 				Variant button = button_pressed;
 				const Variant *args[1] = { &button };
@@ -2553,13 +2551,14 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 				}
 			}
 
-			return OK;
+			result = OK;
 		}
 		FreeLibrary(comctl);
+	} else {
+		ERR_PRINT("Unable to create native dialog.");
 	}
 
-	ERR_PRINT("Unable to create native dialog.");
-	return FAILED;
+	return result;
 }
 
 struct Win32InputTextDialogInit {
