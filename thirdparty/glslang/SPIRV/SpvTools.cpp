@@ -219,6 +219,8 @@ void SpirvToolsTransform(const glslang::TIntermediate& intermediate, std::vector
 
     spvtools::OptimizerOptions spvOptOptions;
     optimizer.SetTargetEnv(MapToSpirvToolsEnv(intermediate.getSpv(), logger));
+	spvOptOptions.set_preserve_bindings(true);
+	spvOptOptions.set_preserve_spec_constants(true);
     spvOptOptions.set_run_validator(false); // The validator may run as a separate step later on
     optimizer.Run(spirv.data(), spirv.size(), &spirv, spvOptOptions);
 }
