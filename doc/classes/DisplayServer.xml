@@ -1148,6 +1148,7 @@
 			<param index="0" name="image" type="Image" />
 			<description>
 				Sets the window icon (usually displayed in the top-left corner) with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				[b]Note:[/b] Requires support for [constant FEATURE_ICON].
 			</description>
 		</method>
 		<method name="set_native_icon">
@@ -1155,6 +1156,7 @@
 			<param index="0" name="filename" type="String" />
 			<description>
 				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. The file at [param filename] must be in [code].ico[/code] format on Windows or [code].icns[/code] on macOS. By using specially crafted [code].ico[/code] or [code].icns[/code] icons, [method set_native_icon] allows specifying different icons depending on the size the icon is displayed at. This size is determined by the operating system and user preferences (including the display scale factor). To use icons in other formats, use [method set_icon] instead.
+				[b]Note:[/b] Requires support for [constant FEATURE_NATIVE_ICON].
 			</description>
 		</method>
 		<method name="set_system_theme_change_callback">
