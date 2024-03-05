@@ -995,6 +995,9 @@
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.
 		</member>
+		<member name="text_editor/behavior/indent/indent_wrapped_lines" type="bool" setter="" getter="">
+			If [code]true[/code], all wrapped lines are indented to the same amount as the unwrapped line.
+		</member>
 		<member name="text_editor/behavior/indent/size" type="int" setter="" getter="">
 			When using tab indentation, determines the length of each tab. When using space indentation, determines how many spaces are inserted when pressing [kbd]Tab[/kbd] and when automatic indentation is performed.
 		</member>

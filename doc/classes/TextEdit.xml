@@ -1154,6 +1154,9 @@
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled" default="false">
 			If [code]true[/code], the line containing the cursor is highlighted.
 		</member>
+		<member name="indent_wrapped_lines" type="bool" setter="set_indent_wrapped_lines" getter="is_indent_wrapped_lines" default="false">
+			If [code]true[/code], all wrapped lines are indented to the same amount as the unwrapped line.
+		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
