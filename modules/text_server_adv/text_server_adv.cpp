@@ -5360,11 +5360,14 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 				// No data loaded - use fallback.
 				for (int j = r_start; j < r_end; j++) {
 					char32_t c = sd->text[j - sd->start];
+					char32_t c_next = (j < r_end) ? sd->text[j - sd->start + 1] : 0x0000;
 					if (is_whitespace(c)) {
 						sd->breaks[j + 1] = false;
 					}
 					if (is_linebreak(c)) {
-						sd->breaks[j + 1] = true;
+						if (c != 0x000D || c_next != 0x000A) { // Skip first hard break in CR-LF pair.
+							sd->breaks[j + 1] = true;
+						}
 					}
 				}
 			} else {
