@@ -587,6 +587,10 @@ void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
 	_autoload_add();
 }
 
+LineEdit *EditorAutoloadSettings::get_path_box() const {
+	return autoload_add_path;
+}
+
 Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control *p_control) {
 	if (autoload_cache.size() <= 1) {
 		return false;

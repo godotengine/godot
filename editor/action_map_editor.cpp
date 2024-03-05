@@ -380,6 +380,10 @@ LineEdit *ActionMapEditor::get_search_box() const {
 	return action_list_search;
 }
 
+LineEdit *ActionMapEditor::get_path_box() const {
+	return add_edit;
+}
+
 InputEventConfigurationDialog *ActionMapEditor::get_configuration_dialog() {
 	return event_config_dialog;
 }

@@ -108,6 +108,8 @@ public:
 	bool autoload_add(const String &p_name, const String &p_path);
 	void autoload_remove(const String &p_name);
 
+	LineEdit *get_path_box() const;
+
 	EditorAutoloadSettings();
 	~EditorAutoloadSettings();
 };
