@@ -818,6 +818,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		}
 		hb->add_theme_constant_override("separation", 7 * EDSCALE);
 
+		// Default value button/property editor.
 		Variant default_value;
 
 		if (valid_left && !port_left_used) {
@@ -2744,6 +2745,8 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	Variant value = vs_node->get_input_port_default_value(p_port);
 
 	edited_property_holder->set_edited_property(value);
+	editing_node = p_node;
+	editing_port = p_port;
 
 	if (property_editor) {
 		property_editor->disconnect("property_changed", callable_mp(this, &VisualShaderEditor::_port_edited));
@@ -2751,29 +2754,49 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	}
 
 	// TODO: Define these properties with actual PropertyInfo and feed it to the property editor widget.
-	property_editor = EditorInspector::instantiate_property_editor(edited_property_holder.ptr(), value.get_type(), "edited_property", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
-	if (property_editor) {
-		property_editor->set_object_and_property(edited_property_holder.ptr(), "edited_property");
-		property_editor->update_property();
-		property_editor->set_name_split_ratio(0);
-		property_editor_popup->add_child(property_editor);
+	property_editor = EditorInspector::instantiate_property_editor(edited_property_holder.ptr(), value.get_type(), "edited_property", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, true);
+	ERR_FAIL_NULL_MSG(property_editor, "Failed to create property editor for type: " + Variant::get_type_name(value.get_type()));
 
-		property_editor->connect("property_changed", callable_mp(this, &VisualShaderEditor::_port_edited));
-
-		Button *button = Object::cast_to<Button>(p_button);
-		if (button) {
-			property_editor_popup->set_position(button->get_screen_position() + Vector2(0, button->get_size().height) * graph->get_zoom());
-		}
-		property_editor_popup->reset_size();
-		if (button) {
-			property_editor_popup->popup();
-		} else {
-			property_editor_popup->popup_centered_ratio();
-		}
+	// Determine the best size for the popup based on the property type.
+	// This is done here, since the property editors are also used in the inspector where they have different layout requirements, so we can't just change their default minimum size.
+	Size2 popup_pref_size;
+	switch (value.get_type()) {
+		case Variant::VECTOR3:
+		case Variant::BASIS:
+			popup_pref_size.width = 320;
+			break;
+		case Variant::VECTOR4:
+		case Variant::QUATERNION:
+		case Variant::PLANE:
+		case Variant::TRANSFORM2D:
+		case Variant::TRANSFORM3D:
+		case Variant::PROJECTION:
+			popup_pref_size.width = 480;
+			break;
+		default:
+			popup_pref_size.width = 180;
+			break;
 	}
+	property_editor_popup->set_min_size(popup_pref_size);
 
-	editing_node = p_node;
-	editing_port = p_port;
+	property_editor->set_object_and_property(edited_property_holder.ptr(), "edited_property");
+	property_editor->update_property();
+	property_editor->set_name_split_ratio(0);
+	property_editor_popup->add_child(property_editor);
+
+	property_editor->connect("property_changed", callable_mp(this, &VisualShaderEditor::_port_edited));
+
+	Button *button = Object::cast_to<Button>(p_button);
+	if (button) {
+		property_editor_popup->set_position(button->get_screen_position() + Vector2(0, button->get_size().height) * graph->get_zoom());
+	}
+	property_editor_popup->reset_size();
+	if (button) {
+		property_editor_popup->popup();
+	} else {
+		property_editor_popup->popup_centered_ratio();
+	}
+	property_editor->select(0); // Focus the first focusable control.
 }
 
 void VisualShaderEditor::_set_custom_node_option(int p_index, int p_node, int p_op) {
@@ -6515,7 +6538,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph_plugin->set_editor(this);
 
 	property_editor_popup = memnew(PopupPanel);
-	property_editor_popup->set_min_size(Size2(180, 0) * EDSCALE);
+	property_editor_popup->set_min_size(Size2(360, 0) * EDSCALE);
 	add_child(property_editor_popup);
 
 	edited_property_holder.instantiate();
