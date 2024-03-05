@@ -202,7 +202,9 @@ def get_opts():
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
-        BoolVariable("silence_msvc", "Silence MSVC's stdout. Decreases output log bloat by roughly half.", True),
+        BoolVariable(
+            "silence_msvc", "Silence MSVC's stdout to decrease output log bloat. May hide error messages.", False
+        ),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         # Direct3D 12 support.
         (
