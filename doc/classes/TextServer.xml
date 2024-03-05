@@ -1837,6 +1837,9 @@
 		<constant name="BREAK_TRIM_EDGE_SPACES" value="16" enum="LineBreakFlag" is_bitfield="true">
 			Remove edge spaces from the broken line segments.
 		</constant>
+		<constant name="BREAK_TRIM_INDENT" value="32" enum="LineBreakFlag" is_bitfield="true">
+			Subtract first line indentation width from all lines after the first one.
+		</constant>
 		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
 			Trims text before the shaping. e.g, increasing [member Label.visible_characters] or [member RichTextLabel.visible_characters] value is visually identical to typing the text.
 		</constant>

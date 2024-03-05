@@ -107,6 +107,9 @@ public:
 		bool needs_resize = false;
 	};
 
+	HMODULE lib_d3d12 = nullptr;
+	HMODULE lib_dxgi = nullptr;
+
 	IDXGIAdapter1 *create_adapter(uint32_t p_adapter_index) const;
 	ID3D12DeviceFactory *device_factory_get() const;
 	IDXGIFactory2 *dxgi_factory_get() const;

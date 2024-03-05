@@ -99,7 +99,8 @@
 			<param index="1" name="coords" type="Vector2i" />
 			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
-				Returns the tile atlas coordinates ID of the cell on layer [param layer] at coordinates [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				Returns the tile atlas coordinates ID of the cell on layer [param layer] at coordinates [param coords]. Returns [code]Vector2i(-1, -1)[/code] if the cell does not exist.
+				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>

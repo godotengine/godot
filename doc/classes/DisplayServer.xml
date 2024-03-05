@@ -102,8 +102,8 @@
 			<param index="2" name="existing_text" type="String" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
-				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] will be called with a [String] argument equal to the text field's contents when the dialog is closed for any reason.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [String] parameter which contains the text field's contents.
+				[b]Note:[/b] This method is implemented only on macOS and Windows.
 			</description>
 		</method>
 		<method name="dialog_show">
@@ -113,8 +113,8 @@
 			<param index="2" name="buttons" type="PackedStringArray" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
-				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] will be called when the dialog is closed for any reason.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [int] parameter which corresponds to the index of the pressed button.
+				[b]Note:[/b] This method is implemented only on macOS and Windows.
 			</description>
 		</method>
 		<method name="enable_for_stealing_focus">
@@ -136,6 +136,7 @@
 			<param index="6" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
+				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
@@ -157,6 +158,7 @@
 			<param index="8" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system with additional user selectable options.
+				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
 				[param options] is array of [Dictionary]s with the following keys:
 				- [code]"name"[/code] - option's name [String].
 				- [code]"values"[/code] - [PackedStringArray] of values. If empty, boolean option (check box) is used.
@@ -1146,6 +1148,7 @@
 			<param index="0" name="image" type="Image" />
 			<description>
 				Sets the window icon (usually displayed in the top-left corner) with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				[b]Note:[/b] Requires support for [constant FEATURE_ICON].
 			</description>
 		</method>
 		<method name="set_native_icon">
@@ -1153,6 +1156,7 @@
 			<param index="0" name="filename" type="String" />
 			<description>
 				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. The file at [param filename] must be in [code].ico[/code] format on Windows or [code].icns[/code] on macOS. By using specially crafted [code].ico[/code] or [code].icns[/code] icons, [method set_native_icon] allows specifying different icons depending on the size the icon is displayed at. This size is determined by the operating system and user preferences (including the display scale factor). To use icons in other formats, use [method set_icon] instead.
+				[b]Note:[/b] Requires support for [constant FEATURE_NATIVE_ICON].
 			</description>
 		</method>
 		<method name="set_system_theme_change_callback">

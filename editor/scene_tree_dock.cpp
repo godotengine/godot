@@ -152,6 +152,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_SHOW_IN_FILE_SYSTEM);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_unique_name", p_event)) {
 		_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME);
+	} else if (ED_IS_SHORTCUT("scene_tree/toggle_editable_children", p_event)) {
+		_tool_selected(TOOL_SCENE_EDITABLE_CHILDREN);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	} else {
@@ -1068,10 +1070,20 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (selection.size() != 1) {
+				break;
+			}
+
 			List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
 				if (node) {
+					bool is_external = (!node->get_scene_file_path().is_empty());
+					bool is_top_level = node->get_owner() == nullptr;
+					if (!is_external || is_top_level) {
+						break;
+					}
+
 					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
 
 					if (editable) {
@@ -3370,12 +3382,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 
 	if (profile_allow_editing) {
-		bool add_separator = false;
-
-		if (full_selection.size() == 1) {
-			add_separator = true;
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
-		}
+		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
 
 		bool can_replace = true;
 		for (Node *E : selection) {
@@ -3386,14 +3393,11 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 
 		if (can_replace) {
-			add_separator = true;
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
 		}
 
 		if (scene_tree->get_selected() != edited_scene) {
-			if (add_separator) {
-				menu->add_separator();
-			}
+			menu->add_separator();
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveUp")), ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveDown")), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Duplicate")), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
@@ -3453,6 +3457,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				bool placeholder = selection[0]->get_scene_instance_load_placeholder();
 				if (profile_allow_editing) {
 					menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
+					menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/toggle_editable_children"));
+
 					menu->add_check_item(TTR("Load as Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
 					menu->add_item(TTR("Make Local"), TOOL_SCENE_MAKE_LOCAL);
 				}
@@ -4186,6 +4192,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTR("Show in FileSystem"));
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTR("Toggle Access as Unique Name"));
+	ED_SHORTCUT("scene_tree/toggle_editable_children", TTR("Toggle Editable Children"));
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KeyModifierMask::SHIFT | Key::KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), Key::KEY_DELETE);
 

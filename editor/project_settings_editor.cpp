@@ -256,8 +256,13 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
-		if (k->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F))) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			_focus_current_search_box();
+			handled = true;
+		}
+
+		if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+			_focus_current_path_box();
 			handled = true;
 		}
 
@@ -344,6 +349,27 @@ void ProjectSettingsEditor::_focus_current_search_box() {
 	if (current_search_box) {
 		current_search_box->grab_focus();
 		current_search_box->select_all();
+	}
+}
+
+void ProjectSettingsEditor::_focus_current_path_box() {
+	Control *tab = tab_container->get_current_tab_control();
+	LineEdit *current_path_box = nullptr;
+	if (tab == general_editor) {
+		current_path_box = property_box;
+	} else if (tab == action_map_editor) {
+		current_path_box = action_map_editor->get_path_box();
+	} else if (tab == autoload_settings) {
+		current_path_box = autoload_settings->get_path_box();
+	} else if (tab == shaders_global_shader_uniforms_editor) {
+		current_path_box = shaders_global_shader_uniforms_editor->get_name_box();
+	} else if (tab == group_settings) {
+		current_path_box = group_settings->get_name_box();
+	}
+
+	if (current_path_box) {
+		current_path_box->grab_focus();
+		current_path_box->select_all();
 	}
 }
 

@@ -3089,17 +3089,40 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 	}
 }
 
-String EditorNode::adjust_scene_name_casing(const String &root_name) {
+String EditorNode::adjust_scene_name_casing(const String &p_root_name) {
 	switch (GLOBAL_GET("editor/naming/scene_name_casing").operator int()) {
 		case SCENE_NAME_CASING_AUTO:
 			// Use casing of the root node.
 			break;
 		case SCENE_NAME_CASING_PASCAL_CASE:
-			return root_name.to_pascal_case();
+			return p_root_name.replace("-", "_").to_pascal_case();
 		case SCENE_NAME_CASING_SNAKE_CASE:
-			return root_name.replace("-", "_").to_snake_case();
+			return p_root_name.replace("-", "_").to_snake_case();
+		case SCENE_NAME_CASING_KEBAB_CASE:
+			return p_root_name.to_snake_case().replace("_", "-");
 	}
-	return root_name;
+	return p_root_name;
+}
+
+String EditorNode::adjust_script_name_casing(const String &p_file_name, ScriptLanguage::ScriptNameCasing p_auto_casing) {
+	int editor_casing = GLOBAL_GET("editor/naming/script_name_casing");
+	if (editor_casing == ScriptLanguage::SCRIPT_NAME_CASING_AUTO) {
+		// Use the script language's preferred casing.
+		editor_casing = p_auto_casing;
+	}
+
+	switch (editor_casing) {
+		case ScriptLanguage::SCRIPT_NAME_CASING_AUTO:
+			// Script language has no preference, so do not adjust.
+			break;
+		case ScriptLanguage::SCRIPT_NAME_CASING_PASCAL_CASE:
+			return p_file_name.replace("-", "_").to_pascal_case();
+		case ScriptLanguage::SCRIPT_NAME_CASING_SNAKE_CASE:
+			return p_file_name.replace("-", "_").to_snake_case();
+		case ScriptLanguage::SCRIPT_NAME_CASING_KEBAB_CASE:
+			return p_file_name.to_snake_case().replace("_", "-");
+	}
+	return p_file_name;
 }
 
 void EditorNode::_request_screenshot() {
@@ -6702,6 +6725,7 @@ EditorNode::EditorNode() {
 	file_menu->add_separator();
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTR("Reload Saved Scene")), EDIT_RELOAD_SAVED_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/close_scene", TTR("Close Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::W), FILE_CLOSE);
+	ED_SHORTCUT_OVERRIDE("editor/close_scene", "macos", KeyModifierMask::CMD_OR_CTRL + Key::W);
 
 	if (!global_menu || !OS::get_singleton()->has_feature("macos")) {
 		// On macOS  "Quit" and "About" options are in the "app" menu.

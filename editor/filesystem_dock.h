@@ -386,6 +386,7 @@ public:
 	String get_current_directory() const;
 
 	void navigate_to_path(const String &p_path);
+	void focus_on_path();
 	void focus_on_filter();
 
 	ScriptCreateDialog *get_script_create_dialog() const;

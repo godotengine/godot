@@ -224,6 +224,7 @@ void EditorFileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 			}
 			if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
 				dir->grab_focus();
+				dir->select_all();
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/move_favorite_up", p_event)) {
@@ -1783,7 +1784,10 @@ EditorFileDialog::EditorFileDialog() {
 	ED_SHORTCUT("file_dialog/toggle_mode", TTR("Toggle Mode"), KeyModifierMask::ALT | Key::V);
 	ED_SHORTCUT("file_dialog/create_folder", TTR("Create Folder"), KeyModifierMask::CMD_OR_CTRL | Key::N);
 	ED_SHORTCUT("file_dialog/delete", TTR("Delete"), Key::KEY_DELETE);
-	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KeyModifierMask::CMD_OR_CTRL | Key::D);
+	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KeyModifierMask::CMD_OR_CTRL | Key::L);
+	// Allow both Cmd + L and Cmd + Shift + G to match Safari's and Finder's shortcuts respectively.
+	ED_SHORTCUT_OVERRIDE_ARRAY("file_dialog/focus_path", "macos",
+			{ int32_t(KeyModifierMask::META | Key::L), int32_t(KeyModifierMask::META | KeyModifierMask::SHIFT | Key::G) });
 	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KeyModifierMask::CMD_OR_CTRL | Key::UP);
 	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KeyModifierMask::CMD_OR_CTRL | Key::DOWN);
 

@@ -193,6 +193,10 @@ public:
 
 class ScriptLanguage : public Object {
 	GDCLASS(ScriptLanguage, Object)
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_name() const = 0;
 
@@ -222,6 +226,13 @@ public:
 		TEMPLATE_BUILT_IN,
 		TEMPLATE_EDITOR,
 		TEMPLATE_PROJECT
+	};
+
+	enum ScriptNameCasing {
+		SCRIPT_NAME_CASING_AUTO,
+		SCRIPT_NAME_CASING_PASCAL_CASE,
+		SCRIPT_NAME_CASING_SNAKE_CASE,
+		SCRIPT_NAME_CASING_KEBAB_CASE,
 	};
 
 	struct ScriptTemplate {
@@ -260,6 +271,7 @@ public:
 	virtual bool can_make_function() const { return true; }
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
+	virtual ScriptNameCasing preferred_file_name_casing() const { return SCRIPT_NAME_CASING_SNAKE_CASE; }
 
 	// Keep enums in sync with:
 	// scene/gui/code_edit.h - CodeEdit::CodeCompletionKind
@@ -404,6 +416,8 @@ public:
 
 	virtual ~ScriptLanguage() {}
 };
+
+VARIANT_ENUM_CAST(ScriptLanguage::ScriptNameCasing);
 
 extern uint8_t script_encryption_key[32];
 

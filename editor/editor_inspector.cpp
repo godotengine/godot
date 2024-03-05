@@ -68,7 +68,7 @@ Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-	ms.height = font->get_height(font_size) + 4 * EDSCALE;
+	ms.height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -106,7 +106,7 @@ Size2 EditorProperty::get_minimum_size() const {
 	}
 
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
-		ms.height += get_theme_constant(SNAME("v_separation"));
+		ms.height += label.is_empty() ? 0 : get_theme_constant(SNAME("v_separation"));
 		Size2 bems = bottom_editor->get_combined_minimum_size();
 		//bems.width += get_constant("item_margin", "Tree");
 		ms.height += bems.height;
@@ -138,7 +138,7 @@ void EditorProperty::_notification(int p_what) {
 				int child_room = size.width * (1.0 - split_ratio);
 				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-				int height = font->get_height(font_size) + 4 * EDSCALE;
+				int height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
 				bool no_children = true;
 
 				//compute room needed
@@ -176,9 +176,8 @@ void EditorProperty::_notification(int p_what) {
 				}
 
 				if (bottom_editor) {
-					int m = 0; //get_constant("item_margin", "Tree");
-
-					bottom_rect = Rect2(m, rect.size.height + get_theme_constant(SNAME("v_separation")), size.width - m, bottom_editor->get_combined_minimum_size().height);
+					int v_offset = label.is_empty() ? 0 : get_theme_constant(SNAME("v_separation"));
+					bottom_rect = Rect2(0, rect.size.height + v_offset, size.width, bottom_editor->get_combined_minimum_size().height);
 				}
 
 				if (keying) {
@@ -254,8 +253,13 @@ void EditorProperty::_notification(int p_what) {
 				size.height = label_reference->get_size().height;
 			}
 
-			Ref<StyleBox> sb = get_theme_stylebox(selected ? SNAME("bg_selected") : SNAME("bg"));
-			draw_style_box(sb, Rect2(Vector2(), size));
+			// Only draw the label if it's not empty.
+			if (label.is_empty()) {
+				size.height = 0;
+			} else {
+				Ref<StyleBox> sb = get_theme_stylebox(selected ? SNAME("bg_selected") : SNAME("bg"));
+				draw_style_box(sb, Rect2(Vector2(), size));
+			}
 
 			Ref<StyleBox> bg_stylebox = get_theme_stylebox(SNAME("child_bg"));
 			if (draw_top_bg && right_child_rect != Rect2()) {

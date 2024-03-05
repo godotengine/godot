@@ -4481,23 +4481,14 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		if (d.has("type") && (String(d["type"]) == "files")) {
 			Vector<String> files = d["files"];
 
-			List<String> scene_extensions;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
-			List<String> mesh_extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Mesh", &mesh_extensions);
-			List<String> material_extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Material", &material_extensions);
-			List<String> texture_extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Texture", &texture_extensions);
-
+			// Check if at least one of the dragged files is a mesh, material, texture or scene.
 			for (int i = 0; i < files.size(); i++) {
-				String extension = files[i].get_extension().to_lower();
+				bool is_scene = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "PackedScene");
+				bool is_mesh = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "Mesh");
+				bool is_material = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "Material");
+				bool is_texture = ClassDB::is_parent_class(ResourceLoader::get_resource_type(files[i]), "Texture");
 
-				// Check if dragged files with mesh or scene extension can be created at least once.
-				if (mesh_extensions.find(extension) ||
-						scene_extensions.find(extension) ||
-						material_extensions.find(extension) ||
-						texture_extensions.find(extension)) {
+				if (is_mesh || is_scene || is_material || is_texture) {
 					Ref<Resource> res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;

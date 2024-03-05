@@ -202,7 +202,9 @@ def get_opts():
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
-        BoolVariable("silence_msvc", "Silence MSVC's stdout. Decreases output log bloat by roughly half.", True),
+        BoolVariable(
+            "silence_msvc", "Silence MSVC's stdout to decrease output log bloat. May hide error messages.", False
+        ),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         # Direct3D 12 support.
         (
@@ -437,6 +439,10 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         else:
             print("Missing environment variable: WindowsSdkDir")
 
+    if int(env["target_win_version"], 16) < 0x0601:
+        print("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        sys.exit(255)
+
     env.AppendUnique(
         CPPDEFINES=[
             "WINDOWS_ENABLED",
@@ -501,7 +507,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             sys.exit(255)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
-        LIBS += ["d3d12", "dxgi", "dxguid"]
+        LIBS += ["dxgi", "dxguid"]
         LIBS += ["version"]  # Mesa dependency.
 
         # Needed for avoiding C1128.
@@ -666,6 +672,10 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compile flags
 
+    if int(env["target_win_version"], 16) < 0x0601:
+        print("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        sys.exit(255)
+
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
 
@@ -726,7 +736,7 @@ def configure_mingw(env: "SConsEnvironment"):
             sys.exit(255)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
-        env.Append(LIBS=["d3d12", "dxgi", "dxguid"])
+        env.Append(LIBS=["dxgi", "dxguid"])
 
         # PIX
         if not env["arch"] in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):

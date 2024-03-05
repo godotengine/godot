@@ -74,6 +74,18 @@ int TextEdit::Text::get_tab_size() const {
 	return tab_size;
 }
 
+void TextEdit::Text::set_indent_wrapped_lines(bool p_enabled) {
+	if (indent_wrapped_lines == p_enabled) {
+		return;
+	}
+	indent_wrapped_lines = p_enabled;
+	tab_size_dirty = true;
+}
+
+bool TextEdit::Text::is_indent_wrapped_lines() const {
+	return indent_wrapped_lines;
+}
+
 void TextEdit::Text::set_direction_and_language(TextServer::Direction p_direction, const String &p_language) {
 	if (direction == p_direction && language == p_language) {
 		return;
@@ -185,9 +197,14 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 		text.write[p_line].data_buf->clear();
 	}
 
+	BitField<TextServer::LineBreakFlag> flags = brk_flags;
+	if (indent_wrapped_lines) {
+		flags.set_flag(TextServer::BREAK_TRIM_INDENT);
+	}
+
 	text.write[p_line].data_buf->set_width(width);
 	text.write[p_line].data_buf->set_direction((TextServer::Direction)direction);
-	text.write[p_line].data_buf->set_break_flags(brk_flags);
+	text.write[p_line].data_buf->set_break_flags(flags);
 	text.write[p_line].data_buf->set_preserve_control(draw_control_chars);
 	if (p_ime_text.length() > 0) {
 		if (p_text_changed) {
@@ -251,8 +268,12 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 
 void TextEdit::Text::invalidate_all_lines() {
 	for (int i = 0; i < text.size(); i++) {
+		BitField<TextServer::LineBreakFlag> flags = brk_flags;
+		if (indent_wrapped_lines) {
+			flags.set_flag(TextServer::BREAK_TRIM_INDENT);
+		}
 		text.write[i].data_buf->set_width(width);
-		text.write[i].data_buf->set_break_flags(brk_flags);
+		text.write[i].data_buf->set_break_flags(flags);
 		if (tab_size_dirty) {
 			if (tab_size > 0) {
 				Vector<float> tabs;
@@ -1075,9 +1096,12 @@ void TextEdit::_notification(int p_what) {
 					// Draw line.
 					RID rid = ldata->get_line_rid(line_wrap_index);
 					float text_height = TS->shaped_text_get_size(rid).y;
+					float wrap_indent = (text.is_indent_wrapped_lines() && line_wrap_index > 0) ? get_indent_level(line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
 
 					if (rtl) {
-						char_margin = size.width - char_margin - TS->shaped_text_get_size(rid).x;
+						char_margin = size.width - char_margin - (TS->shaped_text_get_size(rid).x + wrap_indent);
+					} else {
+						char_margin += wrap_indent;
 					}
 
 					// Draw selections.
@@ -2935,7 +2959,11 @@ void TextEdit::_update_placeholder() {
 	// Placeholder is generally smaller then text documents, and updates less so this should be fast enough for now.
 	placeholder_data_buf->clear();
 	placeholder_data_buf->set_width(text.get_width());
-	placeholder_data_buf->set_break_flags(text.get_brk_flags());
+	BitField<TextServer::LineBreakFlag> flags = text.get_brk_flags();
+	if (text.is_indent_wrapped_lines()) {
+		flags.set_flag(TextServer::BREAK_TRIM_INDENT);
+	}
+	placeholder_data_buf->set_break_flags(flags);
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
 		placeholder_data_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 	} else {
@@ -3329,6 +3357,20 @@ void TextEdit::set_tab_size(const int p_size) {
 
 int TextEdit::get_tab_size() const {
 	return text.get_tab_size();
+}
+
+void TextEdit::set_indent_wrapped_lines(bool p_enabled) {
+	if (text.is_indent_wrapped_lines() == p_enabled) {
+		return;
+	}
+	text.set_indent_wrapped_lines(p_enabled);
+	text.invalidate_all_lines();
+	_update_placeholder();
+	queue_redraw();
+}
+
+bool TextEdit::is_indent_wrapped_lines() const {
+	return text.is_indent_wrapped_lines();
 }
 
 // User controls
@@ -4336,8 +4378,11 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 	}
 
 	RID text_rid = text.get_line_data(row)->get_line_rid(wrap_index);
+	float wrap_indent = (text.is_indent_wrapped_lines() && wrap_index > 0) ? get_indent_level(row) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
 	if (is_layout_rtl()) {
-		colx = TS->shaped_text_get_size(text_rid).x - colx;
+		colx = TS->shaped_text_get_size(text_rid).x - colx + wrap_indent;
+	} else {
+		colx -= wrap_indent;
 	}
 	col = TS->shaped_text_hit_test_position(text_rid, colx);
 	if (!caret_mid_grapheme_enabled) {
@@ -6073,6 +6118,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tab_size", "size"), &TextEdit::set_tab_size);
 	ClassDB::bind_method(D_METHOD("get_tab_size"), &TextEdit::get_tab_size);
 
+	ClassDB::bind_method(D_METHOD("set_indent_wrapped_lines", "enabled"), &TextEdit::set_indent_wrapped_lines);
+	ClassDB::bind_method(D_METHOD("is_indent_wrapped_lines"), &TextEdit::is_indent_wrapped_lines);
+
 	// User controls
 	ClassDB::bind_method(D_METHOD("set_overtype_mode_enabled", "enabled"), &TextEdit::set_overtype_mode_enabled);
 	ClassDB::bind_method(D_METHOD("is_overtype_mode_enabled"), &TextEdit::is_overtype_mode_enabled);
@@ -6451,6 +6499,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Arbitrary:1,Word:2,Word (Smart):3"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_wrapped_lines"), "set_indent_wrapped_lines", "is_indent_wrapped_lines");
 
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_smooth"), "set_smooth_scroll_enabled", "is_smooth_scroll_enabled");
@@ -7075,8 +7124,11 @@ int TextEdit::_get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) con
 	p_wrap_index = MIN(p_wrap_index, text.get_line_data(p_line)->get_line_count() - 1);
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(p_wrap_index);
+	float wrap_indent = (text.is_indent_wrapped_lines() && p_wrap_index > 0) ? get_indent_level(p_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
 	if (is_layout_rtl()) {
-		p_px = TS->shaped_text_get_size(text_rid).x - p_px;
+		p_px = TS->shaped_text_get_size(text_rid).x - p_px + wrap_indent;
+	} else {
+		p_px -= wrap_indent;
 	}
 	int ofs = TS->shaped_text_hit_test_position(text_rid, p_px);
 	if (!caret_mid_grapheme_enabled) {
@@ -7125,11 +7177,12 @@ int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column
 	}
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(row);
+	float wrap_indent = (text.is_indent_wrapped_lines() && row > 0) ? get_indent_level(p_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
 	CaretInfo ts_caret = TS->shaped_text_get_carets(text_rid, p_column);
 	if ((ts_caret.l_caret != Rect2() && (ts_caret.l_dir == TextServer::DIRECTION_AUTO || ts_caret.l_dir == (TextServer::Direction)input_direction)) || (ts_caret.t_caret == Rect2())) {
-		return ts_caret.l_caret.position.x;
+		return ts_caret.l_caret.position.x + (is_layout_rtl() ? -wrap_indent : wrap_indent);
 	} else {
-		return ts_caret.t_caret.position.x;
+		return ts_caret.t_caret.position.x + (is_layout_rtl() ? -wrap_indent : wrap_indent);
 	}
 }
 

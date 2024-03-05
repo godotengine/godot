@@ -166,7 +166,7 @@ void EditorAutoloadSettings::_autoload_add() {
 		if (!fpath.ends_with("/")) {
 			fpath = fpath.get_base_dir();
 		}
-		dialog->config("Node", fpath.path_join(vformat("%s.gd", autoload_add_name->get_text().to_snake_case())), false, false);
+		dialog->config("Node", fpath.path_join(vformat("%s.gd", autoload_add_name->get_text())), false, false);
 		dialog->popup_centered();
 	} else {
 		if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
@@ -585,6 +585,10 @@ void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
 	autoload_add_path->set_text(p_script->get_path());
 	autoload_add_name->set_text(p_script->get_path().get_file().get_basename().to_pascal_case());
 	_autoload_add();
+}
+
+LineEdit *EditorAutoloadSettings::get_path_box() const {
+	return autoload_add_path;
 }
 
 Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control *p_control) {

@@ -91,7 +91,8 @@
 		<method name="get_node_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of an element node. This method will raise an error if the currently parsed node is not of [constant NODE_ELEMENT] or [constant NODE_ELEMENT_END] type.
+				Returns the name of a node. This method will raise an error if the currently parsed node is a text node.
+				[b]Note:[/b] The content of a [constant NODE_CDATA] node and the comment string of a [constant NODE_COMMENT] node are also considered names.
 			</description>
 		</method>
 		<method name="get_node_offset" qualifiers="const">

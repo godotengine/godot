@@ -1615,15 +1615,16 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		gi.setup_voxel_gi_instances(p_render_data, p_render_data->render_buffers, p_render_data->scene_data->cam_transform, *p_render_data->voxel_gi_instances, p_render_data->voxel_gi_count);
 	} else {
-		ERR_PRINT("No render buffer nor reflection atlas, bug"); //should never happen, will crash
+		ERR_PRINT("No render buffer nor reflection atlas, bug"); // Should never happen!
 		current_cluster_builder = nullptr;
+		return; // No point in continuing, we'll just crash.
 	}
 
-	if (current_cluster_builder != nullptr) {
-		p_render_data->cluster_buffer = current_cluster_builder->get_cluster_buffer();
-		p_render_data->cluster_size = current_cluster_builder->get_cluster_size();
-		p_render_data->cluster_max_elements = current_cluster_builder->get_max_cluster_elements();
-	}
+	ERR_FAIL_NULL(current_cluster_builder);
+
+	p_render_data->cluster_buffer = current_cluster_builder->get_cluster_buffer();
+	p_render_data->cluster_size = current_cluster_builder->get_cluster_size();
+	p_render_data->cluster_max_elements = current_cluster_builder->get_max_cluster_elements();
 
 	_update_vrs(rb);
 
