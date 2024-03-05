@@ -60,6 +60,9 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 	if (p_info.type == Variant::ARRAY && (p_info.hint == PROPERTY_HINT_ARRAY_TYPE)) {
 		return String("typedarray::") + p_info.hint_string;
 	}
+	if (p_info.type == Variant::DICTIONARY && (p_info.hint == PROPERTY_HINT_DICTIONARY_TYPE)) {
+		return String("typeddictionary::") + p_info.hint_string;
+	}
 	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM))) {
 		return String("enum::") + String(p_info.class_name);
 	}

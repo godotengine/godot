@@ -189,6 +189,8 @@ public:
 
 		GDScriptParser::DataType get_typed_container_type() const;
 
+		bool can_reference(const DataType &p_other) const;
+
 		bool operator==(const DataType &p_other) const {
 			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
 				return true; // Can be considered equal for parsing purposes.
