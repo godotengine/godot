@@ -3828,7 +3828,9 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 
 	// Parse.
 	{
-		if (p_data.size() <= (int)sizeof(PipelineCacheHeader)) {
+		if (p_data.is_empty()) {
+			// No pre-existing cache, just create it.
+		} else if (p_data.size() <= (int)sizeof(PipelineCacheHeader)) {
 			WARN_PRINT("Invalid/corrupt pipelines cache.");
 		} else {
 			const PipelineCacheHeader *loaded_header = reinterpret_cast<const PipelineCacheHeader *>(p_data.ptr());

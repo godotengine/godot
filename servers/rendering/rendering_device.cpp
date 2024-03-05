@@ -5091,12 +5091,12 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 	if (main_instance) {
 		// Only the instance that is not a local device and is also the singleton is allowed to manage a pipeline cache.
-		pipeline_cache_file_path = "user://vulkan/pipelines";
-		pipeline_cache_file_path += "." + device.name.validate_filename().replace(" ", "_").to_lower();
+		pipeline_cache_file_path = vformat("user://vulkan/pipelines.%s.%s",
+				OS::get_singleton()->get_current_rendering_method(),
+				device.name.validate_filename().replace(" ", "_").to_lower());
 		if (Engine::get_singleton()->is_editor_hint()) {
 			pipeline_cache_file_path += ".editor";
 		}
-
 		pipeline_cache_file_path += ".cache";
 
 		Vector<uint8_t> cache_data = _load_pipeline_cache();
