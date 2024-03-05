@@ -376,6 +376,7 @@ public:
 	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)
 	EXBIND0R(bool, overrides_external_editor)
+	EXBIND0RC(ScriptNameCasing, preferred_file_name_casing)
 
 	GDVIRTUAL3RC(Dictionary, _complete_code, const String &, const String &, Object *)
 
