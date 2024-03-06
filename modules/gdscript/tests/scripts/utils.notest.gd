@@ -39,11 +39,46 @@ static func get_property_signature(property: Dictionary, base: Object = null, is
 	return result
 
 
+static func get_human_readable_hint_string(property: Dictionary) -> String:
+	if property.type >= TYPE_ARRAY and property.hint == PROPERTY_HINT_TYPE_STRING:
+		var type_hint_prefixes: String = ""
+		var hint_string: String = property.hint_string
+
+		while true:
+			if not hint_string.contains(":"):
+				push_error("Invalid PROPERTY_HINT_TYPE_STRING format.")
+			var elem_type_hint: String = hint_string.get_slice(":", 0)
+			hint_string = hint_string.substr(elem_type_hint.length() + 1)
+
+			var elem_type: int
+			var elem_hint: int
+
+			if elem_type_hint.is_valid_int():
+				elem_type = elem_type_hint.to_int()
+				type_hint_prefixes += type_string(elem_type) + ":"
+			else:
+				if elem_type_hint.count("/") != 1:
+					push_error("Invalid PROPERTY_HINT_TYPE_STRING format.")
+				elem_type = elem_type_hint.get_slice("/", 0).to_int()
+				elem_hint = elem_type_hint.get_slice("/", 1).to_int()
+				type_hint_prefixes += "%s/%s:" % [
+				type_string(elem_type),
+				get_property_hint_name(elem_hint).trim_prefix("PROPERTY_HINT_"),
+				]
+
+			if elem_type < TYPE_ARRAY:
+				break
+
+		return type_hint_prefixes + hint_string
+
+	return property.hint_string
+
+
 static func print_property_extended_info(property: Dictionary, base: Object = null, is_static: bool = false) -> void:
 	print(get_property_signature(property, base, is_static))
 	print('  hint=%s hint_string="%s" usage=%s' % [
 		get_property_hint_name(property.hint).trim_prefix("PROPERTY_HINT_"),
-		str(property.hint_string).c_escape(),
+		get_human_readable_hint_string(property),
 		get_property_usage_string(property.usage).replace("PROPERTY_USAGE_", ""),
 	])
 

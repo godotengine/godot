@@ -3869,27 +3869,27 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_BYTE_ARRAY);
+			editor->setup(Variant::PACKED_BYTE_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_INT32_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_INT32_ARRAY);
+			editor->setup(Variant::PACKED_INT32_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_INT64_ARRAY);
+			editor->setup(Variant::PACKED_INT64_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_FLOAT32_ARRAY);
+			editor->setup(Variant::PACKED_FLOAT32_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_FLOAT64_ARRAY);
+			editor->setup(Variant::PACKED_FLOAT64_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
@@ -3899,17 +3899,17 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::PACKED_VECTOR2_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_VECTOR2_ARRAY);
+			editor->setup(Variant::PACKED_VECTOR2_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_VECTOR3_ARRAY);
+			editor->setup(Variant::PACKED_VECTOR3_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_COLOR_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_COLOR_ARRAY);
+			editor->setup(Variant::PACKED_COLOR_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		default: {
