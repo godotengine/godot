@@ -1613,6 +1613,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	if (enc_pck && enc_directory) {
 		pack_flags |= PACK_DIR_ENCRYPTED;
 	}
+	if (p_embed) {
+		pack_flags |= PACK_REL_FILEBASE;
+	}
 	f->store_32(pack_flags); // flags
 
 	uint64_t file_base_ofs = f->get_position();
@@ -1703,8 +1706,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	}
 
 	uint64_t file_base = f->get_position();
+	uint64_t file_base_store = file_base;
+	if (pack_flags & PACK_REL_FILEBASE) {
+		file_base_store -= pck_start_pos;
+	}
 	f->seek(file_base_ofs);
-	f->store_64(file_base); // update files base
+	f->store_64(file_base_store); // update files base
 	f->seek(file_base);
 
 	// Save the rest of the data.
@@ -1745,6 +1752,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 			*r_embedded_size = f->get_position() - embed_pos;
 		}
 	}
+	f->close();
 
 	DirAccess::remove_file_or_error(tmppath);
 
