@@ -1590,6 +1590,10 @@
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
+		<member name="NativeMenu" type="NativeMenu" setter="" getter="">
+			The [NativeMenu] singleton.
+			[b]Note:[/b] Only implemented on macOS.
+		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.
 		</member>
