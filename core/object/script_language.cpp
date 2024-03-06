@@ -325,12 +325,24 @@ void ScriptServer::global_classes_clear() {
 
 void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
 	ERR_FAIL_COND_MSG(p_class == p_base || (global_classes.has(p_base) && get_global_class_native_base(p_base) == p_class), "Cyclic inheritance in script class.");
-	GlobalScriptClass g;
-	g.language = p_language;
-	g.path = p_path;
-	g.base = p_base;
-	global_classes[p_class] = g;
-	inheriters_cache_dirty = true;
+	GlobalScriptClass *existing = global_classes.getptr(p_class);
+	if (existing) {
+		// Update an existing class (only set dirty if something changed).
+		if (existing->base != p_base || existing->path != p_path || existing->language != p_language) {
+			existing->base = p_base;
+			existing->path = p_path;
+			existing->language = p_language;
+			inheriters_cache_dirty = true;
+		}
+	} else {
+		// Add new class.
+		GlobalScriptClass g;
+		g.language = p_language;
+		g.path = p_path;
+		g.base = p_base;
+		global_classes[p_class] = g;
+		inheriters_cache_dirty = true;
+	}
 }
 
 void ScriptServer::remove_global_class(const StringName &p_class) {

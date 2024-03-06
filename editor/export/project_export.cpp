@@ -1039,6 +1039,8 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 		platform->export_zip(current, export_pck_zip_debug->is_pressed(), p_path);
 	} else if (p_path.ends_with(".pck")) {
 		platform->export_pack(current, export_pck_zip_debug->is_pressed(), p_path);
+	} else {
+		ERR_FAIL_MSG("Path must end with .pck or .zip");
 	}
 }
 
