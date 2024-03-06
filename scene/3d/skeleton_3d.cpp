@@ -1864,3 +1864,9 @@ Dictionary Skeleton3D::get_human_bone_mapping()
 	return rs;
 }
 
+void Skeleton3D::set_human_bone_mapping(const Dictionary &p_human_bone_mapping)
+{
+	List<Variant> keys;
+	human_bone_mapping.get_key_list(&keys);
+}
+

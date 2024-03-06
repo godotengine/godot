@@ -178,6 +178,7 @@ public:
 
 	
 	Dictionary get_human_bone_mapping();
+	void set_human_bone_mapping(const Dictionary &p_human_bone_mapping);
 
 	int get_bone_count() const;
 
