@@ -23,13 +23,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor w/ Mono (target=editor)
+          - name: Editor w/ Mono (target=editor, tests=yes)
             cache-name: linux-editor-mono
             target: editor
             sconsflags: module_mono_enabled=yes
             bin: "./bin/godot.linuxbsd.editor.x86_64.mono"
             build-mono: true
-            tests: false # Disabled due freeze caused by mix Mono build and CI
+            tests: true
             doc-test: true
             proj-conv: true
             api-compat: true
@@ -120,7 +120,7 @@ jobs:
         uses: actions/setup-dotnet@v3
         if: ${{ matrix.build-mono }}
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: "6.0.x"
 
       - name: Setup GCC problem matcher
         uses: ammaraskar/gcc-problem-matcher@master
