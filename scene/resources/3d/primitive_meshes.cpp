@@ -129,7 +129,7 @@ void PrimitiveMesh::_update() const {
 	const_cast<PrimitiveMesh *>(this)->emit_changed();
 }
 
-void PrimitiveMesh::_request_update() {
+void PrimitiveMesh::request_update() {
 	if (pending_request) {
 		return;
 	}
@@ -249,6 +249,8 @@ void PrimitiveMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uv2_padding", "uv2_padding"), &PrimitiveMesh::set_uv2_padding);
 	ClassDB::bind_method(D_METHOD("get_uv2_padding"), &PrimitiveMesh::get_uv2_padding);
 
+	ClassDB::bind_method(D_METHOD("request_update"), &PrimitiveMesh::request_update);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
@@ -288,7 +290,7 @@ AABB PrimitiveMesh::get_custom_aabb() const {
 
 void PrimitiveMesh::set_flip_faces(bool p_enable) {
 	flip_faces = p_enable;
-	_request_update();
+	request_update();
 }
 
 bool PrimitiveMesh::get_flip_faces() const {
@@ -298,13 +300,13 @@ bool PrimitiveMesh::get_flip_faces() const {
 void PrimitiveMesh::set_add_uv2(bool p_enable) {
 	add_uv2 = p_enable;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 void PrimitiveMesh::set_uv2_padding(float p_padding) {
 	uv2_padding = p_padding;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 Vector2 PrimitiveMesh::get_uv2_scale(Vector2 p_margin_scale) const {
@@ -562,7 +564,7 @@ void CapsuleMesh::set_radius(const float p_radius) {
 		height = radius * 2.0;
 	}
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CapsuleMesh::get_radius() const {
@@ -575,7 +577,7 @@ void CapsuleMesh::set_height(const float p_height) {
 		radius = height * 0.5;
 	}
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CapsuleMesh::get_height() const {
@@ -584,7 +586,7 @@ float CapsuleMesh::get_height() const {
 
 void CapsuleMesh::set_radial_segments(const int p_segments) {
 	radial_segments = p_segments > 4 ? p_segments : 4;
-	_request_update();
+	request_update();
 }
 
 int CapsuleMesh::get_radial_segments() const {
@@ -594,7 +596,7 @@ int CapsuleMesh::get_radial_segments() const {
 void CapsuleMesh::set_rings(const int p_rings) {
 	ERR_FAIL_COND(p_rings < 0);
 	rings = p_rings;
-	_request_update();
+	request_update();
 }
 
 int CapsuleMesh::get_rings() const {
@@ -891,7 +893,7 @@ void BoxMesh::_bind_methods() {
 void BoxMesh::set_size(const Vector3 &p_size) {
 	size = p_size;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 Vector3 BoxMesh::get_size() const {
@@ -900,7 +902,7 @@ Vector3 BoxMesh::get_size() const {
 
 void BoxMesh::set_subdivide_width(const int p_divisions) {
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int BoxMesh::get_subdivide_width() const {
@@ -909,7 +911,7 @@ int BoxMesh::get_subdivide_width() const {
 
 void BoxMesh::set_subdivide_height(const int p_divisions) {
 	subdivide_h = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int BoxMesh::get_subdivide_height() const {
@@ -918,7 +920,7 @@ int BoxMesh::get_subdivide_height() const {
 
 void BoxMesh::set_subdivide_depth(const int p_divisions) {
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int BoxMesh::get_subdivide_depth() const {
@@ -1168,7 +1170,7 @@ void CylinderMesh::_bind_methods() {
 void CylinderMesh::set_top_radius(const float p_radius) {
 	top_radius = p_radius;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CylinderMesh::get_top_radius() const {
@@ -1178,7 +1180,7 @@ float CylinderMesh::get_top_radius() const {
 void CylinderMesh::set_bottom_radius(const float p_radius) {
 	bottom_radius = p_radius;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CylinderMesh::get_bottom_radius() const {
@@ -1188,7 +1190,7 @@ float CylinderMesh::get_bottom_radius() const {
 void CylinderMesh::set_height(const float p_height) {
 	height = p_height;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CylinderMesh::get_height() const {
@@ -1197,7 +1199,7 @@ float CylinderMesh::get_height() const {
 
 void CylinderMesh::set_radial_segments(const int p_segments) {
 	radial_segments = p_segments > 4 ? p_segments : 4;
-	_request_update();
+	request_update();
 }
 
 int CylinderMesh::get_radial_segments() const {
@@ -1207,7 +1209,7 @@ int CylinderMesh::get_radial_segments() const {
 void CylinderMesh::set_rings(const int p_rings) {
 	ERR_FAIL_COND(p_rings < 0);
 	rings = p_rings;
-	_request_update();
+	request_update();
 }
 
 int CylinderMesh::get_rings() const {
@@ -1216,7 +1218,7 @@ int CylinderMesh::get_rings() const {
 
 void CylinderMesh::set_cap_top(bool p_cap_top) {
 	cap_top = p_cap_top;
-	_request_update();
+	request_update();
 }
 
 bool CylinderMesh::is_cap_top() const {
@@ -1225,7 +1227,7 @@ bool CylinderMesh::is_cap_top() const {
 
 void CylinderMesh::set_cap_bottom(bool p_cap_bottom) {
 	cap_bottom = p_cap_bottom;
-	_request_update();
+	request_update();
 }
 
 bool CylinderMesh::is_cap_bottom() const {
@@ -1361,7 +1363,7 @@ void PlaneMesh::_bind_methods() {
 void PlaneMesh::set_size(const Size2 &p_size) {
 	size = p_size;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 Size2 PlaneMesh::get_size() const {
@@ -1370,7 +1372,7 @@ Size2 PlaneMesh::get_size() const {
 
 void PlaneMesh::set_subdivide_width(const int p_divisions) {
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PlaneMesh::get_subdivide_width() const {
@@ -1379,7 +1381,7 @@ int PlaneMesh::get_subdivide_width() const {
 
 void PlaneMesh::set_subdivide_depth(const int p_divisions) {
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PlaneMesh::get_subdivide_depth() const {
@@ -1388,7 +1390,7 @@ int PlaneMesh::get_subdivide_depth() const {
 
 void PlaneMesh::set_center_offset(const Vector3 p_offset) {
 	center_offset = p_offset;
-	_request_update();
+	request_update();
 }
 
 Vector3 PlaneMesh::get_center_offset() const {
@@ -1397,7 +1399,7 @@ Vector3 PlaneMesh::get_center_offset() const {
 
 void PlaneMesh::set_orientation(const Orientation p_orientation) {
 	orientation = p_orientation;
-	_request_update();
+	request_update();
 }
 
 PlaneMesh::Orientation PlaneMesh::get_orientation() const {
@@ -1706,7 +1708,7 @@ void PrismMesh::_bind_methods() {
 
 void PrismMesh::set_left_to_right(const float p_left_to_right) {
 	left_to_right = p_left_to_right;
-	_request_update();
+	request_update();
 }
 
 float PrismMesh::get_left_to_right() const {
@@ -1716,7 +1718,7 @@ float PrismMesh::get_left_to_right() const {
 void PrismMesh::set_size(const Vector3 &p_size) {
 	size = p_size;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 Vector3 PrismMesh::get_size() const {
@@ -1725,7 +1727,7 @@ Vector3 PrismMesh::get_size() const {
 
 void PrismMesh::set_subdivide_width(const int p_divisions) {
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PrismMesh::get_subdivide_width() const {
@@ -1734,7 +1736,7 @@ int PrismMesh::get_subdivide_width() const {
 
 void PrismMesh::set_subdivide_height(const int p_divisions) {
 	subdivide_h = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PrismMesh::get_subdivide_height() const {
@@ -1743,7 +1745,7 @@ int PrismMesh::get_subdivide_height() const {
 
 void PrismMesh::set_subdivide_depth(const int p_divisions) {
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PrismMesh::get_subdivide_depth() const {
@@ -1892,7 +1894,7 @@ void SphereMesh::_bind_methods() {
 void SphereMesh::set_radius(const float p_radius) {
 	radius = p_radius;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float SphereMesh::get_radius() const {
@@ -1902,7 +1904,7 @@ float SphereMesh::get_radius() const {
 void SphereMesh::set_height(const float p_height) {
 	height = p_height;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float SphereMesh::get_height() const {
@@ -1911,7 +1913,7 @@ float SphereMesh::get_height() const {
 
 void SphereMesh::set_radial_segments(const int p_radial_segments) {
 	radial_segments = p_radial_segments > 4 ? p_radial_segments : 4;
-	_request_update();
+	request_update();
 }
 
 int SphereMesh::get_radial_segments() const {
@@ -1921,7 +1923,7 @@ int SphereMesh::get_radial_segments() const {
 void SphereMesh::set_rings(const int p_rings) {
 	ERR_FAIL_COND(p_rings < 1);
 	rings = p_rings;
-	_request_update();
+	request_update();
 }
 
 int SphereMesh::get_rings() const {
@@ -1931,7 +1933,7 @@ int SphereMesh::get_rings() const {
 void SphereMesh::set_is_hemisphere(const bool p_is_hemisphere) {
 	is_hemisphere = p_is_hemisphere;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 bool SphereMesh::get_is_hemisphere() const {
@@ -2077,7 +2079,7 @@ void TorusMesh::_bind_methods() {
 
 void TorusMesh::set_inner_radius(const float p_inner_radius) {
 	inner_radius = p_inner_radius;
-	_request_update();
+	request_update();
 }
 
 float TorusMesh::get_inner_radius() const {
@@ -2086,7 +2088,7 @@ float TorusMesh::get_inner_radius() const {
 
 void TorusMesh::set_outer_radius(const float p_outer_radius) {
 	outer_radius = p_outer_radius;
-	_request_update();
+	request_update();
 }
 
 float TorusMesh::get_outer_radius() const {
@@ -2096,7 +2098,7 @@ float TorusMesh::get_outer_radius() const {
 void TorusMesh::set_rings(const int p_rings) {
 	ERR_FAIL_COND(p_rings < 3);
 	rings = p_rings;
-	_request_update();
+	request_update();
 }
 
 int TorusMesh::get_rings() const {
@@ -2106,7 +2108,7 @@ int TorusMesh::get_rings() const {
 void TorusMesh::set_ring_segments(const int p_ring_segments) {
 	ERR_FAIL_COND(p_ring_segments < 3);
 	ring_segments = p_ring_segments;
-	_request_update();
+	request_update();
 }
 
 int TorusMesh::get_ring_segments() const {
@@ -2134,7 +2136,7 @@ PointMesh::PointMesh() {
 
 void TubeTrailMesh::set_radius(const float p_radius) {
 	radius = p_radius;
-	_request_update();
+	request_update();
 }
 float TubeTrailMesh::get_radius() const {
 	return radius;
@@ -2143,7 +2145,7 @@ float TubeTrailMesh::get_radius() const {
 void TubeTrailMesh::set_radial_steps(const int p_radial_steps) {
 	ERR_FAIL_COND(p_radial_steps < 3 || p_radial_steps > 128);
 	radial_steps = p_radial_steps;
-	_request_update();
+	request_update();
 }
 int TubeTrailMesh::get_radial_steps() const {
 	return radial_steps;
@@ -2152,7 +2154,7 @@ int TubeTrailMesh::get_radial_steps() const {
 void TubeTrailMesh::set_sections(const int p_sections) {
 	ERR_FAIL_COND(p_sections < 2 || p_sections > 128);
 	sections = p_sections;
-	_request_update();
+	request_update();
 }
 int TubeTrailMesh::get_sections() const {
 	return sections;
@@ -2160,7 +2162,7 @@ int TubeTrailMesh::get_sections() const {
 
 void TubeTrailMesh::set_section_length(float p_section_length) {
 	section_length = p_section_length;
-	_request_update();
+	request_update();
 }
 float TubeTrailMesh::get_section_length() const {
 	return section_length;
@@ -2169,7 +2171,7 @@ float TubeTrailMesh::get_section_length() const {
 void TubeTrailMesh::set_section_rings(const int p_section_rings) {
 	ERR_FAIL_COND(p_section_rings < 1 || p_section_rings > 1024);
 	section_rings = p_section_rings;
-	_request_update();
+	request_update();
 }
 int TubeTrailMesh::get_section_rings() const {
 	return section_rings;
@@ -2177,7 +2179,7 @@ int TubeTrailMesh::get_section_rings() const {
 
 void TubeTrailMesh::set_cap_top(bool p_cap_top) {
 	cap_top = p_cap_top;
-	_request_update();
+	request_update();
 }
 
 bool TubeTrailMesh::is_cap_top() const {
@@ -2186,7 +2188,7 @@ bool TubeTrailMesh::is_cap_top() const {
 
 void TubeTrailMesh::set_cap_bottom(bool p_cap_bottom) {
 	cap_bottom = p_cap_bottom;
-	_request_update();
+	request_update();
 }
 
 bool TubeTrailMesh::is_cap_bottom() const {
@@ -2204,14 +2206,14 @@ void TubeTrailMesh::set_curve(const Ref<Curve> &p_curve) {
 	if (curve.is_valid()) {
 		curve->connect_changed(callable_mp(this, &TubeTrailMesh::_curve_changed));
 	}
-	_request_update();
+	request_update();
 }
 Ref<Curve> TubeTrailMesh::get_curve() const {
 	return curve;
 }
 
 void TubeTrailMesh::_curve_changed() {
-	_request_update();
+	request_update();
 }
 int TubeTrailMesh::get_builtin_bind_pose_count() const {
 	return sections + 1;
@@ -2492,7 +2494,7 @@ TubeTrailMesh::TubeTrailMesh() {
 
 void RibbonTrailMesh::set_shape(Shape p_shape) {
 	shape = p_shape;
-	_request_update();
+	request_update();
 }
 RibbonTrailMesh::Shape RibbonTrailMesh::get_shape() const {
 	return shape;
@@ -2500,7 +2502,7 @@ RibbonTrailMesh::Shape RibbonTrailMesh::get_shape() const {
 
 void RibbonTrailMesh::set_size(const float p_size) {
 	size = p_size;
-	_request_update();
+	request_update();
 }
 float RibbonTrailMesh::get_size() const {
 	return size;
@@ -2509,7 +2511,7 @@ float RibbonTrailMesh::get_size() const {
 void RibbonTrailMesh::set_sections(const int p_sections) {
 	ERR_FAIL_COND(p_sections < 2 || p_sections > 128);
 	sections = p_sections;
-	_request_update();
+	request_update();
 }
 int RibbonTrailMesh::get_sections() const {
 	return sections;
@@ -2517,7 +2519,7 @@ int RibbonTrailMesh::get_sections() const {
 
 void RibbonTrailMesh::set_section_length(float p_section_length) {
 	section_length = p_section_length;
-	_request_update();
+	request_update();
 }
 float RibbonTrailMesh::get_section_length() const {
 	return section_length;
@@ -2526,7 +2528,7 @@ float RibbonTrailMesh::get_section_length() const {
 void RibbonTrailMesh::set_section_segments(const int p_section_segments) {
 	ERR_FAIL_COND(p_section_segments < 1 || p_section_segments > 1024);
 	section_segments = p_section_segments;
-	_request_update();
+	request_update();
 }
 int RibbonTrailMesh::get_section_segments() const {
 	return section_segments;
@@ -2543,14 +2545,14 @@ void RibbonTrailMesh::set_curve(const Ref<Curve> &p_curve) {
 	if (curve.is_valid()) {
 		curve->connect_changed(callable_mp(this, &RibbonTrailMesh::_curve_changed));
 	}
-	_request_update();
+	request_update();
 }
 Ref<Curve> RibbonTrailMesh::get_curve() const {
 	return curve;
 }
 
 void RibbonTrailMesh::_curve_changed() {
-	_request_update();
+	request_update();
 }
 int RibbonTrailMesh::get_builtin_bind_pose_count() const {
 	return sections + 1;
@@ -3340,8 +3342,6 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &TextMesh::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &TextMesh::is_uppercase);
 
-	ClassDB::bind_method(D_METHOD("_request_update"), &TextMesh::_request_update);
-
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
@@ -3376,7 +3376,7 @@ void TextMesh::_notification(int p_what) {
 			}
 			xl_text = new_text;
 			dirty_text = true;
-			_request_update();
+			request_update();
 		} break;
 	}
 }
@@ -3402,7 +3402,7 @@ void TextMesh::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 			dirty_lines = true;
 		}
 		horizontal_alignment = p_alignment;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3414,7 +3414,7 @@ void TextMesh::set_vertical_alignment(VerticalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
 	if (vertical_alignment != p_alignment) {
 		vertical_alignment = p_alignment;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3427,7 +3427,7 @@ void TextMesh::set_text(const String &p_string) {
 		text = p_string;
 		xl_text = tr(text);
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3438,7 +3438,7 @@ String TextMesh::get_text() const {
 void TextMesh::_font_changed() {
 	dirty_font = true;
 	dirty_cache = true;
-	call_deferred(SNAME("_request_update"));
+	callable_mp(static_cast<PrimitiveMesh *>(this), &PrimitiveMesh::request_update).call_deferred();
 }
 
 void TextMesh::set_font(const Ref<Font> &p_font) {
@@ -3454,7 +3454,7 @@ void TextMesh::set_font(const Ref<Font> &p_font) {
 		if (font_override.is_valid()) {
 			font_override->connect_changed(font_changed);
 		}
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3492,7 +3492,7 @@ void TextMesh::set_font_size(int p_size) {
 		font_size = CLAMP(p_size, 1, 127);
 		dirty_font = true;
 		dirty_cache = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3503,7 +3503,7 @@ int TextMesh::get_font_size() const {
 void TextMesh::set_line_spacing(float p_line_spacing) {
 	if (line_spacing != p_line_spacing) {
 		line_spacing = p_line_spacing;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3515,7 +3515,7 @@ void TextMesh::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode != p_mode) {
 		autowrap_mode = p_mode;
 		dirty_lines = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3527,7 +3527,7 @@ void TextMesh::set_justification_flags(BitField<TextServer::JustificationFlag> p
 	if (jst_flags != p_flags) {
 		jst_flags = p_flags;
 		dirty_lines = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3538,7 +3538,7 @@ BitField<TextServer::JustificationFlag> TextMesh::get_justification_flags() cons
 void TextMesh::set_depth(real_t p_depth) {
 	if (depth != p_depth) {
 		depth = MAX(p_depth, 0.0);
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3550,7 +3550,7 @@ void TextMesh::set_width(real_t p_width) {
 	if (width != p_width) {
 		width = p_width;
 		dirty_lines = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3562,7 +3562,7 @@ void TextMesh::set_pixel_size(real_t p_amount) {
 	if (pixel_size != p_amount) {
 		pixel_size = CLAMP(p_amount, 0.0001, 128.0);
 		dirty_cache = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3573,7 +3573,7 @@ real_t TextMesh::get_pixel_size() const {
 void TextMesh::set_offset(const Point2 &p_offset) {
 	if (lbl_offset != p_offset) {
 		lbl_offset = p_offset;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3585,7 +3585,7 @@ void TextMesh::set_curve_step(real_t p_step) {
 	if (curve_step != p_step) {
 		curve_step = CLAMP(p_step, 0.1, 10.0);
 		dirty_cache = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3598,7 +3598,7 @@ void TextMesh::set_text_direction(TextServer::Direction p_text_direction) {
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3610,7 +3610,7 @@ void TextMesh::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3622,7 +3622,7 @@ void TextMesh::set_structured_text_bidi_override(TextServer::StructuredTextParse
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3634,7 +3634,7 @@ void TextMesh::set_structured_text_bidi_override_options(Array p_args) {
 	if (st_args != p_args) {
 		st_args = p_args;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3646,7 +3646,7 @@ void TextMesh::set_uppercase(bool p_uppercase) {
 	if (uppercase != p_uppercase) {
 		uppercase = p_uppercase;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
