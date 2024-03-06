@@ -288,8 +288,8 @@ void MenuBar::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			NativeMenu *nmenu = NativeMenu::get_singleton();
-			RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
 			bool is_global = !global_menu_tag.is_empty();
+			RID main_menu = is_global ? nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID) : RID();
 			for (int i = 0; i < menu_cache.size(); i++) {
 				shape(menu_cache.write[i]);
 				if (is_global && menu_cache[i].global_index >= 0) {
@@ -492,8 +492,8 @@ void MenuBar::shape(Menu &p_menu) {
 
 void MenuBar::_refresh_menu_names() {
 	NativeMenu *nmenu = NativeMenu::get_singleton();
-	RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
 	bool is_global = !global_menu_tag.is_empty();
+	RID main_menu = is_global ? nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID) : RID();
 
 	Vector<PopupMenu *> popups = _get_popups();
 	for (int i = 0; i < popups.size(); i++) {
