@@ -7376,6 +7376,7 @@ void Node3DEditor::_selection_changed() {
 void Node3DEditor::_refresh_menu_icons() {
 	bool all_locked = true;
 	bool all_grouped = true;
+	bool has_node3d_item = false;
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -7384,26 +7385,34 @@ void Node3DEditor::_refresh_menu_icons() {
 		all_grouped = false;
 	} else {
 		for (Node *E : selection) {
-			if (Object::cast_to<Node3D>(E) && !Object::cast_to<Node3D>(E)->has_meta("_edit_lock_")) {
-				all_locked = false;
-				break;
+			Node3D *node = Object::cast_to<Node3D>(E);
+			if (node) {
+				if (all_locked && !node->has_meta("_edit_lock_")) {
+					all_locked = false;
+				}
+				if (all_grouped && !node->has_meta("_edit_group_")) {
+					all_grouped = false;
+				}
+				has_node3d_item = true;
 			}
-		}
-		for (Node *E : selection) {
-			if (Object::cast_to<Node3D>(E) && !Object::cast_to<Node3D>(E)->has_meta("_edit_group_")) {
-				all_grouped = false;
+			if (!all_locked && !all_grouped) {
 				break;
 			}
 		}
 	}
 
+	all_locked = all_locked && has_node3d_item;
+	all_grouped = all_grouped && has_node3d_item;
+
 	tool_button[TOOL_LOCK_SELECTED]->set_visible(!all_locked);
-	tool_button[TOOL_LOCK_SELECTED]->set_disabled(selection.is_empty());
+	tool_button[TOOL_LOCK_SELECTED]->set_disabled(!has_node3d_item);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_visible(all_locked);
+	tool_button[TOOL_UNLOCK_SELECTED]->set_disabled(!has_node3d_item);
 
 	tool_button[TOOL_GROUP_SELECTED]->set_visible(!all_grouped);
-	tool_button[TOOL_GROUP_SELECTED]->set_disabled(selection.is_empty());
+	tool_button[TOOL_GROUP_SELECTED]->set_disabled(!has_node3d_item);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_visible(all_grouped);
+	tool_button[TOOL_UNGROUP_SELECTED]->set_disabled(!has_node3d_item);
 }
 
 template <typename T>
