@@ -529,6 +529,16 @@ Vector<int> Skeleton3D::get_parentless_bones() const {
 	}
 	return parentless_bones;
 }
+Vector<int> Skeleton3D::get_root_bones() const
+{
+	Vector<int> rs;
+	for (int i = 0; i < bones.size(); i++) {
+		if (bones[i].parent < 0) {
+			rs.push_back(i);
+		}
+	}
+	return rs;
+}
 
 void Skeleton3D::set_bone_rest(int p_bone, const Transform3D &p_rest) {
 	const int bone_size = bones.size();
@@ -1016,6 +1026,10 @@ void Skeleton3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_parentless_bones"), &Skeleton3D::get_parentless_bones);
 
+	ClassDB::bind_method(D_METHOD("get_root_bones"), &Skeleton3D::get_root_bones);
+	
+	ClassDB::bind_method(D_METHOD("get_human_bone_mapping"), &Skeleton3D::get_human_bone_mapping);
+
 	ClassDB::bind_method(D_METHOD("get_bone_rest", "bone_idx"), &Skeleton3D::get_bone_rest);
 	ClassDB::bind_method(D_METHOD("set_bone_rest", "bone_idx", "rest"), &Skeleton3D::set_bone_rest);
 	ClassDB::bind_method(D_METHOD("get_bone_global_rest", "bone_idx"), &Skeleton3D::get_bone_global_rest);
@@ -1088,3 +1102,765 @@ Skeleton3D::~Skeleton3D() {
 		E->skeleton_node = nullptr;
 	}
 }
+
+#include "modules/regex/regex.h"
+
+static bool is_match_with_bone_name(const String &p_bone_name, const String &p_word) {
+	RegEx re = RegEx(p_word);
+	return !re.search(p_bone_name.to_lower()).is_null();
+}
+enum BoneSegregation {
+	BONE_SEGREGATION_NONE,
+	BONE_SEGREGATION_LEFT,
+	BONE_SEGREGATION_RIGHT
+};
+static BoneSegregation guess_bone_segregation(const String &p_bone_name) {
+	String fixed_bn = p_bone_name.to_snake_case();
+
+	LocalVector<String> left_words;
+	left_words.push_back("(?<![a-zA-Z])left");
+	left_words.push_back("(?<![a-zA-Z0-9])l(?![a-zA-Z0-9])");
+
+	LocalVector<String> right_words;
+	right_words.push_back("(?<![a-zA-Z])right");
+	right_words.push_back("(?<![a-zA-Z0-9])r(?![a-zA-Z0-9])");
+
+	for (uint32_t i = 0; i < left_words.size(); i++) {
+		RegEx re_l = RegEx(left_words[i]);
+		if (!re_l.search(fixed_bn).is_null()) {
+			return BONE_SEGREGATION_LEFT;
+		}
+		RegEx re_r = RegEx(right_words[i]);
+		if (!re_r.search(fixed_bn).is_null()) {
+			return BONE_SEGREGATION_RIGHT;
+		}
+	}
+
+	return BONE_SEGREGATION_NONE;
+}
+
+static int search_bone_by_name(Skeleton3D *p_skeleton, const Vector<String> &p_picklist, BoneSegregation p_segregation = BONE_SEGREGATION_NONE, int p_parent = -1, int p_child = -1, int p_children_count = -1) {
+	// There may be multiple candidates hit by existing the subsidiary bone.
+	// The one with the shortest name is probably the original.
+	LocalVector<String> hit_list;
+	String shortest = "";
+	Skeleton3D *skeleton = p_skeleton;
+
+	for (int word_idx = 0; word_idx < p_picklist.size(); word_idx++) {
+		if (p_child == -1) {
+			Vector<int> bones_to_process = p_parent == -1 ? p_skeleton->get_parentless_bones() : p_skeleton->get_bone_children(p_parent);
+			while (bones_to_process.size() > 0) {
+				int idx = bones_to_process[0];
+				bones_to_process.erase(idx);
+				Vector<int> children = p_skeleton->get_bone_children(idx);
+				for (int i = 0; i < children.size(); i++) {
+					bones_to_process.push_back(children[i]);
+				}
+
+				if (p_children_count == 0 && children.size() > 0) {
+					continue;
+				}
+				if (p_children_count > 0 && children.size() < p_children_count) {
+					continue;
+				}
+
+				String bn = skeleton->get_bone_name(idx);
+				if (is_match_with_bone_name(bn, p_picklist[word_idx]) && guess_bone_segregation(bn) == p_segregation) {
+					hit_list.push_back(bn);
+				}
+			}
+
+			if (hit_list.size() > 0) {
+				shortest = hit_list[0];
+				for (const String &hit : hit_list) {
+					if (hit.length() < shortest.length()) {
+						shortest = hit; // Prioritize parent.
+					}
+				}
+			}
+		} else {
+			int idx = skeleton->get_bone_parent(p_child);
+			while (idx != p_parent && idx >= 0) {
+				Vector<int> children = p_skeleton->get_bone_children(idx);
+				if (p_children_count == 0 && children.size() > 0) {
+					continue;
+				}
+				if (p_children_count > 0 && children.size() < p_children_count) {
+					continue;
+				}
+
+				String bn = skeleton->get_bone_name(idx);
+				if (is_match_with_bone_name(bn, p_picklist[word_idx]) && guess_bone_segregation(bn) == p_segregation) {
+					hit_list.push_back(bn);
+				}
+				idx = skeleton->get_bone_parent(idx);
+			}
+
+			if (hit_list.size() > 0) {
+				shortest = hit_list[0];
+				for (const String &hit : hit_list) {
+					if (hit.length() <= shortest.length()) {
+						shortest = hit; // Prioritize parent.
+					}
+				}
+			}
+		}
+
+		if (shortest != "") {
+			break;
+		}
+	}
+
+	if (shortest == "") {
+		return -1;
+	}
+
+	return skeleton->find_bone(shortest);
+}
+
+static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
+	WARN_PRINT("Run auto mapping.");
+
+	int bone_idx = -1;
+	Vector<String> picklist; // Use Vector<String> because match words have priority.
+	Vector<int> search_path;
+
+	// 1. Guess Hips
+	picklist.push_back("hip");
+	picklist.push_back("pelvis");
+	picklist.push_back("waist");
+	picklist.push_back("torso");
+	picklist.push_back("spine");
+	int hips = search_bone_by_name(skeleton, picklist);
+	if (hips == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess Hips. Abort auto mapping.");
+		return; // If there is no Hips, we cannot guess bone after then.
+	} else {
+		p_bone_map["Hips"] = StringName(skeleton->get_bone_name(hips)); // Hips is always first skeleton->get_bone_name(hips));
+	}
+	picklist.clear();
+
+	// 2. Guess Root
+	bone_idx = skeleton->get_bone_parent(hips);
+	while (bone_idx >= 0) {
+		search_path.push_back(bone_idx);
+		bone_idx = skeleton->get_bone_parent(bone_idx);
+	}
+	if (search_path.size() == 0) {
+		bone_idx = -1;
+	} else if (search_path.size() == 1) {
+		bone_idx = search_path[0]; // It is only one bone which can be root.
+	} else {
+		bool found = false;
+		for (int i = 0; i < search_path.size(); i++) {
+			RegEx re = RegEx("root");
+			if (!re.search(skeleton->get_bone_name(search_path[i]).to_lower()).is_null()) {
+				bone_idx = search_path[i]; // Name match is preferred.
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			for (int i = 0; i < search_path.size(); i++) {
+				if (skeleton->get_bone_global_rest(search_path[i]).origin.is_zero_approx()) {
+					bone_idx = search_path[i]; // The bone existing at the origin is appropriate as a root.
+					found = true;
+					break;
+				}
+			}
+		}
+		if (!found) {
+			bone_idx = search_path[search_path.size() - 1]; // Ambiguous, but most parental bone selected.
+		}
+	}
+	if (bone_idx == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess Root."); // Root is not required, so continue.
+	} else {
+		p_bone_map["Root"] = StringName(skeleton->get_bone_name(bone_idx)); // Root is always first skeleton->get_bone_name(bone_idx));
+	}
+	bone_idx = -1;
+	search_path.clear();
+
+	// 3. Guess Foots
+	picklist.push_back("foot");
+	picklist.push_back("ankle");
+	int left_foot = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, hips);
+	if (left_foot == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess LeftFoot.");
+	} else {
+		p_bone_map["LeftFoot"] = StringName(skeleton->get_bone_name(left_foot)); // LeftFoot is always first skeleton->get_bone_name(left_foot));
+	}
+	int right_foot = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, hips);
+	if (right_foot == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess RightFoot.");
+	} else {
+		p_bone_map["RightFoot"] = StringName(skeleton->get_bone_name(right_foot)); // RightFoot is always first skeleton->get_bone_name(right_foot));
+	}
+	picklist.clear();
+
+	// 3-1. Guess LowerLegs
+	picklist.push_back("(low|under).*leg");
+	picklist.push_back("knee");
+	picklist.push_back("shin");
+	picklist.push_back("calf");
+	picklist.push_back("leg");
+	int left_lower_leg = -1;
+	if (left_foot != -1) {
+		left_lower_leg = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, hips, left_foot);
+	}
+	if (left_lower_leg == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess LeftLowerLeg.");
+	} else {
+		p_bone_map["LeftLowerLeg"] = StringName(skeleton->get_bone_name(left_lower_leg)); // LeftLowerLeg is always first skeleton->get_bone_name(left_lower_leg));
+	}
+	int right_lower_leg = -1;
+	if (right_foot != -1) {
+		right_lower_leg = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, hips, right_foot);
+	}
+	if (right_lower_leg == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess RightLowerLeg.");
+	} else {
+		p_bone_map["RightLowerLeg"] = StringName(skeleton->get_bone_name(right_lower_leg)); // RightLowerLeg is always first, skeleton->get_bone_name(right_lower_leg));
+	}
+	picklist.clear();
+
+	// 3-2. Guess UpperLegs
+	picklist.push_back("up.*leg");
+	picklist.push_back("thigh");
+	picklist.push_back("leg");
+	if (left_lower_leg != -1) {
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, hips, left_lower_leg);
+	}
+	if (bone_idx == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess LeftUpperLeg.");
+	} else {
+		p_bone_map["LeftUpperLeg"] = StringName(skeleton->get_bone_name(bone_idx)); // LeftUpperLeg is always first, skeleton->get_bone_name(bone_idx"LeftUpperLeg", skeleton->get_bone_name(bone_idx));
+	}
+	bone_idx = -1;
+	if (right_lower_leg != -1) {
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, hips, right_lower_leg);
+	}
+	if (bone_idx == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess RightUpperLeg.");
+	} else {
+		p_bone_map["RightUpperLeg"] = StringName(skeleton->get_bone_name(bone_idx)); // RightUpperLeg is always first skeleton->get_bone_name(bone_idx));
+	}
+	bone_idx = -1;
+	picklist.clear();
+
+	// 3-3. Guess Toes
+	picklist.push_back("toe");
+	picklist.push_back("ball");
+	if (left_foot != -1) {
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, left_foot);
+		if (bone_idx == -1) {
+			search_path = skeleton->get_bone_children(left_foot);
+			if (search_path.size() == 1) {
+				bone_idx = search_path[0]; // Maybe only one child of the Foot is Toes.
+			}
+			search_path.clear();
+		}
+	}
+	if (bone_idx == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess LeftToes.");
+	} else {
+		p_bone_map["LeftToes"] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("LeftToes", skeleton->get_bone_name(bone_idx));
+	}
+	bone_idx = -1;
+	if (right_foot != -1) {
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, right_foot);
+		if (bone_idx == -1) {
+			search_path = skeleton->get_bone_children(right_foot);
+			if (search_path.size() == 1) {
+				bone_idx = search_path[0]; // Maybe only one child of the Foot is Toes.
+			}
+			search_path.clear();
+		}
+	}
+	if (bone_idx == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess RightToes.");
+	} else {
+		p_bone_map["RightToes"] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("RightToes", skeleton->get_bone_name(bone_idx));
+	}
+	bone_idx = -1;
+	picklist.clear();
+
+	// 4. Guess Hands
+	picklist.push_back("hand");
+	picklist.push_back("wrist");
+	picklist.push_back("palm");
+	picklist.push_back("fingers");
+	int left_hand_or_palm = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, hips, -1, 5);
+	if (left_hand_or_palm == -1) {
+		// Ambiguous, but try again for fewer finger models.
+		left_hand_or_palm = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, hips);
+	}
+	int left_hand = left_hand_or_palm; // Check for the presence of a wrist, since bones with five children may be palmar.
+	while (left_hand != -1) {
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, hips, left_hand);
+		if (bone_idx == -1) {
+			break;
+		}
+		left_hand = bone_idx;
+	}
+	if (left_hand == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess LeftHand.");
+	} else {
+		p_bone_map["LeftHand"] = StringName(skeleton->get_bone_name(left_hand)); // LeftHand is always skeleton->get_bone_name(left_hand));
+	}
+	bone_idx = -1;
+	int right_hand_or_palm = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, hips, -1, 5);
+	if (right_hand_or_palm == -1) {
+		// Ambiguous, but try again for fewer finger models.
+		right_hand_or_palm = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, hips);
+	}
+	int right_hand = right_hand_or_palm;
+	while (right_hand != -1) {
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, hips, right_hand);
+		if (bone_idx == -1) {
+			break;
+		}
+		right_hand = bone_idx;
+	}
+	if (right_hand == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess RightHand.");
+	} else {
+		p_bone_map["RightHand"] = StringName(skeleton->get_bone_name(right_hand)); // p_bone_map->_set_skeleton_bone_name("RightHand", skeleton->get_bone_name(right_hand));
+	}
+	bone_idx = -1;
+	picklist.clear();
+
+	// 4-1. Guess Finger
+	bool named_finger_is_found = false;
+	LocalVector<String> fingers;
+	fingers.push_back("thumb|pollex");
+	fingers.push_back("index|fore");
+	fingers.push_back("middle");
+	fingers.push_back("ring");
+	fingers.push_back("little|pinkie|pinky");
+	if (left_hand_or_palm != -1) {
+		LocalVector<LocalVector<String>> left_fingers_map;
+		left_fingers_map.resize(5);
+		left_fingers_map[0].push_back("LeftThumbMetacarpal");
+		left_fingers_map[0].push_back("LeftThumbProximal");
+		left_fingers_map[0].push_back("LeftThumbDistal");
+		left_fingers_map[1].push_back("LeftIndexProximal");
+		left_fingers_map[1].push_back("LeftIndexIntermediate");
+		left_fingers_map[1].push_back("LeftIndexDistal");
+		left_fingers_map[2].push_back("LeftMiddleProximal");
+		left_fingers_map[2].push_back("LeftMiddleIntermediate");
+		left_fingers_map[2].push_back("LeftMiddleDistal");
+		left_fingers_map[3].push_back("LeftRingProximal");
+		left_fingers_map[3].push_back("LeftRingIntermediate");
+		left_fingers_map[3].push_back("LeftRingDistal");
+		left_fingers_map[4].push_back("LeftLittleProximal");
+		left_fingers_map[4].push_back("LeftLittleIntermediate");
+		left_fingers_map[4].push_back("LeftLittleDistal");
+		for (int i = 0; i < 5; i++) {
+			picklist.push_back(fingers[i]);
+			int finger = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, left_hand_or_palm, -1, 0);
+			if (finger != -1) {
+				while (finger != left_hand_or_palm && finger >= 0) {
+					search_path.push_back(finger);
+					finger = skeleton->get_bone_parent(finger);
+				}
+				search_path.reverse();
+				if (search_path.size() == 1) {
+					p_bone_map[left_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					named_finger_is_found = true;
+				} else if (search_path.size() == 2) {
+					p_bone_map[left_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					p_bone_map[left_fingers_map[i][1]] = StringName(skeleton->get_bone_name(search_path[1])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][1], skeleton->get_bone_name(search_path[1]));
+					named_finger_is_found = true;
+				} else if (search_path.size() >= 3) {
+					search_path = search_path.slice(-3); // Eliminate the possibility of carpal bone.
+					p_bone_map[left_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					p_bone_map[left_fingers_map[i][1]] = StringName(skeleton->get_bone_name(search_path[1])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][1], skeleton->get_bone_name(search_path[1]));
+					p_bone_map[left_fingers_map[i][2]] = StringName(skeleton->get_bone_name(search_path[2])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][2], skeleton->get_bone_name(search_path[2]));
+					named_finger_is_found = true;
+				}
+			}
+			picklist.clear();
+			search_path.clear();
+		}
+
+		// It is a bit corner case, but possibly the finger names are sequentially numbered...
+		if (!named_finger_is_found) {
+			picklist.push_back("finger");
+			RegEx finger_re = RegEx("finger");
+			search_path = skeleton->get_bone_children(left_hand_or_palm);
+			Vector<String> finger_names;
+			for (int i = 0; i < search_path.size(); i++) {
+				String bn = skeleton->get_bone_name(search_path[i]);
+				if (!finger_re.search(bn.to_lower()).is_null()) {
+					finger_names.push_back(bn);
+				}
+			}
+			finger_names.sort(); // Order by lexicographic, normal use cases never have more than 10 fingers in one hand.
+			search_path.clear();
+			for (int i = 0; i < finger_names.size(); i++) {
+				if (i >= 5) {
+					break;
+				}
+				int finger_root = skeleton->find_bone(finger_names[i]);
+				int finger = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, finger_root, -1, 0);
+				if (finger != -1) {
+					while (finger != finger_root && finger >= 0) {
+						search_path.push_back(finger);
+						finger = skeleton->get_bone_parent(finger);
+					}
+				}
+				search_path.push_back(finger_root);
+				search_path.reverse();
+				if (search_path.size() == 1) {
+					p_bone_map[left_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+				} else if (search_path.size() == 2) {
+					p_bone_map[left_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					p_bone_map[left_fingers_map[i][1]] = StringName(skeleton->get_bone_name(search_path[1])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][1], skeleton->get_bone_name(search_path[1]));
+				} else if (search_path.size() >= 3) {
+					search_path = search_path.slice(-3); // Eliminate the possibility of carpal bone.
+					p_bone_map[left_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					p_bone_map[left_fingers_map[i][1]] = StringName(skeleton->get_bone_name(search_path[1])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][1], skeleton->get_bone_name(search_path[1]));
+					p_bone_map[left_fingers_map[i][2]] = StringName(skeleton->get_bone_name(search_path[2])); // p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][2], skeleton->get_bone_name(search_path[2]));
+				}
+				search_path.clear();
+			}
+			picklist.clear();
+		}
+	}
+	named_finger_is_found = false;
+	if (right_hand_or_palm != -1) {
+		LocalVector<LocalVector<String>> right_fingers_map;
+		right_fingers_map.resize(5);
+		right_fingers_map[0].push_back("RightThumbMetacarpal");
+		right_fingers_map[0].push_back("RightThumbProximal");
+		right_fingers_map[0].push_back("RightThumbDistal");
+		right_fingers_map[1].push_back("RightIndexProximal");
+		right_fingers_map[1].push_back("RightIndexIntermediate");
+		right_fingers_map[1].push_back("RightIndexDistal");
+		right_fingers_map[2].push_back("RightMiddleProximal");
+		right_fingers_map[2].push_back("RightMiddleIntermediate");
+		right_fingers_map[2].push_back("RightMiddleDistal");
+		right_fingers_map[3].push_back("RightRingProximal");
+		right_fingers_map[3].push_back("RightRingIntermediate");
+		right_fingers_map[3].push_back("RightRingDistal");
+		right_fingers_map[4].push_back("RightLittleProximal");
+		right_fingers_map[4].push_back("RightLittleIntermediate");
+		right_fingers_map[4].push_back("RightLittleDistal");
+		for (int i = 0; i < 5; i++) {
+			picklist.push_back(fingers[i]);
+			int finger = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, right_hand_or_palm, -1, 0);
+			if (finger != -1) {
+				while (finger != right_hand_or_palm && finger >= 0) {
+					search_path.push_back(finger);
+					finger = skeleton->get_bone_parent(finger);
+				}
+				search_path.reverse();
+				if (search_path.size() == 1) {
+					p_bone_map[right_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					named_finger_is_found = true;
+				} else if (search_path.size() == 2) {
+					p_bone_map[right_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					p_bone_map[right_fingers_map[i][1]] = StringName(skeleton->get_bone_name(search_path[1])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][1], skeleton->get_bone_name(search_path[1]));
+					named_finger_is_found = true;
+				} else if (search_path.size() >= 3) {
+					search_path = search_path.slice(-3); // Eliminate the possibility of carpal bone.
+					p_bone_map[right_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					p_bone_map[right_fingers_map[i][1]] = StringName(skeleton->get_bone_name(search_path[1])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][1], skeleton->get_bone_name(search_path[1]));
+					p_bone_map[right_fingers_map[i][2]] = StringName(skeleton->get_bone_name(search_path[2])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][2], skeleton->get_bone_name(search_path[2]));
+					named_finger_is_found = true;
+				}
+			}
+			picklist.clear();
+			search_path.clear();
+		}
+
+		// It is a bit corner case, but possibly the finger names are sequentially numbered...
+		if (!named_finger_is_found) {
+			picklist.push_back("finger");
+			RegEx finger_re = RegEx("finger");
+			search_path = skeleton->get_bone_children(right_hand_or_palm);
+			Vector<String> finger_names;
+			for (int i = 0; i < search_path.size(); i++) {
+				String bn = skeleton->get_bone_name(search_path[i]);
+				if (!finger_re.search(bn.to_lower()).is_null()) {
+					finger_names.push_back(bn);
+				}
+			}
+			finger_names.sort(); // Order by lexicographic, normal use cases never have more than 10 fingers in one hand.
+			search_path.clear();
+			for (int i = 0; i < finger_names.size(); i++) {
+				if (i >= 5) {
+					break;
+				}
+				int finger_root = skeleton->find_bone(finger_names[i]);
+				int finger = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, finger_root, -1, 0);
+				if (finger != -1) {
+					while (finger != finger_root && finger >= 0) {
+						search_path.push_back(finger);
+						finger = skeleton->get_bone_parent(finger);
+					}
+				}
+				search_path.push_back(finger_root);
+				search_path.reverse();
+				if (search_path.size() == 1) {
+					p_bone_map[right_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+				} else if (search_path.size() == 2) {
+					p_bone_map[right_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					p_bone_map[right_fingers_map[i][1]] = StringName(skeleton->get_bone_name(search_path[1])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][1], skeleton->get_bone_name(search_path[1]));
+				} else if (search_path.size() >= 3) {
+					search_path = search_path.slice(-3); // Eliminate the possibility of carpal bone.
+					p_bone_map[right_fingers_map[i][0]] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
+					p_bone_map[right_fingers_map[i][1]] = StringName(skeleton->get_bone_name(search_path[1])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][1], skeleton->get_bone_name(search_path[1]));
+					p_bone_map[right_fingers_map[i][2]] = StringName(skeleton->get_bone_name(search_path[2])); // p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][2], skeleton->get_bone_name(search_path[2]));
+				}
+				search_path.clear();
+			}
+			picklist.clear();
+		}
+	}
+
+	// 5. Guess Arms
+	picklist.push_back("shoulder");
+	picklist.push_back("clavicle");
+	picklist.push_back("collar");
+	int left_shoulder = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, hips);
+	if (left_shoulder == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess LeftShoulder.");
+	} else {
+		p_bone_map["LeftShoulder"] = StringName(skeleton->get_bone_name(left_shoulder)); // p_bone_map->_set_skeleton_bone_name("LeftShoulder", skeleton->get_bone_name(left_shoulder));
+	}
+	int right_shoulder = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, hips);
+	if (right_shoulder == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess RightShoulder.");
+	} else {
+		p_bone_map["RightShoulder"] = StringName(skeleton->get_bone_name(right_shoulder)); // p_bone_map->_set_skeleton_bone_name("RightShoulder", skeleton->get_bone_name(right_shoulder));
+	}
+	picklist.clear();
+
+	// 5-1. Guess LowerArms
+	picklist.push_back("(low|fore).*arm");
+	picklist.push_back("elbow");
+	picklist.push_back("arm");
+	int left_lower_arm = -1;
+	if (left_shoulder != -1 && left_hand_or_palm != -1) {
+		left_lower_arm = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, left_shoulder, left_hand_or_palm);
+	}
+	if (left_lower_arm == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess LeftLowerArm.");
+	} else {
+		p_bone_map["LeftLowerArm"] = StringName(skeleton->get_bone_name(left_lower_arm)); // p_bone_map->_set_skeleton_bone_name("LeftLowerArm", skeleton->get_bone_name(left_lower_arm));
+	}
+	int right_lower_arm = -1;
+	if (right_shoulder != -1 && right_hand_or_palm != -1) {
+		right_lower_arm = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, right_shoulder, right_hand_or_palm);
+	}
+	if (right_lower_arm == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess RightLowerArm.");
+	} else {
+		p_bone_map["RightLowerArm"] = StringName(skeleton->get_bone_name(right_lower_arm)); // p_bone_map->_set_skeleton_bone_name("RightLowerArm", skeleton->get_bone_name(right_lower_arm));
+	}
+	picklist.clear();
+
+	// 5-2. Guess UpperArms
+	picklist.push_back("up.*arm");
+	picklist.push_back("arm");
+	if (left_shoulder != -1 && left_lower_arm != -1) {
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, left_shoulder, left_lower_arm);
+	}
+	if (bone_idx == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess LeftUpperArm.");
+	} else {
+		p_bone_map["LeftUpperArm"] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("LeftUpperArm", skeleton->get_bone_name(bone_idx));
+	}
+	bone_idx = -1;
+	if (right_shoulder != -1 && right_lower_arm != -1) {
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, right_shoulder, right_lower_arm);
+	}
+	if (bone_idx == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess RightUpperArm.");
+	} else {
+		p_bone_map["RightUpperArm"] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("RightUpperArm", skeleton->get_bone_name(bone_idx));
+	}
+	bone_idx = -1;
+	picklist.clear();
+
+	// 6. Guess Neck
+	picklist.push_back("neck");
+	picklist.push_back("head"); // For no neck model.
+	picklist.push_back("face"); // Same above.
+	int neck = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, hips);
+	picklist.clear();
+	if (neck == -1) {
+		// If it can't expect by name, search child spine of where the right and left shoulders (or hands) cross.
+		int ls_idx = left_shoulder != -1 ? left_shoulder : (left_hand_or_palm != -1 ? left_hand_or_palm : -1);
+		int rs_idx = right_shoulder != -1 ? right_shoulder : (right_hand_or_palm != -1 ? right_hand_or_palm : -1);
+		if (ls_idx != -1 && rs_idx != -1) {
+			bool detect = false;
+			while (ls_idx != hips && ls_idx >= 0 && rs_idx != hips && rs_idx >= 0) {
+				ls_idx = skeleton->get_bone_parent(ls_idx);
+				rs_idx = skeleton->get_bone_parent(rs_idx);
+				if (ls_idx == rs_idx) {
+					detect = true;
+					break;
+				}
+			}
+			if (detect) {
+				Vector<int> children = skeleton->get_bone_children(ls_idx);
+				children.erase(ls_idx);
+				children.erase(rs_idx);
+				String word = "spine"; // It would be better to limit the search with "spine" because it could be mistaken with breast, wing and etc...
+				for (int i = 0; children.size(); i++) {
+					bone_idx = children[i];
+					if (is_match_with_bone_name(skeleton->get_bone_name(bone_idx), word)) {
+						neck = bone_idx;
+						break;
+					};
+				}
+				bone_idx = -1;
+			}
+		}
+	}
+
+	// 7. Guess Head
+	picklist.push_back("head");
+	picklist.push_back("face");
+	int head = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck);
+	if (head == -1) {
+		search_path = skeleton->get_bone_children(neck);
+		if (search_path.size() == 1) {
+			head = search_path[0]; // Maybe only one child of the Neck is Head.
+		}
+	}
+	if (head == -1) {
+		if (neck != -1) {
+			head = neck; // The head animation should have more movement.
+			neck = -1;
+			p_bone_map["Head"] = StringName(skeleton->get_bone_name(head)); // p_bone_map->_set_skeleton_bone_name("Head", skeleton->get_bone_name(head));
+		} else {
+			WARN_PRINT("Auto Mapping couldn't guess Neck or Head."); // Continued for guessing on the other bones. But abort when guessing spines step.
+		}
+	} else {
+		p_bone_map["Neck"] = StringName(skeleton->get_bone_name(neck)); // p_bone_map->_set_skeleton_bone_name("Neck", skeleton->get_bone_name(neck));
+		p_bone_map["Head"] = StringName(skeleton->get_bone_name(head)); // p_bone_map->_set_skeleton_bone_name("Head", skeleton->get_bone_name(head));
+	}
+	picklist.clear();
+	search_path.clear();
+
+	int neck_or_head = neck != -1 ? neck : (head != -1 ? head : -1);
+	if (neck_or_head != -1) {
+		// 7-1. Guess Eyes
+		picklist.push_back("eye(?!.*(brow|lash|lid))");
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_LEFT, neck_or_head);
+		if (bone_idx == -1) {
+			WARN_PRINT("Auto Mapping couldn't guess LeftEye.");
+		} else {
+			p_bone_map[("LeftEye")] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("LeftEye", skeleton->get_bone_name(bone_idx));
+		}
+
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, neck_or_head);
+		if (bone_idx == -1) {
+			WARN_PRINT("Auto Mapping couldn't guess RightEye.");
+		} else {
+			p_bone_map[("RightEye")] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("RightEye", skeleton->get_bone_name(bone_idx));
+		}
+		picklist.clear();
+
+		// 7-2. Guess Jaw
+		picklist.push_back("jaw");
+		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck_or_head);
+		if (bone_idx == -1) {
+			WARN_PRINT("Auto Mapping couldn't guess Jaw.");
+		} else {
+			p_bone_map[("Jaw")] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("Jaw", skeleton->get_bone_name(bone_idx));
+		}
+		bone_idx = -1;
+		picklist.clear();
+	}
+
+	// 8. Guess UpperChest or Chest
+	if (neck_or_head == -1) {
+		return; // Abort.
+	}
+	int chest_or_upper_chest = skeleton->get_bone_parent(neck_or_head);
+	bool is_appropriate = true;
+	if (left_shoulder != -1) {
+		bone_idx = skeleton->get_bone_parent(left_shoulder);
+		bool detect = false;
+		while (bone_idx != hips && bone_idx >= 0) {
+			if (bone_idx == chest_or_upper_chest) {
+				detect = true;
+				break;
+			}
+			bone_idx = skeleton->get_bone_parent(bone_idx);
+		}
+		if (!detect) {
+			is_appropriate = false;
+		}
+		bone_idx = -1;
+	}
+	if (right_shoulder != -1) {
+		bone_idx = skeleton->get_bone_parent(right_shoulder);
+		bool detect = false;
+		while (bone_idx != hips && bone_idx >= 0) {
+			if (bone_idx == chest_or_upper_chest) {
+				detect = true;
+				break;
+			}
+			bone_idx = skeleton->get_bone_parent(bone_idx);
+		}
+		if (!detect) {
+			is_appropriate = false;
+		}
+		bone_idx = -1;
+	}
+	if (!is_appropriate) {
+		if (skeleton->get_bone_parent(left_shoulder) == skeleton->get_bone_parent(right_shoulder)) {
+			chest_or_upper_chest = skeleton->get_bone_parent(left_shoulder);
+		} else {
+			chest_or_upper_chest = -1;
+		}
+	}
+	if (chest_or_upper_chest == -1) {
+		WARN_PRINT("Auto Mapping couldn't guess Chest or UpperChest. Abort auto mapping.");
+		return; // Will be not able to guess Spines.
+	}
+
+	// 9. Guess Spines
+	bone_idx = skeleton->get_bone_parent(chest_or_upper_chest);
+	while (bone_idx != hips && bone_idx >= 0) {
+		search_path.push_back(bone_idx);
+		bone_idx = skeleton->get_bone_parent(bone_idx);
+	}
+	search_path.reverse();
+	if (search_path.size() == 0) {
+		p_bone_map[("Spine")] = StringName(skeleton->get_bone_name(chest_or_upper_chest)); // p_bone_map->_set_skeleton_bone_name("Spine", skeleton->get_bone_name(chest_or_upper_chest)); // Maybe chibi model...?
+	} else if (search_path.size() == 1) {
+		p_bone_map[("Spine")] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name("Spine", skeleton->get_bone_name(search_path[0]));
+		p_bone_map[("Chest")] = StringName(skeleton->get_bone_name(chest_or_upper_chest)); // p_bone_map->_set_skeleton_bone_name("Chest", skeleton->get_bone_name(chest_or_upper_chest));
+	} else if (search_path.size() >= 2) {
+		p_bone_map[("Spine")] = StringName(skeleton->get_bone_name(search_path[0])); // p_bone_map->_set_skeleton_bone_name("Spine", skeleton->get_bone_name(search_path[0]));
+		p_bone_map[("Chest")] = StringName(skeleton->get_bone_name(search_path[search_path.size() - 1])); // p_bone_map->_set_skeleton_bone_name("Chest", skeleton->get_bone_name(search_path[search_path.size() - 1])); // Probably UppeChest's parent is appropriate.
+		p_bone_map[("UpperChest")] = StringName(skeleton->get_bone_name(chest_or_upper_chest)); // p_bone_map->_set_skeleton_bone_name("UpperChest", skeleton->get_bone_name(chest_or_upper_chest));
+	}
+	bone_idx = -1;
+	search_path.clear();
+
+	WARN_PRINT("Finish auto mapping.");
+}
+
+
+Dictionary Skeleton3D::get_human_bone_mapping()
+{
+	Dictionary human_bone_mapping;
+	auto_mapping_process(this, human_bone_mapping);
+	Dictionary rs;
+	List<Variant> keys;
+	human_bone_mapping.get_key_list(&keys);
+
+	for (const Variant &E : keys) {
+		rs[human_bone_mapping[E]] = E;
+	}
+	return rs;
+}
+

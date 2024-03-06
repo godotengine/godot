@@ -173,6 +173,11 @@ public:
 
 	Vector<int> get_bone_children(int p_bone) const;
 	Vector<int> get_parentless_bones() const;
+	
+	Vector<int> get_root_bones() const;
+
+	
+	Dictionary get_human_bone_mapping();
 
 	int get_bone_count() const;
 
