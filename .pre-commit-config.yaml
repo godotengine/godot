@@ -1,4 +1,34 @@
+# Globally exclude files which shouldn't be modified by any pre-commit hooks.
+exclude: |
+  (?x)^(
+    .*\.patch|  # Expected to contain trailing whitespace
+    modules/gdscript/tests/scripts/.*|  # Expected to contain trailing whitespace
+    .*\.pot|
+    .*\.po|
+    thirdparty/.*|  # Third-party files
+    platform/android/java/lib/src/com/google.*|  # Third-party files
+    .*-so_wrap\..*  # Generated code
+  )
+
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-json
+
+      - id: check-yaml
+        exclude: .clang-format
+
+      - id: check-executables-have-shebangs
+      - id: check-symlinks
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: forbid-submodules
+      - id: mixed-line-ending
+
+      - id: trailing-whitespace
+        exclude: tests/data/line_endings_cr.test.txt
+
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v17.0.6
     hooks:
@@ -8,9 +38,6 @@ repos:
         exclude: |
           (?x)^(
             tests/python_build.*|
-            .*thirdparty.*|
-            .*platform/android/java/lib/src/com.*|
-            .*-so_wrap.*
           )
 
   - repo: https://github.com/psf/black-pre-commit-mirror
@@ -19,7 +46,6 @@ repos:
       - id: black
         files: (\.py$|SConstruct|SCsub)
         types_or: [text]
-        exclude: .*thirdparty.*
         args:
           - --line-length=120
 
@@ -40,9 +66,6 @@ repos:
         exclude: |
           (?x)^(
             tests/python_build.*|
-            .*thirdparty.*|
-            .*platform/android/java/lib/src/com.*|
-            .*-so_wrap.*|
             platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView.*|
             platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper.*|
             platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.*
