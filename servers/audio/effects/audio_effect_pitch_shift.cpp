@@ -87,10 +87,8 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 	double magn, phase, tmp, window, real, imag;
 	double freqPerBin, expct;
 	long i,k, qpd, index, inFifoLatency, stepSize, fftFrameSize2;
-	unsigned long fftFrameBufferSize;
 
 	/* set up some handy variables */
-	fftFrameBufferSize = (unsigned long)fftFrameSize*sizeof(float);
 	fftFrameSize2 = fftFrameSize/2;
 	stepSize = fftFrameSize/osamp;
 	freqPerBin = sampleRate/(double)fftFrameSize;
@@ -162,8 +160,8 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* ***************** PROCESSING ******************* */
 			/* this does the actual pitch shifting */
-			memset(gSynMagn, 0, fftFrameBufferSize);
-			memset(gSynFreq, 0, fftFrameBufferSize);
+			memset(gSynMagn, 0, fftFrameSize*sizeof(float));
+			memset(gSynFreq, 0, fftFrameSize*sizeof(float));
 			for (k = 0; k <= fftFrameSize2; k++) {
 				index = k*pitchShift;
 				if (index <= fftFrameSize2) {
@@ -216,7 +214,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 }
 
 			/* shift accumulator */
-			memmove(gOutputAccum, gOutputAccum+stepSize, fftFrameBufferSize);
+			memmove(gOutputAccum, gOutputAccum+stepSize, fftFrameSize*sizeof(float));
 
 			/* move input FIFO */
 			for (k = 0; k < inFifoLatency; k++) { gInFIFO[k] = gInFIFO[k+stepSize];
@@ -357,13 +355,4 @@ void AudioEffectPitchShift::_bind_methods() {
 	BIND_ENUM_CONSTANT(FFT_SIZE_2048);
 	BIND_ENUM_CONSTANT(FFT_SIZE_4096);
 	BIND_ENUM_CONSTANT(FFT_SIZE_MAX);
-}
-
-AudioEffectPitchShift::AudioEffectPitchShift() {
-	pitch_scale = 1.0;
-	oversampling = 4;
-	fft_size = FFT_SIZE_2048;
-	wet = 0.0;
-	dry = 0.0;
-	filter = false;
 }
