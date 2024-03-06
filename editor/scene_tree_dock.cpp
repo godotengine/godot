@@ -1342,7 +1342,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_selection->clear();
 			editor_selection->add_node(new_node);
 
-			scene_tree->get_scene_tree()->grab_focus();
+			Tree *tree = scene_tree->get_scene_tree();
+			tree->grab_focus();
+			tree->edit_selected();
 		} break;
 
 		default: {
@@ -2657,21 +2659,25 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 void SceneTreeDock::_create() {
 	if (current_option == TOOL_NEW) {
 		Node *parent = nullptr;
-
-		if (edited_scene) {
-			// If root exists in edited scene
+		bool has_root = edited_scene != nullptr;
+		if (has_root) {
 			parent = scene_tree->get_selected();
 			if (!parent) {
 				parent = edited_scene;
 			}
 
 		} else {
-			// If no root exist in edited scene
 			parent = scene_root;
 			ERR_FAIL_NULL(parent);
 		}
 
 		_do_create(parent);
+
+		if (!has_root) {
+			Tree *tree = scene_tree->get_scene_tree();
+			tree->grab_focus();
+			tree->edit_selected();
+		}
 
 	} else if (current_option == TOOL_REPLACE) {
 		List<Node *> selection = editor_selection->get_selected_node_list();
