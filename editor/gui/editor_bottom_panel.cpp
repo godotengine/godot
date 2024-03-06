@@ -250,13 +250,6 @@ EditorBottomPanel::EditorBottomPanel() {
 	editor_toaster = memnew(EditorToaster);
 	bottom_hbox->add_child(editor_toaster);
 
-	VBoxContainer *version_info_vbox = memnew(VBoxContainer);
-	bottom_hbox->add_child(version_info_vbox);
-
-	// Add a dummy control node for vertical spacing.
-	Control *v_spacer = memnew(Control);
-	version_info_vbox->add_child(v_spacer);
-
 	version_btn = memnew(LinkButton);
 	version_btn->set_text(VERSION_FULL_CONFIG);
 	String hash = String(VERSION_HASH);
@@ -276,7 +269,8 @@ EditorBottomPanel::EditorBottomPanel() {
 	}
 	version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
 	version_btn->connect("pressed", callable_mp(this, &EditorBottomPanel::_version_button_pressed));
-	version_info_vbox->add_child(version_btn);
+	version_btn->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	bottom_hbox->add_child(version_btn);
 
 	// Add a dummy control node for horizontal spacing.
 	Control *h_spacer = memnew(Control);
