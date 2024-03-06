@@ -2957,10 +2957,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 			}
 		}
 		uint32_t s = compressed_stages[i].size();
-		if (s % 4 != 0) {
-			s += 4 - (s % 4);
-		}
-		stages_binary_size += s;
+		stages_binary_size += STEPIFY(s, 4);
 	}
 
 	binary_data.specialization_constants_count = specialization_constants.size();
@@ -2974,11 +2971,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 	uint32_t total_size = sizeof(uint32_t) * 3; // Header + version + main datasize;.
 	total_size += sizeof(ShaderBinary::Data);
 
-	total_size += binary_data.shader_name_len;
-
-	if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-		total_size += 4 - (binary_data.shader_name_len % 4);
-	}
+	total_size += STEPIFY(binary_data.shader_name_len, 4);
 
 	for (int i = 0; i < uniforms.size(); i++) {
 		total_size += sizeof(uint32_t);
@@ -3007,13 +3000,17 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 		memcpy(binptr + offset, &binary_data, sizeof(ShaderBinary::Data));
 		offset += sizeof(ShaderBinary::Data);
 
+#define ADVANCE_OFFSET_WITH_ALIGNMENT(m_bytes)                         \
+	{                                                                  \
+		offset += m_bytes;                                             \
+		uint32_t padding = STEPIFY(m_bytes, 4) - m_bytes;              \
+		memset(binptr + offset, 0, padding); /* Avoid garbage data. */ \
+		offset += padding;                                             \
+	}
+
 		if (binary_data.shader_name_len > 0) {
 			memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
-			offset += binary_data.shader_name_len;
-
-			if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-				offset += 4 - (binary_data.shader_name_len % 4);
-			}
+			ADVANCE_OFFSET_WITH_ALIGNMENT(binary_data.shader_name_len);
 		}
 
 		for (int i = 0; i < uniforms.size(); i++) {
@@ -3039,14 +3036,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 			encode_uint32(zstd_size[i], binptr + offset);
 			offset += sizeof(uint32_t);
 			memcpy(binptr + offset, compressed_stages[i].ptr(), compressed_stages[i].size());
-
-			uint32_t s = compressed_stages[i].size();
-
-			if (s % 4 != 0) {
-				s += 4 - (s % 4);
-			}
-
-			offset += s;
+			ADVANCE_OFFSET_WITH_ALIGNMENT(compressed_stages[i].size());
 		}
 
 		DEV_ASSERT(offset == (uint32_t)ret.size());
@@ -3090,10 +3080,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 	if (binary_data.shader_name_len) {
 		r_name.parse_utf8((const char *)(binptr + read_offset), binary_data.shader_name_len);
-		read_offset += binary_data.shader_name_len;
-		if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-			read_offset += 4 - (binary_data.shader_name_len % 4);
-		}
+		read_offset += STEPIFY(binary_data.shader_name_len, 4);
 	}
 
 	Vector<Vector<VkDescriptorSetLayoutBinding>> vk_set_bindings;
@@ -3192,6 +3179,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 	for (uint32_t i = 0; i < binary_data.stage_count; i++) {
 		ERR_FAIL_COND_V(read_offset + sizeof(uint32_t) * 3 >= binsize, ShaderID());
+
 		uint32_t stage = decode_uint32(binptr + read_offset);
 		read_offset += sizeof(uint32_t);
 		uint32_t smolv_size = decode_uint32(binptr + read_offset);
@@ -3223,16 +3211,12 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 		r_shader_desc.stages.set(i, ShaderStage(stage));
 
-		if (buf_size % 4 != 0) {
-			buf_size += 4 - (buf_size % 4);
-		}
-
-		DEV_ASSERT(read_offset + buf_size <= binsize);
-
+		buf_size = STEPIFY(buf_size, 4);
 		read_offset += buf_size;
+		ERR_FAIL_COND_V(read_offset > binsize, ShaderID());
 	}
 
-	DEV_ASSERT(read_offset == binsize);
+	ERR_FAIL_COND_V(read_offset != binsize, ShaderID());
 
 	// Modules.
 
