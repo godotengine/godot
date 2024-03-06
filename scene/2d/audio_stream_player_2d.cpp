@@ -140,6 +140,7 @@ void AudioStreamPlayer2D::_update_panning() {
 
 		//screen in global is used for attenuation
 		AudioListener2D *listener = vp->get_audio_listener_2d();
+		ERR_FAIL_NULL(listener);
 		Transform2D full_canvas_transform = vp->get_global_canvas_transform() * vp->get_canvas_transform();
 		if (listener) {
 			listener_in_global = listener->get_global_position();
