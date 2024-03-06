@@ -1541,6 +1541,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 vertex_ddx = dFdx(vertex);
 	vec3 vertex_ddy = dFdy(vertex);
 
+#ifndef DECALS_DISABLED
 	{ // process decals
 
 		uint cluster_decal_offset = cluster_offset + implementation_data.cluster_type_size * 3;
@@ -1640,6 +1641,7 @@ void fragment_shader(in SceneData scene_data) {
 			}
 		}
 	}
+#endif // !DECALS_DISABLED
 
 	//pack albedo until needed again, saves 2 VGPRs in the meantime
 
