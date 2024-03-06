@@ -477,6 +477,7 @@ private:
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 	void _update_cursor();
+	void _update_lock_and_group_button();
 
 	void _selection_changed();
 	void _focus_selection(int p_op);
