@@ -34,6 +34,7 @@
 #include "editor_network_profiler.h"
 #include "replication_editor.h"
 
+#include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
@@ -113,7 +114,7 @@ void MultiplayerEditorDebugger::setup_session(int p_session_id) {
 
 MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 	repl_editor = memnew(ReplicationEditor);
-	button = EditorNode::get_bottom_panel()->add_item(TTR("Replication"), repl_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("Replication"), repl_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_replication_bottom_panel", TTR("Toggle Replication Bottom Panel")));
 	button->hide();
 	repl_editor->get_pin()->connect("pressed", callable_mp(this, &MultiplayerEditorPlugin::_pinned));
 	debugger.instantiate();

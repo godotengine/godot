@@ -24,4 +24,4 @@ var test_node_path: NodePath = NodePath("hello")
 var test_node: Node = null
   hint=NODE_TYPE hint_string="Node" usage=DEFAULT|SCRIPT_VARIABLE
 var test_node_array: Array = Array[Node]([])
-  hint=TYPE_STRING hint_string="24/34:Node" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="Object/NODE_TYPE:Node" usage=DEFAULT|SCRIPT_VARIABLE

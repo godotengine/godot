@@ -192,6 +192,11 @@ void DisplayServerWayland::_show_window() {
 
 bool DisplayServerWayland::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_MOUSE:
 		case FEATURE_MOUSE_WARP:
 		case FEATURE_CLIPBOARD:
@@ -1242,6 +1247,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
 
+	native_menu = memnew(NativeMenu);
+
 #ifdef SPEECHD_ENABLED
 	// Init TTS
 	tts = memnew(TTS_Linux);
@@ -1366,6 +1373,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 DisplayServerWayland::~DisplayServerWayland() {
 	// TODO: Multiwindow support.
+
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
+
 	if (main_window.visible) {
 #ifdef VULKAN_ENABLED
 		if (rendering_device) {

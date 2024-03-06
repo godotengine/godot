@@ -70,7 +70,6 @@ protected:
 	static void _bind_methods();
 
 	virtual void _create_mesh_array(Array &p_arr) const {}
-	void _request_update();
 	GDVIRTUAL0RC(Array, _create_mesh_array)
 
 	Vector2 get_uv2_scale(Vector2 p_margin_scale = Vector2(1.0, 1.0)) const;
@@ -110,6 +109,8 @@ public:
 
 	void set_uv2_padding(float p_padding);
 	float get_uv2_padding() const { return uv2_padding; }
+
+	void request_update();
 
 	PrimitiveMesh();
 	~PrimitiveMesh();

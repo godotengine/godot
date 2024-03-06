@@ -96,6 +96,11 @@ static void track_mouse_leave_event(HWND hWnd) {
 
 bool DisplayServerWindows::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_SUBWINDOWS:
 		case FEATURE_TOUCHSCREEN:
 		case FEATURE_MOUSE:
@@ -2531,17 +2536,15 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 	config.pButtons = tbuttons;
 	config.pfCallback = win32_task_dialog_callback;
 
+	Error result = FAILED;
 	HMODULE comctl = LoadLibraryW(L"comctl32.dll");
 	if (comctl) {
 		typedef HRESULT(WINAPI * TaskDialogIndirectPtr)(const TASKDIALOGCONFIG *pTaskConfig, int *pnButton, int *pnRadioButton, BOOL *pfVerificationFlagChecked);
 
 		TaskDialogIndirectPtr task_dialog_indirect = (TaskDialogIndirectPtr)GetProcAddress(comctl, "TaskDialogIndirect");
-		if (task_dialog_indirect) {
-			int button_pressed;
-			if (FAILED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
-				return FAILED;
-			}
+		int button_pressed;
 
+		if (task_dialog_indirect && SUCCEEDED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
 			if (!p_callback.is_null()) {
 				Variant button = button_pressed;
 				const Variant *args[1] = { &button };
@@ -2553,13 +2556,14 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 				}
 			}
 
-			return OK;
+			result = OK;
 		}
 		FreeLibrary(comctl);
+	} else {
+		ERR_PRINT("Unable to create native dialog.");
 	}
 
-	ERR_PRINT("Unable to create native dialog.");
-	return FAILED;
+	return result;
 }
 
 struct Win32InputTextDialogInit {
@@ -5466,6 +5470,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	if (tts_enabled) {
 		tts = memnew(TTS_Windows);
 	}
+	native_menu = memnew(NativeMenu);
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -5841,6 +5846,11 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	// Close power request handle.
 	screen_set_keep_on(false);
+
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
 
 #ifdef GLES3_ENABLED
 	// destroy windows .. NYI?

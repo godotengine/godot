@@ -129,6 +129,7 @@ private:
 
 	bool collapsed = false; // won't show children
 	bool visible = true;
+	bool parent_visible_in_tree = true;
 	bool disable_folding = false;
 	int custom_min_height = 0;
 
@@ -147,6 +148,8 @@ private:
 	void _changed_notify();
 	void _cell_selected(int p_cell);
 	void _cell_deselected(int p_cell);
+	void _handle_visibility_changed(bool p_visible);
+	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
 
 	void _change_tree(Tree *p_tree);
 
@@ -300,6 +303,7 @@ public:
 
 	void set_visible(bool p_visible);
 	bool is_visible();
+	bool is_visible_in_tree() const;
 
 	void uncollapse_tree();
 
