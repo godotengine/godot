@@ -2302,22 +2302,48 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(int p_layer, Ref <TileMapPat
 
 void TileMapLayer::set_pattern_layer(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
 	print_line("set_pattern_layer called");
-	int pattern_read = p_pattern->get_number_of_layers();
-	int layer_number = p_layer;
-	print_line(layer_number);
-	print_line(pattern_read);
-	
 	ERR_FAIL_INDEX_MSG(p_layer, p_pattern->get_number_of_layers(), "Layer index is out of bounds for set_pattern layer");
 	ERR_FAIL_COND(p_pattern.is_null());
 	//CHECK ME: Different operations for single vs multi-layer?
 	// Get the coords_in_pattern (the coordinates relative to the top left beginning of the pattern) and then set cells with the appropriate tiles.
-	TypedArray<Vector2i> used_cells = p_pattern->get_used_cells_on_layer(p_layer);
-	for (int i = 0; i < used_cells.size(); i++) {
-		// Determine the coordinates on the TileMap relative to the pattern, then set the tiles. 
-		Vector2i coords = tile_map_node->map_pattern(p_position, used_cells[i], p_pattern);
-		set_cell(coords, p_pattern->get_cell_source_id(p_layer, used_cells[i]), p_pattern->get_cell_atlas_coords(p_layer, used_cells[i]), p_pattern->get_cell_alternative_tile(p_layer, used_cells[i]));
+	if (p_pattern->get_is_single_layer()) {
+		TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
+		for (int i = 0; i < used_cells.size(); i++) {
+			// Determine the coordinates on the TileMap relative to the pattern, then set the tiles.
+			Vector2i coords = tile_map_node->map_pattern(p_position, used_cells[i], p_pattern);
+			set_cell(coords, p_pattern->get_cell_source_id(p_layer, used_cells[i]), p_pattern->get_cell_atlas_coords(p_layer, used_cells[i]), p_pattern->get_cell_alternative_tile(p_layer, used_cells[i]));
+		}
 	}
+
+	else {
+		TypedArray<Vector2i> used_cells = p_pattern->get_used_cells_on_layer(p_layer);
+		print_line(used_cells.size());
+		for (int i = 0; i < used_cells.size(); i++) {
+			// Determine the coordinates on the TileMap relative to the pattern, then set the tiles. 
+			Vector2i coords = tile_map_node->map_pattern(p_position, used_cells[i], p_pattern);
+			set_cell(coords, p_pattern->get_cell_source_id(p_layer, used_cells[i]), p_pattern->get_cell_atlas_coords(p_layer, used_cells[i]), p_pattern->get_cell_alternative_tile(p_layer, used_cells[i]));
+		}
+	}
+
+
+	/*
+const Ref<TileSet> &tile_set = get_effective_tile_set();
+	ERR_FAIL_COND(tile_set.is_null());
+	ERR_FAIL_COND(p_pattern.is_null());
+
+	TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
+	for (int i = 0; i < used_cells.size(); i++) {
+		Vector2i coords = tile_set->map_pattern(p_position, used_cells[i], p_pattern);
+		set_cell(coords, p_pattern->get_cell_source_id(used_cells[i]), p_pattern->get_cell_atlas_coords(used_cells[i]), p_pattern->get_cell_alternative_tile(used_cells[i]));
+	}
+
+
+*/
+	
 }
+
+
+
 
 void TileMapLayer::set_cells_terrain_connect(TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
@@ -3631,10 +3657,8 @@ void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<Til
 
 	else {
 		print_line("set_pattern multi layer called");
-		if (p_layer < 0) {
-			for (int pattern_layer = 0; pattern_layer < get_layers_count(); pattern_layer++) {
-				layers[pattern_layer]->set_pattern_layer(pattern_layer, p_position, p_pattern);
-			}
+		for (int pattern_layer = 0; pattern_layer < p_pattern->get_number_of_layers(); pattern_layer++) {
+			layers[pattern_layer]->set_pattern_layer(pattern_layer, p_position, p_pattern);
 		}
 	}
 }

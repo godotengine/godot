@@ -174,7 +174,6 @@ void TileMapPattern::remove_cell(int p_layer, const Vector2i &p_coords, bool p_u
 }
 
 int TileMapPattern::get_cell_source_id(int p_layer, const Vector2i &p_coords) {
-	ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), -100, "Layer index is out of bounds for TileMapPattern::get_cell_source_id");
 	if (get_is_single_layer()) {
 		HashMap<Vector2i, TileMapCell> selected_layer = pattern[0];
 		ERR_FAIL_COND_V(!selected_layer.has(p_coords), TileSet::INVALID_SOURCE);
@@ -273,7 +272,7 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells_on_layer(int p_layer) {
 		TypedArray<Vector2i> a;
 		a.resize(pattern[p_layer].size());
 		int i = 0;
-		for (const KeyValue<Vector2i, TileMapCell> &E : pattern[0]) {
+		for (const KeyValue<Vector2i, TileMapCell> &E : pattern[p_layer]) {
 			Vector2i p(E.key.x, E.key.y);
 			a[i++] = p;
 		}
@@ -368,8 +367,14 @@ void TileMapPattern::set_pattern_start_position(Vector2i p_position ) {
 }
 
 void TileMapPattern::clear_layer(int p_layer) {
-	HashMap<Vector2i, TileMapCell> &selected_layer = pattern.write[p_layer];
-	selected_layer.clear();
+	if (get_is_single_layer() == true) {
+		HashMap<Vector2i, TileMapCell> &selected_layer = pattern.write[0];
+		selected_layer.clear();
+	} else {
+		HashMap<Vector2i, TileMapCell> &selected_layer = pattern.write[p_layer];
+		selected_layer.clear();
+		
+	}
 	emit_changed();
 }
 
@@ -389,7 +394,6 @@ bool TileMapPattern::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			return true;
 		}
-		return false;
 	}
 	return false;
 }
@@ -402,7 +406,6 @@ bool TileMapPattern::_get(const StringName &p_name, Variant &r_ret) const {
 		for (int layer_index = 0; layer_index < layer_data.size(); layer_index++) {
 			layer_data.set(layer_index,_get_tile_data(layer_index));
 		}
-		
 		r_ret = layer_data;
 		return true;	
 	}
@@ -415,6 +418,15 @@ void TileMapPattern::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void TileMapPattern::_bind_methods() {
+	
+	// check me ADD_PROPERTY(PropertyInfo(Variant::INT, "pattern_set_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_pattern_set_index", "get_pattern_set_index");
+
+	// Getters and setters that are needed to serialize patterns.
+	//ClassDB::bind_method(D_METHOD("get_pattern_set_index"), &TileMapPattern::get_pattern_set_index);
+	//ClassDB::bind_method(D_METHOD("set_pattern_set_index"), &TileMapPattern::set_pattern_set_index);
+	
+	
+
 	//ClassDB::bind_method(D_METHOD("get_pattern_multi_layer"), &TileMapPattern::get_pattern_multi_layer);
 	//ClassDB::bind_method(D_METHOD("get_pattern_single_layer", "p_layer"), &TileMapPattern::get_pattern_single_layer);
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &TileMapPattern::get_used_cells);
@@ -430,6 +442,16 @@ void TileMapPattern::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &TileMapPattern::get_size);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &TileMapPattern::set_size);
 	ClassDB::bind_method(D_METHOD("is_empty"), &TileMapPattern::is_empty);
+
+	ClassDB::bind_method(D_METHOD("get_is_single_layer"), &TileMapPattern::get_is_single_layer);
+	ClassDB::bind_method(D_METHOD("set_is_single_layer"), &TileMapPattern::set_is_single_layer);
+	ClassDB::bind_method(D_METHOD("get_number_of_layers"), &TileMapPattern::get_number_of_layers);
+	ClassDB::bind_method(D_METHOD("set_number_of_layers"), &TileMapPattern::set_number_of_layers);
+
+	// Getters and setters that are needed to serialize patterns.
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_single_layer", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_is_single_layer", "get_is_single_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "number_of_layers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_number_of_layers", "get_number_of_layers");
+	
 }
 
 /////////////////////////////// TileSet //////////////////////////////////////
