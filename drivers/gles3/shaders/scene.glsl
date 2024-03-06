@@ -913,8 +913,7 @@ ivec2 multiview_uv(ivec2 uv) {
 uniform highp mat4 world_transform;
 uniform mediump float opaque_prepass_threshold;
 
-#ifndef MODE_RENDER_DEPTH
-#ifdef RENDER_MATERIAL
+#if defined(RENDER_MATERIAL)
 layout(location = 0) out vec4 albedo_output_buffer;
 layout(location = 1) out vec4 normal_output_buffer;
 layout(location = 2) out vec4 orm_output_buffer;
@@ -925,7 +924,6 @@ layout(location = 3) out vec4 emission_output_buffer;
 layout(location = 0) out vec4 frag_color;
 
 #endif // !RENDER_MATERIAL
-#endif // !MODE_RENDER_DEPTH
 
 vec3 F0(float metallic, float specular, vec3 albedo) {
 	float dielectric = 0.16 * specular * specular;

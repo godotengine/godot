@@ -181,6 +181,7 @@ private:
 
 		int tab_size = 4;
 		int gutter_count = 0;
+		bool indent_wrapped_lines = false;
 
 		void _calculate_line_height();
 		void _calculate_max_line_width();
@@ -188,6 +189,9 @@ private:
 	public:
 		void set_tab_size(int p_tab_size);
 		int get_tab_size() const;
+		void set_indent_wrapped_lines(bool p_enabled);
+		bool is_indent_wrapped_lines() const;
+
 		void set_font(const Ref<Font> &p_font);
 		void set_font_size(int p_font_size);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
@@ -719,6 +723,9 @@ public:
 
 	void set_tab_size(const int p_size);
 	int get_tab_size() const;
+
+	void set_indent_wrapped_lines(bool p_enabled);
+	bool is_indent_wrapped_lines() const;
 
 	// User controls
 	void set_overtype_mode_enabled(const bool p_enabled);

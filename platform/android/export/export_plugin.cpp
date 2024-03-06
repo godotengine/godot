@@ -2408,9 +2408,22 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += template_err;
 		}
 	} else {
+		// Validate the custom gradle android source template.
+		bool android_source_template_valid = false;
+		const String android_source_template = p_preset->get("gradle_build/android_source_template");
+		if (!android_source_template.is_empty()) {
+			android_source_template_valid = FileAccess::exists(android_source_template);
+			if (!android_source_template_valid) {
+				err += TTR("Custom Android source template not found.") + "\n";
+			}
+		}
+
+		// Validate the installed build template.
 		bool installed_android_build_template = FileAccess::exists(ExportTemplateManager::get_android_build_directory(p_preset).path_join("build.gradle"));
 		if (!installed_android_build_template) {
-			r_missing_templates = !exists_export_template("android_source.zip", &err);
+			if (!android_source_template_valid) {
+				r_missing_templates = !exists_export_template("android_source.zip", &err);
+			}
 			err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
 		} else {
 			r_missing_templates = false;

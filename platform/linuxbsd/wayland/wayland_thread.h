@@ -308,7 +308,7 @@ public:
 
 	struct TabletToolData {
 		Point2i position;
-		Vector2i tilt;
+		Vector2 tilt;
 		uint32_t pressure = 0;
 
 		BitField<MouseButtonMask> pressed_button_mask;

@@ -1093,9 +1093,6 @@ msgstr "Blender"
 msgid "RPC Port"
 msgstr "Port RPC"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "FBX2glTF Path"
 msgstr "Chemin de FBX2glTF"
 
@@ -2683,6 +2680,9 @@ msgstr "Chemin joint"
 msgid "CSG"
 msgstr "GCS"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "GDScript"
 msgstr "GDScript"
 
@@ -3607,33 +3607,6 @@ msgstr "Miroir H"
 msgid "Flip V"
 msgstr "Miroir V"
 
-msgid "Monitoring"
-msgstr "Observation"
-
-msgid "Monitorable"
-msgstr "Observable"
-
-msgid "Gravity"
-msgstr "Gravité"
-
-msgid "Space Override"
-msgstr "Redéfinition d'espace"
-
-msgid "Point"
-msgstr "Point"
-
-msgid "Direction"
-msgstr "Direction"
-
-msgid "Linear Damp"
-msgstr "Amorti Linéaire"
-
-msgid "Angular Damp"
-msgstr "Amorti Angulaire"
-
-msgid "Audio Bus"
-msgstr "Bus audio"
-
 msgid "Current"
 msgstr "Actuel"
 
@@ -3712,24 +3685,6 @@ msgstr "Ajustements"
 msgid "Use Mipmaps"
 msgstr "Utiliser les Mipmaps"
 
-msgid "Input"
-msgstr "Entrée"
-
-msgid "Pickable"
-msgstr "Déplaçable"
-
-msgid "Build Mode"
-msgstr "Mode construction"
-
-msgid "Disabled"
-msgstr "Désactivé"
-
-msgid "One Way Collision"
-msgstr "Collision à sens unique"
-
-msgid "One Way Collision Margin"
-msgstr "marge de collision à sens unique"
-
 msgid "Emitting"
 msgstr "Émet"
 
@@ -3790,8 +3745,14 @@ msgstr "Couleurs"
 msgid "Align Y"
 msgstr "Aligner axe Y"
 
+msgid "Direction"
+msgstr "Direction"
+
 msgid "Spread"
 msgstr "Propagation"
+
+msgid "Gravity"
+msgstr "Gravité"
 
 msgid "Initial Velocity"
 msgstr "Vélocité initiale"
@@ -3855,48 +3816,6 @@ msgstr "Matériau"
 
 msgid "Visibility Rect"
 msgstr "Zone de Visibilité"
-
-msgid "Node A"
-msgstr "Nœud A"
-
-msgid "Node B"
-msgstr "Nœud B"
-
-msgid "Bias"
-msgstr "Biais"
-
-msgid "Disable Collision"
-msgstr "Désactiver les collisions"
-
-msgid "Softness"
-msgstr "Douceur"
-
-msgid "Angular Limit"
-msgstr "Limite angulaire"
-
-msgid "Lower"
-msgstr "Basse"
-
-msgid "Upper"
-msgstr "Haute"
-
-msgid "Motor"
-msgstr "Moteur"
-
-msgid "Target Velocity"
-msgstr "Vélocité cible"
-
-msgid "Length"
-msgstr "Longueur"
-
-msgid "Initial Offset"
-msgstr "Décalage initial"
-
-msgid "Rest Length"
-msgstr "Longueur au repos"
-
-msgid "Stiffness"
-msgstr "Rigidité"
 
 msgid "Editor Only"
 msgstr "Éditeur seulement"
@@ -4018,6 +3937,18 @@ msgstr "Coût de déplacement"
 msgid "Skew"
 msgstr "Biseau"
 
+msgid "Scroll Offset"
+msgstr "Décalage du Défilement"
+
+msgid "Repeat"
+msgstr "Répéter"
+
+msgid "End"
+msgstr "Fin"
+
+msgid "Follow Viewport"
+msgstr "Suivre la fenêtre d'affichage"
+
 msgid "Scroll"
 msgstr "Défilement"
 
@@ -4057,11 +3988,107 @@ msgstr "Décalage Vertical"
 msgid "Cubic Interp"
 msgstr "Interpolation Cubique"
 
-msgid "Constant Linear Velocity"
-msgstr "Vélocité Linéaire Constante"
+msgid "Monitoring"
+msgstr "Observation"
 
-msgid "Constant Angular Velocity"
-msgstr "Vélocité Angulaire Constante"
+msgid "Monitorable"
+msgstr "Observable"
+
+msgid "Space Override"
+msgstr "Redéfinition d'espace"
+
+msgid "Point"
+msgstr "Point"
+
+msgid "Linear Damp"
+msgstr "Amorti Linéaire"
+
+msgid "Angular Damp"
+msgstr "Amorti Angulaire"
+
+msgid "Audio Bus"
+msgstr "Bus audio"
+
+msgid "Max Angle"
+msgstr "Angle maximal"
+
+msgid "Moving Platform"
+msgstr "Plateforme mobile"
+
+msgid "Safe Margin"
+msgstr "Marge de sécurité"
+
+msgid "Input"
+msgstr "Entrée"
+
+msgid "Pickable"
+msgstr "Déplaçable"
+
+msgid "Build Mode"
+msgstr "Mode construction"
+
+msgid "Disabled"
+msgstr "Désactivé"
+
+msgid "One Way Collision"
+msgstr "Collision à sens unique"
+
+msgid "One Way Collision Margin"
+msgstr "marge de collision à sens unique"
+
+msgid "Length"
+msgstr "Longueur"
+
+msgid "Rest Length"
+msgstr "Longueur au repos"
+
+msgid "Stiffness"
+msgstr "Rigidité"
+
+msgid "Initial Offset"
+msgstr "Décalage initial"
+
+msgid "Node A"
+msgstr "Nœud A"
+
+msgid "Node B"
+msgstr "Nœud B"
+
+msgid "Bias"
+msgstr "Biais"
+
+msgid "Disable Collision"
+msgstr "Désactiver les collisions"
+
+msgid "Softness"
+msgstr "Douceur"
+
+msgid "Angular Limit"
+msgstr "Limite angulaire"
+
+msgid "Lower"
+msgstr "Basse"
+
+msgid "Upper"
+msgstr "Haute"
+
+msgid "Motor"
+msgstr "Moteur"
+
+msgid "Target Velocity"
+msgstr "Vélocité cible"
+
+msgid "Exclude Parent"
+msgstr "Exclure Le Parent"
+
+msgid "Collide With"
+msgstr "Collisionne Avec"
+
+msgid "Areas"
+msgstr "Zones"
+
+msgid "Bodies"
+msgstr "Corps"
 
 msgid "Gravity Scale"
 msgstr "Échelle de la Gravité"
@@ -4096,14 +4123,14 @@ msgstr "Angulaire"
 msgid "Torque"
 msgstr "Torque"
 
-msgid "Max Angle"
-msgstr "Angle maximal"
+msgid "Margin"
+msgstr "Marge"
 
-msgid "Moving Platform"
-msgstr "Plateforme mobile"
+msgid "Constant Linear Velocity"
+msgstr "Vélocité Linéaire Constante"
 
-msgid "Safe Margin"
-msgstr "Marge de sécurité"
+msgid "Constant Angular Velocity"
+msgstr "Vélocité Angulaire Constante"
 
 msgid "UV"
 msgstr "UV"
@@ -4117,18 +4144,6 @@ msgstr "Polygones"
 msgid "Internal Vertex Count"
 msgstr "Nombre de Sommet Interne"
 
-msgid "Exclude Parent"
-msgstr "Exclure Le Parent"
-
-msgid "Collide With"
-msgstr "Collisionne Avec"
-
-msgid "Areas"
-msgstr "Zones"
-
-msgid "Bodies"
-msgstr "Corps"
-
 msgid "Remote Path"
 msgstr "Chemin distant"
 
@@ -4137,9 +4152,6 @@ msgstr "Utiliser les coordonnées globales"
 
 msgid "Update"
 msgstr "Mettre à jour"
-
-msgid "Margin"
-msgstr "Marge"
 
 msgid "Editor Settings"
 msgstr "Paramètres de l'éditeur"
@@ -4176,12 +4188,6 @@ msgstr "Mode de Visibilité"
 
 msgid "Node Path"
 msgstr "Chemin de nœud"
-
-msgid "Reverb Bus"
-msgstr "Bus de Réverb"
-
-msgid "Uniformity"
-msgstr "Uniformité"
 
 msgid "Attenuation Model"
 msgstr "Modèle d’atténuation"
@@ -4239,9 +4245,6 @@ msgstr "Plan proche"
 
 msgid "Far"
 msgstr "Plan éloigné"
-
-msgid "Ray Pickable"
-msgstr "Sélectionnable par rayon"
 
 msgid "Visibility AABB"
 msgstr "Visibilité AABB"
@@ -4302,75 +4305,6 @@ msgstr "Mode de mise à jour"
 
 msgid "Skeleton Path"
 msgstr "Squelette de chemin"
-
-msgid "End"
-msgstr "Fin"
-
-msgid "Params"
-msgstr "Paramètres"
-
-msgid "Impulse Clamp"
-msgstr "Borner l'impulsion"
-
-msgid "Relaxation"
-msgstr "Relâchement"
-
-msgid "Max Impulse"
-msgstr "Impulsion Maximale"
-
-msgid "Linear Limit"
-msgstr "Limite linéaire"
-
-msgid "Upper Distance"
-msgstr "Distance haute"
-
-msgid "Lower Distance"
-msgstr "Distance basse"
-
-msgid "Restitution"
-msgstr "Restitution"
-
-msgid "Linear Motion"
-msgstr "Mouvement linéaire"
-
-msgid "Linear Ortho"
-msgstr "Ortho linéaire"
-
-msgid "Upper Angle"
-msgstr "Angle supérieur"
-
-msgid "Lower Angle"
-msgstr "Angle inférieur"
-
-msgid "Angular Motion"
-msgstr "Mouvement angulaire"
-
-msgid "Angular Ortho"
-msgstr "Ortho angulaire"
-
-msgid "Swing Span"
-msgstr "Ampleur de balancement"
-
-msgid "Twist Span"
-msgstr "Ampleur de torsion"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
-
-msgid "Force Limit"
-msgstr "Limite de Force"
-
-msgid "Equilibrium Point"
-msgstr "Point d’équilibre"
-
-msgid "ERP"
-msgstr "ERP"
 
 msgid "Pixel Size"
 msgstr "Taille de pixel"
@@ -4510,26 +4444,80 @@ msgstr "Visible"
 msgid "Rotation Mode"
 msgstr "Mode rotation"
 
-msgid "Axis Lock"
-msgstr "Verrouiller l'axe"
+msgid "Reverb Bus"
+msgstr "Bus de Réverb"
 
-msgid "Linear X"
-msgstr "X linéaire"
+msgid "Uniformity"
+msgstr "Uniformité"
 
-msgid "Linear Y"
-msgstr "Y linéaire"
+msgid "Ray Pickable"
+msgstr "Sélectionnable par rayon"
 
-msgid "Linear Z"
-msgstr "Z linéaire"
+msgid "Swing Span"
+msgstr "Ampleur de balancement"
 
-msgid "Angular X"
-msgstr "X angulaire"
+msgid "Twist Span"
+msgstr "Ampleur de torsion"
 
-msgid "Angular Y"
-msgstr "Y angulaire"
+msgid "Relaxation"
+msgstr "Relâchement"
 
-msgid "Angular Z"
-msgstr "Z angulaire"
+msgid "Linear Limit"
+msgstr "Limite linéaire"
+
+msgid "X"
+msgstr "X"
+
+msgid "Upper Distance"
+msgstr "Distance haute"
+
+msgid "Lower Distance"
+msgstr "Distance basse"
+
+msgid "Restitution"
+msgstr "Restitution"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Force Limit"
+msgstr "Limite de Force"
+
+msgid "Equilibrium Point"
+msgstr "Point d’équilibre"
+
+msgid "Upper Angle"
+msgstr "Angle supérieur"
+
+msgid "Lower Angle"
+msgstr "Angle inférieur"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Params"
+msgstr "Paramètres"
+
+msgid "Max Impulse"
+msgstr "Impulsion Maximale"
+
+msgid "Impulse Clamp"
+msgstr "Borner l'impulsion"
+
+msgid "Linear Motion"
+msgstr "Mouvement linéaire"
+
+msgid "Linear Ortho"
+msgstr "Ortho linéaire"
+
+msgid "Angular Motion"
+msgstr "Mouvement angulaire"
+
+msgid "Angular Ortho"
+msgstr "Ortho angulaire"
 
 msgid "Joint Constraints"
 msgstr "Restrictions de jointure"
@@ -4621,8 +4609,62 @@ msgstr "Friction"
 msgid "Bounce"
 msgstr "Rebond"
 
+msgid "Axis Lock"
+msgstr "Verrouiller l'axe"
+
+msgid "Linear X"
+msgstr "X linéaire"
+
+msgid "Linear Y"
+msgstr "Y linéaire"
+
+msgid "Linear Z"
+msgstr "Z linéaire"
+
+msgid "Angular X"
+msgstr "X angulaire"
+
+msgid "Angular Y"
+msgstr "Y angulaire"
+
+msgid "Angular Z"
+msgstr "Z angulaire"
+
 msgid "Debug Shape"
 msgstr "Forme de débogage"
+
+msgid "Spring Length"
+msgstr "Longueur du ressort"
+
+msgid "Per-Wheel Motion"
+msgstr "Mouvement par roue"
+
+msgid "Engine Force"
+msgstr "Force du moteur"
+
+msgid "Brake"
+msgstr "Frein"
+
+msgid "Steering"
+msgstr "Direction"
+
+msgid "Wheel"
+msgstr "Molette"
+
+msgid "Roll Influence"
+msgstr "Influence de rotation"
+
+msgid "Friction Slip"
+msgstr "Glissement par friction"
+
+msgid "Suspension"
+msgstr "Suspension"
+
+msgid "Travel"
+msgstr "Se déplacer"
+
+msgid "Max Force"
+msgstr "Force max"
 
 msgid "Origin Offset"
 msgstr "Décalage de l'origine"
@@ -4698,39 +4740,6 @@ msgstr "Coefficient d'amortissement"
 
 msgid "Drag Coefficient"
 msgstr "Coefficient de traînée"
-
-msgid "Spring Length"
-msgstr "Longueur du ressort"
-
-msgid "Per-Wheel Motion"
-msgstr "Mouvement par roue"
-
-msgid "Engine Force"
-msgstr "Force du moteur"
-
-msgid "Brake"
-msgstr "Frein"
-
-msgid "Steering"
-msgstr "Direction"
-
-msgid "Wheel"
-msgstr "Molette"
-
-msgid "Roll Influence"
-msgstr "Influence de rotation"
-
-msgid "Friction Slip"
-msgstr "Glissement par friction"
-
-msgid "Suspension"
-msgstr "Suspension"
-
-msgid "Travel"
-msgstr "Se déplacer"
-
-msgid "Max Force"
-msgstr "Force max"
 
 msgid "Track Physics Step"
 msgstr "Suivre les Etapes Physiques"
@@ -4950,9 +4959,6 @@ msgstr "Retour à la ligne automatique"
 
 msgid "Mode Overrides Title"
 msgstr "Le Mode remplace le Titre"
-
-msgid "Scroll Offset"
-msgstr "Décalage du Défilement"
 
 msgid "Panning Scheme"
 msgstr "Schéma de défilement"
@@ -5275,9 +5281,6 @@ msgstr "Masque de lumières"
 msgid "Z Index"
 msgstr "Index Z"
 
-msgid "Repeat"
-msgstr "Répéter"
-
 msgid "Use Parent Material"
 msgstr "Utiliser le matériau du parent"
 
@@ -5286,9 +5289,6 @@ msgstr "Diffus"
 
 msgid "NormalMap"
 msgstr "CarteNormale"
-
-msgid "Follow Viewport"
-msgstr "Suivre la fenêtre d'affichage"
 
 msgid "Download File"
 msgstr "Télécharger le Fichier"
@@ -5455,6 +5455,123 @@ msgstr "Physique 3D"
 msgid "3D Navigation"
 msgstr "Navigation 3D"
 
+msgid "Segments"
+msgstr "Segments"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "o"
+
+msgid "Custom Solver Bias"
+msgstr "Biais Personnalisé du Solveur"
+
+msgid "Terrains"
+msgstr "Terrains"
+
+msgid "Custom Data"
+msgstr "Données Personnalisées"
+
+msgid "Transpose"
+msgstr "Transposer"
+
+msgid "Texture Origin"
+msgstr "Origine de la Texture"
+
+msgid "Y Sort Origin"
+msgstr "Origine du triage par Y"
+
+msgid "Probability"
+msgstr "Probabilité"
+
+msgid "Distance"
+msgstr "Distance"
+
+msgid "Map Width"
+msgstr "Largeur de la carte"
+
+msgid "Map Depth"
+msgstr "Profondeur de la carte"
+
+msgid "Map Data"
+msgstr "Données de la carte"
+
+msgid "Item"
+msgstr "Item"
+
+msgid "Mesh Transform"
+msgstr "Transformation de Mesh"
+
+msgid "Preview"
+msgstr "Aperçu"
+
+msgid "Add UV2"
+msgstr "Ajouter UV2"
+
+msgid "Subdivide Width"
+msgstr "Largeur de subdivision"
+
+msgid "Subdivide Height"
+msgstr "Hauteur de subdivision"
+
+msgid "Subdivide Depth"
+msgstr "Profondeur de subdivision"
+
+msgid "Top Radius"
+msgstr "Rayon Supérieur"
+
+msgid "Bottom Radius"
+msgstr "Rayon bas"
+
+msgid "Is Hemisphere"
+msgstr "Est une hémisphère"
+
+msgid "Curve Step"
+msgstr "Pas de la courbe"
+
+msgid "Bind Count"
+msgstr "Nombre de liaisons"
+
+msgid "Bind"
+msgstr "Liaison"
+
+msgid "Bone"
+msgstr "Os"
+
+msgid "Sky"
+msgstr "Ciel"
+
+msgid "Top Color"
+msgstr "Couleur du haut"
+
+msgid "Horizon Color"
+msgstr "Couleur de l’Horizon"
+
+msgid "Ground"
+msgstr "Sol"
+
+msgid "Bottom Color"
+msgstr "Couleur du bas"
+
+msgid "Sun"
+msgstr "Soleil"
+
+msgid "Panorama"
+msgstr "Panorama"
+
+msgid "Rayleigh"
+msgstr "Rayleigh"
+
+msgid "Ground Color"
+msgstr "Couleur du sol"
+
+msgid "Fallback Environment"
+msgstr "Environnement de repli"
+
+msgid "Plane"
+msgstr "Plan"
+
 msgid "Frames"
 msgstr "Trames"
 
@@ -5512,9 +5629,6 @@ msgstr "Boucle d'animation de particules"
 msgid "Load Path"
 msgstr "Charger chemin"
 
-msgid "Segments"
-msgstr "Segments"
-
 msgid "Bake Resolution"
 msgstr "Précalculer la résolution"
 
@@ -5529,9 +5643,6 @@ msgstr "Arrière-plan"
 
 msgid "Canvas Max Layer"
 msgstr "Calque Max du Canvas"
-
-msgid "Sky"
-msgstr "Ciel"
 
 msgid "Ambient Light"
 msgstr "Lumière ambiante"
@@ -5656,15 +5767,6 @@ msgstr "De"
 msgid "To"
 msgstr "À"
 
-msgid "Map Width"
-msgstr "Largeur de la carte"
-
-msgid "Map Depth"
-msgstr "Profondeur de la carte"
-
-msgid "Map Data"
-msgstr "Données de la carte"
-
 msgid "Next Pass"
 msgstr "Passe suivante"
 
@@ -5782,23 +5884,11 @@ msgstr "Taille de point"
 msgid "Proximity Fade"
 msgstr "Fondu de proximité"
 
-msgid "Distance"
-msgstr "Distance"
-
 msgid "MSDF"
 msgstr "CDSM"
 
 msgid "Lightmap Size Hint"
 msgstr "Indice de taille de la texture de lumière"
-
-msgid "Item"
-msgstr "Item"
-
-msgid "Mesh Transform"
-msgstr "Transformation de Mesh"
-
-msgid "Preview"
-msgstr "Aperçu"
 
 msgid "Base Texture"
 msgstr "Texture de base"
@@ -5890,77 +5980,11 @@ msgstr "Rugueux"
 msgid "Absorbent"
 msgstr "Absorbant"
 
-msgid "Add UV2"
-msgstr "Ajouter UV2"
-
-msgid "Subdivide Width"
-msgstr "Largeur de subdivision"
-
-msgid "Subdivide Height"
-msgstr "Hauteur de subdivision"
-
-msgid "Subdivide Depth"
-msgstr "Profondeur de subdivision"
-
-msgid "Top Radius"
-msgstr "Rayon Supérieur"
-
-msgid "Bottom Radius"
-msgstr "Rayon bas"
-
-msgid "Is Hemisphere"
-msgstr "Est une hémisphère"
-
-msgid "Curve Step"
-msgstr "Pas de la courbe"
-
-msgid "A"
-msgstr "A"
-
-msgid "B"
-msgstr "o"
-
-msgid "Custom Solver Bias"
-msgstr "Biais Personnalisé du Solveur"
-
-msgid "Bind Count"
-msgstr "Nombre de liaisons"
-
-msgid "Bind"
-msgstr "Liaison"
-
-msgid "Bone"
-msgstr "Os"
-
 msgid "Process Mode"
 msgstr "Mode de traitement"
 
 msgid "Radiance Size"
 msgstr "Taille du rayonnement"
-
-msgid "Top Color"
-msgstr "Couleur du haut"
-
-msgid "Horizon Color"
-msgstr "Couleur de l’Horizon"
-
-msgid "Ground"
-msgstr "Sol"
-
-msgid "Bottom Color"
-msgstr "Couleur du bas"
-
-msgid "Sun"
-msgstr "Soleil"
-
-msgid "Panorama"
-msgstr "Panorama"
-
-msgid "Rayleigh"
-msgstr "Rayleigh"
-
-msgid "Ground Color"
-msgstr "Couleur du sol"
 
 msgid "Blend"
 msgstr "Mélanger"
@@ -5991,24 +6015,6 @@ msgstr "Fin d'Expansion"
 
 msgid "Default Font"
 msgstr "Police par défaut"
-
-msgid "Terrains"
-msgstr "Terrains"
-
-msgid "Custom Data"
-msgstr "Données Personnalisées"
-
-msgid "Transpose"
-msgstr "Transposer"
-
-msgid "Texture Origin"
-msgstr "Origine de la Texture"
-
-msgid "Y Sort Origin"
-msgstr "Origine du triage par Y"
-
-msgid "Probability"
-msgstr "Probabilité"
 
 msgid "File"
 msgstr "Fichier"
@@ -6042,12 +6048,6 @@ msgstr "Valeur par défaut"
 
 msgid "Color Default"
 msgstr "Couleur par défaut"
-
-msgid "Fallback Environment"
-msgstr "Environnement de repli"
-
-msgid "Plane"
-msgstr "Plan"
 
 msgid "Panel"
 msgstr "Panneau"

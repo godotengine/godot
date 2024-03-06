@@ -88,14 +88,6 @@ jobs:
         run: |
           doc/tools/doc_status.py doc/classes modules/*/doc_classes platform/*/doc_classes
 
-      - name: Style checks via dotnet format (dotnet_format.sh)
-        run: |
-          if grep -q "modules/mono" changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/dotnet_format.sh
-          else
-            echo "Skipping dotnet format as no C# files were changed."
-          fi
-
       - name: Spell checks via codespell
         if: github.event_name == 'pull_request' && env.CHANGED_FILES != ''
         uses: codespell-project/actions-codespell@v2

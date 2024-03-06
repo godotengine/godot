@@ -102,8 +102,8 @@
 			<param index="2" name="existing_text" type="String" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
-				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] will be called with a [String] argument equal to the text field's contents when the dialog is closed for any reason.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [String] parameter which contains the text field's contents.
+				[b]Note:[/b] This method is implemented only on macOS and Windows.
 			</description>
 		</method>
 		<method name="dialog_show">
@@ -113,8 +113,8 @@
 			<param index="2" name="buttons" type="PackedStringArray" />
 			<param index="3" name="callback" type="Callable" />
 			<description>
-				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] will be called when the dialog is closed for any reason.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [int] parameter which corresponds to the index of the pressed button.
+				[b]Note:[/b] This method is implemented only on macOS and Windows.
 			</description>
 		</method>
 		<method name="enable_for_stealing_focus">
@@ -136,6 +136,7 @@
 			<param index="6" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
+				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
@@ -157,6 +158,7 @@
 			<param index="8" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system with additional user selectable options.
+				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
 				[param options] is array of [Dictionary]s with the following keys:
 				- [code]"name"[/code] - option's name [String].
 				- [code]"values"[/code] - [PackedStringArray] of values. If empty, boolean option (check box) is used.
@@ -264,7 +266,7 @@
 				[b]Note:[/b] Native dialogs are not included in this list.
 			</description>
 		</method>
-		<method name="global_menu_add_check_item">
+		<method name="global_menu_add_check_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -289,7 +291,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_icon_check_item">
+		<method name="global_menu_add_icon_check_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
@@ -315,7 +317,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_icon_item">
+		<method name="global_menu_add_icon_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
@@ -341,7 +343,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_icon_radio_check_item">
+		<method name="global_menu_add_icon_radio_check_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
@@ -368,7 +370,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_item">
+		<method name="global_menu_add_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -393,7 +395,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_multistate_item">
+		<method name="global_menu_add_multistate_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -422,7 +424,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_radio_check_item">
+		<method name="global_menu_add_radio_check_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -448,7 +450,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_separator">
+		<method name="global_menu_add_separator" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="index" type="int" default="-1" />
@@ -466,7 +468,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_add_submenu_item">
+		<method name="global_menu_add_submenu_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
@@ -486,7 +488,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_clear">
+		<method name="global_menu_clear" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<description>
@@ -502,7 +504,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="global_menu_get_item_accelerator" qualifiers="const">
+		<method name="global_menu_get_item_accelerator" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" enum="Key" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -511,7 +513,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_callback" qualifiers="const">
+		<method name="global_menu_get_item_callback" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="Callable" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -520,7 +522,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_count" qualifiers="const">
+		<method name="global_menu_get_item_count" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<description>
@@ -528,7 +530,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_icon" qualifiers="const">
+		<method name="global_menu_get_item_icon" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="Texture2D" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -537,7 +539,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_indentation_level" qualifiers="const">
+		<method name="global_menu_get_item_indentation_level" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -546,7 +548,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_index_from_tag" qualifiers="const">
+		<method name="global_menu_get_item_index_from_tag" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="tag" type="Variant" />
@@ -555,7 +557,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_index_from_text" qualifiers="const">
+		<method name="global_menu_get_item_index_from_text" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="text" type="String" />
@@ -564,7 +566,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_key_callback" qualifiers="const">
+		<method name="global_menu_get_item_key_callback" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="Callable" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -573,7 +575,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_max_states" qualifiers="const">
+		<method name="global_menu_get_item_max_states" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -582,7 +584,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_state" qualifiers="const">
+		<method name="global_menu_get_item_state" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -591,7 +593,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_submenu" qualifiers="const">
+		<method name="global_menu_get_item_submenu" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="String" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -600,7 +602,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_tag" qualifiers="const">
+		<method name="global_menu_get_item_tag" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="Variant" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -609,7 +611,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_text" qualifiers="const">
+		<method name="global_menu_get_item_text" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="String" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -618,7 +620,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_item_tooltip" qualifiers="const">
+		<method name="global_menu_get_item_tooltip" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="String" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -627,14 +629,14 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_get_system_menu_roots" qualifiers="const">
+		<method name="global_menu_get_system_menu_roots" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="Dictionary" />
 			<description>
 				Returns Dictionary of supported system menu IDs and names.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_is_item_checkable" qualifiers="const">
+		<method name="global_menu_is_item_checkable" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -643,7 +645,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_is_item_checked" qualifiers="const">
+		<method name="global_menu_is_item_checked" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -652,7 +654,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_is_item_disabled" qualifiers="const">
+		<method name="global_menu_is_item_disabled" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -662,7 +664,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_is_item_hidden" qualifiers="const">
+		<method name="global_menu_is_item_hidden" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -672,7 +674,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_is_item_radio_checkable" qualifiers="const">
+		<method name="global_menu_is_item_radio_checkable" qualifiers="const" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -682,7 +684,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_remove_item">
+		<method name="global_menu_remove_item" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -692,7 +694,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_accelerator">
+		<method name="global_menu_set_item_accelerator" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -702,7 +704,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_callback">
+		<method name="global_menu_set_item_callback" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -713,7 +715,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_checkable">
+		<method name="global_menu_set_item_checkable" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -723,7 +725,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_checked">
+		<method name="global_menu_set_item_checked" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -733,7 +735,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_disabled">
+		<method name="global_menu_set_item_disabled" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -743,7 +745,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_hidden">
+		<method name="global_menu_set_item_hidden" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -753,7 +755,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_hover_callbacks">
+		<method name="global_menu_set_item_hover_callbacks" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -764,7 +766,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_icon">
+		<method name="global_menu_set_item_icon" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -775,7 +777,7 @@
 				[b]Note:[/b] This method is not supported by macOS "_dock" menu items.
 			</description>
 		</method>
-		<method name="global_menu_set_item_indentation_level">
+		<method name="global_menu_set_item_indentation_level" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -785,7 +787,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_key_callback">
+		<method name="global_menu_set_item_key_callback" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -796,7 +798,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_max_states">
+		<method name="global_menu_set_item_max_states" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -806,7 +808,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_radio_checkable">
+		<method name="global_menu_set_item_radio_checkable" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -817,7 +819,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_state">
+		<method name="global_menu_set_item_state" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -827,7 +829,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_submenu">
+		<method name="global_menu_set_item_submenu" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -837,7 +839,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_tag">
+		<method name="global_menu_set_item_tag" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -847,7 +849,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_text">
+		<method name="global_menu_set_item_text" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -857,7 +859,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_item_tooltip">
+		<method name="global_menu_set_item_tooltip" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="idx" type="int" />
@@ -867,7 +869,7 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
-		<method name="global_menu_set_popup_callbacks">
+		<method name="global_menu_set_popup_callbacks" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			<return type="void" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="open_callback" type="Callable" />
@@ -1146,6 +1148,7 @@
 			<param index="0" name="image" type="Image" />
 			<description>
 				Sets the window icon (usually displayed in the top-left corner) with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				[b]Note:[/b] Requires support for [constant FEATURE_ICON].
 			</description>
 		</method>
 		<method name="set_native_icon">
@@ -1153,6 +1156,7 @@
 			<param index="0" name="filename" type="String" />
 			<description>
 				Sets the window icon (usually displayed in the top-left corner) in the operating system's [i]native[/i] format. The file at [param filename] must be in [code].ico[/code] format on Windows or [code].icns[/code] on macOS. By using specially crafted [code].ico[/code] or [code].icns[/code] icons, [method set_native_icon] allows specifying different icons depending on the size the icon is displayed at. This size is determined by the operating system and user preferences (including the display scale factor). To use icons in other formats, use [method set_icon] instead.
+				[b]Note:[/b] Requires support for [constant FEATURE_NATIVE_ICON].
 			</description>
 		</method>
 		<method name="set_system_theme_change_callback">
@@ -1752,7 +1756,7 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature">
+		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			Display server supports global menu. This allows the application to display its menu items in the operating system's top bar. [b]macOS[/b]
 		</constant>
 		<constant name="FEATURE_SUBWINDOWS" value="1" enum="Feature">

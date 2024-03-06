@@ -599,8 +599,7 @@ void RenameDialog::rename() {
 				ERR_PRINT("Skipping missing node: " + to_rename[i].first.get_concatenated_subnames());
 				continue;
 			}
-
-			scene_tree_editor->call("_rename_node", n, new_name);
+			scene_tree_editor->rename_node(n, new_name);
 		}
 
 		undo_redo->commit_action();

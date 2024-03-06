@@ -1737,7 +1737,7 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
 # Formatting helpers.
 
 
-RESERVED_FORMATTING_TAGS = ["i", "b", "u", "code", "kbd", "center", "url", "br"]
+RESERVED_FORMATTING_TAGS = ["i", "b", "u", "lb", "rb", "code", "kbd", "center", "url", "br"]
 RESERVED_LAYOUT_TAGS = ["codeblocks"]
 RESERVED_CODEBLOCK_TAGS = ["codeblock", "gdscript", "csharp"]
 RESERVED_CROSSLINK_TAGS = [
@@ -2310,6 +2310,12 @@ def format_text_block(
                     tag_depth += 1
                     escape_pre = True
                 tag_text = ""
+
+            elif tag_state.name == "lb":
+                tag_text = "\\["
+
+            elif tag_state.name == "rb":
+                tag_text = "\\]"
 
             elif tag_state.name == "kbd":
                 tag_text = "`"

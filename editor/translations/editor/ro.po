@@ -923,9 +923,6 @@ msgstr "Creare folder"
 msgid "Thanks from the Godot community!"
 msgstr "Mulțumesc din partea comunităţii Godot!"
 
-msgid "Click to copy."
-msgstr "Apasă click sa copiezi."
-
 msgid "Godot Engine contributors"
 msgstr "Contribuabili Motor Godot"
 
@@ -1859,9 +1856,6 @@ msgstr "Inspector"
 msgid "Node"
 msgstr "Nod"
 
-msgid "Expand Bottom Panel"
-msgstr "Extinde Panoul De Jos"
-
 msgid "Output"
 msgstr "Ieșire"
 
@@ -2195,6 +2189,9 @@ msgstr "Adaugă în Grup"
 
 msgid "Remove from Group"
 msgstr "Elimină din Grup"
+
+msgid "Expand Bottom Panel"
+msgstr "Extinde Panoul De Jos"
 
 msgid "Move"
 msgstr "Mută"
@@ -2884,12 +2881,6 @@ msgstr "Snap Relativ"
 msgid "Use Pixel Snap"
 msgstr "Utilizează Pixel Snap"
 
-msgid "Smart Snapping"
-msgstr "Snapping Inteligent"
-
-msgid "Configure Snap..."
-msgstr "Configurare Snap..."
-
 msgid "Snap to Parent"
 msgstr "Snap către Părinte"
 
@@ -2907,6 +2898,12 @@ msgstr "Snap către Alte Noduri"
 
 msgid "Snap to Guides"
 msgstr "Snap pe Ghiduri"
+
+msgid "Smart Snapping"
+msgstr "Snapping Inteligent"
+
+msgid "Configure Snap..."
+msgstr "Configurare Snap..."
 
 msgid "Lock Selected Node(s)"
 msgstr "Blochează Nodurile Selectate"
@@ -3346,9 +3343,6 @@ msgstr "Închidere curbă"
 msgid "Curve Point #"
 msgstr "Punct de curbă #"
 
-msgid "Set Curve Point Position"
-msgstr "Setare poziție punct de curbă"
-
 msgid "Set Curve Out Position"
 msgstr "Setare poziție de ieșire a curbei"
 
@@ -3363,6 +3357,9 @@ msgstr "Ștergere punct cale"
 
 msgid "Split Segment (in curve)"
 msgstr "Divizare segment (pe curbă)"
+
+msgid "Set Curve Point Position"
+msgstr "Setare poziție punct de curbă"
 
 msgid "Create UV Map"
 msgstr "Creare hartă UV"

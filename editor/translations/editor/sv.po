@@ -29,7 +29,7 @@
 # Kenny Andersson <kenny@ordinary.se>, 2022.
 # Ludvig Svenonius <ludvig.svenonius@protonmail.com>, 2023.
 # Daniel Ljung <weblate@bazonic.mozmail.com>, 2023.
-# Henrik Nilsson <nsmoooose@gmail.com>, 2023.
+# Henrik Nilsson <nsmoooose@gmail.com>, 2023, 2024.
 # Flashbox <kalle.frosta@gmail.com>, 2023.
 # Emil Åsberg <02asb01@gmail.com>, 2023.
 # Erik Högberg <erik.hogberg.93@gmail.com>, 2023.
@@ -39,8 +39,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-20 05:55+0000\n"
-"Last-Translator: Kristoffer Grundström <swedishsailfishosuser@tutanota.com>\n"
+"PO-Revision-Date: 2024-02-24 22:50+0000\n"
+"Last-Translator: Henrik Nilsson <nsmoooose@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -48,7 +48,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
 msgstr "Huvudtråd"
@@ -490,6 +490,9 @@ msgstr "Redigera Händelse"
 msgid "Remove Event"
 msgstr "Ta bort Händelse"
 
+msgid "Filter by Name"
+msgstr "Filtrera efter namn"
+
 msgid "Clear All"
 msgstr "Rensa Alla"
 
@@ -523,6 +526,15 @@ msgstr "Infoga Nyckel Här"
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplicera valda punkter"
 
+msgid "Cut Selected Key(s)"
+msgstr "Klipp ut valda nycklar"
+
+msgid "Copy Selected Key(s)"
+msgstr "Kopiera valda nycklar"
+
+msgid "Paste Key(s)"
+msgstr "Klistra in nycklar"
+
 msgid "Delete Selected Key(s)"
 msgstr "Ta bort valda nycklar"
 
@@ -552,6 +564,12 @@ msgstr "Flytta Bezierpunkt"
 
 msgid "Animation Duplicate Keys"
 msgstr "Animation Duplicera Nycklar"
+
+msgid "Animation Cut Keys"
+msgstr "Animation Klipp ut nycklar"
+
+msgid "Animation Paste Keys"
+msgstr "Animation Klistra in nycklar"
 
 msgid "Animation Delete Keys"
 msgstr "Animation Ta Bort Nycklar"
@@ -613,6 +631,27 @@ msgstr ""
 
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "Kan inte ändra loop mode på en animation inbäddad i en annan scen."
+
+msgid "Property Track..."
+msgstr "Egenskapsspår..."
+
+msgid "3D Position Track..."
+msgstr "3D positionsspår..."
+
+msgid "3D Rotation Track..."
+msgstr "3D rotationsspår..."
+
+msgid "3D Scale Track..."
+msgstr "3D skalspår..."
+
+msgid "Call Method Track..."
+msgstr "Anropa metod spår..."
+
+msgid "Bezier Curve Track..."
+msgstr "Bezier kurvspår..."
+
+msgid "Audio Playback Track..."
+msgstr "Ljuduppspelningsspår..."
 
 msgid "Animation length (frames)"
 msgstr "Animation längd (bildrutor)"
@@ -742,6 +781,9 @@ msgstr "Begränsa Sling Interpolering"
 
 msgid "Wrap Loop Interp"
 msgstr "Återgåendeslinginterpolering"
+
+msgid "Insert Key..."
+msgstr "Lägg till nyckel..."
 
 msgid "Duplicate Key(s)"
 msgstr "Duplicera Nycklar"
@@ -1760,9 +1802,6 @@ msgstr "Mapp-namnet är ogiltigt."
 
 msgid "Thanks from the Godot community!"
 msgstr "Tack från Godot-gemenskapen!"
-
-msgid "Click to copy."
-msgstr "Klicka för att kopiera."
 
 msgid "Godot Engine contributors"
 msgstr "Godot Engine bidragare"
@@ -3437,9 +3476,6 @@ msgstr "Nod"
 msgid "History"
 msgstr "Historik"
 
-msgid "Expand Bottom Panel"
-msgstr "Expandera Nedre Panel"
-
 msgid "Output"
 msgstr "Utdata"
 
@@ -3479,9 +3515,6 @@ msgstr "Ladda om"
 
 msgid "Resave"
 msgstr "Spara om"
-
-msgid "Create Version Control Metadata..."
-msgstr "Skapa metadata för versionshantering..."
 
 msgid "Version Control Settings..."
 msgstr "Versionshanteringsinställningar..."
@@ -4025,13 +4058,6 @@ msgstr "Sökväg till FBX2glTF programmet är ogiltig."
 msgid "Configure FBX Importer"
 msgstr "Konfigurera FBX importerare"
 
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX2glTF krävs för att importera FBX filer.\n"
-"Var vänlig och ladda ner detta och sätt en giltig sökväg till programmet:"
-
 msgid "Click this link to download FBX2glTF"
 msgstr "Klicka denna länk för att ladda ner FBX2glTF"
 
@@ -4247,6 +4273,9 @@ msgstr "Ta bort från Grupp"
 
 msgid "Global"
 msgstr "Global"
+
+msgid "Expand Bottom Panel"
+msgstr "Expandera Nedre Panel"
 
 msgid "Move"
 msgstr "Flytta"
@@ -5525,6 +5554,9 @@ msgstr "Intern buffer"
 msgid "Display Advanced..."
 msgstr "Visa avancerad..."
 
+msgid "View Grid"
+msgstr "Visa nät"
+
 msgid "View Information"
 msgstr "Visa Information"
 
@@ -5597,9 +5629,6 @@ msgstr "3 vyer (Alt)"
 msgid "4 Viewports"
 msgstr "4 vyer"
 
-msgid "View Grid"
-msgstr "Visa nät"
-
 msgid "Settings..."
 msgstr "Inställningar..."
 
@@ -5669,14 +5698,14 @@ msgstr "Öppna..."
 msgid "Save All"
 msgstr "Spara Alla"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Import Theme..."
 msgstr "Importera Tema..."
 
 msgid "Reload Theme"
 msgstr "Ladda om Tema"
+
+msgid "Theme"
+msgstr "Tema"
 
 msgid "Save Theme"
 msgstr "Spara Tema"
@@ -7427,9 +7456,6 @@ msgstr "Ogiltig identitetstyp."
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "Kan inte ta bort temporär fil \"%s\"."
 
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "En tom CollisionPolygon2D har ingen effekt på kollision."
-
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
@@ -7440,9 +7466,15 @@ msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr ""
 "PathFollow2D fungerar bara när den är satt som ett barn till en Path2D-Node."
 
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "En tom CollisionPolygon2D har ingen effekt på kollision."
+
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
 "Sökvägs-egenskapen måste peka på en giltigt Node2D Node för att fungera."
+
+msgid "Generating Probe Volumes"
+msgstr "Genererar sond volymer"
 
 msgid ""
 "CollisionPolygon3D only serves to provide a collision shape to a "
@@ -7466,23 +7498,11 @@ msgstr ""
 "Använd endast det som ett barn till Area3D, StaticBody3D, RigidBody3D, "
 "CharacterBody3D, etc. för att ge dem en form."
 
-msgid "Generating Probe Volumes"
-msgstr "Genererar sond volymer"
-
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Inget anslutet till inmatning '%s' av nod '%s'."
 
-msgid "Add current color as a preset."
-msgstr "Lägg till nuvarande färg som en förinställning."
-
 msgid "Alert!"
 msgstr "Varning!"
-
-msgid "Insert Control Character"
-msgstr "Infoga kontroltecken"
-
-msgid "(Other)"
-msgstr "(Annat)"
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

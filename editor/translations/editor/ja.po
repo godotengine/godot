@@ -1252,6 +1252,9 @@ msgstr "警告"
 msgid "Line and column numbers."
 msgstr "行番号と列番号。"
 
+msgid "Indentation"
+msgstr "インデント"
+
 msgid "Method in target node must be specified."
 msgstr "対象ノードのメソッドを指定してください。"
 
@@ -1854,9 +1857,6 @@ msgstr "フォルダ名は有効です。"
 
 msgid "Thanks from the Godot community!"
 msgstr "Godot コミュニティより感謝を！"
-
-msgid "Click to copy."
-msgstr "クリックしてコピーします。"
 
 msgid "Godot Engine contributors"
 msgstr "Godot エンジンに貢献した人々"
@@ -3712,9 +3712,6 @@ msgstr "ノード"
 msgid "History"
 msgstr "履歴"
 
-msgid "Expand Bottom Panel"
-msgstr "下パネルを展開"
-
 msgid "Output"
 msgstr "出力"
 
@@ -3768,9 +3765,6 @@ msgstr "再読み込み"
 
 msgid "Resave"
 msgstr "再保存"
-
-msgid "Create Version Control Metadata..."
-msgstr "バージョン管理用メタデータの作成..."
 
 msgid "Version Control Settings..."
 msgstr "バージョン管理設定..."
@@ -4606,23 +4600,6 @@ msgstr "エクスポートテンプレートの管理"
 msgid "Export With Debug"
 msgstr "デバッグ付きエクスポート"
 
-msgid "Disable FBX & Restart"
-msgstr "FBXを無効にして再起動"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"このダイアログをキャンセルすると、FBXインポーターは無効になります。\n"
-"プロジェクト設定のファイルシステム > インポート > FBX > 有効 で再有効化できま"
-"す。\n"
-"\n"
-"インポーターはエディター起動時に登録されます。そのため、エディターは再起動しま"
-"す。"
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "FBX2glTFの実行ファイルへのパスが空です。"
 
@@ -4639,13 +4616,6 @@ msgstr "FBX2glTFの実行ファイルは有効です。"
 
 msgid "Configure FBX Importer"
 msgstr "FBXインポーターの設定"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBXファイルをインポートするにはFBX2glTFが必要です。\n"
-"ダウンロードし、バイナリへの有効なパスを指定してください。"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "FBX2glTFをダウンロードするには、このリンクをクリックしてください"
@@ -4972,6 +4942,9 @@ msgstr "グループから除去"
 
 msgid "Global"
 msgstr "グローバル"
+
+msgid "Expand Bottom Panel"
+msgstr "下パネルを展開"
 
 msgid "Move"
 msgstr "移動"
@@ -7044,12 +7017,6 @@ msgstr "相対スナップ"
 msgid "Use Pixel Snap"
 msgstr "ピクセルスナップを使用"
 
-msgid "Smart Snapping"
-msgstr "スマートスナップ"
-
-msgid "Configure Snap..."
-msgstr "スナップの設定..."
-
 msgid "Snap to Parent"
 msgstr "親にスナップ"
 
@@ -7067,6 +7034,12 @@ msgstr "他のノードにスナップ"
 
 msgid "Snap to Guides"
 msgstr "ガイドにスナップ"
+
+msgid "Smart Snapping"
+msgstr "スマートスナップ"
+
+msgid "Configure Snap..."
+msgstr "スナップの設定..."
 
 msgid "Lock selected node, preventing selection and movement."
 msgstr "選択したノードをロックして、選択と移動をできなくします。"
@@ -8457,6 +8430,9 @@ msgstr "環境を表示"
 msgid "View Gizmos"
 msgstr "ギズモを表示"
 
+msgid "View Grid"
+msgstr "グリッドを表示"
+
 msgid "View Information"
 msgstr "情報を表示"
 
@@ -8715,9 +8691,6 @@ msgstr "4 ビューポート"
 msgid "View Origin"
 msgstr "原点を表示"
 
-msgid "View Grid"
-msgstr "グリッドを表示"
-
 msgid "Settings..."
 msgstr "設定..."
 
@@ -8935,9 +8908,6 @@ msgstr "ハンドルOut #"
 msgid "Handle Tilt #"
 msgstr "ハンドルTilt #"
 
-msgid "Set Curve Point Position"
-msgstr "カーブポイントの位置を設定"
-
 msgid "Set Curve Out Position"
 msgstr "曲線のOut-Controlの位置を指定"
 
@@ -8964,6 +8934,9 @@ msgstr "ポイントTiltをリセット"
 
 msgid "Split Segment (in curve)"
 msgstr "セグメントを分割する(曲線内)"
+
+msgid "Set Curve Point Position"
+msgstr "カーブポイントの位置を設定"
 
 msgid "Move Joint"
 msgstr "ジョイントを移動"
@@ -9276,14 +9249,14 @@ msgstr "前の履歴"
 msgid "History Next"
 msgstr "次の履歴"
 
-msgid "Theme"
-msgstr "テーマ"
-
 msgid "Import Theme..."
 msgstr "テーマのインポート..."
 
 msgid "Reload Theme"
 msgstr "テーマを再読み込み"
+
+msgid "Theme"
+msgstr "テーマ"
 
 msgid "Save Theme"
 msgstr "テーマを保存"
@@ -9402,9 +9375,6 @@ msgstr "色を取得"
 
 msgid "Folding"
 msgstr "折りたたみ"
-
-msgid "Indentation"
-msgstr "インデント"
 
 msgid "Uppercase"
 msgstr "大文字"
@@ -9715,12 +9685,6 @@ msgstr "画像を読み込めませんでした:"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "エラー:フレームリソースを読み込めませんでした！"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "リソースクリップボードは空か、テクスチャ以外のものです！"
-
-msgid "Paste Frame"
-msgstr "フレームを貼り付け"
-
 msgid "Add Empty"
 msgstr "空を追加"
 
@@ -9771,9 +9735,6 @@ msgstr "スプライトシートからフレームを追加する"
 
 msgid "Delete Frame"
 msgstr "フレームを削除"
-
-msgid "Copy Frame"
-msgstr "フレームをコピー"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "空白を挿入(選択範囲の前)"
@@ -14055,13 +14016,6 @@ msgstr "生成"
 msgid "Replicate"
 msgstr "複製"
 
-msgid ""
-"Add properties using the options above, or\n"
-"drag them them from the inspector and drop them here."
-msgstr ""
-"上記オプションを使ってプロパティを追加するか\n"
-"インスペクタからドラッグしてここにドロップする。"
-
 msgid "Please select a MultiplayerSynchronizer first."
 msgstr "はじめにMultiplayerSynchronizerを選択してください。"
 
@@ -15200,6 +15154,85 @@ msgstr ""
 "です。"
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"CPUParticles2Dアニメーションでは、 \"Particles Animation\" を有効にした"
+"CanvasItemMaterialを使用する必要があります。"
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+"パーティクルを処理するマテリアルが割り当てられていないため、動作を反映できませ"
+"んでした。"
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Particles2Dアニメーションでは、 \"Particles Animation\"が有効になっている"
+"CanvasItemMaterialを使用する必要があります。"
+
+msgid ""
+"Particle trails are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr ""
+"パーティクルトレイルは、Forward+ または Mobile レンダリング バックエンドを使用"
+"している場合にのみ使用できます。"
+
+msgid ""
+"Particle sub-emitters are not available when using the GL Compatibility "
+"rendering backend."
+msgstr ""
+"GL 互換性レンダリングバックエンドを使用している場合、パーティクル サブエミッ"
+"ターは使用できません。"
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr ""
+"光の形状を持つテクスチャは\"Texture\"プロパティに指定する必要があります。"
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"この遮蔽を有効にして、オクルーダーポリゴンを設定 (または描画) する必要がありま"
+"す。"
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "この遮蔽用のオクルーダーポリゴンは空です。ポリゴンを描いてください。"
+
+msgid ""
+"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
+msgstr ""
+"NavigationAgent2D は、親ノードを継承する Node2D 配下でのみ使用できます。"
+
+msgid ""
+"NavigationLink2D start position should be different than the end position to "
+"be useful."
+msgstr ""
+"有用であるためには、NavigationLink2D の開始位置は終了位置と異なる必要がありま"
+"す。"
+
+msgid ""
+"A NavigationMesh resource must be set or created for this node to work. "
+"Please set a property or draw a polygon."
+msgstr ""
+"このノードが機能するには、NavigationMesh リソースを設定または作成する必要があ"
+"ります。プロパティを設定するか、ポリゴンを描画してください。"
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"ParallaxLayer ノードは、ParallaxBackground ノードの子として設定されている場合"
+"のみ動作します。"
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr ""
+"PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -15249,41 +15282,6 @@ msgstr ""
 "ポリゴンベースのシェイプは、CollisionShape2Dノードで使用したり直接編集したりす"
 "るには適しません。代わりにCollisionPolygon2Dノードを使用してください。"
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"CPUParticles2Dアニメーションでは、 \"Particles Animation\" を有効にした"
-"CanvasItemMaterialを使用する必要があります。"
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-"パーティクルを処理するマテリアルが割り当てられていないため、動作を反映できませ"
-"んでした。"
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Particles2Dアニメーションでは、 \"Particles Animation\"が有効になっている"
-"CanvasItemMaterialを使用する必要があります。"
-
-msgid ""
-"Particle trails are only available when using the Forward+ or Mobile "
-"rendering backends."
-msgstr ""
-"パーティクルトレイルは、Forward+ または Mobile レンダリング バックエンドを使用"
-"している場合にのみ使用できます。"
-
-msgid ""
-"Particle sub-emitters are not available when using the GL Compatibility "
-"rendering backend."
-msgstr ""
-"GL 互換性レンダリングバックエンドを使用している場合、パーティクル サブエミッ"
-"ターは使用できません。"
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Node AとNode Bは PhysicsBody2D でなければなりません"
 
@@ -15298,50 +15296,6 @@ msgstr "Joint が2つの PhysicsBody2D に接続されてません"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Node A と Node B は異なる PhysicsBody2D でなければなりません"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr ""
-"光の形状を持つテクスチャは\"Texture\"プロパティに指定する必要があります。"
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"この遮蔽を有効にして、オクルーダーポリゴンを設定 (または描画) する必要がありま"
-"す。"
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "この遮蔽用のオクルーダーポリゴンは空です。ポリゴンを描いてください。"
-
-msgid ""
-"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
-msgstr ""
-"NavigationAgent2D は、親ノードを継承する Node2D 配下でのみ使用できます。"
-
-msgid ""
-"NavigationLink2D start position should be different than the end position to "
-"be useful."
-msgstr ""
-"有用であるためには、NavigationLink2D の開始位置は終了位置と異なる必要がありま"
-"す。"
-
-msgid ""
-"A NavigationMesh resource must be set or created for this node to work. "
-"Please set a property or draw a polygon."
-msgstr ""
-"このノードが機能するには、NavigationMesh リソースを設定または作成する必要があ"
-"ります。プロパティを設定するか、ポリゴンを描画してください。"
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"ParallaxLayer ノードは、ParallaxBackground ノードの子として設定されている場合"
-"のみ動作します。"
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
-"PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
 
 msgid ""
 "A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
@@ -15373,15 +15327,15 @@ msgstr ""
 "されます。\n"
 "代わりに、子の衝突シェイプのサイズを変更してください。"
 
-msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
-"Path プロパティは、動作するように有効な Node2D ノードを示す必要があります。"
-
 msgid ""
 "This node cannot interact with other objects unless a Shape2D is assigned."
 msgstr ""
 "このノードは、Shape2D が割り当てられていない限り、他のオブジェクトとインタラク"
 "トできません。"
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr ""
+"Path プロパティは、動作するように有効な Node2D ノードを示す必要があります。"
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "このBone2DチェインはSkeleton2Dノードで終了する必要があります。"
@@ -15454,84 +15408,6 @@ msgid ""
 msgstr ""
 "BoneAttachment3D ノードはどのボーンにもバインドされていません！このノードに接"
 "続するボーンを選択してください。"
-
-msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
-"its shape."
-msgstr ""
-"このノードにはシェイプがないため、他のオブジェクトと衝突したり相互作用したりす"
-"ることはできません。\n"
-"CollisionShape3D または CollisionPolygon3D を子として追加して、そのシェイプを"
-"定義することを検討してください。"
-
-msgid ""
-"With a non-uniform scale this node will probably not function as expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size in children collision shapes instead."
-msgstr ""
-"スケールが均一でない場合、このノードは期待どおりに機能しない可能性がありま"
-"す。\n"
-"スケールを均一(つまり、すべての軸で同じ)にして、代わりに子のコリジョンシェイプ"
-"のサイズを変更してください。"
-
-msgid ""
-"CollisionPolygon3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon2Dは、CollisionObject2D派生ノードにコリジョンシェイプを提供す"
-"るためにのみ機能します。シェイプを追加する場合は、Area2D、StaticBody2D、"
-"RigidBody2D、KinematicBody2Dなどの子として使用してください。"
-
-msgid "An empty CollisionPolygon3D has no effect on collision."
-msgstr "空の CollisionPolygon3D は衝突判定に影響を与えません。"
-
-msgid ""
-"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change its "
-"polygon's vertices instead."
-msgstr ""
-"不均一にスケーリングされた CollisionPolygon3D ノードは、期待どおりに機能しない"
-"可能性があります。\n"
-"スケールを均一(つまり、すべての軸で同じ)にし、代わりにポリゴンの頂点を変更して"
-"ください。"
-
-msgid ""
-"CollisionShape3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionShape3Dは、CollisionObject3D派生ノードにコリジョン形状を提供するため"
-"だけのものです。\n"
-"Area3D、StaticBody3D、RigidBody3D、CharacterBody3Dなどの子ノードとして、形状を"
-"与えるためだけに使用してください。"
-
-msgid ""
-"A shape must be provided for CollisionShape3D to function. Please create a "
-"shape resource for it."
-msgstr ""
-"CollisionShape3D が機能するには、シェイプを提供する必要があります。シェイプリ"
-"ソースを作成してください。"
-
-msgid ""
-"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
-msgstr ""
-"WorldBoundaryShape3D は、静的モード以外の RigidBody3D をサポートしていません。"
-
-msgid ""
-"A non-uniformly scaled CollisionShape3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size of its shape resource instead."
-msgstr ""
-"不均一にスケーリングされた CollisionShape3D ノードは、期待どおりに機能しない可"
-"能性があります。\n"
-"スケールを均一 (つまり、すべての軸で同じ) にして、代わりにシェイプ リソースの"
-"サイズを変更してください。"
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "メッシュが割り当てられていないため、何も表示されません。"
@@ -15640,21 +15516,6 @@ msgstr ""
 "マスクのベイク処理には有効なビットがありません。これは、ベイク処理によってこ"
 "の GPUParticlesCollisionSDF3D に衝突が発生しないことを意味します。\n"
 "これを解決するには、Bake Mask プロパティで少なくとも1ビットを有効にします。"
-
-msgid "Node A and Node B must be PhysicsBody3Ds"
-msgstr "ノード A とノード B は PhysicsBody3D である必要があります"
-
-msgid "Node A must be a PhysicsBody3D"
-msgstr "ノード A は PhysicsBody3D である必要があります"
-
-msgid "Node B must be a PhysicsBody3D"
-msgstr "ノード B は PhysicsBody3D である必要があります"
-
-msgid "Joint is not connected to any PhysicsBody3Ds"
-msgstr "ジョイントはどの PhysicsBody3D にも接続されていません"
-
-msgid "Node A and Node B must be different PhysicsBody3Ds"
-msgstr "ノード A とノード B は異なる PhysicsBody3D である必要があります"
 
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "ライトのスケールは、ライトの視覚的なサイズには影響しません。"
@@ -15777,6 +15638,99 @@ msgstr ""
 "Vector」を有効にする必要があります。"
 
 msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
+"its shape."
+msgstr ""
+"このノードにはシェイプがないため、他のオブジェクトと衝突したり相互作用したりす"
+"ることはできません。\n"
+"CollisionShape3D または CollisionPolygon3D を子として追加して、そのシェイプを"
+"定義することを検討してください。"
+
+msgid ""
+"With a non-uniform scale this node will probably not function as expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size in children collision shapes instead."
+msgstr ""
+"スケールが均一でない場合、このノードは期待どおりに機能しない可能性がありま"
+"す。\n"
+"スケールを均一(つまり、すべての軸で同じ)にして、代わりに子のコリジョンシェイプ"
+"のサイズを変更してください。"
+
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon2Dは、CollisionObject2D派生ノードにコリジョンシェイプを提供す"
+"るためにのみ機能します。シェイプを追加する場合は、Area2D、StaticBody2D、"
+"RigidBody2D、KinematicBody2Dなどの子として使用してください。"
+
+msgid "An empty CollisionPolygon3D has no effect on collision."
+msgstr "空の CollisionPolygon3D は衝突判定に影響を与えません。"
+
+msgid ""
+"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change its "
+"polygon's vertices instead."
+msgstr ""
+"不均一にスケーリングされた CollisionPolygon3D ノードは、期待どおりに機能しない"
+"可能性があります。\n"
+"スケールを均一(つまり、すべての軸で同じ)にし、代わりにポリゴンの頂点を変更して"
+"ください。"
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape3Dは、CollisionObject3D派生ノードにコリジョン形状を提供するため"
+"だけのものです。\n"
+"Area3D、StaticBody3D、RigidBody3D、CharacterBody3Dなどの子ノードとして、形状を"
+"与えるためだけに使用してください。"
+
+msgid ""
+"A shape must be provided for CollisionShape3D to function. Please create a "
+"shape resource for it."
+msgstr ""
+"CollisionShape3D が機能するには、シェイプを提供する必要があります。シェイプリ"
+"ソースを作成してください。"
+
+msgid ""
+"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
+msgstr ""
+"WorldBoundaryShape3D は、静的モード以外の RigidBody3D をサポートしていません。"
+
+msgid ""
+"A non-uniformly scaled CollisionShape3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size of its shape resource instead."
+msgstr ""
+"不均一にスケーリングされた CollisionShape3D ノードは、期待どおりに機能しない可"
+"能性があります。\n"
+"スケールを均一 (つまり、すべての軸で同じ) にして、代わりにシェイプ リソースの"
+"サイズを変更してください。"
+
+msgid "Node A and Node B must be PhysicsBody3Ds"
+msgstr "ノード A とノード B は PhysicsBody3D である必要があります"
+
+msgid "Node A must be a PhysicsBody3D"
+msgstr "ノード A は PhysicsBody3D である必要があります"
+
+msgid "Node B must be a PhysicsBody3D"
+msgstr "ノード B は PhysicsBody3D である必要があります"
+
+msgid "Joint is not connected to any PhysicsBody3Ds"
+msgstr "ジョイントはどの PhysicsBody3D にも接続されていません"
+
+msgid "Node A and Node B must be different PhysicsBody3Ds"
+msgstr "ノード A とノード B は異なる PhysicsBody3D である必要があります"
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
@@ -15784,6 +15738,26 @@ msgstr ""
 "RigidBody3D に対するスケールの変更は、実行時に物理エンジンによってオーバーライ"
 "ドされます。\n"
 "代わりに、子のコリジョンシェイプのサイズを変更してください。"
+
+msgid ""
+"This node cannot interact with other objects unless a Shape3D is assigned."
+msgstr ""
+"このノードは、Shape3D が割り当てられていない限り、他のオブジェクトとインタラク"
+"トできません。"
+
+msgid ""
+"ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be "
+"reported."
+msgstr ""
+"ShapeCast3D は ConcavePolygonShape3D をサポートしていません。コリジョンは報告"
+"されません。"
+
+msgid ""
+"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
+"use it as a child of a VehicleBody3D."
+msgstr ""
+"VehicleWheel3D は、VehicleBody3D にホイール システムを提供する役割を果たしま"
+"す。VehicleBody3Dの子としてご利用ください。"
 
 msgid ""
 "ReflectionProbes are not supported when using the GL Compatibility backend "
@@ -15799,19 +15773,6 @@ msgstr ""
 "「リモート パス」プロパティが機能するには、有効な Node3D または Node3D 派生"
 "ノードを指す必要があります。"
 
-msgid ""
-"This node cannot interact with other objects unless a Shape3D is assigned."
-msgstr ""
-"このノードは、Shape3D が割り当てられていない限り、他のオブジェクトとインタラク"
-"トできません。"
-
-msgid ""
-"ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be "
-"reported."
-msgstr ""
-"ShapeCast3D は ConcavePolygonShape3D をサポートしていません。コリジョンは報告"
-"されません。"
-
 msgid "This body will be ignored until you set a mesh."
 msgstr "このボディは、メッシュを設定するまで無視されます。"
 
@@ -15821,20 +15782,6 @@ msgid ""
 msgstr ""
 "SpriteFrames リソースを作成または AnimatedSprite3D フレームを表示するためには "
 "'Frames' プロパティを設定する必要があります。"
-
-msgid ""
-"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
-"use it as a child of a VehicleBody3D."
-msgstr ""
-"VehicleWheel3D は、VehicleBody3D にホイール システムを提供する役割を果たしま"
-"す。VehicleBody3Dの子としてご利用ください。"
-
-msgid ""
-"VisibleOnScreenNotifier3D nodes are not supported when using the GL "
-"Compatibility backend yet. Support will be added in a future release."
-msgstr ""
-"GL 互換性バックエンドを使用している場合、VisibleOnScreenNotifier3D ノードはま"
-"だサポートされていません。サポートは将来のリリースで追加される予定です。"
 
 msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
@@ -15949,51 +15896,11 @@ msgstr ""
 "ButtonGroup は、toggle_mode が true に設定されているボタンでのみ使用することを"
 "目的としています。"
 
-msgid "New Code Region"
-msgstr "新しいコード領域"
-
 msgid "Copy this constructor in a script."
 msgstr "このコンストラクターをスクリプトにコピーします。"
 
-msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
-msgstr "16進コード (「#ff0000」) または名前付きの色 (「red」) を入力します。"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"色: #%s\n"
-"左クリック: カラーを適用\n"
-"右クリック: プリセットを削除"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"色: #%s\n"
-"左クリック: 色をセット"
-
-msgid "Pick a color from the screen."
-msgstr "画面から色を選択します。"
-
-msgid "Pick a color from the application window."
-msgstr "アプリケーション ウィンドウから色を選択します。"
-
-msgid "Select a picker shape."
-msgstr "ピッカーシェイプを選択"
-
-msgid "Select a picker mode."
-msgstr "ピッカー・モードを選択"
-
 msgid "Switch between hexadecimal and code values."
 msgstr "16進数とコード値を切り替えます。"
-
-msgid "Hex code or named color"
-msgstr "16 進コードまたは名前付きの色"
-
-msgid "Add current color as a preset."
-msgstr "現在の色をプリセットとして追加します。"
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -16023,12 +15930,6 @@ msgstr ""
 msgid "Alert!"
 msgstr "警告！"
 
-msgid "You don't have permission to access contents of this folder."
-msgstr "このフォルダーの内容にアクセスする権限がありません。"
-
-msgid "Invalid extension, or empty filename."
-msgstr "拡張子が無効か、ファイル名が空です。"
-
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
 "refactoring in a future 4.x version involving compatibility-breaking API "
@@ -16036,21 +15937,6 @@ msgid ""
 msgstr ""
 "GraphEdit と GraphNode は、将来の 4.x バージョンで、互換性に影響がある API 変"
 "更を含む広範なリファクタリングを受ける予定であることに注意してください。"
-
-msgid "Toggle the visual grid."
-msgstr "ビジュアルグリッドを切り替えます。"
-
-msgid "Toggle snapping to the grid."
-msgstr "グリッドスナッピングをオン / オフします。"
-
-msgid "Change the snapping distance."
-msgstr "スナップ距離を変更します。"
-
-msgid "Toggle the graph minimap."
-msgstr "グラフのミニマップを切り替えます。"
-
-msgid "Automatically arrange selected nodes."
-msgstr "選択したノードを自動的に配置します。"
 
 msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
@@ -16065,75 +15951,6 @@ msgid ""
 msgstr ""
 "現在のフォントは、このラベルのテキストで使用されている1つ以上の文字のレンダリ"
 "ングをサポートしていません。"
-
-msgid "Same as Layout Direction"
-msgstr "レイアウト方向と同じ"
-
-msgid "Auto-Detect Direction"
-msgstr "方向の自動検出"
-
-msgid "Left-to-Right"
-msgstr "左から右"
-
-msgid "Right-to-Left"
-msgstr "右から左"
-
-msgid "Left-to-Right Mark (LRM)"
-msgstr "左から右へのマーク (LRM)"
-
-msgid "Right-to-Left Mark (RLM)"
-msgstr "右から左へのマーク (RLM)"
-
-msgid "Start of Left-to-Right Embedding (LRE)"
-msgstr "左から右への埋め込み (LRE) の開始"
-
-msgid "Start of Right-to-Left Embedding (RLE)"
-msgstr "右から左への埋め込み (RLE) の開始"
-
-msgid "Start of Left-to-Right Override (LRO)"
-msgstr "左から右へのオーバーライド (LRO) の開始"
-
-msgid "Start of Right-to-Left Override (RLO)"
-msgstr "右から左へのオーバーライド (RLO) の開始"
-
-msgid "Pop Direction Formatting (PDF)"
-msgstr "ポップ方向のフォーマット (PDF)"
-
-msgid "Arabic Letter Mark (ALM)"
-msgstr "アラビア文字マーク (ALM)"
-
-msgid "Left-to-Right Isolate (LRI)"
-msgstr "左から右への分離 (LRI)"
-
-msgid "Right-to-Left Isolate (RLI)"
-msgstr "右から左への分離 (RLI)"
-
-msgid "First Strong Isolate (FSI)"
-msgstr "ファーストストロングアイソレート(FSI)"
-
-msgid "Pop Direction Isolate (PDI)"
-msgstr "ポップディレクションアイソレート (PDI)"
-
-msgid "Zero-Width Joiner (ZWJ)"
-msgstr "ゼロ幅ジョイナー (ZWJ)"
-
-msgid "Zero-Width Non-Joiner (ZWNJ)"
-msgstr "ゼロ幅非ジョイナー (ZWNJ)"
-
-msgid "Word Joiner (WJ)"
-msgstr "ワードジョイナー (WJ)"
-
-msgid "Soft Hyphen (SHY)"
-msgstr "ソフトハイフン(SHY)"
-
-msgid "Text Writing Direction"
-msgstr "テキストの書き込み方向"
-
-msgid "Display Control Characters"
-msgstr "制御文字を表示"
-
-msgid "Insert Control Character"
-msgstr "制御文字を挿入"
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "「Exp Edit」がtrueの場合、「Min Value」は0より大きい必要があります。"
@@ -16163,9 +15980,6 @@ msgid ""
 msgstr ""
 "SubViewportContainer のデフォルトのマウス カーソルの形状は効果がありません。\n"
 "初期値「CURSOR_ARROW」のままにすることを検討してください。"
-
-msgid "(Other)"
-msgstr "(その他)"
 
 msgid ""
 "This node was saved as class type '%s', which was no longer available when "

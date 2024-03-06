@@ -1832,9 +1832,6 @@ msgstr "نام پوشه معتبر است."
 msgid "Thanks from the Godot community!"
 msgstr "با تشکر از سوی جامعهٔ گودوت!"
 
-msgid "Click to copy."
-msgstr "برای کپی کردن کلیک کنید."
-
 msgid "Godot Engine contributors"
 msgstr "مشارکت‌کنندگان موتور گودو"
 
@@ -4675,14 +4672,14 @@ msgstr "بار کردن..."
 msgid "Save All"
 msgstr "ذخیره‌سازی همه"
 
-msgid "Theme"
-msgstr "زمینه"
-
 msgid "Import Theme..."
 msgstr "وارد کردن زمینه..."
 
 msgid "Reload Theme"
 msgstr "بارگذاری دوباره زمینه"
+
+msgid "Theme"
+msgstr "زمینه"
 
 msgid "Save Theme"
 msgstr "ذخیره زمینه"
@@ -4853,12 +4850,6 @@ msgstr "قادر به بارگذاری تصاویر نیست"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "اخطار: منبع فریم بارگذاری نشد!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "کلیپ‌بورد منبع خالی است یا یک تکسچر نیست!"
-
-msgid "Paste Frame"
-msgstr "چسباندن فریم"
-
 msgid "Add Empty"
 msgstr "اضافه کردن خالی"
 
@@ -4909,9 +4900,6 @@ msgstr "افزودن فریم‌ها از ورقه اسپرایت"
 
 msgid "Delete Frame"
 msgstr "حذف فریم"
-
-msgid "Copy Frame"
-msgstr "کپی فریم"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "درج خالی (پیش از انتخاب‌شده)"
@@ -6124,6 +6112,26 @@ msgstr "خطا در راه‌اندازی سرور ‭"
 msgid "Run exported project on remote Windows system"
 msgstr "اجرای پروژه خروجی گرفته‌شده روی سیستم ویندوز از راه دور"
 
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr "یک تکسچر با شکل نور باید برای دارایی \"Texture\" فراهم شده باشد."
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr "یک چندضلعی انسدادی باید تنظیم (یا ترسیم) شود تا جلوه کننده باشد."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"گره ParallaxLayer تنها در زمانی که به عنوان فرزند یک گره ParallaxBackground "
+"تنظیم شود کار می‌کند."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr ""
+"PathFollow2D تنها در زمانی که به عنوان یک فرزند یک گره Path2D تنظیم شود کار "
+"می‌کند."
+
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "یک CollisionPolygon2D خالی جلوه بر برخورد ندارد."
 
@@ -6146,26 +6154,6 @@ msgstr "گره ب باید یک PhysicsBody2D باشد"
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "گره الف و گره ب باید PhysicsBody2Dهای جداگانه باشند"
 
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr "یک تکسچر با شکل نور باید برای دارایی \"Texture\" فراهم شده باشد."
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr "یک چندضلعی انسدادی باید تنظیم (یا ترسیم) شود تا جلوه کننده باشد."
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"گره ParallaxLayer تنها در زمانی که به عنوان فرزند یک گره ParallaxBackground "
-"تنظیم شود کار می‌کند."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
-"PathFollow2D تنها در زمانی که به عنوان یک فرزند یک گره Path2D تنظیم شود کار "
-"می‌کند."
-
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "دارایی Path باید به یک گره Node2D معتبر اشاره کند تا کار کند."
 
@@ -6187,17 +6175,8 @@ msgstr "انیمیشن پیدا نشد: '%s'"
 msgid "Alert!"
 msgstr "هشدار!"
 
-msgid "Left-to-Right"
-msgstr "چپ به راست"
-
-msgid "Right-to-Left"
-msgstr "راست به چپ"
-
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "اگر \"Exp ویرایش\" فعال است, \"حداقل داده\" باید بزرگتر از 0 باشد."
-
-msgid "(Other)"
-msgstr "(دیگر)"
 
 msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"

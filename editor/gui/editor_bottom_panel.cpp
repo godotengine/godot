@@ -105,6 +105,8 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 			EditorNode::get_top_split()->show();
 		}
 	}
+
+	last_opened_control = items[p_idx].control;
 }
 
 void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
@@ -156,12 +158,13 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 	}
 }
 
-Button *EditorBottomPanel::add_item(String p_text, Control *p_item, bool p_at_front) {
+Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
 	Button *tb = memnew(Button);
 	tb->set_theme_type_variation("FlatMenuButton");
 	tb->connect("toggled", callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item));
 	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorBottomPanel::_button_drag_hover).bind(tb, p_item), Callable());
 	tb->set_text(p_text);
+	tb->set_shortcut(p_shortcut);
 	tb->set_toggle_mode(true);
 	tb->set_focus_mode(Control::FOCUS_NONE);
 	item_vbox->add_child(p_item);
@@ -218,6 +221,17 @@ void EditorBottomPanel::hide_bottom_panel() {
 			_switch_to_item(false, i);
 			break;
 		}
+	}
+}
+
+void EditorBottomPanel::toggle_last_opened_bottom_panel() {
+	// Select by control instead of index, so that the last bottom panel is opened correctly
+	// if it's been reordered since.
+	if (last_opened_control) {
+		_switch_by_control(!last_opened_control->is_visible(), last_opened_control);
+	} else {
+		// Open the first panel in the list if no panel was opened this session.
+		_switch_to_item(true, 0);
 	}
 }
 

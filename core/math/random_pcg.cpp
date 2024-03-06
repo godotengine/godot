@@ -43,7 +43,7 @@ void RandomPCG::randomize() {
 	seed(((uint64_t)OS::get_singleton()->get_unix_time() + OS::get_singleton()->get_ticks_usec()) * pcg.state + PCG_DEFAULT_INC_64);
 }
 
-int RandomPCG::rand_weighted(const Vector<float> &p_weights) {
+int64_t RandomPCG::rand_weighted(const Vector<float> &p_weights) {
 	ERR_FAIL_COND_V_MSG(p_weights.is_empty(), -1, "Weights array is empty.");
 	int64_t weights_size = p_weights.size();
 	const float *weights = p_weights.ptr();

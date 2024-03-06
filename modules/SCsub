@@ -19,7 +19,6 @@ env.CommandNoCache(
     Value(env.module_list),
     env.Run(
         modules_builders.generate_modules_enabled,
-        "Generating enabled modules header.",
         # NOTE: No need to run in subprocess since this is still executed serially.
         subprocess=False,
     ),
@@ -58,7 +57,6 @@ if env["tests"]:
         test_headers,
         env.Run(
             modules_builders.generate_modules_tests,
-            "Generating modules tests header.",
             # NOTE: No need to run in subprocess since this is still executed serially.
             subprocess=False,
         ),

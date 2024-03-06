@@ -1953,9 +1953,6 @@ msgstr "متغير"
 msgid "Centered"
 msgstr "المتوسطة"
 
-msgid "Point"
-msgstr "نقطة"
-
 msgid "Left"
 msgstr "يساراً"
 
@@ -1964,12 +1961,6 @@ msgstr "فوق"
 
 msgid "Right"
 msgstr "يميناً"
-
-msgid "Input"
-msgstr "إدخال"
-
-msgid "Disabled"
-msgstr "معطّل"
 
 msgid "Time"
 msgstr "الوقت"
@@ -1994,6 +1985,21 @@ msgstr "اللون الإفتراضي"
 
 msgid "Fill"
 msgstr "التعبئة"
+
+msgid "Repeat"
+msgstr "كرر"
+
+msgid "End"
+msgstr "النهاية"
+
+msgid "Point"
+msgstr "نقطة"
+
+msgid "Input"
+msgstr "إدخال"
+
+msgid "Disabled"
+msgstr "معطّل"
 
 msgid "Linear"
 msgstr "خطي"
@@ -2022,15 +2028,6 @@ msgstr "نظام تعديل"
 msgid "Update Mode"
 msgstr "وضع التحديث"
 
-msgid "End"
-msgstr "النهاية"
-
-msgid "Upper Angle"
-msgstr "الزاوية العلوية"
-
-msgid "Lower Angle"
-msgstr "الزاوية السفلية"
-
 msgid "Pixel Size"
 msgstr "حجم البكسل"
 
@@ -2049,11 +2046,11 @@ msgstr "الضبابية"
 msgid "Quality"
 msgstr "جودة"
 
-msgid "Bones"
-msgstr "العظام"
+msgid "Upper Angle"
+msgstr "الزاوية العلوية"
 
-msgid "Target"
-msgstr "الهدف"
+msgid "Lower Angle"
+msgstr "الزاوية السفلية"
 
 msgid "Engine Force"
 msgstr "قوة المحرك"
@@ -2066,6 +2063,12 @@ msgstr "عجلة"
 
 msgid "Travel"
 msgstr "السفر"
+
+msgid "Bones"
+msgstr "العظام"
+
+msgid "Target"
+msgstr "الهدف"
 
 msgid "Pose"
 msgstr "وضعية"
@@ -2136,9 +2139,6 @@ msgstr "توسيع"
 msgid "Z Index"
 msgstr "مؤشر ز"
 
-msgid "Repeat"
-msgstr "كرر"
-
 msgid "NormalMap"
 msgstr "خريطة عادية"
 
@@ -2196,14 +2196,53 @@ msgstr "فيزياء 2D"
 msgid "3D Physics"
 msgstr "فيزياء 3D"
 
+msgid "B"
+msgstr "بايت (Byte)"
+
+msgid "Terrains"
+msgstr "التضاريس"
+
+msgid "Custom Data"
+msgstr "البيانات مخصصة"
+
+msgid "Scene"
+msgstr "المشهد"
+
+msgid "Transpose"
+msgstr "المصفوفة المنقولة Transpose"
+
+msgid "Texture Origin"
+msgstr "أصل الملمس"
+
+msgid "Y Sort Origin"
+msgstr "فرز مركز ص"
+
+msgid "Miscellaneous"
+msgstr "متنوع"
+
+msgid "Probability"
+msgstr "الاحتمال"
+
+msgid "Item"
+msgstr "عنصر"
+
+msgid "Preview"
+msgstr "معاينة"
+
+msgid "Sky"
+msgstr "سَمَاء"
+
+msgid "Rayleigh"
+msgstr "التبعثر الضوئي"
+
+msgid "Ground Color"
+msgstr "اللون الأرض"
+
 msgid "Atlas"
 msgstr "أطلس"
 
 msgid "Format"
 msgstr "البنية (اللاحقة)"
-
-msgid "Sky"
-msgstr "سَمَاء"
 
 msgid "Source"
 msgstr "مصدر"
@@ -2241,23 +2280,8 @@ msgstr "التشتت تحت السطح"
 msgid "MSDF"
 msgstr "حقل مسافة متعدد (ح م ع)(MSDF)"
 
-msgid "Item"
-msgstr "عنصر"
-
-msgid "Preview"
-msgstr "معاينة"
-
 msgid "Image Size"
 msgstr "حجم الصورة"
-
-msgid "B"
-msgstr "بايت (Byte)"
-
-msgid "Rayleigh"
-msgstr "التبعثر الضوئي"
-
-msgid "Ground Color"
-msgstr "اللون الأرض"
 
 msgid "Blend"
 msgstr "دمج"
@@ -2273,30 +2297,6 @@ msgstr "في الأسفل يميناً"
 
 msgid "Bottom Left"
 msgstr "في الأسفل يساراً"
-
-msgid "Terrains"
-msgstr "التضاريس"
-
-msgid "Custom Data"
-msgstr "البيانات مخصصة"
-
-msgid "Scene"
-msgstr "المشهد"
-
-msgid "Transpose"
-msgstr "المصفوفة المنقولة Transpose"
-
-msgid "Texture Origin"
-msgstr "أصل الملمس"
-
-msgid "Y Sort Origin"
-msgstr "فرز مركز ص"
-
-msgid "Miscellaneous"
-msgstr "متنوع"
-
-msgid "Probability"
-msgstr "الاحتمال"
 
 msgid "File"
 msgstr "ملف"

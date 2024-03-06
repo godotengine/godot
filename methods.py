@@ -607,6 +607,12 @@ def no_verbose(sys, env):
     java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(
         colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
+    compiled_resource_message = "{}Creating Compiled Resource {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+    )
+    generated_file_message = "{}Generating {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+    )
 
     env.Append(CXXCOMSTR=[compile_source_message])
     env.Append(CCCOMSTR=[compile_source_message])
@@ -618,6 +624,8 @@ def no_verbose(sys, env):
     env.Append(LINKCOMSTR=[link_program_message])
     env.Append(JARCOMSTR=[java_library_message])
     env.Append(JAVACCOMSTR=[java_compile_source_message])
+    env.Append(RCCOMSTR=[compiled_resource_message])
+    env.Append(GENCOMSTR=[generated_file_message])
 
 
 def detect_visual_c_compiler_version(tools_env):
@@ -817,15 +825,14 @@ def CommandNoCache(env, target, sources, command, **args):
     return result
 
 
-def Run(env, function, short_message, subprocess=True):
+def Run(env, function, subprocess=True):
     from SCons.Script import Action
     from platform_methods import run_in_subprocess
 
-    output_print = short_message if not env["verbose"] else ""
     if not subprocess:
-        return Action(function, output_print)
+        return Action(function, "$GENCOMSTR")
     else:
-        return Action(run_in_subprocess(function), output_print)
+        return Action(run_in_subprocess(function), "$GENCOMSTR")
 
 
 def detect_darwin_sdk_path(platform, env):

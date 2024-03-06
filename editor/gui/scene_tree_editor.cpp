@@ -1030,8 +1030,13 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	}
 }
 
-void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
-	TreeItem *item = _find(tree->get_root(), p_node->get_path());
+void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *p_item) {
+	TreeItem *item;
+	if (p_item) {
+		item = p_item; // During batch rename the paths may change, so using _find() is unreliable.
+	} else {
+		item = _find(tree->get_root(), p_node->get_path());
+	}
 	ERR_FAIL_NULL(item);
 	String new_name = p_name.validate_node_name();
 
@@ -1069,7 +1074,7 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 
 	// We previously made sure name is not the same as current name so that it won't complain about already used unique name when not changing name.
 	if (p_node->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name)) {
-		String text = TTR("Another node already uses this unique name in the scene.");
+		String text = vformat(TTR("A node with the unique name %s already exists in this scene."), new_name);
 		if (error->is_visible()) {
 			if (!error->get_meta("same_unique_name", false)) {
 				error->set_text(error->get_text() + "\n\n" + text);
@@ -1091,7 +1096,7 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 		emit_signal(SNAME("node_renamed"));
 	} else {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action("Rename Node", UndoRedo::MERGE_DISABLE, p_node);
+		undo_redo->create_action(TTR("Rename Node"), UndoRedo::MERGE_DISABLE, p_node);
 
 		emit_signal(SNAME("node_prerename"), p_node, new_name);
 
@@ -1108,17 +1113,37 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 	}
 }
 
-void SceneTreeEditor::_renamed() {
-	TreeItem *which = tree->get_edited();
-
+void SceneTreeEditor::_edited() {
+	TreeItem *which = tree->get_next_selected(nullptr);
 	ERR_FAIL_NULL(which);
-	NodePath np = which->get_metadata(0);
-	Node *n = get_node(np);
-	ERR_FAIL_NULL(n);
+	TreeItem *edited = tree->get_edited();
+	ERR_FAIL_NULL(edited);
 
-	String new_name = which->get_text(0);
+	if (is_scene_tree_dock && tree->get_next_selected(which)) {
+		List<Node *> nodes_to_rename;
+		for (TreeItem *item = which; item; item = tree->get_next_selected(item)) {
+			Node *n = get_node(item->get_metadata(0));
+			ERR_FAIL_NULL(n);
+			nodes_to_rename.push_back(n);
+		}
+		ERR_FAIL_COND(nodes_to_rename.is_empty());
 
-	_rename_node(n, new_name);
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Rename Nodes"), UndoRedo::MERGE_DISABLE, nodes_to_rename.front()->get(), true);
+
+		TreeItem *item = which;
+		String new_name = edited->get_text(0);
+		for (Node *n : nodes_to_rename) {
+			rename_node(n, new_name, item);
+			item = tree->get_next_selected(item);
+		}
+
+		undo_redo->commit_action();
+	} else {
+		Node *n = get_node(which->get_metadata(0));
+		ERR_FAIL_NULL(n);
+		rename_node(n, which->get_text(0));
+	}
 }
 
 Node *SceneTreeEditor::get_selected() {
@@ -1491,7 +1516,6 @@ void SceneTreeEditor::set_connecting_signal(bool p_enable) {
 
 void SceneTreeEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_tree"), &SceneTreeEditor::_update_tree, DEFVAL(false)); // Still used by UndoRedo.
-	ClassDB::bind_method("_rename_node", &SceneTreeEditor::_rename_node);
 
 	ClassDB::bind_method(D_METHOD("update_tree"), &SceneTreeEditor::update_tree);
 
@@ -1543,7 +1567,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	}
 
 	tree->connect("cell_selected", callable_mp(this, &SceneTreeEditor::_selected_changed));
-	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_renamed));
+	tree->connect("item_edited", callable_mp(this, &SceneTreeEditor::_edited));
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_clicked", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));

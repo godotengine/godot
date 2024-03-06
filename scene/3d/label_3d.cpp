@@ -208,7 +208,7 @@ void Label3D::_notification(int p_what) {
 			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = tr(text);
+			String new_text = atr(text);
 			if (new_text == xl_text) {
 				return; // Nothing new.
 			}
@@ -422,12 +422,6 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 3] = 1.0;
 			s.mesh_colors.write[(s.offset * 4) + i] = p_modulate;
 			s.mesh_uvs.write[(s.offset * 4) + i] = Vector2();
-
-			if (aabb == AABB()) {
-				aabb.position = s.mesh_vertices[(s.offset * 4) + i];
-			} else {
-				aabb.expand_to(s.mesh_vertices[(s.offset * 4) + i]);
-			}
 		}
 
 		if (tex.is_valid()) {
@@ -598,6 +592,13 @@ void Label3D::_shape() {
 			} break;
 		}
 		offset.x += lbl_offset.x * pixel_size;
+		if (aabb == AABB()) {
+			aabb.position = Vector3(offset.x, offset.y, 0);
+			aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size, 0));
+		} else {
+			aabb.expand_to(Vector3(offset.x, offset.y, 0));
+			aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size, 0));
+		}
 		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
 
 		if (outline_modulate.a != 0.0 && outline_size > 0) {
@@ -636,7 +637,7 @@ void Label3D::_shape() {
 
 void Label3D::set_text(const String &p_string) {
 	text = p_string;
-	xl_text = tr(p_string);
+	xl_text = atr(p_string);
 	dirty_text = true;
 	_queue_update();
 }

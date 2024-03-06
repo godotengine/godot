@@ -913,9 +913,6 @@ msgstr "RPC Port"
 msgid "RPC Server Uptime"
 msgstr "RPC Serveri Aktiivaeg"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF Asukoht"
 
@@ -2209,6 +2206,9 @@ msgstr "Tee Pööramine"
 msgid "Path Local"
 msgstr "Lokaalne Tee"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "GDScript"
 msgstr "GDScript"
 
@@ -3019,14 +3019,8 @@ msgstr "signtool"
 msgid "Frame"
 msgstr "Kaader"
 
-msgid "Point"
-msgstr "Punkt"
-
 msgid "Top"
 msgstr "Ülaosa"
-
-msgid "Input"
-msgstr "Sisend"
 
 msgid "Emitting"
 msgstr "Kiirgab"
@@ -3045,6 +3039,15 @@ msgstr "Alam Kiirgur"
 
 msgid "Fill"
 msgstr "Täida"
+
+msgid "End"
+msgstr "End"
+
+msgid "Point"
+msgstr "Punkt"
+
+msgid "Input"
+msgstr "Sisend"
 
 msgid "Linear"
 msgstr "Sirgjooneline"
@@ -3066,9 +3069,6 @@ msgstr "Väljalõikamis mask"
 
 msgid "Modulate"
 msgstr "Moduleeri"
-
-msgid "End"
-msgstr "End"
 
 msgid "Text"
 msgstr "Tekst"
@@ -3142,6 +3142,42 @@ msgstr "2D Füüsika"
 msgid "3D Physics"
 msgstr "3D Füüsika"
 
+msgid "B"
+msgstr "B"
+
+msgid "Terrains"
+msgstr "Maastikud"
+
+msgid "Custom Data"
+msgstr "Kohandatud Andmed"
+
+msgid "Scenes"
+msgstr "Stseenid"
+
+msgid "Scene"
+msgstr "Stseen"
+
+msgid "Texture Origin"
+msgstr "Tekstuuri Alguspunkt"
+
+msgid "Y Sort Origin"
+msgstr "Y-Sordi Päritolu"
+
+msgid "Probability"
+msgstr "Võimalus"
+
+msgid "Item"
+msgstr "Üksus"
+
+msgid "Preview"
+msgstr "Eelvaade"
+
+msgid "Sky"
+msgstr "Taevas"
+
+msgid "Ground Color"
+msgstr "Maa Värv"
+
 msgid "Pause"
 msgstr "Paus"
 
@@ -3153,9 +3189,6 @@ msgstr "Formaat"
 
 msgid "Camera Is Active"
 msgstr "Kaamera On Aktiivne"
-
-msgid "Sky"
-msgstr "Taevas"
 
 msgid "Source"
 msgstr "Allikas"
@@ -3181,18 +3214,6 @@ msgstr "Funktsionaalsused"
 msgid "Subsurface Scattering"
 msgstr "Pinnaalune hajumine"
 
-msgid "Item"
-msgstr "Üksus"
-
-msgid "Preview"
-msgstr "Eelvaade"
-
-msgid "B"
-msgstr "B"
-
-msgid "Ground Color"
-msgstr "Maa Värv"
-
 msgid "Top Left"
 msgstr "Ülemine Vasak"
 
@@ -3204,27 +3225,6 @@ msgstr "All Parem"
 
 msgid "Bottom Left"
 msgstr "All Vasak"
-
-msgid "Terrains"
-msgstr "Maastikud"
-
-msgid "Custom Data"
-msgstr "Kohandatud Andmed"
-
-msgid "Scenes"
-msgstr "Stseenid"
-
-msgid "Scene"
-msgstr "Stseen"
-
-msgid "Texture Origin"
-msgstr "Tekstuuri Alguspunkt"
-
-msgid "Y Sort Origin"
-msgstr "Y-Sordi Päritolu"
-
-msgid "Probability"
-msgstr "Võimalus"
 
 msgid "File"
 msgstr "Fail"
