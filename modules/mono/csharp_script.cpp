@@ -480,6 +480,9 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_COLOR_ARRAY)) {
 		return "Color[]";
 	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR4_ARRAY)) {
+		return "Vector4[]";
+	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::SIGNAL)) {
 		return "Signal";

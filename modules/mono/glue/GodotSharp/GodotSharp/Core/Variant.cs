@@ -149,6 +149,7 @@ public partial struct Variant : IDisposable
             Type.PackedStringArray => AsStringArray(),
             Type.PackedVector2Array => AsVector2Array(),
             Type.PackedVector3Array => AsVector3Array(),
+            Type.PackedVector4Array => AsVector4Array(),
             Type.PackedColorArray => AsColorArray(),
             Type.Nil => null,
             Type.Max or _ =>
@@ -318,6 +319,10 @@ public partial struct Variant : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Vector3[] AsVector3Array() =>
         VariantUtils.ConvertAsPackedVector3ArrayToSystemArray((godot_variant)NativeVar);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Vector4[] AsVector4Array() =>
+        VariantUtils.ConvertAsPackedVector4ArrayToSystemArray((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Color[] AsColorArray() =>
@@ -492,6 +497,9 @@ public partial struct Variant : IDisposable
     public static explicit operator Vector3[](Variant from) => from.AsVector3Array();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static explicit operator Vector4[](Variant from) => from.AsVector4Array();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Color[](Variant from) => from.AsColorArray();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -640,6 +648,9 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Span<Vector3> from) => from;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Variant CreateFrom(Span<Vector4> from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Span<Color> from) => from;
@@ -841,6 +852,10 @@ public partial struct Variant : IDisposable
         (Variant)from.AsSpan();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(Vector4[] from) =>
+        (Variant)from.AsSpan();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Color[] from) =>
         (Variant)from.AsSpan();
 
@@ -891,6 +906,10 @@ public partial struct Variant : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<Vector3> from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedVector3Array(from));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Variant(Span<Vector4> from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedVector4Array(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<Color> from) =>

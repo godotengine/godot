@@ -66,6 +66,7 @@ namespace Godot.SourceGenerators
                 MarshalType.StringArray => VariantType.PackedStringArray,
                 MarshalType.Vector2Array => VariantType.PackedVector2Array,
                 MarshalType.Vector3Array => VariantType.PackedVector3Array,
+                MarshalType.Vector4Array => VariantType.PackedVector4Array,
                 MarshalType.ColorArray => VariantType.PackedColorArray,
                 MarshalType.GodotObjectOrDerivedArray => VariantType.Array,
                 MarshalType.SystemArrayOfStringName => VariantType.Array,
@@ -190,6 +191,8 @@ namespace Godot.SourceGenerators
                                     return MarshalType.Vector2Array;
                                 case { Name: "Vector3" }:
                                     return MarshalType.Vector3Array;
+                                case { Name: "Vector4" }:
+                                    return MarshalType.Vector4Array;
                                 case { Name: "Color" }:
                                     return MarshalType.ColorArray;
                                 case { Name: "StringName" }:

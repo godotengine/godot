@@ -114,6 +114,9 @@ public:
 			case Variant::PACKED_COLOR_ARRAY:
 				init_color_array(v);
 				break;
+			case Variant::PACKED_VECTOR4_ARRAY:
+				init_vector4_array(v);
+				break;
 			case Variant::OBJECT:
 				init_object(v);
 				break;
@@ -203,6 +206,8 @@ public:
 	_FORCE_INLINE_ static const PackedVector2Array *get_vector2_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Vector2> *>(v->_data.packed_array)->array; }
 	_FORCE_INLINE_ static PackedVector3Array *get_vector3_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Vector3> *>(v->_data.packed_array)->array; }
 	_FORCE_INLINE_ static const PackedVector3Array *get_vector3_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Vector3> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedVector4Array *get_vector4_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedVector4Array *get_vector4_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
 	_FORCE_INLINE_ static PackedColorArray *get_color_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Color> *>(v->_data.packed_array)->array; }
 	_FORCE_INLINE_ static const PackedColorArray *get_color_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Color> *>(v->_data.packed_array)->array; }
 
@@ -313,6 +318,10 @@ public:
 		v->_data.packed_array = Variant::PackedArrayRef<Color>::create(Vector<Color>());
 		v->type = Variant::PACKED_COLOR_ARRAY;
 	}
+	_FORCE_INLINE_ static void init_vector4_array(Variant *v) {
+		v->_data.packed_array = Variant::PackedArrayRef<Vector4>::create(Vector<Vector4>());
+		v->type = Variant::PACKED_VECTOR4_ARRAY;
+	}
 	_FORCE_INLINE_ static void init_object(Variant *v) {
 		object_assign_null(v);
 		v->type = Variant::OBJECT;
@@ -417,6 +426,8 @@ public:
 				return get_vector3_array(v);
 			case Variant::PACKED_COLOR_ARRAY:
 				return get_color_array(v);
+			case Variant::PACKED_VECTOR4_ARRAY:
+				return get_vector4_array(v);
 			case Variant::OBJECT:
 				return get_object(v);
 			case Variant::VARIANT_MAX:
@@ -501,6 +512,8 @@ public:
 				return get_vector3_array(v);
 			case Variant::PACKED_COLOR_ARRAY:
 				return get_color_array(v);
+			case Variant::PACKED_VECTOR4_ARRAY:
+				return get_vector4_array(v);
 			case Variant::OBJECT:
 				return get_object(v);
 			case Variant::VARIANT_MAX:
@@ -792,6 +805,12 @@ struct VariantGetInternalPtr<PackedVector3Array> {
 };
 
 template <>
+struct VariantGetInternalPtr<PackedVector4Array> {
+	static PackedVector4Array *get_ptr(Variant *v) { return VariantInternal::get_vector4_array(v); }
+	static const PackedVector4Array *get_ptr(const Variant *v) { return VariantInternal::get_vector4_array(v); }
+};
+
+template <>
 struct VariantGetInternalPtr<PackedColorArray> {
 	static PackedColorArray *get_ptr(Variant *v) { return VariantInternal::get_color_array(v); }
 	static const PackedColorArray *get_ptr(const Variant *v) { return VariantInternal::get_color_array(v); }
@@ -1052,6 +1071,12 @@ struct VariantInternalAccessor<PackedVector3Array> {
 };
 
 template <>
+struct VariantInternalAccessor<PackedVector4Array> {
+	static _FORCE_INLINE_ const PackedVector4Array &get(const Variant *v) { return *VariantInternal::get_vector4_array(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const PackedVector4Array &p_value) { *VariantInternal::get_vector4_array(v) = p_value; }
+};
+
+template <>
 struct VariantInternalAccessor<PackedColorArray> {
 	static _FORCE_INLINE_ const PackedColorArray &get(const Variant *v) { return *VariantInternal::get_color_array(v); }
 	static _FORCE_INLINE_ void set(Variant *v, const PackedColorArray &p_value) { *VariantInternal::get_color_array(v) = p_value; }
@@ -1297,6 +1322,11 @@ struct VariantInitializer<PackedColorArray> {
 };
 
 template <>
+struct VariantInitializer<PackedVector4Array> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_vector4_array(v); }
+};
+
+template <>
 struct VariantInitializer<Object *> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_object(v); }
 };
@@ -1488,6 +1518,11 @@ struct VariantDefaultInitializer<PackedVector3Array> {
 template <>
 struct VariantDefaultInitializer<PackedColorArray> {
 	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_color_array(v) = PackedColorArray(); }
+};
+
+template <>
+struct VariantDefaultInitializer<PackedVector4Array> {
+	static _FORCE_INLINE_ void init(Variant *v) { *VariantInternal::get_vector4_array(v) = PackedVector4Array(); }
 };
 
 template <typename T>

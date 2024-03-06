@@ -4831,6 +4831,8 @@ static Variant::Type _variant_type_to_typed_array_element_type(Variant::Type p_t
 			return Variant::VECTOR3;
 		case Variant::PACKED_COLOR_ARRAY:
 			return Variant::COLOR;
+		case Variant::PACKED_VECTOR4_ARRAY:
+			return Variant::VECTOR4;
 		default:
 			return Variant::NIL;
 	}

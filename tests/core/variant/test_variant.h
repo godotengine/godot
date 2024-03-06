@@ -2034,6 +2034,10 @@ TEST_CASE("[Variant] Identity comparison") {
 	CHECK(packed_color_array.identity_compare(packed_color_array));
 	CHECK_FALSE(packed_color_array.identity_compare(PackedColorArray()));
 
+	Variant packed_vector4_array = PackedVector4Array();
+	CHECK(packed_vector4_array.identity_compare(packed_vector4_array));
+	CHECK_FALSE(packed_vector4_array.identity_compare(PackedVector4Array()));
+
 	Variant packed_float32_array = PackedFloat32Array();
 	CHECK(packed_float32_array.identity_compare(packed_float32_array));
 	CHECK_FALSE(packed_float32_array.identity_compare(PackedFloat32Array()));
