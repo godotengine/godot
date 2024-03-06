@@ -2205,6 +2205,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, is_empty, sarray(), varray());
 	bind_method(Dictionary, clear, sarray(), varray());
 	bind_method(Dictionary, merge, sarray("dictionary", "overwrite"), varray(false));
+	bind_method(Dictionary, merged, sarray("dictionary", "overwrite"), varray(false));
 	bind_method(Dictionary, has, sarray("key"), varray());
 	bind_method(Dictionary, has_all, sarray("keys"), varray());
 	bind_method(Dictionary, find_key, sarray("value"), varray());
