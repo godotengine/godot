@@ -2573,7 +2573,7 @@ struct Win32InputTextDialogInit {
 	const Callable &callback;
 };
 
-static constexpr int scale_with_dpi(int p_pos, int p_dpi) {
+static int scale_with_dpi(int p_pos, int p_dpi) {
 	return IsProcessDPIAware() ? (p_pos * p_dpi / 96) : p_pos;
 }
 
