@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRBodyModifier3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRBodyModifier3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node for driving body meshes from [XRBodyTracker] data.
 	</brief_description>
 	<description>
 		This node uses body tracking data from a [XRBodyTracker] to animate the skeleton of a body mesh.
+		This node positions itself at the [constant XRBodyTracker.JOINT_ROOT] position and scales itself to [member XRServer.world_scale]. Adding the body model as a child of this node will result in the model being positioned and scaled correctly for XR experiences.
+		The body tracking position-data is scaled by [member Skeleton3D.motion_scale] when applied to the skeleton, which can be used to adjust the tracked body to match the scale of the body model.
 	</description>
 	<tutorials>
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
