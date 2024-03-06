@@ -309,8 +309,33 @@ void main() {
 		//m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
 		//m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
 
-		vec4 blend_q0 = weights_01.x * unpack_q0(bones_01.x) + weights_01.y * unpack_q0(bones_01.y) + weights_23.x * unpack_q0(bones_23.x) + weights_23.y * unpack_q0(bones_23.y);
-		vec4 blend_q1 = weights_01.x * unpack_q1(bones_01.x) + weights_01.y * unpack_q1(bones_01.y) + weights_23.x * unpack_q1(bones_23.x) + weights_23.y * unpack_q1(bones_23.y);
+
+		vec4 blend_q0_0 = weights_01.x * unpack_q0(bones_01.x);
+		vec4 blend_q0_1 = weights_01.y * unpack_q0(bones_01.y);
+		vec4 blend_q0_2 = weights_23.x * unpack_q0(bones_23.x);
+		vec4 blend_q0_3 = weights_23.y * unpack_q0(bones_23.y);
+
+		vec4 blend_q1_0 = weights_01.x * unpack_q1(bones_01.x);
+		vec4 blend_q1_1 = weights_01.y * unpack_q1(bones_01.y);
+		vec4 blend_q1_2 = weights_23.x * unpack_q1(bones_23.x);
+		vec4 blend_q1_3 = weights_23.y * unpack_q1(bones_23.y);
+
+		if (dot(blend_q0_0, blend_q0_1) < 0.0) {
+			blend_q0_1 *= -1.0;
+			blend_q1_1 *= -1.0;
+		}
+		if (dot(blend_q0_0, blend_q0_2) < 0.0) {
+			blend_q0_2 *= -1.0;
+			blend_q1_2 *= -1.0;
+		}
+		if (dot(blend_q0_0, blend_q0_3) < 0.0) {
+			blend_q0_3 *= -1.0;
+			blend_q1_3 *= -1.0;
+		}
+
+		vec4 blend_q0 = weights_01.x * blend_q0_0 + weights_01.y * blend_q0_1 + weights_23.x * blend_q0_2 + weights_23.y * blend_q0_3;
+		vec4 blend_q1 = weights_01.x * blend_q1_0 + weights_01.y * blend_q1_1 + weights_23.x * blend_q1_2 + weights_23.y * blend_q1_3;
+
 		//vec3 scale = weights_01.x * unpack_scale(bones_01.x) + weights_01.y * unpack_scale(bones_01.y) + weights_23.x * unpack_scale(bones_23.x) + weights_23.y * unpack_scale(bones_23.y);
 
 		if (params.skin_weight_offset == 4) {
@@ -332,13 +357,14 @@ void main() {
 			//m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
 			//m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
 			//m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
-
-			blend_q0 += weights_01.x * unpack_q0(bones_01.x) + weights_01.y * unpack_q0(bones_01.y) + weights_23.x * unpack_q0(bones_23.x) + weights_23.y * unpack_q0(bones_23.y);
-			blend_q1 += weights_01.x * unpack_q1(bones_01.x) + weights_01.y * unpack_q1(bones_01.y) + weights_23.x * unpack_q1(bones_23.x) + weights_23.y * unpack_q1(bones_23.y);
+			//TODO!!!!!!!!!!!!!!!!
+			//blend_q0 += weights_01.x * unpack_q0(bones_01.x) + weights_01.y * unpack_q0(bones_01.y) + weights_23.x * unpack_q0(bones_23.x) + weights_23.y * unpack_q0(bones_23.y);
+			//blend_q1 += weights_01.x * unpack_q1(bones_01.x) + weights_01.y * unpack_q1(bones_01.y) + weights_23.x * unpack_q1(bones_23.x) + weights_23.y * unpack_q1(bones_23.y);
 			//scale += weights_01.x * unpack_scale(bones_01.x) + weights_01.y * unpack_scale(bones_01.y) + weights_23.x * unpack_scale(bones_23.x) + weights_23.y * unpack_scale(bones_23.y);
 		}
 
 		mat4 m = dual_quaternion_to_matrix(blend_q0, blend_q1);
+		
 		// TODO how to conserve local scale?
 		//m[0].xyz *= scale.x;
 		//m[1].xyz *= scale.y;

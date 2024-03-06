@@ -390,7 +390,8 @@ void Skeleton3D::_notification(int p_what) {
 					// TODO here there is a problem it seems it can get permanently locked into the wrong rotation
 					// when objects fly very far. Not using this causes rotations to snap at certain angles.
 
-					Quaternion q0 = avoid_jumps(Mj.basis.get_rotation_quaternion(), previous_q0);
+					//Quaternion q0 = avoid_jumps(Mj.basis.get_rotation_quaternion(), previous_q0);
+					Quaternion q0 = Mj.basis.get_rotation_quaternion();
 					Quaternion q1 = quat_trans_2UDQ(q0, t);
 
 					// pack the quaternions into the matrix
