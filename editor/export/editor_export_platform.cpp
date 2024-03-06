@@ -1554,6 +1554,8 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	Error err = export_project_files(p_preset, p_debug, _save_pack_file, &pd, _add_shared_object);
 
+	String shebang = p_preset->get_shebang();
+
 	// Close temp file.
 	pd.f.unref();
 	ftmp.unref();
@@ -1599,6 +1601,17 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		}
 	}
 
+	if (!shebang.is_empty() && !p_embed) {
+		String stub = shebang + vformat("\n\n# GODOT VERSION: %d.%d.%d\n# BINARY PAYLOAD START, DO NOT EDIT\n\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		uint32_t string_len = stub.utf8().length();
+		uint32_t pad = _get_pad(4, string_len);
+
+		f->store_buffer((const uint8_t *)stub.utf8().get_data(), string_len);
+		for (uint32_t j = 0; j < pad; j++) {
+			f->store_8(0);
+		}
+	}
+
 	int64_t pck_start_pos = f->get_position();
 
 	f->store_32(PACK_HEADER_MAGIC);
@@ -1612,6 +1625,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	bool enc_directory = p_preset->get_enc_directory();
 	if (enc_pck && enc_directory) {
 		pack_flags |= PACK_DIR_ENCRYPTED;
+	}
+	if (p_embed || !shebang.is_empty()) {
+		pack_flags |= PACK_REL_FILEBASE;
 	}
 	f->store_32(pack_flags); // flags
 
@@ -1703,8 +1719,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	}
 
 	uint64_t file_base = f->get_position();
+	uint64_t file_base_store = file_base;
+	if (pack_flags & PACK_REL_FILEBASE) {
+		file_base_store -= pck_start_pos;
+	}
 	f->seek(file_base_ofs);
-	f->store_64(file_base); // update files base
+	f->store_64(file_base_store); // update files base
 	f->seek(file_base);
 
 	// Save the rest of the data.
@@ -1729,7 +1749,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	ftmp.unref(); // Close temp file.
 
-	if (p_embed) {
+	if (p_embed || !shebang.is_empty()) {
 		// Ensure embedded data ends at a 64-bit multiple
 		uint64_t embed_end = f->get_position() - embed_pos + 12;
 		uint64_t pad = embed_end % 8;
@@ -1745,7 +1765,13 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 			*r_embedded_size = f->get_position() - embed_pos;
 		}
 	}
+	f->close();
 
+#if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
+	if (!p_embed && !shebang.is_empty()) {
+		FileAccess::set_unix_permissions(p_path, 0755);
+	}
+#endif
 	DirAccess::remove_file_or_error(tmppath);
 
 	return OK;

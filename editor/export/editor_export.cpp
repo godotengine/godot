@@ -79,6 +79,7 @@ void EditorExport::_save() {
 			Vector<String> export_files = preset->get_files_to_export();
 			config->set_value(section, "export_files", export_files);
 		}
+		config->set_value(section, "shebang", preset->get_shebang());
 		config->set_value(section, "include_filter", preset->get_include_filter());
 		config->set_value(section, "exclude_filter", preset->get_exclude_filter());
 		config->set_value(section, "export_path", preset->get_export_path());
@@ -280,6 +281,10 @@ void EditorExport::load_config() {
 					preset->add_export_file(files[i]);
 				}
 			}
+		}
+
+		if (config->has_section_key(section, "shebang")) {
+			preset->set_shebang(config->get_value(section, "shebang"));
 		}
 
 		preset->set_include_filter(config->get_value(section, "include_filter"));
