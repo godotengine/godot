@@ -36,6 +36,8 @@
 #include "core/os/os.h"
 #include "core/variant/callable.h"
 
+#include "native_menu.h"
+
 class Texture2D;
 class Image;
 
@@ -44,6 +46,12 @@ class DisplayServer : public Object {
 
 	static DisplayServer *singleton;
 	static bool hidpi_allowed;
+
+#ifndef DISABLE_DEPRECATED
+	mutable HashMap<String, RID> menu_names;
+
+	RID _get_rid_from_name(NativeMenu *p_nmenu, const String &p_menu_root) const;
+#endif
 
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
@@ -106,7 +114,9 @@ protected:
 
 public:
 	enum Feature {
+#ifndef DISABLE_DEPRECATED
 		FEATURE_GLOBAL_MENU,
+#endif
 		FEATURE_SUBWINDOWS,
 		FEATURE_TOUCHSCREEN,
 		FEATURE_MOUSE,
@@ -137,6 +147,7 @@ public:
 
 	virtual void help_set_search_callbacks(const Callable &p_search_callback = Callable(), const Callable &p_action_callback = Callable());
 
+#ifndef DISABLE_DEPRECATED
 	virtual void global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callback = Callable(), const Callable &p_close_callback = Callable());
 
 	virtual int global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index = -1);
@@ -193,6 +204,7 @@ public:
 	virtual void global_menu_clear(const String &p_menu_root);
 
 	virtual Dictionary global_menu_get_system_menu_roots() const;
+#endif
 
 	struct TTSUtterance {
 		String text;

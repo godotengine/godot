@@ -1012,10 +1012,11 @@ void ProjectList::set_order_option(int p_option) {
 // Global menu integration.
 
 void ProjectList::update_dock_menu() {
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+	if (!NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
 		return;
 	}
-	DisplayServer::get_singleton()->global_menu_clear("_dock");
+	RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
+	NativeMenu::get_singleton()->clear(dock_rid);
 
 	int favs_added = 0;
 	int total_added = 0;
@@ -1025,18 +1026,18 @@ void ProjectList::update_dock_menu() {
 				favs_added++;
 			} else {
 				if (favs_added != 0) {
-					DisplayServer::get_singleton()->global_menu_add_separator("_dock");
+					NativeMenu::get_singleton()->add_separator(dock_rid);
 				}
 				favs_added = 0;
 			}
-			DisplayServer::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", callable_mp(this, &ProjectList::_global_menu_open_project), Callable(), i);
+			NativeMenu::get_singleton()->add_item(dock_rid, _projects[i].project_name + " ( " + _projects[i].path + " )", callable_mp(this, &ProjectList::_global_menu_open_project), Callable(), i);
 			total_added++;
 		}
 	}
 	if (total_added != 0) {
-		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
+		NativeMenu::get_singleton()->add_separator(dock_rid);
 	}
-	DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &ProjectList::_global_menu_new_window));
+	NativeMenu::get_singleton()->add_item(dock_rid, TTR("New Window"), callable_mp(this, &ProjectList::_global_menu_new_window));
 }
 
 void ProjectList::_global_menu_new_window(const Variant &p_tag) {

@@ -40,7 +40,7 @@
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
 
-	static HashMap<String, PopupMenu *> system_menus;
+	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 
 	struct Item {
 		Ref<Texture2D> icon;
@@ -97,8 +97,9 @@ class PopupMenu : public Popup {
 	static inline PropertyListHelper base_property_helper;
 	PropertyListHelper property_helper;
 
-	String global_menu_name;
-	String system_menu_name;
+	RID global_menu;
+	RID system_menu;
+	NativeMenu::SystemMenus system_menu_id = NativeMenu::INVALID_MENU_ID;
 
 	bool close_allowed = false;
 	bool activated_by_keyboard = false;
@@ -221,6 +222,10 @@ protected:
 	void _add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _clear_bind_compat_79965();
+
+	void _set_system_menu_root_compat_87452(const String &p_special);
+	String _get_system_menu_root_compat_87452() const;
+
 	static void _bind_compatibility_methods();
 #endif
 
@@ -231,11 +236,12 @@ public:
 
 	virtual void _parent_focused() override;
 
-	String bind_global_menu();
+	RID bind_global_menu();
 	void unbind_global_menu();
 	bool is_system_menu() const;
-	void set_system_menu_root(const String &p_special);
-	String get_system_menu_root() const;
+
+	void set_system_menu(NativeMenu::SystemMenus p_system_menu_id);
+	NativeMenu::SystemMenus get_system_menu() const;
 
 	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);

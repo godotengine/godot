@@ -61,6 +61,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	if (tts_enabled) {
 		tts = [[TTS_IOS alloc] init];
 	}
+	native_menu = memnew(NativeMenu);
 
 #if defined(RD_ENABLED)
 	rendering_context = nullptr;
@@ -134,6 +135,11 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 }
 
 DisplayServerIOS::~DisplayServerIOS() {
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
+
 #if defined(RD_ENABLED)
 	if (rendering_device) {
 		rendering_device->screen_free(MAIN_WINDOW_ID);
@@ -309,9 +315,13 @@ void DisplayServerIOS::update_gyroscope(float p_x, float p_y, float p_z) {
 
 bool DisplayServerIOS::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		// case FEATURE_CURSOR_SHAPE:
 		// case FEATURE_CUSTOM_CURSOR_SHAPE:
-		// case FEATURE_GLOBAL_MENU:
 		// case FEATURE_HIDPI:
 		// case FEATURE_ICON:
 		// case FEATURE_IME:

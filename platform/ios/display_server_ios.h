@@ -65,6 +65,7 @@ class DisplayServerIOS : public DisplayServer {
 	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
+	NativeMenu *native_menu = nullptr;
 
 	id tts = nullptr;
 
