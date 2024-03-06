@@ -104,6 +104,7 @@ if env.editor_build:
 
     # Extractable translations
     tlist = glob.glob(env.Dir("#editor/translations/extractable").abspath + "/*.po")
+    tlist.extend(glob.glob(env.Dir("#editor/translations/extractable").abspath + "/extractable.pot"))
     env.Depends("#editor/extractable_translations.gen.h", tlist)
     env.CommandNoCache(
         "#editor/extractable_translations.gen.h",
