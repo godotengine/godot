@@ -400,6 +400,7 @@ void TabContainer::move_tab_from_tab_container(TabContainer *p_from, int p_from_
 
 	// Get the tab properties before they get erased by the child removal.
 	String tab_title = p_from->get_tab_title(p_from_index);
+	String tab_tooltip = p_from->get_tab_tooltip(p_from_index);
 	Ref<Texture2D> tab_icon = p_from->get_tab_icon(p_from_index);
 	Ref<Texture2D> tab_button_icon = p_from->get_tab_button_icon(p_from_index);
 	bool tab_disabled = p_from->is_tab_disabled(p_from_index);
@@ -417,6 +418,7 @@ void TabContainer::move_tab_from_tab_container(TabContainer *p_from, int p_from_
 	move_child(moving_tabc, get_tab_control(p_to_index)->get_index(false));
 
 	set_tab_title(p_to_index, tab_title);
+	set_tab_tooltip(p_to_index, tab_tooltip);
 	set_tab_icon(p_to_index, tab_icon);
 	set_tab_button_icon(p_to_index, tab_button_icon);
 	set_tab_disabled(p_to_index, tab_disabled);
@@ -770,6 +772,14 @@ String TabContainer::get_tab_title(int p_tab) const {
 	return tab_bar->get_tab_title(p_tab);
 }
 
+void TabContainer::set_tab_tooltip(int p_tab, const String &p_tooltip) {
+	tab_bar->set_tab_tooltip(p_tab, p_tooltip);
+}
+
+String TabContainer::get_tab_tooltip(int p_tab) const {
+	return tab_bar->get_tab_tooltip(p_tab);
+}
+
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	if (tab_bar->get_tab_icon(p_tab) == p_icon) {
 		return;
@@ -978,6 +988,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_all_tabs_in_front"), &TabContainer::is_all_tabs_in_front);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
+	ClassDB::bind_method(D_METHOD("set_tab_tooltip", "tab_idx", "tooltip"), &TabContainer::set_tab_tooltip);
+	ClassDB::bind_method(D_METHOD("get_tab_tooltip", "tab_idx"), &TabContainer::get_tab_tooltip);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabContainer::set_tab_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &TabContainer::get_tab_icon);
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabContainer::set_tab_disabled);
