@@ -772,6 +772,10 @@ void ProjectDialog::show_dialog() {
 
 void ProjectDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			create_dir->set_icon(get_editor_theme_icon(SNAME("FolderCreate")));
+		} break;
+
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_remove_created_folder();
 		} break;
