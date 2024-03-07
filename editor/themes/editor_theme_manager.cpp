@@ -1852,6 +1852,9 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			Ref<StyleBoxFlat> editor_log_button_pressed = style_flat_button_pressed->duplicate();
 			editor_log_button_pressed->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
 			editor_log_button_pressed->set_border_color(p_config.accent_color);
+
+			p_theme->set_stylebox("normal", "EditorLogFilterButton", style_flat_button);
+			p_theme->set_stylebox("hover", "EditorLogFilterButton", style_flat_button_hover);
 			p_theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
 		}
 
