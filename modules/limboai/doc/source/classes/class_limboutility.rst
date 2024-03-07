@@ -22,15 +22,15 @@ Methods
 .. table::
    :widths: auto
 
-   +-----------+-----------------------------------------------------------------------------------------------------------------+
-   | String    | :ref:`decorate_output_var<class_LimboUtility_method_decorate_output_var>` **(** String p_variable **)** |const| |
-   +-----------+-----------------------------------------------------------------------------------------------------------------+
-   | String    | :ref:`decorate_var<class_LimboUtility_method_decorate_var>` **(** String p_variable **)** |const|               |
-   +-----------+-----------------------------------------------------------------------------------------------------------------+
-   | String    | :ref:`get_status_name<class_LimboUtility_method_get_status_name>` **(** int p_status **)** |const|              |
-   +-----------+-----------------------------------------------------------------------------------------------------------------+
-   | Texture2D | :ref:`get_task_icon<class_LimboUtility_method_get_task_icon>` **(** String p_class_or_script_path **)** |const| |
-   +-----------+-----------------------------------------------------------------------------------------------------------------+
+   +-----------+---------------------------------------------------------------------------------------------------------------+
+   | String    | :ref:`decorate_output_var<class_LimboUtility_method_decorate_output_var>` **(** String variable **)** |const| |
+   +-----------+---------------------------------------------------------------------------------------------------------------+
+   | String    | :ref:`decorate_var<class_LimboUtility_method_decorate_var>` **(** String variable **)** |const|               |
+   +-----------+---------------------------------------------------------------------------------------------------------------+
+   | String    | :ref:`get_status_name<class_LimboUtility_method_get_status_name>` **(** int status **)** |const|              |
+   +-----------+---------------------------------------------------------------------------------------------------------------+
+   | Texture2D | :ref:`get_task_icon<class_LimboUtility_method_get_task_icon>` **(** String class_or_script_path **)** |const| |
+   +-----------+---------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -214,7 +214,7 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-String **decorate_output_var** **(** String p_variable **)** |const|
+String **decorate_output_var** **(** String variable **)** |const|
 
 Just like :ref:`decorate_var<class_LimboUtility_method_decorate_var>`, produces a string with a :ref:`Blackboard<class_Blackboard>` variable name that is formatted for display, and also adds an additional symbol to indicate that the variable is used as an output.
 
@@ -226,7 +226,7 @@ Just like :ref:`decorate_var<class_LimboUtility_method_decorate_var>`, produces 
 
 .. rst-class:: classref-method
 
-String **decorate_var** **(** String p_variable **)** |const|
+String **decorate_var** **(** String variable **)** |const|
 
 Produces a string with a :ref:`Blackboard<class_Blackboard>` variable name that is formatted for display or console output.
 
@@ -238,7 +238,7 @@ Produces a string with a :ref:`Blackboard<class_Blackboard>` variable name that 
 
 .. rst-class:: classref-method
 
-String **get_status_name** **(** int p_status **)** |const|
+String **get_status_name** **(** int status **)** |const|
 
 Returns a name of a :ref:`BTTask<class_BTTask>` status code.
 
@@ -250,7 +250,7 @@ Returns a name of a :ref:`BTTask<class_BTTask>` status code.
 
 .. rst-class:: classref-method
 
-Texture2D **get_task_icon** **(** String p_class_or_script_path **)** |const|
+Texture2D **get_task_icon** **(** String class_or_script_path **)** |const|
 
 Returns the icon texture associated with a task based on its class name or script resource path.
 

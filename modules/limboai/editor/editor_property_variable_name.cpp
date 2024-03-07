@@ -200,7 +200,7 @@ bool EditorInspectorPluginVariableName::parse_property(Object *p_object, const V
 #elif LIMBOAI_GDEXTENSION
 bool EditorInspectorPluginVariableName::_parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 #endif
-	if (p_type != Variant::Type::STRING || !(p_path.ends_with("_var") || p_path.ends_with("variable"))) {
+	if (!(p_type == Variant::Type::STRING_NAME || p_type == Variant::Type::STRING) || !(p_path.ends_with("_var") || p_path.ends_with("variable"))) {
 		return false;
 	}
 

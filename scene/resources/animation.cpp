@@ -3771,6 +3771,27 @@ void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 	}
 }
 
+
+void Animation::set_human_bone_mapping(const Dictionary &p_mapping)
+{
+	for(int i = 0; i < tracks.size(); i++) {
+		String name = tracks[i]->path;
+		if(!name.begins_with("Skeleton3D:")) {
+			continue;
+		}
+		auto sv = name.split(":");
+		if(sv.size() != 2)
+		{
+			continue;
+		}
+		if(!p_mapping.has(sv[0]))
+		{
+			continue;
+		}
+		tracks[i]->path = "Skeleton3D:" + String(p_mapping[sv[1]]);
+	}
+}
+
 void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_track", "type", "at_position"), &Animation::add_track, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("remove_track", "track_idx"), &Animation::remove_track);
@@ -3841,6 +3862,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bezier_track_get_key_out_handle", "track_idx", "key_idx"), &Animation::bezier_track_get_key_out_handle);
 
 	ClassDB::bind_method(D_METHOD("bezier_track_interpolate", "track_idx", "time"), &Animation::bezier_track_interpolate);
+
+	ClassDB::bind_method(D_METHOD("set_human_bone_mapping", "mapping"), &Animation::set_human_bone_mapping);
 
 	ClassDB::bind_method(D_METHOD("audio_track_insert_key", "track_idx", "time", "stream", "start_offset", "end_offset"), &Animation::audio_track_insert_key, DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("audio_track_set_key_stream", "track_idx", "key_idx", "stream"), &Animation::audio_track_set_key_stream);

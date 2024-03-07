@@ -42,7 +42,7 @@ Properties
    +-------------------------------------+-------------------------------------------------------------------------------------+-------------------------+
    | :ref:`BBNode<class_BBNode>`         | :ref:`node<class_BTEvaluateExpression_property_node>`                               |                         |
    +-------------------------------------+-------------------------------------------------------------------------------------+-------------------------+
-   | String                              | :ref:`result_var<class_BTEvaluateExpression_property_result_var>`                   | ``""``                  |
+   | StringName                          | :ref:`result_var<class_BTEvaluateExpression_property_result_var>`                   | ``&""``                 |
    +-------------------------------------+-------------------------------------------------------------------------------------+-------------------------+
 
 .. rst-class:: classref-reftable-group
@@ -161,12 +161,12 @@ Specifies the ``Node`` or ``Object`` instance containing the method to be called
 
 .. rst-class:: classref-property
 
-String **result_var** = ``""``
+StringName **result_var** = ``&""``
 
 .. rst-class:: classref-property-setget
 
-- void **set_result_var** **(** String value **)**
-- String **get_result_var** **(** **)**
+- void **set_result_var** **(** StringName value **)**
+- StringName **get_result_var** **(** **)**
 
 if non-empty, assign the result of the method call to the blackboard variable specified by this property.
 

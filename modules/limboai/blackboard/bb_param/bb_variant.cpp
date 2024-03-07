@@ -1,7 +1,7 @@
 /**
  * bb_variant.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -27,7 +27,7 @@ Variant::Type BBVariant::get_type() const {
 }
 
 void BBVariant::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_type", "p_type"), &BBVariant::set_type);
+	ClassDB::bind_method(D_METHOD("set_type", "type"), &BBVariant::set_type);
 
 	String vtypes;
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {

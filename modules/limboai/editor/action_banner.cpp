@@ -74,7 +74,7 @@ void ActionBanner::_notification(int p_what) {
 }
 
 void ActionBanner::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_execute_action", "p_action", "p_auto_close"), &ActionBanner::_execute_action);
+	ClassDB::bind_method(D_METHOD("_execute_action", "action", "auto_close"), &ActionBanner::_execute_action);
 }
 
 ActionBanner::ActionBanner() {

@@ -17,7 +17,7 @@
 		<member name="value" type="BBVariant" setter="set_value" getter="get_value">
 			Parameter that specifies the value to be assigned to the variable.
 		</member>
-		<member name="variable" type="String" setter="set_variable" getter="get_variable" default="&quot;&quot;">
+		<member name="variable" type="StringName" setter="set_variable" getter="get_variable" default="&amp;&quot;&quot;">
 			Name of the variable to which the value will be assigned.
 		</member>
 	</members>

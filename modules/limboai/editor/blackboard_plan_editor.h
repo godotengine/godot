@@ -18,11 +18,13 @@
 
 #ifdef LIMBOAI_MODULE
 #include "editor/editor_inspector.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #endif // LIMBOAI_MODULE
 
 #ifdef LIMBOAI_GDEXTENSION
 #include <godot_cpp/classes/accept_dialog.hpp>
+#include <godot_cpp/classes/check_box.hpp>
 #include <godot_cpp/classes/editor_inspector_plugin.hpp>
 #include <godot_cpp/classes/line_edit.hpp>
 #include <godot_cpp/classes/panel_container.hpp>
@@ -56,10 +58,11 @@ private:
 	int drag_index = -1;
 
 	Ref<BlackboardPlan> plan;
-	String default_var_name;
+	StringName default_var_name;
 
 	VBoxContainer *rows_vbox;
 	Button *add_var_tool;
+	CheckBox *nodepath_prefetching;
 	PanelContainer *header_row;
 	ScrollContainer *scroll_container;
 	PopupMenu *type_menu;
@@ -69,7 +72,7 @@ private:
 
 	void _add_var();
 	void _trash_var(int p_index);
-	void _rename_var(const String &p_new_name, int p_index);
+	void _rename_var(const StringName &p_new_name, int p_index);
 	void _change_var_type(Variant::Type p_new_type, int p_index);
 	void _change_var_hint(PropertyHint p_new_hint, int p_index);
 	void _change_var_hint_string(const String &p_new_hint_string, int p_index);
@@ -78,6 +81,7 @@ private:
 	void _type_chosen(int id);
 	void _hint_chosen(int id);
 	void _add_var_pressed();
+	void _prefetching_toggled(bool p_toggle_on);
 
 	void _drag_button_down(Control *p_row);
 	void _drag_button_up();
@@ -95,7 +99,7 @@ public:
 	_FORCE_INLINE_ static BlackboardPlanEditor *get_singleton() { return singleton; }
 
 	void edit_plan(const Ref<BlackboardPlan> &p_plan);
-	void set_next_var_name(const String &p_name);
+	void set_next_var_name(const StringName &p_name);
 
 	BlackboardPlanEditor();
 };

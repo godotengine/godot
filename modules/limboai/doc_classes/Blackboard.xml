@@ -13,16 +13,16 @@
 	<methods>
 		<method name="bind_var_to_property">
 			<return type="void" />
-			<param index="0" name="p_name" type="String" />
-			<param index="1" name="p_object" type="Object" />
-			<param index="2" name="p_property" type="StringName" />
+			<param index="0" name="var_name" type="StringName" />
+			<param index="1" name="object" type="Object" />
+			<param index="2" name="property" type="StringName" />
 			<description>
-				Establish a binding between a variable and the object's property specified by [param p_property] and [param p_object]. Changes to the variable update the property, and vice versa.
+				Establish a binding between a variable and the object's property specified by [param property] and [param object]. Changes to the variable update the property, and vice versa.
 			</description>
 		</method>
 		<method name="erase_var">
 			<return type="void" />
-			<param index="0" name="p_name" type="String" />
+			<param index="0" name="var_name" type="StringName" />
 			<description>
 				Removes a variable by its name.
 			</description>
@@ -35,38 +35,31 @@
 		</method>
 		<method name="get_var" qualifiers="const">
 			<return type="Variant" />
-			<param index="0" name="p_name" type="String" />
-			<param index="1" name="p_default" type="Variant" default="null" />
-			<param index="2" name="p_complain" type="bool" default="true" />
+			<param index="0" name="var_name" type="StringName" />
+			<param index="1" name="default" type="Variant" default="null" />
+			<param index="2" name="complain" type="bool" default="true" />
 			<description>
-				Returns variable value or [param p_default] if variable doesn't exist. If [param p_complain] is [code]true[/code], an error will be printed if variable doesn't exist.
+				Returns variable value or [param default] if variable doesn't exist. If [param complain] is [code]true[/code], an error will be printed if variable doesn't exist.
 			</description>
 		</method>
 		<method name="has_var" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="p_name" type="String" />
+			<param index="0" name="var_name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the Blackboard contains the [param p_name] variable, including the parent scopes.
-			</description>
-		</method>
-		<method name="prefetch_nodepath_vars">
-			<return type="void" />
-			<param index="0" name="p_node" type="Node" />
-			<description>
-				If [code]true[/code], any [NodePath] variables in the [Blackboard] are replaced with [Node] references when the tree is instantiated. References are retrieved by calling [method Node.get_node] on the agent instance.
+				Returns [code]true[/code] if the Blackboard contains the [param var_name] variable, including the parent scopes.
 			</description>
 		</method>
 		<method name="set_parent">
 			<return type="void" />
-			<param index="0" name="p_blackboard" type="Blackboard" />
+			<param index="0" name="blackboard" type="Blackboard" />
 			<description>
 				Assigns the parent scope. If a value isn't in the current Blackboard scope, it will look in the parent scope Blackboard to find it.
 			</description>
 		</method>
 		<method name="set_var">
 			<return type="void" />
-			<param index="0" name="p_name" type="String" />
-			<param index="1" name="p_value" type="Variant" />
+			<param index="0" name="var_name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
 			<description>
 				Assigns a value to a Blackboard variable.
 			</description>
@@ -79,7 +72,7 @@
 		</method>
 		<method name="unbind_var">
 			<return type="void" />
-			<param index="0" name="p_name" type="String" />
+			<param index="0" name="var_name" type="StringName" />
 			<description>
 				Remove binding from a variable.
 			</description>

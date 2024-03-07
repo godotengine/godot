@@ -1,7 +1,7 @@
 /**
  * bt_run_limit.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -40,9 +40,9 @@ BT::Status BTRunLimit::_tick(double p_delta) {
 }
 
 void BTRunLimit::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_run_limit", "p_value"), &BTRunLimit::set_run_limit);
+	ClassDB::bind_method(D_METHOD("set_run_limit", "max_runs"), &BTRunLimit::set_run_limit);
 	ClassDB::bind_method(D_METHOD("get_run_limit"), &BTRunLimit::get_run_limit);
-	ClassDB::bind_method(D_METHOD("set_count_policy", "p_policy"), &BTRunLimit::set_count_policy);
+	ClassDB::bind_method(D_METHOD("set_count_policy", "count_policy"), &BTRunLimit::set_count_policy);
 	ClassDB::bind_method(D_METHOD("get_count_policy"), &BTRunLimit::get_count_policy);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "run_limit"), "set_run_limit", "get_run_limit");

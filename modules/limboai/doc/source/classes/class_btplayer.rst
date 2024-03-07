@@ -31,21 +31,19 @@ Properties
 .. table::
    :widths: auto
 
-   +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
-   | bool                                        | :ref:`active<class_BTPlayer_property_active>`                                 | ``true``  |
-   +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
-   | :ref:`BehaviorTree<class_BehaviorTree>`     | :ref:`behavior_tree<class_BTPlayer_property_behavior_tree>`                   |           |
-   +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
-   | :ref:`Blackboard<class_Blackboard>`         | :ref:`blackboard<class_BTPlayer_property_blackboard>`                         |           |
-   +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
-   | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`blackboard_plan<class_BTPlayer_property_blackboard_plan>`               |           |
-   +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
-   | bool                                        | :ref:`monitor_performance<class_BTPlayer_property_monitor_performance>`       | ``false`` |
-   +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
-   | bool                                        | :ref:`prefetch_nodepath_vars<class_BTPlayer_property_prefetch_nodepath_vars>` | ``true``  |
-   +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
-   | :ref:`UpdateMode<enum_BTPlayer_UpdateMode>` | :ref:`update_mode<class_BTPlayer_property_update_mode>`                       | ``1``     |
-   +---------------------------------------------+-------------------------------------------------------------------------------+-----------+
+   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
+   | bool                                        | :ref:`active<class_BTPlayer_property_active>`                           | ``true``  |
+   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
+   | :ref:`BehaviorTree<class_BehaviorTree>`     | :ref:`behavior_tree<class_BTPlayer_property_behavior_tree>`             |           |
+   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
+   | :ref:`Blackboard<class_Blackboard>`         | :ref:`blackboard<class_BTPlayer_property_blackboard>`                   |           |
+   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
+   | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`blackboard_plan<class_BTPlayer_property_blackboard_plan>`         |           |
+   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
+   | bool                                        | :ref:`monitor_performance<class_BTPlayer_property_monitor_performance>` | ``false`` |
+   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
+   | :ref:`UpdateMode<enum_BTPlayer_UpdateMode>` | :ref:`update_mode<class_BTPlayer_property_update_mode>`                 | ``1``     |
+   +---------------------------------------------+-------------------------------------------------------------------------+-----------+
 
 .. rst-class:: classref-reftable-group
 
@@ -62,7 +60,7 @@ Methods
    +-----------------------------+-----------------------------------------------------------------------------------+
    | void                        | :ref:`restart<class_BTPlayer_method_restart>` **(** **)**                         |
    +-----------------------------+-----------------------------------------------------------------------------------+
-   | void                        | :ref:`update<class_BTPlayer_method_update>` **(** float p_delta **)**             |
+   | void                        | :ref:`update<class_BTPlayer_method_update>` **(** float delta **)**               |
    +-----------------------------+-----------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
@@ -78,11 +76,11 @@ Signals
 
 .. rst-class:: classref-signal
 
-**behavior_tree_finished** **(** int p_status **)**
+**behavior_tree_finished** **(** int status **)**
 
 Emitted when the behavior tree has finished executing and returned ``SUCCESS`` or ``FAILURE``.
 
-Argument ``p_status`` holds the status returned by the behavior tree. See :ref:`Status<enum_BT_Status>`.
+Argument ``status`` holds the status returned by the behavior tree. See :ref:`Status<enum_BT_Status>`.
 
 .. rst-class:: classref-item-separator
 
@@ -92,11 +90,11 @@ Argument ``p_status`` holds the status returned by the behavior tree. See :ref:`
 
 .. rst-class:: classref-signal
 
-**updated** **(** int p_status **)**
+**updated** **(** int status **)**
 
 Emitted when BTPlayer has finished the behavior tree update.
 
-Argument ``p_status`` holds the status returned by the behavior tree. See :ref:`Status<enum_BT_Status>`.
+Argument ``status`` holds the status returned by the behavior tree. See :ref:`Status<enum_BT_Status>`.
 
 .. rst-class:: classref-section-separator
 
@@ -226,23 +224,6 @@ If ``true``, adds a performance monitor to "Debugger->Monitors" for each instanc
 
 ----
 
-.. _class_BTPlayer_property_prefetch_nodepath_vars:
-
-.. rst-class:: classref-property
-
-bool **prefetch_nodepath_vars** = ``true``
-
-.. rst-class:: classref-property-setget
-
-- void **set_prefetch_nodepath_vars** **(** bool value **)**
-- bool **get_prefetch_nodepath_vars** **(** **)**
-
-If ``true``, any ``NodePath`` variables in the :ref:`Blackboard<class_Blackboard>` are replaced with ``Node`` references when the tree is instantiated. References are retrieved by calling :ref:`Node.get_node<class_Node_method_get_node>` on the agent instance (agent is the owner of the BTPlayer node).
-
-.. rst-class:: classref-item-separator
-
-----
-
 .. _class_BTPlayer_property_update_mode:
 
 .. rst-class:: classref-property
@@ -305,7 +286,7 @@ Resets the behavior tree's execution. Each running task will be aborted and the 
 
 .. rst-class:: classref-method
 
-void **update** **(** float p_delta **)**
+void **update** **(** float delta **)**
 
 Executes the root task of the behavior tree instance if :ref:`active<class_BTPlayer_property_active>` is ``true``. Call this method when :ref:`update_mode<class_BTPlayer_property_update_mode>` is set to :ref:`MANUAL<class_BTPlayer_constant_MANUAL>`. When :ref:`update_mode<class_BTPlayer_property_update_mode>` is not :ref:`MANUAL<class_BTPlayer_constant_MANUAL>`, the :ref:`update<class_BTPlayer_method_update>` will be called automatically. See :ref:`UpdateMode<enum_BTPlayer_UpdateMode>`.
 

@@ -30,7 +30,7 @@
 		</method>
 		<method name="update">
 			<return type="void" />
-			<param index="0" name="p_delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Executes the root task of the behavior tree instance if [member active] is [code]true[/code]. Call this method when [member update_mode] is set to [constant MANUAL]. When [member update_mode] is not [constant MANUAL], the [method update] will be called automatically. See [enum UpdateMode].
 			</description>
@@ -52,26 +52,23 @@
 		<member name="monitor_performance" type="bool" setter="_set_monitor_performance" getter="_get_monitor_performance" default="false">
 			If [code]true[/code], adds a performance monitor to "Debugger-&gt;Monitors" for each instance of this [BTPlayer] node.
 		</member>
-		<member name="prefetch_nodepath_vars" type="bool" setter="set_prefetch_nodepath_vars" getter="get_prefetch_nodepath_vars" default="true">
-			If [code]true[/code], any [NodePath] variables in the [Blackboard] are replaced with [Node] references when the tree is instantiated. References are retrieved by calling [method Node.get_node] on the agent instance (agent is the owner of the BTPlayer node).
-		</member>
 		<member name="update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="BTPlayer.UpdateMode" default="1">
 			Determines when the behavior tree is executed. See [enum UpdateMode].
 		</member>
 	</members>
 	<signals>
 		<signal name="behavior_tree_finished">
-			<param index="0" name="p_status" type="int" />
+			<param index="0" name="status" type="int" />
 			<description>
 				Emitted when the behavior tree has finished executing and returned [code]SUCCESS[/code] or [code]FAILURE[/code].
-				Argument [param p_status] holds the status returned by the behavior tree. See [enum BT.Status].
+				Argument [param status] holds the status returned by the behavior tree. See [enum BT.Status].
 			</description>
 		</signal>
 		<signal name="updated">
-			<param index="0" name="p_status" type="int" />
+			<param index="0" name="status" type="int" />
 			<description>
 				Emitted when BTPlayer has finished the behavior tree update.
-				Argument [param p_status] holds the status returned by the behavior tree. See [enum BT.Status].
+				Argument [param status] holds the status returned by the behavior tree. See [enum BT.Status].
 			</description>
 		</signal>
 	</signals>

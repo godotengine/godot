@@ -1,7 +1,7 @@
 /**
  * bt_probability_selector.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -119,14 +119,14 @@ void BTProbabilitySelector::_select_task() {
 //***** Godot
 
 void BTProbabilitySelector::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_weight", "p_index"), &BTProbabilitySelector::get_weight);
-	ClassDB::bind_method(D_METHOD("set_weight", "p_index", "p_weight"), &BTProbabilitySelector::set_weight);
+	ClassDB::bind_method(D_METHOD("get_weight", "child_idx"), &BTProbabilitySelector::get_weight);
+	ClassDB::bind_method(D_METHOD("set_weight", "child_idx", "weight"), &BTProbabilitySelector::set_weight);
 	ClassDB::bind_method(D_METHOD("get_total_weight"), &BTProbabilitySelector::get_total_weight);
-	ClassDB::bind_method(D_METHOD("get_probability", "p_index"), &BTProbabilitySelector::get_probability);
-	ClassDB::bind_method(D_METHOD("set_probability", "p_index", "p_probability"), &BTProbabilitySelector::set_probability);
-	ClassDB::bind_method(D_METHOD("has_probability", "p_index"), &BTProbabilitySelector::has_probability);
+	ClassDB::bind_method(D_METHOD("get_probability", "child_idx"), &BTProbabilitySelector::get_probability);
+	ClassDB::bind_method(D_METHOD("set_probability", "child_idx", "probability"), &BTProbabilitySelector::set_probability);
+	ClassDB::bind_method(D_METHOD("has_probability", "child_idx"), &BTProbabilitySelector::has_probability);
 	ClassDB::bind_method(D_METHOD("get_abort_on_failure"), &BTProbabilitySelector::get_abort_on_failure);
-	ClassDB::bind_method(D_METHOD("set_abort_on_failure", "p_value"), &BTProbabilitySelector::set_abort_on_failure);
+	ClassDB::bind_method(D_METHOD("set_abort_on_failure", "enable"), &BTProbabilitySelector::set_abort_on_failure);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "abort_on_failure"), "set_abort_on_failure", "get_abort_on_failure");
 }

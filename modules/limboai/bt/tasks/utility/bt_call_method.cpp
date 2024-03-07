@@ -1,7 +1,7 @@
 /**
  * bt_call_method.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -20,12 +20,12 @@
 
 //**** Setters / Getters
 
-void BTCallMethod::set_method(StringName p_method_name) {
+void BTCallMethod::set_method(const StringName &p_method_name) {
 	method = p_method_name;
 	emit_changed();
 }
 
-void BTCallMethod::set_node_param(Ref<BBNode> p_object) {
+void BTCallMethod::set_node_param(const Ref<BBNode> &p_object) {
 	node_param = p_object;
 	emit_changed();
 	if (Engine::get_singleton()->is_editor_hint() && node_param.is_valid()) {
@@ -43,7 +43,7 @@ void BTCallMethod::set_args(TypedArray<BBVariant> p_args) {
 	emit_changed();
 }
 
-void BTCallMethod::set_result_var(const String &p_result_var) {
+void BTCallMethod::set_result_var(const StringName &p_result_var) {
 	result_var = p_result_var;
 	emit_changed();
 }
@@ -77,7 +77,7 @@ String BTCallMethod::_generate_name() {
 			method != StringName() ? method : "???",
 			args_str,
 			node_param.is_valid() && !node_param->to_string().is_empty() ? node_param->to_string() : "???",
-			result_var.is_empty() ? "" : LimboUtility::get_singleton()->decorate_output_var(result_var));
+			result_var == StringName() ? "" : LimboUtility::get_singleton()->decorate_output_var(result_var));
 }
 
 BT::Status BTCallMethod::_tick(double p_delta) {
@@ -124,7 +124,7 @@ BT::Status BTCallMethod::_tick(double p_delta) {
 	result = obj->callv(method, call_args);
 #endif // LIMBOAI_MODULE & LIMBOAI_GDEXTENSION
 
-	if (!result_var.is_empty()) {
+	if (result_var != StringName()) {
 		get_blackboard()->set_var(result_var, result);
 	}
 
@@ -134,25 +134,23 @@ BT::Status BTCallMethod::_tick(double p_delta) {
 //**** Godot
 
 void BTCallMethod::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_method", "p_method"), &BTCallMethod::set_method);
+	ClassDB::bind_method(D_METHOD("set_method", "method_name"), &BTCallMethod::set_method);
 	ClassDB::bind_method(D_METHOD("get_method"), &BTCallMethod::get_method);
-	ClassDB::bind_method(D_METHOD("set_node_param", "p_param"), &BTCallMethod::set_node_param);
+	ClassDB::bind_method(D_METHOD("set_node_param", "param"), &BTCallMethod::set_node_param);
 	ClassDB::bind_method(D_METHOD("get_node_param"), &BTCallMethod::get_node_param);
-	ClassDB::bind_method(D_METHOD("set_args", "p_args"), &BTCallMethod::set_args);
+	ClassDB::bind_method(D_METHOD("set_args", "args"), &BTCallMethod::set_args);
 	ClassDB::bind_method(D_METHOD("get_args"), &BTCallMethod::get_args);
-	ClassDB::bind_method(D_METHOD("set_include_delta", "p_include_delta"), &BTCallMethod::set_include_delta);
+	ClassDB::bind_method(D_METHOD("set_include_delta", "include_delta"), &BTCallMethod::set_include_delta);
 	ClassDB::bind_method(D_METHOD("is_delta_included"), &BTCallMethod::is_delta_included);
-	ClassDB::bind_method(D_METHOD("set_result_var", "p_result_var"), &BTCallMethod::set_result_var);
+	ClassDB::bind_method(D_METHOD("set_result_var", "variable"), &BTCallMethod::set_result_var);
 	ClassDB::bind_method(D_METHOD("get_result_var"), &BTCallMethod::get_result_var);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "BBNode"), "set_node_param", "get_node_param");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "method"), "set_method", "get_method");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "result_var"), "set_result_var", "get_result_var");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "result_var"), "set_result_var", "get_result_var");
 	ADD_GROUP("Arguments", "args_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "args_include_delta"), "set_include_delta", "is_delta_included");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "args", PROPERTY_HINT_ARRAY_TYPE, RESOURCE_TYPE_HINT("BBVariant")), "set_args", "get_args");
-
-	// ADD_PROPERTY_DEFAULT("args_include_delta", false);
 }
 
 BTCallMethod::BTCallMethod() {

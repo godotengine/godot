@@ -76,7 +76,7 @@ To register a transition and associate it with a specific event, you can use the
 
 .. code:: gdscript
 
-    hsm.add_transition(idle_state, move_state, "movement_started")
+    hsm.add_transition(idle_state, move_state, &"movement_started")
 
 In this example, we're registering a transition from the ``idle_state`` to the ``move_state``
 when the ``movement_started`` event is dispatched.
@@ -85,7 +85,7 @@ A transition can be also associated with no particular starting state:
 
 .. code:: gdscript
 
-    hsm.add_transition(hsm.ANYSTATE, move_state, "movement_started")
+    hsm.add_transition(hsm.ANYSTATE, move_state, &"movement_started")
 
 **Events are dispatched** with the :ref:`LimboState.dispatch<class_LimboState_method_dispatch>` method.
 It's important to note that this method can be called from anywhere in the state machine hierarchy and outside of it.
@@ -187,8 +187,8 @@ Let's illustrate this with a practical code example:
         hsm.add_child(idle_state)
         hsm.add_child(move_state)
 
-        hsm.add_transition(idle_state, move_state, "movement_started")
-        hsm.add_transition(move_state, idle_state, "movement_ended")
+        hsm.add_transition(idle_state, move_state, &"movement_started")
+        hsm.add_transition(move_state, idle_state, &"movement_ended")
 
         hsm.initialize(self)
         hsm.set_active(true)
@@ -198,7 +198,7 @@ Let's illustrate this with a practical code example:
         var dir: Vector2 = Input.get_vector(
             &"ui_left", &"ui_right", &"ui_up", &"ui_down")
         if dir.is_zero_approx():
-            hsm.dispatch("movement_started")
+            hsm.dispatch(&"movement_started")
 
 
     func _move_update(delta: float) -> void:
@@ -208,4 +208,4 @@ Let's illustrate this with a practical code example:
         velocity = desired_velocity
         move_and_slide()
         if desired_velocity.is_zero_approx():
-            hsm.dispatch("movement_ended")
+            hsm.dispatch(&"movement_ended")

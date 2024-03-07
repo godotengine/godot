@@ -1,7 +1,7 @@
 /**
  * blackboard.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -34,7 +34,7 @@ class Blackboard : public RefCounted {
 	GDCLASS(Blackboard, RefCounted);
 
 private:
-	HashMap<String, BBVariable> data;
+	HashMap<StringName, BBVariable> data;
 	Ref<Blackboard> parent;
 
 protected:
@@ -46,17 +46,15 @@ public:
 
 	Ref<Blackboard> top() const;
 
-	Variant get_var(const String &p_name, const Variant &p_default, bool p_complain = true) const;
-	void set_var(const String &p_name, const Variant &p_value);
-	bool has_var(const String &p_name) const;
-	void erase_var(const String &p_name);
+	Variant get_var(const StringName &p_name, const Variant &p_default, bool p_complain = true) const;
+	void set_var(const StringName &p_name, const Variant &p_value);
+	bool has_var(const StringName &p_name) const;
+	void erase_var(const StringName &p_name);
 
-	void bind_var_to_property(const String &p_name, Object *p_object, const StringName &p_property);
-	void unbind_var(const String &p_name);
+	void bind_var_to_property(const StringName &p_name, Object *p_object, const StringName &p_property);
+	void unbind_var(const StringName &p_name);
 
-	void add_var(const String &p_name, const BBVariable &p_var);
-
-	void prefetch_nodepath_vars(Node *p_node);
+	void add_var(const StringName &p_name, const BBVariable &p_var);
 
 	// TODO: Add serialization API.
 };

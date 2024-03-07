@@ -1185,16 +1185,16 @@ void LimboAIEditor::_notification(int p_what) {
 }
 
 void LimboAIEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_add_task", "p_task"), &LimboAIEditor::_add_task);
-	ClassDB::bind_method(D_METHOD("_remove_task", "p_task"), &LimboAIEditor::_remove_task);
-	ClassDB::bind_method(D_METHOD("_add_task_with_prototype", "p_prototype"), &LimboAIEditor::_add_task_with_prototype);
+	ClassDB::bind_method(D_METHOD("_add_task", "task"), &LimboAIEditor::_add_task);
+	ClassDB::bind_method(D_METHOD("_remove_task", "task"), &LimboAIEditor::_remove_task);
+	ClassDB::bind_method(D_METHOD("_add_task_with_prototype", "prototype_task"), &LimboAIEditor::_add_task_with_prototype);
 	ClassDB::bind_method(D_METHOD("_new_bt"), &LimboAIEditor::_new_bt);
-	ClassDB::bind_method(D_METHOD("_save_bt", "p_path"), &LimboAIEditor::_save_bt);
-	ClassDB::bind_method(D_METHOD("_load_bt", "p_path"), &LimboAIEditor::_load_bt);
-	ClassDB::bind_method(D_METHOD("edit_bt", "p_behavior_tree", "p_force_refresh"), &LimboAIEditor::edit_bt, Variant(false));
+	ClassDB::bind_method(D_METHOD("_save_bt", "path"), &LimboAIEditor::_save_bt);
+	ClassDB::bind_method(D_METHOD("_load_bt", "path"), &LimboAIEditor::_load_bt);
+	ClassDB::bind_method(D_METHOD("edit_bt", "behavior_tree", "force_refresh"), &LimboAIEditor::edit_bt, Variant(false));
 	ClassDB::bind_method(D_METHOD("_reload_modified"), &LimboAIEditor::_reload_modified);
 	ClassDB::bind_method(D_METHOD("_resave_modified"), &LimboAIEditor::_resave_modified);
-	ClassDB::bind_method(D_METHOD("_replace_task", "p_task", "p_by_task"), &LimboAIEditor::_replace_task);
+	ClassDB::bind_method(D_METHOD("_replace_task", "task", "by_task"), &LimboAIEditor::_replace_task);
 	ClassDB::bind_method(D_METHOD("_popup_file_dialog"), &LimboAIEditor::_popup_file_dialog);
 	ClassDB::bind_method(D_METHOD("get_edited_blackboard_plan"), &LimboAIEditor::get_edited_blackboard_plan);
 }

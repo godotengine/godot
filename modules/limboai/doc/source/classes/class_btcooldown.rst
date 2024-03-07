@@ -35,17 +35,17 @@ Properties
 .. table::
    :widths: auto
 
-   +--------+-------------------------------------------------------------------------+-----------+
-   | String | :ref:`cooldown_state_var<class_BTCooldown_property_cooldown_state_var>` | ``""``    |
-   +--------+-------------------------------------------------------------------------+-----------+
-   | float  | :ref:`duration<class_BTCooldown_property_duration>`                     | ``10.0``  |
-   +--------+-------------------------------------------------------------------------+-----------+
-   | bool   | :ref:`process_pause<class_BTCooldown_property_process_pause>`           | ``false`` |
-   +--------+-------------------------------------------------------------------------+-----------+
-   | bool   | :ref:`start_cooled<class_BTCooldown_property_start_cooled>`             | ``false`` |
-   +--------+-------------------------------------------------------------------------+-----------+
-   | bool   | :ref:`trigger_on_failure<class_BTCooldown_property_trigger_on_failure>` | ``false`` |
-   +--------+-------------------------------------------------------------------------+-----------+
+   +------------+-------------------------------------------------------------------------+-----------+
+   | StringName | :ref:`cooldown_state_var<class_BTCooldown_property_cooldown_state_var>` | ``&""``   |
+   +------------+-------------------------------------------------------------------------+-----------+
+   | float      | :ref:`duration<class_BTCooldown_property_duration>`                     | ``10.0``  |
+   +------------+-------------------------------------------------------------------------+-----------+
+   | bool       | :ref:`process_pause<class_BTCooldown_property_process_pause>`           | ``false`` |
+   +------------+-------------------------------------------------------------------------+-----------+
+   | bool       | :ref:`start_cooled<class_BTCooldown_property_start_cooled>`             | ``false`` |
+   +------------+-------------------------------------------------------------------------+-----------+
+   | bool       | :ref:`trigger_on_failure<class_BTCooldown_property_trigger_on_failure>` | ``false`` |
+   +------------+-------------------------------------------------------------------------+-----------+
 
 .. rst-class:: classref-section-separator
 
@@ -60,12 +60,12 @@ Property Descriptions
 
 .. rst-class:: classref-property
 
-String **cooldown_state_var** = ``""``
+StringName **cooldown_state_var** = ``&""``
 
 .. rst-class:: classref-property-setget
 
-- void **set_cooldown_state_var** **(** String value **)**
-- String **get_cooldown_state_var** **(** **)**
+- void **set_cooldown_state_var** **(** StringName value **)**
+- StringName **get_cooldown_state_var** **(** **)**
 
 A boolean variable used to store the cooldown state in the :ref:`Blackboard<class_Blackboard>`. If left empty, the variable will be automatically generated and assigned.
 

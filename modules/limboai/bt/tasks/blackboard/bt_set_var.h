@@ -1,7 +1,7 @@
 /**
  * bt_set_var.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -22,7 +22,7 @@ class BTSetVar : public BTAction {
 	TASK_CATEGORY(Blackboard);
 
 private:
-	String variable;
+	StringName variable;
 	Ref<BBVariant> value;
 	LimboUtility::Operation operation = LimboUtility::OPERATION_NONE;
 
@@ -35,10 +35,10 @@ protected:
 public:
 	virtual PackedStringArray get_configuration_warnings() override;
 
-	void set_variable(const String &p_variable);
-	String get_variable() const { return variable; }
+	void set_variable(const StringName &p_variable);
+	StringName get_variable() const { return variable; }
 
-	void set_value(Ref<BBVariant> p_value);
+	void set_value(const Ref<BBVariant> &p_value);
 	Ref<BBVariant> get_value() const { return value; }
 
 	void set_operation(LimboUtility::Operation p_operation);

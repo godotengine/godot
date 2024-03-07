@@ -60,6 +60,7 @@ public:
 	StringName ActionCopy;
 	StringName ActionCut;
 	StringName ActionPaste;
+	StringName active_state_changed;
 	StringName add_child_at_index;
 	StringName add_child;
 	StringName Add;
@@ -92,6 +93,9 @@ public:
 	StringName emit_changed;
 	StringName entered;
 	StringName error_value;
+	StringName EVENT_FAILURE;
+	StringName EVENT_FINISHED;
+	StringName EVENT_SUCCESS;
 	StringName exited;
 	StringName favorite_tasks_changed;
 	StringName Favorites;
@@ -153,7 +157,6 @@ public:
 	StringName set_v_scroll;
 	StringName setup;
 	StringName started;
-	StringName state_changed;
 	StringName StatusWarning;
 	StringName stopped;
 	StringName task_activated;
@@ -175,7 +178,6 @@ public:
 	StringName visibility_changed;
 	StringName window_visibility_changed;
 
-	String EVENT_FINISHED;
 	String repeat_forever;
 	String output_var_prefix;
 };

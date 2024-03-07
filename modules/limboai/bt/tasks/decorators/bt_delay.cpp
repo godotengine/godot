@@ -1,7 +1,7 @@
 /**
  * bt_delay.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -29,7 +29,7 @@ BT::Status BTDelay::_tick(double p_delta) {
 }
 
 void BTDelay::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_seconds", "p_value"), &BTDelay::set_seconds);
+	ClassDB::bind_method(D_METHOD("set_seconds", "value"), &BTDelay::set_seconds);
 	ClassDB::bind_method(D_METHOD("get_seconds"), &BTDelay::get_seconds);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seconds"), "set_seconds", "get_seconds");
 }

@@ -53,14 +53,16 @@ public:
         return material;
     }
 
-    void init_form_mesh_instance(MeshInstance3D *mesh_instance)
+    void init_form_mesh_instance(MeshInstance3D *mesh_instance,const Dictionary& p_bone_mapping = Dictionary())
     {
+        ERR_FAIL_COND(mesh_instance == nullptr);
         skin = mesh_instance->get_skin();
         mesh = mesh_instance->get_mesh();
         material = mesh_instance->get_material_override();
         if(skin.is_valid())
         {
             skin = skin->duplicate();
+            skin->set_human_bone_mapping(p_bone_mapping);
         }
         if(mesh.is_valid())
         {

@@ -1029,6 +1029,8 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root_bones"), &Skeleton3D::get_root_bones);
 	
 	ClassDB::bind_method(D_METHOD("get_human_bone_mapping"), &Skeleton3D::get_human_bone_mapping);
+	
+	ClassDB::bind_method(D_METHOD("set_human_bone_mapping:", "mapping"), &Skeleton3D::set_human_bone_mapping);
 
 	ClassDB::bind_method(D_METHOD("get_bone_rest", "bone_idx"), &Skeleton3D::get_bone_rest);
 	ClassDB::bind_method(D_METHOD("set_bone_rest", "bone_idx", "rest"), &Skeleton3D::set_bone_rest);
@@ -1867,6 +1869,11 @@ Dictionary Skeleton3D::get_human_bone_mapping()
 void Skeleton3D::set_human_bone_mapping(const Dictionary &p_human_bone_mapping)
 {
 	List<Variant> keys;
-	human_bone_mapping.get_key_list(&keys);
+	p_human_bone_mapping.get_key_list(&keys);
+	
+	for (const Variant &E : keys) {
+		int bone_index = this->find_bone(E);
+		this->set_bone_name(bone_index, p_human_bone_mapping[E]);
+	}
 }
 

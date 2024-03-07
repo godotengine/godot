@@ -20,10 +20,10 @@
 		<member name="behavior_tree" type="BehaviorTree" setter="set_behavior_tree" getter="get_behavior_tree">
 			A [BehaviorTree] resource that defines state behavior.
 		</member>
-		<member name="failure_event" type="String" setter="set_failure_event" getter="get_failure_event" default="&quot;failure&quot;">
+		<member name="failure_event" type="StringName" setter="set_failure_event" getter="get_failure_event" default="&amp;&quot;failure&quot;">
 			HSM event that will be dispatched when the behavior tree results in [code]FAILURE[/code]. See [method LimboState.dispatch].
 		</member>
-		<member name="success_event" type="String" setter="set_success_event" getter="get_success_event" default="&quot;success&quot;">
+		<member name="success_event" type="StringName" setter="set_success_event" getter="get_success_event" default="&amp;&quot;success&quot;">
 			HSM event that will be dispatched when the behavior tree results in [code]SUCCESS[/code]. See [method LimboState.dispatch].
 		</member>
 	</members>

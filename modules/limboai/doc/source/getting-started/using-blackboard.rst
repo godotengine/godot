@@ -19,7 +19,7 @@ Here's an example of how you can interact with the :ref:`Blackboard<class_Blackb
 
 .. code:: gdscript
 
-    @export var speed_var: String = "speed"
+    @export var speed_var: StringName = &"speed"
 
     func _tick(delta: float) -> Status:
         # Set the value of the "speed" variable:
@@ -114,7 +114,7 @@ In the following example, we have a group of agents, and we want to share a comm
 
     extends BTAction
 
-    @export var group_target_var: String = "group_target"
+    @export var group_target_var: StringName = &"group_target"
 
     func _tick(delta: float) -> Status:
         if not blackboard.has_var(group_target_var):

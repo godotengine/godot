@@ -1,0 +1,29 @@
+[gd_resource type="BehaviorTree" load_steps=5 format=3 uid="uid://b1mfh8yad7rmw"]
+
+[sub_resource type="BlackboardPlan" id="BlackboardPlan_ewfwq"]
+var/speed/name = &"speed"
+var/speed/type = 3
+var/speed/value = 400.0
+var/speed/hint = 1
+var/speed/hint_string = "10,1000,10"
+
+[sub_resource type="BBNode" id="BBNode_fq0jf"]
+resource_name = "AnimationPlayer"
+saved_value = NodePath("AnimationPlayer")
+
+[sub_resource type="BTPlayAnimation" id="BTPlayAnimation_rsejo"]
+animation_player = SubResource("BBNode_fq0jf")
+animation_name = &"idle"
+
+[sub_resource type="BTSequence" id="BTSequence_4bq32"]
+children = [SubResource("BTPlayAnimation_rsejo")]
+
+[resource]
+description = "Welcome to the [b]LimboAI Tutorial[/b]!
+
+Here, you'll learn how to use behavior trees to craft AI for your games. We'll start with the basics and gradually move to more advanced topics. Strap in for a quick and engaging introduction to behavior trees.
+
+Press ➡ button in the top-right corner to proceed.
+Press ⬅ button any time you want to go back to a previous chapter."
+blackboard_plan = SubResource("BlackboardPlan_ewfwq")
+root_task = SubResource("BTSequence_4bq32")

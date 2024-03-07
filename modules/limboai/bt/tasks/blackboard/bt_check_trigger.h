@@ -1,7 +1,7 @@
 /**
  * bt_check_trigger.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -19,7 +19,7 @@ class BTCheckTrigger : public BTCondition {
 	TASK_CATEGORY(Blackboard);
 
 private:
-	String variable;
+	StringName variable;
 
 protected:
 	static void _bind_methods();
@@ -28,8 +28,8 @@ protected:
 	virtual Status _tick(double p_delta) override;
 
 public:
-	void set_variable(String p_variable);
-	String get_variable() const { return variable; }
+	void set_variable(const StringName &p_variable);
+	StringName get_variable() const { return variable; }
 
 	virtual PackedStringArray get_configuration_warnings() override;
 };

@@ -28,13 +28,16 @@ class BlackboardPlan : public Resource {
 	GDCLASS(BlackboardPlan, Resource);
 
 private:
-	List<Pair<String, BBVariable>> var_list;
-	HashMap<String, BBVariable> var_map;
+	List<Pair<StringName, BBVariable>> var_list;
+	HashMap<StringName, BBVariable> var_map;
 
 	// When base is not null, the plan is considered to be derived from the base plan.
 	// A derived plan can only have variables that exist in the base plan,
 	// and only the values can be different in those variables.
 	Ref<BlackboardPlan> base;
+
+	// If true, NodePath variables will be prefetched, so that the vars will contain node pointers instead (upon BB creation/population).
+	bool prefetch_nodepath_vars = true;
 
 protected:
 	static void _bind_methods();
@@ -49,25 +52,28 @@ public:
 	void set_base_plan(const Ref<BlackboardPlan> &p_base);
 	Ref<BlackboardPlan> get_base_plan() const { return base; }
 
-	void add_var(const String &p_name, const BBVariable &p_var);
-	void remove_var(const String &p_name);
-	BBVariable get_var(const String &p_name);
-	Pair<String, BBVariable> get_var_by_index(int p_index);
-	bool has_var(const String &p_name) { return var_map.has(p_name); }
-	bool is_empty() const { return var_map.is_empty(); }
+	void set_prefetch_nodepath_vars(bool p_enable);
+	bool is_prefetching_nodepath_vars() const;
+
+	void add_var(const StringName &p_name, const BBVariable &p_var);
+	void remove_var(const StringName &p_name);
+	BBVariable get_var(const StringName &p_name);
+	Pair<StringName, BBVariable> get_var_by_index(int p_index);
+	_FORCE_INLINE_ bool has_var(const StringName &p_name) { return var_map.has(p_name); }
+	_FORCE_INLINE_ bool is_empty() const { return var_map.is_empty(); }
 	int get_var_count() const { return var_map.size(); }
 
 	PackedStringArray list_vars() const;
-	String get_var_name(const BBVariable &p_var) const;
-	bool is_valid_var_name(const String &p_name) const;
-	void rename_var(const String &p_name, const String &p_new_name);
+	StringName get_var_name(const BBVariable &p_var) const;
+	bool is_valid_var_name(const StringName &p_name) const;
+	void rename_var(const StringName &p_name, const StringName &p_new_name);
 	void move_var(int p_index, int p_new_index);
 
 	void sync_with_base_plan();
 	bool is_derived() const { return base.is_valid(); }
 
-	Ref<Blackboard> create_blackboard();
-	void populate_blackboard(const Ref<Blackboard> &p_blackboard, bool overwrite);
+	Ref<Blackboard> create_blackboard(Node *p_agent);
+	void populate_blackboard(const Ref<Blackboard> &p_blackboard, bool overwrite, Node *p_node);
 
 	BlackboardPlan();
 };

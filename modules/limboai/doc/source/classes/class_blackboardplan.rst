@@ -16,17 +16,51 @@ Stores and manages variables that will be used in constructing new :ref:`Blackbo
 
 .. rst-class:: classref-reftable-group
 
+Properties
+----------
+
+.. table::
+   :widths: auto
+
+   +------+-------------------------------------------------------------------------------------+----------+
+   | bool | :ref:`prefetch_nodepath_vars<class_BlackboardPlan_property_prefetch_nodepath_vars>` | ``true`` |
+   +------+-------------------------------------------------------------------------------------+----------+
+
+.. rst-class:: classref-reftable-group
+
 Methods
 -------
 
 .. table::
    :widths: auto
 
-   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Blackboard<class_Blackboard>` | :ref:`create_blackboard<class_BlackboardPlan_method_create_blackboard>` **(** **)**                                                                        |
-   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`populate_blackboard<class_BlackboardPlan_method_populate_blackboard>` **(** :ref:`Blackboard<class_Blackboard>` p_blackboard, bool p_overwrite **)** |
-   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +-------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Blackboard<class_Blackboard>` | :ref:`create_blackboard<class_BlackboardPlan_method_create_blackboard>` **(** Node node **)**                                                                     |
+   +-------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`populate_blackboard<class_BlackboardPlan_method_populate_blackboard>` **(** :ref:`Blackboard<class_Blackboard>` blackboard, bool overwrite, Node node **)** |
+   +-------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+.. rst-class:: classref-section-separator
+
+----
+
+.. rst-class:: classref-descriptions-group
+
+Property Descriptions
+---------------------
+
+.. _class_BlackboardPlan_property_prefetch_nodepath_vars:
+
+.. rst-class:: classref-property
+
+bool **prefetch_nodepath_vars** = ``true``
+
+.. rst-class:: classref-property-setget
+
+- void **set_prefetch_nodepath_vars** **(** bool value **)**
+- bool **is_prefetching_nodepath_vars** **(** **)**
+
+Enables or disables ``NodePath`` variable prefetching. If ``true``, ``NodePath`` values will be replaced with node instances when the :ref:`Blackboard<class_Blackboard>` is created.
 
 .. rst-class:: classref-section-separator
 
@@ -41,9 +75,9 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-:ref:`Blackboard<class_Blackboard>` **create_blackboard** **(** **)**
+:ref:`Blackboard<class_Blackboard>` **create_blackboard** **(** Node node **)**
 
-Constructs a new instance of a :ref:`Blackboard<class_Blackboard>` using this plan.
+Constructs a new instance of a :ref:`Blackboard<class_Blackboard>` using this plan. If ``NodePath`` prefetching is enabled, ``node`` will be used to retrieve node instances for ``NodePath`` variables and substitute their values.
 
 .. rst-class:: classref-item-separator
 
@@ -53,9 +87,9 @@ Constructs a new instance of a :ref:`Blackboard<class_Blackboard>` using this pl
 
 .. rst-class:: classref-method
 
-void **populate_blackboard** **(** :ref:`Blackboard<class_Blackboard>` p_blackboard, bool p_overwrite **)**
+void **populate_blackboard** **(** :ref:`Blackboard<class_Blackboard>` blackboard, bool overwrite, Node node **)**
 
-Populates ``p_blackboard`` with the variables from this plan. If ``p_override`` is ``true``, existing variables with the same names will be overwritten.
+Populates ``blackboard`` with the variables from this plan. If ``overwrite`` is ``true``, existing variables with the same names will be overwritten. If ``NodePath`` prefetching is enabled, ``node`` will be used to retrieve node instances for ``NodePath`` variables and substitute their values.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`

@@ -23,7 +23,7 @@ extends BTCondition
 @export var distance_max: float
 
 ## Blackboard variable that holds the target (expecting Node2D).
-@export var target_var := "target"
+@export var target_var: StringName = &"target"
 
 var _min_distance_squared: float
 var _max_distance_squared: float

@@ -45,7 +45,7 @@
 		</method>
 		<method name="_tick" qualifiers="virtual">
 			<return type="int" enum="BT.Status" />
-			<param index="0" name="p_delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Called when task is "ticked", i.e. executed by [BTPlayer] or [BTState] during an update.
 				Returns execution status as defined in [enum BT.Status].
@@ -60,17 +60,17 @@
 		</method>
 		<method name="add_child">
 			<return type="void" />
-			<param index="0" name="p_child" type="BTTask" />
+			<param index="0" name="task" type="BTTask" />
 			<description>
-				Adds a child task. The [param p_child] is placed at the end of the children list.
+				Adds a child task. The [param task] is placed at the end of the children list.
 			</description>
 		</method>
 		<method name="add_child_at_index">
 			<return type="void" />
-			<param index="0" name="p_child" type="BTTask" />
-			<param index="1" name="p_idx" type="int" />
+			<param index="0" name="task" type="BTTask" />
+			<param index="1" name="idx" type="int" />
 			<description>
-				Adds a child task. The [param p_child] is placed at [param p_idx] position in the children list.
+				Adds a child task. The [param task] is placed at [param idx] position in the children list.
 			</description>
 		</method>
 		<method name="clone" qualifiers="const">
@@ -81,7 +81,7 @@
 		</method>
 		<method name="execute">
 			<return type="int" enum="BT.Status" />
-			<param index="0" name="p_delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Performs task's execution. The execution follows a specific sequence:
 				- If task's current [member status] is not [code]RUNNING[/code], the [method _enter] method is called first.
@@ -91,7 +91,7 @@
 		</method>
 		<method name="get_child" qualifiers="const">
 			<return type="BTTask" />
-			<param index="0" name="p_idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns a child task by specifying its index.
 			</description>
@@ -135,15 +135,15 @@
 		</method>
 		<method name="has_child" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="p_child" type="BTTask" />
+			<param index="0" name="task" type="BTTask" />
 			<description>
-				Returns [code]true[/code] if [param p_child] is a child of this task.
+				Returns [code]true[/code] if [param task] is a child of this task.
 			</description>
 		</method>
 		<method name="initialize">
 			<return type="void" />
-			<param index="0" name="p_agent" type="Node" />
-			<param index="1" name="p_blackboard" type="Blackboard" />
+			<param index="0" name="agent" type="Node" />
+			<param index="1" name="blackboard" type="Blackboard" />
 			<description>
 				Initilizes the task. Assigns [member agent] and [member blackboard], and calls [method _setup] for the task and its children.
 				The method is called recursively for each child task.
@@ -151,9 +151,9 @@
 		</method>
 		<method name="is_descendant_of" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="p_task" type="BTTask" />
+			<param index="0" name="task" type="BTTask" />
 			<description>
-				Returns [code]true[/code] if this task is a descendant of [param p_task]. In other words, this task must be a child of [param p_task] or one of its children or grandchildren.
+				Returns [code]true[/code] if this task is a descendant of [param task]. In other words, this task must be a child of [param task] or one of its children or grandchildren.
 			</description>
 		</method>
 		<method name="is_root" qualifiers="const">
@@ -171,21 +171,21 @@
 		</method>
 		<method name="print_tree">
 			<return type="void" />
-			<param index="0" name="p_initial_tabs" type="int" default="0" />
+			<param index="0" name="initial_tabs" type="int" default="0" />
 			<description>
 				Prints the subtree that starts with this task to the console.
 			</description>
 		</method>
 		<method name="remove_child">
 			<return type="void" />
-			<param index="0" name="p_child" type="BTTask" />
+			<param index="0" name="task" type="BTTask" />
 			<description>
-				Removes [param p_child] task from children.
+				Removes [param task] from children.
 			</description>
 		</method>
 		<method name="remove_child_at_index">
 			<return type="void" />
-			<param index="0" name="p_idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Removes a child task at a specified index from children.
 			</description>

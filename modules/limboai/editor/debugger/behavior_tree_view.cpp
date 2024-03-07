@@ -311,13 +311,13 @@ void BehaviorTreeView::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_draw_success_status"), &BehaviorTreeView::_draw_success_status);
 	ClassDB::bind_method(D_METHOD("_draw_failure_status"), &BehaviorTreeView::_draw_failure_status);
 	ClassDB::bind_method(D_METHOD("_item_collapsed"), &BehaviorTreeView::_item_collapsed);
-	ClassDB::bind_method(D_METHOD("update_tree", "p_behavior_tree_data"), &BehaviorTreeView::update_tree);
+	ClassDB::bind_method(D_METHOD("update_tree", "behavior_tree_data"), &BehaviorTreeView::update_tree);
 
-	ClassDB::bind_method(D_METHOD("set_update_interval_msec", "p_milliseconds"), &BehaviorTreeView::set_update_interval_msec);
+	ClassDB::bind_method(D_METHOD("set_update_interval_msec", "interval_msec"), &BehaviorTreeView::set_update_interval_msec);
 	ClassDB::bind_method(D_METHOD("get_update_interval_msec"), &BehaviorTreeView::get_update_interval_msec);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_interval_msec"), "set_update_interval_msec", "get_update_interval_msec");
 
-	ADD_SIGNAL(MethodInfo("task_selected", PropertyInfo(Variant::STRING, "p_type_name"), PropertyInfo(Variant::STRING, "p_script_path")));
+	ADD_SIGNAL(MethodInfo("task_selected", PropertyInfo(Variant::STRING, "type_name"), PropertyInfo(Variant::STRING, "script_path")));
 }
 
 BehaviorTreeView::BehaviorTreeView() {

@@ -17,7 +17,7 @@ extends BTAction
 @export var group: StringName
 
 ## Blackboard variable in which the task will store the acquired node.
-@export var output_var: String = "target"
+@export var output_var: StringName = &"target"
 
 
 func _generate_name() -> String:

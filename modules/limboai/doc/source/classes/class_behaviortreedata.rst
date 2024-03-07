@@ -31,9 +31,9 @@ Methods
 .. table::
    :widths: auto
 
-   +-------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`BehaviorTreeData<class_BehaviorTreeData>` | :ref:`create_from_tree_instance<class_BehaviorTreeData_method_create_from_tree_instance>` **(** :ref:`BTTask<class_BTTask>` p_tree_instance **)** |static| |
-   +-------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BehaviorTreeData<class_BehaviorTreeData>` | :ref:`create_from_tree_instance<class_BehaviorTreeData_method_create_from_tree_instance>` **(** :ref:`BTTask<class_BTTask>` tree_instance **)** |static| |
+   +-------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -48,9 +48,9 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-:ref:`BehaviorTreeData<class_BehaviorTreeData>` **create_from_tree_instance** **(** :ref:`BTTask<class_BTTask>` p_tree_instance **)** |static|
+:ref:`BehaviorTreeData<class_BehaviorTreeData>` **create_from_tree_instance** **(** :ref:`BTTask<class_BTTask>` tree_instance **)** |static|
 
-Returns current state of the ``p_tree_instance`` encoded as a **BehaviorTreeData**, suitable for use with :ref:`BehaviorTreeView<class_BehaviorTreeView>`.
+Returns current state of the ``tree_instance`` encoded as a **BehaviorTreeData**, suitable for use with :ref:`BehaviorTreeView<class_BehaviorTreeView>`.
 
 Behavior tree instance can be acquired with :ref:`BTPlayer.get_tree_instance<class_BTPlayer_method_get_tree_instance>`.
 

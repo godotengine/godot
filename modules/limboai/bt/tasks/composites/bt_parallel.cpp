@@ -1,7 +1,7 @@
 /**
  * bt_parallel.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -49,11 +49,11 @@ BT::Status BTParallel::_tick(double p_delta) {
 
 void BTParallel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_num_successes_required"), &BTParallel::get_num_successes_required);
-	ClassDB::bind_method(D_METHOD("set_num_successes_required", "p_value"), &BTParallel::set_num_successes_required);
+	ClassDB::bind_method(D_METHOD("set_num_successes_required", "value"), &BTParallel::set_num_successes_required);
 	ClassDB::bind_method(D_METHOD("get_num_failures_required"), &BTParallel::get_num_failures_required);
-	ClassDB::bind_method(D_METHOD("set_num_failures_required", "p_value"), &BTParallel::set_num_failures_required);
+	ClassDB::bind_method(D_METHOD("set_num_failures_required", "value"), &BTParallel::set_num_failures_required);
 	ClassDB::bind_method(D_METHOD("get_repeat"), &BTParallel::get_repeat);
-	ClassDB::bind_method(D_METHOD("set_repeat", "p_value"), &BTParallel::set_repeat);
+	ClassDB::bind_method(D_METHOD("set_repeat", "enable"), &BTParallel::set_repeat);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "num_successes_required"), "set_num_successes_required", "get_num_successes_required");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "num_failures_required"), "set_num_failures_required", "get_num_failures_required");

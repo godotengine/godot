@@ -7,7 +7,7 @@
 [ext_resource type="Script" path="res://demo/ai/tasks/face_target.gd" id="5_o4ggh"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_46tbn"]
-var/speed/name = "speed"
+var/speed/name = &"speed"
 var/speed/type = 3
 var/speed/value = 400.0
 var/speed/hint = 1
@@ -26,14 +26,14 @@ blend = 0.1
 script = ExtResource("1_cdtqu")
 range_min = 200.0
 range_max = 500.0
-position_var = "pos"
+position_var = &"pos"
 
 [sub_resource type="BTAction" id="BTAction_5kivl"]
 script = ExtResource("2_31fsn")
-target_position_var = "pos"
-speed_var = "speed"
+target_position_var = &"pos"
+speed_var = &"speed"
 tolerance = 50.0
-avoid_var = ""
+avoid_var = &""
 
 [sub_resource type="BTSequence" id="BTSequence_k184c"]
 custom_name = "Chaotic Walk"
@@ -71,12 +71,12 @@ blend = 0.1
 [sub_resource type="BTAction" id="BTAction_ulbrf"]
 script = ExtResource("3_y1r1a")
 group = &"player"
-output_var = "target"
+output_var = &"target"
 
 [sub_resource type="BTAction" id="BTAction_a4jqi"]
 script = ExtResource("4_jlgat")
-target_var = "target"
-speed_var = "speed"
+target_var = &"target"
+speed_var = &"speed"
 approach_distance = 100.0
 
 [sub_resource type="BTTimeLimit" id="BTTimeLimit_xek5v"]
@@ -89,7 +89,7 @@ children = [SubResource("BTPlayAnimation_olf37"), SubResource("BTAction_ulbrf"),
 
 [sub_resource type="BTAction" id="BTAction_kidxn"]
 script = ExtResource("5_o4ggh")
-target_var = "target"
+target_var = &"target"
 
 [sub_resource type="BTWait" id="BTWait_tadkc"]
 duration = 0.1

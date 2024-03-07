@@ -14,7 +14,7 @@ extends BTAction
 ## Returns RUNNING always.
 
 ## Blackboard variable that stores desired speed.
-@export var speed_var: String = "speed"
+@export var speed_var: StringName = &"speed"
 
 ## How much can we deviate from the "away" direction (in radians).
 @export var max_angle_deviation: float = 0.7

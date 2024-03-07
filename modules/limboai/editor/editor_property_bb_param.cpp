@@ -15,11 +15,11 @@
 
 #include "editor_property_bb_param.h"
 
-#include "modules/limboai/blackboard/bb_param/bb_param.h"
-#include "modules/limboai/blackboard/bb_param/bb_variant.h"
-#include "modules/limboai/editor/editor_property_variable_name.h"
-#include "modules/limboai/editor/mode_switch_button.h"
-#include "modules/limboai/util/limbo_string_names.h"
+#include "../blackboard/bb_param/bb_param.h"
+#include "../blackboard/bb_param/bb_variant.h"
+#include "editor_property_variable_name.h"
+#include "mode_switch_button.h"
+#include "../util/limbo_string_names.h"
 
 #include "core/error/error_macros.h"
 #include "core/io/marshalls.h"

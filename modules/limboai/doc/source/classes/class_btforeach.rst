@@ -35,11 +35,11 @@ Properties
 .. table::
    :widths: auto
 
-   +--------+------------------------------------------------------+--------+
-   | String | :ref:`array_var<class_BTForEach_property_array_var>` | ``""`` |
-   +--------+------------------------------------------------------+--------+
-   | String | :ref:`save_var<class_BTForEach_property_save_var>`   | ``""`` |
-   +--------+------------------------------------------------------+--------+
+   +------------+------------------------------------------------------+---------+
+   | StringName | :ref:`array_var<class_BTForEach_property_array_var>` | ``&""`` |
+   +------------+------------------------------------------------------+---------+
+   | StringName | :ref:`save_var<class_BTForEach_property_save_var>`   | ``&""`` |
+   +------------+------------------------------------------------------+---------+
 
 .. rst-class:: classref-section-separator
 
@@ -54,12 +54,12 @@ Property Descriptions
 
 .. rst-class:: classref-property
 
-String **array_var** = ``""``
+StringName **array_var** = ``&""``
 
 .. rst-class:: classref-property-setget
 
-- void **set_array_var** **(** String value **)**
-- String **get_array_var** **(** **)**
+- void **set_array_var** **(** StringName value **)**
+- StringName **get_array_var** **(** **)**
 
 A variable within the :ref:`Blackboard<class_Blackboard>` that holds an ``Array``, which is used for the iteration process.
 
@@ -71,12 +71,12 @@ A variable within the :ref:`Blackboard<class_Blackboard>` that holds an ``Array`
 
 .. rst-class:: classref-property
 
-String **save_var** = ``""``
+StringName **save_var** = ``&""``
 
 .. rst-class:: classref-property-setget
 
-- void **set_save_var** **(** String value **)**
-- String **get_save_var** **(** **)**
+- void **set_save_var** **(** StringName value **)**
+- StringName **get_save_var** **(** **)**
 
 A :ref:`Blackboard<class_Blackboard>` variable used to store an element of the array referenced by :ref:`array_var<class_BTForEach_property_array_var>`.
 

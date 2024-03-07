@@ -41,9 +41,9 @@ Methods
 .. table::
    :widths: auto
 
-   +------+------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void | :ref:`update_tree<class_BehaviorTreeView_method_update_tree>` **(** :ref:`BehaviorTreeData<class_BehaviorTreeData>` p_behavior_tree_data **)** |
-   +------+------------------------------------------------------------------------------------------------------------------------------------------------+
+   +------+----------------------------------------------------------------------------------------------------------------------------------------------+
+   | void | :ref:`update_tree<class_BehaviorTreeView_method_update_tree>` **(** :ref:`BehaviorTreeData<class_BehaviorTreeData>` behavior_tree_data **)** |
+   +------+----------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -58,7 +58,7 @@ Signals
 
 .. rst-class:: classref-signal
 
-**task_selected** **(** String p_type_name, String p_script_path **)**
+**task_selected** **(** String type_name, String script_path **)**
 
 Emitted when a task item is selected in **BehaviorTreeView**.
 
@@ -97,7 +97,7 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-void **update_tree** **(** :ref:`BehaviorTreeData<class_BehaviorTreeData>` p_behavior_tree_data **)**
+void **update_tree** **(** :ref:`BehaviorTreeData<class_BehaviorTreeData>` behavior_tree_data **)**
 
 Updates the representation of a :ref:`BehaviorTree<class_BehaviorTree>` instance. See also :ref:`BehaviorTreeData<class_BehaviorTreeData>`.
 

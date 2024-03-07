@@ -46,6 +46,7 @@ LimboStringNames::LimboStringNames() {
 	ActionCopy = SN("ActionCopy");
 	ActionCut = SN("ActionCut");
 	ActionPaste = SN("ActionPaste");
+	active_state_changed = SN("active_state_changed");
 	Add = SN("Add");
 	add_child = SN("add_child");
 	add_child_at_index = SN("add_child_at_index");
@@ -78,6 +79,9 @@ LimboStringNames::LimboStringNames() {
 	emit_changed = SN("emit_changed");
 	entered = SN("entered");
 	error_value = SN("error_value");
+	EVENT_FAILURE = SN("failure");
+	EVENT_FINISHED = SN("finished");
+	EVENT_SUCCESS = SN("success");
 	exited = SN("exited");
 	favorite_tasks_changed = SN("favorite_tasks_changed");
 	Favorites = SN("Favorites");
@@ -138,7 +142,6 @@ LimboStringNames::LimboStringNames() {
 	set_v_scroll = SN("set_v_scroll");
 	setup = SN("setup");
 	started = SN("started");
-	state_changed = SN("state_changed");
 	StatusWarning = SN("StatusWarning");
 	stopped = SN("stopped");
 	task_activated = SN("task_activated");
@@ -160,7 +163,6 @@ LimboStringNames::LimboStringNames() {
 	visibility_changed = SN("visibility_changed");
 	window_visibility_changed = SN("window_visibility_changed");
 
-	EVENT_FINISHED = "finished";
 	repeat_forever.parse_utf8("Repeat ∞");
 	output_var_prefix.parse_utf8("➜");
 }

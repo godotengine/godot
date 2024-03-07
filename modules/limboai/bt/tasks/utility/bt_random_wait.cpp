@@ -1,7 +1,7 @@
 /**
  * bt_random_wait.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -48,9 +48,9 @@ void BTRandomWait::set_max_duration(double p_max_duration) {
 }
 
 void BTRandomWait::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_min_duration", "p_value"), &BTRandomWait::set_min_duration);
+	ClassDB::bind_method(D_METHOD("set_min_duration", "duration_sec"), &BTRandomWait::set_min_duration);
 	ClassDB::bind_method(D_METHOD("get_min_duration"), &BTRandomWait::get_min_duration);
-	ClassDB::bind_method(D_METHOD("set_max_duration", "p_value"), &BTRandomWait::set_max_duration);
+	ClassDB::bind_method(D_METHOD("set_max_duration", "duration_sec"), &BTRandomWait::set_max_duration);
 	ClassDB::bind_method(D_METHOD("get_max_duration"), &BTRandomWait::get_max_duration);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_duration"), "set_min_duration", "get_min_duration");

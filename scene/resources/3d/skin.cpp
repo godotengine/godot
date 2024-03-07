@@ -142,6 +142,8 @@ void Skin::_get_property_list(List<PropertyInfo> *p_list) const {
 void Skin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bind_count", "bind_count"), &Skin::set_bind_count);
 	ClassDB::bind_method(D_METHOD("get_bind_count"), &Skin::get_bind_count);
+	
+	ClassDB::bind_method(D_METHOD("set_human_bone_mapping", "mapping"), &Skin::set_human_bone_mapping);
 
 	ClassDB::bind_method(D_METHOD("add_bind", "bone", "pose"), &Skin::add_bind);
 	ClassDB::bind_method(D_METHOD("add_named_bind", "name", "pose"), &Skin::add_named_bind);

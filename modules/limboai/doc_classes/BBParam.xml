@@ -18,9 +18,9 @@
 		</method>
 		<method name="get_value">
 			<return type="Variant" />
-			<param index="0" name="p_agent" type="Object" />
-			<param index="1" name="p_blackboard" type="Blackboard" />
-			<param index="2" name="p_default" type="Variant" default="null" />
+			<param index="0" name="agent" type="Object" />
+			<param index="1" name="blackboard" type="Blackboard" />
+			<param index="2" name="default" type="Variant" default="null" />
 			<description>
 				Returns the value of the parameter.
 			</description>
@@ -33,7 +33,7 @@
 		<member name="value_source" type="int" setter="set_value_source" getter="get_value_source" enum="BBParam.ValueSource" default="0">
 			Specifies the source of the value for BBParam. See [enum ValueSource].
 		</member>
-		<member name="variable" type="String" setter="set_variable" getter="get_variable">
+		<member name="variable" type="StringName" setter="set_variable" getter="get_variable">
 			Stores the name of a [Blackboard] variable when [member value_source] is set to [constant BLACKBOARD_VAR].
 		</member>
 	</members>

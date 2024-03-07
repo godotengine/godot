@@ -20,10 +20,10 @@ extends BTAction
 const TOLERANCE := 30.0
 
 ## Blackboard variable that stores our target (expecting Node2D).
-@export var target_var: String = "target"
+@export var target_var: StringName = &"target"
 
 ## Blackboard variable that stores desired speed.
-@export var speed_var: String = "speed"
+@export var speed_var: StringName = &"speed"
 
 ## Desired distance from target.
 @export var approach_distance: float = 100.0

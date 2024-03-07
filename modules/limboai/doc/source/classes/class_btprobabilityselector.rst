@@ -52,17 +52,17 @@ Methods
    :widths: auto
 
    +-------+-------------------------------------------------------------------------------------------------------------------------+
-   | float | :ref:`get_probability<class_BTProbabilitySelector_method_get_probability>` **(** int p_index **)** |const|              |
+   | float | :ref:`get_probability<class_BTProbabilitySelector_method_get_probability>` **(** int child_idx **)** |const|            |
    +-------+-------------------------------------------------------------------------------------------------------------------------+
    | float | :ref:`get_total_weight<class_BTProbabilitySelector_method_get_total_weight>` **(** **)** |const|                        |
    +-------+-------------------------------------------------------------------------------------------------------------------------+
-   | float | :ref:`get_weight<class_BTProbabilitySelector_method_get_weight>` **(** int p_index **)** |const|                        |
+   | float | :ref:`get_weight<class_BTProbabilitySelector_method_get_weight>` **(** int child_idx **)** |const|                      |
    +-------+-------------------------------------------------------------------------------------------------------------------------+
-   | bool  | :ref:`has_probability<class_BTProbabilitySelector_method_has_probability>` **(** int p_index **)** |const|              |
+   | bool  | :ref:`has_probability<class_BTProbabilitySelector_method_has_probability>` **(** int child_idx **)** |const|            |
    +-------+-------------------------------------------------------------------------------------------------------------------------+
-   | void  | :ref:`set_probability<class_BTProbabilitySelector_method_set_probability>` **(** int p_index, float p_probability **)** |
+   | void  | :ref:`set_probability<class_BTProbabilitySelector_method_set_probability>` **(** int child_idx, float probability **)** |
    +-------+-------------------------------------------------------------------------------------------------------------------------+
-   | void  | :ref:`set_weight<class_BTProbabilitySelector_method_set_weight>` **(** int p_index, float p_weight **)**                |
+   | void  | :ref:`set_weight<class_BTProbabilitySelector_method_set_weight>` **(** int child_idx, float weight **)**                |
    +-------+-------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
@@ -100,7 +100,7 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-float **get_probability** **(** int p_index **)** |const|
+float **get_probability** **(** int child_idx **)** |const|
 
 Returns the child task's selection probability.
 
@@ -124,7 +124,7 @@ Returns the total weight of all child tasks.
 
 .. rst-class:: classref-method
 
-float **get_weight** **(** int p_index **)** |const|
+float **get_weight** **(** int child_idx **)** |const|
 
 Returns the child task's weight within the weighted probability selection algorithm.
 
@@ -136,9 +136,9 @@ Returns the child task's weight within the weighted probability selection algori
 
 .. rst-class:: classref-method
 
-bool **has_probability** **(** int p_index **)** |const|
+bool **has_probability** **(** int child_idx **)** |const|
 
-Returns whether the child task at index ``p_index`` participates within the weighted probability selection algorithm and has a probability assigned to it. Returns ``false`` for :ref:`BTComment<class_BTComment>` tasks.
+Returns whether the child task at index ``child_idx`` participates within the weighted probability selection algorithm and has a probability assigned to it. Returns ``false`` for :ref:`BTComment<class_BTComment>` tasks.
 
 .. rst-class:: classref-item-separator
 
@@ -148,7 +148,7 @@ Returns whether the child task at index ``p_index`` participates within the weig
 
 .. rst-class:: classref-method
 
-void **set_probability** **(** int p_index, float p_probability **)**
+void **set_probability** **(** int child_idx, float probability **)**
 
 Sets the child task's weight calculated based on the desired probability.
 
@@ -160,7 +160,7 @@ Sets the child task's weight calculated based on the desired probability.
 
 .. rst-class:: classref-method
 
-void **set_weight** **(** int p_index, float p_weight **)**
+void **set_weight** **(** int child_idx, float weight **)**
 
 Sets the child task's weight for the weighted probability selection algorithm.
 

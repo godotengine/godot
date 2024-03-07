@@ -4,12 +4,12 @@
 [ext_resource type="Script" path="res://demo/ai/tasks/arrive_pos.gd" id="2_pshl2"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_58oq1"]
-var/speed/name = "speed"
+var/speed/name = &"speed"
 var/speed/type = 3
 var/speed/value = 300.0
 var/speed/hint = 1
 var/speed/hint_string = "10,1000,10"
-var/summon_cooldown/name = "summon_cooldown"
+var/summon_cooldown/name = &"summon_cooldown"
 var/summon_cooldown/type = 1
 var/summon_cooldown/value = false
 var/summon_cooldown/hint = 0
@@ -53,7 +53,7 @@ type = 1
 
 [sub_resource type="BTCheckVar" id="BTCheckVar_hc3o3"]
 children = [SubResource("BTComment_ef6y0")]
-variable = "summon_cooldown"
+variable = &"summon_cooldown"
 value = SubResource("BBVariant_hgde2")
 
 [sub_resource type="BBNode" id="BBNode_q8bei"]
@@ -72,12 +72,12 @@ duration = 0.5
 script = ExtResource("1_sgn0p")
 range_min = 300.0
 range_max = 500.0
-position_var = "minion_pos"
+position_var = &"minion_pos"
 
 [sub_resource type="BBVariant" id="BBVariant_wfjwy"]
 resource_name = "$minion_pos"
 value_source = 1
-variable = "minion_pos"
+variable = &"minion_pos"
 type = 5
 
 [sub_resource type="BBNode" id="BBNode_v271m"]
@@ -92,7 +92,7 @@ args = Array[BBVariant]([SubResource("BBVariant_wfjwy")])
 [sub_resource type="BTCooldown" id="BTCooldown_25f70"]
 children = [SubResource("BTCallMethod_4ath5")]
 duration = 6.0
-cooldown_state_var = "summon_cooldown"
+cooldown_state_var = &"summon_cooldown"
 
 [sub_resource type="BTWait" id="BTWait_tdhfn"]
 
@@ -104,7 +104,7 @@ children = [SubResource("BTCheckAgentProperty_olmdj"), SubResource("BTCheckVar_h
 script = ExtResource("1_sgn0p")
 range_min = 300.0
 range_max = 700.0
-position_var = "pos"
+position_var = &"pos"
 
 [sub_resource type="BBNode" id="BBNode_w5fh2"]
 resource_name = "AnimationPlayer"
@@ -117,10 +117,10 @@ blend = 0.1
 
 [sub_resource type="BTAction" id="BTAction_dfifw"]
 script = ExtResource("2_pshl2")
-target_position_var = "pos"
-speed_var = "speed"
+target_position_var = &"pos"
+speed_var = &"speed"
 tolerance = 50.0
-avoid_var = ""
+avoid_var = &""
 
 [sub_resource type="BTTimeLimit" id="BTTimeLimit_i05cm"]
 children = [SubResource("BTAction_dfifw")]

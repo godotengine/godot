@@ -1,7 +1,7 @@
 /**
  * bt_repeat.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -61,11 +61,11 @@ void BTRepeat::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void BTRepeat::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_forever", "p_value"), &BTRepeat::set_forever);
+	ClassDB::bind_method(D_METHOD("set_forever", "value"), &BTRepeat::set_forever);
 	ClassDB::bind_method(D_METHOD("get_forever"), &BTRepeat::get_forever);
-	ClassDB::bind_method(D_METHOD("set_times", "p_value"), &BTRepeat::set_times);
+	ClassDB::bind_method(D_METHOD("set_times", "value"), &BTRepeat::set_times);
 	ClassDB::bind_method(D_METHOD("get_times"), &BTRepeat::get_times);
-	ClassDB::bind_method(D_METHOD("set_abort_on_failure", "p_value"), &BTRepeat::set_abort_on_failure);
+	ClassDB::bind_method(D_METHOD("set_abort_on_failure", "enable"), &BTRepeat::set_abort_on_failure);
 	ClassDB::bind_method(D_METHOD("get_abort_on_failure"), &BTRepeat::get_abort_on_failure);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "forever"), "set_forever", "get_forever");

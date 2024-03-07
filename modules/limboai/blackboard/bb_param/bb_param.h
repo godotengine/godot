@@ -41,7 +41,7 @@ public:
 private:
 	ValueSource value_source;
 	Variant saved_value;
-	String variable;
+	StringName variable;
 
 	_FORCE_INLINE_ void _update_name() {
 		set_name((value_source == SAVED_VALUE) ? String(saved_value) : LimboUtility::get_singleton()->decorate_var(variable));
@@ -70,8 +70,8 @@ public:
 	void set_saved_value(Variant p_value);
 	Variant get_saved_value();
 
-	void set_variable(const String &p_value);
-	String get_variable() const { return variable; }
+	void set_variable(const StringName &p_variable);
+	StringName get_variable() const { return variable; }
 
 #ifdef LIMBOAI_MODULE
 	virtual String to_string() override;

@@ -15,17 +15,17 @@ extends BTAction
 ## otherwise returns RUNNING.
 
 ## Blackboard variable that stores the target position (Vector2)
-@export var target_position_var := "pos"
+@export var target_position_var := &"pos"
 
 ## Variable that stores desired speed (float)
-@export var speed_var := "speed"
+@export var speed_var := &"speed"
 
 ## How close should the agent be to the target position to return SUCCESS.
 @export var tolerance := 50.0
 
 ## Specifies the node to avoid (valid Node2D is expected).
 ## If not empty, agent will circle around the node while moving into position.
-@export var avoid_var: String
+@export var avoid_var: StringName
 
 
 func _generate_name() -> String:

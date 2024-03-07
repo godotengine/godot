@@ -1,7 +1,7 @@
 /**
  * limbo_state.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -28,13 +28,13 @@
 
 LimboState *LimboState::get_root() const {
 	const LimboState *state = this;
-	while (state->get_parent() && state->get_parent()->is_class("LimboState")) {
+	while (state->get_parent() && IS_CLASS(state->get_parent(), LimboState)) {
 		state = Object::cast_to<LimboState>(get_parent());
 	}
 	return const_cast<LimboState *>(state);
 }
 
-LimboState *LimboState::named(String p_name) {
+LimboState *LimboState::named(const String &p_name) {
 	set_name(p_name);
 	return this;
 }
@@ -68,20 +68,20 @@ void LimboState::_initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard)
 	ERR_FAIL_COND(p_agent == nullptr);
 	agent = p_agent;
 
-	if (!p_blackboard.is_null()) {
-		if (blackboard_plan.is_valid() && !blackboard_plan->is_empty()) {
-			blackboard = blackboard_plan->create_blackboard();
-			blackboard->set_parent(p_blackboard);
-		} else {
-			blackboard = p_blackboard;
-		}
+	if (_should_use_new_scope()) {
+		blackboard->set_parent(p_blackboard);
+	} else {
+		blackboard = p_blackboard;
+	}
+	if (blackboard_plan.is_valid() && !blackboard_plan->is_empty()) {
+		blackboard_plan->populate_blackboard(blackboard, true, this);
 	}
 
 	_setup();
 }
 
-bool LimboState::_dispatch(const String &p_event, const Variant &p_cargo) {
-	ERR_FAIL_COND_V(p_event.is_empty(), false);
+bool LimboState::_dispatch(const StringName &p_event, const Variant &p_cargo) {
+	ERR_FAIL_COND_V(p_event == StringName(), false);
 	if (handlers.size() > 0 && handlers.has(p_event)) {
 		Variant ret;
 
@@ -120,13 +120,13 @@ bool LimboState::_dispatch(const String &p_event, const Variant &p_cargo) {
 	return false;
 }
 
-void LimboState::add_event_handler(const String &p_event, const Callable &p_handler) {
-	ERR_FAIL_COND(p_event.is_empty());
+void LimboState::add_event_handler(const StringName &p_event, const Callable &p_handler) {
+	ERR_FAIL_COND(p_event == StringName());
 	ERR_FAIL_COND(!p_handler.is_valid());
 	handlers.insert(p_event, p_handler);
 }
 
-bool LimboState::dispatch(const String &p_event, const Variant &p_cargo) {
+bool LimboState::dispatch(const StringName &p_event, const Variant &p_cargo) {
 	return get_root()->_dispatch(p_event, p_cargo);
 }
 
@@ -170,33 +170,33 @@ void LimboState::_notification(int p_what) {
 void LimboState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &LimboState::get_root);
 	ClassDB::bind_method(D_METHOD("get_agent"), &LimboState::get_agent);
-	ClassDB::bind_method(D_METHOD("set_agent", "p_agent"), &LimboState::set_agent);
+	ClassDB::bind_method(D_METHOD("set_agent", "agent"), &LimboState::set_agent);
 	ClassDB::bind_method(D_METHOD("event_finished"), &LimboState::event_finished);
 	ClassDB::bind_method(D_METHOD("is_active"), &LimboState::is_active);
-	ClassDB::bind_method(D_METHOD("_initialize", "p_agent", "p_blackboard"), &LimboState::_initialize);
-	ClassDB::bind_method(D_METHOD("dispatch", "p_event", "p_cargo"), &LimboState::dispatch, Variant());
-	ClassDB::bind_method(D_METHOD("named", "p_name"), &LimboState::named);
-	ClassDB::bind_method(D_METHOD("add_event_handler", "p_event", "p_handler"), &LimboState::add_event_handler);
-	ClassDB::bind_method(D_METHOD("call_on_enter", "p_callable"), &LimboState::call_on_enter);
-	ClassDB::bind_method(D_METHOD("call_on_exit", "p_callable"), &LimboState::call_on_exit);
-	ClassDB::bind_method(D_METHOD("call_on_update", "p_callable"), &LimboState::call_on_update);
-	ClassDB::bind_method(D_METHOD("set_guard", "p_guard_callable"), &LimboState::set_guard);
+	ClassDB::bind_method(D_METHOD("_initialize", "agent", "blackboard"), &LimboState::_initialize);
+	ClassDB::bind_method(D_METHOD("dispatch", "event", "cargo"), &LimboState::dispatch, Variant());
+	ClassDB::bind_method(D_METHOD("named", "name"), &LimboState::named);
+	ClassDB::bind_method(D_METHOD("add_event_handler", "event", "handler"), &LimboState::add_event_handler);
+	ClassDB::bind_method(D_METHOD("call_on_enter", "callable"), &LimboState::call_on_enter);
+	ClassDB::bind_method(D_METHOD("call_on_exit", "callable"), &LimboState::call_on_exit);
+	ClassDB::bind_method(D_METHOD("call_on_update", "callable"), &LimboState::call_on_update);
+	ClassDB::bind_method(D_METHOD("set_guard", "guard_callable"), &LimboState::set_guard);
 	ClassDB::bind_method(D_METHOD("clear_guard"), &LimboState::clear_guard);
 	ClassDB::bind_method(D_METHOD("get_blackboard"), &LimboState::get_blackboard);
 
-	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "p_plan"), &LimboState::set_blackboard_plan);
+	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &LimboState::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &LimboState::get_blackboard_plan);
 
 #ifdef LIMBOAI_MODULE
 	GDVIRTUAL_BIND(_setup);
 	GDVIRTUAL_BIND(_enter);
 	GDVIRTUAL_BIND(_exit);
-	GDVIRTUAL_BIND(_update, "p_delta");
+	GDVIRTUAL_BIND(_update, "delta");
 #elif LIMBOAI_GDEXTENSION
 	// TODO: Registering virtual functions is not available in godot-cpp...
 #endif
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "EVENT_FINISHED", PROPERTY_HINT_NONE, "", 0), "", "event_finished");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "EVENT_FINISHED", PROPERTY_HINT_NONE, "", 0), "", "event_finished");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "agent", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_agent", "get_agent");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard", 0), "", "get_blackboard");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT), "set_blackboard_plan", "get_blackboard_plan");
@@ -204,7 +204,7 @@ void LimboState::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("setup"));
 	ADD_SIGNAL(MethodInfo("entered"));
 	ADD_SIGNAL(MethodInfo("exited"));
-	ADD_SIGNAL(MethodInfo("updated", PropertyInfo(Variant::FLOAT, "p_delta")));
+	ADD_SIGNAL(MethodInfo("updated", PropertyInfo(Variant::FLOAT, "delta")));
 }
 
 LimboState::LimboState() {

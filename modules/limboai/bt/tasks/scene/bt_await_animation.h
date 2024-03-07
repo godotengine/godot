@@ -1,7 +1,7 @@
 /**
  * bt_await_animation.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -47,7 +47,7 @@ public:
 	void set_animation_player(Ref<BBNode> p_animation_player);
 	Ref<BBNode> get_animation_player() const { return animation_player_param; }
 
-	void set_animation_name(StringName p_animation_name);
+	void set_animation_name(const StringName &p_animation_name);
 	StringName get_animation_name() const { return animation_name; }
 
 	void set_max_time(double p_max_time);

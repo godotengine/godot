@@ -12,10 +12,10 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="array_var" type="String" setter="set_array_var" getter="get_array_var" default="&quot;&quot;">
+		<member name="array_var" type="StringName" setter="set_array_var" getter="get_array_var" default="&amp;&quot;&quot;">
 			A variable within the [Blackboard] that holds an [Array], which is used for the iteration process.
 		</member>
-		<member name="save_var" type="String" setter="set_save_var" getter="get_save_var" default="&quot;&quot;">
+		<member name="save_var" type="StringName" setter="set_save_var" getter="get_save_var" default="&amp;&quot;&quot;">
 			A [Blackboard] variable used to store an element of the array referenced by [member array_var].
 		</member>
 	</members>

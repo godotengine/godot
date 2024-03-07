@@ -1,7 +1,7 @@
 /**
  * bt_console_print.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -72,9 +72,9 @@ PackedStringArray BTConsolePrint::get_configuration_warnings() {
 }
 
 void BTConsolePrint::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_text", "p_text"), &BTConsolePrint::set_text);
+	ClassDB::bind_method(D_METHOD("set_text", "text"), &BTConsolePrint::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &BTConsolePrint::get_text);
-	ClassDB::bind_method(D_METHOD("set_bb_format_parameters", "p_variables"), &BTConsolePrint::set_bb_format_parameters);
+	ClassDB::bind_method(D_METHOD("set_bb_format_parameters", "params"), &BTConsolePrint::set_bb_format_parameters);
 	ClassDB::bind_method(D_METHOD("get_bb_format_parameters"), &BTConsolePrint::get_bb_format_parameters);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");

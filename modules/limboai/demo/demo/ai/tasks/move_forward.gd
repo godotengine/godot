@@ -15,7 +15,7 @@ extends BTAction
 ## Returns RUNNING if elapsed time didn't exceed duration.
 
 ## Blackboard variable that stores desired speed.
-@export var speed_var: String = "speed"
+@export var speed_var: StringName = &"speed"
 
 ## How long to perform this task (in seconds).
 @export var duration: float = 0.1

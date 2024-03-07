@@ -1,7 +1,7 @@
 /**
  * bt_player.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -52,9 +52,6 @@ void BTPlayer::_load_tree() {
 	tree_instance.unref();
 	ERR_FAIL_COND_MSG(!behavior_tree.is_valid(), "BTPlayer: Needs a valid behavior tree.");
 	ERR_FAIL_COND_MSG(!behavior_tree->get_root_task().is_valid(), "BTPlayer: Behavior tree has no valid root task.");
-	if (prefetch_nodepath_vars == true) {
-		blackboard->prefetch_nodepath_vars(this);
-	}
 	tree_instance = behavior_tree->instantiate(get_owner(), blackboard);
 #ifdef DEBUG_ENABLED
 	if (IS_DEBUGGER_ACTIVE()) {
@@ -187,7 +184,7 @@ void BTPlayer::_notification(int p_notification) {
 					blackboard = Ref<Blackboard>(memnew(Blackboard));
 				}
 				if (blackboard_plan.is_valid()) {
-					blackboard_plan->populate_blackboard(blackboard, false);
+					blackboard_plan->populate_blackboard(blackboard, false, this);
 				}
 				if (behavior_tree.is_valid()) {
 					_load_tree();
@@ -223,21 +220,19 @@ void BTPlayer::_notification(int p_notification) {
 }
 
 void BTPlayer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_behavior_tree", "p_path"), &BTPlayer::set_behavior_tree);
+	ClassDB::bind_method(D_METHOD("set_behavior_tree", "behavior_tree"), &BTPlayer::set_behavior_tree);
 	ClassDB::bind_method(D_METHOD("get_behavior_tree"), &BTPlayer::get_behavior_tree);
-	ClassDB::bind_method(D_METHOD("set_update_mode", "p_mode"), &BTPlayer::set_update_mode);
+	ClassDB::bind_method(D_METHOD("set_update_mode", "update_mode"), &BTPlayer::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &BTPlayer::get_update_mode);
-	ClassDB::bind_method(D_METHOD("set_active", "p_active"), &BTPlayer::set_active);
+	ClassDB::bind_method(D_METHOD("set_active", "active"), &BTPlayer::set_active);
 	ClassDB::bind_method(D_METHOD("get_active"), &BTPlayer::get_active);
-	ClassDB::bind_method(D_METHOD("set_blackboard", "p_blackboard"), &BTPlayer::set_blackboard);
+	ClassDB::bind_method(D_METHOD("set_blackboard", "blackboard"), &BTPlayer::set_blackboard);
 	ClassDB::bind_method(D_METHOD("get_blackboard"), &BTPlayer::get_blackboard);
-	ClassDB::bind_method(D_METHOD("set_prefetch_nodepath_vars", "p_value"), &BTPlayer::set_prefetch_nodepath_vars);
-	ClassDB::bind_method(D_METHOD("get_prefetch_nodepath_vars"), &BTPlayer::get_prefetch_nodepath_vars);
 
-	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "p_plan"), &BTPlayer::set_blackboard_plan);
+	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &BTPlayer::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &BTPlayer::get_blackboard_plan);
 
-	ClassDB::bind_method(D_METHOD("update", "p_delta"), &BTPlayer::update);
+	ClassDB::bind_method(D_METHOD("update", "delta"), &BTPlayer::update);
 	ClassDB::bind_method(D_METHOD("restart"), &BTPlayer::restart);
 	ClassDB::bind_method(D_METHOD("get_last_status"), &BTPlayer::get_last_status);
 
@@ -248,17 +243,16 @@ void BTPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "get_active");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_NONE, "Blackboard", 0), "set_blackboard", "get_blackboard");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_blackboard_plan", "get_blackboard_plan");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefetch_nodepath_vars"), "set_prefetch_nodepath_vars", "get_prefetch_nodepath_vars");
 
 	BIND_ENUM_CONSTANT(IDLE);
 	BIND_ENUM_CONSTANT(PHYSICS);
 	BIND_ENUM_CONSTANT(MANUAL);
 
-	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "p_status")));
-	ADD_SIGNAL(MethodInfo("updated", PropertyInfo(Variant::INT, "p_status")));
+	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
+	ADD_SIGNAL(MethodInfo("updated", PropertyInfo(Variant::INT, "status")));
 
 #ifdef DEBUG_ENABLED
-	ClassDB::bind_method(D_METHOD("_set_monitor_performance", "p_value"), &BTPlayer::_set_monitor_performance);
+	ClassDB::bind_method(D_METHOD("_set_monitor_performance", "enable"), &BTPlayer::_set_monitor_performance);
 	ClassDB::bind_method(D_METHOD("_get_monitor_performance"), &BTPlayer::_get_monitor_performance);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitor_performance"), "_set_monitor_performance", "_get_monitor_performance");
 #endif // DEBUG_ENABLED

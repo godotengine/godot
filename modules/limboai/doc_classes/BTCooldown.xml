@@ -12,7 +12,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="cooldown_state_var" type="String" setter="set_cooldown_state_var" getter="get_cooldown_state_var" default="&quot;&quot;">
+		<member name="cooldown_state_var" type="StringName" setter="set_cooldown_state_var" getter="get_cooldown_state_var" default="&amp;&quot;&quot;">
 			A boolean variable used to store the cooldown state in the [Blackboard]. If left empty, the variable will be automatically generated and assigned.
 			If the variable's value is set to [code]true[/code], it indicates that the cooldown is activated. This feature is useful for checking the cooldown state from other parts of the tree or sharing it among different sections of the [BehaviorTree].
 		</member>

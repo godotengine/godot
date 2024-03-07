@@ -1,7 +1,7 @@
 /**
  * bt_evaluate_expression.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  * Copyright 2024 Wilson E. Alvarez
  *
  * Use of this source code is governed by an MIT-style
@@ -39,7 +39,7 @@ private:
 	TypedArray<BBVariant> input_values;
 	bool input_include_delta = false;
 	Array processed_input_values;
-	String result_var;
+	StringName result_var;
 
 protected:
 	static void _bind_methods();
@@ -66,8 +66,8 @@ public:
 	void set_input_include_delta(bool p_input_include_delta);
 	bool is_input_delta_included() const { return input_include_delta; }
 
-	void set_result_var(const String &p_result_var);
-	String get_result_var() const { return result_var; }
+	void set_result_var(const StringName &p_result_var);
+	StringName get_result_var() const { return result_var; }
 
 	virtual PackedStringArray get_configuration_warnings() override;
 

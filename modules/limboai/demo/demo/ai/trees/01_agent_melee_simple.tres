@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://demo/ai/tasks/face_target.gd" id="3_bpmfp"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_46tbn"]
-var/speed/name = "speed"
+var/speed/name = &"speed"
 var/speed/type = 3
 var/speed/value = 400.0
 var/speed/hint = 1
@@ -40,12 +40,12 @@ blend = 0.1
 [sub_resource type="BTAction" id="BTAction_ulbrf"]
 script = ExtResource("1_2jpsu")
 group = &"player"
-output_var = "target"
+output_var = &"target"
 
 [sub_resource type="BTAction" id="BTAction_a4jqi"]
 script = ExtResource("2_h5db5")
-target_var = "target"
-speed_var = "speed"
+target_var = &"target"
+speed_var = &"speed"
 approach_distance = 100.0
 
 [sub_resource type="BTTimeLimit" id="BTTimeLimit_xek5v"]
@@ -58,7 +58,7 @@ children = [SubResource("BTPlayAnimation_olf37"), SubResource("BTAction_ulbrf"),
 
 [sub_resource type="BTAction" id="BTAction_kidxn"]
 script = ExtResource("3_bpmfp")
-target_var = "target"
+target_var = &"target"
 
 [sub_resource type="BTWait" id="BTWait_tadkc"]
 duration = 0.1

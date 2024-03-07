@@ -1,7 +1,7 @@
 /**
  * bt_call_method.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -26,7 +26,7 @@ private:
 	Ref<BBNode> node_param;
 	TypedArray<BBVariant> args;
 	bool include_delta = false;
-	String result_var;
+	StringName result_var;
 
 protected:
 	static void _bind_methods();
@@ -35,10 +35,10 @@ protected:
 	virtual Status _tick(double p_delta) override;
 
 public:
-	void set_method(StringName p_method_name);
+	void set_method(const StringName &p_method_name);
 	StringName get_method() const { return method; }
 
-	void set_node_param(Ref<BBNode> p_object);
+	void set_node_param(const Ref<BBNode> &p_object);
 	Ref<BBNode> get_node_param() const { return node_param; }
 
 	void set_args(TypedArray<BBVariant> p_args);
@@ -47,8 +47,8 @@ public:
 	void set_include_delta(bool p_include_delta);
 	bool is_delta_included() const { return include_delta; }
 
-	void set_result_var(const String &p_result_var);
-	String get_result_var() const { return result_var; }
+	void set_result_var(const StringName &p_result_var);
+	StringName get_result_var() const { return result_var; }
 
 	virtual PackedStringArray get_configuration_warnings() override;
 

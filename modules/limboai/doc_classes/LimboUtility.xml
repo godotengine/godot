@@ -10,28 +10,28 @@
 	<methods>
 		<method name="decorate_output_var" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="p_variable" type="String" />
+			<param index="0" name="variable" type="String" />
 			<description>
 				Just like [method decorate_var], produces a string with a [Blackboard] variable name that is formatted for display, and also adds an additional symbol to indicate that the variable is used as an output.
 			</description>
 		</method>
 		<method name="decorate_var" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="p_variable" type="String" />
+			<param index="0" name="variable" type="String" />
 			<description>
 				Produces a string with a [Blackboard] variable name that is formatted for display or console output.
 			</description>
 		</method>
 		<method name="get_status_name" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="p_status" type="int" />
+			<param index="0" name="status" type="int" />
 			<description>
 				Returns a name of a [BTTask] status code.
 			</description>
 		</method>
 		<method name="get_task_icon" qualifiers="const">
 			<return type="Texture2D" />
-			<param index="0" name="p_class_or_script_path" type="String" />
+			<param index="0" name="class_or_script_path" type="String" />
 			<description>
 				Returns the icon texture associated with a task based on its class name or script resource path.
 			</description>

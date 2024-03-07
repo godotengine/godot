@@ -604,10 +604,10 @@ void LimboUtility::open_doc_class(const String &p_class_name) {
 #endif // ! TOOLS_ENABLED
 
 void LimboUtility::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("decorate_var", "p_variable"), &LimboUtility::decorate_var);
-	ClassDB::bind_method(D_METHOD("decorate_output_var", "p_variable"), &LimboUtility::decorate_output_var);
-	ClassDB::bind_method(D_METHOD("get_status_name", "p_status"), &LimboUtility::get_status_name);
-	ClassDB::bind_method(D_METHOD("get_task_icon", "p_class_or_script_path"), &LimboUtility::get_task_icon);
+	ClassDB::bind_method(D_METHOD("decorate_var", "variable"), &LimboUtility::decorate_var);
+	ClassDB::bind_method(D_METHOD("decorate_output_var", "variable"), &LimboUtility::decorate_output_var);
+	ClassDB::bind_method(D_METHOD("get_status_name", "status"), &LimboUtility::get_status_name);
+	ClassDB::bind_method(D_METHOD("get_task_icon", "class_or_script_path"), &LimboUtility::get_task_icon);
 
 	BIND_ENUM_CONSTANT(CHECK_EQUAL);
 	BIND_ENUM_CONSTANT(CHECK_LESS_THAN);

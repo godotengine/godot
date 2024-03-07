@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="variable" type="String" setter="set_variable" getter="get_variable" default="&quot;&quot;">
+		<member name="variable" type="StringName" setter="set_variable" getter="get_variable" default="&amp;&quot;&quot;">
 			A boolean variable on the blackboard used as a trigger. See also [member BTTask.blackboard].
 			If variable's value is [code]true[/code], [BTCheckTrigger] will switch it to [code]false[/code] and return [code]SUCCESS[/code].
 			If variable's value is [code]false[/code], [BTCheckTrigger] will return [code]FAILURE[/code].

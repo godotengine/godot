@@ -16,7 +16,7 @@
 	<methods>
 		<method name="get_probability" qualifiers="const">
 			<return type="float" />
-			<param index="0" name="p_index" type="int" />
+			<param index="0" name="child_idx" type="int" />
 			<description>
 				Returns the child task's selection probability.
 			</description>
@@ -29,30 +29,30 @@
 		</method>
 		<method name="get_weight" qualifiers="const">
 			<return type="float" />
-			<param index="0" name="p_index" type="int" />
+			<param index="0" name="child_idx" type="int" />
 			<description>
 				Returns the child task's weight within the weighted probability selection algorithm.
 			</description>
 		</method>
 		<method name="has_probability" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="p_index" type="int" />
+			<param index="0" name="child_idx" type="int" />
 			<description>
-				Returns whether the child task at index [param p_index] participates within the weighted probability selection algorithm and has a probability assigned to it. Returns [code]false[/code] for [BTComment] tasks.
+				Returns whether the child task at index [param child_idx] participates within the weighted probability selection algorithm and has a probability assigned to it. Returns [code]false[/code] for [BTComment] tasks.
 			</description>
 		</method>
 		<method name="set_probability">
 			<return type="void" />
-			<param index="0" name="p_index" type="int" />
-			<param index="1" name="p_probability" type="float" />
+			<param index="0" name="child_idx" type="int" />
+			<param index="1" name="probability" type="float" />
 			<description>
 				Sets the child task's weight calculated based on the desired probability.
 			</description>
 		</method>
 		<method name="set_weight">
 			<return type="void" />
-			<param index="0" name="p_index" type="int" />
-			<param index="1" name="p_weight" type="float" />
+			<param index="0" name="child_idx" type="int" />
+			<param index="1" name="weight" type="float" />
 			<description>
 				Sets the child task's weight for the weighted probability selection algorithm.
 			</description>

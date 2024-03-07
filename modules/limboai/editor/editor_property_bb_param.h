@@ -18,9 +18,9 @@
 
 #include "editor/editor_inspector.h"
 
-#include "modules/limboai/blackboard/bb_param/bb_param.h"
-#include "modules/limboai/blackboard/blackboard_plan.h"
-#include "modules/limboai/editor/mode_switch_button.h"
+#include "../blackboard/bb_param/bb_param.h"
+#include "../blackboard/blackboard_plan.h"
+#include "mode_switch_button.h"
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"

@@ -31,9 +31,9 @@ Properties
 .. table::
    :widths: auto
 
-   +--------+---------------------------------------------------------+--------+
-   | String | :ref:`variable<class_BTCheckTrigger_property_variable>` | ``""`` |
-   +--------+---------------------------------------------------------+--------+
+   +------------+---------------------------------------------------------+---------+
+   | StringName | :ref:`variable<class_BTCheckTrigger_property_variable>` | ``&""`` |
+   +------------+---------------------------------------------------------+---------+
 
 .. rst-class:: classref-section-separator
 
@@ -48,12 +48,12 @@ Property Descriptions
 
 .. rst-class:: classref-property
 
-String **variable** = ``""``
+StringName **variable** = ``&""``
 
 .. rst-class:: classref-property-setget
 
-- void **set_variable** **(** String value **)**
-- String **get_variable** **(** **)**
+- void **set_variable** **(** StringName value **)**
+- StringName **get_variable** **(** **)**
 
 A boolean variable on the blackboard used as a trigger. See also :ref:`BTTask.blackboard<class_BTTask_property_blackboard>`.
 

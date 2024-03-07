@@ -23,7 +23,7 @@
 		</method>
 		<method name="copy_other">
 			<return type="void" />
-			<param index="0" name="p_other" type="BehaviorTree" />
+			<param index="0" name="other" type="BehaviorTree" />
 			<description>
 				Become a copy of another behavior tree.
 			</description>
@@ -36,15 +36,15 @@
 		</method>
 		<method name="instantiate" qualifiers="const">
 			<return type="BTTask" />
-			<param index="0" name="p_agent" type="Node" />
-			<param index="1" name="p_blackboard" type="Blackboard" />
+			<param index="0" name="agent" type="Node" />
+			<param index="1" name="blackboard" type="Blackboard" />
 			<description>
 				Instantiates the Behavior Tree and returns the root [BTTask].
 			</description>
 		</method>
 		<method name="set_root_task">
 			<return type="void" />
-			<param index="0" name="p_value" type="BTTask" />
+			<param index="0" name="task" type="BTTask" />
 			<description>
 				Assigns a new root task to the [BehaviorTree] resource.
 			</description>

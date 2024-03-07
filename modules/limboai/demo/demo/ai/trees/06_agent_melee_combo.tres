@@ -7,12 +7,12 @@
 [ext_resource type="Script" path="res://demo/ai/tasks/move_forward.gd" id="5_au5yc"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_46tbn"]
-var/speed/name = "speed"
+var/speed/name = &"speed"
 var/speed/type = 3
 var/speed/value = 400.0
 var/speed/hint = 1
 var/speed/hint_string = "10,1000,10"
-var/charge_speed/name = "charge_speed"
+var/charge_speed/name = &"charge_speed"
 var/charge_speed/type = 3
 var/charge_speed/value = 1000.0
 var/charge_speed/hint = 0
@@ -34,7 +34,7 @@ max_duration = 1.5
 [sub_resource type="BTAction" id="BTAction_ulbrf"]
 script = ExtResource("1_sf4l8")
 group = &"player"
-output_var = "target"
+output_var = &"target"
 
 [sub_resource type="BTSequence" id="BTSequence_yhjh1"]
 custom_name = "Pause before action"
@@ -42,11 +42,11 @@ children = [SubResource("BTPlayAnimation_qiw21"), SubResource("BTRandomWait_xlud
 
 [sub_resource type="BTAction" id="BTAction_85keo"]
 script = ExtResource("2_5nwkp")
-target_var = "target"
+target_var = &"target"
 flank_side = 0
 range_min = 300
 range_max = 400
-position_var = "pos"
+position_var = &"pos"
 
 [sub_resource type="BBNode" id="BBNode_wpj6d"]
 resource_name = "AnimationPlayer"
@@ -59,10 +59,10 @@ blend = 0.1
 
 [sub_resource type="BTAction" id="BTAction_ygjnc"]
 script = ExtResource("3_3tom2")
-target_position_var = "pos"
-speed_var = "speed"
+target_position_var = &"pos"
+speed_var = &"speed"
 tolerance = 50.0
-avoid_var = ""
+avoid_var = &""
 
 [sub_resource type="BTTimeLimit" id="BTTimeLimit_xek5v"]
 children = [SubResource("BTAction_ygjnc")]
@@ -73,7 +73,7 @@ children = [SubResource("BTAction_85keo"), SubResource("BTPlayAnimation_olf37"),
 
 [sub_resource type="BTAction" id="BTAction_kidxn"]
 script = ExtResource("4_hi228")
-target_var = "target"
+target_var = &"target"
 
 [sub_resource type="BBNode" id="BBNode_giv5l"]
 resource_name = "AnimationPlayer"
@@ -98,7 +98,7 @@ animation_name = &"attack_1"
 
 [sub_resource type="BTAction" id="BTAction_u22bc"]
 script = ExtResource("5_au5yc")
-speed_var = "charge_speed"
+speed_var = &"charge_speed"
 duration = 0.1
 
 [sub_resource type="BTParallel" id="BTParallel_ec2e3"]
@@ -119,7 +119,7 @@ animation_name = &"attack_2"
 
 [sub_resource type="BTAction" id="BTAction_yuxl3"]
 script = ExtResource("5_au5yc")
-speed_var = "charge_speed"
+speed_var = &"charge_speed"
 duration = 0.1
 
 [sub_resource type="BTParallel" id="BTParallel_thojy"]
@@ -140,7 +140,7 @@ animation_name = &"attack_3"
 
 [sub_resource type="BTAction" id="BTAction_rwp18"]
 script = ExtResource("5_au5yc")
-speed_var = "charge_speed"
+speed_var = &"charge_speed"
 duration = 0.1
 
 [sub_resource type="BTParallel" id="BTParallel_qmdfb"]

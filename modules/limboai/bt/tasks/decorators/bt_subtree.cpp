@@ -1,7 +1,7 @@
 /**
  * bt_subtree.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -52,7 +52,7 @@ PackedStringArray BTSubtree::get_configuration_warnings() {
 }
 
 void BTSubtree::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_subtree", "p_value"), &BTSubtree::set_subtree);
+	ClassDB::bind_method(D_METHOD("set_subtree", "behavior_tree"), &BTSubtree::set_subtree);
 	ClassDB::bind_method(D_METHOD("get_subtree"), &BTSubtree::get_subtree);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subtree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_subtree", "get_subtree");

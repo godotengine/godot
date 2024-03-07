@@ -31,13 +31,13 @@ Properties
 .. table::
    :widths: auto
 
-   +-----------------------------------------------+-----------------------------------------------------+--------+
-   | :ref:`Operation<enum_LimboUtility_Operation>` | :ref:`operation<class_BTSetVar_property_operation>` | ``0``  |
-   +-----------------------------------------------+-----------------------------------------------------+--------+
-   | :ref:`BBVariant<class_BBVariant>`             | :ref:`value<class_BTSetVar_property_value>`         |        |
-   +-----------------------------------------------+-----------------------------------------------------+--------+
-   | String                                        | :ref:`variable<class_BTSetVar_property_variable>`   | ``""`` |
-   +-----------------------------------------------+-----------------------------------------------------+--------+
+   +-----------------------------------------------+-----------------------------------------------------+---------+
+   | :ref:`Operation<enum_LimboUtility_Operation>` | :ref:`operation<class_BTSetVar_property_operation>` | ``0``   |
+   +-----------------------------------------------+-----------------------------------------------------+---------+
+   | :ref:`BBVariant<class_BBVariant>`             | :ref:`value<class_BTSetVar_property_value>`         |         |
+   +-----------------------------------------------+-----------------------------------------------------+---------+
+   | StringName                                    | :ref:`variable<class_BTSetVar_property_variable>`   | ``&""`` |
+   +-----------------------------------------------+-----------------------------------------------------+---------+
 
 .. rst-class:: classref-section-separator
 
@@ -88,12 +88,12 @@ Parameter that specifies the value to be assigned to the variable.
 
 .. rst-class:: classref-property
 
-String **variable** = ``""``
+StringName **variable** = ``&""``
 
 .. rst-class:: classref-property-setget
 
-- void **set_variable** **(** String value **)**
-- String **get_variable** **(** **)**
+- void **set_variable** **(** StringName value **)**
+- StringName **get_variable** **(** **)**
 
 Name of the variable to which the value will be assigned.
 

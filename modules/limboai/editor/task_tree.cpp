@@ -396,10 +396,10 @@ void TaskTree::_notification(int p_what) {
 }
 
 void TaskTree::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("load_bt", "p_behavior_tree"), &TaskTree::load_bt);
+	ClassDB::bind_method(D_METHOD("load_bt", "behavior_tree"), &TaskTree::load_bt);
 	ClassDB::bind_method(D_METHOD("get_bt"), &TaskTree::get_bt);
 	ClassDB::bind_method(D_METHOD("update_tree"), &TaskTree::update_tree);
-	ClassDB::bind_method(D_METHOD("update_task", "p_task"), &TaskTree::update_task);
+	ClassDB::bind_method(D_METHOD("update_task", "task"), &TaskTree::update_task);
 	ClassDB::bind_method(D_METHOD("get_selected"), &TaskTree::get_selected);
 	ClassDB::bind_method(D_METHOD("deselect"), &TaskTree::deselect);
 
@@ -413,9 +413,9 @@ void TaskTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("task_activated"));
 	ADD_SIGNAL(MethodInfo("probability_clicked"));
 	ADD_SIGNAL(MethodInfo("task_dragged",
-			PropertyInfo(Variant::OBJECT, "p_task", PROPERTY_HINT_RESOURCE_TYPE, "BTTask"),
-			PropertyInfo(Variant::OBJECT, "p_to_task", PROPERTY_HINT_RESOURCE_TYPE, "BTTask"),
-			PropertyInfo(Variant::INT, "p_type")));
+			PropertyInfo(Variant::OBJECT, "task", PROPERTY_HINT_RESOURCE_TYPE, "BTTask"),
+			PropertyInfo(Variant::OBJECT, "to_task", PROPERTY_HINT_RESOURCE_TYPE, "BTTask"),
+			PropertyInfo(Variant::INT, "type")));
 }
 
 TaskTree::TaskTree() {

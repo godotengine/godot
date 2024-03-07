@@ -10,7 +10,7 @@ extends BTAction
 @export var range_max: float = 500.0
 
 ## Blackboard variable that will be used to store the desired position.
-@export var position_var: String = "pos"
+@export var position_var: StringName = &"pos"
 
 
 # Display a customized name (requires @tool).

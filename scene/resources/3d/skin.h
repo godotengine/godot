@@ -80,6 +80,14 @@ public:
 		ERR_FAIL_INDEX_V(p_index, bind_count, Transform3D());
 		return binds_ptr[p_index].pose;
 	}
+	void set_human_bone_mapping(const Dictionary &p_mapping)
+	{
+		for(int i=0;i<binds.size();i++) {
+			if(p_mapping.has(binds[i].name)) {
+				set_bind_name(i,p_mapping[binds[i].name]);
+			}
+		}
+	}
 
 	void clear_binds();
 

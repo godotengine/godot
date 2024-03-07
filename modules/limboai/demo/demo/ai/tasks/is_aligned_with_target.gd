@@ -15,7 +15,7 @@ extends BTCondition
 ## Returns FAILURE if not aligned or if target is not a valid node instance.
 
 
-@export var target_var: String = "target"
+@export var target_var: StringName = &"target"
 @export var tolerance: float = 30.0
 
 

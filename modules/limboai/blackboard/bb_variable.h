@@ -63,8 +63,8 @@ public:
 	void copy_prop_info(const BBVariable &p_other);
 
 	// * Editor binding methods
-	String get_binding_path() const { return data->binding_path; }
-	void set_binding_path(const String &p_binding_path) { data->binding_path = p_binding_path; }
+	NodePath get_binding_path() const { return data->binding_path; }
+	void set_binding_path(const NodePath &p_binding_path) { data->binding_path = p_binding_path; }
 	bool has_binding() { return data->binding_path.is_empty(); }
 
 	// * Runtime binding methods

@@ -11,11 +11,11 @@
 	<methods>
 		<method name="add_transition">
 			<return type="void" />
-			<param index="0" name="p_from_state" type="LimboState" />
-			<param index="1" name="p_to_state" type="LimboState" />
-			<param index="2" name="p_event" type="String" />
+			<param index="0" name="from_state" type="LimboState" />
+			<param index="1" name="to_state" type="LimboState" />
+			<param index="2" name="event" type="StringName" />
 			<description>
-				Establishes a transition from one state to another when [param p_event] is dispatched. Both [param p_from_state] and [param p_to_state] must be immediate children of this state.
+				Establishes a transition from one state to another when [param event] is dispatched. Both [param from_state] and [param to_state] must be immediate children of this state.
 			</description>
 		</method>
 		<method name="get_active_state" qualifiers="const">
@@ -30,24 +30,30 @@
 				Returns the currently active leaf state within the state machine.
 			</description>
 		</method>
+		<method name="get_previous_active_state" qualifiers="const">
+			<return type="LimboState" />
+			<description>
+				Returns the previously active substate.
+			</description>
+		</method>
 		<method name="initialize">
 			<return type="void" />
-			<param index="0" name="p_agent" type="Node" />
-			<param index="1" name="p_parent_scope" type="Blackboard" default="null" />
+			<param index="0" name="agent" type="Node" />
+			<param index="1" name="parent_scope" type="Blackboard" default="null" />
 			<description>
 				Initiates the state and calls [method LimboState._setup] for both itself and all substates.
 			</description>
 		</method>
 		<method name="set_active">
 			<return type="void" />
-			<param index="0" name="p_active" type="bool" />
+			<param index="0" name="active" type="bool" />
 			<description>
 				When set to [code]true[/code], switches the state to [member initial_state] and activates state processing according to [member update_mode].
 			</description>
 		</method>
 		<method name="update">
 			<return type="void" />
-			<param index="0" name="p_delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Calls [method LimboState._update] on itself and the active substate, with the call cascading down to the leaf state. This method is automatically triggered if [member update_mode] is not set to [constant MANUAL].
 			</description>
@@ -65,8 +71,9 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="state_changed">
-			<param index="0" name="p_state" type="LimboState" />
+		<signal name="active_state_changed">
+			<param index="0" name="current" type="LimboState" />
+			<param index="1" name="previous" type="LimboState" />
 			<description>
 				Emitted when the currently active substate is switched to a different substate.
 			</description>

@@ -1,7 +1,7 @@
 /**
  * bt_state.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -23,13 +23,17 @@ class BTState : public LimboState {
 private:
 	Ref<BehaviorTree> behavior_tree;
 	Ref<BTTask> tree_instance;
-	String success_event;
-	String failure_event;
+	StringName success_event;
+	StringName failure_event;
 
 	void _update_blackboard_plan();
 
 protected:
 	static void _bind_methods();
+
+	void _notification(int p_notification);
+
+	virtual bool _should_use_new_scope() const override { return true; }
 
 	virtual void _setup() override;
 	virtual void _exit() override;
@@ -41,16 +45,13 @@ public:
 
 	Ref<BTTask> get_tree_instance() const { return tree_instance; }
 
-	void set_success_event(String p_success_event) { success_event = p_success_event; }
-	String get_success_event() const { return success_event; }
+	void set_success_event(const StringName &p_success_event) { success_event = p_success_event; }
+	StringName get_success_event() const { return success_event; }
 
-	void set_failure_event(String p_failure_event) { failure_event = p_failure_event; }
-	String get_failure_event() const { return failure_event; }
+	void set_failure_event(const StringName &p_failure_event) { failure_event = p_failure_event; }
+	StringName get_failure_event() const { return failure_event; }
 
 	BTState();
-
-protected:
-	void _notification(int p_notification);
 };
 
 #endif // BT_STATE_H

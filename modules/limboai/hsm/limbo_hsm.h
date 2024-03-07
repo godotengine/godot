@@ -1,7 +1,7 @@
 /**
  * limbo_hsm.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -28,11 +28,14 @@ private:
 	UpdateMode update_mode;
 	LimboState *initial_state;
 	LimboState *active_state;
+	LimboState *previous_active;
 	HashMap<uint64_t, LimboState *> transitions;
 
-	_FORCE_INLINE_ uint64_t _get_transition_key(LimboState *p_from_state, const String &p_event) {
+	_FORCE_INLINE_ uint64_t _get_transition_key(LimboState *p_from_state, const StringName &p_event) {
 		uint64_t key = hash_djb2_one_64(Variant::OBJECT);
-		key = hash_djb2_one_64(Variant(p_from_state).hash(), key);
+		if (p_from_state != nullptr) {
+			key = hash_djb2_one_64(hash_one_uint64(hash_make_uint64_t(p_from_state)), key);
+		}
 		key = hash_djb2_one_64(p_event.hash(), key);
 		return key;
 	}
@@ -43,7 +46,7 @@ protected:
 	void _notification(int p_what);
 
 	virtual void _initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) override;
-	virtual bool _dispatch(const String &p_event, const Variant &p_cargo = Variant()) override;
+	virtual bool _dispatch(const StringName &p_event, const Variant &p_cargo = Variant()) override;
 
 	virtual void _enter() override;
 	virtual void _exit() override;
@@ -56,6 +59,7 @@ public:
 	UpdateMode get_update_mode() const { return update_mode; }
 
 	LimboState *get_active_state() const { return active_state; }
+	LimboState *get_previous_active_state() const { return previous_active; }
 	LimboState *get_leaf_state() const;
 	void set_active(bool p_active);
 
@@ -65,7 +69,7 @@ public:
 	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_parent_scope = nullptr);
 
 	void update(double p_delta);
-	void add_transition(LimboState *p_from_state, LimboState *p_to_state, const String &p_event);
+	void add_transition(LimboState *p_from_state, LimboState *p_to_state, const StringName &p_event);
 	LimboState *anystate() const { return nullptr; }
 
 	LimboHSM();

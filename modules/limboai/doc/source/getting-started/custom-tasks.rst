@@ -110,7 +110,7 @@ Example 2: InRange condition
 
    @export var distance_min: float
    @export var distance_max: float
-   @export var target_var := "target"
+   @export var target_var: StringName = &"target"
 
    var _min_distance_squared: float
    var _max_distance_squared: float

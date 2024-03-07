@@ -1,7 +1,7 @@
 /**
  * limbo_hsm.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -61,12 +61,13 @@ void LimboHSM::_change_state(LimboState *p_state) {
 
 	if (active_state) {
 		active_state->_exit();
+		previous_active = active_state;
 	}
 
 	active_state = p_state;
 	active_state->_enter();
 
-	emit_signal(LimboStringNames::get_singleton()->state_changed, active_state);
+	emit_signal(LimboStringNames::get_singleton()->active_state_changed, active_state, previous_active);
 }
 
 void LimboHSM::_enter() {
@@ -100,11 +101,11 @@ void LimboHSM::update(double p_delta) {
 	_update(p_delta);
 }
 
-void LimboHSM::add_transition(LimboState *p_from_state, LimboState *p_to_state, const String &p_event) {
+void LimboHSM::add_transition(LimboState *p_from_state, LimboState *p_to_state, const StringName &p_event) {
 	ERR_FAIL_COND_MSG(p_from_state != nullptr && p_from_state->get_parent() != this, "LimboHSM: Unable to add a transition from a state that is not an immediate child of mine.");
 	ERR_FAIL_COND_MSG(p_to_state == nullptr, "LimboHSM: Unable to add a transition to a null state.");
 	ERR_FAIL_COND_MSG(p_to_state->get_parent() != this, "LimboHSM: Unable to add a transition to a state that is not an immediate child of mine.");
-	ERR_FAIL_COND_MSG(p_event.is_empty(), "LimboHSM: Failed to add transition due to empty event string.");
+	ERR_FAIL_COND_MSG(p_event == StringName(), "LimboHSM: Failed to add transition due to empty event string.");
 
 	uint64_t key = _get_transition_key(p_from_state, p_event);
 	transitions[key] = Object::cast_to<LimboState>(p_to_state);
@@ -127,8 +128,8 @@ void LimboHSM::set_initial_state(LimboState *p_state) {
 	initial_state = Object::cast_to<LimboState>(p_state);
 }
 
-bool LimboHSM::_dispatch(const String &p_event, const Variant &p_cargo) {
-	ERR_FAIL_COND_V(p_event.is_empty(), false);
+bool LimboHSM::_dispatch(const StringName &p_event, const Variant &p_cargo) {
+	ERR_FAIL_COND_V(p_event == StringName(), false);
 
 	bool event_consumed = false;
 
@@ -194,9 +195,12 @@ bool LimboHSM::_dispatch(const String &p_event, const Variant &p_cargo) {
 
 void LimboHSM::initialize(Node *p_agent, const Ref<Blackboard> &p_parent_scope) {
 	ERR_FAIL_COND(p_agent == nullptr);
+	ERR_FAIL_COND_MSG(!is_root(), "LimboHSM: initialize() must be called on the root HSM.");
+
 	if (!p_parent_scope.is_null()) {
 		blackboard->set_parent(p_parent_scope);
 	}
+
 	_initialize(p_agent, nullptr);
 
 	if (initial_state == nullptr) {
@@ -240,20 +244,21 @@ void LimboHSM::_notification(int p_what) {
 }
 
 void LimboHSM::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_update_mode", "p_mode"), &LimboHSM::set_update_mode);
+	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &LimboHSM::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &LimboHSM::get_update_mode);
 
-	ClassDB::bind_method(D_METHOD("set_initial_state", "p_state"), &LimboHSM::set_initial_state);
+	ClassDB::bind_method(D_METHOD("set_initial_state", "state"), &LimboHSM::set_initial_state);
 	ClassDB::bind_method(D_METHOD("get_initial_state"), &LimboHSM::get_initial_state);
 
 	ClassDB::bind_method(D_METHOD("get_active_state"), &LimboHSM::get_active_state);
+	ClassDB::bind_method(D_METHOD("get_previous_active_state"), &LimboHSM::get_previous_active_state);
 	ClassDB::bind_method(D_METHOD("get_leaf_state"), &LimboHSM::get_leaf_state);
-	ClassDB::bind_method(D_METHOD("set_active", "p_active"), &LimboHSM::set_active);
-	ClassDB::bind_method(D_METHOD("update", "p_delta"), &LimboHSM::update);
-	ClassDB::bind_method(D_METHOD("add_transition", "p_from_state", "p_to_state", "p_event"), &LimboHSM::add_transition);
+	ClassDB::bind_method(D_METHOD("set_active", "active"), &LimboHSM::set_active);
+	ClassDB::bind_method(D_METHOD("update", "delta"), &LimboHSM::update);
+	ClassDB::bind_method(D_METHOD("add_transition", "from_state", "to_state", "event"), &LimboHSM::add_transition);
 	ClassDB::bind_method(D_METHOD("anystate"), &LimboHSM::anystate);
 
-	ClassDB::bind_method(D_METHOD("initialize", "p_agent", "p_parent_scope"), &LimboHSM::initialize, Variant());
+	ClassDB::bind_method(D_METHOD("initialize", "agent", "parent_scope"), &LimboHSM::initialize, Variant());
 
 	BIND_ENUM_CONSTANT(IDLE);
 	BIND_ENUM_CONSTANT(PHYSICS);
@@ -263,11 +268,14 @@ void LimboHSM::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ANYSTATE", PROPERTY_HINT_RESOURCE_TYPE, "LimboState", 0), "", "anystate");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "initial_state", PROPERTY_HINT_RESOURCE_TYPE, "LimboState", 0), "set_initial_state", "get_initial_state");
 
-	ADD_SIGNAL(MethodInfo("state_changed", PropertyInfo(Variant::OBJECT, "p_state", PROPERTY_HINT_RESOURCE_TYPE, "LimboState", 0)));
+	ADD_SIGNAL(MethodInfo("active_state_changed",
+			PropertyInfo(Variant::OBJECT, "current", PROPERTY_HINT_RESOURCE_TYPE, "LimboState"),
+			PropertyInfo(Variant::OBJECT, "previous", PROPERTY_HINT_RESOURCE_TYPE, "LimboState")));
 }
 
 LimboHSM::LimboHSM() {
 	update_mode = UpdateMode::PHYSICS;
 	active_state = nullptr;
+	previous_active = nullptr;
 	initial_state = nullptr;
 }

@@ -29,13 +29,13 @@ Properties
 .. table::
    :widths: auto
 
-   +-----------------------------------------+------------------------------------------------------------+---------------+
-   | :ref:`BehaviorTree<class_BehaviorTree>` | :ref:`behavior_tree<class_BTState_property_behavior_tree>` |               |
-   +-----------------------------------------+------------------------------------------------------------+---------------+
-   | String                                  | :ref:`failure_event<class_BTState_property_failure_event>` | ``"failure"`` |
-   +-----------------------------------------+------------------------------------------------------------+---------------+
-   | String                                  | :ref:`success_event<class_BTState_property_success_event>` | ``"success"`` |
-   +-----------------------------------------+------------------------------------------------------------+---------------+
+   +-----------------------------------------+------------------------------------------------------------+----------------+
+   | :ref:`BehaviorTree<class_BehaviorTree>` | :ref:`behavior_tree<class_BTState_property_behavior_tree>` |                |
+   +-----------------------------------------+------------------------------------------------------------+----------------+
+   | StringName                              | :ref:`failure_event<class_BTState_property_failure_event>` | ``&"failure"`` |
+   +-----------------------------------------+------------------------------------------------------------+----------------+
+   | StringName                              | :ref:`success_event<class_BTState_property_success_event>` | ``&"success"`` |
+   +-----------------------------------------+------------------------------------------------------------+----------------+
 
 .. rst-class:: classref-reftable-group
 
@@ -79,12 +79,12 @@ A :ref:`BehaviorTree<class_BehaviorTree>` resource that defines state behavior.
 
 .. rst-class:: classref-property
 
-String **failure_event** = ``"failure"``
+StringName **failure_event** = ``&"failure"``
 
 .. rst-class:: classref-property-setget
 
-- void **set_failure_event** **(** String value **)**
-- String **get_failure_event** **(** **)**
+- void **set_failure_event** **(** StringName value **)**
+- StringName **get_failure_event** **(** **)**
 
 HSM event that will be dispatched when the behavior tree results in ``FAILURE``. See :ref:`LimboState.dispatch<class_LimboState_method_dispatch>`.
 
@@ -96,12 +96,12 @@ HSM event that will be dispatched when the behavior tree results in ``FAILURE``.
 
 .. rst-class:: classref-property
 
-String **success_event** = ``"success"``
+StringName **success_event** = ``&"success"``
 
 .. rst-class:: classref-property-setget
 
-- void **set_success_event** **(** String value **)**
-- String **get_success_event** **(** **)**
+- void **set_success_event** **(** StringName value **)**
+- StringName **get_success_event** **(** **)**
 
 HSM event that will be dispatched when the behavior tree results in ``SUCCESS``. See :ref:`LimboState.dispatch<class_LimboState_method_dispatch>`.
 

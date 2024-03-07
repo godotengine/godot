@@ -117,7 +117,7 @@ Ref<BehaviorTreeData> BehaviorTreeData::create_from_tree_instance(const Ref<BTTa
 void BehaviorTreeData::_bind_methods() {
 	// ClassDB::bind_static_method("BehaviorTreeData", D_METHOD("serialize", "p_tree_instance", "p_player_path", "p_bt_resource_path"), &BehaviorTreeData::serialize);
 	// ClassDB::bind_static_method("BehaviorTreeData", D_METHOD("deserialize", "p_array"), &BehaviorTreeData::deserialize);
-	ClassDB::bind_static_method("BehaviorTreeData", D_METHOD("create_from_tree_instance", "p_tree_instance"), &BehaviorTreeData::create_from_tree_instance);
+	ClassDB::bind_static_method("BehaviorTreeData", D_METHOD("create_from_tree_instance", "tree_instance"), &BehaviorTreeData::create_from_tree_instance);
 }
 
 BehaviorTreeData::BehaviorTreeData() {

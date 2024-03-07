@@ -63,7 +63,7 @@
 
 using namespace godot;
 
-#define GET_UNDO_REDO() EditorUndoRedoManager::get_singleton()
+#define GET_UNDO_REDO() plugin->get_undo_redo()
 
 #endif // LIMBOAI_GDEXTENSION
 

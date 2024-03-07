@@ -1,7 +1,7 @@
 /**
  * bt_probability.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -31,7 +31,7 @@ BT::Status BTProbability::_tick(double p_delta) {
 }
 
 void BTProbability::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_run_chance", "p_value"), &BTProbability::set_run_chance);
+	ClassDB::bind_method(D_METHOD("set_run_chance", "probability"), &BTProbability::set_run_chance);
 	ClassDB::bind_method(D_METHOD("get_run_chance"), &BTProbability::get_run_chance);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "run_chance", PROPERTY_HINT_RANGE, "0.0,1.0"), "set_run_chance", "get_run_chance");
 }

@@ -12,22 +12,22 @@
 #include "blackboard_plan.h"
 
 bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
-	String prop_name = p_name;
+	String name_str = p_name;
 
 	// * Editor
-	if (var_map.has(prop_name)) {
-		var_map[prop_name].set_value(p_value);
-		if (base.is_valid() && p_value == base->get_var(prop_name).get_value()) {
+	if (var_map.has(p_name)) {
+		var_map[p_name].set_value(p_value);
+		if (base.is_valid() && p_value == base->get_var(p_name).get_value()) {
 			// When user pressed reset property button in inspector...
-			var_map[prop_name].reset_value_changed();
+			var_map[p_name].reset_value_changed();
 		}
 		return true;
 	}
 
 	// * Storage
-	if (prop_name.begins_with("var/")) {
-		String var_name = prop_name.get_slicec('/', 1);
-		String what = prop_name.get_slicec('/', 2);
+	if (name_str.begins_with("var/")) {
+		StringName var_name = name_str.get_slicec('/', 1);
+		String what = name_str.get_slicec('/', 2);
 		if (!var_map.has(var_name) && what == "name") {
 			add_var(var_name, BBVariable());
 		}
@@ -51,21 +51,21 @@ bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool BlackboardPlan::_get(const StringName &p_name, Variant &r_ret) const {
-	String prop_name = p_name;
+	String name_str = p_name;
 
 	// * Editor
-	if (var_map.has(prop_name)) {
-		r_ret = var_map[prop_name].get_value();
+	if (var_map.has(p_name)) {
+		r_ret = var_map[p_name].get_value();
 		return true;
 	}
 
 	// * Storage
-	if (!prop_name.begins_with("var/")) {
+	if (!name_str.begins_with("var/")) {
 		return false;
 	}
 
-	String var_name = prop_name.get_slicec('/', 1);
-	String what = prop_name.get_slicec('/', 2);
+	StringName var_name = name_str.get_slicec('/', 1);
+	String what = name_str.get_slicec('/', 2);
 	ERR_FAIL_COND_V(!var_map.has(var_name), false);
 
 	if (what == "name") {
@@ -83,7 +83,7 @@ bool BlackboardPlan::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void BlackboardPlan::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const Pair<String, BBVariable> &p : var_list) {
+	for (const Pair<StringName, BBVariable> &p : var_list) {
 		String var_name = p.first;
 		BBVariable var = p.second;
 
@@ -119,58 +119,72 @@ void BlackboardPlan::set_base_plan(const Ref<BlackboardPlan> &p_base) {
 	notify_property_list_changed();
 }
 
-void BlackboardPlan::add_var(const String &p_name, const BBVariable &p_var) {
+void BlackboardPlan::set_prefetch_nodepath_vars(bool p_enable) {
+	prefetch_nodepath_vars = p_enable;
+	emit_changed();
+}
+
+bool BlackboardPlan::is_prefetching_nodepath_vars() const {
+	if (is_derived()) {
+		return base->is_prefetching_nodepath_vars();
+	} else {
+		return prefetch_nodepath_vars;
+	}
+}
+
+void BlackboardPlan::add_var(const StringName &p_name, const BBVariable &p_var) {
 	ERR_FAIL_COND(var_map.has(p_name));
 	var_map.insert(p_name, p_var);
-	var_list.push_back(Pair<String, BBVariable>(p_name, p_var));
+	var_list.push_back(Pair<StringName, BBVariable>(p_name, p_var));
 	notify_property_list_changed();
 	emit_changed();
 }
 
-void BlackboardPlan::remove_var(const String &p_name) {
+void BlackboardPlan::remove_var(const StringName &p_name) {
 	ERR_FAIL_COND(!var_map.has(p_name));
-	var_list.erase(Pair<String, BBVariable>(p_name, var_map[p_name]));
+	var_list.erase(Pair<StringName, BBVariable>(p_name, var_map[p_name]));
 	var_map.erase(p_name);
 	notify_property_list_changed();
 	emit_changed();
 }
 
-BBVariable BlackboardPlan::get_var(const String &p_name) {
+BBVariable BlackboardPlan::get_var(const StringName &p_name) {
 	ERR_FAIL_COND_V(!var_map.has(p_name), BBVariable());
 	return var_map.get(p_name);
 }
 
-Pair<String, BBVariable> BlackboardPlan::get_var_by_index(int p_index) {
-	Pair<String, BBVariable> ret;
+Pair<StringName, BBVariable> BlackboardPlan::get_var_by_index(int p_index) {
+	Pair<StringName, BBVariable> ret;
 	ERR_FAIL_INDEX_V(p_index, (int)var_map.size(), ret);
 	return var_list[p_index];
 }
 
 PackedStringArray BlackboardPlan::list_vars() const {
 	PackedStringArray ret;
-	for (const Pair<String, BBVariable> &p : var_list) {
+	for (const Pair<StringName, BBVariable> &p : var_list) {
 		ret.append(p.first);
 	}
 	return ret;
 }
 
-String BlackboardPlan::get_var_name(const BBVariable &p_var) const {
-	for (const Pair<String, BBVariable> &p : var_list) {
+StringName BlackboardPlan::get_var_name(const BBVariable &p_var) const {
+	for (const Pair<StringName, BBVariable> &p : var_list) {
 		if (p.second == p_var) {
 			return p.first;
 		}
 	}
-	return String();
+	return StringName();
 }
 
-bool BlackboardPlan::is_valid_var_name(const String &p_name) const {
-	if (p_name.begins_with("resource_")) {
+bool BlackboardPlan::is_valid_var_name(const StringName &p_name) const {
+	String name_str = p_name;
+	if (name_str.begins_with("resource_")) {
 		return false;
 	}
-	return p_name.is_valid_identifier() && !var_map.has(p_name);
+	return name_str.is_valid_identifier() && !var_map.has(p_name);
 }
 
-void BlackboardPlan::rename_var(const String &p_name, const String &p_new_name) {
+void BlackboardPlan::rename_var(const StringName &p_name, const StringName &p_new_name) {
 	if (p_name == p_new_name) {
 		return;
 	}
@@ -179,8 +193,8 @@ void BlackboardPlan::rename_var(const String &p_name, const String &p_new_name) 
 	ERR_FAIL_COND(!var_map.has(p_name));
 
 	BBVariable var = var_map[p_name];
-	Pair<String, BBVariable> new_entry(p_new_name, var);
-	Pair<String, BBVariable> old_entry(p_name, var);
+	Pair<StringName, BBVariable> new_entry(p_new_name, var);
+	Pair<StringName, BBVariable> old_entry(p_name, var);
 	var_list.find(old_entry)->set(new_entry);
 
 	var_map.erase(p_name);
@@ -198,11 +212,11 @@ void BlackboardPlan::move_var(int p_index, int p_new_index) {
 		return;
 	}
 
-	List<Pair<String, BBVariable>>::Element *E = var_list.front();
+	List<Pair<StringName, BBVariable>>::Element *E = var_list.front();
 	for (int i = 0; i < p_index; i++) {
 		E = E->next();
 	}
-	List<Pair<String, BBVariable>>::Element *E2 = var_list.front();
+	List<Pair<StringName, BBVariable>>::Element *E2 = var_list.front();
 	for (int i = 0; i < p_new_index; i++) {
 		E2 = E2->next();
 	}
@@ -224,8 +238,8 @@ void BlackboardPlan::sync_with_base_plan() {
 	bool changed = false;
 
 	// Sync variables with the base plan.
-	for (const Pair<String, BBVariable> &p : base->var_list) {
-		const String &base_name = p.first;
+	for (const Pair<StringName, BBVariable> &p : base->var_list) {
+		const StringName &base_name = p.first;
 		const BBVariable &base_var = p.second;
 
 		if (!var_map.has(base_name)) {
@@ -249,7 +263,7 @@ void BlackboardPlan::sync_with_base_plan() {
 	}
 
 	// Erase variables that do not exist in the base plan.
-	for (const Pair<String, BBVariable> &p : var_list) {
+	for (const Pair<StringName, BBVariable> &p : var_list) {
 		if (!base->has_var(p.first)) {
 			remove_var(p.first);
 			changed = true;
@@ -262,16 +276,34 @@ void BlackboardPlan::sync_with_base_plan() {
 	}
 }
 
-Ref<Blackboard> BlackboardPlan::create_blackboard() {
+// Add a variable duplicate to the blackboard, optionally with NodePath prefetch.
+inline void bb_add_var_dup_with_prefetch(const Ref<Blackboard> &p_blackboard, const StringName &p_name, const BBVariable &p_var, bool p_prefetch, Node *p_node) {
+	if (unlikely(p_prefetch && p_var.get_type() == Variant::NODE_PATH)) {
+		Node *n = p_node->get_node_or_null(p_var.get_value());
+		BBVariable var = p_var.duplicate();
+		if (n != nullptr) {
+			var.set_value(n);
+		} else {
+			ERR_PRINT(vformat("BlackboardPlan: Prefetch failed for variable $%s with value: %s", p_name, p_var.get_value()));
+		}
+		p_blackboard->add_var(p_name, var);
+	} else {
+		p_blackboard->add_var(p_name, p_var.duplicate());
+	}
+}
+
+Ref<Blackboard> BlackboardPlan::create_blackboard(Node *p_node) {
+	ERR_FAIL_COND_V(p_node == nullptr && prefetch_nodepath_vars, memnew(Blackboard));
 	Ref<Blackboard> bb = memnew(Blackboard);
-	for (const Pair<String, BBVariable> &p : var_list) {
-		bb->add_var(p.first, p.second.duplicate());
+	for (const Pair<StringName, BBVariable> &p : var_list) {
+		bb_add_var_dup_with_prefetch(bb, p.first, p.second, prefetch_nodepath_vars, p_node);
 	}
 	return bb;
 }
 
-void BlackboardPlan::populate_blackboard(const Ref<Blackboard> &p_blackboard, bool overwrite) {
-	for (const Pair<String, BBVariable> &p : var_list) {
+void BlackboardPlan::populate_blackboard(const Ref<Blackboard> &p_blackboard, bool overwrite, Node *p_node) {
+	ERR_FAIL_COND(p_node == nullptr && prefetch_nodepath_vars);
+	for (const Pair<StringName, BBVariable> &p : var_list) {
 		if (p_blackboard->has_var(p.first)) {
 			if (overwrite) {
 				p_blackboard->erase_var(p.first);
@@ -279,13 +311,18 @@ void BlackboardPlan::populate_blackboard(const Ref<Blackboard> &p_blackboard, bo
 				continue;
 			}
 		}
-		p_blackboard->add_var(p.first, p.second.duplicate());
+		bb_add_var_dup_with_prefetch(p_blackboard, p.first, p.second, prefetch_nodepath_vars, p_node);
 	}
 }
 
 void BlackboardPlan::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_blackboard"), &BlackboardPlan::create_blackboard);
-	ClassDB::bind_method(D_METHOD("populate_blackboard", "p_blackboard", "p_overwrite"), &BlackboardPlan::populate_blackboard);
+	ClassDB::bind_method(D_METHOD("set_prefetch_nodepath_vars", "enable"), &BlackboardPlan::set_prefetch_nodepath_vars);
+	ClassDB::bind_method(D_METHOD("is_prefetching_nodepath_vars"), &BlackboardPlan::is_prefetching_nodepath_vars);
+
+	ClassDB::bind_method(D_METHOD("create_blackboard", "node"), &BlackboardPlan::create_blackboard);
+	ClassDB::bind_method(D_METHOD("populate_blackboard", "blackboard", "overwrite", "node"), &BlackboardPlan::populate_blackboard);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefetch_nodepath_vars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_prefetch_nodepath_vars", "is_prefetching_nodepath_vars");
 }
 
 BlackboardPlan::BlackboardPlan() {

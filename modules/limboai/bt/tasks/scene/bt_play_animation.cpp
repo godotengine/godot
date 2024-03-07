@@ -1,7 +1,7 @@
 /**
  * bt_play_animation.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -55,7 +55,7 @@ PackedStringArray BTPlayAnimation::get_configuration_warnings() {
 	} else {
 		if (animation_player_param->get_value_source() == BBParam::SAVED_VALUE && animation_player_param->get_saved_value() == Variant()) {
 			warnings.append("Path to AnimationPlayer node is not set.");
-		} else if (animation_player_param->get_value_source() == BBParam::BLACKBOARD_VAR && animation_player_param->get_variable().is_empty()) {
+		} else if (animation_player_param->get_value_source() == BBParam::BLACKBOARD_VAR && animation_player_param->get_variable() == StringName()) {
 			warnings.append("AnimationPlayer blackboard variable is not set.");
 		}
 	}
@@ -109,17 +109,17 @@ BT::Status BTPlayAnimation::_tick(double p_delta) {
 //**** Godot
 
 void BTPlayAnimation::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_animation_player", "p_anim_player"), &BTPlayAnimation::set_animation_player);
+	ClassDB::bind_method(D_METHOD("set_animation_player", "animation_player"), &BTPlayAnimation::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &BTPlayAnimation::get_animation_player);
-	ClassDB::bind_method(D_METHOD("set_animation_name", "p_anim_name"), &BTPlayAnimation::set_animation_name);
+	ClassDB::bind_method(D_METHOD("set_animation_name", "name"), &BTPlayAnimation::set_animation_name);
 	ClassDB::bind_method(D_METHOD("get_animation_name"), &BTPlayAnimation::get_animation_name);
-	ClassDB::bind_method(D_METHOD("set_await_completion", "p_time_sec"), &BTPlayAnimation::set_await_completion);
+	ClassDB::bind_method(D_METHOD("set_await_completion", "time_sec"), &BTPlayAnimation::set_await_completion);
 	ClassDB::bind_method(D_METHOD("get_await_completion"), &BTPlayAnimation::get_await_completion);
-	ClassDB::bind_method(D_METHOD("set_blend", "p_blend"), &BTPlayAnimation::set_blend);
+	ClassDB::bind_method(D_METHOD("set_blend", "blend"), &BTPlayAnimation::set_blend);
 	ClassDB::bind_method(D_METHOD("get_blend"), &BTPlayAnimation::get_blend);
-	ClassDB::bind_method(D_METHOD("set_speed", "p_speed"), &BTPlayAnimation::set_speed);
+	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &BTPlayAnimation::set_speed);
 	ClassDB::bind_method(D_METHOD("get_speed"), &BTPlayAnimation::get_speed);
-	ClassDB::bind_method(D_METHOD("set_from_end", "p_from_end"), &BTPlayAnimation::set_from_end);
+	ClassDB::bind_method(D_METHOD("set_from_end", "from_end"), &BTPlayAnimation::set_from_end);
 	ClassDB::bind_method(D_METHOD("get_from_end"), &BTPlayAnimation::get_from_end);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "await_completion", PROPERTY_HINT_RANGE, "0.0,100.0"), "set_await_completion", "get_await_completion");

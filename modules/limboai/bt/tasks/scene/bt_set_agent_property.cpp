@@ -1,7 +1,7 @@
 /**
  * bt_set_agent_property.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -81,11 +81,11 @@ BT::Status BTSetAgentProperty::_tick(double p_delta) {
 }
 
 void BTSetAgentProperty::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_property", "p_property"), &BTSetAgentProperty::set_property);
+	ClassDB::bind_method(D_METHOD("set_property", "property"), &BTSetAgentProperty::set_property);
 	ClassDB::bind_method(D_METHOD("get_property"), &BTSetAgentProperty::get_property);
-	ClassDB::bind_method(D_METHOD("set_value", "p_value"), &BTSetAgentProperty::set_value);
+	ClassDB::bind_method(D_METHOD("set_value", "value"), &BTSetAgentProperty::set_value);
 	ClassDB::bind_method(D_METHOD("get_value"), &BTSetAgentProperty::get_value);
-	ClassDB::bind_method(D_METHOD("set_operation", "p_operation"), &BTSetAgentProperty::set_operation);
+	ClassDB::bind_method(D_METHOD("set_operation", "operation"), &BTSetAgentProperty::set_operation);
 	ClassDB::bind_method(D_METHOD("get_operation"), &BTSetAgentProperty::get_operation);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "property"), "set_property", "get_property");

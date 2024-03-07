@@ -10,17 +10,24 @@
 	<methods>
 		<method name="create_blackboard">
 			<return type="Blackboard" />
+			<param index="0" name="node" type="Node" />
 			<description>
-				Constructs a new instance of a [Blackboard] using this plan.
+				Constructs a new instance of a [Blackboard] using this plan. If [NodePath] prefetching is enabled, [param node] will be used to retrieve node instances for [NodePath] variables and substitute their values.
 			</description>
 		</method>
 		<method name="populate_blackboard">
 			<return type="void" />
-			<param index="0" name="p_blackboard" type="Blackboard" />
-			<param index="1" name="p_overwrite" type="bool" />
+			<param index="0" name="blackboard" type="Blackboard" />
+			<param index="1" name="overwrite" type="bool" />
+			<param index="2" name="node" type="Node" />
 			<description>
-				Populates [param p_blackboard] with the variables from this plan. If [param p_override] is [code]true[/code], existing variables with the same names will be overwritten.
+				Populates [param blackboard] with the variables from this plan. If [param overwrite] is [code]true[/code], existing variables with the same names will be overwritten. If [NodePath] prefetching is enabled, [param node] will be used to retrieve node instances for [NodePath] variables and substitute their values.
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="prefetch_nodepath_vars" type="bool" setter="set_prefetch_nodepath_vars" getter="is_prefetching_nodepath_vars" default="true">
+			Enables or disables [NodePath] variable prefetching. If [code]true[/code], [NodePath] values will be replaced with node instances when the [Blackboard] is created.
+		</member>
+	</members>
 </class>

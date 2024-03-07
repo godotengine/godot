@@ -36,7 +36,7 @@ Properties
    :widths: auto
 
    +---------------------------------------------+-------------------------------------------------------------------+
-   | String                                      | :ref:`EVENT_FINISHED<class_LimboState_property_EVENT_FINISHED>`   |
+   | StringName                                  | :ref:`EVENT_FINISHED<class_LimboState_property_EVENT_FINISHED>`   |
    +---------------------------------------------+-------------------------------------------------------------------+
    | Node                                        | :ref:`agent<class_LimboState_property_agent>`                     |
    +---------------------------------------------+-------------------------------------------------------------------+
@@ -60,27 +60,27 @@ Methods
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
    | void                                | :ref:`_setup<class_LimboState_private_method__setup>` **(** **)** |virtual|                                        |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`_update<class_LimboState_private_method__update>` **(** float p_delta **)** |virtual|                        |
+   | void                                | :ref:`_update<class_LimboState_private_method__update>` **(** float delta **)** |virtual|                          |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`add_event_handler<class_LimboState_method_add_event_handler>` **(** String p_event, Callable p_handler **)** |
+   | void                                | :ref:`add_event_handler<class_LimboState_method_add_event_handler>` **(** StringName event, Callable handler **)** |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-   | :ref:`LimboState<class_LimboState>` | :ref:`call_on_enter<class_LimboState_method_call_on_enter>` **(** Callable p_callable **)**                        |
+   | :ref:`LimboState<class_LimboState>` | :ref:`call_on_enter<class_LimboState_method_call_on_enter>` **(** Callable callable **)**                          |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-   | :ref:`LimboState<class_LimboState>` | :ref:`call_on_exit<class_LimboState_method_call_on_exit>` **(** Callable p_callable **)**                          |
+   | :ref:`LimboState<class_LimboState>` | :ref:`call_on_exit<class_LimboState_method_call_on_exit>` **(** Callable callable **)**                            |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-   | :ref:`LimboState<class_LimboState>` | :ref:`call_on_update<class_LimboState_method_call_on_update>` **(** Callable p_callable **)**                      |
+   | :ref:`LimboState<class_LimboState>` | :ref:`call_on_update<class_LimboState_method_call_on_update>` **(** Callable callable **)**                        |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
    | void                                | :ref:`clear_guard<class_LimboState_method_clear_guard>` **(** **)**                                                |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-   | bool                                | :ref:`dispatch<class_LimboState_method_dispatch>` **(** String p_event, Variant p_cargo=null **)**                 |
+   | bool                                | :ref:`dispatch<class_LimboState_method_dispatch>` **(** StringName event, Variant cargo=null **)**                 |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
    | :ref:`LimboState<class_LimboState>` | :ref:`get_root<class_LimboState_method_get_root>` **(** **)** |const|                                              |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
    | bool                                | :ref:`is_active<class_LimboState_method_is_active>` **(** **)** |const|                                            |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-   | :ref:`LimboState<class_LimboState>` | :ref:`named<class_LimboState_method_named>` **(** String p_name **)**                                              |
+   | :ref:`LimboState<class_LimboState>` | :ref:`named<class_LimboState_method_named>` **(** String name **)**                                                |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`set_guard<class_LimboState_method_set_guard>` **(** Callable p_guard_callable **)**                          |
+   | void                                | :ref:`set_guard<class_LimboState_method_set_guard>` **(** Callable guard_callable **)**                            |
    +-------------------------------------+--------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
@@ -132,7 +132,7 @@ Emitted when the state is initialized.
 
 .. rst-class:: classref-signal
 
-**updated** **(** float p_delta **)**
+**updated** **(** float delta **)**
 
 Emitted when the state is updated.
 
@@ -149,11 +149,11 @@ Property Descriptions
 
 .. rst-class:: classref-property
 
-String **EVENT_FINISHED**
+StringName **EVENT_FINISHED**
 
 .. rst-class:: classref-property-setget
 
-- String **event_finished** **(** **)**
+- StringName **event_finished** **(** **)**
 
 A commonly used event that indicates that the state has finished its work.
 
@@ -256,7 +256,7 @@ Called once during initialization. Use this method to initialize your state.
 
 .. rst-class:: classref-method
 
-void **_update** **(** float p_delta **)** |virtual|
+void **_update** **(** float delta **)** |virtual|
 
 Called during the update. Implement your state's behavior with this method.
 
@@ -268,9 +268,9 @@ Called during the update. Implement your state's behavior with this method.
 
 .. rst-class:: classref-method
 
-void **add_event_handler** **(** String p_event, Callable p_handler **)**
+void **add_event_handler** **(** StringName event, Callable handler **)**
 
-Registers a ``p_handler`` to be called when ``p_event`` is dispatched.
+Registers a ``handler`` to be called when ``event`` is dispatched.
 
 .. rst-class:: classref-item-separator
 
@@ -280,9 +280,9 @@ Registers a ``p_handler`` to be called when ``p_event`` is dispatched.
 
 .. rst-class:: classref-method
 
-:ref:`LimboState<class_LimboState>` **call_on_enter** **(** Callable p_callable **)**
+:ref:`LimboState<class_LimboState>` **call_on_enter** **(** Callable callable **)**
 
-A chained method that connects the :ref:`entered<class_LimboState_signal_entered>` signal to a ``p_callable``.
+A chained method that connects the :ref:`entered<class_LimboState_signal_entered>` signal to a ``callable``.
 
 .. rst-class:: classref-item-separator
 
@@ -292,9 +292,9 @@ A chained method that connects the :ref:`entered<class_LimboState_signal_entered
 
 .. rst-class:: classref-method
 
-:ref:`LimboState<class_LimboState>` **call_on_exit** **(** Callable p_callable **)**
+:ref:`LimboState<class_LimboState>` **call_on_exit** **(** Callable callable **)**
 
-A chained method that connects the :ref:`exited<class_LimboState_signal_exited>` signal to a ``p_callable``.
+A chained method that connects the :ref:`exited<class_LimboState_signal_exited>` signal to a ``callable``.
 
 .. rst-class:: classref-item-separator
 
@@ -304,9 +304,9 @@ A chained method that connects the :ref:`exited<class_LimboState_signal_exited>`
 
 .. rst-class:: classref-method
 
-:ref:`LimboState<class_LimboState>` **call_on_update** **(** Callable p_callable **)**
+:ref:`LimboState<class_LimboState>` **call_on_update** **(** Callable callable **)**
 
-A chained method that connects the :ref:`updated<class_LimboState_signal_updated>` signal to a ``p_callable``.
+A chained method that connects the :ref:`updated<class_LimboState_signal_updated>` signal to a ``callable``.
 
 .. rst-class:: classref-item-separator
 
@@ -328,9 +328,9 @@ Clears the guard function, removing the ``Callable`` previously set by :ref:`set
 
 .. rst-class:: classref-method
 
-bool **dispatch** **(** String p_event, Variant p_cargo=null **)**
+bool **dispatch** **(** StringName event, Variant cargo=null **)**
 
-Recursively dispatches a state machine event named ``p_event`` with an optional argument ``p_cargo``. Returns ``true`` if the event was consumed.
+Recursively dispatches a state machine event named ``event`` with an optional argument ``cargo``. Returns ``true`` if the event was consumed.
 
 Events propagate from the leaf state to the root state, and propagation stops as soon as any state consumes the event. States will consume the event if they have a related transition or event handler. For more information on event handlers, see :ref:`add_event_handler<class_LimboState_method_add_event_handler>`.
 
@@ -366,7 +366,7 @@ Returns ``true`` if it is currently active, meaning it is the active substate of
 
 .. rst-class:: classref-method
 
-:ref:`LimboState<class_LimboState>` **named** **(** String p_name **)**
+:ref:`LimboState<class_LimboState>` **named** **(** String name **)**
 
 A chained method for setting the name of this state.
 
@@ -378,7 +378,7 @@ A chained method for setting the name of this state.
 
 .. rst-class:: classref-method
 
-void **set_guard** **(** Callable p_guard_callable **)**
+void **set_guard** **(** Callable guard_callable **)**
 
 Sets the guard function, which is a function called each time a transition to this state is considered. If the function returns ``false``, the transition will be disallowed.
 

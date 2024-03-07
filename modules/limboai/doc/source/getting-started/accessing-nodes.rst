@@ -40,7 +40,7 @@ and point it to the proper node in the :ref:`BTPlayer<class_BTPlayer>` blackboar
 
    extends BTCondition
 
-   @export var shape_var: String = "shape_cast"
+   @export var shape_var: StringName = &"shape_cast"
 
    func _tick(delta) -> Status:
        var shape_cast: ShapeCast3D = blackboard.get_var(shape_var)

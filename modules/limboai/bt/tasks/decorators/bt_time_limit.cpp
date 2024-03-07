@@ -1,7 +1,7 @@
 /**
  * bt_time_limit.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -31,7 +31,7 @@ BT::Status BTTimeLimit::_tick(double p_delta) {
 }
 
 void BTTimeLimit::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_time_limit", "p_value"), &BTTimeLimit::set_time_limit);
+	ClassDB::bind_method(D_METHOD("set_time_limit", "duration_sec"), &BTTimeLimit::set_time_limit);
 	ClassDB::bind_method(D_METHOD("get_time_limit"), &BTTimeLimit::get_time_limit);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_limit"), "set_time_limit", "get_time_limit");
 }

@@ -1,7 +1,7 @@
 /**
  * bt_pause_animation.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -30,7 +30,7 @@ PackedStringArray BTPauseAnimation::get_configuration_warnings() {
 	} else {
 		if (animation_player_param->get_value_source() == BBParam::SAVED_VALUE && animation_player_param->get_saved_value() == Variant()) {
 			warnings.append("Path to AnimationPlayer node is not set.");
-		} else if (animation_player_param->get_value_source() == BBParam::BLACKBOARD_VAR && animation_player_param->get_variable().is_empty()) {
+		} else if (animation_player_param->get_value_source() == BBParam::BLACKBOARD_VAR && animation_player_param->get_variable() == StringName()) {
 			warnings.append("AnimationPlayer blackboard variable is not set.");
 		}
 	}
@@ -58,7 +58,7 @@ BT::Status BTPauseAnimation::_tick(double p_delta) {
 //**** Godot
 
 void BTPauseAnimation::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_animation_player", "p_anim_player"), &BTPauseAnimation::set_animation_player);
+	ClassDB::bind_method(D_METHOD("set_animation_player", "animation_player"), &BTPauseAnimation::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &BTPauseAnimation::get_animation_player);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_player", PROPERTY_HINT_RESOURCE_TYPE, "BBNode"), "set_animation_player", "get_animation_player");

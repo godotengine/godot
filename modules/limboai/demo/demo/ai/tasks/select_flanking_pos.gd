@@ -21,7 +21,7 @@ enum AgentSide {
 }
 
 ## Blackboard variable that holds current target (should be a Node2D instance).
-@export var target_var: String = "target"
+@export var target_var: StringName = &"target"
 
 ## Which agent's side should we flank?
 @export var flank_side: AgentSide = AgentSide.CLOSEST
@@ -33,7 +33,7 @@ enum AgentSide {
 @export var range_max: int = 400
 
 ## Blackboard variable that will be used to store selected position.
-@export var position_var: String = "pos"
+@export var position_var: StringName = &"pos"
 
 
 # Display a customized name (requires @tool).

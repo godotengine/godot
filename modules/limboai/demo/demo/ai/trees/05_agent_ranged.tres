@@ -7,12 +7,12 @@
 [ext_resource type="Script" path="res://demo/ai/tasks/face_target.gd" id="5_aexyq"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_46tbn"]
-var/speed/name = "speed"
+var/speed/name = &"speed"
 var/speed/type = 3
 var/speed/value = 400.0
 var/speed/hint = 1
 var/speed/hint_string = "10,1000,10"
-var/run_speed/name = "run_speed"
+var/run_speed/name = &"run_speed"
 var/run_speed/type = 3
 var/run_speed/value = 600.0
 var/run_speed/hint = 1
@@ -34,7 +34,7 @@ max_duration = 1.5
 [sub_resource type="BTAction" id="BTAction_c4cxo"]
 script = ExtResource("1_4xk1i")
 group = &"player"
-output_var = "target"
+output_var = &"target"
 
 [sub_resource type="BTSequence" id="BTSequence_yhjh1"]
 custom_name = "Take a break"
@@ -52,18 +52,18 @@ speed = 1.5
 
 [sub_resource type="BTAction" id="BTAction_op6l6"]
 script = ExtResource("4_53hao")
-target_var = "target"
+target_var = &"target"
 flank_side = 1
 range_min = 400
 range_max = 1000
-position_var = "pos"
+position_var = &"pos"
 
 [sub_resource type="BTAction" id="BTAction_ycjun"]
 script = ExtResource("3_q4r2p")
-target_position_var = "pos"
-speed_var = "run_speed"
+target_position_var = &"pos"
+speed_var = &"run_speed"
 tolerance = 50.0
-avoid_var = "target"
+avoid_var = &"target"
 
 [sub_resource type="BTTimeLimit" id="BTTimeLimit_gadc6"]
 children = [SubResource("BTAction_ycjun")]
@@ -71,7 +71,7 @@ time_limit = 7.0
 
 [sub_resource type="BTAction" id="BTAction_poqpu"]
 script = ExtResource("5_aexyq")
-target_var = "target"
+target_var = &"target"
 
 [sub_resource type="BTSequence" id="BTSequence_0gdqn"]
 custom_name = "Change flank"
@@ -87,11 +87,11 @@ run_chance = 0.3
 
 [sub_resource type="BTAction" id="BTAction_kuuw2"]
 script = ExtResource("4_53hao")
-target_var = "target"
+target_var = &"target"
 flank_side = 0
 range_min = 400
 range_max = 1000
-position_var = "shoot_pos"
+position_var = &"shoot_pos"
 
 [sub_resource type="BBNode" id="BBNode_kc64r"]
 resource_name = "AnimationPlayer"
@@ -104,21 +104,21 @@ blend = 0.1
 
 [sub_resource type="BTAction" id="BTAction_66hsk"]
 script = ExtResource("3_q4r2p")
-target_position_var = "shoot_pos"
-speed_var = "speed"
+target_position_var = &"shoot_pos"
+speed_var = &"speed"
 tolerance = 50.0
-avoid_var = ""
+avoid_var = &""
 
 [sub_resource type="BTTimeLimit" id="BTTimeLimit_24ath"]
 children = [SubResource("BTAction_66hsk")]
 
 [sub_resource type="BTAction" id="BTAction_enw2m"]
 script = ExtResource("5_aexyq")
-target_var = "target"
+target_var = &"target"
 
 [sub_resource type="BTCondition" id="BTCondition_1fnyc"]
 script = ExtResource("2_a8qex")
-target_var = "target"
+target_var = &"target"
 tolerance = 150.0
 
 [sub_resource type="BBNode" id="BBNode_s6vt4"]

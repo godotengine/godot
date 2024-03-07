@@ -22,7 +22,7 @@
 		<member name="node" type="BBNode" setter="set_node_param" getter="get_node_param">
 			Specifies the [Node] or [Object] instance containing the method to be called.
 		</member>
-		<member name="result_var" type="String" setter="set_result_var" getter="get_result_var" default="&quot;&quot;">
+		<member name="result_var" type="StringName" setter="set_result_var" getter="get_result_var" default="&amp;&quot;&quot;">
 			if non-empty, assign the result of the method call to the blackboard variable specified by this property.
 		</member>
 	</members>

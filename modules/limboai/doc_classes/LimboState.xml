@@ -31,38 +31,38 @@
 		</method>
 		<method name="_update" qualifiers="virtual">
 			<return type="void" />
-			<param index="0" name="p_delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Called during the update. Implement your state's behavior with this method.
 			</description>
 		</method>
 		<method name="add_event_handler">
 			<return type="void" />
-			<param index="0" name="p_event" type="String" />
-			<param index="1" name="p_handler" type="Callable" />
+			<param index="0" name="event" type="StringName" />
+			<param index="1" name="handler" type="Callable" />
 			<description>
-				Registers a [param p_handler] to be called when [param p_event] is dispatched.
+				Registers a [param handler] to be called when [param event] is dispatched.
 			</description>
 		</method>
 		<method name="call_on_enter">
 			<return type="LimboState" />
-			<param index="0" name="p_callable" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
-				A chained method that connects the [signal entered] signal to a [param p_callable].
+				A chained method that connects the [signal entered] signal to a [param callable].
 			</description>
 		</method>
 		<method name="call_on_exit">
 			<return type="LimboState" />
-			<param index="0" name="p_callable" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
-				A chained method that connects the [signal exited] signal to a [param p_callable].
+				A chained method that connects the [signal exited] signal to a [param callable].
 			</description>
 		</method>
 		<method name="call_on_update">
 			<return type="LimboState" />
-			<param index="0" name="p_callable" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
-				A chained method that connects the [signal updated] signal to a [param p_callable].
+				A chained method that connects the [signal updated] signal to a [param callable].
 			</description>
 		</method>
 		<method name="clear_guard">
@@ -73,10 +73,10 @@
 		</method>
 		<method name="dispatch">
 			<return type="bool" />
-			<param index="0" name="p_event" type="String" />
-			<param index="1" name="p_cargo" type="Variant" default="null" />
+			<param index="0" name="event" type="StringName" />
+			<param index="1" name="cargo" type="Variant" default="null" />
 			<description>
-				Recursively dispatches a state machine event named [param p_event] with an optional argument [param p_cargo]. Returns [code]true[/code] if the event was consumed.
+				Recursively dispatches a state machine event named [param event] with an optional argument [param cargo]. Returns [code]true[/code] if the event was consumed.
 				Events propagate from the leaf state to the root state, and propagation stops as soon as any state consumes the event. States will consume the event if they have a related transition or event handler. For more information on event handlers, see [method add_event_handler].
 			</description>
 		</method>
@@ -94,21 +94,21 @@
 		</method>
 		<method name="named">
 			<return type="LimboState" />
-			<param index="0" name="p_name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
 				A chained method for setting the name of this state.
 			</description>
 		</method>
 		<method name="set_guard">
 			<return type="void" />
-			<param index="0" name="p_guard_callable" type="Callable" />
+			<param index="0" name="guard_callable" type="Callable" />
 			<description>
 				Sets the guard function, which is a function called each time a transition to this state is considered. If the function returns [code]false[/code], the transition will be disallowed.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="EVENT_FINISHED" type="String" setter="" getter="event_finished">
+		<member name="EVENT_FINISHED" type="StringName" setter="" getter="event_finished">
 			A commonly used event that indicates that the state has finished its work.
 		</member>
 		<member name="agent" type="Node" setter="set_agent" getter="get_agent">
@@ -138,7 +138,7 @@
 			</description>
 		</signal>
 		<signal name="updated">
-			<param index="0" name="p_delta" type="float" />
+			<param index="0" name="delta" type="float" />
 			<description>
 				Emitted when the state is updated.
 			</description>

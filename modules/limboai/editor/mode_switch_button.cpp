@@ -74,9 +74,9 @@ void ModeSwitchButton::_notification(int p_what) {
 }
 
 void ModeSwitchButton::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_mode", "p_id", "p_icon", "p_tooltip"), &ModeSwitchButton::add_mode);
+	ClassDB::bind_method(D_METHOD("add_mode", "id", "icon", "tooltip"), &ModeSwitchButton::add_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &ModeSwitchButton::get_mode);
-	ClassDB::bind_method(D_METHOD("set_mode", "p_id"), &ModeSwitchButton::set_mode);
+	ClassDB::bind_method(D_METHOD("set_mode", "id"), &ModeSwitchButton::set_mode);
 	ClassDB::bind_method(D_METHOD("next_mode"), &ModeSwitchButton::next_mode);
 
 	ADD_SIGNAL(MethodInfo("mode_changed"));

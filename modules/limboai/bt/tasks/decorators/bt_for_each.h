@@ -1,7 +1,7 @@
 /**
  * bt_for_each.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -19,8 +19,8 @@ class BTForEach : public BTDecorator {
 	TASK_CATEGORY(Decorators);
 
 private:
-	String array_var;
-	String save_var;
+	StringName array_var;
+	StringName save_var;
 
 	int current_idx;
 
@@ -32,11 +32,11 @@ protected:
 	virtual Status _tick(double p_delta) override;
 
 public:
-	void set_array_var(String p_value);
-	String get_array_var() const { return array_var; }
+	void set_array_var(const StringName &p_value);
+	StringName get_array_var() const { return array_var; }
 
-	void set_save_var(String p_value);
-	String get_save_var() const { return save_var; }
+	void set_save_var(const StringName &p_value);
+	StringName get_save_var() const { return save_var; }
 };
 
 #endif // BT_FOR_EACH_H
