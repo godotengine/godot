@@ -100,6 +100,7 @@ class PopupMenu : public Popup {
 	RID global_menu;
 	RID system_menu;
 	NativeMenu::SystemMenus system_menu_id = NativeMenu::INVALID_MENU_ID;
+	bool prefer_native = false;
 
 	bool close_allowed = false;
 	bool activated_by_keyboard = false;
@@ -322,6 +323,9 @@ public:
 	void set_item_count(int p_count);
 	int get_item_count() const;
 
+	void set_prefer_native_menu(bool p_enabled);
+	bool is_prefer_native_menu() const;
+
 	void scroll_to_item(int p_idx);
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
@@ -357,6 +361,7 @@ public:
 	bool get_allow_search() const;
 
 	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
+	virtual void set_visible(bool p_visible) override;
 
 	void take_mouse_focus();
 

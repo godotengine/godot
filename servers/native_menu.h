@@ -54,6 +54,9 @@ public:
 	enum Feature {
 		FEATURE_GLOBAL_MENU,
 		FEATURE_POPUP_MENU,
+		FEATURE_OPEN_CLOSE_CALLBACK,
+		FEATURE_HOVER_CALLBACK,
+		FEATURE_KEY_CALLBACK,
 	};
 
 	enum SystemMenus {
@@ -77,6 +80,8 @@ public:
 
 	virtual Size2 get_size(const RID &p_rid) const;
 	virtual void popup(const RID &p_rid, const Vector2i &p_position);
+
+	virtual void set_interface_direction(const RID &p_rid, bool p_is_rtl);
 
 	virtual void set_popup_open_callback(const RID &p_rid, const Callable &p_callback);
 	virtual Callable get_popup_open_callback(const RID &p_rid) const;
