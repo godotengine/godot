@@ -3911,16 +3911,19 @@ void CanvasItemEditor::_update_editor_settings() {
 	warped_panning = bool(EDITOR_GET("editors/panning/warped_mouse_panning"));
 }
 
+void CanvasItemEditor::_project_settings_changed() {
+	EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
+}
+
 void CanvasItemEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
 			EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CanvasItemEditor::_project_settings_changed));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
-
 			int nb_having_pivot = 0;
 
 			// Update the viewport if the canvas_item changes
