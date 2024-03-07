@@ -60,6 +60,8 @@ private:
 		RUN_MULTIPLE_INSTANCES,
 	};
 
+	bool initializing = true;
+
 	void _update_debug_options();
 	void _notification(int p_what);
 	void _menu_option(int p_option);

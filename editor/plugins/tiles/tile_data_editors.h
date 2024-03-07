@@ -140,6 +140,7 @@ private:
 	EditorZoomWidget *editor_zoom_widget = nullptr;
 	Button *button_center_view = nullptr;
 	Vector2 panning;
+	bool initializing = true;
 
 	Ref<Texture2D> background_texture;
 	Rect2 background_region;
