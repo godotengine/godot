@@ -213,12 +213,14 @@ void XRHandModifier3D::_update_skeleton() {
 		return;
 	}
 
+	// Get the world and skeleton scale.
+	const float ws = xr_server->get_world_scale();
+	const float ss = skeleton->get_motion_scale();
+
 	// We cache our transforms so we can quickly calculate local transforms.
 	bool has_valid_data[XRHandTracker::HAND_JOINT_MAX];
 	Transform3D transforms[XRHandTracker::HAND_JOINT_MAX];
 	Transform3D inv_transforms[XRHandTracker::HAND_JOINT_MAX];
-
-	const float ws = xr_server->get_world_scale();
 
 	if (tracker->get_has_tracking_data()) {
 		for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
@@ -227,7 +229,7 @@ void XRHandModifier3D::_update_skeleton() {
 
 			if (has_valid_data[joint]) {
 				transforms[joint] = tracker->get_hand_joint_transform((XRHandTracker::HandJoint)joint);
-				transforms[joint].origin *= ws;
+				transforms[joint].origin *= ss;
 				inv_transforms[joint] = transforms[joint].inverse();
 			}
 		}
@@ -253,8 +255,11 @@ void XRHandModifier3D::_update_skeleton() {
 				skeleton->set_bone_pose_rotation(joints[joint].bone, Quaternion(relative_transform.basis));
 			}
 
-			// Transform to the skeleton pose.
-			set_transform(transforms[XRHandTracker::HAND_JOINT_PALM]);
+			// Transform to the skeleton pose. This uses the HAND_JOINT_PALM position without skeleton-scaling, as it
+			// must be positioned to match the physical hand location. It is scaled with the world space to match
+			// the scaling done to the camera and eyes.
+			set_transform(
+					tracker->get_hand_joint_transform(XRHandTracker::HAND_JOINT_PALM) * ws);
 
 			set_visible(true);
 		} else {

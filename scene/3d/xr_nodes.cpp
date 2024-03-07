@@ -461,6 +461,7 @@ void XRController3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
 	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
+	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(Variant::STRING, "role")));
 };
 
 void XRController3D::_bind_tracker() {
@@ -471,6 +472,7 @@ void XRController3D::_bind_tracker() {
 		tracker->connect("button_released", callable_mp(this, &XRController3D::_button_released));
 		tracker->connect("input_float_changed", callable_mp(this, &XRController3D::_input_float_changed));
 		tracker->connect("input_vector2_changed", callable_mp(this, &XRController3D::_input_vector2_changed));
+		tracker->connect("profile_changed", callable_mp(this, &XRController3D::_profile_changed));
 	}
 }
 
@@ -481,29 +483,30 @@ void XRController3D::_unbind_tracker() {
 		tracker->disconnect("button_released", callable_mp(this, &XRController3D::_button_released));
 		tracker->disconnect("input_float_changed", callable_mp(this, &XRController3D::_input_float_changed));
 		tracker->disconnect("input_vector2_changed", callable_mp(this, &XRController3D::_input_vector2_changed));
+		tracker->disconnect("profile_changed", callable_mp(this, &XRController3D::_profile_changed));
 	}
 
 	XRNode3D::_unbind_tracker();
 }
 
 void XRController3D::_button_pressed(const String &p_name) {
-	// just pass it on...
 	emit_signal(SNAME("button_pressed"), p_name);
 }
 
 void XRController3D::_button_released(const String &p_name) {
-	// just pass it on...
 	emit_signal(SNAME("button_released"), p_name);
 }
 
 void XRController3D::_input_float_changed(const String &p_name, float p_value) {
-	// just pass it on...
 	emit_signal(SNAME("input_float_changed"), p_name, p_value);
 }
 
 void XRController3D::_input_vector2_changed(const String &p_name, Vector2 p_value) {
-	// just pass it on...
 	emit_signal(SNAME("input_vector2_changed"), p_name, p_value);
+}
+
+void XRController3D::_profile_changed(const String &p_role) {
+	emit_signal(SNAME("profile_changed"), p_role);
 }
 
 bool XRController3D::is_button_pressed(const StringName &p_name) const {

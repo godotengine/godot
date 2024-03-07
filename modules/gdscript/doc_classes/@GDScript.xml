@@ -341,6 +341,18 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_custom">
+			<return type="void" />
+			<param index="0" name="hint" type="int" enum="PropertyHint" />
+			<param index="1" name="hint_string" type="String" />
+			<param index="2" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" default="6" />
+			<description>
+				Allows you to set a custom hint, hint string, and usage flags for the exported property. Note that there's no validation done in GDScript, it will just pass the hint along to the editor.
+				[codeblock]
+				@export_custom(PROPERTY_HINT_NONE, "suffix:m") var suffix: Vector3
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_dir">
 			<return type="void" />
 			<description>
