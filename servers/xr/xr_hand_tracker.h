@@ -90,6 +90,13 @@ public:
 		HAND_JOINT_FLAG_ANGULAR_VELOCITY_VALID = 32,
 	};
 
+	struct HandCapsule {
+		Transform3D transform;
+		float height;
+		float radius;
+		HandJoint joint;
+	};
+
 	void set_hand(Hand p_hand);
 	Hand get_hand() const;
 
@@ -114,6 +121,23 @@ public:
 	void set_hand_joint_angular_velocity(HandJoint p_joint, const Vector3 &p_velocity);
 	Vector3 get_hand_joint_angular_velocity(HandJoint p_joint) const;
 
+	void set_hand_capsule_transform(int p_capsule_index, const Transform3D &p_transform);
+	Transform3D get_hand_capsule_transform(int p_capsule_index) const;
+
+	void set_hand_capsule_height(int p_capsule_index, float p_height);
+	float get_hand_capsule_height(int p_capsule_index) const;
+
+	void set_hand_capsule_radius(int p_capsule_index, float p_radius);
+	float get_hand_capsule_radius(int p_capsule_index) const;
+
+	void set_hand_capsule_joint(int p_capsule_index, HandJoint p_joint);
+	HandJoint get_hand_capsule_joint(int p_capsule_index);
+
+	void set_hand_capsule_count(int p_capsule_count);
+	int get_hand_capsule_count() const;
+
+	bool has_hand_capsule_data() const;
+
 protected:
 	static void _bind_methods();
 
@@ -127,6 +151,8 @@ private:
 	float hand_joint_radii[HAND_JOINT_MAX] = {};
 	Vector3 hand_joint_linear_velocities[HAND_JOINT_MAX];
 	Vector3 hand_joint_angular_velocities[HAND_JOINT_MAX];
+
+	Vector<HandCapsule> hand_capsules;
 };
 
 VARIANT_ENUM_CAST(XRHandTracker::Hand)
