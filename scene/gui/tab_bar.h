@@ -55,6 +55,7 @@ public:
 private:
 	struct Tab {
 		String text;
+		String tooltip;
 
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
@@ -65,6 +66,8 @@ private:
 
 		bool disabled = false;
 		bool hidden = false;
+		bool truncated = false;
+
 		Variant metadata;
 		int ofs_cache = 0;
 		int size_cache = 0;
@@ -162,6 +165,7 @@ private:
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -183,6 +187,9 @@ public:
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
+
+	void set_tab_tooltip(int p_tab, const String &p_tooltip);
+	String get_tab_tooltip(int p_tab) const;
 
 	void set_tab_text_direction(int p_tab, TextDirection p_text_direction);
 	TextDirection get_tab_text_direction(int p_tab) const;

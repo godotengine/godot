@@ -111,6 +111,13 @@
 				Returns the title of the tab at index [param tab_idx].
 			</description>
 		</method>
+		<method name="get_tab_tooltip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the tooltip text of the tab at index [param tab_idx].
+			</description>
+		</method>
 		<method name="is_tab_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="tab_idx" type="int" />
@@ -222,6 +229,15 @@
 			<param index="1" name="title" type="String" />
 			<description>
 				Sets a [param title] for the tab at index [param tab_idx].
+			</description>
+		</method>
+		<method name="set_tab_tooltip">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets a [param tooltip] for tab at index [param tab_idx].
+				[b]Note:[/b] By default, if the [param tooltip] is empty and the tab text is truncated (not all characters fit into the tab), the title will be displayed as a tooltip. To hide the tooltip, assign [code]" "[/code] as the [param tooltip] text.
 			</description>
 		</method>
 	</methods>

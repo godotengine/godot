@@ -323,6 +323,19 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+String TabBar::get_tooltip(const Point2 &p_pos) const {
+	int tab_idx = get_tab_idx_at_point(p_pos);
+	if (tab_idx < 0) {
+		return Control::get_tooltip(p_pos);
+	}
+
+	if (tabs[tab_idx].tooltip.is_empty() && tabs[tab_idx].truncated) {
+		return tabs[tab_idx].text;
+	}
+
+	return tabs[tab_idx].tooltip;
+}
+
 void TabBar::_shape(int p_tab) {
 	tabs.write[p_tab].text_buf->clear();
 	tabs.write[p_tab].text_buf->set_width(-1);
@@ -757,6 +770,16 @@ String TabBar::get_tab_title(int p_tab) const {
 	return tabs[p_tab].text;
 }
 
+void TabBar::set_tab_tooltip(int p_tab, const String &p_tooltip) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+	tabs.write[p_tab].tooltip = p_tooltip;
+}
+
+String TabBar::get_tab_tooltip(int p_tab) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), "");
+	return tabs[p_tab].tooltip;
+}
+
 void TabBar::set_tab_text_direction(int p_tab, Control::TextDirection p_text_direction) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
@@ -998,7 +1021,8 @@ void TabBar::_update_cache(bool p_update_hover) {
 		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
 		tabs.write[i].size_cache = get_tab_width(i);
 
-		if (max_width > 0 && tabs[i].size_cache > max_width) {
+		tabs.write[i].truncated = max_width > 0 && tabs[i].size_cache > max_width;
+		if (tabs[i].truncated) {
 			int size_textless = tabs[i].size_cache - tabs[i].size_text;
 			int mw = MAX(size_textless, max_width);
 
@@ -1728,6 +1752,9 @@ bool TabBar::_set(const StringName &p_name, const Variant &p_value) {
 		if (property == "title") {
 			set_tab_title(tab_index, p_value);
 			return true;
+		} else if (property == "tooltip") {
+			set_tab_tooltip(tab_index, p_value);
+			return true;
 		} else if (property == "icon") {
 			set_tab_icon(tab_index, p_value);
 			return true;
@@ -1747,6 +1774,9 @@ bool TabBar::_get(const StringName &p_name, Variant &r_ret) const {
 		if (property == "title") {
 			r_ret = get_tab_title(tab_index);
 			return true;
+		} else if (property == "tooltip") {
+			r_ret = get_tab_tooltip(tab_index);
+			return true;
 		} else if (property == "icon") {
 			r_ret = get_tab_icon(tab_index);
 			return true;
@@ -1761,6 +1791,7 @@ bool TabBar::_get(const StringName &p_name, Variant &r_ret) const {
 void TabBar::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < tabs.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("tab_%d/title", i)));
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("tab_%d/tooltip", i)));
 
 		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("tab_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 		pi.usage &= ~(get_tab_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
@@ -1782,6 +1813,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_next_available"), &TabBar::select_next_available);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabBar::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabBar::get_tab_title);
+	ClassDB::bind_method(D_METHOD("set_tab_tooltip", "tab_idx", "tooltip"), &TabBar::set_tab_tooltip);
+	ClassDB::bind_method(D_METHOD("get_tab_tooltip", "tab_idx"), &TabBar::get_tab_tooltip);
 	ClassDB::bind_method(D_METHOD("set_tab_text_direction", "tab_idx", "direction"), &TabBar::set_tab_text_direction);
 	ClassDB::bind_method(D_METHOD("get_tab_text_direction", "tab_idx"), &TabBar::get_tab_text_direction);
 	ClassDB::bind_method(D_METHOD("set_tab_language", "tab_idx", "language"), &TabBar::set_tab_language);
