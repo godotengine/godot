@@ -1092,10 +1092,17 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 	PagedArray<RID> empty;
 
-	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 		render_data.voxel_gi_instances = &empty;
+	}
+
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED ||
+			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW ||
+			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING ||
+			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
+		render_data.decals = &empty;
 	}
 
 	Color clear_color;

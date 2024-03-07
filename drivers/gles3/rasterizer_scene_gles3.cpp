@@ -3419,7 +3419,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		scene_globals.default_shader = material_storage->shader_allocate();
 		material_storage->shader_initialize(scene_globals.default_shader);
 		material_storage->shader_set_code(scene_globals.default_shader, R"(
-// Default 3D material shader.
+// Default 3D material shader (Compatibility).
 
 shader_type spatial;
 
@@ -3444,11 +3444,11 @@ void fragment() {
 		scene_globals.overdraw_shader = material_storage->shader_allocate();
 		material_storage->shader_initialize(scene_globals.overdraw_shader);
 		material_storage->shader_set_code(scene_globals.overdraw_shader, R"(
-// 3D editor Overdraw debug draw mode shader.
+// 3D editor Overdraw debug draw mode shader (Compatibility).
 
 shader_type spatial;
 
-render_mode blend_add, unshaded;
+render_mode blend_add, unshaded, fog_disabled;
 
 void fragment() {
 	ALBEDO = vec3(0.4, 0.8, 0.8);
