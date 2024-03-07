@@ -906,25 +906,34 @@ void ConnectionsDock::_make_or_edit_connection() {
 	bool b_oneshot = connect_dialog->get_one_shot();
 	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0);
 
-	// Conditions to add function: must have a script and must not have the method already
-	// (in the class, the script itself, or inherited).
-	bool add_script_function = false;
+	// If the function is found in target's own script, check the editor setting
+	// to determine if the script should be opened.
+	// If the function is found in an inherited class or script no need to do anything
+	// except making a connection.
+	bool add_script_function_request = false;
 	Ref<Script> scr = target->get_script();
-	if (!scr.is_null() && !ClassDB::has_method(target->get_class(), cd.method)) {
-		// There is a chance that the method is inherited from another script.
-		bool found_inherited_function = false;
-		Ref<Script> inherited_scr = scr->get_base_script();
-		while (!inherited_scr.is_null()) {
-			int line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
-			if (line != -1) {
-				found_inherited_function = true;
-				break;
+
+	if (scr.is_valid() && !ClassDB::has_method(target->get_class(), cd.method)) {
+		// Check in target's own script.
+		int line = scr->get_language()->find_function(cd.method, scr->get_source_code());
+		if (line != -1) {
+			add_script_function_request = EDITOR_GET("text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method");
+		} else {
+			// There is a chance that the method is inherited from another script.
+			bool found_inherited_function = false;
+			Ref<Script> inherited_scr = scr->get_base_script();
+			while (inherited_scr.is_valid()) {
+				int inherited_line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
+				if (inherited_line != -1) {
+					found_inherited_function = true;
+					break;
+				}
+
+				inherited_scr = inherited_scr->get_base_script();
 			}
 
-			inherited_scr = inherited_scr->get_base_script();
+			add_script_function_request = !found_inherited_function;
 		}
-
-		add_script_function = !found_inherited_function;
 	}
 
 	if (connect_dialog->is_editing()) {
@@ -934,7 +943,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 		_connect(cd);
 	}
 
-	if (add_script_function) {
+	if (add_script_function_request) {
 		PackedStringArray script_function_args = connect_dialog->get_signal_args();
 		script_function_args.resize(script_function_args.size() - cd.unbinds);
 		for (int i = 0; i < cd.binds.size(); i++) {
