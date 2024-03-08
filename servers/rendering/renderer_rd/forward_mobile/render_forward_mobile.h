@@ -57,12 +57,6 @@ private:
 		RENDER_PASS_UNIFORM_SET = 1,
 		TRANSFORMS_UNIFORM_SET = 2,
 		MATERIAL_UNIFORM_SET = 3,
-// <TF>
-// @ShadyTF 
-// replacing push constants with uniform buffer
-// uniform set to contain the params
-		PARAMS_UNIFORM_SET = 4,
-// </TF>
 	};
 
 	enum {
@@ -357,12 +351,6 @@ private:
 	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
 	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
 	void _render_list_with_draw_list(RenderListParameters *p_params, RID p_framebuffer, RD::InitialAction p_initial_color_action, RD::FinalAction p_final_color_action, RD::InitialAction p_initial_depth_action, RD::FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
-// <TF>
-// @ShadyTF 
-// replacing push constants with uniform buffer
-// prepapre params that will be used in a draw call
-	void _render_list_prepare_params(RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element, bool p_depth_material);
-// </TF>
 
 	RenderList render_list[RENDER_LIST_MAX];
 
@@ -466,14 +454,6 @@ protected:
 
 		GeometryInstanceSurfaceDataCache *next = nullptr;
 		GeometryInstanceForwardMobile *owner = nullptr;
-
-// <TF>
-// @ShadyTF 
-// replacing push constants with uniform buffer
-// new uniform set and uniform buffer for draw call params
-		RID params_uniform_set;
-		RID params_uniform_buffer;
-// <TF>
 	};
 
 	class GeometryInstanceForwardMobile : public RenderGeometryInstanceBase {
