@@ -94,13 +94,16 @@ Files extracted from upstream source:
 ## clipper2
 
 - Upstream: https://github.com/AngusJohnson/Clipper2
-- Version: 1.2.2 (756c5079aacab5837e812a143c59dc48a09f22e7, 2023)
+- Version: 1.3.0 (98db5662e8dd1808a5a7b50c5605a2289bb390e8, 2023)
 - License: BSL 1.0
 
 Files extracted from upstream source:
 
-- `CPP/Clipper2Lib` folder
+- `CPP/Clipper2Lib/` folder (in root)
 - `LICENSE`
+
+Apply the patches in the `patches/` folder when syncing on newer upstream
+commits.
 
 
 ## cvtt
