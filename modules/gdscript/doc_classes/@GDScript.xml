@@ -95,7 +95,7 @@
 				    print(get_stack())
 				[/codeblock]
 				Starting from [code]_ready()[/code], [code]bar()[/code] would print:
-				[codeblock]
+				[codeblock lang=text]
 				[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]
 				[/codeblock]
 				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method get_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
@@ -116,7 +116,7 @@
 				    print(d.values())
 				[/codeblock]
 				Prints out:
-				[codeblock]
+				[codeblock lang=text]
 				[@subpath, @path, foo]
 				[, res://test.gd, bar]
 				[/codeblock]
@@ -190,7 +190,7 @@
 			<description>
 				Like [method @GlobalScope.print], but includes the current stack frame when running with the debugger turned on.
 				The output in the console may look like the following:
-				[codeblock]
+				[codeblock lang=text]
 				Test print
 				At: res://test.gd:15:_process()
 				[/codeblock]
@@ -202,7 +202,7 @@
 			<description>
 				Prints a stack trace at the current code location. See also [method get_stack].
 				The output in the console may look like the following:
-				[codeblock]
+				[codeblock lang=text]
 				Frame 0 - res://test.gd:16 in function '_process'
 				[/codeblock]
 				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method print_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
@@ -232,7 +232,7 @@
 				    print(array[i])
 				[/codeblock]
 				Output:
-				[codeblock]
+				[codeblock lang=text]
 				9
 				6
 				3
@@ -243,7 +243,7 @@
 				    print(i / 10.0)
 				[/codeblock]
 				Output:
-				[codeblock]
+				[codeblock lang=text]
 				0.3
 				0.2
 				0.1

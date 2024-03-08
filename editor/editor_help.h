@@ -44,6 +44,8 @@
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 
+#include "modules/modules_enabled.gen.h" // For gdscript, mono.
+
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);
 
@@ -265,6 +267,7 @@ class EditorHelpBit : public MarginContainer {
 	String text;
 
 protected:
+	String doc_class_name;
 	String custom_description;
 
 	static void _bind_methods();
@@ -296,5 +299,42 @@ public:
 
 	EditorHelpTooltip(const String &p_text = String(), const String &p_custom_description = String());
 };
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+class EditorSyntaxHighlighter;
+
+class EditorHelpHighlighter {
+public:
+	enum Language {
+		LANGUAGE_GDSCRIPT,
+		LANGUAGE_CSHARP,
+		LANGUAGE_MAX,
+	};
+
+private:
+	using HighlightData = Vector<Pair<int, Color>>;
+
+	static EditorHelpHighlighter *singleton;
+
+	HashMap<String, HighlightData> highlight_data_caches[LANGUAGE_MAX];
+
+	TextEdit *text_edits[LANGUAGE_MAX];
+	Ref<Script> scripts[LANGUAGE_MAX];
+	Ref<EditorSyntaxHighlighter> highlighters[LANGUAGE_MAX];
+
+	HighlightData _get_highlight_data(Language p_language, const String &p_source, bool p_use_cache);
+
+public:
+	static void create_singleton();
+	static void free_singleton();
+	static EditorHelpHighlighter *get_singleton();
+
+	void highlight(RichTextLabel *p_rich_text_label, Language p_language, const String &p_source, bool p_use_cache);
+	void reset_cache();
+
+	EditorHelpHighlighter();
+	virtual ~EditorHelpHighlighter();
+};
+#endif // defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 
 #endif // EDITOR_HELP_H
