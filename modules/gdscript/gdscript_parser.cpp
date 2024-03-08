@@ -3460,6 +3460,7 @@ enum DocLineState {
 	DOC_LINE_NORMAL,
 	DOC_LINE_IN_CODE,
 	DOC_LINE_IN_CODEBLOCK,
+	DOC_LINE_IN_KBD,
 };
 
 static String _process_doc_line(const String &p_line, const String &p_text, const String &p_space_prefix, DocLineState &r_state) {
@@ -3505,21 +3506,23 @@ static String _process_doc_line(const String &p_line, const String &p_text, cons
 				from = rb_pos + 1;
 
 				String tag = line.substr(lb_pos + 1, rb_pos - lb_pos - 1);
-				if (tag == "code") {
+				if (tag == "code" || tag.begins_with("code ")) {
 					r_state = DOC_LINE_IN_CODE;
-				} else if (tag == "codeblock") {
+				} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
 					if (lb_pos == 0) {
 						line_join = "\n";
 					} else {
 						result += line.substr(buffer_start, lb_pos - buffer_start) + '\n';
 					}
-					result += "[codeblock]";
+					result += "[" + tag + "]";
 					if (from < len) {
 						result += '\n';
 					}
 
 					r_state = DOC_LINE_IN_CODEBLOCK;
 					buffer_start = from;
+				} else if (tag == "kbd") {
+					r_state = DOC_LINE_IN_KBD;
 				}
 			} break;
 			case DOC_LINE_IN_CODE: {
@@ -3529,7 +3532,7 @@ static String _process_doc_line(const String &p_line, const String &p_text, cons
 					break;
 				}
 
-				from = pos + 7;
+				from = pos + 7; // `len("[/code]")`.
 
 				r_state = DOC_LINE_NORMAL;
 			} break;
@@ -3540,7 +3543,7 @@ static String _process_doc_line(const String &p_line, const String &p_text, cons
 					break;
 				}
 
-				from = pos + 12;
+				from = pos + 12; // `len("[/codeblock]")`.
 
 				if (pos == 0) {
 					line_join = "\n";
@@ -3554,6 +3557,17 @@ static String _process_doc_line(const String &p_line, const String &p_text, cons
 
 				r_state = DOC_LINE_NORMAL;
 				buffer_start = from;
+			} break;
+			case DOC_LINE_IN_KBD: {
+				int pos = line.find("[/kbd]", from);
+				if (pos < 0) {
+					process = false;
+					break;
+				}
+
+				from = pos + 6; // `len("[/kbd]")`.
+
+				r_state = DOC_LINE_NORMAL;
 			} break;
 		}
 	}

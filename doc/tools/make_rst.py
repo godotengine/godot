@@ -437,7 +437,7 @@ class State:
 
 
 class TagState:
-    def __init__(self, raw: str, name: str, arguments: List[str], closing: bool) -> None:
+    def __init__(self, raw: str, name: str, arguments: str, closing: bool) -> None:
         self.raw = raw
 
         self.name = name
@@ -1762,7 +1762,7 @@ def is_in_tagset(tag_text: str, tagset: List[str]) -> bool:
         # Tag with arguments.
         if tag_text.startswith(tag + " "):
             return True
-        # Tag with arguments, special case for [url].
+        # Tag with arguments, special case for [url], [color], and [font].
         if tag_text.startswith(tag + "="):
             return True
 
@@ -1771,17 +1771,22 @@ def is_in_tagset(tag_text: str, tagset: List[str]) -> bool:
 
 def get_tag_and_args(tag_text: str) -> TagState:
     tag_name = tag_text
-    arguments: List[str] = []
+    arguments: str = ""
 
+    delim_pos = -1
+
+    space_pos = tag_text.find(" ")
+    if space_pos >= 0:
+        delim_pos = space_pos
+
+    # Special case for [url], [color], and [font].
     assign_pos = tag_text.find("=")
-    if assign_pos >= 0:
-        tag_name = tag_text[:assign_pos]
-        arguments = [tag_text[assign_pos + 1 :].strip()]
-    else:
-        space_pos = tag_text.find(" ")
-        if space_pos >= 0:
-            tag_name = tag_text[:space_pos]
-            arguments = [tag_text[space_pos + 1 :].strip()]
+    if assign_pos >= 0 and (delim_pos < 0 or assign_pos < delim_pos):
+        delim_pos = assign_pos
+
+    if delim_pos >= 0:
+        tag_name = tag_text[:delim_pos]
+        arguments = tag_text[delim_pos + 1 :].strip()
 
     closing = False
     if tag_name.startswith("/"):
@@ -1969,11 +1974,14 @@ def format_text_block(
                         state,
                     )
 
-                    tag_text = "\n::\n"
+                    if "lang=text" in tag_state.arguments.split(" "):
+                        tag_text = "\n.. code::\n"
+                    else:
+                        tag_text = "\n::\n"
 
                 inside_code = True
                 inside_code_tag = tag_state.name
-                ignore_code_warnings = "skip-lint" in tag_state.arguments
+                ignore_code_warnings = "skip-lint" in tag_state.arguments.split(" ")
 
             elif is_in_tagset(tag_state.name, ["code"]):
                 tag_text = "``"
@@ -1981,7 +1989,7 @@ def format_text_block(
 
                 inside_code = True
                 inside_code_tag = "code"
-                ignore_code_warnings = "skip-lint" in tag_state.arguments
+                ignore_code_warnings = "skip-lint" in tag_state.arguments.split(" ")
                 escape_pre = True
 
                 if not ignore_code_warnings:
@@ -2078,7 +2086,7 @@ def format_text_block(
 
             # Cross-references to items in this or other class documentation pages.
             elif is_in_tagset(tag_state.name, RESERVED_CROSSLINK_TAGS):
-                link_target: str = tag_state.arguments[0] if len(tag_state.arguments) > 0 else ""
+                link_target: str = tag_state.arguments
 
                 if link_target == "":
                     print_error(
@@ -2238,7 +2246,7 @@ def format_text_block(
             # Formatting directives.
 
             elif is_in_tagset(tag_state.name, ["url"]):
-                url_target = tag_state.arguments[0] if len(tag_state.arguments) > 0 else ""
+                url_target = tag_state.arguments
 
                 if url_target == "":
                     print_error(
@@ -2439,7 +2447,7 @@ def format_codeblock(
 
     opening_formatted = tag_state.name
     if len(tag_state.arguments) > 0:
-        opening_formatted += " " + " ".join(tag_state.arguments)
+        opening_formatted += " " + tag_state.arguments
 
     code_text = post_text[len(f"[{opening_formatted}]") : end_pos]
     post_text = post_text[end_pos:]
