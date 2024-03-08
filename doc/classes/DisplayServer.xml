@@ -1167,12 +1167,21 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
 			</description>
 		</method>
+		<method name="status_indicator_get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the rectangle for the given status indicator [param id] in screen coordinates. If the status indicator is not visible, returns an empty [Rect2].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="status_indicator_set_callback">
 			<return type="void" />
 			<param index="0" name="id" type="int" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
 				Sets the application status indicator activation callback.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="status_indicator_set_icon">
@@ -1181,6 +1190,7 @@
 			<param index="1" name="icon" type="Texture2D" />
 			<description>
 				Sets the application status indicator icon.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="status_indicator_set_menu">
@@ -1200,6 +1210,7 @@
 			<param index="1" name="tooltip" type="String" />
 			<description>
 				Sets the application status indicator tooltip.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="tablet_get_current_driver" qualifiers="const">

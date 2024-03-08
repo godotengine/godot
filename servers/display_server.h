@@ -569,6 +569,7 @@ public:
 	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip);
 	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid);
 	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback);
+	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const;
 	virtual void delete_status_indicator(IndicatorID p_id);
 
 	enum Context {

@@ -436,6 +436,7 @@ public:
 	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
 	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) override;
 	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const override;
 	virtual void delete_status_indicator(IndicatorID p_id) override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);

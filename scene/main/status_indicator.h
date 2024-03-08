@@ -61,6 +61,8 @@ public:
 
 	void set_visible(bool p_visible);
 	bool is_visible() const;
+
+	Rect2 get_rect() const;
 };
 
 #endif // STATUS_INDICATOR_H
