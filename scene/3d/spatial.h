@@ -115,6 +115,7 @@ private:
 		List<Spatial *> children;
 		List<Spatial *>::Element *C;
 
+		float lod_range = 10.0f;
 		ClientPhysicsInterpolationData *client_physics_interpolation_data;
 
 #ifdef TOOLS_ENABLED
@@ -247,6 +248,9 @@ public:
 	bool is_visible_in_tree() const;
 
 	void force_update_transform();
+
+	void set_lod_range(float p_range);
+	float get_lod_range() const { return data.lod_range; }
 
 	Spatial();
 	~Spatial();

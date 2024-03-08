@@ -121,10 +121,6 @@ private:
 	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
 	Ref<Material> material_overlay;
-	float lod_min_distance;
-	float lod_max_distance;
-	float lod_min_hysteresis;
-	float lod_max_hysteresis;
 
 	float extra_cull_margin;
 
@@ -144,18 +140,6 @@ public:
 
 	void set_lightmap_scale(LightmapScale p_scale);
 	LightmapScale get_lightmap_scale() const;
-
-	void set_lod_min_distance(float p_dist);
-	float get_lod_min_distance() const;
-
-	void set_lod_max_distance(float p_dist);
-	float get_lod_max_distance() const;
-
-	void set_lod_min_hysteresis(float p_dist);
-	float get_lod_min_hysteresis() const;
-
-	void set_lod_max_hysteresis(float p_dist);
-	float get_lod_max_hysteresis() const;
 
 	virtual void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;

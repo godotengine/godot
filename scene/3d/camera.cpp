@@ -504,6 +504,8 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera::get_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera::get_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera::get_camera);
+	ClassDB::bind_method(D_METHOD("set_affect_lod", "enable"), &Camera::set_affect_lod);
+	ClassDB::bind_method(D_METHOD("get_affect_lod"), &Camera::get_affect_lod);
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_bit", "layer", "enable"), &Camera::set_cull_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_cull_mask_bit", "layer"), &Camera::get_cull_mask_bit);
@@ -523,6 +525,7 @@ void Camera::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset"), "set_frustum_offset", "get_frustum_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "near", PROPERTY_HINT_EXP_RANGE, "0.01,8192,0.01,or_greater"), "set_znear", "get_znear");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "far", PROPERTY_HINT_EXP_RANGE, "0.1,8192,0.1,or_greater"), "set_zfar", "get_zfar");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "affect_lod"), "set_affect_lod", "get_affect_lod");
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);

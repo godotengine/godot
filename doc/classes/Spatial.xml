@@ -266,6 +266,10 @@
 		<member name="global_translation" type="Vector3" setter="set_global_translation" getter="get_global_translation">
 			Global position of this node. This is equivalent to [code]global_transform.origin[/code].
 		</member>
+		<member name="lod_range" type="float" setter="set_lod_range" getter="get_lod_range" default="10.0">
+			Determines the threshold distance at which this node will be shown or hidden when this node is parented by a [LOD] node.
+			For example, a first child with a range of [code]2[/code] will be shown from distance 0 to 2. A second child with a range of [code]5[/code] will be shown from distance 2 to 7, etc.
+		</member>
 		<member name="merging_mode" type="int" setter="set_merging_mode" getter="get_merging_mode" enum="Spatial.MergingMode" default="0">
 			The merging mode determines whether merging features of the engine ([MergeGroup] and [RoomManager]) will attempt to operate on branches of the scene tree.
 			The default mode inherited from the scene tree root is [constant MERGING_MODE_ON].

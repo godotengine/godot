@@ -73,7 +73,7 @@ class SceneTreeEditor : public Control {
 
 	void _compute_hash(Node *p_node, uint64_t &hash);
 
-	void _add_nodes(Node *p_node, TreeItem *p_parent);
+	void _add_nodes(Node *p_node, TreeItem *p_parent, bool p_disable_visibility = false);
 	void _test_update_tree();
 	void _update_tree(bool p_scroll_to_selected = false);
 	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);

@@ -566,9 +566,6 @@ public:
 	FUNC2(instance_geometry_set_material_override, RID, RID)
 	FUNC2(instance_geometry_set_material_overlay, RID, RID)
 
-	FUNC5(instance_geometry_set_draw_range, RID, float, float, float, float)
-	FUNC2(instance_geometry_set_as_instance_lod, RID, RID)
-
 	/* CANVAS (2D) */
 
 	FUNCRID(canvas)

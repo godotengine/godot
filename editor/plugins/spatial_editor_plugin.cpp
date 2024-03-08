@@ -45,6 +45,7 @@
 #include "editor/spatial_editor_gizmos.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/collision_shape.h"
+#include "scene/3d/lod_manager.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/room_manager.h"
@@ -2735,7 +2736,12 @@ void SpatialEditorViewport::_notification(int p_what) {
 		} else {
 			set_freelook_active(false);
 		}
+
 		call_deferred("update_transform_gizmo_view");
+
+		if (camera) {
+			camera->set_affect_lod(visible);
+		}
 	}
 
 	if (p_what == NOTIFICATION_RESIZED) {
@@ -5504,6 +5510,14 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked(checkbox_id, !is_checked);
 
 		} break;
+		case MENU_VIEW_LEVEL_OF_DETAIL: {
+			int checkbox_id = view_menu->get_popup()->get_item_index(p_option);
+			bool is_checked = view_menu->get_popup()->is_item_checked(checkbox_id);
+			LODManager::set_enabled(!is_checked);
+			view_menu->get_popup()->set_item_checked(checkbox_id, !is_checked);
+			EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->update_tree();
+
+		} break;
 		case MENU_VIEW_CAMERA_SETTINGS: {
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
 		} break;
@@ -7076,6 +7090,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTR("View Grid"), KEY_NUMBERSIGN), MENU_VIEW_GRID);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_portal_culling", TTR("View Portal Culling"), KEY_MASK_ALT | KEY_P), MENU_VIEW_PORTAL_CULLING);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_occlusion_culling", TTR("View Occlusion Culling")), MENU_VIEW_OCCLUSION_CULLING);
+	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_level_of_detail", TTR("View Level of Detail")), MENU_VIEW_LEVEL_OF_DETAIL);
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings...")), MENU_VIEW_CAMERA_SETTINGS);
@@ -7083,6 +7098,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_OCCLUSION_CULLING), true);
+	p->set_item_checked(p->get_item_index(MENU_VIEW_LEVEL_OF_DETAIL), true);
 
 	p->connect("id_pressed", this, "_menu_item_pressed");
 
