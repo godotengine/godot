@@ -35,6 +35,7 @@ import android.util.Log
 import android.util.SparseArray
 import org.godotengine.godot.io.StorageScope
 import java.io.FileNotFoundException
+import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 
 /**
@@ -118,6 +119,8 @@ class FileAccessHandler(val context: Context) {
 			} ?: INVALID_FILE_ID
 		} catch (e: FileNotFoundException) {
 			FileErrors.FILE_NOT_FOUND.nativeValue
+		} catch (e: UnsupportedOperationException) {
+			FileErrors.UNSUPPORTED_OPERATION.nativeValue
 		} catch (e: Exception) {
 			Log.w(TAG, "Error while opening $path", e)
 			INVALID_FILE_ID

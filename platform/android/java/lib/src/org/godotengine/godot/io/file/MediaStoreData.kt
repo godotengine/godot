@@ -52,7 +52,7 @@ import java.nio.channels.FileChannel
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 internal class MediaStoreData(context: Context, filePath: String, accessFlag: FileAccessFlags) :
-	DataAccess(filePath) {
+	DataAccess.FileChannelDataAccess(filePath) {
 
 	private data class DataItem(
 		val id: Long,
