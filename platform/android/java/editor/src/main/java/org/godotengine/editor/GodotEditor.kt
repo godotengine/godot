@@ -32,6 +32,7 @@ package org.godotengine.editor
 
 import android.Manifest
 import android.app.ActivityManager
+import android.app.ActivityOptions
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -69,17 +70,24 @@ open class GodotEditor : GodotActivity() {
 
 		private const val WAIT_FOR_DEBUGGER = false
 
-		private const val EXTRA_COMMAND_LINE_PARAMS = "command_line_params"
+		@JvmStatic
+		protected val EXTRA_COMMAND_LINE_PARAMS = "command_line_params"
+		@JvmStatic
+		protected val EXTRA_PIP_AVAILABLE = "pip_available"
+		@JvmStatic
+		protected val EXTRA_LAUNCH_IN_PIP = "launch_in_pip_requested"
 
 		// Command line arguments
 		private const val EDITOR_ARG = "--editor"
 		private const val EDITOR_ARG_SHORT = "-e"
 		private const val EDITOR_PROJECT_MANAGER_ARG = "--project-manager"
 		private const val EDITOR_PROJECT_MANAGER_ARG_SHORT = "-p"
+		private const val BREAKPOINTS_ARG = "--breakpoints"
+		private const val BREAKPOINTS_ARG_SHORT = "-b"
 
 		// Info for the various classes used by the editor
 		internal val EDITOR_MAIN_INFO = EditorWindowInfo(GodotEditor::class.java, 777, "")
-		internal val RUN_GAME_INFO = EditorWindowInfo(GodotGame::class.java, 667, ":GodotGame", LaunchAdjacentPolicy.AUTO)
+		internal val RUN_GAME_INFO = EditorWindowInfo(GodotGame::class.java, 667, ":GodotGame", LaunchPolicy.AUTO, true)
 
 		/**
 		 * Sets of constants to specify the window to use to run the project.
@@ -90,12 +98,25 @@ open class GodotEditor : GodotActivity() {
 		private const val ANDROID_WINDOW_AUTO = 0
 		private const val ANDROID_WINDOW_SAME_AS_EDITOR = 1
 		private const val ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR = 2
+
+		/**
+		 * Sets of constants to specify the Play window PiP mode.
+		 *
+		 * Should match the values in `editor/editor_settings.cpp'` for the
+		 * 'run/window_placement/play_window_pip_mode' setting.
+		 */
+		private const val PLAY_WINDOW_PIP_DISABLED = 0
+		private const val PLAY_WINDOW_PIP_ENABLED = 1
+		private const val PLAY_WINDOW_PIP_ENABLED_FOR_SAME_AS_EDITOR = 2
 	}
 
+	private val editorMessageDispatcher = EditorMessageDispatcher(this)
 	private val commandLineParams = ArrayList<String>()
 	private val editorLoadingIndicator: View? by lazy { findViewById(R.id.editor_loading_indicator) }
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
+
+	internal open fun getEditorId() = EDITOR_MAIN_INFO.windowId
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		installSplashScreen()
@@ -107,6 +128,8 @@ open class GodotEditor : GodotActivity() {
 		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 		Log.d(TAG, "Starting intent $intent with parameters ${params.contentToString()}")
 		updateCommandLineParams(params?.asList() ?: emptyList())
+
+		editorMessageDispatcher.parseStartIntent(packageManager, intent)
 
 		if (BuildConfig.BUILD_TYPE == "dev" && WAIT_FOR_DEBUGGER) {
 			Debug.waitForDebugger()
@@ -189,35 +212,67 @@ open class GodotEditor : GodotActivity() {
 		}
 	}
 
-	override fun onNewGodotInstanceRequested(args: Array<String>): Int {
-		val editorWindowInfo = getEditorWindowInfo(args)
-
-		// Launch a new activity
+	protected fun getNewGodotInstanceIntent(editorWindowInfo: EditorWindowInfo, args: Array<String>): Intent {
 		val newInstance = Intent()
 			.setComponent(ComponentName(this, editorWindowInfo.windowClassName))
 			.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 			.putExtra(EXTRA_COMMAND_LINE_PARAMS, args)
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			if (editorWindowInfo.launchAdjacentPolicy == LaunchAdjacentPolicy.ENABLED ||
-				(editorWindowInfo.launchAdjacentPolicy == LaunchAdjacentPolicy.AUTO && shouldGameLaunchAdjacent())) {
+
+		val launchPolicy = resolveLaunchPolicyIfNeeded(editorWindowInfo.launchPolicy)
+		val isPiPAvailable = if (editorWindowInfo.supportsPiPMode && hasPiPSystemFeature()) {
+			val pipMode = getPlayWindowPiPMode()
+			pipMode == PLAY_WINDOW_PIP_ENABLED ||
+				(pipMode == PLAY_WINDOW_PIP_ENABLED_FOR_SAME_AS_EDITOR && launchPolicy == LaunchPolicy.SAME)
+		} else {
+			false
+		}
+		newInstance.putExtra(EXTRA_PIP_AVAILABLE, isPiPAvailable)
+
+		if (launchPolicy == LaunchPolicy.ADJACENT) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 				Log.v(TAG, "Adding flag for adjacent launch")
 				newInstance.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
 			}
+		} else if (launchPolicy == LaunchPolicy.SAME) {
+			if (isPiPAvailable &&
+				(args.contains(BREAKPOINTS_ARG) || args.contains(BREAKPOINTS_ARG_SHORT))) {
+				Log.v(TAG, "Launching in PiP mode because of breakpoints")
+				newInstance.putExtra(EXTRA_LAUNCH_IN_PIP, true)
+			}
 		}
+
+		return newInstance
+	}
+
+	override fun onNewGodotInstanceRequested(args: Array<String>): Int {
+		val editorWindowInfo = getEditorWindowInfo(args)
+
+		// Launch a new activity
+		val sourceView = godotFragment?.view
+		val activityOptions = if (sourceView == null) {
+			null
+		} else {
+			val startX = sourceView.width / 2
+			val startY = sourceView.height / 2
+			ActivityOptions.makeScaleUpAnimation(sourceView, startX, startY, 0, 0)
+		}
+
+		val newInstance = getNewGodotInstanceIntent(editorWindowInfo, args)
 		if (editorWindowInfo.windowClassName == javaClass.name) {
 			Log.d(TAG, "Restarting ${editorWindowInfo.windowClassName} with parameters ${args.contentToString()}")
 			val godot = godot
 			if (godot != null) {
 				godot.destroyAndKillProcess {
-					ProcessPhoenix.triggerRebirth(this, newInstance)
+					ProcessPhoenix.triggerRebirth(this, activityOptions?.toBundle(), newInstance)
 				}
 			} else {
-				ProcessPhoenix.triggerRebirth(this, newInstance)
+				ProcessPhoenix.triggerRebirth(this, activityOptions?.toBundle(), newInstance)
 			}
 		} else {
 			Log.d(TAG, "Starting ${editorWindowInfo.windowClassName} with parameters ${args.contentToString()}")
 			newInstance.putExtra(EXTRA_NEW_LAUNCH, true)
-			startActivity(newInstance)
+				.putExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD, editorMessageDispatcher.getMessageDispatcherPayload())
+			startActivity(newInstance, activityOptions?.toBundle())
 		}
 		return editorWindowInfo.windowId
 	}
@@ -231,6 +286,12 @@ open class GodotEditor : GodotActivity() {
 			return true
 		}
 
+		// Send an inter-process message to request the target editor window to force quit.
+		if (editorMessageDispatcher.requestForceQuit(editorWindowInfo.windowId)) {
+			return true
+		}
+
+		// Fallback to killing the target process.
 		val processName = packageName + editorWindowInfo.processNameSuffix
 		val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 		val runningProcesses = activityManager.runningAppProcesses
@@ -285,28 +346,64 @@ open class GodotEditor : GodotActivity() {
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_pan_and_scale_gestures"))
 
 	/**
-	 * Whether we should launch the new godot instance in an adjacent window
-	 * @see https://developer.android.com/reference/android/content/Intent#FLAG_ACTIVITY_LAUNCH_ADJACENT
+	 * Retrieves the play window pip mode editor setting.
 	 */
-	private fun shouldGameLaunchAdjacent(): Boolean {
-		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			try {
-				when (Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/android_window"))) {
-					ANDROID_WINDOW_SAME_AS_EDITOR -> false
-					ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR -> true
-					else -> {
-						// ANDROID_WINDOW_AUTO
-						isInMultiWindowMode || isLargeScreen
-					}
-				}
-			} catch (e: NumberFormatException) {
-				// Fall-back to the 'Auto' behavior
-				isInMultiWindowMode || isLargeScreen
-			}
+	private fun getPlayWindowPiPMode(): Int {
+		return try {
+			Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/play_window_pip_mode"))
+		} catch (e: NumberFormatException) {
+			PLAY_WINDOW_PIP_ENABLED_FOR_SAME_AS_EDITOR
+		}
+	}
+
+	/**
+	 * If the launch policy is [LaunchPolicy.AUTO], resolve it into a specific policy based on the
+	 * editor setting or device and screen metrics.
+	 *
+	 * If the launch policy is [LaunchPolicy.PIP] but PIP is not supported, fallback to the default
+	 * launch policy.
+	 */
+	private fun resolveLaunchPolicyIfNeeded(policy: LaunchPolicy): LaunchPolicy {
+		val inMultiWindowMode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			isInMultiWindowMode
 		} else {
 			false
 		}
+		val defaultLaunchPolicy = if (inMultiWindowMode || isLargeScreen) {
+			LaunchPolicy.ADJACENT
+		} else {
+			LaunchPolicy.SAME
+		}
+
+		return when (policy) {
+			LaunchPolicy.AUTO -> {
+				try {
+					when (Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/android_window"))) {
+						ANDROID_WINDOW_SAME_AS_EDITOR -> LaunchPolicy.SAME
+						ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR -> LaunchPolicy.ADJACENT
+						else -> {
+							// ANDROID_WINDOW_AUTO
+							defaultLaunchPolicy
+						}
+					}
+				} catch (e: NumberFormatException) {
+					Log.w(TAG, "Error parsing the Android window placement editor setting", e)
+					// Fall-back to the default launch policy
+					defaultLaunchPolicy
+				}
+			}
+
+			else -> {
+				policy
+			}
+		}
 	}
+
+	/**
+	 * Returns true the if the device supports picture-in-picture (PiP)
+	 */
+	protected open fun hasPiPSystemFeature() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+		packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
