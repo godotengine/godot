@@ -483,6 +483,8 @@ private:
 	void _focus_selection(int p_op);
 	void _reset_drag();
 
+	void _project_settings_changed();
+
 	SnapTarget snap_target[2];
 	Transform2D snap_transform;
 	void _snap_if_closer_float(
