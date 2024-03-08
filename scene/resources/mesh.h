@@ -137,11 +137,11 @@ public:
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) = 0;
 	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
 	virtual int get_blend_shape_count() const = 0;
-	int surface_get_face_count(int p_idx) const;
+	int surface_get_triangle_count(int p_idx) const;
 	virtual StringName get_blend_shape_name(int p_index) const = 0;
 	virtual void set_blend_shape_name(int p_index, const StringName &p_name) = 0;
 
-	int get_face_count() const;
+	int get_triangle_count() const;
 	PoolVector<Face3> get_faces() const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
 	Ref<TriangleMesh> generate_triangle_mesh_from_aabb() const;
