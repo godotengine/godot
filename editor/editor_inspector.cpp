@@ -2009,6 +2009,10 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 	Array output;
 
 	for (const PropertyInfo &pi : p_list) {
+		if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
+			continue;
+		}
+
 		if (pi.name.begins_with(array_element_prefix)) {
 			String str = pi.name.trim_prefix(array_element_prefix);
 
