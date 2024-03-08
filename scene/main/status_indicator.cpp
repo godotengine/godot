@@ -80,6 +80,7 @@ void StatusIndicator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_visible"), &StatusIndicator::is_visible);
 	ClassDB::bind_method(D_METHOD("set_menu", "menu"), &StatusIndicator::set_menu);
 	ClassDB::bind_method(D_METHOD("get_menu"), &StatusIndicator::get_menu);
+	ClassDB::bind_method(D_METHOD("get_rect"), &StatusIndicator::get_rect);
 
 	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::INT, "mouse_button"), PropertyInfo(Variant::VECTOR2I, "mouse_position")));
 
@@ -181,4 +182,11 @@ void StatusIndicator::set_visible(bool p_visible) {
 
 bool StatusIndicator::is_visible() const {
 	return visible;
+}
+
+Rect2 StatusIndicator::get_rect() const {
+	if (iid == DisplayServer::INVALID_INDICATOR_ID) {
+		return Rect2();
+	}
+	return DisplayServer::get_singleton()->status_indicator_get_rect(iid);
 }

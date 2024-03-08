@@ -730,6 +730,11 @@ void DisplayServer::status_indicator_set_callback(IndicatorID p_id, const Callab
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
 
+Rect2 DisplayServer::status_indicator_get_rect(IndicatorID p_id) const {
+	WARN_PRINT("Status indicator not supported by this display server.");
+	return Rect2();
+}
+
 void DisplayServer::delete_status_indicator(IndicatorID p_id) {
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
@@ -983,6 +988,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("status_indicator_set_tooltip", "id", "tooltip"), &DisplayServer::status_indicator_set_tooltip);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_menu", "id", "menu_rid"), &DisplayServer::status_indicator_set_menu);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_callback", "id", "callback"), &DisplayServer::status_indicator_set_callback);
+	ClassDB::bind_method(D_METHOD("status_indicator_get_rect", "id"), &DisplayServer::status_indicator_get_rect);
 	ClassDB::bind_method(D_METHOD("delete_status_indicator", "id"), &DisplayServer::delete_status_indicator);
 
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_count"), &DisplayServer::tablet_get_driver_count);
