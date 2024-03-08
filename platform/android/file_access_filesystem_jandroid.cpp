@@ -84,6 +84,9 @@ Error FileAccessFilesystemJAndroid::open_internal(const String &p_path, int p_mo
 
 				case -1:
 					return ERR_FILE_NOT_FOUND;
+
+				case -2:
+					return ERR_UNAVAILABLE;
 			}
 		}
 

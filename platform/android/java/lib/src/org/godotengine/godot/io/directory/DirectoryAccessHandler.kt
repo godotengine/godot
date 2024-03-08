@@ -32,6 +32,7 @@ package org.godotengine.godot.io.directory
 
 import android.content.Context
 import android.util.Log
+import org.godotengine.godot.io.StorageScope
 import org.godotengine.godot.io.directory.DirectoryAccessHandler.AccessType.ACCESS_FILESYSTEM
 import org.godotengine.godot.io.directory.DirectoryAccessHandler.AccessType.ACCESS_RESOURCES
 
@@ -45,18 +46,58 @@ class DirectoryAccessHandler(context: Context) {
 
 		internal const val INVALID_DIR_ID = -1
 		internal const val STARTING_DIR_ID = 1
-
-		private fun getAccessTypeFromNative(accessType: Int): AccessType? {
-			return when (accessType) {
-				ACCESS_RESOURCES.nativeValue -> ACCESS_RESOURCES
-				ACCESS_FILESYSTEM.nativeValue -> ACCESS_FILESYSTEM
-				else -> null
-			}
-		}
 	}
 
 	private enum class AccessType(val nativeValue: Int) {
-		ACCESS_RESOURCES(0), ACCESS_FILESYSTEM(2)
+		ACCESS_RESOURCES(0), ACCESS_FILESYSTEM(2);
+
+		fun generateDirAccessId(dirId: Int) = (dirId * DIR_ACCESS_ID_MULTIPLIER) + nativeValue
+
+		companion object {
+			const val DIR_ACCESS_ID_MULTIPLIER = 10
+
+			fun fromDirAccessId(dirAccessId: Int): Pair<AccessType?, Int> {
+				val nativeValue = dirAccessId % DIR_ACCESS_ID_MULTIPLIER
+				val dirId = dirAccessId / DIR_ACCESS_ID_MULTIPLIER
+				return Pair(fromNative(nativeValue), dirId)
+			}
+
+			fun fromNative(nativeAccessType: Int, storageScope: StorageScope? = null): AccessType? {
+				if (nativeAccessType != ACCESS_RESOURCES.nativeValue && nativeAccessType != ACCESS_FILESYSTEM.nativeValue) {
+					Log.w(TAG, "Unsupported access type $nativeAccessType")
+					return null
+				}
+
+				// 'Resources' access type takes precedence as it is simple to handle:
+				// if we receive a 'Resources' access type, we provide a 'Resources' directory
+				// handler
+				if (nativeAccessType == ACCESS_RESOURCES.nativeValue) {
+					return ACCESS_RESOURCES
+				} else {
+					// We've received a 'Filesystem' access type. On Android, this may refer to:
+					// - assets directory (path has 'assets:/' prefix)
+					// - app directories
+					// - device shared directories
+					// As such we check the storage scope (if available) to figure what type of
+					// directory handler to provide
+					if (storageScope != null) {
+						val accessTypeFromStorageScope = when (storageScope) {
+							StorageScope.ASSETS -> ACCESS_RESOURCES
+							StorageScope.APP, StorageScope.SHARED -> ACCESS_FILESYSTEM
+							StorageScope.UNKNOWN -> null
+						}
+
+						if (accessTypeFromStorageScope != null) {
+							return accessTypeFromStorageScope
+						}
+					}
+					// If we're not able to infer the type of directory handler from the storage
+					// scope, we fall-back to the 'Filesystem' directory handler as it's the default
+					// for the 'Filesystem' access type.
+					return ACCESS_FILESYSTEM
+				}
+			}
+		}
 	}
 
 	internal interface DirectoryAccess {
@@ -76,8 +117,10 @@ class DirectoryAccessHandler(context: Context) {
 		fun remove(filename: String): Boolean
 	}
 
+	private val storageScopeIdentifier = StorageScope.Identifier(context)
+
 	private val assetsDirAccess = AssetsDirectoryAccess(context)
-	private val fileSystemDirAccess = FilesystemDirectoryAccess(context)
+	private val fileSystemDirAccess = FilesystemDirectoryAccess(context, storageScopeIdentifier)
 
 	fun assetsFileExists(assetsPath: String) = assetsDirAccess.fileExists(assetsPath)
 	fun filesystemFileExists(path: String) = fileSystemDirAccess.fileExists(path)
@@ -90,19 +133,27 @@ class DirectoryAccessHandler(context: Context) {
 	}
 
 	fun dirOpen(nativeAccessType: Int, path: String?): Int {
-		val accessType = getAccessTypeFromNative(nativeAccessType)
-		if (path == null || accessType == null) {
+		if (path == null) {
 			return INVALID_DIR_ID
 		}
 
-		return when (accessType) {
+		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
+		val accessType = AccessType.fromNative(nativeAccessType, storageScope) ?: return INVALID_DIR_ID
+
+		val dirId = when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.dirOpen(path)
 			ACCESS_FILESYSTEM -> fileSystemDirAccess.dirOpen(path)
 		}
+		if (dirId == INVALID_DIR_ID) {
+			return INVALID_DIR_ID
+		}
+
+		val dirAccessId = accessType.generateDirAccessId(dirId)
+		return dirAccessId
 	}
 
-	fun dirNext(nativeAccessType: Int, dirId: Int): String {
-		val accessType = getAccessTypeFromNative(nativeAccessType)
+	fun dirNext(dirAccessId: Int): String {
+		val (accessType, dirId) = AccessType.fromDirAccessId(dirAccessId)
 		if (accessType == null || !hasDirId(accessType, dirId)) {
 			Log.w(TAG, "dirNext: Invalid dir id: $dirId")
 			return ""
@@ -114,8 +165,8 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun dirClose(nativeAccessType: Int, dirId: Int) {
-		val accessType = getAccessTypeFromNative(nativeAccessType)
+	fun dirClose(dirAccessId: Int) {
+		val (accessType, dirId) = AccessType.fromDirAccessId(dirAccessId)
 		if (accessType == null || !hasDirId(accessType, dirId)) {
 			Log.w(TAG, "dirClose: Invalid dir id: $dirId")
 			return
@@ -127,8 +178,8 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun dirIsDir(nativeAccessType: Int, dirId: Int): Boolean {
-		val accessType = getAccessTypeFromNative(nativeAccessType)
+	fun dirIsDir(dirAccessId: Int): Boolean {
+		val (accessType, dirId) = AccessType.fromDirAccessId(dirAccessId)
 		if (accessType == null || !hasDirId(accessType, dirId)) {
 			Log.w(TAG, "dirIsDir: Invalid dir id: $dirId")
 			return false
@@ -140,8 +191,8 @@ class DirectoryAccessHandler(context: Context) {
 		}
 	}
 
-	fun isCurrentHidden(nativeAccessType: Int, dirId: Int): Boolean {
-		val accessType = getAccessTypeFromNative(nativeAccessType)
+	fun isCurrentHidden(dirAccessId: Int): Boolean {
+		val (accessType, dirId) = AccessType.fromDirAccessId(dirAccessId)
 		if (accessType == null || !hasDirId(accessType, dirId)) {
 			return false
 		}
@@ -153,10 +204,12 @@ class DirectoryAccessHandler(context: Context) {
 	}
 
 	fun dirExists(nativeAccessType: Int, path: String?): Boolean {
-		val accessType = getAccessTypeFromNative(nativeAccessType)
-		if (path == null || accessType == null) {
+		if (path == null) {
 			return false
 		}
+
+		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
+		val accessType = AccessType.fromNative(nativeAccessType, storageScope) ?: return false
 
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.dirExists(path)
@@ -165,10 +218,12 @@ class DirectoryAccessHandler(context: Context) {
 	}
 
 	fun fileExists(nativeAccessType: Int, path: String?): Boolean {
-		val accessType = getAccessTypeFromNative(nativeAccessType)
-		if (path == null || accessType == null) {
+		if (path == null) {
 			return false
 		}
+
+		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
+		val accessType = AccessType.fromNative(nativeAccessType, storageScope) ?: return false
 
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.fileExists(path)
@@ -177,7 +232,7 @@ class DirectoryAccessHandler(context: Context) {
 	}
 
 	fun getDriveCount(nativeAccessType: Int): Int {
-		val accessType = getAccessTypeFromNative(nativeAccessType) ?: return 0
+		val accessType = AccessType.fromNative(nativeAccessType) ?: return 0
 		return when(accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.getDriveCount()
 			ACCESS_FILESYSTEM -> fileSystemDirAccess.getDriveCount()
@@ -185,15 +240,21 @@ class DirectoryAccessHandler(context: Context) {
 	}
 
 	fun getDrive(nativeAccessType: Int, drive: Int): String {
-		val accessType = getAccessTypeFromNative(nativeAccessType) ?: return ""
+		val accessType = AccessType.fromNative(nativeAccessType) ?: return ""
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.getDrive(drive)
 			ACCESS_FILESYSTEM -> fileSystemDirAccess.getDrive(drive)
 		}
 	}
 
-	fun makeDir(nativeAccessType: Int, dir: String): Boolean {
-		val accessType = getAccessTypeFromNative(nativeAccessType) ?: return false
+	fun makeDir(nativeAccessType: Int, dir: String?): Boolean {
+		if (dir == null) {
+			return false
+		}
+
+		val storageScope = storageScopeIdentifier.identifyStorageScope(dir)
+		val accessType = AccessType.fromNative(nativeAccessType, storageScope) ?: return false
+
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.makeDir(dir)
 			ACCESS_FILESYSTEM -> fileSystemDirAccess.makeDir(dir)
@@ -201,7 +262,7 @@ class DirectoryAccessHandler(context: Context) {
 	}
 
 	fun getSpaceLeft(nativeAccessType: Int): Long {
-		val accessType = getAccessTypeFromNative(nativeAccessType) ?: return 0L
+		val accessType = AccessType.fromNative(nativeAccessType) ?: return 0L
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.getSpaceLeft()
 			ACCESS_FILESYSTEM -> fileSystemDirAccess.getSpaceLeft()
@@ -209,15 +270,20 @@ class DirectoryAccessHandler(context: Context) {
 	}
 
 	fun rename(nativeAccessType: Int, from: String, to: String): Boolean {
-		val accessType = getAccessTypeFromNative(nativeAccessType) ?: return false
+		val accessType = AccessType.fromNative(nativeAccessType) ?: return false
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.rename(from, to)
 			ACCESS_FILESYSTEM -> fileSystemDirAccess.rename(from, to)
 		}
 	}
 
-	fun remove(nativeAccessType: Int, filename: String): Boolean {
-		val accessType = getAccessTypeFromNative(nativeAccessType) ?: return false
+	fun remove(nativeAccessType: Int, filename: String?): Boolean {
+		if (filename == null) {
+			return false
+		}
+
+		val storageScope = storageScopeIdentifier.identifyStorageScope(filename)
+		val accessType = AccessType.fromNative(nativeAccessType, storageScope) ?: return false
 		return when (accessType) {
 			ACCESS_RESOURCES -> assetsDirAccess.remove(filename)
 			ACCESS_FILESYSTEM -> fileSystemDirAccess.remove(filename)
