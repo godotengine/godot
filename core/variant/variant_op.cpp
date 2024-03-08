@@ -37,7 +37,7 @@ static VariantEvaluatorFunction operator_evaluator_table[Variant::OP_MAX][Varian
 static Variant::ValidatedOperatorEvaluator validated_operator_evaluator_table[Variant::OP_MAX][Variant::VARIANT_MAX][Variant::VARIANT_MAX];
 static Variant::PTROperatorEvaluator ptr_operator_evaluator_table[Variant::OP_MAX][Variant::VARIANT_MAX][Variant::VARIANT_MAX];
 
-template <class T>
+template <typename T>
 void register_op(Variant::Operator p_op, Variant::Type p_type_a, Variant::Type p_type_b) {
 	operator_return_type_table[p_op][p_type_a][p_type_b] = T::get_return_type();
 	operator_evaluator_table[p_op][p_type_a][p_type_b] = T::evaluate;

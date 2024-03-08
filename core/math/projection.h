@@ -34,7 +34,7 @@
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
 
-template <class T>
+template <typename T>
 class Vector;
 
 struct AABB;

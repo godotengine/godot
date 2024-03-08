@@ -77,7 +77,7 @@ public:
 	virtual uint32_t hash() const;
 };
 
-template <class T, class... P>
+template <typename T, typename... P>
 class CallableCustomMethodPointer : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
@@ -107,7 +107,7 @@ public:
 	}
 };
 
-template <class T, class... P>
+template <typename T, typename... P>
 Callable create_custom_callable_function_pointer(T *p_instance,
 #ifdef DEBUG_METHODS_ENABLED
 		const char *p_func_text,
@@ -123,7 +123,7 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 
 // VERSION WITH RETURN
 
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 class CallableCustomMethodPointerRet : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
@@ -154,7 +154,7 @@ public:
 	}
 };
 
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 Callable create_custom_callable_function_pointer(T *p_instance,
 #ifdef DEBUG_METHODS_ENABLED
 		const char *p_func_text,
@@ -170,7 +170,7 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 
 // CONST VERSION WITH RETURN
 
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 class CallableCustomMethodPointerRetC : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
@@ -201,7 +201,7 @@ public:
 	}
 };
 
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 Callable create_custom_callable_function_pointer(T *p_instance,
 #ifdef DEBUG_METHODS_ENABLED
 		const char *p_func_text,
@@ -223,7 +223,7 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 
 // STATIC VERSIONS
 
-template <class... P>
+template <typename... P>
 class CallableCustomStaticMethodPointer : public CallableCustomMethodPointerBase {
 	struct Data {
 		void (*method)(P...);
@@ -250,7 +250,7 @@ public:
 	}
 };
 
-template <class T, class... P>
+template <typename T, typename... P>
 Callable create_custom_callable_static_function_pointer(
 #ifdef DEBUG_METHODS_ENABLED
 		const char *p_func_text,
@@ -264,7 +264,7 @@ Callable create_custom_callable_static_function_pointer(
 	return Callable(ccmp);
 }
 
-template <class R, class... P>
+template <typename R, typename... P>
 class CallableCustomStaticMethodPointerRet : public CallableCustomMethodPointerBase {
 	struct Data {
 		R(*method)
@@ -291,7 +291,7 @@ public:
 	}
 };
 
-template <class R, class... P>
+template <typename R, typename... P>
 Callable create_custom_callable_static_function_pointer(
 #ifdef DEBUG_METHODS_ENABLED
 		const char *p_func_text,

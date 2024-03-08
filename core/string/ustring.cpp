@@ -2459,7 +2459,7 @@ bool String::is_numeric() const {
 	return true; // TODO: Use the parser below for this instead
 }
 
-template <class C>
+template <typename C>
 static double built_in_strtod(
 		/* A decimal ASCII floating-point number,
 		 * optionally preceded by white space. Must

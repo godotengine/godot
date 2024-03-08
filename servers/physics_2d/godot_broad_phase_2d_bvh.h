@@ -38,7 +38,7 @@
 #include "core/math/vector2.h"
 
 class GodotBroadPhase2DBVH : public GodotBroadPhase2D {
-	template <class T>
+	template <typename T>
 	class UserPairTestFunction {
 	public:
 		static bool user_pair_check(const T *p_a, const T *p_b) {
@@ -47,7 +47,7 @@ class GodotBroadPhase2DBVH : public GodotBroadPhase2D {
 		}
 	};
 
-	template <class T>
+	template <typename T>
 	class UserCullTestFunction {
 	public:
 		static bool user_cull_check(const T *p_a, const T *p_b) {

@@ -216,7 +216,7 @@ private:
 	Light3D *_generate_light(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	Node3D *_generate_spatial(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	void _assign_node_names(Ref<GLTFState> p_state);
-	template <class T>
+	template <typename T>
 	T _interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values,
 			const float p_time,
 			const GLTFAnimation::Interpolation p_interp);

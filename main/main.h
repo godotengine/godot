@@ -35,7 +35,7 @@
 #include "core/os/thread.h"
 #include "core/typedefs.h"
 
-template <class T>
+template <typename T>
 class Vector;
 
 class Main {

@@ -35,7 +35,7 @@
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
-template <class T>
+template <typename T>
 struct PtrToArg {};
 
 #define MAKE_PTRARG(m_type)                                              \
@@ -156,7 +156,7 @@ MAKE_PTRARG_BY_REFERENCE(Variant);
 
 // This is for Object.
 
-template <class T>
+template <typename T>
 struct PtrToArg<T *> {
 	_FORCE_INLINE_ static T *convert(const void *p_ptr) {
 		if (p_ptr == nullptr) {
@@ -170,7 +170,7 @@ struct PtrToArg<T *> {
 	}
 };
 
-template <class T>
+template <typename T>
 struct PtrToArg<const T *> {
 	_FORCE_INLINE_ static const T *convert(const void *p_ptr) {
 		if (p_ptr == nullptr) {

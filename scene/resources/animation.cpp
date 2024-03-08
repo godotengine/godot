@@ -1041,7 +1041,7 @@ bool Animation::track_get_interpolation_loop_wrap(int p_track) const {
 	return tracks[p_track]->loop_wrap;
 }
 
-template <class T, class V>
+template <typename T, typename V>
 int Animation::_insert(double p_time, T &p_keys, const V &p_value) {
 	int idx = p_keys.size();
 
@@ -1065,7 +1065,7 @@ int Animation::_insert(double p_time, T &p_keys, const V &p_value) {
 	return -1;
 }
 
-template <class T>
+template <typename T>
 void Animation::_clear(T &p_keys) {
 	p_keys.clear();
 }
@@ -2331,7 +2331,7 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, real_t p_tr
 	emit_changed();
 }
 
-template <class K>
+template <typename K>
 int Animation::_find(const Vector<K> &p_keys, double p_time, bool p_backward, bool p_limit) const {
 	int len = p_keys.size();
 	if (len == 0) {
@@ -2451,7 +2451,7 @@ Variant Animation::_cubic_interpolate_angle_in_time(const Variant &p_pre_a, cons
 	return _cubic_interpolate_in_time(p_pre_a, p_a, p_b, p_post_b, p_c, p_pre_a_t, p_b_t, p_post_b_t);
 }
 
-template <class T>
+template <typename T>
 T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward) const {
 	int len = _find(p_keys, length) + 1; // try to find last key (there may be more past the end)
 
@@ -2693,7 +2693,7 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 	return vt->update_mode;
 }
 
-template <class T>
+template <typename T>
 void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const {
 	int len = p_array.size();
 	if (len == 0) {

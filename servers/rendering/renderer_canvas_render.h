@@ -366,7 +366,7 @@ public:
 		mutable double debug_redraw_time = 0;
 #endif
 
-		template <class T>
+		template <typename T>
 		T *alloc_command() {
 			T *command = nullptr;
 			if (commands == nullptr) {

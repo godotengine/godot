@@ -305,11 +305,11 @@ public:
 		virtual ~DefaultQueryResult() {}
 	};
 
-	template <class QueryResult>
+	template <typename QueryResult>
 	_FORCE_INLINE_ void aabb_query(const AABB &p_aabb, QueryResult &r_result);
-	template <class QueryResult>
+	template <typename QueryResult>
 	_FORCE_INLINE_ void convex_query(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, QueryResult &r_result);
-	template <class QueryResult>
+	template <typename QueryResult>
 	_FORCE_INLINE_ void ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResult &r_result);
 
 	void set_index(uint32_t p_index);
@@ -318,7 +318,7 @@ public:
 	~DynamicBVH();
 };
 
-template <class QueryResult>
+template <typename QueryResult>
 void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 	if (!bvh_root) {
 		return;
@@ -363,7 +363,7 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 	} while (depth > 0);
 }
 
-template <class QueryResult>
+template <typename QueryResult>
 void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, QueryResult &r_result) {
 	if (!bvh_root) {
 		return;
@@ -420,7 +420,7 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 		}
 	} while (depth > 0);
 }
-template <class QueryResult>
+template <typename QueryResult>
 void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResult &r_result) {
 	if (!bvh_root) {
 		return;
