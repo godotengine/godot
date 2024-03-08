@@ -240,4 +240,9 @@ public class GodotLib {
 	 * @see GodotRenderer#onActivityPaused()
 	 */
 	public static native void onRendererPaused();
+
+	/**
+	 * @return the project resource directory
+	 */
+	public static native String getProjectResourceDir();
 }

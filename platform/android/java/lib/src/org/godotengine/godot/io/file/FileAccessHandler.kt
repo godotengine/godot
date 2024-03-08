@@ -35,6 +35,8 @@ import android.util.Log
 import android.util.SparseArray
 import org.godotengine.godot.io.StorageScope
 import java.io.FileNotFoundException
+import java.io.InputStream
+import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 
 /**
@@ -47,6 +49,17 @@ class FileAccessHandler(val context: Context) {
 
 		internal const val INVALID_FILE_ID = 0
 		private const val STARTING_FILE_ID = 1
+
+		internal fun getInputStream(context: Context, storageScopeIdentifier: StorageScope.Identifier, path: String?): InputStream? {
+			val storageScope = storageScopeIdentifier.identifyStorageScope(path)
+			return try {
+				path?.let {
+					DataAccess.getInputStream(storageScope, context, path)
+				}
+			} catch (e: Exception) {
+				null
+			}
+		}
 
 		internal fun fileExists(context: Context, storageScopeIdentifier: StorageScope.Identifier, path: String?): Boolean {
 			val storageScope = storageScopeIdentifier.identifyStorageScope(path)
@@ -118,6 +131,8 @@ class FileAccessHandler(val context: Context) {
 			} ?: INVALID_FILE_ID
 		} catch (e: FileNotFoundException) {
 			FileErrors.FILE_NOT_FOUND.nativeValue
+		} catch (e: UnsupportedOperationException) {
+			FileErrors.UNSUPPORTED_OPERATION.nativeValue
 		} catch (e: Exception) {
 			Log.w(TAG, "Error while opening $path", e)
 			INVALID_FILE_ID
@@ -171,6 +186,10 @@ class FileAccessHandler(val context: Context) {
 
 		files[fileId].flush()
 	}
+
+	fun getInputStream(path: String?) = Companion.getInputStream(context, storageScopeIdentifier, path)
+
+	fun renameFile(from: String, to: String) = Companion.renameFile(context, storageScopeIdentifier, from, to)
 
 	fun fileExists(path: String?) = Companion.fileExists(context, storageScopeIdentifier, path)
 
