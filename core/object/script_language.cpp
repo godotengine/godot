@@ -163,9 +163,13 @@ bool ScriptServer::is_scripting_enabled() {
 }
 
 ScriptLanguage *ScriptServer::get_language(int p_idx) {
+#ifndef DISABLE_SCRIPTING
 	MutexLock lock(languages_mutex);
 	ERR_FAIL_INDEX_V(p_idx, _language_count, nullptr);
 	return _languages[p_idx];
+#else
+	return nullptr;
+#endif // DISABLE_SCRIPTING
 }
 
 ScriptLanguage *ScriptServer::get_language_for_extension(const String &p_extension) {

@@ -1778,7 +1778,9 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
 			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
 				ret.append(cptr[i]);
-			} else if (cptr[i]->get_script_instance()) {
+			}
+#ifndef DISABLE_SCRIPTING
+			else if (cptr[i]->get_script_instance()) {
 				Ref<Script> scr = cptr[i]->get_script_instance()->get_script();
 				while (scr.is_valid()) {
 					if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
@@ -1789,6 +1791,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 					scr = scr->get_base_script();
 				}
 			}
+#endif // DISABLE_SCRIPTING
 		}
 
 		if (p_recursive) {

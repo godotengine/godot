@@ -3284,21 +3284,24 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		resource_picker = nullptr;
 	}
 
+#ifndef DISABLE_SCRIPTING
 	if (p_path == "script" && p_base_type == "Script" && Object::cast_to<Node>(p_object)) {
 		EditorScriptPicker *script_picker = memnew(EditorScriptPicker);
 		script_picker->set_script_owner(Object::cast_to<Node>(p_object));
 		resource_picker = script_picker;
-	} else if (p_path == "shader" && p_base_type == "Shader" && Object::cast_to<ShaderMaterial>(p_object)) {
-		EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
-		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
-		resource_picker = shader_picker;
-		connect(SNAME("ready"), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
-	} else if (p_base_type == "AudioStream") {
-		EditorAudioStreamPicker *astream_picker = memnew(EditorAudioStreamPicker);
-		resource_picker = astream_picker;
-	} else {
-		resource_picker = memnew(EditorResourcePicker);
-	}
+	} else
+#endif // DISABLE_SCRIPTING
+		if (p_path == "shader" && p_base_type == "Shader" && Object::cast_to<ShaderMaterial>(p_object)) {
+			EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
+			shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
+			resource_picker = shader_picker;
+			connect(SNAME("ready"), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
+		} else if (p_base_type == "AudioStream") {
+			EditorAudioStreamPicker *astream_picker = memnew(EditorAudioStreamPicker);
+			resource_picker = astream_picker;
+		} else {
+			resource_picker = memnew(EditorResourcePicker);
+		}
 
 	resource_picker->set_base_type(p_base_type);
 	resource_picker->set_editable(true);
