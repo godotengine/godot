@@ -34,6 +34,13 @@
 				Returns the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin].
 			</description>
 		</method>
+		<method name="get_input_cull_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member input_cull_mask] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
 		<method name="get_limit" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="margin" type="int" enum="Side" />
@@ -80,6 +87,14 @@
 			<param index="1" name="drag_margin" type="float" />
 			<description>
 				Sets the specified [enum Side]'s margin. See also [member drag_bottom_margin], [member drag_top_margin], [member drag_left_margin], and [member drag_right_margin].
+			</description>
+		</method>
+		<method name="set_input_cull_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member input_cull_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_limit">
@@ -140,6 +155,10 @@
 		<member name="ignore_rotation" type="bool" setter="set_ignore_rotation" getter="is_ignoring_rotation" default="true">
 			If [code]true[/code], the camera's rendered view is not affected by its [member Node2D.rotation] and [member Node2D.global_rotation].
 		</member>
+		<member name="input_cull_mask" type="int" setter="set_input_cull_mask" getter="get_input_cull_mask" default="4294967295">
+			The collision layers in which physics objects can receive input events. See [member Viewport.input_cull_mask_2d].
+			Only used when [member override_input_cull_mask] is [code]true[/code], otherwise it will be ignored in favor of [member Viewport.input_cull_mask_2d].
+		</member>
 		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit" default="10000000">
 			Bottom scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
 		</member>
@@ -159,6 +178,9 @@
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The camera's relative offset. Useful for looking around or camera shake animations. The offsetted camera can go past the limits defined in [member limit_top], [member limit_bottom], [member limit_left] and [member limit_right].
+		</member>
+		<member name="override_input_cull_mask" type="bool" setter="set_override_input_cull_mask" getter="get_override_input_cull_mask" default="false">
+			Determines whether to pick [member input_cull_mask] (when [code]true[/code]) or [member Viewport.input_cull_mask_2d] (when [code]false[/code]) for determining which collision layers receive input events.
 		</member>
 		<member name="position_smoothing_enabled" type="bool" setter="set_position_smoothing_enabled" getter="is_position_smoothing_enabled" default="false">
 			If [code]true[/code], the camera's view smoothly moves towards its target position at [member position_smoothing_speed].

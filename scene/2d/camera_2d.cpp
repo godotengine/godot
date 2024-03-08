@@ -713,6 +713,40 @@ bool Camera2D::is_margin_drawing_enabled() const {
 	return margin_drawing_enabled;
 }
 
+void Camera2D::set_input_cull_mask(uint32_t p_layers) {
+	input_cull_mask = p_layers;
+}
+
+uint32_t Camera2D::get_input_cull_mask() const {
+	return input_cull_mask;
+}
+
+void Camera2D::set_input_cull_mask_value(int p_layer_number, bool p_enable) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Input cull layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Input cull layer number must be between 1 and 32 inclusive.");
+	uint32_t mask = get_input_cull_mask();
+	if (p_enable) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_input_cull_mask(mask);
+}
+
+bool Camera2D::get_input_cull_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Input cull layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Input cull layer number must be between 1 and 32 inclusive.");
+	return get_input_cull_mask() & (1 << (p_layer_number - 1));
+}
+
+void Camera2D::set_override_input_cull_mask(bool p_value) {
+	override_input_cull_mask = p_value;
+}
+
+bool Camera2D::get_override_input_cull_mask() const {
+	return override_input_cull_mask;
+}
+
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
 	if (!position_smoothing_enabled && p_property.name == "position_smoothing_speed") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -801,6 +835,14 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin_drawing_enabled", "margin_drawing_enabled"), &Camera2D::set_margin_drawing_enabled);
 	ClassDB::bind_method(D_METHOD("is_margin_drawing_enabled"), &Camera2D::is_margin_drawing_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_input_cull_mask", "mask"), &Camera2D::set_input_cull_mask);
+	ClassDB::bind_method(D_METHOD("get_input_cull_mask"), &Camera2D::get_input_cull_mask);
+	ClassDB::bind_method(D_METHOD("set_input_cull_mask_value", "layer_number", "value"), &Camera2D::set_input_cull_mask_value);
+	ClassDB::bind_method(D_METHOD("get_input_cull_mask_value", "layer_number"), &Camera2D::get_input_cull_mask_value);
+
+	ClassDB::bind_method(D_METHOD("set_override_input_cull_mask", "override"), &Camera2D::set_override_input_cull_mask);
+	ClassDB::bind_method(D_METHOD("get_override_input_cull_mask"), &Camera2D::get_override_input_cull_mask);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_mode", PROPERTY_HINT_ENUM, "Fixed TopLeft,Drag Center"), "set_anchor_mode", "get_anchor_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_rotation"), "set_ignore_rotation", "is_ignoring_rotation");
@@ -808,6 +850,8 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom", PROPERTY_HINT_LINK), "set_zoom", "get_zoom");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_callback", "get_process_callback");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_cull_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_input_cull_mask", "get_input_cull_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_input_cull_mask"), "set_override_input_cull_mask", "get_override_input_cull_mask");
 
 	ADD_GROUP("Limit", "limit_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_left", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_LEFT);
