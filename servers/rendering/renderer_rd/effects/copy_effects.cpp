@@ -66,6 +66,22 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 			blur_raster.pipelines[i].setup(blur_raster.shader.version_get_shader(blur_raster.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 		}
 
+
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// prepare uniform set and buffer
+		uint32_t params_size = sizeof(BlurRasterPushConstant);
+		blur_raster.params_uniform_buffer = RD::RenderingDevice::get_singleton()->uniform_buffer_create( params_size );
+		Vector<RD::Uniform> params_uniforms;
+		RD::Uniform u;
+		u.binding = 0;
+		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+		u.append_id(blur_raster.params_uniform_buffer);
+		params_uniforms.push_back(u);
+		blur_raster.params_uniform_set = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, blur_raster.shader.version_get_shader(blur_raster.shader_version, 0), 4);
+// </TF>
+
 	} else {
 		// not used in clustered
 		for (int i = 0; i < BLUR_MODE_MAX; i++) {
@@ -144,6 +160,20 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		dss.depth_compare_operator = RD::COMPARE_OP_ALWAYS;
 		dss.enable_depth_write = true;
 		cube_to_dp.pipeline.setup(shader, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), dss, RD::PipelineColorBlendState(), 0);
+
+// <TF>
+// @ShadyTF 
+// prepare uniform set and buffer
+	uint32_t params_size = sizeof(CopyToDPPushConstant);
+	cube_to_dp.params_uniform_buffer = RD::RenderingDevice::get_singleton()->uniform_buffer_create( params_size );
+	Vector<RD::Uniform> params_uniforms;
+	RD::Uniform u;
+	u.binding = 0;
+	u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+	u.append_id(cube_to_dp.params_uniform_buffer);
+	params_uniforms.push_back(u);
+	cube_to_dp.params_uniform_set = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, 0), 4);
+// </TF>
 	}
 
 	{
@@ -307,6 +337,16 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 
 CopyEffects::~CopyEffects() {
 	if (prefer_raster_effects) {
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+		if (blur_raster.params_uniform_buffer.is_valid()) {
+			RD::RenderingDevice::get_singleton()->free(blur_raster.params_uniform_buffer);
+		}
+		if (blur_raster.params_uniform_set.is_valid()) {
+			RD::RenderingDevice::get_singleton()->free(blur_raster.params_uniform_set);
+		}
+// </TF>
 		blur_raster.shader.version_free(blur_raster.shader_version);
 		cubemap_downsampler.raster_shader.version_free(cubemap_downsampler.shader_version);
 		filter.raster_shader.version_free(filter.shader_version);
@@ -333,6 +373,16 @@ CopyEffects::~CopyEffects() {
 	copy_to_fb.shader.version_free(copy_to_fb.shader_version);
 	cube_to_dp.shader.version_free(cube_to_dp.shader_version);
 
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+	if (cube_to_dp.params_uniform_set.is_valid()) {
+		RD::RenderingDevice::get_singleton()->free(cube_to_dp.params_uniform_set);
+	}
+	if (cube_to_dp.params_uniform_buffer.is_valid()) {
+		RD::RenderingDevice::get_singleton()->free(cube_to_dp.params_uniform_buffer);
+	}
+// </TF>
 	singleton = nullptr;
 }
 
@@ -640,6 +690,11 @@ void CopyEffects::copy_raster(RID p_source_texture, RID p_dest_framebuffer) {
 	ERR_FAIL_NULL(material_storage);
 
 	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+	RD::RenderingDevice::get_singleton()->buffer_update(blur_raster.params_uniform_buffer, 0, sizeof(BlurRasterPushConstant), &blur_raster.push_constant);
+// </TF>
 
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -654,7 +709,13 @@ void CopyEffects::copy_raster(RID p_source_texture, RID p_dest_framebuffer) {
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[BLUR_MODE_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_texture), 0);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// Was:
+//	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, blur_raster.params_uniform_set, 4); 
+// </TF>
 
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 	RD::get_singleton()->draw_list_end();
@@ -716,6 +777,12 @@ void CopyEffects::gaussian_blur_raster(RID p_source_rd_texture, RID p_dest_textu
 	blur_raster.push_constant.pixel_size[0] = 1.0 / float(p_size.x);
 	blur_raster.push_constant.pixel_size[1] = 1.0 / float(p_size.y);
 
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+	RD::RenderingDevice::get_singleton()->buffer_update(blur_raster.params_uniform_buffer, 0, sizeof(BlurRasterPushConstant), &blur_raster.push_constant);
+// </TF>
+
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
@@ -728,7 +795,14 @@ void CopyEffects::gaussian_blur_raster(RID p_source_rd_texture, RID p_dest_textu
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
 
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// Was:
+//	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, blur_raster.params_uniform_set, 4); 
+// </TF>
+	
 
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 	RD::get_singleton()->draw_list_end();
@@ -826,6 +900,12 @@ void CopyEffects::gaussian_glow_raster(RID p_source_rd_texture, RID p_half_textu
 	ERR_FAIL_COND(shader.is_null());
 
 	//HORIZONTAL
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+	blur_raster.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL | (p_first_pass ? BLUR_FLAG_GLOW_FIRST_PASS : 0);
+	RD::RenderingDevice::get_singleton()->buffer_update(blur_raster.params_uniform_buffer, 0, sizeof(BlurRasterPushConstant), &blur_raster.push_constant);
+// </TF>
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(half_framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(half_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
@@ -833,10 +913,14 @@ void CopyEffects::gaussian_glow_raster(RID p_source_rd_texture, RID p_half_textu
 		RD::Uniform u_auto_exposure(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_auto_exposure }));
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_auto_exposure), 1);
 	}
-
-	blur_raster.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL | (p_first_pass ? BLUR_FLAG_GLOW_FIRST_PASS : 0);
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
-
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// was:
+//blur_raster.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL | (p_first_pass ? BLUR_FLAG_GLOW_FIRST_PASS : 0);
+//RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, blur_raster.params_uniform_set, 4);
+// </TF>
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 	RD::get_singleton()->draw_list_end();
 
@@ -846,13 +930,23 @@ void CopyEffects::gaussian_glow_raster(RID p_source_rd_texture, RID p_half_textu
 	ERR_FAIL_COND(shader.is_null());
 
 	//VERTICAL
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+	blur_raster.push_constant.flags = base_flags;
+	RD::RenderingDevice::get_singleton()->buffer_update(blur_raster.params_uniform_buffer, 0, sizeof(BlurRasterPushConstant), &blur_raster.push_constant);
+// </TF>
 	draw_list = RD::get_singleton()->draw_list_begin(dest_framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_half_texture), 0);
-
-	blur_raster.push_constant.flags = base_flags;
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
-
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// Was:
+	//blur_raster.push_constant.flags = base_flags;
+	//RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, blur_raster.params_uniform_set, 4);
+// </TF>
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 	RD::get_singleton()->draw_list_end();
 }
@@ -1007,6 +1101,11 @@ void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuf
 	push_constant.texel_size[1] = 1.0f / p_dst_size.y;
 	push_constant.texel_size[0] *= p_dp_flip ? -1.0f : 1.0f; // Encode dp flip as x size sign
 
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+	RD::RenderingDevice::get_singleton()->buffer_update(cube_to_dp.params_uniform_buffer, 0, sizeof(CopyToDPPushConstant), &push_constant);
+// </TF>
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
@@ -1020,7 +1119,13 @@ void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuf
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
 
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(CopyToDPPushConstant));
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// Was:
+	//RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(CopyToDPPushConstant));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, cube_to_dp.params_uniform_set, 4);
+// </TF>
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 	RD::get_singleton()->draw_list_end();
 }

@@ -65,7 +65,13 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #define FLAG_USE_DEBANDING (1 << 5)
 #define FLAG_CONVERT_TO_SRGB (1 << 6)
 
-layout(push_constant, std430) uniform Params {
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// Was:
+//layout(push_constant, std430) uniform Params {
+layout(set = 4, binding = 0, std140) uniform Params {
+// </TF>
 	vec3 bcs;
 	uint flags;
 
@@ -77,8 +83,17 @@ layout(push_constant, std430) uniform Params {
 	float glow_intensity;
 	float glow_map_strength;
 
-	uint glow_mode;
-	float glow_levels[7];
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// swap these to fix alignment for UBO
+// Was :
+//	uint glow_mode;
+//	float glow_levels[7];
+	vec4 glow_levelsA;
+	vec3 glow_levelsB;
+	uint glow_mode;	
+// </TF>	
 
 	float exposure;
 	float white;
@@ -280,6 +295,12 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 #endif // defined(MULTIVIEW)
 	vec3 glow = vec3(0.0f);
 
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// fix aligment issues by reordering and using a vec4 and a vec3 for the 7 glow levels
+// Was:
+/*
 	if (params.glow_levels[0] > 0.0001) {
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb * params.glow_levels[0];
 	}
@@ -307,7 +328,36 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 	if (params.glow_levels[6] > 0.0001) {
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb * params.glow_levels[6];
 	}
+*/		
 
+	if (params.glow_levelsA.x > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb * params.glow_levelsA.x;
+	}
+
+	if (params.glow_levelsA.y > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb * params.glow_levelsA.y;
+	}
+
+	if (params.glow_levelsA.z > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb * params.glow_levelsA.z;
+	}
+
+	if (params.glow_levelsA.w > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb * params.glow_levelsA.w;
+	}
+
+	if (params.glow_levelsB.x > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb * params.glow_levelsB.x;
+	}
+
+	if (params.glow_levelsB.y > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb * params.glow_levelsB.y;
+	}
+
+	if (params.glow_levelsB.z > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb * params.glow_levelsB.z;
+	}
+// </TF>
 	return glow;
 }
 

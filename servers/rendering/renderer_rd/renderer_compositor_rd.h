@@ -91,6 +91,12 @@ protected:
 		RID index_buffer;
 		RID array;
 		RID sampler;
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+		RID params_uniform_set;
+		RID params_uniform_buffer;
+// </TF>
 	} blit;
 
 	HashMap<RID, RID> render_target_descriptors;

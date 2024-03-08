@@ -74,10 +74,34 @@ ToneMapper::ToneMapper() {
 				tonemap.pipelines[i].clear();
 			}
 		}
+
+// <TF>
+// @ShadyTF 
+// prepare uniform set and buffer
+	uint32_t params_size = sizeof(TonemapPushConstant);
+	params_uniform_buffer = RD::RenderingDevice::get_singleton()->uniform_buffer_create(params_size);
+	Vector<RD::Uniform> params_uniforms;
+	RD::Uniform u;
+	u.binding = 0;
+	u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+	u.append_id(params_uniform_buffer);
+	params_uniforms.push_back(u);
+	params_uniform_set = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 4);
+// </TF>
 	}
 }
 
 ToneMapper::~ToneMapper() {
+// <TF>
+// @ShadyTF 
+// prepare uniform set and buffer
+	if (params_uniform_buffer.is_valid()) {
+		RD::RenderingDevice::get_singleton()->free(params_uniform_set);
+	}
+	if (params_uniform_set.is_valid()) {
+		RD::RenderingDevice::get_singleton()->free(params_uniform_set);
+	}
+// </TF>
 	tonemap.shader.version_free(tonemap.shader_version);
 }
 
@@ -173,7 +197,14 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 2, u_glow_texture, u_glow_map), 2);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 3, u_color_correction_texture), 3);
 
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
+	
+// <TF>
+// @ShadyTF
+// replace push constant with UBO
+// was:
+	//RD::get_singleton()->draw_list_set_push_constant(draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, params_uniform_set, 4);
+// </TF>
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 	RD::get_singleton()->draw_list_end();
 }
@@ -253,7 +284,45 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, uniform_set_cache->get_cache(shader, 1, u_exposure_texture), 1); // should be set to a default texture, it's ignored
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, uniform_set_cache->get_cache(shader, 2, u_glow_texture, u_glow_map), 2); // should be set to a default texture, it's ignored
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, uniform_set_cache->get_cache(shader, 3, u_color_correction_texture), 3);
-
-	RD::get_singleton()->draw_list_set_push_constant(p_subpass_draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
+	
+// <TF>
+// @ShadyTF
+// replace push constant with UBO
+// was:
+	//RD::get_singleton()->draw_list_set_push_constant(p_subpass_draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
+	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, params_uniform_set, 4);
+// </TF>
 	RD::get_singleton()->draw_list_draw(p_subpass_draw_list, false, 1u, 3u);
 }
+
+// <TF>
+// @ShadyTF
+// replace push constant with UBO
+void ToneMapper::prepare_params(RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const TonemapSettings& p_settings ) {
+
+	memset(&tonemap.push_constant, 0, sizeof(TonemapPushConstant));
+
+	tonemap.push_constant.flags |= p_settings.use_bcs ? TONEMAP_FLAG_USE_BCS : 0;
+	tonemap.push_constant.bcs[0] = p_settings.brightness;
+	tonemap.push_constant.bcs[1] = p_settings.contrast;
+	tonemap.push_constant.bcs[2] = p_settings.saturation;
+
+	tonemap.push_constant.flags |= p_settings.use_glow ? TONEMAP_FLAG_USE_GLOW : 0;
+
+	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
+	tonemap.push_constant.flags |= p_settings.use_auto_exposure ? TONEMAP_FLAG_USE_AUTO_EXPOSURE : 0;
+	tonemap.push_constant.exposure = p_settings.exposure;
+	tonemap.push_constant.white = p_settings.white;
+	tonemap.push_constant.auto_exposure_scale = p_settings.auto_exposure_scale;
+
+	tonemap.push_constant.flags |= p_settings.use_color_correction ? TONEMAP_FLAG_USE_COLOR_CORRECTION : 0;
+
+	tonemap.push_constant.flags |= p_settings.use_debanding ? TONEMAP_FLAG_USE_DEBANDING : 0;
+	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
+
+	tonemap.push_constant.flags |= p_settings.convert_to_srgb ? TONEMAP_FLAG_CONVERT_TO_SRGB : 0;
+
+	RD::RenderingDevice::get_singleton()->buffer_update(params_uniform_buffer, 0, sizeof(TonemapPushConstant), &tonemap.push_constant);
+
+}
+// </TF>

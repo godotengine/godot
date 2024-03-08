@@ -101,6 +101,12 @@ private:
 		BlurRasterShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipelines[BLUR_MODE_MAX];
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+		RID params_uniform_set;
+		RID params_uniform_buffer;
+// </TF>
 	} blur_raster;
 
 	// Copy shader
@@ -223,6 +229,12 @@ private:
 		CubeToDpShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipeline;
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+		RID params_uniform_set;
+		RID params_uniform_buffer;
+// </TF>
 	} cube_to_dp;
 
 	// Cubemap effects
