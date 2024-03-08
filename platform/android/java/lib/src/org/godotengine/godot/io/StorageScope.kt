@@ -34,11 +34,17 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import java.io.File
+import org.godotengine.godot.GodotLib
 
 /**
  * Represents the different storage scopes.
  */
 internal enum class StorageScope {
+	/**
+	 * Covers the 'assets' directory
+	 */
+	ASSETS,
+
 	/**
 	 * Covers internal and external directories accessible to the app without restrictions.
 	 */
@@ -56,6 +62,10 @@ internal enum class StorageScope {
 
 	class Identifier(context: Context) {
 
+		companion object {
+			internal const val ASSETS_PREFIX = "assets://"
+		}
+
 		private val internalAppDir: String? = context.filesDir.canonicalPath
 		private val internalCacheDir: String? = context.cacheDir.canonicalPath
 		private val externalAppDir: String? = context.getExternalFilesDir(null)?.canonicalPath
@@ -71,9 +81,16 @@ internal enum class StorageScope {
 				return UNKNOWN
 			}
 
-			val pathFile = File(path)
+			if (path.startsWith(ASSETS_PREFIX)) {
+				return ASSETS
+			}
+
+			var pathFile = File(path)
 			if (!pathFile.isAbsolute) {
-				return UNKNOWN
+				pathFile = File(GodotLib.getProjectResourceDir(), path)
+				if (!pathFile.isAbsolute) {
+					return UNKNOWN
+				}
 			}
 
 			// If we have 'All Files Access' permission, we can access all directories without
