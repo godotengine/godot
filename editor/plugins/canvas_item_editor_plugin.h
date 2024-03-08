@@ -483,6 +483,8 @@ private:
 	void _focus_selection(int p_op);
 	void _reset_drag();
 
+	void _project_settings_changed();
+
 	SnapTarget snap_target[2];
 	Transform2D snap_transform;
 	void _snap_if_closer_float(
@@ -645,7 +647,7 @@ class CanvasItemEditorViewport : public Control {
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 
-	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
+	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _only_packed_scenes_selected() const;
 	void _create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point);
 	bool _create_instance(Node *parent, String &path, const Point2 &p_point);

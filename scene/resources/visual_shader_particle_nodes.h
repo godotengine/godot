@@ -75,8 +75,6 @@ public:
 	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
-
 	VisualShaderNodeParticleSphereEmitter();
 };
 
@@ -94,8 +92,6 @@ public:
 	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
-
 	VisualShaderNodeParticleBoxEmitter();
 };
 
@@ -111,8 +107,6 @@ public:
 
 	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
-
-	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
 
 	VisualShaderNodeParticleRingEmitter();
 };
@@ -165,8 +159,6 @@ public:
 	Vector<StringName> get_editable_properties() const override;
 	HashMap<StringName, String> get_editable_properties_names() const override;
 	Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
-
-	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
 
 	VisualShaderNodeParticleMeshEmitter();
 };

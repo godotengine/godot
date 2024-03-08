@@ -35,8 +35,6 @@
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_server_3d.h"
 
-#include "tests/test_macros.h"
-
 namespace TestNavigationServer3D {
 
 // TODO: Find a more generic way to create `Callable` mocks.
@@ -579,6 +577,51 @@ TEST_SUITE("[Navigation]") {
 		memdelete(node_3d);
 	}
 #endif // DISABLE_DEPRECATED
+
+	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to parse geometry") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		// Prepare scene tree with simple mesh to serve as an input geometry.
+		Node3D *node_3d = memnew(Node3D);
+		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+		Ref<PlaneMesh> plane_mesh = memnew(PlaneMesh);
+		plane_mesh->set_size(Size2(10.0, 10.0));
+		MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
+		mesh_instance->set_mesh(plane_mesh);
+		node_3d->add_child(mesh_instance);
+
+		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+		CHECK_EQ(source_geometry->get_vertices().size(), 0);
+		CHECK_EQ(source_geometry->get_indices().size(), 0);
+
+		navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, mesh_instance);
+		CHECK_EQ(source_geometry->get_vertices().size(), 12);
+		CHECK_EQ(source_geometry->get_indices().size(), 6);
+
+		SUBCASE("By default, parsing should remove any data that was parsed before") {
+			navigation_server->parse_source_geometry_data(navigation_mesh, source_geometry, mesh_instance);
+			CHECK_EQ(source_geometry->get_vertices().size(), 12);
+			CHECK_EQ(source_geometry->get_indices().size(), 6);
+		}
+
+		SUBCASE("Parsed geometry should be extendible with other geometry") {
+			source_geometry->merge(source_geometry); // Merging with itself.
+			const Vector<float> vertices = source_geometry->get_vertices();
+			const Vector<int> indices = source_geometry->get_indices();
+			REQUIRE_EQ(vertices.size(), 24);
+			REQUIRE_EQ(indices.size(), 12);
+			// Check if first newly added vertex is the same as first vertex.
+			CHECK_EQ(vertices[0], vertices[12]);
+			CHECK_EQ(vertices[1], vertices[13]);
+			CHECK_EQ(vertices[2], vertices[14]);
+			// Check if first newly added index is the same as first index.
+			CHECK_EQ(indices[0] + 4, indices[6]);
+		}
+
+		memdelete(mesh_instance);
+		memdelete(node_3d);
+	}
 
 	// This test case uses only public APIs on purpose - other test cases use simplified baking.
 	TEST_CASE("[NavigationServer3D][SceneTree] Server should be able to bake map correctly") {
