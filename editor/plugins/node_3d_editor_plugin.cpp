@@ -1888,7 +1888,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					surface->queue_redraw();
 				} else {
 					if (_edit.gizmo.is_valid()) {
-						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
+						if (_edit.original_mouse_pos != _edit.mouse_pos) {
+							_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
+						}
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
 						break;
 					}
@@ -1922,7 +1924,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 							se->gizmo->commit_subgizmos(ids, restore, false);
 						} else {
-							commit_transform();
+							if (_edit.original_mouse_pos != _edit.mouse_pos) {
+								commit_transform();
+							}
 						}
 						_edit.mode = TRANSFORM_NONE;
 						set_message("");
