@@ -1581,6 +1581,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	GLOBAL_DEF("input_devices/pointing/android/enable_long_press_as_right_click", false);
 	GLOBAL_DEF("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
+	GLOBAL_DEF("input_devices/pointing/android/rotary_input_scroll_axis", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pointing/android/rotary_input_scroll_axis",
+			PropertyInfo(Variant::INT,
+					"input_devices/pointing/android/rotary_input_scroll_axis",
+					PROPERTY_HINT_ENUM, "Horizontal,Vertical"));
 
 	MAIN_PRINT("Main: Load Translations and Remaps");
 

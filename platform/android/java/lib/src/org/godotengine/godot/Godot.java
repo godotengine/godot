@@ -336,6 +336,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		// These properties are defined after Godot setup completion, so we retrieve them here.
 		boolean longPressEnabled = Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"));
 		boolean panScaleEnabled = Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"));
+		int rotaryInputAxis = java.lang.Integer.parseInt(GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis"));
 
 		runOnUiThread(() -> {
 			GodotView renderView = getRenderView();
@@ -344,6 +345,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				inputHandler.enableLongPress(longPressEnabled);
 				inputHandler.enablePanningAndScalingGestures(panScaleEnabled);
 			}
+			GodotInputHandler.setRotaryInputAxis(rotaryInputAxis);
 		});
 
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
