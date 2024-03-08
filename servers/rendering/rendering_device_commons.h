@@ -878,6 +878,7 @@ protected:
 
 	static const char *SHADER_STAGE_NAMES[SHADER_STAGE_MAX];
 
+public:
 	struct ShaderUniform {
 		UniformType type = UniformType::UNIFORM_TYPE_MAX;
 		bool writable = false;
@@ -925,6 +926,7 @@ protected:
 		Vector<ShaderStage> stages;
 	};
 
+protected:
 	struct ShaderReflection : public ShaderDescription {
 		BitField<ShaderStage> stages;
 		BitField<ShaderStage> push_constant_stages;
