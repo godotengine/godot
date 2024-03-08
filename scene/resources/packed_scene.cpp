@@ -1721,6 +1721,10 @@ StringName SceneState::get_node_property_name(int p_idx, int p_prop) const {
 }
 
 Vector<String> SceneState::get_node_deferred_nodepath_properties(int p_idx) const {
+	if (p_idx >= nodes.size() && base_scene_node_remap.has(p_idx)) {
+		return get_base_scene_state()->get_node_deferred_nodepath_properties(base_scene_node_remap[p_idx]);
+	}
+
 	Vector<String> ret;
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), ret);
 	for (int i = 0; i < nodes[p_idx].properties.size(); i++) {
