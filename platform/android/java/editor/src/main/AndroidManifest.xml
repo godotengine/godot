@@ -42,6 +42,7 @@
             android:name=".GodotEditor"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:exported="true"
+            android:icon="@mipmap/icon"
             android:launchMode="singleTask"
             android:screenOrientation="userLandscape">
             <layout
@@ -59,9 +60,11 @@
             android:name=".GodotGame"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:exported="false"
-            android:label="@string/godot_project_name_string"
+            android:icon="@mipmap/ic_play_window"
+            android:label="@string/godot_game_activity_name"
             android:launchMode="singleTask"
             android:process=":GodotGame"
+            android:supportsPictureInPicture="true"
             android:screenOrientation="userLandscape">
             <layout
                 android:defaultWidth="@dimen/editor_default_window_width"
