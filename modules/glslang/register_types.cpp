@@ -184,32 +184,11 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 
 	glslang::GlslangToSpv(*program.getIntermediate(stages[p_stage]), SpirV, &logger, &spvOptions);
 
-	spv_target_env target_env = MapToSpirvToolsEnv(program.getIntermediate(stages[p_stage])->getSpv(), &logger);
-	spvtools::Optimizer optimizer(target_env);
-	spv_optimizer_options_t optOptions;
-	optOptions.run_validator_ = true;
-	optOptions.preserve_bindings_ = true;
-	optOptions.preserve_spec_constants_ = true;
-
-	optimizer.RegisterPassFromFlag("-O");
-	if (!optimizer.Run(&SpirV[0], SpirV.size(), &SpirV, &optOptions))
-		print_error("Optimization pass failed.");
-
 	ret.resize(SpirV.size() * sizeof(uint32_t));
 	{
 		uint8_t *w = ret.ptrw();
 		memcpy(w, &SpirV[0], SpirV.size() * sizeof(uint32_t));
 		char buffer[256];
-
-		uint64_t hash = 0;
-		for (uint64_t i = 0; i < p_source_code.size(); i++)
-			hash += p_source_code[i];
-
-		sprintf(buffer, "D:\\dev\\Shaders\\%lld.spirv", hash);
-
-		FILE *f = fopen(buffer, "wb");
-		fwrite(&SpirV[0], sizeof(uint32_t), SpirV.size(), f);
-		fclose(f);
 	}
 
 	return ret;
