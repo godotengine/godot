@@ -71,6 +71,8 @@ public:
 	bool has_data() { return traversable_outlines.size(); };
 	void clear();
 
+	void merge(const Ref<NavigationMeshSourceGeometryData2D> &p_other_geometry);
+
 	NavigationMeshSourceGeometryData2D() {}
 	~NavigationMeshSourceGeometryData2D() { clear(); }
 };
