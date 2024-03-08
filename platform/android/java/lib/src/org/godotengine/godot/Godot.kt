@@ -83,12 +83,17 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class Godot(private val context: Context) {
 
-	private companion object {
+	internal companion object {
 		private val TAG = Godot::class.java.simpleName
 
 		// Supported build flavors
 		const val EDITOR_FLAVOR = "editor"
 		const val TEMPLATE_FLAVOR = "template"
+
+		/**
+		 * @return true if this is an editor build, false if this is a template build
+		 */
+		fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
 	}
 
 	private val windowManager: WindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -833,11 +838,6 @@ class Godot(private val context: Context) {
 	fun hasClipboard(): Boolean {
 		return mClipboard.hasPrimaryClip()
 	}
-
-	/**
-	 * @return true if this is an editor build, false if this is a template build
-	 */
-	fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
 
 	fun getClipboard(): String {
 		val clipData = mClipboard.primaryClip ?: return ""

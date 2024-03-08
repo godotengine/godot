@@ -68,7 +68,7 @@ String DirAccessJAndroid::get_next() {
 	if (_dir_next) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, "");
-		jstring str = (jstring)env->CallObjectMethod(dir_access_handler, _dir_next, get_access_type(), id);
+		jstring str = (jstring)env->CallObjectMethod(dir_access_handler, _dir_next, id);
 		if (!str) {
 			return "";
 		}
@@ -85,7 +85,7 @@ bool DirAccessJAndroid::current_is_dir() const {
 	if (_dir_is_dir) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, false);
-		return env->CallBooleanMethod(dir_access_handler, _dir_is_dir, get_access_type(), id);
+		return env->CallBooleanMethod(dir_access_handler, _dir_is_dir, id);
 	} else {
 		return false;
 	}
@@ -95,7 +95,7 @@ bool DirAccessJAndroid::current_is_hidden() const {
 	if (_current_is_hidden) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, false);
-		return env->CallBooleanMethod(dir_access_handler, _current_is_hidden, get_access_type(), id);
+		return env->CallBooleanMethod(dir_access_handler, _current_is_hidden, id);
 	}
 	return false;
 }
@@ -307,9 +307,9 @@ void DirAccessJAndroid::setup(jobject p_dir_access_handler) {
 	cls = (jclass)env->NewGlobalRef(c);
 
 	_dir_open = env->GetMethodID(cls, "dirOpen", "(ILjava/lang/String;)I");
-	_dir_next = env->GetMethodID(cls, "dirNext", "(II)Ljava/lang/String;");
-	_dir_close = env->GetMethodID(cls, "dirClose", "(II)V");
-	_dir_is_dir = env->GetMethodID(cls, "dirIsDir", "(II)Z");
+	_dir_next = env->GetMethodID(cls, "dirNext", "(I)Ljava/lang/String;");
+	_dir_close = env->GetMethodID(cls, "dirClose", "(I)V");
+	_dir_is_dir = env->GetMethodID(cls, "dirIsDir", "(I)Z");
 	_dir_exists = env->GetMethodID(cls, "dirExists", "(ILjava/lang/String;)Z");
 	_file_exists = env->GetMethodID(cls, "fileExists", "(ILjava/lang/String;)Z");
 	_get_drive_count = env->GetMethodID(cls, "getDriveCount", "(I)I");
@@ -318,7 +318,7 @@ void DirAccessJAndroid::setup(jobject p_dir_access_handler) {
 	_get_space_left = env->GetMethodID(cls, "getSpaceLeft", "(I)J");
 	_rename = env->GetMethodID(cls, "rename", "(ILjava/lang/String;Ljava/lang/String;)Z");
 	_remove = env->GetMethodID(cls, "remove", "(ILjava/lang/String;)Z");
-	_current_is_hidden = env->GetMethodID(cls, "isCurrentHidden", "(II)Z");
+	_current_is_hidden = env->GetMethodID(cls, "isCurrentHidden", "(I)Z");
 }
 
 void DirAccessJAndroid::terminate() {
@@ -355,6 +355,6 @@ void DirAccessJAndroid::dir_close(int p_id) {
 	if (_dir_close) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
-		env->CallVoidMethod(dir_access_handler, _dir_close, get_access_type(), p_id);
+		env->CallVoidMethod(dir_access_handler, _dir_close, p_id);
 	}
 }
