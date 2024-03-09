@@ -443,24 +443,27 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 		return;
 	}
 	for (const KeyValue<String, NodeData> &e : node_map) {
+		// Skip import nodes that aren't MeshInstance3D.
+		const MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
+		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
+			continue;
+		}
+
+		// Determine if the mesh collider should be visible.
 		bool show_collider_view = false;
 		if (e.value.settings.has(SNAME("generate/physics"))) {
 			show_collider_view = e.value.settings[SNAME("generate/physics")];
 		}
 
-		MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
-		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
-			// Nothing to do.
-			continue;
-		}
-
+		// Get the collider_view MeshInstance3D.
 		TypedArray<Node> descendants = mesh_node->find_children("collider_view", "MeshInstance3D");
-
 		CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
+		MeshInstance3D *collider_view = Object::cast_to<MeshInstance3D>(descendants[0].operator Object *());
 
-		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(descendants[0].operator Object *());
-		collider_view->set_visible(show_collider_view);
-		if (generate_collider) {
+		// Regenerate the physics collider for this MeshInstance3D if either:
+		// - A regeneration is requested for the selected import node.
+		// - The collider is being made visible.
+		if ((generate_collider && e.key == selected_id) || (show_collider_view && !collider_view->is_visible())) {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
 			Ref<ImporterMesh> mesh;
 			mesh.instantiate();
@@ -524,6 +527,9 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 			collider_view->set_mesh(collider_view_mesh);
 			collider_view->set_transform(transform);
 		}
+
+		// Set the collider visibility.
+		collider_view->set_visible(show_collider_view);
 	}
 
 	generate_collider = false;
