@@ -383,7 +383,7 @@
 				Fetches a node. The [NodePath] can either be a relative path (from this node), or an absolute path (from the [member SceneTree.root]) to a node. If [param path] does not point to a valid node, generates an error and returns [code]null[/code]. Attempts to access methods on the return value will result in an [i]"Attempt to call &lt;method&gt; on a null instance."[/i] error.
 				[b]Note:[/b] Fetching by absolute path only works when the node is inside the scene tree (see [method is_inside_tree]).
 				[b]Example:[/b] Assume this method is called from the Character node, inside the following tree:
-				[codeblock]
+				[codeblock lang=text]
 				 ┖╴root
 				    ┠╴Character (you are here!)
 				    ┃  ┠╴Sword
@@ -514,8 +514,8 @@
 			<return type="String" />
 			<description>
 				Returns the tree as a [String]. Used mainly for debugging purposes. This version displays the path relative to the current node, and is good for copy/pasting into the [method get_node] function. It also can be used in game UI/UX.
-				[b]Example output:[/b]
-				[codeblock]
+				May print, for example:
+				[codeblock lang=text]
 				TheGame
 				TheGame/Menu
 				TheGame/Menu/Label
@@ -529,8 +529,8 @@
 			<return type="String" />
 			<description>
 				Similar to [method get_tree_string], this returns the tree as a [String]. This version displays a more graphical representation similar to what is displayed in the Scene Dock. It is useful for inspecting larger trees.
-				[b]Example output:[/b]
-				[codeblock]
+				May print, for example:
+				[codeblock lang=text]
 				 ┖╴TheGame
 				    ┠╴Menu
 				    ┃  ┠╴Label
@@ -716,8 +716,8 @@
 			<return type="void" />
 			<description>
 				Prints the node and its children to the console, recursively. The node does not have to be inside the tree. This method outputs [NodePath]s relative to this node, and is good for copy/pasting into [method get_node]. See also [method print_tree_pretty].
-				[b]Example output:[/b]
-				[codeblock]
+				May print, for example:
+				[codeblock lang=text]
 				.
 				Menu
 				Menu/Label
@@ -731,8 +731,8 @@
 			<return type="void" />
 			<description>
 				Prints the node and its children to the console, recursively. The node does not have to be inside the tree. Similar to [method print_tree], but the graphical representation looks like what is displayed in the editor's Scene dock. It is useful for inspecting larger trees.
-				[b]Example output:[/b]
-				[codeblock]
+				May print, for example:
+				[codeblock lang=text]
 				 ┖╴TheGame
 				    ┠╴Menu
 				    ┃  ┠╴Label

@@ -12,7 +12,7 @@
 	<members>
 		<member name="application/additional_plist_content" type="String" setter="" getter="">
 			Additional data added to the root [code]&lt;dict&gt;[/code] section of the [url=https://developer.apple.com/documentation/bundleresources/information_property_list]Info.plist[/url] file. The value should be an XML section with pairs of key-value elements, e.g.:
-			[codeblock]
+			[codeblock lang=text]
 			&lt;key&gt;key_name&lt;/key&gt;
 			&lt;string&gt;value&lt;/string&gt;
 			[/codeblock]
