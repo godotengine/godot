@@ -2192,9 +2192,14 @@ void WaylandThread::_wp_tablet_tool_on_done(void *data, struct zwp_tablet_tool_v
 
 void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
 	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+
+	if (!ts) {
+		return;
+	}
+
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
 
-	if (!ts || !ss) {
+	if (!ss) {
 		return;
 	}
 
@@ -2214,9 +2219,14 @@ void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_too
 
 void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface) {
 	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+
+	if (!ts) {
+		return;
+	}
+
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
 
-	if (!ts || !ss) {
+	if (!ss) {
 		return;
 	}
 
@@ -2237,9 +2247,14 @@ void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_table
 
 void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
 	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+
+	if (!ts) {
+		return;
+	}
+
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
 
-	if (!ts || !ss) {
+	if (!ss) {
 		return;
 	}
 
@@ -2389,9 +2404,14 @@ void WaylandThread::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool
 
 void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t time) {
 	TabletToolState *ts = wp_tablet_tool_get_state(zwp_tablet_tool_v2);
+
+	if (!ts) {
+		return;
+	}
+
 	SeatState *ss = wl_seat_get_seat_state(ts->wl_seat);
 
-	if (!ts || !ss) {
+	if (!ss) {
 		return;
 	}
 
