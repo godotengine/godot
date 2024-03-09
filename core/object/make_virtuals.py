@@ -201,7 +201,7 @@ def run(target, source, env):
 
     txt += "#endif // GDVIRTUAL_GEN_H\n"
 
-    with open(target[0], "w") as f:
+    with open(target[0], "w", encoding="utf-8", newline="\n") as f:
         f.write(txt)
 
 

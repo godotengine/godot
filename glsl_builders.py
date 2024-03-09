@@ -165,7 +165,7 @@ public:
 #endif
 """
 
-    with open(out_file, "w") as fd:
+    with open(out_file, "w", encoding="utf-8", newline="\n") as fd:
         fd.write(shader_template)
 
 
@@ -224,7 +224,7 @@ static const char {out_file_base}[] = {{
 #endif
 """
 
-    with open(out_file, "w") as f:
+    with open(out_file, "w", encoding="utf-8", newline="\n") as f:
         f.write(shader_template)
 
 

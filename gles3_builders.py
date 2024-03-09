@@ -211,7 +211,7 @@ def build_gles3_header(
     else:
         out_file = optional_output_filename
 
-    fd = open(out_file, "w")
+    fd = open(out_file, "w", encoding="utf-8", newline="\n")
     defspec = 0
     defvariant = ""
 

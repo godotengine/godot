@@ -14,7 +14,7 @@ def make_splash(target, source, env):
     with open(src, "rb") as f:
         buf = f.read()
 
-    with open(dst, "w") as g:
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_H\n")
         g.write("#define BOOT_SPLASH_H\n")
@@ -34,7 +34,7 @@ def make_splash_editor(target, source, env):
     with open(src, "rb") as f:
         buf = f.read()
 
-    with open(dst, "w") as g:
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_EDITOR_H\n")
         g.write("#define BOOT_SPLASH_EDITOR_H\n")
@@ -55,7 +55,7 @@ def make_app_icon(target, source, env):
     with open(src, "rb") as f:
         buf = f.read()
 
-    with open(dst, "w") as g:
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef APP_ICON_H\n")
         g.write("#define APP_ICON_H\n")

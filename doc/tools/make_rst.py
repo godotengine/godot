@@ -891,9 +891,9 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
     class_name = class_def.name
 
     if dry_run:
-        f = open(os.devnull, "w", encoding="utf-8")
+        f = open(os.devnull, "w", encoding="utf-8", newline="\n")
     else:
-        f = open(os.path.join(output_dir, f"class_{class_name.lower()}.rst"), "w", encoding="utf-8")
+        f = open(os.path.join(output_dir, f"class_{class_name.lower()}.rst"), "w", encoding="utf-8", newline="\n")
 
     # Remove the "Edit on Github" button from the online docs page.
     f.write(":github_url: hide\n\n")
@@ -1691,9 +1691,9 @@ def make_link(url: str, title: str) -> str:
 
 def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
     if dry_run:
-        f = open(os.devnull, "w", encoding="utf-8")
+        f = open(os.devnull, "w", encoding="utf-8", newline="\n")
     else:
-        f = open(os.path.join(output_dir, "index.rst"), "w", encoding="utf-8")
+        f = open(os.path.join(output_dir, "index.rst"), "w", encoding="utf-8", newline="\n")
 
     # Remove the "Edit on Github" button from the online docs page, and disallow user-contributed notes
     # on the index page. User-contributed notes are allowed on individual class pages.

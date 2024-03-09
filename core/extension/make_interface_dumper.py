@@ -5,7 +5,7 @@ def run(target, source, env):
     src = source[0]
     dst = target[0]
     f = open(src, "rb")
-    g = open(dst, "w", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
 
     buf = f.read()
     decomp_size = len(buf)

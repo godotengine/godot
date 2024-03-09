@@ -32,7 +32,7 @@ def make_certs_header(target, source, env):
     src = source[0]
     dst = target[0]
     f = open(src, "rb")
-    g = open(dst, "w", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
     buf = f.read()
     decomp_size = len(buf)
 
@@ -79,7 +79,7 @@ def make_authors_header(target, source, env):
     src = source[0]
     dst = target[0]
     f = open(src, "r", encoding="utf-8")
-    g = open(dst, "w", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef AUTHORS_GEN_H\n")
@@ -141,7 +141,7 @@ def make_donors_header(target, source, env):
     src = source[0]
     dst = target[0]
     f = open(src, "r", encoding="utf-8")
-    g = open(dst, "w", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef DONORS_GEN_H\n")
@@ -239,7 +239,7 @@ def make_license_header(target, source, env):
             part["copyright_index"] = len(data_list)
             data_list += part["Copyright"]
 
-    with open(dst, "w", encoding="utf-8") as f:
+    with open(dst, "w", encoding="utf-8", newline="\n") as f:
         f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         f.write("#ifndef LICENSE_GEN_H\n")
         f.write("#define LICENSE_GEN_H\n")
