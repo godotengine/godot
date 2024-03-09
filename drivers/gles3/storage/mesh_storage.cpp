@@ -2263,6 +2263,29 @@ void MeshStorage::skeleton_bone_set_dq_transform(RID p_skeleton, int p_bone, con
 	_skeleton_make_dirty(skeleton);
 }
 
+Basis MeshStorage::skeleton_bone_get_dq_transform(RID p_skeleton, int p_bone) const {
+	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
+
+	ERR_FAIL_NULL_V(skeleton, Basis());
+	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Basis());
+	ERR_FAIL_COND_V(skeleton->use_2d, Basis());
+
+	const float *dataptr = skeleton->data.ptr() + p_bone * SKELETON_3D_DATA_SIZE;
+
+	Basis basis;
+
+	basis.rows[0][0] = dataptr[12];
+	basis.rows[0][1] = dataptr[13];
+	basis.rows[0][2] = dataptr[14];
+	basis.rows[1][0] = dataptr[15];
+	basis.rows[1][1] = dataptr[16];
+	basis.rows[1][2] = dataptr[17];
+	basis.rows[2][0] = dataptr[18];
+	basis.rows[2][1] = dataptr[19];
+	basis.rows[2][2] = 0.0;
+
+	return basis;
+}
 
 Transform3D MeshStorage::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);

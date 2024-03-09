@@ -257,7 +257,7 @@ void Skeleton3D::_update_process_order() {
 Quaternion get_shortest_arc(const Quaternion &q_current, const Quaternion &q_prev) {
 	// Avoid the quaternion taking the longest path for this versions's new rotation vs the last
 	if(q_current.dot(q_prev) < 0.0) {
-		return -q_current;
+		return q_current*-1.0;
 	}
 	return q_current;
 }
@@ -344,15 +344,16 @@ void Skeleton3D::_notification(int p_what) {
 					uint32_t bone_index = E->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
 
-					Transform3D prev = rs->skeleton_bone_get_transform(skeleton, i);
 					Transform3D Mj = bonesptr[bone_index].pose_global * skin->get_bind_pose(i);
 					Vector3 t = Mj.origin;
+					Quaternion prev_q0, prev_q1;
+					Basis dq = rs->skeleton_bone_get_dq_transform(skeleton, i);
 
 					// This works to keep quaternions stable, basing it off the shortest path between the
 					// previous frame's linear transformation and the new one
 					Quaternion q0 = get_shortest_arc( 
 						Mj.basis.scaled(Mj.basis.get_scale_local().inverse()).get_rotation_quaternion(),
-						prev.basis.get_rotation_quaternion()
+						Quaternion(dq.rows[0][0], dq.rows[0][1], dq.rows[0][2], dq.rows[1][0])
 					);
 					Quaternion q1 = quat_trans_2UDQ(q0, t);
 
