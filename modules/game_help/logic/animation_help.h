@@ -138,7 +138,7 @@ class AnimationHelp : public Object
             return AnimationHelp::getNullAnimation();
         }
         // 配置动画树
-        void setup_animation_player(AnimationPlayer* player)
+        void setup_animation_player(Node* node,AnimationPlayer* player)
         {
             if(is_error)
             {
@@ -170,7 +170,8 @@ class AnimationHelp : public Object
                 is_error = true;
                 ERR_FAIL_MSG(vformat("AnimationTree not fund : \"%s\".", animationTreePath));
                 return;
-            }            
+            }      
+            tree->set_owner(node);      
             player->add_animation_library(animationLibrary->get_name(),animationLibrary);
             player->set_begin_animation_cb(callable_mp_static(on_animation_player_begin));
             //player->set_end_animation_cb(callable_mp_static(on_animation_player_end));
@@ -353,7 +354,8 @@ public:
             ERR_FAIL_MSG("AnimationGroup not found.");
             return;
         }
-        animationGroup[group].setup_animation_player(player);
+        player->set_owner(node);
+        animationGroup[group].setup_animation_player(node,player);
 
     }
 

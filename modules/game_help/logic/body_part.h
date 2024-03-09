@@ -87,18 +87,57 @@ struct CharacterBodyBoneAttachment
     }
 
 };
-class CharacterBodyPartInstane : public Node3D
+struct CharacterBodyPartInstane
 {
-    GDCLASS(CharacterBodyPartInstane, Node3D);
-    Skeleton3D *skeleton;    
-    HashMap<int,CharacterBodyBoneAttachment> boneAttachment;
-    void on_bone_pose_update(int p_bone_index)
+    Ref<CharacterBodyPart> part;
+    Ref<Skin> skin;
+    MeshInstance3D *mesh_instance = nullptr;
+    Skeleton3D *skeleton = nullptr;
+
+    void init(Node* scene,Ref<CharacterBodyPart> p_part,Skeleton3D *p_skeleton)
     {
-        if(boneAttachment.has(p_bone_index))
+        part = p_part;
+        if(part.is_valid())
         {
-            boneAttachment[p_bone_index].attachToBone(skeleton,p_bone_index,skeleton);
+            skin = part->get_skin();
+            mesh_instance = memnew(MeshInstance3D);
+            if(mesh_instance)
+            {
+                mesh_instance->set_owner(scene);
+                p_skeleton->add_child(mesh_instance, true);
+                if(skin.is_valid())
+                {
+                    skin = skin->duplicate();
+                }
+                mesh_instance->set_mesh(part->get_mesh());
+                mesh_instance->set_skin(skin);
+                mesh_instance->set_material_override(part->get_material());
+            }
+            skeleton = p_skeleton;
         }
+
     }
+    void clear()
+    {
+        part.unref();
+        skin.unref();
+        if(mesh_instance != nullptr)
+        {
+            memdelete(mesh_instance);
+            mesh_instance = nullptr;
+        }
+        skeleton = nullptr;
+    }
+    
+
+    
+    // void on_bone_pose_update(int p_bone_index)
+    // {
+    //     if(boneAttachment.has(p_bone_index))
+    //     {
+    //         boneAttachment[p_bone_index].attachToBone(skeleton,p_bone_index,skeleton);
+    //     }
+    // }
 };
 
 #endif

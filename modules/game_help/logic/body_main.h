@@ -29,17 +29,28 @@ class CharacterBodyMain : public CharacterBody3D {
 
 public:
     // 初始化身體
-    void init_main_body(String p_mesh_file_path,StringName p_animation_group);
+    void init_main_body(String p_skeleton_file_path,StringName p_animation_group);
+    void clear_all();
 
 protected:
-    Node3D *root = nullptr;
+    void load_skeleton();
+    void load_mesh(const StringName& part_name,String p_mesh_file_path);
+
+protected:
     Skeleton3D *skeleton = nullptr;
     AnimationPlayer *player = nullptr;
     AnimationTree *tree = nullptr;
+    // 骨架配置文件
+    String skeleton_res;
+    // 动画组配置
+    String animation_group;
+    // 身體部件列表
+    PackedStringArray   partList;
     // 插槽信息
     HashMap<StringName,BodySocket> socket;
     // 身体部件信息
-    HashMap<StringName,Ref<CharacterBodyPart>> bodyPart;
+    HashMap<StringName,CharacterBodyPartInstane> bodyPart;
+    
 
 
 };
