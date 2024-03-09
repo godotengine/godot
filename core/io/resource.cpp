@@ -435,7 +435,7 @@ RID Resource::get_rid() const {
 
 #ifdef TOOLS_ENABLED
 
-uint32_t Resource::hash_edited_version() const {
+uint32_t Resource::hash_edited_version_for_preview() const {
 	uint32_t hash = hash_murmur3_one_32(get_edited_version());
 
 	List<PropertyInfo> plist;
@@ -445,7 +445,7 @@ uint32_t Resource::hash_edited_version() const {
 		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			Ref<Resource> res = get(E.name);
 			if (res.is_valid()) {
-				hash = hash_murmur3_one_32(res->hash_edited_version(), hash);
+				hash = hash_murmur3_one_32(res->hash_edited_version_for_preview(), hash);
 			}
 		}
 	}

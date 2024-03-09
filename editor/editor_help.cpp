@@ -47,6 +47,20 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 
+#include "modules/modules_enabled.gen.h" // For gdscript, mono.
+
+// For syntax highlighting.
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/editor/gdscript_highlighter.h"
+#include "modules/gdscript/gdscript.h"
+#endif
+
+// For syntax highlighting.
+#ifdef MODULE_MONO_ENABLED
+#include "editor/plugins/script_editor_plugin.h"
+#include "modules/mono/csharp_script.h"
+#endif
+
 #define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
 
 #ifdef MODULE_MONO_ENABLED
@@ -367,7 +381,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 	}
 	class_desc->add_text(display_t);
 	if (can_ref) {
-		class_desc->pop(); // Pushed meta above.
+		class_desc->pop(); // meta
 		if (add_array) {
 			class_desc->add_text("]");
 		} else if (is_bitfield) {
@@ -2298,18 +2312,27 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 }
 
-static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node, const String &p_class = "") {
-	DocTools *doc = EditorHelp::get_doc_data();
-	String base_path;
+static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node, const String &p_class) {
+	const DocTools *doc = EditorHelp::get_doc_data();
 
-	Ref<Font> doc_font = p_owner_node->get_theme_font(SNAME("doc"), EditorStringName(EditorFonts));
-	Ref<Font> doc_bold_font = p_owner_node->get_theme_font(SNAME("doc_bold"), EditorStringName(EditorFonts));
-	Ref<Font> doc_italic_font = p_owner_node->get_theme_font(SNAME("doc_italic"), EditorStringName(EditorFonts));
-	Ref<Font> doc_code_font = p_owner_node->get_theme_font(SNAME("doc_source"), EditorStringName(EditorFonts));
-	Ref<Font> doc_kbd_font = p_owner_node->get_theme_font(SNAME("doc_keyboard"), EditorStringName(EditorFonts));
+	bool is_native = false;
+	{
+		const HashMap<String, DocData::ClassDoc>::ConstIterator E = doc->class_list.find(p_class);
+		if (E && !E->value.is_script_doc) {
+			is_native = true;
+		}
+	}
 
-	int doc_code_font_size = p_owner_node->get_theme_font_size(SNAME("doc_source_size"), EditorStringName(EditorFonts));
-	int doc_kbd_font_size = p_owner_node->get_theme_font_size(SNAME("doc_keyboard_size"), EditorStringName(EditorFonts));
+	const bool using_tab_indent = int(EDITOR_GET("text_editor/behavior/indent/type")) == 0;
+
+	const Ref<Font> doc_font = p_owner_node->get_theme_font(SNAME("doc"), EditorStringName(EditorFonts));
+	const Ref<Font> doc_bold_font = p_owner_node->get_theme_font(SNAME("doc_bold"), EditorStringName(EditorFonts));
+	const Ref<Font> doc_italic_font = p_owner_node->get_theme_font(SNAME("doc_italic"), EditorStringName(EditorFonts));
+	const Ref<Font> doc_code_font = p_owner_node->get_theme_font(SNAME("doc_source"), EditorStringName(EditorFonts));
+	const Ref<Font> doc_kbd_font = p_owner_node->get_theme_font(SNAME("doc_keyboard"), EditorStringName(EditorFonts));
+
+	const int doc_code_font_size = p_owner_node->get_theme_font_size(SNAME("doc_source_size"), EditorStringName(EditorFonts));
+	const int doc_kbd_font_size = p_owner_node->get_theme_font_size(SNAME("doc_keyboard_size"), EditorStringName(EditorFonts));
 
 	const Color type_color = p_owner_node->get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
 	const Color code_color = p_owner_node->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
@@ -2330,7 +2353,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 	// Select the correct code examples.
 	switch ((int)EDITOR_GET("text_editor/help/class_reference_examples")) {
 		case 0: // GDScript
-			bbcode = bbcode.replace("[gdscript", "[codeblock"); // Tag can have extra arguments.
+			bbcode = bbcode.replace("[gdscript", "[codeblock lang=gdscript"); // Tag can have extra arguments.
 			bbcode = bbcode.replace("[/gdscript]", "[/codeblock]");
 
 			for (int pos = bbcode.find("[csharp"); pos != -1; pos = bbcode.find("[csharp")) {
@@ -2347,7 +2370,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			}
 			break;
 		case 1: // C#
-			bbcode = bbcode.replace("[csharp", "[codeblock"); // Tag can have extra arguments.
+			bbcode = bbcode.replace("[csharp", "[codeblock lang=csharp"); // Tag can have extra arguments.
 			bbcode = bbcode.replace("[/csharp]", "[/codeblock]");
 
 			for (int pos = bbcode.find("[gdscript"); pos != -1; pos = bbcode.find("[gdscript")) {
@@ -2364,8 +2387,8 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			}
 			break;
 		case 2: // GDScript and C#
-			bbcode = bbcode.replace("[csharp", "[b]C#:[/b]\n[codeblock"); // Tag can have extra arguments.
-			bbcode = bbcode.replace("[gdscript", "[b]GDScript:[/b]\n[codeblock"); // Tag can have extra arguments.
+			bbcode = bbcode.replace("[csharp", "[b]C#:[/b]\n[codeblock lang=csharp"); // Tag can have extra arguments.
+			bbcode = bbcode.replace("[gdscript", "[b]GDScript:[/b]\n[codeblock lang=gdscript"); // Tag can have extra arguments.
 
 			bbcode = bbcode.replace("[/csharp]", "[/codeblock]");
 			bbcode = bbcode.replace("[/gdscript]", "[/codeblock]");
@@ -2378,17 +2401,11 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 	bbcode = bbcode.replace("[codeblocks]", "");
 	bbcode = bbcode.replace("[/codeblocks]", "");
 
-	// Remove extra new lines around code blocks.
-	bbcode = bbcode.replace("[codeblock]\n", "[codeblock]");
-	bbcode = bbcode.replace("[codeblock skip-lint]\n", "[codeblock skip-lint]"); // Extra argument to silence validation warnings.
-	bbcode = bbcode.replace("\n[/codeblock]", "[/codeblock]");
+	// Remove `\n` here because `\n` is replaced by `\n\n` later.
+	// Will be compensated when parsing `[/codeblock]`.
 	bbcode = bbcode.replace("[/codeblock]\n", "[/codeblock]");
 
 	List<String> tag_stack;
-	bool code_tag = false;
-	bool codeblock_tag = false;
-	const bool using_tab_indent = int(EDITOR_GET("text_editor/behavior/indent/type")) == 0;
-	StringBuilder codeblock_text;
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
@@ -2399,33 +2416,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 		}
 
 		if (brk_pos > pos) {
-			String text = bbcode.substr(pos, brk_pos - pos);
-			if (codeblock_tag && using_tab_indent) {
-				// Replace the code block's space indentation with tabs.
-				StringBuilder builder;
-				PackedStringArray text_lines = text.split("\n");
-				for (const String &line : text_lines) {
-					String stripped_line = line.dedent();
-					int space_count = line.length() - stripped_line.length();
-
-					if (builder.num_strings_appended() > 0) {
-						builder.append("\n");
-					}
-					if (space_count > 0) {
-						builder.append(String("\t").repeat(MAX(space_count / 4, 1)) + stripped_line);
-					} else {
-						builder.append(line);
-					}
-				}
-				text = builder.as_string();
-			}
-			if (!code_tag && !codeblock_tag) {
-				text = text.replace("\n", "\n\n");
-			}
-			if (codeblock_tag) {
-				codeblock_text.append(text);
-			}
-			p_rt->add_text(text);
+			p_rt->add_text(bbcode.substr(pos, brk_pos - pos).replace("\n", "\n\n"));
 		}
 
 		if (brk_pos == bbcode.length()) {
@@ -2435,16 +2426,11 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 		int brk_end = bbcode.find_char(']', brk_pos + 1);
 
 		if (brk_end == -1) {
-			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
-			if (!code_tag && !codeblock_tag) {
-				text = text.replace("\n", "\n\n");
-			}
-			p_rt->add_text(text);
-
+			p_rt->add_text(bbcode.substr(brk_pos, bbcode.length() - brk_pos).replace("\n", "\n\n"));
 			break;
 		}
 
-		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+		const String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
 
 		if (tag.begins_with("/")) {
 			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
@@ -2458,52 +2444,12 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			tag_stack.pop_front();
 			pos = brk_end + 1;
 			if (tag != "/img") {
-				if (code_tag) {
-					p_rt->pop(); // color
-					p_rt->pop(); // background color
-					p_rt->pop(); // font size
-				} else if (codeblock_tag) {
-					p_rt->pop(); // color
-					p_rt->pop(); // cell
-
-					// Copy codeblock button.
-					p_rt->push_cell();
-					p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
-					p_rt->set_cell_padding(Rect2(0, 10 * EDSCALE, 0, 10 * EDSCALE));
-					p_rt->set_cell_size_override(Vector2(1, 1), Vector2(10, 10) * EDSCALE);
-					p_rt->push_meta("^" + codeblock_text.as_string(), RichTextLabel::META_UNDERLINE_ON_HOVER);
-					codeblock_text = StringBuilder();
-					p_rt->add_image(p_owner_node->get_editor_theme_icon(SNAME("ActionCopy")), 24 * EDSCALE, 24 * EDSCALE, Color(link_property_color, 0.3), INLINE_ALIGNMENT_BOTTOM_TO, Rect2(), Variant(), false, TTR("Click to copy."));
-					p_rt->pop(); // meta
-					p_rt->pop(); // cell
-
-					p_rt->pop(); // table
-					p_rt->pop(); // font size
-
-					if (pos < bbcode.length()) {
-						p_rt->add_newline();
-					}
-				}
-				p_rt->pop(); // Pops font for codetags & codeblocks, anything else for other tags.
-			}
-			code_tag = false;
-			codeblock_tag = false;
-
-		} else if (code_tag || codeblock_tag) {
-			p_rt->add_text("[");
-			pos = brk_pos + 1;
-			if (codeblock_tag) {
-				codeblock_text.append("[");
+				p_rt->pop();
 			}
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
 			const int tag_end = tag.find_char(' ');
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
-
-			// Use monospace font to make clickable references
-			// easier to distinguish from inline code and other text.
-			p_rt->push_font(doc_code_font);
-			p_rt->push_font_size(doc_code_font_size);
 
 			Color target_color = link_color;
 			if (link_tag == "method" || link_tag == "constructor" || link_tag == "operator") {
@@ -2514,6 +2460,10 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 				target_color = link_annotation_color;
 			}
 
+			// Use monospace font to make clickable references
+			// easier to distinguish from inline code and other text.
+			p_rt->push_font(doc_code_font);
+			p_rt->push_font_size(doc_code_font_size);
 			p_rt->push_color(target_color);
 			p_rt->push_meta("@" + link_tag + " " + link_target);
 
@@ -2541,11 +2491,10 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			p_rt->pop(); // meta
 			p_rt->pop(); // color
-
-			p_rt->pop(); // font size
+			p_rt->pop(); // font_size
 			p_rt->pop(); // font
-			pos = brk_end + 1;
 
+			pos = brk_end + 1;
 		} else if (tag.begins_with("param ")) {
 			const int tag_end = tag.find_char(' ');
 			const String param_name = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
@@ -2553,25 +2502,24 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			// Use monospace font with translucent background color to make code easier to distinguish from other text.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
-
 			p_rt->push_bgcolor(param_bg_color);
 			p_rt->push_color(code_color);
+
 			p_rt->add_text(param_name);
-			p_rt->pop();
-			p_rt->pop();
 
-			p_rt->pop(); // font size
+			p_rt->pop(); // color
+			p_rt->pop(); // bgcolor
+			p_rt->pop(); // font_size
 			p_rt->pop(); // font
-			pos = brk_end + 1;
 
+			pos = brk_end + 1;
 		} else if (tag == p_class) {
 			// Use a bold font when class reference tags are in their own page.
 			p_rt->push_font(doc_bold_font);
 			p_rt->add_text(tag);
-			p_rt->pop();
+			p_rt->pop(); // font
 
 			pos = brk_end + 1;
-
 		} else if (doc->class_list.has(tag)) {
 			// Use a monospace font for class reference tags such as [Node2D] or [SceneTree].
 
@@ -2579,15 +2527,15 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->push_font_size(doc_code_font_size);
 			p_rt->push_color(type_color);
 			p_rt->push_meta("#" + tag);
+
 			p_rt->add_text(tag);
 
-			p_rt->pop();
-			p_rt->pop();
-			p_rt->pop(); // Font size
-			p_rt->pop(); // Font
+			p_rt->pop(); // meta
+			p_rt->pop(); // color
+			p_rt->pop(); // font_size
+			p_rt->pop(); // font
 
 			pos = brk_end + 1;
-
 		} else if (tag == "b") {
 			// Use bold font.
 			p_rt->push_font(doc_bold_font);
@@ -2601,42 +2549,134 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code" || tag.begins_with("code ")) {
+			int end_pos = bbcode.find("[/code]", brk_end + 1);
+			if (end_pos < 0) {
+				end_pos = bbcode.length();
+			}
+
 			// Use monospace font with darkened background color to make code easier to distinguish from other text.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
 			p_rt->push_bgcolor(code_bg_color);
 			p_rt->push_color(code_color.lerp(p_owner_node->get_theme_color(SNAME("error_color"), EditorStringName(Editor)), 0.6));
 
-			code_tag = true;
-			pos = brk_end + 1;
-			tag_stack.push_front("code");
+			p_rt->add_text(bbcode.substr(brk_end + 1, end_pos - (brk_end + 1)));
+
+			p_rt->pop(); // color
+			p_rt->pop(); // bgcolor
+			p_rt->pop(); // font_size
+			p_rt->pop(); // font
+
+			pos = end_pos + 7; // `len("[/code]")`.
 		} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
+			int end_pos = bbcode.find("[/codeblock]", brk_end + 1);
+			if (end_pos < 0) {
+				end_pos = bbcode.length();
+			}
+
+			const String codeblock_text = bbcode.substr(brk_end + 1, end_pos - (brk_end + 1)).strip_edges();
+
+			String codeblock_copy_text = codeblock_text;
+			if (using_tab_indent) {
+				// Replace the code block's space indentation with tabs.
+				StringBuilder builder;
+				PackedStringArray text_lines = codeblock_copy_text.split("\n");
+				for (const String &line : text_lines) {
+					const String stripped_line = line.dedent();
+					const int space_count = line.length() - stripped_line.length();
+
+					if (builder.num_strings_appended() > 0) {
+						builder.append("\n");
+					}
+					if (space_count > 0) {
+						builder.append(String("\t").repeat(MAX(space_count / 4, 1)) + stripped_line);
+					} else {
+						builder.append(line);
+					}
+				}
+				codeblock_copy_text = builder.as_string();
+			}
+
+			String lang;
+			const PackedStringArray args = tag.trim_prefix("codeblock").split(" ", false);
+			for (int i = args.size() - 1; i >= 0; i--) {
+				if (args[i].begins_with("lang=")) {
+					lang = args[i].trim_prefix("lang=");
+					break;
+				}
+			}
+
 			// Use monospace font with darkened background color to make code easier to distinguish from other text.
 			// Use a single-column table with cell row background color instead of `[bgcolor]`.
 			// This makes the background color highlight cover the entire block, rather than individual lines.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
-
 			p_rt->push_table(2);
+
 			p_rt->push_cell();
 			p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
 			p_rt->set_cell_padding(Rect2(10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE));
 			p_rt->push_color(code_dark_color);
 
-			codeblock_tag = true;
-			pos = brk_end + 1;
-			tag_stack.push_front("codeblock");
+			if (lang.is_empty() || lang == "gdscript") {
+#ifdef MODULE_GDSCRIPT_ENABLED
+				EditorHelpHighlighter::get_singleton()->highlight(p_rt, EditorHelpHighlighter::LANGUAGE_GDSCRIPT, codeblock_text, is_native);
+#else
+				p_rt->add_text(codeblock_text);
+#endif
+			} else if (lang == "csharp") {
+#ifdef MODULE_MONO_ENABLED
+				EditorHelpHighlighter::get_singleton()->highlight(p_rt, EditorHelpHighlighter::LANGUAGE_CSHARP, codeblock_text, is_native);
+#else
+				p_rt->add_text(codeblock_text);
+#endif
+			} else {
+				p_rt->add_text(codeblock_text);
+			}
+
+			p_rt->pop(); // color
+			p_rt->pop(); // cell
+
+			// Copy codeblock button.
+			p_rt->push_cell();
+			p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
+			p_rt->set_cell_padding(Rect2(0, 10 * EDSCALE, 0, 10 * EDSCALE));
+			p_rt->set_cell_size_override(Vector2(1, 1), Vector2(10, 10) * EDSCALE);
+			p_rt->push_meta("^" + codeblock_copy_text, RichTextLabel::META_UNDERLINE_ON_HOVER);
+			p_rt->add_image(p_owner_node->get_editor_theme_icon(SNAME("ActionCopy")), 24 * EDSCALE, 24 * EDSCALE, Color(link_property_color, 0.3), INLINE_ALIGNMENT_BOTTOM_TO, Rect2(), Variant(), false, TTR("Click to copy."));
+			p_rt->pop(); // meta
+			p_rt->pop(); // cell
+
+			p_rt->pop(); // table
+			p_rt->pop(); // font_size
+			p_rt->pop(); // font
+
+			pos = end_pos + 12; // `len("[/codeblock]")`.
+
+			// Compensate for `\n` removed before the loop.
+			if (pos < bbcode.length()) {
+				p_rt->add_newline();
+			}
 		} else if (tag == "kbd") {
+			int end_pos = bbcode.find("[/kbd]", brk_end + 1);
+			if (end_pos < 0) {
+				end_pos = bbcode.length();
+			}
+
 			// Use keyboard font with custom color and background color.
 			p_rt->push_font(doc_kbd_font);
 			p_rt->push_font_size(doc_kbd_font_size);
 			p_rt->push_bgcolor(kbd_bg_color);
 			p_rt->push_color(kbd_color);
 
-			code_tag = true; // Though not strictly a code tag, logic is similar.
-			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+			p_rt->add_text(bbcode.substr(brk_end + 1, end_pos - (brk_end + 1)));
 
+			p_rt->pop(); // color
+			p_rt->pop(); // bgcolor
+			p_rt->pop(); // font_size
+			p_rt->pop(); // font
+
+			pos = end_pos + 6; // `len("[/kbd]")`.
 		} else if (tag == "center") {
 			// Align to center.
 			p_rt->push_paragraph(HORIZONTAL_ALIGNMENT_CENTER, Control::TEXT_DIRECTION_AUTO, "");
@@ -2712,9 +2752,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			if (end == -1) {
 				end = bbcode.length();
 			}
-			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			p_rt->add_image(ResourceLoader::load(base_path.path_join(image), "Texture2D"), width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent);
+			String image_path = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			p_rt->add_image(ResourceLoader::load(image_path, "Texture2D"), width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent);
 
 			pos = end;
 			tag_stack.push_front("img");
@@ -2725,11 +2765,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			pos = brk_end + 1;
 			tag_stack.push_front("color");
-
 		} else if (tag.begins_with("font=")) {
-			String fnt = tag.substr(5, tag.length());
-
-			Ref<Font> font = ResourceLoader::load(base_path.path_join(fnt), "Font");
+			String font_path = tag.substr(5, tag.length());
+			Ref<Font> font = ResourceLoader::load(font_path, "Font");
 			if (font.is_valid()) {
 				p_rt->push_font(font);
 			} else {
@@ -2738,10 +2776,16 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
-
 		} else {
-			p_rt->add_text("["); // ignore
+			p_rt->add_text("["); // Ignore.
 			pos = brk_pos + 1;
+		}
+	}
+
+	// Close unclosed tags.
+	for (const String &tag : tag_stack) {
+		if (tag != "img") {
+			p_rt->pop();
 		}
 	}
 }
@@ -2882,7 +2926,16 @@ void EditorHelp::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help")) {
+			bool need_update = false;
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help")) {
+				need_update = true;
+			}
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+			if (!need_update && EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme/highlighting")) {
+				need_update = true;
+			}
+#endif
+			if (!need_update) {
 				break;
 			}
 			[[fallthrough]];
@@ -3076,10 +3129,11 @@ String EditorHelpBit::get_class_description(const StringName &p_class_name) cons
 	}
 
 	String description;
-	HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(p_class_name);
+
+	const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(p_class_name);
 	if (E) {
 		// Non-native class shouldn't be cached, nor translated.
-		bool is_native = ClassDB::class_exists(p_class_name);
+		const bool is_native = !E->value.is_script_doc;
 		description = is_native ? DTR(E->value.brief_description) : E->value.brief_description;
 
 		if (is_native) {
@@ -3100,11 +3154,13 @@ String EditorHelpBit::get_property_description(const StringName &p_class_name, c
 	}
 
 	String description;
-	// Non-native properties shouldn't be cached, nor translated.
-	bool is_native = ClassDB::class_exists(p_class_name);
-	DocTools *dd = EditorHelp::get_doc_data();
-	HashMap<String, DocData::ClassDoc>::ConstIterator E = dd->class_list.find(p_class_name);
+
+	const DocTools *dd = EditorHelp::get_doc_data();
+	const HashMap<String, DocData::ClassDoc>::ConstIterator E = dd->class_list.find(p_class_name);
 	if (E) {
+		// Non-native properties shouldn't be cached, nor translated.
+		const bool is_native = !E->value.is_script_doc;
+
 		for (const DocData::PropertyDoc &property : E->value.properties) {
 			String description_current = is_native ? DTR(property.description) : property.description;
 
@@ -3112,7 +3168,7 @@ String EditorHelpBit::get_property_description(const StringName &p_class_name, c
 			const String enum_name = class_enum.size() >= 2 ? class_enum[1] : "";
 			if (!enum_name.is_empty()) {
 				// Classes can use enums from other classes, so check from which it came.
-				HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(class_enum[0]);
+				const HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(class_enum[0]);
 				if (enum_class) {
 					for (DocData::ConstantDoc val : enum_class->value.constants) {
 						// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
@@ -3151,10 +3207,11 @@ String EditorHelpBit::get_method_description(const StringName &p_class_name, con
 	}
 
 	String description;
-	HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(p_class_name);
+
+	const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(p_class_name);
 	if (E) {
 		// Non-native methods shouldn't be cached, nor translated.
-		bool is_native = ClassDB::class_exists(p_class_name);
+		const bool is_native = !E->value.is_script_doc;
 
 		for (const DocData::MethodDoc &method : E->value.methods) {
 			String description_current = is_native ? DTR(method.description) : method.description;
@@ -3182,10 +3239,11 @@ String EditorHelpBit::get_signal_description(const StringName &p_class_name, con
 	}
 
 	String description;
-	HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(p_class_name);
+
+	const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(p_class_name);
 	if (E) {
 		// Non-native signals shouldn't be cached, nor translated.
-		bool is_native = ClassDB::class_exists(p_class_name);
+		const bool is_native = !E->value.is_script_doc;
 
 		for (const DocData::MethodDoc &signal : E->value.signals) {
 			String description_current = is_native ? DTR(signal.description) : signal.description;
@@ -3213,12 +3271,13 @@ String EditorHelpBit::get_theme_item_description(const StringName &p_class_name,
 	}
 
 	String description;
+
 	bool found = false;
-	DocTools *dd = EditorHelp::get_doc_data();
+	const DocTools *dd = EditorHelp::get_doc_data();
 	HashMap<String, DocData::ClassDoc>::ConstIterator E = dd->class_list.find(p_class_name);
 	while (E) {
 		// Non-native theme items shouldn't be cached, nor translated.
-		bool is_native = ClassDB::class_exists(p_class_name);
+		const bool is_native = !E->value.is_script_doc;
 
 		for (const DocData::ThemeItemDoc &theme_item : E->value.theme_properties) {
 			String description_current = is_native ? DTR(theme_item.description) : theme_item.description;
@@ -3257,7 +3316,7 @@ void EditorHelpBit::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
 			rich_text->clear();
-			_add_text_to_rt(text, rich_text, this);
+			_add_text_to_rt(text, rich_text, this, doc_class_name);
 			rich_text->reset_size(); // Force recalculating size after parsing bbcode.
 		} break;
 	}
@@ -3266,7 +3325,7 @@ void EditorHelpBit::_notification(int p_what) {
 void EditorHelpBit::set_text(const String &p_text) {
 	text = p_text;
 	rich_text->clear();
-	_add_text_to_rt(text, rich_text, this);
+	_add_text_to_rt(text, rich_text, this, doc_class_name);
 }
 
 EditorHelpBit::EditorHelpBit() {
@@ -3303,6 +3362,8 @@ void EditorHelpTooltip::parse_tooltip(const String &p_text) {
 	const String &class_name = slices[1];
 	const String &property_name = slices[2];
 	const String &property_args = slices[3];
+
+	doc_class_name = class_name;
 
 	String formatted_text;
 
@@ -3356,6 +3417,170 @@ EditorHelpTooltip::EditorHelpTooltip(const String &p_text, const String &p_custo
 
 	get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 0));
 }
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+/// EditorHelpHighlighter ///
+
+EditorHelpHighlighter *EditorHelpHighlighter::singleton = nullptr;
+
+void EditorHelpHighlighter::create_singleton() {
+	ERR_FAIL_COND(singleton != nullptr);
+	singleton = memnew(EditorHelpHighlighter);
+}
+
+void EditorHelpHighlighter::free_singleton() {
+	ERR_FAIL_NULL(singleton);
+	memdelete(singleton);
+	singleton = nullptr;
+}
+
+EditorHelpHighlighter *EditorHelpHighlighter::get_singleton() {
+	return singleton;
+}
+
+EditorHelpHighlighter::HighlightData EditorHelpHighlighter::_get_highlight_data(Language p_language, const String &p_source, bool p_use_cache) {
+	switch (p_language) {
+		case LANGUAGE_GDSCRIPT:
+#ifndef MODULE_GDSCRIPT_ENABLED
+			ERR_FAIL_V_MSG(HighlightData(), "GDScript module is disabled.");
+#endif
+			break;
+		case LANGUAGE_CSHARP:
+#ifndef MODULE_MONO_ENABLED
+			ERR_FAIL_V_MSG(HighlightData(), "Mono module is disabled.");
+#endif
+			break;
+		default:
+			ERR_FAIL_V_MSG(HighlightData(), "Invalid parameter \"p_language\".");
+	}
+
+	if (p_use_cache) {
+		const HashMap<String, HighlightData>::ConstIterator E = highlight_data_caches[p_language].find(p_source);
+		if (E) {
+			return E->value;
+		}
+	}
+
+	text_edits[p_language]->set_text(p_source);
+	scripts[p_language]->set_source_code(p_source);
+	highlighters[p_language]->_update_cache();
+
+	HighlightData result;
+
+	int source_offset = 0;
+	int result_index = 0;
+	for (int i = 0; i < text_edits[p_language]->get_line_count(); i++) {
+		const Dictionary dict = highlighters[p_language]->_get_line_syntax_highlighting_impl(i);
+
+		result.resize(result.size() + dict.size());
+
+		const Variant *key = nullptr;
+		int prev_column = -1;
+		while ((key = dict.next(key)) != nullptr) {
+			const int column = *key;
+			ERR_FAIL_COND_V(column <= prev_column, HighlightData());
+			prev_column = column;
+
+			const Color color = dict[*key].operator Dictionary().get("color", Color());
+
+			result.write[result_index] = { source_offset + column, color };
+			result_index++;
+		}
+
+		source_offset += text_edits[p_language]->get_line(i).length() + 1; // Plus newline.
+	}
+
+	if (p_use_cache) {
+		highlight_data_caches[p_language][p_source] = result;
+	}
+
+	return result;
+}
+
+void EditorHelpHighlighter::highlight(RichTextLabel *p_rich_text_label, Language p_language, const String &p_source, bool p_use_cache) {
+	ERR_FAIL_NULL(p_rich_text_label);
+
+	const HighlightData highlight_data = _get_highlight_data(p_language, p_source, p_use_cache);
+
+	if (!highlight_data.is_empty()) {
+		for (int i = 1; i < highlight_data.size(); i++) {
+			const Pair<int, Color> &prev = highlight_data[i - 1];
+			const Pair<int, Color> &curr = highlight_data[i];
+			p_rich_text_label->push_color(prev.second);
+			p_rich_text_label->add_text(p_source.substr(prev.first, curr.first - prev.first));
+			p_rich_text_label->pop(); // color
+		}
+
+		const Pair<int, Color> &last = highlight_data[highlight_data.size() - 1];
+		p_rich_text_label->push_color(last.second);
+		p_rich_text_label->add_text(p_source.substr(last.first));
+		p_rich_text_label->pop(); // color
+	}
+}
+
+void EditorHelpHighlighter::reset_cache() {
+	const Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+	highlight_data_caches[LANGUAGE_GDSCRIPT].clear();
+	text_edits[LANGUAGE_GDSCRIPT]->add_theme_color_override("font_color", text_color);
+#endif
+
+#ifdef MODULE_MONO_ENABLED
+	highlight_data_caches[LANGUAGE_CSHARP].clear();
+	text_edits[LANGUAGE_CSHARP]->add_theme_color_override("font_color", text_color);
+#endif
+}
+
+EditorHelpHighlighter::EditorHelpHighlighter() {
+#ifdef MODULE_GDSCRIPT_ENABLED
+	TextEdit *gdscript_text_edit = memnew(TextEdit);
+
+	Ref<GDScript> gdscript;
+	gdscript.instantiate();
+
+	Ref<GDScriptSyntaxHighlighter> gdscript_highlighter;
+	gdscript_highlighter.instantiate();
+	gdscript_highlighter->set_text_edit(gdscript_text_edit);
+	gdscript_highlighter->_set_edited_resource(gdscript);
+
+	text_edits[LANGUAGE_GDSCRIPT] = gdscript_text_edit;
+	scripts[LANGUAGE_GDSCRIPT] = gdscript;
+	highlighters[LANGUAGE_GDSCRIPT] = gdscript_highlighter;
+#endif
+
+#ifdef MODULE_MONO_ENABLED
+	TextEdit *csharp_text_edit = memnew(TextEdit);
+
+	Ref<CSharpScript> csharp;
+	csharp.instantiate();
+
+	Ref<EditorStandardSyntaxHighlighter> csharp_highlighter;
+	csharp_highlighter.instantiate();
+	csharp_highlighter->set_text_edit(csharp_text_edit);
+	csharp_highlighter->_set_edited_resource(csharp);
+
+	text_edits[LANGUAGE_CSHARP] = csharp_text_edit;
+	scripts[LANGUAGE_CSHARP] = csharp;
+	highlighters[LANGUAGE_CSHARP] = csharp_highlighter;
+#endif
+}
+
+EditorHelpHighlighter::~EditorHelpHighlighter() {
+#ifdef MODULE_GDSCRIPT_ENABLED
+	memdelete(text_edits[LANGUAGE_GDSCRIPT]);
+	scripts[LANGUAGE_GDSCRIPT].unref();
+	highlighters[LANGUAGE_GDSCRIPT].unref();
+#endif
+
+#ifdef MODULE_MONO_ENABLED
+	memdelete(text_edits[LANGUAGE_CSHARP]);
+	scripts[LANGUAGE_CSHARP].unref();
+	highlighters[LANGUAGE_CSHARP].unref();
+#endif
+}
+
+#endif // defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 
 /// FindBar ///
 
