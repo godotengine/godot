@@ -106,7 +106,7 @@ struct Shape::Impl
     {
         //Path bounding size
         if (rs.path.pts.count > 0 ) {
-            auto pts = rs.path.pts.data;
+            auto pts = rs.path.pts.begin();
             Point min = { pts->x, pts->y };
             Point max = { pts->x, pts->y };
 
