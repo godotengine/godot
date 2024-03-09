@@ -394,7 +394,7 @@
 		<member name="vrs_texture" type="Texture2D" setter="set_vrs_texture" getter="get_vrs_texture">
 			Texture to use when [member vrs_mode] is set to [constant Viewport.VRS_TEXTURE].
 			The texture [i]must[/i] use a lossless compression format so that colors can be matched precisely. The following VRS densities are mapped to various colors, with brighter colors representing a lower level of shading precision:
-			[codeblock]
+			[codeblock lang=text]
 			- 1×1 = rgb(0, 0, 0)     - #000000
 			- 1×2 = rgb(0, 85, 0)    - #005500
 			- 2×1 = rgb(85, 0, 0)    - #550000

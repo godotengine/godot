@@ -249,7 +249,7 @@
 			<param index="0" name="position" type="Vector2i" />
 			<description>
 				Returns the ID of the window at the specified screen [param position] (in pixels). On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
-				[codeblock]
+				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
 				+-------------+ |       |
@@ -282,7 +282,7 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -308,7 +308,7 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -334,7 +334,7 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -361,7 +361,7 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -386,7 +386,7 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -415,7 +415,7 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -441,7 +441,7 @@
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -459,7 +459,7 @@
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -479,7 +479,7 @@
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -495,7 +495,7 @@
 				Removes all items from the global menu with ID [param menu_root].
 				[b]Note:[/b] This method is implemented only on macOS.
 				[b]Supported system menu IDs:[/b]
-				[codeblock]
+				[codeblock lang=text]
 				"_main" - Main menu (macOS).
 				"_dock" - Dock popup menu (macOS).
 				"_apple" - Apple menu (macOS, custom items added before "Services").
@@ -1022,7 +1022,7 @@
 				Returns the dots per inch density of the specified screen. If [param screen] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
 				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
 				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
-				[codeblock]
+				[codeblock lang=text]
 				   ldpi - 120 dpi
 				   mdpi - 160 dpi
 				   hdpi - 240 dpi
@@ -1072,7 +1072,7 @@
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the screen's top-left corner position in pixels. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
-				[codeblock]
+				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
 				+-------------+ |       |
@@ -1674,7 +1674,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the position of the given window to [param position]. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
-				[codeblock]
+				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
 				+-------------+ |       |
