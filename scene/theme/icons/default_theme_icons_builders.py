@@ -65,7 +65,7 @@ def make_default_theme_icons_action(target, source, env):
 
     s.write("#endif\n")
 
-    with open(dst, "w") as f:
+    with open(dst, "w", encoding="utf-8", newline="\n") as f:
         f.write(s.getvalue())
 
     s.close()

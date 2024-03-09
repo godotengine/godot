@@ -16,7 +16,7 @@ from platform_methods import subprocess_main
 
 def make_doc_header(target, source, env):
     dst = target[0]
-    g = open(dst, "w", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
     buf = ""
     docbegin = ""
     docend = ""
@@ -53,7 +53,7 @@ def make_doc_header(target, source, env):
 def make_translations_header(target, source, env, category):
     dst = target[0]
 
-    g = open(dst, "w", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _{}_TRANSLATIONS_H\n".format(category.upper()))

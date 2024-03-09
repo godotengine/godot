@@ -19,7 +19,7 @@ reg_apis += "}\n\n"
 unreg_apis += "}\n"
 
 # NOTE: It is safe to generate this file here, since this is still execute serially
-with open("register_platform_apis.gen.cpp", "w", encoding="utf-8") as f:
+with open("register_platform_apis.gen.cpp", "w", encoding="utf-8", newline="\n") as f:
     f.write(reg_apis_inc)
     f.write(reg_apis)
     f.write(unreg_apis)

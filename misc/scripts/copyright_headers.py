@@ -90,6 +90,6 @@ while line != "":  # Dump everything until EOF
 fileread.close()
 
 # Write
-filewrite = open(fname.strip(), "w")
+filewrite = open(fname.strip(), "w", encoding="utf-8", newline="\n")
 filewrite.write(text)
 filewrite.close()

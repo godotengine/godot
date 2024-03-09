@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 def make_default_controller_mappings(target, source, env):
     dst = target[0]
-    g = open(dst, "w")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write('#include "core/typedefs.h"\n')
