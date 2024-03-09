@@ -688,18 +688,26 @@ void FileSystemDock::_set_current_path_line_edit_text(const String &p_path) {
 }
 
 void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites) {
+	if(p_path.size() == 0) {
+		return;
+	}
+	file_list_search_box->clear();
 	if (p_path == "Favorites") {
 		current_path = p_path;
 	} else {
-		String target_path = p_path;
+		String file = p_path;
+		if (file.find("::") > 0) {
+			file = p_path.get_slice("::", 0);		
+		}
+		String target_path = file;
 		// If the path is a file, do not only go to the directory in the tree, also select the file in the file list.
 		if (target_path.ends_with("/")) {
 			target_path = target_path.substr(0, target_path.length() - 1);
 		}
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (da->file_exists(p_path)) {
+		if (da->file_exists(file)) {
 			current_path = target_path;
-		} else if (da->dir_exists(p_path)) {
+		} else if (da->dir_exists(file)) {
 			current_path = target_path + "/";
 		} else {
 			ERR_FAIL_MSG(vformat("Cannot navigate to '%s' as it has not been found in the file system!", p_path));
@@ -732,7 +740,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 }
 
 void FileSystemDock::navigate_to_path(const String &p_path) {
-	file_list_search_box->clear();
+
 	_navigate_to_path(p_path);
 
 	// Ensure that the FileSystem dock is visible.

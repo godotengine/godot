@@ -12,8 +12,8 @@ void CharacterBodyPart::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("init_form_mesh_instance","p_mesh_instance","bone_mapping"), &CharacterBodyPart::init_form_mesh_instance,DEFVAL(Dictionary()));
 
-    ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"skin"), "set_skin", "get_skin");
-    ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"mesh"), "set_mesh", "get_mesh");
-    ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"material"), "set_material", "get_material");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"skin",PROPERTY_HINT_RESOURCE_TYPE,"Skin"), "set_skin", "get_skin");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"mesh",PROPERTY_HINT_RESOURCE_TYPE,"Mesh"),"set_mesh", "get_mesh");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"material",PROPERTY_HINT_RESOURCE_TYPE,"BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
     
 }

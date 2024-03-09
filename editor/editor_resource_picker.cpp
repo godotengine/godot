@@ -128,6 +128,7 @@ void EditorResourcePicker::_resource_selected() {
 		return;
 	}
 
+	FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
 	emit_signal(SNAME("resource_selected"), edited_resource, false);
 }
 

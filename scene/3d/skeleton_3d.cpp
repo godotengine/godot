@@ -1030,7 +1030,7 @@ void Skeleton3D::_bind_methods() {
 	
 	ClassDB::bind_method(D_METHOD("get_human_bone_mapping"), &Skeleton3D::get_human_bone_mapping);
 	
-	ClassDB::bind_method(D_METHOD("set_human_bone_mapping:", "mapping"), &Skeleton3D::set_human_bone_mapping);
+	ClassDB::bind_method(D_METHOD("set_human_bone_mapping", "mapping"), &Skeleton3D::set_human_bone_mapping);
 
 	ClassDB::bind_method(D_METHOD("get_bone_rest", "bone_idx"), &Skeleton3D::get_bone_rest);
 	ClassDB::bind_method(D_METHOD("set_bone_rest", "bone_idx", "rest"), &Skeleton3D::set_bone_rest);

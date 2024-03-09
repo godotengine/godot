@@ -24,7 +24,7 @@ class CharacterBodyPart : public Resource
 
 
 public:
-    void set_skin(Ref<Skin> p_skin)
+    void set_skin(const Ref<Skin>& p_skin)
     {
         skin = p_skin;
     }
@@ -33,7 +33,7 @@ public:
         return skin;
     }
 
-    void set_mesh(Ref<Mesh> p_mesh)
+    void set_mesh(const Ref<Mesh>& p_mesh)
     {
         mesh = p_mesh;
     }
@@ -43,7 +43,7 @@ public:
         return mesh;
     }
 
-    void set_material(Ref<Material> p_material)
+    void set_material(const Ref<Material>& p_material)
     {
         material = p_material;
     }
