@@ -146,7 +146,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 void ScriptCreateDialog::_path_hbox_sorted() {
 	if (is_visible()) {
 		int filename_start_pos = file_path->get_text().rfind("/") + 1;
-		int filename_end_pos = file_path->get_text().length();
+		int filename_end_pos = file_path->get_text().get_basename().length();
 
 		if (!is_built_in) {
 			file_path->select(filename_start_pos, filename_end_pos);
