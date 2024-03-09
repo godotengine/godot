@@ -254,7 +254,7 @@ void Skeleton3D::_update_process_order() {
 }
 
 
-Quaternion get_shortest_arc(Quaternion q_current, Quaternion q_prev) {
+Quaternion get_shortest_arc(const Quaternion &q_current, const Quaternion &q_prev) {
 	// Avoid the quaternion taking the longest path for this versions's new rotation vs the last
 	if(q_current.dot(q_prev) < 0.0) {
 		return -q_current;
