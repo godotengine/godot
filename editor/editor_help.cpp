@@ -2622,20 +2622,25 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->set_cell_padding(Rect2(10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE));
 			p_rt->push_color(code_dark_color);
 
-			if (lang.is_empty() || lang == "gdscript") {
+			bool codeblock_printed = false;
+
 #ifdef MODULE_GDSCRIPT_ENABLED
+			if (!codeblock_printed && (lang.is_empty() || lang == "gdscript")) {
 				EditorHelpHighlighter::get_singleton()->highlight(p_rt, EditorHelpHighlighter::LANGUAGE_GDSCRIPT, codeblock_text, is_native);
-#else
-				p_rt->add_text(codeblock_text);
+				codeblock_printed = true;
+			}
 #endif
-			} else if (lang == "csharp") {
+
 #ifdef MODULE_MONO_ENABLED
+			if (!codeblock_printed && lang == "csharp") {
 				EditorHelpHighlighter::get_singleton()->highlight(p_rt, EditorHelpHighlighter::LANGUAGE_CSHARP, codeblock_text, is_native);
-#else
-				p_rt->add_text(codeblock_text);
+				codeblock_printed = true;
+			}
 #endif
-			} else {
+
+			if (!codeblock_printed) {
 				p_rt->add_text(codeblock_text);
+				codeblock_printed = true;
 			}
 
 			p_rt->pop(); // color
