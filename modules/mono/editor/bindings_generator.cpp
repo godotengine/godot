@@ -125,6 +125,20 @@ const Vector<String> ignored_types = {};
 // Don't check against all C# reserved words, as many cases are GDScript-specific.
 const Vector<String> langword_check = { "true", "false", "null" };
 
+// The following properties currently need to be defined with `new` to avoid warnings. We treat
+// them as a special case instead of silencing the warnings altogether, to be warned if more
+// shadowing appears.
+const Vector<String> prop_allowed_inherited_member_hiding = {
+	"ArrayMesh.BlendShapeMode",
+	"Button.TextDirection",
+	"Label.TextDirection",
+	"LineEdit.TextDirection",
+	"LinkButton.TextDirection",
+	"MenuBar.TextDirection",
+	"RichTextLabel.TextDirection",
+	"TextEdit.TextDirection",
+};
+
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
 	// any of the changes done here to the 'uint32_t' type interface as well.
@@ -2568,6 +2582,10 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	}
 
 	p_output.append(MEMBER_BEGIN "public ");
+
+	if (prop_allowed_inherited_member_hiding.has(p_itype.proxy_name + "." + p_iprop.proxy_name)) {
+		p_output.append("new ");
+	}
 
 	if (p_itype.is_singleton) {
 		p_output.append("static ");
