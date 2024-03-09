@@ -450,6 +450,9 @@ protected:                                                                      
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {                                                                                        \
 		return &m_class::_bind_methods;                                                                                                          \
 	}                                                                                                                                            \
+	_FORCE_INLINE_ static void (*_get_bind_editor_methods())() {                                                                                 \
+		return &m_class::_bind_editor_methods;                                                                                                   \
+	}                                                                                                                                            \
 	_FORCE_INLINE_ static void (*_get_bind_compatibility_methods())() {                                                                          \
 		return &m_class::_bind_compatibility_methods;                                                                                            \
 	}                                                                                                                                            \
@@ -464,6 +467,9 @@ public:                                                                         
 		::ClassDB::_add_class<m_class>();                                                                                                        \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                                   \
 			_bind_methods();                                                                                                                     \
+		}                                                                                                                                        \
+		if (m_class::_get_bind_editor_methods() != m_inherits::_get_bind_editor_methods()) {                                                     \
+			_bind_editor_methods();                                                                                                              \
 		}                                                                                                                                        \
 		if (m_class::_get_bind_compatibility_methods() != m_inherits::_get_bind_compatibility_methods()) {                                       \
 			_bind_compatibility_methods();                                                                                                       \
@@ -702,6 +708,7 @@ protected:
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
 
 	static void _bind_methods();
+	static void _bind_editor_methods() {}
 #ifndef DISABLE_DEPRECATED
 	static void _bind_compatibility_methods();
 #else
@@ -717,6 +724,9 @@ protected:
 
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
 		return &Object::_bind_methods;
+	}
+	_FORCE_INLINE_ static void (*_get_bind_editor_methods())() {
+		return &Object::_bind_editor_methods;
 	}
 	_FORCE_INLINE_ static void (*_get_bind_compatibility_methods())() {
 		return &Object::_bind_compatibility_methods;
