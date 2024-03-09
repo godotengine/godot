@@ -142,26 +142,22 @@ mat4 dual_quaternion_to_matrix(vec4 Qn, vec4 Qd)
 	return M;
 }
 
-vec4 unpack_q0(uint index) {
-	mat4 mat_data = mat4(bone_transforms.data[index], bone_transforms.data[index + 1], bone_transforms.data[index + 2], vec4(0.0, 0.0, 0.0, 1.0));
-	vec4 row1 = mat_data[0];
-	vec4 row2 = mat_data[1];
-	return vec4(row1.x, row1.y, row1.z, row2.x);
-}
 
-vec4 unpack_q1(uint index) {
-	mat4 mat_data = mat4(bone_transforms.data[index], bone_transforms.data[index + 1], bone_transforms.data[index + 2], vec4(0.0, 0.0, 0.0, 1.0));
-	vec4 row2 = mat_data[1];
-	vec4 row3 = mat_data[2];
-	return vec4(row2.y, row2.z, row3.x, row3.y);
-}
+mat3 adjointTransposeMatrix(mat3 M) {
+	mat3 atM;
+	atM[0][0] = M[2][2] * M[1][1] - M[1][2] * M[2][1];
+	atM[0][1] = M[1][2] * M[2][0] - M[1][0] * M[2][2];
+	atM[0][2] = M[1][0] * M[2][1] - M[2][0] * M[1][1];
 
-vec3 unpack_scale(uint index) {
-	mat4 mat_data = mat4(bone_transforms.data[index], bone_transforms.data[index + 1], bone_transforms.data[index + 2], vec4(0.0, 0.0, 0.0, 1.0));
-	vec4 row1 = mat_data[0];
-	vec4 row2 = mat_data[1];
-	vec4 row3 = mat_data[2];
-	return vec3(row1.w, row2.w, row3.w);
+	atM[1][0] = M[0][2] * M[2][1] - M[2][2] * M[0][1];
+	atM[1][1] = M[2][2] * M[0][0] - M[0][2] * M[2][0];
+	atM[1][2] = M[2][0] * M[0][1] - M[0][0] * M[2][1];
+
+	atM[2][0] = M[1][2] * M[0][1] - M[0][2] * M[1][1];
+	atM[2][1] = M[1][0] * M[0][2] - M[1][2] * M[0][0];
+	atM[2][2] = M[0][0] * M[1][1] - M[1][0] * M[0][1];
+
+	return atM;
 }
 
 
@@ -294,8 +290,8 @@ void main() {
 		uint skin_offset = params.skin_stride * index;
 
 		uvec2 bones = uvec2(src_bone_weights.data[skin_offset + 0], src_bone_weights.data[skin_offset + 1]);
-		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 3; //pre-add xform offset
-		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 3;
+		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 5; //pre-add xform offset
+		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 5;
 
 		skin_offset += params.skin_weight_offset;
 
@@ -304,39 +300,13 @@ void main() {
 		vec2 weights_01 = unpackUnorm2x16(weights.x);
 		vec2 weights_23 = unpackUnorm2x16(weights.y);
 
-		//mat4 m = mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
-		//m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
-		//m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
-		//m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
+		mat4 mlin = mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
+		mlin += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
+		mlin += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
+		mlin += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
 
-
-		vec4 blend_q0_0 = weights_01.x * unpack_q0(bones_01.x);
-		vec4 blend_q0_1 = weights_01.y * unpack_q0(bones_01.y);
-		vec4 blend_q0_2 = weights_23.x * unpack_q0(bones_23.x);
-		vec4 blend_q0_3 = weights_23.y * unpack_q0(bones_23.y);
-
-		vec4 blend_q1_0 = weights_01.x * unpack_q1(bones_01.x);
-		vec4 blend_q1_1 = weights_01.y * unpack_q1(bones_01.y);
-		vec4 blend_q1_2 = weights_23.x * unpack_q1(bones_23.x);
-		vec4 blend_q1_3 = weights_23.y * unpack_q1(bones_23.y);
-
-		if (dot(blend_q0_0, blend_q0_1) < 0.0) {
-			blend_q0_1 *= -1.0;
-			blend_q1_1 *= -1.0;
-		}
-		if (dot(blend_q0_0, blend_q0_2) < 0.0) {
-			blend_q0_2 *= -1.0;
-			blend_q1_2 *= -1.0;
-		}
-		if (dot(blend_q0_0, blend_q0_3) < 0.0) {
-			blend_q0_3 *= -1.0;
-			blend_q1_3 *= -1.0;
-		}
-
-		vec4 blend_q0 = weights_01.x * blend_q0_0 + weights_01.y * blend_q0_1 + weights_23.x * blend_q0_2 + weights_23.y * blend_q0_3;
-		vec4 blend_q1 = weights_01.x * blend_q1_0 + weights_01.y * blend_q1_1 + weights_23.x * blend_q1_2 + weights_23.y * blend_q1_3;
-
-		//vec3 scale = weights_01.x * unpack_scale(bones_01.x) + weights_01.y * unpack_scale(bones_01.y) + weights_23.x * unpack_scale(bones_23.x) + weights_23.y * unpack_scale(bones_23.y);
+		vec4 blend_q0 = weights_01.x * bone_transforms.data[bones_01.x + 3] + weights_01.y * bone_transforms.data[bones_01.y + 3] + weights_23.x * bone_transforms.data[bones_23.x + 3] + weights_23.y * bone_transforms.data[bones_23.y + 3];
+		vec4 blend_q1 = weights_01.x * bone_transforms.data[bones_01.x + 4] + weights_01.y * bone_transforms.data[bones_01.y + 4] + weights_23.x * bone_transforms.data[bones_23.x + 4] + weights_23.y * bone_transforms.data[bones_23.y + 4];
 
 		if (params.skin_weight_offset == 4) {
 			//using 8 bones/weights
@@ -353,28 +323,46 @@ void main() {
 			weights_01 = unpackUnorm2x16(weights.x);
 			weights_23 = unpackUnorm2x16(weights.y);
 
-			//m += mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
-			//m += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
-			//m += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
-			//m += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
-			//TODO!!!!!!!!!!!!!!!!
-			//blend_q0 += weights_01.x * unpack_q0(bones_01.x) + weights_01.y * unpack_q0(bones_01.y) + weights_23.x * unpack_q0(bones_23.x) + weights_23.y * unpack_q0(bones_23.y);
-			//blend_q1 += weights_01.x * unpack_q1(bones_01.x) + weights_01.y * unpack_q1(bones_01.y) + weights_23.x * unpack_q1(bones_23.x) + weights_23.y * unpack_q1(bones_23.y);
-			//scale += weights_01.x * unpack_scale(bones_01.x) + weights_01.y * unpack_scale(bones_01.y) + weights_23.x * unpack_scale(bones_23.x) + weights_23.y * unpack_scale(bones_23.y);
+			mlin += mat4(bone_transforms.data[bones_01.x], bone_transforms.data[bones_01.x + 1], bone_transforms.data[bones_01.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.x;
+			mlin += mat4(bone_transforms.data[bones_01.y], bone_transforms.data[bones_01.y + 1], bone_transforms.data[bones_01.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_01.y;
+			mlin += mat4(bone_transforms.data[bones_23.x], bone_transforms.data[bones_23.x + 1], bone_transforms.data[bones_23.x + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.x;
+			mlin += mat4(bone_transforms.data[bones_23.y], bone_transforms.data[bones_23.y + 1], bone_transforms.data[bones_23.y + 2], vec4(0.0, 0.0, 0.0, 1.0)) * weights_23.y;
+
+			blend_q0 += weights_01.x * bone_transforms.data[bones_01.x + 3] + weights_01.y * bone_transforms.data[bones_01.y + 3] + weights_23.x * bone_transforms.data[bones_23.x + 3] + weights_23.y * bone_transforms.data[bones_23.y + 3];
+			blend_q1 += weights_01.x * bone_transforms.data[bones_01.x + 4] + weights_01.y * bone_transforms.data[bones_01.y + 4] + weights_23.x * bone_transforms.data[bones_23.x + 4] + weights_23.y * bone_transforms.data[bones_23.y + 4];
 		}
 
-		mat4 m = dual_quaternion_to_matrix(blend_q0, blend_q1);
-		
-		// TODO how to conserve local scale?
-		//m[0].xyz *= scale.x;
-		//m[1].xyz *= scale.y;
-		//m[2].xyz *= scale.z;
+		mat4 mquat = dual_quaternion_to_matrix(blend_q0, blend_q1);
 
-		//reverse order because its transposed
-		//dual quaternion however is not transposed. To restore this, swap the * operator ordering
-		vertex = (m * vec4(vertex, 1.0)).xyz;
-		normal = normalize(m * vec4(normal, 0.0)).xyz;
-		tangent.xyz = normalize(m * vec4(tangent.xyz, 0.0)).xyz;
+		/*  ===========
+		// TODO scale doesnt work with quaternion
+		mat3 blendS = mat3(
+			vec3(length(mlin[0].xyz), 0, 0),
+			vec3(0, length(mlin[1].xyz), 0),
+			vec3(0, 0, length(mlin[2].xyz))
+		);
+
+		vec3 pass1_vertex = vertex * blendS;
+		mat3 blendSrotAT = adjointTransposeMatrix(blendS);
+		vec3 pass1_normal = normalize(blendSrotAT * normal);
+		vec4 pass1_tangent = normalize(vec4(blendSrotAT * tangent.xyz, 0.0));
+		=========== */
+
+		vec3 vertex_lin = (vec4(vertex, 1.0) * mlin).xyz;
+		vec3 normal_lin = normalize(vec4(normal, 0.0) * mlin).xyz;
+		vec3 tangent_lin = normalize(vec4(tangent.xyz, 0.0) * mlin).xyz;
+
+		vertex = (mquat * vec4(vertex, 1.0)).xyz;
+		normal = normalize(mquat * vec4(normal, 0.0)).xyz;
+		tangent.xyz = normalize(mquat * vec4(tangent.xyz, 0.0)).xyz;
+
+		float lin_blend = 0.5;
+		float quat_blend = 1.0 - lin_blend;
+
+		vertex = vertex * quat_blend + vertex_lin * lin_blend;
+		normal = normal * quat_blend + normal_lin * lin_blend;
+		tangent.xyz = tangent.xyz * quat_blend + tangent_lin * lin_blend;
+
 	}
 
 	uint dst_offset = index * params.vertex_stride;

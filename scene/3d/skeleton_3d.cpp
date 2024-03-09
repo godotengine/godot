@@ -287,18 +287,26 @@ Transform3D dual_quaternion_to_matrix(Quaternion Qn, Quaternion Qd)
 	return M;
 }
 
-Quaternion avoid_jumps(Quaternion q_current, Quaternion q_prev) {
+Quaternion get_shortest_arc(Quaternion q_current, Quaternion q_prev) {
 	// Avoid the quaternion taking the longest path for this versions's new rotation vs the last
-	float len1 = (q_prev - q_current).length_squared();
-	float len2 = (q_prev + q_current).length_squared();
-	if(len1 < len2) {
+	// this method doesnt quite work right. Quaternion seems to become trapped in negative rotation
+	if(q_current.dot(q_prev) < 0.0) {
 		return -q_current;
-	} else {
-		return q_current;
 	}
+	return q_current;
+	
+	// float len1 = (q_prev - q_current).length_squared();
+	// float len2 = (q_prev + q_current).length_squared();
+	// if(len1 < len2) {
+	// 	return -q_current;
+	// } else {
+	// 	return q_current;
+	// }
 }
 
-Quaternion quat_trans_2UDQ(Quaternion q0, Vector3 t) {
+
+
+Quaternion quat_trans_2UDQ(const Quaternion &q0, const Vector3 &t) {
 	//Original version of this function is in https://users.cs.utah.edu/~ladislav/dq/dqconv.c
 	return Quaternion(
 		0.5*( t.x*q0.w + t.y*q0.z - t.z*q0.y),
@@ -307,6 +315,47 @@ Quaternion quat_trans_2UDQ(Quaternion q0, Vector3 t) {
 		-0.5*(t.x*q0.x + t.y*q0.y + t.z*q0.z)
 	);
 }
+
+struct DualQuaternion {
+	Quaternion real; Quaternion dual;
+};
+struct DualNumber {
+	float real; float dual;
+};
+
+DualNumber magnitude(const DualQuaternion &dq) {
+	DualQuaternion dq_conjugate = {
+		Quaternion(-dq.real.get_axis(), dq.real.get_angle()), 
+		Quaternion(-dq.dual.get_axis(), dq.dual.get_angle())
+	};
+	DualQuaternion magnitude_squared = {dq.real * dq_conjugate.real, (dq.real * dq_conjugate.dual) + (dq.dual * dq_conjugate.real)};
+	float real_of_root = Math::sqrt(magnitude_squared.real.get_angle());
+	float dual_of_root = magnitude_squared.dual.get_angle() / (2.0f * real_of_root);
+
+	return DualNumber {real_of_root, dual_of_root};
+}
+
+DualQuaternion normalize(const DualQuaternion &dq) {
+      // see the explanation in the self-normalization method
+
+      DualNumber dn = magnitude(dq);
+      Quaternion a = dq.real;
+      Quaternion b = dq.dual;
+      float c = dn.real;
+      float inverse_c = 1 / c;
+      float inverse_c_squared = inverse_c * inverse_c;
+      float d = dn.dual;
+
+      // ac / c^2 = a/c
+      Quaternion new_real = a * inverse_c;
+
+      // (-ad + bc)e / c^2
+      Quaternion new_dual = ((-1.0f) * a * d * inverse_c_squared) + (b * inverse_c);
+
+      return DualQuaternion { new_real, new_dual };
+}
+
+
 
 void Skeleton3D::_notification(int p_what) {
 	switch (p_what) {
@@ -378,38 +427,20 @@ void Skeleton3D::_notification(int p_what) {
 					uint32_t bone_index = E->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
 
-					Transform3D M1 = Transform3D(bonesptr[bone_index].pose_global);
-					Vector3 m_scale = M1.basis.get_scale_local();
-					M1.basis.scale(m_scale.inverse()); // remove scaling from the basis. This seems to still have some scale? minor
-					Transform3D Mj = M1 * skin->get_bind_pose(i);
+					Transform3D prev = rs->skeleton_bone_get_transform(skeleton, i);
+					Transform3D Mj = bonesptr[bone_index].pose_global * skin->get_bind_pose(i);
 					Vector3 t = Mj.origin;
-					Transform3D M0 = rs->skeleton_bone_get_transform(skeleton, i);
-					Quaternion previous_q0 = Quaternion(  // unpack from previous calculation
-						M0.basis.rows[0][0], M0.basis.rows[0][1], M0.basis.rows[0][2], M0.basis.rows[1][0]
-					);
-					// TODO here there is a problem it seems it can get permanently locked into the wrong rotation
-					// when objects fly very far. Not using this causes rotations to snap at certain angles.
 
-					//Quaternion q0 = avoid_jumps(Mj.basis.get_rotation_quaternion(), previous_q0);
-					Quaternion q0 = Mj.basis.get_rotation_quaternion();
+					// This works to keep quaternions stable, basing it off the shortest path between the
+					// previous frame's linear transformation and the new one
+					Quaternion q0 = get_shortest_arc( 
+						Mj.basis.scaled(Mj.basis.get_scale_local().inverse()).get_rotation_quaternion(),
+						prev.basis.get_rotation_quaternion()
+					);
 					Quaternion q1 = quat_trans_2UDQ(q0, t);
 
-					// pack the quaternions into the matrix
-					// TODO we can pack this better.
-					Mj.basis.rows[0][0] = q0.x;
-					Mj.basis.rows[0][1] = q0.y;
-					Mj.basis.rows[0][2] = q0.z;
-					Mj.origin.x = t.x;
-					Mj.basis.rows[1][0] = q0.w;
-					Mj.basis.rows[1][1] = q1.x;
-					Mj.basis.rows[1][2] = q1.y;
-					Mj.origin.y = t.y;
-					Mj.basis.rows[2][0] = q1.z;
-					Mj.basis.rows[2][1] = q1.w;
-					Mj.basis.rows[2][2] = 0.0;
-					Mj.origin.z = t.z;
-
 					rs->skeleton_bone_set_transform(skeleton, i, Mj);
+					rs->skeleton_bone_set_dq_transform(skeleton, i, q0, q1);
 				}
 			}
 			emit_signal(SceneStringNames::get_singleton()->pose_updated);

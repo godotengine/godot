@@ -608,6 +608,8 @@ AABB MeshStorage::mesh_get_custom_aabb(RID p_mesh) const {
 	return mesh->custom_aabb;
 }
 
+#define SKELETON_3D_DATA_SIZE 12
+
 AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL_V(mesh, AABB());
@@ -674,7 +676,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 						continue; //bone is unused
 					}
 
-					const float *dataptr = baseptr + j * 12;
+					const float *dataptr = baseptr + j * SKELETON_3D_DATA_SIZE;
 
 					Transform3D mtx;
 
@@ -2221,7 +2223,7 @@ void MeshStorage::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const 
 	ERR_FAIL_INDEX(p_bone, skeleton->size);
 	ERR_FAIL_COND(skeleton->use_2d);
 
-	float *dataptr = skeleton->data.ptrw() + p_bone * 12;
+	float *dataptr = skeleton->data.ptrw() + p_bone * SKELETON_3D_DATA_SIZE;
 
 	dataptr[0] = p_transform.basis.rows[0][0];
 	dataptr[1] = p_transform.basis.rows[0][1];
@@ -2239,6 +2241,29 @@ void MeshStorage::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const 
 	_skeleton_make_dirty(skeleton);
 }
 
+
+void MeshStorage::skeleton_bone_set_dq_transform(RID p_skeleton, int p_bone, const Quaternion &real, const Quaternion &dual) {
+	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
+
+	ERR_FAIL_NULL(skeleton);
+	ERR_FAIL_INDEX(p_bone, skeleton->size);
+	ERR_FAIL_COND(skeleton->use_2d);
+
+	float *dataptr = skeleton->data.ptrw() + p_bone * SKELETON_3D_DATA_SIZE;
+
+	dataptr[12] = real.x;
+	dataptr[13] = real.y;
+	dataptr[14] = real.z;
+	dataptr[15] = real.w;
+	dataptr[16] = dual.x;
+	dataptr[17] = dual.y;
+	dataptr[18] = dual.z;
+	dataptr[19] = dual.w;
+
+	_skeleton_make_dirty(skeleton);
+}
+
+
 Transform3D MeshStorage::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
@@ -2246,7 +2271,7 @@ Transform3D MeshStorage::skeleton_bone_get_transform(RID p_skeleton, int p_bone)
 	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Transform3D());
 	ERR_FAIL_COND_V(skeleton->use_2d, Transform3D());
 
-	const float *dataptr = skeleton->data.ptr() + p_bone * 12;
+	const float *dataptr = skeleton->data.ptr() + p_bone * SKELETON_3D_DATA_SIZE;
 
 	Transform3D t;
 
