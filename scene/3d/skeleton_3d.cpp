@@ -253,61 +253,18 @@ void Skeleton3D::_update_process_order() {
 	process_order_dirty = false;
 }
 
-Transform3D dual_quaternion_to_matrix(Quaternion Qn, Quaternion Qd)
-{
-	//Original version of this function is in https://users.cs.utah.edu/~ladislav/dq/dqs.cg
-	Transform3D M = Transform3D();
-	float len2 = Qn.dot(Qn);
-	float w = Qn.w;
-	float x = Qn.x;
-	float y = Qn.y;
-	float z = Qn.z;
-	
-	float t0 = Qd.w;
-	float t1 = Qd.x;
-	float t2 = Qd.y;
-	float t3 = Qd.z;
-
-	M.basis.rows[0][0] = w*w + x*x - y*y - z*z;
-	M.basis.rows[0][1] = 2.0*x*y - 2.0*w*z; 
-	M.basis.rows[0][2] = 2.0*x*z + 2.0*w*y;
-	M.basis.rows[1][0] = (2.0*x*y + 2.0*w*z); 
-	M.basis.rows[1][1] = (w*w + y*y - x*x - z*z); 
-	M.basis.rows[1][2] = (2.0*y*z - 2.0*w*x); 
-	M.basis.rows[2][0] = 2.0*x*z - 2.0*w*y; 
-	M.basis.rows[2][1] = 2.0*y*z + 2.0*w*x; 
-	M.basis.rows[2][2] = w*w + z*z - x*x - y*y;
-	
-	M.origin.x = -2.0*t0*x + 2.0*w*t1 - 2.0*t2*z + 2.0*y*t3;
-	M.origin.y = -2.0*t0*y + 2.0*t1*z - 2.0*x*t3 + 2.0*w*t2;
-	M.origin.z = -2.0*t0*z + 2.0*x*t2 + 2.0*w*t3 - 2.0*t1*y;
-	
-	M *= 1 / len2;
-	
-	return M;
-}
 
 Quaternion get_shortest_arc(Quaternion q_current, Quaternion q_prev) {
 	// Avoid the quaternion taking the longest path for this versions's new rotation vs the last
-	// this method doesnt quite work right. Quaternion seems to become trapped in negative rotation
 	if(q_current.dot(q_prev) < 0.0) {
 		return -q_current;
 	}
 	return q_current;
-	
-	// float len1 = (q_prev - q_current).length_squared();
-	// float len2 = (q_prev + q_current).length_squared();
-	// if(len1 < len2) {
-	// 	return -q_current;
-	// } else {
-	// 	return q_current;
-	// }
 }
 
 
-
 Quaternion quat_trans_2UDQ(const Quaternion &q0, const Vector3 &t) {
-	//Original version of this function is in https://users.cs.utah.edu/~ladislav/dq/dqconv.c
+	//Reference https://users.cs.utah.edu/~ladislav/dq/dqconv.c
 	return Quaternion(
 		0.5*( t.x*q0.w + t.y*q0.z - t.z*q0.y),
 		0.5*(-t.x*q0.z + t.y*q0.w + t.z*q0.x),
@@ -315,46 +272,6 @@ Quaternion quat_trans_2UDQ(const Quaternion &q0, const Vector3 &t) {
 		-0.5*(t.x*q0.x + t.y*q0.y + t.z*q0.z)
 	);
 }
-
-struct DualQuaternion {
-	Quaternion real; Quaternion dual;
-};
-struct DualNumber {
-	float real; float dual;
-};
-
-DualNumber magnitude(const DualQuaternion &dq) {
-	DualQuaternion dq_conjugate = {
-		Quaternion(-dq.real.get_axis(), dq.real.get_angle()), 
-		Quaternion(-dq.dual.get_axis(), dq.dual.get_angle())
-	};
-	DualQuaternion magnitude_squared = {dq.real * dq_conjugate.real, (dq.real * dq_conjugate.dual) + (dq.dual * dq_conjugate.real)};
-	float real_of_root = Math::sqrt(magnitude_squared.real.get_angle());
-	float dual_of_root = magnitude_squared.dual.get_angle() / (2.0f * real_of_root);
-
-	return DualNumber {real_of_root, dual_of_root};
-}
-
-DualQuaternion normalize(const DualQuaternion &dq) {
-      // see the explanation in the self-normalization method
-
-      DualNumber dn = magnitude(dq);
-      Quaternion a = dq.real;
-      Quaternion b = dq.dual;
-      float c = dn.real;
-      float inverse_c = 1 / c;
-      float inverse_c_squared = inverse_c * inverse_c;
-      float d = dn.dual;
-
-      // ac / c^2 = a/c
-      Quaternion new_real = a * inverse_c;
-
-      // (-ad + bc)e / c^2
-      Quaternion new_dual = ((-1.0f) * a * d * inverse_c_squared) + (b * inverse_c);
-
-      return DualQuaternion { new_real, new_dual };
-}
-
 
 
 void Skeleton3D::_notification(int p_what) {
