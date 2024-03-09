@@ -476,41 +476,35 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 		_add_text(m_message);                                                                   \
 	}
 
-void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview, bool p_override) {
+void EditorHelp::_add_method(const DocData::MethodDoc &p_method, MethodPlace p_method_place, bool p_allow_link, bool p_override) {
 	if (p_override) {
 		method_line[p_method.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 	}
 
-	const bool is_vararg = p_method.qualifiers.contains("vararg");
-
-	if (p_overview) {
+	if (p_method_place == METHOD_PLACE_OVERVIEW) {
 		class_desc->push_cell();
 		class_desc->push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
-	} else {
-		_add_bulletpoint();
-	}
-
-	_add_type(p_method.return_type, p_method.return_enum, p_method.return_is_bitfield);
-
-	if (p_overview) {
+		_add_type(p_method.return_type, p_method.return_enum, p_method.return_is_bitfield);
 		class_desc->pop(); // paragraph
 		class_desc->pop(); // cell
 		class_desc->push_cell();
-	} else {
+	} else if (p_method_place == METHOD_PLACE_DESCRIPTION) {
+		_add_bulletpoint();
+		_add_type(p_method.return_type, p_method.return_enum, p_method.return_is_bitfield);
 		class_desc->add_text(" ");
 	}
 
 	const bool is_documented = p_method.is_deprecated || p_method.is_experimental || !p_method.description.strip_edges().is_empty();
 
-	if (p_overview && is_documented) {
+	if (p_allow_link && is_documented) {
 		class_desc->push_meta("@method " + p_method.name);
 	}
 
-	class_desc->push_color(theme_cache.headline_color);
+	class_desc->push_color(p_method_place == METHOD_PLACE_PROPERTY_SETGET ? theme_cache.text_color : theme_cache.headline_color);
 	class_desc->add_text(p_method.name);
 	class_desc->pop(); // color
 
-	if (p_overview && is_documented) {
+	if (p_allow_link && is_documented) {
 		class_desc->pop(); // meta
 	}
 
@@ -528,8 +522,10 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		}
 
 		class_desc->add_text(argument.name);
-		class_desc->add_text(": ");
-		_add_type(argument.type, argument.enumeration, argument.is_bitfield);
+		if (p_method_place != METHOD_PLACE_PROPERTY_SETGET) {
+			class_desc->add_text(": ");
+			_add_type(argument.type, argument.enumeration, argument.is_bitfield);
+		}
 
 		if (!argument.default_value.is_empty()) {
 			class_desc->push_color(theme_cache.symbol_color);
@@ -544,7 +540,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->pop(); // color
 	}
 
-	if (is_vararg) {
+	if (p_method.qualifiers.contains("vararg")) {
 		class_desc->push_color(theme_cache.text_color);
 		if (!p_method.arguments.is_empty()) {
 			class_desc->add_text(", ");
@@ -559,7 +555,8 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->push_color(theme_cache.symbol_color);
 	class_desc->add_text(")");
 	class_desc->pop(); // color
-	if (!p_method.qualifiers.is_empty()) {
+
+	if (p_method_place != METHOD_PLACE_PROPERTY_SETGET && !p_method.qualifiers.is_empty()) {
 		class_desc->push_color(theme_cache.qualifier_color);
 
 		PackedStringArray qualifiers = p_method.qualifiers.split_spaces();
@@ -588,7 +585,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->pop(); // color
 	}
 
-	if (p_overview) {
+	if (p_method_place == METHOD_PLACE_OVERVIEW) {
 		if (p_method.is_deprecated) {
 			class_desc->add_text(" ");
 			DEPRECATED_DOC_TAG;
@@ -724,7 +721,7 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 			}
 
 			// For constructors always point to the first one.
-			_add_method(m[i], true, (p_method_type != METHOD_TYPE_CONSTRUCTOR || i == 0));
+			_add_method(m[i], METHOD_PLACE_OVERVIEW, true, p_method_type != METHOD_TYPE_CONSTRUCTOR || i == 0);
 		}
 
 		any_previous = !m.is_empty();
@@ -775,7 +772,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 
 			_push_code_font();
 			// For constructors always point to the first one.
-			_add_method(method, false, (p_method_type != METHOD_TYPE_CONSTRUCTOR || i == 0));
+			_add_method(method, METHOD_PLACE_DESCRIPTION, false, p_method_type != METHOD_TYPE_CONSTRUCTOR || i == 0);
 			_pop_code_font();
 
 			class_desc->add_newline();
@@ -1117,8 +1114,6 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Properties overview
-	HashSet<String> skip_methods;
-
 	bool has_properties = false;
 	bool has_property_descriptions = false;
 	for (const DocData::PropertyDoc &prop : cd.properties) {
@@ -1132,6 +1127,13 @@ void EditorHelp::_update_doc() {
 			break;
 		}
 	}
+
+	enum SkipMethodFlag {
+		SKIP_METHOD_FLAG_SETTER = 1,
+		SKIP_METHOD_FLAG_GETTER = 2,
+		SKIP_METHOD_FLAG_PRIVATE = 4,
+	};
+	HashMap<String, int> skip_methods;
 
 	if (has_properties) {
 		class_desc->add_newline();
@@ -1156,7 +1158,7 @@ void EditorHelp::_update_doc() {
 		bool overridden_property_exists = false;
 
 		for (const DocData::PropertyDoc &prop : cd.properties) {
-			// Ignore undocumented private.
+			// Ignore undocumented private properties.
 			const bool is_documented = prop.is_deprecated || prop.is_experimental || !prop.description.strip_edges().is_empty();
 			if (!is_documented && prop.name.begins_with("_")) {
 				continue;
@@ -1189,11 +1191,19 @@ void EditorHelp::_update_doc() {
 			bool describe = false;
 
 			if (!prop.setter.is_empty()) {
-				skip_methods.insert(prop.setter);
+				if (skip_methods.has(prop.setter)) {
+					skip_methods[prop.setter] |= SKIP_METHOD_FLAG_SETTER;
+				} else {
+					skip_methods[prop.setter] = SKIP_METHOD_FLAG_SETTER;
+				}
 				describe = true;
 			}
 			if (!prop.getter.is_empty()) {
-				skip_methods.insert(prop.getter);
+				if (skip_methods.has(prop.getter)) {
+					skip_methods[prop.getter] |= SKIP_METHOD_FLAG_GETTER;
+				} else {
+					skip_methods[prop.getter] = SKIP_METHOD_FLAG_GETTER;
+				}
 				describe = true;
 			}
 
@@ -1312,18 +1322,26 @@ void EditorHelp::_update_doc() {
 	bool sort_methods = EDITOR_GET("text_editor/help/sort_functions_alphabetically");
 
 	Vector<DocData::MethodDoc> methods;
-
+	HashMap<String, const DocData::MethodDoc *> method_map;
 	for (const DocData::MethodDoc &method : cd.methods) {
-		if (skip_methods.has(method.name)) {
-			if (method.arguments.is_empty() /* getter */ || (method.arguments.size() == 1 && method.return_type == "void" /* setter */)) {
+		method_map[method.name] = &method;
+
+		const bool is_documented = method.is_deprecated || method.is_experimental || !method.description.strip_edges().is_empty();
+		// Ignore undocumented setters and getters.
+		if (!is_documented && skip_methods.has(method.name)) {
+			const int argc = method.arguments.size();
+			const int skip_flags = skip_methods[method.name];
+			// Ignore only setters/getters without additional arguments.
+			if ((argc == 1 && (skip_flags & SKIP_METHOD_FLAG_SETTER)) || (argc == 0 && (skip_flags & SKIP_METHOD_FLAG_GETTER))) {
 				continue;
 			}
 		}
-		// Ignore undocumented non virtual private.
-		const bool is_documented = method.is_deprecated || method.is_experimental || !method.description.strip_edges().is_empty();
+		// Ignore undocumented non-virtual private methods.
 		if (!is_documented && method.name.begins_with("_") && !method.qualifiers.contains("virtual")) {
+			skip_methods[method.name] = SKIP_METHOD_FLAG_PRIVATE;
 			continue;
 		}
+		skip_methods.erase(method.name);
 		methods.push_back(method);
 	}
 
@@ -1588,7 +1606,7 @@ void EditorHelp::_update_doc() {
 
 				enums[constant.enumeration].push_back(constant);
 			} else {
-				// Ignore undocumented private.
+				// Ignore undocumented private properties.
 				const bool is_documented = constant.is_deprecated || constant.is_experimental || !constant.description.strip_edges().is_empty();
 				if (!is_documented && constant.name.begins_with("_")) {
 					continue;
@@ -2026,7 +2044,7 @@ void EditorHelp::_update_doc() {
 			if (prop.overridden) {
 				continue;
 			}
-			// Ignore undocumented private.
+			// Ignore undocumented private properties.
 			const bool is_documented = prop.is_deprecated || prop.is_experimental || !prop.description.strip_edges().is_empty();
 			if (!is_documented && prop.name.begins_with("_")) {
 				continue;
@@ -2069,95 +2087,89 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); // color
 			}
 
-			if (cd.is_script_doc && (!prop.setter.is_empty() || !prop.getter.is_empty())) {
-				class_desc->push_color(theme_cache.symbol_color);
-				class_desc->add_text(" [" + TTR("property:") + " ");
-				class_desc->pop(); // color
-
-				if (!prop.setter.is_empty()) {
-					class_desc->push_color(theme_cache.value_color);
-					class_desc->add_text("setter");
-					class_desc->pop(); // color
-				}
-				if (!prop.getter.is_empty()) {
-					if (!prop.setter.is_empty()) {
-						class_desc->push_color(theme_cache.symbol_color);
-						class_desc->add_text(", ");
-						class_desc->pop(); // color
-					}
-					class_desc->push_color(theme_cache.value_color);
-					class_desc->add_text("getter");
-					class_desc->pop(); // color
-				}
-
-				class_desc->push_color(theme_cache.symbol_color);
-				class_desc->add_text("]");
-				class_desc->pop(); // color
-			}
-
 			_pop_code_font();
 			class_desc->pop(); // cell
 
-			// Script doc doesn't have setter, getter.
-			if (!cd.is_script_doc) {
-				HashMap<String, DocData::MethodDoc> method_map;
-				for (int j = 0; j < methods.size(); j++) {
-					method_map[methods[j].name] = methods[j];
-				}
+			if (!prop.setter.is_empty()) {
+				class_desc->push_cell();
+				class_desc->pop(); // cell
 
-				if (!prop.setter.is_empty()) {
-					class_desc->push_cell();
-					class_desc->pop(); // cell
+				class_desc->push_cell();
+				_push_code_font();
 
-					class_desc->push_cell();
-					_push_code_font();
-					class_desc->push_color(theme_cache.text_color);
-
-					if (method_map[prop.setter].arguments.size() > 1) {
-						// Setters with additional arguments are exposed in the method list, so we link them here for quick access.
-						class_desc->push_meta("@method " + prop.setter);
-						class_desc->add_text(prop.setter + TTR("(value)"));
-						class_desc->pop(); // meta
-					} else {
-						class_desc->add_text(prop.setter + TTR("(value)"));
-					}
-
-					class_desc->pop(); // color
-					class_desc->push_color(theme_cache.comment_color);
-					class_desc->add_text(" setter");
-					class_desc->pop(); // color
-					_pop_code_font();
-					class_desc->pop(); // cell
-
+				const bool has_setter_link = method_line.has(prop.setter);
+				if (!has_setter_link) {
 					method_line[prop.setter] = property_line[prop.name];
 				}
 
-				if (!prop.getter.is_empty()) {
-					class_desc->push_cell();
-					class_desc->pop(); // cell
-
-					class_desc->push_cell();
-					_push_code_font();
+				if (method_map.has(prop.setter)) {
+					_add_method(*method_map[prop.setter], METHOD_PLACE_PROPERTY_SETGET, has_setter_link, false);
+				} else {
 					class_desc->push_color(theme_cache.text_color);
-
-					if (!method_map[prop.getter].arguments.is_empty()) {
-						// Getters with additional arguments are exposed in the method list, so we link them here for quick access.
-						class_desc->push_meta("@method " + prop.getter);
-						class_desc->add_text(prop.getter + "()");
-						class_desc->pop(); // meta
+					if (prop.setter.begins_with("@")) {
+						// GDScript inline setter.
+						class_desc->add_text("<inline setter>");
 					} else {
-						class_desc->add_text(prop.getter + "()");
+						class_desc->add_text(prop.setter);
 					}
-
 					class_desc->pop(); // color
-					class_desc->push_color(theme_cache.comment_color);
-					class_desc->add_text(" getter");
-					class_desc->pop(); // color
-					_pop_code_font();
-					class_desc->pop(); // cell
 
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text("(");
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.text_color);
+					class_desc->add_text("value");
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text(")");
+					class_desc->pop(); // color
+				}
+
+				class_desc->push_color(theme_cache.comment_color);
+				class_desc->add_text(" setter");
+				class_desc->pop(); // color
+
+				_pop_code_font();
+				class_desc->pop(); // cell
+			}
+
+			if (!prop.getter.is_empty()) {
+				class_desc->push_cell();
+				class_desc->pop(); // cell
+
+				class_desc->push_cell();
+				_push_code_font();
+
+				const bool has_getter_link = method_line.has(prop.getter);
+				if (!has_getter_link) {
 					method_line[prop.getter] = property_line[prop.name];
 				}
+
+				if (method_map.has(prop.getter)) {
+					_add_method(*method_map[prop.getter], METHOD_PLACE_PROPERTY_SETGET, has_getter_link, false);
+				} else {
+					class_desc->push_color(theme_cache.text_color);
+					if (prop.getter.begins_with("@")) {
+						// GDScript inline getter.
+						class_desc->add_text("<inline getter>");
+					} else {
+						class_desc->add_text(prop.getter);
+					}
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text("()");
+					class_desc->pop(); // color
+				}
+
+				class_desc->push_color(theme_cache.comment_color);
+				class_desc->add_text(" getter");
+				class_desc->pop(); // color
+
+				_pop_code_font();
+				class_desc->pop(); // cell
 			}
 
 			class_desc->pop(); // table
