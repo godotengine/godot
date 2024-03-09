@@ -383,8 +383,8 @@ def is_module(path):
     return True
 
 
-def write_disabled_classes(class_list):
-    f = open("core/disabled_classes.gen.h", "w")
+def write_disabled_classes(class_list, output_filepath):
+    f = open(output_filepath, "w")
     f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     f.write("#ifndef DISABLED_CLASSES_GEN_H\n")
     f.write("#define DISABLED_CLASSES_GEN_H\n\n")

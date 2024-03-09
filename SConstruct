@@ -533,7 +533,7 @@ if selected_platform in platform_list:
         except:
             print("Error opening feature build profile: " + env["build_profile"])
             Exit(255)
-    methods.write_disabled_classes(disabled_classes)
+    methods.write_disabled_classes(disabled_classes, "core/disabled_classes.gen.h")
 
     # Platform specific flags.
     # These can sometimes override default options.
