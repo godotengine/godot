@@ -11,7 +11,7 @@
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY  KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -20,52 +20,29 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_LOCK_H_
-#define _TVG_LOCK_H_
+#ifndef _TVG_ANIMATION_H_
+#define _TVG_ANIMATION_H_
 
-#ifdef THORVG_THREAD_SUPPORT
+#include "tvgCommon.h"
+#include "tvgPaint.h"
+#include "tvgPicture.h"
 
-#include <mutex>
+struct Animation::Impl
+{
+    Picture* picture = nullptr;
 
-namespace tvg {
-
-    struct Key
+    Impl()
     {
-        std::mutex mtx;
-    };
+        picture = Picture::gen().release();
+        PP(picture)->ref();
+    }
 
-    struct ScopedLock
+    ~Impl()
     {
-        Key* key = nullptr;
-
-        ScopedLock(Key& k)
-        {
-            k.mtx.lock();
-            key = &k;
+        if (PP(picture)->unref() == 0) {
+            delete(picture);
         }
+    }
+};
 
-        ~ScopedLock()
-        {
-            key->mtx.unlock();
-        }
-    };
-
-}
-
-#else //THORVG_THREAD_SUPPORT
-
-namespace tvg {
-
-    struct Key {};
-
-    struct ScopedLock
-    {
-        ScopedLock(Key& key) {}
-    };
-
-}
-
-#endif //THORVG_THREAD_SUPPORT
-
-#endif //_TVG_LOCK_H_
-
+#endif //_TVG_ANIMATION_H_

@@ -59,7 +59,7 @@ struct Surface
     uint32_t w = 0, h = 0;
     ColorSpace cs = ColorSpace::Unsupported;
     uint8_t channelSize = 0;
-    bool premultiplied = 0;         //Alpha-premultiplied
+    bool premultiplied = false;         //Alpha-premultiplied
 
     Surface()
     {
