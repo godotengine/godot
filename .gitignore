@@ -18,16 +18,12 @@
 # - Visual Studio specific
 # - OS specific
 
-###########################
-### Build configuration ###
-###########################
+## Build configuration
 
 /custom.py
 misc/hooks/pre-commit-custom-*
 
-#############################
-### Godot generated files ###
-#############################
+## Godot generated files
 
 # Buildsystem
 bin
@@ -45,9 +41,7 @@ logs/
 tests/data/*.translation
 tests/data/crypto/out*
 
-############################
-### General build output ###
-############################
+## General build output
 
 # C/C++ generated
 *.a
@@ -95,9 +89,7 @@ platform/web/node_modules/
 # Misc
 *.debug
 
-#############################
-### IDE and tool specific ###
-#############################
+## IDE and tool specific
 
 # Automake
 .deps/*
@@ -211,9 +203,7 @@ xcuserdata/
 *.xccheckout
 *.xcodeproj/*
 
-##############################
-### Visual Studio specific ###
-##############################
+## Visual Studio specific
 
 # https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 # Ignore Visual Studio temporary files, build results, and
@@ -345,9 +335,7 @@ ServiceFabricBackup/
 # Hint file for IntelliSense
 cpp.hint
 
-###################
-### OS specific ###
-###################
+## OS specific
 
 # Linux
 *~
