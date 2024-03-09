@@ -382,11 +382,11 @@ public partial class VariantUtils
             var godotObject = ConvertToGodotObject(variant);
 
             //Disable the "Possible null reference return" warning for this line
-            #pragma warning disable CS8603
+#pragma warning disable CS8603
 
             //Only cast if the type matches, otherwise sends null
             return godotObject is T ? (T)(object)godotObject : default;
-            #pragma warning restore CS8603
+#pragma warning restore CS8603
         }
 
         // `typeof(T).IsValueType` is optimized away
