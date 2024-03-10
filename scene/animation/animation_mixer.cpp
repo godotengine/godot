@@ -1491,6 +1491,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							t->value = Animation::blend_variant(t->value, value, blend);
 						}
 					} else {
+						t->use_discrete = true;
 						if (seeked) {
 							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
 							if (idx < 0) {
@@ -1514,7 +1515,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						}
-						t->use_discrete = true;
 					}
 				} break;
 				case Animation::TYPE_METHOD: {

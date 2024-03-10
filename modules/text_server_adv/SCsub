@@ -9,7 +9,7 @@ env_text_server_adv = env_modules.Clone()
 def make_icu_data(target, source, env):
     dst = target[0].srcnode().abspath
 
-    g = open(dst, "w", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")

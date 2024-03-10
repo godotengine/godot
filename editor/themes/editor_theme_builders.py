@@ -12,7 +12,7 @@ from platform_methods import subprocess_main
 def make_fonts_header(target, source, env):
     dst = target[0]
 
-    g = open(dst, "w", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _EDITOR_FONTS_H\n")
