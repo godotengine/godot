@@ -409,7 +409,7 @@ static bool _recognizeShape(SvgNode* node, Shape* shape)
         }
         case SvgNodeType::Polygon: {
             if (node->node.polygon.pts.count < 2) break;
-            auto pts = node->node.polygon.pts.data;
+            auto pts = node->node.polygon.pts.begin();
             shape->moveTo(pts[0], pts[1]);
             for (pts += 2; pts < node->node.polygon.pts.end(); pts += 2) {
                 shape->lineTo(pts[0], pts[1]);
@@ -419,7 +419,7 @@ static bool _recognizeShape(SvgNode* node, Shape* shape)
         }
         case SvgNodeType::Polyline: {
             if (node->node.polyline.pts.count < 2) break;
-            auto pts = node->node.polyline.pts.data;
+            auto pts = node->node.polyline.pts.begin();
             shape->moveTo(pts[0], pts[1]);
             for (pts += 2; pts < node->node.polyline.pts.end(); pts += 2) {
                 shape->lineTo(pts[0], pts[1]);
