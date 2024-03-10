@@ -179,12 +179,14 @@ def get_version_info(module_version_string="", silent=False):
     gitfolder = ".git"
 
     if os.path.isfile(".git"):
-        module_folder = open(".git", "r").readline().strip()
+        with open(".git", "r") as file:
+            module_folder = file.readline().strip()
         if module_folder.startswith("gitdir: "):
             gitfolder = module_folder[8:]
 
     if os.path.isfile(os.path.join(gitfolder, "HEAD")):
-        head = open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8").readline().strip()
+        with open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8") as file:
+            head = file.readline().strip()
         if head.startswith("ref: "):
             ref = head[5:]
             # If this directory is a Git worktree instead of a root clone.
@@ -194,7 +196,8 @@ def get_version_info(module_version_string="", silent=False):
             head = os.path.join(gitfolder, ref)
             packedrefs = os.path.join(gitfolder, "packed-refs")
             if os.path.isfile(head):
-                githash = open(head, "r").readline().strip()
+                with open(head, "r") as file:
+                    githash = file.readline().strip()
             elif os.path.isfile(packedrefs):
                 # Git may pack refs into a single file. This code searches .git/packed-refs file for the current ref's hash.
                 # https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-pack-refs.html
@@ -230,9 +233,10 @@ def generate_version_header(module_version_string=""):
 
     # NOTE: It is safe to generate these files here, since this is still executed serially.
 
-    f = open("core/version_generated.gen.h", "w", encoding="utf-8", newline="\n")
-    f.write(
-        """/* THIS FILE IS GENERATED DO NOT EDIT */
+    with open("core/version_generated.gen.h", "w", encoding="utf-8", newline="\n") as f:
+        f.write(
+            """\
+/* THIS FILE IS GENERATED DO NOT EDIT */
 #ifndef VERSION_GENERATED_GEN_H
 #define VERSION_GENERATED_GEN_H
 #define VERSION_SHORT_NAME "{short_name}"
@@ -248,52 +252,49 @@ def generate_version_header(module_version_string=""):
 #define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
 #endif // VERSION_GENERATED_GEN_H
 """.format(
-            **version_info
+                **version_info
+            )
         )
-    )
-    f.close()
 
-    fhash = open("core/version_hash.gen.cpp", "w", encoding="utf-8", newline="\n")
-    fhash.write(
-        """/* THIS FILE IS GENERATED DO NOT EDIT */
+    with open("core/version_hash.gen.cpp", "w", encoding="utf-8", newline="\n") as fhash:
+        fhash.write(
+            """\
+/* THIS FILE IS GENERATED DO NOT EDIT */
 #include "core/version.h"
 const char *const VERSION_HASH = "{git_hash}";
 const uint64_t VERSION_TIMESTAMP = {git_timestamp};
 """.format(
-            **version_info
+                **version_info
+            )
         )
-    )
-    fhash.close()
 
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
-    fs = open(fname, "r")
-    line = fs.readline()
-
-    while line:
-        if re.match(r"^\s*uniform", line):
-            res = re.match(r"uniform ([\d\w]*) ([\d\w]*)")
-            type = res.groups(1)
-            name = res.groups(2)
-
-            uniforms.append(name)
-
-            if type.find("texobj") != -1:
-                sizes.append(1)
-            else:
-                t = re.match(r"float(\d)x(\d)", type)
-                if t:
-                    sizes.append(int(t.groups(1)) * int(t.groups(2)))
-                else:
-                    t = re.match(r"float(\d)", type)
-                    sizes.append(int(t.groups(1)))
-
-            if line.find("[branch]") != -1:
-                conditionals.append(name)
-
+    with open(fname, "r") as fs:
         line = fs.readline()
 
-    fs.close()
+        while line:
+            if re.match(r"^\s*uniform", line):
+                res = re.match(r"uniform ([\d\w]*) ([\d\w]*)")
+                type = res.groups(1)
+                name = res.groups(2)
+
+                uniforms.append(name)
+
+                if type.find("texobj") != -1:
+                    sizes.append(1)
+                else:
+                    t = re.match(r"float(\d)x(\d)", type)
+                    if t:
+                        sizes.append(int(t.groups(1)) * int(t.groups(2)))
+                    else:
+                        t = re.match(r"float(\d)", type)
+                        sizes.append(int(t.groups(1)))
+
+                if line.find("[branch]") != -1:
+                    conditionals.append(name)
+
+            line = fs.readline()
 
 
 def get_cmdline_bool(option, default):
@@ -384,15 +385,15 @@ def is_module(path):
 
 
 def write_disabled_classes(class_list):
-    f = open("core/disabled_classes.gen.h", "w", encoding="utf-8", newline="\n")
-    f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    f.write("#ifndef DISABLED_CLASSES_GEN_H\n")
-    f.write("#define DISABLED_CLASSES_GEN_H\n\n")
-    for c in class_list:
-        cs = c.strip()
-        if cs != "":
-            f.write("#define ClassDB_Disable_" + cs + " 1\n")
-    f.write("\n#endif\n")
+    with open("core/disabled_classes.gen.h", "w", encoding="utf-8", newline="\n") as f:
+        f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        f.write("#ifndef DISABLED_CLASSES_GEN_H\n")
+        f.write("#define DISABLED_CLASSES_GEN_H\n\n")
+        for c in class_list:
+            cs = c.strip()
+            if cs != "":
+                f.write("#define ClassDB_Disable_" + cs + " 1\n")
+        f.write("\n#endif\n")
 
 
 def write_modules(modules):
@@ -1246,7 +1247,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
     ).hexdigest()
 
     if os.path.exists(f"{project_name}.vcxproj.filters"):
-        existing_filters = open(f"{project_name}.vcxproj.filters", "r").read()
+        with open(f"{project_name}.vcxproj.filters", "r") as file:
+            existing_filters = file.read()
         match = re.search(r"(?ms)^<!-- CHECKSUM$.([0-9a-f]{32})", existing_filters)
         if match is not None and md5 == match.group(1):
             skip_filters = True
@@ -1257,7 +1259,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
     if not skip_filters:
         print(f"Regenerating {project_name}.vcxproj.filters")
 
-        filters_template = open("misc/msvs/vcxproj.filters.template", "r").read()
+        with open("misc/msvs/vcxproj.filters.template", "r") as file:
+            filters_template = file.read()
         for i in range(1, 10):
             filters_template = filters_template.replace(f"%%UUID{i}%%", str(uuid.uuid4()))
 
@@ -1410,7 +1413,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
             )
         output = f'bin\\godot{env["PROGSUFFIX"]}'
 
-        props_template = open("misc/msvs/props.template", "r").read()
+        with open("misc/msvs/props.template", "r") as file:
+            props_template = file.read()
 
         props_template = props_template.replace("%%VSCONF%%", vsconf)
         props_template = props_template.replace("%%CONDITION%%", condition)
@@ -1567,7 +1571,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
     section2 = sorted(section2)
 
     if not get_bool(original_args, "vsproj_props_only", False):
-        proj_template = open("misc/msvs/vcxproj.template", "r").read()
+        with open("misc/msvs/vcxproj.template", "r") as file:
+            proj_template = file.read()
         proj_template = proj_template.replace("%%UUID%%", proj_uuid)
         proj_template = proj_template.replace("%%CONFS%%", "\n    ".join(configurations))
         proj_template = proj_template.replace("%%IMPORTS%%", "\n  ".join(imports))
@@ -1578,7 +1583,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
             f.write(proj_template)
 
     if not get_bool(original_args, "vsproj_props_only", False):
-        sln_template = open("misc/msvs/sln.template", "r").read()
+        with open("misc/msvs/sln.template", "r") as file:
+            sln_template = file.read()
         sln_template = sln_template.replace("%%NAME%%", project_name)
         sln_template = sln_template.replace("%%UUID%%", proj_uuid)
         sln_template = sln_template.replace("%%SLNUUID%%", sln_uuid)
