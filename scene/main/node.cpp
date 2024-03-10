@@ -1301,6 +1301,7 @@ String Node::adjust_name_casing(const String &p_name) {
 }
 
 void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
+	ERR_FAIL_NULL(p_child);
 	/* Make sure the name is unique */
 
 	if (p_force_human_readable) {
