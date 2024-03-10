@@ -2861,7 +2861,12 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	for (const Ref<Theme> &theme : global_context->get_themes()) {
+	List<Ref<Theme>> themes = global_context->get_themes();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
+	}
+
+	for (const Ref<Theme> &theme : themes) {
 		if (theme.is_null()) {
 			continue;
 		}
