@@ -360,7 +360,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 			link_t = link_t.trim_suffix("[]");
 			display_t = display_t.trim_suffix("[]");
 
-			class_desc->push_meta("#Array"); // class
+			class_desc->push_meta("#Array", RichTextLabel::META_UNDERLINE_ON_HOVER); // class
 			class_desc->add_text("Array");
 			class_desc->pop(); // meta
 			class_desc->add_text("[");
@@ -374,9 +374,9 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 		}
 
 		if (is_enum_type) {
-			class_desc->push_meta("$" + link_t); // enum
+			class_desc->push_meta("$" + link_t, RichTextLabel::META_UNDERLINE_ON_HOVER); // enum
 		} else {
-			class_desc->push_meta("#" + link_t); // class
+			class_desc->push_meta("#" + link_t, RichTextLabel::META_UNDERLINE_ON_HOVER); // class
 		}
 	}
 	class_desc->add_text(display_t);
@@ -503,7 +503,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	const bool is_documented = p_method.is_deprecated || p_method.is_experimental || !p_method.description.strip_edges().is_empty();
 
 	if (p_overview && is_documented) {
-		class_desc->push_meta("@method " + p_method.name);
+		class_desc->push_meta("@method " + p_method.name, RichTextLabel::META_UNDERLINE_ON_HOVER);
 	}
 
 	class_desc->push_color(theme_cache.headline_color);
@@ -1210,7 +1210,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(theme_cache.headline_color);
 
 			if (describe) {
-				class_desc->push_meta("@member " + prop.name);
+				class_desc->push_meta("@member " + prop.name, RichTextLabel::META_UNDERLINE_ON_HOVER);
 			}
 
 			class_desc->add_text(prop.name);
@@ -2452,12 +2452,16 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
 			Color target_color = link_color;
+			RichTextLabel::MetaUnderline underline_mode = RichTextLabel::META_UNDERLINE_ON_HOVER;
 			if (link_tag == "method" || link_tag == "constructor" || link_tag == "operator") {
 				target_color = link_method_color;
 			} else if (link_tag == "member" || link_tag == "signal" || link_tag == "theme_item") {
 				target_color = link_property_color;
 			} else if (link_tag == "annotation") {
 				target_color = link_annotation_color;
+			} else {
+				// Better visibility for constants, enums, etc.
+				underline_mode = RichTextLabel::META_UNDERLINE_ALWAYS;
 			}
 
 			// Use monospace font to make clickable references
@@ -2465,7 +2469,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
 			p_rt->push_color(target_color);
-			p_rt->push_meta("@" + link_tag + " " + link_target);
+			p_rt->push_meta("@" + link_tag + " " + link_target, underline_mode);
 
 			if (link_tag == "member" &&
 					((!link_target.contains(".") && (p_class == "ProjectSettings" || p_class == "EditorSettings")) ||
@@ -2526,7 +2530,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
 			p_rt->push_color(type_color);
-			p_rt->push_meta("#" + tag);
+			p_rt->push_meta("#" + tag, RichTextLabel::META_UNDERLINE_ON_HOVER);
 
 			p_rt->add_text(tag);
 
@@ -2618,20 +2622,25 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->set_cell_padding(Rect2(10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE));
 			p_rt->push_color(code_dark_color);
 
-			if (lang.is_empty() || lang == "gdscript") {
+			bool codeblock_printed = false;
+
 #ifdef MODULE_GDSCRIPT_ENABLED
+			if (!codeblock_printed && (lang.is_empty() || lang == "gdscript")) {
 				EditorHelpHighlighter::get_singleton()->highlight(p_rt, EditorHelpHighlighter::LANGUAGE_GDSCRIPT, codeblock_text, is_native);
-#else
-				p_rt->add_text(codeblock_text);
+				codeblock_printed = true;
+			}
 #endif
-			} else if (lang == "csharp") {
+
 #ifdef MODULE_MONO_ENABLED
+			if (!codeblock_printed && lang == "csharp") {
 				EditorHelpHighlighter::get_singleton()->highlight(p_rt, EditorHelpHighlighter::LANGUAGE_CSHARP, codeblock_text, is_native);
-#else
-				p_rt->add_text(codeblock_text);
+				codeblock_printed = true;
+			}
 #endif
-			} else {
+
+			if (!codeblock_printed) {
 				p_rt->add_text(codeblock_text);
+				codeblock_printed = true;
 			}
 
 			p_rt->pop(); // color

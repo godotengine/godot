@@ -40,7 +40,7 @@ def run_in_subprocess(builder_function):
         args = (target, source, filtered_env)
         data = dict(fn=function_name, args=args)
         json_path = os.path.join(os.environ["TMP"], uuid.uuid4().hex + ".json")
-        with open(json_path, "wt") as json_file:
+        with open(json_path, "wt", encoding="utf-8", newline="\n") as json_file:
             json.dump(data, json_file, indent=2)
         json_file_size = os.stat(json_path).st_size
 
@@ -138,7 +138,7 @@ def generate_export_icons(platform_path, platform_name):
 
         # NOTE: It is safe to generate this file here, since this is still executed serially.
         wf = export_path + "/" + name + "_svg.gen.h"
-        with open(wf, "w") as svgw:
+        with open(wf, "w", encoding="utf-8", newline="\n") as svgw:
             svgw.write(svg_str)
 
 

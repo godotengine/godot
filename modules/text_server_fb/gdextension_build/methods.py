@@ -83,7 +83,7 @@ def disable_warnings(self):
 
 def make_icu_data(target, source, env):
     dst = target[0].srcnode().abspath
-    g = open(dst, "w", encoding="utf-8")
+    g = open(dst, "w", encoding="utf-8", newline="\n")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
@@ -108,7 +108,7 @@ def make_icu_data(target, source, env):
 
 def write_macos_plist(target, binary_name, identifier, name):
     os.makedirs(f"{target}/Resource/", exist_ok=True)
-    f = open(f"{target}/Resource/Info.plist", "w")
+    f = open(f"{target}/Resource/Info.plist", "w", encoding="utf-8", newline="\n")
 
     f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n')
     f.write(f'<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
