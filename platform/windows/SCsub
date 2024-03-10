@@ -4,7 +4,6 @@ Import("env")
 
 import os
 from pathlib import Path
-from platform_methods import run_in_subprocess
 import platform_windows_builders
 
 sources = []
@@ -135,8 +134,8 @@ if env["d3d12"]:
 
 if not os.getenv("VCINSTALLDIR"):
     if env["debug_symbols"]:
-        env.AddPostAction(prog, run_in_subprocess(platform_windows_builders.make_debug_mingw))
+        env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
         if env["windows_subsystem"] == "gui":
-            env.AddPostAction(prog_wrap, run_in_subprocess(platform_windows_builders.make_debug_mingw))
+            env.AddPostAction(prog_wrap, env.Run(platform_windows_builders.make_debug_mingw))
 
 env.platform_sources += sources
