@@ -9,6 +9,8 @@ from typing import Optional, Iterable
 
 from platform_methods import subprocess_main
 
+shader_include_search_paths = [("%s/" % os.path.dirname(__file__))]  # Godot Engine Root Directory
+
 
 def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True):
     """Take header data and generate inline code
@@ -76,11 +78,15 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
         while line.find("#include ") != -1:
             includeline = line.replace("#include ", "").strip()[1:-1]
 
-            if includeline.startswith("thirdparty/"):
-                included_file = os.path.relpath(includeline)
+            # Attempt to find the include right next to the shader
+            included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
 
-            else:
-                included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
+            # If we were unable to find the file, try to use the search paths
+            if not os.path.isfile(included_file):
+                for current_search_path in shader_include_search_paths:
+                    included_file = os.path.relpath(current_search_path + includeline)
+                    if os.path.isfile(included_file):
+                        break
 
             if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
                 header_data.vertex_included_files += [included_file]
