@@ -25,8 +25,7 @@ using namespace godot;
 #endif // LIMBOAI_GDEXTENSION
 
 class LimboStringNames {
-	friend void initialize_limboai_module(ModuleInitializationLevel p_level);
-	friend void uninitialize_limboai_module(ModuleInitializationLevel p_level);
+public:
 
 	static LimboStringNames *singleton;
 

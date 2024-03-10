@@ -10,6 +10,9 @@
 #include "body_part.h"
 #include "animation_help.h"
 
+
+#include "modules/limboai/bt/bt_player.h"
+
 // 身体的插槽信息
 class BodySocket
 {
@@ -32,14 +35,50 @@ public:
     void init_main_body(String p_skeleton_file_path,StringName p_animation_group);
     void clear_all();
 
+public:
+	void set_behavior_tree(const Ref<BehaviorTree> &p_tree)
+    {
+        get_bt_player()->set_behavior_tree(p_tree);
+    }
+	Ref<BehaviorTree> get_behavior_tree()  { return get_bt_player()->get_behavior_tree(); };
+
+	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan)
+    {
+        get_bt_player()->set_blackboard_plan(p_plan);
+    }
+	Ref<BlackboardPlan> get_blackboard_plan() { return get_bt_player()->get_blackboard_plan(); }
+
+	void set_update_mode(int p_mode)
+    {
+        get_bt_player()->set_update_mode((BTPlayer::UpdateMode)p_mode);
+    }
+	int get_update_mode() { return (int)(get_bt_player()->get_update_mode()); }
+
+	Ref<Blackboard> get_blackboard()  { return get_bt_player()->get_blackboard(); }
+	void set_blackboard(const Ref<Blackboard> &p_blackboard) { get_bt_player()->set_blackboard(p_blackboard); }
+
+	void restart()
+    {
+        get_bt_player()->restart();
+    }
+	int get_last_status() { return get_bt_player()->get_last_status(); }
+
+	Ref<BTTask> get_tree_instance() { return get_bt_player()->get_tree_instance(); }
+
 protected:
     void load_skeleton();
     void load_mesh(const StringName& part_name,String p_mesh_file_path);
+    BTPlayer * get_bt_player();
+protected:
+    void behavior_tree_finished(int last_status);
+    void behavior_tree_update(int last_status);
+
 
 protected:
     Skeleton3D *skeleton = nullptr;
     AnimationPlayer *player = nullptr;
     AnimationTree *tree = nullptr;
+    mutable BTPlayer *btPlayer = nullptr;
     // 骨架配置文件
     String skeleton_res;
     // 动画组配置
