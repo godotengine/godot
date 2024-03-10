@@ -21,4 +21,3 @@ runs:
       with:
         name: 'godot-api-dump'
         path: './godot-api/*'
-

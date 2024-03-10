@@ -596,7 +596,7 @@ def build_gles3_header(
     fd.write("\t}\n\n")
 
     fd.write("};\n\n")
-    fd.write("#endif\n\n")
+    fd.write("#endif\n")
     fd.close()
 
 

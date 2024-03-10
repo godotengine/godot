@@ -151,7 +151,7 @@
 			<param index="1" name="destination_port" type="int" />
 			<param index="2" name="packet" type="PackedByteArray" />
 			<description>
-				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance. 
+				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance.
 				This is useful as it serves to establish entries in NAT routing tables on all devices between this bound instance and the public facing internet, allowing a prospective client's connection packets to be routed backward through the NAT device(s) between the public internet and this host.
 				This requires forward knowledge of a prospective client's address and communication port as seen by the public internet - after any NAT devices have handled their connection request. This information can be obtained by a [url=https://en.wikipedia.org/wiki/STUN]STUN[/url] service, and must be handed off to your host by an entity that is not the prospective client. This will never work for a client behind a Symmetric NAT due to the nature of the Symmetric NAT routing algorithm, as their IP and Port cannot be known beforehand.
 			</description>
