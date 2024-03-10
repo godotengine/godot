@@ -114,6 +114,7 @@ public:
 private:
 	void _build_parent_hierachy(Ref<GLTFState> p_state);
 	double _filter_number(double p_float);
+	void _round_min_max_components(Vector<double> &r_type_min, Vector<double> &r_type_max);
 	String _get_component_type_name(const uint32_t p_component);
 	int _get_component_type_size(const int p_component_type);
 	Error _parse_scenes(Ref<GLTFState> p_state);
@@ -262,7 +263,8 @@ private:
 
 	GLTFAccessorIndex _encode_accessor_as_ints(Ref<GLTFState> p_state,
 			const Vector<int32_t> p_attribs,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const bool p_for_indices);
 	GLTFAccessorIndex _encode_accessor_as_xform(Ref<GLTFState> p_state,
 			const Vector<Transform3D> p_attribs,
 			const bool p_for_vertex);
@@ -270,7 +272,7 @@ private:
 			const int p_count, const GLTFType p_type,
 			const int p_component_type, const bool p_normalized,
 			const int p_byte_offset, const bool p_for_vertex,
-			GLTFBufferViewIndex &r_accessor);
+			GLTFBufferViewIndex &r_accessor, const bool p_for_indices = false);
 	Error _encode_accessors(Ref<GLTFState> p_state);
 	Error _encode_buffer_views(Ref<GLTFState> p_state);
 	Error _serialize_materials(Ref<GLTFState> p_state);
