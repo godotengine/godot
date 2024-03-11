@@ -1434,7 +1434,7 @@ void Environment::_bind_methods() {
 	ADD_GROUP("DynamicGI", "dynamic_gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_enabled"), "set_dynamic_gi_enabled", "is_dynamic_gi_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_cascades", PROPERTY_HINT_RANGE, "1,8,1"), "set_dynamic_gi_cascades", "get_dynamic_gi_cascades");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_cascade_format", PROPERTY_HINT_ENUM, "16x8x16,16x16x16"), "set_dynamic_gi_cascade_format", "get_dynamic_gi_cascade_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_cascade_format", PROPERTY_HINT_ENUM, "16x8x16,16x16x16,16x16x16 75% Height,16x16x16 50% Height"), "set_dynamic_gi_cascade_format", "get_dynamic_gi_cascade_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_dynamic_gi_min_cell_size", "get_dynamic_gi_min_cell_size");
 	// Don't store the values of `dynamic_gi_cascade0_distance` and `dynamic_gi_max_distance`
 	// as they're derived from `dynamic_gi_min_cell_size`.
@@ -1657,6 +1657,8 @@ void Environment::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x8x16);
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16);
+	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT);
+	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT);
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_MAX);
 }
 

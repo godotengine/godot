@@ -653,7 +653,6 @@ public:
 		RID lightprobe_specular_data;
 		RID lightprobe_diffuse_data;
 		RID lightprobe_diffuse_tex;
-		RID lightprobe_ambient_data;
 		RID lightprobe_ambient_tex;
 		RID lightprobe_diffuse_filter_data;
 		RID lightprobe_diffuse_filter_tex;

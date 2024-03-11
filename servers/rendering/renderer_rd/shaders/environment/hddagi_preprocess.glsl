@@ -203,7 +203,7 @@ layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, l
 
 layout(r32ui, set = 0, binding = 1) uniform restrict uimage2DArray lightprobe_specular_data;
 layout(r32ui, set = 0, binding = 2) uniform restrict uimage2DArray lightprobe_diffuse_data;
-layout(r32ui, set = 0, binding = 3) uniform restrict uimage2DArray lightprobe_ambient_data;
+layout(rgba16f, set = 0, binding = 3) uniform restrict image2DArray lightprobe_ambient_tex;
 layout(r32ui, set = 0, binding = 4) uniform restrict uimage2DArray ray_hit_cache;
 layout(r32ui, set = 0, binding = 5) uniform restrict uimage2DArray lightprobe_moving_average_history;
 layout(r32ui, set = 0, binding = 6) uniform restrict uimage2DArray lightprobe_moving_average;
@@ -1407,7 +1407,7 @@ void main() {
 
 			if (local_pos == ivec2(0)) {
 				tex_array_pos = ivec3(base_tex_pos, upper_cascade);
-				ambient_light += rgbe_decode(imageLoad(lightprobe_ambient_data, tex_array_pos).r) * occlusion_blend[i];
+				ambient_light += imageLoad(lightprobe_ambient_tex, tex_array_pos).rgb * occlusion_blend[i];
 			}
 		}
 	}
@@ -1458,7 +1458,7 @@ void main() {
 	}
 
 	if (local_pos == ivec2(0)) {
-		imageStore(lightprobe_ambient_data, ivec3(probe_tex_pos, params.cascade), uvec4(rgbe_encode(ambient_light)));
+		imageStore(lightprobe_ambient_tex, ivec3(probe_tex_pos, params.cascade), vec4(ambient_light, 1));
 	}
 
 	// Cache and history invalidation
