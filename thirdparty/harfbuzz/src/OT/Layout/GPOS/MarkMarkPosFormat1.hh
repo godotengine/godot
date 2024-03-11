@@ -42,6 +42,7 @@ struct MarkMarkPosFormat1_2
                   mark1Coverage.sanitize (c, this) &&
                   mark2Coverage.sanitize (c, this) &&
                   mark1Array.sanitize (c, this) &&
+		  hb_barrier () &&
                   mark2Array.sanitize (c, this, (unsigned int) classCount));
   }
 

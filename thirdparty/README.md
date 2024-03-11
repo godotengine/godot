@@ -375,7 +375,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 8.2.2 (18a6e78549e8e04a281129ea8ca784ce85f111b8, 2023)
+- Version: 8.3.0 (894a1f72ee93a1fd8dc1d9218cb3fd8f048be29a, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -383,7 +383,8 @@ Files extracted from upstream source:
 - `AUTHORS`, `COPYING`, `THANKS`
 - From the `src` folder, recursively:
   - All the `.c`, `.cc`, `.h`, `.hh` files
-  - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`
+  - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`,
+    and the `wasm` folder
 
 
 ## icu4c

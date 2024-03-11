@@ -42,10 +42,34 @@ template <typename K, typename V,
 	  bool minus_one = false>
 struct hb_hashmap_t
 {
+  static constexpr bool realloc_move = true;
+
   hb_hashmap_t ()  { init (); }
   ~hb_hashmap_t () { fini (); }
 
-  hb_hashmap_t (const hb_hashmap_t& o) : hb_hashmap_t () { alloc (o.population); hb_copy (o, *this); }
+  hb_hashmap_t (const hb_hashmap_t& o) : hb_hashmap_t ()
+  {
+    if (unlikely (!o.mask)) return;
+
+    if (item_t::is_trivial)
+    {
+      items = (item_t *) hb_malloc (sizeof (item_t) * (o.mask + 1));
+      if (unlikely (!items))
+      {
+	successful = false;
+	return;
+      }
+      population = o.population;
+      occupancy = o.occupancy;
+      mask = o.mask;
+      prime = o.prime;
+      max_chain_length = o.max_chain_length;
+      memcpy (items, o.items, sizeof (item_t) * (mask + 1));
+      return;
+    }
+
+    alloc (o.population); hb_copy (o, *this);
+  }
   hb_hashmap_t (hb_hashmap_t&& o) : hb_hashmap_t () { hb_swap (*this, o); }
   hb_hashmap_t& operator= (const hb_hashmap_t& o)  { reset (); alloc (o.population); hb_copy (o, *this); return *this; }
   hb_hashmap_t& operator= (hb_hashmap_t&& o)  { hb_swap (*this, o); return *this; }
@@ -209,9 +233,10 @@ struct hb_hashmap_t
 		       old_items[i].hash,
 		       std::move (old_items[i].value));
       }
-      if (!item_t::is_trivial)
-	old_items[i].~item_t ();
     }
+    if (!item_t::is_trivial)
+      for (unsigned int i = 0; i < old_size; i++)
+	old_items[i].~item_t ();
 
     hb_free (old_items);
 
