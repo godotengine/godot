@@ -3769,7 +3769,7 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager or opening in an external program is not supported on the Android and web editors.
-	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"));
+	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"), KeyModifierMask::CMD_OR_CTRL | Key::B);
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTR("Open in External Program"));
 	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTR("Open in Terminal"));
 #endif
