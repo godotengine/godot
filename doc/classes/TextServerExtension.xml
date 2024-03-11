@@ -126,6 +126,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_font_get_disable_embedded_bitmaps" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_get_embolden" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -585,6 +591,13 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="size" type="int" />
 			<param index="2" name="descent" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_disable_embedded_bitmaps" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="disable_embedded_bitmaps" type="bool" />
 			<description>
 			</description>
 		</method>

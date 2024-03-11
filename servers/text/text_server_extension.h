@@ -128,6 +128,11 @@ public:
 	GDVIRTUAL2(_font_set_antialiasing, RID, TextServer::FontAntialiasing);
 	GDVIRTUAL1RC(TextServer::FontAntialiasing, _font_get_antialiasing, RID);
 
+	virtual void font_set_disable_embedded_bitmaps(const RID &p_font_rid, bool p_disable_embedded_bitmaps) override;
+	virtual bool font_get_disable_embedded_bitmaps(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_disable_embedded_bitmaps, RID, bool);
+	GDVIRTUAL1RC(bool, _font_get_disable_embedded_bitmaps, RID);
+
 	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) override;
 	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_generate_mipmaps, RID, bool);
