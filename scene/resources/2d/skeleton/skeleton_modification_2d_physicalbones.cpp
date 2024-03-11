@@ -113,9 +113,11 @@ void SkeletonModification2DPhysicalBones::_execute(float p_delta) {
 	for (int i = 0; i < physical_bone_chain.size(); i++) {
 		PhysicalBone_Data2D bone_data = physical_bone_chain[i];
 		if (bone_data.physical_bone_node_cache.is_null()) {
-			WARN_PRINT_ONCE("PhysicalBone2D cache " + itos(i) + " is out of date. Attempting to update...");
 			_physical_bone_update_cache(i);
-			continue;
+			if (bone_data.physical_bone_node_cache.is_null()) {
+				ERR_PRINT_ONCE("PhysicalBone2D cache " + itos(i) + " is out of date. Failed to update...");
+				continue;
+			}
 		}
 
 		PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(ObjectDB::get_instance(bone_data.physical_bone_node_cache));
@@ -263,7 +265,9 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 void SkeletonModification2DPhysicalBones::set_physical_bone_node(int p_joint_idx, const NodePath &p_nodepath) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, physical_bone_chain.size(), "Joint index out of range!");
 	physical_bone_chain.write[p_joint_idx].physical_bone_node = p_nodepath;
-	_physical_bone_update_cache(p_joint_idx);
+	if (is_setup) {
+		_physical_bone_update_cache(p_joint_idx);
+	}
 }
 
 NodePath SkeletonModification2DPhysicalBones::get_physical_bone_node(int p_joint_idx) const {

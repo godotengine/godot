@@ -116,15 +116,19 @@ void SkeletonModification2DLookAt::_execute(float p_delta) {
 	}
 
 	if (target_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
 		update_target_cache();
-		return;
+		if (target_node_cache.is_null()) {
+			ERR_PRINT_ONCE("Target cache is out of date. Failed to update...");
+			return;
+		}
 	}
 
 	if (bone2d_node_cache.is_null() && !bone2d_node.is_empty()) {
 		update_bone2d_cache();
-		WARN_PRINT_ONCE("Bone2D node cache is out of date. Attempting to update...");
-		return;
+		if (bone2d_node_cache.is_null()) {
+			ERR_PRINT_ONCE("Bone2D node cache is out of date. Failed to update...");
+			return;
+		}
 	}
 
 	if (target_node_reference == nullptr) {
@@ -231,7 +235,9 @@ void SkeletonModification2DLookAt::update_bone2d_cache() {
 
 void SkeletonModification2DLookAt::set_bone2d_node(const NodePath &p_target_node) {
 	bone2d_node = p_target_node;
-	update_bone2d_cache();
+	if (is_setup) {
+		update_bone2d_cache();
+	}
 }
 
 NodePath SkeletonModification2DLookAt::get_bone2d_node() const {
@@ -244,21 +250,12 @@ int SkeletonModification2DLookAt::get_bone_index() const {
 
 void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
-
-	if (is_setup && stack) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			bone_idx = p_bone_idx;
-			bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
-		} else {
-			WARN_PRINT("Cannot verify the bone index for this modification...");
-			bone_idx = p_bone_idx;
-		}
-	} else {
-		WARN_PRINT("Cannot verify the bone index for this modification...");
-		bone_idx = p_bone_idx;
+	if (is_setup && stack && stack->skeleton) {
+		ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+		bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
 	}
+	bone_idx = p_bone_idx;
 
 	notify_property_list_changed();
 }
@@ -286,7 +283,9 @@ void SkeletonModification2DLookAt::update_target_cache() {
 
 void SkeletonModification2DLookAt::set_target_node(const NodePath &p_target_node) {
 	target_node = p_target_node;
-	update_target_cache();
+	if (is_setup) {
+		update_target_cache();
+	}
 }
 
 NodePath SkeletonModification2DLookAt::get_target_node() const {

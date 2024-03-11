@@ -448,7 +448,6 @@ void Bone2D::calculate_length_and_rotation() {
 		}
 	}
 
-	WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle.");
 	bone_angle = get_transform().get_rotation();
 }
 

@@ -110,9 +110,11 @@ void SkeletonModification2DFABRIK::_execute(float p_delta) {
 	}
 
 	if (target_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
 		update_target_cache();
-		return;
+		if (target_node_cache.is_null()) {
+			ERR_PRINT_ONCE("Target cache is out of date. Failed to update...");
+			return;
+		}
 	}
 
 	if (fabrik_data_chain.size() <= 1) {
@@ -129,7 +131,10 @@ void SkeletonModification2DFABRIK::_execute(float p_delta) {
 
 	if (fabrik_data_chain[0].bone2d_node_cache.is_null() && !fabrik_data_chain[0].bone2d_node.is_empty()) {
 		fabrik_joint_update_bone2d_cache(0);
-		WARN_PRINT("Bone2D cache for origin joint is out of date. Updating...");
+		if (fabrik_data_chain[0].bone2d_node_cache.is_null()) {
+			ERR_PRINT("Bone2D cache for origin joint is out of date. Failed to update...");
+			return;
+		}
 	}
 
 	Bone2D *origin_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[0].bone2d_node_cache));
@@ -147,8 +152,11 @@ void SkeletonModification2DFABRIK::_execute(float p_delta) {
 	for (int i = 0; i < fabrik_data_chain.size(); i++) {
 		// Update the transform chain
 		if (fabrik_data_chain[i].bone2d_node_cache.is_null() && !fabrik_data_chain[i].bone2d_node.is_empty()) {
-			WARN_PRINT_ONCE("Bone2D cache for joint " + itos(i) + " is out of date.. Attempting to update...");
 			fabrik_joint_update_bone2d_cache(i);
+			if (fabrik_data_chain[i].bone2d_node_cache.is_null()) {
+				ERR_PRINT("Bone2D cache for joint " + itos(i) + " is out of date. Failed to update...");
+				return;
+			}
 		}
 		Bone2D *joint_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
 		if (!joint_bone2d_node) {
@@ -345,7 +353,9 @@ void SkeletonModification2DFABRIK::fabrik_joint_update_bone2d_cache(int p_joint_
 
 void SkeletonModification2DFABRIK::set_target_node(const NodePath &p_target_node) {
 	target_node = p_target_node;
-	update_target_cache();
+	if (is_setup) {
+		update_target_cache();
+	}
 }
 
 NodePath SkeletonModification2DFABRIK::get_target_node() const {
@@ -364,7 +374,9 @@ int SkeletonModification2DFABRIK::get_fabrik_data_chain_length() {
 void SkeletonModification2DFABRIK::set_fabrik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
-	fabrik_joint_update_bone2d_cache(p_joint_idx);
+	if (is_setup) {
+		fabrik_joint_update_bone2d_cache(p_joint_idx);
+	}
 
 	notify_property_list_changed();
 }
@@ -378,20 +390,12 @@ void SkeletonModification2DFABRIK::set_fabrik_joint_bone_index(int p_joint_idx, 
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
-	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			fabrik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			fabrik_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
-		} else {
-			WARN_PRINT("Cannot verify the FABRIK joint " + itos(p_joint_idx) + " bone index for this modification...");
-			fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-		}
-	} else {
-		WARN_PRINT("Cannot verify the FABRIK joint " + itos(p_joint_idx) + " bone index for this modification...");
-		fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
+	if (is_setup && stack->skeleton) {
+		ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		fabrik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+		fabrik_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
 	}
+	fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 
 	notify_property_list_changed();
 }
