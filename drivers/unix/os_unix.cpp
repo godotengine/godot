@@ -705,10 +705,15 @@ bool OS_Unix::has_environment(const String &p_var) const {
 }
 
 String OS_Unix::get_environment(const String &p_var) const {
-	if (getenv(p_var.utf8().get_data())) {
-		return getenv(p_var.utf8().get_data());
+	const char *val = getenv(p_var.utf8().get_data());
+	if (val == nullptr) { // Not set; return empty string
+		return "";
 	}
-	return "";
+	String s;
+	if (s.parse_utf8(val) == OK) {
+		return s;
+	}
+	return String(val); // Not valid UTF-8, so return as-is
 }
 
 void OS_Unix::set_environment(const String &p_var, const String &p_value) const {
