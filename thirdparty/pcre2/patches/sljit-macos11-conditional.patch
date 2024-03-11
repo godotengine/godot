@@ -12,13 +12,13 @@ if the toolchain allows it.
 
 Fixes: PCRE2Project/pcre2#109
 ---
- sljit_src/sljitExecAllocator.c | 3 +++
+ thirdparty/pcre2/src/sljit/sljitExecAllocator.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/sljit_src/sljitExecAllocator.c b/sljit_src/sljitExecAllocator.c
-index 92d940dd..6359848c 100644
---- a/sljit_src/sljitExecAllocator.c
-+++ b/sljit_src/sljitExecAllocator.c
+diff --git a/thirdparty/pcre2/src/sljit/sljitExecAllocator.c b/thirdparty/pcre2/src/sljit/sljitExecAllocator.c
+index 92d940ddc2..6359848cd5 100644
+--- a/thirdparty/pcre2/src/sljit/sljitExecAllocator.c
++++ b/thirdparty/pcre2/src/sljit/sljitExecAllocator.c
 @@ -152,6 +152,9 @@ static SLJIT_INLINE void apple_update_wx_flags(sljit_s32 enable_exec)
  {
  #if MAC_OS_X_VERSION_MIN_REQUIRED >= 110000
