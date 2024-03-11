@@ -457,8 +457,8 @@ License: Apache-2.0
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2022, University of Cambridge
- 2009-2022, Zoltan Herczeg
+Copyright: 1997-2024, University of Cambridge
+ 2009-2024, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/recastnavigation/
