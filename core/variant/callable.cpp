@@ -92,10 +92,31 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 		r_call_error.expected = 0;
 		return ERR_UNCONFIGURED;
 	} else if (!is_custom()) {
-		r_call_error.error = CallError::CALL_ERROR_INVALID_METHOD;
-		r_call_error.argument = 0;
-		r_call_error.expected = 0;
-		return ERR_UNCONFIGURED;
+		Object *obj = ObjectDB::get_instance(ObjectID(object));
+#ifdef DEBUG_ENABLED
+		if (!obj || !obj->is_class("Node")) {
+			r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			r_call_error.argument = 0;
+			r_call_error.expected = 0;
+			return ERR_UNCONFIGURED;
+		}
+#endif
+
+		int argcount = p_argcount + 2;
+		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		const Variant args[2] = { p_id, method };
+
+		argptrs[0] = &args[0];
+		argptrs[1] = &args[1];
+		for (int i = 0; i < p_argcount; ++i) {
+			argptrs[i + 2] = p_arguments[i];
+		}
+
+		CallError tmp;
+		Error err = (Error)obj->callp(SNAME("rpc_id"), argptrs, argcount, tmp).operator int64_t();
+
+		r_call_error.error = Callable::CallError::CALL_OK;
+		return err;
 	} else {
 		return custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
 	}
