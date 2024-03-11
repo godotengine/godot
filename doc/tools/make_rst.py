@@ -1975,7 +1975,7 @@ def format_text_block(
                     )
 
                     if "lang=text" in tag_state.arguments.split(" "):
-                        tag_text = "\n.. code::\n"
+                        tag_text = "\n.. code:: text\n"
                     else:
                         tag_text = "\n::\n"
 
