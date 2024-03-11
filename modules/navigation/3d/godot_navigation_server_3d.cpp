@@ -30,11 +30,12 @@
 
 #include "godot_navigation_server_3d.h"
 
+#include "core/os/mutex.h"
+#include "scene/main/node.h"
+
 #ifndef _3D_DISABLED
 #include "nav_mesh_generator_3d.h"
 #endif // _3D_DISABLED
-
-#include "core/os/mutex.h"
 
 using namespace NavigationUtilities;
 

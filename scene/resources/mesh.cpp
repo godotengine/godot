@@ -34,8 +34,10 @@
 #include "core/templates/pair.h"
 #include "scene/resources/surface_tool.h"
 
+#ifndef _3D_DISABLED
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
+#endif // _3D_DISABLED
 
 void MeshConvexDecompositionSettings::set_max_concavity(real_t p_max_concavity) {
 	max_concavity = CLAMP(p_max_concavity, 0.001, 1.0);
@@ -519,6 +521,7 @@ Vector<Face3> Mesh::get_surface_faces(int p_surface) const {
 	return Vector<Face3>();
 }
 
+#ifndef _3D_DISABLED
 Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 	if (p_simplify) {
 		Ref<MeshConvexDecompositionSettings> settings = Ref<MeshConvexDecompositionSettings>();
@@ -578,6 +581,7 @@ Ref<ConcavePolygonShape3D> Mesh::create_trimesh_shape() const {
 	shape->set_faces(face_points);
 	return shape;
 }
+#endif // _3D_DISABLED
 
 Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	Array arrays;
@@ -896,6 +900,7 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
+#ifndef _3D_DISABLED
 Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
 	ERR_FAIL_NULL_V(convex_decomposition_function, Vector<Ref<Shape3D>>());
 
@@ -932,6 +937,7 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSet
 
 	return ret;
 }
+#endif // _3D_DISABLED
 
 int Mesh::get_builtin_bind_pose_count() const {
 	return 0;
