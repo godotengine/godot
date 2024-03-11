@@ -222,9 +222,14 @@ protected:
 		Variant init_value;
 		Variant value;
 		Vector<StringName> subpath;
+
+		// TODO: There are many boolean, can be packed into one integer.
+		bool init_use_continuous = false;
+		bool use_continuous = false;
 		bool use_discrete = false;
 		bool is_using_angle = false;
 		bool is_variant_interpolatable = true;
+
 		Variant element_size;
 
 		TrackCacheValue(const TrackCacheValue &p_other) :
@@ -232,6 +237,8 @@ protected:
 				init_value(p_other.init_value),
 				value(p_other.value),
 				subpath(p_other.subpath),
+				init_use_continuous(p_other.init_use_continuous),
+				use_continuous(p_other.use_continuous),
 				use_discrete(p_other.use_discrete),
 				is_using_angle(p_other.is_using_angle),
 				is_variant_interpolatable(p_other.is_variant_interpolatable),
