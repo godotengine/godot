@@ -80,6 +80,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	uint64_t time_usec = OS::get_singleton()->get_ticks_usec();
 
+	RENDER_TIMESTAMP("Prepare Render Frame");
 	RSG::scene->update(); //update scenes stuff before updating instances
 
 	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;

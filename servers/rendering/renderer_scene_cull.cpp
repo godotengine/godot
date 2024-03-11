@@ -3567,6 +3567,10 @@ void RendererSceneCull::render_probes() {
 
 	bool busy = false;
 
+	if (ref_probe) {
+		RENDER_TIMESTAMP("Render ReflectionProbes");
+	}
+
 	while (ref_probe) {
 		SelfList<InstanceReflectionProbeData> *next = ref_probe->next();
 		RID base = ref_probe->self()->owner->base;
