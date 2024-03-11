@@ -116,8 +116,6 @@ static GDExtensionManager *gdextension_manager = nullptr;
 extern void register_global_constants();
 extern void unregister_global_constants();
 
-static ResourceUID *resource_uid = nullptr;
-
 static bool _is_core_extensions_registered = false;
 
 void register_core_types() {
@@ -273,8 +271,6 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(EngineProfiler);
 
-	resource_uid = memnew(ResourceUID);
-
 	gdextension_manager = memnew(GDExtensionManager);
 
 	resource_loader_gdextension.instantiate();
@@ -396,8 +392,6 @@ void unregister_core_types() {
 	memdelete(_geometry_2d);
 
 	memdelete(gdextension_manager);
-
-	memdelete(resource_uid);
 
 	if (ip) {
 		memdelete(ip);
