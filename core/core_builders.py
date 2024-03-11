@@ -1,11 +1,6 @@
-"""Functions used to generate source files during build time
-
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-"""
+"""Functions used to generate source files during build time"""
 
 import zlib
-
-from platform_methods import subprocess_main
 
 
 def escape_string(s):
@@ -29,8 +24,8 @@ def escape_string(s):
 
 
 def make_certs_header(target, source, env):
-    src = source[0]
-    dst = target[0]
+    src = str(source[0])
+    dst = str(target[0])
     with open(src, "rb") as f, open(dst, "w", encoding="utf-8", newline="\n") as g:
         buf = f.read()
         decomp_size = len(buf)
@@ -72,8 +67,8 @@ def make_authors_header(target, source, env):
         "AUTHORS_DEVELOPERS",
     ]
 
-    src = source[0]
-    dst = target[0]
+    src = str(source[0])
+    dst = str(target[0])
     with open(src, "r", encoding="utf-8") as f, open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef AUTHORS_GEN_H\n")
@@ -129,8 +124,8 @@ def make_donors_header(target, source, env):
         "DONORS_MEMBERS_GOLD",
     ]
 
-    src = source[0]
-    dst = target[0]
+    src = str(source[0])
+    dst = str(target[0])
     with open(src, "r", encoding="utf-8") as f, open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef DONORS_GEN_H\n")
@@ -165,9 +160,9 @@ def make_donors_header(target, source, env):
 
 
 def make_license_header(target, source, env):
-    src_copyright = source[0]
-    src_license = source[1]
-    dst = target[0]
+    src_copyright = str(source[0])
+    src_license = str(source[1])
+    dst = str(target[0])
 
     class LicenseReader:
         def __init__(self, license_file):
@@ -318,7 +313,3 @@ def make_license_header(target, source, env):
         f.write("};\n\n")
 
         f.write("#endif // LICENSE_GEN_H\n")
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())

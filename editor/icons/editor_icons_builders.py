@@ -1,18 +1,12 @@
-"""
-Functions used to generate source files during build time
-
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-
-"""
+"""Functions used to generate source files during build time"""
 
 import os
 from io import StringIO
-from platform_methods import subprocess_main
 
 
 # See also `scene/theme/icons/default_theme_icons_builders.py`.
 def make_editor_icons_action(target, source, env):
-    dst = target[0]
+    dst = str(target[0])
     svg_icons = source
 
     with StringIO() as icons_string, StringIO() as s:
@@ -85,7 +79,3 @@ def make_editor_icons_action(target, source, env):
 
         with open(dst, "w", encoding="utf-8", newline="\n") as f:
             f.write(s.getvalue())
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())
