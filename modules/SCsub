@@ -17,11 +17,7 @@ env.Depends("modules_enabled.gen.h", Value(env.module_list))
 env.CommandNoCache(
     "modules_enabled.gen.h",
     Value(env.module_list),
-    env.Run(
-        modules_builders.generate_modules_enabled,
-        # NOTE: No need to run in subprocess since this is still executed serially.
-        subprocess=False,
-    ),
+    env.Run(modules_builders.generate_modules_enabled),
 )
 
 
@@ -55,11 +51,7 @@ if env["tests"]:
     env.CommandNoCache(
         "modules_tests.gen.h",
         test_headers,
-        env.Run(
-            modules_builders.generate_modules_tests,
-            # NOTE: No need to run in subprocess since this is still executed serially.
-            subprocess=False,
-        ),
+        env.Run(modules_builders.generate_modules_tests),
     )
 
 # libmodules.a with only register_module_types.

@@ -1,8 +1,4 @@
-"""Functions used to generate source files during build time
-
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-
-"""
+"""Functions used to generate source files during build time"""
 
 import os
 import os.path
@@ -11,16 +7,16 @@ import subprocess
 import tempfile
 import uuid
 import zlib
-from platform_methods import subprocess_main
 
 
 def make_doc_header(target, source, env):
-    dst = target[0]
+    dst = str(target[0])
     with open(dst, "w", encoding="utf-8", newline="\n") as g:
         buf = ""
         docbegin = ""
         docend = ""
         for src in source:
+            src = str(src)
             if not src.endswith(".xml"):
                 continue
             with open(src, "r", encoding="utf-8") as f:
@@ -49,14 +45,14 @@ def make_doc_header(target, source, env):
 
 
 def make_translations_header(target, source, env, category):
-    dst = target[0]
+    dst = str(target[0])
 
     with open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef _{}_TRANSLATIONS_H\n".format(category.upper()))
         g.write("#define _{}_TRANSLATIONS_H\n".format(category.upper()))
 
-        sorted_paths = sorted(source, key=lambda path: os.path.splitext(os.path.basename(path))[0])
+        sorted_paths = sorted([str(x) for x in source], key=lambda path: os.path.splitext(os.path.basename(path))[0])
 
         msgfmt_available = shutil.which("msgfmt") is not None
 
@@ -139,7 +135,3 @@ def make_doc_translations_header(target, source, env):
 
 def make_extractable_translations_header(target, source, env):
     make_translations_header(target, source, env, "extractable")
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())

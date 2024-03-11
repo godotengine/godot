@@ -1,14 +1,10 @@
-"""Functions used to generate source files during build time
+"""Functions used to generate source files during build time"""
 
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-"""
-
-from platform_methods import subprocess_main
 from collections import OrderedDict
 
 
 def make_default_controller_mappings(target, source, env):
-    dst = target[0]
+    dst = str(target[0])
     with open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write('#include "core/typedefs.h"\n')
@@ -17,7 +13,7 @@ def make_default_controller_mappings(target, source, env):
         # ensure mappings have a consistent order
         platform_mappings: dict = OrderedDict()
         for src_path in source:
-            with open(src_path, "r") as f:
+            with open(str(src_path), "r") as f:
                 # read mapping file and skip header
                 mapping_file_lines = f.readlines()[2:]
 
@@ -61,7 +57,3 @@ def make_default_controller_mappings(target, source, env):
             g.write("#endif\n")
 
         g.write("\tnullptr\n};\n")
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())

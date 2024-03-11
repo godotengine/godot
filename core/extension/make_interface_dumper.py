@@ -2,8 +2,8 @@ import zlib
 
 
 def run(target, source, env):
-    src = source[0]
-    dst = target[0]
+    src = str(source[0])
+    dst = str(target[0])
     with open(src, "rb") as f, open(dst, "w", encoding="utf-8", newline="\n") as g:
         buf = f.read()
         decomp_size = len(buf)
@@ -53,9 +53,3 @@ class GDExtensionInterfaceDump {
 #endif // GDEXTENSION_INTERFACE_DUMP_H
 """
         )
-
-
-if __name__ == "__main__":
-    from platform_methods import subprocess_main
-
-    subprocess_main(globals())
