@@ -259,6 +259,7 @@ static const String NULL_AUDIO_DRIVER("Dummy");
 // (excluding the 2-space left and right margins).
 // Currently, this is `--export-release <preset> <path>`.
 static const int OPTION_COLUMN_LENGTH = 32;
+int Main::versionYolo = 0;
 
 /* Helper methods */
 
@@ -4523,4 +4524,6 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
+	Object::initialized = false; // Try to set initialized to false on clean => can improve it by creating a specific method
+	Main::versionYolo++;
 }

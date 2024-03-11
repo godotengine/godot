@@ -42,6 +42,8 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 
+bool Object::initialized = false;
+
 #ifdef DEBUG_ENABLED
 
 struct _ObjectDebugLock {
@@ -1504,7 +1506,7 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 }
 
 void Object::initialize_class() {
-	static bool initialized = false;
+	// static bool initialized = false; // On veut pouvoir réinitialiser après un clean
 	if (initialized) {
 		return;
 	}
@@ -2122,6 +2124,7 @@ Object::~Object() {
 		}
 		memfree(_instance_bindings);
 	}
+	// initialized = false; // Do not do that in destructor otherwise call multiple times
 }
 
 bool predelete_handler(Object *p_object) {
@@ -2319,6 +2322,7 @@ void ObjectDB::cleanup() {
 
 	if (object_slots) {
 		memfree(object_slots);
+		object_slots = nullptr;
 	}
 	slot_count = 0;
 	slot_max = 0;

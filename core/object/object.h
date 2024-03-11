@@ -43,6 +43,7 @@
 #include "core/templates/safe_refcount.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
+#include "main/main.h"
 
 template <typename T>
 class TypedArray;
@@ -457,8 +458,12 @@ protected:                                                                      
                                                                                                                                                  \
 public:                                                                                                                                          \
 	static void initialize_class() {                                                                                                             \
-		static bool initialized = false;                                                                                                         \
+		/*static bool initialized = false; Je veux être capable de reset ce truc                                                                \
 		if (initialized) {                                                                                                                       \
+			return;                                                                                                                              \
+		}*/                                                                                                                                      \
+		static int versionYoloLocal = -1;                                                                                                        \
+		if (Main::versionYolo == versionYoloLocal) {                                                                                             \
 			return;                                                                                                                              \
 		}                                                                                                                                        \
 		m_inherits::initialize_class();                                                                                                          \
@@ -469,7 +474,8 @@ public:                                                                         
 		if (m_class::_get_bind_compatibility_methods() != m_inherits::_get_bind_compatibility_methods()) {                                       \
 			_bind_compatibility_methods();                                                                                                       \
 		}                                                                                                                                        \
-		initialized = true;                                                                                                                      \
+		/*initialized = true;*/                                                                                                                  \
+		versionYoloLocal++;                                                                                                                      \
 	}                                                                                                                                            \
                                                                                                                                                  \
 protected:                                                                                                                                       \
@@ -600,6 +606,8 @@ public:
 		Connection() {}
 		Connection(const Variant &p_variant);
 	};
+
+	static bool initialized;
 
 private:
 #ifdef DEBUG_ENABLED
