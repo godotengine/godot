@@ -1799,7 +1799,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, dot, sarray("with"), varray());
 	bind_method(Vector2, slide, sarray("n"), varray());
 	bind_method(Vector2, bounce, sarray("n"), varray());
-	bind_method(Vector2, reflect, sarray("n"), varray());
+	bind_method(Vector2, reflect, sarray("line"), varray());
 	bind_method(Vector2, cross, sarray("with"), varray());
 	bind_method(Vector2, abs, sarray(), varray());
 	bind_method(Vector2, sign, sarray(), varray());
@@ -1896,7 +1896,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, project, sarray("b"), varray());
 	bind_method(Vector3, slide, sarray("n"), varray());
 	bind_method(Vector3, bounce, sarray("n"), varray());
-	bind_method(Vector3, reflect, sarray("n"), varray());
+	bind_method(Vector3, reflect, sarray("direction"), varray());
 	bind_method(Vector3, sign, sarray(), varray());
 	bind_method(Vector3, octahedron_encode, sarray(), varray());
 	bind_static_method(Vector3, octahedron_decode, sarray("uv"), varray());
