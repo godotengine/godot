@@ -80,6 +80,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_antialiasing, "font_rid", "antialiasing");
 	GDVIRTUAL_BIND(_font_get_antialiasing, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_disable_embedded_bitmaps, "font_rid", "disable_embedded_bitmaps");
+	GDVIRTUAL_BIND(_font_get_disable_embedded_bitmaps, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_generate_mipmaps, "font_rid", "generate_mipmaps");
 	GDVIRTUAL_BIND(_font_get_generate_mipmaps, "font_rid");
 
@@ -515,6 +518,16 @@ void TextServerExtension::font_set_antialiasing(const RID &p_font_rid, TextServe
 TextServer::FontAntialiasing TextServerExtension::font_get_antialiasing(const RID &p_font_rid) const {
 	TextServer::FontAntialiasing ret = TextServer::FONT_ANTIALIASING_NONE;
 	GDVIRTUAL_CALL(_font_get_antialiasing, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_disable_embedded_bitmaps(const RID &p_font_rid, bool p_disable_embedded_bitmaps) {
+	GDVIRTUAL_CALL(_font_set_disable_embedded_bitmaps, p_font_rid, p_disable_embedded_bitmaps);
+}
+
+bool TextServerExtension::font_get_disable_embedded_bitmaps(const RID &p_font_rid) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_font_get_disable_embedded_bitmaps, p_font_rid, ret);
 	return ret;
 }
 
