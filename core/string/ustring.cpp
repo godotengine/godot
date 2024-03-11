@@ -4360,6 +4360,35 @@ String String::pad_zeros(int p_digits) const {
 	}
 }
 
+String String::format_number(const String &p_delimiter_separator, const String &p_decimal_separator, int p_delimiter_interval) const {
+	ERR_FAIL_COND_V_MSG(p_delimiter_interval <= 0, *this, vformat("Delimiter interval for number formatting must be positive (%d specified).", p_delimiter_interval));
+
+	const String s = *this;
+	const bool is_negative = s.begins_with("-");
+	const String s_trimmed = s.trim_prefix("-");
+	const bool is_hexadecimal = s_trimmed.begins_with("0x");
+	PackedStringArray split = s_trimmed.trim_prefix("0x").split(".");
+
+	const String integer = split[0];
+	const String fractional = split.size() >= 2 ? split[1] : "";
+
+	String new_string;
+	int count = p_delimiter_interval - 1;
+	for (int i = integer.size() - 1; i >= 0; i--) {
+		new_string = integer[i] + new_string;
+		count++;
+		if (i != 0 && i != (integer.size() - 1) && count % p_delimiter_interval == 0) {
+			new_string = p_delimiter_separator + new_string;
+		}
+	}
+
+	if (!fractional.is_empty()) {
+		new_string += p_decimal_separator + fractional;
+	}
+
+	return String(is_negative ? "-" : "") + String(is_hexadecimal ? "0x" : "") + new_string;
+}
+
 String String::trim_prefix(const String &p_prefix) const {
 	String s = *this;
 	if (s.begins_with(p_prefix)) {

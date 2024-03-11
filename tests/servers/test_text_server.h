@@ -660,6 +660,27 @@ TEST_SUITE("[TextServer]") {
 			}
 		}
 
+		SUBCASE("[TextServer] Number formatting") {
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				CHECK_FALSE_MESSAGE(ts.is_null(), "Invalid TS interface.");
+
+				CHECK(ts->format_number("") == "");
+				CHECK(ts->format_number("0") == "0");
+				CHECK(ts->format_number("10.10") == "10.10");
+				CHECK(ts->format_number("1234") == "1,234");
+				CHECK(ts->format_number("-1234") == "-1,234");
+				CHECK(ts->format_number("12345") == "12,345");
+				CHECK(ts->format_number("-12345") == "-12,345");
+				CHECK(ts->format_number("123456789") == "123,456,789");
+				CHECK(ts->format_number("-123456789") == "-123,456,789");
+				CHECK(ts->format_number("123456789.01") == "123,456,789.01");
+				CHECK(ts->format_number("-123456789.01") == "-123,456,789.01");
+				CHECK(ts->format_number("123456789.01234567") == "123,456,789.01234567");
+				CHECK(ts->format_number("-123456789.01234567") == "-123,456,789.01234567");
+			}
+		}
+
 		SUBCASE("[TextServer] Word break") {
 			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);

@@ -226,6 +226,14 @@
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
 		</method>
+		<method name="format_number" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="delimiter_separator" type="String" />
+			<param index="1" name="decimal_separator" type="String" default="&quot;,&quot;" />
+			<param index="2" name="delimiter_interval" type="int" default="&quot;.&quot;" />
+			<description>
+			</description>
+		</method>
 		<method name="get_base_dir" qualifiers="const">
 			<return type="String" />
 			<description>

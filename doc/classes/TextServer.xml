@@ -999,7 +999,7 @@
 			<param index="0" name="number" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Converts a number from the Western Arabic (0..9) to the numeral systems used in [param language].
+				Converts a number from the Western Arabic (0..9) to the numeral systems used in [param language]. If no numeral system conversion is required, separators for thousands are added to improve readability of large numbers, and the decimal separator is replaced to match the specified [param language]. See also [method String.format_number].
 				If [param language] is omitted, the active locale will be used.
 			</description>
 		</method>

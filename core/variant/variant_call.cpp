@@ -1735,6 +1735,7 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(rpad, sarray("min_length", "character"), varray(" "));
 	bind_string_method(pad_decimals, sarray("digits"), varray());
 	bind_string_method(pad_zeros, sarray("digits"), varray());
+	bind_string_method(format_number, sarray("delimiter_separator", "decimal_separator", "delimiter_interval"), varray(",", ".", 3));
 	bind_string_method(trim_prefix, sarray("prefix"), varray());
 	bind_string_method(trim_suffix, sarray("suffix"), varray());
 

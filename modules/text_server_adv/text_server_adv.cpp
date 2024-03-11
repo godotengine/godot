@@ -6704,6 +6704,9 @@ String TextServerAdvanced::_format_number(const String &p_string, const String &
 				}
 			}
 			break;
+		} else {
+			// Use fallback formatter for thousands separators and decimal character replacement.
+			return TextServer::format_number(p_string, p_language);
 		}
 	}
 	return res;

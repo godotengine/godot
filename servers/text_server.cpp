@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "servers/text_server.h"
+#include "core/string/translation.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
 
@@ -2129,6 +2130,30 @@ bool TextServer::is_valid_identifier(const String &p_string) const {
 		}
 	}
 	return true;
+}
+
+String TextServer::format_number(const String &p_string, const String &p_language) const {
+	const String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+
+	String thousands_separator = ",";
+	String decimal_separator = ".";
+
+	// Format number for common languages.
+	// https://en.wikipedia.org/wiki/Decimal_separator#Examples_of_use
+	if (!lang.begins_with("en")) {
+		if (lang.begins_with("de")) {
+			thousands_separator = ".";
+			decimal_separator = ",";
+		} else {
+			// Most English-speaking countries use a comma and period.
+			// In contrast, most other languages use SI style.
+			// Thin non-breaking space.
+			thousands_separator = U" ";
+			decimal_separator = ",";
+		}
+	}
+
+	return p_string.format_number(thousands_separator, decimal_separator);
 }
 
 TextServer::TextServer() {
