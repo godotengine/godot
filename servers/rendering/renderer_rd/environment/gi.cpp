@@ -354,12 +354,20 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 	switch (cascade_format) {
 		case RS::ENV_HDDAGI_CASCADE_FORMAT_16x16x16: {
 			cascade_size.y = CASCADE_SIZE;
+			y_mult = 1.0;
 		} break;
-		case RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16: {
-			cascade_size.y = CASCADE_SIZE / 2;
-		} break;
-		default: {
+		case RS::ENV_HDDAGI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT: {
 			cascade_size.y = CASCADE_SIZE;
+			y_mult = 2.0;
+		} break;
+		case RS::ENV_HDDAGI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT: {
+			cascade_size.y = CASCADE_SIZE;
+			y_mult = 1.5;
+		} break;
+		case RS::ENV_HDDAGI_CASCADE_FORMAT_16x8x16:
+		default: {
+			cascade_size.y = CASCADE_SIZE / 2;
+			y_mult = 1.0;
 		} break;
 	}
 
@@ -374,9 +382,6 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 	occlusion_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_occlusion_bias(p_env);
 	normal_bias = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_normal_bias(p_env);
 	frames_to_converge = p_requested_history_size;
-	//y_scale_mode = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_y_scale(p_env);
-	//static const float y_scale[3] = { 2.0, 1.5, 1.0 };
-	//y_mult = y_scale[y_scale_mode];
 	version = gi->hddagi_current_version;
 	cascades.resize(num_cascades);
 
@@ -546,9 +551,9 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 		RD::TextureFormat tf_ambient = tf_lightprobes;
 		tf_ambient.width = (PROBE_DIVISOR.x + 1);
 		tf_ambient.height = (PROBE_DIVISOR.y + 1) * (PROBE_DIVISOR.z + 1);
-
-		lightprobe_ambient_data = create_clear_texture(tf_ambient, String("HDDAGI Lighprobe Ambient"));
-		lightprobe_ambient_tex = RD::get_singleton()->texture_create_shared(tv, lightprobe_ambient_data);
+		tf_ambient.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tf_ambient.shareable_formats.clear();
+		lightprobe_ambient_tex = create_clear_texture(tf_ambient, String("HDDAGI Ambient Light Texture"));
 
 		RD::TextureFormat tf_neighbours;
 		tf_neighbours.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
@@ -819,7 +824,7 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 					0,
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, lightprobe_specular_data),
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, lightprobe_diffuse_data),
-					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, lightprobe_ambient_data),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, lightprobe_ambient_tex),
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, lightprobe_hit_cache_data),
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, lightprobe_moving_average_history),
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, lightprobe_moving_average),
@@ -1041,7 +1046,7 @@ GI::HDDAGI::~HDDAGI() {
 
 	RD::get_singleton()->free(lightprobe_specular_data);
 	RD::get_singleton()->free(lightprobe_diffuse_data);
-	RD::get_singleton()->free(lightprobe_ambient_data);
+	RD::get_singleton()->free(lightprobe_ambient_tex);
 	RD::get_singleton()->free(lightprobe_diffuse_filter_data);
 	RD::get_singleton()->free(lightprobe_hit_cache_data);
 	RD::get_singleton()->free(lightprobe_hit_cache_version_data);
@@ -1360,7 +1365,7 @@ void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_cou
 			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, lightprobe_specular_data),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, lightprobe_diffuse_data),
-			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 7, lightprobe_ambient_data),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 7, lightprobe_ambient_tex),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 8, lightprobe_hit_cache_data),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, lightprobe_hit_cache_version_data),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, region_version_data),

@@ -641,7 +641,7 @@ void main() {
 		//hddagi
 #ifdef ENABLE_HDDAGI
 
-		{
+		if (params.gi_inject > 0.001) {
 			vec3 ambient_total = vec3(0.0);
 
 			int cascade = HDDAGI_MAX_CASCADES;
@@ -706,14 +706,15 @@ void main() {
 					ivec2 tex_pos = probe_to_tex(probe, cascade);
 
 					vec3 probe_light = texelFetch(sampler2DArray(hddagi_ambient_texture, linear_sampler), ivec3(tex_pos, cascade), 0).rgb;
-					ambient_accum.rgb += probe_light * weight * hddagi.cascades[i].exposure_normalization;
+					ambient_accum.rgb += probe_light * weight;
 					ambient_accum.a += weight;
 				}
 
 				if (ambient_accum.a > 0) {
 					ambient_accum.rgb /= ambient_accum.a;
 				}
-				ambient_total = ambient_accum.rgb;
+
+				ambient_total = ambient_accum.rgb * hddagi.cascades[cascade].exposure_normalization;
 			}
 
 			total_light += ambient_total * params.gi_inject;

@@ -230,7 +230,6 @@ void RendererSceneRenderRD::_debug_hddagi_probes(Ref<RenderSceneBuffersRD> p_ren
 	Ref<RendererRD::GI::HDDAGI> hddagi = p_render_buffers->get_custom_data(RB_SCOPE_HDDAGI);
 
 	hddagi->debug_probes(p_framebuffer, p_view_count, p_camera_with_transforms);
-
 }
 
 ////////////////////////////////
@@ -794,7 +793,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_
 		case RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
 		case RS::VIEWPORT_DEBUG_DRAW_SSAO:
 		case RS::VIEWPORT_DEBUG_DRAW_SSIL:
-		case RS::VIEWPORT_DEBUG_DRAW_SDFGI:
+		case RS::VIEWPORT_DEBUG_DRAW_HDDAGI:
 		case RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
 		case RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
 			can_use_effects = true;
@@ -805,7 +804,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_
 		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION:
 		case RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE:
 		case RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS:
-		case RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES:
+		case RS::VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES:
 		case RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD:
 			can_use_effects = true;
 			break;
@@ -1107,7 +1106,6 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
 }
 
 void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderHDDAGIData *p_render_hddagi_regions, int p_render_hddagi_region_count, const RenderHDDAGIUpdateData *p_hddagi_update_data, RenderingMethod::RenderInfo *r_render_info) {
-	
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
