@@ -31,6 +31,7 @@
 #include "register_types.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "servers/rendering/rendering_device.h"
 
 #include <glslang/Include/Types.h>
@@ -179,8 +180,11 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		spvOptions.emitNonSemanticShaderDebugSource = true;
 	}
 #endif
-	spvOptions.disableOptimizer = false;
-	spvOptions.optimizeSize = true;
+	if (GLOBAL_GET("rendering/shader_compiler/shader_compilation/optimize")) {
+		spvOptions.disableOptimizer = false;
+		spvOptions.optimizeSize = true;
+	}
+	
 
 	glslang::GlslangToSpv(*program.getIntermediate(stages[p_stage]), SpirV, &logger, &spvOptions);
 
