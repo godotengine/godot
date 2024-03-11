@@ -1011,6 +1011,12 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 }
 
 void ParticlesStorage::update_particles() {
+	if (!particle_update_list.first()) {
+		// Return early to avoid unnecessary state changes.
+		return;
+	}
+
+	RENDER_TIMESTAMP("Update GPUParticles");
 	glEnable(GL_RASTERIZER_DISCARD);
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 

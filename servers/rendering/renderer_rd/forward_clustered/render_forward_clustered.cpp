@@ -1132,6 +1132,7 @@ void RenderForwardClustered::_update_sdfgi(RenderDataRD *p_render_data) {
 	}
 
 	if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_SDFGI)) {
+		RENDER_TIMESTAMP("Render SDFGI");
 		Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
 		float exposure_normalization = 1.0;
 
@@ -1403,7 +1404,8 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 		}
 
-		//cube shadows are rendered in their own way
+		RENDER_TIMESTAMP("Render OmniLight Shadows");
+		// Cube shadows are rendered in their own way.
 		for (const int &index : p_render_data->cube_shadows) {
 			_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, camera_plane, lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, true, true, true, p_render_data->render_info, viewport_size, p_render_data->scene_data->cam_transform);
 		}
@@ -1459,6 +1461,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		// drawcalls per eye/view. It will all sync up at the barrier.
 
 		if (p_use_ssao || p_use_ssil) {
+			RENDER_TIMESTAMP("Prepare Depth for SSAO/SSIL");
 			// Convert our depth buffer data to linear data in
 			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 				ss_effects->downsample_depth(rb, v, p_render_data->scene_data->view_projection[v]);
@@ -1473,6 +1476,8 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 		}
 	}
+
+	RENDER_TIMESTAMP("Pre Opaque Render");
 
 	if (current_cluster_builder) {
 		// Note: when rendering stereoscopic (multiview) we are using our combined frustum projection to create
@@ -1506,6 +1511,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	}
 
 	if (rb_data.is_valid()) {
+		RENDER_TIMESTAMP("Update Volumetric Fog");
 		bool directional_shadows = RendererRD::LightStorage::get_singleton()->has_directional_shadows(directional_light_count);
 		_update_volumetric_fog(rb, p_render_data->environment, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, p_render_data->scene_data->prev_cam_transform.affine_inverse(), p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, p_render_data->voxel_gi_count, *p_render_data->fog_volumes);
 	}
@@ -1967,6 +1973,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			WARN_PRINT_ONCE("Pre opaque rendering effects can't access resolved depth buffers.");
 		}
 
+		RENDER_TIMESTAMP("Process Pre Opaque Compositor Effects");
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE, p_render_data);
 	}
 
@@ -1978,6 +1985,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 	_pre_opaque_render(p_render_data, using_ssao, using_ssil, using_sdfgi || using_voxelgi, normal_roughness_views, rb_data.is_valid() && rb_data->has_voxelgi() ? rb_data->get_voxelgi() : RID());
 
+	RENDER_TIMESTAMP("Render Opaque Pass");
+
 	RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
 
 	p_render_data->scene_data->directional_light_count = p_render_data->directional_light_count;
@@ -1987,8 +1996,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	_update_render_base_uniform_set();
 
 	_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, true, using_motion_pass);
-
-	RENDER_TIMESTAMP("Render Opaque Pass");
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, samplers, true);
 
@@ -2053,6 +2060,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			}
 		}
 
+		RENDER_TIMESTAMP("Process Post Opaque Compositor Effects");
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE, p_render_data);
 	}
 
@@ -2113,6 +2121,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	{
+		RENDER_TIMESTAMP("Process Post Sky Compositor Effects");
 		// Don't need to check for depth or color resolve here, we've already triggered it.
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_SKY, p_render_data);
 	}
@@ -2190,6 +2199,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			}
 		}
 
+		RENDER_TIMESTAMP("Process Pre Transparent Compositor Effects");
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
 	}
 
@@ -2234,6 +2244,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	RD::get_singleton()->draw_command_end_label();
 
 	{
+		RENDER_TIMESTAMP("Process Post Transparent Compositor Effects");
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
 	}
 

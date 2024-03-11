@@ -3568,43 +3568,47 @@ void RendererSceneCull::render_probes() {
 
 	bool busy = false;
 
-	while (ref_probe) {
-		SelfList<InstanceReflectionProbeData> *next = ref_probe->next();
-		RID base = ref_probe->self()->owner->base;
+	if (ref_probe) {
+		RENDER_TIMESTAMP("Render ReflectionProbes");
 
-		switch (RSG::light_storage->reflection_probe_get_update_mode(base)) {
-			case RS::REFLECTION_PROBE_UPDATE_ONCE: {
-				if (busy) { //already rendering something
-					break;
-				}
+		while (ref_probe) {
+			SelfList<InstanceReflectionProbeData> *next = ref_probe->next();
+			RID base = ref_probe->self()->owner->base;
 
-				bool done = _render_reflection_probe_step(ref_probe->self()->owner, ref_probe->self()->render_step);
-				if (done) {
+			switch (RSG::light_storage->reflection_probe_get_update_mode(base)) {
+				case RS::REFLECTION_PROBE_UPDATE_ONCE: {
+					if (busy) { // Already rendering something.
+						break;
+					}
+
+					bool done = _render_reflection_probe_step(ref_probe->self()->owner, ref_probe->self()->render_step);
+					if (done) {
+						done_list.push_back(ref_probe);
+					} else {
+						ref_probe->self()->render_step++;
+					}
+
+					busy = true; // Do not render another one of this kind.
+				} break;
+				case RS::REFLECTION_PROBE_UPDATE_ALWAYS: {
+					int step = 0;
+					bool done = false;
+					while (!done) {
+						done = _render_reflection_probe_step(ref_probe->self()->owner, step);
+						step++;
+					}
+
 					done_list.push_back(ref_probe);
-				} else {
-					ref_probe->self()->render_step++;
-				}
+				} break;
+			}
 
-				busy = true; //do not render another one of this kind
-			} break;
-			case RS::REFLECTION_PROBE_UPDATE_ALWAYS: {
-				int step = 0;
-				bool done = false;
-				while (!done) {
-					done = _render_reflection_probe_step(ref_probe->self()->owner, step);
-					step++;
-				}
-
-				done_list.push_back(ref_probe);
-			} break;
+			ref_probe = next;
 		}
 
-		ref_probe = next;
-	}
-
-	// Now remove from our list
-	for (SelfList<InstanceReflectionProbeData> *rp : done_list) {
-		reflection_probe_render_list.remove(rp);
+		// Now remove from our list
+		for (SelfList<InstanceReflectionProbeData> *rp : done_list) {
+			reflection_probe_render_list.remove(rp);
+		}
 	}
 
 	/* VOXEL GIS */
