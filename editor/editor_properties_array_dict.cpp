@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
+#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_vector.h"
 #include "editor/editor_settings.h"
@@ -459,9 +460,10 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 	}
 
 	Dictionary drag_data = p_drag_data;
+	const String drop_type = drag_data.get("type", "");
 
-	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-		Vector<String> files = drag_data["files"];
+	if (drop_type == "files") {
+		Array files = drag_data["files"];
 
 		for (int i = 0; i < files.size(); i++) {
 			const String &file = files[i];
@@ -480,6 +482,26 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 		return true;
 	}
 
+	if (drop_type == "nodes") {
+		Array nodes = drag_data["nodes"];
+
+		if (allowed_type == "NodePath") {
+			return true;
+		}
+
+		bool is_drop_allowed = true;
+		for (int i = 0; i < nodes.size(); i++) {
+			Node *dropped_node = get_tree()->get_edited_scene_root()->get_node_or_null(nodes[i]);
+			ERR_FAIL_NULL_V(dropped_node, false);
+
+			if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type)) {
+				// Do not allow to drop nodes if one of them is not inheriting the allowed type.
+				is_drop_allowed = false;
+			}
+		}
+		return is_drop_allowed;
+	}
+
 	return false;
 }
 
@@ -491,18 +513,18 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 	ERR_FAIL_COND(!_is_drop_valid(p_data));
 
 	Dictionary drag_data = p_data;
+	const String drop_type = drag_data.get("type", "");
+	Variant array = object->get_array();
 
-	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-		Vector<String> files = drag_data["files"];
+	// Handle the case where array is not initialized yet.
+	if (!array.is_array()) {
+		initialize_array(array);
+	} else {
+		array = array.duplicate();
+	}
 
-		Variant array = object->get_array();
-
-		// Handle the case where array is not initialized yet.
-		if (!array.is_array()) {
-			initialize_array(array);
-		} else {
-			array = array.duplicate();
-		}
+	if (drop_type == "files") {
+		Array files = drag_data["files"];
 
 		// Loop the file array and add to existing array.
 		for (int i = 0; i < files.size(); i++) {
@@ -517,6 +539,52 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		emit_changed(get_edited_property(), array, "", false);
 		update_property();
 	}
+
+	if (drop_type == "nodes") {
+		Array nodes = drag_data["nodes"];
+		Node *base_node = get_base_node();
+
+		for (int i = 0; i < nodes.size(); i++) {
+			Node *node = get_node(nodes[i]);
+			NodePath path = node->get_path();
+
+			if (subtype == Variant::OBJECT) {
+				if (!base_node) {
+					array.call("push_back", get_tree()->get_edited_scene_root()->get_node(path));
+				} else {
+					array.call("push_back", base_node->get_node(path));
+				}
+			} else if (subtype == Variant::NODE_PATH) {
+				if (!base_node) {
+					array.call("push_back", get_tree()->get_edited_scene_root()->get_path_to(node));
+				} else {
+					array.call("push_back", base_node->get_path_to(node));
+				}
+			}
+		}
+
+		emit_changed(get_edited_property(), array, "", false);
+		update_property();
+	}
+}
+
+Node *EditorPropertyArray::get_base_node() {
+	Node *base_node = Object::cast_to<Node>(get_edited_object());
+
+	if (!base_node) {
+		base_node = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+	}
+	if (!base_node) {
+		// Try a base node within history.
+		if (EditorNode::get_singleton()->get_editor_selection_history()->get_path_size() > 0) {
+			Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_path_object(0));
+			if (base) {
+				base_node = Object::cast_to<Node>(base);
+			}
+		}
+	}
+
+	return base_node;
 }
 
 void EditorPropertyArray::_notification(int p_what) {
