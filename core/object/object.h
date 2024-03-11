@@ -43,6 +43,7 @@
 #include "core/templates/safe_refcount.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
+#include "main/main.h"
 
 template <typename T>
 class TypedArray;
@@ -457,8 +458,8 @@ protected:                                                                      
                                                                                                                                                  \
 public:                                                                                                                                          \
 	static void initialize_class() {                                                                                                             \
-		static bool initialized = false;                                                                                                         \
-		if (initialized) {                                                                                                                       \
+		static int local_version = -1;                                                                                                    	     \
+		if (Main::version == local_version) {                                                                                         			 \
 			return;                                                                                                                              \
 		}                                                                                                                                        \
 		m_inherits::initialize_class();                                                                                                          \
@@ -469,7 +470,7 @@ public:                                                                         
 		if (m_class::_get_bind_compatibility_methods() != m_inherits::_get_bind_compatibility_methods()) {                                       \
 			_bind_compatibility_methods();                                                                                                       \
 		}                                                                                                                                        \
-		initialized = true;                                                                                                                      \
+		local_version++;                                                                                                                  		 \
 	}                                                                                                                                            \
                                                                                                                                                  \
 protected:                                                                                                                                       \
@@ -600,6 +601,8 @@ public:
 		Connection() {}
 		Connection(const Variant &p_variant);
 	};
+
+	static bool initialized;
 
 private:
 #ifdef DEBUG_ENABLED

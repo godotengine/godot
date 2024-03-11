@@ -42,6 +42,8 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 
+bool Object::initialized = false;
+
 #ifdef DEBUG_ENABLED
 
 struct _ObjectDebugLock {
@@ -1504,7 +1506,6 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 }
 
 void Object::initialize_class() {
-	static bool initialized = false;
 	if (initialized) {
 		return;
 	}
@@ -2319,6 +2320,7 @@ void ObjectDB::cleanup() {
 
 	if (object_slots) {
 		memfree(object_slots);
+		object_slots = nullptr;
 	}
 
 	slot_count = 0;
