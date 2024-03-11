@@ -475,7 +475,8 @@ class TextServerAdvanced : public TextServerExtension {
 		Vector<Span> spans;
 
 		struct EmbeddedObject {
-			int pos = 0;
+			int start = -1;
+			int end = -1;
 			InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 			Rect2 rect;
 			double baseline = 0;
@@ -957,6 +958,8 @@ public:
 
 	MODBIND1RC(Array, shaped_text_get_objects, const RID &);
 	MODBIND2RC(Rect2, shaped_text_get_object_rect, const RID &, const Variant &);
+	MODBIND2RC(Vector2i, shaped_text_get_object_range, const RID &, const Variant &);
+	MODBIND2RC(int64_t, shaped_text_get_object_glyph, const RID &, const Variant &);
 
 	MODBIND1RC(Size2, shaped_text_get_size, const RID &);
 	MODBIND1RC(double, shaped_text_get_ascent, const RID &);

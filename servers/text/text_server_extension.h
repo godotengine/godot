@@ -486,8 +486,12 @@ public:
 
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const override;
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const override;
+	virtual Vector2i shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const override;
+	virtual int64_t shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const override;
 	GDVIRTUAL1RC(Array, _shaped_text_get_objects, RID);
 	GDVIRTUAL2RC(Rect2, _shaped_text_get_object_rect, RID, const Variant &);
+	GDVIRTUAL2RC(Vector2i, _shaped_text_get_object_range, RID, const Variant &);
+	GDVIRTUAL2RC(int64_t, _shaped_text_get_object_glyph, RID, const Variant &);
 
 	virtual Size2 shaped_text_get_size(const RID &p_shaped) const override;
 	virtual double shaped_text_get_ascent(const RID &p_shaped) const override;
