@@ -375,7 +375,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 8.2.2 (18a6e78549e8e04a281129ea8ca784ce85f111b8, 2023)
+- Version: 8.3.0 (894a1f72ee93a1fd8dc1d9218cb3fd8f048be29a, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -383,7 +383,8 @@ Files extracted from upstream source:
 - `AUTHORS`, `COPYING`, `THANKS`
 - From the `src` folder, recursively:
   - All the `.c`, `.cc`, `.h`, `.hh` files
-  - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`
+  - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`,
+    and the `wasm` folder
 
 
 ## icu4c
@@ -755,7 +756,7 @@ Exclude:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.42 (52c08847921a324c804cabf2814549f50bce1265, 2022)
+- Version: 10.43 (3864abdb713f78831dd12d898ab31bbb0fa630b6, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -764,6 +765,7 @@ Files extracted from upstream source:
 - All `.h` files in `src/` apart from `pcre2posix.h`
 - `src/pcre2_jit_match.c`
 - `src/pcre2_jit_misc.c`
+- `src/pcre2_ucptables.c`
 - `src/sljit/`
 - `AUTHORS` and `LICENCE`
 
@@ -861,13 +863,13 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.12.5 (9c8eeaab9629b5d241b1092a3398fe6351c259cd, 2024)
+- Version: 0.12.7 (cddae9966cbb48c431ea17c262d6f48393206fd7, 2024)
 - License: MIT
 
 Files extracted from upstream source:
 
 See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
-number and run the script and apply patches from the `patches` folder.
+number and run the script.
 
 
 ## ufbx

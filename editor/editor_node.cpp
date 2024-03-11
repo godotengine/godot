@@ -980,6 +980,9 @@ void EditorNode::_fs_changed() {
 						err = platform->export_zip(export_preset, export_defer.debug, export_path);
 					} else if (export_path.ends_with(".pck")) {
 						err = platform->export_pack(export_preset, export_defer.debug, export_path);
+					} else {
+						ERR_PRINT(vformat("Export path \"%s\" doesn't end with a supported extension.", export_path));
+						err = FAILED;
 					}
 				} else { // Normal project export.
 					String config_error;

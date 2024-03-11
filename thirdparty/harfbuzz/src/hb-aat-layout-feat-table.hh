@@ -138,6 +138,7 @@ struct FeatureName
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  (base+settingTableZ).sanitize (c, nSettings)));
   }
 
@@ -200,6 +201,7 @@ struct feat
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  namesZ.sanitize (c, featureNameCount, this)));
   }

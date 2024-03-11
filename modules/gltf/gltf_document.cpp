@@ -819,8 +819,11 @@ Error GLTFDocument::_encode_buffer_views(Ref<GLTFState> p_state) {
 			d["byteStride"] = buffer_view->byte_stride;
 		}
 
-		// TODO Sparse
-		// d["target"] = buffer_view->indices;
+		if (buffer_view->indices) {
+			d["target"] = GLTFDocument::ELEMENT_ARRAY_BUFFER;
+		} else if (buffer_view->vertex_attributes) {
+			d["target"] = GLTFDocument::ARRAY_BUFFER;
+		}
 
 		ERR_FAIL_COND_V(!d.has("buffer"), ERR_INVALID_DATA);
 		ERR_FAIL_COND_V(!d.has("byteLength"), ERR_INVALID_DATA);
@@ -861,6 +864,7 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 		if (d.has("target")) {
 			const int target = d["target"];
 			buffer_view->indices = target == GLTFDocument::ELEMENT_ARRAY_BUFFER;
+			buffer_view->vertex_attributes = target == GLTFDocument::ARRAY_BUFFER;
 		}
 
 		p_state->buffer_views.push_back(buffer_view);
@@ -1059,10 +1063,11 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> p_state) {
 }
 
 double GLTFDocument::_filter_number(double p_float) {
-	if (Math::is_nan(p_float)) {
+	if (!Math::is_finite(p_float)) {
+		// 3.6.2.2. "Values of NaN, +Infinity, and -Infinity MUST NOT be present."
 		return 0.0f;
 	}
-	return p_float;
+	return (double)(float)p_float;
 }
 
 String GLTFDocument::_get_component_type_name(const uint32_t p_component) {
@@ -1098,7 +1103,7 @@ String GLTFDocument::_get_type_name(const GLTFType p_component) {
 	return names[p_component];
 }
 
-Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_src, const int p_count, const GLTFType p_type, const int p_component_type, const bool p_normalized, const int p_byte_offset, const bool p_for_vertex, GLTFBufferViewIndex &r_accessor) {
+Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_src, const int p_count, const GLTFType p_type, const int p_component_type, const bool p_normalized, const int p_byte_offset, const bool p_for_vertex, GLTFBufferViewIndex &r_accessor, const bool p_for_vertex_indices) {
 	const int component_count_for_type[7] = {
 		1, 2, 3, 4, 4, 9, 16
 	};
@@ -1150,6 +1155,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 	const int buffer_end = (stride * (p_count - 1)) + _get_component_type_size(p_component_type);
 	// TODO define bv->byte_stride
 	bv->byte_offset = gltf_buffer.size();
+	if (p_for_vertex_indices) {
+		bv->indices = true;
+	} else if (p_for_vertex) {
+		bv->vertex_attributes = true;
+	}
 
 	switch (p_component_type) {
 		case COMPONENT_TYPE_BYTE: {
@@ -1497,7 +1507,7 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> p_state, const GLTF
 	return dst_buffer;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state, const Vector<int32_t> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state, const Vector<int32_t> p_attribs, const bool p_for_vertex, const bool p_for_vertex_indices) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1510,7 +1520,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state,
 	Vector<double> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
-		attribs.write[i] = Math::snapped(p_attribs[i], 1.0);
+		attribs.write[i] = p_attribs[i];
 		if (i == 0) {
 			for (int32_t type_i = 0; type_i < element_count; type_i++) {
 				type_max.write[type_i] = attribs[(i * element_count) + type_i];
@@ -1520,11 +1530,8 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state,
 		for (int32_t type_i = 0; type_i < element_count; type_i++) {
 			type_max.write[type_i] = MAX(attribs[(i * element_count) + type_i], type_max[type_i]);
 			type_min.write[type_i] = MIN(attribs[(i * element_count) + type_i], type_min[type_i]);
-			type_max.write[type_i] = _filter_number(type_max.write[type_i]);
-			type_min.write[type_i] = _filter_number(type_min.write[type_i]);
 		}
 	}
-
 	ERR_FAIL_COND_V(attribs.is_empty(), -1);
 
 	Ref<GLTFAccessor> accessor;
@@ -1541,7 +1548,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state,
 	accessor->type = type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), attribs.size(), type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
+	Error err = _encode_buffer_view(p_state, attribs.ptr(), attribs.size(), type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i, p_for_vertex_indices);
 	if (err != OK) {
 		return -1;
 	}
@@ -1588,6 +1595,15 @@ Vector<float> GLTFDocument::_decode_accessor_as_floats(Ref<GLTFState> p_state, c
 	return ret;
 }
 
+void GLTFDocument::_round_min_max_components(Vector<double> &r_type_min, Vector<double> &r_type_max) {
+	// 3.6.2.5: For floating-point components, JSON-stored minimum and maximum values represent single precision
+	// floats and SHOULD be rounded to single precision before usage to avoid any potential boundary mismatches.
+	for (int32_t type_i = 0; type_i < r_type_min.size(); type_i++) {
+		r_type_min.write[type_i] = (double)(float)r_type_min[type_i];
+		r_type_max.write[type_i] = (double)(float)r_type_max[type_i];
+	}
+}
+
 GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> p_state, const Vector<Vector2> p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
@@ -1604,10 +1620,11 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> p_state,
 
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Vector2 attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = _filter_number(attrib.x);
+		attribs.write[(i * element_count) + 1] = _filter_number(attrib.y);
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
+	_round_min_max_components(type_min, type_max);
 
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
 
@@ -1650,13 +1667,14 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> p_state
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = _filter_number(attrib.r);
+		attribs.write[(i * element_count) + 1] = _filter_number(attrib.g);
+		attribs.write[(i * element_count) + 2] = _filter_number(attrib.b);
+		attribs.write[(i * element_count) + 3] = _filter_number(attrib.a);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
+	_round_min_max_components(type_min, type_max);
 
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
 
@@ -1693,8 +1711,6 @@ void GLTFDocument::_calc_accessor_min_max(int p_i, const int p_element_count, Ve
 	for (int32_t type_i = 0; type_i < p_element_count; type_i++) {
 		p_type_max.write[type_i] = MAX(p_attribs[(p_i * p_element_count) + type_i], p_type_max[type_i]);
 		p_type_min.write[type_i] = MIN(p_attribs[(p_i * p_element_count) + type_i], p_type_min[type_i]);
-		p_type_max.write[type_i] = _filter_number(p_type_max.write[type_i]);
-		p_type_min.write[type_i] = _filter_number(p_type_min.write[type_i]);
 	}
 }
 
@@ -1715,13 +1731,14 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> p_sta
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = _filter_number(attrib.r);
+		attribs.write[(i * element_count) + 1] = _filter_number(attrib.g);
+		attribs.write[(i * element_count) + 2] = _filter_number(attrib.b);
+		attribs.write[(i * element_count) + 3] = _filter_number(attrib.a);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
+	_round_min_max_components(type_min, type_max);
 
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
 
@@ -1764,12 +1781,13 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> p_stat
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Color attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.r, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.g, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.b, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(attrib.a, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = _filter_number(attrib.r);
+		attribs.write[(i * element_count) + 1] = _filter_number(attrib.g);
+		attribs.write[(i * element_count) + 2] = _filter_number(attrib.b);
+		attribs.write[(i * element_count) + 3] = _filter_number(attrib.a);
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
+	_round_min_max_components(type_min, type_max);
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
 
 	Ref<GLTFAccessor> accessor;
@@ -1811,13 +1829,14 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> p
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Quaternion quaternion = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(quaternion.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(quaternion.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(quaternion.z, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 3] = Math::snapped(quaternion.w, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = _filter_number(quaternion.x);
+		attribs.write[(i * element_count) + 1] = _filter_number(quaternion.y);
+		attribs.write[(i * element_count) + 2] = _filter_number(quaternion.z);
+		attribs.write[(i * element_count) + 3] = _filter_number(quaternion.w);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
+	_round_min_max_components(type_min, type_max);
 
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
 
@@ -1879,10 +1898,11 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_stat
 	type_min.resize(element_count);
 
 	for (int i = 0; i < p_attribs.size(); i++) {
-		attribs.write[i] = Math::snapped(p_attribs[i], CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i] = _filter_number(p_attribs[i]);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
+	_round_min_max_components(type_min, type_max);
 
 	ERR_FAIL_COND_V(attribs.is_empty(), -1);
 
@@ -1924,12 +1944,13 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> p_state,
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Vector3 attrib = p_attribs[i];
-		attribs.write[(i * element_count) + 0] = Math::snapped(attrib.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 1] = Math::snapped(attrib.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[(i * element_count) + 2] = Math::snapped(attrib.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[(i * element_count) + 0] = _filter_number(attrib.x);
+		attribs.write[(i * element_count) + 1] = _filter_number(attrib.y);
+		attribs.write[(i * element_count) + 2] = _filter_number(attrib.z);
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
+	_round_min_max_components(type_min, type_max);
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
 
 	Ref<GLTFAccessor> accessor;
@@ -1973,31 +1994,32 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> p_state
 		Basis basis = attrib.get_basis();
 		Vector3 axis_0 = basis.get_column(Vector3::AXIS_X);
 
-		attribs.write[i * element_count + 0] = Math::snapped(axis_0.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 1] = Math::snapped(axis_0.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 2] = Math::snapped(axis_0.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 0] = _filter_number(axis_0.x);
+		attribs.write[i * element_count + 1] = _filter_number(axis_0.y);
+		attribs.write[i * element_count + 2] = _filter_number(axis_0.z);
 		attribs.write[i * element_count + 3] = 0.0;
 
 		Vector3 axis_1 = basis.get_column(Vector3::AXIS_Y);
-		attribs.write[i * element_count + 4] = Math::snapped(axis_1.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 5] = Math::snapped(axis_1.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 6] = Math::snapped(axis_1.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 4] = _filter_number(axis_1.x);
+		attribs.write[i * element_count + 5] = _filter_number(axis_1.y);
+		attribs.write[i * element_count + 6] = _filter_number(axis_1.z);
 		attribs.write[i * element_count + 7] = 0.0;
 
 		Vector3 axis_2 = basis.get_column(Vector3::AXIS_Z);
-		attribs.write[i * element_count + 8] = Math::snapped(axis_2.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 9] = Math::snapped(axis_2.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 10] = Math::snapped(axis_2.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 8] = _filter_number(axis_2.x);
+		attribs.write[i * element_count + 9] = _filter_number(axis_2.y);
+		attribs.write[i * element_count + 10] = _filter_number(axis_2.z);
 		attribs.write[i * element_count + 11] = 0.0;
 
 		Vector3 origin = attrib.get_origin();
-		attribs.write[i * element_count + 12] = Math::snapped(origin.x, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 13] = Math::snapped(origin.y, CMP_NORMALIZE_TOLERANCE);
-		attribs.write[i * element_count + 14] = Math::snapped(origin.z, CMP_NORMALIZE_TOLERANCE);
+		attribs.write[i * element_count + 12] = _filter_number(origin.x);
+		attribs.write[i * element_count + 13] = _filter_number(origin.y);
+		attribs.write[i * element_count + 14] = _filter_number(origin.z);
 		attribs.write[i * element_count + 15] = 1.0;
 
 		_calc_accessor_min_max(i, element_count, type_max, attribs, type_min);
 	}
+	_round_min_max_components(type_min, type_max);
 	ERR_FAIL_COND_V(attribs.size() % element_count != 0, -1);
 
 	Ref<GLTFAccessor> accessor;
@@ -2365,7 +2387,13 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 					Vector<Color> attribs;
 					attribs.resize(vertex_count);
 					for (int i = 0; i < vertex_count; i++) {
-						attribs.write[i] = Color(a[(i * JOINT_GROUP_SIZE) + 0], a[(i * JOINT_GROUP_SIZE) + 1], a[(i * JOINT_GROUP_SIZE) + 2], a[(i * JOINT_GROUP_SIZE) + 3]);
+						Color weight_0(a[(i * JOINT_GROUP_SIZE) + 0], a[(i * JOINT_GROUP_SIZE) + 1], a[(i * JOINT_GROUP_SIZE) + 2], a[(i * JOINT_GROUP_SIZE) + 3]);
+						float divisor = weight_0.r + weight_0.g + weight_0.b + weight_0.a;
+						if (Math::is_zero_approx(divisor) || !Math::is_finite(divisor)) {
+							divisor = 1.0;
+							weight_0 = Color(1, 0, 0, 0);
+						}
+						attribs.write[i] = weight_0 / divisor;
 					}
 					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(p_state, attribs, true);
 				} else if ((a.size() / (JOINT_GROUP_SIZE * 2)) >= vertex_array.size()) {
@@ -2380,13 +2408,19 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 						weight_0.g = a[vertex_i * weights_8_count + 1];
 						weight_0.b = a[vertex_i * weights_8_count + 2];
 						weight_0.a = a[vertex_i * weights_8_count + 3];
-						weights_0.write[vertex_i] = weight_0;
 						Color weight_1;
 						weight_1.r = a[vertex_i * weights_8_count + 4];
 						weight_1.g = a[vertex_i * weights_8_count + 5];
 						weight_1.b = a[vertex_i * weights_8_count + 6];
 						weight_1.a = a[vertex_i * weights_8_count + 7];
-						weights_1.write[vertex_i] = weight_1;
+						float divisor = weight_0.r + weight_0.g + weight_0.b + weight_0.a + weight_1.r + weight_1.g + weight_1.b + weight_1.a;
+						if (Math::is_zero_approx(divisor) || !Math::is_finite(divisor)) {
+							divisor = 1.0f;
+							weight_0 = Color(1, 0, 0, 0);
+							weight_1 = Color(0, 0, 0, 0);
+						}
+						weights_0.write[vertex_i] = weight_0 / divisor;
+						weights_1.write[vertex_i] = weight_1 / divisor;
 					}
 					attributes["WEIGHTS_0"] = _encode_accessor_as_weights(p_state, weights_0, true);
 					attributes["WEIGHTS_1"] = _encode_accessor_as_weights(p_state, weights_1, true);
@@ -2402,7 +2436,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 							SWAP(mesh_indices.write[k + 0], mesh_indices.write[k + 2]);
 						}
 					}
-					primitive["indices"] = _encode_accessor_as_ints(p_state, mesh_indices, true);
+					primitive["indices"] = _encode_accessor_as_ints(p_state, mesh_indices, true, true);
 				} else {
 					if (primitive_type == Mesh::PRIMITIVE_TRIANGLES) {
 						//generate indices because they need to be swapped for CW/CCW
@@ -2421,7 +2455,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 								generated_indices.write[k + 2] = k + 1;
 							}
 						}
-						primitive["indices"] = _encode_accessor_as_ints(p_state, generated_indices, true);
+						primitive["indices"] = _encode_accessor_as_ints(p_state, generated_indices, true, true);
 					}
 				}
 			}

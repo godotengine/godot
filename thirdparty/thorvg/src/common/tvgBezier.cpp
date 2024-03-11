@@ -29,7 +29,7 @@
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static float _lineLength(const Point& pt1, const Point& pt2)
+static float _lineLengthApprox(const Point& pt1, const Point& pt2)
 {
     /* approximate sqrt(x*x + y*y) using alpha max plus beta min algorithm.
        With alpha = 1, beta = 3/8, giving results with the largest error less
@@ -41,6 +41,59 @@ static float _lineLength(const Point& pt1, const Point& pt2)
 }
 
 
+static float _lineLength(const Point& pt1, const Point& pt2)
+{
+    Point diff = {pt2.x - pt1.x, pt2.y - pt1.y};
+    return sqrtf(diff.x * diff.x + diff.y * diff.y);
+}
+
+
+template<typename LengthFunc>
+float _bezLength(const Bezier& cur, LengthFunc lineLengthFunc)
+{
+    Bezier left, right;
+    auto len = lineLengthFunc(cur.start, cur.ctrl1) + lineLengthFunc(cur.ctrl1, cur.ctrl2) + lineLengthFunc(cur.ctrl2, cur.end);
+    auto chord = lineLengthFunc(cur.start, cur.end);
+
+    if (fabsf(len - chord) > BEZIER_EPSILON) {
+        tvg::bezSplit(cur, left, right);
+        return _bezLength(left, lineLengthFunc) + _bezLength(right, lineLengthFunc);
+    }
+    return len;
+}
+
+
+template<typename LengthFunc>
+float _bezAt(const Bezier& bz, float at, float length, LengthFunc lineLengthFunc)
+{
+    auto biggest = 1.0f;
+    auto smallest = 0.0f;
+    auto t = 0.5f;
+
+    //just in case to prevent an infinite loop
+    if (at <= 0) return 0.0f;
+    if (at >= length) return 1.0f;
+
+    while (true) {
+        auto right = bz;
+        Bezier left;
+        bezSplitLeft(right, t, left);
+        length = _bezLength(left, lineLengthFunc);
+        if (fabsf(length - at) < BEZIER_EPSILON || fabsf(smallest - biggest) < BEZIER_EPSILON) {
+            break;
+        }
+        if (length < at) {
+            smallest = t;
+            t = (t + biggest) * 0.5f;
+        } else {
+            biggest = t;
+            t = (smallest + t) * 0.5f;
+        }
+    }
+    return t;
+}
+
+
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
@@ -48,7 +101,7 @@ static float _lineLength(const Point& pt1, const Point& pt2)
 namespace tvg
 {
 
-void bezSplit(const Bezier&cur, Bezier& left, Bezier& right)
+void bezSplit(const Bezier& cur, Bezier& left, Bezier& right)
 {
     auto c = (cur.ctrl1.x + cur.ctrl2.x) * 0.5f;
     left.ctrl1.x = (cur.start.x + cur.ctrl1.x) * 0.5f;
@@ -72,15 +125,13 @@ void bezSplit(const Bezier&cur, Bezier& left, Bezier& right)
 
 float bezLength(const Bezier& cur)
 {
-    Bezier left, right;
-    auto len = _lineLength(cur.start, cur.ctrl1) + _lineLength(cur.ctrl1, cur.ctrl2) + _lineLength(cur.ctrl2, cur.end);
-    auto chord = _lineLength(cur.start, cur.end);
+    return _bezLength(cur, _lineLength);
+}
 
-    if (fabsf(len - chord) > BEZIER_EPSILON) {
-        bezSplit(cur, left, right);
-        return bezLength(left) + bezLength(right);
-    }
-    return len;
+
+float bezLengthApprox(const Bezier& cur)
+{
+    return _bezLength(cur, _lineLengthApprox);
 }
 
 
@@ -110,31 +161,13 @@ void bezSplitLeft(Bezier& cur, float at, Bezier& left)
 
 float bezAt(const Bezier& bz, float at, float length)
 {
-    auto biggest = 1.0f;
-    auto smallest = 0.0f;
-    auto t = 0.5f;
+    return _bezAt(bz, at, length, _lineLength);
+}
 
-    //just in case to prevent an infinite loop
-    if (at <= 0) return 0.0f;
-    if (at >= length) return 1.0f;
 
-    while (true) {
-        auto right = bz;
-        Bezier left;
-        bezSplitLeft(right, t, left);
-        length = bezLength(left);
-        if (fabsf(length - at) < BEZIER_EPSILON || fabsf(smallest - biggest) < BEZIER_EPSILON) {
-            break;
-        }
-        if (length < at) {
-            smallest = t;
-            t = (t + biggest) * 0.5f;
-        } else {
-            biggest = t;
-            t = (smallest + t) * 0.5f;
-        }
-    }
-    return t;
+float bezAtApprox(const Bezier& bz, float at, float length)
+{
+    return _bezAt(bz, at, length, _lineLengthApprox);
 }
 
 

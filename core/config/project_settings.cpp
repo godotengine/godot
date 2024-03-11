@@ -38,6 +38,8 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_uid.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
@@ -476,6 +478,14 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 
 	if (!ok) {
 		return false;
+	}
+
+	if (project_loaded) {
+		// This pack may have declared new global classes (make sure they are picked up).
+		refresh_global_class_list();
+
+		// This pack may have defined new UIDs, make sure they are cached.
+		ResourceUID::get_singleton()->load_from_cache(false);
 	}
 
 	//if data.pck is found, all directory access will be from here
@@ -1186,6 +1196,19 @@ Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_d
 		return get(p_setting);
 	} else {
 		return p_default_value;
+	}
+}
+
+void ProjectSettings::refresh_global_class_list() {
+	// This is called after mounting a new PCK file to pick up class changes.
+	is_global_class_list_loaded = false; // Make sure we read from the freshly mounted PCK.
+	Array script_classes = get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary c = script_classes[i];
+		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+			continue;
+		}
+		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"]);
 	}
 }
 

@@ -327,6 +327,7 @@ struct AxisValueFormat4
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
                           axisValues.sanitize (c, axisCount)));
   }
 
@@ -416,6 +417,7 @@ struct AxisValue
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     switch (u.format)
     {
@@ -560,6 +562,7 @@ struct STAT
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  version.minor > 0 &&
 			  designAxesOffset.sanitize (c, this, designAxisCount) &&

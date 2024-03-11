@@ -460,9 +460,10 @@ _dependencies_satisfied (hb_subset_plan_t *plan, hb_tag_t tag,
   case HB_OT_TAG_hmtx:
   case HB_OT_TAG_vmtx:
   case HB_OT_TAG_maxp:
+  case HB_OT_TAG_OS2:
     return !plan->normalized_coords || !pending_subset_tags.has (HB_OT_TAG_glyf);
   case HB_OT_TAG_GPOS:
-    return !plan->normalized_coords || plan->all_axes_pinned || !pending_subset_tags.has (HB_OT_TAG_GDEF);
+    return plan->all_axes_pinned || !pending_subset_tags.has (HB_OT_TAG_GDEF);
   default:
     return true;
   }
