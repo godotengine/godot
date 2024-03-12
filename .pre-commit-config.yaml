@@ -39,10 +39,10 @@ repos:
         entry: python3 misc/scripts/copyright_headers.py
         exclude: |
           (?x)^(
-            tests/python_build.*|
             .*thirdparty.*|
-            .*platform/android/java/lib/src/com.*|
             .*-so_wrap.*|
+            core/math/bvh_.*\.inc$|
+            platform/android/java/lib/src/com.*|
             platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView.*|
             platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper.*|
             platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.*
