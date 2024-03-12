@@ -155,19 +155,24 @@ private:
 			const bool p_for_vertex);
 	Vector<float> _decode_accessor_as_floats(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<int> _decode_accessor_as_ints(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<Vector2> _decode_accessor_as_vec2(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<Vector3> _decode_accessor_as_vec3(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<Color> _decode_accessor_as_color(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<Quaternion> _decode_accessor_as_quaternion(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
 			const bool p_for_vertex);

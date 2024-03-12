@@ -1557,7 +1557,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state,
 	return p_state->accessors.size() - 1;
 }
 
-Vector<int> GLTFDocument::_decode_accessor_as_ints(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
+Vector<int> GLTFDocument::_decode_accessor_as_ints(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<int> ret;
 
@@ -1566,17 +1566,23 @@ Vector<int> GLTFDocument::_decode_accessor_as_ints(Ref<GLTFState> p_state, const
 	}
 
 	const double *attribs_ptr = attribs.ptr();
-	const int ret_size = attribs.size();
+	int ret_size = attribs.size();
+	if (!p_packed_vertex_ids.is_empty()) {
+		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
+		ret_size = p_packed_vertex_ids.size();
+	}
 	ret.resize(ret_size);
-	{
-		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = int(attribs_ptr[i]);
+	for (int i = 0; i < ret_size; i++) {
+		int src_i = i;
+		if (!p_packed_vertex_ids.is_empty()) {
+			src_i = p_packed_vertex_ids[i];
 		}
+		ret.write[i] = int(attribs_ptr[src_i]);
 	}
 	return ret;
 }
 
-Vector<float> GLTFDocument::_decode_accessor_as_floats(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
+Vector<float> GLTFDocument::_decode_accessor_as_floats(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<float> ret;
 
@@ -1585,12 +1591,18 @@ Vector<float> GLTFDocument::_decode_accessor_as_floats(Ref<GLTFState> p_state, c
 	}
 
 	const double *attribs_ptr = attribs.ptr();
-	const int ret_size = attribs.size();
+	int ret_size = attribs.size();
+	if (!p_packed_vertex_ids.is_empty()) {
+		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
+		ret_size = p_packed_vertex_ids.size();
+	}
 	ret.resize(ret_size);
-	{
-		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = float(attribs_ptr[i]);
+	for (int i = 0; i < ret_size; i++) {
+		int src_i = i;
+		if (!p_packed_vertex_ids.is_empty()) {
+			src_i = p_packed_vertex_ids[i];
 		}
+		ret.write[i] = float(attribs_ptr[src_i]);
 	}
 	return ret;
 }
@@ -1863,7 +1875,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> p
 	return p_state->accessors.size() - 1;
 }
 
-Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
+Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Vector2> ret;
 
@@ -1873,12 +1885,18 @@ Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> p_state, c
 
 	ERR_FAIL_COND_V(attribs.size() % 2 != 0, ret);
 	const double *attribs_ptr = attribs.ptr();
-	const int ret_size = attribs.size() / 2;
+	int ret_size = attribs.size() / 2;
+	if (!p_packed_vertex_ids.is_empty()) {
+		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
+		ret_size = p_packed_vertex_ids.size();
+	}
 	ret.resize(ret_size);
-	{
-		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Vector2(attribs_ptr[i * 2 + 0], attribs_ptr[i * 2 + 1]);
+	for (int i = 0; i < ret_size; i++) {
+		int src_i = i;
+		if (!p_packed_vertex_ids.is_empty()) {
+			src_i = p_packed_vertex_ids[i];
 		}
+		ret.write[i] = Vector2(attribs_ptr[src_i * 2 + 0], attribs_ptr[src_i * 2 + 1]);
 	}
 	return ret;
 }
@@ -2045,7 +2063,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> p_state
 	return p_state->accessors.size() - 1;
 }
 
-Vector<Vector3> GLTFDocument::_decode_accessor_as_vec3(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
+Vector<Vector3> GLTFDocument::_decode_accessor_as_vec3(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Vector3> ret;
 
@@ -2055,17 +2073,23 @@ Vector<Vector3> GLTFDocument::_decode_accessor_as_vec3(Ref<GLTFState> p_state, c
 
 	ERR_FAIL_COND_V(attribs.size() % 3 != 0, ret);
 	const double *attribs_ptr = attribs.ptr();
-	const int ret_size = attribs.size() / 3;
+	int ret_size = attribs.size() / 3;
+	if (!p_packed_vertex_ids.is_empty()) {
+		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
+		ret_size = p_packed_vertex_ids.size();
+	}
 	ret.resize(ret_size);
-	{
-		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Vector3(attribs_ptr[i * 3 + 0], attribs_ptr[i * 3 + 1], attribs_ptr[i * 3 + 2]);
+	for (int i = 0; i < ret_size; i++) {
+		int src_i = i;
+		if (!p_packed_vertex_ids.is_empty()) {
+			src_i = p_packed_vertex_ids[i];
 		}
+		ret.write[i] = Vector3(attribs_ptr[src_i * 3 + 0], attribs_ptr[src_i * 3 + 1], attribs_ptr[src_i * 3 + 2]);
 	}
 	return ret;
 }
 
-Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
+Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
 	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
 	Vector<Color> ret;
 
@@ -2082,12 +2106,18 @@ Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> p_state, co
 
 	ERR_FAIL_COND_V(attribs.size() % vec_len != 0, ret);
 	const double *attribs_ptr = attribs.ptr();
-	const int ret_size = attribs.size() / vec_len;
+	int ret_size = attribs.size() / vec_len;
+	if (!p_packed_vertex_ids.is_empty()) {
+		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
+		ret_size = p_packed_vertex_ids.size();
+	}
 	ret.resize(ret_size);
-	{
-		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Color(attribs_ptr[i * vec_len + 0], attribs_ptr[i * vec_len + 1], attribs_ptr[i * vec_len + 2], vec_len == 4 ? attribs_ptr[i * 4 + 3] : 1.0);
+	for (int i = 0; i < ret_size; i++) {
+		int src_i = i;
+		if (!p_packed_vertex_ids.is_empty()) {
+			src_i = p_packed_vertex_ids[i];
 		}
+		ret.write[i] = Color(attribs_ptr[src_i * vec_len + 0], attribs_ptr[src_i * vec_len + 1], attribs_ptr[src_i * vec_len + 2], vec_len == 4 ? attribs_ptr[src_i * 4 + 3] : 1.0);
 	}
 	return ret;
 }
@@ -2430,7 +2460,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 				Vector<int32_t> mesh_indices = array[Mesh::ARRAY_INDEX];
 				if (mesh_indices.size()) {
 					if (primitive_type == Mesh::PRIMITIVE_TRIANGLES) {
-						//swap around indices, convert ccw to cw for front face
+						// Swap around indices, convert ccw to cw for front face.
 						const int is = mesh_indices.size();
 						for (int k = 0; k < is; k += 3) {
 							SWAP(mesh_indices.write[k + 0], mesh_indices.write[k + 2]);
@@ -2439,7 +2469,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 					primitive["indices"] = _encode_accessor_as_ints(p_state, mesh_indices, true, true);
 				} else {
 					if (primitive_type == Mesh::PRIMITIVE_TRIANGLES) {
-						//generate indices because they need to be swapped for CW/CCW
+						// Generate indices because they need to be swapped for CW/CCW.
 						const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
 						Ref<SurfaceTool> st;
 						st.instantiate();
@@ -2462,7 +2492,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 
 			primitive["attributes"] = attributes;
 
-			//blend shapes
+			// Blend shapes
 			print_verbose("glTF: Mesh has targets");
 			if (import_mesh->get_blend_shape_count()) {
 				ArrayMesh::BlendShapeMode shape_mode = import_mesh->get_blend_shape_mode();
@@ -2623,24 +2653,72 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				primitive = primitives2[mode];
 			}
 
+			int32_t orig_vertex_num = 0;
 			ERR_FAIL_COND_V(!a.has("POSITION"), ERR_PARSE_ERROR);
-			int32_t vertex_num = 0;
 			if (a.has("POSITION")) {
 				PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"], true);
 				array[Mesh::ARRAY_VERTEX] = vertices;
-				vertex_num = vertices.size();
+				orig_vertex_num = vertices.size();
+			}
+			int32_t vertex_num = orig_vertex_num;
+
+			Vector<int> indices;
+			Vector<int> indices_mapping;
+			Vector<int> indices_rev_mapping;
+			Vector<int> indices_vec4_mapping;
+			if (p.has("indices")) {
+				indices = _decode_accessor_as_ints(p_state, p["indices"], false);
+				const int is = indices.size();
+
+				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
+					// Swap around indices, convert ccw to cw for front face.
+
+					int *w = indices.ptrw();
+					for (int k = 0; k < is; k += 3) {
+						SWAP(w[k + 1], w[k + 2]);
+					}
+				}
+
+				const int *indices_w = indices.ptrw();
+				Vector<bool> used_indices;
+				used_indices.resize_zeroed(orig_vertex_num);
+				bool *used_w = used_indices.ptrw();
+				for (int idx_i = 0; idx_i < is; idx_i++) {
+					ERR_FAIL_INDEX_V(indices_w[idx_i], orig_vertex_num, ERR_INVALID_DATA);
+					used_w[indices_w[idx_i]] = true;
+				}
+				indices_rev_mapping.resize_zeroed(orig_vertex_num);
+				int *rev_w = indices_rev_mapping.ptrw();
+				vertex_num = 0;
+				for (int vert_i = 0; vert_i < orig_vertex_num; vert_i++) {
+					if (used_w[vert_i]) {
+						rev_w[vert_i] = indices_mapping.size();
+						indices_mapping.push_back(vert_i);
+						indices_vec4_mapping.push_back(vert_i * 4 + 0);
+						indices_vec4_mapping.push_back(vert_i * 4 + 1);
+						indices_vec4_mapping.push_back(vert_i * 4 + 2);
+						indices_vec4_mapping.push_back(vert_i * 4 + 3);
+						vertex_num++;
+					}
+				}
+			}
+			ERR_FAIL_COND_V(vertex_num <= 0, ERR_INVALID_DECLARATION);
+
+			if (a.has("POSITION")) {
+				PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"], true, indices_mapping);
+				array[Mesh::ARRAY_VERTEX] = vertices;
 			}
 			if (a.has("NORMAL")) {
-				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(p_state, a["NORMAL"], true);
+				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(p_state, a["NORMAL"], true, indices_mapping);
 			}
 			if (a.has("TANGENT")) {
-				array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_floats(p_state, a["TANGENT"], true);
+				array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_floats(p_state, a["TANGENT"], true, indices_vec4_mapping);
 			}
 			if (a.has("TEXCOORD_0")) {
-				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_0"], true);
+				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_0"], true, indices_mapping);
 			}
 			if (a.has("TEXCOORD_1")) {
-				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_1"], true);
+				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_1"], true, indices_mapping);
 			}
 			for (int custom_i = 0; custom_i < 3; custom_i++) {
 				Vector<float> cur_custom;
@@ -2651,12 +2729,12 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				String gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
 				int num_channels = 0;
 				if (a.has(gltf_texcoord_key)) {
-					texcoord_first = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], true);
+					texcoord_first = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], true, indices_mapping);
 					num_channels = 2;
 				}
 				gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
 				if (a.has(gltf_texcoord_key)) {
-					texcoord_second = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], true);
+					texcoord_second = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], true, indices_mapping);
 					num_channels = 4;
 				}
 				if (!num_channels) {
@@ -2697,15 +2775,18 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				}
 			}
 			if (a.has("COLOR_0")) {
-				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], true);
+				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], true, indices_mapping);
 				has_vertex_color = true;
 			}
 			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
-				array[Mesh::ARRAY_BONES] = _decode_accessor_as_ints(p_state, a["JOINTS_0"], true);
+				PackedInt32Array joints_0 = _decode_accessor_as_ints(p_state, a["JOINTS_0"], true, indices_vec4_mapping);
+				ERR_FAIL_COND_V(joints_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
+				array[Mesh::ARRAY_BONES] = joints_0;
 			} else if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
-				PackedInt32Array joints_0 = _decode_accessor_as_ints(p_state, a["JOINTS_0"], true);
-				PackedInt32Array joints_1 = _decode_accessor_as_ints(p_state, a["JOINTS_1"], true);
+				PackedInt32Array joints_0 = _decode_accessor_as_ints(p_state, a["JOINTS_0"], true, indices_vec4_mapping);
+				PackedInt32Array joints_1 = _decode_accessor_as_ints(p_state, a["JOINTS_1"], true, indices_vec4_mapping);
 				ERR_FAIL_COND_V(joints_0.size() != joints_1.size(), ERR_INVALID_DATA);
+				ERR_FAIL_COND_V(joints_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
 				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
 				Vector<int> joints;
 				joints.resize(vertex_num * weight_8_count);
@@ -2722,8 +2803,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				array[Mesh::ARRAY_BONES] = joints;
 			}
 			if (a.has("WEIGHTS_0") && !a.has("WEIGHTS_1")) {
-				Vector<float> weights = _decode_accessor_as_floats(p_state, a["WEIGHTS_0"], true);
-				{ //gltf does not seem to normalize the weights for some reason..
+				Vector<float> weights = _decode_accessor_as_floats(p_state, a["WEIGHTS_0"], true, indices_vec4_mapping);
+				ERR_FAIL_COND_V(weights.size() != 4 * vertex_num, ERR_INVALID_DATA);
+				{ // glTF does not seem to normalize the weights for some reason.
 					int wc = weights.size();
 					float *w = weights.ptrw();
 
@@ -2743,10 +2825,11 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				}
 				array[Mesh::ARRAY_WEIGHTS] = weights;
 			} else if (a.has("WEIGHTS_0") && a.has("WEIGHTS_1")) {
-				Vector<float> weights_0 = _decode_accessor_as_floats(p_state, a["WEIGHTS_0"], true);
-				Vector<float> weights_1 = _decode_accessor_as_floats(p_state, a["WEIGHTS_1"], true);
+				Vector<float> weights_0 = _decode_accessor_as_floats(p_state, a["WEIGHTS_0"], true, indices_vec4_mapping);
+				Vector<float> weights_1 = _decode_accessor_as_floats(p_state, a["WEIGHTS_1"], true, indices_vec4_mapping);
 				Vector<float> weights;
 				ERR_FAIL_COND_V(weights_0.size() != weights_1.size(), ERR_INVALID_DATA);
+				ERR_FAIL_COND_V(weights_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
 				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
 				weights.resize(vertex_num * weight_8_count);
 				for (int32_t vertex_i = 0; vertex_i < vertex_num; vertex_i++) {
@@ -2759,7 +2842,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					weights.write[vertex_i * weight_8_count + 6] = weights_1[vertex_i * JOINT_GROUP_SIZE + 2];
 					weights.write[vertex_i * weight_8_count + 7] = weights_1[vertex_i * JOINT_GROUP_SIZE + 3];
 				}
-				{ //gltf does not seem to normalize the weights for some reason..
+				{ // glTF does not seem to normalize the weights for some reason.
 					int wc = weights.size();
 					float *w = weights.ptrw();
 
@@ -2788,25 +2871,18 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				array[Mesh::ARRAY_WEIGHTS] = weights;
 			}
 
-			if (p.has("indices")) {
-				Vector<int> indices = _decode_accessor_as_ints(p_state, p["indices"], false);
-
-				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
-					//swap around indices, convert ccw to cw for front face
-
-					const int is = indices.size();
-					int *w = indices.ptrw();
-					for (int k = 0; k < is; k += 3) {
-						SWAP(w[k + 1], w[k + 2]);
-					}
+			if (!indices.is_empty()) {
+				int *w = indices.ptrw();
+				const int is = indices.size();
+				for (int ind_i = 0; ind_i < is; ind_i++) {
+					w[ind_i] = indices_rev_mapping[indices[ind_i]];
 				}
 				array[Mesh::ARRAY_INDEX] = indices;
 
 			} else if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
-				//generate indices because they need to be swapped for CW/CCW
+				// Generate indices because they need to be swapped for CW/CCW.
 				const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
 				ERR_FAIL_COND_V(vertices.is_empty(), ERR_PARSE_ERROR);
-				Vector<int> indices;
 				const int vs = vertices.size();
 				indices.resize(vs);
 				{
@@ -2870,13 +2946,11 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 
 			Array morphs;
-			//blend shapes
+			// Blend shapes
 			if (p.has("targets")) {
 				print_verbose("glTF: Mesh has targets");
 				const Array &targets = p["targets"];
 
-				//ideally BLEND_SHAPE_MODE_RELATIVE since gltf2 stores in displacement
-				//but it could require a larger refactor?
 				import_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 
 				if (j == 0) {
@@ -2903,7 +2977,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 
 					if (t.has("POSITION")) {
-						Vector<Vector3> varr = _decode_accessor_as_vec3(p_state, t["POSITION"], true);
+						Vector<Vector3> varr = _decode_accessor_as_vec3(p_state, t["POSITION"], true, indices_mapping);
 						const Vector<Vector3> src_varr = array[Mesh::ARRAY_VERTEX];
 						const int size = src_varr.size();
 						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
@@ -2925,7 +2999,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 						array_copy[Mesh::ARRAY_VERTEX] = varr;
 					}
 					if (t.has("NORMAL")) {
-						Vector<Vector3> narr = _decode_accessor_as_vec3(p_state, t["NORMAL"], true);
+						Vector<Vector3> narr = _decode_accessor_as_vec3(p_state, t["NORMAL"], true, indices_mapping);
 						const Vector<Vector3> src_narr = array[Mesh::ARRAY_NORMAL];
 						int size = src_narr.size();
 						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
@@ -2947,7 +3021,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 						array_copy[Mesh::ARRAY_NORMAL] = narr;
 					}
 					if (t.has("TANGENT")) {
-						const Vector<Vector3> tangents_v3 = _decode_accessor_as_vec3(p_state, t["TANGENT"], true);
+						const Vector<Vector3> tangents_v3 = _decode_accessor_as_vec3(p_state, t["TANGENT"], true, indices_mapping);
 						const Vector<float> src_tangents = array[Mesh::ARRAY_TANGENT];
 						ERR_FAIL_COND_V(src_tangents.is_empty(), ERR_PARSE_ERROR);
 
