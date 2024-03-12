@@ -74,7 +74,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		blit.push_constant.rotation_cos = cos(screen_rotation);
 		blit.push_constant.rotation_sin = sin(screen_rotation);
 		// Swap width and height when the orientation is not the native one
-		if (sc_optimizations && screen_rotation_degrees % 180 != 0) {
+		if (screen_rotation_degrees % 180 != 0) {
 			SWAP(screen_size.width, screen_size.height);
 		}
 		blit.push_constant.src_rect[0] = p_render_targets[i].src_rect.position.x;
