@@ -2893,7 +2893,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 	ShapedTextDataFallback *parent = shaped_owner.get_or_null(p_shaped->parent);
 
 	for (const KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : parent->objects) {
-		if (E.value.pos >= p_shaped->start && E.value.pos < p_shaped->end) {
+		if (E.value.start >= p_shaped->start && E.value.start < p_shaped->end) {
 			p_shaped->objects[E.key] = E.value;
 		}
 	}
@@ -3189,7 +3189,8 @@ bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Vari
 	ShapedTextDataFallback::EmbeddedObject obj;
 	obj.inline_align = p_inline_align;
 	obj.rect.size = p_size;
-	obj.pos = span.start;
+	obj.start = span.start;
+	obj.end = span.end;
 	obj.baseline = p_baseline;
 
 	sd->spans.push_back(span);
@@ -3224,7 +3225,7 @@ bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const V
 			Variant key;
 			if (gl.count == 1) {
 				for (const KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : sd->objects) {
-					if (E.value.pos == gl.start) {
+					if (E.value.start == gl.start) {
 						key = E.key;
 						break;
 					}
@@ -3273,7 +3274,7 @@ void TextServerFallback::_realign(ShapedTextDataFallback *p_sd) const {
 	double full_ascent = p_sd->ascent;
 	double full_descent = p_sd->descent;
 	for (KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : p_sd->objects) {
-		if ((E.value.pos >= p_sd->start) && (E.value.pos < p_sd->end)) {
+		if ((E.value.start >= p_sd->start) && (E.value.start < p_sd->end)) {
 			if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 				switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
 					case INLINE_ALIGNMENT_TO_TOP: {
@@ -3394,7 +3395,7 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 				bool find_embedded = false;
 				if (gl.count == 1) {
 					for (const KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : sd->objects) {
-						if (E.value.pos == gl.start) {
+						if (E.value.start == gl.start) {
 							find_embedded = true;
 							key = E.key;
 							new_sd->objects[key] = E.value;
@@ -4306,6 +4307,32 @@ Rect2 TextServerFallback::_shaped_text_get_object_rect(const RID &p_shaped, cons
 		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
 	}
 	return sd->objects[p_key].rect;
+}
+
+Vector2i TextServerFallback::_shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const {
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, Vector2i());
+
+	MutexLock lock(sd->mutex);
+	ERR_FAIL_COND_V(!sd->objects.has(p_key), Vector2i());
+	return Vector2i(sd->objects[p_key].start, sd->objects[p_key].end);
+}
+
+int64_t TextServerFallback::_shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const {
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, -1);
+
+	MutexLock lock(sd->mutex);
+	ERR_FAIL_COND_V(!sd->objects.has(p_key), -1);
+	const ShapedTextDataFallback::EmbeddedObject &obj = sd->objects[p_key];
+	int sd_size = sd->glyphs.size();
+	const Glyph *sd_glyphs = sd->glyphs.ptr();
+	for (int i = 0; i < sd_size; i++) {
+		if (obj.start == sd_glyphs[i].start) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 Size2 TextServerFallback::_shaped_text_get_size(const RID &p_shaped) const {

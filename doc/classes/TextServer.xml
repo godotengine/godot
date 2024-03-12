@@ -1382,6 +1382,22 @@
 				Breaks text to the lines and columns. Returns character ranges for each segment.
 			</description>
 		</method>
+		<method name="shaped_text_get_object_glyph" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns the glyph index of the inline object.
+			</description>
+		</method>
+		<method name="shaped_text_get_object_range" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns the character range of the inline object.
+			</description>
+		</method>
 		<method name="shaped_text_get_object_rect" qualifiers="const">
 			<return type="Rect2" />
 			<param index="0" name="shaped" type="RID" />

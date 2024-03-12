@@ -1193,6 +1193,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="_shaped_text_get_object_glyph" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_object_range" qualifiers="virtual const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+			</description>
+		</method>
 		<method name="_shaped_text_get_object_rect" qualifiers="virtual const">
 			<return type="Rect2" />
 			<param index="0" name="shaped" type="RID" />

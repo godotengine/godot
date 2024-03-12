@@ -493,6 +493,8 @@ public:
 
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const = 0;
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const = 0;
+	virtual Vector2i shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const = 0;
+	virtual int64_t shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const = 0;
 
 	virtual Size2 shaped_text_get_size(const RID &p_shaped) const = 0;
 	virtual double shaped_text_get_ascent(const RID &p_shaped) const = 0;

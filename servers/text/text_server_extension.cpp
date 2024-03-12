@@ -296,6 +296,8 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_get_objects, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_object_rect, "shaped", "key");
+	GDVIRTUAL_BIND(_shaped_text_get_object_range, "shaped", "key");
+	GDVIRTUAL_BIND(_shaped_text_get_object_glyph, "shaped", "key");
 
 	GDVIRTUAL_BIND(_shaped_text_get_size, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_ascent, "shaped");
@@ -1294,6 +1296,18 @@ Array TextServerExtension::shaped_text_get_objects(const RID &p_shaped) const {
 Rect2 TextServerExtension::shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const {
 	Rect2 ret;
 	GDVIRTUAL_CALL(_shaped_text_get_object_rect, p_shaped, p_key, ret);
+	return ret;
+}
+
+Vector2i TextServerExtension::shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const {
+	Vector2i ret;
+	GDVIRTUAL_CALL(_shaped_text_get_object_range, p_shaped, p_key, ret);
+	return ret;
+}
+
+int64_t TextServerExtension::shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const {
+	int64_t ret = -1;
+	GDVIRTUAL_CALL(_shaped_text_get_object_glyph, p_shaped, p_key, ret);
 	return ret;
 }
 
