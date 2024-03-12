@@ -33,7 +33,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor/themes/builtin_fonts.gen.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 #include "tests/test_macros.h"
 
 namespace TestTextServer {
