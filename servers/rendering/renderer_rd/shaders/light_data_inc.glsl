@@ -48,6 +48,10 @@ struct ReflectionData {
 	//0-8 is intensity,8-9 is ambient, mode
 	highp mat4 local_matrix; // up to here for spot and omni, rest is for directional
 	// notes: for ambientblend, use distance to edge to blend between already existing global environment
+	uint priority;
+	float res1;
+	float res2;
+	float res3;
 };
 
 struct DirectionalLightData {

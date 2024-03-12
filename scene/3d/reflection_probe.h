@@ -61,6 +61,7 @@ private:
 	Color ambient_color = Color(0, 0, 0);
 	float ambient_color_energy = 1.0;
 	float mesh_lod_threshold = 1.0;
+	int priority = 0;
 
 	uint32_t cull_mask = (1 << 20) - 1;
 	uint32_t reflection_mask = (1 << 20) - 1;
@@ -119,6 +120,9 @@ public:
 
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
+
+	void set_priority(int p_priority);
+	int get_priority() const;
 
 	virtual AABB get_aabb() const override;
 

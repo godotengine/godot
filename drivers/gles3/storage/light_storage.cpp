@@ -474,6 +474,9 @@ void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
 }
 
+void LightStorage::reflection_probe_set_priority(RID p_probe, int p_priority) {
+}
+
 AABB LightStorage::reflection_probe_get_aabb(RID p_probe) const {
 	return AABB();
 }
