@@ -36,7 +36,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class ShaderRD {
 public:
