@@ -265,6 +265,8 @@ Error RenderingDeviceDriver::_reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 							r_reflection.specialization_constants.push_back(sconst);
 						}
 					}
+
+					r_reflection.specialization_constants.sort();
 				}
 			}
 
