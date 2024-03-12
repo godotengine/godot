@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
 class RenderingContextDriver;
