@@ -133,8 +133,6 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
         "core/Projection.cpp",
         "core/Scanline.cpp",
         "core/Shape.cpp",
-        "core/SignedDistance.cpp",
-        "core/Vector2.cpp",
         "core/contour-combiners.cpp",
         "core/edge-coloring.cpp",
         "core/edge-segments.cpp",
@@ -149,8 +147,10 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     ]
     thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
 
+    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
     env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
+    env.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
