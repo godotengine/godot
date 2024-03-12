@@ -30,7 +30,7 @@
 
 #include "audio_effect_eq.h"
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	int band_count = bands[0].size();
