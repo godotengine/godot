@@ -32,7 +32,7 @@
 
 #include "core/io/resource_importer.h"
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 class ResourceImporterImageFont : public ResourceImporter {
 	GDCLASS(ResourceImporterImageFont, ResourceImporter);
