@@ -32,7 +32,10 @@
 #include "../renderer_compositor_rd.h"
 #include "../storage_rd/texture_storage.h"
 #include "../uniform_set_cache_rd.h"
+
+#ifndef _3D_DISABLED
 #include "servers/xr_server.h"
+#endif // _3D_DISABLED
 
 using namespace RendererRD;
 
@@ -124,6 +127,7 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 					copy_vrs(rd_texture, p_vrs_fb, layers > 1);
 				}
 			}
+#ifndef _3D_DISABLED
 		} else if (vrs_mode == RS::VIEWPORT_VRS_XR) {
 			Ref<XRInterface> interface = XRServer::get_singleton()->get_primary_interface();
 			if (interface.is_valid()) {
@@ -138,6 +142,7 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 					}
 				}
 			}
+#endif // _3D_DISABLED
 		}
 
 		RD::get_singleton()->draw_command_end_label();
