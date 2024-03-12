@@ -338,7 +338,7 @@ bool NavRegion2D::get_use_async_iterations() const {
 
 NavRegion2D::NavRegion2D() :
 		sync_dirty_request_list_element(this), async_list_element(this) {
-	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
+	type = NavigationEnums2D::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
 	iteration_build.region = this;
 	iteration.instantiate();
 

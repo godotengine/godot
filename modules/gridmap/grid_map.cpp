@@ -35,7 +35,7 @@
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "core/math/convex_hull.h"
@@ -52,7 +52,7 @@
 
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 Callable GridMap::_navmesh_source_geometry_parsing_callback;
 RID GridMap::_navmesh_source_geometry_parser;

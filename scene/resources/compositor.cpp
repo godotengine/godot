@@ -30,7 +30,7 @@
 
 #include "compositor.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 /* Compositor Effect */
 

@@ -37,7 +37,7 @@
 
 #include "core/input/input.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #include <emscripten/html5.h>
 

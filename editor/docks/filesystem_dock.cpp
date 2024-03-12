@@ -65,7 +65,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/resources/packed_scene.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
 	TreeItem *item = get_item_at_position(get_local_mouse_position());

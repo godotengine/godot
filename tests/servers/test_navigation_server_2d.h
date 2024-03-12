@@ -31,7 +31,7 @@
 #pragma once
 
 #include "modules/navigation_2d/nav_utils_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 #include "scene/2d/polygon_2d.h"
 

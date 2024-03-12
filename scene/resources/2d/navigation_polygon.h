@@ -32,7 +32,7 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation/navigation_globals.h"
+#include "servers/navigation_2d/navigation_constants_2d.h"
 
 class NavigationPolygon : public Resource {
 	GDCLASS(NavigationPolygon, Resource);

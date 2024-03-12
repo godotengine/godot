@@ -34,7 +34,7 @@
 #include "../openxr_api.h"
 #include "core/config/project_settings.h"
 #include "scene/3d/xr/xr_nodes.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 void OpenXRRenderModelManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tracker"), &OpenXRRenderModelManager::get_tracker);

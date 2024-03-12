@@ -36,7 +36,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "main/main.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <CoreMotion/CoreMotion.h>

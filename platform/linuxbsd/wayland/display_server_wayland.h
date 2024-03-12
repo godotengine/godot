@@ -59,7 +59,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include <climits>
 #include <cstdio>

@@ -35,7 +35,7 @@
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 #ifndef NAVIGATION_3D_DISABLED
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
 
 void World3D::_register_camera(Camera3D *p_camera) {

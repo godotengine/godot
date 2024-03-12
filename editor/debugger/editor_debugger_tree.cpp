@@ -40,7 +40,7 @@
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);

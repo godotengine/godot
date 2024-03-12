@@ -32,8 +32,8 @@
 
 #include "core/templates/local_vector.h"
 #include "scene/scene_string_names.h"
+#include "servers/audio/audio_server.h"
 #include "servers/audio/audio_stream.h"
-#include "servers/audio_server.h"
 
 class AudioStreamPolyphonic : public AudioStream {
 	GDCLASS(AudioStreamPolyphonic, AudioStream)

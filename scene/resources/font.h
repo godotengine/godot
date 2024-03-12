@@ -33,7 +33,7 @@
 #include "core/io/resource.h"
 #include "core/templates/lru.h"
 #include "scene/resources/texture.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 class TextLine;
 class TextParagraph;
