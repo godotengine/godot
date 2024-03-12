@@ -39,7 +39,7 @@
 #include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 bool NavigationObstacle3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<NavigationObstacle3D>(p_spatial) != nullptr;

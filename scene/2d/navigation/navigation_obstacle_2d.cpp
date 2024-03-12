@@ -34,7 +34,7 @@
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/world_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 Callable NavigationObstacle2D::_navmesh_source_geometry_parsing_callback;
 RID NavigationObstacle2D::_navmesh_source_geometry_parser;
