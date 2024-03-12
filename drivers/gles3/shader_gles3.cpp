@@ -540,7 +540,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	return false;
 #else
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerGLES3::is_gles_over_gl() && (glProgramBinary == NULL)) { // ARB_get_program_binary extension not available.
+	if (RasterizerGLES3::is_gles_over_gl() && (glProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return false;
 	}
 #endif
@@ -627,7 +627,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 #else
 	ERR_FAIL_COND(!shader_cache_dir_valid);
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerGLES3::is_gles_over_gl() && (glGetProgramBinary == NULL)) { // ARB_get_program_binary extension not available.
+	if (RasterizerGLES3::is_gles_over_gl() && (glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return;
 	}
 #endif
