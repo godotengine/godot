@@ -1289,6 +1289,11 @@ void RenderingDeviceGraph::finalize() {
 }
 
 void RenderingDeviceGraph::begin() {
+	reset();
+	tracking_frame++;
+}
+
+void RenderingDeviceGraph::reset() {
 	command_data.clear();
 	command_data_offsets.clear();
 	command_normalization_barriers.clear();
@@ -1309,7 +1314,6 @@ void RenderingDeviceGraph::begin() {
 	frames[frame].secondary_command_buffers_used = 0;
 	draw_instruction_list.index = 0;
 	compute_instruction_list.index = 0;
-	tracking_frame++;
 
 #ifdef DEV_ENABLED
 	write_dependency_counters.clear();

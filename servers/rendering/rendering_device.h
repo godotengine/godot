@@ -1290,6 +1290,7 @@ private:
 	int frame = 0;
 	TightLocalVector<Frame> frames;
 	uint64_t frames_drawn = 0;
+	bool screen_prepared = false;
 	RID local_device;
 
 	void _free_pending_resources(int p_frame);

@@ -3167,14 +3167,18 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 	_THREAD_SAFE_METHOD_
 
 	// Submit offscreen rendering and swap the command buffers
-	_end_frame();
-	_execute_frame(false, true);
+	if (!screen_prepared) {
+		screen_prepared = true;
 
-	SWAP(frames[frame].draw_command_buffer, frames[frame].blit_draw_command_buffer);
-	SWAP(frames[frame].setup_command_buffer, frames[frame].blit_setup_command_buffer);
+		_end_frame();
+		_execute_frame(false, true);
 
-	// Reset the graph.
-	draw_graph.begin();
+		SWAP(frames[frame].draw_command_buffer, frames[frame].blit_draw_command_buffer);
+		SWAP(frames[frame].setup_command_buffer, frames[frame].blit_setup_command_buffer);
+
+		// Reset the graph.
+		draw_graph.begin();
+	}
 
 	// After submitting work, acquire the swapchain image(s)
 	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
@@ -3197,7 +3201,9 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 	bool resize_required = false;
 	RDD::FramebufferID framebuffer = driver->swap_chain_acquire_framebuffer(main_queue, it->value, resize_required);
 	if (resize_required) {
-		// Flushing is not needed as the swapchain isn't in use yet
+		// Flush everything so nothing can be using the swap chain before resizing it.
+		_stall_for_previous_frames();
+
 		Error err = driver->swap_chain_resize(main_queue, it->value, _get_swap_chain_desired_count());
 		if (err != OK) {
 			// Resize is allowed to fail silently because the window can be minimized.
@@ -4890,6 +4896,8 @@ uint64_t RenderingDevice::get_memory_usage(MemoryType p_type) const {
 }
 
 void RenderingDevice::_begin_frame() {
+	screen_prepared = false;
+
 	// Before beginning this frame, wait on the fence if it was signaled to make sure its work is finished.
 	if (frames[frame].draw_fence_signaled) {
 		driver->fence_wait(frames[frame].draw_fence);
@@ -5096,6 +5104,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		// Create command pool, command buffers, semaphores and fences.
 		frames[i].command_pool = driver->command_pool_create(main_queue_family, RDD::COMMAND_BUFFER_TYPE_PRIMARY);
 		ERR_FAIL_COND_V(!frames[i].command_pool, FAILED);
+
 		frames[i].setup_command_buffer = driver->command_buffer_create(frames[i].command_pool);
 		ERR_FAIL_COND_V(!frames[i].setup_command_buffer, FAILED);
 		frames[i].draw_command_buffer = driver->command_buffer_create(frames[i].command_pool);
@@ -5104,6 +5113,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		ERR_FAIL_COND_V(!frames[i].blit_setup_command_buffer, FAILED);
 		frames[i].blit_draw_command_buffer = driver->command_buffer_create(frames[i].command_pool);
 		ERR_FAIL_COND_V(!frames[i].blit_draw_command_buffer, FAILED);
+
 		frames[i].setup_semaphore = driver->semaphore_create();
 		ERR_FAIL_COND_V(!frames[i].setup_semaphore, FAILED);
 		frames[i].draw_semaphore = driver->semaphore_create();
