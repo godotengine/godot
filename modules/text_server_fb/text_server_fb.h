@@ -111,7 +111,6 @@ using namespace godot;
 
 class TextServerFallback : public TextServerExtension {
 	GDCLASS(TextServerFallback, TextServerExtension);
-	_THREAD_SAFE_CLASS_
 
 	HashMap<StringName, int32_t> feature_sets;
 	HashMap<int32_t, StringName> feature_sets_inv;
@@ -216,6 +215,8 @@ class TextServerFallback : public TextServerExtension {
 		Vector2 advance;
 	};
 
+	static Mutex ft_mutex;
+
 	struct FontForSizeFallback {
 		double ascent = 0.0;
 		double descent = 0.0;
@@ -238,19 +239,23 @@ class TextServerFallback : public TextServerExtension {
 		~FontForSizeFallback() {
 #ifdef MODULE_FREETYPE_ENABLED
 			if (face != nullptr) {
+				TextServerFallback::ft_mutex.lock();
 				FT_Done_Face(face);
+				TextServerFallback::ft_mutex.unlock();
 			}
 #endif
 		}
 	};
 
-	struct FontFallbackLinkedVariation {
+	struct FontFallbackLinkedVariation : public RefCounted {
+		Mutex mutex;
+
 		RID base_font;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
 		float baseline_offset = 0.0;
 	};
 
-	struct FontFallback {
+	struct FontFallback : public RefCounted {
 		Mutex mutex;
 
 		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
@@ -303,17 +308,17 @@ class TextServerFallback : public TextServerExtension {
 
 	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeFallback *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
 #ifdef MODULE_MSDFGEN_ENABLED
-	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontFallback *p_font_data, FontForSizeFallback *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const;
+	_FORCE_INLINE_ FontGlyph rasterize_msdf(Ref<FontFallback> &p_font_data, FontForSizeFallback *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const;
 #endif
 #ifdef MODULE_FREETYPE_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeFallback *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance, bool p_bgra) const;
 #endif
-	_FORCE_INLINE_ bool _ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph) const;
-	_FORCE_INLINE_ bool _ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size) const;
-	_FORCE_INLINE_ void _font_clear_cache(FontFallback *p_font_data);
+	_FORCE_INLINE_ bool _ensure_glyph(Ref<FontFallback> &p_font_data, const Vector2i &p_size, int32_t p_glyph) const;
+	_FORCE_INLINE_ bool _ensure_cache_for_size(Ref<FontFallback> &p_font_data, const Vector2i &p_size) const;
+	_FORCE_INLINE_ void _font_clear_cache(Ref<FontFallback> &p_font_data);
 	static void _generateMTSDF_threaded(void *p_td, uint32_t p_y);
 
-	_FORCE_INLINE_ Vector2i _get_size(const FontFallback *p_font_data, int p_size) const {
+	_FORCE_INLINE_ Vector2i _get_size(const Ref<FontFallback> &p_font_data, int p_size) const {
 		if (p_font_data->msdf) {
 			return Vector2i(p_font_data->msdf_source_size, 0);
 		} else if (p_font_data->fixed_size > 0) {
@@ -323,7 +328,7 @@ class TextServerFallback : public TextServerExtension {
 		}
 	}
 
-	_FORCE_INLINE_ Vector2i _get_size_outline(const FontFallback *p_font_data, const Vector2i &p_size) const {
+	_FORCE_INLINE_ Vector2i _get_size_outline(const Ref<FontFallback> &p_font_data, const Vector2i &p_size) const {
 		if (p_font_data->msdf) {
 			return Vector2i(p_font_data->msdf_source_size, 0);
 		} else if (p_font_data->fixed_size > 0) {
@@ -392,7 +397,7 @@ class TextServerFallback : public TextServerExtension {
 		Vector<Glyph> ellipsis_glyph_buf;
 	};
 
-	struct ShapedTextDataFallback {
+	struct ShapedTextDataFallback : public RefCounted {
 		Mutex mutex;
 
 		/* Source data */
@@ -461,17 +466,17 @@ class TextServerFallback : public TextServerExtension {
 	// Common data.
 
 	double oversampling = 1.0;
-	mutable RID_PtrOwner<FontFallbackLinkedVariation> font_var_owner;
-	mutable RID_PtrOwner<FontFallback> font_owner;
-	mutable RID_PtrOwner<ShapedTextDataFallback> shaped_owner;
+	mutable RID_RefCountedOwner<FontFallbackLinkedVariation, true> font_var_owner;
+	mutable RID_RefCountedOwner<FontFallback, true> font_owner;
+	mutable RID_RefCountedOwner<ShapedTextDataFallback, true> shaped_owner;
 
-	_FORCE_INLINE_ FontFallback *_get_font_data(const RID &p_font_rid) const {
+	_FORCE_INLINE_ Ref<FontFallback> _get_font_data(const RID &p_font_rid) const {
 		RID rid = p_font_rid;
-		FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(rid);
-		if (unlikely(fdv)) {
+		Ref<FontFallbackLinkedVariation> fdv = font_var_owner.get_ref(p_font_rid);
+		if (unlikely(fdv.is_valid())) {
 			rid = fdv->base_font;
 		}
-		return font_owner.get_or_null(rid);
+		return font_owner.get_ref(rid);
 	}
 
 	struct SystemFontKey {
@@ -563,16 +568,14 @@ class TextServerFallback : public TextServerExtension {
 	mutable HashMap<SystemFontKey, SystemFontCache, SystemFontKeyHasher> system_fonts;
 	mutable HashMap<String, PackedByteArray> system_font_data;
 
-	void _realign(ShapedTextDataFallback *p_sd) const;
+	void _realign(Ref<ShapedTextDataFallback> &p_sd) const;
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
-
-	Mutex ft_mutex;
 
 protected:
 	static void _bind_methods(){};
 
-	void full_copy(ShapedTextDataFallback *p_shaped);
-	void invalidate(ShapedTextDataFallback *p_shaped);
+	void full_copy(Ref<ShapedTextDataFallback> &p_shaped);
+	void invalidate(Ref<ShapedTextDataFallback> &p_shaped);
 
 public:
 	MODBIND1RC(bool, has_feature, Feature);
