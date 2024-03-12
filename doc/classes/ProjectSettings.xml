@@ -1022,6 +1022,9 @@
 			Font anti-aliasing mode for the default project font. See [member FontFile.antialiasing].
 			[b]Note:[/b] This setting does not affect custom [Font]s used within the project. Use the [b]Import[/b] dock for that instead (see [member ResourceImporterDynamicFont.antialiasing]).
 		</member>
+		<member name="gui/theme/default_font_clamp_glyph_offset" type="int" setter="" getter="" default="0.0">
+			Sets default value for glyph offset clamping. Value is a fraction of font height. If set to zero or negative value, no clamping is done.
+		</member>
 		<member name="gui/theme/default_font_generate_mipmaps" type="bool" setter="" getter="" default="false">
 			If set to [code]true[/code], the default font will have mipmaps generated. This prevents text from looking grainy when a [Control] is scaled down, or when a [Label3D] is viewed from a long distance (if [member Label3D.texture_filter] is set to a mode that displays mipmaps).
 			Enabling [member gui/theme/default_font_generate_mipmaps] increases font generation time and memory usage. Only enable this setting if you actually need it.

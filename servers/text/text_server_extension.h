@@ -494,6 +494,11 @@ public:
 	GDVIRTUAL1RC(Array, _shaped_text_get_objects, RID);
 	GDVIRTUAL2RC(Rect2, _shaped_text_get_object_rect, RID, const Variant &);
 
+	virtual void shaped_text_clamp_glyph_offsets(const RID &p_shaped, double p_limit) override;
+	virtual void clamp_glyph_offsets(double p_limit) override;
+	GDVIRTUAL2(_shaped_text_clamp_glyph_offsets, RID, double);
+	GDVIRTUAL1(_clamp_glyph_offsets, double);
+
 	virtual Size2 shaped_text_get_size(const RID &p_shaped) const override;
 	virtual double shaped_text_get_ascent(const RID &p_shaped) const override;
 	virtual double shaped_text_get_descent(const RID &p_shaped) const override;

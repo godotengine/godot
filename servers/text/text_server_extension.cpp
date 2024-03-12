@@ -297,6 +297,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_get_objects, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_object_rect, "shaped", "key");
 
+	GDVIRTUAL_BIND(_shaped_text_clamp_glyph_offsets, "shaped", "limit");
+	GDVIRTUAL_BIND(_clamp_glyph_offsets, "limit");
+
 	GDVIRTUAL_BIND(_shaped_text_get_size, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_ascent, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_descent, "shaped");
@@ -1295,6 +1298,14 @@ Rect2 TextServerExtension::shaped_text_get_object_rect(const RID &p_shaped, cons
 	Rect2 ret;
 	GDVIRTUAL_CALL(_shaped_text_get_object_rect, p_shaped, p_key, ret);
 	return ret;
+}
+
+void TextServerExtension::shaped_text_clamp_glyph_offsets(const RID &p_shaped, double p_limit) {
+	GDVIRTUAL_CALL(_shaped_text_clamp_glyph_offsets, p_shaped, p_limit);
+}
+
+void TextServerExtension::clamp_glyph_offsets(double p_limit) {
+	GDVIRTUAL_CALL(_clamp_glyph_offsets, p_limit);
 }
 
 Size2 TextServerExtension::shaped_text_get_size(const RID &p_shaped) const {

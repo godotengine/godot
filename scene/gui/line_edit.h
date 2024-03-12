@@ -101,6 +101,7 @@ private:
 	String ime_text;
 	Point2 ime_selection;
 
+	RID canvas_item_text;
 	RID text_rid;
 	float full_width = 0.0;
 

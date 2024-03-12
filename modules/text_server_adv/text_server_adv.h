@@ -494,6 +494,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 		bool preserve_invalid = true; // Draw hex code box instead of missing characters.
 		bool preserve_control = false; // Draw control characters.
+		double clamp_offset = 0.0;
 
 		double ascent = 0.0; // Ascent for horizontal layout, 1/2 of width for vertical.
 		double descent = 0.0; // Descent for horizontal layout, 1/2 of width for vertical.
@@ -547,6 +548,7 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable RID_PtrOwner<FontAdvancedLinkedVariation> font_var_owner;
 	mutable RID_PtrOwner<FontAdvanced> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
+	double clamp_offset = 0.0;
 
 	_FORCE_INLINE_ FontAdvanced *_get_font_data(const RID &p_font_rid) const {
 		RID rid = p_font_rid;
@@ -963,6 +965,9 @@ public:
 
 	MODBIND1RC(Array, shaped_text_get_objects, const RID &);
 	MODBIND2RC(Rect2, shaped_text_get_object_rect, const RID &, const Variant &);
+
+	MODBIND2(shaped_text_clamp_glyph_offsets, const RID &, double);
+	MODBIND1(clamp_glyph_offsets, double);
 
 	MODBIND1RC(Size2, shaped_text_get_size, const RID &);
 	MODBIND1RC(double, shaped_text_get_ascent, const RID &);

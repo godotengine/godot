@@ -447,6 +447,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_objects", "shaped"), &TextServer::shaped_text_get_objects);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_object_rect", "shaped", "key"), &TextServer::shaped_text_get_object_rect);
 
+	ClassDB::bind_method(D_METHOD("shaped_text_clamp_glyph_offsets", "shaped", "limit"), &TextServer::shaped_text_clamp_glyph_offsets);
+	ClassDB::bind_method(D_METHOD("clamp_glyph_offsets", "limit"), &TextServer::clamp_glyph_offsets);
+
 	ClassDB::bind_method(D_METHOD("shaped_text_get_size", "shaped"), &TextServer::shaped_text_get_size);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ascent", "shaped"), &TextServer::shaped_text_get_ascent);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_descent", "shaped"), &TextServer::shaped_text_get_descent);
