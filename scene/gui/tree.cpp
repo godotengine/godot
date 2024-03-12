@@ -113,6 +113,7 @@ void TreeItem::_change_tree(Tree *p_tree) {
 			tree->popup_edited_item = nullptr;
 			tree->popup_pressing_edited_item = nullptr;
 			tree->pressing_for_editor = false;
+			tree->popup_editor->hide();
 		}
 
 		if (tree->cache.hover_item == this) {
@@ -4082,10 +4083,6 @@ bool Tree::edit_selected(bool p_force_edit) {
 	}
 
 	return false;
-}
-
-bool Tree::is_editing() {
-	return popup_editor->is_visible();
 }
 
 void Tree::set_editor_selection(int p_from_line, int p_to_line, int p_from_column, int p_to_column, int p_caret) {
