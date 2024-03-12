@@ -2561,6 +2561,20 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	VkResult err = functions.GetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface->vk_surface, &surface_capabilities);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
+	// No swapchain yet, this is the first time we're creating it
+	if (!swap_chain->vk_swapchain) {
+		uint32_t width = surface_capabilities.currentExtent.width;
+		uint32_t height = surface_capabilities.currentExtent.height;
+		if (surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
+				surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+			// Swap to get identity width and height
+			surface_capabilities.currentExtent.height = width;
+			surface_capabilities.currentExtent.width = height;
+		}
+
+		native_display_size = surface_capabilities.currentExtent;
+	}
+
 	VkExtent2D extent;
 	if (surface_capabilities.currentExtent.width == 0xFFFFFFFF) {
 		// The current extent is currently undefined, so the current surface width and height will be clamped to the surface's capabilities.
@@ -2627,15 +2641,8 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 		desired_swapchain_images = MIN(desired_swapchain_images, surface_capabilities.maxImageCount);
 	}
 
-	// Prefer identity transform if it's supported, use the current transform otherwise.
-	// This behavior is intended as Godot does not supported native rotation in platforms that use these bits.
 	// Refer to the comment in command_queue_present() for more details.
-	VkSurfaceTransformFlagBitsKHR surface_transform_bits;
-	if (surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
-		surface_transform_bits = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-	} else {
-		surface_transform_bits = surface_capabilities.currentTransform;
-	}
+	VkSurfaceTransformFlagBitsKHR surface_transform_bits = surface_capabilities.currentTransform;
 
 	VkCompositeAlphaFlagBitsKHR composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	if (OS::get_singleton()->is_layered_allowed() || !(surface_capabilities.supportedCompositeAlpha & composite_alpha)) {
