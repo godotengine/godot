@@ -1987,7 +1987,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> p_state,
 	return p_state->accessors.size() - 1;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> p_attribs, const Vector<Vector3> p_reference_attribs, const bool p_for_vertex, const GLTFAccessorIndex p_reference_accessor) {
+GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> p_attribs, const Vector<Vector3> p_reference_attribs, const float p_reference_multiplier, const bool p_for_vertex, const GLTFAccessorIndex p_reference_accessor) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -2006,15 +2006,21 @@ GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p
 
 	for (int i = 0; i < p_attribs.size(); i++) {
 		Vector3 attrib = p_attribs[i];
+		bool is_different = false;
+		if (i < p_reference_attribs.size()) {
+			is_different = !(attrib * p_reference_multiplier).is_equal_approx(p_reference_attribs[i]);
+			if (!is_different) {
+				attrib = p_reference_attribs[i];
+			}
+		} else {
+			is_different = !(attrib * p_reference_multiplier).is_zero_approx();
+			if (!is_different) {
+				attrib = Vector3();
+			}
+		}
 		attribs.write[(i * element_count) + 0] = _filter_number(attrib.x);
 		attribs.write[(i * element_count) + 1] = _filter_number(attrib.y);
 		attribs.write[(i * element_count) + 2] = _filter_number(attrib.z);
-		bool is_different = false;
-		if (i < p_reference_attribs.size()) {
-			is_different = !attrib.is_equal_approx(p_reference_attribs[i]);
-		} else {
-			is_different = !attrib.is_zero_approx();
-		}
 		if (is_different) {
 			changed_indices.push_back(i);
 			if (i > max_changed_index) {
@@ -2577,39 +2583,23 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 			print_verbose("glTF: Mesh has targets");
 			if (import_mesh->get_blend_shape_count()) {
 				ArrayMesh::BlendShapeMode shape_mode = import_mesh->get_blend_shape_mode();
-				Vector<Vector3> reference_vertex_array = array[Mesh::ARRAY_VERTEX];
-				Vector<Vector3> reference_normal_array = array[Mesh::ARRAY_NORMAL];
-				Vector<Vector3> reference_tangent_array;
-				{
-					Vector<real_t> tarr = array[Mesh::ARRAY_TANGENT];
-					if (tarr.size()) {
-						const int ret_size = tarr.size() / 4;
-						reference_tangent_array.resize(ret_size);
-						for (int i = 0; i < ret_size; i++) {
-							Vector3 vec3;
-							vec3.x = tarr[(i * 4) + 0];
-							vec3.y = tarr[(i * 4) + 1];
-							vec3.z = tarr[(i * 4) + 2];
-							reference_tangent_array.write[i] = vec3;
-						}
-					}
-				}
+				const float normal_tangent_sparse_rounding = 0.001;
 				for (int morph_i = 0; morph_i < import_mesh->get_blend_shape_count(); morph_i++) {
 					Array array_morph = import_mesh->get_surface_blend_shape_arrays(surface_i, morph_i);
 					Dictionary t;
 					Vector<Vector3> varr = array_morph[Mesh::ARRAY_VERTEX];
+					Vector<Vector3> src_varr = array[Mesh::ARRAY_VERTEX];
 					Array mesh_arrays = import_mesh->get_surface_arrays(surface_i);
-					if (varr.size()) {
-						Vector<Vector3> src_varr = array[Mesh::ARRAY_VERTEX];
+					if (varr.size() && varr.size() == src_varr.size()) {
 						if (shape_mode == ArrayMesh::BlendShapeMode::BLEND_SHAPE_MODE_NORMALIZED) {
 							const int max_idx = src_varr.size();
 							for (int blend_i = 0; blend_i < max_idx; blend_i++) {
-								varr.write[blend_i] = Vector3(varr[blend_i]) - src_varr[blend_i];
+								varr.write[blend_i] = varr[blend_i] - src_varr[blend_i];
 							}
 						}
 						GLTFAccessorIndex position_accessor = attributes["POSITION"];
 						if (position_accessor != -1) {
-							int new_accessor = _encode_sparse_accessor_as_vec3(p_state, varr, reference_vertex_array, true, position_accessor);
+							int new_accessor = _encode_sparse_accessor_as_vec3(p_state, varr, Vector<Vector3>(), 1.0, true, -1);
 							if (new_accessor != -1) {
 								t["POSITION"] = new_accessor;
 							}
@@ -2617,30 +2607,38 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 					}
 
 					Vector<Vector3> narr = array_morph[Mesh::ARRAY_NORMAL];
-					if (narr.size()) {
+					Vector<Vector3> src_narr = array[Mesh::ARRAY_NORMAL];
+					if (narr.size() && narr.size() == src_narr.size()) {
+						if (shape_mode == ArrayMesh::BlendShapeMode::BLEND_SHAPE_MODE_NORMALIZED) {
+							const int max_idx = src_narr.size();
+							for (int blend_i = 0; blend_i < max_idx; blend_i++) {
+								narr.write[blend_i] = narr[blend_i] - src_narr[blend_i];
+							}
+						}
 						GLTFAccessorIndex normal_accessor = attributes["NORMAL"];
 						if (normal_accessor != -1) {
-							int new_accessor = _encode_sparse_accessor_as_vec3(p_state, narr, reference_normal_array, true, normal_accessor);
+							int new_accessor = _encode_sparse_accessor_as_vec3(p_state, narr, Vector<Vector3>(), normal_tangent_sparse_rounding, true, -1);
 							if (new_accessor != -1) {
 								t["NORMAL"] = new_accessor;
 							}
 						}
 					}
 					Vector<real_t> tarr = array_morph[Mesh::ARRAY_TANGENT];
-					if (tarr.size()) {
+					Vector<real_t> src_tarr = array[Mesh::ARRAY_TANGENT];
+					if (tarr.size() && tarr.size() == src_tarr.size()) {
 						const int ret_size = tarr.size() / 4;
 						Vector<Vector3> attribs;
 						attribs.resize(ret_size);
 						for (int i = 0; i < ret_size; i++) {
 							Vector3 vec3;
-							vec3.x = tarr[(i * 4) + 0];
-							vec3.y = tarr[(i * 4) + 1];
-							vec3.z = tarr[(i * 4) + 2];
+							vec3.x = tarr[(i * 4) + 0] - src_tarr[(i * 4) + 0];
+							vec3.y = tarr[(i * 4) + 1] - src_tarr[(i * 4) + 1];
+							vec3.z = tarr[(i * 4) + 2] - src_tarr[(i * 4) + 2];
 							attribs.write[i] = vec3;
 						}
 						GLTFAccessorIndex tangent_accessor = attributes["TANGENT"];
 						if (tangent_accessor != -1) {
-							int new_accessor = _encode_sparse_accessor_as_vec3(p_state, attribs, reference_tangent_array, true, tangent_accessor);
+							int new_accessor = _encode_sparse_accessor_as_vec3(p_state, attribs, Vector<Vector3>(), normal_tangent_sparse_rounding, true, -1);
 							if (new_accessor != -1) {
 								t["TANGENT"] = new_accessor;
 							}
