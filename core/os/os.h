@@ -53,8 +53,8 @@ class OS {
 	bool low_processor_usage_mode = false;
 	int low_processor_usage_mode_sleep_usec = 10000;
 	bool _delta_smoothing_enabled = false;
-	bool _verbose_stdout = false;
-	bool _debug_stdout = false;
+	bool _verbose_stdout = true;
+	bool _debug_stdout = true;
 	String _local_clipboard;
 	// Assume success by default, all failure cases need to set EXIT_FAILURE explicitly.
 	int _exit_code = EXIT_SUCCESS;

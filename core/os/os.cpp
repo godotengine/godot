@@ -177,7 +177,7 @@ int OS::get_process_id() const {
 }
 
 bool OS::is_stdout_verbose() const {
-	return true;
+	return _verbose_stdout;
 }
 
 bool OS::is_stdout_debug_enabled() const {
