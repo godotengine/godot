@@ -912,19 +912,18 @@ void ConnectionsDock::_make_or_edit_connection() {
 	Ref<Script> scr = target->get_script();
 	if (!scr.is_null() && !ClassDB::has_method(target->get_class(), cd.method)) {
 		// There is a chance that the method is inherited from another script.
-		bool found_inherited_function = false;
-		Ref<Script> inherited_scr = scr->get_base_script();
+		bool found_member_function = false;
+		Ref<Script> inherited_scr = scr;
 		while (!inherited_scr.is_null()) {
-			int line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
-			if (line != -1) {
-				found_inherited_function = true;
+			if (inherited_scr->has_method(cd.method)) {
+				found_member_function = true;
 				break;
 			}
 
 			inherited_scr = inherited_scr->get_base_script();
 		}
 
-		add_script_function = !found_inherited_function;
+		add_script_function = !found_member_function;
 	}
 
 	if (connect_dialog->is_editing()) {
