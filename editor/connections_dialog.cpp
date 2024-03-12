@@ -159,10 +159,6 @@ void ConnectDialog::_item_activated() {
 	_ok_pressed(); // From AcceptDialog.
 }
 
-void ConnectDialog::_text_submitted(const String &p_text) {
-	_ok_pressed(); // From AcceptDialog.
-}
-
 /*
  * Called each time a target node is selected within the target node tree.
  */
@@ -449,6 +445,11 @@ void ConnectDialog::_update_warning_label() {
 
 	warning_label->set_text(vformat(TTR("%s: Callback code won't be generated, please add it manually."), language->get_name()));
 	warning_label->set_visible(true);
+}
+
+void ConnectDialog::_post_popup() {
+	callable_mp((Control *)dst_method, &Control::grab_focus).call_deferred();
+	callable_mp(dst_method, &LineEdit::select_all).call_deferred();
 }
 
 void ConnectDialog::_notification(int p_what) {
@@ -825,8 +826,8 @@ ConnectDialog::ConnectDialog() {
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dst_method->connect("text_changed", callable_mp(method_tree, &Tree::deselect_all).unbind(1));
-	dst_method->connect("text_submitted", callable_mp(this, &ConnectDialog::_text_submitted));
 	hbc_method->add_child(dst_method);
+	register_text_enter(dst_method);
 
 	open_method_tree = memnew(Button);
 	hbc_method->add_child(open_method_tree);
