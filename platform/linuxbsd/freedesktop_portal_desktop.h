@@ -34,7 +34,7 @@
 
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 struct DBusMessage;
 struct DBusConnection;

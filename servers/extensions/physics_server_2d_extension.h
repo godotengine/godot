@@ -34,7 +34,7 @@
 #include "core/object/gdvirtual.gen.inc"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class PhysicsDirectBodyState2DExtension : public PhysicsDirectBodyState2D {
 	GDCLASS(PhysicsDirectBodyState2DExtension, PhysicsDirectBodyState2D);

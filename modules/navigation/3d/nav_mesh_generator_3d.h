@@ -35,7 +35,7 @@
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_3d.h"
 
 class Node;
 class NavigationMesh;
