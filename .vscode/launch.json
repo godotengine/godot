@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Project",
+            "type": "cppvsdbg",
+            "request": "launch",
+            // change to your correct platform
+            "program": "${workspaceFolder}/bin/godot.windows.editor.dev.x86_64",
+            "args": [ "--test", "--source-file=*test_unknoter*", "--success" ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "internalConsole",
+            "preLaunchTask": "build"
+          }
+    ]
+}

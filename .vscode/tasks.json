@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "group": "build",
+            "type": "shell",
+            "command": "scons",
+            "args": [
+                "dev_build=yes",
+                "tests=yes",
+                //"compiledb=yes",
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
