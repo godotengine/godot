@@ -1254,7 +1254,10 @@ private:
 		// Signaled by the setup submission. Draw must wait on this semaphore.
 		RDD::SemaphoreID setup_semaphore;
 
-		// Signaled by the draw submission. Blit must wait on this semaphore.
+		// Signaled by the blit setup submission. Blit draw must wait on this semaphore.
+		RDD::SemaphoreID blit_setup_semaphore;
+
+		// Signaled by the draw submission. Blit draw must wait on this semaphore.
 		RDD::SemaphoreID draw_semaphore;
 
 		// Signaled by the blit submission. Present must wait on this semaphore.
@@ -1291,7 +1294,6 @@ private:
 	TightLocalVector<Frame> frames;
 	uint64_t frames_drawn = 0;
 	RID local_device;
-	bool used_setup_buffer = false;
 
 	void _free_pending_resources(int p_frame);
 

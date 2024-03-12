@@ -2010,10 +2010,13 @@ RDD::FenceID RenderingDeviceDriverVulkan::fence_create() {
 
 Error RenderingDeviceDriverVulkan::fence_wait(FenceID p_fence) {
 	Fence *fence = (Fence *)(p_fence.id);
-	VkResult err = vkWaitForFences(vk_device, 1, &fence->vk_fence, VK_TRUE, UINT64_MAX);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+	VkResult fence_status = vkGetFenceStatus(vk_device, fence->vk_fence);
+	if (fence_status == VK_NOT_READY) {
+		VkResult err = vkWaitForFences(vk_device, 1, &fence->vk_fence, VK_TRUE, UINT64_MAX);
+		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+	}
 
-	err = vkResetFences(vk_device, 1, &fence->vk_fence);
+	VkResult err = vkResetFences(vk_device, 1, &fence->vk_fence);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 
 	if (fence->queue_signaled_from != nullptr) {

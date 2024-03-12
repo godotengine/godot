@@ -441,7 +441,6 @@ Error RenderingDevice::_buffer_update(Buffer *p_buffer, RID p_buffer_id, size_t 
 			command_buffer_copies_vector.push_back(buffer_copy);
 		} else {
 			driver->command_copy_buffer(frames[frame].setup_command_buffer, staging_buffer_blocks[staging_buffer_current].driver_id, p_buffer->driver_id, region);
-			used_setup_buffer = true;
 		}
 
 		staging_buffer_blocks.write[staging_buffer_current].fill_amount = block_write_offset + block_write_amount;
@@ -1105,7 +1104,6 @@ Error RenderingDevice::_texture_update(RID p_texture, uint32_t p_layer, const Ve
 		tb.subresources.layer_count = 1;
 
 		driver->command_pipeline_barrier(frames[frame].setup_command_buffer, RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, RDD::PIPELINE_STAGE_TRANSFER_BIT, {}, {}, tb);
-		used_setup_buffer = true;
 	}
 
 	uint32_t mipmap_offset = 0;
@@ -1204,7 +1202,6 @@ Error RenderingDevice::_texture_update(RID p_texture, uint32_t p_layer, const Ve
 
 					if (p_use_setup_queue) {
 						driver->command_copy_buffer_to_texture(frames[frame].setup_command_buffer, staging_buffer_blocks[staging_buffer_current].driver_id, texture->driver_id, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, copy_region);
-						used_setup_buffer = true;
 					} else {
 						RDG::RecordedBufferToTextureCopy buffer_to_texture_copy;
 						buffer_to_texture_copy.from_buffer = staging_buffer_blocks[staging_buffer_current].driver_id;
@@ -1234,7 +1231,6 @@ Error RenderingDevice::_texture_update(RID p_texture, uint32_t p_layer, const Ve
 		tb.subresources.base_layer = p_layer;
 		tb.subresources.layer_count = 1;
 		driver->command_pipeline_barrier(frames[frame].setup_command_buffer, RDD::PIPELINE_STAGE_TRANSFER_BIT, RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, {}, {}, tb);
-		used_setup_buffer = true;
 	} else if (!p_use_setup_queue && !command_buffer_to_texture_copies_vector.is_empty()) {
 		if (_texture_make_mutable(texture, p_texture)) {
 			// The texture must be mutable to be used as a copy destination.
@@ -3177,8 +3173,6 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 	SWAP(frames[frame].draw_command_buffer, frames[frame].blit_draw_command_buffer);
 	SWAP(frames[frame].setup_command_buffer, frames[frame].blit_setup_command_buffer);
 
-	used_setup_buffer = false;
-
 	// After submitting work, acquire the swapchain image(s)
 	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), ERR_CANT_CREATE, "A swap chain was not created for the screen.");
@@ -4948,9 +4942,7 @@ void RenderingDevice::_end_frame() {
 void RenderingDevice::_execute_frame(bool p_present, bool p_swap) {
 	// Command flushing, previous behavior
 	if (!p_swap) {
-		if (used_setup_buffer) {
-			driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
-		}
+		driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
 		driver->command_queue_execute_and_present(main_queue, frames[frame].setup_semaphore, frames[frame].draw_command_buffer, VectorView<RDD::SemaphoreID>(), frames[frame].draw_fence, VectorView<RDD::SwapChainID>());
 		frames[frame].draw_fence_signaled = true;
 	}
@@ -4958,23 +4950,18 @@ void RenderingDevice::_execute_frame(bool p_present, bool p_swap) {
 	else {
 		const bool frame_can_present = p_present && !frames[frame].swap_chains_to_present.is_empty();
 		const bool separate_present_queue = main_queue != present_queue;
-		const VectorView<RDD::SemaphoreID> signal_draw_semaphore = frame_can_present && separate_present_queue ? frames[frame].blit_semaphore : frames[frame].draw_semaphore;
+		const VectorView<RDD::SemaphoreID> signal_draw_semaphore = frame_can_present && separate_present_queue ? frames[frame].blit_semaphore : (frame_can_present ? VectorView<RDD::SemaphoreID>() : frames[frame].draw_semaphore);
 		const VectorView<RDD::SwapChainID> draw_swap_chains = frame_can_present && !separate_present_queue ? frames[frame].swap_chains_to_present : VectorView<RDD::SwapChainID>();
 		const RDD::FenceID fence = frame_can_present ? frames[frame].draw_fence : RDD::FenceID{};
 
-		RDD::SemaphoreID semaphores[] = { frames[frame].setup_semaphore, frames[frame].draw_semaphore };
-		const VectorView<RDD::SemaphoreID> semaphores_to_wait = VectorView(&semaphores[!used_setup_buffer ? 1 : 0], frame_can_present && used_setup_buffer ? 2 : 1);
-
-		if (used_setup_buffer) {
-			driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
-		}
-		driver->command_queue_execute_and_present(main_queue, semaphores_to_wait, frames[frame].draw_command_buffer, signal_draw_semaphore, fence, draw_swap_chains);
+		driver->command_queue_execute_and_present(main_queue, frame_can_present ? frames[frame].draw_semaphore : VectorView<RDD::SemaphoreID>(), frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
+		driver->command_queue_execute_and_present(main_queue, frames[frame].setup_semaphore, frames[frame].draw_command_buffer, signal_draw_semaphore, fence, draw_swap_chains);
 		frames[frame].draw_fence_signaled = true;
 
 		if (frame_can_present) {
 			if (separate_present_queue) {
 				// Issue the presentation separately if the presentation queue is different from the main queue.
-				driver->command_queue_execute_and_present(present_queue, frames[frame].draw_semaphore, {}, {}, {}, frames[frame].swap_chains_to_present);
+				driver->command_queue_execute_and_present(present_queue, frames[frame].blit_semaphore, {}, {}, {}, frames[frame].swap_chains_to_present);
 			}
 
 			frames[frame].swap_chains_to_present.clear();
@@ -5115,6 +5102,10 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		ERR_FAIL_COND_V(!frames[i].setup_semaphore, FAILED);
 		frames[i].draw_semaphore = driver->semaphore_create();
 		ERR_FAIL_COND_V(!frames[i].draw_semaphore, FAILED);
+		frames[i].blit_semaphore = driver->semaphore_create();
+		ERR_FAIL_COND_V(!frames[i].draw_semaphore, FAILED);
+		frames[i].blit_setup_semaphore = driver->semaphore_create();
+		ERR_FAIL_COND_V(!frames[i].blit_setup_semaphore, FAILED);
 		frames[i].draw_fence = driver->fence_create();
 		ERR_FAIL_COND_V(!frames[i].draw_fence, FAILED);
 		frames[i].draw_fence_signaled = false;
