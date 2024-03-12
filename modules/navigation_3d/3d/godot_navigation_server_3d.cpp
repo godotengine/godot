@@ -35,7 +35,7 @@
 
 #include "nav_mesh_generator_3d.h"
 
-using namespace NavigationUtilities;
+using namespace NavigationDefaults3D;
 
 /// Creates a struct for each function and a function that once called creates
 /// an instance of that struct with the submitted parameters.

@@ -33,7 +33,7 @@
 #include "core/os/thread.h"
 #include "scene/resources/audio_stream_wav.h"
 #include "servers/audio/audio_effect.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 class AudioEffectRecord;
 
