@@ -34,8 +34,8 @@
 #include "core/os/time.h"
 #include "scene/main/window.h"
 #include "servers/audio/audio_driver_dummy.h"
-#include "servers/display_server.h"
-#include "servers/rendering_server.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 MovieWriter *MovieWriter::writers[MovieWriter::MAX_WRITERS];
 uint32_t MovieWriter::writer_count = 0;

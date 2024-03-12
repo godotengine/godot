@@ -162,7 +162,7 @@ void NavLink2D::cancel_sync_request() {
 
 NavLink2D::NavLink2D() :
 		sync_dirty_request_list_element(this) {
-	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
+	type = NavigationEnums2D::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
 }
 
 NavLink2D::~NavLink2D() {
