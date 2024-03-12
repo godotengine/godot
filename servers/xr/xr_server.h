@@ -33,7 +33,7 @@
 #include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/variant.h"
-#include "rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class XRInterface;
 class XRTracker;
