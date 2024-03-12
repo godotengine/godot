@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/input/input.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #if defined(GLES3_ENABLED)
 #include "embedded_gl_manager.h"

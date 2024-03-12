@@ -49,7 +49,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 void EditorFileDialog::_native_popup() {
 	// Show native dialog directly.
