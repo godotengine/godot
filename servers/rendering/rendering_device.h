@@ -1254,9 +1254,6 @@ private:
 		// Signaled by the setup submission. Draw must wait on this semaphore.
 		RDD::SemaphoreID setup_semaphore;
 
-		// Signaled by the blit setup submission. Blit draw must wait on this semaphore.
-		RDD::SemaphoreID blit_setup_semaphore;
-
 		// Signaled by the draw submission. Blit draw must wait on this semaphore.
 		RDD::SemaphoreID draw_semaphore;
 
