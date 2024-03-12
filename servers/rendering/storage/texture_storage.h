@@ -31,7 +31,7 @@
 #ifndef TEXTURE_STORAGE_H
 #define TEXTURE_STORAGE_H
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RendererTextureStorage {
 private:

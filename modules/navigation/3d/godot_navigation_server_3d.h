@@ -42,7 +42,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_3d.h"
 
 /// The commands are functions executed during the `sync` phase.
 

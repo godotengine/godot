@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "audio_effect_reverb.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 void AudioEffectReverbInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	for (int i = 0; i < 2; i++) {
 		Reverb &r = reverb[i];

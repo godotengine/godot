@@ -33,7 +33,7 @@
 
 #include "core/io/marshalls.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 #define TILEMAP_CALL_FOR_LAYER(layer, function, ...) \
 	if (layer < 0) {                                 \

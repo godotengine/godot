@@ -31,7 +31,7 @@
 #ifndef RENDERING_CONTEXT_DRIVER_H
 #define RENDERING_CONTEXT_DRIVER_H
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 class RenderingDeviceDriver;
 

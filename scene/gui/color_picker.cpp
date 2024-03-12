@@ -51,6 +51,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
 #include "thirdparty/misc/ok_color_shader.h"
 
 void ColorPicker::_notification(int p_what) {
