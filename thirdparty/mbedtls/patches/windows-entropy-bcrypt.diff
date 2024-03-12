@@ -1,0 +1,56 @@
+Backported from: https://github.com/Mbed-TLS/mbedtls/pull/8047
+
+diff --git a/thirdparty/mbedtls/library/entropy_poll.c b/thirdparty/mbedtls/library/entropy_poll.c
+index cde49e66a0..4c5184686e 100644
+--- a/thirdparty/mbedtls/library/entropy_poll.c
++++ b/thirdparty/mbedtls/library/entropy_poll.c
+@@ -39,32 +39,34 @@
+ 
+ #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
+ 
+-#if !defined(_WIN32_WINNT)
+-#define _WIN32_WINNT 0x0400
+-#endif
+ #include <windows.h>
+-#include <wincrypt.h>
++#include <bcrypt.h>
++#include <intsafe.h>
+ 
+ int mbedtls_platform_entropy_poll(void *data, unsigned char *output, size_t len,
+                                   size_t *olen)
+ {
+-    HCRYPTPROV provider;
+     ((void) data);
+     *olen = 0;
+ 
+-    if (CryptAcquireContext(&provider, NULL, NULL,
+-                            PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) == FALSE) {
+-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+-    }
++    /*
++     * BCryptGenRandom takes ULONG for size, which is smaller than size_t on
++     * 64-bit Windows platforms. Extract entropy in chunks of len (dependent
++     * on ULONG_MAX) size.
++     */
++    while (len != 0) {
++        unsigned long ulong_bytes =
++            (len > ULONG_MAX) ? ULONG_MAX : (unsigned long) len;
++
++        if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, output, ulong_bytes,
++                                            BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
++            return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
++        }
+ 
+-    if (CryptGenRandom(provider, (DWORD) len, output) == FALSE) {
+-        CryptReleaseContext(provider, 0);
+-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
++        *olen += ulong_bytes;
++        len -= ulong_bytes;
+     }
+ 
+-    CryptReleaseContext(provider, 0);
+-    *olen = len;
+-
+     return 0;
+ }
+ #else /* _WIN32 && !EFIX64 && !EFI32 */

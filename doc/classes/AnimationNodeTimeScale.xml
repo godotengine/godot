@@ -4,7 +4,7 @@
 		A time-scaling animation node used in [AnimationTree].
 	</brief_description>
 	<description>
-		Allows to scale the speed of the animation (or reverse it) in any children [AnimationNode]s. Setting it to [code]0.0[/code] will pause the animation.
+		Allows to scale the speed of the animation (or reverse it) in any child [AnimationNode]s. Setting it to [code]0.0[/code] will pause the animation.
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
