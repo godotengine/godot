@@ -30,7 +30,7 @@
 
 #include "audio_effect_distortion.h"
 #include "core/math/math_funcs.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	const float *src = (const float *)p_src_frames;

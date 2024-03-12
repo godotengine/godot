@@ -65,7 +65,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 void SceneTreeDock::_nodes_drag_begin() {
 	pending_click_select = nullptr;
