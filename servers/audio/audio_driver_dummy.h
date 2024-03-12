@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"

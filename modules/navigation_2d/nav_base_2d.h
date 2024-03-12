@@ -33,7 +33,7 @@
 #include "nav_rid_2d.h"
 #include "nav_utils_2d.h"
 
-#include "servers/navigation/navigation_utilities.h"
+#include "servers/navigation_common.h"
 
 class NavMap2D;
 

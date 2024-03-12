@@ -32,7 +32,7 @@
 
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RendererSceneOcclusionCull {
 protected:

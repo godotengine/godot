@@ -32,9 +32,8 @@
 
 #include "../nav_utils_3d.h"
 
-#include "servers/navigation/navigation_path_query_parameters_3d.h"
-#include "servers/navigation/navigation_path_query_result_3d.h"
-#include "servers/navigation/navigation_utilities.h"
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
 
 using namespace NavigationUtilities;
 
