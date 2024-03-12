@@ -64,7 +64,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- `encoder/` and `transcoder/` folders
+- `encoder/` and `transcoder/` folders, minus `jpgd.{cpp,h}`
 - `LICENSE`
 
 Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
@@ -424,12 +424,12 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.40 (f135775ad4e5d4408d2e12ffcc71bb36e6b48551, 2023)
+- Version: 1.6.43 (ed217e3e601d8e462f7fd1e04bed43ac42212429, 2024)
 - License: libpng/zlib
 
 Files extracted from upstream source:
 
-- All `.c` and `.h` files of the main directory, except from `example.c` and
+- All `.c` and `.h` files of the main directory, apart from `example.c` and
   `pngtest.c`
 - `arm/`, `intel/` and `powerpc/` folders
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
@@ -480,7 +480,7 @@ in the MSVC debugger.
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.5 (47e8cc9db2e469d902b0e3093ae9e482c3d87188, 2023)
+- Version: 2.28.7 (555f84735aecdbd76a566cf087ec8425dfb0c8ab, 2024)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -489,7 +489,7 @@ File extracted from upstream release tarball:
   except `config_psa.h` and `psa_util.h`
 - All `.c` and `.h` from `library/` to `thirdparty/mbedtls/library/` except
   those starting with `psa_*`
-- The `LICENSE` file
+- The `LICENSE` file (edited to keep only the Apache 2.0 variant)
 - Applied the patch `windows-arm64-hardclock.diff` to fix Windows ARM64 build
   Applied the patch `windows-entropy-bcrypt.diff` to fix Windows Store support
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
@@ -553,14 +553,14 @@ to solve some MSVC warnings. See the patches in the `patches` directory.
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
-- Version: 2.2.5 (58837ef586278d18cbebee50be758835ed4be79a, 2023)
+- Version: 2.2.6 (faad29d7300f1bfa9dc7795031993c04c5191f59, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
 - Copy `miniupnpc/src` and `miniupnpc/include` to `thirdparty/miniupnpc`
 - Remove the following test or sample files:
-  `listdevices.c minihttptestserver.c miniupnpcmodule.c upnpc.c upnperrors.* test*`
+  `listdevices.c,minihttptestserver.c,miniupnpcmodule.c,upnpc.c,upnperrors.*,test*`
 - `LICENSE`
 
 The only modified file is `src/miniupnpcstrings.h`, which was created for Godot
@@ -811,7 +811,7 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.5 (3627ab3060592468d49547b4cdf5353e9e2b50dc, 2023)
+- Version: 1.0.8 (6c8742cc8145c8f629698cd8248900990946d6b1, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -825,7 +825,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.12.0 (25ea242d3867ed66807714f5a52d080984d3c8cc, 2024)
+- Version: 0.12.7 (cddae9966cbb48c431ea17c262d6f48393206fd7, 2024)
 - License: MIT
 
 Files extracted from upstream source:

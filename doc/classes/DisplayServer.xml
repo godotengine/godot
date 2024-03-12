@@ -1646,7 +1646,7 @@
 			Display server supports setting the mouse cursor shape to a custom image. [b]Windows, macOS, Linux (X11), Web[/b]
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG" value="9" enum="Feature">
-			Display server supports spawning dialogs using the operating system's native look-and-feel. [b]macOS[/b]
+			Display server supports spawning dialogs using the operating system's native look-and-feel. [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_IME" value="10" enum="Feature">
 			Display server supports [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url], which is commonly used for inputting Chinese/Japanese/Korean text. This is handled by the operating system, rather than by Godot. [b]Windows, macOS, Linux (X11)[/b]

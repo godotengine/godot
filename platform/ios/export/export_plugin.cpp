@@ -262,8 +262,8 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	};
 	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "iPhone Developer" : p_preset->get("application/code_sign_identity_debug");
 	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
-	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer");
-	bool rel_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE).operator String().is_empty() || (rel_sign_id != "iPhone Distribution");
+	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer" && dbg_sign_id != "iPhone Distribution");
+	bool rel_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE).operator String().is_empty() || (rel_sign_id != "iPhone Developer" && rel_sign_id != "iPhone Distribution");
 	String str;
 	String strnew;
 	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
@@ -1493,7 +1493,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false, false);
 }
 
-Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags, bool p_simulator, bool p_skip_ipa) {
+Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags, bool p_simulator, bool p_oneclick) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	String src_pkg_name;
@@ -1501,6 +1501,9 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	String binary_name = p_path.get_file().get_basename();
 
 	bool export_project_only = p_preset->get("application/export_project_only");
+	if (p_oneclick) {
+		export_project_only = false; // Skip for one-click deploy.
+	}
 
 	EditorProgress ep("export", export_project_only ? TTR("Exporting for iOS (Project Files Only)") : TTR("Exporting for iOS"), export_project_only ? 2 : 5, true);
 
@@ -1904,7 +1907,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 		return FAILED;
 	}
 
-	if (!p_skip_ipa) {
+	if (!p_oneclick) {
 		if (ep.step("Making .ipa", 4)) {
 			return ERR_SKIP;
 		}
@@ -2118,12 +2121,9 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 		// Check for devices updates.
 		Vector<Device> ldevices;
 
-		// Enum real devices.
+		// Enum real devices (via ios_deploy, pre Xcode 15).
 		String idepl = EDITOR_GET("export/ios/ios_deploy");
-		if (idepl.is_empty()) {
-			idepl = "ios-deploy";
-		}
-		{
+		if (!idepl.is_empty()) {
 			String devices;
 			List<String> args;
 			args.push_back("-c");
@@ -2149,8 +2149,9 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 							Dictionary device_info = device_event["Device"];
 							Device nd;
 							nd.id = device_info["DeviceIdentifier"];
-							nd.name = device_info["DeviceName"].operator String() + " (connected through " + device_event["Interface"].operator String() + ")";
+							nd.name = device_info["DeviceName"].operator String() + " (ios_deploy, " + ((device_event["Interface"] == "WIFI") ? "network" : "wired") + ")";
 							nd.wifi = device_event["Interface"] == "WIFI";
+							nd.use_ios_deploy = true;
 							nd.simulator = false;
 							ldevices.push_back(nd);
 						}
@@ -2159,34 +2160,73 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 			}
 		}
 
-		// Enum simulators
+		// Enum simulators.
 		if (_check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
-			String devices;
-			List<String> args;
-			args.push_back("simctl");
-			args.push_back("list");
-			args.push_back("devices");
-			args.push_back("-j");
-
-			int ec = 0;
-			Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
-			if (err == OK && ec == 0) {
-				Ref<JSON> json;
-				json.instantiate();
-				err = json->parse(devices);
-				if (err == OK) {
-					Dictionary data = json->get_data();
-					Dictionary devices = data["devices"];
-					for (const Variant *key = devices.next(nullptr); key; key = devices.next(key)) {
-						Array os_devices = devices[*key];
-						for (int i = 0; i < os_devices.size(); i++) {
-							Dictionary device_info = os_devices[i];
-							if (device_info["isAvailable"].operator bool() && device_info["state"] == "Booted") {
+			{
+				String devices;
+				List<String> args;
+				args.push_back("devicectl");
+				args.push_back("list");
+				args.push_back("devices");
+				args.push_back("-j");
+				args.push_back("-");
+				args.push_back("-q");
+				int ec = 0;
+				Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
+				if (err == OK && ec == 0) {
+					Ref<JSON> json;
+					json.instantiate();
+					err = json->parse(devices);
+					if (err == OK) {
+						const Dictionary &data = json->get_data();
+						const Dictionary &result = data["result"];
+						const Array &devices = result["devices"];
+						for (int i = 0; i < devices.size(); i++) {
+							const Dictionary &device_info = devices[i];
+							const Dictionary &conn_props = device_info["connectionProperties"];
+							const Dictionary &dev_props = device_info["deviceProperties"];
+							if (conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
 								Device nd;
-								nd.id = device_info["udid"];
-								nd.name = device_info["name"].operator String() + " (simulator)";
-								nd.simulator = true;
+								nd.id = device_info["identifier"];
+								nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
+								nd.wifi = conn_props["transportType"] == "localNetwork";
+								nd.simulator = false;
 								ldevices.push_back(nd);
+							}
+						}
+					}
+				}
+			}
+
+			// Enum simulators.
+			{
+				String devices;
+				List<String> args;
+				args.push_back("simctl");
+				args.push_back("list");
+				args.push_back("devices");
+				args.push_back("-j");
+
+				int ec = 0;
+				Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
+				if (err == OK && ec == 0) {
+					Ref<JSON> json;
+					json.instantiate();
+					err = json->parse(devices);
+					if (err == OK) {
+						const Dictionary &data = json->get_data();
+						const Dictionary &devices = data["devices"];
+						for (const Variant *key = devices.next(nullptr); key; key = devices.next(key)) {
+							const Array &os_devices = devices[*key];
+							for (int i = 0; i < os_devices.size(); i++) {
+								const Dictionary &device_info = os_devices[i];
+								if (device_info["isAvailable"].operator bool() && device_info["state"] == "Booted") {
+									Device nd;
+									nd.id = device_info["udid"];
+									nd.name = device_info["name"].operator String() + " (simulator)";
+									nd.simulator = true;
+									ldevices.push_back(nd);
+								}
 							}
 						}
 					}
@@ -2352,6 +2392,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 			List<String> args;
 			args.push_back("simctl");
 			args.push_back("launch");
+			args.push_back("--terminate-running-process");
 			args.push_back(dev.id);
 			args.push_back(p_preset->get("application/bundle_identifier"));
 			for (const String &E : cmd_args_list) {
@@ -2370,8 +2411,8 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Running failed, see editor log for details."));
 			}
 		}
-	} else {
-		// Deploy and run on real device.
+	} else if (dev.use_ios_deploy) {
+		// Deploy and run on real device (via ios-deploy).
 		if (ep.step("Installing and running on device...", 4)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		} else {
@@ -2407,6 +2448,62 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 				print_line("ios-deploy:\n" + log);
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Installation/running failed, see editor log for details."));
 				CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
+			}
+		}
+	} else {
+		// Deploy and run on real device.
+		if (ep.step("Installing to device...", 3)) {
+			CLEANUP_AND_RETURN(ERR_SKIP);
+		} else {
+			List<String> args;
+			args.push_back("devicectl");
+			args.push_back("device");
+			args.push_back("install");
+			args.push_back("app");
+			args.push_back("-d");
+			args.push_back(dev.id);
+			args.push_back(EditorPaths::get_singleton()->get_cache_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
+
+			String log;
+			int ec;
+			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start device executable."));
+				CLEANUP_AND_RETURN(err);
+			}
+			if (ec != 0) {
+				print_line("device install:\n" + log);
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Installation failed, see editor log for details."));
+				CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
+			}
+		}
+
+		if (ep.step("Running on device...", 4)) {
+			CLEANUP_AND_RETURN(ERR_SKIP);
+		} else {
+			List<String> args;
+			args.push_back("devicectl");
+			args.push_back("device");
+			args.push_back("process");
+			args.push_back("launch");
+			args.push_back("--terminate-existing");
+			args.push_back("-d");
+			args.push_back(dev.id);
+			args.push_back(p_preset->get("application/bundle_identifier"));
+			for (const String &E : cmd_args_list) {
+				args.push_back(E);
+			}
+
+			String log;
+			int ec;
+			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start devicectl executable."));
+				CLEANUP_AND_RETURN(err);
+			}
+			if (ec != 0) {
+				print_line("devicectl launch:\n" + log);
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Running failed, see editor log for details."));
 			}
 		}
 	}

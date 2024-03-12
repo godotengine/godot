@@ -3769,6 +3769,60 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		}
 	}
 
+	// Check non-GDScript scripts.
+	Ref<Script> script_type = base.script_type;
+
+	if (base_class == nullptr && script_type.is_valid()) {
+		List<PropertyInfo> property_list;
+		script_type->get_script_property_list(&property_list);
+
+		for (const PropertyInfo &property_info : property_list) {
+			if (property_info.name != p_identifier->name) {
+				continue;
+			}
+
+			const GDScriptParser::DataType property_type = GDScriptAnalyzer::type_from_property(property_info, false, false);
+
+			p_identifier->set_datatype(property_type);
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
+			return;
+		}
+
+		MethodInfo method_info = script_type->get_method_info(p_identifier->name);
+
+		if (method_info.name == p_identifier->name) {
+			p_identifier->set_datatype(make_callable_type(method_info));
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_FUNCTION;
+			return;
+		}
+
+		List<MethodInfo> signal_list;
+		script_type->get_script_signal_list(&signal_list);
+
+		for (const MethodInfo &signal_info : signal_list) {
+			if (signal_info.name != p_identifier->name) {
+				continue;
+			}
+
+			const GDScriptParser::DataType signal_type = make_signal_type(signal_info);
+
+			p_identifier->set_datatype(signal_type);
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
+			return;
+		}
+
+		HashMap<StringName, Variant> constant_map;
+		script_type->get_constants(&constant_map);
+
+		if (constant_map.has(p_identifier->name)) {
+			Variant constant = constant_map.get(p_identifier->name);
+
+			p_identifier->set_datatype(make_builtin_meta_type(constant.get_type()));
+			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+			return;
+		}
+	}
+
 	// Check native members. No need for native class recursion because Node exposes all Object's properties.
 	const StringName &native = base.native_type;
 

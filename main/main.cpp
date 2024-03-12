@@ -1783,13 +1783,47 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 		// AMD GPUs.
-		BLOCK_DEVICE("ATI", "AMD Radeon(TM) R2 Graphics");
-		BLOCK_DEVICE("ATI", "AMD Radeon(TM) R3 Graphics");
-		BLOCK_DEVICE("ATI", "AMD Radeon HD 8400 / R3 Series");
-		BLOCK_DEVICE("ATI", "AMD Radeon R5 M200 Series");
-		BLOCK_DEVICE("ATI", "AMD Radeon R5 M230 Series");
-		BLOCK_DEVICE("ATI", "AMD Radeon R5 M255");
-		BLOCK_DEVICE("AMD", "AMD Radeon (TM) R5 M330");
+		BLOCK_DEVICE("ATI", "Radeon 9"); // ATI Radeon 9000 Series
+		BLOCK_DEVICE("ATI", "Radeon X"); // ATI Radeon X500-X2000 Series
+		BLOCK_DEVICE("ATI", "Radeon HD 2"); // AMD/ATI (Mobility) Radeon HD 2xxx Series
+		BLOCK_DEVICE("ATI", "Radeon HD 3"); // AMD/ATI (Mobility) Radeon HD 3xxx Series
+		BLOCK_DEVICE("ATI", "Radeon HD 4"); // AMD/ATI (Mobility) Radeon HD 4xxx Series
+		BLOCK_DEVICE("ATI", "Radeon HD 5"); // AMD/ATI (Mobility) Radeon HD 5xxx Series
+		BLOCK_DEVICE("ATI", "Radeon HD 6"); // AMD/ATI (Mobility) Radeon HD 6xxx Series
+		BLOCK_DEVICE("ATI", "Radeon HD 7"); // AMD/ATI (Mobility) Radeon HD 7xxx Series
+		BLOCK_DEVICE("ATI", "Radeon HD 8"); // AMD/ATI (Mobility) Radeon HD 8xxx Series
+		BLOCK_DEVICE("ATI", "Radeon(TM) R2 Graphics"); // APUs
+		BLOCK_DEVICE("ATI", "Radeon(TM) R3 Graphics");
+		BLOCK_DEVICE("ATI", "Radeon(TM) R4 Graphics");
+		BLOCK_DEVICE("ATI", "Radeon(TM) R5 Graphics");
+		BLOCK_DEVICE("ATI", "Radeon(TM) R6 Graphics");
+		BLOCK_DEVICE("ATI", "Radeon(TM) R7 Graphics");
+		BLOCK_DEVICE("AMD", "Radeon(TM) R7 Graphics");
+		BLOCK_DEVICE("AMD", "Radeon(TM) R8 Graphics");
+		BLOCK_DEVICE("ATI", "Radeon R5 Graphics");
+		BLOCK_DEVICE("ATI", "Radeon R6 Graphics");
+		BLOCK_DEVICE("ATI", "Radeon R7 Graphics");
+		BLOCK_DEVICE("AMD", "Radeon R7 Graphics");
+		BLOCK_DEVICE("AMD", "Radeon R8 Graphics");
+		BLOCK_DEVICE("ATI", "Radeon R5 2"); // Rx 2xx Series
+		BLOCK_DEVICE("ATI", "Radeon R7 2");
+		BLOCK_DEVICE("ATI", "Radeon R9 2");
+		BLOCK_DEVICE("ATI", "Radeon R5 M2"); // Rx M2xx Series
+		BLOCK_DEVICE("ATI", "Radeon R7 M2");
+		BLOCK_DEVICE("ATI", "Radeon R9 M2");
+		BLOCK_DEVICE("ATI", "Radeon (TM) R9 Fury");
+		BLOCK_DEVICE("ATI", "Radeon (TM) R5 3"); // Rx 3xx Series
+		BLOCK_DEVICE("AMD", "Radeon (TM) R5 3");
+		BLOCK_DEVICE("ATI", "Radeon (TM) R7 3");
+		BLOCK_DEVICE("AMD", "Radeon (TM) R7 3");
+		BLOCK_DEVICE("ATI", "Radeon (TM) R9 3");
+		BLOCK_DEVICE("AMD", "Radeon (TM) R9 3");
+		BLOCK_DEVICE("ATI", "Radeon (TM) R5 M3"); // Rx M3xx Series
+		BLOCK_DEVICE("AMD", "Radeon (TM) R5 M3");
+		BLOCK_DEVICE("ATI", "Radeon (TM) R7 M3");
+		BLOCK_DEVICE("AMD", "Radeon (TM) R7 M3");
+		BLOCK_DEVICE("ATI", "Radeon (TM) R9 M3");
+		BLOCK_DEVICE("AMD", "Radeon (TM) R9 M3");
 
 #undef BLOCK_DEVICE
 
@@ -2020,11 +2054,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->set_environment("DISABLE_MANGOHUD", "1"); // GH-57403.
 		OS::get_singleton()->set_environment("DISABLE_RTSS_LAYER", "1"); // GH-57937.
 		OS::get_singleton()->set_environment("DISABLE_VKBASALT", "1");
+		OS::get_singleton()->set_environment("DISABLE_VK_LAYER_reshade_1", "1"); // GH-70849.
 	} else {
 		// Re-allow using Vulkan overlays, disabled while using the editor.
 		OS::get_singleton()->unset_environment("DISABLE_MANGOHUD");
 		OS::get_singleton()->unset_environment("DISABLE_RTSS_LAYER");
 		OS::get_singleton()->unset_environment("DISABLE_VKBASALT");
+		OS::get_singleton()->unset_environment("DISABLE_VK_LAYER_reshade_1");
 	}
 #endif
 

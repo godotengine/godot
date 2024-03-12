@@ -938,11 +938,11 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 					if (binormal_src && tangent_src) {
 						surftool->set_tangent(vertex_array[k].tangent);
 					} else if (generate_dummy_tangents) {
-						Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(vertex_array[k].normal);
+						Vector3 tan = Vector3(vertex_array[k].normal.z, -vertex_array[k].normal.x, vertex_array[k].normal.y).cross(vertex_array[k].normal.normalized()).normalized();
 						surftool->set_tangent(Plane(tan.x, tan.y, tan.z, 1.0));
 					}
 				} else {
-					// No normals, use a dummy normal since normals will be generated.
+					// No normals, use a dummy tangent since normals will be generated.
 					if (generate_dummy_tangents) {
 						surftool->set_tangent(Plane(1.0, 0.0, 0.0, 1.0));
 					}
@@ -1007,6 +1007,19 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 
 			Array d = surftool->commit_to_arrays();
 			d.resize(RS::ARRAY_MAX);
+
+			if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && (generate_dummy_tangents || generate_tangents)) {
+				// Compression is enabled, so let's validate that the normals and tangents are correct.
+				Vector<Vector3> normals = d[Mesh::ARRAY_NORMAL];
+				Vector<float> tangents = d[Mesh::ARRAY_TANGENT];
+				for (int vert = 0; vert < normals.size(); vert++) {
+					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+					if (abs(tan.dot(normals[vert])) > 0.0001) {
+						// Tangent is not perpendicular to the normal, so we can't use compression.
+						mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+					}
+				}
+			}
 
 			Array mr;
 

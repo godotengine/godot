@@ -70,9 +70,9 @@ struct Picture::Impl
 
     RenderTransform resizeTransform(const RenderTransform* pTransform);
     bool needComposition(uint8_t opacity);
-    bool render(RenderMethod &renderer);
+    bool render(RenderMethod* renderer);
     bool size(float w, float h);
-    RenderRegion bounds(RenderMethod& renderer);
+    RenderRegion bounds(RenderMethod* renderer);
     Result load(ImageLoader* ploader);
 
     Impl(Picture* p) : picture(p)
@@ -82,24 +82,21 @@ struct Picture::Impl
     ~Impl()
     {
         LoaderMgr::retrieve(loader);
+        if (surface) {
+            if (auto renderer = PP(picture)->renderer) {
+                renderer->dispose(rd);
+            }
+        }
         delete(paint);
     }
 
-    bool dispose(RenderMethod& renderer)
-    {
-        if (paint) paint->pImpl->dispose(renderer);
-        else if (surface) renderer.dispose(rd);
-        rd = nullptr;
-        return true;
-    }
-
-    RenderData update(RenderMethod &renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
+    RenderData update(RenderMethod* renderer, const RenderTransform* pTransform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper)
     {
         auto flag = load();
 
         if (surface) {
             auto transform = resizeTransform(pTransform);
-            rd = renderer.prepare(surface, &rm, rd, &transform, clips, opacity, static_cast<RenderUpdateFlag>(pFlag | flag));
+            rd = renderer->prepare(surface, &rm, rd, &transform, clips, opacity, static_cast<RenderUpdateFlag>(pFlag | flag));
         } else if (paint) {
             if (resizing) {
                 loader->resize(paint, w, h);

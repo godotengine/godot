@@ -4071,7 +4071,7 @@ bool RendererSceneCull::free(RID p_rid) {
 		scenario_owner.free(p_rid);
 		RendererSceneOcclusionCull::get_singleton()->remove_scenario(p_rid);
 
-	} else if (RendererSceneOcclusionCull::get_singleton()->is_occluder(p_rid)) {
+	} else if (RendererSceneOcclusionCull::get_singleton() && RendererSceneOcclusionCull::get_singleton()->is_occluder(p_rid)) {
 		RendererSceneOcclusionCull::get_singleton()->free_occluder(p_rid);
 	} else if (instance_owner.owns(p_rid)) {
 		// delete the instance

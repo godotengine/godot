@@ -643,6 +643,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 						undo_redo->add_undo_method(base_control, "queue_redraw");
 						undo_redo->commit_action(false);
 						emit_signal(SNAME("polygons_changed"));
+						drag_type = DRAG_TYPE_NONE;
 					} else {
 						drag_type = DRAG_TYPE_PAN;
 						drag_last_pos = mb->get_position();
@@ -719,11 +720,19 @@ void GenericTilePolygonEditor::set_tile_set(Ref<TileSet> p_tile_set) {
 	Vector2 zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
 	while (zoomed_tile.y < default_control_y_size) {
 		editor_zoom_widget->set_zoom_by_increments(6, false);
-		zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
+		float current_zoom = editor_zoom_widget->get_zoom();
+		zoomed_tile = current_zoom * tile_set->get_tile_size();
+		if (Math::is_equal_approx(current_zoom, editor_zoom_widget->get_max_zoom())) {
+			break;
+		}
 	}
 	while (zoomed_tile.y > default_control_y_size) {
 		editor_zoom_widget->set_zoom_by_increments(-6, false);
-		zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
+		float current_zoom = editor_zoom_widget->get_zoom();
+		zoomed_tile = current_zoom * tile_set->get_tile_size();
+		if (Math::is_equal_approx(current_zoom, editor_zoom_widget->get_min_zoom())) {
+			break;
+		}
 	}
 	editor_zoom_widget->set_zoom_by_increments(-6, false);
 	_zoom_changed();

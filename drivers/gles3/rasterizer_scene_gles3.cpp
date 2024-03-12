@@ -262,7 +262,9 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 
 	GLES3::Mesh::Surface *s = reinterpret_cast<GLES3::Mesh::Surface *>(sdcache->surface);
 	if (p_material->shader_data->uses_tangent && !(s->format & RS::ARRAY_FORMAT_TANGENT)) {
-		WARN_PRINT_ED("Attempting to use a shader that requires tangents with a mesh that doesn't contain tangents. Ensure that meshes are imported with the 'ensure_tangents' option. If creating your own meshes, add an `ARRAY_TANGENT` array (when using ArrayMesh) or call `generate_tangents()` (when using SurfaceTool).");
+		String shader_path = p_material->shader_data->path.is_empty() ? "" : "(" + p_material->shader_data->path + ")";
+		String mesh_path = mesh_storage->mesh_get_path(p_mesh).is_empty() ? "" : "(" + mesh_storage->mesh_get_path(p_mesh) + ")";
+		WARN_PRINT_ED(vformat("Attempting to use a shader %s that requires tangents with a mesh %s that doesn't contain tangents. Ensure that meshes are imported with the 'ensure_tangents' option. If creating your own meshes, add an `ARRAY_TANGENT` array (when using ArrayMesh) or call `generate_tangents()` (when using SurfaceTool).", shader_path, mesh_path));
 	}
 }
 
@@ -1461,7 +1463,15 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	//time global variables
 	scene_state.ubo.time = time;
 
-	if (is_environment(p_render_data->environment)) {
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+		scene_state.ubo.use_ambient_light = true;
+		scene_state.ubo.ambient_light_color_energy[0] = 1;
+		scene_state.ubo.ambient_light_color_energy[1] = 1;
+		scene_state.ubo.ambient_light_color_energy[2] = 1;
+		scene_state.ubo.ambient_light_color_energy[3] = 1.0;
+		scene_state.ubo.use_ambient_cubemap = false;
+		scene_state.ubo.use_reflection_cubemap = false;
+	} else if (is_environment(p_render_data->environment)) {
 		RS::EnvironmentBG env_bg = environment_get_background(p_render_data->environment);
 		RS::EnvironmentAmbientSource ambient_src = environment_get_ambient_source(p_render_data->environment);
 
@@ -2298,7 +2308,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool keep_color = false;
 	float sky_energy_multiplier = 1.0;
 
-	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
 	} else if (render_data.environment.is_valid()) {
 		RS::EnvironmentBG bg_mode = environment_get_background(render_data.environment);
@@ -2546,6 +2556,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			}
 			glBindTexture(GL_TEXTURE_CUBE_MAP, texture_to_bind);
 		}
+
 	} else if constexpr (p_pass_mode == PASS_MODE_DEPTH || p_pass_mode == PASS_MODE_SHADOW) {
 		shader_variant = SceneShaderGLES3::MODE_DEPTH;
 	}
@@ -2583,8 +2594,16 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			material_data = surf->material_shadow;
 			mesh_surface = surf->surface_shadow;
 		} else {
-			shader = surf->shader;
-			material_data = surf->material;
+			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
+				material_data = overdraw_material_data_ptr;
+				shader = material_data->shader_data;
+			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
+				material_data = default_material_data_ptr;
+				shader = material_data->shader_data;
+			} else {
+				shader = surf->shader;
+				material_data = surf->material;
+			}
 			mesh_surface = surf->surface;
 		}
 
@@ -3400,7 +3419,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		scene_globals.default_shader = material_storage->shader_allocate();
 		material_storage->shader_initialize(scene_globals.default_shader);
 		material_storage->shader_set_code(scene_globals.default_shader, R"(
-// Default 3D material shader.
+// Default 3D material shader (Compatibility).
 
 shader_type spatial;
 
@@ -3417,6 +3436,29 @@ void fragment() {
 		scene_globals.default_material = material_storage->material_allocate();
 		material_storage->material_initialize(scene_globals.default_material);
 		material_storage->material_set_shader(scene_globals.default_material, scene_globals.default_shader);
+		default_material_data_ptr = static_cast<GLES3::SceneMaterialData *>(GLES3::MaterialStorage::get_singleton()->material_get_data(scene_globals.default_material, RS::SHADER_SPATIAL));
+	}
+
+	{
+		// Overdraw material and shader.
+		scene_globals.overdraw_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(scene_globals.overdraw_shader);
+		material_storage->shader_set_code(scene_globals.overdraw_shader, R"(
+// 3D editor Overdraw debug draw mode shader (Compatibility).
+
+shader_type spatial;
+
+render_mode blend_add, unshaded, fog_disabled;
+
+void fragment() {
+	ALBEDO = vec3(0.4, 0.8, 0.8);
+	ALPHA = 0.2;
+}
+)");
+		scene_globals.overdraw_material = material_storage->material_allocate();
+		material_storage->material_initialize(scene_globals.overdraw_material);
+		material_storage->material_set_shader(scene_globals.overdraw_material, scene_globals.overdraw_shader);
+		overdraw_material_data_ptr = static_cast<GLES3::SceneMaterialData *>(GLES3::MaterialStorage::get_singleton()->material_get_data(scene_globals.overdraw_material, RS::SHADER_SPATIAL));
 	}
 
 	{
@@ -3530,6 +3572,10 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 	GLES3::MaterialStorage::get_singleton()->shaders.cubemap_filter_shader.version_free(scene_globals.cubemap_filter_shader_version);
 	RSG::material_storage->material_free(scene_globals.default_material);
 	RSG::material_storage->shader_free(scene_globals.default_shader);
+
+	// Overdraw Shader
+	RSG::material_storage->material_free(scene_globals.overdraw_material);
+	RSG::material_storage->shader_free(scene_globals.overdraw_shader);
 
 	// Sky Shader
 	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_free(sky_globals.shader_default_version);

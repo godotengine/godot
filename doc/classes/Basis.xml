@@ -4,10 +4,12 @@
 		A 3×3 matrix for representing 3D rotation and scale.
 	</brief_description>
 	<description>
-		A 3×3 matrix used for representing 3D rotation and scale. Usually used as an orthogonal basis for a [Transform3D].
-		Contains 3 vector fields X, Y and Z as its columns, which are typically interpreted as the local basis vectors of a transformation. For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
-		Basis can also be accessed as an array of 3D vectors. These vectors are usually orthogonal to each other, but are not necessarily normalized (due to scaling).
+		The [Basis] built-in [Variant] type is a 3x3 [url=https://en.wikipedia.org/wiki/Matrix_(mathematics)]matrix[/url] used to represent 3D rotation, scale, and shear. It is frequently used within a [Transform3D].
+		A [Basis] is composed by 3 axis vectors, each representing a column of the matrix: [member x], [member y], and [member z]. The length of each axis ([method Vector3.length]) influences the basis's scale, while the direction of all axes influence the rotation. Usually, these axes are perpendicular to one another. However, when you rotate any axis individually, the basis becomes sheared. Applying a sheared basis to a 3D model will make the model appear distorted.
+		A [Basis] is [b]orthogonal[/b] if its axes are perpendicular to each other. A basis is [b]normalized[/b] if the length of every axis is [code]1[/code]. A basis is [b]uniform[/b] if all axes share the same length (see [method get_scale]). A basis is [b]orthonormal[/b] if it is both orthogonal and normalized, which allows it to only represent rotations. A basis is [b]conformal[/b] if it is both orthogonal and uniform, which ensures it is not distorted.
 		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
+		[b]Note:[/b] Godot uses a [url=https://en.wikipedia.org/wiki/Right-hand_rule]right-handed coordinate system[/url], which is a common standard. For directions, the convention for built-in types like [Camera3D] is for -Z to point forward (+X is right, +Y is up, and +Z is back). Other objects may use different direction conventions. For more information, see the [url=$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#d-asset-direction-conventions]Importing 3D Scenes[/url] tutorial.
+		[b]Note:[/b] The basis matrices are exposed as [url=https://www.mindcontrol.org/~hplus/graphics/matrix-layout.html]column-major[/url] order, which is the same as OpenGL. However, they are stored internally in row-major order, which is the same as DirectX.
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
@@ -22,7 +24,7 @@
 		<constructor name="Basis">
 			<return type="Basis" />
 			<description>
-				Constructs a default-initialized [Basis] set to [constant IDENTITY].
+				Constructs a [Basis] identical to the [constant IDENTITY].
 			</description>
 		</constructor>
 		<constructor name="Basis">
@@ -37,14 +39,16 @@
 			<param index="0" name="axis" type="Vector3" />
 			<param index="1" name="angle" type="float" />
 			<description>
-				Constructs a pure rotation basis matrix, rotated around the given [param axis] by [param angle] (in radians). The axis must be a normalized vector.
+				Constructs a [Basis] that only represents rotation, rotated around the [param axis] by the given [param angle], in radians. The axis must be a normalized vector.
+				[b]Note:[/b] This is the same as using [method rotated] on the [constant IDENTITY] basis. With more than one angle consider using [method from_euler], instead.
 			</description>
 		</constructor>
 		<constructor name="Basis">
 			<return type="Basis" />
 			<param index="0" name="from" type="Quaternion" />
 			<description>
-				Constructs a pure rotation basis matrix from the given quaternion.
+				Constructs a [Basis] that only represents rotation from the given [Quaternion].
+				[b]Note:[/b] Quaternions [i]only[/i] store rotation, not scale. Because of this, conversions from [Basis] to [Quaternion] cannot always be reversed.
 			</description>
 		</constructor>
 		<constructor name="Basis">
@@ -53,7 +57,7 @@
 			<param index="1" name="y_axis" type="Vector3" />
 			<param index="2" name="z_axis" type="Vector3" />
 			<description>
-				Constructs a basis matrix from 3 axis vectors (matrix columns).
+				Constructs a [Basis] from 3 axis vectors. These are the columns of the basis matrix.
 			</description>
 		</constructor>
 	</constructors>
@@ -61,8 +65,10 @@
 		<method name="determinant" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the determinant of the basis matrix. If the basis is uniformly scaled, its determinant is the square of the scale.
-				A negative determinant means the basis has a negative scale. A zero determinant means the basis isn't invertible, and is usually considered invalid.
+				Returns the [url=https://en.wikipedia.org/wiki/Determinant]determinant[/url] of this basis's matrix. For advanced math, this number can be used to determine a few attributes:
+				- If the determinant is exactly [code]0[/code], the basis is not invertible (see [method inverse]).
+				- If the determinant is a negative number, the basis represents a negative scale.
+				[b]Note:[/b] If the basis's scale is the same for every axis, its determinant is always that scale by the power of 2.
 			</description>
 		</method>
 		<method name="from_euler" qualifiers="static">
@@ -70,46 +76,114 @@
 			<param index="0" name="euler" type="Vector3" />
 			<param index="1" name="order" type="int" default="2" />
 			<description>
-				Constructs a pure rotation Basis matrix from Euler angles in the specified Euler rotation order. By default, use YXZ order (most common). See the [enum EulerOrder] enum for possible values.
+				Constructs a new [Basis] that only represents rotation from the given [Vector3] of [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url], in radians.
+				- The [member Vector3.x] should contain the angle around the [member x] axis (pitch).
+				- The [member Vector3.y] should contain the angle around the [member y] axis (yaw).
+				- The [member Vector3.z] should contain the angle around the [member z] axis (roll).
+				[codeblocks]
+				[gdscript]
+				# Creates a Basis whose z axis points down.
+				var my_basis = Basis.from_euler(Vector3(TAU / 4, 0, 0))
+
+				print(my_basis.z) # Prints (0, -1, 0).
+				[/gdscript]
+				[csharp]
+				// Creates a Basis whose z axis points down.
+				var myBasis = Basis.FromEuler(new Vector3(Mathf.Tau / 4.0f, 0.0f, 0.0f));
+
+				GD.Print(myBasis.Z); // Prints (0, -1, 0).
+				[/csharp]
+				[/codeblocks]
+				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). By default, the YXZ convention is used ([constant EULER_ORDER_YXZ]): the basis rotates first around the Y axis (yaw), then X (pitch), and lastly Z (roll). When using the opposite method [method get_euler], this order is reversed.
 			</description>
 		</method>
 		<method name="from_scale" qualifiers="static">
 			<return type="Basis" />
 			<param index="0" name="scale" type="Vector3" />
 			<description>
-				Constructs a pure scale basis matrix with no rotation or shearing. The scale values are set as the diagonal of the matrix, and the other parts of the matrix are zero.
+				Constructs a new [Basis] that only represents scale, with no rotation or shear, from the given [param scale] vector.
+				[codeblocks]
+				[gdscript]
+				var my_basis = Basis.from_scale(Vector3(2, 4, 8))
+
+				print(my_basis.x) # Prints (2, 0, 0).
+				print(my_basis.y) # Prints (0, 4, 0).
+				print(my_basis.z) # Prints (0, 0, 8).
+				[/gdscript]
+				[csharp]
+				var myBasis = Basis.FromScale(new Vector3(2.0f, 4.0f, 8.0f));
+
+				GD.Print(myBasis.X); // Prints (2, 0, 0).
+				GD.Print(myBasis.Y); // Prints (0, 4, 0).
+				GD.Print(myBasis.Z); // Prints (0, 0, 8).
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] In linear algebra, the matrix of this basis is also known as a [url=https://en.wikipedia.org/wiki/Diagonal_matrix]diagonal matrix[/url].
 			</description>
 		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="order" type="int" default="2" />
 			<description>
-				Returns the basis's rotation in the form of Euler angles. The Euler order depends on the [param order] parameter, by default it uses the YXZ convention: when decomposing, first Z, then X, and Y last. The returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
-				Consider using the [method get_rotation_quaternion] method instead, which returns a [Quaternion] quaternion instead of Euler angles.
+				Returns this basis's rotation as a [Vector3] of [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url], in radians.
+				- The [member Vector3.x] contains the angle around the [member x] axis (pitch);
+				- The [member Vector3.y] contains the angle around the [member y] axis (yaw);
+				- The [member Vector3.z] contains the angle around the [member z] axis (roll).
+				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). By default, the YXZ convention is used ([constant EULER_ORDER_YXZ]): Z (roll) is calculated first, then X (pitch), and lastly Y (yaw). When using the opposite method [method from_euler], this order is reversed.
+				[b]Note:[/b] Euler angles are much more intuitive but are not suitable for 3D math. Because of this, consider using the [method get_rotation_quaternion] method instead, which returns a [Quaternion].
+				[b]Note:[/b] In the Inspector dock, a basis's rotation is often displayed in Euler angles (in degrees), as is the case with the [member Node3D.rotation] property.
 			</description>
 		</method>
 		<method name="get_rotation_quaternion" qualifiers="const">
 			<return type="Quaternion" />
 			<description>
-				Returns the basis's rotation in the form of a quaternion. See [method get_euler] if you need Euler angles, but keep in mind quaternions should generally be preferred to Euler angles.
+				Returns this basis's rotation as a [Quaternion].
+				[b]Note:[/b] Quatenions are much more suitable for 3D math but are less intuitive. For user interfaces, consider using the [method get_euler] method, which returns Euler angles.
 			</description>
 		</method>
 		<method name="get_scale" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Assuming that the matrix is the combination of a rotation and scaling, return the absolute value of scaling factors along each axis.
+				Returns the length of each axis of this basis, as a [Vector3]. If the basis is not sheared, this is the scaling factor. It is not affected by rotation.
+				[codeblocks]
+				[gdscript]
+				var my_basis = Basis(
+				    Vector3(2, 0, 0),
+				    Vector3(0, 4, 0),
+				    Vector3(0, 0, 8)
+				)
+				# Rotating the Basis in any way preserves its scale.
+				my_basis = my_basis.rotated(Vector3.UP, TAU / 2)
+				my_basis = my_basis.rotated(Vector3.RIGHT, TAU / 4)
+
+				print(my_basis.get_scale()) # Prints (2, 4, 8).
+				[/gdscript]
+				[csharp]
+				var myBasis = new Basis(
+				    Vector3(2.0f, 0.0f, 0.0f),
+				    Vector3(0.0f, 4.0f, 0.0f),
+				    Vector3(0.0f, 0.0f, 8.0f)
+				);
+				// Rotating the Basis in any way preserves its scale.
+				myBasis = myBasis.Rotated(Vector3.Up, Mathf.Tau / 2.0f);
+				myBasis = myBasis.Rotated(Vector3.Right, Mathf.Tau / 4.0f);
+
+				GD.Print(myBasis.Scale); // Prints (2, 4, 8).
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] If the value returned by [method determinant] is negative, the scale is also negative.
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
 			<return type="Basis" />
 			<description>
-				Returns the inverse of the matrix.
+				Returns the [url=https://en.wikipedia.org/wiki/Invertible_matrix]inverse of this basis's matrix[/url].
 			</description>
 		</method>
 		<method name="is_conformal" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the basis is conformal, meaning it preserves angles and distance ratios, and may only be composed of rotation and uniform scale. Returns [code]false[/code] if the basis has non-uniform scale or shear/skew. This can be used to validate if the basis is non-distorted, which is important for physics and other use cases.
+				Returns [code]true[/code] if this basis is conformal. A conformal basis is both [i]orthogonal[/i] (the axes are perpendicular to each other) and [i]uniform[/i] (the axes share the same length). This method can be especially useful during physics calculations.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -131,15 +205,35 @@
 			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<param index="2" name="use_model_front" type="bool" default="false" />
 			<description>
-				Creates a Basis with a rotation such that the forward axis (-Z) points towards the [param target] position.
-				The up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the forward axis. The resulting Basis is orthonormalized. The [param target] and [param up] vectors cannot be zero, and cannot be parallel to each other.
-				If [param use_model_front] is [code]true[/code], the +Z axis (asset front) is treated as forward (implies +X is left) and points toward the [param target] position. By default, the -Z axis (camera forward) is treated as forward (implies +X is right).
+				Creates a new [Basis] with a rotation such that the forward axis (-Z) points towards the [param target] position.
+				By default, the -Z axis (camera forward) is treated as forward (implies +X is right). If [param use_model_front] is [code]true[/code], the +Z axis (asset front) is treated as forward (implies +X is left) and points toward the [param target] position.
+				The up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the forward axis. The returned basis is orthonormalized (see [method orthonormalized]). The [param target] and [param up] vectors cannot be [constant Vector3.ZERO], and cannot be parallel to each other.
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">
 			<return type="Basis" />
 			<description>
-				Returns the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
+				Returns the orthonormalized version of this basis. An orthonormal basis is both [i]orthogonal[/i] (the axes are perpendicular to each other) and [i]normalized[/i] (the axes have a length of [code]1[/code]), which also means it can only represent rotation.
+				It is often useful to call this method to avoid rounding errors on a rotating basis:
+				[codeblocks]
+				[gdscript]
+				# Rotate this Node3D every frame.
+				func _process(delta):
+				    basis = basis.rotated(Vector3.UP, TAU * delta)
+				    basis = basis.rotated(Vector3.RIGHT, TAU * delta)
+
+				    basis = basis.orthonormalized()
+				[/gdscript]
+				[csharp]
+				// Rotate this Node3D every frame.
+				public override void _Process(double delta)
+				{
+				    Basis = Basis.Rotated(Vector3.Up, Mathf.Tau * (float)delta)
+				                 .Rotated(Vector3.Right, Mathf.Tau * (float)delta)
+				                 .Orthonormalized();
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -147,14 +241,60 @@
 			<param index="0" name="axis" type="Vector3" />
 			<param index="1" name="angle" type="float" />
 			<description>
-				Introduce an additional rotation around the given axis by [param angle] (in radians). The axis must be a normalized vector.
+				Returns this basis rotated around the given [param axis] by [param angle] (in radians). The [param axis] must be a normalized vector (see [method Vector3.normalized]).
+				Positive values rotate this basis clockwise around the axis, while negative values rotate it counterclockwise.
+				[codeblocks]
+				[gdscript]
+				var my_basis = Basis.IDENTITY
+				var angle = TAU / 2
+
+				my_basis = my_basis.rotated(Vector3.UP, angle)    # Rotate around the up axis (yaw).
+				my_basis = my_basis.rotated(Vector3.RIGHT, angle) # Rotate around the right axis (pitch).
+				my_basis = my_basis.rotated(Vector3.BACK, angle)  # Rotate around the back axis (roll).
+				[/gdscript]
+				[csharp]
+				var myBasis = Basis.Identity;
+				var angle = Mathf.Tau / 2.0f;
+
+				myBasis = myBasis.Rotated(Vector3.Up, angle);    // Rotate around the up axis (yaw).
+				myBasis = myBasis.Rotated(Vector3.Right, angle); // Rotate around the right axis (pitch).
+				myBasis = myBasis.Rotated(Vector3.Back, angle);  // Rotate around the back axis (roll).
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
 			<return type="Basis" />
 			<param index="0" name="scale" type="Vector3" />
 			<description>
-				Introduce an additional scaling specified by the given 3D scaling factor.
+				Returns this basis with each axis's components scaled by the given [param scale]'s components.
+				The basis matrix's rows are multiplied by [param scale]'s components. This operation is a global scale (relative to the parent).
+				[codeblocks]
+				[gdscript]
+				var my_basis = Basis(
+				    Vector3(1, 1, 1),
+				    Vector3(2, 2, 2),
+				    Vector3(3, 3, 3)
+				)
+				my_basis = my_basis.scaled(Vector3(0, 2, -2))
+
+				print(my_basis.x) # Prints (0, 2, -2).
+				print(my_basis.y) # Prints (0, 4, -4).
+				print(my_basis.z) # Prints (0, 6, -6).
+				[/gdscript]
+				[csharp]
+				var myBasis = new Basis(
+				    new Vector3(1.0f, 1.0f, 1.0f),
+				    new Vector3(2.0f, 2.0f, 2.0f),
+				    new Vector3(3.0f, 3.0f, 3.0f)
+				);
+				myBasis = myBasis.Scaled(new Vector3(0.0f, 2.0f, -2.0f));
+
+				GD.Print(myBasis.X); // Prints (0, 2, -2).
+				GD.Print(myBasis.Y); // Prints (0, 4, -4).
+				GD.Print(myBasis.Z); // Prints (0, 6, -6).
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="slerp" qualifiers="const">
@@ -162,61 +302,122 @@
 			<param index="0" name="to" type="Basis" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Assuming that the matrix is a proper rotation matrix, slerp performs a spherical-linear interpolation with another rotation matrix.
+				Performs a spherical-linear interpolation with the [param to] basis, given a [param weight]. Both this basis and [param to] should represent a rotation.
+				[b]Example:[/b] Smoothly rotate a [Node3D] to the target basis over time, with a [Tween].
+				[codeblock]
+				var start_basis = Basis.IDENTITY
+				var target_basis = Basis.IDENTITY.rotated(Vector3.UP, TAU / 2)
+
+				func _ready():
+				    create_tween().tween_method(interpolate, 0.0, 1.0, 5.0).set_trans(Tween.TRANS_EXPO)
+
+				func interpolate(weight):
+				    basis = start_basis.slerp(target_basis, weight)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="tdotx" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="with" type="Vector3" />
 			<description>
-				Transposed dot product with the X axis of the matrix.
+				Returns the transposed dot product between [param with] and the [member x] axis (see [method transposed]).
+				This is equivalent to [code]basis.x.dot(vector)[/code].
 			</description>
 		</method>
 		<method name="tdoty" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="with" type="Vector3" />
 			<description>
-				Transposed dot product with the Y axis of the matrix.
+				Returns the transposed dot product between [param with] and the [member y] axis (see [method transposed]).
+				This is equivalent to [code]basis.y.dot(vector)[/code].
 			</description>
 		</method>
 		<method name="tdotz" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="with" type="Vector3" />
 			<description>
-				Transposed dot product with the Z axis of the matrix.
+				Returns the transposed dot product between [param with] and the [member z] axis (see [method transposed]).
+				This is equivalent to [code]basis.z.dot(vector)[/code].
 			</description>
 		</method>
 		<method name="transposed" qualifiers="const">
 			<return type="Basis" />
 			<description>
-				Returns the transposed version of the matrix.
+				Returns the transposed version of this basis. This turns the basis matrix's columns into rows, and its rows into columns.
+				[codeblocks]
+				[gdscript]
+				var my_basis = Basis(
+				    Vector3(1, 2, 3),
+				    Vector3(4, 5, 6),
+				    Vector3(7, 8, 9)
+				)
+				my_basis = my_basis.transposed()
+
+				print(my_basis.x) # Prints (1, 4, 7).
+				print(my_basis.y) # Prints (2, 5, 8).
+				print(my_basis.z) # Prints (3, 6, 9).
+				[/gdscript]
+				[csharp]
+				var myBasis = new Basis(
+				    new Vector3(1.0f, 2.0f, 3.0f),
+				    new Vector3(4.0f, 5.0f, 6.0f),
+				    new Vector3(7.0f, 8.0f, 9.0f)
+				);
+				myBasis = myBasis.Transposed();
+
+				GD.Print(myBasis.X); // Prints (1, 4, 7).
+				GD.Print(myBasis.Y); // Prints (2, 5, 8).
+				GD.Print(myBasis.Z); // Prints (3, 6, 9).
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="x" type="Vector3" setter="" getter="" default="Vector3(1, 0, 0)">
-			The basis matrix's X vector (column 0). Equivalent to array index [code]0[/code].
+			The basis's X axis, and the column [code]0[/code] of the matrix.
+			On the identity basis, this vector points right ([constant Vector3.RIGHT]).
 		</member>
 		<member name="y" type="Vector3" setter="" getter="" default="Vector3(0, 1, 0)">
-			The basis matrix's Y vector (column 1). Equivalent to array index [code]1[/code].
+			The basis's Y axis, and the column [code]1[/code] of the matrix.
+			On the identity basis, this vector points up ([constant Vector3.UP]).
 		</member>
 		<member name="z" type="Vector3" setter="" getter="" default="Vector3(0, 0, 1)">
-			The basis matrix's Z vector (column 2). Equivalent to array index [code]2[/code].
+			The basis's Z axis, and the column [code]2[/code] of the matrix.
+			On the identity basis, this vector points back ([constant Vector3.BACK]).
 		</member>
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
-			The identity basis, with no rotation or scaling applied.
+			The identity basis. This is a basis with no rotation, no shear, and its scale being [code]1[/code]. This means that:
+			- The [member x] points right ([constant Vector3.RIGHT]);
+			- The [member y] points up ([constant Vector3.UP]);
+			- The [member z] points back ([constant Vector3.BACK]).
+			[codeblock]
+			var basis := Basis.IDENTITY
+			print("| X | Y | Z")
+			print("| %s | %s | %s" % [basis.x.x, basis.y.x, basis.z.x])
+			print("| %s | %s | %s" % [basis.x.y, basis.y.y, basis.z.y])
+			print("| %s | %s | %s" % [basis.x.z, basis.y.z, basis.z.z])
+			# Prints:
+			# | X | Y | Z
+			# | 1 | 0 | 0
+			# | 0 | 1 | 0
+			# | 0 | 0 | 1
+			[/codeblock]
 			This is identical to creating [constructor Basis] without any parameters. This constant can be used to make your code clearer, and for consistency with C#.
 		</constant>
 		<constant name="FLIP_X" value="Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1)">
-			The basis that will flip something along the X axis when used in a transformation.
+			When any basis is multiplied by [constant FLIP_X], it negates all components of the [member x] axis (the X column).
+			When [constant FLIP_X] is multiplied by any basis, it negates the [member Vector3.x] component of all axes (the X row).
 		</constant>
 		<constant name="FLIP_Y" value="Basis(1, 0, 0, 0, -1, 0, 0, 0, 1)">
-			The basis that will flip something along the Y axis when used in a transformation.
+			When any basis is multiplied by [constant FLIP_Y], it negates all components of the [member y] axis (the Y column).
+			When [constant FLIP_Y] is multiplied by any basis, it negates the [member Vector3.y] component of all axes (the Y row).
 		</constant>
 		<constant name="FLIP_Z" value="Basis(1, 0, 0, 0, 1, 0, 0, 0, -1)">
-			The basis that will flip something along the Z axis when used in a transformation.
+			When any basis is multiplied by [constant FLIP_Z], it negates all components of the [member z] axis (the Z column).
+			When [constant FLIP_Z] is multiplied by any basis, it negates the [member Vector3.z] component of all axes (the Z row).
 		</constant>
 	</constants>
 	<operators>
@@ -224,7 +425,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Basis" />
 			<description>
-				Returns [code]true[/code] if the [Basis] matrices are not equal.
+				Returns [code]true[/code] if the components of both [Basis] matrices are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
@@ -232,35 +433,46 @@
 			<return type="Basis" />
 			<param index="0" name="right" type="Basis" />
 			<description>
-				Composes these two basis matrices by multiplying them together. This has the effect of transforming the second basis (the child) by the first basis (the parent).
+				Transforms (multiplies) the [param right] basis by this basis.
+				This is the operation performed between parent and child [Node3D]s.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector3" />
 			<param index="0" name="right" type="Vector3" />
 			<description>
-				Transforms (multiplies) the [Vector3] by the given [Basis] matrix.
+				Transforms (multiplies) the [param right] vector by this basis, returning a [Vector3].
+				[codeblocks]
+				[gdscript]
+				var my_basis = Basis(Vector3(1, 1, 1), Vector3(1, 1, 1), Vector3(0, 2, 5))
+				print(my_basis * Vector3(1, 2, 3)) # Prints (7, 3, 16)
+				[/gdscript]
+				[csharp]
+				var myBasis = new Basis(new Vector3(1, 1, 1), new Vector3(1, 1, 1), new Vector3(0, 2, 5));
+				GD.Print(my_basis * new Vector3(1, 2, 3)); // Prints (7, 3, 16)
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Basis" />
 			<param index="0" name="right" type="float" />
 			<description>
-				This operator multiplies all components of the [Basis], which scales it uniformly.
+				Multiplies all components of the [Basis] by the given [float]. This affects the basis's scale uniformly, resizing all 3 axes by the [param right] value.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Basis" />
 			<param index="0" name="right" type="int" />
 			<description>
-				This operator multiplies all components of the [Basis], which scales it uniformly.
+				Multiplies all components of the [Basis] by the given [int]. This affects the basis's scale uniformly, resizing all 3 axes by the [param right] value.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="Basis" />
 			<description>
-				Returns [code]true[/code] if the [Basis] matrices are exactly equal.
+				Returns [code]true[/code] if the components of both [Basis] matrices are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
@@ -268,7 +480,8 @@
 			<return type="Vector3" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Access basis components using their index. [code]b[0][/code] is equivalent to [code]b.x[/code], [code]b[1][/code] is equivalent to [code]b.y[/code], and [code]b[2][/code] is equivalent to [code]b.z[/code].
+				Accesses each axis (column) of this basis by their index. Index [code]0[/code] is the same as [member x], index [code]1[/code] is the same as [member y], and index [code]2[/code] is the same as [member z].
+				[b]Note:[/b] In C++, this operator accesses the rows of the basis matrix, [i]not[/i] the columns. For the same behavior as scripting languages, use the [code]set_column[/code] and [code]get_column[/code] methods.
 			</description>
 		</operator>
 	</operators>

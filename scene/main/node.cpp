@@ -2510,6 +2510,11 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
 			for (int i = 0; i < N->get()->get_child_count(); ++i) {
 				Node *descendant = N->get()->get_child(i);
+
+				if (!descendant->get_owner()) {
+					continue; // Internal nodes or nodes added by scripts.
+				}
+
 				// Skip nodes not really belonging to the instantiated hierarchy; they'll be processed normally later
 				// but remember non-instantiated nodes that are hidden below instantiated ones
 				if (!instance_roots.has(descendant->get_owner())) {
@@ -2829,17 +2834,24 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		remove_child(child);
 		if (!child->is_owned_by_parent()) {
 			// add the custom children to the p_node
+			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+			child->set_owner(nullptr);
 			p_node->add_child(child);
+			child->set_owner(child_owner);
 		}
 	}
 
 	p_node->set_owner(owner);
-	for (int i = 0; i < owned.size(); i++) {
-		owned[i]->set_owner(p_node);
+	for (Node *E : owned) {
+		if (E->data.owner != p_node) {
+			E->set_owner(p_node);
+		}
 	}
 
-	for (int i = 0; i < owned_by_owner.size(); i++) {
-		owned_by_owner[i]->set_owner(owner);
+	for (Node *E : owned_by_owner) {
+		if (E->data.owner != owner) {
+			E->set_owner(owner);
+		}
 	}
 
 	p_node->set_scene_file_path(get_scene_file_path());

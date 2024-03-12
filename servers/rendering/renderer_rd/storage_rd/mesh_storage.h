@@ -161,6 +161,8 @@ private:
 		RID shadow_mesh;
 		HashSet<Mesh *> shadow_owners;
 
+		String path;
+
 		Dependency dependency;
 	};
 
@@ -376,6 +378,9 @@ public:
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) override;
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override;
+
+	virtual void mesh_set_path(RID p_mesh, const String &p_path) override;
+	virtual String mesh_get_path(RID p_mesh) const override;
 
 	virtual void mesh_clear(RID p_mesh) override;
 

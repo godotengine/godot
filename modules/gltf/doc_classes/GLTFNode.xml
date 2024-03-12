@@ -35,7 +35,7 @@
 			If this GLTF node is a camera, the index of the [GLTFCamera] in the [GLTFState] that describes the camera's properties. If -1, this node is not a camera.
 		</member>
 		<member name="children" type="PackedInt32Array" setter="set_children" getter="get_children" default="PackedInt32Array()">
-			The indices of the children nodes in the [GLTFState]. If this GLTF node has no children, this will be an empty array.
+			The indices of the child nodes in the [GLTFState]. If this GLTF node has no children, this will be an empty array.
 		</member>
 		<member name="height" type="int" setter="set_height" getter="get_height" default="-1">
 			How deep into the node hierarchy this node is. A root node will have a height of 0, its children will have a height of 1, and so on. If -1, the height has not been calculated.

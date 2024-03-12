@@ -165,7 +165,7 @@ def configure(env: "Environment"):
     env.AddMethod(create_template_zip, "CreateTemplateZip")
 
     # Closure compiler extern and support for ecmascript specs (const, let, etc).
-    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT_2020"
+    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT_2021"
 
     env["CC"] = "emcc"
     env["CXX"] = "em++"
@@ -202,6 +202,11 @@ def configure(env: "Environment"):
         env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
         # Allow use to take control of swapping WebGL buffers.
         env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
+        # Breaking change since emscripten 3.1.51
+        # https://github.com/emscripten-core/emscripten/blob/main/ChangeLog.md#3151---121323
+        if cc_semver >= (3, 1, 51):
+            # Enables the use of *glGetProcAddress()
+            env.Append(LINKFLAGS=["-s", "GL_ENABLE_GET_PROC_ADDRESS=1"])
 
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
@@ -221,6 +226,9 @@ def configure(env: "Environment"):
         # Workaround https://github.com/emscripten-core/emscripten/issues/19781.
         if cc_semver >= (3, 1, 42) and cc_semver < (3, 1, 46):
             env.Append(LINKFLAGS=["-Wl,-u,scalbnf"])
+        # Workaround https://github.com/emscripten-core/emscripten/issues/16836.
+        if cc_semver >= (3, 1, 47):
+            env.Append(LINKFLAGS=["-Wl,-u,_emscripten_run_callback_on_thread"])
 
     if env["dlink_enabled"]:
         if env["proxy_to_pthread"]:
@@ -237,6 +245,9 @@ def configure(env: "Environment"):
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
         env.extra_suffix = ".dlink" + env.extra_suffix
 
+    # WASM_BIGINT is needed since emscripten ≥ 3.1.41
+    needs_wasm_bigint = cc_semver >= (3, 1, 41)
+
     # Run the main application in a web worker
     if env["proxy_to_pthread"]:
         env.Append(LINKFLAGS=["-s", "PROXY_TO_PTHREAD=1"])
@@ -245,6 +256,9 @@ def configure(env: "Environment"):
         # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
         env.Append(LINKFLAGS=["-s", "TEXTDECODER=0"])
         # BigInt support to pass object pointers between contexts
+        needs_wasm_bigint = True
+
+    if needs_wasm_bigint:
         env.Append(LINKFLAGS=["-s", "WASM_BIGINT"])
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).

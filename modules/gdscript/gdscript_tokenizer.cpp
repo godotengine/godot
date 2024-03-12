@@ -672,6 +672,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 	bool has_decimal = false;
 	bool has_exponent = false;
 	bool has_error = false;
+	bool need_digits = false;
 	bool (*digit_check_func)(char32_t) = is_digit;
 
 	// Sign before hexadecimal or binary.
@@ -686,11 +687,13 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 			// Hexadecimal.
 			base = 16;
 			digit_check_func = is_hex_digit;
+			need_digits = true;
 			_advance();
 		} else if (_peek() == 'b') {
 			// Binary.
 			base = 2;
 			digit_check_func = is_binary_digit;
+			need_digits = true;
 			_advance();
 		}
 	}
@@ -717,6 +720,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 			}
 			previous_was_underscore = true;
 		} else {
+			need_digits = false;
 			previous_was_underscore = false;
 		}
 		_advance();
@@ -818,6 +822,16 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 				_advance();
 			}
 		}
+	}
+
+	if (need_digits) {
+		// No digits in hex or bin literal.
+		Token error = make_error(vformat(R"(Expected %s digit after "0%c".)", (base == 16 ? "hexadecimal" : "binary"), (base == 16 ? 'x' : 'b')));
+		error.start_column = column;
+		error.leftmost_column = column;
+		error.end_column = column + 1;
+		error.rightmost_column = column + 1;
+		return error;
 	}
 
 	// Detect extra decimal point.

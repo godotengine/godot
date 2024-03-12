@@ -107,7 +107,7 @@ namespace Godot
                 instance = instance.Substring(1);
             }
 
-            if (instance.StartsWith("0b"))
+            if (instance.StartsWith("0b", StringComparison.OrdinalIgnoreCase))
             {
                 instance = instance.Substring(2);
             }
@@ -817,7 +817,7 @@ namespace Godot
                 instance = instance.Substring(1);
             }
 
-            if (instance.StartsWith("0x"))
+            if (instance.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
             {
                 instance = instance.Substring(2);
             }

@@ -295,6 +295,7 @@
 				Input.ParseInputEvent(cancelEvent);
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Calling this function has no influence on the operating system. So for example sending an [InputEventMouseMotion] will not move the OS mouse cursor to the specified position (use [method warp_mouse] instead) and sending [kbd]Alt/Cmd + Tab[/kbd] as [InputEventKey] won't toggle between active windows.
 			</description>
 		</method>
 		<method name="remove_joy_mapping">

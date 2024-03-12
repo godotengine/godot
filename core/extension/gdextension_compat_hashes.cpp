@@ -65,7 +65,7 @@ bool GDExtensionCompatHashes::get_legacy_hashes(const StringName &p_class, const
 			if (p_check_valid) {
 				MethodBind *mb = ClassDB::get_method_with_compatibility(p_class, p_method, mapping.current_hash);
 				if (!mb) {
-					WARN_PRINT(vformat("Compatibility hash %d mapped to non-existent hash %d. Please update gdextension_compat_hashes.cpp.", mapping.legacy_hash, mapping.current_hash));
+					WARN_PRINT(vformat("Compatibility hash %d for %s::%s() mapped to non-existent hash %d. Please update gdextension_compat_hashes.cpp.", mapping.legacy_hash, p_class, p_method, mapping.current_hash));
 					continue;
 				}
 			}
@@ -107,7 +107,11 @@ void GDExtensionCompatHashes::initialize() {
 		{ "add_track", 2393815928, 3843682357 },
 		{ "track_insert_key", 1985425300, 808952278 },
 		{ "track_find_key", 3898229885, 3245197284 },
+#ifdef REAL_T_IS_DOUBLE
+		{ "bezier_track_insert_key", 1057544502, 3767441357 },
+#else
 		{ "bezier_track_insert_key", 1057544502, 3656773645 },
+#endif
 		{ "bezier_track_set_key_in_handle", 1028302688, 1719223284 },
 		{ "bezier_track_set_key_out_handle", 1028302688, 1719223284 },
 		{ "audio_track_insert_key", 3489962123, 4021027286 },
@@ -125,10 +129,18 @@ void GDExtensionCompatHashes::initialize() {
 		{ "add_triangle", 642454959, 753017335 },
 	});
 	mappings.insert("AnimationNodeBlendTree", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "add_node", 2055804584, 1407702499 },
+#else
 		{ "add_node", 2055804584, 1980270704 },
+#endif
 	});
 	mappings.insert("AnimationNodeStateMachine", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "add_node", 2055804584, 1407702499 },
+#else
 		{ "add_node", 2055804584, 1980270704 },
+#endif
 	});
 	mappings.insert("AnimationNodeStateMachinePlayback", {
 		{ "travel", 3683006648, 3823612587 },
@@ -177,8 +189,13 @@ void GDExtensionCompatHashes::initialize() {
 		{ "draw_multiline_string_outline", 3717870722, 1912318525 },
 		{ "draw_char", 2329089032, 3339793283 },
 		{ "draw_char_outline", 419453826, 3302344391 },
+#ifdef REAL_T_IS_DOUBLE
+		{ "draw_mesh", 1634855856, 4036154158 },
+		{ "draw_set_transform", 3283884939, 156553079 },
+#else
 		{ "draw_mesh", 1634855856, 153818295 },
 		{ "draw_set_transform", 3283884939, 288975085 },
+#endif
 		{ "draw_animation_slice", 2295343543, 3112831842 },
 	});
 	mappings.insert("CodeEdit", {
@@ -210,10 +227,18 @@ void GDExtensionCompatHashes::initialize() {
 		{ "add_point", 2766148617, 434072736 },
 	});
 	mappings.insert("Curve2D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "add_point", 529706502, 3343370600 },
+#else
 		{ "add_point", 2437345566, 4175465202 },
+#endif
 	});
 	mappings.insert("Curve3D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "add_point", 3544159631, 917388502 },
+#else
 		{ "add_point", 3836314258, 2931053748 },
+#endif
 	});
 	mappings.insert("DirAccess", {
 		{ "list_dir_begin", 2018049411, 2610976713 },
@@ -253,8 +278,13 @@ void GDExtensionCompatHashes::initialize() {
 		{ "window_set_ime_active", 450484987, 1661950165 },
 		{ "window_set_ime_position", 3614040015, 2019273902 },
 		{ "window_set_vsync_mode", 1708924624, 2179333492 },
-		{ "virtual_keyboard_show", 860410478, 3042891259 },
+#ifdef REAL_T_IS_DOUBLE
+		{ "cursor_set_custom_image", 1358907026, 4163678968 },
+		{ "virtual_keyboard_show", 384539973, 1323934605 },
+#else
 		{ "cursor_set_custom_image", 1358907026, 1816663697 },
+		{ "virtual_keyboard_show", 860410478, 3042891259 },
+#endif
 	});
 	mappings.insert("ENetConnection", {
 		{ "create_host_bound", 866250949, 1515002313 },
@@ -289,7 +319,11 @@ void GDExtensionCompatHashes::initialize() {
 	});
 	mappings.insert("EditorNode3DGizmo", {
 		{ "add_lines", 302451090, 2910971437 },
+	#ifdef REAL_T_IS_DOUBLE
+		{ "add_mesh", 3332776472, 2161761131 },
+	#else
 		{ "add_mesh", 1868867708, 1579955111 },
+	#endif
 		{ "add_unscaled_billboard", 3719733075, 520007164 },
 	});
 	mappings.insert("EditorNode3DGizmoPlugin", {
@@ -316,7 +350,6 @@ void GDExtensionCompatHashes::initialize() {
 		{ "add_filter", 233059325, 3388804757 },
 	});
 	mappings.insert("Font", {
-		{ "find_variation", 1222433716, 3344325384 },
 		{ "get_string_size", 3678918099, 1868866121 },
 		{ "get_multiline_string_size", 2427690650, 519636710 },
 		{ "draw_string", 2565402639, 1983721962 },
@@ -325,8 +358,13 @@ void GDExtensionCompatHashes::initialize() {
 		{ "draw_multiline_string_outline", 1649790182, 3206388178 },
 		{ "draw_char", 1462476057, 3815617597 },
 		{ "draw_char_outline", 4161008124, 209525354 },
+	#ifdef REAL_T_IS_DOUBLE
+		{ "find_variation", 625117670, 2196349508 },
+	#else
+		{ "find_variation", 1222433716, 3344325384 },
 		// Pre-existing compatibility hash.
 		{ "find_variation", 1149405976, 1851767612 },
+	#endif
 	});
 	mappings.insert("GLTFDocument", {
 		{ "append_from_file", 1862991421, 866380864 },
@@ -380,11 +418,19 @@ void GDExtensionCompatHashes::initialize() {
 		{ "get_vector", 1517139831, 2479607902 },
 		{ "start_joy_vibration", 1890603622, 2576575033 },
 		{ "action_press", 573731101, 1713091165 },
+#ifdef REAL_T_IS_DOUBLE
+		{ "set_custom_mouse_cursor", 3489634142, 1277868338 },
+#else
 		{ "set_custom_mouse_cursor", 3489634142, 703945977 },
+#endif
 	});
 	mappings.insert("InputEvent", {
 		{ "is_match", 3392494811, 1754951977 },
+#ifdef REAL_T_IS_DOUBLE
+		{ "xformed_by", 2747409789, 3242949850 },
+#else
 		{ "xformed_by", 2747409789, 1282766827 },
+#endif
 	});
 	mappings.insert("InputMap", {
 		{ "add_action", 573731101, 4100757082 },
@@ -429,8 +475,13 @@ void GDExtensionCompatHashes::initialize() {
 		{ "set_multiplayer_authority", 4023243586, 972357352 },
 	});
 	mappings.insert("Node3D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "look_at", 136915519, 819337406 },
+		{ "look_at_from_position", 4067663783, 1809580162 },
+#else
 		{ "look_at", 3123400617, 2882425029 },
 		{ "look_at_from_position", 4067663783, 2086826090 },
+#endif
 	});
 	mappings.insert("Noise", {
 		{ "get_image", 2569233413, 3180683109 },
@@ -470,7 +521,11 @@ void GDExtensionCompatHashes::initialize() {
 		{ "add_custom_monitor", 2865980031, 4099036814 },
 	});
 	mappings.insert("PhysicalBone3D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "apply_impulse", 1002852006, 2485728502 },
+#else
 		{ "apply_impulse", 1002852006, 2754756483 },
+#endif
 	});
 	mappings.insert("PhysicsBody2D", {
 		{ "move_and_collide", 1529961754, 3681923724 },
@@ -481,14 +536,26 @@ void GDExtensionCompatHashes::initialize() {
 		{ "test_move", 680299713, 2481691619 },
 	});
 	mappings.insert("PhysicsDirectBodyState2D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "apply_impulse", 496058220, 1271588277 },
+		{ "apply_force", 496058220, 1271588277 },
+		{ "add_constant_force", 496058220, 1271588277 },
+#else
 		{ "apply_impulse", 496058220, 4288681949 },
 		{ "apply_force", 496058220, 4288681949 },
 		{ "add_constant_force", 496058220, 4288681949 },
+#endif
 	});
 	mappings.insert("PhysicsDirectBodyState3D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "apply_impulse", 1002852006, 2485728502 },
+		{ "apply_force", 1002852006, 2485728502 },
+		{ "add_constant_force", 1002852006, 2485728502 },
+#else
 		{ "apply_impulse", 1002852006, 2754756483 },
 		{ "apply_force", 1002852006, 2754756483 },
 		{ "add_constant_force", 1002852006, 2754756483 },
+#endif
 	});
 	mappings.insert("PhysicsDirectSpaceState2D", {
 		{ "intersect_point", 3278207904, 2118456068 },
@@ -507,21 +574,37 @@ void GDExtensionCompatHashes::initialize() {
 		{ "create", 680321959, 3110599579 },
 	});
 	mappings.insert("PhysicsServer2D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "area_add_shape", 754862190, 3597527023 },
+		{ "body_add_shape", 754862190, 3597527023 },
+		{ "body_apply_impulse", 34330743, 1124035137 },
+		{ "body_apply_force", 34330743, 1124035137 },
+		{ "body_add_constant_force", 34330743, 1124035137 },
+#else
 		{ "area_add_shape", 754862190, 339056240 },
 		{ "body_add_shape", 754862190, 339056240 },
 		{ "body_apply_impulse", 34330743, 205485391 },
 		{ "body_apply_force", 34330743, 205485391 },
 		{ "body_add_constant_force", 34330743, 205485391 },
+#endif
 		{ "joint_make_pin", 2288600450, 1612646186 },
 		{ "joint_make_groove", 3573265764, 481430435 },
 		{ "joint_make_damped_spring", 206603952, 1994657646 },
 	});
 	mappings.insert("PhysicsServer3D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "area_add_shape", 4040559639, 183938777 },
+		{ "body_add_shape", 4040559639, 183938777 },
+		{ "body_apply_impulse", 110375048, 2238283471 },
+		{ "body_apply_force", 110375048, 2238283471 },
+		{ "body_add_constant_force", 110375048, 2238283471 },
+#else
 		{ "area_add_shape", 4040559639, 3711419014 },
 		{ "body_add_shape", 4040559639, 3711419014 },
 		{ "body_apply_impulse", 110375048, 390416203 },
 		{ "body_apply_force", 110375048, 390416203 },
 		{ "body_add_constant_force", 110375048, 390416203 },
+#endif
 	});
 	mappings.insert("PopupMenu", {
 		{ "add_item", 3224536192, 3674230041 },
@@ -581,10 +664,16 @@ void GDExtensionCompatHashes::initialize() {
 		{ "buffer_get_data", 125363422, 3101830688 },
 		{ "render_pipeline_create", 2911419500, 2385451958 },
 		{ "compute_pipeline_create", 403593840, 1448838280 },
+		{ "draw_list_draw", 3710874499, 4230067973 },
+#ifdef REAL_T_IS_DOUBLE
+		{ "draw_list_begin", 4252992020, 848735039 },
+		{ "draw_list_begin_split", 832527510, 2228306807 },
+		{ "draw_list_enable_scissor", 338791288, 730833978 },
+#else
 		{ "draw_list_begin", 4252992020, 2468082605 },
 		{ "draw_list_begin_split", 832527510, 2406300660 },
-		{ "draw_list_draw", 3710874499, 4230067973 },
 		{ "draw_list_enable_scissor", 338791288, 244650101 },
+#endif
 	});
 	mappings.insert("RenderingServer", {
 		{ "texture_rd_create", 3291180269, 1434128712 },
@@ -592,12 +681,10 @@ void GDExtensionCompatHashes::initialize() {
 		{ "shader_get_default_texture_parameter", 2523186822, 1464608890 },
 		{ "mesh_create_from_surfaces", 4007581507, 4291747531 },
 		{ "mesh_add_surface_from_arrays", 1247008646, 2342446560 },
-		{ "viewport_attach_to_screen", 1278520651, 1062245816 },
 		{ "environment_set_ambient_light", 491659071, 1214961493 },
 		{ "instances_cull_aabb", 2031554939, 2570105777 },
 		{ "instances_cull_ray", 3388524336, 2208759584 },
 		{ "instances_cull_convex", 3690700105, 2488539944 },
-		{ "canvas_item_set_custom_rect", 2180266943, 1333997032 },
 		{ "canvas_item_add_line", 2843922985, 1819681853 },
 		{ "canvas_item_add_polyline", 3438017257, 3098767073 },
 		{ "canvas_item_add_multiline", 3176074788, 2088642721 },
@@ -607,11 +694,19 @@ void GDExtensionCompatHashes::initialize() {
 		{ "canvas_item_add_nine_patch", 904428547, 389957886 },
 		{ "canvas_item_add_polygon", 2907936855, 3580000528 },
 		{ "canvas_item_add_triangle_array", 749685193, 660261329 },
-		{ "canvas_item_add_mesh", 3548053052, 316450961 },
 		{ "canvas_item_add_multimesh", 1541595251, 2131855138 },
 		{ "canvas_item_add_animation_slice", 4107531031, 2646834499 },
 		{ "canvas_item_set_canvas_group_mode", 41973386, 3973586316 },
 		{ "set_boot_image", 2244367877, 3759744527 },
+#ifdef REAL_T_IS_DOUBLE
+		{ "viewport_attach_to_screen", 1410474027, 2248302004 },
+		{ "canvas_item_set_custom_rect", 2180266943, 1134449082 },
+		{ "canvas_item_add_mesh", 3877492181, 3024949314 },
+#else
+		{ "viewport_attach_to_screen", 1278520651, 1062245816 },
+		{ "canvas_item_set_custom_rect", 2180266943, 1333997032 },
+		{ "canvas_item_add_mesh", 3548053052, 316450961 },
+#endif
 	});
 	mappings.insert("ResourceLoader", {
 		{ "load_threaded_request", 1939848623, 3614384323 },
@@ -623,23 +718,40 @@ void GDExtensionCompatHashes::initialize() {
 		{ "save", 2303056517, 2983274697 },
 	});
 	mappings.insert("RichTextLabel", {
-		{ "add_image", 3346058748, 3580801207 },
 		{ "push_font", 814287596, 2347424842 },
 		{ "push_paragraph", 3218895358, 3089306873 },
 		{ "push_list", 4036303897, 3017143144 },
 		{ "push_table", 1125058220, 2623499273 },
-		{ "push_dropcap", 311501835, 4061635501 },
 		{ "set_table_column_expand", 4132157579, 2185176273 },
+#ifdef REAL_T_IS_DOUBLE
+		{ "add_image", 3346058748, 1507062345 },
+		{ "push_dropcap", 981432822, 763534173 },
+#else
+		{ "add_image", 3346058748, 3580801207 },
+		{ "push_dropcap", 311501835, 4061635501 },
+#endif
 	});
 	mappings.insert("RigidBody2D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "apply_impulse", 496058220, 1271588277 },
+		{ "apply_force", 496058220, 1271588277 },
+		{ "add_constant_force", 496058220, 1271588277 },
+#else
 		{ "apply_impulse", 496058220, 4288681949 },
 		{ "apply_force", 496058220, 4288681949 },
 		{ "add_constant_force", 496058220, 4288681949 },
+#endif
 	});
 	mappings.insert("RigidBody3D", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "apply_impulse", 1002852006, 2485728502 },
+		{ "apply_force", 1002852006, 2485728502 },
+		{ "add_constant_force", 1002852006, 2485728502 },
+#else
 		{ "apply_impulse", 1002852006, 2754756483 },
 		{ "apply_force", 1002852006, 2754756483 },
 		{ "add_constant_force", 1002852006, 2754756483 },
+#endif
 	});
 	mappings.insert("SceneMultiplayer", {
 		{ "send_bytes", 2742700601, 1307428718 },
@@ -699,7 +811,11 @@ void GDExtensionCompatHashes::initialize() {
 		{ "draw_outline", 1364491366, 1343401456 },
 	});
 	mappings.insert("TextParagraph", {
+#ifdef REAL_T_IS_DOUBLE
+		{ "set_dropcap", 2613124475, 2897844600 },
+#else
 		{ "set_dropcap", 2613124475, 2498990330 },
+#endif
 		{ "add_string", 867188035, 621426851 },
 		{ "add_object", 735420116, 1316529304 },
 		{ "resize_object", 960819067, 2095776372 },

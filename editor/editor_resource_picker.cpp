@@ -194,10 +194,11 @@ void EditorResourcePicker::_update_menu_items() {
 		set_create_options(edit_menu);
 
 		// Add an option to load a resource from a file using the QuickOpen dialog.
-		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load"), OBJ_MENU_QUICKLOAD);
+		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
+		edit_menu->set_item_tooltip(-1, TTR("Opens a quick menu to select from a list of allowed Resource files."));
 
 		// Add an option to load a resource from a file using the regular file dialog.
-		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load"), OBJ_MENU_LOAD);
+		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load..."), OBJ_MENU_LOAD);
 	}
 
 	// Add options for changing existing value of the resource.
@@ -1081,11 +1082,11 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
-	menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
+	menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script..."), OBJ_MENU_NEW_SCRIPT);
 	if (script_owner) {
 		Ref<Script> scr = script_owner->get_script();
 		if (scr.is_valid()) {
-			menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
+			menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTR("Extend Script..."), OBJ_MENU_EXTEND_SCRIPT);
 		}
 	}
 	menu_node->add_separator();
@@ -1137,7 +1138,7 @@ void EditorShaderPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
-	menu_node->add_icon_item(get_editor_theme_icon(SNAME("Shader")), TTR("New Shader"), OBJ_MENU_NEW_SHADER);
+	menu_node->add_icon_item(get_editor_theme_icon(SNAME("Shader")), TTR("New Shader..."), OBJ_MENU_NEW_SHADER);
 	menu_node->add_separator();
 }
 

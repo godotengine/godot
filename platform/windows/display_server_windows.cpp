@@ -52,6 +52,10 @@
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
 
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1
+#define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 19
+#endif
+
 #if defined(__GNUC__)
 // Workaround GCC warning from -Wcast-function-type.
 #define GetProcAddress (void *)GetProcAddress
@@ -550,8 +554,7 @@ Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 						pba.append(rgbquad->rgbReserved);
 					}
 				}
-				image.instantiate();
-				image->create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
+				image = Image::create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
 
 				GlobalUnlock(mem);
 			}
@@ -2928,6 +2931,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_CREATE: {
+			if (is_dark_mode_supported() && dark_title_available) {
+				BOOL value = is_dark_mode();
+
+				::DwmSetWindowAttribute(windows[window_id].hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+				SendMessageW(windows[window_id].hWnd, WM_PAINT, 0, 0);
+			}
+		} break;
 		case WM_NCPAINT: {
 			if (RenderingServer::get_singleton() && (windows[window_id].borderless || (windows[window_id].fullscreen && windows[window_id].multiwindow_fs))) {
 				Color color = RenderingServer::get_singleton()->get_default_clear_color();
@@ -3014,6 +3025,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			if (wParam != WA_INACTIVE) {
 				track_mouse_leave_event(hWnd);
+
+				if (!IsIconic(hWnd)) {
+					SetFocus(hWnd);
+				}
 			}
 			return 0; // Return to the message loop.
 		} break;
@@ -3060,14 +3075,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, true) == CSTR_EQUAL) {
 				if (is_dark_mode_supported() && dark_title_available) {
 					BOOL value = is_dark_mode();
-					::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+					::DwmSetWindowAttribute(windows[window_id].hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 				}
 			}
 		} break;
 		case WM_THEMECHANGED: {
 			if (is_dark_mode_supported() && dark_title_available) {
 				BOOL value = is_dark_mode();
-				::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+				::DwmSetWindowAttribute(windows[window_id].hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 			}
 		} break;
 		case WM_SYSCOMMAND: // Intercept system commands.
@@ -4321,7 +4336,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		if (is_dark_mode_supported() && dark_title_available) {
 			BOOL value = is_dark_mode();
-			::DwmSetWindowAttribute(wd.hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+			::DwmSetWindowAttribute(wd.hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 		}
 
 #ifdef VULKAN_ENABLED
@@ -4440,6 +4455,7 @@ WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
 
 // UXTheme API.
 bool DisplayServerWindows::dark_title_available = false;
+bool DisplayServerWindows::use_legacy_dark_mode_before_20H1 = false;
 bool DisplayServerWindows::ux_theme_available = false;
 ShouldAppsUseDarkModePtr DisplayServerWindows::ShouldAppsUseDarkMode = nullptr;
 GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromColorSetEx = nullptr;
@@ -4561,8 +4577,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
 
 		ux_theme_available = ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
-		if (os_ver.dwBuildNumber >= 22000) {
+		if (os_ver.dwBuildNumber >= 18363) {
 			dark_title_available = true;
+			if (os_ver.dwBuildNumber < 19041) {
+				use_legacy_dark_mode_before_20H1 = true;
+			}
 		}
 	}
 
@@ -4647,6 +4666,12 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Init context and rendering device
 #if defined(GLES3_ENABLED)
 
+#if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+	// There's no native OpenGL drivers on Windows for ARM, switch to ANGLE over DX.
+	if (rendering_driver == "opengl3") {
+		rendering_driver = "opengl3_angle";
+	}
+#elif defined(EGL_STATIC)
 	bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_angle");
 	if (fallback && (rendering_driver == "opengl3")) {
 		Dictionary gl_info = detect_wgl();
@@ -4667,6 +4692,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			rendering_driver = "opengl3_angle";
 		}
 	}
+#endif
 
 	if (rendering_driver == "opengl3") {
 		gl_manager_native = memnew(GLManagerNative_Windows);

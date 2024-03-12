@@ -44,7 +44,7 @@ void DebugAdapterParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("req_attach", "params"), &DebugAdapterParser::req_attach);
 	ClassDB::bind_method(D_METHOD("req_restart", "params"), &DebugAdapterParser::req_restart);
 	ClassDB::bind_method(D_METHOD("req_terminate", "params"), &DebugAdapterParser::req_terminate);
-	ClassDB::bind_method(D_METHOD("req_configurationDone", "params"), &DebugAdapterParser::prepare_success_response);
+	ClassDB::bind_method(D_METHOD("req_configurationDone", "params"), &DebugAdapterParser::req_configurationDone);
 	ClassDB::bind_method(D_METHOD("req_pause", "params"), &DebugAdapterParser::req_pause);
 	ClassDB::bind_method(D_METHOD("req_continue", "params"), &DebugAdapterParser::req_continue);
 	ClassDB::bind_method(D_METHOD("req_threads", "params"), &DebugAdapterParser::req_threads);
@@ -180,6 +180,13 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 		DebugAdapterProtocol::get_singleton()->get_current_peer()->supportsCustomData = args["godot/custom_data"];
 	}
 
+	DebugAdapterProtocol::get_singleton()->get_current_peer()->pending_launch = p_params;
+
+	return Dictionary();
+}
+
+Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const {
+	Dictionary args = p_params["arguments"];
 	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
 	if ((bool)args["noDebug"] != dbg->is_skip_breakpoints()) {
 		dbg->debug_skip_breakpoints();
@@ -246,7 +253,7 @@ Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
 	args = args["arguments"];
 	params["arguments"] = args;
 
-	Dictionary response = DebugAdapterProtocol::get_singleton()->get_current_peer()->attached ? req_attach(params) : req_launch(params);
+	Dictionary response = DebugAdapterProtocol::get_singleton()->get_current_peer()->attached ? req_attach(params) : _launch_process(params);
 	if (!response["success"]) {
 		response["command"] = p_params["command"];
 		return response;
@@ -257,6 +264,16 @@ Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
 
 Dictionary DebugAdapterParser::req_terminate(const Dictionary &p_params) const {
 	EditorRunBar::get_singleton()->stop_playing();
+
+	return prepare_success_response(p_params);
+}
+
+Dictionary DebugAdapterParser::req_configurationDone(const Dictionary &p_params) const {
+	Ref<DAPeer> peer = DebugAdapterProtocol::get_singleton()->get_current_peer();
+	if (!peer->pending_launch.is_empty()) {
+		peer->res_queue.push_back(_launch_process(peer->pending_launch));
+		peer->pending_launch.clear();
+	}
 
 	return prepare_success_response(p_params);
 }
@@ -468,6 +485,7 @@ Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
 
 	String value = EditorDebuggerNode::get_singleton()->get_var_value(args["expression"]);
 	body["result"] = value;
+	body["variablesReference"] = 0;
 
 	return response;
 }

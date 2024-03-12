@@ -1687,6 +1687,7 @@ void Object::_bind_methods() {
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);
+	BIND_CONSTANT(NOTIFICATION_EXTENSION_RELOADED);
 
 	BIND_ENUM_CONSTANT(CONNECT_DEFERRED);
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
@@ -2226,8 +2227,9 @@ void ObjectDB::cleanup() {
 						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
 					}
 
-					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);
-					print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + extra_info);
+					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_SLOT_MAX_COUNT_BITS) | (object_slots[i].is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);
+					DEV_ASSERT(id == (uint64_t)obj->get_instance_id()); // We could just use the id from the object, but this check may help catching memory corruption catastrophes.
+					print_line("Leaked instance: " + String(obj->get_class()) + ":" + uitos(id) + extra_info);
 
 					count--;
 				}

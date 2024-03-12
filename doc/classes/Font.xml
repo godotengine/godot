@@ -135,7 +135,7 @@
 			<param index="0" name="char" type="int" />
 			<param index="1" name="font_size" type="int" />
 			<description>
-				Returns the size of a character, optionally taking kerning into account if the next character is provided.
+				Returns the size of a character. Does not take kerning into account.
 				[b]Note:[/b] Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead. The height returned is the font height (see also [method get_height]) and has no relation to the glyph height.
 			</description>
 		</method>

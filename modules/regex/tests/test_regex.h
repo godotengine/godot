@@ -133,6 +133,18 @@ TEST_CASE("[RegEx] Substitution") {
 	RegEx re4("(a)(b){0}(c)");
 	REQUIRE(re4.is_valid());
 	CHECK(re4.sub(s4, "${1}.${3}.", true) == "a.c.a.c.a.c.");
+
+	const String s5 = "aaaa";
+
+	RegEx re5("a");
+	REQUIRE(re5.is_valid());
+	CHECK(re5.sub(s5, "b", true, 0, 2) == "bbaa");
+	CHECK(re5.sub(s5, "b", true, 1, 3) == "abba");
+	CHECK(re5.sub(s5, "b", true, 0, 0) == "aaaa");
+	CHECK(re5.sub(s5, "b", true, 1, 1) == "aaaa");
+	CHECK(re5.sub(s5, "cc", true, 0, 2) == "ccccaa");
+	CHECK(re5.sub(s5, "cc", true, 1, 3) == "acccca");
+	CHECK(re5.sub(s5, "", true, 0, 2) == "aa");
 }
 
 TEST_CASE("[RegEx] Substitution with empty input and/or replacement") {

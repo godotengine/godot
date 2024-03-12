@@ -77,7 +77,7 @@ void mpoolRetDashOutline(SwMpool* mpool, unsigned idx)
 }
 
 
-SwMpool* mpoolInit(unsigned threads)
+SwMpool* mpoolInit(uint32_t threads)
 {
     auto allocSize = threads + 1;
 

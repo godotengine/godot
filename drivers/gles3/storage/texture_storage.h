@@ -402,8 +402,8 @@ private:
 	RID_Owner<CanvasTexture, true> canvas_texture_owner;
 
 	/* Texture API */
-
-	mutable RID_Owner<Texture> texture_owner;
+	// Textures can be created from threads, so this RID_Owner is thread safe.
+	mutable RID_Owner<Texture, true> texture_owner;
 
 	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
 

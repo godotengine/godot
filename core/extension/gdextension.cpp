@@ -794,6 +794,9 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 	ERR_FAIL_COND(p_level > int32_t(level_initialized));
 
 	level_initialized = int32_t(p_level) - 1;
+
+	ERR_FAIL_NULL(initialization.deinitialize);
+
 	initialization.deinitialize(initialization.userdata, GDExtensionInitializationLevel(p_level));
 }
 

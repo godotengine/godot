@@ -624,7 +624,12 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			int prev_len = text.length();
 			insert_text_at_caret(ucodestr);
 			if (text.length() != prev_len) {
-				_text_changed();
+				if (!text_changed_dirty) {
+					if (is_inside_tree()) {
+						callable_mp(this, &LineEdit::_text_changed).call_deferred();
+					}
+					text_changed_dirty = true;
+				}
 			}
 			accept_event();
 			return;

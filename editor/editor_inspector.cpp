@@ -2791,7 +2791,9 @@ void EditorInspector::update_tree() {
 						(!filter.is_empty() || !restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 					break;
 				}
-				if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
+				// Treat custom categories as second-level ones. Do not skip a normal category if it is followed by a custom one.
+				// Skip in the other 3 cases (normal -> normal, custom -> custom, custom -> normal).
+				if ((N->get().usage & PROPERTY_USAGE_CATEGORY) && (p.hint_string.is_empty() || !N->get().hint_string.is_empty())) {
 					valid = false;
 					break;
 				}
@@ -2808,53 +2810,53 @@ void EditorInspector::update_tree() {
 
 			// `hint_script` should contain a native class name or a script path.
 			// Otherwise the category was probably added via `@export_category` or `_get_property_list()`.
+			// Do not add an icon, do not change the current class (`doc_name`) for custom categories.
 			if (p.hint_string.is_empty()) {
 				category->label = p.name;
 				category->set_tooltip_text(p.name);
-				continue; // Do not add an icon, do not change the current class (`doc_name`).
-			}
+			} else {
+				String type = p.name;
+				String label = p.name;
+				doc_name = p.name;
 
-			String type = p.name;
-			String label = p.name;
-			doc_name = p.name;
+				// Use category's owner script to update some of its information.
+				if (!EditorNode::get_editor_data().is_type_recognized(type) && ResourceLoader::exists(p.hint_string)) {
+					Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
+					if (scr.is_valid()) {
+						StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
 
-			// Use category's owner script to update some of its information.
-			if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && ResourceLoader::exists(p.hint_string)) {
-				Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
-				if (scr.is_valid()) {
-					StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
+						// Update the docs reference and the label based on the script.
+						Vector<DocData::ClassDoc> docs = scr->get_documentation();
+						if (!docs.is_empty()) {
+							// The documentation of a GDScript's main class is at the end of the array.
+							// Hacky because this isn't necessarily always guaranteed.
+							doc_name = docs[docs.size() - 1].name;
+						}
+						if (script_name != StringName()) {
+							label = script_name;
+						}
 
-					// Update the docs reference and the label based on the script.
-					Vector<DocData::ClassDoc> docs = scr->get_documentation();
-					if (!docs.is_empty()) {
-						// The documentation of a GDScript's main class is at the end of the array.
-						// Hacky because this isn't necessarily always guaranteed.
-						doc_name = docs[docs.size() - 1].name;
-					}
-					if (script_name != StringName()) {
-						label = script_name;
-					}
-
-					// Find the icon corresponding to the script.
-					if (script_name != StringName()) {
-						category->icon = EditorNode::get_singleton()->get_class_icon(script_name);
-					} else {
-						category->icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
+						// Find the icon corresponding to the script.
+						if (script_name != StringName()) {
+							category->icon = EditorNode::get_singleton()->get_class_icon(script_name);
+						} else {
+							category->icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
+						}
 					}
 				}
-			}
 
-			if (category->icon.is_null() && !type.is_empty()) {
-				category->icon = EditorNode::get_singleton()->get_class_icon(type);
-			}
+				if (category->icon.is_null() && !type.is_empty()) {
+					category->icon = EditorNode::get_singleton()->get_class_icon(type);
+				}
 
-			// Set the category label.
-			category->label = label;
-			category->doc_class_name = doc_name;
+				// Set the category label.
+				category->label = label;
+				category->doc_class_name = doc_name;
 
-			if (use_doc_hints) {
-				// `|` separator used in `EditorHelpTooltip` for formatting.
-				category->set_tooltip_text("class|" + doc_name + "||");
+				if (use_doc_hints) {
+					// `|` separator used in `EditorHelpTooltip` for formatting.
+					category->set_tooltip_text("class|" + doc_name + "||");
+				}
 			}
 
 			// Add editors at the start of a category.

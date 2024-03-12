@@ -933,7 +933,7 @@
 			Set the process thread group for this node (basically, whether it receives [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS], [method _process] or [method _physics_process] (and the internal versions) on the main thread or in a sub-thread.
 			By default, the thread group is [constant PROCESS_THREAD_GROUP_INHERIT], which means that this node belongs to the same thread group as the parent node. The thread groups means that nodes in a specific thread group will process together, separate to other thread groups (depending on [member process_thread_group_order]). If the value is set is [constant PROCESS_THREAD_GROUP_SUB_THREAD], this thread group will occur on a sub thread (not the main thread), otherwise if set to [constant PROCESS_THREAD_GROUP_MAIN_THREAD] it will process on the main thread. If there is not a parent or grandparent node set to something other than inherit, the node will belong to the [i]default thread group[/i]. This default group will process on the main thread and its group order is 0.
 			During processing in a sub-thread, accessing most functions in nodes outside the thread group is forbidden (and it will result in an error in debug mode). Use [method Object.call_deferred], [method call_thread_safe], [method call_deferred_thread_group] and the likes in order to communicate from the thread groups to the main thread (or to other thread groups).
-			To better understand process thread groups, the idea is that any node set to any other value than [constant PROCESS_THREAD_GROUP_INHERIT] will include any children (and grandchildren) nodes set to inherit into its process thread group. this means that the processing of all the nodes in the group will happen together, at the same time as the node including them.
+			To better understand process thread groups, the idea is that any node set to any other value than [constant PROCESS_THREAD_GROUP_INHERIT] will include any child (and grandchild) nodes set to inherit into its process thread group. This means that the processing of all the nodes in the group will happen together, at the same time as the node including them.
 		</member>
 		<member name="process_thread_group_order" type="int" setter="set_process_thread_group_order" getter="get_process_thread_group_order">
 			Change the process thread group order. Groups with a lesser order will process before groups with a greater order. This is useful when a large amount of nodes process in sub thread and, afterwards, another group wants to collect their result in the main thread, as an example.
@@ -1170,13 +1170,13 @@
 			Never process. Completely disables processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_ALWAYS].
 		</constant>
 		<constant name="PROCESS_THREAD_GROUP_INHERIT" value="0" enum="ProcessThreadGroup">
-			If the [member process_thread_group] property is sent to this, the node will belong to any parent (or grandparent) node that has a thread group mode that is not inherit. See [member process_thread_group] for more information.
+			Process this node based on the thread group mode of the first parent (or grandparent) node that has a thread group mode that is not inherit. See [member process_thread_group] for more information.
 		</constant>
 		<constant name="PROCESS_THREAD_GROUP_MAIN_THREAD" value="1" enum="ProcessThreadGroup">
-			Process this node (and children nodes set to inherit) on the main thread. See [member process_thread_group] for more information.
+			Process this node (and child nodes set to inherit) on the main thread. See [member process_thread_group] for more information.
 		</constant>
 		<constant name="PROCESS_THREAD_GROUP_SUB_THREAD" value="2" enum="ProcessThreadGroup">
-			Process this node (and children nodes set to inherit) on a sub-thread. See [member process_thread_group] for more information.
+			Process this node (and child nodes set to inherit) on a sub-thread. See [member process_thread_group] for more information.
 		</constant>
 		<constant name="FLAG_PROCESS_THREAD_MESSAGES" value="1" enum="ProcessThreadMessages" is_bitfield="true">
 		</constant>
@@ -1200,10 +1200,10 @@
 			The node will not be internal.
 		</constant>
 		<constant name="INTERNAL_MODE_FRONT" value="1" enum="InternalMode">
-			The node will be placed at the beginning of the parent's children list, before any non-internal sibling.
+			The node will be placed at the beginning of the parent's children, before any non-internal sibling.
 		</constant>
 		<constant name="INTERNAL_MODE_BACK" value="2" enum="InternalMode">
-			The node will be placed at the end of the parent's children list, after any non-internal sibling.
+			The node will be placed at the end of the parent's children, after any non-internal sibling.
 		</constant>
 	</constants>
 </class>

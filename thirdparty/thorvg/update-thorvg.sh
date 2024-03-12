@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=0.12.0
+VERSION=0.12.7
 
 cd thirdparty/thorvg/ || true
 rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/
@@ -38,6 +38,7 @@ cat << EOF > ../inc/config.h
 #define THORVG_SVG_LOADER_SUPPORT
 #define THORVG_PNG_LOADER_SUPPORT
 #define THORVG_JPG_LOADER_SUPPORT
+#define THORVG_THREAD_SUPPORT
 
 // For internal debugging:
 //#define THORVG_LOG_ENABLED

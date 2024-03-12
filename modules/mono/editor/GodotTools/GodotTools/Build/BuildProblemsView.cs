@@ -308,14 +308,14 @@ namespace GodotTools.Build
                 return false;
 
             string searchText = _searchBox.Text;
-            if (!string.IsNullOrEmpty(searchText) &&
-                (!diagnostic.Message.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                !(diagnostic.File?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false)))
-            {
-                return false;
-            }
+            if (string.IsNullOrEmpty(searchText))
+                return true;
+            if (diagnostic.Message.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (diagnostic.File?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false)
+                return true;
 
-            return true;
+            return false;
         }
 
         private Color? GetProblemItemColor(BuildDiagnostic diagnostic)

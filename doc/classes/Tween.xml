@@ -237,6 +237,12 @@
 			<param index="0" name="parallel" type="bool" default="true" />
 			<description>
 				If [param parallel] is [code]true[/code], the [Tweener]s appended after this method will by default run simultaneously, as opposed to sequentially.
+				[b]Note:[/b] Just like with [method parallel], the tweener added right before this method will also be part of the parallel step.
+				[codeblock]
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5)
+				tween.set_parallel()
+				tween.tween_property(self, "modulate", Color.GREEN, 0.5) # Runs together with the position tweener.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_pause_mode">

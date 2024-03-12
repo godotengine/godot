@@ -793,15 +793,18 @@
 		</member>
 		<member name="display/window/size/initial_position" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
 			Main window initial position (in virtual desktop coordinates), this setting is used only if [member display/window/size/initial_position_type] is set to "Absolute" ([code]0[/code]).
+			[b]Note:[/b] This setting only affects the exported project, or when the project is run from the command line. In the editor, the value of [member EditorSettings.run/window_placement/rect_custom_position] is used instead.
 		</member>
 		<member name="display/window/size/initial_position_type" type="int" setter="" getter="" default="1">
 			Main window initial position.
 			[code]0[/code] - "Absolute", [member display/window/size/initial_position] is used to set window position.
 			[code]1[/code] - "Primary Screen Center".
 			[code]2[/code] - "Other Screen Center", [member display/window/size/initial_screen] is used to set the screen.
+			[b]Note:[/b] This setting only affects the exported project, or when the project is run from the command line. In the editor, the value of [member EditorSettings.run/window_placement/rect] is used instead.
 		</member>
 		<member name="display/window/size/initial_screen" type="int" setter="" getter="" default="0">
 			Main window initial screen, this setting is used only if [member display/window/size/initial_position_type] is set to "Other Screen Center" ([code]2[/code]).
+			[b]Note:[/b] This setting only affects the exported project, or when the project is run from the command line. In the editor, the value of [member EditorSettings.run/window_placement/screen] is used instead.
 		</member>
 		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
 			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
@@ -874,6 +877,9 @@
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resources are converted to a binary format on export. This decreases file sizes and speeds up loading slightly.
 			[b]Note:[/b] If [member editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to return the converted files in an exported project. Some file paths within the exported PCK will also change, such as [code]project.godot[/code] becoming [code]project.binary[/code]. If you rely on run-time loading of files present within the PCK, set [member editor/export/convert_text_resources_to_binary] to [code]false[/code].
+		</member>
+		<member name="editor/import/atlas_max_width" type="int" setter="" getter="" default="2048">
+			The maximum width to use when importing textures as an atlas. The value will be rounded to the nearest power of two when used. Use this to prevent imported textures from growing too large in the other direction.
 		</member>
 		<member name="editor/import/reimport_missing_imported_files" type="bool" setter="" getter="" default="true">
 		</member>

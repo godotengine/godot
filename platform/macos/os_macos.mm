@@ -354,8 +354,11 @@ Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
 Error OS_MacOS::shell_open(String p_uri) {
 	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *uri = [[NSURL alloc] initWithString:string];
-	// Escape special characters in filenames
 	if (!uri || !uri.scheme || [uri.scheme isEqual:@"file"]) {
+		// No scheme set, assume "file://" and escape special characters.
+		if (!p_uri.begins_with("file://")) {
+			string = [NSString stringWithUTF8String:("file://" + p_uri).utf8().get_data()];
+		}
 		uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
 	}
 	[[NSWorkspace sharedWorkspace] openURL:uri];

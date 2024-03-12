@@ -198,6 +198,40 @@ Error EditorImportBlendRunner::do_import(const Dictionary &p_options) {
 	}
 }
 
+HTTPClient::Status EditorImportBlendRunner::connect_blender_rpc(const Ref<HTTPClient> &p_client, int p_timeout_usecs) {
+	p_client->connect_to_host("127.0.0.1", rpc_port);
+	HTTPClient::Status status = p_client->get_status();
+
+	int attempts = 1;
+	int wait_usecs = 1000;
+
+	bool done = false;
+	while (!done) {
+		OS::get_singleton()->delay_usec(wait_usecs);
+		status = p_client->get_status();
+		switch (status) {
+			case HTTPClient::STATUS_RESOLVING:
+			case HTTPClient::STATUS_CONNECTING: {
+				p_client->poll();
+				break;
+			}
+			case HTTPClient::STATUS_CONNECTED: {
+				done = true;
+				break;
+			}
+			default: {
+				if (attempts * wait_usecs < p_timeout_usecs) {
+					p_client->connect_to_host("127.0.0.1", rpc_port);
+				} else {
+					return status;
+				}
+			}
+		}
+	}
+
+	return status;
+}
+
 Error EditorImportBlendRunner::do_import_rpc(const Dictionary &p_options) {
 	kill_timer->stop();
 
@@ -217,25 +251,9 @@ Error EditorImportBlendRunner::do_import_rpc(const Dictionary &p_options) {
 
 	// Connect to RPC server.
 	Ref<HTTPClient> client = HTTPClient::create();
-	client->connect_to_host("127.0.0.1", rpc_port);
-
-	bool done = false;
-	while (!done) {
-		HTTPClient::Status status = client->get_status();
-		switch (status) {
-			case HTTPClient::STATUS_RESOLVING:
-			case HTTPClient::STATUS_CONNECTING: {
-				client->poll();
-				break;
-			}
-			case HTTPClient::STATUS_CONNECTED: {
-				done = true;
-				break;
-			}
-			default: {
-				ERR_FAIL_V_MSG(ERR_CONNECTION_ERROR, vformat("Unexpected status during RPC connection: %d", status));
-			}
-		}
+	HTTPClient::Status status = connect_blender_rpc(client, 1000000);
+	if (status != HTTPClient::STATUS_CONNECTED) {
+		ERR_FAIL_V_MSG(ERR_CONNECTION_ERROR, vformat("Unexpected status during RPC connection: %d", status));
 	}
 
 	// Send XML request.
@@ -246,9 +264,9 @@ Error EditorImportBlendRunner::do_import_rpc(const Dictionary &p_options) {
 	}
 
 	// Wait for response.
-	done = false;
+	bool done = false;
 	while (!done) {
-		HTTPClient::Status status = client->get_status();
+		status = client->get_status();
 		switch (status) {
 			case HTTPClient::STATUS_REQUESTING: {
 				client->poll();

@@ -1792,7 +1792,7 @@ void VisualShaderEditor::_update_options_menu() {
 					}
 
 					Ref<VisualShaderNodeParameterRef> parameter_ref = Object::cast_to<VisualShaderNodeParameterRef>(vsn.ptr());
-					if (parameter_ref.is_valid()) {
+					if (parameter_ref.is_valid() && parameter_ref->is_shader_valid()) {
 						check_result = -1;
 
 						if (members_input_port_type != VisualShaderNode::PORT_TYPE_MAX) {

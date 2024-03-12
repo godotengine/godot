@@ -189,9 +189,6 @@ void SceneReplicationInterface::_node_ready(const ObjectID &p_oid) {
 
 		spawned_nodes.insert(oid);
 		if (_has_authority(spawner)) {
-			if (tobj.net_id == 0) {
-				tobj.net_id = ++last_net_id;
-			}
 			_update_spawn_visibility(0, oid);
 		}
 	}
@@ -249,6 +246,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 		uint32_t net_id = pending_sync_net_ids[0];
 		pending_sync_net_ids.pop_front();
 		peers_info[pending_spawn_remote].recv_sync_ids[net_id] = sync->get_instance_id();
+		sync->set_net_id(net_id);
 
 		// Try to apply spawn state (before ready).
 		if (pending_buffer_size > 0) {
@@ -472,9 +470,13 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	ERR_FAIL_COND_V(!multiplayer || !p_node || !p_spawner, ERR_BUG);
 
 	const ObjectID oid = p_node->get_instance_id();
-	const TrackedNode *tnode = tracked_nodes.getptr(oid);
+	TrackedNode *tnode = tracked_nodes.getptr(oid);
 	ERR_FAIL_NULL_V(tnode, ERR_INVALID_PARAMETER);
 
+	if (tnode->net_id == 0) {
+		// Ensure the node has an ID.
+		tnode->net_id = ++last_net_id;
+	}
 	uint32_t nid = tnode->net_id;
 	ERR_FAIL_COND_V(!nid, ERR_UNCONFIGURED);
 

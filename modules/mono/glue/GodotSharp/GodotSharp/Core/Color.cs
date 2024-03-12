@@ -330,7 +330,7 @@ namespace Godot
         /// by the specified ratio (on the range of 0 to 1).
         /// </summary>
         /// <param name="amount">The ratio to lighten by.</param>
-        /// <returns>The darkened color.</returns>
+        /// <returns>The lightened color.</returns>
         public readonly Color Lightened(float amount)
         {
             Color res = this;

@@ -202,7 +202,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 	return OK;
 }
 
-static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, bool p_disable_compression, List<String> *r_missing_deps) {
+static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, bool p_disable_compression, List<String> *r_missing_deps) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
 
@@ -220,7 +220,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	ERR_FAIL_COND_V_MSG(coff_header_machines.find(first_bytes) != -1, ERR_FILE_CORRUPT, vformat("Couldn't read OBJ file '%s', it seems to be binary, corrupted, or empty.", p_path));
 	f->seek(0);
 
-	Ref<ArrayMesh> mesh;
+	Ref<ImporterMesh> mesh;
 	mesh.instantiate();
 
 	bool generate_tangents = p_generate_tangents;
@@ -329,11 +329,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 						surf_tool->set_normal(normals[norm]);
 						if (generate_tangents && uvs.is_empty()) {
 							// We can't generate tangents without UVs, so create dummy tangents.
-							Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[norm]);
+							Vector3 tan = Vector3(normals[norm].z, -normals[norm].x, normals[norm].y).cross(normals[norm].normalized()).normalized();
 							surf_tool->set_tangent(Plane(tan.x, tan.y, tan.z, 1.0));
 						}
 					} else {
-						// No normals, use a dummy normal since normals will be generated.
+						// No normals, use a dummy tangent since normals and tangents will be generated.
 						if (generate_tangents && uvs.is_empty()) {
 							// We can't generate tangents without UVs, so create dummy tangents.
 							surf_tool->set_tangent(Plane(1.0, 0.0, 0.0, 1.0));
@@ -400,24 +400,38 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 				print_verbose("OBJ: Current material library " + current_material_library + " has " + itos(material_map.has(current_material_library)));
 				print_verbose("OBJ: Current material " + current_material + " has " + itos(material_map.has(current_material_library) && material_map[current_material_library].has(current_material)));
-
+				Ref<StandardMaterial3D> material;
 				if (material_map.has(current_material_library) && material_map[current_material_library].has(current_material)) {
-					Ref<StandardMaterial3D> &material = material_map[current_material_library][current_material];
+					material = material_map[current_material_library][current_material];
 					if (!colors.is_empty()) {
 						material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 					}
 					surf_tool->set_material(material);
 				}
 
-				mesh = surf_tool->commit(mesh, mesh_flags);
-
 				if (!current_material.is_empty()) {
-					mesh->surface_set_name(mesh->get_surface_count() - 1, current_material.get_basename());
+					mesh->set_surface_name(mesh->get_surface_count() - 1, current_material.get_basename());
 				} else if (!current_group.is_empty()) {
-					mesh->surface_set_name(mesh->get_surface_count() - 1, current_group);
+					mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
+				}
+				Array array = surf_tool->commit_to_arrays();
+
+				if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && generate_tangents) {
+					// Compression is enabled, so let's validate that the normals and tangents are correct.
+					Vector<Vector3> norms = array[Mesh::ARRAY_NORMAL];
+					Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
+					for (int vert = 0; vert < norms.size(); vert++) {
+						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+						if (abs(tan.dot(norms[vert])) > 0.0001) {
+							// Tangent is not perpendicular to the normal, so we can't use compression.
+							mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+						}
+					}
 				}
 
-				print_verbose("OBJ: Added surface :" + mesh->surface_get_name(mesh->get_surface_count() - 1));
+				mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, array, TypedArray<Array>(), Dictionary(), material, name, mesh_flags);
+				print_verbose("OBJ: Added surface :" + mesh->get_surface_name(mesh->get_surface_count() - 1));
+
 				surf_tool->clear();
 				surf_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
 			}
@@ -476,7 +490,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 }
 
 Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
-	List<Ref<Mesh>> meshes;
+	List<Ref<ImporterMesh>> meshes;
 
 	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, false, Vector3(1, 1, 1), Vector3(0, 0, 0), p_flags & IMPORT_FORCE_DISABLE_MESH_COMPRESSION, r_missing_deps);
 
@@ -489,16 +503,9 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, co
 
 	Node3D *scene = memnew(Node3D);
 
-	for (const Ref<Mesh> &m : meshes) {
-		Ref<ImporterMesh> mesh;
-		mesh.instantiate();
-		mesh->set_name(m->get_name());
-		for (int i = 0; i < m->get_surface_count(); i++) {
-			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i), String(), m->surface_get_format(i));
-		}
-
+	for (Ref<ImporterMesh> m : meshes) {
 		ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
-		mi->set_mesh(mesh);
+		mi->set_mesh(m);
 		mi->set_name(m->get_name());
 		scene->add_child(mi, true);
 		mi->set_owner(scene);
@@ -565,7 +572,7 @@ bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const Stri
 }
 
 Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	List<Ref<Mesh>> meshes;
+	List<Ref<ImporterMesh>> meshes;
 
 	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], p_options["force_disable_mesh_compression"], nullptr);
 
@@ -574,7 +581,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 
 	String save_path = p_save_path + ".mesh";
 
-	err = ResourceSaver::save(meshes.front()->get(), save_path);
+	err = ResourceSaver::save(meshes.front()->get()->get_mesh(), save_path);
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Mesh to file '" + save_path + "'.");
 

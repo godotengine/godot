@@ -112,6 +112,10 @@ void TreeItem::_change_tree(Tree *p_tree) {
 		}
 
 		if (tree->selected_item == this) {
+			for (int i = 0; i < tree->selected_item->cells.size(); i++) {
+				tree->selected_item->cells.write[i].selected = false;
+			}
+
 			tree->selected_item = nullptr;
 		}
 
@@ -2536,12 +2540,8 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 		}
 	}
 
-	if (p_from->get_first_child()) {
-		count += _count_selected_items(p_from->get_first_child());
-	}
-
-	if (p_from->get_next()) {
-		count += _count_selected_items(p_from->get_next());
+	for (TreeItem *c = p_from->get_first_child(); c; c = c->get_next()) {
+		count += _count_selected_items(c);
 	}
 
 	return count;

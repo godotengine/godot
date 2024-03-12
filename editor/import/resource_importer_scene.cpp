@@ -31,6 +31,7 @@
 #include "resource_importer_scene.h"
 
 #include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
@@ -1935,7 +1936,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI),Static Lightmaps (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI only)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Static,Static Lightmaps,Dynamic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/force_disable_compression"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
@@ -2393,6 +2394,21 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	return scene;
 }
 
+Error ResourceImporterScene::_check_resource_save_paths(const Dictionary &p_data) {
+	Array keys = p_data.keys();
+	for (int i = 0; i < keys.size(); i++) {
+		const Dictionary &settings = p_data[keys[i]];
+
+		if (bool(settings.get("save_to_file/enabled", false)) && settings.has("save_to_file/path")) {
+			const String &save_path = settings["save_to_file/path"];
+
+			ERR_FAIL_COND_V(!save_path.is_empty() && !DirAccess::exists(save_path.get_base_dir()), ERR_FILE_BAD_PATH);
+		}
+	}
+
+	return OK;
+}
+
 Error ResourceImporterScene::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	const String &src_path = p_source_file;
 
@@ -2445,7 +2461,42 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		import_flags |= EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
 	}
 
+	Dictionary subresources = p_options["_subresources"];
+
+	Dictionary node_data;
+	if (subresources.has("nodes")) {
+		node_data = subresources["nodes"];
+	}
+
+	Dictionary material_data;
+	if (subresources.has("materials")) {
+		material_data = subresources["materials"];
+	}
+
+	Dictionary animation_data;
+	if (subresources.has("animations")) {
+		animation_data = subresources["animations"];
+	}
+
+	Dictionary mesh_data;
+	if (subresources.has("meshes")) {
+		mesh_data = subresources["meshes"];
+	}
+
 	Error err = OK;
+
+	// Check whether any of the meshes or animations have nonexistent save paths
+	// and if they do, fail the import immediately.
+	err = _check_resource_save_paths(mesh_data);
+	if (err != OK) {
+		return err;
+	}
+
+	err = _check_resource_save_paths(animation_data);
+	if (err != OK) {
+		return err;
+	}
+
 	List<String> missing_deps; // for now, not much will be done with this
 	Node *scene = importer->import_scene(src_path, import_flags, p_options, &missing_deps, &err);
 	if (!scene || err != OK) {
@@ -2468,22 +2519,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		} else {
 			scene_3d->scale(scale);
 		}
-	}
-	Dictionary subresources = p_options["_subresources"];
-
-	Dictionary node_data;
-	if (subresources.has("nodes")) {
-		node_data = subresources["nodes"];
-	}
-
-	Dictionary material_data;
-	if (subresources.has("materials")) {
-		material_data = subresources["materials"];
-	}
-
-	Dictionary animation_data;
-	if (subresources.has("animations")) {
-		animation_data = subresources["animations"];
 	}
 
 	HashSet<Ref<ImporterMesh>> scanned_meshes;
@@ -2564,10 +2599,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		}
 	}
 
-	Dictionary mesh_data;
-	if (subresources.has("meshes")) {
-		mesh_data = subresources["meshes"];
-	}
 	scene = _generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, mesh_lightmap_caches);
 
 	if (mesh_lightmap_caches.size()) {

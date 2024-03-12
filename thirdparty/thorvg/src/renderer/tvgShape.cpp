@@ -26,7 +26,7 @@
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
-constexpr auto PATH_KAPPA = 0.552284f;
+
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -130,11 +130,11 @@ Result Shape::appendCircle(float cx, float cy, float rx, float ry) noexcept
     auto ryKappa = ry * PATH_KAPPA;
 
     pImpl->grow(6, 13);
-    pImpl->moveTo(cx, cy - ry);
-    pImpl->cubicTo(cx + rxKappa, cy - ry, cx + rx, cy - ryKappa, cx + rx, cy);
+    pImpl->moveTo(cx + rx, cy);
     pImpl->cubicTo(cx + rx, cy + ryKappa, cx + rxKappa, cy + ry, cx, cy + ry);
     pImpl->cubicTo(cx - rxKappa, cy + ry, cx - rx, cy + ryKappa, cx - rx, cy);
     pImpl->cubicTo(cx - rx, cy - ryKappa, cx - rxKappa, cy - ry, cx, cy - ry);
+    pImpl->cubicTo(cx + rxKappa, cy - ry, cx + rx, cy - ryKappa, cx + rx, cy);
     pImpl->close();
 
     return Result::Success;
@@ -215,9 +215,7 @@ Result Shape::appendRect(float x, float y, float w, float h, float rx, float ry)
         pImpl->lineTo(x + w, y + h);
         pImpl->lineTo(x, y + h);
         pImpl->close();
-    //circle
-    } else if (mathEqual(rx, halfW) && mathEqual(ry, halfH)) {
-        return appendCircle(x + (w * 0.5f), y + (h * 0.5f), rx, ry);
+    //rounded rectangle or circle
     } else {
         auto hrx = rx * PATH_KAPPA;
         auto hry = ry * PATH_KAPPA;

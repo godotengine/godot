@@ -579,48 +579,59 @@ struct test_27_data {
 
 TEST_CASE("[String] Begins with") {
 	test_27_data tc[] = {
+		// Test cases for true:
 		{ "res://foobar", "res://", true },
+		{ "abc", "abc", true },
+		{ "abc", "", true },
+		{ "", "", true },
+		// Test cases for false:
 		{ "res", "res://", false },
-		{ "abc", "abc", true }
+		{ "abcdef", "foo", false },
+		{ "abc", "ax", false },
+		{ "", "abc", false }
 	};
 	size_t count = sizeof(tc) / sizeof(tc[0]);
 	bool state = true;
-	for (size_t i = 0; state && i < count; ++i) {
+	for (size_t i = 0; i < count; ++i) {
 		String s = tc[i].data;
 		state = s.begins_with(tc[i].part) == tc[i].expected;
-		if (state) {
-			String sb = tc[i].part;
-			state = s.begins_with(sb) == tc[i].expected;
-		}
-		CHECK(state);
-		if (!state) {
-			break;
-		}
-	};
-	CHECK(state);
+		CHECK_MESSAGE(state, "first check failed at: ", i);
+
+		String sb = tc[i].part;
+		state = s.begins_with(sb) == tc[i].expected;
+		CHECK_MESSAGE(state, "second check failed at: ", i);
+	}
+
+	// Test "const char *" version also with nullptr.
+	String s("foo");
+	state = s.begins_with(nullptr) == false;
+	CHECK_MESSAGE(state, "nullptr check failed");
+
+	String empty("");
+	state = empty.begins_with(nullptr) == false;
+	CHECK_MESSAGE(state, "nullptr check with empty string failed");
 }
 
 TEST_CASE("[String] Ends with") {
 	test_27_data tc[] = {
+		// test cases for true:
 		{ "res://foobar", "foobar", true },
+		{ "abc", "abc", true },
+		{ "abc", "", true },
+		{ "", "", true },
+		// test cases for false:
 		{ "res", "res://", false },
-		{ "abc", "abc", true }
+		{ "", "abc", false },
+		{ "abcdef", "foo", false },
+		{ "abc", "xc", false }
 	};
 	size_t count = sizeof(tc) / sizeof(tc[0]);
-	bool state = true;
-	for (size_t i = 0; state && i < count; ++i) {
+	for (size_t i = 0; i < count; ++i) {
 		String s = tc[i].data;
-		state = s.ends_with(tc[i].part) == tc[i].expected;
-		if (state) {
-			String sb = tc[i].part;
-			state = s.ends_with(sb) == tc[i].expected;
-		}
-		CHECK(state);
-		if (!state) {
-			break;
-		}
-	};
-	CHECK(state);
+		String sb = tc[i].part;
+		bool state = s.ends_with(sb) == tc[i].expected;
+		CHECK_MESSAGE(state, "check failed at: ", i);
+	}
 }
 
 TEST_CASE("[String] format") {

@@ -32,17 +32,20 @@ struct LoadModule
     INLIST_ITEM(LoadModule);
 
     //Use either hashkey(data) or hashpath(path)
-    uint64_t hashkey;
-    char* hashpath = nullptr;
+    union {
+        uintptr_t hashkey;
+        char* hashpath = nullptr;
+    };
 
     FileType type;                                  //current loader file type
     uint16_t sharing = 0;                           //reference count
     bool readied = false;                           //read done already.
+    bool pathcache = false;                         //cached by path
 
     LoadModule(FileType type) : type(type) {}
     virtual ~LoadModule()
     {
-        free(hashpath);
+        if (pathcache) free(hashpath);
     }
 
     virtual bool open(const string& path) { return false; }
@@ -57,6 +60,12 @@ struct LoadModule
         return true;
     }
 
+    bool cached()
+    {
+        if (hashkey) return true;
+        return false;
+    }
+
     virtual bool close()
     {
         if (sharing == 0) return true;
@@ -68,6 +77,8 @@ struct LoadModule
 
 struct ImageLoader : LoadModule
 {
+    static ColorSpace cs;                           //desired value
+
     float w = 0, h = 0;                             //default image size
     Surface surface;
 

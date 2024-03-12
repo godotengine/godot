@@ -377,7 +377,7 @@
 			<param index="0" name="method" type="StringName" />
 			<description>
 				Calls the [param method] on the object during idle time. Always returns null, [b]not[/b] the method's result.
-				Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. If not done carefully, this can result in infinite recursion without causing a stack overflow, which will hang the game similarly to an infinite loop.
+				Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. This means you should not call a method deferred from itself (or from a method called by it), as this causes infinite recursion the same way as if you had called the method directly.
 				This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 				[codeblocks]
 				[gdscript]
@@ -614,7 +614,7 @@
 				[csharp]
 				var node = new Node2D();
 				node.Rotation = 1.5f;
-				var a = node.Get("rotation"); // a is 1.5
+				var a = node.Get(Node2D.PropertyName.Rotation); // a is 1.5
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
@@ -882,7 +882,7 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
-				node.Set("global_scale", new Vector2(8, 2.5));
+				node.Set(Node2D.PropertyName.GlobalScale, new Vector2(8, 2.5));
 				GD.Print(node.GlobalScale); // Prints Vector2(8, 2.5)
 				[/csharp]
 				[/codeblocks]
@@ -907,21 +907,21 @@
 				var node = Node2D.new()
 				add_child(node)
 
-				node.rotation = 45.0
-				node.set_deferred("rotation", 90.0)
-				print(node.rotation) # Prints 45.0
+				node.rotation = 1.5
+				node.set_deferred("rotation", 3.0)
+				print(node.rotation) # Prints 1.5
 
 				await get_tree().process_frame
-				print(node.rotation) # Prints 90.0
+				print(node.rotation) # Prints 3.0
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
-				node.Rotation = 45f;
-				node.SetDeferred("rotation", 90f);
-				GD.Print(node.Rotation); // Prints 45.0
+				node.Rotation = 1.5f;
+				node.SetDeferred(Node2D.PropertyName.Rotation, 3f);
+				GD.Print(node.Rotation); // Prints 1.5
 
 				await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-				GD.Print(node.Rotation); // Prints 90.0
+				GD.Print(node.Rotation); // Prints 3.0
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
@@ -1026,6 +1026,9 @@
 		</constant>
 		<constant name="NOTIFICATION_PREDELETE" value="1">
 			Notification received when the object is about to be deleted. Can act as the deconstructor of some programming languages.
+		</constant>
+		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
+			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.
 		</constant>
 		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
 			Deferred connections trigger their [Callable]s on idle time (at the end of the frame), rather than instantly.

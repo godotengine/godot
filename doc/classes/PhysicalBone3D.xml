@@ -61,6 +61,7 @@
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" default="0.0">
 			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			[b]Note:[/b] Even with [member bounce] set to [code]1.0[/code], some energy will be lost over time due to linear and angular damping. To have a [PhysicalBone3D] that preserves all its energy over time, set [member bounce] to [code]1.0[/code], [member linear_damp_mode] to [constant DAMP_MODE_REPLACE], [member linear_damp] to [code]0.0[/code], [member angular_damp_mode] to [constant DAMP_MODE_REPLACE], and [member angular_damp] to [code]0.0[/code].
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body is deactivated when there is no movement, so it will not take part in the simulation until it is awakened by an external force.

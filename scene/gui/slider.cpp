@@ -65,8 +65,8 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
 
-				double grab_width = (double)grabber->get_width();
-				double grab_height = (double)grabber->get_height();
+				double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+				double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
 				set_block_signals(true);
 				if (orientation == VERTICAL) {
@@ -88,10 +88,14 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-				grab_focus();
+				if (get_focus_mode() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				grab_focus();
+				if (get_focus_mode() != FOCUS_NONE) {
+					grab_focus();
+				}
 				set_value(get_value() - get_step());
 			}
 		}
@@ -102,12 +106,14 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		if (grab.active) {
 			Size2i size = get_size();
-			Ref<Texture2D> grabber = theme_cache.grabber_icon;
+			Ref<Texture2D> grabber = theme_cache.grabber_hl_icon;
+			double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+			double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
 			}
-			double areasize = orientation == VERTICAL ? size.height - grabber->get_height() : size.width - grabber->get_width();
+			double areasize = orientation == VERTICAL ? size.height - grab_height : size.width - grab_width;
 			if (areasize <= 0) {
 				return;
 			}
