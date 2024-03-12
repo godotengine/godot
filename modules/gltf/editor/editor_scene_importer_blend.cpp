@@ -471,6 +471,10 @@ void EditorFileSystemImportFormatSupportQueryBlend::_browse_install() {
 	browse_dialog->popup_centered_ratio();
 }
 
+void EditorFileSystemImportFormatSupportQueryBlend::_update_icons() {
+	blender_path_browse->set_icon(blender_path_browse->get_editor_theme_icon(SNAME("FolderBrowse")));
+}
+
 bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
@@ -486,10 +490,12 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		blender_path = memnew(LineEdit);
 		blender_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(blender_path);
+
 		blender_path_browse = memnew(Button);
-		hb->add_child(blender_path_browse);
 		blender_path_browse->set_text(TTR("Browse"));
 		blender_path_browse->connect("pressed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_browse_install));
+		hb->add_child(blender_path_browse);
+
 		hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 
@@ -515,6 +521,11 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		browse_dialog->connect("dir_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
+
+		// Update icons.
+		// This is a hack because we can't rely on notifications here as we don't receive them.
+		// Usually, we only have to wait for `NOTIFICATION_THEME_CHANGED` to update the icons.
+		callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_update_icons).call_deferred();
 	}
 
 	String path = EDITOR_GET("filesystem/import/blender/blender_path");
