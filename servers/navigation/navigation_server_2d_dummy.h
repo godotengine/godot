@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 class NavigationServer2DDummy : public NavigationServer2D {
 	GDCLASS(NavigationServer2DDummy, NavigationServer2D);

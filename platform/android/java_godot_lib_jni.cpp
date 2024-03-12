@@ -49,11 +49,11 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "main/main.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
-#ifndef _3D_DISABLED
-#include "servers/xr_server.h"
-#endif // _3D_DISABLED
+#ifndef XR_DISABLED
+#include "servers/xr/xr_server.h"
+#endif // XR_DISABLED
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"

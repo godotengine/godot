@@ -37,7 +37,7 @@
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 Callable StaticBody2D::_navmesh_source_geometry_parsing_callback;
 RID StaticBody2D::_navmesh_source_geometry_parser;

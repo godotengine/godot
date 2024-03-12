@@ -33,7 +33,7 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_3d.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"

@@ -45,8 +45,8 @@
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/surface_tool.h"
-#include "servers/navigation_server_3d.h"
-#include "servers/rendering_server.h"
+#include "servers/navigation/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 Callable GridMap::_navmesh_source_geometry_parsing_callback;
 RID GridMap::_navmesh_source_geometry_parser;
