@@ -1053,6 +1053,16 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	}
 
 	scene_tabs->set_current_tab(current_tab);
+
+	// Means there might've been a clone that got added.
+	// They are removed in reload_instances_with_path_in_edited_scenes
+	// so now we fix the scene tree
+	if (!scenes.is_empty()) {
+		Node *current = editor_data.get_edited_scene_root();
+		if (current) {
+			set_edited_scene(current);
+		}
+	}
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
@@ -3674,7 +3684,9 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 		if (old_edited_scene_root->get_parent() == scene_root) {
 			scene_root->remove_child(old_edited_scene_root);
 		}
-		old_edited_scene_root->disconnect(SNAME("replacing_by"), callable_mp(this, &EditorNode::set_edited_scene));
+		if (old_edited_scene_root->is_connected(SNAME("replacing_by"), callable_mp(this, &EditorNode::set_edited_scene))) {
+			old_edited_scene_root->disconnect(SNAME("replacing_by"), callable_mp(this, &EditorNode::set_edited_scene));
+		}
 	}
 	get_editor_data().set_edited_scene_root(p_scene);
 
@@ -3687,7 +3699,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 	}
 
 	if (p_scene) {
-		if (p_scene->get_parent() != scene_root) {
+		if (p_scene->get_parent() == nullptr && p_scene->get_parent() != scene_root) {
 			scene_root->add_child(p_scene, true);
 		}
 		p_scene->connect(SNAME("replacing_by"), callable_mp(this, &EditorNode::set_edited_scene));
@@ -5586,6 +5598,7 @@ void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *
 void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_instance_path) {
 	int original_edited_scene_idx = editor_data.get_edited_scene();
 	HashMap<int, List<Node *>> edited_scene_map;
+	List<int> inherited_scenes;
 
 	// Walk through each opened scene to get a global list of all instances which match
 	// the current reimported scenes.
@@ -5598,6 +5611,11 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 				find_all_instances_inheriting_path_in_node(edited_scene_root, edited_scene_root, p_instance_path, valid_nodes);
 				if (valid_nodes.size() > 0) {
 					edited_scene_map[i] = valid_nodes;
+				}
+
+				Ref<SceneState> inherited_state = edited_scene_root->get_scene_inherited_state();
+				if (inherited_state.is_valid() && inherited_state->get_path() == p_instance_path) {
+					inherited_scenes.push_back(i);
 				}
 			}
 		}
@@ -5909,6 +5927,16 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 		}
 		edited_scene_map.clear();
 	}
+
+	// Remove the node from viewport since we're still in the reloading process
+	if (!inherited_scenes.is_empty()) {
+		for (int scene : inherited_scenes) {
+			Node *original_scene = editor_data.get_edited_scene_root(scene);
+			if (original_scene->get_parent() == scene_root)
+				scene_root->remove_child(original_scene);
+		}
+	}
+
 	editor_data.set_edited_scene(original_edited_scene_idx);
 
 	_edit_current();

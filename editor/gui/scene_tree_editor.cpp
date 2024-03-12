@@ -196,7 +196,8 @@ void SceneTreeEditor::_toggle_visible(Node *p_node) {
 }
 
 void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
-	if (!p_node) {
+	// If the node is null or outside of the tree, don't do this stuff?
+	if (!p_node || !p_node->is_inside_tree()) {
 		return;
 	}
 
