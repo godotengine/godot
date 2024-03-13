@@ -471,6 +471,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	}
 	// </TF>
 
+	// <TF>
 	// @ShadyTF ASTC decode mode extension
 	_register_requested_device_extension(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME, false);
 	// </TF>
