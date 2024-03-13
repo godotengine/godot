@@ -471,6 +471,9 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	}
 	// </TF>
 
+	// @ShadyTF ASTC decode mode extension
+	_register_requested_device_extension(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME, false);
+	// </TF>
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
@@ -1755,7 +1758,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
    	// <TF>
 	// @ShadyTF ASTC decode mode extension
 	VkImageViewASTCDecodeModeEXT decode_mode;
-    if (context->is_device_extension_enabled(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME)) {
+    if (enabled_device_extension_names.has(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME)) {
 		if (image_view_create_info.format >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK
         && image_view_create_info.format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK ) {
 			create_info.extent.height = p_format.height;
