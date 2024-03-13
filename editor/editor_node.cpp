@@ -1058,9 +1058,9 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	// They are removed in reload_instances_with_path_in_edited_scenes
 	// so now we fix the scene tree
 	if (!scenes.is_empty()) {
-		Node *current = editor_data.get_edited_scene_root();
-		if (current) {
-			set_edited_scene(current);
+		Node *current_edited_root = editor_data.get_edited_scene_root();
+		if (current_edited_root) {
+			set_edited_scene(current_edited_root);
 		}
 	}
 }
