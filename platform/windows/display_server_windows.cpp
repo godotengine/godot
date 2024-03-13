@@ -202,8 +202,8 @@ void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window)
 		rid[1].hwndTarget = windows[p_target_window].hWnd;
 	} else {
 		// Follow the keyboard focus
-		rid[0].hwndTarget = 0;
-		rid[1].hwndTarget = 0;
+		rid[0].hwndTarget = nullptr;
+		rid[1].hwndTarget = nullptr;
 	}
 
 	if (RegisterRawInputDevices(rid, 2, sizeof(rid[0])) == FALSE) {
@@ -272,7 +272,7 @@ public:
 			QITABENT(FileDialogEventHandler, IFileDialogEvents),
 			QITABENT(FileDialogEventHandler, IFileDialogControlEvents),
 #endif
-			{ 0, 0 },
+			{ nullptr, 0 },
 		};
 		return QISearch(this, qit, riid, ppv);
 	}
@@ -762,15 +762,15 @@ Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 		}
 	} else if (IsClipboardFormatAvailable(CF_DIB)) {
 		HGLOBAL mem = GetClipboardData(CF_DIB);
-		if (mem != NULL) {
+		if (mem != nullptr) {
 			BITMAPINFO *ptr = static_cast<BITMAPINFO *>(GlobalLock(mem));
 
-			if (ptr != NULL) {
+			if (ptr != nullptr) {
 				BITMAPINFOHEADER *info = &ptr->bmiHeader;
 				void *dib_bits = (void *)(ptr->bmiColors);
 
 				// Draw DIB image to temporary DC surface and read it back as BGRA8.
-				HDC dc = GetDC(0);
+				HDC dc = GetDC(nullptr);
 				if (dc) {
 					HDC hdc = CreateCompatibleDC(dc);
 					if (hdc) {
@@ -804,7 +804,7 @@ Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 						}
 						DeleteDC(hdc);
 					}
-					ReleaseDC(NULL, dc);
+					ReleaseDC(nullptr, dc);
 				}
 				GlobalUnlock(mem);
 			}
@@ -868,7 +868,7 @@ int DisplayServerWindows::get_screen_count() const {
 }
 
 int DisplayServerWindows::get_primary_screen() const {
-	EnumScreenData data = { 0, 0, 0 };
+	EnumScreenData data = { 0, 0, nullptr };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcPrim, (LPARAM)&data);
 	return data.screen;
 }
@@ -1116,16 +1116,16 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 	p.x = pos.x;
 	p.y = pos.y;
 	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p);
 	}
-	HDC dc = GetDC(0);
+	HDC dc = GetDC(nullptr);
 	if (dc) {
 		COLORREF col = GetPixel(dc, p.x, p.y);
 		if (col != CLR_INVALID) {
-			ReleaseDC(NULL, dc);
+			ReleaseDC(nullptr, dc);
 			return Color(float(col & 0x000000FF) / 255.0f, float((col & 0x0000FF00) >> 8) / 255.0f, float((col & 0x00FF0000) >> 16) / 255.0f, 1.0f);
 		}
-		ReleaseDC(NULL, dc);
+		ReleaseDC(nullptr, dc);
 	}
 
 	return Color();
@@ -1156,12 +1156,12 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 	p2.x = pos.x + size.x;
 	p2.y = pos.y + size.y;
 	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p2);
 	}
 
 	Ref<Image> img;
-	HDC dc = GetDC(0);
+	HDC dc = GetDC(nullptr);
 	if (dc) {
 		HDC hdc = CreateCompatibleDC(dc);
 		int width = p2.x - p1.x;
@@ -1194,7 +1194,7 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 			}
 			DeleteDC(hdc);
 		}
-		ReleaseDC(NULL, dc);
+		ReleaseDC(nullptr, dc);
 	}
 
 	return img;
@@ -1420,7 +1420,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 	if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[p_window].wtctx) {
 		wintab_WTClose(windows[p_window].wtctx);
-		windows[p_window].wtctx = 0;
+		windows[p_window].wtctx = nullptr;
 	}
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
@@ -1541,7 +1541,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 		return size;
 	}
 
-	HDC hdc = GetDCEx(wd.hWnd, NULL, DCX_WINDOW);
+	HDC hdc = GetDCEx(wd.hWnd, nullptr, DCX_WINDOW);
 	if (hdc) {
 		Char16String s = p_title.utf16();
 		SIZE text_size;
@@ -1559,8 +1559,8 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 			ClientToScreen(wd.hWnd, (POINT *)&rect.right);
 
 			if (win81p_PhysicalToLogicalPointForPerMonitorDPI) {
-				win81p_PhysicalToLogicalPointForPerMonitorDPI(0, (POINT *)&rect.left);
-				win81p_PhysicalToLogicalPointForPerMonitorDPI(0, (POINT *)&rect.right);
+				win81p_PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.left);
+				win81p_PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.right);
 			}
 
 			size.x += (rect.right - rect.left);
@@ -1991,7 +1991,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 
 		if (restore_mouse_trails > 1) {
-			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
 			restore_mouse_trails = 0;
 		}
 	}
@@ -2048,7 +2048,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		// Save number of trails so we can restore when exiting, then turn off mouse trails
 		SystemParametersInfoA(SPI_GETMOUSETRAILS, 0, &restore_mouse_trails, 0);
 		if (restore_mouse_trails > 1) {
-			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
+			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, nullptr, 0);
 		}
 	}
 }
@@ -2303,10 +2303,10 @@ void DisplayServerWindows::window_set_ime_active(const bool p_active, WindowID p
 	if (p_active) {
 		wd.ime_active = true;
 		ImmAssociateContext(wd.hWnd, wd.im_himc);
-		CreateCaret(wd.hWnd, NULL, 1, 1);
+		CreateCaret(wd.hWnd, nullptr, 1, 1);
 		window_set_ime_position(wd.im_position, p_window);
 	} else {
-		ImmAssociateContext(wd.hWnd, (HIMC)0);
+		ImmAssociateContext(wd.hWnd, (HIMC) nullptr);
 		DestroyCaret();
 		wd.ime_active = false;
 	}
@@ -2321,7 +2321,7 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 	wd.im_position = p_pos;
 
 	HIMC himc = ImmGetContext(wd.hWnd);
-	if (himc == (HIMC)0) {
+	if (himc == (HIMC) nullptr) {
 		return;
 	}
 
@@ -5012,7 +5012,7 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 		if ((p_old_driver == "wintab") && wintab_available && wd.wtctx) {
 			wintab_WTEnable(wd.wtctx, false);
 			wintab_WTClose(wd.wtctx);
-			wd.wtctx = 0;
+			wd.wtctx = nullptr;
 		}
 		if ((p_new_driver == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
@@ -5101,8 +5101,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				dwExStyle,
 				L"Engine", L"",
 				dwStyle,
-				//				(GetSystemMetrics(SM_CXSCREEN) - WindowRect.right) / 2,
-				//				(GetSystemMetrics(SM_CYSCREEN) - WindowRect.bottom) / 2,
 				WindowRect.left,
 				WindowRect.top,
 				WindowRect.right - WindowRect.left,
@@ -5220,7 +5218,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				print_verbose("WinTab context creation failed.");
 			}
 		} else {
-			wd.wtctx = 0;
+			wd.wtctx = nullptr;
 		}
 
 		if (p_mode == WINDOW_MODE_MAXIMIZED) {
@@ -5266,7 +5264,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		// IME.
 		wd.im_himc = ImmGetContext(wd.hWnd);
-		ImmAssociateContext(wd.hWnd, (HIMC)0);
+		ImmAssociateContext(wd.hWnd, (HIMC) nullptr);
 
 		wd.im_position = Vector2();
 
@@ -5321,17 +5319,17 @@ Vector2i _get_device_ids(const String &p_device_name) {
 
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
 	REFIID uuid = IID_IWbemLocator; // Interface UUID
-	IWbemLocator *wbemLocator = NULL; // to get the services
-	IWbemServices *wbemServices = NULL; // to get the class
-	IEnumWbemClassObject *iter = NULL;
+	IWbemLocator *wbemLocator = nullptr; // to get the services
+	IWbemServices *wbemServices = nullptr; // to get the class
+	IEnumWbemClassObject *iter = nullptr;
 	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
 
-	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
+	HRESULT hr = CoCreateInstance(clsid, nullptr, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
 	if (hr != S_OK) {
 		return Vector2i();
 	}
 	BSTR resource_name = SysAllocString(L"root\\CIMV2");
-	hr = wbemLocator->ConnectServer(resource_name, NULL, NULL, NULL, 0, NULL, NULL, &wbemServices);
+	hr = wbemLocator->ConnectServer(resource_name, nullptr, nullptr, nullptr, 0, nullptr, nullptr, &wbemServices);
 	SysFreeString(resource_name);
 
 	SAFE_RELEASE(wbemLocator) // from now on, use `wbemServices`
@@ -5345,7 +5343,7 @@ Vector2i _get_device_ids(const String &p_device_name) {
 	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", p_device_name);
 	BSTR query = SysAllocString((const WCHAR *)gpu_device_class_query.utf16().get_data());
 	BSTR query_lang = SysAllocString(L"WQL");
-	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, NULL, &iter);
+	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, nullptr, &iter);
 	SysFreeString(query_lang);
 	SysFreeString(query);
 	if (hr == S_OK) {
@@ -5356,7 +5354,7 @@ Vector2i _get_device_ids(const String &p_device_name) {
 			VARIANT did;
 			VariantInit(&did);
 			BSTR object_name = SysAllocString(L"DeviceID");
-			hr = pnpSDriverObject[0]->Get(object_name, 0, &did, NULL, NULL);
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &did, nullptr, nullptr);
 			SysFreeString(object_name);
 			if (hr == S_OK) {
 				String device_id = String(V_BSTR(&did));
@@ -5869,7 +5867,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 #endif
 		if (wintab_available && windows[MAIN_WINDOW_ID].wtctx) {
 			wintab_WTClose(windows[MAIN_WINDOW_ID].wtctx);
-			windows[MAIN_WINDOW_ID].wtctx = 0;
+			windows[MAIN_WINDOW_ID].wtctx = nullptr;
 		}
 		DestroyWindow(windows[MAIN_WINDOW_ID].hWnd);
 	}
@@ -5887,7 +5885,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 #endif
 
 	if (restore_mouse_trails > 1) {
-		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
 	}
 #ifdef GLES3_ENABLED
 	if (gl_manager_angle) {

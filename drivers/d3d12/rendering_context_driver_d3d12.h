@@ -100,7 +100,7 @@ public:
 
 	// D3D12-only methods.
 	struct Surface {
-		HWND hwnd = NULL;
+		HWND hwnd = nullptr;
 		uint32_t width = 0;
 		uint32_t height = 0;
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
