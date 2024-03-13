@@ -910,7 +910,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		bool device_created = VulkanHooks::get_singleton()->create_vulkan_device(&create_info, &vk_device);
 		ERR_FAIL_COND_V(!device_created, ERR_CANT_CREATE);
 	} else {
-		VkResult err = vkCreateDevice(physical_device, &create_info, nullptr, &vk_device);
+		VkResult err = vkCreateDevice(physical_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE), &vk_device);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 	}
 
@@ -1086,11 +1086,11 @@ bool RenderingDeviceDriverVulkan::_recreate_image_semaphore(CommandQueue *p_comm
 	VkSemaphore semaphore;
 	VkSemaphoreCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	VkResult err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+	VkResult err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, false);
 
 	// Indicate the semaphore is free again and destroy the previous one before storing the new one.
-	vkDestroySemaphore(vk_device, p_command_queue->image_semaphores[p_semaphore_index], nullptr);
+	vkDestroySemaphore(vk_device, p_command_queue->image_semaphores[p_semaphore_index], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 
 	p_command_queue->image_semaphores[p_semaphore_index] = semaphore;
 	p_command_queue->free_image_semaphores.push_back(p_semaphore_index);
@@ -1149,6 +1149,7 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	ERR_FAIL_COND_V(err != OK, err);
 
 	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
+	breadcrumb_buffer = buffer_create(sizeof(uint32_t), BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU);
 
 	return OK;
 }
@@ -2020,7 +2021,7 @@ RDD::FenceID RenderingDeviceDriverVulkan::fence_create() {
 	VkFence vk_fence = VK_NULL_HANDLE;
 	VkFenceCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	VkResult err = vkCreateFence(vk_device, &create_info, nullptr, &vk_fence);
+	VkResult err = vkCreateFence(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FENCE), &vk_fence);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, FenceID());
 
 	Fence *fence = memnew(Fence);
@@ -2062,7 +2063,7 @@ Error RenderingDeviceDriverVulkan::fence_wait(FenceID p_fence) {
 
 void RenderingDeviceDriverVulkan::fence_free(FenceID p_fence) {
 	Fence *fence = (Fence *)(p_fence.id);
-	vkDestroyFence(vk_device, fence->vk_fence, nullptr);
+	vkDestroyFence(vk_device, fence->vk_fence, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FENCE));
 	memdelete(fence);
 }
 
@@ -2074,14 +2075,14 @@ RDD::SemaphoreID RenderingDeviceDriverVulkan::semaphore_create() {
 	VkSemaphore semaphore = VK_NULL_HANDLE;
 	VkSemaphoreCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	VkResult err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+	VkResult err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SemaphoreID());
 
 	return SemaphoreID(semaphore);
 }
 
 void RenderingDeviceDriverVulkan::semaphore_free(SemaphoreID p_semaphore) {
-	vkDestroySemaphore(vk_device, VkSemaphore(p_semaphore.id), nullptr);
+	vkDestroySemaphore(vk_device, VkSemaphore(p_semaphore.id), VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 }
 
 /******************/
@@ -2208,7 +2209,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 				create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
 				for (uint32_t i = 0; i < frame_count; i++) {
-					err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+					err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
 					ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 					command_queue->present_semaphores.push_back(semaphore);
 				}
@@ -2331,12 +2332,12 @@ void RenderingDeviceDriverVulkan::command_queue_free(CommandQueueID p_cmd_queue)
 
 	// Erase all the semaphores used for presentation.
 	for (VkSemaphore semaphore : command_queue->present_semaphores) {
-		vkDestroySemaphore(vk_device, semaphore, nullptr);
+		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 	}
 
 	// Erase all the semaphores used for image acquisition.
 	for (VkSemaphore semaphore : command_queue->image_semaphores) {
-		vkDestroySemaphore(vk_device, semaphore, nullptr);
+		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
 	}
 
 	// Retrieve the queue family corresponding to the virtual queue.
@@ -2462,7 +2463,7 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 	}
 
 	for (VkImageView view : swap_chain->image_views) {
-		vkDestroyImageView(vk_device, view, nullptr);
+		vkDestroyImageView(vk_device, view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
 	}
 
 	swap_chain->image_index = UINT_MAX;
@@ -2471,7 +2472,7 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 	swap_chain->framebuffers.clear();
 
 	if (swap_chain->vk_swapchain != VK_NULL_HANDLE) {
-		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, nullptr);
+		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR));
 		swap_chain->vk_swapchain = VK_NULL_HANDLE;
 	}
 
@@ -2553,7 +2554,7 @@ RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_creat
 	pass_info.pSubpasses = &subpass;
 
 	VkRenderPass render_pass = VK_NULL_HANDLE;
-	err = _create_render_pass(vk_device, &pass_info, nullptr, &render_pass);
+	err = _create_render_pass(vk_device, &pass_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &render_pass);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
 
 	SwapChain *swap_chain = memnew(SwapChain);
@@ -2702,7 +2703,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.compositeAlpha = composite_alpha;
 	swap_create_info.presentMode = present_mode;
 	swap_create_info.clipped = true;
-	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, nullptr, &swap_chain->vk_swapchain);
+	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR), &swap_chain->vk_swapchain);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 	uint32_t image_count = 0;
@@ -2730,7 +2731,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	VkImageView image_view;
 	for (uint32_t i = 0; i < image_count; i++) {
 		view_create_info.image = swap_chain->images[i];
-		err = vkCreateImageView(vk_device, &view_create_info, nullptr, &image_view);
+		err = vkCreateImageView(vk_device, &view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &image_view);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 		swap_chain->image_views.push_back(image_view);
@@ -2749,7 +2750,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	VkFramebuffer framebuffer;
 	for (uint32_t i = 0; i < image_count; i++) {
 		fb_create_info.pAttachments = &swap_chain->image_views[i];
-		err = vkCreateFramebuffer(vk_device, &fb_create_info, nullptr, &framebuffer);
+		err = vkCreateFramebuffer(vk_device, &fb_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &framebuffer);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 		swap_chain->framebuffers.push_back(RDD::FramebufferID(framebuffer));
@@ -2780,7 +2781,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 		// Add a new semaphore if none are free.
 		VkSemaphoreCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+		err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
 		ERR_FAIL_COND_V(err != VK_SUCCESS, FramebufferID());
 
 		semaphore_index = command_queue->image_semaphores.size();
@@ -2852,7 +2853,7 @@ void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
 	_swap_chain_release(swap_chain);
 
 	if (swap_chain->render_pass.id != 0) {
-		vkDestroyRenderPass(vk_device, VkRenderPass(swap_chain->render_pass.id), nullptr);
+		vkDestroyRenderPass(vk_device, VkRenderPass(swap_chain->render_pass.id), VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS));
 	}
 
 	memdelete(swap_chain);
@@ -3478,7 +3479,7 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 	descriptor_set_pool_create_info.pPoolSizes = vk_sizes;
 
 	VkDescriptorPool vk_pool = VK_NULL_HANDLE;
-	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, nullptr, &vk_pool);
+	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL), &vk_pool);
 	if (res) {
 		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
 	}
@@ -4790,6 +4791,67 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, ((BufferInfo*)breadcrumb_buffer.id)->vk_buffer, 0, sizeof(uint32_t), p_data);
 }
 
+void RenderingDeviceDriverVulkan::on_device_lost() const {
+	VkDeviceFaultCountsEXT fault_counts = { VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT };
+	VkResult vkres = vkGetDeviceFaultInfoEXT(vk_device, &fault_counts, nullptr);
+
+	if (vkres != VK_SUCCESS) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault count, skipping VK_EXT_device_fault report...");
+		return;
+	}
+
+	VkDeviceFaultInfoEXT fault_info = { VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT };
+	fault_info.pVendorInfos = fault_counts.vendorInfoCount
+			? (VkDeviceFaultVendorInfoEXT *)memalloc(fault_counts.vendorInfoCount * sizeof(VkDeviceFaultVendorInfoEXT))
+			: NULL;
+	fault_info.pAddressInfos =
+			fault_counts.addressInfoCount
+			? (VkDeviceFaultAddressInfoEXT *)memalloc(fault_counts.addressInfoCount * sizeof(VkDeviceFaultAddressInfoEXT))
+			: NULL;
+	fault_counts.vendorBinarySize = 0;
+	vkres = vkGetDeviceFaultInfoEXT(vk_device, &fault_counts, &fault_info);
+	if (vkres != VK_SUCCESS) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault info, skipping VK_EXT_device_fault report...");
+	} else {
+		print_line("** Report from VK_EXT_device_fault **");
+		print_line("Description: %s", fault_info.description);
+		print_line("Vendor infos");
+		for (uint32_t vd = 0; vd < fault_counts.vendorInfoCount; ++vd) {
+			const VkDeviceFaultVendorInfoEXT *vendor_info = &fault_info.pVendorInfos[vd];
+			print_line("Info[%u]", vd);
+			print_line("   Description: %s", vendor_info->description);
+			print_line("   Fault code : %zu", (size_t)vendor_info->vendorFaultCode);
+			print_line("   Fault data : %zu", (size_t)vendor_info->vendorFaultData);
+		}
+
+		static constexpr const char *addressTypeNames[] = {
+			"NONE",
+			"READ_INVALID",
+			"WRITE_INVALID",
+			"EXECUTE_INVALID",
+			"INSTRUCTION_POINTER_UNKNOWN",
+			"INSTRUCTION_POINTER_INVALID",
+			"INSTRUCTION_POINTER_FAULT",
+		};
+		print_line("Address infos");
+		for (uint32_t ad = 0; ad < fault_counts.addressInfoCount; ++ad) {
+			const VkDeviceFaultAddressInfoEXT *addr_info = &fault_info.pAddressInfos[ad];
+			// From https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDeviceFaultAddressInfoEXT.html
+			const VkDeviceAddress lower = (addr_info->reportedAddress & ~(addr_info->addressPrecision - 1));
+			const VkDeviceAddress upper = (addr_info->reportedAddress | (addr_info->addressPrecision - 1));
+			print_line("Info[%u]", ad);
+			print_line("   Type            : %s", addressTypeNames[addr_info->addressType]);
+			print_line("   Reported address: %zu", (size_t)addr_info->reportedAddress);
+			print_line("   Lower address   : %zu", (size_t)lower);
+			print_line("   Upper address   : %zu", (size_t)upper);
+			print_line("   Precision       : %zu", (size_t)addr_info->addressPrecision);
+		}
+	}
+
+	memfree(fault_info.pVendorInfos);
+	memfree(fault_info.pAddressInfos);
+}
+
 void RenderingDeviceDriverVulkan::print_lost_device_info() {
 
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
@@ -4826,7 +4888,7 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 
 	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, errorMsg);
 #endif
-	context->on_device_lost();
+	on_device_lost();
 }
 
 /********************/
@@ -5080,7 +5142,6 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 	DEV_ASSERT(p_context_driver != nullptr);
 
 	context_driver = p_context_driver;
-	breadcrumb_buffer = buffer_create(sizeof(uint32_t), BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU);
 }
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
@@ -5094,6 +5155,6 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 	vmaDestroyAllocator(allocator);
 
 	if (vk_device != VK_NULL_HANDLE) {
-		vkDestroyDevice(vk_device, nullptr);
+		vkDestroyDevice(vk_device, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE));
 	}
 }

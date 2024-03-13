@@ -43,7 +43,7 @@
 #include "core/variant/typed_array.h"
 
 #if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
-#include "drivers/vulkan/vulkan_context.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif
 
 namespace core_bind {
@@ -1609,40 +1609,40 @@ uint64_t Engine::get_process_frames() const {
 
 #if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 String Engine::get_tracked_object_name(uint32_t typeIndex) const {
-	return VulkanContext::get_tracked_object_name(typeIndex);
+	return RenderingContextDriverVulkan::get_tracked_object_name(typeIndex);
 }
 uint64_t Engine::get_tracked_object_type_count() const {
-	return VulkanContext::get_tracked_object_type_count();
+	return RenderingContextDriverVulkan::get_tracked_object_type_count();
 }
 #endif
 
 #if defined(VK_TRACK_DRIVER_MEMORY)
 uint64_t Engine::get_driver_total_memory() const {
-	return VulkanContext::get_driver_total_memory();
+	return RenderingContextDriverVulkan::get_driver_total_memory();
 }
 uint64_t Engine::get_driver_allocation_count() const {
-	return VulkanContext::get_driver_allocation_count();
+	return RenderingContextDriverVulkan::get_driver_allocation_count();
 }
 uint64_t Engine::get_driver_memory_by_object_type(uint32_t type) const {
-	return VulkanContext::get_driver_memory_by_object_type(type);
+	return RenderingContextDriverVulkan::get_driver_memory_by_object_type(type);
 }
 uint64_t Engine::get_driver_allocs_by_object_type(uint32_t type) const {
-	return VulkanContext::get_driver_allocs_by_object_type(type);
+	return RenderingContextDriverVulkan::get_driver_allocs_by_object_type(type);
 }
 #endif
 
 #if defined(VK_TRACK_DEVICE_MEMORY)
 uint64_t Engine::get_device_total_memory() const {
-	return VulkanContext::get_device_total_memory();
+	return RenderingContextDriverVulkan::get_device_total_memory();
 }
 uint64_t Engine::get_device_allocation_count() const {
-	return VulkanContext::get_device_allocation_count();
+	return RenderingContextDriverVulkan::get_device_allocation_count();
 }
 uint64_t Engine::get_device_memory_by_object_type(uint32_t type) const {
-	return VulkanContext::get_device_memory_by_object_type(type);
+	return RenderingContextDriverVulkan::get_device_memory_by_object_type(type);
 }
 uint64_t Engine::get_device_allocs_by_object_type(uint32_t type) const {
-	return VulkanContext::get_device_allocs_by_object_type(type);
+	return RenderingContextDriverVulkan::get_device_allocs_by_object_type(type);
 }
 #endif
 

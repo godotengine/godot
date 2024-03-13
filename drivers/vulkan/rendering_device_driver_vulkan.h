@@ -614,7 +614,8 @@ public:
 	/**** DEBUG *****/
 	/****************/
 	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
-	virtual void print_lost_device_info() override final;
+	void print_lost_device_info();
+	void on_device_lost() const;
 
 	/********************/
 	/**** SUBMISSION ****/
@@ -659,6 +660,6 @@ public:
 	virtual ~RenderingDeviceDriverVulkan();
 };
 
-using VKC = VulkanContext;
+using VKC = RenderingContextDriverVulkan;
 
 #endif // RENDERING_DEVICE_DRIVER_VULKAN_H

@@ -109,6 +109,7 @@ private:
 	// Static callbacks.
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(VkDebugUtilsMessageSeverityFlagBitsEXT p_message_severity, VkDebugUtilsMessageTypeFlagsEXT p_message_type, const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data, void *p_user_data);
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_report_callback(VkDebugReportFlagsEXT p_flags, VkDebugReportObjectTypeEXT p_object_type, uint64_t p_object, size_t p_location, int32_t p_message_code, const char *p_layer_prefix, const char *p_message, void *p_user_data);
+	static VKAPI_ATTR void VKAPI_CALL memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data);
 
 protected:
 	Error _find_validation_layers(TightLocalVector<const char *> &r_layer_names) const;
@@ -151,6 +152,38 @@ public:
 	VkQueueFamilyProperties queue_family_get(uint32_t p_device_index, uint32_t p_queue_family_index) const;
 	bool queue_family_supports_present(VkPhysicalDevice p_physical_device, uint32_t p_queue_family_index, SurfaceID p_surface) const;
 	const Functions &functions_get() const;
+
+	static VkAllocationCallbacks *get_allocation_callbacks(VkObjectType type);
+
+#if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
+	enum VkTrackedObjectType{
+		VK_TRACKED_OBJECT_TYPE_SURFACE = VK_OBJECT_TYPE_COMMAND_POOL + 1,
+		VK_TRACKED_OBJECT_TYPE_SWAPCHAIN,
+		VK_TRACKED_OBJECT_TYPE_VMA,
+		VK_TRACKED_OBJECT_TYPE_COUNT
+	};
+
+	enum VkTrackedSystemAllocationScope{
+		VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT = VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE + 1
+	};
+
+	static const char *get_tracked_object_name(uint32_t typeIndex);
+	static uint64_t get_tracked_object_type_count();
+#endif
+
+#if defined(VK_TRACK_DRIVER_MEMORY)
+	static uint64_t get_driver_total_memory();
+	static uint64_t get_driver_allocation_count();
+	static uint64_t get_driver_memory_by_object_type(uint32_t type);
+	static uint64_t get_driver_allocs_by_object_type(uint32_t type);
+#endif
+
+#if defined(VK_TRACK_DEVICE_MEMORY)
+	static uint64_t get_device_total_memory();
+	static uint64_t get_device_allocation_count();
+	static uint64_t get_device_memory_by_object_type(uint32_t type);
+	static uint64_t get_device_allocs_by_object_type(uint32_t type);
+#endif
 
 	RenderingContextDriverVulkan();
 	virtual ~RenderingContextDriverVulkan() override;
