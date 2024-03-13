@@ -1434,6 +1434,10 @@ bool ClassDB::class_has_method(const StringName &p_class, const StringName &p_me
 	return ::ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
 
+int ClassDB::class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) const {
+	return ::ClassDB::get_method_argument_count(p_class, p_method, nullptr, p_no_inheritance);
+}
+
 TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
@@ -1561,6 +1565,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &ClassDB::class_set_property);
 
 	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::class_has_method, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("class_get_method_argument_count", "class", "method", "no_inheritance"), &ClassDB::class_get_method_argument_count, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::class_get_method_list, DEFVAL(false));
 

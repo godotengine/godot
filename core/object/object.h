@@ -654,6 +654,7 @@ private:
 	Variant _get_bind(const StringName &p_name) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
+	int _get_method_argument_count_bind(const StringName &p_name) const;
 
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
@@ -865,6 +866,7 @@ public:
 	Variant property_get_revert(const StringName &p_name) const;
 
 	bool has_method(const StringName &p_method) const;
+	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);

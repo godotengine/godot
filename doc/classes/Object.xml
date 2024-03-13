@@ -711,6 +711,14 @@
 				Returns the object's metadata entry names as a [PackedStringArray].
 			</description>
 		</method>
+		<method name="get_method_argument_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Returns the number of arguments of the given [param method] by name.
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
+			</description>
+		</method>
 		<method name="get_method_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>
