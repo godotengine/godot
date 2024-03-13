@@ -204,6 +204,8 @@ def configure(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED"])
     env.Append(LIBS=["OpenSLES", "EGL", "android", "log", "z", "dl"])
     env.Append(LIBS=["swappy_static"])
+    env.Append(LIBPATH=["java/editor/build/intermediates/stripped_native_libs/dev/out/lib/arm64-v8a"])
+    env.Append(LIBS=["memory_advice"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
