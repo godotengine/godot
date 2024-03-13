@@ -1752,6 +1752,21 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
+   	// <TF>
+	// @ShadyTF ASTC decode mode extension
+	VkImageViewASTCDecodeModeEXT decode_mode;
+    if (context->is_device_extension_enabled(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME)) {
+		if (image_view_create_info.format >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK
+        && image_view_create_info.format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK ) {
+			create_info.extent.height = p_format.height;
+			decode_mode.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT;
+			decode_mode.pNext = nullptr;
+			decode_mode.decodeMode = VK_FORMAT_R8G8B8A8_UNORM;
+			image_view_create_info.pNext = &decode_mode;
+		}
+    }
+    // </TF>
+
 	VkImageView vk_image_view = VK_NULL_HANDLE;
 	err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
