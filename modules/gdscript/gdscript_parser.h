@@ -856,6 +856,7 @@ public:
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
 		Vector<Variant> default_arg_values;
+		bool has_super_call = false;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED

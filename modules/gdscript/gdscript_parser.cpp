@@ -3035,6 +3035,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	if (previous.type == GDScriptTokenizer::Token::SUPER) {
 		// Super call.
 		call->is_super = true;
+		if (current_function) {
+			current_function->has_super_call = true;
+		}
 		push_multiline(true);
 		if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
 			// Implicit call to the parent method of the same name.

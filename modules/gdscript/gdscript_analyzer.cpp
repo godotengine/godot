@@ -1812,6 +1812,19 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		}
 	}
 
+	// If this is a constructor and the super class has a custom constructor, ensure `super()` is called.
+	if (p_function->identifier != nullptr && p_function->identifier->name == GDScriptLanguage::get_singleton()->strings._init) {
+		GDScriptParser::ClassNode *base_class = parser->current_class->base_type.class_type;
+
+		while (base_class) {
+			if (base_class->has_function(GDScriptLanguage::get_singleton()->strings._init) && !p_function->has_super_call) {
+				push_error(R"*(Constructor must call "super()" to invoke the superclass constructor.)*", p_function);
+				break;
+			}
+			base_class = base_class->base_type.class_type;
+		}
+	}
+
 #ifdef DEBUG_ENABLED
 	parser->ignored_warnings = previously_ignored_warnings;
 #endif

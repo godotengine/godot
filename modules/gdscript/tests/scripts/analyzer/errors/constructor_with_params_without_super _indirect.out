@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Constructor must call "super()" to invoke the superclass constructor.
