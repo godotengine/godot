@@ -1319,7 +1319,19 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	context_device = context_driver->device_get(p_device_index);
 	physical_device = context_driver->physical_device_get(p_device_index);
 	vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
-
+		
+	// <TF>
+	// @ShadyTF
+	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
+	// Which eventually run out of memory. in such case we should not be using linear allocated pools
+	// Bug introduced in driver 512.597.0 and fixed in 512.671.0
+	// Confirmed by Qualcomm
+	if (linear_descriptor_pools_enabled) {
+		const uint32_t reset_descriptor_pool_broken_driver_begin = VK_MAKE_VERSION( 512u, 597u, 0u );
+		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION( 512u, 671u, 0u );
+		linear_descriptor_pools_enabled = physical_device_properties.driverVersion < reset_descriptor_pool_broken_driver_begin || physical_device_properties.driverVersion > reset_descriptor_pool_fixed_driver_begin;
+	}
+	// </TF>
 	frame_count = p_frame_count;
 
 	// Copy the queue family properties the context already retrieved.
@@ -5615,31 +5627,6 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 	context_driver = p_context_driver;
 	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
 
-	VkPhysicalDeviceProperties props = {};
-	vkGetPhysicalDeviceProperties(context->get_physical_device(), &props);
-	pipelines_cache.buffer.resize(sizeof(PipelineCacheHeader));
-	PipelineCacheHeader *header = (PipelineCacheHeader *)pipelines_cache.buffer.ptrw();
-	*header = {};
-	header->magic = 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE;
-	header->device_id = props.deviceID;
-	header->vendor_id = props.vendorID;
-	header->driver_version = props.driverVersion;
-	memcpy(header->uuid, props.pipelineCacheUUID, VK_UUID_SIZE);
-	header->driver_abi = sizeof(void *);
-
-	limits = context->get_device_limits();
-	// <TF>
-	// @ShadyTF
-	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
-	// Which eventually run out of memory. in such case we should not be using linear allocated pools
-	// Bug introduced in driver 512.597.0 and fixed in 512.671.0
-	// Confirmed by Qualcomm
-	if (linear_descriptor_pools_enabled) {
-		const uint32_t reset_descriptor_pool_broken_driver_begin = VK_MAKE_VERSION( 512u, 597u, 0u );
-		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION( 512u, 671u, 0u );
-		linear_descriptor_pools_enabled = props.driverVersion < reset_descriptor_pool_broken_driver_begin || props.driverVersion > reset_descriptor_pool_fixed_driver_begin;
-	}
-	// </TF>
 }
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
