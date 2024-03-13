@@ -181,6 +181,10 @@ public:
 			uint64_t size = UINT64_MAX;
 		} allocation;
 		uint64_t size = 0;
+		// <TF>
+		// persistent mapped address
+		uint8_t* pMappedAddress = VK_NULL_HANDLE;
+		// </TF>
 		VkBufferView vk_view = VK_NULL_HANDLE; // For texel buffers.
 	};
 
@@ -190,7 +194,10 @@ public:
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
-
+	// <TF>
+	// @ShadyTF -- getter for persitent mapped address
+	virtual uint8_t* buffer_get_persistent_address(BufferID p_buffer) override final;
+	// </TF>
 	/*****************/
 	/**** TEXTURE ****/
 	/*****************/
@@ -416,6 +423,10 @@ public:
 	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 
+	// <TF>
+	// @ShadyTF unload shader modules
+	virtual void shader_destroy_modules(ShaderID p_shader) override final;
+	// </TF>
 	/*********************/
 	/**** UNIFORM SET ****/
 	/*********************/
@@ -639,6 +650,10 @@ public:
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) override final;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) override final;
 	virtual uint64_t get_total_memory_used() override final;
+	// <TF>
+	// @ShadyTF lazily allocated memory
+	virtual uint64_t get_lazily_memory_used() override final;
+	// </TF>
 	virtual uint64_t limit_get(Limit p_limit) override final;
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;

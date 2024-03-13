@@ -173,6 +173,10 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 			usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 		}
 
+		//<TF>
+		//@ShadyTF : lazily allocated buffers
+		usage_bits |= RD::TEXTURE_USAGE_LAZILY_ALLOCATED_BIT;
+		//</TF>
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, base_data_format, usage_bits);
 	}
 
@@ -191,6 +195,10 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 			usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (can_be_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
 		}
 
+		//<TF>
+		//@ShadyTF : lazily allocated buffers
+		usage_bits |= RD::TEXTURE_USAGE_LAZILY_ALLOCATED_BIT;
+		//</TF>
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, format, usage_bits);
 	}
 
@@ -210,8 +218,16 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 		texture_samples = ts[msaa_3d];
 
+		//<TF>
+		//@ShadyTF : lazily allocated buffers
+		usage_bits |= RD::TEXTURE_USAGE_LAZILY_ALLOCATED_BIT;
+		//</TF>
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, format, usage_bits, texture_samples);
 
+		//<TF>
+		//@ShadyTF : lazily allocated buffers
+		usage_bits |= RD::TEXTURE_USAGE_LAZILY_ALLOCATED_BIT;
+		//</TF>
 		usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 		format = RD::get_singleton()->texture_is_format_supported_for_usage(preferred_format[0], usage_bits) ? preferred_format[0] : preferred_format[1];
 

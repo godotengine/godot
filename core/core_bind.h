@@ -489,6 +489,10 @@ public:
 	double get_frames_per_second() const;
 	uint64_t get_physics_frames() const;
 	uint64_t get_process_frames() const;
+	// <TF>
+	// @ShadyTF script function to get performance report text
+	String get_perf_report() const;
+	// </TF>
 
 #if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 	String get_tracked_object_name(uint32_t typeIndex) const;

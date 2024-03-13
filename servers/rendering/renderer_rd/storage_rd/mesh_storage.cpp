@@ -1445,7 +1445,12 @@ void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::
 		if (multimesh->motion_vectors_enabled) {
 			buffer_size *= 2;
 		}
-		multimesh->buffer = RD::get_singleton()->storage_buffer_create(buffer_size);
+		// <TF>
+		// @ShadyTF : persistent buffers
+		// was :
+		//multimesh->buffer = RD::get_singleton()->storage_buffer_create(buffer_size);
+		multimesh->buffer = RD::get_singleton()->storage_buffer_create(buffer_size, Vector<uint8_t>(), 0, RD::BUFFER_CREATION_PERSISTENT_BIT);
+		// </TF>
 	}
 
 	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH);
@@ -2150,7 +2155,13 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 
 	if (skeleton->size) {
 		skeleton->data.resize(skeleton->size * (skeleton->use_2d ? 8 : 12));
-		skeleton->buffer = RD::get_singleton()->storage_buffer_create(skeleton->data.size() * sizeof(float));
+
+		// <TF>
+		// @ShadyTF : persistent buffers
+		// was:
+		//skeleton->buffer = RD::get_singleton()->storage_buffer_create(skeleton->data.size() * sizeof(float));
+		skeleton->buffer = RD::get_singleton()->storage_buffer_create(skeleton->data.size() * sizeof(float), Vector<uint8_t>(), 0, RD::BUFFER_CREATION_PERSISTENT_BIT);
+		// </TF>
 		memset(skeleton->data.ptrw(), 0, skeleton->data.size() * sizeof(float));
 
 		_skeleton_make_dirty(skeleton);

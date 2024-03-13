@@ -343,6 +343,10 @@ public:
 		TEXTURE_USAGE_CAN_COPY_TO_BIT = (1 << 8),
 		TEXTURE_USAGE_INPUT_ATTACHMENT_BIT = (1 << 9),
 		TEXTURE_USAGE_VRS_ATTACHMENT_BIT = (1 << 10),
+		//<TF>
+		//@ShadyTF : lazily allocated buffers
+		TEXTURE_USAGE_LAZILY_ALLOCATED_BIT = (1 << 11),
+		//</TF>
 	};
 
 	struct TextureFormat {

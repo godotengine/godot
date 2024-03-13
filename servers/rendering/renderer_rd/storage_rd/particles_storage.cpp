@@ -1459,7 +1459,13 @@ void ParticlesStorage::update_particles() {
 				if (particles->frame_params_buffer.is_valid()) {
 					RD::get_singleton()->free(particles->frame_params_buffer);
 				}
-				particles->frame_params_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticlesFrameParams) * trail_steps);
+				
+				// <TF>
+				// @ShadyTF : persistent buffers
+				// was:
+				//particles->frame_params_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticlesFrameParams) * trail_steps);
+				particles->frame_params_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticlesFrameParams) * trail_steps, Vector<uint8_t>(), 0, RD::BUFFER_CREATION_PERSISTENT_BIT);
+				// </TF>
 			}
 
 			if (particles->trail_bind_poses.size() > 1 && particles->trail_bind_pose_buffer.is_null()) {

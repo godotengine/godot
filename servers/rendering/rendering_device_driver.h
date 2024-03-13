@@ -192,6 +192,10 @@ public:
 		BUFFER_USAGE_INDEX_BIT = (1 << 6),
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
+		// <TF>
+		// @ShadyTF : bit for persistenly mapped buffers
+		BUFFER_USAGE_PERSISTENT_BIT = (1 << 9)
+		// </TF>
 	};
 
 	enum {
@@ -205,6 +209,11 @@ public:
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) = 0;
 	virtual uint8_t *buffer_map(BufferID p_buffer) = 0;
 	virtual void buffer_unmap(BufferID p_buffer) = 0;
+	// <TF>
+	// @ShadyTF
+	// adding UMA feature, when possible a valid persistent address is returned and can be used directly
+	virtual uint8_t* buffer_get_persistent_address(BufferID p_buffer) = 0;
+	// </TF>
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -469,6 +478,10 @@ public:
 	// Only meaningful if API_TRAIT_SHADER_CHANGE_INVALIDATION is SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH.
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) { return 0; }
 	virtual void shader_free(ShaderID p_shader) = 0;
+	// <TF>
+	// @ShadyTF unload shader modules
+	virtual void shader_destroy_modules(ShaderID p_shader) = 0;
+	// </TF>
 
 protected:
 	// An optional service to implementations.
@@ -768,6 +781,10 @@ public:
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) = 0;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) = 0;
 	virtual uint64_t get_total_memory_used() = 0;
+	// <TF>
+	// @ShadyTF lazily allocated memory
+	virtual uint64_t get_lazily_memory_used() = 0;
+	// </TF>
 	virtual uint64_t limit_get(Limit p_limit) = 0;
 	virtual uint64_t api_trait_get(ApiTrait p_trait);
 	virtual bool has_feature(Features p_feature) = 0;

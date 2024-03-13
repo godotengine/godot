@@ -181,6 +181,28 @@ private:
 	Buffer *_get_buffer_from_owner(RID p_buffer);
 	Error _buffer_update(Buffer *p_buffer, RID p_buffer_id, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_queue = false, uint32_t p_required_align = 32);
 
+	// <TF>
+	// @ShadyTF persistently mapped buffers
+	struct PersistentBufferSet {
+		int usage_index;
+		Vector<Buffer> buffers;
+	};
+	struct PersistentBuffer {
+		uint32_t size;
+		BitField<RDD::BufferUsageBits> usage;
+		Vector<PersistentBufferSet> buffer_set;
+	};
+	RID_Owner<PersistentBuffer> persistent_buffer_owner;
+	void persistent_uniform_buffer_advance(RID p_buffer);
+	void persistent_uniform_buffers_reset();
+	void update_perf_report();
+	// flag for using persistent buffers;
+	bool persistent_buffer_enabled = true;
+	uint32_t gpu_copy_count = 0;
+	uint32_t direct_copy_count = 0;
+	uint32_t copy_bytes_count = 0;
+	String perf_report_text;
+	// </TF>
 	RID_Owner<Buffer> uniform_buffer_owner;
 	RID_Owner<Buffer> storage_buffer_owner;
 	RID_Owner<Buffer> texture_buffer_owner;
@@ -816,6 +838,11 @@ public:
 	RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 	RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID());
 	RID shader_create_placeholder();
+	// <TF>
+	// @ShadyTF unload shader modules
+	void shader_destroy_modules(RID p_shaderRID);
+	void _destroy_all_shader_modules();
+	// </TF>
 
 	uint64_t shader_get_vertex_input_attribute_mask(RID p_shader);
 
@@ -827,8 +854,29 @@ public:
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
 	};
 
-	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
-	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0);
+	// <TF>
+	// @ShadyTF
+	// was
+	//
+	//RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	//RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+
+	String get_perf_report() const;
+	/*****************/
+	/**** BUFFERS ****/
+	/*****************/
+
+	enum BufferCreationBits {
+		BUFFER_CREATION_PERSISTENT_BIT = (1 << 0),
+		BUFFER_CREATION_LINEAR_BIT = (1 << 1)
+	};
+
+	RID linear_buffer_create(uint32_t p_size_bytes, bool p_storage, BitField<StorageBufferUsage> p_usage = 0);
+	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<BufferCreationBits> p_creation_bits = 0);
+	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
+
+	// <TF>
+
 	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
 	struct Uniform {
@@ -1441,9 +1489,16 @@ VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 VARIANT_ENUM_CAST(RenderingDevice::Features)
 VARIANT_ENUM_CAST(RenderingDevice::BreadcrumbMarker)
 
+
 #ifndef DISABLE_DEPRECATED
 VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);
 #endif
+
+// <TF>
+// @ShadyTF
+VARIANT_BITFIELD_CAST(RenderingDevice::BufferCreationBits);
+// </TF>
+
 
 typedef RenderingDevice RD;
 

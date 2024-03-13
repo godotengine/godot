@@ -1699,6 +1699,24 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
     VmaAllocator VMA_NOT_NULL allocator,
     VmaTotalStatistics* VMA_NOT_NULL pStats);
 
+// <TF>
+// @ShadyTF lazily allocated memory
+// adding extra method because vma includes lazily allocated memory in the total bytes
+/** \brief Retrieves lazily allocated bytes
+
+This function is called "calculate" not "get" because it has to traverse all
+internal data structures, so it may be quite slow. Use it for debugging purposes.
+For faster but more brief statistics suitable to be called every frame or every allocation,
+use vmaGetHeapBudgets().
+
+Note that when using allocator from multiple threads, returned information may immediately
+become outdated.
+*/
+VMA_CALL_PRE uint64_t VMA_CALL_POST vmaCalculateLazilyAllocatedBytes(
+    VmaAllocator VMA_NOT_NULL allocator);
+
+// </TF>
+
 /** \brief Retrieves information about current memory usage and budget for all memory heaps.
 
 \param allocator
@@ -14806,6 +14824,31 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
     allocator->CalculateStatistics(pStats);
 }
+
+// <TF>
+// @ShadyTF lazily allocated memory
+// adding extra method because vma includes lazily allocated memory in the total bytes
+VMA_CALL_PRE uint64_t VMA_CALL_POST vmaCalculateLazilyAllocatedBytes(
+    VmaAllocator allocator)
+{
+    VMA_ASSERT(allocator);
+    VMA_DEBUG_GLOBAL_MUTEX_LOCK
+	VmaTotalStatistics stats;
+    allocator->CalculateStatistics(&stats);
+	uint64_t total_lazilily_allocated_bytes = 0;
+	for (uint32_t heapIndex = 0; heapIndex < allocator->GetMemoryHeapCount(); ++heapIndex) {
+		for (uint32_t typeIndex = 0; typeIndex < allocator->GetMemoryTypeCount(); ++typeIndex) {
+			if (allocator->MemoryTypeIndexToHeapIndex(typeIndex) == heapIndex) {
+				VkMemoryPropertyFlags flags = allocator->m_MemProps.memoryTypes[typeIndex].propertyFlags;
+				if (flags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)
+					total_lazilily_allocated_bytes += stats.memoryType[typeIndex].statistics.allocationBytes;
+			}
+		}
+	}
+	return total_lazilily_allocated_bytes;
+}
+// </TF>
+
 
 VMA_CALL_PRE void VMA_CALL_POST vmaGetHeapBudgets(
     VmaAllocator allocator,

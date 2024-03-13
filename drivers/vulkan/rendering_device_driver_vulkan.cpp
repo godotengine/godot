@@ -457,6 +457,20 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 #endif
 	_register_requested_device_extension(VK_EXT_DEVICE_FAULT_EXTENSION_NAME, false);
 
+	// <TF>
+	// @ShadyTF debug marker extensions
+	// Should be last element in the array
+
+#ifdef DEV_ENABLED
+	bool want_debug_markers = true;
+#else
+	bool want_debug_markers = OS::get_singleton()->is_stdout_verbose();
+#endif
+	if (want_debug_markers) {
+		_register_requested_device_extension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME, false);
+	}
+	// </TF>
+
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
@@ -1002,6 +1016,16 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		if (enabled_device_extension_names.has(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
 			device_functions.CreateRenderPass2KHR = PFN_vkCreateRenderPass2KHR(functions.GetDeviceProcAddr(vk_device, "vkCreateRenderPass2KHR"));
 		}
+
+	// <TF>
+	// @ShadyTF debug marker extensions
+	if (enabled_device_extension_names.has(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+		vkCmdDebugMarkerBeginEXT = (PFN_vkCmdDebugMarkerBeginEXT)functions.GetDeviceProcAddr(vk_device, "vkCmdDebugMarkerBeginEXT");
+		vkCmdDebugMarkerEndEXT = (PFN_vkCmdDebugMarkerEndEXT)functions.GetDeviceProcAddr(vk_device, "vkCmdDebugMarkerEndEXT");
+		vkCmdDebugMarkerInsertEXT = (PFN_vkCmdDebugMarkerInsertEXT)functions.GetDeviceProcAddr(vk_device, "vkCmdDebugMarkerInsertEXT");
+		vkDebugMarkerSetObjectNameEXT = (PFN_vkDebugMarkerSetObjectNameEXT)functions.GetDeviceProcAddr(vk_device, "vkDebugMarkerSetObjectNameEXT");
+	}
+	// </TF>
 	}
 
 	return OK;
@@ -1168,6 +1192,93 @@ bool RenderingDeviceDriverVulkan::_recreate_image_semaphore(CommandQueue *p_comm
 
 	return true;
 }
+// <TF>
+// @ShadyTF debug marker extensions
+VkDebugReportObjectTypeEXT RenderingDeviceDriverVulkan::_convert_to_debug_report_objectType(VkObjectType p_object_type){
+	switch (p_object_type) {
+		case VK_OBJECT_TYPE_UNKNOWN:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT;
+		case VK_OBJECT_TYPE_INSTANCE:
+	        return VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT;
+		case VK_OBJECT_TYPE_PHYSICAL_DEVICE:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT;
+		case VK_OBJECT_TYPE_DEVICE:
+	        return VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT;
+	    case VK_OBJECT_TYPE_QUEUE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT;
+	    case VK_OBJECT_TYPE_SEMAPHORE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT;
+	    case VK_OBJECT_TYPE_COMMAND_BUFFER:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT;
+	    case VK_OBJECT_TYPE_FENCE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT;
+	    case VK_OBJECT_TYPE_DEVICE_MEMORY:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT;
+	    case VK_OBJECT_TYPE_BUFFER:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT;
+	    case VK_OBJECT_TYPE_IMAGE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT;
+	    case VK_OBJECT_TYPE_EVENT:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT;
+	    case VK_OBJECT_TYPE_QUERY_POOL:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT;
+	    case VK_OBJECT_TYPE_BUFFER_VIEW:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT;
+	    case VK_OBJECT_TYPE_IMAGE_VIEW:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT;
+	    case VK_OBJECT_TYPE_SHADER_MODULE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT;
+	    case VK_OBJECT_TYPE_PIPELINE_CACHE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT;
+	    case VK_OBJECT_TYPE_PIPELINE_LAYOUT:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT;
+	    case VK_OBJECT_TYPE_RENDER_PASS:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT;
+	    case VK_OBJECT_TYPE_PIPELINE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT;
+	    case VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT;
+	    case VK_OBJECT_TYPE_SAMPLER:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT;
+	    case VK_OBJECT_TYPE_DESCRIPTOR_POOL:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT;
+	    case VK_OBJECT_TYPE_DESCRIPTOR_SET:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT;
+	    case VK_OBJECT_TYPE_FRAMEBUFFER:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT;
+	    case VK_OBJECT_TYPE_COMMAND_POOL:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT;
+	    case VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT;
+	    case VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT;
+		case VK_OBJECT_TYPE_SURFACE_KHR:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT;
+	    case VK_OBJECT_TYPE_SWAPCHAIN_KHR:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT;
+	    case VK_OBJECT_TYPE_DISPLAY_KHR:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_KHR_EXT;
+	    case VK_OBJECT_TYPE_DISPLAY_MODE_KHR:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DISPLAY_MODE_KHR_EXT;
+	    case VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT_EXT;
+	    case VK_OBJECT_TYPE_CU_MODULE_NVX:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_CU_MODULE_NVX_EXT;
+	    case VK_OBJECT_TYPE_CU_FUNCTION_NVX:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_CU_FUNCTION_NVX_EXT;
+	    case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR_EXT;
+		case VK_OBJECT_TYPE_VALIDATION_CACHE_EXT:
+			return VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT;
+	    case VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV:
+		    return VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_NV_EXT;
+		default:
+			break;
+	}
+    
+    return VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT;
+}
+// </TF>
 
 void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) {
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
@@ -1181,6 +1292,23 @@ void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, u
 		name_info.pObjectName = obj_data.get_data();
 		functions.SetDebugUtilsObjectNameEXT(vk_device, &name_info);
 	}
+	// <TF>
+	// @ShadyTF debug marker extensions
+	else {
+		if (functions.vkDebugMarkerSetObjectNameEXT != nullptr) {
+			CharString obj_data = p_object_name.utf8();
+			VkDebugMarkerObjectNameInfoEXT name_info;
+			name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+			name_info.pNext = nullptr;
+			name_info.objectType = _convert_to_debug_report_objectType( p_object_type );
+			name_info.object = p_object_handle;
+			name_info.pObjectName = obj_data.get_data();
+			functions.vkDebugMarkerSetObjectNameEXT(vk_device, &name_info);
+		}
+	}
+	// </TF>
+
+
 }
 
 Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t p_frame_count) {
@@ -1299,7 +1427,14 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 		} break;
 		case MEMORY_ALLOCATION_TYPE_GPU: {
 			alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-
+			// <TF>
+			// @ShadyTF
+			// condition to use persistent memory, UMA, condition would be passed in
+			if (p_usage & BUFFER_USAGE_PERSISTENT_BIT ) {
+				alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+			}
+			// </TF>
 			if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
 				uint32_t mem_type_index = 0;
 				vmaFindMemoryTypeIndexForBufferInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
@@ -1324,11 +1459,16 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 
 	// Bookkeep.
 
+
 	BufferInfo *buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
 	buf_info->vk_buffer = vk_buffer;
 	buf_info->allocation.handle = allocation;
 	buf_info->allocation.size = alloc_info.size;
 	buf_info->size = p_size;
+	// <TF>
+	// @ShadyTF - Store persistent address
+	buf_info->pMappedAddress = (uint8_t*)alloc_info.pMappedData;
+	// </TF>
 
 	return BufferID(buf_info);
 }
@@ -1379,6 +1519,15 @@ void RenderingDeviceDriverVulkan::buffer_unmap(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
 	vmaUnmapMemory(allocator, buf_info->allocation.handle);
 }
+
+// <TF>
+// @ShadyTF : return persistent mapped adreess
+uint8_t* RenderingDeviceDriverVulkan::buffer_get_persistent_address( BufferID p_buffer ) {
+	//VkBuffer vk_buffer = (VkBuffer)p_buffer.id;
+	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+	return buf_info->pMappedAddress;
+}
+// </TF>
 
 /*****************/
 /**** TEXTURE ****/
@@ -1541,6 +1690,27 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 
 	VmaAllocationCreateInfo alloc_create_info = {};
 	alloc_create_info.flags = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT : 0;
+
+
+	//<TF>
+	//@ShadyTF : lazily allocated buffers
+	if (p_format.usage_bits & TEXTURE_USAGE_LAZILY_ALLOCATED_BIT) {
+		uint32_t memoryTypeIndex = 0;
+		VmaAllocationCreateInfo lazy_memory_requirements = alloc_create_info;
+		lazy_memory_requirements.usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
+		VkResult result = vmaFindMemoryTypeIndex(allocator, UINT32_MAX, &lazy_memory_requirements, &memoryTypeIndex);
+		if (VK_SUCCESS == result) {
+			alloc_create_info = lazy_memory_requirements;
+			create_info.usage |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+			// VUID-VkImageCreateInfo-usage-00963 :
+			// If usage includes VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+			// then bits other than VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			// and VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT must not be set
+			create_info.usage &= (VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
+		}
+	}
+	//</TF>
+
 	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
 		uint32_t mem_type_index = 0;
 		vmaFindMemoryTypeIndexForImageInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
@@ -3488,9 +3658,40 @@ void RenderingDeviceDriverVulkan::shader_free(ShaderID p_shader) {
 	for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
 		vkDestroyShaderModule(vk_device, shader_info->vk_stages_create_info[i].module, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE));
 	}
+	// <TF>
+	// @ShadyTF unload shader modules
+	// Was :
+	//for (uint32_t i = 0; i < si.vk_stages_create_info.size(); i++) {
+	//	if (si.vk_stages_create_info[i].module) {
+	//		vkDestroyShaderModule(vk_device, si.vk_stages_create_info[i].module, nullptr);
+	//	}
+	//}
+	shader_destroy_modules( p_shader );
+	// </TF>
 
 	VersatileResource::free(resources_allocator, shader_info);
 }
+
+// <TF>
+// @ShadyTF unload shader modules
+
+
+void RenderingDeviceDriverVulkan::shader_destroy_modules(ShaderID p_shader) {
+	auto *E = (RBSet<ShaderInfo>::Element *)p_shader.id;
+	ShaderInfo &si = E->get();
+
+	for (uint32_t i = 0; i < si.vk_stages_create_info.size(); i++) {
+		if (si.vk_stages_create_info[i].module) {
+			vkDestroyShaderModule(vk_device, si.vk_stages_create_info[i].module, nullptr);
+			si.vk_stages_create_info[i].module = VK_NULL_HANDLE;
+		}
+	}
+	si.vk_stages_create_info.clear();
+}
+
+// </TF>
+
+
 
 /*********************/
 /**** UNIFORM SET ****/
@@ -4679,6 +4880,10 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	pipeline_create_info.pNext = graphics_pipeline_nextptr;
 	pipeline_create_info.stageCount = shader_info->vk_stages_create_info.size();
 
+	// <TF>
+	// @ShadyTF unload shader modules
+	ERR_FAIL_COND_V_MSG(pipeline_create_info.stageCount == 0, PipelineID(), "Cannot create pipeline without shader module, please make sure shader modules are destroyed only after all associated pipelines are created");
+	// </TF>
 	VkPipelineShaderStageCreateInfo *vk_pipeline_stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, shader_info->vk_stages_create_info.size());
 
 	for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
@@ -4876,6 +5081,23 @@ void RenderingDeviceDriverVulkan::command_timestamp_write(CommandBufferID p_cmd_
 
 void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+	// <TF>
+	// @ShadyTF debug marker extensions
+	if (!context->is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
+		if (context->is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+			VkDebugMarkerMarkerInfoEXT marker;
+			marker.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+			marker.pNext = nullptr;
+			marker.pMarkerName = p_label_name;
+			marker.color[0] = p_color[0];
+			marker.color[1] = p_color[1];
+			marker.color[2] = p_color[2];
+			marker.color[3] = p_color[3];
+			vkCmdDebugMarkerBeginEXT((VkCommandBuffer)p_cmd_buffer.id, &marker);
+		}
+		return;
+	}
+	// </TF>
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
@@ -4890,6 +5112,16 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer) {
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
 	functions.CmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
+	// <TF>
+	// @ShadyTF debug marker extensions
+	if (!context->is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
+		if (context->is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+			vkCmdDebugMarkerEndEXT((VkCommandBuffer)p_cmd_buffer.id);
+		}
+		return;
+	}
+	// </TF>
+	vkCmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
 }
 
 /****************/
@@ -5104,6 +5336,13 @@ uint64_t RenderingDeviceDriverVulkan::get_total_memory_used() {
 	vmaCalculateStatistics(allocator, &stats);
 	return stats.total.statistics.allocationBytes;
 }
+
+// <TF>
+// @ShadyTF lazily allocated memory
+uint64_t RenderingDeviceDriverVulkan::get_lazily_memory_used() {
+	return vmaCalculateLazilyAllocatedBytes(allocator);
+}
+// </TF>
 
 uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 	const VkPhysicalDeviceLimits &limits = physical_device_properties.limits;
