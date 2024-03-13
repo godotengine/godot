@@ -83,7 +83,7 @@ struct VariantCaster<const T &> {
 	}
 };
 
-#define VARIANT_ENUM_CAST(m_enum)                                                                                       \
+#define TEMPL_VARIANT_ENUM_CAST(m_enum)                                                                                 \
 	MAKE_ENUM_TYPE_INFO(m_enum)                                                                                         \
 	template <>                                                                                                         \
 	struct VariantCaster<m_enum> {                                                                                      \
@@ -111,7 +111,7 @@ struct VariantCaster<const T &> {
 		static _FORCE_INLINE_ void set(Variant *v, m_enum p_value) { *VariantInternal::get_int(v) = (int64_t)p_value; } \
 	};
 
-#define VARIANT_BITFIELD_CAST(m_enum)                                                                                                       \
+#define TEMPL_VARIANT_BITFIELD_CAST(m_enum)                                                                                                 \
 	MAKE_BITFIELD_TYPE_INFO(m_enum)                                                                                                         \
 	template <>                                                                                                                             \
 	struct VariantCaster<BitField<m_enum>> {                                                                                                \
@@ -126,18 +126,65 @@ struct VariantCaster<const T &> {
 		}                                                                                                                                   \
 		typedef int64_t EncodeT;                                                                                                            \
 		_FORCE_INLINE_ static void encode(BitField<m_enum> p_val, const void *p_ptr) {                                                      \
-			*(int64_t *)p_ptr = p_val;                                                                                                      \
+			*(int64_t *)p_ptr = (int64_t)p_val;                                                                                             \
 		}                                                                                                                                   \
 	};                                                                                                                                      \
 	template <>                                                                                                                             \
 	struct ZeroInitializer<BitField<m_enum>> {                                                                                              \
-		static void initialize(BitField<m_enum> &value) { value = 0; }                                                                      \
+		static void initialize(BitField<m_enum> &value) { value = (m_enum)0; }                                                              \
 	};                                                                                                                                      \
 	template <>                                                                                                                             \
 	struct VariantInternalAccessor<BitField<m_enum>> {                                                                                      \
 		static _FORCE_INLINE_ BitField<m_enum> get(const Variant *v) { return BitField<m_enum>(*VariantInternal::get_int(v)); }             \
 		static _FORCE_INLINE_ void set(Variant *v, BitField<m_enum> p_value) { *VariantInternal::get_int(v) = p_value.operator int64_t(); } \
 	};
+
+#define ENUM_CLASS_BITWISE_OPERATORS(m_enum)                                                                                                    \
+	constexpr m_enum &operator|=(m_enum &p_a, m_enum p_b) {                                                                                     \
+		return p_a = static_cast<m_enum>(static_cast<std::underlying_type_t<m_enum>>(p_a) | static_cast<std::underlying_type_t<m_enum>>(p_b));  \
+	}                                                                                                                                           \
+	constexpr m_enum operator|(m_enum p_a, m_enum p_b) { return p_a |= p_b; }                                                                   \
+	constexpr m_enum &operator&=(m_enum &p_a, m_enum p_b) {                                                                                     \
+		return p_a = static_cast<m_enum>(static_cast<std::underlying_type_t<m_enum>>(p_a) & static_cast<std::underlying_type_t<m_enum>>(p_b));  \
+	}                                                                                                                                           \
+	constexpr m_enum operator&(m_enum p_a, m_enum p_b) { return p_a &= p_b; }                                                                   \
+	constexpr m_enum &operator^=(m_enum &p_a, m_enum p_b) {                                                                                     \
+		return p_a = static_cast<m_enum>(static_cast<std::underlying_type_t<m_enum>>(p_a) ^ static_cast<std::underlying_type_t<m_enum>>(p_b));  \
+	}                                                                                                                                           \
+	constexpr m_enum operator^(m_enum p_a, m_enum p_b) { return p_a ^= p_b; }                                                                   \
+	constexpr m_enum &operator<<=(m_enum &p_a, m_enum p_b) {                                                                                    \
+		return p_a = static_cast<m_enum>(static_cast<std::underlying_type_t<m_enum>>(p_a) << static_cast<std::underlying_type_t<m_enum>>(p_b)); \
+	}                                                                                                                                           \
+	constexpr m_enum operator<<(m_enum p_a, m_enum p_b) { return p_a <<= p_b; }                                                                 \
+	constexpr m_enum &operator>>=(m_enum &p_a, m_enum p_b) {                                                                                    \
+		return p_a = static_cast<m_enum>(static_cast<std::underlying_type_t<m_enum>>(p_a) >> static_cast<std::underlying_type_t<m_enum>>(p_b)); \
+	}                                                                                                                                           \
+	constexpr m_enum operator>>(m_enum p_a, m_enum p_b) { return p_a >>= p_b; }                                                                 \
+	constexpr m_enum operator~(m_enum p_a) {                                                                                                    \
+		return static_cast<m_enum>(~static_cast<std::underlying_type_t<m_enum>>(p_a));                                                          \
+	}
+
+#define VARIANT_ENUM_CAST(m_enum)                                                                                                                                \
+	static_assert(std::is_enum_v<m_enum>);                                                                                                                       \
+	static_assert(std::is_convertible_v<m_enum, std::underlying_type_t<m_enum>>, "Tried legacy enum cast with enum class. Use VARIANT_ENUM_CLASS_CAST instead"); \
+	TEMPL_VARIANT_ENUM_CAST(m_enum)
+
+#define VARIANT_BITFIELD_CAST(m_enum)                                                                                                                                \
+	static_assert(std::is_enum_v<m_enum>);                                                                                                                           \
+	static_assert(std::is_convertible_v<m_enum, std::underlying_type_t<m_enum>>, "Tried legacy enum cast with enum class. Use VARIANT_BITFIELD_CLASS_CAST instead"); \
+	TEMPL_VARIANT_BITFIELD_CAST(m_enum)
+
+#define VARIANT_ENUM_CLASS_CAST(m_enum)                                                                                                                     \
+	static_assert(std::is_enum_v<m_enum>);                                                                                                                  \
+	static_assert(!std::is_convertible_v<m_enum, std::underlying_type_t<m_enum>>, "Tried enum class cast with legacy enum. Use VARIANT_ENUM_CAST instead"); \
+	ENUM_CLASS_BITWISE_OPERATORS(m_enum)                                                                                                                    \
+	TEMPL_VARIANT_ENUM_CAST(m_enum)
+
+#define VARIANT_BITFIELD_CLASS_CAST(m_enum)                                                                                                                     \
+	static_assert(std::is_enum_v<m_enum>);                                                                                                                      \
+	static_assert(!std::is_convertible_v<m_enum, std::underlying_type_t<m_enum>>, "Tried enum class cast with legacy enum. Use VARIANT_BITFIELD_CAST instead"); \
+	ENUM_CLASS_BITWISE_OPERATORS(m_enum)                                                                                                                        \
+	TEMPL_VARIANT_BITFIELD_CAST(m_enum)
 
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);
@@ -148,21 +195,21 @@ VARIANT_ENUM_CAST(Vector3::Axis);
 VARIANT_ENUM_CAST(Vector3i::Axis);
 VARIANT_ENUM_CAST(Vector4::Axis);
 VARIANT_ENUM_CAST(Vector4i::Axis);
-VARIANT_ENUM_CAST(EulerOrder);
+VARIANT_ENUM_CLASS_CAST(EulerOrder);
 VARIANT_ENUM_CAST(Projection::Planes);
 
 VARIANT_ENUM_CAST(Error);
 VARIANT_ENUM_CAST(Side);
 VARIANT_ENUM_CAST(ClockDirection);
 VARIANT_ENUM_CAST(Corner);
-VARIANT_ENUM_CAST(HatDir);
-VARIANT_BITFIELD_CAST(HatMask);
-VARIANT_ENUM_CAST(JoyAxis);
-VARIANT_ENUM_CAST(JoyButton);
+VARIANT_ENUM_CLASS_CAST(HatDir);
+VARIANT_BITFIELD_CLASS_CAST(HatMask);
+VARIANT_ENUM_CLASS_CAST(JoyAxis);
+VARIANT_ENUM_CLASS_CAST(JoyButton);
 
-VARIANT_ENUM_CAST(MIDIMessage);
-VARIANT_ENUM_CAST(MouseButton);
-VARIANT_BITFIELD_CAST(MouseButtonMask);
+VARIANT_ENUM_CLASS_CAST(MIDIMessage);
+VARIANT_ENUM_CLASS_CAST(MouseButton);
+VARIANT_BITFIELD_CLASS_CAST(MouseButtonMask);
 VARIANT_ENUM_CAST(Orientation);
 VARIANT_ENUM_CAST(HorizontalAlignment);
 VARIANT_ENUM_CAST(VerticalAlignment);
@@ -174,9 +221,9 @@ VARIANT_ENUM_CAST(Variant::Operator);
 
 // Key
 
-VARIANT_ENUM_CAST(Key);
-VARIANT_BITFIELD_CAST(KeyModifierMask);
-VARIANT_ENUM_CAST(KeyLocation);
+VARIANT_ENUM_CLASS_CAST(Key);
+VARIANT_BITFIELD_CLASS_CAST(KeyModifierMask);
+VARIANT_ENUM_CLASS_CAST(KeyLocation);
 
 static inline Key &operator|=(Key &a, BitField<KeyModifierMask> b) {
 	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b.operator int64_t()));

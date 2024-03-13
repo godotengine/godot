@@ -661,7 +661,7 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 }
 
 BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
-	BitField<MouseButtonMask> last_button_state = 0;
+	BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 
 	if (GetKeyState(VK_LBUTTON) & (1 << 15)) {
 		last_button_state.set_flag(MouseButtonMask::LEFT);
@@ -4254,7 +4254,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb.instantiate();
 			mb->set_window_id(window_id);
 
-			BitField<MouseButtonMask> last_button_state = 0;
+			BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 			if (IS_POINTER_FIRSTBUTTON_WPARAM(wParam)) {
 				last_button_state.set_flag(MouseButtonMask::LEFT);
 				mb->set_button_index(MouseButton::LEFT);
@@ -4420,7 +4420,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
 			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
 
-			BitField<MouseButtonMask> last_button_state = 0;
+			BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 			if (IS_POINTER_FIRSTBUTTON_WPARAM(wParam)) {
 				last_button_state.set_flag(MouseButtonMask::LEFT);
 			}
