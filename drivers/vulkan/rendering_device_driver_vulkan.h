@@ -132,6 +132,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	StorageBufferCapabilities storage_buffer_capabilities;
 	bool pipeline_cache_control_support = false;
 	bool device_fault_support = false;
+	bool device_memory_report_support = false;
 #if defined(ANDROID_ENABLED)
 	// Swappy frame pacer for Android
 	bool swappy_frame_pacer_enable = false;

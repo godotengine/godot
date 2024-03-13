@@ -452,6 +452,11 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
 	}
 
+#if defined(VK_TRACK_DEVICE_MEMORY)
+	_register_requested_device_extension(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME, false);
+#endif
+	_register_requested_device_extension(VK_EXT_DEVICE_FAULT_EXTENSION_NAME, false);
+
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
@@ -727,6 +732,14 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		if (enabled_device_extension_names.has(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
 			pipeline_cache_control_support = pipeline_cache_control_features.pipelineCreationCacheControl;
 		}
+
+		if (enabled_device_extension_names.has(VK_EXT_DEVICE_FAULT_EXTENSION_NAME)) {
+			device_fault_support = true;
+		}
+
+		if (enabled_device_extension_names.has(VK_EXT_DEVICE_MEMORY_REPORT_EXTENSION_NAME)) {
+			device_memory_report_support = true;
+		}
 	}
 
 	if (functions.GetPhysicalDeviceProperties2 != nullptr) {
@@ -892,6 +905,25 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		pipeline_cache_control_features.pNext = create_info_next;
 		pipeline_cache_control_features.pipelineCreationCacheControl = pipeline_cache_control_support;
 		create_info_next = &pipeline_cache_control_features;
+	}
+
+	VkPhysicalDeviceFaultFeaturesEXT deviceFaultFeatures = {};
+	if (device_fault_support) {
+		deviceFaultFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT;
+		deviceFaultFeatures.pNext = create_info_next;
+		create_info_next = &deviceFaultFeatures;
+	}
+
+	VkDeviceDeviceMemoryReportCreateInfoEXT memory_report_info = {};
+
+	if (device_memory_report_support) {
+		memory_report_info.sType = VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
+		memory_report_info.pfnUserCallback = RenderingContextDriverVulkan::memory_report_callback;
+		memory_report_info.pNext = create_info_next;
+		memory_report_info.flags = 0;
+		memory_report_info.pUserData = this;
+
+		create_info_next = &memory_report_info;
 	}
 
 	VkPhysicalDeviceVulkan11Features vulkan_1_1_features = {};
