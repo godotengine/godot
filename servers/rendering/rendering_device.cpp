@@ -2702,6 +2702,8 @@ RID RenderingDevice::linear_buffer_create(uint32_t p_size_bytes, bool p_storage,
 	}
 	
 
+	static uint32_t frame_count = MAX(2U, uint32_t(GLOBAL_GET("rendering/rendering_device/vsync/frame_queue_size")));
+	
 	for (int i = 0; i < frame_count; i++) {
 		Buffer buffer;
 		buffer.size = p_size_bytes;

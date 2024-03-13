@@ -77,6 +77,14 @@ public:
 		PFN_vkDebugReportMessageEXT DebugReportMessageEXT = nullptr;
 		PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT = nullptr;
 
+		// <TF>
+		// @ShadyTF debug marker extensions
+		PFN_vkCmdDebugMarkerBeginEXT vkCmdDebugMarkerBeginEXT = nullptr;
+		PFN_vkCmdDebugMarkerEndEXT vkCmdDebugMarkerEndEXT = nullptr;
+		PFN_vkCmdDebugMarkerInsertEXT vkCmdDebugMarkerInsertEXT = nullptr;
+		PFN_vkDebugMarkerSetObjectNameEXT vkDebugMarkerSetObjectNameEXT = nullptr;
+		// </TF>
+
 		bool debug_report_functions_available() const {
 			return CreateDebugReportCallbackEXT != nullptr &&
 					DebugReportMessageEXT != nullptr &&
@@ -109,6 +117,10 @@ private:
 	// Static callbacks.
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(VkDebugUtilsMessageSeverityFlagBitsEXT p_message_severity, VkDebugUtilsMessageTypeFlagsEXT p_message_type, const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data, void *p_user_data);
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_report_callback(VkDebugReportFlagsEXT p_flags, VkDebugReportObjectTypeEXT p_object_type, uint64_t p_object, size_t p_location, int32_t p_message_code, const char *p_layer_prefix, const char *p_message, void *p_user_data);
+	// <TF>
+	// @ShadyTF debug marker extensions
+	VkDebugReportObjectTypeEXT _convert_to_debug_report_objectType(VkObjectType p_object_type);
+	// </TF>
 
 protected:
 	Error _find_validation_layers(TightLocalVector<const char *> &r_layer_names) const;

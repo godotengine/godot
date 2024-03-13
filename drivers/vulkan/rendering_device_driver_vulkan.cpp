@@ -5083,8 +5083,8 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
 	// <TF>
 	// @ShadyTF debug marker extensions
-	if (!context->is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
-		if (context->is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
+	if (!functions.CmdBeginDebugUtilsLabelEXT) {
+		if (functions.vkCmdDebugMarkerBeginEXT) {
 			VkDebugMarkerMarkerInfoEXT marker;
 			marker.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 			marker.pNext = nullptr;
@@ -5093,7 +5093,7 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 			marker.color[1] = p_color[1];
 			marker.color[2] = p_color[2];
 			marker.color[3] = p_color[3];
-			vkCmdDebugMarkerBeginEXT((VkCommandBuffer)p_cmd_buffer.id, &marker);
+			functions.vkCmdDebugMarkerBeginEXT((VkCommandBuffer)p_cmd_buffer.id, &marker);
 		}
 		return;
 	}
@@ -5111,17 +5111,16 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 
 void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer) {
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
-	functions.CmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
 	// <TF>
 	// @ShadyTF debug marker extensions
-	if (!context->is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
-		if (context->is_device_extension_enabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
-			vkCmdDebugMarkerEndEXT((VkCommandBuffer)p_cmd_buffer.id);
+	if (!functions.CmdEndDebugUtilsLabelEXT) {
+		if (functions.vkCmdDebugMarkerEndEXT) {
+			functions.vkCmdDebugMarkerEndEXT((VkCommandBuffer)p_cmd_buffer.id);
 		}
 		return;
 	}
 	// </TF>
-	vkCmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
+	functions.CmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
 }
 
 /****************/
