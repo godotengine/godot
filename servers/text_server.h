@@ -43,6 +43,8 @@ class TypedArray;
 struct Glyph;
 struct CaretInfo;
 
+#define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
+
 class TextServer : public RefCounted {
 	GDCLASS(TextServer, RefCounted);
 
@@ -239,8 +241,8 @@ public:
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 
-	virtual int64_t name_to_tag(const String &p_name) const { return 0; };
-	virtual String tag_to_name(int64_t p_tag) const { return ""; };
+	virtual int64_t name_to_tag(const String &p_name) const;
+	virtual String tag_to_name(int64_t p_tag) const;
 
 	/* Font interface */
 

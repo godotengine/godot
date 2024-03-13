@@ -27,7 +27,7 @@
 			<param index="0" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Creates new buffer for complex text layout, with the given [param direction] and [param orientation]. To free the resulting buffer, use [method free_rid] method.
+				Creates a new buffer for complex text layout, with the given [param direction] and [param orientation]. To free the resulting buffer, use [method free_rid] method.
 				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
 				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
 			</description>
@@ -48,7 +48,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all rendered glyphs information from the cache entry.
+				Removes all rendered glyph information from the cache entry.
 				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
 			</description>
 		</method>
@@ -956,7 +956,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
-				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
+				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping, and rotating glyphs.
 				For example, to simulate italic typeface by slanting, apply the following transform [code]Transform2D(1.0, slant, 0.0, 1.0, 0.0, 0.0)[/code].
 			</description>
 		</method>
@@ -1115,7 +1115,7 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Converts readable feature, variation, script or language name to OpenType tag.
+				Converts readable feature, variation, script, or language name to OpenType tag.
 			</description>
 		</method>
 		<method name="parse_number" qualifiers="const">
@@ -1173,7 +1173,7 @@
 			<param index="3" name="size" type="int" />
 			<param index="4" name="opentype_features" type="Dictionary" default="{}" />
 			<description>
-				Changes text span font, font size and OpenType features, without changing the text.
+				Changes text span font, font size, and OpenType features, without changing the text.
 			</description>
 		</method>
 		<method name="shaped_text_add_object">
@@ -1758,7 +1758,7 @@
 			<return type="String" />
 			<param index="0" name="tag" type="int" />
 			<description>
-				Converts OpenType tag to readable feature, variation, script or language name.
+				Converts OpenType tag to readable feature, variation, script, or language name.
 			</description>
 		</method>
 	</methods>
