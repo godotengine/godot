@@ -1460,7 +1460,7 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("display/window/frame_pacing/android/enable_frame_pacing", false);
 	GLOBAL_DEF("display/window/frame_pacing/android/enable_auto_swap", true);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/frame_pacing/android/target_frame_rate", PROPERTY_HINT_RANGE, "Target frame rate"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/frame_pacing/android/target_frame_rate", PROPERTY_HINT_RANGE, "0.0, 90.0, 1.0"), 60);
 
 	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
