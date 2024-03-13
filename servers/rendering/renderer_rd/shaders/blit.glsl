@@ -3,8 +3,13 @@
 #version 450
 
 #VERSION_DEFINES
-
-layout(push_constant, std140) uniform Pos {
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// Was:
+//layout(push_constant, std140) uniform Pos {
+layout(set = 4, binding = 0, std140) uniform Pos {
+// </TF>
 	vec4 src_rect;
 	vec4 dst_rect;
 	
@@ -44,7 +49,13 @@ void main() {
 
 #VERSION_DEFINES
 
-layout(push_constant, std140) uniform Pos {
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// Was:
+//layout(push_constant, std140) uniform Pos {
+layout(set = 4, binding = 0, std140) uniform Pos {
+// </TF>
 	vec4 src_rect;
 	vec4 dst_rect;
 	

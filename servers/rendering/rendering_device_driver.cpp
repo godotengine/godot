@@ -115,7 +115,19 @@ Error RenderingDeviceDriver::_reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 							may_be_writable = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
-							uniform.type = UNIFORM_TYPE_UNIFORM_BUFFER;
+// <TF>
+// @ShadyTF 
+// Dynamic uniform buffer
+// a uniform buffer with a typename ending with "_dynamic" will be treated as dynamic
+// Was :
+//							uniform.type = UNIFORM_TYPE_UNIFORM_BUFFER;
+							String type_name = binding.type_description->type_name;
+							if (type_name.ends_with("_dynamic")) {
+								uniform.type = UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC;
+							} else {
+								uniform.type = UNIFORM_TYPE_UNIFORM_BUFFER;
+							}
+// </TF>							
 							need_block_size = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {

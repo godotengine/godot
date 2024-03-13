@@ -81,9 +81,16 @@ private:
 		float glow_intensity; //  4 - 44
 		float glow_map_strength; //  4 - 48
 
-		uint32_t glow_mode; //  4 - 52
-		float glow_levels[7]; // 28 - 80
-
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+// swap the members order to correct alignment of UBO
+// Was:
+//		uint32_t glow_mode; //  4 - 52
+//		float glow_levels[7]; // 28 - 80
+		float glow_levels[7]; // 28 - 76
+		uint32_t glow_mode; //  4 - 80
+// </TF>
 		float exposure; //  4 - 84
 		float white; //  4 - 88
 		float auto_exposure_scale; //  4 - 92
@@ -100,6 +107,14 @@ private:
 		RID shader_version;
 		PipelineCacheRD pipelines[TONEMAP_MODE_MAX];
 	} tonemap;
+
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+// new uniform set and uniform buffer for draw call params
+		RID params_uniform_set;
+		RID params_uniform_buffer;
+// <TF>
 
 public:
 	ToneMapper();
@@ -152,6 +167,11 @@ public:
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
 	void tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const TonemapSettings &p_settings);
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+	void prepare_params(RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const TonemapSettings &p_settings);
+// </TF>
 };
 
 } // namespace RendererRD

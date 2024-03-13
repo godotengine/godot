@@ -688,6 +688,63 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	texture_storage->render_target_disable_clear_request(render_target);
 }
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+void RendererSceneRenderRD::_post_process_prepare_params(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
+
+	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+
+	// FIXME: Our input it our internal_texture, shouldn't this be using internal_size ??
+	// Seeing we don't support FSR in our mobile renderer right now target_size = internal_size...
+	Size2i target_size = rb->get_target_size();
+	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8;
+
+	RendererRD::ToneMapper::TonemapSettings tonemap;
+
+	if (p_render_data->environment.is_valid()) {
+		tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
+		tonemap.exposure = environment_get_exposure(p_render_data->environment);
+		tonemap.white = environment_get_white(p_render_data->environment);
+	}
+
+	tonemap.use_glow = false;
+	tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+	tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
+	tonemap.use_auto_exposure = false;
+	tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
+
+	tonemap.use_color_correction = false;
+	tonemap.use_1d_color_correction = false;
+	tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
+
+	if (can_use_effects && p_render_data->environment.is_valid()) {
+		tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
+		tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+		tonemap.contrast = environment_get_adjustments_contrast(p_render_data->environment);
+		tonemap.saturation = environment_get_adjustments_saturation(p_render_data->environment);
+		if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
+			tonemap.use_color_correction = true;
+			tonemap.use_1d_color_correction = environment_get_use_1d_color_correction(p_render_data->environment);
+			tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment));
+		}
+	}
+
+	tonemap.use_debanding = rb->get_use_debanding();
+	tonemap.texture_size = Vector2i(target_size.x, target_size.y);
+
+	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
+	tonemap.view_count = rb->get_view_count();
+
+	tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(rb->get_render_target());
+
+
+	tone_mapper->prepare_params( p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
+}
+// </TF>
 
 void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();

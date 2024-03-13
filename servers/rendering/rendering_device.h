@@ -1091,6 +1091,12 @@ private:
 			RDD::UniformSetID uniform_set_driver_id;
 			RID uniform_set;
 			bool bound = false;
+// <TF>
+// @ShadyTF 
+// Dynamic uniform buffer
+			uint32_t offsets_count = 0;
+			const uint32_t* offsets = nullptr;
+// </TF>
 		};
 
 		struct State {
@@ -1164,6 +1170,11 @@ public:
 	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
 	void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index);
+// <TF>
+// @ShadyTF 
+// Dynamic uniform buffer
+	void draw_list_bind_uniform_set_dynamic(DrawListID p_list, RID p_uniform_set, uint32_t p_index, uint32_t p_offsets_count, const uint32_t* p_offsets);
+// </TF>
 	void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array);
 	void draw_list_bind_index_array(DrawListID p_list, RID p_index_array);
 	void draw_list_set_line_width(DrawListID p_list, float p_width);

@@ -993,6 +993,15 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			}
 		}
 
+
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+		if (draw_sky || draw_sky_fog_only) {
+			sky.draw_sky_prepare_params(p_render_data->environment, time, sky_energy_multiplier);
+		}
+		_post_process_prepare_params(p_render_data->render_buffers->get_internal_texture(), framebuffer, p_render_data);
+// </TF>
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 1.0, 0, Rect2(), breadcrumb);
 		RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
@@ -2809,6 +2818,11 @@ RenderForwardMobile::RenderForwardMobile() {
 
 	sky.set_texture_format(_render_buffers_get_color_format());
 
+// <TF>
+// @ShadyTF 
+// replacing push constants with uniform buffer
+	sky.use_push_constants = false;
+// </TF>
 	String defines;
 
 	defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
