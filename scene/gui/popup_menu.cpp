@@ -1059,7 +1059,7 @@ void PopupMenu::_notification(int p_what) {
 
 		case NOTIFICATION_POST_POPUP: {
 			initial_button_mask = Input::get_singleton()->get_mouse_button_mask();
-			during_grabbed_click = (bool)initial_button_mask;
+			during_grabbed_click = !initial_button_mask.is_empty();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
