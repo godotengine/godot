@@ -162,6 +162,9 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value is using "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
+		case TYPE_TEST_ALWAYS_FALSE:
+			CHECK_SYMBOLS(2);
+			return vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", symbols[0], symbols[1]);
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -236,6 +239,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
 		"ONREADY_WITH_EXPORT",
+		"TYPE_TEST_ALWAYS_FALSE",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");

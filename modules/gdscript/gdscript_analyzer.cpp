@@ -2523,6 +2523,11 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		dummy.kind = GDScriptParser::DataType::VARIANT;
 		p_expression->set_datatype(dummy);
 	}
+
+	if (p_expression->is_constant && p_expression->get_datatype().kind == GDScriptParser::DataType::VARIANT) {
+		// Use the type of the actual value since that is what the compiler relies on.
+		p_expression->set_datatype(type_from_variant(p_expression->reduced_value, p_expression));
+	}
 }
 
 void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
@@ -4588,7 +4593,9 @@ void GDScriptAnalyzer::reduce_type_test(GDScriptParser::TypeTestNode *p_type_tes
 		p_type_test->reduced_value = false;
 
 		if (!is_type_compatible(test_type, operand_type)) {
-			push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", operand_type.to_string(), test_type.to_string()), p_type_test->operand);
+#ifdef DEBUG_ENABLED
+			parser->push_warning(p_type_test->operand, GDScriptWarning::TYPE_TEST_ALWAYS_FALSE, operand_type.to_string(), test_type.to_string());
+#endif
 		} else if (is_type_compatible(test_type, type_from_variant(p_type_test->operand->reduced_value, p_type_test->operand))) {
 			p_type_test->reduced_value = test_type.builtin_type != Variant::OBJECT || !p_type_test->operand->reduced_value.is_null();
 		}
@@ -4598,7 +4605,9 @@ void GDScriptAnalyzer::reduce_type_test(GDScriptParser::TypeTestNode *p_type_tes
 
 	if (!is_type_compatible(test_type, operand_type) && !is_type_compatible(operand_type, test_type)) {
 		if (operand_type.is_hard_type()) {
-			push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", operand_type.to_string(), test_type.to_string()), p_type_test->operand);
+#ifdef DEBUG_ENABLED
+			parser->push_warning(p_type_test->operand, GDScriptWarning::TYPE_TEST_ALWAYS_FALSE, operand_type.to_string(), test_type.to_string());
+#endif
 		} else {
 			downgrade_node_type_source(p_type_test->operand);
 		}

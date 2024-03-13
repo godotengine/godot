@@ -8,7 +8,7 @@ func test():
 	var left_hard_variant := 1 as Variant
 	@warning_ignore("inference_on_variant")
 	var right_hard_variant := 2.0 as Variant
-	@warning_ignore("inference_on_variant")
+	@warning_ignore("inference_on_variant", "incompatible_ternary")
 	var result_hard_variant := left_hard_variant if true else right_hard_variant
 	assert(result_hard_variant == 1)
 

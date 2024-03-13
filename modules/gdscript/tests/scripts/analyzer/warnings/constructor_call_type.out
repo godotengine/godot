@@ -1,0 +1,6 @@
+GDTEST_OK
+>> WARNING
+>> Line: 10
+>> TYPE_TEST_ALWAYS_FALSE
+>> Expression is of type "B" so it can't be of type "C".
+false
