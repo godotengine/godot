@@ -181,7 +181,7 @@
 			<return type="Color" />
 			<param index="0" name="rgbe" type="int" />
 			<description>
-				Decodes a [Color] from a RGBE9995 format integer. See [constant Image.FORMAT_RGBE9995].
+				Decodes a [Color] from an RGBE9995 format integer. See [constant Image.FORMAT_RGBE9995].
 			</description>
 		</method>
 		<method name="from_string" qualifiers="static">

@@ -317,7 +317,7 @@
 			The default exposure used for tonemapping. Higher values result in a brighter image. See also [member tonemap_white].
 		</member>
 		<member name="tonemap_mode" type="int" setter="set_tonemapper" getter="get_tonemapper" enum="Environment.ToneMapper" default="0">
-			The tonemapping mode to use. Tonemapping is the process that "converts" HDR values to be suitable for rendering on a LDR display. (Godot doesn't support rendering on HDR displays yet.)
+			The tonemapping mode to use. Tonemapping is the process that "converts" HDR values to be suitable for rendering on an LDR display. (Godot doesn't support rendering on HDR displays yet.)
 		</member>
 		<member name="tonemap_white" type="float" setter="set_tonemap_white" getter="get_tonemap_white" default="1.0">
 			The white reference value for tonemapping (also called "whitepoint"). Higher values can make highlights look less blown out, and will also slightly darken the whole scene as a result. Only effective if the [member tonemap_mode] isn't set to [constant TONE_MAPPER_LINEAR]. See also [member tonemap_exposure].

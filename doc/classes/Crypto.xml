@@ -123,7 +123,7 @@
 			<param index="3" name="not_after" type="String" default="&quot;20340101000000&quot;" />
 			<description>
 				Generates a self-signed [X509Certificate] from the given [CryptoKey] and [param issuer_name]. The certificate validity will be defined by [param not_before] and [param not_after] (first valid date and last valid date). The [param issuer_name] must contain at least "CN=" (common name, i.e. the domain name), "O=" (organization, i.e. your company name), "C=" (country, i.e. 2 lettered ISO-3166 code of the country the organization is based in).
-				A small example to generate an RSA key and a X509 self-signed certificate.
+				A small example to generate an RSA key and an X509 self-signed certificate.
 				[codeblocks]
 				[gdscript]
 				var crypto = Crypto.new()
