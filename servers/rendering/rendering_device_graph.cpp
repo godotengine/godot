@@ -665,9 +665,9 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 // @ShadyTF 
 // Dynamic uniform buffer
 			case DrawListInstruction::TYPE_BIND_UNIFORM_SET_DYNAMIC: {
-				const DrawListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const DrawListBindUniformSetInstruction *>(instruction);
-				driver->command_bind_render_uniform_set_dynamic(p_command_buffer, bind_uniform_set_instruction->uniform_set, bind_uniform_set_instruction->shader, bind_uniform_set_instruction->set_index, bind_uniform_set_instruction->offsets_count, bind_uniform_set_instruction->offsets);
-				instruction_data_cursor += sizeof(DrawListBindUniformSetInstruction);
+				const DrawListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const DrawListBindUniformSetsInstruction *>(instruction);
+				driver->command_bind_render_uniform_set_dynamic(p_command_buffer, bind_uniform_sets_instruction->uniform_set_ids()[0], bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->offsets_count, bind_uniform_sets_instruction->offsets);
+				instruction_data_cursor += sizeof(DrawListBindUniformSetsInstruction);
 			} break;
 // </TF>
 			case DrawListInstruction::TYPE_BIND_VERTEX_BUFFERS: {
@@ -1554,11 +1554,12 @@ void RenderingDeviceGraph::add_draw_list_bind_uniform_sets(RDD::ShaderID p_shade
 // @ShadyTF 
 // Dynamic uniform buffer
 void RenderingDeviceGraph::add_draw_list_bind_uniform_set_dynamic(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index, uint32_t p_offsets_count, const uint32_t* p_offsets) {
-	DrawListBindUniformSetInstruction *instruction = reinterpret_cast<DrawListBindUniformSetInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListBindUniformSetInstruction)));
+	DrawListBindUniformSetsInstruction *instruction = reinterpret_cast<DrawListBindUniformSetsInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListBindUniformSetsInstruction)));
 	instruction->type = DrawListInstruction::TYPE_BIND_UNIFORM_SET_DYNAMIC;
 	instruction->shader = p_shader;
-	instruction->uniform_set = p_uniform_set;
-	instruction->set_index = set_index;
+	instruction->first_set_index = 0;
+	instruction->set_count = 1;
+	instruction->uniform_set_ids()[0] = p_uniform_set;
 	instruction->offsets = p_offsets;
 	instruction->offsets_count = p_offsets_count;
 }
