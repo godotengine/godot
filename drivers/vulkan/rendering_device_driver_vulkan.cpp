@@ -467,7 +467,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 		char **swappy_required_extensions;
 		uint32_t swappy_required_extensions_count = 0;
 		// Determine number of extensions required by Swappy frame pacer
-		SwappyVk_determineDeviceExtensions(gpu, device_extension_count, device_extensions, &swappy_required_extensions_count, nullptr);
+		SwappyVk_determineDeviceExtensions(physical_device, device_extension_count, device_extensions.ptr(), &swappy_required_extensions_count, nullptr);
 
 		if (swappy_required_extensions_count < device_extension_count && swappy_required_extensions_count < device_extension_count) {
 			// Determine the actual extensions
@@ -476,8 +476,8 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 			for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
 				swappy_required_extensions[i] = &pRequiredExtensionsData[i * (VK_MAX_EXTENSION_NAME_SIZE + 1)];
 			}
-			SwappyVk_determineDeviceExtensions(gpu, device_extension_count,
-					device_extensions, &swappy_required_extensions_count, swappy_required_extensions);
+			SwappyVk_determineDeviceExtensions(physical_device, device_extension_count,
+					device_extensions.ptr(), &swappy_required_extensions_count, swappy_required_extensions);
 
 			// Enable extensions requested by Swappy
 			for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
@@ -2342,7 +2342,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		device_queue.submit_mutex.lock();
 #if defined(ANDROID_ENABLED)
 		if (swappy_frame_pacer_enable) {
-			err = SwappyVk_queuePresent(present_queue, &present);
+			err = SwappyVk_queuePresent(device_queue.queue, &present_info);
 		} else {
 			err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
 		}
@@ -2776,11 +2776,11 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 #if defined(ANDROID_ENABLED)
 	if (swappy_frame_pacer_enable) {
 		uint64_t refresh_duration;
-		SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), gpu,
-				device, swap_chain->vk_swapchain, &refresh_duration);
-		SwappyVk_setSwapIntervalNS(device, window->swapchain, MAX(refresh_duration, (1.0f / swappy_target_framerate) * 1000 * 1000 * 1000));
+		SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), physical_device,
+				vk_device, swap_chain->vk_swapchain, &refresh_duration);
+		SwappyVk_setSwapIntervalNS(vk_device, swap_chain->vk_swapchain, MAX(refresh_duration, (1.0f / swappy_target_framerate) * 1000 * 1000 * 1000));
 		SwappyVk_setAutoSwapInterval(swappy_enable_auto_swap);
-		SwappyVk_setWindow(device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
+		SwappyVk_setWindow(vk_device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
 	}
 #endif
 
