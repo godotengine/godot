@@ -74,14 +74,15 @@
 #include "servers/navigation_server_3d.h"
 #include "servers/navigation_server_3d_dummy.h"
 #include "servers/physics_server_2d.h"
-#ifndef _3D_DISABLED
-#include "servers/physics_server_3d.h"
-#endif // _3D_DISABLED
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server_dummy.h"
 #include "servers/text_server.h"
+
+#ifndef _3D_DISABLED
+#include "servers/physics_server_3d.h"
 #include "servers/xr_server.h"
+#endif // _3D_DISABLED
 
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"
@@ -144,17 +145,17 @@ static AudioServer *audio_server = nullptr;
 static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
-static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
-#ifndef _3D_DISABLED
-static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
-static PhysicsServer3D *physics_server_3d = nullptr;
-#endif // _3D_DISABLED
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
 static ThemeDB *theme_db = nullptr;
+#ifndef _3D_DISABLED
+static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
+static PhysicsServer3D *physics_server_3d = nullptr;
+static XRServer *xr_server = nullptr;
+#endif // _3D_DISABLED
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -1646,6 +1647,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
 			skip_breakpoints = true;
+#ifndef _3D_DISABLED
 		} else if (I->get() == "--xr-mode") {
 			if (I->next()) {
 				String xr_mode = I->next()->get().to_lower();
@@ -1664,7 +1666,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
 				goto error;
 			}
-
+#endif // _3D_DISABLED
 		} else if (I->get() == "--benchmark") {
 			OS::get_singleton()->set_use_benchmark(true);
 		} else if (I->get() == "--benchmark-file") {
@@ -2788,6 +2790,7 @@ Error Main::setup2() {
 		OS::get_singleton()->benchmark_end_measure("Servers", "Audio");
 	}
 
+#ifndef _3D_DISABLED
 	/* Initialize XR Server */
 
 	{
@@ -2797,6 +2800,7 @@ Error Main::setup2() {
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "XR");
 	}
+#endif // _3D_DISABLED
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Servers");
 
@@ -3942,7 +3946,9 @@ bool Main::iteration() {
 	bool exit = false;
 
 	// process all our active interfaces
+#ifndef _3D_DISABLED
 	XRServer::get_singleton()->_process();
+#endif // _3D_DISABLED
 
 	NavigationServer2D::get_singleton()->sync();
 	NavigationServer3D::get_singleton()->sync();
@@ -4161,11 +4167,13 @@ void Main::cleanup(bool p_force) {
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
 	rendering_server->global_shader_parameters_clear();
 
+#ifndef _3D_DISABLED
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer
 		// We do however unset our primary interface
 		xr_server->set_primary_interface(Ref<XRInterface>());
 	}
+#endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
@@ -4195,9 +4203,11 @@ void Main::cleanup(bool p_force) {
 
 	EngineDebugger::deinitialize();
 
+#ifndef _3D_DISABLED
 	if (xr_server) {
 		memdelete(xr_server);
 	}
+#endif // _3D_DISABLED
 
 	if (audio_server) {
 		audio_server->finish();
