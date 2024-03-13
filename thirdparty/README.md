@@ -390,7 +390,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 74.1 (9edac7b78327a1cb58db29e2714b15f9fa14e4d7, 2023)
+- Version: 74.2 (2d029329c82c7792b985024b2bdab5fc7278fbc8, 2023)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -690,7 +690,7 @@ Collection of single-file libraries used in Godot components.
 ## msdfgen
 
 - Upstream: https://github.com/Chlumsky/msdfgen
-- Version: 1.10 (64a91eec3ca3787e6f78b4c99fcd3052ad3e37c0, 2021)
+- Version: 1.11 (f12d7ca00091a632a289865b85c3f2e0bfc6542d, 2023)
 - License: MIT
 
 Files extracted from the upstream source:

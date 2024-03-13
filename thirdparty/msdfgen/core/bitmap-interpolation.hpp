@@ -2,7 +2,7 @@
 #pragma once
 
 #include "arithmetics.hpp"
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include "BitmapRef.hpp"
 
 namespace msdfgen {
