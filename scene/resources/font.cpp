@@ -1417,6 +1417,10 @@ static const char32_t _oem_to_unicode[][129] = {
 };
 
 Error FontFile::load_bitmap_font(const String &p_path) {
+	return _load_bitmap_font(p_path, nullptr);
+}
+
+Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_files) {
 	reset_state();
 
 	antialiasing = TextServer::FONT_ANTIALIASING_NONE;
@@ -1558,6 +1562,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 								img.instantiate();
 								Error err = ImageLoader::load_image(file, img);
 								ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: %s.", file));
+								if (r_image_files) {
+									r_image_files->push_back(file);
+								}
 
 								if (packed) {
 									if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
@@ -1849,6 +1856,10 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						img.instantiate();
 						Error err = ImageLoader::load_image(file, img);
 						ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: %s.", file));
+						if (r_image_files) {
+							r_image_files->push_back(file);
+						}
+
 						if (packed) {
 							if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
 								outline = 0;
