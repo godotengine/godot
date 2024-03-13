@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+A getter cannot have more than 1 mandatory argument.

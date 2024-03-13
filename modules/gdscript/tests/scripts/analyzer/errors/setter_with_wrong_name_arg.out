@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+First mandatory argument of a setter with 2 mandatory arguments must be a property name of type String or StringName.
