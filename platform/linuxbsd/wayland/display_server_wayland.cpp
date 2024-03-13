@@ -39,12 +39,13 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "os_linuxbsd.h"
+
 #ifdef VULKAN_ENABLED
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
 #ifdef GLES3_ENABLED
-#include "detect_prime_egl.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
@@ -1276,48 +1277,6 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #ifdef GLES3_ENABLED
 	if (p_rendering_driver == "opengl3") {
-		if (getenv("DRI_PRIME") == nullptr) {
-			int prime_idx = -1;
-
-			if (getenv("PRIMUS_DISPLAY") ||
-					getenv("PRIMUS_libGLd") ||
-					getenv("PRIMUS_libGLa") ||
-					getenv("PRIMUS_libGL") ||
-					getenv("PRIMUS_LOAD_GLOBAL") ||
-					getenv("BUMBLEBEE_SOCKET") ||
-					getenv("__NV_PRIME_RENDER_OFFLOAD")) {
-				print_verbose("Optirun/primusrun detected. Skipping GPU detection");
-				prime_idx = 0;
-			}
-
-			// Some tools use fake libGL libraries and have them override the real one using
-			// LD_LIBRARY_PATH, so we skip them. *But* Steam also sets LD_LIBRARY_PATH for its
-			// runtime and includes system `/lib` and `/lib64`... so ignore Steam.
-			if (prime_idx == -1 && getenv("LD_LIBRARY_PATH") && !getenv("STEAM_RUNTIME_LIBRARY_PATH")) {
-				String ld_library_path(getenv("LD_LIBRARY_PATH"));
-				Vector<String> libraries = ld_library_path.split(":");
-
-				for (int i = 0; i < libraries.size(); ++i) {
-					if (FileAccess::exists(libraries[i] + "/libGL.so.1") ||
-							FileAccess::exists(libraries[i] + "/libGL.so")) {
-						print_verbose("Custom libGL override detected. Skipping GPU detection");
-						prime_idx = 0;
-					}
-				}
-			}
-
-			if (prime_idx == -1) {
-				print_verbose("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
-				prime_idx = DetectPrimeEGL::detect_prime();
-			}
-
-			if (prime_idx) {
-				print_line(vformat("Found discrete GPU, setting DRI_PRIME=%d to use it.", prime_idx));
-				print_line("Note: Set DRI_PRIME=0 in the environment to disable Godot from using the discrete GPU.");
-				setenv("DRI_PRIME", itos(prime_idx).utf8().ptr(), 1);
-			}
-		}
-
 		egl_manager = memnew(EGLManagerWayland);
 
 #ifdef SOWRAP_ENABLED
@@ -1332,6 +1291,33 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 			egl_manager = nullptr;
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize GLES3.");
+		}
+
+		Vector<EGLDeviceEXT> devices = egl_manager->get_device_list();
+
+		// TODO: gpu-index check.
+		if (!devices.is_empty()) {
+			print_verbose("Auto-detecting GPUs.");
+		}
+
+		int best_priority = -1;
+		EGLDeviceEXT best_device = EGL_NO_DEVICE_EXT;
+
+		for (EGLDeviceEXT &device : devices) {
+			EGLManager::DeviceInfo info = egl_manager->egl_device_get_info(device);
+			int priority = ((OS_LinuxBSD *)OS::get_singleton())->gpu_vendor_get_priority(info.vendor);
+
+			print_verbose(vformat("Found device [0x%x] %s - %s with priority %d.", (uint64_t)device, info.vendor, info.renderer, priority));
+
+			if (priority > best_priority) {
+				best_priority = priority;
+				best_device = device;
+			}
+		}
+
+		if (best_device != EGL_NO_DEVICE_EXT) {
+			print_verbose(vformat("Selected device [0x%x]", (uint64_t)best_device));
+			egl_manager->set_explicit_device(best_device);
 		}
 
 		RasterizerGLES3::make_current(true);
