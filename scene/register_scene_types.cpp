@@ -1281,7 +1281,9 @@ void register_scene_singletons() {
 	OS::get_singleton()->benchmark_begin_measure("Scene", "Register Singletons");
 
 	GDREGISTER_CLASS(ThemeDB);
+	GDREGISTER_ABSTRACT_CLASS(RenderingServer);
 
+	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton(), "RenderingServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ThemeDB", ThemeDB::get_singleton()));
 
 	OS::get_singleton()->benchmark_end_measure("Scene", "Register Singletons");
