@@ -234,8 +234,6 @@ private:
 
 	void clear_internal();
 
-	void _editor_settings_changed();
-
 	void _swap_current_input_direction();
 	void _move_caret_left(bool p_select, bool p_move_by_word = false);
 	void _move_caret_right(bool p_select, bool p_move_by_word = false);
@@ -257,6 +255,11 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
+#ifdef TOOLS_ENABLED
+	static inline Object *editor_settings = nullptr;
+	void _editor_settings_changed(bool p_force_update);
+#endif
+
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
 
