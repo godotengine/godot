@@ -69,6 +69,31 @@ public:
 	static const Vector<String> &get_forwardable_cli_arguments(CLIScope p_scope);
 #endif
 
+	// <TF>
+	// @ShadyTF : Thermal state support
+	enum ThermalState
+	{
+		THERMAL_STATE_MIN = -2,
+		THERMAL_STATE_NOT_SUPPORTED = -2, // Current platform/device/build doesn't support ThermalState queries
+		THERMAL_STATE_ERROR = -1,		  // error aqcuiring thermal state
+
+		
+		THERMAL_STATE_NONE = 0,      // no state (perhaps device doesn't support it)
+		THERMAL_STATE_LIGHT = 1,     // iOS Nominal
+		THERMAL_STATE_MODERATE = 2,  // iOS Fair
+		THERMAL_STATE_SEVERE = 3,    // iOS Serious
+		THERMAL_STATE_CRITICAL = 4,  // iOS Critical
+		THERMAL_STATE_EMERGENCY = 5,
+		THERMAL_STATE_SHUTDOWN = 6,
+
+		THERMAL_STATE_MAX,
+	};
+	static ThermalState thermal_state;
+	static const char* get_therrmal_state_string(ThermalState p_thermalState);
+	static void update_thermal_state(ThermalState p_thermalState);
+	static ThermalState get_thermal_state();
+	static float get_thermal_headroom( int p_forecast_seconds );
+	// </TF>
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
 	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
 	static Error setup2(); // The thread calling setup2() will effectively become the main thread.

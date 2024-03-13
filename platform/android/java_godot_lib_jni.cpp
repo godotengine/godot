@@ -80,6 +80,49 @@ static Vector3 gravity;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
 
+// <TF>
+// @ShadyTF : Thermal headroom support
+jclass godot_thermal_wrapper_class = nullptr;
+JNIEnv* godot_thermal_env = nullptr;
+jmethodID godot_thermal_wrapper_thermal_headroom_methodid = nullptr;
+jobject godot_thermal_wrapper_obj = nullptr;
+
+void  GodotGetThermalHeadroom_initialize(JNIEnv *env) {
+    godot_thermal_env = env;
+    // Find the class
+    godot_thermal_wrapper_class = env->FindClass(            "org/godotengine/godot/GodotThermalWrapper$Companion");
+    if (godot_thermal_wrapper_class == nullptr) {
+        return;
+    }
+    // Find the method
+    godot_thermal_wrapper_thermal_headroom_methodid = env->GetMethodID(godot_thermal_wrapper_class,
+                                                                       "getThermalHeadRoom", "(I)F");
+    godot_thermal_wrapper_obj = godot_thermal_env->AllocObject(godot_thermal_wrapper_class);
+}
+
+void  GodotGetThermalHeadroom_cleanup(JNIEnv *env) {
+    if ( godot_thermal_wrapper_obj ) {
+        godot_thermal_env->DeleteLocalRef(godot_thermal_wrapper_obj);
+    }
+}
+
+
+float GodotGetThermalHeadroom(int forecastSeconds) {
+    if (godot_thermal_wrapper_class == nullptr) {
+        return 0.0f;
+    }
+    if (godot_thermal_wrapper_thermal_headroom_methodid == nullptr) {
+        return 0.0f;
+    }
+
+    // Call the method
+    jfloat result = godot_thermal_env->CallFloatMethod(godot_thermal_wrapper_obj, godot_thermal_wrapper_thermal_headroom_methodid, forecastSeconds);
+    return result;
+}
+
+// </TF>
+
+
 static void _terminate(JNIEnv *env, bool p_restart = false) {
 	step.set(-1); // Ensure no further steps are attempted and no further events are sent
 
@@ -90,6 +133,11 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	if (input_handler) {
 		delete input_handler;
 	}
+    // <TF>
+    // @ShadyTF : Thermal headroom support
+    GodotGetThermalHeadroom_cleanup( env );
+    // </TF>
+
 	// Whether restarting is handled by 'Main::cleanup()'
 	bool restart_on_cleanup = false;
 	if (os_android) {
@@ -154,6 +202,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline, jobject p_godot_tts) {
 	setup_android_thread();
+
+    // <TF>
+    // @ShadyTF : Thermal headroom support
+    GodotGetThermalHeadroom_initialize(env);
+    // </TF>
 
 	const char **cmdline = nullptr;
 	jstring *j_cmdline = nullptr;
@@ -537,3 +590,15 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 	}
 }
 }
+
+
+// <TF>
+// @ShadyTF : Thermal state support
+extern "C"
+JNIEXPORT void JNICALL
+Java_org_godotengine_godot_GodotActivity_nativeThermalEvent(JNIEnv *env, jobject thiz,
+                                                            jint native_state) {
+    const Main::ThermalState thermal_state = (Main::ThermalState)native_state;
+    Main::update_thermal_state( thermal_state );
+}
+// </TF>
