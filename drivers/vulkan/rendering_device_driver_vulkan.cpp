@@ -2778,6 +2778,8 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 		uint64_t refresh_duration;
 		SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), gpu,
 				device, swap_chain->vk_swapchain, &refresh_duration);
+		SwappyVk_setSwapIntervalNS(device, window->swapchain, MAX(refresh_duration, (1.0f / swappy_target_framerate) * 1000 * 1000 * 1000));
+		SwappyVk_setAutoSwapInterval(swappy_enable_auto_swap);
 		SwappyVk_setWindow(device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
 	}
 #endif
