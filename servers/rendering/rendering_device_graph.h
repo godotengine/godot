@@ -65,6 +65,11 @@ public:
 			TYPE_BIND_INDEX_BUFFER,
 			TYPE_BIND_PIPELINE,
 			TYPE_BIND_UNIFORM_SET,
+// <TF>
+// @ShadyTF 
+// Dynamic uniform buffer
+			TYPE_BIND_UNIFORM_SET_DYNAMIC,
+// </TF>
 			TYPE_BIND_VERTEX_BUFFERS,
 			TYPE_CLEAR_ATTACHMENTS,
 			TYPE_DRAW,
@@ -381,6 +386,12 @@ private:
 		RDD::UniformSetID uniform_set;
 		RDD::ShaderID shader;
 		uint32_t set_index = 0;
+// <TF>
+// @ShadyTF 
+// Dynamic uniform buffer
+		uint32_t offsets_count = 0;
+		const uint32_t* offsets = nullptr;
+// </TF>
 	};
 
 	struct DrawListBindVertexBuffersInstruction : DrawListInstruction {
@@ -640,6 +651,11 @@ public:
 	void add_draw_list_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint32_t p_offset);
 	void add_draw_list_bind_pipeline(RDD::PipelineID p_pipeline, BitField<RDD::PipelineStageBits> p_pipeline_stage_bits);
 	void add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
+// <TF>
+// @ShadyTF 
+// Dynamic uniform buffer
+	void add_draw_list_bind_uniform_set_dynamic(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index, uint32_t p_offsets_count, const uint32_t* p_offsets);
+// </TF>
 	void add_draw_list_bind_vertex_buffers(VectorView<RDD::BufferID> p_vertex_buffers, VectorView<uint64_t> p_vertex_buffer_offsets);
 	void add_draw_list_clear_attachments(VectorView<RDD::AttachmentClear> p_attachments_clear, VectorView<Rect2i> p_attachments_clear_rect);
 	void add_draw_list_draw(uint32_t p_vertex_count, uint32_t p_instance_count);

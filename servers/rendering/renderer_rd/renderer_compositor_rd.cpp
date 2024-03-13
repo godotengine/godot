@@ -45,7 +45,6 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 // replace push constants with UBO
 	for (int i = 0; i < p_amount; i++) {
 		Size2 screen_size(RD::get_singleton()->screen_get_width(p_screen), RD::get_singleton()->screen_get_height(p_screen));
-		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : (p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER : BLIT_MODE_NORMAL);
 
 		blit.push_constant.src_rect[0] = p_render_targets[i].src_rect.position.x;
 		blit.push_constant.src_rect[1] = p_render_targets[i].src_rect.position.y;

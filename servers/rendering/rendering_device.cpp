@@ -2372,7 +2372,13 @@ RID RenderingDevice::index_array_create(RID p_index_buffer, uint32_t p_index_off
 /****************/
 
 static const char *SHADER_UNIFORM_NAMES[RenderingDevice::UNIFORM_TYPE_MAX] = {
-	"Sampler", "CombinedSampler", "Texture", "Image", "TextureBuffer", "SamplerTextureBuffer", "ImageBuffer", "UniformBuffer", "StorageBuffer", "InputAttachment"
+// <TF>
+// @ShadyTF 
+// Dynamic uniform buffer
+// Was:
+//	"Sampler", "CombinedSampler", "Texture", "Image", "TextureBuffer", "SamplerTextureBuffer", "ImageBuffer", "UniformBuffer", "StorageBuffer", "InputAttachment"
+	"Sampler", "CombinedSampler", "Texture", "Image", "TextureBuffer", "SamplerTextureBuffer", "ImageBuffer", "UniformBuffer", "StorageBuffer", "InputAttachment", "UniformBufferDynamic"
+// </TF>
 };
 
 String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
@@ -2771,7 +2777,12 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 			case UNIFORM_TYPE_IMAGE_BUFFER: {
 				// Todo.
 			} break;
-			case UNIFORM_TYPE_UNIFORM_BUFFER: {
+
+// Was:
+//			case UNIFORM_TYPE_UNIFORM_BUFFER: {
+			case UNIFORM_TYPE_UNIFORM_BUFFER:
+			case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:{
+// </TF>
 				ERR_FAIL_COND_V_MSG(uniform.get_id_count() != 1, RID(),
 						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.get_id_count()) + " provided).");
 
@@ -3655,6 +3666,55 @@ void RenderingDevice::draw_list_bind_uniform_set(DrawListID p_list, RID p_unifor
 	}
 #endif
 }
+// <TF>
+// @ShadyTF 
+// Dynamic uniform buffer
+void RenderingDevice::draw_list_bind_uniform_set_dynamic(DrawListID p_list, RID p_uniform_set, uint32_t p_index, uint32_t p_offsets_count, const uint32_t* p_offsets) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_index >= driver->limit_get(LIMIT_MAX_BOUND_UNIFORM_SETS) || p_index >= MAX_UNIFORM_SETS,
+			"Attempting to bind a descriptor set (" + itos(p_index) + ") greater than what the hardware supports (" + itos(driver->limit_get(LIMIT_MAX_BOUND_UNIFORM_SETS)) + ").");
+#endif
+	DrawList *dl = _get_draw_list_ptr(p_list);
+	ERR_FAIL_NULL(dl);
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!p_offsets, "offsets ,ust be provided for dynamic uniform set.");
+#endif
+
+	const UniformSet *uniform_set = uniform_set_owner.get_or_null(p_uniform_set);
+	ERR_FAIL_NULL(uniform_set);
+
+	if (p_index > dl->state.set_count) {
+		dl->state.set_count = p_index;
+	}
+
+	dl->state.sets[p_index].uniform_set_driver_id = uniform_set->driver_id; // Update set pointer.
+	dl->state.sets[p_index].bound = false; // Needs rebind.
+	dl->state.sets[p_index].uniform_set_format = uniform_set->format;
+	dl->state.sets[p_index].uniform_set = p_uniform_set;
+	dl->state.sets[p_index].offsets = p_offsets;
+	dl->state.sets[p_index].offsets_count = p_offsets_count;
+
+#ifdef DEBUG_ENABLED
+	{ // Validate that textures bound are not attached as framebuffer bindings.
+		uint32_t attachable_count = uniform_set->attachable_textures.size();
+		const UniformSet::AttachableTexture *attachable_ptr = uniform_set->attachable_textures.ptr();
+		uint32_t bound_count = draw_list_bound_textures.size();
+		const RID *bound_ptr = draw_list_bound_textures.ptr();
+		for (uint32_t i = 0; i < attachable_count; i++) {
+			for (uint32_t j = 0; j < bound_count; j++) {
+				ERR_FAIL_COND_MSG(attachable_ptr[i].texture == bound_ptr[j],
+						"Attempted to use the same texture in framebuffer attachment and a uniform (set: " + itos(p_index) + ", binding: " + itos(attachable_ptr[i].bind) + "), this is not allowed.");
+			}
+		}
+	}
+#endif
+}
+// </TF>
 
 void RenderingDevice::draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
@@ -3799,7 +3859,17 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 		}
 		if (!dl->state.sets[i].bound) {
 			// All good, see if this requires re-binding.
+// <TF>
+// @ShadyTF 
+// Dynamic uniform buffer
+// Was:
 			draw_graph.add_draw_list_bind_uniform_set(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
+			if (dl->state.sets[i].offsets) {
+				draw_graph.add_draw_list_bind_uniform_set_dynamic(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i, dl->state.sets[i].offsets_count, dl->state.sets[i].offsets);
+			} else {
+				draw_graph.add_draw_list_bind_uniform_set(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
+			}
+// </TF>
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
 			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
