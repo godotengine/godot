@@ -55,12 +55,12 @@ struct _NO_DISCARD_ Projection {
 
 	Vector4 columns[4];
 
-	_FORCE_INLINE_ const Vector4 &operator[](const int p_axis) const {
+	_FORCE_INLINE_ const Vector4 &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 4);
 		return columns[p_axis];
 	}
 
-	_FORCE_INLINE_ Vector4 &operator[](const int p_axis) {
+	_FORCE_INLINE_ Vector4 &operator[](int p_axis) {
 		DEV_ASSERT((unsigned int)p_axis < 4);
 		return columns[p_axis];
 	}

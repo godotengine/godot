@@ -618,14 +618,15 @@ void ProjectManager::_new_project() {
 }
 
 void ProjectManager::_rename_project() {
-	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
+	const Vector<ProjectList::Item> &selected_list = project_list->get_selected_projects();
 
 	if (selected_list.size() == 0) {
 		return;
 	}
 
-	for (const String &E : selected_list) {
-		project_dialog->set_project_path(E);
+	for (const ProjectList::Item &E : selected_list) {
+		project_dialog->set_project_name(E.project_name);
+		project_dialog->set_project_path(E.path);
 		project_dialog->set_mode(ProjectDialog::MODE_RENAME);
 		project_dialog->show_dialog();
 	}

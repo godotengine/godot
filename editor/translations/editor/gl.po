@@ -1509,9 +1509,6 @@ msgstr "O nome do cartafol é válido."
 msgid "Thanks from the Godot community!"
 msgstr "Moitas grazas de parte da comunidade de Godot!"
 
-msgid "Click to copy."
-msgstr "Clic para copiar."
-
 msgid "Godot Engine contributors"
 msgstr "Colaboradores de Godot Engine"
 
@@ -2587,9 +2584,6 @@ msgstr "Nodo"
 msgid "History"
 msgstr "Historial"
 
-msgid "Expand Bottom Panel"
-msgstr "Estender Panel Inferior"
-
 msgid "Output"
 msgstr "Saída"
 
@@ -3001,6 +2995,9 @@ msgstr "Engadir ao Grupo"
 
 msgid "Remove from Group"
 msgstr "Eliminar do Grupo"
+
+msgid "Expand Bottom Panel"
+msgstr "Estender Panel Inferior"
 
 msgid "Move"
 msgstr "Mover"
@@ -3630,12 +3627,6 @@ msgstr "Axuste Relativo"
 msgid "Use Pixel Snap"
 msgstr "Empregar Axuste aos Píxeles"
 
-msgid "Smart Snapping"
-msgstr "Axuste Intelixente"
-
-msgid "Configure Snap..."
-msgstr "Configurar Axuste de Cuadrícula..."
-
 msgid "Snap to Parent"
 msgstr "Axustar ao Pai"
 
@@ -3653,6 +3644,12 @@ msgstr "Axustar a Outros Nodos"
 
 msgid "Snap to Guides"
 msgstr "Axustar as Guías"
+
+msgid "Smart Snapping"
+msgstr "Axuste Intelixente"
+
+msgid "Configure Snap..."
+msgstr "Configurar Axuste de Cuadrícula..."
 
 msgid "Show Bones"
 msgstr "Amosar Ósos"
@@ -3983,6 +3980,9 @@ msgstr "Amosar Entorno"
 msgid "View Gizmos"
 msgstr "Amosar Gizmos"
 
+msgid "View Grid"
+msgstr "Amosar Cuadrícula"
+
 msgid "View Information"
 msgstr "Amosar Información"
 
@@ -4074,9 +4074,6 @@ msgstr "4 Ventás"
 
 msgid "View Origin"
 msgstr "Amosar Orixe"
-
-msgid "View Grid"
-msgstr "Amosar Cuadrícula"
 
 msgid "Settings..."
 msgstr "Axustes..."
@@ -4273,14 +4270,14 @@ msgstr "Historial Anterior"
 msgid "History Next"
 msgstr "Historial Seguinte"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Import Theme..."
 msgstr "Importar Tema..."
 
 msgid "Reload Theme"
 msgstr "Volver a Cargar Tema"
+
+msgid "Theme"
+msgstr "Tema"
 
 msgid "Save Theme"
 msgstr "Gardar Tema"
@@ -5049,6 +5046,12 @@ msgid "Building Android Project (gradle)"
 msgstr "Construir Proxecto Android (gradle)"
 
 msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"O nodo ParallaxLayer só funciona cando se establece como fillo dun nodo "
+"ParallaxBackground."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -5080,12 +5083,6 @@ msgstr "A articulación non está conectada a dous nodos PhysicsBody2D"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Os nodos A e B teñen que ser nodos PhysicsBody2D distintos"
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"O nodo ParallaxLayer só funciona cando se establece como fillo dun nodo "
-"ParallaxBackground."
 
 msgid ""
 "CollisionPolygon3D only serves to provide a collision shape to a "
@@ -5124,9 +5121,6 @@ msgstr ""
 
 msgid "Alert!"
 msgstr "Alerta!"
-
-msgid "(Other)"
-msgstr "(Outros)"
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

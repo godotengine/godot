@@ -1121,9 +1121,6 @@ msgstr "Tạo thư mục"
 msgid "Thanks from the Godot community!"
 msgstr "Cảm ơn từ cộng đồng Godot!"
 
-msgid "Click to copy."
-msgstr "Nháy để sao chép."
-
 msgid "Godot Engine contributors"
 msgstr "Cá nhân đóng góp của Godot Engine"
 
@@ -2204,9 +2201,6 @@ msgstr "Quan Sát Viên"
 msgid "Node"
 msgstr "Nút"
 
-msgid "Expand Bottom Panel"
-msgstr "Mở rộng bảng điều khiển dưới"
-
 msgid "Output"
 msgstr "Đầu ra"
 
@@ -2846,6 +2840,9 @@ msgstr "Thêm vào Nhóm"
 
 msgid "Remove from Group"
 msgstr "Xóa khỏi Nhóm"
+
+msgid "Expand Bottom Panel"
+msgstr "Mở rộng bảng điều khiển dưới"
 
 msgid "Move"
 msgstr "Di chuyển"
@@ -3886,12 +3883,6 @@ msgstr "Dính tương đối"
 msgid "Use Pixel Snap"
 msgstr "Dính điểm ảnh"
 
-msgid "Smart Snapping"
-msgstr "Dính thông minh"
-
-msgid "Configure Snap..."
-msgstr "Cài đặt Dính..."
-
 msgid "Snap to Parent"
 msgstr "Dính về nút Mẹ"
 
@@ -3909,6 +3900,12 @@ msgstr "Dính vào các Nút khác"
 
 msgid "Snap to Guides"
 msgstr "Dính vào Đường căn"
+
+msgid "Smart Snapping"
+msgstr "Dính thông minh"
+
+msgid "Configure Snap..."
+msgstr "Cài đặt Dính..."
 
 msgid "Skeleton Options"
 msgstr "Cài đặt Khung xương"
@@ -4332,6 +4329,9 @@ msgstr "Chia tỉ lệ %s."
 msgid "Lock View Rotation"
 msgstr "Khóa xoay ở chế độ xem"
 
+msgid "View Grid"
+msgstr "Xem Lưới"
+
 msgid "View Information"
 msgstr "Xem thông tin"
 
@@ -4388,9 +4388,6 @@ msgstr "3 Cổng xem"
 
 msgid "4 Viewports"
 msgstr "4 Cổng xem"
-
-msgid "View Grid"
-msgstr "Xem Lưới"
 
 msgid "Settings..."
 msgstr "Cài đặt..."
@@ -4464,9 +4461,6 @@ msgstr "Xin hãy xác nhận..."
 msgid "Curve Point #"
 msgstr "Điểm uốn #"
 
-msgid "Set Curve Point Position"
-msgstr "Đặt vị trí điểm uốn"
-
 msgid "Split Path"
 msgstr "Tách đường"
 
@@ -4475,6 +4469,9 @@ msgstr "Loại bỏ điểm đường dẫn"
 
 msgid "Split Segment (in curve)"
 msgstr "Phân tách đoạn (trong đường cong)"
+
+msgid "Set Curve Point Position"
+msgstr "Đặt vị trí điểm uốn"
 
 msgid "Move Joint"
 msgstr "Di chuyển Khớp"
@@ -4689,14 +4686,14 @@ msgstr "Lưu tất cả"
 msgid "Copy Script Path"
 msgstr "Sao chép đường dẫn tập lệnh"
 
-msgid "Theme"
-msgstr "Tông màu"
-
 msgid "Import Theme..."
 msgstr "Nhập Tông màu..."
 
 msgid "Reload Theme"
 msgstr "Tải lại Tông màu"
+
+msgid "Theme"
+msgstr "Tông màu"
 
 msgid "Save Theme"
 msgstr "Lưu Tông màu"
@@ -4949,12 +4946,6 @@ msgstr "Không tải được hình ảnh"
 
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "LỖI: Không thể nạp khung hình!"
-
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Khay nhớ tạm tài nguyên bị trống hoặc không chứa họa tiết!"
-
-msgid "Paste Frame"
-msgstr "Dán Khung hình"
 
 msgid "Add Empty"
 msgstr "Thêm Rỗng"
@@ -6336,6 +6327,26 @@ msgid "Failed to remove temporary file \"%s\"."
 msgstr "Không thể gỡ bỏ tệp tạm thời \"%s\"."
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Hoạt ảnh CPUParticles2D cần CanvasItemMaterial bật \"Particles Animation\"."
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Hoạt ảnh Particles2D cần CanvasItemMaterial bật \"Particles Animation\"."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"Nút ParallaxLayer chỉ hoạt động khi là con của một nút ParallaxBackground."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D chỉ hoạt động khi được đặt làm con của một nút Path2D."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -6368,18 +6379,6 @@ msgstr ""
 "Khối hình đa giác không được nhằm để dùng hoặc chỉnh sửa thông qua nút "
 "CollisionShape2D. Hãy chuyển qua dùng nút CollisionPolygon2D."
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Hoạt ảnh CPUParticles2D cần CanvasItemMaterial bật \"Particles Animation\"."
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Hoạt ảnh Particles2D cần CanvasItemMaterial bật \"Particles Animation\"."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Nút A và Nút B phải là PhysicsBody2D"
 
@@ -6394,14 +6393,6 @@ msgstr "Khớp nối chưa kết nối tới hai PhysicsBody2D"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Nút A và Nút B phải là 2 PhysicsBody2D khác nhau"
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"Nút ParallaxLayer chỉ hoạt động khi là con của một nút ParallaxBackground."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D chỉ hoạt động khi được đặt làm con của một nút Path2D."
 
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
@@ -6442,9 +6433,6 @@ msgstr "Sao chép constructor này vào một script."
 
 msgid "Alert!"
 msgstr "Cảnh báo!"
-
-msgid "(Other)"
-msgstr "(Khác)"
 
 msgid "Invalid source for preview."
 msgstr "Nguồn vô hiệu cho xem trước."

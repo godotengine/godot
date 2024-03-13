@@ -65,31 +65,28 @@ text += "\n"
 # In a second pass, we skip all consecutive comment lines starting with "/*",
 # then we can append the rest (step 2).
 
-fileread = open(fname.strip(), "r")
-line = fileread.readline()
-header_done = False
-
-while line.strip() == "":  # Skip empty lines at the top
+with open(fname.strip(), "r") as fileread:
     line = fileread.readline()
+    header_done = False
 
-if line.find("/**********") == -1:  # Godot header starts this way
-    # Maybe starting with a non-Godot comment, abort header magic
-    header_done = True
+    while line.strip() == "":  # Skip empty lines at the top
+        line = fileread.readline()
 
-while not header_done:  # Handle header now
-    if line.find("/*") != 0:  # No more starting with a comment
+    if line.find("/**********") == -1:  # Godot header starts this way
+        # Maybe starting with a non-Godot comment, abort header magic
         header_done = True
-        if line.strip() != "":
-            text += line
-    line = fileread.readline()
 
-while line != "":  # Dump everything until EOF
-    text += line
-    line = fileread.readline()
+    while not header_done:  # Handle header now
+        if line.find("/*") != 0:  # No more starting with a comment
+            header_done = True
+            if line.strip() != "":
+                text += line
+        line = fileread.readline()
 
-fileread.close()
+    while line != "":  # Dump everything until EOF
+        text += line
+        line = fileread.readline()
 
 # Write
-filewrite = open(fname.strip(), "w")
-filewrite.write(text)
-filewrite.close()
+with open(fname.strip(), "w", encoding="utf-8", newline="\n") as filewrite:
+    filewrite.write(text)

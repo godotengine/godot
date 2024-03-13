@@ -798,12 +798,12 @@ public:
 
 	template <class T>
 	static T *cast_to(Object *p_object) {
-		return dynamic_cast<T *>(p_object);
+		return p_object ? dynamic_cast<T *>(p_object) : nullptr;
 	}
 
 	template <class T>
 	static const T *cast_to(const Object *p_object) {
-		return dynamic_cast<const T *>(p_object);
+		return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {

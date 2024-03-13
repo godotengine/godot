@@ -1088,9 +1088,6 @@ msgstr "RPC 포트"
 msgid "RPC Server Uptime"
 msgstr "RPC 서버 업타임"
 
-msgid "FBX"
-msgstr "FBX"
-
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF 경로"
 
@@ -2783,6 +2780,12 @@ msgstr "결합된 경로"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "FBX"
+msgstr "FBX"
+
+msgid "Embedded Image Handling"
+msgstr "임베디드 이미지 핸들링"
+
 msgid "GDScript"
 msgstr "GDScript"
 
@@ -2827,9 +2830,6 @@ msgstr "저작권"
 
 msgid "glTF"
 msgstr "glTF"
-
-msgid "Embedded Image Handling"
-msgstr "임베디드 이미지 핸들링"
 
 msgid "Color"
 msgstr "색상"
@@ -3989,39 +3989,6 @@ msgstr "가로 뒤집기"
 msgid "Flip V"
 msgstr "세로 뒤집기"
 
-msgid "Monitoring"
-msgstr "모니터링"
-
-msgid "Monitorable"
-msgstr "모니터링 가능"
-
-msgid "Gravity"
-msgstr "중력"
-
-msgid "Space Override"
-msgstr "공간 오버라이드"
-
-msgid "Point"
-msgstr "점"
-
-msgid "Point Unit Distance"
-msgstr "점 유닛 거리"
-
-msgid "Point Center"
-msgstr "점 중간"
-
-msgid "Direction"
-msgstr "방향"
-
-msgid "Linear Damp"
-msgstr "선형 댐핑"
-
-msgid "Angular Damp"
-msgstr "각도 댐핑"
-
-msgid "Audio Bus"
-msgstr "오디오 버스"
-
 msgid "Current"
 msgstr "사용 중"
 
@@ -4139,30 +4106,6 @@ msgstr "여백 비우기"
 msgid "Use Mipmaps"
 msgstr "밉맵 사용"
 
-msgid "Disable Mode"
-msgstr "비활성화 모드"
-
-msgid "Input"
-msgstr "입력"
-
-msgid "Pickable"
-msgstr "집기 가능"
-
-msgid "Build Mode"
-msgstr "빌드 모드"
-
-msgid "Disabled"
-msgstr "비활성화됨"
-
-msgid "One Way Collision"
-msgstr "일방향 충돌"
-
-msgid "One Way Collision Margin"
-msgstr "일방향 충돌 간격"
-
-msgid "Debug Color"
-msgstr "디버그 색상"
-
 msgid "Emitting"
 msgstr "방출"
 
@@ -4226,8 +4169,14 @@ msgstr "파티클 플래그"
 msgid "Align Y"
 msgstr "Y 정렬"
 
+msgid "Direction"
+msgstr "방향"
+
 msgid "Spread"
 msgstr "스프레드"
+
+msgid "Gravity"
+msgstr "중력"
 
 msgid "Initial Velocity"
 msgstr "초기 속도"
@@ -4360,48 +4309,6 @@ msgstr "섹션"
 
 msgid "Section Subdivisions"
 msgstr "섹션 세분"
-
-msgid "Node A"
-msgstr "노드 A"
-
-msgid "Node B"
-msgstr "노드 B"
-
-msgid "Bias"
-msgstr "바이어스"
-
-msgid "Disable Collision"
-msgstr "충돌 비활성화"
-
-msgid "Softness"
-msgstr "연성"
-
-msgid "Angular Limit"
-msgstr "각 제한"
-
-msgid "Lower"
-msgstr "하한"
-
-msgid "Upper"
-msgstr "상한"
-
-msgid "Motor"
-msgstr "모터"
-
-msgid "Target Velocity"
-msgstr "목표 속도"
-
-msgid "Length"
-msgstr "길이"
-
-msgid "Initial Offset"
-msgstr "초기 오프셋"
-
-msgid "Rest Length"
-msgstr "나머지 길이"
-
-msgid "Stiffness"
-msgstr "강성"
 
 msgid "Editor Only"
 msgstr "에디터 전용"
@@ -4589,6 +4496,18 @@ msgstr "어보이던스 제약"
 msgid "Skew"
 msgstr "기울임"
 
+msgid "Repeat"
+msgstr "반복"
+
+msgid "Begin"
+msgstr "시작점"
+
+msgid "End"
+msgstr "끝"
+
+msgid "Follow Viewport"
+msgstr "뷰포트 따라가기"
+
 msgid "Scroll"
 msgstr "스크롤"
 
@@ -4634,6 +4553,144 @@ msgstr "회전함"
 msgid "Cubic Interp"
 msgstr "입방형 보간"
 
+msgid "Sync to Physics"
+msgstr "물리와 동기화"
+
+msgid "Monitoring"
+msgstr "모니터링"
+
+msgid "Monitorable"
+msgstr "모니터링 가능"
+
+msgid "Space Override"
+msgstr "공간 오버라이드"
+
+msgid "Point"
+msgstr "점"
+
+msgid "Point Unit Distance"
+msgstr "점 유닛 거리"
+
+msgid "Point Center"
+msgstr "점 중간"
+
+msgid "Linear Damp"
+msgstr "선형 댐핑"
+
+msgid "Angular Damp"
+msgstr "각도 댐핑"
+
+msgid "Audio Bus"
+msgstr "오디오 버스"
+
+msgid "Motion Mode"
+msgstr "움직임 모드"
+
+msgid "Up Direction"
+msgstr "위 방향"
+
+msgid "Slide on Ceiling"
+msgstr "천장에서 슬라이딩"
+
+msgid "Wall Min Slide Angle"
+msgstr "벽 최소 슬라이딩 각도"
+
+msgid "Floor"
+msgstr "바닥"
+
+msgid "Stop on Slope"
+msgstr "경사면에서 정지"
+
+msgid "Constant Speed"
+msgstr "상수 속력"
+
+msgid "Max Angle"
+msgstr "최대 각도"
+
+msgid "Snap Length"
+msgstr "스냅 길이"
+
+msgid "Moving Platform"
+msgstr "움직이는 플랫폼"
+
+msgid "On Leave"
+msgstr "나갈 때"
+
+msgid "Floor Layers"
+msgstr "바닥 레이어"
+
+msgid "Wall Layers"
+msgstr "벽 레이어"
+
+msgid "Safe Margin"
+msgstr "안전 마진"
+
+msgid "Disable Mode"
+msgstr "비활성화 모드"
+
+msgid "Input"
+msgstr "입력"
+
+msgid "Pickable"
+msgstr "집기 가능"
+
+msgid "Build Mode"
+msgstr "빌드 모드"
+
+msgid "Disabled"
+msgstr "비활성화됨"
+
+msgid "One Way Collision"
+msgstr "일방향 충돌"
+
+msgid "One Way Collision Margin"
+msgstr "일방향 충돌 간격"
+
+msgid "Debug Color"
+msgstr "디버그 색상"
+
+msgid "Length"
+msgstr "길이"
+
+msgid "Rest Length"
+msgstr "나머지 길이"
+
+msgid "Stiffness"
+msgstr "강성"
+
+msgid "Initial Offset"
+msgstr "초기 오프셋"
+
+msgid "Node A"
+msgstr "노드 A"
+
+msgid "Node B"
+msgstr "노드 B"
+
+msgid "Bias"
+msgstr "바이어스"
+
+msgid "Disable Collision"
+msgstr "충돌 비활성화"
+
+msgid "Softness"
+msgstr "연성"
+
+msgid "Angular Limit"
+msgstr "각 제한"
+
+msgid "Lower"
+msgstr "하한"
+
+msgid "Upper"
+msgstr "상한"
+
+msgid "Motor"
+msgstr "모터"
+
+msgid "Target Velocity"
+msgstr "목표 속도"
+
 msgid "Bone 2D Nodepath"
 msgstr "본 2D 노드 경로"
 
@@ -4649,14 +4706,23 @@ msgstr "물리 시뮬레이션"
 msgid "Follow Bone When Simulating"
 msgstr "시뮬레이션 시 본을 따르기"
 
-msgid "Constant Linear Velocity"
-msgstr "상수 선속도"
+msgid "Exclude Parent"
+msgstr "부모 제외"
 
-msgid "Constant Angular Velocity"
-msgstr "상수 각속도"
+msgid "Target Position"
+msgstr "목표 위치"
 
-msgid "Sync to Physics"
-msgstr "물리와 동기화"
+msgid "Hit From Inside"
+msgstr "내부에서 충돌"
+
+msgid "Collide With"
+msgstr "닿을 것"
+
+msgid "Areas"
+msgstr "에이리어"
+
+msgid "Bodies"
+msgstr "바디"
 
 msgid "Gravity Scale"
 msgstr "중력 스케일"
@@ -4715,47 +4781,17 @@ msgstr "상수 힘"
 msgid "Torque"
 msgstr "토크"
 
-msgid "Motion Mode"
-msgstr "움직임 모드"
+msgid "Margin"
+msgstr "마진"
 
-msgid "Up Direction"
-msgstr "위 방향"
+msgid "Max Results"
+msgstr "최대 결과 수"
 
-msgid "Slide on Ceiling"
-msgstr "천장에서 슬라이딩"
+msgid "Constant Linear Velocity"
+msgstr "상수 선속도"
 
-msgid "Wall Min Slide Angle"
-msgstr "벽 최소 슬라이딩 각도"
-
-msgid "Floor"
-msgstr "바닥"
-
-msgid "Stop on Slope"
-msgstr "경사면에서 정지"
-
-msgid "Constant Speed"
-msgstr "상수 속력"
-
-msgid "Max Angle"
-msgstr "최대 각도"
-
-msgid "Snap Length"
-msgstr "스냅 길이"
-
-msgid "Moving Platform"
-msgstr "움직이는 플랫폼"
-
-msgid "On Leave"
-msgstr "나갈 때"
-
-msgid "Floor Layers"
-msgstr "바닥 레이어"
-
-msgid "Wall Layers"
-msgstr "벽 레이어"
-
-msgid "Safe Margin"
-msgstr "안전 마진"
+msgid "Constant Angular Velocity"
+msgstr "상수 각속도"
 
 msgid "UV"
 msgstr "UV"
@@ -4769,24 +4805,6 @@ msgstr "폴리곤"
 msgid "Internal Vertex Count"
 msgstr "내부 꼭짓점 개수"
 
-msgid "Exclude Parent"
-msgstr "부모 제외"
-
-msgid "Target Position"
-msgstr "목표 위치"
-
-msgid "Hit From Inside"
-msgstr "내부에서 충돌"
-
-msgid "Collide With"
-msgstr "닿을 것"
-
-msgid "Areas"
-msgstr "에이리어"
-
-msgid "Bodies"
-msgstr "바디"
-
 msgid "Remote Path"
 msgstr "원격 경로"
 
@@ -4795,12 +4813,6 @@ msgstr "전역 좌표 사용"
 
 msgid "Update"
 msgstr "업데이트"
-
-msgid "Margin"
-msgstr "마진"
-
-msgid "Max Results"
-msgstr "최대 결과 수"
 
 msgid "Auto Calculate Length and Angle"
 msgstr "길이와 각도 자동 계산"
@@ -4861,24 +4873,6 @@ msgstr "활성화함"
 
 msgid "Node Path"
 msgstr "노드 경로"
-
-msgid "Wind"
-msgstr "바람"
-
-msgid "Force Magnitude"
-msgstr "힘 강도"
-
-msgid "Attenuation Factor"
-msgstr "감쇠율"
-
-msgid "Source Path"
-msgstr "소스 경로"
-
-msgid "Reverb Bus"
-msgstr "리버브 버스"
-
-msgid "Uniformity"
-msgstr "균일성"
 
 msgid "Attenuation Model"
 msgstr "감쇠 모델"
@@ -5015,9 +5009,6 @@ msgstr "페이드 하한"
 msgid "Distance Fade"
 msgstr "거리 페이드"
 
-msgid "Begin"
-msgstr "시작점"
-
 msgid "Transform Align"
 msgstr "변형 정렬"
 
@@ -5051,98 +5042,11 @@ msgstr "가시성 범위"
 msgid "Begin Margin"
 msgstr "마진 시작"
 
-msgid "End"
-msgstr "끝"
-
 msgid "End Margin"
 msgstr "끝 마진"
 
 msgid "Fade Mode"
 msgstr "페이드 모드"
-
-msgid "Solver Priority"
-msgstr "솔버 우선 순위"
-
-msgid "Exclude Nodes From Collision"
-msgstr "노드를 충돌에서 제외"
-
-msgid "Params"
-msgstr "매개 변수"
-
-msgid "Impulse Clamp"
-msgstr "충격 제한"
-
-msgid "Relaxation"
-msgstr "완화"
-
-msgid "Max Impulse"
-msgstr "최대 충격"
-
-msgid "Linear Limit"
-msgstr "선형 제한"
-
-msgid "Upper Distance"
-msgstr "거리 상한"
-
-msgid "Lower Distance"
-msgstr "거리 하한"
-
-msgid "Restitution"
-msgstr "복원력"
-
-msgid "Linear Motion"
-msgstr "선운동"
-
-msgid "Linear Ortho"
-msgstr "선형 직교"
-
-msgid "Upper Angle"
-msgstr "각도 상한"
-
-msgid "Lower Angle"
-msgstr "각도 하한"
-
-msgid "Angular Motion"
-msgstr "각운동"
-
-msgid "Angular Ortho"
-msgstr "각 직교"
-
-msgid "Swing Span"
-msgstr "스윙 폭"
-
-msgid "Twist Span"
-msgstr "트위스트 폭"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
-
-msgid "Linear Motor"
-msgstr "직선형 모터"
-
-msgid "Force Limit"
-msgstr "힘 제한"
-
-msgid "Linear Spring"
-msgstr "선형 스프링"
-
-msgid "Equilibrium Point"
-msgstr "평형점"
-
-msgid "ERP"
-msgstr "ERP"
-
-msgid "Angular Motor"
-msgstr "회전 모터"
-
-msgid "Angular Spring"
-msgstr "회전 스프링"
 
 msgid "Pixel Size"
 msgstr "픽셀 크기"
@@ -5390,6 +5294,114 @@ msgstr "모델 앞면 사용"
 msgid "Tilt Enabled"
 msgstr "기울이기 활성화"
 
+msgid "Wind"
+msgstr "바람"
+
+msgid "Force Magnitude"
+msgstr "힘 강도"
+
+msgid "Attenuation Factor"
+msgstr "감쇠율"
+
+msgid "Source Path"
+msgstr "소스 경로"
+
+msgid "Reverb Bus"
+msgstr "리버브 버스"
+
+msgid "Uniformity"
+msgstr "균일성"
+
+msgid "Swing Span"
+msgstr "스윙 폭"
+
+msgid "Twist Span"
+msgstr "트위스트 폭"
+
+msgid "Relaxation"
+msgstr "완화"
+
+msgid "Linear Limit"
+msgstr "선형 제한"
+
+msgid "X"
+msgstr "X"
+
+msgid "Upper Distance"
+msgstr "거리 상한"
+
+msgid "Lower Distance"
+msgstr "거리 하한"
+
+msgid "Restitution"
+msgstr "복원력"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Linear Motor"
+msgstr "직선형 모터"
+
+msgid "Force Limit"
+msgstr "힘 제한"
+
+msgid "Linear Spring"
+msgstr "선형 스프링"
+
+msgid "Equilibrium Point"
+msgstr "평형점"
+
+msgid "Upper Angle"
+msgstr "각도 상한"
+
+msgid "Lower Angle"
+msgstr "각도 하한"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Angular Motor"
+msgstr "회전 모터"
+
+msgid "Angular Spring"
+msgstr "회전 스프링"
+
+msgid "Params"
+msgstr "매개 변수"
+
+msgid "Max Impulse"
+msgstr "최대 충격"
+
+msgid "Solver Priority"
+msgstr "솔버 우선 순위"
+
+msgid "Exclude Nodes From Collision"
+msgstr "노드를 충돌에서 제외"
+
+msgid "Impulse Clamp"
+msgstr "충격 제한"
+
+msgid "Linear Motion"
+msgstr "선운동"
+
+msgid "Linear Ortho"
+msgstr "선형 직교"
+
+msgid "Angular Motion"
+msgstr "각운동"
+
+msgid "Angular Ortho"
+msgstr "각 직교"
+
+msgid "Friction"
+msgstr "마찰력"
+
+msgid "Bounce"
+msgstr "바운스"
+
 msgid "Axis Lock"
 msgstr "축 잠금"
 
@@ -5411,14 +5423,50 @@ msgstr "각 Y"
 msgid "Angular Z"
 msgstr "각 Z"
 
-msgid "Friction"
-msgstr "마찰력"
-
-msgid "Bounce"
-msgstr "바운스"
-
 msgid "Debug Shape"
 msgstr "디버그 모양"
+
+msgid "Spring Length"
+msgstr "스프링 길이"
+
+msgid "Per-Wheel Motion"
+msgstr "바퀴마다 운동"
+
+msgid "Engine Force"
+msgstr "엔진 힘"
+
+msgid "Brake"
+msgstr "브레이크"
+
+msgid "Steering"
+msgstr "스티어링"
+
+msgid "VehicleBody3D Motion"
+msgstr "VehicleBody3D 운동"
+
+msgid "Use as Traction"
+msgstr "견인용으로 사용"
+
+msgid "Use as Steering"
+msgstr "스티어링으로 사용"
+
+msgid "Wheel"
+msgstr "바퀴"
+
+msgid "Roll Influence"
+msgstr "구르기 영향력"
+
+msgid "Friction Slip"
+msgstr "마찰력 슬립"
+
+msgid "Suspension"
+msgstr "서스펜션"
+
+msgid "Travel"
+msgstr "진행"
+
+msgid "Max Force"
+msgstr "최대 힘"
 
 msgid "Origin Offset"
 msgstr "원점 오프셋"
@@ -5473,48 +5521,6 @@ msgstr "댐핑 계수"
 
 msgid "Drag Coefficient"
 msgstr "항력 계수"
-
-msgid "Spring Length"
-msgstr "스프링 길이"
-
-msgid "Per-Wheel Motion"
-msgstr "바퀴마다 운동"
-
-msgid "Engine Force"
-msgstr "엔진 힘"
-
-msgid "Brake"
-msgstr "브레이크"
-
-msgid "Steering"
-msgstr "스티어링"
-
-msgid "VehicleBody3D Motion"
-msgstr "VehicleBody3D 운동"
-
-msgid "Use as Traction"
-msgstr "견인용으로 사용"
-
-msgid "Use as Steering"
-msgstr "스티어링으로 사용"
-
-msgid "Wheel"
-msgstr "바퀴"
-
-msgid "Roll Influence"
-msgstr "구르기 영향력"
-
-msgid "Friction Slip"
-msgstr "마찰력 슬립"
-
-msgid "Suspension"
-msgstr "서스펜션"
-
-msgid "Travel"
-msgstr "진행"
-
-msgid "Max Force"
-msgstr "최대 힘"
 
 msgid "Track Physics Step"
 msgstr "물리 스텝 추적"
@@ -6185,17 +6191,11 @@ msgstr "Z를 상대값으로"
 msgid "Y Sort Enabled"
 msgstr "Y 정렬 사용"
 
-msgid "Repeat"
-msgstr "반복"
-
 msgid "Use Parent Material"
 msgstr "부모 머티리얼 사용"
 
 msgid "NormalMap"
 msgstr "노멀 맵"
-
-msgid "Follow Viewport"
-msgstr "뷰포트 따라가기"
 
 msgid "Download File"
 msgstr "다운로드 파일"
@@ -6350,6 +6350,198 @@ msgstr "2D 물리"
 msgid "3D Physics"
 msgstr "3D 물리"
 
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Terrains"
+msgstr "지형"
+
+msgid "Custom Data"
+msgstr "커스텀 데이터"
+
+msgid "Tile Proxies"
+msgstr "타일 프록시"
+
+msgid "Source Level"
+msgstr "소스 레벨"
+
+msgid "Coords Level"
+msgstr "좌표 레벨"
+
+msgid "Alternative Level"
+msgstr "대체 레벨"
+
+msgid "Tile Shape"
+msgstr "타일 모양"
+
+msgid "Tile Layout"
+msgstr "타일 레이아웃"
+
+msgid "Tile Offset Axis"
+msgstr "타일 오프셋 축"
+
+msgid "Tile Size"
+msgstr "타일 크기"
+
+msgid "UV Clipping"
+msgstr "UV 클리핑"
+
+msgid "Occlusion Layers"
+msgstr "오클루전 레이어"
+
+msgid "Physics Layers"
+msgstr "물리 레이어"
+
+msgid "Terrain Sets"
+msgstr "지형 세트"
+
+msgid "Custom Data Layers"
+msgstr "커스텀 데이터 레이어"
+
+msgid "Scenes"
+msgstr "씬"
+
+msgid "Scene"
+msgstr "씬"
+
+msgid "Display Placeholder"
+msgstr "자리 표시자 보이기"
+
+msgid "Polygons Count"
+msgstr "폴리곤 개수"
+
+msgid "One Way"
+msgstr "일방향"
+
+msgid "One Way Margin"
+msgstr "일방향 여백"
+
+msgid "Transpose"
+msgstr "전치"
+
+msgid "Texture Origin"
+msgstr "텍스처 원점"
+
+msgid "Y Sort Origin"
+msgstr "Y 정렬 기준점"
+
+msgid "Terrain Set"
+msgstr "지형 세트"
+
+msgid "Terrain"
+msgstr "지형"
+
+msgid "Miscellaneous"
+msgstr "기타"
+
+msgid "Probability"
+msgstr "확률"
+
+msgid "Distance"
+msgstr "거리"
+
+msgid "Density"
+msgstr "밀도"
+
+msgid "Height Falloff"
+msgstr "높이 감소율"
+
+msgid "Edge Fade"
+msgstr "모서리 페이드"
+
+msgid "Density Texture"
+msgstr "밀도 텍스처"
+
+msgid "Map Width"
+msgstr "맵 너비"
+
+msgid "Map Depth"
+msgstr "맵 깊이"
+
+msgid "Map Data"
+msgstr "맵 데이터"
+
+msgid "Item"
+msgstr "항목"
+
+msgid "Preview"
+msgstr "미리보기"
+
+msgid "Subdivide Width"
+msgstr "서브디바이드 너비"
+
+msgid "Subdivide Height"
+msgstr "서브디바이드 높이"
+
+msgid "Subdivide Depth"
+msgstr "서브디바이드 깊이"
+
+msgid "Bone"
+msgstr "본"
+
+msgid "Sky"
+msgstr "하늘"
+
+msgid "Top Color"
+msgstr "위쪽 색상"
+
+msgid "Horizon Color"
+msgstr "지평선 색상"
+
+msgid "Energy Multiplier"
+msgstr "에너지 배수"
+
+msgid "Cover"
+msgstr "커버"
+
+msgid "Cover Modulate"
+msgstr "커버 변조"
+
+msgid "Ground"
+msgstr "땅"
+
+msgid "Bottom Color"
+msgstr "아래쪽 색상"
+
+msgid "Sun"
+msgstr "태양"
+
+msgid "Panorama"
+msgstr "파노라마"
+
+msgid "Rayleigh"
+msgstr "레일리"
+
+msgid "Coefficient"
+msgstr "계수"
+
+msgid "Mie"
+msgstr "미"
+
+msgid "Eccentricity"
+msgstr "이심률"
+
+msgid "Turbidity"
+msgstr "탁도"
+
+msgid "Sun Disk Scale"
+msgstr "태양 디스크 크기"
+
+msgid "Ground Color"
+msgstr "땅 색상"
+
+msgid "Night Sky"
+msgstr "밤하늘"
+
+msgid "Fallback Environment"
+msgstr "대안 환경"
+
+msgid "Plane"
+msgstr "평면"
+
 msgid "Frames"
 msgstr "프레임"
 
@@ -6386,14 +6578,8 @@ msgstr "곡선 Y"
 msgid "Curve Z"
 msgstr "곡선 Z"
 
-msgid "Energy Multiplier"
-msgstr "에너지 배수"
-
 msgid "Canvas Max Layer"
 msgstr "캔버스 최대 레이어"
-
-msgid "Sky"
-msgstr "하늘"
 
 msgid "Custom FOV"
 msgstr "커스텀 FOV"
@@ -6542,9 +6728,6 @@ msgstr "빛 에너지"
 msgid "Sun Scatter"
 msgstr "태양 산란"
 
-msgid "Density"
-msgstr "밀도"
-
 msgid "Aerial Perspective"
 msgstr "공기 원근법"
 
@@ -6583,15 +6766,6 @@ msgstr "포화도"
 
 msgid "Color Correction"
 msgstr "색상 보정"
-
-msgid "Height Falloff"
-msgstr "높이 감소율"
-
-msgid "Edge Fade"
-msgstr "모서리 페이드"
-
-msgid "Density Texture"
-msgstr "밀도 텍스처"
 
 msgid "Base Font"
 msgstr "기반 글꼴"
@@ -6634,15 +6808,6 @@ msgstr "으로부터"
 
 msgid "To"
 msgstr "까지"
-
-msgid "Map Width"
-msgstr "맵 너비"
-
-msgid "Map Depth"
-msgstr "맵 깊이"
-
-msgid "Map Data"
-msgstr "맵 데이터"
 
 msgid "Next Pass"
 msgstr "다음 패스"
@@ -6806,20 +6971,11 @@ msgstr "파티클 트레일 사용"
 msgid "Proximity Fade"
 msgstr "프록시미티 페이드"
 
-msgid "Distance"
-msgstr "거리"
-
 msgid "MSDF"
 msgstr "MSDF"
 
 msgid "Pixel Range"
 msgstr "픽셀 범위"
-
-msgid "Item"
-msgstr "항목"
-
-msgid "Preview"
-msgstr "미리보기"
 
 msgid "Base Texture"
 msgstr "기반 텍스처"
@@ -6878,24 +7034,6 @@ msgstr "크기 오버라이드"
 msgid "Keep Compressed Buffer"
 msgstr "압축된 버퍼 유지"
 
-msgid "Subdivide Width"
-msgstr "서브디바이드 너비"
-
-msgid "Subdivide Height"
-msgstr "서브디바이드 높이"
-
-msgid "Subdivide Depth"
-msgstr "서브디바이드 깊이"
-
-msgid "A"
-msgstr "A"
-
-msgid "B"
-msgstr "B"
-
-msgid "Bone"
-msgstr "본"
-
 msgid "Sky Material"
 msgstr "하늘 머티리얼"
 
@@ -6904,54 +7042,6 @@ msgstr "프로세스 모드"
 
 msgid "Radiance Size"
 msgstr "광도 크기"
-
-msgid "Top Color"
-msgstr "위쪽 색상"
-
-msgid "Horizon Color"
-msgstr "지평선 색상"
-
-msgid "Cover"
-msgstr "커버"
-
-msgid "Cover Modulate"
-msgstr "커버 변조"
-
-msgid "Ground"
-msgstr "땅"
-
-msgid "Bottom Color"
-msgstr "아래쪽 색상"
-
-msgid "Sun"
-msgstr "태양"
-
-msgid "Panorama"
-msgstr "파노라마"
-
-msgid "Rayleigh"
-msgstr "레일리"
-
-msgid "Coefficient"
-msgstr "계수"
-
-msgid "Mie"
-msgstr "미"
-
-msgid "Eccentricity"
-msgstr "이심률"
-
-msgid "Turbidity"
-msgstr "탁도"
-
-msgid "Sun Disk Scale"
-msgstr "태양 디스크 크기"
-
-msgid "Ground Color"
-msgstr "땅 색상"
-
-msgid "Night Sky"
-msgstr "밤하늘"
 
 msgid "Content Margins"
 msgstr "내용물 여백"
@@ -7001,90 +7091,6 @@ msgstr "기본 글꼴"
 msgid "Default Font Size"
 msgstr "기본 글꼴 크기"
 
-msgid "Terrains"
-msgstr "지형"
-
-msgid "Custom Data"
-msgstr "커스텀 데이터"
-
-msgid "Tile Proxies"
-msgstr "타일 프록시"
-
-msgid "Source Level"
-msgstr "소스 레벨"
-
-msgid "Coords Level"
-msgstr "좌표 레벨"
-
-msgid "Alternative Level"
-msgstr "대체 레벨"
-
-msgid "Tile Shape"
-msgstr "타일 모양"
-
-msgid "Tile Layout"
-msgstr "타일 레이아웃"
-
-msgid "Tile Offset Axis"
-msgstr "타일 오프셋 축"
-
-msgid "Tile Size"
-msgstr "타일 크기"
-
-msgid "UV Clipping"
-msgstr "UV 클리핑"
-
-msgid "Occlusion Layers"
-msgstr "오클루전 레이어"
-
-msgid "Physics Layers"
-msgstr "물리 레이어"
-
-msgid "Terrain Sets"
-msgstr "지형 세트"
-
-msgid "Custom Data Layers"
-msgstr "커스텀 데이터 레이어"
-
-msgid "Scenes"
-msgstr "씬"
-
-msgid "Scene"
-msgstr "씬"
-
-msgid "Display Placeholder"
-msgstr "자리 표시자 보이기"
-
-msgid "Polygons Count"
-msgstr "폴리곤 개수"
-
-msgid "One Way"
-msgstr "일방향"
-
-msgid "One Way Margin"
-msgstr "일방향 여백"
-
-msgid "Transpose"
-msgstr "전치"
-
-msgid "Texture Origin"
-msgstr "텍스처 원점"
-
-msgid "Y Sort Origin"
-msgstr "Y 정렬 기준점"
-
-msgid "Terrain Set"
-msgstr "지형 세트"
-
-msgid "Terrain"
-msgstr "지형"
-
-msgid "Miscellaneous"
-msgstr "기타"
-
-msgid "Probability"
-msgstr "확률"
-
 msgid "File"
 msgstr "파일"
 
@@ -7102,12 +7108,6 @@ msgstr "서피스 인덱스"
 
 msgid "Degrees Mode"
 msgstr "각도 모드"
-
-msgid "Fallback Environment"
-msgstr "대안 환경"
-
-msgid "Plane"
-msgstr "평면"
 
 msgid "Clear"
 msgstr "지우기"

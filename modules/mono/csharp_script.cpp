@@ -405,6 +405,10 @@ bool CSharpLanguage::supports_builtin_mode() const {
 	return false;
 }
 
+ScriptLanguage::ScriptNameCasing CSharpLanguage::preferred_file_name_casing() const {
+	return SCRIPT_NAME_CASING_PASCAL_CASE;
+}
+
 #ifdef TOOLS_ENABLED
 struct VariantCsName {
 	Variant::Type variant_type;

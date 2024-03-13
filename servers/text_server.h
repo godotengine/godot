@@ -108,6 +108,7 @@ public:
 		BREAK_GRAPHEME_BOUND = 1 << 2,
 		BREAK_ADAPTIVE = 1 << 3,
 		BREAK_TRIM_EDGE_SPACES = 1 << 4,
+		BREAK_TRIM_INDENT = 1 << 5,
 	};
 
 	enum OverrunBehavior {
@@ -272,6 +273,9 @@ public:
 
 	virtual void font_set_antialiasing(const RID &p_font_rid, FontAntialiasing p_antialiasing) = 0;
 	virtual FontAntialiasing font_get_antialiasing(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_disable_embedded_bitmaps(const RID &p_font_rid, bool p_disable_embedded_bitmaps) = 0;
+	virtual bool font_get_disable_embedded_bitmaps(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) = 0;
 	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const = 0;
@@ -489,6 +493,8 @@ public:
 
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const = 0;
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const = 0;
+	virtual Vector2i shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const = 0;
+	virtual int64_t shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const = 0;
 
 	virtual Size2 shaped_text_get_size(const RID &p_shaped) const = 0;
 	virtual double shaped_text_get_ascent(const RID &p_shaped) const = 0;

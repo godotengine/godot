@@ -74,6 +74,7 @@ class CollisionShape2DEditor : public Control {
 	Transform2D original_transform;
 	Vector2 original_point;
 	Point2 last_point;
+	Vector2 original_mouse_pos;
 
 	Ref<Shape2D> current_shape;
 

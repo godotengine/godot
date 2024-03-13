@@ -45,6 +45,7 @@ private:
 	int byte_length = 0;
 	int byte_stride = -1;
 	bool indices = false;
+	bool vertex_attributes = false;
 
 protected:
 	static void _bind_methods();
@@ -73,6 +74,9 @@ public:
 
 	bool get_indices() const;
 	void set_indices(bool p_indices);
+
+	bool get_vertex_attributes() const;
+	void set_vertex_attributes(bool p_attributes);
 
 	Vector<uint8_t> load_buffer_view_data(const Ref<GLTFState> p_state) const;
 };

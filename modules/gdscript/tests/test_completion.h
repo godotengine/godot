@@ -139,7 +139,7 @@ static void test_directory(const String &p_dir) {
 
 			Node *owner = nullptr;
 			if (conf.has_section_key("input", "scene")) {
-				Ref<PackedScene> scene = ResourceLoader::load(conf.get_value("input", "scene"), "PackedScene");
+				Ref<PackedScene> scene = ResourceLoader::load(conf.get_value("input", "scene"), "PackedScene", ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP);
 				if (scene.is_valid()) {
 					owner = scene->instantiate();
 				}

@@ -36,7 +36,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-21 09:02+0000\n"
+"PO-Revision-Date: 2024-03-03 20:01+0000\n"
 "Last-Translator: Franco Ezequiel Ibañez <francoibanez.dev@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
@@ -488,6 +488,9 @@ msgstr "Modificar Evento"
 msgid "Remove Event"
 msgstr "Quitar Evento"
 
+msgid "Filter by Name"
+msgstr "Filtrar por nombre"
+
 msgid "Clear All"
 msgstr "Limpiar Todo"
 
@@ -521,6 +524,15 @@ msgstr "Insertar Clave Aquí"
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplicar Clave(s) Seleccionada(s)"
 
+msgid "Cut Selected Key(s)"
+msgstr "Cortar Clave(s) Seleccionada(s)"
+
+msgid "Copy Selected Key(s)"
+msgstr "Copiar Clave(s) Seleccionada(s)"
+
+msgid "Paste Key(s)"
+msgstr "Pegar Clave(s)"
+
 msgid "Delete Selected Key(s)"
 msgstr "Eliminar Clave(s) Seleccionada(s)"
 
@@ -550,6 +562,12 @@ msgstr "Mover Puntos Bezier"
 
 msgid "Animation Duplicate Keys"
 msgstr "Duplicar Claves de la Animación"
+
+msgid "Animation Cut Keys"
+msgstr "Cortar Claves de la Animación"
+
+msgid "Animation Paste Keys"
+msgstr "Pegar Claves de la Animación"
 
 msgid "Animation Delete Keys"
 msgstr "Borrar Claves de la Animación"
@@ -586,6 +604,18 @@ msgstr "Animación Múltiple Cambiar transición"
 
 msgid "Animation Multi Change Position3D"
 msgstr "Animación Múltiple Cambiar posición 3D"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Cambiar Rotación 3D de Múltiples Animaciones"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Cambiar Escala 3D de Múltiples Animaciones"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Cambiar Valor de Fotograma Clave en Múltiples Animaciones"
+
+msgid "Animation Multi Change Call"
+msgstr "Cambiar Llamada de Múltiples Animaciones"
 
 msgid "Change Animation Length"
 msgstr "Cambiar Duración de la Animación"
@@ -1325,9 +1355,6 @@ msgstr "Crear Carpeta"
 
 msgid "Thanks from the Godot community!"
 msgstr "Gracias de parte de la comunidad Godot!"
-
-msgid "Click to copy."
-msgstr "Click para copiar."
 
 msgid "Godot Engine contributors"
 msgstr "Colaboradores de Godot Engine"
@@ -2420,9 +2447,6 @@ msgstr "Inspector"
 msgid "Node"
 msgstr "Nodo"
 
-msgid "Expand Bottom Panel"
-msgstr "Expandir Panel Inferior"
-
 msgid "Output"
 msgstr "Salida"
 
@@ -3145,6 +3169,9 @@ msgstr "Agregar al Grupo"
 msgid "Remove from Group"
 msgstr "Quitar del Grupo"
 
+msgid "Expand Bottom Panel"
+msgstr "Expandir Panel Inferior"
+
 msgid "Move"
 msgstr "Mover"
 
@@ -3764,7 +3791,7 @@ msgid "Display list of animations in player."
 msgstr "Diaplay list de animaciones en el reproductor."
 
 msgid "Autoplay on Load"
-msgstr "Autoreproducir al Cargar"
+msgstr "Reproducir automáticamente al Cargar"
 
 msgid "Enable Onion Skinning"
 msgstr "Activar Onion Skinning"
@@ -4229,12 +4256,6 @@ msgstr "Ajuste Relativo"
 msgid "Use Pixel Snap"
 msgstr "Usar Ajuste a Pixeles"
 
-msgid "Smart Snapping"
-msgstr "Ajuste Inteligente"
-
-msgid "Configure Snap..."
-msgstr "Configurar Ajuste..."
-
 msgid "Snap to Parent"
 msgstr "Ajustar al Padre"
 
@@ -4252,6 +4273,12 @@ msgstr "Ajustar a Otros Nodos"
 
 msgid "Snap to Guides"
 msgstr "Ajustar a las Guías"
+
+msgid "Smart Snapping"
+msgstr "Ajuste Inteligente"
+
+msgid "Configure Snap..."
+msgstr "Configurar Ajuste..."
 
 msgid "Lock Selected Node(s)"
 msgstr "Bloquear Nodo(s) Seleccionado(s)"
@@ -5001,6 +5028,9 @@ msgstr "Ver Entorno"
 msgid "View Gizmos"
 msgstr "Ver Gizmos"
 
+msgid "View Grid"
+msgstr "Ver Grilla"
+
 msgid "View Information"
 msgstr "Ver Información"
 
@@ -5168,9 +5198,6 @@ msgstr "4 Viewports"
 msgid "View Origin"
 msgstr "Ver Origen"
 
-msgid "View Grid"
-msgstr "Ver Grilla"
-
 msgid "Settings..."
 msgstr "Configuración..."
 
@@ -5279,9 +5306,6 @@ msgstr "Manejadores de Tamaño de Espejo"
 msgid "Curve Point #"
 msgstr "Punto # de Curva"
 
-msgid "Set Curve Point Position"
-msgstr "Setear Posición de Punto de Curva"
-
 msgid "Set Curve Out Position"
 msgstr "Setear Posición de Salida de Curva"
 
@@ -5296,6 +5320,9 @@ msgstr "Quitar Punto del Path"
 
 msgid "Split Segment (in curve)"
 msgstr "Partir Segmento (en curva)"
+
+msgid "Set Curve Point Position"
+msgstr "Setear Posición de Punto de Curva"
 
 msgid "Move Joint"
 msgstr "Mover Unión"
@@ -5560,14 +5587,14 @@ msgstr "Previo en Historial"
 msgid "History Next"
 msgstr "Siguiente en Historial"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Import Theme..."
 msgstr "Importar Tema..."
 
 msgid "Reload Theme"
 msgstr "Recargar Tema"
+
+msgid "Theme"
+msgstr "Tema"
 
 msgid "Save Theme"
 msgstr "Guardar Tema"
@@ -5824,12 +5851,6 @@ msgstr "No se pudieron cargar las imágenes"
 
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "ERROR: No se pudo cargar el recurso de frames!"
-
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "El portapapeles de recursos esta vacío o no es una textura!"
-
-msgid "Paste Frame"
-msgstr "Pegar Frame"
 
 msgid "Add Empty"
 msgstr "Agregar Vacío"
@@ -8034,6 +8055,55 @@ msgid "No identity found."
 msgstr "No se encontró identidad."
 
 msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Animar CPUParticles2D requiere el uso de un CanvasItemMaterial con "
+"\"Particles Animation\" activado."
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+"No se imprimió ningun comportamiento ya que ningún material fue asignado para "
+"procesar las particulas."
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Animar de Particles2D requiere el uso de un CanvasItemMaterial con "
+"\"Particles Animation\" activado."
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr ""
+"Se debe proporcionar una textura con la forma de la luz a la propiedad "
+"\"Texture\"."
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"Se debe setear(o dibujar) un polígono oclusor para que este oclusor tenga "
+"efecto."
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr ""
+"El polígono oclusor para este oclusor está vacío. Por favor, dibujá un "
+"polígono."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"El nodo ParallaxLayer sólo funciona cuando está seteado como hijo de un nodo "
+"ParallaxBackground."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr ""
+"PathFollow2D sólo funciona cuando está seteado como hijo de un nodo Path2D."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
 "its shape."
@@ -8071,27 +8141,6 @@ msgstr ""
 "directamente a través del nodo CollisionShape2D. Por favor, usá el nodo "
 "CollisionPolygon2D en su lugar."
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Animar CPUParticles2D requiere el uso de un CanvasItemMaterial con "
-"\"Particles Animation\" activado."
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-"No se imprimió ningun comportamiento ya que ningún material fue asignado para "
-"procesar las particulas."
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Animar de Particles2D requiere el uso de un CanvasItemMaterial con "
-"\"Particles Animation\" activado."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "El nodo A y el nodo B deben ser PhysicsBody2D"
 
@@ -8106,34 +8155,6 @@ msgstr "La unión no está conectada a dos PhysicsBody2D"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "El Nodo A y el Nodo B deben ser diferentes PhysicsBody2D"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr ""
-"Se debe proporcionar una textura con la forma de la luz a la propiedad "
-"\"Texture\"."
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"Se debe setear(o dibujar) un polígono oclusor para que este oclusor tenga "
-"efecto."
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr ""
-"El polígono oclusor para este oclusor está vacío. Por favor, dibujá un "
-"polígono."
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"El nodo ParallaxLayer sólo funciona cuando está seteado como hijo de un nodo "
-"ParallaxBackground."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
-"PathFollow2D sólo funciona cuando está seteado como hijo de un nodo Path2D."
 
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "La propiedad Path debe apuntar a un nodo Node2D válido para funcionar."
@@ -8188,9 +8209,6 @@ msgstr "No se ha establecido ningún nodo AnimationNode raíz para el gráfico."
 msgid "Switch between hexadecimal and code values."
 msgstr "Cambiar entre valores hexadecimales y de código."
 
-msgid "Add current color as a preset."
-msgstr "Agregar color actual como preset."
-
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
 "placement behavior.\n"
@@ -8223,9 +8241,6 @@ msgstr ""
 "ScrollContainer está pensado para funcionar con un solo control hijo.\n"
 "Utilizá un container como hijo (VBox, HBox, etc.), o un Control y establecé "
 "manualmente el tamaño mínimo personalizado."
-
-msgid "(Other)"
-msgstr "(Otro)"
 
 msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "

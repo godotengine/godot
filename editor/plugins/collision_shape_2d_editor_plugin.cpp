@@ -326,6 +326,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 					return false;
 				}
 
+				original_mouse_pos = gpoint;
 				original_point = handles[edit_handle];
 				original = get_handle_value(edit_handle);
 				original_transform = node->get_global_transform();
@@ -336,7 +337,9 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 
 			} else {
 				if (pressed) {
-					commit_handle(edit_handle, original);
+					if (original_mouse_pos != gpoint) {
+						commit_handle(edit_handle, original);
+					}
 
 					edit_handle = -1;
 					pressed = false;

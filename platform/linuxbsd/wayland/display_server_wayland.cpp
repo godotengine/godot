@@ -192,19 +192,35 @@ void DisplayServerWayland::_show_window() {
 
 bool DisplayServerWayland::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_MOUSE:
+		case FEATURE_MOUSE_WARP:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CURSOR_SHAPE:
+		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
-		case FEATURE_CLIPBOARD_PRIMARY:
-#ifdef DBUS_ENABLED
-		case FEATURE_NATIVE_DIALOG:
-#endif
-		case FEATURE_HIDPI: {
+		case FEATURE_CLIPBOARD_PRIMARY: {
 			return true;
 		} break;
+
+#ifdef DBUS_ENABLED
+		case FEATURE_NATIVE_DIALOG: {
+			return true;
+		} break;
+#endif
+
+#ifdef SPEECHD_ENABLED
+		case FEATURE_TEXT_TO_SPEECH: {
+			return true;
+		} break;
+#endif
 
 		default: {
 			return false;
@@ -569,9 +585,9 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 bool DisplayServerWayland::screen_is_kept_on() const {
 #ifdef DBUS_ENABLED
 	return wayland_thread.window_get_idle_inhibition(MAIN_WINDOW_ID) || screensaver_inhibited;
-#endif
-
+#else
 	return wayland_thread.window_get_idle_inhibition(MAIN_WINDOW_ID);
+#endif
 }
 
 Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
@@ -1231,6 +1247,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
 
+	native_menu = memnew(NativeMenu);
+
 #ifdef SPEECHD_ENABLED
 	// Init TTS
 	tts = memnew(TTS_Linux);
@@ -1355,6 +1373,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 DisplayServerWayland::~DisplayServerWayland() {
 	// TODO: Multiwindow support.
+
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
+
 	if (main_window.visible) {
 #ifdef VULKAN_ENABLED
 		if (rendering_device) {

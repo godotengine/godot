@@ -1234,6 +1234,9 @@ msgstr "Попередження"
 msgid "Line and column numbers."
 msgstr "Номери рядків і позицій."
 
+msgid "Indentation"
+msgstr "Відступ"
+
 msgid "Method in target node must be specified."
 msgstr "Має бути вказано метод у цільовому вузлі."
 
@@ -1842,9 +1845,6 @@ msgstr "Некоректна назва теки."
 
 msgid "Thanks from the Godot community!"
 msgstr "Спасибі від спільноти Godot!"
-
-msgid "Click to copy."
-msgstr "Клацніть, щоб скопіювати."
 
 msgid "Godot Engine contributors"
 msgstr "Автори рушія Godot"
@@ -3688,9 +3688,6 @@ msgstr "Вузол"
 msgid "History"
 msgstr "Історія"
 
-msgid "Expand Bottom Panel"
-msgstr "Розгорнути нижню панель"
-
 msgid "Output"
 msgstr "Вивід"
 
@@ -3744,9 +3741,6 @@ msgstr "Перезавантажити"
 
 msgid "Resave"
 msgstr "Перезаписати"
-
-msgid "Create Version Control Metadata..."
-msgstr "Створення метаданих керування версіями..."
 
 msgid "Version Control Settings..."
 msgstr "Налаштування контролю версій..."
@@ -4580,23 +4574,6 @@ msgstr "Керування шаблонами експорту"
 msgid "Export With Debug"
 msgstr "Експортувати із діагностикою"
 
-msgid "Disable FBX & Restart"
-msgstr "Вимкнути FBX та перезапустити"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"Скасування цього діалового вікна зупинить імпорт FBX.\n"
-"Ви зможете заново увімкнути у Параметрах проекту у категорії Файлова система "
-"> FBX > Увімкнути.\n"
-"\n"
-"Редактор буде перезавантажено, оскільки процеси імпорту реєструються в момент "
-"запуску редактора."
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Шлях до виконуваного файлу FBX2glTF порожній."
 
@@ -4611,13 +4588,6 @@ msgstr "Виконуваний файл FBX2glTF є дійсним."
 
 msgid "Configure FBX Importer"
 msgstr "Налаштування імпортера FBX"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX2glTF необхідний для імпорту FBX файлів.\n"
-"Будь ласка, завантажте його та вкажіть правильний шлях до бінарного файлу:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "Натисніть на це посилання, щоб завантажити FBX2glTF"
@@ -4943,6 +4913,9 @@ msgstr "Вилучити з групи"
 
 msgid "Global"
 msgstr "Загально"
+
+msgid "Expand Bottom Panel"
+msgstr "Розгорнути нижню панель"
 
 msgid "Move"
 msgstr "Перемістити"
@@ -7034,12 +7007,6 @@ msgstr "Відносна прив'язка"
 msgid "Use Pixel Snap"
 msgstr "Використати прилипання до пікселів"
 
-msgid "Smart Snapping"
-msgstr "Інтелектуальне прилипання"
-
-msgid "Configure Snap..."
-msgstr "Налаштування прив'язки..."
-
 msgid "Snap to Parent"
 msgstr "Прилипання до предка"
 
@@ -7057,6 +7024,12 @@ msgstr "Прилипання до інших вузлів"
 
 msgid "Snap to Guides"
 msgstr "Прилипання до напрямних"
+
+msgid "Smart Snapping"
+msgstr "Інтелектуальне прилипання"
+
+msgid "Configure Snap..."
+msgstr "Налаштування прив'язки..."
 
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Блокувати вибраний вузол, запобігаючи виділенню та переміщенню."
@@ -8397,6 +8370,9 @@ msgstr "Перегляд середовища"
 msgid "View Gizmos"
 msgstr "Перегляд гаджетів"
 
+msgid "View Grid"
+msgstr "Перегляд ґратки"
+
 msgid "View Information"
 msgstr "Перегляд відомостей"
 
@@ -8654,9 +8630,6 @@ msgstr "4 панелі перегляду"
 msgid "View Origin"
 msgstr "Перегляд центра"
 
-msgid "View Grid"
-msgstr "Перегляд ґратки"
-
 msgid "Settings..."
 msgstr "Параметри…"
 
@@ -8870,9 +8843,6 @@ msgstr "Handle In #"
 msgid "Handle Tilt #"
 msgstr "Нахил ручки #"
 
-msgid "Set Curve Point Position"
-msgstr "Задати положення точки кривої"
-
 msgid "Set Curve Out Position"
 msgstr "Встановити положення виходу кривої"
 
@@ -8887,6 +8857,9 @@ msgstr "Видалити точку шляху"
 
 msgid "Split Segment (in curve)"
 msgstr "Розділити сегмент (кривої)"
+
+msgid "Set Curve Point Position"
+msgstr "Задати положення точки кривої"
 
 msgid "Move Joint"
 msgstr "Пересунути з'єднання"
@@ -9192,14 +9165,14 @@ msgstr "Попередній у журналі"
 msgid "History Next"
 msgstr "Наступний файл"
 
-msgid "Theme"
-msgstr "Тема"
-
 msgid "Import Theme..."
 msgstr "Імпортувати тему…"
 
 msgid "Reload Theme"
 msgstr "Перезавантажити тему"
+
+msgid "Theme"
+msgstr "Тема"
 
 msgid "Save Theme"
 msgstr "Зберегти тему"
@@ -9305,9 +9278,6 @@ msgstr "Вибрати колір"
 
 msgid "Folding"
 msgstr "Згортання"
-
-msgid "Indentation"
-msgstr "Відступ"
 
 msgid "Uppercase"
 msgstr "ВЕРХНІЙ РЕГІСТР"
@@ -9593,12 +9563,6 @@ msgstr "Не вдалося завантажити зображення"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "Помилка: не вдалося завантажити ресурс кадру!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Буфер ресурсів порожній або не містить текстури!"
-
-msgid "Paste Frame"
-msgstr "Вставити кадр"
-
 msgid "Add Empty"
 msgstr "Додати порожній"
 
@@ -9646,9 +9610,6 @@ msgstr "Додати кадри із аркуша спрайтів"
 
 msgid "Delete Frame"
 msgstr "Видалити кадр"
-
-msgid "Copy Frame"
-msgstr "Копіювати кадр"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "Вставити порожній (перед виділеним)"
@@ -14845,50 +14806,6 @@ msgstr ""
 "Працюватиме перший зі створених, решту буде проігноровано."
 
 msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
-"its shape."
-msgstr ""
-"У цього вузла немає форми, отже він не може взаємодіяти із іншими об'єктами.\n"
-"Спробуйте додати дочірні вузли CollisionShape2D або CollisionPolygon2D для "
-"визначення його форми."
-
-msgid ""
-"CollisionPolygon2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon2D призначено лише для надання форми для зіткнень похідному "
-"вузлу CollisionObject2D. Будь ласка, використовуйте його як дочірній елемент "
-"Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, тощо, щоб надати їм форми."
-
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "Порожній CollisionPolygon2D ніяк не вплине на зіткнення."
-
-msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
-msgstr ""
-"Некоректний полігон. У режимі збирання «Solids» потрібно принаймні 3 точки."
-
-msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
-msgstr ""
-"Некоректний полігон. У режимі збирання «Segments» потрібні принаймні 2 точки."
-
-msgid ""
-"A shape must be provided for CollisionShape2D to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"Для забезпечення працездатності CollisionShape2D слід надати форму. Будь "
-"ласка, створіть ресурс форми для цього елемента!"
-
-msgid ""
-"Polygon-based shapes are not meant be used nor edited directly through the "
-"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
-msgstr ""
-"Засновані на багатокутниках форми не призначено для використання або "
-"редагування з вузла CollisionShape2D. Будь ласка, скористайтеся замість нього "
-"вузлом CollisionPolygon2D."
-
-msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
@@ -14915,21 +14832,6 @@ msgid ""
 msgstr ""
 "Сліди частинок доступні лише при використанні бекендів рендерингу Forward+ "
 "або Мобільний."
-
-msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr "Вузол A і вузол B мають бути PhysicsBody2D"
-
-msgid "Node A must be a PhysicsBody2D"
-msgstr "Вузол A має бути PhysicsBody2D"
-
-msgid "Node B must be a PhysicsBody2D"
-msgstr "Вузол B має бути PhysicsBody2D"
-
-msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr "З'єднання не з'єднано із двома PhysicsBody2D"
-
-msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr "Вузол A і вузол B мають бути різними PhysicsBody2D"
 
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -14978,6 +14880,65 @@ msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr "PathFollow2D працюватиме лише як дочірній елемент вузла Path2D."
 
 msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
+"its shape."
+msgstr ""
+"У цього вузла немає форми, отже він не може взаємодіяти із іншими об'єктами.\n"
+"Спробуйте додати дочірні вузли CollisionShape2D або CollisionPolygon2D для "
+"визначення його форми."
+
+msgid ""
+"CollisionPolygon2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon2D призначено лише для надання форми для зіткнень похідному "
+"вузлу CollisionObject2D. Будь ласка, використовуйте його як дочірній елемент "
+"Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, тощо, щоб надати їм форми."
+
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "Порожній CollisionPolygon2D ніяк не вплине на зіткнення."
+
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+"Некоректний полігон. У режимі збирання «Solids» потрібно принаймні 3 точки."
+
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+"Некоректний полігон. У режимі збирання «Segments» потрібні принаймні 2 точки."
+
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"Для забезпечення працездатності CollisionShape2D слід надати форму. Будь "
+"ласка, створіть ресурс форми для цього елемента!"
+
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"Засновані на багатокутниках форми не призначено для використання або "
+"редагування з вузла CollisionShape2D. Будь ласка, скористайтеся замість нього "
+"вузлом CollisionPolygon2D."
+
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr "Вузол A і вузол B мають бути PhysicsBody2D"
+
+msgid "Node A must be a PhysicsBody2D"
+msgstr "Вузол A має бути PhysicsBody2D"
+
+msgid "Node B must be a PhysicsBody2D"
+msgstr "Вузол B має бути PhysicsBody2D"
+
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr "З'єднання не з'єднано із двома PhysicsBody2D"
+
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr "Вузол A і вузол B мають бути різними PhysicsBody2D"
+
+msgid ""
 "A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
 "parent node!"
 msgstr ""
@@ -15008,16 +14969,16 @@ msgstr ""
 "запуску.\n"
 "Вам варто змінити розмір у дочірніх формах зіткнення."
 
-msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
-"Щоб усе працювало як слід, властивість шляху (path) має вказувати на "
-"коректний вузол Node2D."
-
 msgid ""
 "This node cannot interact with other objects unless a Shape2D is assigned."
 msgstr ""
 "Цей вузол не може взаємодіяти з іншими об'єктами, якщо йому не призначено "
 "Shape2D."
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr ""
+"Щоб усе працювало як слід, властивість шляху (path) має вказувати на "
+"коректний вузол Node2D."
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "Цей ланцюжок Bone2D має завершуватися вузлом Skeleton2D."
@@ -15078,86 +15039,6 @@ msgid ""
 msgstr ""
 "Вузол BoneAttachment3D не прив'язаний до жодної кістки! Будь ласка, виберіть "
 "кістку для прикріплення цього вузла."
-
-msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
-"its shape."
-msgstr ""
-"У цього вузла немає форми, отже він не може стикатися, або взаємодіяти із "
-"іншими об'єктами.\n"
-"Спробуйте додати дочірні вузли CollisionShape3D або CollisionPolygon3D для "
-"визначення його форми."
-
-msgid ""
-"With a non-uniform scale this node will probably not function as expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size in children collision shapes instead."
-msgstr ""
-"З нерівномірним масштабом цей вузол, ймовірно, не буде функціонувати належним "
-"чином.\n"
-"Будь ласка, зробіть його масштаб рівномірним (тобто однаковим на всіх осях), "
-"а замість цього змініть розмір у дочірніх формах зіткнення."
-
-msgid ""
-"CollisionPolygon3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon3D призначено лише для надання форми зіткнень похідному вузлу "
-"CollisionObject3D.\n"
-"Будь ласка, використовуйте його лише як дочірній елемент Area3D, "
-"StaticBody3D, RigidBody3D, CharacterBody3D, тощо, щоб надати їм форми."
-
-msgid "An empty CollisionPolygon3D has no effect on collision."
-msgstr "Порожній CollisionPolygon3D ніяк не вплине на зіткнення."
-
-msgid ""
-"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change its "
-"polygon's vertices instead."
-msgstr ""
-"Нерівномірно масштабований вузол CollisionPolygon3D, ймовірно, не працюватиме "
-"належним чином.\n"
-"Будь ласка, зробіть його масштаб рівномірним (тобто однаковим на всіх осях), "
-"а замість цього змініть вершини багатокутника."
-
-msgid ""
-"CollisionShape3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionShape3D призначено лише для надання форми для зіткнень похідному "
-"вузлу CollisionObject3D.\n"
-"Будь ласка, використовуйте його лише як дочірній елемент Area3D, "
-"StaticBody3D, RigidBody3D, CharacterBody3D тощо, щоб надати їм форми."
-
-msgid ""
-"A shape must be provided for CollisionShape3D to function. Please create a "
-"shape resource for it."
-msgstr ""
-"Для забезпечення працездатності CollisionShape3D слід надати форму. Будь "
-"ласка, створіть ресурс форми для цього елемента."
-
-msgid ""
-"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
-msgstr ""
-"У WorldBoundaryShape3D не передбачено підтримки RigidBody3D у режимі, "
-"відмінному від статичного."
-
-msgid ""
-"A non-uniformly scaled CollisionShape3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size of its shape resource instead."
-msgstr ""
-"Нерівномірно масштабований вузол CollisionShape3D, ймовірно, не працюватиме "
-"належним чином.\n"
-"Будь ласка, зробіть його масштаб рівномірним (тобто однаковим на всіх осях), "
-"а замість цього змініть розмір форми його ресурсу."
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Нічого не видно, оскільки не призначено сітки."
@@ -15222,21 +15103,6 @@ msgstr ""
 "Маска запікання не має увімкнених бітів, що означає, що запікання не "
 "спричинить жодної колізії для цього GPUParticlesCollisionSDF3D.\n"
 "Щоб вирішити цю проблему, увімкніть хоча б один біт у властивості Bake Mask."
-
-msgid "Node A and Node B must be PhysicsBody3Ds"
-msgstr "Вузол A і вузол B мають бути PhysicsBody3D"
-
-msgid "Node A must be a PhysicsBody3D"
-msgstr "Вузол A має бути PhysicsBody3D"
-
-msgid "Node B must be a PhysicsBody3D"
-msgstr "Вузол B має бути PhysicsBody3D"
-
-msgid "Joint is not connected to any PhysicsBody3Ds"
-msgstr "Joint не з'єднано із жодним PhysicsBody3D"
-
-msgid "Node A and Node B must be different PhysicsBody3Ds"
-msgstr "Вузол A і вузол B мають бути різними PhysicsBody3D"
 
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "Масштаб світильника не впливає на візуальний розмір світла."
@@ -15361,6 +15227,101 @@ msgstr ""
 "батьківському ресурсі Curve у Path3D."
 
 msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
+"its shape."
+msgstr ""
+"У цього вузла немає форми, отже він не може стикатися, або взаємодіяти із "
+"іншими об'єктами.\n"
+"Спробуйте додати дочірні вузли CollisionShape3D або CollisionPolygon3D для "
+"визначення його форми."
+
+msgid ""
+"With a non-uniform scale this node will probably not function as expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size in children collision shapes instead."
+msgstr ""
+"З нерівномірним масштабом цей вузол, ймовірно, не буде функціонувати належним "
+"чином.\n"
+"Будь ласка, зробіть його масштаб рівномірним (тобто однаковим на всіх осях), "
+"а замість цього змініть розмір у дочірніх формах зіткнення."
+
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon3D призначено лише для надання форми зіткнень похідному вузлу "
+"CollisionObject3D.\n"
+"Будь ласка, використовуйте його лише як дочірній елемент Area3D, "
+"StaticBody3D, RigidBody3D, CharacterBody3D, тощо, щоб надати їм форми."
+
+msgid "An empty CollisionPolygon3D has no effect on collision."
+msgstr "Порожній CollisionPolygon3D ніяк не вплине на зіткнення."
+
+msgid ""
+"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change its "
+"polygon's vertices instead."
+msgstr ""
+"Нерівномірно масштабований вузол CollisionPolygon3D, ймовірно, не працюватиме "
+"належним чином.\n"
+"Будь ласка, зробіть його масштаб рівномірним (тобто однаковим на всіх осях), "
+"а замість цього змініть вершини багатокутника."
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape3D призначено лише для надання форми для зіткнень похідному "
+"вузлу CollisionObject3D.\n"
+"Будь ласка, використовуйте його лише як дочірній елемент Area3D, "
+"StaticBody3D, RigidBody3D, CharacterBody3D тощо, щоб надати їм форми."
+
+msgid ""
+"A shape must be provided for CollisionShape3D to function. Please create a "
+"shape resource for it."
+msgstr ""
+"Для забезпечення працездатності CollisionShape3D слід надати форму. Будь "
+"ласка, створіть ресурс форми для цього елемента."
+
+msgid ""
+"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
+msgstr ""
+"У WorldBoundaryShape3D не передбачено підтримки RigidBody3D у режимі, "
+"відмінному від статичного."
+
+msgid ""
+"A non-uniformly scaled CollisionShape3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size of its shape resource instead."
+msgstr ""
+"Нерівномірно масштабований вузол CollisionShape3D, ймовірно, не працюватиме "
+"належним чином.\n"
+"Будь ласка, зробіть його масштаб рівномірним (тобто однаковим на всіх осях), "
+"а замість цього змініть розмір форми його ресурсу."
+
+msgid "Node A and Node B must be PhysicsBody3Ds"
+msgstr "Вузол A і вузол B мають бути PhysicsBody3D"
+
+msgid "Node A must be a PhysicsBody3D"
+msgstr "Вузол A має бути PhysicsBody3D"
+
+msgid "Node B must be a PhysicsBody3D"
+msgstr "Вузол B має бути PhysicsBody3D"
+
+msgid "Joint is not connected to any PhysicsBody3Ds"
+msgstr "Joint не з'єднано із жодним PhysicsBody3D"
+
+msgid "Node A and Node B must be different PhysicsBody3Ds"
+msgstr "Вузол A і вузол B мають бути різними PhysicsBody3D"
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
@@ -15368,6 +15329,27 @@ msgstr ""
 "Зміни розмірів RigidBody3D буде перевизначено фізичним рушієм під час "
 "роботи.\n"
 "Замість змінювати це, вам варто змінити розміри дочірніх форм зіткнення."
+
+msgid ""
+"This node cannot interact with other objects unless a Shape3D is assigned."
+msgstr ""
+"Цей вузол не може взаємодіяти з іншими об'єктами, якщо йому не призначено "
+"Shape3D."
+
+msgid ""
+"ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be "
+"reported."
+msgstr ""
+"ShapeCast3D не підтримує ConcavePolygonShape3D. Про зіткнення не буде "
+"повідомлено."
+
+msgid ""
+"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
+"use it as a child of a VehicleBody3D."
+msgstr ""
+"VehicleWheel3D слугує для забезпечення роботи системи коліс у VehicleBody3D. "
+"Будь ласка, використовуйте цей елемент як дочірній елемент вузла "
+"VehicleBody3D."
 
 msgid ""
 "ReflectionProbes are not supported when using the GL Compatibility backend "
@@ -15383,19 +15365,6 @@ msgstr ""
 "Властивість \"Remote Path\" має вказувати на дійсний вузол Node3D або "
 "похідний вузол Node3D, щоб працювати."
 
-msgid ""
-"This node cannot interact with other objects unless a Shape3D is assigned."
-msgstr ""
-"Цей вузол не може взаємодіяти з іншими об'єктами, якщо йому не призначено "
-"Shape3D."
-
-msgid ""
-"ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be "
-"reported."
-msgstr ""
-"ShapeCast3D не підтримує ConcavePolygonShape3D. Про зіткнення не буде "
-"повідомлено."
-
 msgid "This body will be ignored until you set a mesh."
 msgstr "Це тіло буде проігноровано, аж доки ви не встановите сітку."
 
@@ -15405,21 +15374,6 @@ msgid ""
 msgstr ""
 "Щоб AnimatedSprite3D могла показувати кадри, має бути створено або "
 "встановлено у властивості «Frames» ресурс SpriteFrames."
-
-msgid ""
-"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
-"use it as a child of a VehicleBody3D."
-msgstr ""
-"VehicleWheel3D слугує для забезпечення роботи системи коліс у VehicleBody3D. "
-"Будь ласка, використовуйте цей елемент як дочірній елемент вузла "
-"VehicleBody3D."
-
-msgid ""
-"VisibleOnScreenNotifier3D nodes are not supported when using the GL "
-"Compatibility backend yet. Support will be added in a future release."
-msgstr ""
-"Вузли VisibleOnScreenNotifier3D поки що не підтримуються при використанні "
-"бекенду сумісності з GL. Підтримка буде додана у наступному випуску."
 
 msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
@@ -15539,43 +15493,8 @@ msgstr ""
 msgid "Copy this constructor in a script."
 msgstr "Скопіюйте цей конструктор у скрипт."
 
-msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
-msgstr ""
-"Введите шестнадцатеричный код (\"#ff0000\") или названный цвет (\"красный\")."
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Колір: #%s\n"
-"Ліва кнопка: застосувати колір\n"
-"Права кнопка: вилучити взірець"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Колір: #%s\n"
-"Ліва кнопка: Застосувати колір"
-
-msgid "Pick a color from the application window."
-msgstr "Вибрати колір з вікна програми."
-
-msgid "Select a picker shape."
-msgstr "Виберіть фігуру вибору."
-
-msgid "Select a picker mode."
-msgstr "Виберіть режим вибору."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Перемикання між шістнадцятковими значеннями і кодами."
-
-msgid "Hex code or named color"
-msgstr "Шестнадцатеричный код или названный цвет"
-
-msgid "Add current color as a preset."
-msgstr "Додати поточний колір як шаблон."
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -15605,12 +15524,6 @@ msgstr ""
 msgid "Alert!"
 msgstr "Увага!"
 
-msgid "You don't have permission to access contents of this folder."
-msgstr "У вас немає дозволу на доступ до вмісту цієї папки."
-
-msgid "Invalid extension, or empty filename."
-msgstr "Некоректний суфікс, або порожня назва файлу."
-
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
 "refactoring in a future 4.x version involving compatibility-breaking API "
@@ -15619,9 +15532,6 @@ msgstr ""
 "Будь ласка, зверніть увагу, що GraphEdit і GraphNode зазнають значного "
 "рефакторингу в майбутній версії 4.x, що включає зміни API, які порушують "
 "сумісність."
-
-msgid "Change the snapping distance."
-msgstr "Изменение расстояния привязки."
 
 msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
@@ -15636,72 +15546,6 @@ msgid ""
 msgstr ""
 "Поточний шрифт не підтримує відображення одного або декількох символів, що "
 "використовуються в тексті цієї мітки."
-
-msgid "Same as Layout Direction"
-msgstr "Те саме, що напрямок макета"
-
-msgid "Auto-Detect Direction"
-msgstr "Автоматичне визначення напрямку"
-
-msgid "Left-to-Right"
-msgstr "Зліва направо"
-
-msgid "Right-to-Left"
-msgstr "Справа наліво"
-
-msgid "Left-to-Right Mark (LRM)"
-msgstr "Позначка зліва направо (LRM)"
-
-msgid "Right-to-Left Mark (RLM)"
-msgstr "Позначка справа наліво (ПЛП)"
-
-msgid "Start of Left-to-Right Embedding (LRE)"
-msgstr "Початок вбудовування зліва направо (ЛПВ)"
-
-msgid "Start of Right-to-Left Embedding (RLE)"
-msgstr "Початок вбудовування справа наліво (ПЛВ)"
-
-msgid "Start of Left-to-Right Override (LRO)"
-msgstr "Початок перевизначення зліва направо (ЛПЗ)"
-
-msgid "Start of Right-to-Left Override (RLO)"
-msgstr "Початок перевизначення справа наліво (ПЛЗ)"
-
-msgid "Arabic Letter Mark (ALM)"
-msgstr "Знак арабської літери (ЗАЛ)"
-
-msgid "Left-to-Right Isolate (LRI)"
-msgstr "Ізоляція зліва направо (ЛПІ)"
-
-msgid "Right-to-Left Isolate (RLI)"
-msgstr "Ізоляція справа наліво (ПЛІ)"
-
-msgid "First Strong Isolate (FSI)"
-msgstr "Первый сильный изолят (FSI)"
-
-msgid "Pop Direction Isolate (PDI)"
-msgstr "Поп-направление Изолировать (PDI)"
-
-msgid "Zero-Width Joiner (ZWJ)"
-msgstr "З'єднувач нульової ширини (ZWJ)"
-
-msgid "Zero-Width Non-Joiner (ZWNJ)"
-msgstr "Нез’єднувач нульової ширини (ZWNJ)"
-
-msgid "Word Joiner (WJ)"
-msgstr "З'єднувач слів (WJ)"
-
-msgid "Soft Hyphen (SHY)"
-msgstr "М'який дефіс (SHY)"
-
-msgid "Text Writing Direction"
-msgstr "Напрямок написання тексту"
-
-msgid "Display Control Characters"
-msgstr "Відображення контрольних символів"
-
-msgid "Insert Control Character"
-msgstr "Вставлення контрольного символу"
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Якщо увімкнено «Exp Edit», «Min Value» має бути > 0."
@@ -15732,9 +15576,6 @@ msgstr ""
 "Форма курсора мыши по умолчанию для SubViewportContainer не имеет никакого "
 "эффекта.\n"
 "Рассмотрите возможность оставить ее в начальном значении `CURSOR_ARROW`."
-
-msgid "(Other)"
-msgstr "(Інші)"
 
 msgid ""
 "This node was saved as class type '%s', which was no longer available when "

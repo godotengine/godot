@@ -325,12 +325,24 @@ void ScriptServer::global_classes_clear() {
 
 void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
 	ERR_FAIL_COND_MSG(p_class == p_base || (global_classes.has(p_base) && get_global_class_native_base(p_base) == p_class), "Cyclic inheritance in script class.");
-	GlobalScriptClass g;
-	g.language = p_language;
-	g.path = p_path;
-	g.base = p_base;
-	global_classes[p_class] = g;
-	inheriters_cache_dirty = true;
+	GlobalScriptClass *existing = global_classes.getptr(p_class);
+	if (existing) {
+		// Update an existing class (only set dirty if something changed).
+		if (existing->base != p_base || existing->path != p_path || existing->language != p_language) {
+			existing->base = p_base;
+			existing->path = p_path;
+			existing->language = p_language;
+			inheriters_cache_dirty = true;
+		}
+	} else {
+		// Add new class.
+		GlobalScriptClass g;
+		g.language = p_language;
+		g.path = p_path;
+		g.base = p_base;
+		global_classes[p_class] = g;
+		inheriters_cache_dirty = true;
+	}
 }
 
 void ScriptServer::remove_global_class(const StringName &p_class) {
@@ -535,6 +547,13 @@ TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_cached_characte
 	return charac;
 }
 
+void ScriptLanguage::_bind_methods() {
+	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_AUTO);
+	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_PASCAL_CASE);
+	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_SNAKE_CASE);
+	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_KEBAB_CASE);
+}
+
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	if (script->is_placeholder_fallback_enabled()) {
 		return false;
@@ -708,7 +727,12 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 			}
 		}
 		if (!found) {
-			properties.push_back(PropertyInfo(p_value.get_type(), p_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE));
+			PropertyHint hint = PROPERTY_HINT_NONE;
+			const Object *obj = p_value.get_validated_object();
+			if (obj && obj->is_class("Node")) {
+				hint = PROPERTY_HINT_NODE_TYPE;
+			}
+			properties.push_back(PropertyInfo(p_value.get_type(), p_name, hint, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE));
 		}
 	}
 

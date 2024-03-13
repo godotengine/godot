@@ -907,7 +907,7 @@ void Basis::_set_diagonal(const Vector3 &p_diag) {
 	rows[2][2] = p_diag.z;
 }
 
-Basis Basis::lerp(const Basis &p_to, const real_t &p_weight) const {
+Basis Basis::lerp(const Basis &p_to, real_t p_weight) const {
 	Basis b;
 	b.rows[0] = rows[0].lerp(p_to.rows[0], p_weight);
 	b.rows[1] = rows[1].lerp(p_to.rows[1], p_weight);
@@ -916,7 +916,7 @@ Basis Basis::lerp(const Basis &p_to, const real_t &p_weight) const {
 	return b;
 }
 
-Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
+Basis Basis::slerp(const Basis &p_to, real_t p_weight) const {
 	//consider scale
 	Quaternion from(*this);
 	Quaternion to(p_to);

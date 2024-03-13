@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "dialogs.h"
+#include "dialogs.compat.inc"
 
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
@@ -195,12 +196,9 @@ String AcceptDialog::get_ok_button_text() const {
 	return ok_button->get_text();
 }
 
-void AcceptDialog::register_text_enter(Control *p_line_edit) {
+void AcceptDialog::register_text_enter(LineEdit *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
-	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
-	if (line_edit) {
-		line_edit->connect("text_submitted", callable_mp(this, &AcceptDialog::_text_submitted));
-	}
+	p_line_edit->connect("text_submitted", callable_mp(this, &AcceptDialog::_text_submitted));
 }
 
 void AcceptDialog::_update_child_rects() {
@@ -329,31 +327,30 @@ Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	return b;
 }
 
-void AcceptDialog::remove_button(Control *p_button) {
-	Button *button = Object::cast_to<Button>(p_button);
-	ERR_FAIL_NULL(button);
-	ERR_FAIL_COND_MSG(button->get_parent() != buttons_hbox, vformat("Cannot remove button %s as it does not belong to this dialog.", button->get_name()));
-	ERR_FAIL_COND_MSG(button == ok_button, "Cannot remove dialog's OK button.");
+void AcceptDialog::remove_button(Button *p_button) {
+	ERR_FAIL_NULL(p_button);
+	ERR_FAIL_COND_MSG(p_button->get_parent() != buttons_hbox, vformat("Cannot remove button %s as it does not belong to this dialog.", p_button->get_name()));
+	ERR_FAIL_COND_MSG(p_button == ok_button, "Cannot remove dialog's OK button.");
 
-	Control *right_spacer = Object::cast_to<Control>(button->get_meta("__right_spacer"));
+	Control *right_spacer = Object::cast_to<Control>(p_button->get_meta("__right_spacer"));
 	if (right_spacer) {
-		ERR_FAIL_COND_MSG(right_spacer->get_parent() != buttons_hbox, vformat("Cannot remove button %s as its associated spacer does not belong to this dialog.", button->get_name()));
+		ERR_FAIL_COND_MSG(right_spacer->get_parent() != buttons_hbox, vformat("Cannot remove button %s as its associated spacer does not belong to this dialog.", p_button->get_name()));
 	}
 
-	button->disconnect("visibility_changed", callable_mp(this, &AcceptDialog::_custom_button_visibility_changed));
-	if (button->is_connected("pressed", callable_mp(this, &AcceptDialog::_custom_action))) {
-		button->disconnect("pressed", callable_mp(this, &AcceptDialog::_custom_action));
+	p_button->disconnect("visibility_changed", callable_mp(this, &AcceptDialog::_custom_button_visibility_changed));
+	if (p_button->is_connected("pressed", callable_mp(this, &AcceptDialog::_custom_action))) {
+		p_button->disconnect("pressed", callable_mp(this, &AcceptDialog::_custom_action));
 	}
-	if (button->is_connected("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed))) {
-		button->disconnect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+	if (p_button->is_connected("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed))) {
+		p_button->disconnect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
 	}
 
 	if (right_spacer) {
 		buttons_hbox->remove_child(right_spacer);
-		button->remove_meta("__right_spacer");
+		p_button->remove_meta("__right_spacer");
 		right_spacer->queue_free();
 	}
-	buttons_hbox->remove_child(button);
+	buttons_hbox->remove_child(p_button);
 
 	child_controls_changed();
 	if (is_visible()) {

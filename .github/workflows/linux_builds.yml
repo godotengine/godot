@@ -116,12 +116,6 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
-      - name: Set up .NET Sdk
-        uses: actions/setup-dotnet@v3
-        if: ${{ matrix.build-mono }}
-        with:
-          dotnet-version: '6.0.x'
-
       - name: Setup GCC problem matcher
         uses: ammaraskar/gcc-problem-matcher@master
 

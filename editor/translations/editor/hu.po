@@ -1202,9 +1202,6 @@ msgstr "Mappa Létrehozása"
 msgid "Thanks from the Godot community!"
 msgstr "Köszönet a Godot közösségétől!"
 
-msgid "Click to copy."
-msgstr "Kattints a másoláshoz."
-
 msgid "Godot Engine contributors"
 msgstr "Godot Engine közreműködők"
 
@@ -2136,9 +2133,6 @@ msgstr "Ellenőrző"
 msgid "Node"
 msgstr "Node"
 
-msgid "Expand Bottom Panel"
-msgstr "Alsó panel kinyitása"
-
 msgid "Output"
 msgstr "Kimenet"
 
@@ -2543,6 +2537,9 @@ msgstr "Hozzáadás Csoporthoz"
 
 msgid "Remove from Group"
 msgstr "Eltávolítás Csoportból"
+
+msgid "Expand Bottom Panel"
+msgstr "Alsó panel kinyitása"
 
 msgid "Move"
 msgstr "Áthelyezés"
@@ -3304,12 +3301,6 @@ msgstr "Relatív Illesztés"
 msgid "Use Pixel Snap"
 msgstr "Pixelhez Illesztés"
 
-msgid "Smart Snapping"
-msgstr "Intelligens illesztés"
-
-msgid "Configure Snap..."
-msgstr "Illesztés Beállítása..."
-
 msgid "Snap to Parent"
 msgstr "Illesztés szülőhöz"
 
@@ -3327,6 +3318,12 @@ msgstr "Illesztés más node-okhoz"
 
 msgid "Snap to Guides"
 msgstr "Illesztés segédvonalakhoz"
+
+msgid "Smart Snapping"
+msgstr "Intelligens illesztés"
+
+msgid "Configure Snap..."
+msgstr "Illesztés Beállítása..."
 
 msgid "Skeleton Options"
 msgstr "Csontváz beállítások"
@@ -3851,9 +3848,6 @@ msgstr "Kérjük erősítse meg..."
 msgid "Curve Point #"
 msgstr "Görbe Pont #"
 
-msgid "Set Curve Point Position"
-msgstr "Görbe Pont Pozíció Beállítása"
-
 msgid "Set Curve Out Position"
 msgstr "Ki-Görbe Pozíció Beállítása"
 
@@ -3868,6 +3862,9 @@ msgstr "Útvonal Pont Eltávolítása"
 
 msgid "Split Segment (in curve)"
 msgstr "Szakasz Felosztása (görbén)"
+
+msgid "Set Curve Point Position"
+msgstr "Görbe Pont Pozíció Beállítása"
 
 msgid "Sync Bones"
 msgstr "Csontok szinkronizálása"
@@ -4622,9 +4619,6 @@ msgstr "Az animáció nem található: '%s'"
 
 msgid "Alert!"
 msgstr "Figyelem!"
-
-msgid "(Other)"
-msgstr "(Más)"
 
 msgid "Invalid source for preview."
 msgstr "Érvénytelen forrás az előnézethez."

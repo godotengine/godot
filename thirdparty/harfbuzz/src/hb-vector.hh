@@ -37,6 +37,8 @@ template <typename Type,
 	  bool sorted=false>
 struct hb_vector_t
 {
+  static constexpr bool realloc_move = true;
+
   typedef Type item_t;
   static constexpr unsigned item_size = hb_static_size (Type);
   using array_t = typename std::conditional<sorted, hb_sorted_array_t<Type>, hb_array_t<Type>>::type;
@@ -268,10 +270,9 @@ struct hb_vector_t
     }
     return new_array;
   }
-  /* Specialization for hb_vector_t<hb_{vector,array}_t<U>> to speed up. */
+  /* Specialization for types that can be moved using realloc(). */
   template <typename T = Type,
-	    hb_enable_if (hb_is_same (T, hb_vector_t<typename T::item_t>) ||
-			  hb_is_same (T, hb_array_t <typename T::item_t>))>
+	    hb_enable_if (T::realloc_move)>
   Type *
   realloc_vector (unsigned new_allocated, hb_priority<1>)
   {

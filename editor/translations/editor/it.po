@@ -96,13 +96,14 @@
 # Samuele Righi <blackdestinyx145@gmail.com>, 2023.
 # Ott8v <Ott8v@users.noreply.hosted.weblate.org>, 2024.
 # NicKoehler <grillinicola@proton.me>, 2024.
+# EricManara0 <ericmanara@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-21 09:02+0000\n"
-"Last-Translator: NicKoehler <grillinicola@proton.me>\n"
+"PO-Revision-Date: 2024-02-26 06:01+0000\n"
+"Last-Translator: EricManara0 <ericmanara@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -552,6 +553,9 @@ msgstr "Modifica l'evento"
 msgid "Remove Event"
 msgstr "Rimuovi l'evento"
 
+msgid "Filter by Name"
+msgstr "Filtra per nome"
+
 msgid "Clear All"
 msgstr "Pulisci tutto"
 
@@ -585,6 +589,15 @@ msgstr "Inserisci una chiave"
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplica le chiavi selezionate"
 
+msgid "Cut Selected Key(s)"
+msgstr "Taglia le chiavi selezionate"
+
+msgid "Copy Selected Key(s)"
+msgstr "Copia le chiavi selezionate"
+
+msgid "Paste Key(s)"
+msgstr "Incolla le chiavi selezionate"
+
 msgid "Delete Selected Key(s)"
 msgstr "Elimina le chiavi selezionate"
 
@@ -614,6 +627,12 @@ msgstr "Sposta dei punti di controllo di Bézier"
 
 msgid "Animation Duplicate Keys"
 msgstr "Duplica le chiavi di un'animazione"
+
+msgid "Animation Cut Keys"
+msgstr "Taglia le chiavi di un'animazione"
+
+msgid "Animation Paste Keys"
+msgstr "Incolla le chiavi di un'animazione"
 
 msgid "Animation Delete Keys"
 msgstr "Elimina le chiavi di un'animazione"
@@ -648,6 +667,15 @@ msgstr "Cambia la chiamata di un'animazione"
 msgid "Animation Multi Change Transition"
 msgstr "Cambio multiplo di transizione di un'animazione"
 
+msgid "Animation Multi Change Position3D"
+msgstr "Cambio multiplo della Position3D di un'animazione"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Cambio multiplo della Rotation3D di un'animazione"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Cambio multiplo della Scale3D di un'animazione"
+
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Cambio multiplo del valore dei fotogrammi chiave di un'animazione"
 
@@ -669,6 +697,33 @@ msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Impossibile cambiare la modalità di ripetizione di un'animazione integrata in "
 "un'altra scena."
+
+msgid "Property Track..."
+msgstr "Traccia di proprietà..."
+
+msgid "3D Position Track..."
+msgstr "Traccia di posizione 3D..."
+
+msgid "3D Rotation Track..."
+msgstr "Traccia di rotazione 3D..."
+
+msgid "3D Scale Track..."
+msgstr "Traccia di scalatura 3D..."
+
+msgid "Blend Shape Track..."
+msgstr "Traccia di plasma forme..."
+
+msgid "Call Method Track..."
+msgstr "Traccia di metodi..."
+
+msgid "Bezier Curve Track..."
+msgstr "Traccia di curve di Bézier..."
+
+msgid "Audio Playback Track..."
+msgstr "Traccia sonora..."
+
+msgid "Animation Playback Track..."
+msgstr "Traccia di animazioni..."
 
 msgid "Animation length (frames)"
 msgstr "Durata dell'animazione (fotogrammi)"
@@ -801,6 +856,9 @@ msgstr "Blocca l'interpolazione d'un ciclo"
 
 msgid "Wrap Loop Interp"
 msgstr "Continua l'interpolazione d'un ciclo"
+
+msgid "Insert Key..."
+msgstr "Inserisci un fotogramma chiave..."
 
 msgid "Duplicate Key(s)"
 msgstr "Duplica i fotogrammi chiave selezionati"
@@ -1257,6 +1315,9 @@ msgstr "Avvisi"
 
 msgid "Line and column numbers."
 msgstr "Numeri di riga e di colonna."
+
+msgid "Indentation"
+msgstr "Indentazione"
 
 msgid "Method in target node must be specified."
 msgstr "Il metodo del nodo selezionato deve essere specificato."
@@ -1862,9 +1923,6 @@ msgstr "Il nome della cartella è valido."
 
 msgid "Thanks from the Godot community!"
 msgstr "Grazie dalla comunità di Godot!"
-
-msgid "Click to copy."
-msgstr "Clicca per copiare."
 
 msgid "Godot Engine contributors"
 msgstr "Contributori di Godot Engine"
@@ -3661,9 +3719,6 @@ msgstr "Nodo"
 msgid "History"
 msgstr "Cronologia"
 
-msgid "Expand Bottom Panel"
-msgstr "Espandi il pannello inferiore"
-
 msgid "Output"
 msgstr "Output"
 
@@ -4528,23 +4583,6 @@ msgstr "Gestisci i modelli di esportazione"
 msgid "Export With Debug"
 msgstr "Esporta Con Debug"
 
-msgid "Disable FBX & Restart"
-msgstr "Disabilita FBX e Ricomincia"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"Chiudendo questa finestra di dialogo si disattiva l'importatore FBX.\n"
-"È possibile riabilitarlo nelle Impostazioni progetto in Filesystem > "
-"Importazione > FBX > Abilitato.\n"
-"\n"
-"L'editor si riavvia perché gli importatori sono registrati all'avvio "
-"dell'editor."
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Il percorso per FBX2glTF è vuoto."
 
@@ -4560,13 +4598,6 @@ msgstr "L'eseguibile di FBX2glTF è valido."
 
 msgid "Configure FBX Importer"
 msgstr "Configura l'importatore FBX"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX2glTF è richiesto per importare i file FBX.\n"
-"Per favore, scaricarlo e offrire un percorso valido al binario:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "Cliccare questo collegamento per scaricare FGX2glTF"
@@ -4861,6 +4892,9 @@ msgstr "Rimuovi da Gruppo"
 
 msgid "Global"
 msgstr "Globale"
+
+msgid "Expand Bottom Panel"
+msgstr "Espandi il pannello inferiore"
 
 msgid "Move"
 msgstr "Sposta"
@@ -6889,12 +6923,6 @@ msgstr "Scatto relativo"
 msgid "Use Pixel Snap"
 msgstr "Scatta sui pixel"
 
-msgid "Smart Snapping"
-msgstr "Scatto intelligente"
-
-msgid "Configure Snap..."
-msgstr "Configura l'agganciamento..."
-
 msgid "Snap to Parent"
 msgstr "Aggancia sul Genitore"
 
@@ -6912,6 +6940,12 @@ msgstr "Aggancia agli Altri Nodi"
 
 msgid "Snap to Guides"
 msgstr "Aggancia alle Guide"
+
+msgid "Smart Snapping"
+msgstr "Scatto intelligente"
+
+msgid "Configure Snap..."
+msgstr "Configura l'agganciamento..."
 
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Blocca il nodo selezionato, impedendo la selezione e il movimento."
@@ -8131,6 +8165,9 @@ msgstr "Visualizza ambiente"
 msgid "View Gizmos"
 msgstr "Visualizza Gizmos"
 
+msgid "View Grid"
+msgstr "Visualizza la griglia"
+
 msgid "View Information"
 msgstr "Visualizza Informazioni"
 
@@ -8383,9 +8420,6 @@ msgstr "4 Viste"
 msgid "View Origin"
 msgstr "Visualizza l'origine"
 
-msgid "View Grid"
-msgstr "Visualizza la griglia"
-
 msgid "Settings..."
 msgstr "Impostazioni…"
 
@@ -8592,9 +8626,6 @@ msgstr "Specchia Lunghezze Manico"
 msgid "Curve Point #"
 msgstr "Punto Curva #"
 
-msgid "Set Curve Point Position"
-msgstr "Imposta Posizione Punto Curva"
-
 msgid "Set Curve Out Position"
 msgstr "Imposta posizione curva esterna"
 
@@ -8609,6 +8640,9 @@ msgstr "Rimuovi Punto Percorso"
 
 msgid "Split Segment (in curve)"
 msgstr "Dividere Segmento (in curva)"
+
+msgid "Set Curve Point Position"
+msgstr "Imposta Posizione Punto Curva"
 
 msgid "Move Joint"
 msgstr "Sposta Articolazione"
@@ -8889,14 +8923,14 @@ msgstr "Cronologia Precedente"
 msgid "History Next"
 msgstr "Cronologia successiva"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Import Theme..."
 msgstr "Importa tema..."
 
 msgid "Reload Theme"
 msgstr "Ricarica Tema"
+
+msgid "Theme"
+msgstr "Tema"
 
 msgid "Save Theme"
 msgstr "Salva tema"
@@ -8991,9 +9025,6 @@ msgstr "Scegli un colore"
 
 msgid "Folding"
 msgstr "Raggruppamento"
-
-msgid "Indentation"
-msgstr "Indentazione"
 
 msgid "Uppercase"
 msgstr "Maiuscolo"
@@ -9274,12 +9305,6 @@ msgstr "Impossibile caricare le immagini"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "ERRORE: Impossibile caricare la risorsa frame!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Gli appunti delle risorse sono vuoti o non una texture!"
-
-msgid "Paste Frame"
-msgstr "Incolla Frame"
-
 msgid "Add Empty"
 msgstr "Aggiungi vuoto"
 
@@ -9330,9 +9355,6 @@ msgstr "Aggiungi i fotogrammi da una scheda di sprite"
 
 msgid "Delete Frame"
 msgstr "Cancella un fotogramma"
-
-msgid "Copy Frame"
-msgstr "Copia un fotogramma"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "Inserisci un fotogramma vuoto (prima della selezione)"
@@ -13726,44 +13748,6 @@ msgstr ""
 "definito."
 
 msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
-"its shape."
-msgstr ""
-"Questo nodo non ha una forma, non può quindi collidere o interagire con gli "
-"altri oggetti.\n"
-"Aggiungi come figlio un CollisionShape2D o un CollisionPolygon2D per definire "
-"la sua forma."
-
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "Un CollisionPolygon2D vuoto non ha effetti sulla collisione."
-
-msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
-msgstr ""
-"Poligono non valido. Sono necessari almeno 3 punti nella modalità di "
-"costruzione \"Solidi\"."
-
-msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
-msgstr ""
-"Poligono non valido. Sono necessari almeno 2 punti nella modalità di "
-"costruzione \"Segmenti\"."
-
-msgid ""
-"A shape must be provided for CollisionShape2D to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"Perché CollisionShape2D funzioni deve essere fornita una forma. Si prega di "
-"creare una risorsa forma (shape)!"
-
-msgid ""
-"Polygon-based shapes are not meant be used nor edited directly through the "
-"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
-msgstr ""
-"Le forme basate sui poligoni non sono dovrebbero essere usate né modificate "
-"direttamente tramite il nodo CollisionShape2D. Si prega di usare invece il "
-"nodo CollisionPolygon2D."
-
-msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
@@ -13783,21 +13767,6 @@ msgid ""
 msgstr ""
 "L'animazione Particles2D richiede l'utilizzo di un CanvasItemMaterial con "
 "\"Animazione di Particelle\" abilitato."
-
-msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr "Nodo A e Nodo B devono essere PhysicsBody2D"
-
-msgid "Node A must be a PhysicsBody2D"
-msgstr "Nodo A deve essere un PhysicsBody2D"
-
-msgid "Node B must be a PhysicsBody2D"
-msgstr "Nodo B deve essere un PhysicsBody2D"
-
-msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr "Il giunto non è collegato a due PhysicsBody2D"
-
-msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr "Nodo A e Nodo B devono essere PhysicsBody2D diversi"
 
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -13839,14 +13808,67 @@ msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr ""
 "PathFollow2D funziona solamente se impostato come figlio di un nodo Path2D."
 
-msgid "Path property must point to a valid Node2D node to work."
-msgstr "La proprietà path deve puntare a un nodo Node2D valido per funzionare."
+msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
+"its shape."
+msgstr ""
+"Questo nodo non ha una forma, non può quindi collidere o interagire con gli "
+"altri oggetti.\n"
+"Aggiungi come figlio un CollisionShape2D o un CollisionPolygon2D per definire "
+"la sua forma."
+
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "Un CollisionPolygon2D vuoto non ha effetti sulla collisione."
+
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr ""
+"Poligono non valido. Sono necessari almeno 3 punti nella modalità di "
+"costruzione \"Solidi\"."
+
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr ""
+"Poligono non valido. Sono necessari almeno 2 punti nella modalità di "
+"costruzione \"Segmenti\"."
+
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"Perché CollisionShape2D funzioni deve essere fornita una forma. Si prega di "
+"creare una risorsa forma (shape)!"
+
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"Le forme basate sui poligoni non sono dovrebbero essere usate né modificate "
+"direttamente tramite il nodo CollisionShape2D. Si prega di usare invece il "
+"nodo CollisionPolygon2D."
+
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr "Nodo A e Nodo B devono essere PhysicsBody2D"
+
+msgid "Node A must be a PhysicsBody2D"
+msgstr "Nodo A deve essere un PhysicsBody2D"
+
+msgid "Node B must be a PhysicsBody2D"
+msgstr "Nodo B deve essere un PhysicsBody2D"
+
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr "Il giunto non è collegato a due PhysicsBody2D"
+
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr "Nodo A e Nodo B devono essere PhysicsBody2D diversi"
 
 msgid ""
 "This node cannot interact with other objects unless a Shape2D is assigned."
 msgstr ""
 "Questo nodo non può interagire con altri oggetti a meno che non venga "
 "assegnato un Shape2D."
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr "La proprietà path deve puntare a un nodo Node2D valido per funzionare."
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "Questa catena di Bone2D deve terminare con un nodo Skeleton2D."
@@ -13861,17 +13883,6 @@ msgid ""
 msgstr ""
 "Questo osso ha bisogno di una corretta postura di RIPOSO. Vai al nodo "
 "Skeleton2D e impostane una."
-
-msgid ""
-"CollisionShape3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionShape3D serve solo a fornire una forma di collisione a un nodo "
-"derivato da CollisionObject3D.\n"
-"Si prega di usarlo solo come child di Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, ecc. per dare loro una forma."
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Niente è visibile perché non è stata assegnata alcuna mesh."
@@ -13904,21 +13915,6 @@ msgid ""
 msgstr ""
 "Usando mesh di tipo Trail con skin, causa la sovrascrittura delle pose Trail "
 "con le Skin. Suggeriamo di rimuovere la Skin."
-
-msgid "Node A and Node B must be PhysicsBody3Ds"
-msgstr "Il nodo A e il nodo B devono essere PhysicsBody3D"
-
-msgid "Node A must be a PhysicsBody3D"
-msgstr "Il nodo A deve essere un PhysicsBody3D"
-
-msgid "Node B must be a PhysicsBody3D"
-msgstr "Il nodo B deve essere un PhysicsBody3D"
-
-msgid "Joint is not connected to any PhysicsBody3Ds"
-msgstr "Il giunto non è collegato ad alcun PhysicsBody3D"
-
-msgid "Node A and Node B must be different PhysicsBody3Ds"
-msgstr "Il nodo A e il nodo B devono essere due PhysicsBody3D diversi"
 
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "La scala di una luce non altera la sua dimensione visiva."
@@ -13980,11 +13976,30 @@ msgstr ""
 "PathFollow3D funziona solamente se impostato come child di un nodo Path3D."
 
 msgid ""
-"The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
-"node to work."
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
 msgstr ""
-"La proprietà \"Remote Path\" deve puntare a un Node3D o a un nodo derivato da "
-"Node3D per funzionare."
+"CollisionShape3D serve solo a fornire una forma di collisione a un nodo "
+"derivato da CollisionObject3D.\n"
+"Si prega di usarlo solo come child di Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, ecc. per dare loro una forma."
+
+msgid "Node A and Node B must be PhysicsBody3Ds"
+msgstr "Il nodo A e il nodo B devono essere PhysicsBody3D"
+
+msgid "Node A must be a PhysicsBody3D"
+msgstr "Il nodo A deve essere un PhysicsBody3D"
+
+msgid "Node B must be a PhysicsBody3D"
+msgstr "Il nodo B deve essere un PhysicsBody3D"
+
+msgid "Joint is not connected to any PhysicsBody3Ds"
+msgstr "Il giunto non è collegato ad alcun PhysicsBody3D"
+
+msgid "Node A and Node B must be different PhysicsBody3Ds"
+msgstr "Il nodo A e il nodo B devono essere due PhysicsBody3D diversi"
 
 msgid ""
 "This node cannot interact with other objects unless a Shape3D is assigned."
@@ -13999,6 +14014,20 @@ msgstr ""
 "ShapeCast3D non supporta i ConcavePolygonShape3D. Le collisioni non verranno "
 "segnalate."
 
+msgid ""
+"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
+"use it as a child of a VehicleBody3D."
+msgstr ""
+"VehicleWheel3D serve a fornire un sistema di ruote a un VehicleBody3D. Per "
+"favore, usarlo come figlio di un VehicleBody3D."
+
+msgid ""
+"The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
+"node to work."
+msgstr ""
+"La proprietà \"Remote Path\" deve puntare a un Node3D o a un nodo derivato da "
+"Node3D per funzionare."
+
 msgid "This body will be ignored until you set a mesh."
 msgstr "Questo corpo verrà ignorato finché non imposterai una mesh."
 
@@ -14008,13 +14037,6 @@ msgid ""
 msgstr ""
 "Una risorsa SpriteFrames deve essere creata o impostata nella proprietà "
 "\"Frames\" per permettere a AnimatedSprite3D di visualizzare i frame."
-
-msgid ""
-"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
-"use it as a child of a VehicleBody3D."
-msgstr ""
-"VehicleWheel3D serve a fornire un sistema di ruote a un VehicleBody3D. Per "
-"favore, usarlo come figlio di un VehicleBody3D."
 
 msgid "Plotting Meshes"
 msgstr "Tracciando Meshes"
@@ -14047,30 +14069,8 @@ msgstr "Non è stata impostata alcuna radice AnimationNode per il grafico."
 msgid "Copy this constructor in a script."
 msgstr "Copia questo costruttore in uno script."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Colore: #%s\n"
-"LMB: Imposta il colore\n"
-"RMB: Rimuovi la preimpostazione"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Colore: #%s\n"
-"LMB: Imposta il colore"
-
-msgid "Pick a color from the application window."
-msgstr "Seleziona un colore dalla finestra applicativa."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Cambia tra valori esadecimali e valori di codice."
-
-msgid "Add current color as a preset."
-msgstr "Aggiungi il colore corrente come preset."
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -14084,33 +14084,6 @@ msgstr ""
 
 msgid "Alert!"
 msgstr "Attenzione!"
-
-msgid "Invalid extension, or empty filename."
-msgstr "Estensione non valida o nome del file vuoto."
-
-msgid "Auto-Detect Direction"
-msgstr "Auto-rileva la direzione"
-
-msgid "Left-to-Right"
-msgstr "Sinistra a destra"
-
-msgid "Right-to-Left"
-msgstr "Destra a sinistra"
-
-msgid "Left-to-Right Mark (LRM)"
-msgstr "Segna da Sinistra-a-Destra (LRM)"
-
-msgid "Left-to-Right Isolate (LRI)"
-msgstr "Isola da Sinistra-a-Destra (LRI)"
-
-msgid "Text Writing Direction"
-msgstr "Direzione di scrittura del testo"
-
-msgid "Display Control Characters"
-msgstr "Mostra i caratteri di controllo"
-
-msgid "Insert Control Character"
-msgstr "Inserisci un carattere di controllo"
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Se \"Exp Edit\" è abilitato, \"Min Value\" deve essere maggiore di 0."
@@ -14134,9 +14107,6 @@ msgstr ""
 "contenuto previsto.\n"
 "Considera di aggiungere un SubViewport come child per fornire qualcosa di "
 "visualizzabile."
-
-msgid "(Other)"
-msgstr "(Altro)"
 
 msgid ""
 "This node was saved as class type '%s', which was no longer available when "

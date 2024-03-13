@@ -12,13 +12,14 @@
 # Jacque Fresco <aidter@use.startmail.com>, 2021.
 # Lemoney <railkill@gmail.com>, 2021, 2022.
 # dens-07 <densleyn01@gmail.com>, 2023.
+# ghakindye vv <ghaffur2013@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-09 13:37+0000\n"
-"Last-Translator: Keviindran Ramachandran <keviinx@yahoo.com>\n"
+"PO-Revision-Date: 2024-03-01 21:04+0000\n"
+"Last-Translator: ghakindye vv <ghaffur2013@gmail.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
@@ -26,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -155,7 +156,19 @@ msgid "D-pad Right"
 msgstr "D-pad Kanan"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
-msgstr "Xbox Kongsi, Mikrofon PS5, Nintendo Tangkap"
+msgstr "Xbox Share, Mikrofon PS5, Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "Paddle Xbox 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Paddle Xbox 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Paddle Xbox 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Paddle Xbox 4"
 
 msgid "PS4/5 Touchpad"
 msgstr "Pad Sentuh PS4/5"
@@ -170,10 +183,10 @@ msgid "canceled"
 msgstr "dibatalkan"
 
 msgid "touched"
-msgstr "Disentuh"
+msgstr "disentuh"
 
 msgid "released"
-msgstr "Dilepas"
+msgstr "dilepas"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Skrin %s di (%s) dengan nilai sentuh %s"
@@ -187,10 +200,10 @@ msgid "Magnify Gesture at (%s) with factor %s"
 msgstr "Besarkan Gerak Isyarat pada (%s) dengan faktor %s"
 
 msgid "Pan Gesture at (%s) with delta (%s)"
-msgstr "Pan Gerak Isyarat pada (%s) dengan delta (%s)"
+msgstr "Geser Gerak Isyarat pada (%s) dengan delta (%s)"
 
 msgid "MIDI Input on Channel=%s Message=%s"
-msgstr "Pemasuk MIDI di Saluran=%s Mesej=%s"
+msgstr "Masukan MIDI di Saluran=%s Mesej=%s"
 
 msgid "Input Event with Shortcut=%s"
 msgstr "Peristiwa Pemasuk dengan Pintasan=%s"
@@ -490,6 +503,15 @@ msgstr "Masukkan Kunci di Sini"
 msgid "Duplicate Selected Key(s)"
 msgstr "Gandakan Kunci Terpilih"
 
+msgid "Cut Selected Key(s)"
+msgstr "Potong Kunci Terpilih"
+
+msgid "Copy Selected Key(s)"
+msgstr "Salin Kunci Terpilih"
+
+msgid "Paste Key(s)"
+msgstr "Paste Kunci"
+
 msgid "Delete Selected Key(s)"
 msgstr "Padam Kunci Terpilih"
 
@@ -520,6 +542,12 @@ msgstr "Pindah Titik-titik Bezier"
 msgid "Animation Duplicate Keys"
 msgstr "Animasi Ganda Kunci"
 
+msgid "Animation Cut Keys"
+msgstr "Animasi Padam Kekunci"
+
+msgid "Animation Paste Keys"
+msgstr "Animasi Paste Kekunci"
+
 msgid "Animation Delete Keys"
 msgstr "Animasi Padam Kunci"
 
@@ -534,6 +562,36 @@ msgstr "Batalkan Pilihan Semua Kunci"
 
 msgid "Animation Change Transition"
 msgstr "Animasi Ubah Transisi"
+
+msgid "Animation Change Position3D"
+msgstr "Animasi Ubah Position3D"
+
+msgid "Animation Change Rotation3D"
+msgstr "Animasi Ubah Rotation3D"
+
+msgid "Animation Change Scale3D"
+msgstr "Animasi Ubah Scale3D"
+
+msgid "Animation Change Keyframe Value"
+msgstr "Animasi Ubah Nilai Bingkai Kekunci"
+
+msgid "Animation Change Call"
+msgstr "Animasi Ubah Panggilan"
+
+msgid "Animation Multi Change Transition"
+msgstr "Animasi Ubah Multi Transisi"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Animasi Ubah Multi Position3D"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Animasi Ubah Multi Rotation3D"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Animasi Ubah Multi Scale3D"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Animasi Ubah Multi Nilai Bingkai Kekunci"
 
 msgid "Change Animation Length"
 msgstr "Ubah Panjang Animasi"
@@ -613,6 +671,18 @@ msgstr "Dalam-Pemegang:"
 msgid "Out-Handle:"
 msgstr "Keluar-Pemegang:"
 
+msgid "Handle mode: Free\n"
+msgstr "Cara urusan: Bebas\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Cara urusan: Lelurus\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Cara urusan: Seimbang\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Cara urusan: Cerminan\n"
+
 msgid "Stream:"
 msgstr "Aliran:"
 
@@ -627,6 +697,9 @@ msgstr "Klip Animasi:"
 
 msgid "Toggle Track Enabled"
 msgstr "Togol Trek Diaktifkan"
+
+msgid "Don't Use Blend"
+msgstr "Jangan Gunakan Paduan"
 
 msgid "Continuous"
 msgstr "Berterusan"
@@ -670,8 +743,19 @@ msgstr "Tukar Mod Interpolasi Animasi"
 msgid "Change Animation Loop Mode"
 msgstr "Tukar Mod Gelung Animasi"
 
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Trek pemampatan tidak boleh disunting atau dibuang. Import semula animasi "
+"tanpa mampatan untuk menyunting."
+
 msgid "Remove Anim Track"
 msgstr "Keluarkan Trek Anim"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Tekan dan tahan Shift semasa mengklik ikon kunci untuk langkau dialog ini."
 
 msgid "Create"
 msgstr "Cipta"
@@ -744,6 +828,9 @@ msgstr "Skala"
 msgid "Methods"
 msgstr "Kaedah"
 
+msgid "Bezier"
+msgstr "Bezier"
+
 msgid "Audio"
 msgstr "Audio"
 
@@ -758,6 +845,12 @@ msgstr "Pilih nod AnimationPlayer untuk mencipta dan mengedit animasi."
 
 msgid "Warning: Editing imported animation"
 msgstr "Amaran: Mengedit animasi yang diimport"
+
+msgid "Dummy Player"
+msgstr "Pemain Patung"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Tukar antara penyunting lengkung bezier dan penyunting trek."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Hanya tunjukkan trek dari nod yang dipilih di pokok."
@@ -783,6 +876,18 @@ msgstr "Sunting"
 msgid "Animation properties."
 msgstr "Sifat animasi."
 
+msgid "Set Start Offset (Audio)"
+msgstr "Tetapkan Ofset Mula (Audio)"
+
+msgid "Set End Offset (Audio)"
+msgstr "Tetapkan Ofset Berakhir (Audio)"
+
+msgid "Move First Selected Key to Cursor"
+msgstr "Alih Kekunci Terpilih Pertama ke Kursor"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "Alih Kekunci Terpilih Terakhir ke Kursor"
+
 msgid "Delete Selection"
 msgstr "Padam Pilihan"
 
@@ -804,6 +909,12 @@ msgstr "Cipta Trek RESET"
 msgid "Optimize"
 msgstr "Mengoptimumkan"
 
+msgid "Trim keys placed in negative time"
+msgstr "Potong kekunci yg diletakkan pada masa negatif"
+
+msgid "Trim keys placed exceed the animation length"
+msgstr "Potong kekunci yang melebihi panjang animasi"
+
 msgid "Remove invalid keys"
 msgstr "Keluarkan kunci yang tidak sah"
 
@@ -821,6 +932,32 @@ msgstr "Bersihkan"
 
 msgid "Scale Ratio:"
 msgstr "Nisbah Skala:"
+
+msgid "Select Transition and Easing"
+msgstr "Pilih Transisi dan Perlincinan"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sinus"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Kuad"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Kenyal"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Lantunan"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Pegas"
+
+msgid "FPS:"
+msgstr "FPS:"
 
 msgid "Select Tracks to Copy"
 msgstr "Pilih Trek untuk Disalin"
@@ -861,6 +998,14 @@ msgstr "Ganti Semua"
 msgid "Selection Only"
 msgstr "Pilihan Sahaja"
 
+msgctxt "Indentation"
+msgid "Spaces"
+msgstr "Jarak"
+
+msgctxt "Indentation"
+msgid "Tabs"
+msgstr "Tab"
+
 msgid "Toggle Scripts Panel"
 msgstr "Togol Panel Skrip"
 
@@ -872,6 +1017,9 @@ msgstr "Zum Keluar"
 
 msgid "Reset Zoom"
 msgstr "Set Semula Zum"
+
+msgid "Errors"
+msgstr "Ralat"
 
 msgid "Warnings"
 msgstr "Amaran"
@@ -892,6 +1040,10 @@ msgstr ""
 "Kaedah sasaran tidak dijumpai. Tentukan kaedah yang sah atau lampirkan skrip "
 "ke nod sasaran."
 
+msgid "%s: Callback code won't be generated, please add it manually."
+msgstr ""
+"%s: Kod panggilan balik tidak akan dijana, sila tambahkan-nya secara manual."
+
 msgid "Connect to Node:"
 msgstr "Sambung ke Nod:"
 
@@ -904,6 +1056,12 @@ msgstr "Dari Isyarat:"
 msgid "Scene does not contain any script."
 msgstr "Adegan tidak mengandungi sebarang skrip."
 
+msgid "Select Method"
+msgstr "Pilih Kaedah"
+
+msgid "No method found matching given filters."
+msgstr "Tiada kaedah ditemui dengan tapisan yang diberi."
+
 msgid "Remove"
 msgstr "Keluarkan"
 
@@ -912,6 +1070,9 @@ msgstr "Tambah Hujah Panggilan Tambahan:"
 
 msgid "Extra Call Arguments:"
 msgstr "Hujah Panggilan Tambahan:"
+
+msgid "Allows to drop arguments sent by signal emitter."
+msgstr "Membenarkan untuk gugurkan argumen yang dihantar oleh pemancar isyarat."
 
 msgid "Receiver Method:"
 msgstr "Kaedah Penerima:"
@@ -990,6 +1151,12 @@ msgstr "Cipta %s Baru"
 msgid "No results for \"%s\"."
 msgstr "Tiada hasil untuk \"%s\"."
 
+msgid "This class is marked as deprecated."
+msgstr "Kelas ini ditanda sebagai usang."
+
+msgid "This class is marked as experimental."
+msgstr "Kelas ini ditanda sebagai eksperimental."
+
 msgid "No description available for %s."
 msgstr "Tiada keterangan tersedia untuk %s."
 
@@ -1008,8 +1175,20 @@ msgstr "Padanan:"
 msgid "Description:"
 msgstr "Keterangan:"
 
+msgid "Debugger"
+msgstr "Penyahpepijat"
+
 msgid "Debug"
 msgstr "Nyahpepijat"
+
+msgid "Save Branch as Scene"
+msgstr "Simpan Cabang sebagai Adengan"
+
+msgid "Copy Node Path"
+msgstr "Salin Laluan Nod"
+
+msgid "Instance:"
+msgstr "Tika:"
 
 msgid "Value"
 msgstr "Nilai"
@@ -1195,9 +1374,6 @@ msgstr "Cipta Folder"
 
 msgid "Thanks from the Godot community!"
 msgstr "Terima kasih dari komuniti Godot!"
-
-msgid "Click to copy."
-msgstr "Klik untuk salin."
 
 msgid "Godot Engine contributors"
 msgstr "Penyumbang Enjin Godot"
@@ -2254,9 +2430,6 @@ msgstr "Pemeriksa"
 msgid "Node"
 msgstr "Nod"
 
-msgid "Expand Bottom Panel"
-msgstr "Kembangkan Panel Bawah"
-
 msgid "Output"
 msgstr "Keluaran"
 
@@ -2838,6 +3011,9 @@ msgstr "Tambah ke Kumpulan"
 
 msgid "Remove from Group"
 msgstr "Alih keluar dari Kumpulan"
+
+msgid "Expand Bottom Panel"
+msgstr "Kembangkan Panel Bawah"
 
 msgid "Move"
 msgstr "Pindah"
@@ -3826,12 +4002,6 @@ msgstr "Snap Relatif"
 msgid "Use Pixel Snap"
 msgstr "Gunakan Pixel Snap"
 
-msgid "Smart Snapping"
-msgstr "Snap Pintar"
-
-msgid "Configure Snap..."
-msgstr "Konfigurasikan Snap..."
-
 msgid "Snap to Parent"
 msgstr "Snap kepada Ibu Bapa"
 
@@ -3849,6 +4019,12 @@ msgstr "Snap ke Nod Lain"
 
 msgid "Snap to Guides"
 msgstr "Snap ke Panduan"
+
+msgid "Smart Snapping"
+msgstr "Snap Pintar"
+
+msgid "Configure Snap..."
+msgstr "Konfigurasikan Snap..."
 
 msgid "Lock Selected Node(s)"
 msgstr "Kunci Nod Terpilih"

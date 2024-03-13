@@ -57,6 +57,7 @@ class EditorBottomPanel : public PanelContainer {
 	EditorToaster *editor_toaster = nullptr;
 	LinkButton *version_btn = nullptr;
 	Button *expand_button = nullptr;
+	Control *last_opened_control = nullptr;
 
 	void _switch_by_control(bool p_visible, Control *p_control);
 	void _switch_to_item(bool p_visible, int p_idx);
@@ -72,11 +73,12 @@ public:
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
 	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
 
-	Button *add_item(String p_text, Control *p_item, bool p_at_front = false);
+	Button *add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut = nullptr, bool p_at_front = false);
 	void remove_item(Control *p_item);
 	void make_item_visible(Control *p_item, bool p_visible = true);
 	void move_item_to_end(Control *p_item);
 	void hide_bottom_panel();
+	void toggle_last_opened_bottom_panel();
 
 	EditorBottomPanel();
 };

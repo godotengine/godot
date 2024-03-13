@@ -376,6 +376,7 @@ public:
 	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)
 	EXBIND0R(bool, overrides_external_editor)
+	EXBIND0RC(ScriptNameCasing, preferred_file_name_casing)
 
 	GDVIRTUAL3RC(Dictionary, _complete_code, const String &, const String &, Object *)
 
@@ -655,11 +656,17 @@ VARIANT_ENUM_CAST(ScriptLanguageExtension::CodeCompletionLocation)
 
 class ScriptInstanceExtension : public ScriptInstance {
 public:
-	const GDExtensionScriptInstanceInfo2 *native_info;
+	const GDExtensionScriptInstanceInfo3 *native_info;
+
+#ifndef DISABLE_DEPRECATED
 	bool free_native_info = false;
-	struct {
+	struct DeprecatedNativeInfo {
 		GDExtensionScriptInstanceNotification notification_func = nullptr;
-	} deprecated_native_info;
+		GDExtensionScriptInstanceFreePropertyList free_property_list_func = nullptr;
+		GDExtensionScriptInstanceFreeMethodList free_method_list_func = nullptr;
+	};
+	DeprecatedNativeInfo *deprecated_native_info = nullptr;
+#endif // DISABLE_DEPRECATED
 
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
@@ -706,7 +713,11 @@ public:
 				p_list->push_back(PropertyInfo(pinfo[i]));
 			}
 			if (native_info->free_property_list_func) {
-				native_info->free_property_list_func(instance, pinfo);
+				native_info->free_property_list_func(instance, pinfo, pcount);
+#ifndef DISABLE_DEPRECATED
+			} else if (deprecated_native_info && deprecated_native_info->free_property_list_func) {
+				deprecated_native_info->free_property_list_func(instance, pinfo);
+#endif // DISABLE_DEPRECATED
 			}
 		}
 	}
@@ -781,7 +792,11 @@ public:
 				p_list->push_back(MethodInfo(minfo[i]));
 			}
 			if (native_info->free_method_list_func) {
-				native_info->free_method_list_func(instance, minfo);
+				native_info->free_method_list_func(instance, minfo, mcount);
+#ifndef DISABLE_DEPRECATED
+			} else if (deprecated_native_info && deprecated_native_info->free_method_list_func) {
+				deprecated_native_info->free_method_list_func(instance, minfo);
+#endif // DISABLE_DEPRECATED
 			}
 		}
 	}
@@ -808,8 +823,8 @@ public:
 		if (native_info->notification_func) {
 			native_info->notification_func(instance, p_notification, p_reversed);
 #ifndef DISABLE_DEPRECATED
-		} else if (deprecated_native_info.notification_func) {
-			deprecated_native_info.notification_func(instance, p_notification);
+		} else if (deprecated_native_info && deprecated_native_info->notification_func) {
+			deprecated_native_info->notification_func(instance, p_notification);
 #endif // DISABLE_DEPRECATED
 		}
 	}
@@ -885,9 +900,14 @@ public:
 		if (native_info->free_func) {
 			native_info->free_func(instance);
 		}
+#ifndef DISABLE_DEPRECATED
 		if (free_native_info) {
-			memfree(const_cast<GDExtensionScriptInstanceInfo2 *>(native_info));
+			memfree(const_cast<GDExtensionScriptInstanceInfo3 *>(native_info));
 		}
+		if (deprecated_native_info) {
+			memfree(deprecated_native_info);
+		}
+#endif // DISABLE_DEPRECATED
 	}
 
 #if defined(__GNUC__) && !defined(__clang__)

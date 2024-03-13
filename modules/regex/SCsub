@@ -19,6 +19,7 @@ if env["builtin_pcre2"]:
     thirdparty_sources = [
         "pcre2_auto_possess.c",
         "pcre2_chartables.c",
+        "pcre2_chkdint.c",
         "pcre2_compile.c",
         "pcre2_config.c",
         "pcre2_context.c",

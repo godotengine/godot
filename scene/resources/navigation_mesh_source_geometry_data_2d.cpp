@@ -113,6 +113,12 @@ void NavigationMeshSourceGeometryData2D::add_obstruction_outline(const PackedVec
 	}
 }
 
+void NavigationMeshSourceGeometryData2D::merge(const Ref<NavigationMeshSourceGeometryData2D> &p_other_geometry) {
+	// No need to worry about `root_node_transform` here as the data is already xformed.
+	traversable_outlines.append_array(p_other_geometry->traversable_outlines);
+	obstruction_outlines.append_array(p_other_geometry->obstruction_outlines);
+}
+
 void NavigationMeshSourceGeometryData2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &NavigationMeshSourceGeometryData2D::clear);
 	ClassDB::bind_method(D_METHOD("has_data"), &NavigationMeshSourceGeometryData2D::has_data);
@@ -125,6 +131,8 @@ void NavigationMeshSourceGeometryData2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_traversable_outline", "shape_outline"), &NavigationMeshSourceGeometryData2D::add_traversable_outline);
 	ClassDB::bind_method(D_METHOD("add_obstruction_outline", "shape_outline"), &NavigationMeshSourceGeometryData2D::add_obstruction_outline);
+
+	ClassDB::bind_method(D_METHOD("merge", "other_geometry"), &NavigationMeshSourceGeometryData2D::merge);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "traversable_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_traversable_outlines", "get_traversable_outlines");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "obstruction_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_obstruction_outlines", "get_obstruction_outlines");

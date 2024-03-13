@@ -935,6 +935,16 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		for (int i = 0; i < objects.size(); i++) {
 			Item *it = items.get_or_null(objects[i]);
 			if (it != nullptr) {
+				Vector2i obj_range = TS->shaped_text_get_object_range(rid, objects[i]);
+				if (trim_chars && l.char_offset + obj_range.y > visible_characters) {
+					continue;
+				}
+				if (trim_glyphs_ltr || trim_glyphs_rtl) {
+					int obj_glyph = r_processed_glyphs + TS->shaped_text_get_object_glyph(rid, objects[i]);
+					if ((trim_glyphs_ltr && (obj_glyph >= visible_glyphs)) || (trim_glyphs_rtl && (obj_glyph < total_glyphs - visible_glyphs))) {
+						continue;
+					}
+				}
 				Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
 				//draw_rect(rect, Color(1,0,0), false, 2); //DEBUG_RECTS
 				switch (it->type) {
@@ -1901,7 +1911,11 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_apply_translation();
+			// If `text` is empty, it could mean that the tag stack is being used instead. Leave it be.
+			if (!text.is_empty()) {
+				_apply_translation();
+			}
+
 			queue_redraw();
 		} break;
 
@@ -2257,6 +2271,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 		}
 
+		_find_click(main, m->get_position(), nullptr, nullptr, &c_item, nullptr, &outside, true);
 		Variant meta;
 		ItemMeta *item_meta;
 		ItemMeta *prev_meta = meta_hovering;
@@ -5667,19 +5682,16 @@ int RichTextLabel::get_selection_to() const {
 }
 
 void RichTextLabel::set_text(const String &p_bbcode) {
-	if (text == p_bbcode) {
+	// Allow clearing the tag stack.
+	if (!p_bbcode.is_empty() && text == p_bbcode) {
 		return;
 	}
+
 	text = p_bbcode;
 	_apply_translation();
 }
 
 void RichTextLabel::_apply_translation() {
-	// If `text` is empty, it could mean that the tag stack is being used instead. Leave it be.
-	if (text.is_empty()) {
-		return;
-	}
-
 	String xl_text = atr(text);
 	if (use_bbcode) {
 		parse_bbcode(xl_text);
@@ -5700,7 +5712,10 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	use_bbcode = p_enable;
 	notify_property_list_changed();
 
-	_apply_translation();
+	// If `text` is empty, it could mean that the tag stack is being used instead. Leave it be.
+	if (!text.is_empty()) {
+		_apply_translation();
+	}
 }
 
 bool RichTextLabel::is_using_bbcode() const {

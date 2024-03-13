@@ -218,16 +218,11 @@ private:
 	Viewport *parent = nullptr;
 	Viewport *gui_parent = nullptr; // Whose gui.tooltip_popup it is.
 
-	AudioListener2D *audio_listener_2d = nullptr;
-	Camera2D *camera_2d = nullptr;
 	HashSet<CanvasLayer *> canvas_layers;
 
 	RID viewport;
 	RID current_canvas;
 	RID subwindow_canvas;
-
-	bool is_audio_listener_2d_enabled = false;
-	RID internal_audio_listener_2d;
 
 	bool override_canvas_transform = false;
 
@@ -266,13 +261,6 @@ private:
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
-
-	// Collider to frame
-	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
-	// Collider & shape to frame
-	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
-	// Cleans up colliders corresponding to old frames or all of them.
-	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
 
 	Ref<World2D> world_2d;
 
@@ -447,13 +435,6 @@ private:
 
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
-	friend class AudioListener2D;
-	void _audio_listener_2d_set(AudioListener2D *p_listener);
-	void _audio_listener_2d_remove(AudioListener2D *p_listener);
-
-	friend class Camera2D;
-	void _camera_2d_set(Camera2D *p_camera_2d);
-
 	friend class CanvasLayer;
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
@@ -483,6 +464,7 @@ private:
 	uint64_t event_count = 0;
 
 	void _process_dirty_canvas_parent_orders();
+	void _propagate_world_2d_changed(Node *p_node);
 
 protected:
 	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
@@ -494,17 +476,13 @@ protected:
 	void _notification(int p_what);
 	void _process_picking();
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void canvas_parent_mark_dirty(Node *p_node);
 	void canvas_item_top_level_changed();
 
 	uint64_t get_processed_events_count() const { return event_count; }
-
-	AudioListener2D *get_audio_listener_2d() const;
-	Camera2D *get_camera_2d() const;
-	void set_as_audio_listener_2d(bool p_enable);
-	bool is_audio_listener_2d() const;
 
 	void update_canvas_items();
 
@@ -528,7 +506,6 @@ public:
 	Transform2D get_global_canvas_transform() const;
 
 	virtual Transform2D get_final_transform() const;
-	void assign_next_enabled_camera_2d(const StringName &p_camera_group);
 
 	void gui_set_root_order_dirty();
 
@@ -689,16 +666,43 @@ public:
 	virtual bool is_attached_in_viewport() const { return false; };
 	virtual bool is_sub_viewport() const { return false; };
 
+private:
+	// 2D audio, camera, and physics. (don't put World2D here because World2D is needed for Control nodes).
+	friend class AudioListener2D; // Needs _audio_listener_2d_set and _audio_listener_2d_remove
+	AudioListener2D *audio_listener_2d = nullptr;
+	void _audio_listener_2d_set(AudioListener2D *p_audio_listener);
+	void _audio_listener_2d_remove(AudioListener2D *p_audio_listener);
+	bool is_audio_listener_2d_enabled = false;
+	RID internal_audio_listener_2d;
+
+	friend class Camera2D; // Needs _camera_2d_set
+	Camera2D *camera_2d = nullptr;
+	void _camera_2d_set(Camera2D *p_camera_2d);
+
+	// Collider to frame
+	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
+	// Collider & shape to frame
+	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
+	// Cleans up colliders corresponding to old frames or all of them.
+	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
+
+public:
+	AudioListener2D *get_audio_listener_2d() const;
+	void set_as_audio_listener_2d(bool p_enable);
+	bool is_audio_listener_2d() const;
+
+	Camera2D *get_camera_2d() const;
+	void assign_next_enabled_camera_2d(const StringName &p_camera_group);
+
 #ifndef _3D_DISABLED
+private:
+	// 3D audio, camera, physics, and world.
 	bool use_xr = false;
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
 	HashSet<AudioListener3D *> audio_listener_3d_set;
 	bool is_audio_listener_3d_enabled = false;
 	RID internal_audio_listener_3d;
-	AudioListener3D *get_audio_listener_3d() const;
-	void set_as_audio_listener_3d(bool p_enable);
-	bool is_audio_listener_3d() const;
 	void _update_audio_listener_3d();
 	void _listener_transform_3d_changed_notify();
 	void _audio_listener_3d_set(AudioListener3D *p_listener);
@@ -729,13 +733,24 @@ public:
 	friend class Camera3D;
 	Camera3D *camera_3d = nullptr;
 	HashSet<Camera3D *> camera_3d_set;
-	Camera3D *get_camera_3d() const;
 	void _camera_3d_transform_changed_notify();
 	void _camera_3d_set(Camera3D *p_camera);
 	bool _camera_3d_add(Camera3D *p_camera); //true if first
 	void _camera_3d_remove(Camera3D *p_camera);
 	void _camera_3d_make_next_current(Camera3D *p_exclude);
 
+	Ref<World3D> world_3d;
+	Ref<World3D> own_world_3d;
+	void _own_world_3d_changed();
+	void _propagate_enter_world_3d(Node *p_node);
+	void _propagate_exit_world_3d(Node *p_node);
+
+public:
+	AudioListener3D *get_audio_listener_3d() const;
+	void set_as_audio_listener_3d(bool p_enable);
+	bool is_audio_listener_3d() const;
+
+	Camera3D *get_camera_3d() const;
 	void enable_camera_3d_override(bool p_enable);
 	bool is_camera_3d_override_enabled() const;
 
@@ -748,24 +763,16 @@ public:
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;
 
-	Ref<World3D> world_3d;
-	Ref<World3D> own_world_3d;
 	void set_world_3d(const Ref<World3D> &p_world_3d);
 	Ref<World3D> get_world_3d() const;
 	Ref<World3D> find_world_3d() const;
-	void _own_world_3d_changed();
 	void set_use_own_world_3d(bool p_use_own_world_3d);
 	bool is_using_own_world_3d() const;
-	void _propagate_enter_world_3d(Node *p_node);
-	void _propagate_exit_world_3d(Node *p_node);
 
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
 #endif // _3D_DISABLED
 
-	void _propagate_world_2d_changed(Node *p_node);
-
-	void _validate_property(PropertyInfo &p_property) const;
 	Viewport();
 	~Viewport();
 };
