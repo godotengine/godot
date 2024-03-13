@@ -790,7 +790,13 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			uniforms.push_back(u);
 		}
 
-		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
+		// <TF>
+		// @ShadyTF :
+		// descriptor optimizations : linear allocation of descriptor set pools
+		// Was:
+		// p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
+		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1, true);
+		// </TF>
 	}
 
 	double new_phase = Math::fmod((double)p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, 1.0);
@@ -1083,7 +1089,13 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 				}
 				uniforms.push_back(u);
 			}
-			p_particles->collision_textures_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 2);
+			// <TF>
+			// @ShadyTF :
+			// descriptor optimizations : linear allocation of descriptor set pools
+			// Was:
+			//p_particles->collision_textures_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 2);
+			p_particles->collision_textures_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 2, true);
+			// </TF>
 			p_particles->collision_heightmap_texture = collision_heightmap_texture;
 		}
 	}
@@ -1374,7 +1386,13 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 				uniforms.push_back(u);
 			}
 
-			particles->particles_copy_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 0);
+			// <TF>
+			// @ShadyTF :
+			// descriptor optimizations : linear allocation of descriptor set pools
+			// Was:
+			// particles->particles_copy_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 0);
+			particles->particles_copy_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 0, true);
+			// </TF>
 		}
 
 		particles->instance_motion_vectors_current_offset = 0;
@@ -1488,7 +1506,13 @@ void ParticlesStorage::update_particles() {
 					uniforms.push_back(u);
 				}
 
-				particles->trail_bind_pose_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 2);
+				// <TF>
+				// @ShadyTF :
+				// descriptor optimizations : linear allocation of descriptor set pools
+				// Was:
+				// particles->trail_bind_pose_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 2);
+				particles->trail_bind_pose_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 2, true);
+				// </TF>
 			}
 
 			if (particles->trail_bind_pose_buffer.is_valid() && particles->trail_bind_poses_dirty) {

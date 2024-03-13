@@ -498,7 +498,14 @@ public:
 		LocalVector<ID> ids;
 	};
 
-	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) = 0;
+// <TF>
+// @ShadyTF :
+// descriptor optimizations : allow the option to have linearly allocated uniform set pools for frame allocated uniform sets
+// Was:
+//  virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) = 0;	
+	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) = 0;
+	virtual void linear_uniform_set_pools_reset(int p_linear_pool_index) = 0;
+// </TF>
 	virtual void uniform_set_free(UniformSetID p_uniform_set) = 0;
 
 	// ----- COMMANDS -----

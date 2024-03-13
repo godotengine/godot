@@ -2688,6 +2688,7 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 	return id;
 }
 // <TF>
+
 // @ShadyTF : persistent buffers
 RID RenderingDevice::linear_buffer_create(uint32_t p_size_bytes, bool p_storage, BitField<StorageBufferUsage> p_usage) {
 	_THREAD_SAFE_METHOD_
@@ -2727,7 +2728,12 @@ RID RenderingDevice::linear_buffer_create(uint32_t p_size_bytes, bool p_storage,
 	return id;
 }
 // </TF>
-RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
+// @ShadyTF :
+// descriptor optimizations : allow the option to have linearly allocated uniform set pools for frame allocated uniform sets
+// Was:
+//RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
+RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool) {
+// </TF>
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_uniforms.is_empty(), RID());
@@ -3071,7 +3077,13 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 		}
 	}
 
-	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set);
+// <TF>
+// @ShadyTF :
+// descriptor optimizations : allow the option to have linearly allocated uniform set pools for frame allocated uniform sets
+// Was:
+//	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set);
+	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set, p_linear_pool ? frame : -1 );
+// </TF>
 	ERR_FAIL_COND_V(!driver_uniform_set, RID());
 
 	UniformSet uniform_set;
@@ -5043,6 +5055,72 @@ String RenderingDevice::get_device_api_version() const {
 
 String RenderingDevice::get_device_pipeline_cache_uuid() const {
 	return driver->get_pipeline_cache_uuid();
+}
+
+void RenderingDevice::_finalize_command_buffers(bool p_postpare) {
+	if (draw_list) {
+		ERR_PRINT("Found open draw list at the end of the frame, this should never happen (further drawing will likely not work).");
+	}
+
+	if (compute_list) {
+		ERR_PRINT("Found open compute list at the end of the frame, this should never happen (further compute will likely not work).");
+	}
+
+	{ // Complete the setup buffer (that needs to be processed before anything else).
+		draw_graph.end(frames[frame].draw_command_buffer, RENDER_GRAPH_REORDER, RENDER_GRAPH_FULL_BARRIERS);
+
+		if (p_postpare) {
+			context->postpare_buffers(frames[frame].draw_command_buffer);
+		}
+
+		driver->end_segment();
+		driver->command_buffer_end(frames[frame].setup_command_buffer);
+		driver->command_buffer_end(frames[frame].draw_command_buffer);
+	}
+}
+
+void RenderingDevice::_begin_frame() {
+	driver->linear_uniform_set_pools_reset(frame);
+	draw_graph.begin();
+
+	// Erase pending resources.
+	_free_pending_resources(frame);
+
+	// Create setup command buffer and set as the setup buffer.
+
+	{
+		bool ok = driver->command_buffer_begin(frames[frame].setup_command_buffer);
+		ERR_FAIL_COND(!ok);
+		ok = driver->command_buffer_begin(frames[frame].draw_command_buffer);
+		ERR_FAIL_COND(!ok);
+
+		if (local_device.is_null()) {
+			context->append_command_buffer(frames[frame].draw_command_buffer);
+			context->set_setup_buffer(frames[frame].setup_command_buffer); // Append now so it's added before everything else.
+		}
+
+		driver->begin_segment(frames[frame].draw_command_buffer, frame, frames_drawn);
+	}
+
+	// Advance current frame.
+	frames_drawn++;
+	// Advance staging buffer if used.
+	if (staging_buffer_used) {
+		staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
+		staging_buffer_used = false;
+	}
+
+	if (frames[frame].timestamp_count) {
+		driver->timestamp_query_pool_get_results(frames[frame].timestamp_pool, frames[frame].timestamp_count, frames[frame].timestamp_result_values.ptr());
+		driver->command_timestamp_query_pool_reset(frames[frame].setup_command_buffer, frames[frame].timestamp_pool, frames[frame].timestamp_count);
+		SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
+		SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
+	}
+
+	frames[frame].timestamp_result_count = frames[frame].timestamp_count;
+	frames[frame].timestamp_count = 0;
+	frames[frame].index = Engine::get_singleton()->get_frames_drawn();
+
 }
 
 void RenderingDevice::swap_buffers() {
