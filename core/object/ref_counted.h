@@ -80,6 +80,7 @@ class Ref {
 
 	//virtual RefCounted * get_reference() const { return reference; }
 public:
+	typedef T Type;
 	_FORCE_INLINE_ bool operator==(const T *p_ptr) const {
 		return reference == p_ptr;
 	}
@@ -272,22 +273,12 @@ struct PtrToArg<const Ref<T> &> {
 };
 
 template <class T>
-struct GetTypeInfo<Ref<T>> {
+struct GetTypeInfo<T, EnableIf_t<types_are_same_v<Ref<typename RemoveRefPointerConst_t<T>::Type>, RemoveRefPointerConst_t<T>>>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 
 	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
-	}
-};
-
-template <class T>
-struct GetTypeInfo<const Ref<T> &> {
-	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
+		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, RemoveRefPointerConst_t<T>::Type::get_class_static());
 	}
 };
 
