@@ -132,7 +132,7 @@ constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
 // Generic swap template.
 #ifndef SWAP
 #define SWAP(m_x, m_y) __swap_tmpl((m_x), (m_y))
-template <class T>
+template <typename T>
 inline void __swap_tmpl(T &x, T &y) {
 	T aux = x;
 	x = y;
@@ -186,7 +186,7 @@ static inline int get_shift_from_power_of_2(unsigned int p_bits) {
 	return -1;
 }
 
-template <class T>
+template <typename T>
 static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 	--x;
 
@@ -256,7 +256,7 @@ static inline uint64_t BSWAP64(uint64_t x) {
 #endif
 
 // Generic comparator used in Map, List, etc.
-template <class T>
+template <typename T>
 struct Comparator {
 	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
 };

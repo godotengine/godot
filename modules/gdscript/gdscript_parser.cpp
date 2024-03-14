@@ -856,7 +856,7 @@ void GDScriptParser::parse_extends() {
 	}
 }
 
-template <class T>
+template <typename T>
 void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static) {
 	advance();
 

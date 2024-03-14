@@ -797,12 +797,12 @@ public:
 	void detach_from_objectdb();
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 
-	template <class T>
+	template <typename T>
 	static T *cast_to(Object *p_object) {
 		return p_object ? dynamic_cast<T *>(p_object) : nullptr;
 	}
 
-	template <class T>
+	template <typename T>
 	static const T *cast_to(const Object *p_object) {
 		return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
 	}
