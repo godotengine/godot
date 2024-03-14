@@ -80,6 +80,21 @@ static_assert(__cplusplus >= 201703L);
 #define _ALLOW_DISCARD_ (void)
 #endif
 
+// Some of our macros require a trailing semicolon; appending this to the end of a macro
+// enforces that behavior without increasing build size or compilation time whatsoever.
+#ifndef FORCE_SEMICOLON
+#define FORCE_SEMICOLON static_assert(true)
+#endif
+
+// Ensure that macro replacement does not trigger unexpected issues when expanded by
+// constraining them to "if" wrappers. e.g. `if (cond) SOME_MACRO();` without braces.
+/* clang-format off */
+#ifndef MACRO_WRAPPER_BEGIN
+#define MACRO_WRAPPER_BEGIN if constexpr (true) {
+#define MACRO_WRAPPER_END } else FORCE_SEMICOLON
+#endif
+/* clang-format on */
+
 // Windows badly defines a lot of stuff we'll never use. Undefine it.
 #ifdef _WIN32
 #undef min // override standard definition
