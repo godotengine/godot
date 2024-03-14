@@ -80,6 +80,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_script_method_argument_count" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_script_method_list" qualifiers="virtual const">
 			<return type="Dictionary[]" />
 			<description>

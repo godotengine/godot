@@ -560,6 +560,8 @@ matches to an empty string (also represented by a non-zero value). */
 
 for(;;)
   {
+  PCRE2_SPTR bracode;
+
   /* All operations move the code pointer forward.
   Therefore infinite recursions are not possible. */
 
@@ -617,7 +619,8 @@ for(;;)
     recursions. (This could be improved by keeping a list of group numbers that
     are called by recursion.) */
 
-    switch(*(code - GET(code, 1)))
+    bracode = code - GET(code, 1);
+    switch(*bracode)
       {
       case OP_CBRA:
       case OP_SCBRA:
@@ -636,15 +639,18 @@ for(;;)
       break;
 
       /* Atomic sub-patterns and assertions can always auto-possessify their
-      last iterator. However, if the group was entered as a result of checking
-      a previous iterator, this is not possible. */
+      last iterator except for variable length lookbehinds. However, if the
+      group was entered as a result of checking a previous iterator, this is
+      not possible. */
 
       case OP_ASSERT:
       case OP_ASSERT_NOT:
-      case OP_ASSERTBACK:
-      case OP_ASSERTBACK_NOT:
       case OP_ONCE:
       return !entered_a_group;
+
+      case OP_ASSERTBACK:
+      case OP_ASSERTBACK_NOT:
+      return (bracode[1+LINK_SIZE] == OP_VREVERSE)? FALSE : !entered_a_group;
 
       /* Non-atomic assertions - don't possessify last iterator. This needs
       more thought. */

@@ -789,7 +789,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y;
 
 		Rect64 clipper_rect = Rect64(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
-		RectClip rect_clip = RectClip(clipper_rect);
+		RectClip64 rect_clip = RectClip64(clipper_rect);
 
 		traversable_polygon_paths = rect_clip.Execute(traversable_polygon_paths);
 		obstruction_polygon_paths = rect_clip.Execute(obstruction_polygon_paths);
@@ -821,7 +821,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y - border_size;
 
 		Rect64 clipper_rect = Rect64(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
-		RectClip rect_clip = RectClip(clipper_rect);
+		RectClip64 rect_clip = RectClip64(clipper_rect);
 
 		path_solution = rect_clip.Execute(path_solution);
 	}

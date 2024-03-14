@@ -118,7 +118,7 @@ private:
 	XrSession session = XR_NULL_HANDLE;
 	XrSessionState session_state = XR_SESSION_STATE_UNKNOWN;
 	bool running = false;
-	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, NULL, 0, 0, false };
+	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;

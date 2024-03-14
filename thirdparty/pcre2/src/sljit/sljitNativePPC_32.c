@@ -85,10 +85,6 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 		}
 		return SLJIT_SUCCESS;
 
-	case SLJIT_NOT:
-		SLJIT_ASSERT(src1 == TMP_REG1);
-		return push_inst(compiler, NOR | RC(flags) | S(src2) | A(dst) | B(src2));
-
 	case SLJIT_CLZ:
 		SLJIT_ASSERT(src1 == TMP_REG1);
 		return push_inst(compiler, CNTLZW | S(src2) | A(dst));
@@ -246,6 +242,10 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 			FAIL_IF(push_inst(compiler, XORI | S(src1) | A(dst) | IMM(imm)));
 			return push_inst(compiler, XORIS | S(dst) | A(dst) | IMM(imm >> 16));
 		}
+		if (flags & ALT_FORM4) {
+			SLJIT_ASSERT(src1 == TMP_REG1);
+			return push_inst(compiler, NOR | RC(flags) | S(src2) | A(dst) | B(src2));
+		}
 		return push_inst(compiler, XOR | RC(flags) | S(src1) | A(dst) | B(src2));
 
 	case SLJIT_SHL:
@@ -323,6 +323,151 @@ static SLJIT_INLINE sljit_s32 emit_const(struct sljit_compiler *compiler, sljit_
 {
 	FAIL_IF(push_inst(compiler, ADDIS | D(reg) | A(0) | IMM(init_value >> 16)));
 	return push_inst(compiler, ORI | S(reg) | A(reg) | IMM(init_value));
+}
+
+static SLJIT_INLINE sljit_s32 sljit_emit_fop1_conv_f64_from_sw(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 dst, sljit_sw dstw,
+	sljit_s32 src, sljit_sw srcw)
+{
+	sljit_s32 dst_r = FAST_IS_REG(dst) ? dst : TMP_FREG1;
+	sljit_s32 invert_sign = 1;
+
+	if (src == SLJIT_IMM) {
+		FAIL_IF(load_immediate(compiler, TMP_REG1, srcw ^ (sljit_sw)0x80000000));
+		src = TMP_REG1;
+		invert_sign = 0;
+	} else if (!FAST_IS_REG(src)) {
+		FAIL_IF(emit_op_mem(compiler, WORD_DATA | SIGNED_DATA | LOAD_DATA, TMP_REG1, src, srcw, TMP_REG1));
+		src = TMP_REG1;
+	}
+
+	/* First, a special double precision floating point value is constructed:
+	      (2^53 + (src xor (2^31)))
+	   The upper 32 bits of this number is a constant, and the lower 32 bits
+	   is simply the value of the source argument. The xor 2^31 operation adds
+	   0x80000000 to the source argument, which moves it into the 0 - 0xffffffff
+	   range. Finally we substract 2^53 + 2^31 to get the converted value. */
+	FAIL_IF(push_inst(compiler, ADDIS | D(TMP_REG2) | A(0) | 0x4330));
+	if (invert_sign)
+		FAIL_IF(push_inst(compiler, XORIS | S(src) | A(TMP_REG1) | 0x8000));
+	FAIL_IF(push_inst(compiler, STW | S(TMP_REG2) | A(SLJIT_SP) | TMP_MEM_OFFSET_HI));
+	FAIL_IF(push_inst(compiler, STW | S(TMP_REG1) | A(SLJIT_SP) | TMP_MEM_OFFSET_LO));
+	FAIL_IF(push_inst(compiler, ADDIS | D(TMP_REG1) | A(0) | 0x8000));
+	FAIL_IF(push_inst(compiler, LFD | FS(TMP_FREG1) | A(SLJIT_SP) | TMP_MEM_OFFSET));
+	FAIL_IF(push_inst(compiler, STW | S(TMP_REG1) | A(SLJIT_SP) | TMP_MEM_OFFSET_LO));
+	FAIL_IF(push_inst(compiler, LFD | FS(TMP_FREG2) | A(SLJIT_SP) | TMP_MEM_OFFSET));
+
+	FAIL_IF(push_inst(compiler, FSUB | FD(dst_r) | FA(TMP_FREG1) | FB(TMP_FREG2)));
+
+	if (op & SLJIT_32)
+		FAIL_IF(push_inst(compiler, FRSP | FD(dst_r) | FB(dst_r)));
+
+	if (dst & SLJIT_MEM)
+		return emit_op_mem(compiler, FLOAT_DATA(op), TMP_FREG1, dst, dstw, TMP_REG1);
+	return SLJIT_SUCCESS;
+}
+
+static SLJIT_INLINE sljit_s32 sljit_emit_fop1_conv_f64_from_uw(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 dst, sljit_sw dstw,
+	sljit_s32 src, sljit_sw srcw)
+{
+	sljit_s32 dst_r = FAST_IS_REG(dst) ? dst : TMP_FREG1;
+
+	if (src == SLJIT_IMM) {
+		FAIL_IF(load_immediate(compiler, TMP_REG1, srcw));
+		src = TMP_REG1;
+	} else if (!FAST_IS_REG(src)) {
+		FAIL_IF(emit_op_mem(compiler, WORD_DATA | SIGNED_DATA | LOAD_DATA, TMP_REG1, src, srcw, TMP_REG1));
+		src = TMP_REG1;
+	}
+
+	/* First, a special double precision floating point value is constructed:
+	      (2^53 + src)
+	   The upper 32 bits of this number is a constant, and the lower 32 bits
+	   is simply the value of the source argument. Finally we substract 2^53
+	   to get the converted value. */
+	FAIL_IF(push_inst(compiler, ADDIS | D(TMP_REG2) | A(0) | 0x4330));
+	FAIL_IF(push_inst(compiler, STW | S(src) | A(SLJIT_SP) | TMP_MEM_OFFSET_LO));
+	FAIL_IF(push_inst(compiler, STW | S(TMP_REG2) | A(SLJIT_SP) | TMP_MEM_OFFSET_HI));
+
+	FAIL_IF(push_inst(compiler, LFD | FS(TMP_FREG1) | A(SLJIT_SP) | TMP_MEM_OFFSET));
+	FAIL_IF(push_inst(compiler, STW | S(TMP_ZERO) | A(SLJIT_SP) | TMP_MEM_OFFSET_LO));
+	FAIL_IF(push_inst(compiler, LFD | FS(TMP_FREG2) | A(SLJIT_SP) | TMP_MEM_OFFSET));
+
+	FAIL_IF(push_inst(compiler, FSUB | FD(dst_r) | FA(TMP_FREG1) | FB(TMP_FREG2)));
+
+	if (op & SLJIT_32)
+		FAIL_IF(push_inst(compiler, FRSP | FD(dst_r) | FB(dst_r)));
+
+	if (dst & SLJIT_MEM)
+		return emit_op_mem(compiler, FLOAT_DATA(op), TMP_FREG1, dst, dstw, TMP_REG1);
+	return SLJIT_SUCCESS;
+}
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fset64(struct sljit_compiler *compiler,
+	sljit_s32 freg, sljit_f64 value)
+{
+	union {
+		sljit_s32 imm[2];
+		sljit_f64 value;
+	} u;
+
+	CHECK_ERROR();
+	CHECK(check_sljit_emit_fset64(compiler, freg, value));
+
+	u.value = value;
+
+	if (u.imm[0] != 0)
+		FAIL_IF(load_immediate(compiler, TMP_REG1, u.imm[0]));
+	if (u.imm[1] != 0)
+		FAIL_IF(load_immediate(compiler, TMP_REG2, u.imm[1]));
+
+	/* Saved in the same endianness. */
+	FAIL_IF(push_inst(compiler, STW | S(u.imm[0] != 0 ? TMP_REG1 : TMP_ZERO) | A(SLJIT_SP) | TMP_MEM_OFFSET));
+	FAIL_IF(push_inst(compiler, STW | S(u.imm[1] != 0 ? TMP_REG2 : TMP_ZERO) | A(SLJIT_SP) | (TMP_MEM_OFFSET + sizeof(sljit_s32))));
+	return push_inst(compiler, LFD | FS(freg) | A(SLJIT_SP) | TMP_MEM_OFFSET);
+}
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fcopy(struct sljit_compiler *compiler, sljit_s32 op,
+	sljit_s32 freg, sljit_s32 reg)
+{
+	sljit_s32 reg2 = 0;
+
+	CHECK_ERROR();
+	CHECK(check_sljit_emit_fcopy(compiler, op, freg, reg));
+
+	if (op & SLJIT_32) {
+		if (op == SLJIT_COPY32_TO_F32) {
+			FAIL_IF(push_inst(compiler, STW | S(reg) | A(SLJIT_SP) | TMP_MEM_OFFSET));
+			return push_inst(compiler, LFS | FS(freg) | A(SLJIT_SP) | TMP_MEM_OFFSET);
+		}
+
+		FAIL_IF(push_inst(compiler, STFS | FS(freg) | A(SLJIT_SP) | TMP_MEM_OFFSET));
+		return push_inst(compiler, LWZ | S(reg) | A(SLJIT_SP) | TMP_MEM_OFFSET);
+	}
+
+	if (reg & REG_PAIR_MASK) {
+		reg2 = REG_PAIR_SECOND(reg);
+		reg = REG_PAIR_FIRST(reg);
+	}
+
+	if (op == SLJIT_COPY_TO_F64) {
+		FAIL_IF(push_inst(compiler, STW | S(reg) | A(SLJIT_SP) | TMP_MEM_OFFSET_HI));
+
+		if (reg2 != 0)
+			FAIL_IF(push_inst(compiler, STW | S(reg2) | A(SLJIT_SP) | TMP_MEM_OFFSET_LO));
+		else
+			FAIL_IF(push_inst(compiler, STFD | FS(freg) | A(SLJIT_SP) | TMP_MEM_OFFSET_LO));
+
+		return push_inst(compiler, LFD | FS(freg) | A(SLJIT_SP) | TMP_MEM_OFFSET);
+	}
+
+	FAIL_IF(push_inst(compiler, STFD | FS(freg) | A(SLJIT_SP) | TMP_MEM_OFFSET));
+
+	if (reg2 != 0)
+		FAIL_IF(push_inst(compiler, LWZ | S(reg2) | A(SLJIT_SP) | TMP_MEM_OFFSET_LO));
+
+	return push_inst(compiler, LWZ | S(reg) | A(SLJIT_SP) | TMP_MEM_OFFSET_HI);
 }
 
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_target, sljit_sw executable_offset)

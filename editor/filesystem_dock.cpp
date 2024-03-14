@@ -1160,7 +1160,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			if (err == OK) {
 				if (config->has_section_key("remap", "importer")) {
 					String importer = config->get_value("remap", "importer");
-					if (importer == "keep") {
+					if (importer == "keep" || importer == "skip") {
 						EditorNode::get_singleton()->show_warning(TTR("Importing has been disabled for this file, so it can't be opened for editing."));
 						return;
 					}

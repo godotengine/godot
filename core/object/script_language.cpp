@@ -102,6 +102,22 @@ Dictionary Script::_get_script_constant_map() {
 	return ret;
 }
 
+int Script::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	MethodInfo mi = get_method_info(p_method);
+
+	if (mi == MethodInfo()) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = true;
+	}
+	return mi.arguments.size();
+}
+
 #ifdef TOOLS_ENABLED
 
 PropertyInfo Script::get_class_category() const {
@@ -325,12 +341,24 @@ void ScriptServer::global_classes_clear() {
 
 void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
 	ERR_FAIL_COND_MSG(p_class == p_base || (global_classes.has(p_base) && get_global_class_native_base(p_base) == p_class), "Cyclic inheritance in script class.");
-	GlobalScriptClass g;
-	g.language = p_language;
-	g.path = p_path;
-	g.base = p_base;
-	global_classes[p_class] = g;
-	inheriters_cache_dirty = true;
+	GlobalScriptClass *existing = global_classes.getptr(p_class);
+	if (existing) {
+		// Update an existing class (only set dirty if something changed).
+		if (existing->base != p_base || existing->path != p_path || existing->language != p_language) {
+			existing->base = p_base;
+			existing->path = p_path;
+			existing->language = p_language;
+			inheriters_cache_dirty = true;
+		}
+	} else {
+		// Add new class.
+		GlobalScriptClass g;
+		g.language = p_language;
+		g.path = p_path;
+		g.base = p_base;
+		global_classes[p_class] = g;
+		inheriters_cache_dirty = true;
+	}
 }
 
 void ScriptServer::remove_global_class(const StringName &p_class) {

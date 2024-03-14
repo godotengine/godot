@@ -1948,10 +1948,11 @@ struct COLR
   bool has_v0_data () const { return numBaseGlyphs; }
   bool has_v1_data () const
   {
-    if (version == 1)
-      return (this+baseGlyphList).len > 0;
+    if (version != 1)
+      return false;
+    hb_barrier ();
 
-    return false;
+    return (this+baseGlyphList).len > 0;
   }
 
   unsigned int get_glyph_layers (hb_codepoint_t       glyph,
@@ -2032,6 +2033,8 @@ struct COLR
                       hb_set_t *palette_indices) const
   {
     if (version != 1) return;
+    hb_barrier ();
+
     hb_set_t visited_glyphs;
 
     hb_colrv1_closure_context_t c (this, &visited_glyphs, layer_indices, palette_indices);
@@ -2058,10 +2061,12 @@ struct COLR
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
                   (this+baseGlyphsZ).sanitize (c, numBaseGlyphs) &&
                   (this+layersZ).sanitize (c, numLayers) &&
                   (version == 0 ||
-		   (version == 1 &&
+		   (hb_barrier () &&
+		    version == 1 &&
 		    baseGlyphList.sanitize (c, this) &&
 		    layerList.sanitize (c, this) &&
 		    clipList.sanitize (c, this) &&
@@ -2284,6 +2289,8 @@ struct COLR
   {
     if (version == 1)
     {
+      hb_barrier ();
+
       const Paint *paint = get_base_glyph_paint (glyph);
 
       return paint != nullptr;
@@ -2313,6 +2320,8 @@ struct COLR
 
     if (version == 1)
     {
+      hb_barrier ();
+
       const Paint *paint = get_base_glyph_paint (glyph);
       if (paint)
       {

@@ -79,6 +79,7 @@ struct KernSubTableFormat3
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  c->check_range (kernValueZ,
 				  kernValueCount * sizeof (FWORD) +
 				  glyphCount * 2 +
@@ -147,9 +148,10 @@ struct KernSubTable
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (unlikely (!u.header.sanitize (c) ||
-		  u.header.length < u.header.min_size ||
-		  !c->check_range (this, u.header.length))) return_trace (false);
+    if (unlikely (!(u.header.sanitize (c) &&
+		    hb_barrier () &&
+		    u.header.length >= u.header.min_size &&
+		    c->check_range (this, u.header.length)))) return_trace (false);
 
     return_trace (dispatch (c));
   }
@@ -337,6 +339,7 @@ struct kern
   {
     TRACE_SANITIZE (this);
     if (!u.version32.sanitize (c)) return_trace (false);
+    hb_barrier ();
     return_trace (dispatch (c));
   }
 

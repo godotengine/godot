@@ -1,20 +1,14 @@
-"""Functions used to generate source files during build time
-
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-
-"""
-
-from platform_methods import subprocess_main
+"""Functions used to generate source files during build time"""
 
 
 def make_splash(target, source, env):
-    src = source[0]
-    dst = target[0]
+    src = str(source[0])
+    dst = str(target[0])
 
     with open(src, "rb") as f:
         buf = f.read()
 
-    with open(dst, "w") as g:
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_H\n")
         g.write("#define BOOT_SPLASH_H\n")
@@ -28,13 +22,13 @@ def make_splash(target, source, env):
 
 
 def make_splash_editor(target, source, env):
-    src = source[0]
-    dst = target[0]
+    src = str(source[0])
+    dst = str(target[0])
 
     with open(src, "rb") as f:
         buf = f.read()
 
-    with open(dst, "w") as g:
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_EDITOR_H\n")
         g.write("#define BOOT_SPLASH_EDITOR_H\n")
@@ -49,13 +43,13 @@ def make_splash_editor(target, source, env):
 
 
 def make_app_icon(target, source, env):
-    src = source[0]
-    dst = target[0]
+    src = str(source[0])
+    dst = str(target[0])
 
     with open(src, "rb") as f:
         buf = f.read()
 
-    with open(dst, "w") as g:
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef APP_ICON_H\n")
         g.write("#define APP_ICON_H\n")
@@ -64,7 +58,3 @@ def make_app_icon(target, source, env):
             g.write(str(buf[i]) + ",\n")
         g.write("};\n")
         g.write("#endif")
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())

@@ -398,8 +398,24 @@ FindInFilesDialog::FindInFilesDialog() {
 }
 
 void FindInFilesDialog::set_search_text(const String &text) {
-	_search_text_line_edit->set_text(text);
-	_on_search_text_modified(text);
+	if (_mode == SEARCH_MODE) {
+		if (!text.is_empty()) {
+			_search_text_line_edit->set_text(text);
+			_on_search_text_modified(text);
+		}
+		callable_mp((Control *)_search_text_line_edit, &Control::grab_focus).call_deferred();
+		_search_text_line_edit->select_all();
+	} else if (_mode == REPLACE_MODE) {
+		if (!text.is_empty()) {
+			_search_text_line_edit->set_text(text);
+			callable_mp((Control *)_replace_text_line_edit, &Control::grab_focus).call_deferred();
+			_replace_text_line_edit->select_all();
+			_on_search_text_modified(text);
+		} else {
+			callable_mp((Control *)_search_text_line_edit, &Control::grab_focus).call_deferred();
+			_search_text_line_edit->select_all();
+		}
+	}
 }
 
 void FindInFilesDialog::set_replace_text(const String &text) {
@@ -464,9 +480,6 @@ void FindInFilesDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				// Doesn't work more than once if not deferred...
-				callable_mp((Control *)_search_text_line_edit, &Control::grab_focus).call_deferred();
-				_search_text_line_edit->select_all();
 				// Extensions might have changed in the meantime, we clean them and instance them again.
 				for (int i = 0; i < _filters_container->get_child_count(); i++) {
 					_filters_container->get_child(i)->queue_free();

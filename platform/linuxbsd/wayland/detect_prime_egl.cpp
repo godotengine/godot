@@ -69,7 +69,7 @@ void DetectPrimeEGL::create_context() {
 	EGLConfig egl_config;
 	EGLContext egl_context = EGL_NO_CONTEXT;
 
-	eglInitialize(egl_display, NULL, NULL);
+	eglInitialize(egl_display, nullptr, nullptr);
 
 #if defined(GLAD_ENABLED)
 	if (!gladLoaderLoadEGL(egl_display)) {

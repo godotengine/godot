@@ -147,6 +147,9 @@ struct hb_subset_plan_t
   bool gsub_insert_catch_all_feature_variation_rec;
   bool gpos_insert_catch_all_feature_variation_rec;
 
+  // whether GDEF VarStore is retained
+  mutable bool has_gdef_varstore;
+
 #define HB_SUBSET_PLAN_MEMBER(Type, Name) Type Name;
 #include "hb-subset-plan-member-list.hh"
 #undef HB_SUBSET_PLAN_MEMBER

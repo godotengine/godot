@@ -11,17 +11,15 @@ import editor_builders
 
 def _make_doc_data_class_path(to_path):
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    g = open(os.path.join(to_path, "doc_data_class_path.gen.h"), "w", encoding="utf-8")
-    g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
-    g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
+    with open(os.path.join(to_path, "doc_data_class_path.gen.h"), "w", encoding="utf-8", newline="\n") as g:
+        g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
+        g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
 
-    g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n")
-    for c in sorted(env.doc_class_path):
-        g.write('\t{"' + c + '", "' + env.doc_class_path[c] + '"},\n')
-    g.write("\t{nullptr, nullptr}\n")
-    g.write("};\n")
-
-    g.close()
+        g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n")
+        for c in sorted(env.doc_class_path):
+            g.write('\t{"' + c + '", "' + env.doc_class_path[c] + '"},\n')
+        g.write("\t{nullptr, nullptr}\n")
+        g.write("};\n")
 
 
 if env.editor_build:
@@ -41,7 +39,7 @@ if env.editor_build:
     reg_exporters += "}\n"
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    with open("register_exporters.gen.cpp", "w", encoding="utf-8") as f:
+    with open("register_exporters.gen.cpp", "w", encoding="utf-8", newline="\n") as f:
         f.write(reg_exporters_inc)
         f.write(reg_exporters)
 

@@ -3,7 +3,7 @@
 Import("env")
 
 import os, json
-from platform_methods import run_in_subprocess, architectures, lipo, get_build_version
+from platform_methods import architectures, lipo, get_build_version
 import platform_macos_builders
 import subprocess
 import shutil
@@ -36,7 +36,7 @@ def generate_bundle(target, source, env):
         version = get_build_version(False)
         short_version = get_build_version(True)
         with open(Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt") as fin:
-            with open(app_dir + "/Contents/Info.plist", "wt") as fout:
+            with open(app_dir + "/Contents/Info.plist", "wt", encoding="utf-8", newline="\n") as fout:
                 for line in fin:
                     line = line.replace("$version", version)
                     line = line.replace("$short_version", short_version)
@@ -125,7 +125,7 @@ files = [
 prog = env.add_program("#bin/godot", files)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
-    env.AddPostAction(prog, run_in_subprocess(platform_macos_builders.make_debug_macos))
+    env.AddPostAction(prog, env.Run(platform_macos_builders.make_debug_macos))
 
 if env["generate_bundle"]:
     generate_bundle_command = env.Command("generate_bundle", [], generate_bundle)

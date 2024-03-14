@@ -57,6 +57,13 @@
 				Returns [code]true[/code] when parsed source geometry data exists.
 			</description>
 		</method>
+		<method name="merge">
+			<return type="void" />
+			<param index="0" name="other_geometry" type="NavigationMeshSourceGeometryData3D" />
+			<description>
+				Adds the geometry data of another [NavigationMeshSourceGeometryData3D] to the navigation mesh baking data.
+			</description>
+		</method>
 		<method name="set_indices">
 			<return type="void" />
 			<param index="0" name="indices" type="PackedInt32Array" />

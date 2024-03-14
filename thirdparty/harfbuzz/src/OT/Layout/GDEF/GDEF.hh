@@ -291,6 +291,7 @@ struct CaretValue
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 1: return_trace (u.format1.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
@@ -441,6 +442,20 @@ struct MarkGlyphSetsFormat1
   bool covers (unsigned int set_index, hb_codepoint_t glyph_id) const
   { return (this+coverage[set_index]).get_coverage (glyph_id) != NOT_COVERED; }
 
+  void collect_used_mark_sets (const hb_set_t& glyph_set,
+                               hb_set_t& used_mark_sets /* OUT */) const
+  {
+    unsigned i = 0;
+    for (const auto &offset : coverage)
+     {
+       const auto &cov = this+offset;
+       if (cov.intersects (&glyph_set))
+         used_mark_sets.add (i);
+
+       i++;
+     }
+  }
+
   template <typename set_t>
   void collect_coverage (hb_vector_t<set_t> &sets) const
   {
@@ -461,6 +476,7 @@ struct MarkGlyphSetsFormat1
     bool ret = true;
     for (const Offset32To<Coverage>& offset : coverage.iter ())
     {
+      auto snap = c->serializer->snapshot ();
       auto *o = out->coverage.serialize_append (c->serializer);
       if (unlikely (!o))
       {
@@ -468,11 +484,17 @@ struct MarkGlyphSetsFormat1
 	break;
       }
 
-      //not using o->serialize_subset (c, offset, this, out) here because
-      //OTS doesn't allow null offset.
-      //See issue: https://github.com/khaledhosny/ots/issues/172
+      //skip empty coverage
       c->serializer->push ();
-      c->dispatch (this+offset);
+      bool res = false;
+      if (offset) res = c->dispatch (this+offset);
+      if (!res)
+      {
+        c->serializer->pop_discard ();
+        c->serializer->revert (snap);
+        (out->coverage.len)--;
+        continue;
+      }
       c->serializer->add_link (*o, c->serializer->pop_pack ());
     }
 
@@ -513,6 +535,15 @@ struct MarkGlyphSets
     }
   }
 
+  void collect_used_mark_sets (const hb_set_t& glyph_set,
+                               hb_set_t& used_mark_sets /* OUT */) const
+  {
+    switch (u.format) {
+    case 1: u.format1.collect_used_mark_sets (glyph_set, used_mark_sets); return;
+    default:return;
+    }
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -526,6 +557,7 @@ struct MarkGlyphSets
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 1: return_trace (u.format1.sanitize (c));
     default:return_trace (true);
@@ -600,6 +632,7 @@ struct GDEFVersion1_2
 		  attachList.sanitize (c, this) &&
 		  ligCaretList.sanitize (c, this) &&
 		  markAttachClassDef.sanitize (c, this) &&
+		  hb_barrier () &&
 		  (version.to_int () < 0x00010002u || markGlyphSetsDef.sanitize (c, this)) &&
 		  (version.to_int () < 0x00010003u || varStore.sanitize (c, this)));
   }
@@ -627,23 +660,28 @@ struct GDEFVersion1_2
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    auto *out = c->serializer->embed (*this);
-    if (unlikely (!out)) return_trace (false);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
+    out->version.major = version.major;
+    out->version.minor = version.minor;
     bool subset_glyphclassdef = out->glyphClassDef.serialize_subset (c, glyphClassDef, this, nullptr, false, true);
     bool subset_attachlist = out->attachList.serialize_subset (c, attachList, this);
-    bool subset_ligcaretlist = out->ligCaretList.serialize_subset (c, ligCaretList, this);
     bool subset_markattachclassdef = out->markAttachClassDef.serialize_subset (c, markAttachClassDef, this, nullptr, false, true);
 
     bool subset_markglyphsetsdef = false;
+    auto snapshot_version0 = c->serializer->snapshot ();
     if (version.to_int () >= 0x00010002u)
     {
+      if (unlikely (!c->serializer->embed (markGlyphSetsDef))) return_trace (false);
       subset_markglyphsetsdef = out->markGlyphSetsDef.serialize_subset (c, markGlyphSetsDef, this);
     }
 
     bool subset_varstore = false;
+    auto snapshot_version2 = c->serializer->snapshot ();
     if (version.to_int () >= 0x00010003u)
     {
+      if (unlikely (!c->serializer->embed (varStore))) return_trace (false);
       if (c->plan->all_axes_pinned)
         out->varStore = 0;
       else if (c->plan->normalized_coords)
@@ -666,14 +704,20 @@ struct GDEFVersion1_2
         subset_varstore = out->varStore.serialize_subset (c, varStore, this, c->plan->gdef_varstore_inner_maps.as_array ());
     }
 
+
     if (subset_varstore)
     {
       out->version.minor = 3;
+      c->plan->has_gdef_varstore = true;
     } else if (subset_markglyphsetsdef) {
       out->version.minor = 2;
+      c->serializer->revert (snapshot_version2);
     } else  {
       out->version.minor = 0;
+      c->serializer->revert (snapshot_version0);
     }
+
+    bool subset_ligcaretlist = out->ligCaretList.serialize_subset (c, ligCaretList, this);
 
     return_trace (subset_glyphclassdef || subset_attachlist ||
 		  subset_ligcaretlist || subset_markattachclassdef ||
@@ -709,6 +753,7 @@ struct GDEF
   {
     TRACE_SANITIZE (this);
     if (unlikely (!u.version.sanitize (c))) return_trace (false);
+    hb_barrier ();
     switch (u.version.major) {
     case 1: return_trace (u.version1.sanitize (c));
 #ifndef HB_NO_BEYOND_64K

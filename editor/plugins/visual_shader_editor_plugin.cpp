@@ -482,6 +482,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	if (p_just_update) {
 		Link &link = links[p_id];
 
+		link.visual_node = vsnode.ptr();
 		link.graph_element = node;
 		link.preview_box = nullptr;
 		link.preview_pos = -1;

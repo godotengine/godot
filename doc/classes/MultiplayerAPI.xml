@@ -34,7 +34,7 @@
 			<return type="int" />
 			<description>
 				Returns the sender's peer ID for the RPC currently being executed.
-				[b]Note:[/b] If not inside an RPC this method will return 0.
+				[b]Note:[/b] This method returns [code]0[/code] when called outside of an RPC. As such, the original peer ID may be lost when code execution is delayed (such as with GDScript's [code]await[/code] keyword).
 			</description>
 		</method>
 		<method name="get_unique_id">

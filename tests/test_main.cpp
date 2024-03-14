@@ -93,6 +93,7 @@
 #include "tests/core/test_time.h"
 #include "tests/core/threads/test_worker_thread_pool.h"
 #include "tests/core/variant/test_array.h"
+#include "tests/core/variant/test_callable.h"
 #include "tests/core/variant/test_dictionary.h"
 #include "tests/core/variant/test_variant.h"
 #include "tests/core/variant/test_variant_utility.h"

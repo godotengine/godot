@@ -3462,10 +3462,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 
 				if (use_wireframe) {
-					glDrawElementsInstanced(GL_LINES, count, GL_UNSIGNED_INT, 0, inst->instance_count);
+					glDrawElementsInstanced(GL_LINES, count, GL_UNSIGNED_INT, nullptr, inst->instance_count);
 				} else {
 					if (use_index_buffer) {
-						glDrawElementsInstanced(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0, inst->instance_count);
+						glDrawElementsInstanced(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), nullptr, inst->instance_count);
 					} else {
 						glDrawArraysInstanced(primitive_gl, 0, count, inst->instance_count);
 					}
@@ -3473,10 +3473,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			} else {
 				// Using regular Mesh.
 				if (use_wireframe) {
-					glDrawElements(GL_LINES, count, GL_UNSIGNED_INT, 0);
+					glDrawElements(GL_LINES, count, GL_UNSIGNED_INT, nullptr);
 				} else {
 					if (use_index_buffer) {
-						glDrawElements(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0);
+						glDrawElements(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), nullptr);
 					} else {
 						glDrawArrays(primitive_gl, 0, count);
 					}
@@ -4075,7 +4075,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		scene_globals.default_shader = material_storage->shader_allocate();
 		material_storage->shader_initialize(scene_globals.default_shader);
 		material_storage->shader_set_code(scene_globals.default_shader, R"(
-// Default 3D material shader.
+// Default 3D material shader (Compatibility).
 
 shader_type spatial;
 
@@ -4100,11 +4100,11 @@ void fragment() {
 		scene_globals.overdraw_shader = material_storage->shader_allocate();
 		material_storage->shader_initialize(scene_globals.overdraw_shader);
 		material_storage->shader_set_code(scene_globals.overdraw_shader, R"(
-// 3D editor Overdraw debug draw mode shader.
+// 3D editor Overdraw debug draw mode shader (Compatibility).
 
 shader_type spatial;
 
-render_mode blend_add, unshaded;
+render_mode blend_add, unshaded, fog_disabled;
 
 void fragment() {
 	ALBEDO = vec3(0.4, 0.8, 0.8);

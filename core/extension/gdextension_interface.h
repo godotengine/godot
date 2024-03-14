@@ -442,6 +442,8 @@ typedef GDExtensionBool (*GDExtensionCallableCustomLessThan)(void *callable_user
 
 typedef void (*GDExtensionCallableCustomToString)(void *callable_userdata, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out);
 
+typedef GDExtensionInt (*GDExtensionCallableCustomGetArgumentCount)(void *callable_userdata, GDExtensionBool *r_is_valid);
+
 typedef struct {
 	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
 	 *
@@ -471,7 +473,40 @@ typedef struct {
 	GDExtensionCallableCustomLessThan less_than_func;
 
 	GDExtensionCallableCustomToString to_string_func;
-} GDExtensionCallableCustomInfo;
+} GDExtensionCallableCustomInfo; // Deprecated. Use GDExtensionCallableCustomInfo2 instead.
+
+typedef struct {
+	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
+	 *
+	 * `token` should point to an address that uniquely identifies the GDExtension (for example, the
+	 * `GDExtensionClassLibraryPtr` passed to the entry symbol function.
+	 *
+	 * `hash_func`, `equal_func`, and `less_than_func` are optional. If not provided both `call_func` and
+	 * `callable_userdata` together are used as the identity of the callable for hashing and comparison purposes.
+	 *
+	 * The hash returned by `hash_func` is cached, `hash_func` will not be called more than once per callable.
+	 *
+	 * `is_valid_func` is necessary if the validity of the callable can change before destruction.
+	 *
+	 * `free_func` is necessary if `callable_userdata` needs to be cleaned up when the callable is freed.
+	 */
+	void *callable_userdata;
+	void *token;
+
+	GDObjectInstanceID object_id;
+
+	GDExtensionCallableCustomCall call_func;
+	GDExtensionCallableCustomIsValid is_valid_func;
+	GDExtensionCallableCustomFree free_func;
+
+	GDExtensionCallableCustomHash hash_func;
+	GDExtensionCallableCustomEqual equal_func;
+	GDExtensionCallableCustomLessThan less_than_func;
+
+	GDExtensionCallableCustomToString to_string_func;
+
+	GDExtensionCallableCustomGetArgumentCount get_argument_count_func;
+} GDExtensionCallableCustomInfo2;
 
 /* SCRIPT INSTANCE EXTENSION */
 
@@ -2510,6 +2545,7 @@ typedef GDExtensionScriptInstanceDataPtr (*GDExtensionInterfaceObjectGetScriptIn
 /**
  * @name callable_custom_create
  * @since 4.2
+ * @deprecated in Godot 4.3. Use `callable_custom_create2` instead.
  *
  * Creates a custom Callable object from a function pointer.
  *
@@ -2519,6 +2555,19 @@ typedef GDExtensionScriptInstanceDataPtr (*GDExtensionInterfaceObjectGetScriptIn
  * @param p_callable_custom_info The info required to construct a Callable.
  */
 typedef void (*GDExtensionInterfaceCallableCustomCreate)(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo *p_callable_custom_info);
+
+/**
+ * @name callable_custom_create2
+ * @since 4.3
+ *
+ * Creates a custom Callable object from a function pointer.
+ *
+ * Provided struct can be safely freed once the function returns.
+ *
+ * @param r_callable A pointer that will receive the new Callable.
+ * @param p_callable_custom_info The info required to construct a Callable.
+ */
+typedef void (*GDExtensionInterfaceCallableCustomCreate2)(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo2 *p_callable_custom_info);
 
 /**
  * @name callable_custom_get_userdata

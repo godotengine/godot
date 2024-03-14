@@ -2053,7 +2053,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 
 		Vector3 inner_pos = ((lm_pos - bounds.position) / bounds.size) * 2.0 - Vector3(1.0, 1.0, 1.0);
 
-		real_t blend = MAX(inner_pos.x, MAX(inner_pos.y, inner_pos.z));
+		real_t blend = MAX(ABS(inner_pos.x), MAX(ABS(inner_pos.y), ABS(inner_pos.z)));
 		//make blend more rounded
 		blend = Math::lerp(inner_pos.length(), blend, blend);
 		blend *= blend;

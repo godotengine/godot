@@ -257,7 +257,7 @@
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a SHA-256 [String] representing the file at the given path or an empty [String] on failure.
+				Returns an SHA-256 [String] representing the file at the given path or an empty [String] on failure.
 			</description>
 		</method>
 		<method name="get_unix_permissions" qualifiers="static">

@@ -1861,12 +1861,18 @@ bool CodeEdit::is_line_code_region_start(int p_line) const {
 	if (code_region_start_string.is_empty()) {
 		return false;
 	}
+	if (is_in_string(p_line) != -1) {
+		return false;
+	}
 	return get_line(p_line).strip_edges().begins_with(code_region_start_string);
 }
 
 bool CodeEdit::is_line_code_region_end(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
 	if (code_region_start_string.is_empty()) {
+		return false;
+	}
+	if (is_in_string(p_line) != -1) {
 		return false;
 	}
 	return get_line(p_line).strip_edges().begins_with(code_region_end_string);

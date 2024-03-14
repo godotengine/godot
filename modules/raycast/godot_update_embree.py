@@ -96,7 +96,7 @@ for f in all_files:
         os.makedirs(d)
     shutil.copy2(f, d)
 
-with open(os.path.join(dest_dir, "kernels/hash.h"), "w") as hash_file:
+with open(os.path.join(dest_dir, "kernels/hash.h"), "w", encoding="utf-8", newline="\n") as hash_file:
     hash_file.write(
         f"""// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
@@ -105,7 +105,7 @@ with open(os.path.join(dest_dir, "kernels/hash.h"), "w") as hash_file:
 """
     )
 
-with open(os.path.join(dest_dir, "kernels/config.h"), "w") as config_file:
+with open(os.path.join(dest_dir, "kernels/config.h"), "w", encoding="utf-8", newline="\n") as config_file:
     config_file.write(
         """// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
@@ -193,7 +193,9 @@ with open("CMakeLists.txt", "r") as cmake_file:
     minor_version = int(re.compile(r"EMBREE_VERSION_MINOR\s(\d+)").findall(cmake_content)[0])
     patch_version = int(re.compile(r"EMBREE_VERSION_PATCH\s(\d+)").findall(cmake_content)[0])
 
-with open(os.path.join(dest_dir, "include/embree3/rtcore_config.h"), "w") as config_file:
+with open(
+    os.path.join(dest_dir, "include/embree3/rtcore_config.h"), "w", encoding="utf-8", newline="\n"
+) as config_file:
     config_file.write(
         f"""// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0

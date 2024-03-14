@@ -1287,7 +1287,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 			uint32_t range_start = state.canvas_instance_batches[p_index].start * sizeof(InstanceData);
 			_enable_attributes(range_start, false);
 
-			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, state.canvas_instance_batches[p_index].instance_count);
+			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, state.canvas_instance_batches[p_index].instance_count);
 			glBindVertexArray(0);
 
 			if (r_render_info) {
@@ -1490,7 +1490,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 				uint32_t vertex_count = mesh_storage->mesh_surface_get_vertices_drawn_count(surface);
 
 				if (use_index_buffer) {
-					glDrawElementsInstanced(primitive_gl, vertex_count, mesh_storage->mesh_surface_get_index_type(surface), 0, instance_count);
+					glDrawElementsInstanced(primitive_gl, vertex_count, mesh_storage->mesh_surface_get_index_type(surface), nullptr, instance_count);
 				} else {
 					glDrawArraysInstanced(primitive_gl, 0, vertex_count, instance_count);
 				}
@@ -1701,7 +1701,7 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 			}
 
 			glBindVertexArray(co->vertex_array);
-			glDrawElements(GL_TRIANGLES, 3 * co->line_point_count, GL_UNSIGNED_SHORT, 0);
+			glDrawElements(GL_TRIANGLES, 3 * co->line_point_count, GL_UNSIGNED_SHORT, nullptr);
 
 			instance = instance->next;
 		}
@@ -1804,7 +1804,7 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 		}
 
 		glBindVertexArray(co->vertex_array);
-		glDrawElements(GL_TRIANGLES, 3 * co->line_point_count, GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_TRIANGLES, 3 * co->line_point_count, GL_UNSIGNED_SHORT, nullptr);
 
 		instance = instance->next;
 	}
@@ -1923,7 +1923,7 @@ void RasterizerCanvasGLES3::render_sdf(RID p_render_target, LightOccluderInstanc
 		shadow_render.shader.version_set_uniform(CanvasOcclusionShaderGLES3::MODELVIEW2, modelview.columns[0][1], modelview.columns[1][1], 0, modelview.columns[2][1], shadow_render.shader_version, variant);
 
 		glBindVertexArray(oc->sdf_vertex_array);
-		glDrawElements(oc->sdf_is_lines ? GL_LINES : GL_TRIANGLES, oc->sdf_index_count, GL_UNSIGNED_INT, 0);
+		glDrawElements(oc->sdf_is_lines ? GL_LINES : GL_TRIANGLES, oc->sdf_index_count, GL_UNSIGNED_INT, nullptr);
 
 		instance = instance->next;
 	}

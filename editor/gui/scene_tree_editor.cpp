@@ -103,15 +103,12 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_LOCK) {
 		undo_redo->create_action(TTR("Unlock Node"));
-
-		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
-			undo_redo->add_do_method(n, "remove_meta", "_edit_lock_");
-			undo_redo->add_undo_method(n, "set_meta", "_edit_lock_", true);
-			undo_redo->add_do_method(this, "_update_tree");
-			undo_redo->add_undo_method(this, "_update_tree");
-			undo_redo->add_do_method(this, "emit_signal", "node_changed");
-			undo_redo->add_undo_method(this, "emit_signal", "node_changed");
-		}
+		undo_redo->add_do_method(n, "remove_meta", "_edit_lock_");
+		undo_redo->add_undo_method(n, "set_meta", "_edit_lock_", true);
+		undo_redo->add_do_method(this, "_update_tree");
+		undo_redo->add_undo_method(this, "_update_tree");
+		undo_redo->add_do_method(this, "emit_signal", "node_changed");
+		undo_redo->add_undo_method(this, "emit_signal", "node_changed");
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 		if (n->is_class("AnimationMixer")) {
@@ -400,60 +397,28 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->set_button_color(0, item->get_button_count(0) - 1, button_color);
 		}
 
-		if (p_node->is_class("CanvasItem")) {
-			if (p_node->has_meta("_edit_lock_")) {
-				item->add_button(0, get_editor_theme_icon(SNAME("Lock")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
-			}
-
-			if (p_node->has_meta("_edit_group_")) {
-				item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
-			}
-
-			bool v = p_node->call("is_visible");
-			if (v) {
+		if (p_node->has_method("is_visible") && p_node->has_method("set_visible") && p_node->has_signal("visibility_changed")) {
+			bool is_visible = p_node->call("is_visible");
+			if (is_visible) {
 				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityVisible")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			} else {
 				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityHidden")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			}
-
-			if (!p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
-				p_node->connect("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed).bind(p_node));
+			const Callable vis_changed = callable_mp(this, &SceneTreeEditor::_node_visibility_changed);
+			if (!p_node->is_connected("visibility_changed", vis_changed)) {
+				p_node->connect("visibility_changed", vis_changed.bind(p_node));
 			}
-
 			_update_visibility_color(p_node, item);
-		} else if (p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
-			bool v = p_node->call("is_visible");
-			if (v) {
-				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityVisible")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
-			} else {
-				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityHidden")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
-			}
+		}
 
-			if (!p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
-				p_node->connect("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed).bind(p_node));
-			}
-		} else if (p_node->is_class("Node3D")) {
-			if (p_node->has_meta("_edit_lock_")) {
-				item->add_button(0, get_editor_theme_icon(SNAME("Lock")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
-			}
+		if (p_node->has_meta("_edit_lock_")) {
+			item->add_button(0, get_editor_theme_icon(SNAME("Lock")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
+		}
+		if (p_node->has_meta("_edit_group_")) {
+			item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
+		}
 
-			if (p_node->has_meta("_edit_group_")) {
-				item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
-			}
-
-			bool v = p_node->call("is_visible");
-			if (v) {
-				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityVisible")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
-			} else {
-				item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityHidden")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
-			}
-
-			if (!p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
-				p_node->connect("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed).bind(p_node));
-			}
-
-			_update_visibility_color(p_node, item);
-		} else if (p_node->is_class("AnimationMixer")) {
+		if (p_node->is_class("AnimationMixer")) {
 			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_editing_node() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
 
 			if (is_pinned) {
@@ -564,11 +529,11 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
 	bool node_visible = false;
 
-	if (p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
+	if (p_node->has_method("is_visible")) {
 		node_visible = p_node->call("is_visible");
-		CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
-	} else if (p_node->is_class("Node3D")) {
-		node_visible = p_node->call("is_visible");
+		if (p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
+			CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
+		}
 	}
 
 	if (node_visible) {
@@ -581,7 +546,7 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 }
 
 void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
-	if (p_node->is_class("CanvasItem") || p_node->is_class("Node3D")) {
+	if (p_node->has_method("is_visible_in_tree")) {
 		Color color(1, 1, 1, 1);
 		bool visible_on_screen = p_node->call("is_visible_in_tree");
 		if (!visible_on_screen) {
@@ -615,7 +580,7 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 		p_node->disconnect("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed));
 	}
 
-	if (p_node->is_class("Node3D") || p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
+	if (p_node->has_signal("visibility_changed")) {
 		if (p_node->is_connected("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
 			p_node->disconnect("visibility_changed", callable_mp(this, &SceneTreeEditor::_node_visibility_changed));
 		}

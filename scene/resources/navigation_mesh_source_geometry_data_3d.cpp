@@ -165,6 +165,17 @@ void NavigationMeshSourceGeometryData3D::add_faces(const PackedVector3Array &p_f
 	_add_faces(p_faces, root_node_transform * p_xform);
 }
 
+void NavigationMeshSourceGeometryData3D::merge(const Ref<NavigationMeshSourceGeometryData3D> &p_other_geometry) {
+	// No need to worry about `root_node_transform` here as the vertices are already xformed.
+	const int64_t number_of_vertices_before_merge = vertices.size();
+	const int64_t number_of_indices_before_merge = indices.size();
+	vertices.append_array(p_other_geometry->vertices);
+	indices.append_array(p_other_geometry->indices);
+	for (int64_t i = number_of_indices_before_merge; i < indices.size(); i++) {
+		indices.set(i, indices[i] + number_of_vertices_before_merge / 3);
+	}
+}
+
 void NavigationMeshSourceGeometryData3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &NavigationMeshSourceGeometryData3D::set_vertices);
 	ClassDB::bind_method(D_METHOD("get_vertices"), &NavigationMeshSourceGeometryData3D::get_vertices);
@@ -178,6 +189,7 @@ void NavigationMeshSourceGeometryData3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "xform"), &NavigationMeshSourceGeometryData3D::add_mesh);
 	ClassDB::bind_method(D_METHOD("add_mesh_array", "mesh_array", "xform"), &NavigationMeshSourceGeometryData3D::add_mesh_array);
 	ClassDB::bind_method(D_METHOD("add_faces", "faces", "xform"), &NavigationMeshSourceGeometryData3D::add_faces);
+	ClassDB::bind_method(D_METHOD("merge", "other_geometry"), &NavigationMeshSourceGeometryData3D::merge);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_indices", "get_indices");

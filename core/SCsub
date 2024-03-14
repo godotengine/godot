@@ -36,7 +36,7 @@ if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
         Exit(255)
 
 # NOTE: It is safe to generate this file here, since this is still executed serially
-with open("script_encryption_key.gen.cpp", "w") as f:
+with open("script_encryption_key.gen.cpp", "w", encoding="utf-8", newline="\n") as f:
     f.write('#include "core/config/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n")
 
 

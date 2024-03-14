@@ -1053,6 +1053,10 @@ struct _VariantCall {
 		r_ret = callable->bindp(p_args, p_argcount);
 	}
 
+	static int func_Callable_get_argument_count(Callable *p_callable) {
+		return p_callable->get_argument_count();
+	}
+
 	static void func_Signal_emit(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Signal *signal = VariantGetInternalPtr<Signal>::get_ptr(v);
 		signal->emit(p_args, p_argcount);
@@ -2048,6 +2052,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Callable, get_object, sarray(), varray());
 	bind_method(Callable, get_object_id, sarray(), varray());
 	bind_method(Callable, get_method, sarray(), varray());
+	bind_function(Callable, get_argument_count, _VariantCall::func_Callable_get_argument_count, sarray(), varray());
 	bind_method(Callable, get_bound_arguments_count, sarray(), varray());
 	bind_method(Callable, get_bound_arguments, sarray(), varray());
 	bind_method(Callable, hash, sarray(), varray());
@@ -2205,6 +2210,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, is_empty, sarray(), varray());
 	bind_method(Dictionary, clear, sarray(), varray());
 	bind_method(Dictionary, merge, sarray("dictionary", "overwrite"), varray(false));
+	bind_method(Dictionary, merged, sarray("dictionary", "overwrite"), varray(false));
 	bind_method(Dictionary, has, sarray("key"), varray());
 	bind_method(Dictionary, has_all, sarray("keys"), varray());
 	bind_method(Dictionary, find_key, sarray("value"), varray());
