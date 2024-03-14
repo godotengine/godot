@@ -4076,7 +4076,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_BOOL:
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
-				// TODO: Handle boolean representation.
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_FLAGS) + ":" + RTR("On");
 			} else {
 				pi.type = Variant::BOOL;
 			}
