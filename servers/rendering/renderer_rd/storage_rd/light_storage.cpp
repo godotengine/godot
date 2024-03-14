@@ -568,7 +568,7 @@ void LightStorage::set_max_lights(const uint32_t p_max_lights) {
 	// <TF>
 	// @ShadyTF persistently mapped buffers
 	// Was:
-	// directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
+	//directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
 	directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size, Vector<uint8_t>(), RD::BUFFER_CREATION_PERSISTENT_BIT);
 	// </TF>
 }
