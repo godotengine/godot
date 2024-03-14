@@ -115,12 +115,6 @@
 #include "modules/mono/editor/bindings_generator.h"
 #endif
 
-// <TF>
-// @ShadyTF : Android memory advisor
-#if defined(ANDROID_ENABLED)
-#include "thirdparty/memory_advice/memory_advice.h"
-#endif
-// </TF>
 #ifdef MODULE_GDSCRIPT_ENABLED
 #include "modules/gdscript/gdscript.h"
 #if defined(TOOLS_ENABLED) && !defined(GDSCRIPT_NO_LSP)
@@ -263,33 +257,6 @@ const Vector<String> &Main::get_forwardable_cli_arguments(Main::CLIScope p_scope
 	return forwardable_cli_arguments[p_scope];
 }
 #endif
-
-// <TF>
-// @ShadyTF : Android memory advisor
-#if defined(ANDROID_ENABLED)
-
-constexpr int godot_memory_advice_callback_waittime_ms = 5000;
-
-void godot_memory_advice_callback(MemoryAdvice_MemoryState p_state, void* p_context) {
-    const char* warning_msg = "Memory warning : Approaching limit, The application should minimize memory allocation";
-    const char* error_msg = "Memory critical warning : The application should free memory as soon as possible";
-    switch (p_state) {
-        case MEMORYADVICE_STATE_APPROACHING_LIMIT:
-            OS::get_singleton()->print( "%s",warning_msg);
-            OS::get_singleton()->alert(warning_msg);
-            break;
-        case MEMORYADVICE_STATE_CRITICAL:
-            OS::get_singleton()->print( "%s",error_msg);
-            OS::get_singleton()->alert(error_msg);
-            break;
-        default:
-            break;
-    }
-}
-
-#endif
-// </TF>
-
 
 static String unescape_cmdline(const String &p_str) {
 	return p_str.replace("%20", " ");
@@ -894,14 +861,6 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
  */
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
-
-
-    // <TF>
-    // @ShadyTF : Android memory advisor
-#if defined(ANDROID_ENABLED)
-    MemoryAdvice_registerWatcher(godot_memory_advice_callback_waittime_ms, godot_memory_advice_callback, nullptr);
-#endif
-    // </TF>
 
 	Thread::make_main_thread();
 	set_current_thread_safe_for_nodes(true);

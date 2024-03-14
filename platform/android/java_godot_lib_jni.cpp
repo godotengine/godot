@@ -50,12 +50,6 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "main/main.h"
-// <TF>
-// @ShadyTF : Android memory advisor
-#include "thirdparty/memory_advice/memory_advice.h"
-// </TF>
-
-
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"

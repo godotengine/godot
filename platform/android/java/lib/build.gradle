@@ -14,7 +14,6 @@ dependencies {
 	implementation fileTree(dir: '../../../../thirdparty/swappy-frame-pacing', includes: ['games-frame-pacing-2.0.0.aar'])
     implementation libraries.kotlinStdLib
     implementation libraries.androidxFragment
-    implementation fileTree(dir: '../../../../thirdparty/memory_advice', includes: ['games-memory-advice-2.0.0-beta04.aar'])
 }
 
 def pathToRootDir = "../../../../"
