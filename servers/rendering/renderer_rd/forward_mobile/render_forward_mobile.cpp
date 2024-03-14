@@ -618,6 +618,10 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 
 		if (p_render_data->directional_shadows.size()) {
 			light_storage->update_directional_shadow_atlas();
+			if (!RenderingDeviceCommons::render_pass_opts_enabled) {
+				RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE);
+				RD::get_singleton()->draw_list_end();
+			}
 		}
 	}
 
@@ -747,8 +751,14 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	// fill our render lists early so we can find out if we use various features
 	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR);
-	render_list[RENDER_LIST_OPAQUE].sort_for_rendering();
-	render_list[RENDER_LIST_ALPHA].sort_for_rendering();
+	if (RenderingDeviceCommons::render_pass_opts_enabled) {
+		render_list[RENDER_LIST_OPAQUE].sort_for_rendering();
+		render_list[RENDER_LIST_ALPHA].sort_for_rendering();
+	} else {
+		render_list[RENDER_LIST_OPAQUE].sort_by_key();
+		render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
+	}
+	
 	_fill_instance_data(RENDER_LIST_OPAQUE);
 	_fill_instance_data(RENDER_LIST_ALPHA);
 
@@ -1353,7 +1363,11 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	uint32_t render_list_from = render_list[RENDER_LIST_SECONDARY].elements.size();
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode, true);
 	uint32_t render_list_size = render_list[RENDER_LIST_SECONDARY].elements.size() - render_list_from;
-	render_list[RENDER_LIST_SECONDARY].sort_for_shadows(render_list_from, render_list_size);
+	if (RenderingDeviceCommons::render_pass_opts_enabled) {
+		render_list[RENDER_LIST_SECONDARY].sort_for_shadows(render_list_from, render_list_size);
+	} else {
+		render_list[RENDER_LIST_SECONDARY].sort_by_key_range(render_list_from, render_list_size);
+	}
 	_fill_instance_data(RENDER_LIST_SECONDARY, render_list_from, render_list_size);
 
 	{
@@ -1396,55 +1410,62 @@ void RenderForwardMobile::_render_shadow_process() {
 
 void RenderForwardMobile::_render_shadow_end() {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
-	
-	// Render all cascades in the same pass since they render on different regions
-	uint32_t curr_shadow_index = 0;
 
-	while (curr_shadow_index < scene_state.shadow_passes.size()) {
-		// 4 = shadow cascades amount
-		uint32_t pass_amount;
-		SceneState::ShadowPass start_shadow_pass = scene_state.shadow_passes[curr_shadow_index];
-		switch (start_shadow_pass.light_type) {
-			case RS::LIGHT_DIRECTIONAL:
-				pass_amount = 4;
-				break;
-			case RS::LIGHT_OMNI:
-				pass_amount = 6;
-				break;
-			case RS::LIGHT_SPOT:
-				pass_amount = 1;
-				break;
-		}
+	if (RenderingDeviceCommons::render_pass_opts_enabled) {
+		// Render all cascades in the same pass since they render on different regions
+		uint32_t curr_shadow_index = 0;
 
-		// Use one drawlist per face, the render target has to change
-		if (start_shadow_pass.light_type == RS::LIGHT_OMNI || start_shadow_pass.light_type == RS::LIGHT_SPOT) {
-			for (uint32_t j = 0; j < pass_amount && curr_shadow_index + j < scene_state.shadow_passes.size(); j++) {
-				SceneState::ShadowPass shadow_pass = scene_state.shadow_passes[curr_shadow_index + j];
-				RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
-				_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, shadow_pass.rect);
-			}
-		} else {
-			RID framebuffer = scene_state.shadow_passes[curr_shadow_index].framebuffer;
-			Size2 fb_size = RD::get_singleton()->framebuffer_get_size(framebuffer);
-			RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
-			RD::DrawListID draw_list;
-
-			draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, Rect2(0, 0, fb_size.x, fb_size.y), RenderingDeviceCommons::BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL);
-
-			for (uint32_t j = 0; j < pass_amount && curr_shadow_index + j < scene_state.shadow_passes.size(); j++) {
-				SceneState::ShadowPass shadow_pass = scene_state.shadow_passes[curr_shadow_index + j];
-				// Change viewport and scissors for the next cascade
-				RD::get_singleton()->draw_list_set_viewport(draw_list, shadow_pass.rect);
-				RD::get_singleton()->draw_list_enable_scissor(draw_list, Rect2(0, 0, shadow_pass.rect.size.x, shadow_pass.rect.size.y));
-
-				RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
-				render_list_parameters.framebuffer_format = fb_format;
-				_render_list(draw_list, fb_format, &render_list_parameters, 0, render_list_parameters.element_count);
+		while (curr_shadow_index < scene_state.shadow_passes.size()) {
+			// 4 = shadow cascades amount
+			uint32_t pass_amount;
+			SceneState::ShadowPass start_shadow_pass = scene_state.shadow_passes[curr_shadow_index];
+			switch (start_shadow_pass.light_type) {
+				case RS::LIGHT_DIRECTIONAL:
+					pass_amount = 4;
+					break;
+				case RS::LIGHT_OMNI:
+					pass_amount = 6;
+					break;
+				case RS::LIGHT_SPOT:
+					pass_amount = 1;
+					break;
 			}
 
-			RD::get_singleton()->draw_list_end();
+			// Use one drawlist per face, the render target has to change
+			if (start_shadow_pass.light_type == RS::LIGHT_OMNI || start_shadow_pass.light_type == RS::LIGHT_SPOT) {
+				for (uint32_t j = 0; j < pass_amount && curr_shadow_index + j < scene_state.shadow_passes.size(); j++) {
+					SceneState::ShadowPass shadow_pass = scene_state.shadow_passes[curr_shadow_index + j];
+					RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+					_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, shadow_pass.rect);
+				}
+			} else {
+				RID framebuffer = scene_state.shadow_passes[curr_shadow_index].framebuffer;
+				Size2 fb_size = RD::get_singleton()->framebuffer_get_size(framebuffer);
+				RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
+				RD::DrawListID draw_list;
+
+				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, Rect2(0, 0, fb_size.x, fb_size.y), RenderingDeviceCommons::BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL);
+
+				for (uint32_t j = 0; j < pass_amount && curr_shadow_index + j < scene_state.shadow_passes.size(); j++) {
+					SceneState::ShadowPass shadow_pass = scene_state.shadow_passes[curr_shadow_index + j];
+					// Change viewport and scissors for the next cascade
+					RD::get_singleton()->draw_list_set_viewport(draw_list, shadow_pass.rect);
+					RD::get_singleton()->draw_list_enable_scissor(draw_list, Rect2(0, 0, shadow_pass.rect.size.x, shadow_pass.rect.size.y));
+
+					RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+					render_list_parameters.framebuffer_format = fb_format;
+					_render_list(draw_list, fb_format, &render_list_parameters, 0, render_list_parameters.element_count);
+				}
+
+				RD::get_singleton()->draw_list_end();
+			}
+			curr_shadow_index += pass_amount;
 		}
-		curr_shadow_index += pass_amount;
+	} else {
+		for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
+			RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+			_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, shadow_pass.rect);
+		}
 	}
 
 	RD::get_singleton()->draw_command_end_label();
@@ -1479,6 +1500,9 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
+	if (!RenderingDeviceCommons::render_pass_opts_enabled) {
+		render_list[RENDER_LIST_SECONDARY].sort_by_key();
+	}
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
@@ -1523,6 +1547,9 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
+	if (RenderingDeviceCommons::render_pass_opts_enabled) {
+		render_list[RENDER_LIST_SECONDARY].sort_by_key();
+	}
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
@@ -1604,6 +1631,9 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	PassMode pass_mode = PASS_MODE_SHADOW;
 
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
+	if (RenderingDeviceCommons::render_pass_opts_enabled) {
+		render_list[RENDER_LIST_SECONDARY].sort_by_key();
+	}
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
@@ -2107,7 +2137,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 	bool shadow_pass = (p_params->pass_mode == PASS_MODE_SHADOW) || (p_params->pass_mode == PASS_MODE_SHADOW_DP);
 
 	for (uint32_t i = p_from_element; i < p_to_element; i++) {
-		const GeometryInstanceSurfaceDataCache *surf = p_params->elements[i];
+		GeometryInstanceSurfaceDataCache *surf = p_params->elements[i];
 		const RenderElementInfo &element_info = p_params->element_info[i];
 		const GeometryInstanceForwardMobile *inst = surf->owner;
 
@@ -2138,8 +2168,30 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			mesh_surface = surf->surface_shadow;
 
 		} else {
-			base_spec_constants |= surf->sort.spec_consts;
-			
+			if (inst->use_projector) {
+				base_spec_constants |= 1 << SPEC_CONSTANT_USING_PROJECTOR;
+			}
+			if (inst->use_soft_shadow) {
+				base_spec_constants |= 1 << SPEC_CONSTANT_USING_SOFT_SHADOWS;
+			}
+
+			if (inst->omni_light_count == 0) {
+				base_spec_constants |= 1 << SPEC_CONSTANT_DISABLE_OMNI_LIGHTS;
+			}
+			if (inst->spot_light_count == 0) {
+				base_spec_constants |= 1 << SPEC_CONSTANT_DISABLE_SPOT_LIGHTS;
+			}
+			if (inst->reflection_probe_count == 0) {
+				base_spec_constants |= 1 << SPEC_CONSTANT_DISABLE_REFLECTION_PROBES;
+			}
+			if (inst->decals_count == 0) {
+				base_spec_constants |= 1 << SPEC_CONSTANT_DISABLE_DECALS;
+			}
+
+			// @NicolaTF: Update spec consts in sort structure to improve further sorting
+			if (RenderingDeviceCommons::render_pass_opts_enabled)
+				surf->sort.spec_consts = base_spec_constants;
+
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
 				material_uniform_set = scene_shader.default_material_uniform_set;
@@ -2210,9 +2262,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			} break;
 		}
 
-		PipelineCacheRD *pipeline = nullptr;
-
-		pipeline = &shader->pipelines[cull_variant][primitive][shader_version];
+		PipelineCacheRD *pipeline = &shader->pipelines[cull_variant][primitive][shader_version];
 
 		RD::VertexFormatID vertex_format = -1;
 		RID vertex_array_rd;
@@ -2502,12 +2552,6 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
 	sdcache->sort.format = format;
 	sdcache->sort.spec_consts = 0;
-	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->use_projector) << SPEC_CONSTANT_USING_PROJECTOR;
-	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->use_soft_shadow) << SPEC_CONSTANT_USING_SOFT_SHADOWS;
-	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->omni_light_count == 0) << SPEC_CONSTANT_DISABLE_OMNI_LIGHTS;
-	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->spot_light_count == 0) << SPEC_CONSTANT_DISABLE_SPOT_LIGHTS;
-	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->reflection_probe_count == 0) << SPEC_CONSTANT_DISABLE_REFLECTION_PROBES;
-	sdcache->sort.spec_consts |= (uint64_t)(1 && sdcache->owner->decals_count == 0) << SPEC_CONSTANT_DISABLE_DECALS;
 	// sdcache->sort.uses_forward_gi = ginstance->can_sdfgi;
 	sdcache->sort.priority = p_material->priority;
 

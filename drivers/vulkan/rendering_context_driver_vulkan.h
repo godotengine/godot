@@ -165,7 +165,6 @@ public:
 	const Functions &functions_get() const;
 
 	static VkAllocationCallbacks *get_allocation_callbacks(VkObjectType type);
-	static VKAPI_ATTR void VKAPI_CALL memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data);
 
 #if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 	enum VkTrackedObjectType{
@@ -195,6 +194,7 @@ public:
 	static uint64_t get_device_allocation_count();
 	static uint64_t get_device_memory_by_object_type(uint32_t type);
 	static uint64_t get_device_allocs_by_object_type(uint32_t type);
+	static VKAPI_ATTR void VKAPI_CALL memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data);
 #endif
 
 	RenderingContextDriverVulkan();

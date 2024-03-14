@@ -43,7 +43,8 @@ class RenderingDeviceCommons : public Object {
 	// with RenderingDeviceDriver.
 	////////////////////////////////////////////
 public:
-	bool command_pool_reset_enabled = false;
+	static const bool command_pool_reset_enabled = false;
+	static const bool render_pass_opts_enabled = true;
 
 	/*****************/
 	/**** GENERIC ****/

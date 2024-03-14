@@ -1477,7 +1477,7 @@ void RenderingDeviceGraph::add_compute_list_usages(VectorView<ResourceTracker *>
 }
 
 void RenderingDeviceGraph::add_compute_list_end() {
-	if (!compute_instruction_list.has_dispatches)
+	if (RenderingDeviceCommons::render_pass_opts_enabled && !compute_instruction_list.has_dispatches)
 		return;
 
 	int32_t command_index;
@@ -1704,7 +1704,7 @@ void RenderingDeviceGraph::add_draw_list_usages(VectorView<ResourceTracker *> p_
 
 
 void RenderingDeviceGraph::add_draw_list_end() {
-	if (!draw_instruction_list.has_draws) {
+	if (RenderingDeviceCommons::render_pass_opts_enabled && !draw_instruction_list.has_draws) {
 		return;
 	}
 

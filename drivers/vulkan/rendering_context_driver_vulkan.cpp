@@ -109,7 +109,6 @@ const char *RenderingContextDriverVulkan::get_tracked_object_name(uint32_t typeI
 uint64_t RenderingContextDriverVulkan::get_tracked_object_type_count() {
 	return VK_TRACKED_OBJECT_TYPE_COUNT;
 }
-#endif
 
 RenderingContextDriverVulkan::VkTrackedObjectType vk_object_to_tracked_object(VkObjectType type) {
 	if (type > VK_OBJECT_TYPE_COMMAND_POOL && type != (VkObjectType)RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_VMA) {
@@ -128,6 +127,10 @@ RenderingContextDriverVulkan::VkTrackedObjectType vk_object_to_tracked_object(Vk
 
 	return (RenderingContextDriverVulkan::VkTrackedObjectType)type;
 }
+
+#endif
+
+
 
 #if defined(VK_TRACK_DEVICE_MEMORY)
 uint64_t RenderingContextDriverVulkan::get_device_total_memory() {
@@ -169,6 +172,7 @@ uint64_t RenderingContextDriverVulkan::get_driver_allocs_by_object_type(uint32_t
 }
 #endif
 
+#if defined(VK_TRACK_DEVICE_MEMORY)
 void RenderingContextDriverVulkan::memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data) {
 	if (!p_callback_data) {
 		return;
@@ -205,6 +209,7 @@ void RenderingContextDriverVulkan::memory_report_callback(const VkDeviceMemoryRe
 		}
 	}
 }
+#endif
 
 VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(VkObjectType type) {
 

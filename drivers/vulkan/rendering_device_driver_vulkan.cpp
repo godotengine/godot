@@ -932,8 +932,8 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		create_info_next = &device_fault_features;
 	}
 
+#if defined(VK_TRACK_DEVICE_MEMORY)
 	VkDeviceDeviceMemoryReportCreateInfoEXT memory_report_info = {};
-
 	if (device_memory_report_support) {
 		memory_report_info.sType = VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
 		memory_report_info.pfnUserCallback = RenderingContextDriverVulkan::memory_report_callback;
@@ -943,6 +943,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 
 		create_info_next = &memory_report_info;
 	}
+#endif
 
 	VkPhysicalDeviceVulkan11Features vulkan_1_1_features = {};
 	VkPhysicalDevice16BitStorageFeaturesKHR storage_features = {};
