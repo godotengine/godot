@@ -535,6 +535,8 @@ typedef void (*GDExtensionScriptInstanceFreeMethodList2)(GDExtensionScriptInstan
 
 typedef GDExtensionBool (*GDExtensionScriptInstanceHasMethod)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name);
 
+typedef GDExtensionInt (*GDExtensionScriptInstanceGetMethodArgumentCount)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionBool *r_is_valid);
+
 typedef void (*GDExtensionScriptInstanceCall)(GDExtensionScriptInstanceDataPtr p_self, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error);
 typedef void (*GDExtensionScriptInstanceNotification)(GDExtensionScriptInstanceDataPtr p_instance, int32_t p_what); // Deprecated. Use GDExtensionScriptInstanceNotification2 instead.
 typedef void (*GDExtensionScriptInstanceNotification2)(GDExtensionScriptInstanceDataPtr p_instance, int32_t p_what, GDExtensionBool p_reversed);
@@ -653,6 +655,8 @@ typedef struct {
 	GDExtensionScriptInstanceValidateProperty validate_property_func;
 
 	GDExtensionScriptInstanceHasMethod has_method_func;
+
+	GDExtensionScriptInstanceGetMethodArgumentCount get_method_argument_count_func;
 
 	GDExtensionScriptInstanceCall call_func;
 	GDExtensionScriptInstanceNotification2 notification_func;
