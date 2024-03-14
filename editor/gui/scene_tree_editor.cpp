@@ -176,6 +176,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		TabContainer *tab_container = Object::cast_to<TabContainer>(NodeDock::get_singleton()->get_parent());
 		NodeDock::get_singleton()->get_parent()->call("set_current_tab", tab_container->get_tab_idx_from_control(NodeDock::get_singleton()));
 		NodeDock::get_singleton()->show_groups();
+
 	} else if (p_id == BUTTON_UNIQUE) {
 		undo_redo->create_action(TTR("Disable Scene Unique Name"));
 		undo_redo->add_do_method(n, "set_unique_name_in_owner", false);
@@ -1399,6 +1400,7 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	if (!item) {
 		return;
 	}
+
 	int section = tree->get_drop_section_at_position(p_point);
 	if (section < -1) {
 		return;

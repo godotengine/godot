@@ -151,10 +151,11 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 			}
 		}
 	}
+
 	// If there is no active tab we need to collapse the panel.
 	if (!has_active_tab) {
-		items[0].control->show(); // _switch_to_item() can collapse only visible tabs.
-		_switch_to_item(false, 0);
+		items[0].control->show(); 
+		_switch_to_item(false, 0); // _switch_to_item() can collapse only visible tabs.
 	}
 }
 
@@ -258,15 +259,19 @@ EditorBottomPanel::EditorBottomPanel() {
 	}
 	// Set the text to copy in metadata as it slightly differs from the button's text.
 	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_FULL_BUILD + hash);
+
 	// Fade out the version label to be less prominent, but still readable.
 	version_btn->set_self_modulate(Color(1, 1, 1, 0.65));
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
+
 	String build_date;
+
 	if (VERSION_TIMESTAMP > 0) {
 		build_date = Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC";
 	} else {
 		build_date = TTR("(unknown)");
 	}
+
 	version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
 	version_btn->connect("pressed", callable_mp(this, &EditorBottomPanel::_version_button_pressed));
 	version_btn->set_v_size_flags(Control::SIZE_SHRINK_CENTER);

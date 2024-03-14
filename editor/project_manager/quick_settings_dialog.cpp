@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "quick_settings_dialog.h"
-
 #include "core/config/project_settings.h"
 #include "core/string/translation.h"
 #include "editor/editor_settings.h"
@@ -258,11 +257,13 @@ QuickSettingsDialog::QuickSettingsDialog() {
 
 		// Scale options.
 		{
+
 			scale_option_button = memnew(OptionButton);
 			scale_option_button->set_fit_to_longest_item(false);
 			scale_option_button->connect("item_selected", callable_mp(this, &QuickSettingsDialog::_scale_selected));
 
 			for (int i = 0; i < editor_scales.size(); i++) {
+
 				const String &scale_value = editor_scales[i];
 				scale_option_button->add_item(scale_value, i);
 			}
