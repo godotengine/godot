@@ -1455,10 +1455,11 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 		if (_peek() != '\n') {
 			return make_error("Expected new line after \"\\\".");
 		}
-		continuation_lines.push_back(line);
 		_advance();
 		newline(false);
 		line_continuation = true;
+		_skip_whitespace(); // Skip whitespace/comment lines after `\`. See GH-89403.
+		continuation_lines.push_back(line);
 		return scan(); // Recurse to get next token.
 	}
 

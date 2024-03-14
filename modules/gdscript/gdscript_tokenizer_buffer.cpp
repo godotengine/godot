@@ -33,7 +33,8 @@
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
 
-#define TOKENIZER_VERSION 100
+// `version = major * 100 + minor`.
+#define TOKENIZER_VERSION 101
 
 int GDScriptTokenizerBuffer::_token_to_binary(const Token &p_token, Vector<uint8_t> &r_buffer, int p_start, HashMap<StringName, uint32_t> &r_identifiers_map, HashMap<Variant, uint32_t, VariantHasher, VariantComparator> &r_constants_map) {
 	int pos = p_start;
@@ -285,9 +286,9 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code,
 
 	// Remove continuation lines from map.
 	for (int line : tokenizer.get_continuation_lines()) {
-		if (rev_token_lines.has(line + 1)) {
-			token_lines.erase(rev_token_lines[line + 1]);
-			token_columns.erase(rev_token_lines[line + 1]);
+		if (rev_token_lines.has(line)) {
+			token_lines.erase(rev_token_lines[line]);
+			token_columns.erase(rev_token_lines[line]);
 		}
 	}
 
