@@ -285,9 +285,9 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code,
 
 	// Remove continuation lines from map.
 	for (int line : tokenizer.get_continuation_lines()) {
-		if (rev_token_lines.has(line + 1)) {
-			token_lines.erase(rev_token_lines[line + 1]);
-			token_columns.erase(rev_token_lines[line + 1]);
+		if (rev_token_lines.has(line)) {
+			token_lines.erase(rev_token_lines[line]);
+			token_columns.erase(rev_token_lines[line]);
 		}
 	}
 
