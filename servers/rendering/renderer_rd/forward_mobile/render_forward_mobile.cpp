@@ -2896,6 +2896,11 @@ RenderForwardMobile::~RenderForwardMobile() {
 		for (const RID &rid : scene_state.uniform_buffers) {
 			RD::get_singleton()->free(rid);
 		}
+		for (uint32_t i = 0; i < RENDER_LIST_MAX; i++) {
+			if (scene_state.instance_buffer[i].is_valid()) {
+				RD::get_singleton()->free(scene_state.instance_buffer[i]);
+			}
+		}
 		RD::get_singleton()->free(scene_state.lightmap_buffer);
 		RD::get_singleton()->free(scene_state.lightmap_capture_buffer);
 		memdelete_arr(scene_state.lightmap_captures);
