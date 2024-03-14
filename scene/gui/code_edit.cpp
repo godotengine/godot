@@ -733,14 +733,15 @@ void CodeEdit::_backspace_internal(int p_caret) {
 				prev_column = cc - auto_brace_completion_pairs[idx].open_key.length();
 
 				if (_get_auto_brace_pair_close_at_pos(cl, cc) == idx) {
-					remove_text(prev_line, prev_column, cl, cc + auto_brace_completion_pairs[idx].close_key.length());
-				} else {
-					remove_text(prev_line, prev_column, cl, cc);
+					cc += auto_brace_completion_pairs[idx].close_key.length();
 				}
+
+				remove_text(prev_line, prev_column, cl, cc);
+
 				set_caret_line(prev_line, false, true, 0, i);
 				set_caret_column(prev_column, i == 0, i);
 
-				adjust_carets_after_edit(i, prev_line, prev_column, cl, cc + auto_brace_completion_pairs[idx].close_key.length());
+				adjust_carets_after_edit(i, prev_line, prev_column, cl, cc);
 				continue;
 			}
 		}
