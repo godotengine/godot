@@ -431,7 +431,14 @@ private:
 public:
 	virtual String shader_get_binary_cache_key() override final;
 	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
+	// <TF>
+	// @ShadyTF
+	// adding support of immutable samplers, which can be embedded when creating the pipeline layout on the condition they remain
+	// valid and unchanged, so they don't need to be specified when creating uniform sets
+	// Was:
+	//virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
+	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler>& r_immutableSamplers) override final;
+	// </TF>
 	virtual void shader_free(ShaderID p_shader) override final;
 
 	// <TF>
@@ -482,6 +489,12 @@ private:
 	bool linear_descriptor_pools_enabled = true;
 	VkDescriptorPool _descriptor_set_pool_find_or_create(const DescriptorSetPoolKey &p_key, DescriptorSetPools::Iterator *r_pool_sets_it, int p_linear_pool_index);
 	void _descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool, int p_linear_pool_index);
+	// </TF>
+
+	// <TF>
+	// @ShadyTF :
+	// global  flag to toggle usage of immutable sampler when creating  pipeline layouts and for skipping when creating uniform sets
+	bool immutable_samplers_enabled = true;
 	// </TF>
 	
 	
