@@ -317,7 +317,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel.is_empty()) {
-		c = "Cancel";
+		c = ETR("Cancel");
 	}
 
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
@@ -419,13 +419,13 @@ AcceptDialog::AcceptDialog() {
 
 	buttons_hbox->add_spacer();
 	ok_button = memnew(Button);
-	ok_button->set_text("OK");
+	ok_button->set_text(ETR("OK"));
 	buttons_hbox->add_child(ok_button);
 	buttons_hbox->add_spacer();
 
 	ok_button->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
 
-	set_title(TTRC("Alert!"));
+	set_title(ETR("Alert!"));
 }
 
 AcceptDialog::~AcceptDialog() {
@@ -454,7 +454,7 @@ Button *ConfirmationDialog::get_cancel_button() {
 }
 
 ConfirmationDialog::ConfirmationDialog() {
-	set_title(TTRC("Please Confirm..."));
+	set_title(ETR("Please Confirm..."));
 	set_min_size(Size2(200, 70));
 
 	cancel = add_cancel_button();
