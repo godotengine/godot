@@ -749,13 +749,11 @@ void EditorFileSystem::scan() {
 	} else {
 		ERR_FAIL_COND(thread.is_started());
 		set_process(true);
+		scan_total = 0;
 		Thread::Settings s;
 		scanning = true;
-		scan_total = 0;
 		s.priority = Thread::PRIORITY_LOW;
 		thread.start(_thread_func, this, s);
-		//tree->hide();
-		//progress->show();
 	}
 }
 

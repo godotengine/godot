@@ -195,32 +195,9 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		dname = "res://";
 	}
 
-	// Set custom folder color (if applicable).
-	bool has_custom_color = assigned_folder_colors.has(lpath);
-	Color custom_color = has_custom_color ? folder_colors[assigned_folder_colors[lpath]] : Color();
-
-	if (has_custom_color) {
-		subdirectory_item->set_icon_modulate(0, editor_is_dark_theme ? custom_color : custom_color * 1.75);
-		subdirectory_item->set_custom_bg_color(0, Color(custom_color, editor_is_dark_theme ? 0.1 : 0.15));
-	} else {
-		TreeItem *parent = subdirectory_item->get_parent();
-		if (parent) {
-			Color parent_bg_color = parent->get_custom_bg_color(0);
-			if (parent_bg_color != Color()) {
-				bool parent_has_custom_color = assigned_folder_colors.has(parent->get_metadata(0));
-				subdirectory_item->set_custom_bg_color(0, parent_has_custom_color ? parent_bg_color.darkened(0.3) : parent_bg_color);
-				subdirectory_item->set_icon_modulate(0, parent->get_icon_modulate(0));
-			} else {
-				subdirectory_item->set_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
-			}
-		}
-	}
-
-	subdirectory_item->set_text(0, dname);
-	subdirectory_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
-	subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
+	_setup_tree_item(subdirectory_item, dname, lpath);
 	subdirectory_item->set_selectable(0, true);
-	subdirectory_item->set_metadata(0, lpath);
+
 	if (!p_select_in_favorites && (current_path == lpath || ((display_mode != DISPLAY_MODE_TREE_ONLY) && current_path.get_base_dir() == lpath))) {
 		subdirectory_item->select(0);
 		// Keep select an item when re-created a tree
@@ -282,10 +259,9 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		_sort_file_info_list(file_list);
 
 		// Build the tree.
+		bool has_custom_color = assigned_folder_colors.has(lpath);
 		for (const FileInfo &fi : file_list) {
 			TreeItem *file_item = tree->create_item(subdirectory_item);
-			file_item->set_text(0, fi.name);
-			file_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type));
 			Color parent_bg_color = subdirectory_item->get_custom_bg_color(0);
 			if (has_custom_color) {
@@ -294,7 +270,8 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->set_custom_bg_color(0, parent_bg_color);
 			}
 			String file_metadata = lpath.path_join(fi.name);
-			file_item->set_metadata(0, file_metadata);
+			_setup_tree_item(file_item, fi.name, file_metadata);
+
 			if (!p_select_in_favorites && current_path == file_metadata) {
 				file_item->select(0);
 				file_item->set_as_cursor(0);
@@ -362,6 +339,7 @@ Vector<String> FileSystemDock::get_uncollapsed_paths() const {
 void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, bool p_uncollapse_root, bool p_select_in_favorites, bool p_unfold_path) {
 	// Recreate the tree.
 	tree->clear();
+	path_map.clear();
 	tree_update_id++;
 	updating_tree = true;
 	TreeItem *root = tree->create_item();
@@ -452,6 +430,10 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	updating_tree = false;
 }
 
+void FileSystemDock::_soft_update_tree() {
+	_update_tree(get_uncollapsed_paths());
+}
+
 void FileSystemDock::set_display_mode(DisplayMode p_display_mode) {
 	display_mode = p_display_mode;
 	_update_display_mode(false);
@@ -467,7 +449,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
 				toolbar2_hbc->show();
 
-				_update_tree(get_uncollapsed_paths());
+				_soft_update_tree();
 				file_list_vb->hide();
 				break;
 
@@ -485,7 +467,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
 				tree->ensure_cursor_is_visible();
 				toolbar2_hbc->hide();
-				_update_tree(get_uncollapsed_paths());
+				_soft_update_tree();
 
 				file_list_vb->show();
 				_update_file_list(true);
@@ -617,7 +599,7 @@ void FileSystemDock::_notification(int p_what) {
 
 			if (do_redraw) {
 				_update_file_list(true);
-				_update_tree(get_uncollapsed_paths());
+				_soft_update_tree();
 			}
 
 			if (EditorThemeManager::is_generated_theme_outdated()) {
@@ -728,6 +710,13 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 				break;
 			}
 		}
+	}
+}
+
+void FileSystemDock::_ensure_select() {
+	TreeItem *to_select = _get_cached_item_safe(current_path);
+	if (to_select) {
+		to_select->select(0);
 	}
 }
 
@@ -1259,7 +1248,7 @@ void FileSystemDock::_fs_changed() {
 	split_box->show();
 
 	if (tree->is_visible()) {
-		_update_tree(get_uncollapsed_paths());
+		_soft_update_tree();
 	}
 
 	if (file_list_vb->is_visible()) {
@@ -1274,6 +1263,44 @@ void FileSystemDock::_fs_changed() {
 	}
 
 	set_process(false);
+}
+
+void FileSystemDock::_setup_tree_item(TreeItem *p_item, const String &p_name, const String &p_path) {
+	p_item->set_text(0, p_name);
+	p_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
+	p_item->set_metadata(0, p_path);
+
+	if (p_path.ends_with("/")) {
+		p_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
+
+		// Set custom folder color (if applicable).
+		const String &custom_color_name = assigned_folder_colors.get(p_path, "");
+		if (!custom_color_name.is_empty()) {
+			const Color &custom_color = folder_colors[custom_color_name];
+			p_item->set_icon_modulate(0, editor_is_dark_theme ? custom_color : custom_color * 1.75);
+			p_item->set_custom_bg_color(0, Color(custom_color, editor_is_dark_theme ? 0.1 : 0.15));
+		} else {
+			TreeItem *parent = p_item->get_parent();
+			if (parent) {
+				Color parent_bg_color = parent->get_custom_bg_color(0);
+				if (parent_bg_color != Color()) {
+					bool parent_has_custom_color = assigned_folder_colors.has(parent->get_metadata(0));
+					p_item->set_custom_bg_color(0, parent_has_custom_color ? parent_bg_color.darkened(0.3) : parent_bg_color);
+					p_item->set_icon_modulate(0, parent->get_icon_modulate(0));
+				} else {
+					p_item->set_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
+				}
+			}
+		}
+	}
+
+	path_map.insert(p_path, p_item);
+}
+
+TreeItem *FileSystemDock::_get_cached_item_safe(const String &p_path) const {
+	TreeItem *const *item = path_map.getptr(p_path);
+	ERR_FAIL_NULL_V_MSG(item, nullptr, vformat("No TreeItem for path: %s", p_path));
+	return *item;
 }
 
 void FileSystemDock::_set_scanning_mode() {
@@ -1310,7 +1337,7 @@ void FileSystemDock::_update_history() {
 	_set_current_path_line_edit_text(current_path);
 
 	if (tree->is_visible()) {
-		_update_tree(get_uncollapsed_paths());
+		_soft_update_tree();
 		tree->grab_focus();
 		tree->ensure_cursor_is_visible();
 	}
@@ -1422,6 +1449,19 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 			}
 		}
 
+		TreeItem *moved_item = _get_cached_item_safe(old_path);
+		TreeItem *new_parent = _get_cached_item_safe(new_path.trim_suffix("/").get_base_dir() + "/");
+
+		if (moved_item && new_parent && new_parent != moved_item->get_parent()) {
+			moved_item->get_parent()->remove_child(moved_item);
+			new_parent->add_child(moved_item);
+			moved_item->set_text(0, new_path.trim_suffix("/").get_file()); // In case of using Keep Both option.
+			moved_item->deselect(0);
+			callable_mp(this, &FileSystemDock::_ensure_select).call_deferred();
+		}
+		moved_item->set_metadata(0, new_path);
+		_sort_item_position(moved_item);
+
 		// Only treat as a changed dependency if it was successfully moved.
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			p_file_renames[file_changed_paths[i]] = file_changed_paths[i].replace_first(old_path, new_path);
@@ -1437,7 +1477,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	}
 }
 
-void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const {
+void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) {
 	// Ensure folder paths end with "/".
 	String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
 	String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
@@ -1458,7 +1498,22 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		print_verbose("Duplicating " + old_path + " -> " + new_path);
 
 		// Create the directory structure.
-		da->make_dir_recursive(new_path.get_base_dir());
+		if (da->make_dir_recursive(new_path.get_base_dir()) == OK) {
+			_folder_created(new_path.get_base_dir());
+		}
+
+		TreeItem *duplicated_item = _get_cached_item_safe(old_path);
+		TreeItem *new_parent = _get_cached_item_safe(new_path.trim_suffix("/").get_base_dir() + "/");
+
+		if (duplicated_item && new_parent) {
+			duplicated_item->deselect(0);
+			duplicated_item = duplicated_item->duplicate();
+			duplicated_item->set_metadata(0, new_path);
+			new_parent->add_child(duplicated_item);
+			_sort_item_position(duplicated_item);
+			duplicated_item->select(0);
+			duplicated_item->set_text(0, new_path.get_file());
+		}
 
 		if (FileAccess::exists(old_path + ".import")) {
 			Error err = da->copy(old_path, new_path);
@@ -1502,7 +1557,9 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 			}
 		}
 	} else {
-		da->make_dir(new_path);
+		if (da->make_dir(new_path) == OK) {
+			_folder_created(new_path.trim_suffix("/"));
+		}
 
 		// Recursively duplicate all files inside the folder.
 		Ref<DirAccess> old_dir = DirAccess::open(old_path);
@@ -1674,6 +1731,36 @@ void FileSystemDock::_make_scene_confirm() {
 	EditorNode::get_singleton()->save_scene_if_open(scene_path);
 }
 
+void FileSystemDock::_folder_created(const String &p_path) {
+	const PackedStringArray splits = p_path.trim_prefix("res://").split("/");
+
+	String full_path = "res://";
+	TreeItem *parent_item = tree->get_root();
+
+	for (int i = 0; i < splits.size(); i++) {
+		full_path += splits[i] + "/";
+
+		if (!DirAccess::exists(full_path)) {
+			break;
+		}
+
+		{
+			TreeItem **existing = path_map.getptr(full_path);
+			if (existing) {
+				parent_item = *existing;
+				continue;
+			}
+		}
+
+		TreeItem *new_item = parent_item->create_child();
+		_setup_tree_item(new_item, full_path.trim_suffix("/").get_file(), full_path);
+		_sort_item_position(new_item);
+		parent_item = new_item;
+	}
+
+	_background_rescan();
+}
+
 void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
 	emit_signal(SNAME("resource_removed"), p_resource);
 }
@@ -1681,11 +1768,8 @@ void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
 void FileSystemDock::_file_removed(const String &p_file) {
 	emit_signal(SNAME("file_removed"), p_file);
 
-	// Find the closest parent directory available, in case multiple items were deleted along the same path.
-	current_path = p_file.get_base_dir();
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	while (!da->dir_exists(current_path)) {
-		current_path = current_path.get_base_dir();
+	if (current_path == p_file) {
+		_fix_current_path();
 	}
 
 	current_path_line_edit->set_text(current_path);
@@ -1694,23 +1778,35 @@ void FileSystemDock::_file_removed(const String &p_file) {
 void FileSystemDock::_folder_removed(const String &p_folder) {
 	emit_signal(SNAME("folder_removed"), p_folder);
 
-	// Find the closest parent directory available, in case multiple items were deleted along the same path.
-	current_path = p_folder.get_base_dir();
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	while (!da->dir_exists(current_path)) {
-		current_path = current_path.get_base_dir();
+	TreeItem *folder_item = _get_cached_item_safe(p_folder);
+	if (folder_item) {
+		memdelete(folder_item);
 	}
+
+	if (current_path.begins_with(p_folder)) {
+		_fix_current_path();
+	}
+	current_path_line_edit->set_text(current_path);
+	_background_rescan(); // FIXME: A blocking scan is started anyway, needs to be fixed.
 
 	if (assigned_folder_colors.has(p_folder)) {
 		assigned_folder_colors.erase(p_folder);
 		_update_folder_colors_setting();
 	}
+}
 
-	current_path_line_edit->set_text(current_path);
-	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(current_path);
-	if (efd) {
-		efd->force_update();
+void FileSystemDock::_fix_current_path() {
+	// Find the closest parent directory available, in case multiple items were deleted along the same path.
+	current_path = current_path.get_base_dir();
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	while (!da->dir_exists(current_path)) {
+		current_path = current_path.get_base_dir();
 	}
+	// It's a directory, so add slash.
+	if (current_path != "res://") {
+		current_path += "/";
+	}
+	current_path_line_edit->set_text(current_path);
 }
 
 void FileSystemDock::_rename_operation_confirm() {
@@ -1793,11 +1889,14 @@ void FileSystemDock::_rename_operation_confirm() {
 
 	if (ti) {
 		current_path = new_path;
+		if (!current_path.ends_with("/") && da->dir_exists(new_path)) {
+			current_path += "/";
+		}
 		current_path_line_edit->set_text(current_path);
 	}
 
 	print_verbose("FileSystem: calling rescan.");
-	_rescan();
+	_background_rescan();
 }
 
 void FileSystemDock::_duplicate_operation_confirm() {
@@ -1829,10 +1928,16 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	}
 
 	_try_duplicate_item(to_duplicate, new_path);
+	select_after_scan = new_path;
+	if (!select_after_scan.ends_with("/") && da->dir_exists(new_path)) {
+		select_after_scan += "/";
+	}
+	current_path = select_after_scan;
+	current_path_line_edit->set_text(current_path);
 
 	// Rescan everything.
 	print_verbose("FileSystem: calling rescan.");
-	_rescan();
+	_background_rescan();
 }
 
 void FileSystemDock::_overwrite_dialog_action(bool p_overwrite) {
@@ -1884,16 +1989,26 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 
 	if (p_copy) {
 		bool is_copied = false;
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+
 		for (int i = 0; i < to_move.size(); i++) {
 			if (to_move[i].path != new_paths[i]) {
 				_try_duplicate_item(to_move[i], new_paths[i]);
-				select_after_scan = new_paths[i];
 				is_copied = true;
+
+				if (i == to_move.size() - 1) {
+					select_after_scan = new_paths[i];
+					if (!select_after_scan.ends_with("/") && da->dir_exists(new_paths[i])) {
+						select_after_scan += "/";
+					}
+					current_path = select_after_scan;
+					current_path_line_edit->set_text(current_path);
+				}
 			}
 		}
 
 		if (is_copied) {
-			_rescan();
+			_background_rescan();
 		}
 	} else {
 		// Check groups.
@@ -1928,9 +2043,17 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 
 			print_verbose("FileSystem: calling rescan.");
-			_rescan();
+			_background_rescan();
 
 			current_path = p_to_path;
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			if (!da->file_exists(current_path)) {
+				if (!current_path.ends_with("/")) {
+					current_path += "/";
+				}
+				_fix_current_path();
+			}
+
 			current_path_line_edit->set_text(current_path);
 		}
 	}
@@ -2262,7 +2385,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			if (p_selected.size() == 1) {
 				ProjectSettings::get_singleton()->set("application/run/main_scene", p_selected[0]);
 				ProjectSettings::get_singleton()->save();
-				_update_tree(get_uncollapsed_paths());
+				_soft_update_tree();
 				_update_file_list(true);
 			}
 		} break;
@@ -2290,7 +2413,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				}
 			}
 			EditorSettings::get_singleton()->set_favorites(favorites_list);
-			_update_tree(get_uncollapsed_paths());
+			_soft_update_tree();
 		} break;
 
 		case FILE_REMOVE_FAVORITE: {
@@ -2300,7 +2423,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				favorites_list.erase(p_selected[i]);
 			}
 			EditorSettings::get_singleton()->set_favorites(favorites_list);
-			_update_tree(get_uncollapsed_paths());
+			_soft_update_tree();
 			if (current_path == "Favorites") {
 				_update_file_list(true);
 			}
@@ -2545,6 +2668,44 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 void FileSystemDock::_rescan() {
 	_set_scanning_mode();
 	EditorFileSystem::get_singleton()->scan();
+}
+
+void FileSystemDock::_background_rescan() {
+	EditorFileSystem::get_singleton()->scan();
+}
+
+void FileSystemDock::_sort_item_position(TreeItem *p_item) {
+	const String &path = p_item->get_metadata(0);
+
+	TreeItem *sibling = p_item->get_parent()->get_first_child();
+	bool stop = false;
+
+	while (!stop) {
+		stop = !sibling->get_next() || sibling->get_next() == p_item || sibling->get_next()->get_parent() != sibling->get_parent();
+		const String &other_path = sibling->get_metadata(0);
+
+		const int dir_compare = int(path.ends_with("/")) - int(other_path.ends_with("/"));
+		if (dir_compare > 0) {
+			p_item->move_before(sibling);
+			break;
+		} else if (dir_compare < 0) {
+			sibling = sibling->get_next();
+			continue;
+		}
+
+		if (path.naturalnocasecmp_to(other_path) < 0) {
+			p_item->move_before(sibling);
+			break;
+		}
+
+		if (stop) {
+			if (sibling->get_index() > p_item->get_index()) {
+				p_item->move_after(sibling);
+			}
+		} else {
+			sibling = sibling->get_next();
+		}
+	}
 }
 
 void FileSystemDock::_change_bottom_dock_placement() {
@@ -2824,7 +2985,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		}
 
 		EditorSettings::get_singleton()->set_favorites(dirs);
-		_update_tree(get_uncollapsed_paths());
+		_soft_update_tree();
 
 		if (display_mode != DISPLAY_MODE_TREE_ONLY && current_path == "Favorites") {
 			_update_file_list(true);
@@ -2876,7 +3037,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				}
 			}
 			EditorSettings::get_singleton()->set_favorites(favorites_list);
-			_update_tree(get_uncollapsed_paths());
+			_soft_update_tree();
 		}
 	}
 
@@ -2987,7 +3148,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 
 	_update_folder_colors_setting();
 
-	_update_tree(get_uncollapsed_paths());
+	_soft_update_tree();
 	_update_file_list(true);
 }
 
@@ -3303,7 +3464,7 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 		if (!fpath.ends_with("/")) {
 			current_path = fpath;
 			if (display_mode != DISPLAY_MODE_TREE_ONLY) {
-				_update_tree(get_uncollapsed_paths());
+				_soft_update_tree();
 			}
 		}
 	}
@@ -3594,7 +3755,7 @@ void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
 	file_sort = p_file_sort;
 
 	// Update everything needed.
-	_update_tree(get_uncollapsed_paths());
+	_soft_update_tree();
 	_update_file_list(true);
 }
 
@@ -3981,7 +4142,7 @@ FileSystemDock::FileSystemDock() {
 
 	make_dir_dialog = memnew(DirectoryCreateDialog);
 	add_child(make_dir_dialog);
-	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_rescan).unbind(1));
+	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_folder_created));
 
 	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);

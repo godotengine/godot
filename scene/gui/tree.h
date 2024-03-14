@@ -387,6 +387,7 @@ public:
 
 	void move_before(TreeItem *p_item);
 	void move_after(TreeItem *p_item);
+	TreeItem *duplicate();
 
 	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
