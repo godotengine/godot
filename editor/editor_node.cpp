@@ -7425,6 +7425,12 @@ EditorNode::EditorNode() {
 	add_child(system_theme_timer);
 	system_theme_timer->set_owner(get_owner());
 	system_theme_timer->set_autostart(true);
+
+	// Register `editor://` custom resource path
+	String editor_path = OS::get_singleton()->get_data_path().path_join(OS::get_singleton()->get_godot_dir_name());
+	FileAccess::map_path_to_custom_path("editor", editor_path);
+	Ref<DirAccess> editor_dir = DirAccess::open(String("editor://"));
+	editor_dir->make_dir("addons");
 }
 
 EditorNode::~EditorNode() {

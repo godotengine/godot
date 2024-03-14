@@ -271,6 +271,20 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 		return p_path.replace("user://", "");
 	}
 
+	// Custom paths
+	Vector<String> custom_paths = FileAccess::get_custom_paths();
+	for (const String &prefix : custom_paths) {
+		if (!p_path.begins_with(prefix + "://")) {
+			continue;
+		}
+		Dictionary data = FileAccess::get_custom_path_data(prefix);
+		if (data["type"] == "path") {
+			return p_path.replace(prefix + ":/", data["path"]);
+		} else {
+			// `data["type"]` is of type `"class"`, so no path is available.
+			return p_path;
+		}
+	}
 	return p_path;
 }
 

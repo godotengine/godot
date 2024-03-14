@@ -226,6 +226,22 @@ public:
 	static PackedByteArray _get_file_as_bytes(const String &p_path) { return get_file_as_bytes(p_path, &last_file_open_error); }
 	static String _get_file_as_string(const String &p_path) { return get_file_as_string(p_path, &last_file_open_error); }
 
+	// Custom paths
+private:
+	static HashMap<String, String> custom_path_paths;
+	static HashMap<String, Vector<String>> custom_path_classes;
+	static String _get_custom_path_prefix(const String &p_prefix);
+
+public:
+	static void map_path_to_custom_path(const String &p_prefix, const String &p_path);
+	static void map_classes_to_custom_path(const String &p_prefix, const String &p_custom_file_access_class, const String &p_custom_dir_access_class);
+	static void remove_custom_path(const String &p_prefix);
+	static bool is_custom_path(const String &p_prefix);
+	static Dictionary get_custom_path_data(const String &p_prefix);
+	static Vector<String> get_custom_paths();
+	// Custom paths end
+
+public:
 	template <class T>
 	static void make_default(AccessType p_access) {
 		create_func[p_access] = _create_builtin<T>;
