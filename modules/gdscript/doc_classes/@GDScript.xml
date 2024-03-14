@@ -43,6 +43,7 @@
 				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check.
 				assert(speed &lt; 20, "the speed limit is 20") # Show a message.
 				[/codeblock]
+				[b]Note:[/b] [method assert] is a keyword, not a function. So you cannot access it as a [Callable] or use it inside expressions.
 			</description>
 		</method>
 		<method name="char">
@@ -132,7 +133,7 @@
 				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
 				- An [Object]-derived class which exists in [ClassDB], for example [Node].
 				- A [Script] (you can use any class, including inner one).
-				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays) and is more performant. Use the operator instead of this method if you do not need dynamic type checking.
+				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need dynamic type checking.
 				Examples:
 				[codeblock]
 				print(is_instance_of(a, TYPE_INT))
@@ -184,6 +185,7 @@
 				# Create instance of a scene.
 				var diamond = preload("res://diamond.tscn").instantiate()
 				[/codeblock]
+				[b]Note:[/b] [method preload] is a keyword, not a function. So you cannot access it as a [Callable].
 			</description>
 		</method>
 		<method name="print_debug" qualifiers="vararg">
@@ -668,6 +670,8 @@
 			<return type="void" />
 			<description>
 				Make a script with static variables to not persist after all references are lost. If the script is loaded again the static variables will revert to their default values.
+				[b]Note:[/b] As annotations describe their subject, the [annotation @static_unload] annotation must be placed before the class definition and inheritance.
+				[b]Warning:[/b] Currently, due to a bug, scripts are never freed, even if [annotation @static_unload] annotation is used.
 			</description>
 		</annotation>
 		<annotation name="@tool">
