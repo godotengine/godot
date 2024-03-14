@@ -66,7 +66,7 @@ RID RenderSceneDataRD::create_uniform_buffer() {
 	// @ShadyTF : persistent buffers
 	// Was:
 	//return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
-	return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA), Vector<uint8_t>(), RD::BUFFER_CREATION_LINEAR_BIT |RD::BUFFER_CREATION_PERSISTENT_BIT);
+	return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA), Vector<uint8_t>(), RD::BUFFER_CREATION_LINEAR_BIT | RD::BUFFER_CREATION_PERSISTENT_BIT);
 	
 	// </TF>
 }
