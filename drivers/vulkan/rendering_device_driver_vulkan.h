@@ -494,7 +494,7 @@ private:
 	// <TF>
 	// @ShadyTF :
 	// global  flag to toggle usage of immutable sampler when creating  pipeline layouts and for skipping when creating uniform sets
-	bool immutable_samplers_enabled = true;
+	bool immutable_samplers_enabled = false;
 	// </TF>
 	
 	
