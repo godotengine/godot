@@ -1050,7 +1050,7 @@ bool Variant::is_null() const {
 }
 
 bool Variant::initialize_ref(Object *p_object) {
-	RefCounted *ref_counted = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_object));
+	RefCounted *ref_counted = static_or_reinterpret_cast<RefCounted *>(p_object);
 	if (!ref_counted->init_ref()) {
 		return false;
 	}
@@ -2610,7 +2610,7 @@ Variant::Variant(const Object *p_object) {
 
 	if (p_object) {
 		if (p_object->is_ref_counted()) {
-			RefCounted *ref_counted = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_object));
+			RefCounted *ref_counted = static_or_reinterpret_cast<RefCounted *>(p_object);
 			if (!ref_counted->init_ref()) {
 				_get_obj().obj = nullptr;
 				_get_obj().id = ObjectID();

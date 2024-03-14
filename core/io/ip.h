@@ -34,9 +34,6 @@
 #include "core/io/ip_address.h"
 #include "core/os/os.h"
 
-template <typename T>
-class TypedArray;
-
 struct _IP_ResolverPrivate;
 
 class IP : public Object {

@@ -331,7 +331,7 @@ void VariantInternal::refcounted_object_assign(Variant *v, const RefCounted *rc)
 void VariantInternal::object_assign(Variant *v, const Object *o) {
 	if (o) {
 		if (o->is_ref_counted()) {
-			RefCounted *ref_counted = const_cast<RefCounted *>(static_cast<const RefCounted *>(o));
+			RefCounted *ref_counted = static_or_reinterpret_cast<RefCounted *>(o);
 			if (!ref_counted->init_ref()) {
 				v->_get_obj().obj = nullptr;
 				v->_get_obj().id = ObjectID();

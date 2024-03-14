@@ -36,9 +36,6 @@
 #include "core/object/object.h"
 #include "core/templates/hash_map.h"
 
-template <typename T>
-class TypedArray;
-
 class InputMap : public Object {
 	GDCLASS(InputMap, Object);
 

@@ -36,8 +36,6 @@
 #include "core/object/ref_counted.h"
 
 class PhysicsDirectSpaceState2D;
-template <typename T>
-class TypedArray;
 
 class PhysicsDirectBodyState2D : public Object {
 	GDCLASS(PhysicsDirectBodyState2D, Object);

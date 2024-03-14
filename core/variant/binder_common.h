@@ -49,32 +49,8 @@
 
 template <class T>
 struct VariantCaster {
-	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of_v<Object, TStripped>) {
-			return Object::cast_to<TStripped>(p_variant);
-		} else {
-			return p_variant;
-		}
-	}
-};
-
-template <class T>
-struct VariantCaster<T &> {
-	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		using TStripped = std::remove_pointer_t<T>;
-		if constexpr (std::is_base_of_v<Object, TStripped>) {
-			return Object::cast_to<TStripped>(p_variant);
-		} else {
-			return p_variant;
-		}
-	}
-};
-
-template <class T>
-struct VariantCaster<const T &> {
-	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-		using TStripped = std::remove_pointer_t<T>;
+	typedef RemoveRefPointerConst_t<T> TStripped;
+	static _FORCE_INLINE_ std::remove_reference_t<T> cast(const Variant &p_variant) {
 		if constexpr (std::is_base_of_v<Object, TStripped>) {
 			return Object::cast_to<TStripped>(p_variant);
 		} else {
@@ -222,7 +198,7 @@ struct PtrToArg<char32_t> {
 	}
 };
 
-template <typename T>
+template <typename T, typename = void>
 struct VariantObjectClassChecker {
 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
 		using TStripped = std::remove_pointer_t<T>;
@@ -239,10 +215,10 @@ template <typename T>
 class Ref;
 
 template <typename T>
-struct VariantObjectClassChecker<const Ref<T> &> {
+struct VariantObjectClassChecker<T, EnableIf_t<types_are_same_v<Ref<typename RemoveRefPointerConst_t<T>::Type>, RemoveRefPointerConst_t<T>>>> {
 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
 		Object *obj = p_variant;
-		const Ref<T> node = p_variant;
+		const RemoveRefPointerConst_t<T> node = p_variant;
 		return node.ptr() || !obj;
 	}
 };
@@ -251,37 +227,7 @@ struct VariantObjectClassChecker<const Ref<T> &> {
 
 template <class T>
 struct VariantCasterAndValidate {
-	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
-		}
-
-		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
-	}
-};
-
-template <class T>
-struct VariantCasterAndValidate<T &> {
-	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
-		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
-		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
-				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = p_arg_idx;
-			r_error.expected = argtype;
-		}
-
-		return VariantCaster<T>::cast(*p_args[p_arg_idx]);
-	}
-};
-
-template <class T>
-struct VariantCasterAndValidate<const T &> {
-	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
+	static _FORCE_INLINE_ std::remove_reference_t<T> cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype) ||
 				!VariantObjectClassChecker<T>::check(*p_args[p_arg_idx])) {

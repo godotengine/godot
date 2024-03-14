@@ -218,7 +218,7 @@ private:
 			return static_cast<PackedArrayRef<T> *>(p_base)->array;
 		}
 		static _FORCE_INLINE_ Vector<T> *get_array_ptr(const PackedArrayRefBase *p_base) {
-			return &const_cast<PackedArrayRef<T> *>(static_cast<const PackedArrayRef<T> *>(p_base))->array;
+			return &static_or_reinterpret_cast<PackedArrayRef<T> *>(p_base)->array;
 		}
 
 		_FORCE_INLINE_ PackedArrayRef(const Vector<T> &p_from) {

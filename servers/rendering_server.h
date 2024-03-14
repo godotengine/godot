@@ -41,9 +41,6 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
-template <typename T>
-class TypedArray;
-
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
 
