@@ -62,6 +62,11 @@ private:
 	HashMap<int, LocalVector<int>> group_to_variant_map;
 	Vector<bool> group_enabled;
 
+// <TF>
+// @ShadyTF : immutable samplers
+// to be passed when creating shaders to render device
+	Vector<RD::PipelineImmutableSampler> immutable_samplers;
+// </TF>
 	struct Version {
 		CharString uniforms;
 		CharString vertex_globals;
@@ -202,7 +207,12 @@ public:
 
 	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
-	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "");
+// <TF>
+// optional parameter to pass immutable samplers to be used when creating pipelines
+// Was:
+//	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "");
+	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "", const Vector<RD::PipelineImmutableSampler>& r_immutable_samplers = Vector<RD::PipelineImmutableSampler>());
+// </TF>
 	void initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines = "");
 
 	virtual ~ShaderRD();

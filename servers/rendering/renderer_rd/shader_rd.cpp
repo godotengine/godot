@@ -448,7 +448,13 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		}
 		{
 			MutexLock lock(variant_set_mutex);
-			RID shader = RD::get_singleton()->shader_create_from_bytecode(p_version->variant_data[variant_id], p_version->variants[variant_id]);
+// <TF>
+// @ShadyTF
+// use api function when creating shaders which passes immutable samplers
+// Was :
+// RID shader = RD::get_singleton()->shader_create_from_bytecode(p_version->variant_data[variant_id], p_version->variants[variant_id]);
+			RID shader = RD::get_singleton()->shader_create_from_bytecode_with_samplers(p_version->variant_data[variant_id], p_version->variants[variant_id], immutable_samplers);
+// </TF>
 			if (shader.is_null()) {
 				for (uint32_t j = 0; j < i; j++) {
 					int variant_free_id = group_to_variant_map[p_group][j];
@@ -715,7 +721,14 @@ ShaderRD::ShaderRD() {
 	base_compute_defines = base_compute_define_text.ascii();
 }
 
-void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines) {
+// <TF>
+// @ShadyTF
+// optional parameter to pass immutable samplers to be used when creating pipelines
+// Was :
+//void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines) {
+void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler>& r_immutable_samplers) {
+	immutable_samplers = r_immutable_samplers;
+// </TF>
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.is_empty());
 

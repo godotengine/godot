@@ -2541,11 +2541,44 @@ Vector<uint8_t> RenderingDevice::shader_compile_binary_from_spirv(const Vector<S
 }
 
 RID RenderingDevice::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder) {
+// <TF>
+// @ShadyTF
+// immutable samplers :
+// expanding api when creating shader to allow passing optionally a set of immutable samplers
+// keeping existing api but extending it by sending an empty set 
+	Vector<PipelineImmutableSampler> immutable_samplers;
+	return shader_create_from_bytecode_with_samplers(p_shader_binary, p_placeholder, immutable_samplers); 
+}
+
+RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder, const Vector<PipelineImmutableSampler>& r_immutable_samplers) {
+// </TF>
 	_THREAD_SAFE_METHOD_
 
 	ShaderDescription shader_desc;
 	String name;
-	RDD::ShaderID shader_id = driver->shader_create_from_bytecode(p_shader_binary, shader_desc, name);
+
+// <TF>
+// @ShadyTF
+// immutable samplers
+// passing them to device driver
+// Was:
+//  RDD::ShaderID shader_id = driver->shader_create_from_bytecode(p_shader_binary, shader_desc, name, driver_immutable_samplers);
+	Vector<RDD::ImmutableSampler> driver_immutable_samplers;
+	for (int i = 0; i < r_immutable_samplers.size(); i++) {
+		const PipelineImmutableSampler& source_sampler = r_immutable_samplers[i];
+		RDD::ImmutableSampler driver_sampler;
+		driver_sampler.type = source_sampler.uniform_type;
+		driver_sampler.binding = source_sampler.binding;
+
+		for (uint32_t j = 0; j < source_sampler.get_id_count(); j++) {
+			RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
+				driver_sampler.ids.push_back(*sampler_driver_id);
+		}
+
+		driver_immutable_samplers.append(driver_sampler);
+	}
+	RDD::ShaderID shader_id = driver->shader_create_from_bytecode(p_shader_binary, shader_desc, name, driver_immutable_samplers);
+// </TF>
 	ERR_FAIL_COND_V(!shader_id, RID());
 
 	// All good, let's create modules.
@@ -2787,6 +2820,13 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 		RDD::BoundUniform &driver_uniform = driver_uniforms[i];
 		driver_uniform.type = uniform.uniform_type;
 		driver_uniform.binding = uniform.binding;
+
+// <TF>
+// @ShadyTF
+// immutable samplers
+// mark immutable samplers to be skipped when creating uniform set
+		driver_uniform.immutable_sampler = uniform.immutable_sampler;
+// </TF>
 
 		switch (uniform.uniform_type) {
 			case UNIFORM_TYPE_SAMPLER: {
