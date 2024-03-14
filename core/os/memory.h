@@ -35,6 +35,7 @@
 #include "core/templates/safe_refcount.h"
 
 #include <stddef.h>
+#include <cstring>
 #include <new>
 #include <type_traits>
 
@@ -107,6 +108,12 @@ _ALWAYS_INLINE_ bool predelete_handler(void *) {
 	return true;
 }
 
+#ifdef DEV_ENABLED
+#define junk_fill(p_mem, p_size) memset(static_cast<void *>(p_mem), 0xab, p_size)
+#else
+#define junk_fill(p_mem, p_size)
+#endif
+
 template <class T>
 void memdelete(T *p_class) {
 	if (!predelete_handler(p_class)) {
@@ -115,6 +122,8 @@ void memdelete(T *p_class) {
 	if constexpr (!std::is_trivially_destructible_v<T>) {
 		p_class->~T();
 	}
+
+	junk_fill(p_class, sizeof(T));
 
 	Memory::free_static(p_class, false);
 }
@@ -127,6 +136,8 @@ void memdelete_allocator(T *p_class) {
 	if constexpr (!std::is_trivially_destructible_v<T>) {
 		p_class->~T();
 	}
+
+	junk_fill(p_class, sizeof(T));
 
 	A::free(p_class);
 }
@@ -195,6 +206,8 @@ void memdelete_arr(T *p_class) {
 		for (uint64_t i = 0; i < elem_count; i++) {
 			p_class[i].~T();
 		}
+
+		junk_fill(ptr, sizeof(T) * elem_count);
 	}
 
 	Memory::free_static(ptr, true);
