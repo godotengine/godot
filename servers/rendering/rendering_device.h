@@ -198,6 +198,7 @@ private:
 	void update_perf_report();
 	// flag for using persistent buffers;
 	bool persistent_buffer_enabled = true;
+	bool descriptor_set_batching = true;
 	uint32_t gpu_copy_count = 0;
 	uint32_t direct_copy_count = 0;
 	uint32_t copy_bytes_count = 0;

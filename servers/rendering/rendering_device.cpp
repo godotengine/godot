@@ -4148,30 +4148,36 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 		}
 
 		if (!dl->state.sets[i].bound) {
-			// All good, see if this requires re-binding.
-			if (i - last_set_index > 1) {
-				// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
-				draw_graph.add_draw_list_bind_uniform_sets(dl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
+			// @NicolaTF: batch contiguous descriptor sets in a single call
+			if (descriptor_set_batching) {
+				// All good, see if this requires re-binding.
+				if (i - last_set_index > 1) {
+					// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
+					draw_graph.add_draw_list_bind_uniform_sets(dl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
 
-				first_set_index = i;
-				valid_set_count = 1;
-				valid_descriptor_ids[0] = dl->state.sets[i].uniform_set_driver_id;
-			} else {
-				// Otherwise, keep storing in the current batch
-				valid_descriptor_ids[valid_set_count] = dl->state.sets[i].uniform_set_driver_id;
-				valid_set_count++;
+					first_set_index = i;
+					valid_set_count = 1;
+					valid_descriptor_ids[0] = dl->state.sets[i].uniform_set_driver_id;
+				} else {
+					// Otherwise, keep storing in the current batch
+					valid_descriptor_ids[valid_set_count] = dl->state.sets[i].uniform_set_driver_id;
+					valid_set_count++;
+				}
+
+				UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
+				draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+				dl->state.sets[i].bound = true;
+
+				last_set_index = i;
 			}
-
-			UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
-			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
-			dl->state.sets[i].bound = true;
-
-			last_set_index = i;
+			else {
+				draw_graph.add_draw_list_bind_uniform_set(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
+			}
 		}
 	}
 
 	// Bind the remaining batch
-	if (valid_set_count > 0) {
+	if (descriptor_set_batching && valid_set_count > 0) {
 		draw_graph.add_draw_list_bind_uniform_sets(dl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
 	}
 
@@ -5295,10 +5301,12 @@ void RenderingDevice::_begin_frame() {
 		frames[frame].draw_fence_signaled = false;
 	}
 
-	// Reset command pool for this frame
-	bool reset = driver->command_pool_reset(frames[frame].command_pool);
-	ERR_FAIL_COND(!reset);
-
+	// @NicolaTF: manually reset command pool
+	if (command_pool_reset_enabled) {
+		bool reset = driver->command_pool_reset(frames[frame].command_pool);
+		ERR_FAIL_COND(!reset);
+	}
+	
 	// Begin recording on the frame's command buffers.
 	driver->begin_segment(frame, frames_drawn++);
 	driver->command_buffer_begin(frames[frame].setup_command_buffer);
@@ -5348,6 +5356,10 @@ void RenderingDevice::_end_frame() {
 	draw_graph.end(frames[frame].draw_command_buffer, RENDER_GRAPH_REORDER, RENDER_GRAPH_FULL_BARRIERS);
 	driver->command_buffer_end(frames[frame].setup_command_buffer);
 	driver->command_buffer_end(frames[frame].draw_command_buffer);
+	if (!screen_prepared && !command_pool_reset_enabled) {
+		driver->command_buffer_end(frames[frame].blit_setup_command_buffer);
+		driver->command_buffer_end(frames[frame].blit_draw_command_buffer);
+	}
 	driver->end_segment();
 }
 

@@ -43,6 +43,8 @@ class RenderingDeviceCommons : public Object {
 	// with RenderingDeviceDriver.
 	////////////////////////////////////////////
 public:
+	bool command_pool_reset_enabled = false;
+
 	/*****************/
 	/**** GENERIC ****/
 	/*****************/
