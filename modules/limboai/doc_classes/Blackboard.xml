@@ -49,6 +49,17 @@
 				Returns [code]true[/code] if the Blackboard contains the [param var_name] variable, including the parent scopes.
 			</description>
 		</method>
+		<method name="link_var">
+			<return type="void" />
+			<param index="0" name="var_name" type="StringName" />
+			<param index="1" name="target_blackboard" type="Blackboard" />
+			<param index="2" name="target_var" type="StringName" />
+			<description>
+				Links a variable to another Blackboard variable. If a variable is linked to another variable, their state will always be identical, and any change to one will be reflected in the other. You can use this method to link a variable in the current scope to a variable in another scope, or in another Blackboard instance.
+
+				A variable can only be linked to one other variable. Calling this method again will overwrite the previous link. However, it is possible to link to the same variable from multiple different variables.
+			</description>
+		</method>
 		<method name="set_parent">
 			<return type="void" />
 			<param index="0" name="blackboard" type="Blackboard" />

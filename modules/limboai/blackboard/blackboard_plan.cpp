@@ -88,7 +88,7 @@ void BlackboardPlan::_get_property_list(List<PropertyInfo> *p_list) const {
 		BBVariable var = p.second;
 
 		// * Editor
-		if (!is_derived() || !var_name.begins_with("_")) {
+		if (var.get_type() != Variant::NIL && (!is_derived() || !var_name.begins_with("_"))) {
 			p_list->push_back(PropertyInfo(var.get_type(), var_name, var.get_hint(), var.get_hint_string(), PROPERTY_USAGE_EDITOR));
 		}
 
@@ -270,6 +270,25 @@ void BlackboardPlan::sync_with_base_plan() {
 		}
 	}
 
+	// Sync order of variables.
+	// Glossary: E - element of current plan, B - element of base plan, F - element of current plan (used for forward search).
+	ERR_FAIL_COND(base->var_list.size() != var_list.size());
+	List<Pair<StringName, BBVariable>>::Element *B = base->var_list.front();
+	for (List<Pair<StringName, BBVariable>>::Element *E = var_list.front(); E; E = E->next()) {
+		if (E->get().first != B->get().first) {
+			List<Pair<StringName, BBVariable>>::Element *F = E->next();
+			while (F) {
+				if (F->get().first == B->get().first) {
+					var_list.move_before(F, E);
+					E = F;
+					break;
+				}
+				F = F->next();
+			}
+		}
+		B = B->next();
+	}
+
 	if (changed) {
 		notify_property_list_changed();
 		emit_changed();
@@ -284,11 +303,16 @@ inline void bb_add_var_dup_with_prefetch(const Ref<Blackboard> &p_blackboard, co
 		if (n != nullptr) {
 			var.set_value(n);
 		} else {
+			if (p_blackboard->has_var(p_name)) {
+				// Not adding: Assuming variable was initialized by the user or in the parent scope.
+				return;
+			}
 			ERR_PRINT(vformat("BlackboardPlan: Prefetch failed for variable $%s with value: %s", p_name, p_var.get_value()));
+			var.set_value(Variant());
 		}
-		p_blackboard->add_var(p_name, var);
+		p_blackboard->assign_var(p_name, var);
 	} else {
-		p_blackboard->add_var(p_name, p_var.duplicate());
+		p_blackboard->assign_var(p_name, p_var.duplicate());
 	}
 }
 
@@ -304,12 +328,8 @@ Ref<Blackboard> BlackboardPlan::create_blackboard(Node *p_node) {
 void BlackboardPlan::populate_blackboard(const Ref<Blackboard> &p_blackboard, bool overwrite, Node *p_node) {
 	ERR_FAIL_COND(p_node == nullptr && prefetch_nodepath_vars);
 	for (const Pair<StringName, BBVariable> &p : var_list) {
-		if (p_blackboard->has_var(p.first)) {
-			if (overwrite) {
-				p_blackboard->erase_var(p.first);
-			} else {
-				continue;
-			}
+		if (p_blackboard->has_var(p.first) && !overwrite) {
+			continue;
 		}
 		bb_add_var_dup_with_prefetch(p_blackboard, p.first, p.second, prefetch_nodepath_vars, p_node);
 	}
@@ -319,9 +339,14 @@ void BlackboardPlan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_prefetch_nodepath_vars", "enable"), &BlackboardPlan::set_prefetch_nodepath_vars);
 	ClassDB::bind_method(D_METHOD("is_prefetching_nodepath_vars"), &BlackboardPlan::is_prefetching_nodepath_vars);
 
+	ClassDB::bind_method(D_METHOD("set_base_plan", "blackboard_plan"), &BlackboardPlan::set_base_plan);
+	ClassDB::bind_method(D_METHOD("get_base_plan"), &BlackboardPlan::get_base_plan);
+	ClassDB::bind_method(D_METHOD("is_derived"), &BlackboardPlan::is_derived);
+	ClassDB::bind_method(D_METHOD("sync_with_base_plan"), &BlackboardPlan::sync_with_base_plan);
 	ClassDB::bind_method(D_METHOD("create_blackboard", "node"), &BlackboardPlan::create_blackboard);
 	ClassDB::bind_method(D_METHOD("populate_blackboard", "blackboard", "overwrite", "node"), &BlackboardPlan::populate_blackboard);
 
+	// To avoid cluttering the member namespace, we do not export unnecessary properties in this class.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefetch_nodepath_vars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_prefetch_nodepath_vars", "is_prefetching_nodepath_vars");
 }
 

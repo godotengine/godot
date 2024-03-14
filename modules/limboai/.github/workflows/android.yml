@@ -2,22 +2,22 @@ name: 🤖 Android builds
 on:
   workflow_call:
     inputs:
-      godot-treeish:
+      godot-ref:
         description: A tag, branch or commit hash in the Godot repository.
         type: string
         default: master
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
 
   workflow_dispatch:
     inputs:
-      godot-treeish:
+      godot-ref:
         description: A tag, branch or commit hash in the Godot repository.
         type: string
         default: master
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
@@ -28,6 +28,11 @@ env:
   SCONSFLAGS: production=yes tests=no verbose=yes warnings=extra werror=yes
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+permissions:
+  actions: write
+  contents: read
+  packages: read
 
 jobs:
   android-builds:
@@ -77,19 +82,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: godotengine/godot
-          ref: ${{ inputs.godot-treeish }}
+          ref: ${{ inputs.godot-ref }}
 
       - name: Clone LimboAI module
         uses: actions/checkout@v4
         with:
           path: modules/limboai
-          ref: ${{ inputs.limboai-treeish }}
+          ref: ${{ inputs.limboai-ref }}
 
       # Inits GODOT_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
       - uses: ./modules/limboai/.github/actions/init-version
 
       - name: Set up Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
@@ -102,14 +107,14 @@ jobs:
           scons --version
 
       - name: Set up scons cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/.scons_cache/
-          key: ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+          key: ${{env.BIN}}-${{inputs.godot-ref}}-${{inputs.limboai-ref}}-${{env.LIMBOAI_VERSION}}
           restore-keys: |
-            ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
-            ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}
-            ${{env.BIN}}-${{inputs.godot-treeish}}
+            ${{env.BIN}}-${{inputs.godot-ref}}-${{inputs.limboai-ref}}-${{env.LIMBOAI_VERSION}}
+            ${{env.BIN}}-${{inputs.godot-ref}}-${{inputs.limboai-ref}}
+            ${{env.BIN}}-${{inputs.godot-ref}}
 
       - name: Compilation
         env:
@@ -119,11 +124,10 @@ jobs:
           ls platform/android/java/lib/libs/*
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: android-templates
+          name: tmp-android-templates-${{strategy.job-index}}
           path: platform/android/java/lib/libs/*
-
 
   make-android-package:
     runs-on: "ubuntu-20.04"
@@ -135,31 +139,32 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: godotengine/godot
-          ref: ${{ inputs.godot-treeish }}
+          ref: ${{ inputs.godot-ref }}
 
       - name: Clone LimboAI module
         uses: actions/checkout@v4
         with:
           path: modules/limboai
-          ref: ${{ inputs.limboai-treeish }}
+          ref: ${{ inputs.limboai-ref }}
 
       # Inits GODOT_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
       - uses: ./modules/limboai/.github/actions/init-version
 
       - name: Download Android template builds
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: android-templates
+          pattern: tmp-android-templates-*
+          merge-multiple: true
           path: platform/android/java/lib/libs/
 
       - name: Set up Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
       - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
           architecture: x64
@@ -184,19 +189,20 @@ jobs:
           ls -l out/*
 
       - name: Delete Android template builds
-        uses: geekyeggo/delete-artifact@v2
+        uses: geekyeggo/delete-artifact@v4
         with:
-            name: android-templates
-            failOnError: false
+          name: tmp-android-templates-*
+          useGlob: true
+          failOnError: false
 
       - name: Upload Android libs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{env.NAME_PREFIX}}.android-lib
           path: bin/godot-lib.*
 
       - name: Upload Android templates
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{env.NAME_PREFIX}}.export-templates
+          name: ${{env.NAME_PREFIX}}.export-templates.android
           path: out/*

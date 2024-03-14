@@ -98,6 +98,7 @@ inline void _item_set_elapsed_time(TreeItem *p_item, double p_elapsed) {
 }
 
 void BehaviorTreeView::update_tree(const Ref<BehaviorTreeData> &p_data) {
+	ERR_FAIL_COND_MSG(p_data.is_null(), "Invalid data. View won't update.");
 	update_data = p_data;
 	update_pending = true;
 	_notification(NOTIFICATION_PROCESS);
@@ -312,6 +313,7 @@ void BehaviorTreeView::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_draw_failure_status"), &BehaviorTreeView::_draw_failure_status);
 	ClassDB::bind_method(D_METHOD("_item_collapsed"), &BehaviorTreeView::_item_collapsed);
 	ClassDB::bind_method(D_METHOD("update_tree", "behavior_tree_data"), &BehaviorTreeView::update_tree);
+	ClassDB::bind_method(D_METHOD("clear"), &BehaviorTreeView::clear);
 
 	ClassDB::bind_method(D_METHOD("set_update_interval_msec", "interval_msec"), &BehaviorTreeView::set_update_interval_msec);
 	ClassDB::bind_method(D_METHOD("get_update_interval_msec"), &BehaviorTreeView::get_update_interval_msec);

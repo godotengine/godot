@@ -34,11 +34,19 @@ Methods
 .. table::
    :widths: auto
 
-   +-------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Blackboard<class_Blackboard>` | :ref:`create_blackboard<class_BlackboardPlan_method_create_blackboard>` **(** Node node **)**                                                                     |
-   +-------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`populate_blackboard<class_BlackboardPlan_method_populate_blackboard>` **(** :ref:`Blackboard<class_Blackboard>` blackboard, bool overwrite, Node node **)** |
-   +-------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Blackboard<class_Blackboard>`         | :ref:`create_blackboard<class_BlackboardPlan_method_create_blackboard>` **(** Node node **)**                                                                     |
+   +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`BlackboardPlan<class_BlackboardPlan>` | :ref:`get_base_plan<class_BlackboardPlan_method_get_base_plan>` **(** **)** |const|                                                                               |
+   +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | bool                                        | :ref:`is_derived<class_BlackboardPlan_method_is_derived>` **(** **)** |const|                                                                                     |
+   +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                        | :ref:`populate_blackboard<class_BlackboardPlan_method_populate_blackboard>` **(** :ref:`Blackboard<class_Blackboard>` blackboard, bool overwrite, Node node **)** |
+   +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                        | :ref:`set_base_plan<class_BlackboardPlan_method_set_base_plan>` **(** :ref:`BlackboardPlan<class_BlackboardPlan>` blackboard_plan **)**                           |
+   +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                        | :ref:`sync_with_base_plan<class_BlackboardPlan_method_sync_with_base_plan>` **(** **)**                                                                           |
+   +---------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -83,6 +91,30 @@ Constructs a new instance of a :ref:`Blackboard<class_Blackboard>` using this pl
 
 ----
 
+.. _class_BlackboardPlan_method_get_base_plan:
+
+.. rst-class:: classref-method
+
+:ref:`BlackboardPlan<class_BlackboardPlan>` **get_base_plan** **(** **)** |const|
+
+Returns the base plan. See :ref:`is_derived<class_BlackboardPlan_method_is_derived>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BlackboardPlan_method_is_derived:
+
+.. rst-class:: classref-method
+
+bool **is_derived** **(** **)** |const|
+
+Returns ``true`` if this plan is derived from another, i.e., the base plan is not ``null``. A derived plan can only contain variables that are present in the base plan, and only variable values can be different.
+
+.. rst-class:: classref-item-separator
+
+----
+
 .. _class_BlackboardPlan_method_populate_blackboard:
 
 .. rst-class:: classref-method
@@ -90,6 +122,32 @@ Constructs a new instance of a :ref:`Blackboard<class_Blackboard>` using this pl
 void **populate_blackboard** **(** :ref:`Blackboard<class_Blackboard>` blackboard, bool overwrite, Node node **)**
 
 Populates ``blackboard`` with the variables from this plan. If ``overwrite`` is ``true``, existing variables with the same names will be overwritten. If ``NodePath`` prefetching is enabled, ``node`` will be used to retrieve node instances for ``NodePath`` variables and substitute their values.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BlackboardPlan_method_set_base_plan:
+
+.. rst-class:: classref-method
+
+void **set_base_plan** **(** :ref:`BlackboardPlan<class_BlackboardPlan>` blackboard_plan **)**
+
+Sets the base plan. If assigned, this plan will be derived from the base plan.
+
+Use with caution, as it will remove variables not present in the base plan. Only use this for custom tooling.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_BlackboardPlan_method_sync_with_base_plan:
+
+.. rst-class:: classref-method
+
+void **sync_with_base_plan** **(** **)**
+
+Synchronizes this plan with the base plan: removes variables not present in the base plan, and updates type information. Only use this for custom tooling.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`

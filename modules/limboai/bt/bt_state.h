@@ -26,14 +26,13 @@ private:
 	StringName success_event;
 	StringName failure_event;
 
-	void _update_blackboard_plan();
-
 protected:
 	static void _bind_methods();
 
 	void _notification(int p_notification);
 
 	virtual bool _should_use_new_scope() const override { return true; }
+	virtual void _update_blackboard_plan() override;
 
 	virtual void _setup() override;
 	virtual void _exit() override;

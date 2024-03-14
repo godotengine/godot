@@ -1,7 +1,7 @@
 /**
  * editor_property_bb_param.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -17,9 +17,9 @@
 
 #include "../blackboard/bb_param/bb_param.h"
 #include "../blackboard/bb_param/bb_variant.h"
+#include "../util/limbo_string_names.h"
 #include "editor_property_variable_name.h"
 #include "mode_switch_button.h"
-#include "../util/limbo_string_names.h"
 
 #include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
@@ -253,15 +253,18 @@ void EditorPropertyBBParam::_value_edited(const String &p_property, Variant p_va
 	_get_edited_param()->set_saved_value(p_value);
 }
 
-void EditorPropertyBBParam::_mode_changed() {
-	_get_edited_param()->set_value_source(mode_button->get_mode() == Mode::SPECIFY_VALUE ? BBParam::SAVED_VALUE : BBParam::BLACKBOARD_VAR);
-	update_property();
-}
-
 void EditorPropertyBBParam::_type_selected(int p_index) {
-	Ref<BBVariant> param = _get_edited_param();
+	Ref<BBParam> param = _get_edited_param();
 	ERR_FAIL_COND(param.is_null());
-	param->set_type(Variant::Type(p_index));
+	if (p_index == ID_BIND_VAR) {
+		param->set_value_source(BBParam::BLACKBOARD_VAR);
+	} else {
+		param->set_value_source(BBParam::SAVED_VALUE);
+		Ref<BBVariant> variant_param = param;
+		if (variant_param.is_valid()) {
+			variant_param->set_type(Variant::Type(p_index));
+		}
+	}
 	update_property();
 }
 
@@ -270,36 +273,27 @@ void EditorPropertyBBParam::_variable_edited(const String &p_property, Variant p
 }
 
 void EditorPropertyBBParam::update_property() {
-	if (mode_button->get_mode() == -1) {
+	if (!initialized) {
 		// Initialize UI -- needed after https://github.com/godotengine/godot/commit/db7175458a0532f1efe733f303ad2b55a02a52a5
 		_notification(NOTIFICATION_THEME_CHANGED);
 	}
 
 	Ref<BBParam> param = _get_edited_param();
-	bool is_variant_param = param->is_class_ptr(BBVariant::get_class_ptr_static());
 
 	if (param->get_value_source() == BBParam::BLACKBOARD_VAR) {
 		_remove_value_editor();
 		variable_editor->set_object_and_property(param.ptr(), SNAME("variable"));
 		variable_editor->update_property();
 		variable_editor->show();
-		mode_button->call_deferred(SNAME("set_mode"), Mode::BIND_VAR, true);
-		type_choice->hide();
 		bottom_container->hide();
+		type_choice->set_icon(get_editor_theme_icon(SNAME("BTSetVar")));
 	} else {
 		_create_value_editor(param->get_type());
 		variable_editor->hide();
 		value_editor->show();
 		value_editor->set_object_and_property(param.ptr(), SNAME("saved_value"));
 		value_editor->update_property();
-		mode_button->call_deferred(SNAME("set_mode"), Mode::SPECIFY_VALUE, true);
-		type_choice->set_visible(is_variant_param);
-	}
-
-	if (is_variant_param) {
-		Variant::Type t = Variant::Type(param->get_type());
-		String type_name = Variant::get_type_name(t);
-		type_choice->set_icon(get_editor_theme_icon(type_name));
+		type_choice->set_icon(get_editor_theme_icon(Variant::get_type_name(param->get_type())));
 	}
 }
 
@@ -324,17 +318,14 @@ void EditorPropertyBBParam::_notification(int p_what) {
 				type_choice->set_icon(get_editor_theme_icon(type));
 			}
 
-			// Initialize mode button.
-			mode_button->clear();
-			mode_button->add_mode(Mode::SPECIFY_VALUE, get_editor_theme_icon(SNAME("LimboSpecifyValue")), TTR("Mode: Set a specific value.\nClick to switch modes."));
-			mode_button->add_mode(Mode::BIND_VAR, get_editor_theme_icon(SNAME("BTSetVar")), TTR("Mode: Use a blackboard variable.\nClick to switch modes."));
-			mode_button->set_mode(_get_edited_param()->get_value_source() == BBParam::BLACKBOARD_VAR ? Mode::BIND_VAR : Mode::SPECIFY_VALUE, true);
-
-			bool is_variant_param = _get_edited_param()->is_class_ptr(BBVariant::get_class_ptr_static());
+			// Initialize type choice.
+			PopupMenu *type_menu = type_choice->get_popup();
+			type_menu->clear();
+			type_menu->add_icon_item(get_editor_theme_icon(SNAME("BTSetVar")), TTR("Blackboard Variable"), ID_BIND_VAR);
+			type_menu->add_separator();
+			Ref<BBParam> param = _get_edited_param();
+			bool is_variant_param = param->is_class_ptr(BBVariant::get_class_ptr_static());
 			if (is_variant_param) {
-				// Initialize type choice.
-				PopupMenu *type_menu = type_choice->get_popup();
-				type_menu->clear();
 				for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 					if (i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
 						continue;
@@ -343,8 +334,11 @@ void EditorPropertyBBParam::_notification(int p_what) {
 					type_menu->add_icon_item(get_editor_theme_icon(type), type, i);
 				}
 			} else { // Not a variant param.
-				type_choice->hide();
+				String type = Variant::get_type_name(param->get_type());
+				type_menu->add_icon_item(get_editor_theme_icon(type), type, param->get_type());
 			}
+
+			initialized = true;
 		} break;
 	}
 }
@@ -357,11 +351,6 @@ EditorPropertyBBParam::EditorPropertyBBParam() {
 	bottom_container = memnew(MarginContainer);
 	bottom_container->set_theme_type_variation("MarginContainer4px");
 	add_child(bottom_container);
-
-	mode_button = memnew(ModeSwitchButton);
-	hbox->add_child(mode_button);
-	mode_button->set_focus_mode(FOCUS_NONE);
-	mode_button->connect(LW_NAME(mode_changed), callable_mp(this, &EditorPropertyBBParam::_mode_changed));
 
 	type_choice = memnew(MenuButton);
 	hbox->add_child(type_choice);

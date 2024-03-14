@@ -15,6 +15,18 @@
 				Constructs a new instance of a [Blackboard] using this plan. If [NodePath] prefetching is enabled, [param node] will be used to retrieve node instances for [NodePath] variables and substitute their values.
 			</description>
 		</method>
+		<method name="get_base_plan" qualifiers="const">
+			<return type="BlackboardPlan" />
+			<description>
+				Returns the base plan. See [method is_derived].
+			</description>
+		</method>
+		<method name="is_derived" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this plan is derived from another, i.e., the base plan is not [code]null[/code]. A derived plan can only contain variables that are present in the base plan, and only variable values can be different.
+			</description>
+		</method>
 		<method name="populate_blackboard">
 			<return type="void" />
 			<param index="0" name="blackboard" type="Blackboard" />
@@ -22,6 +34,20 @@
 			<param index="2" name="node" type="Node" />
 			<description>
 				Populates [param blackboard] with the variables from this plan. If [param overwrite] is [code]true[/code], existing variables with the same names will be overwritten. If [NodePath] prefetching is enabled, [param node] will be used to retrieve node instances for [NodePath] variables and substitute their values.
+			</description>
+		</method>
+		<method name="set_base_plan">
+			<return type="void" />
+			<param index="0" name="blackboard_plan" type="BlackboardPlan" />
+			<description>
+				Sets the base plan. If assigned, this plan will be derived from the base plan.
+				Use with caution, as it will remove variables not present in the base plan. Only use this for custom tooling.
+			</description>
+		</method>
+		<method name="sync_with_base_plan">
+			<return type="void" />
+			<description>
+				Synchronizes this plan with the base plan: removes variables not present in the base plan, and updates type information. Only use this for custom tooling.
 			</description>
 		</method>
 	</methods>

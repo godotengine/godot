@@ -17,9 +17,6 @@
 
 #ifdef LIMBOAI_MODULE
 #include "core/debugger/engine_debugger.h"
-#include "core/error/error_macros.h"
-#include "core/object/class_db.h"
-#include "core/variant/variant.h"
 #endif // LIMBOAI_MODULE
 
 #ifdef LIMBOAI_GDEXTENSION

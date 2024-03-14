@@ -216,7 +216,9 @@ void LimboAIEditor::_load_bt(String p_path) {
 	ERR_FAIL_COND_MSG(p_path.is_empty(), "Empty p_path");
 	Ref<BehaviorTree> bt = RESOURCE_LOAD(p_path, "BehaviorTree");
 	ERR_FAIL_COND(!bt.is_valid());
-
+	if (bt->get_blackboard_plan().is_null()) {
+		bt->set_blackboard_plan(memnew(BlackboardPlan));
+	}
 	if (history.find(bt) != -1) {
 		history.erase(bt);
 		history.push_back(bt);

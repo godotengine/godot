@@ -193,6 +193,8 @@ void BTPlayer::_notification(int p_notification) {
 #ifdef DEBUG_ENABLED
 				_set_monitor_performance(monitor_performance);
 #endif
+			} else {
+				_update_blackboard_plan();
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {

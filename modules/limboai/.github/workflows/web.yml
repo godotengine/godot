@@ -2,22 +2,22 @@ name: 🌐 Web builds
 on:
   workflow_call:
     inputs:
-      godot-treeish:
+      godot-ref:
         description: A tag, branch or commit hash in the Godot repository.
         type: string
         default: master
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
 
   workflow_dispatch:
     inputs:
-      godot-treeish:
+      godot-ref:
         description: A tag, branch or commit hash in the Godot repository.
         type: string
         default: master
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
@@ -31,68 +31,56 @@ env:
   EM_CACHE_FOLDER: "emsdk-cache"
 
 jobs:
-  # Workaround for issue: https://github.com/mymindstorm/setup-emsdk/issues/20
-  init-emscripten:
-    name: Init Emscripten
-    runs-on: "ubuntu-20.04"
-    steps:
-      - name: Set up Emscripten
-        uses: mymindstorm/setup-emsdk@v12
-        with:
-          version: ${{env.EM_VERSION}}
-          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
-
   web-builds:
     runs-on: "ubuntu-20.04"
     name: ${{ matrix.name }}
-    needs: init-emscripten
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: Template (release)
             target: template_release
-            dlink_enabled: false
+            dlink: false
 
           - name: Template (release, dlink_enabled=true)
             target: template_release
-            dlink_enabled: true
+            dlink: true
 
           - name: Template (debug)
             target: template_debug
-            dlink_enabled: false
+            dlink: false
 
           - name: Template (debug, dlink_enabled=true)
             target: template_debug
-            dlink_enabled: true
+            dlink: true
 
     env:
-      CACHE_NAME: godot.web.${{matrix.target}}${{  matrix.dlink_enabled == true && '.dlink' || ''  }}
+      CACHE_NAME: godot.web.${{matrix.target}}${{  matrix.dlink == true && '.dlink' || ''  }}
 
     steps:
       - name: Clone Godot
         uses: actions/checkout@v4
         with:
           repository: godotengine/godot
-          ref: ${{ inputs.godot-treeish }}
+          ref: ${{ inputs.godot-ref }}
 
       - name: Clone LimboAI module
         uses: actions/checkout@v4
         with:
           path: modules/limboai
-          ref: ${{ inputs.limboai-treeish }}
+          ref: ${{ inputs.limboai-ref }}
 
       # Inits GODOT_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
       - uses: ./modules/limboai/.github/actions/init-version
 
-      # - name: Set up Emscripten cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ${{env.EM_CACHE_FOLDER}}
-      #     key: ${{env.EM_VERSION}}-${{runner.os}}-libs
+      - name: Set up Emscripten cache
+        uses: actions/cache@v4
+        with:
+          path: ${{env.EM_CACHE_FOLDER}}
+          key: ${{env.EM_VERSION}}-${{runner.os}}-libs
 
       - name: Set up Emscripten
-        uses: mymindstorm/setup-emsdk@v12
+        uses: mymindstorm/setup-emsdk@v14
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
@@ -109,20 +97,20 @@ jobs:
           scons --version
 
       - name: Set up scons cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/.scons_cache/
-          key: ${{env.CACHE_NAME}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+          key: ${{env.CACHE_NAME}}-${{inputs.godot-ref}}-${{inputs.limboai-ref}}-${{env.LIMBOAI_VERSION}}
           restore-keys: |
-            ${{env.CACHE_NAME}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
-            ${{env.CACHE_NAME}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}
-            ${{env.CACHE_NAME}}-${{inputs.godot-treeish}}
+            ${{env.CACHE_NAME}}-${{inputs.godot-ref}}-${{inputs.limboai-ref}}-${{env.LIMBOAI_VERSION}}
+            ${{env.CACHE_NAME}}-${{inputs.godot-ref}}-${{inputs.limboai-ref}}
+            ${{env.CACHE_NAME}}-${{inputs.godot-ref}}
 
       - name: Compilation
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons platform=web target=${{matrix.target}} dlink_enabled=${{matrix.dlink_enabled}} ${{env.SCONSFLAGS}}
+          scons platform=web target=${{matrix.target}} dlink_enabled=${{matrix.dlink}} ${{env.SCONSFLAGS}}
 
       - name: Prepare artifacts
         run: |
@@ -135,7 +123,7 @@ jobs:
           echo "${GODOT_VERSION}.limboai+${LIMBOAI_VERSION}" > out/templates/version.txt
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{env.NAME_PREFIX}}.export-templates
+          name: ${{env.NAME_PREFIX}}.${{matrix.target}}.web${{matrix.dlink == true && '.dlink' || ''}}
           path: out/*

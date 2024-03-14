@@ -60,7 +60,8 @@ TEST_CASE("[Modules][LimboAI] HSM") {
 	hsm->add_transition(state_beta, state_alpha, "event_two");
 
 	hsm->set_initial_state(state_alpha);
-	hsm->initialize(agent);
+	Ref<Blackboard> parent_scope = memnew(Blackboard);
+	hsm->initialize(agent, parent_scope);
 	hsm->set_active(true);
 
 	SUBCASE("Test get_root()") {
@@ -171,6 +172,12 @@ TEST_CASE("[Modules][LimboAI] HSM") {
 		CHECK(beta_entries->num_callbacks == 0);
 		CHECK(hsm->is_active());
 		CHECK(hsm->get_active_state() == state_alpha);
+	}
+	SUBCASE("Check if parent scope is accessible") {
+		parent_scope->set_var("parent_var", 100);
+		CHECK(state_alpha->get_blackboard()->get_parent() == parent_scope);
+		CHECK(state_beta->get_blackboard()->get_parent() == parent_scope);
+		CHECK(state_alpha->get_blackboard()->get_var("parent_var", Variant()) == Variant(100));
 	}
 
 	memdelete(agent);

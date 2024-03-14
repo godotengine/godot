@@ -42,6 +42,8 @@ Methods
    :widths: auto
 
    +------+----------------------------------------------------------------------------------------------------------------------------------------------+
+   | void | :ref:`clear<class_BehaviorTreeView_method_clear>` **(** **)**                                                                                |
+   +------+----------------------------------------------------------------------------------------------------------------------------------------------+
    | void | :ref:`update_tree<class_BehaviorTreeView_method_update_tree>` **(** :ref:`BehaviorTreeData<class_BehaviorTreeData>` behavior_tree_data **)** |
    +------+----------------------------------------------------------------------------------------------------------------------------------------------+
 
@@ -92,6 +94,18 @@ Minimum delay between two updates (in milliseconds). Set to higher values for a 
 
 Method Descriptions
 -------------------
+
+.. _class_BehaviorTreeView_method_clear:
+
+.. rst-class:: classref-method
+
+void **clear** **(** **)**
+
+Clears the tree view.
+
+.. rst-class:: classref-item-separator
+
+----
 
 .. _class_BehaviorTreeView_method_update_tree:
 

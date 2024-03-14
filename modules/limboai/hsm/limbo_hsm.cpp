@@ -11,16 +11,6 @@
 
 #include "limbo_hsm.h"
 
-#ifdef LIMBOAI_MODULE
-#include "core/config/engine.h"
-#include "core/error/error_macros.h"
-#include "core/object/class_db.h"
-#include "core/object/object.h"
-#include "core/typedefs.h"
-#include "core/variant/callable.h"
-#include "core/variant/variant.h"
-#endif // LIMBOAI_MODULE
-
 VARIANT_ENUM_CAST(LimboHSM::UpdateMode);
 
 void LimboHSM::set_active(bool p_active) {
@@ -197,11 +187,7 @@ void LimboHSM::initialize(Node *p_agent, const Ref<Blackboard> &p_parent_scope) 
 	ERR_FAIL_COND(p_agent == nullptr);
 	ERR_FAIL_COND_MSG(!is_root(), "LimboHSM: initialize() must be called on the root HSM.");
 
-	if (!p_parent_scope.is_null()) {
-		blackboard->set_parent(p_parent_scope);
-	}
-
-	_initialize(p_agent, nullptr);
+	_initialize(p_agent, p_parent_scope);
 
 	if (initial_state == nullptr) {
 		initial_state = Object::cast_to<LimboState>(get_child(0));

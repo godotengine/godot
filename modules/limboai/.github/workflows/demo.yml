@@ -2,14 +2,14 @@ name: 🎮️ Demo project
 on:
   workflow_call:
     inputs:
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
 
   workflow_dispatch:
     inputs:
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-tags: true
-          ref: ${{ inputs.limboai-treeish }}
+          ref: ${{ inputs.limboai-ref }}
 
       - name: Prepare artifact
         shell: bash
@@ -33,7 +33,7 @@ jobs:
           cp {README,LICENSE}.md demo/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         env:
           NAME: limboai+${{env.LIMBOAI_VERSION}}.demo-project
         with:

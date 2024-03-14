@@ -13,6 +13,10 @@ Therefore, if you create a subdirectory named “motion_and_physics,” your
 custom tasks in that directory will automatically be categorized under
 “Motion And Physics.”
 
+When creating custom tasks, **extend one of the following** base classes:
+:ref:`BTAction<class_BTAction>`, :ref:`BTCondition<class_BTCondition>`, :ref:`BTDecorator<class_BTDecorator>`, :ref:`BTComposite<class_BTComposite>`.
+More on task types you can read in the :ref:`introduction`.
+
    **🛈 Note:** To help you write new tasks, you can add a script template to
    your project using “Misc → Create script template” menu option.
 

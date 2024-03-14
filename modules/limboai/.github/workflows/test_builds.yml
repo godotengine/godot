@@ -29,6 +29,11 @@ env:
   GODOT_REF: "4.2"
   GODOT_CPP_REF: "4.2"
 
+permissions:
+  actions: write
+  contents: read
+  packages: read
+
 jobs:
   unit-tests:
     name: 🧪 Unit tests
@@ -64,7 +69,7 @@ jobs:
           cd ..
 
       - name: Set up scons cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/.scons_cache/
           key: ${{env.BIN}}-${{env.GODOT_REF}}-${{github.ref}}-${{github.sha}}
@@ -75,7 +80,7 @@ jobs:
         continue-on-error: true
 
       - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
           architecture: "x64"
@@ -124,8 +129,8 @@ jobs:
     needs: cache-env
     uses: ./.github/workflows/linux.yml
     with:
-      godot-treeish: ${{ needs.cache-env.outputs.godot-ref }}
-      limboai-treeish: ${{ github.sha }}
+      godot-ref: ${{ needs.cache-env.outputs.godot-ref }}
+      limboai-ref: ${{ github.sha }}
       test-build: true
 
   windows-test-build:
@@ -133,8 +138,8 @@ jobs:
     needs: cache-env
     uses: ./.github/workflows/windows.yml
     with:
-      godot-treeish: ${{ needs.cache-env.outputs.godot-ref }}
-      limboai-treeish: ${{ github.sha }}
+      godot-ref: ${{ needs.cache-env.outputs.godot-ref }}
+      limboai-ref: ${{ github.sha }}
       test-build: true
 
   macos-test-build:
@@ -142,8 +147,8 @@ jobs:
     needs: cache-env
     uses: ./.github/workflows/macos.yml
     with:
-      godot-treeish: ${{ needs.cache-env.outputs.godot-ref }}
-      limboai-treeish: ${{ github.sha }}
+      godot-ref: ${{ needs.cache-env.outputs.godot-ref }}
+      limboai-ref: ${{ github.sha }}
       test-build: true
 
   gdextension:
@@ -151,6 +156,6 @@ jobs:
     needs: cache-env
     uses: ./.github/workflows/gdextension.yml
     with:
-      godot-cpp-treeish: ${{ needs.cache-env.outputs.godot-cpp-ref }}
-      limboai-treeish: ${{ github.sha }}
+      godot-cpp-ref: ${{ needs.cache-env.outputs.godot-cpp-ref }}
+      limboai-ref: ${{ github.sha }}
       test-build: true

@@ -1,7 +1,7 @@
 /**
  * editor_property_bb_param.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -32,19 +32,16 @@ class EditorPropertyBBParam : public EditorProperty {
 	GDCLASS(EditorPropertyBBParam, EditorProperty);
 
 private:
-	enum Mode {
-		SPECIFY_VALUE,
-		BIND_VAR,
-	};
+	const int ID_BIND_VAR = 1000;
+
+	bool initialized = false;
 
 	StringName param_type;
 	PropertyHint property_hint = PROPERTY_HINT_NONE;
-	Mode mode = Mode::SPECIFY_VALUE;
 
 	HBoxContainer *hbox = nullptr;
 	MarginContainer *bottom_container = nullptr;
 	HBoxContainer *editor_hbox = nullptr;
-	ModeSwitchButton *mode_button = nullptr;
 	EditorProperty *value_editor = nullptr;
 	EditorPropertyVariableName *variable_editor = nullptr;
 	MenuButton *type_choice = nullptr;
@@ -56,7 +53,6 @@ private:
 
 	void _value_edited(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
 	void _variable_edited(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
-	void _mode_changed();
 	void _type_selected(int p_index);
 
 protected:

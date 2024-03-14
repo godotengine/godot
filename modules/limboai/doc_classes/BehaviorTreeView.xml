@@ -9,6 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the tree view.
+			</description>
+		</method>
 		<method name="update_tree">
 			<return type="void" />
 			<param index="0" name="behavior_tree_data" type="BehaviorTreeData" />

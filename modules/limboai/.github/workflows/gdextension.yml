@@ -2,11 +2,11 @@ name: 🔌 GDExtension
 on:
   workflow_call:
     inputs:
-      godot-cpp-treeish:
+      godot-cpp-ref:
         description: A tag, branch or commit hash in the godot-cpp repository.
         type: string
         default: 4.2
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
@@ -17,11 +17,11 @@ on:
 
   workflow_dispatch:
     inputs:
-      godot-cpp-treeish:
+      godot-cpp-ref:
         description: A tag, branch or commit hash in the godot-cpp repository.
         type: string
         default: 4.2
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
@@ -41,6 +41,8 @@ jobs:
   gdextension:
     runs-on: ${{ matrix.opts.runner }}
     name: ${{ matrix.opts.name }}
+    outputs:
+      name-prefix: ${{ steps.output-name-prefix.outputs.name-prefix }}
     strategy:
       fail-fast: false
       matrix:
@@ -114,17 +116,21 @@ jobs:
           repository: godotengine/godot-cpp
           fetch-tags: true
           path: godot-cpp
-          ref: ${{ inputs.godot-cpp-treeish }}
+          ref: ${{ inputs.godot-cpp-ref }}
 
       - name: Clone LimboAI module
         uses: actions/checkout@v4
         with:
           path: limboai
           fetch-tags: true
-          ref: ${{ inputs.limboai-treeish }}
+          ref: ${{ inputs.limboai-ref }}
 
       # Inits GDEXTENSION_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
       - uses: ./limboai/.github/actions/init-version-gdext
+
+      - name: Output NAME_PREFIX
+        id: output-name-prefix
+        run: echo "name-prefix=${NAME_PREFIX}" >> $GITHUB_OUTPUT
 
       - name: Set up Linux buildroot x86_64
         if: matrix.opts.platform == 'linux' && matrix.opts.arch == 'x86_64'
@@ -148,21 +154,21 @@ jobs:
 
       - name: Set up Python 3.x
         if: matrix.opts.platform == 'windows' || matrix.opts.platform == 'macos'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
           architecture: "x64"
 
       - name: Set up Emscripten cache
         if: matrix.opts.platform == 'web'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{env.EM_CACHE_FOLDER}}
           key: ${{env.EM_VERSION}}-${{runner.os}}-libs
 
       - name: Set up Emscripten
         if: matrix.opts.platform == 'web'
-        uses: mymindstorm/setup-emsdk@v12
+        uses: mymindstorm/setup-emsdk@v14
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
@@ -185,14 +191,14 @@ jobs:
         uses: ammaraskar/msvc-problem-matcher@master
 
       - name: Set up scons cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/.scons_cache/
-          key: ${{env.BIN}}-${{inputs.godot-cpp-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+          key: ${{env.BIN}}-${{inputs.godot-cpp-ref}}-${{inputs.limboai-ref}}-${{env.LIMBOAI_VERSION}}
           restore-keys: |
-            ${{env.BIN}}-${{inputs.godot-cpp-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
-            ${{env.BIN}}-${{inputs.godot-cpp-treeish}}-${{inputs.limboai-treeish}}
-            ${{env.BIN}}-${{inputs.godot-cpp-treeish}}
+            ${{env.BIN}}-${{inputs.godot-cpp-ref}}-${{inputs.limboai-ref}}-${{env.LIMBOAI_VERSION}}
+            ${{env.BIN}}-${{inputs.godot-cpp-ref}}-${{inputs.limboai-ref}}
+            ${{env.BIN}}-${{inputs.godot-cpp-ref}}
 
       - name: Setup project structure for GDExtension
         shell: bash
@@ -237,9 +243,22 @@ jobs:
           ls -l -R out/addons/limboai/bin/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         env:
-          NAME: ${{env.NAME_PREFIX}}
+          NAME: tmp-gdextension.${{matrix.opts.platform}}.${{matrix.opts.target}}.${{matrix.opts.arch}}
         with:
           name: ${{ env.NAME }}
           path: out/*
+
+  merge-artifacts:
+    name: Merge artifacts
+    runs-on: ubuntu-latest
+    needs: gdextension
+
+    steps:
+      - name: Merge artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: ${{needs.gdextension.outputs.name-prefix}}
+          pattern: tmp-gdextension.*
+          delete-merged: true

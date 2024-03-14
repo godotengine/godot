@@ -70,7 +70,7 @@ public:
 	void move_var(int p_index, int p_new_index);
 
 	void sync_with_base_plan();
-	bool is_derived() const { return base.is_valid(); }
+	_FORCE_INLINE_ bool is_derived() const { return base.is_valid(); }
 
 	Ref<Blackboard> create_blackboard(Node *p_agent);
 	void populate_blackboard(const Ref<Blackboard> &p_blackboard, bool overwrite, Node *p_node);

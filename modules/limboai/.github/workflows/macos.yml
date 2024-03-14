@@ -2,11 +2,11 @@ name: 🍎 macOS builds
 on:
   workflow_call:
     inputs:
-      godot-treeish:
+      godot-ref:
         description: A tag, branch or commit hash in the Godot repository.
         type: string
         default: master
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
@@ -17,11 +17,11 @@ on:
 
   workflow_dispatch:
     inputs:
-      godot-treeish:
+      godot-ref:
         description: A tag, branch or commit hash in the Godot repository.
         type: string
         default: master
-      limboai-treeish:
+      limboai-ref:
         description: A tag, branch or commit hash in the LimboAI repository.
         type: string
         default: master
@@ -30,13 +30,17 @@ on:
         type: boolean
         default: false
 
-
 # Global Settings
 env:
   SCONS_CACHE_LIMIT: 4096
   SCONSFLAGS: production=yes tests=no verbose=yes warnings=extra werror=yes
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+permissions:
+  actions: write
+  contents: read
+  packages: read
 
 jobs:
   macos-builds:
@@ -51,42 +55,36 @@ jobs:
             target: editor
             arch: x86_64
             build-mono: false
-            artifact-name: macos-editor
             should-build: true
 
           - name: Template (x86_64, release)
             target: template_release
             arch: x86_64
             build-mono: false
-            artifact-name: macos-templates
             should-build: ${{ !inputs.test-build }}
 
           - name: Template (x86_64, debug)
             target: template_debug
             arch: x86_64
             build-mono: false
-            artifact-name: macos-templates
             should-build: ${{ !inputs.test-build }}
 
           - name: Editor (arm64, release)
             target: editor
             arch: arm64
             build-mono: false
-            artifact-name: macos-editor
             should-build: true
 
           - name: Template (arm64, release)
             target: template_release
             arch: arm64
             build-mono: false
-            artifact-name: macos-templates
             should-build: ${{ !inputs.test-build }}
 
           - name: Template (arm64, debug)
             target: template_debug
             arch: arm64
             build-mono: false
-            artifact-name: macos-templates
             should-build: ${{ !inputs.test-build }}
 
           # ! Disabled for now: .NET version fails to build
@@ -136,33 +134,32 @@ jobs:
           #   should-build: ${{ !inputs.test-build }}
 
         exclude:
-          - { opts: {should-build: false }}
+          - { opts: { should-build: false } }
 
     env:
       BIN: godot.macos.${{matrix.opts.target}}.${{matrix.opts.arch}}${{  matrix.opts.build-mono == true && '.mono' || ''  }}
 
     steps:
-
       - name: Clone Godot
         uses: actions/checkout@v4
         with:
           repository: godotengine/godot
-          ref: ${{ inputs.godot-treeish }}
+          ref: ${{ inputs.godot-ref }}
 
       - name: Clone LimboAI module
         uses: actions/checkout@v4
         with:
           path: modules/limboai
-          ref: ${{ inputs.limboai-treeish }}
+          ref: ${{ inputs.limboai-ref }}
 
       # Inits GODOT_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
       - uses: ./modules/limboai/.github/actions/init-version
 
       - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
-          architecture: 'x64'
+          python-version: "3.x"
+          architecture: "x64"
 
       - name: Set up scons
         run: |
@@ -180,14 +177,14 @@ jobs:
           sh misc/scripts/install_vulkan_sdk_macos.sh
 
       - name: Set up scons cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/.scons_cache/
-          key: ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
+          key: ${{env.BIN}}-${{inputs.godot-ref}}-${{inputs.limboai-ref}}-${{env.LIMBOAI_VERSION}}
           restore-keys: |
-            ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}-${{env.LIMBOAI_VERSION}}
-            ${{env.BIN}}-${{inputs.godot-treeish}}-${{inputs.limboai-treeish}}
-            ${{env.BIN}}-${{inputs.godot-treeish}}
+            ${{env.BIN}}-${{inputs.godot-ref}}-${{inputs.limboai-ref}}-${{env.LIMBOAI_VERSION}}
+            ${{env.BIN}}-${{inputs.godot-ref}}-${{inputs.limboai-ref}}
+            ${{env.BIN}}-${{inputs.godot-ref}}
 
       - name: Compilation
         env:
@@ -195,7 +192,7 @@ jobs:
         run: |
           scons -j2 platform=macos target=${{matrix.opts.target}} arch=${{matrix.opts.arch}} module_mono_enabled=${{matrix.opts.build-mono}} ${{env.SCONSFLAGS}}
 
-      # ! Disabled for now: .NET version fail to build
+      # ! Disabled for now: .NET version fails to build
 
       # - name: Generate C# glue
       #   if: matrix.opts.build-mono && matrix.opts.target == 'editor'
@@ -213,9 +210,9 @@ jobs:
           chmod +x bin/godot.*
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.opts.artifact-name }}
+          name: tmp-macos-${{matrix.opts.target}}-${{matrix.opts.arch}}
           path: bin/*
 
   make-macos-bundle:
@@ -224,26 +221,26 @@ jobs:
     needs: macos-builds
 
     steps:
-
       - name: Clone Godot
         uses: actions/checkout@v4
         with:
           repository: godotengine/godot
-          ref: ${{ inputs.godot-treeish }}
+          ref: ${{ inputs.godot-ref }}
 
       - name: Clone LimboAI module
         uses: actions/checkout@v4
         with:
           path: modules/limboai
-          ref: ${{ inputs.limboai-treeish }}
+          ref: ${{ inputs.limboai-ref }}
 
       # Inits GODOT_VERSION, LIMBOAI_VERSION and NAME_PREFIX environment variables.
       - uses: ./modules/limboai/.github/actions/init-version
 
       - name: Download editor artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: macos-editor
+          pattern: tmp-macos-editor-*
+          merge-multiple: true
           path: bin/
 
       # Zipping the editor bundle to retain executable bit;
@@ -267,16 +264,17 @@ jobs:
           ls out/editor/
 
       - name: Upload editor bundle
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{env.NAME_PREFIX}}.editor.macos.universal
           path: out/editor/*
 
       - name: Download templates artifact
         if: ${{ !inputs.test-build }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: macos-templates
+          pattern: tmp-macos-template_*
+          merge-multiple: true
           path: bin/
 
       - name: Make templates bundle
@@ -300,15 +298,15 @@ jobs:
           echo "${GODOT_VERSION}.limboai+${LIMBOAI_VERSION}" > out/templates/version.txt
           ls out/templates/
 
-      - uses: geekyeggo/delete-artifact@v2
+      - uses: geekyeggo/delete-artifact@v4
         with:
-            name: macos-*
-            useGlob: true
-            failOnError: false
+          name: tmp-macos-*
+          useGlob: true
+          failOnError: false
 
       - name: Upload templates bundle
         if: ${{ !inputs.test-build }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{env.NAME_PREFIX}}.export-templates
+          name: ${{env.NAME_PREFIX}}.export-templates.macos
           path: out/*

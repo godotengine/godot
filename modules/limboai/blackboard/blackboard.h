@@ -54,7 +54,9 @@ public:
 	void bind_var_to_property(const StringName &p_name, Object *p_object, const StringName &p_property);
 	void unbind_var(const StringName &p_name);
 
-	void add_var(const StringName &p_name, const BBVariable &p_var);
+	void assign_var(const StringName &p_name, const BBVariable &p_var);
+
+	void link_var(const StringName &p_name, const Ref<Blackboard> &p_target_blackboard, const StringName &p_target_var);
 
 	// TODO: Add serialization API.
 };
