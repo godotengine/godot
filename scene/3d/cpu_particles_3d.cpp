@@ -214,13 +214,13 @@ PackedStringArray CPUParticles3D::get_configuration_warnings() const {
 		for (int j = 0; j < get_mesh()->get_surface_count(); j++) {
 			anim_material_found = Object::cast_to<ShaderMaterial>(get_mesh()->surface_get_material(j).ptr()) != nullptr;
 			StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(get_mesh()->surface_get_material(j).ptr());
-			anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
+			anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES) || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES_Y);
 		}
 	}
 
 	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != nullptr;
 	StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(get_material_override().ptr());
-	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
+	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES) || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES_Y);
 
 	if (!mesh_found) {
 		warnings.push_back(RTR("Nothing is visible because no mesh has been assigned."));
