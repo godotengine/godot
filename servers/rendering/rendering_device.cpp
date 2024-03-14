@@ -4162,18 +4162,6 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 				valid_set_count++;
 			}
 
-// <TF>
-// @ShadyTF 
-// Dynamic uniform buffer
-// Was:
-			draw_graph.add_draw_list_bind_uniform_set(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
-			if (dl->state.sets[i].offsets) {
-				draw_graph.add_draw_list_bind_uniform_set_dynamic(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i, dl->state.sets[i].offsets_count, dl->state.sets[i].offsets);
-			} else {
-				draw_graph.add_draw_list_bind_uniform_set(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
-			}
-// </TF>
-
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
 			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 			dl->state.sets[i].bound = true;

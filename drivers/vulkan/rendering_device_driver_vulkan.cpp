@@ -925,11 +925,11 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		create_info_next = &pipeline_cache_control_features;
 	}
 
-	VkPhysicalDeviceFaultFeaturesEXT deviceFaultFeatures = {};
+	VkPhysicalDeviceFaultFeaturesEXT device_fault_features = {};
 	if (device_fault_support) {
-		deviceFaultFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT;
-		deviceFaultFeatures.pNext = create_info_next;
-		create_info_next = &deviceFaultFeatures;
+		device_fault_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT;
+		device_fault_features.pNext = create_info_next;
+		create_info_next = &device_fault_features;
 	}
 
 	VkDeviceDeviceMemoryReportCreateInfoEXT memory_report_info = {};
@@ -5364,7 +5364,8 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 }
 
 void RenderingDeviceDriverVulkan::on_device_lost() const {
-	VkDeviceFaultCountsEXT fault_counts = { VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT };
+	VkDeviceFaultCountsEXT fault_counts = { };
+	fault_counts.sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT;
 	VkResult vkres = vkGetDeviceFaultInfoEXT(vk_device, &fault_counts, nullptr);
 
 	if (vkres != VK_SUCCESS) {
@@ -5372,7 +5373,8 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 		return;
 	}
 
-	VkDeviceFaultInfoEXT fault_info = { VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT };
+	VkDeviceFaultInfoEXT fault_info = { };
+	fault_info.sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT;
 	fault_info.pVendorInfos = fault_counts.vendorInfoCount
 			? (VkDeviceFaultVendorInfoEXT *)memalloc(fault_counts.vendorInfoCount * sizeof(VkDeviceFaultVendorInfoEXT))
 			: NULL;
