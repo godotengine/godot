@@ -368,7 +368,7 @@
 			<param index="0" name="svg_str" type="String" />
 			<param index="1" name="scale" type="float" default="1.0" />
 			<description>
-				Loads an image from the string contents of a SVG file ([b].svg[/b]).
+				Loads an image from the string contents of an SVG file ([b].svg[/b]).
 				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
 			</description>
 		</method>

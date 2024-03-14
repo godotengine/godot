@@ -3462,10 +3462,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 
 				if (use_wireframe) {
-					glDrawElementsInstanced(GL_LINES, count, GL_UNSIGNED_INT, 0, inst->instance_count);
+					glDrawElementsInstanced(GL_LINES, count, GL_UNSIGNED_INT, nullptr, inst->instance_count);
 				} else {
 					if (use_index_buffer) {
-						glDrawElementsInstanced(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0, inst->instance_count);
+						glDrawElementsInstanced(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), nullptr, inst->instance_count);
 					} else {
 						glDrawArraysInstanced(primitive_gl, 0, count, inst->instance_count);
 					}
@@ -3473,10 +3473,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			} else {
 				// Using regular Mesh.
 				if (use_wireframe) {
-					glDrawElements(GL_LINES, count, GL_UNSIGNED_INT, 0);
+					glDrawElements(GL_LINES, count, GL_UNSIGNED_INT, nullptr);
 				} else {
 					if (use_index_buffer) {
-						glDrawElements(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0);
+						glDrawElements(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), nullptr);
 					} else {
 						glDrawArrays(primitive_gl, 0, count);
 					}

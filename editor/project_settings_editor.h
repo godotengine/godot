@@ -113,9 +113,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _update_action_map_editor();
 	void _update_theme();
 
-	void _input_filter_focused();
-	void _input_filter_unfocused();
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

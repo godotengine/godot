@@ -49,7 +49,7 @@ static int solveCubicNormed(double x[3], double a, double b, double c) {
         x[2] = q*cos(1/3.*(t-2*M_PI))-a;
         return 3;
     } else {
-        double u = (r < 0 ? 1 : -1)*pow(fabs(r)+sqrt(r2-q3), 1/3.); 
+        double u = (r < 0 ? 1 : -1)*pow(fabs(r)+sqrt(r2-q3), 1/3.);
         double v = u == 0 ? 0 : q/u;
         x[0] = (u+v)-a;
         if (u == v || fabs(u-v) < 1e-12*fabs(u+v)) {

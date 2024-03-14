@@ -447,6 +447,8 @@ public:
 
 	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
+	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
+
 	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;

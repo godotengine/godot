@@ -39,6 +39,10 @@
 
 void FBXImporterManager::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			fbx_path_browse->set_icon(get_editor_theme_icon(SNAME("FileBrowse")));
+		} break;
+
 		case NOTIFICATION_READY: {
 			connect("confirmed", callable_mp(this, &FBXImporterManager::_path_confirmed));
 		} break;
@@ -148,9 +152,9 @@ FBXImporterManager::FBXImporterManager() {
 	fbx_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(fbx_path);
 	fbx_path_browse = memnew(Button);
-	hb->add_child(fbx_path_browse);
 	fbx_path_browse->set_text(TTR("Browse"));
 	fbx_path_browse->connect("pressed", callable_mp(this, &FBXImporterManager::_browse_install));
+	hb->add_child(fbx_path_browse);
 	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 

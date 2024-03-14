@@ -1196,6 +1196,11 @@ Error EditorExportPlatform::export_project_files(bool p_main_pack, const Ref<Edi
 
 				String importer_type = config->get_value("remap", "importer");
 
+				if (importer_type == "skip") {
+					// Skip file.
+					continue;
+				}
+
 				if (importer_type == "keep") {
 					// Just keep file as-is.
 					Vector<uint8_t> array = FileAccess::get_file_as_bytes(path);

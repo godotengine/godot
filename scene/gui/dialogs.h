@@ -83,16 +83,23 @@ protected:
 	void _ok_pressed();
 	void _cancel_pressed();
 
+#ifndef DISABLE_DEPRECATED
+	void _register_text_enter_bind_compat_89419(Control *p_line_edit);
+	void _remove_button_bind_compat_89419(Control *p_button);
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	Label *get_label() { return message_label; }
 	static void set_swap_cancel_ok(bool p_swap);
 
-	void register_text_enter(Control *p_line_edit);
+	void register_text_enter(LineEdit *p_line_edit);
 
 	Button *get_ok_button() { return ok_button; }
 	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
 	Button *add_cancel_button(const String &p_cancel = "");
-	void remove_button(Control *p_button);
+	void remove_button(Button *p_button);
 
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;

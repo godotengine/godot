@@ -1,13 +1,7 @@
-"""Functions used to generate source files during build time
-
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-
-"""
+"""Functions used to generate source files during build time"""
 
 import os.path
 from typing import Optional, Iterable
-
-from platform_methods import subprocess_main
 
 
 def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True):
@@ -227,7 +221,3 @@ static const char {out_file_base}[] = {{
 def build_raw_headers(target, source, env):
     for x in source:
         build_raw_header(filename=str(x))
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())

@@ -1724,7 +1724,7 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 		ss->keymap_buffer = nullptr;
 	}
 
-	ss->keymap_buffer = (const char *)mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+	ss->keymap_buffer = (const char *)mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0);
 	ss->keymap_buffer_size = size;
 
 	xkb_keymap_unref(ss->xkb_keymap);
@@ -2854,7 +2854,7 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 
 		ERR_FAIL_NULL(locked_surface);
 
-		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, NULL, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 	}
 }
 
@@ -2886,7 +2886,7 @@ void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 
 		ERR_FAIL_NULL(confined_surface);
 
-		p_ss->wp_confined_pointer = zwp_pointer_constraints_v1_confine_pointer(registry.wp_pointer_constraints, confined_surface, p_ss->wl_pointer, NULL, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+		p_ss->wp_confined_pointer = zwp_pointer_constraints_v1_confine_pointer(registry.wp_pointer_constraints, confined_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 	}
 }
 
@@ -3660,7 +3660,7 @@ void WaylandThread::cursor_shape_set_custom_image(DisplayServer::CursorShape p_c
 		munmap(cursor.buffer_data, cursor.buffer_data_size);
 	}
 
-	cursor.buffer_data = (uint32_t *)mmap(NULL, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	cursor.buffer_data = (uint32_t *)mmap(nullptr, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (cursor.wl_buffer) {
 		// Clean up the old Wayland buffer.

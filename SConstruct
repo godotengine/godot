@@ -1039,3 +1039,13 @@ def print_elapsed_time():
 
 
 atexit.register(print_elapsed_time)
+
+
+def purge_flaky_files():
+    for build_failure in GetBuildFailures():
+        path = build_failure.node.abspath
+        if os.path.isfile(path):
+            os.remove(path)
+
+
+atexit.register(purge_flaky_files)

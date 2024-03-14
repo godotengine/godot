@@ -12,7 +12,7 @@
 		<method name="_get_composition_layer" qualifiers="virtual">
 			<return type="int" />
 			<description>
-				Returns a pointer to a [code]XrCompositionLayerBaseHeader[/code] struct to provide a composition layer. This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
+				Returns a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct to provide a composition layer. This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
 			</description>
 		</method>
 		<method name="_get_requested_extensions" qualifiers="virtual">

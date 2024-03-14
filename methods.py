@@ -826,14 +826,10 @@ def CommandNoCache(env, target, sources, command, **args):
     return result
 
 
-def Run(env, function, subprocess=True):
+def Run(env, function):
     from SCons.Script import Action
-    from platform_methods import run_in_subprocess
 
-    if not subprocess:
-        return Action(function, "$GENCOMSTR")
-    else:
-        return Action(run_in_subprocess(function), "$GENCOMSTR")
+    return Action(function, "$GENCOMSTR")
 
 
 def detect_darwin_sdk_path(platform, env):

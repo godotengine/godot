@@ -2443,8 +2443,8 @@ bool BaseMaterial3D::is_proximity_fade_enabled() const {
 }
 
 void BaseMaterial3D::set_proximity_fade_distance(float p_distance) {
-	proximity_fade_distance = p_distance;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->proximity_fade_distance, p_distance);
+	proximity_fade_distance = MAX(p_distance, 0.01);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->proximity_fade_distance, proximity_fade_distance);
 }
 
 float BaseMaterial3D::get_proximity_fade_distance() const {
@@ -2894,7 +2894,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_particle_trails"), "set_flag", "get_flag", FLAG_PARTICLE_TRAILS_MODE);
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enabled"), "set_proximity_fade_enabled", "is_proximity_fade_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_proximity_fade_distance", "get_proximity_fade_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0.01,4096,0.01,suffix:m"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("MSDF", "msdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_outline_size", PROPERTY_HINT_RANGE, "0,250,1"), "set_msdf_outline_size", "get_msdf_outline_size");

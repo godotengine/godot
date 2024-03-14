@@ -1,10 +1,7 @@
-"""Functions used to generate source files during build time
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-"""
+"""Functions used to generate source files during build time"""
 
 import os
 from io import StringIO
-from platform_methods import subprocess_main
 
 
 def parse_template(inherits, source, delimiter):
@@ -53,7 +50,7 @@ def parse_template(inherits, source, delimiter):
 
 
 def make_templates(target, source, env):
-    dst = target[0]
+    dst = str(target[0])
     with StringIO() as s:
         s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n\n")
         s.write("#ifndef _CODE_TEMPLATES_H\n")
@@ -63,7 +60,7 @@ def make_templates(target, source, env):
 
         delimiter = "#"  # GDScript single line comment delimiter by default.
         if source:
-            ext = os.path.splitext(source[0])[1]
+            ext = os.path.splitext(str(source[0]))[1]
             if ext == ".cs":
                 delimiter = "//"
 
@@ -71,6 +68,7 @@ def make_templates(target, source, env):
         number_of_templates = 0
 
         for filepath in source:
+            filepath = str(filepath)
             node_name = os.path.basename(os.path.dirname(filepath))
             parsed_template = parse_template(node_name, filepath, delimiter)
             parsed_template_string += "\t" + parsed_template
@@ -89,7 +87,3 @@ def make_templates(target, source, env):
 
         with open(dst, "w", encoding="utf-8", newline="\n") as f:
             f.write(s.getvalue())
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())

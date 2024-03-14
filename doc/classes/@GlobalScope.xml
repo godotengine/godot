@@ -1099,14 +1099,14 @@
 		<method name="rid_allocate_id">
 			<return type="int" />
 			<description>
-				Allocates a unique ID which can be used by the implementation to construct a RID. This is used mainly from native extensions to implement servers.
+				Allocates a unique ID which can be used by the implementation to construct an RID. This is used mainly from native extensions to implement servers.
 			</description>
 		</method>
 		<method name="rid_from_int64">
 			<return type="RID" />
 			<param index="0" name="base" type="int" />
 			<description>
-				Creates a RID from a [param base]. This is used mainly from native extensions to build servers.
+				Creates an RID from a [param base]. This is used mainly from native extensions to build servers.
 			</description>
 		</method>
 		<method name="rotate_toward">

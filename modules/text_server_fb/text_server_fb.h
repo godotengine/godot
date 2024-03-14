@@ -254,6 +254,7 @@ class TextServerFallback : public TextServerExtension {
 		Mutex mutex;
 
 		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+		bool disable_embedded_bitmaps = true;
 		bool mipmaps = false;
 		bool msdf = false;
 		FixedSizeScaleMode fixed_size_scale_mode = FIXED_SIZE_SCALE_DISABLE;
@@ -421,7 +422,8 @@ class TextServerFallback : public TextServerExtension {
 		Vector<Span> spans;
 
 		struct EmbeddedObject {
-			int pos = 0;
+			int start = -1;
+			int end = -1;
 			InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 			Rect2 rect;
 			double baseline = 0;
@@ -475,6 +477,7 @@ class TextServerFallback : public TextServerExtension {
 	struct SystemFontKey {
 		String font_name;
 		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+		bool disable_embedded_bitmaps = true;
 		bool italic = false;
 		bool mipmaps = false;
 		bool msdf = false;
@@ -494,7 +497,7 @@ class TextServerFallback : public TextServerExtension {
 		float baseline_offset = 0.0;
 
 		bool operator==(const SystemFontKey &p_b) const {
-			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
+			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
 		}
 
 		SystemFontKey(const String &p_font_name, bool p_italic, int p_weight, int p_stretch, RID p_font, const TextServerFallback *p_fb) {
@@ -503,6 +506,7 @@ class TextServerFallback : public TextServerExtension {
 			weight = p_weight;
 			stretch = p_stretch;
 			antialiasing = p_fb->_font_get_antialiasing(p_font);
+			disable_embedded_bitmaps = p_fb->_font_get_disable_embedded_bitmaps(p_font);
 			mipmaps = p_fb->_font_get_generate_mipmaps(p_font);
 			msdf = p_fb->_font_is_multichannel_signed_distance_field(p_font);
 			msdf_range = p_fb->_font_get_msdf_pixel_range(p_font);
@@ -553,7 +557,7 @@ class TextServerFallback : public TextServerExtension {
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_SPACE], hash);
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_GLYPH], hash);
 			hash = hash_murmur3_one_double(p_a.baseline_offset, hash);
-			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12), hash));
+			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12) | ((int)p_a.disable_embedded_bitmaps << 14), hash));
 		}
 	};
 	mutable HashMap<SystemFontKey, SystemFontCache, SystemFontKeyHasher> system_fonts;
@@ -618,6 +622,9 @@ public:
 
 	MODBIND2(font_set_antialiasing, const RID &, TextServer::FontAntialiasing);
 	MODBIND1RC(TextServer::FontAntialiasing, font_get_antialiasing, const RID &);
+
+	MODBIND2(font_set_disable_embedded_bitmaps, const RID &, bool);
+	MODBIND1RC(bool, font_get_disable_embedded_bitmaps, const RID &);
 
 	MODBIND2(font_set_generate_mipmaps, const RID &, bool);
 	MODBIND1RC(bool, font_get_generate_mipmaps, const RID &);
@@ -825,6 +832,8 @@ public:
 
 	MODBIND1RC(Array, shaped_text_get_objects, const RID &);
 	MODBIND2RC(Rect2, shaped_text_get_object_rect, const RID &, const Variant &);
+	MODBIND2RC(Vector2i, shaped_text_get_object_range, const RID &, const Variant &);
+	MODBIND2RC(int64_t, shaped_text_get_object_glyph, const RID &, const Variant &);
 
 	MODBIND1RC(Size2, shaped_text_get_size, const RID &);
 	MODBIND1RC(double, shaped_text_get_ascent, const RID &);

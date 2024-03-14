@@ -46,6 +46,29 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
+        internal static unsafe int GetArgumentCount(IntPtr delegateGCHandle, godot_bool* outIsValid)
+        {
+            try
+            {
+                var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                int? argCount = @delegate?.Method?.GetParameters().Length;
+                if (argCount is null)
+                {
+                    *outIsValid = godot_bool.False;
+                    return 0;
+                }
+                *outIsValid = godot_bool.True;
+                return argCount.Value;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outIsValid = godot_bool.False;
+                return 0;
+            }
+        }
+
+        [UnmanagedCallersOnly]
         internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, void* trampoline,
             godot_variant** args, int argc, godot_variant* outRet)
         {

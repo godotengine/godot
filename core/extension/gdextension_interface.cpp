@@ -59,6 +59,8 @@ class CallableCustomExtension : public CallableCustom {
 
 	GDExtensionCallableCustomToString to_string_func;
 
+	GDExtensionCallableCustomGetArgumentCount get_argument_count_func;
+
 	uint32_t _hash;
 
 	static bool default_compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -143,6 +145,21 @@ public:
 		return object;
 	}
 
+	int get_argument_count(bool &r_is_valid) const override {
+		if (get_argument_count_func != nullptr) {
+			GDExtensionBool is_valid = false;
+
+			GDExtensionInt ret = get_argument_count_func(userdata, &is_valid);
+
+			if (is_valid) {
+				r_is_valid = true;
+				return ret;
+			}
+		}
+		r_is_valid = false;
+		return 0;
+	}
+
 	void *get_userdata(void *p_token) const {
 		return (p_token == token) ? userdata : nullptr;
 	}
@@ -157,6 +174,7 @@ public:
 		r_call_error.expected = error.expected;
 	}
 
+#ifndef DISABLE_DEPRECATED
 	CallableCustomExtension(GDExtensionCallableCustomInfo *p_info) {
 		userdata = p_info->callable_userdata;
 		token = p_info->token;
@@ -171,6 +189,35 @@ public:
 		less_than_func = p_info->less_than_func;
 
 		to_string_func = p_info->to_string_func;
+
+		get_argument_count_func = nullptr;
+
+		// Pre-calculate the hash.
+		if (p_info->hash_func != nullptr) {
+			_hash = p_info->hash_func(userdata);
+		} else {
+			_hash = hash_murmur3_one_64((uint64_t)call_func);
+			_hash = hash_murmur3_one_64((uint64_t)userdata, _hash);
+		}
+	}
+#endif
+
+	CallableCustomExtension(GDExtensionCallableCustomInfo2 *p_info) {
+		userdata = p_info->callable_userdata;
+		token = p_info->token;
+
+		object = p_info->object_id;
+
+		call_func = p_info->call_func;
+		is_valid_func = p_info->is_valid_func;
+		free_func = p_info->free_func;
+
+		equal_func = p_info->equal_func;
+		less_than_func = p_info->less_than_func;
+
+		to_string_func = p_info->to_string_func;
+
+		get_argument_count_func = p_info->get_argument_count_func;
 
 		// Pre-calculate the hash.
 		if (p_info->hash_func != nullptr) {
@@ -1378,7 +1425,13 @@ static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExt
 	return script_instance_extension->instance;
 }
 
+#ifndef DISABLE_DEPRECATED
 static void gdextension_callable_custom_create(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo *p_custom_callable_info) {
+	memnew_placement(r_callable, Callable(memnew(CallableCustomExtension(p_custom_callable_info))));
+}
+#endif
+
+static void gdextension_callable_custom_create2(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo2 *p_custom_callable_info) {
 	memnew_placement(r_callable, Callable(memnew(CallableCustomExtension(p_custom_callable_info))));
 }
 
@@ -1595,7 +1648,10 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(placeholder_script_instance_create);
 	REGISTER_INTERFACE_FUNC(placeholder_script_instance_update);
 	REGISTER_INTERFACE_FUNC(object_get_script_instance);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(callable_custom_create);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(callable_custom_create2);
 	REGISTER_INTERFACE_FUNC(callable_custom_get_userdata);
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
