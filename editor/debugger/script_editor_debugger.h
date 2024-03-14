@@ -118,7 +118,7 @@ private:
 
 	TabContainer *tabs = nullptr;
 
-	Label *reason = nullptr;
+	RichTextLabel *reason = nullptr;
 
 	Button *skip_breakpoints = nullptr;
 	Button *copy = nullptr;
