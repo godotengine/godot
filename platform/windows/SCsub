@@ -17,6 +17,7 @@ common_win = [
     "joypad_windows.cpp",
     "tts_windows.cpp",
     "windows_terminal_logger.cpp",
+    "native_menu_windows.cpp",
     "gl_manager_windows_native.cpp",
     "gl_manager_windows_angle.cpp",
     "wgl_detect_version.cpp",

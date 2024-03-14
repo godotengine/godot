@@ -192,7 +192,7 @@ bool MenuBar::is_native_menu() const {
 	}
 #endif
 
-	return (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU) && is_native);
+	return (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU) && prefer_native);
 }
 
 void MenuBar::bind_global_menu() {
@@ -767,9 +767,9 @@ int MenuBar::get_start_index() const {
 }
 
 void MenuBar::set_prefer_global_menu(bool p_enabled) {
-	if (is_native != p_enabled) {
-		is_native = p_enabled;
-		if (is_native) {
+	if (prefer_native != p_enabled) {
+		prefer_native = p_enabled;
+		if (prefer_native) {
 			bind_global_menu();
 		} else {
 			unbind_global_menu();
@@ -778,7 +778,7 @@ void MenuBar::set_prefer_global_menu(bool p_enabled) {
 }
 
 bool MenuBar::is_prefer_global_menu() const {
-	return is_native;
+	return prefer_native;
 }
 
 Size2 MenuBar::get_minimum_size() const {

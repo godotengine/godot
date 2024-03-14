@@ -181,6 +181,9 @@ bool NativeMenuMacOS::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_GLOBAL_MENU:
 		case FEATURE_POPUP_MENU:
+		case FEATURE_OPEN_CLOSE_CALLBACK:
+		case FEATURE_HOVER_CALLBACK:
+		case FEATURE_KEY_CALLBACK:
 			return true;
 		default:
 			return false;
@@ -262,6 +265,13 @@ void NativeMenuMacOS::popup(const RID &p_rid, const Vector2i &p_position) {
 
 		[md->menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(position.x, position.y) inView:nil];
 	}
+}
+
+void NativeMenuMacOS::set_interface_direction(const RID &p_rid, bool p_is_rtl) {
+	MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL(md);
+
+	md->menu.userInterfaceLayoutDirection = p_is_rtl ? NSUserInterfaceLayoutDirectionLeftToRight : NSUserInterfaceLayoutDirectionRightToLeft;
 }
 
 void NativeMenuMacOS::set_popup_open_callback(const RID &p_rid, const Callable &p_callback) {

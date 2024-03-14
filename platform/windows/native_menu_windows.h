@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  native_menu_macos.h                                                   */
+/*  native_menu_windows.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,53 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NATIVE_MENU_MACOS_H
-#define NATIVE_MENU_MACOS_H
+#ifndef NATIVE_MENU_WINDOWS_H
+#define NATIVE_MENU_WINDOWS_H
 
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/native_menu.h"
 
-#import <AppKit/AppKit.h>
-#import <ApplicationServices/ApplicationServices.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
-class NativeMenuMacOS : public NativeMenu {
-	GDCLASS(NativeMenuMacOS, NativeMenu)
+class NativeMenuWindows : public NativeMenu {
+	GDCLASS(NativeMenuWindows, NativeMenu)
+
+	enum GlobalMenuCheckType {
+		CHECKABLE_TYPE_NONE,
+		CHECKABLE_TYPE_CHECK_BOX,
+		CHECKABLE_TYPE_RADIO_BUTTON,
+	};
+
+	struct MenuItemData {
+		Callable callback;
+		Variant meta;
+		GlobalMenuCheckType checkable_type;
+		int max_states = 0;
+		int state = 0;
+		Ref<Image> img;
+		HBITMAP bmp = 0;
+	};
 
 	struct MenuData {
-		NSMenu *menu = nullptr;
-
-		Callable open_cb;
-		Callable close_cb;
-		bool is_open = false;
-		bool is_system = false;
+		HMENU menu = 0;
+		bool is_rtl = false;
 	};
 
 	mutable RID_PtrOwner<MenuData> menus;
-	HashMap<NSMenu *, RID> menu_lookup;
+	HashMap<HMENU, RID> menu_lookup;
 
-	NSMenu *main_menu_ns = nullptr;
-	NSMenu *application_menu_ns = nullptr;
-	NSMenu *window_menu_ns = nullptr;
-	NSMenu *help_menu_ns = nullptr;
-	NSMenu *dock_menu_ns = nullptr;
-
-	RID main_menu;
-	RID application_menu;
-	RID window_menu;
-	RID help_menu;
-	RID dock_menu;
-
-	int _get_system_menu_start(const NSMenu *p_menu) const;
-	int _get_system_menu_count(const NSMenu *p_menu) const;
-	bool _is_menu_opened(NSMenu *p_menu) const;
-	NSMenuItem *_menu_add_item(NSMenu *p_menu, const String &p_label, Key p_accel, int p_index, int *r_out);
+	HBITMAP _make_bitmap(const Ref<Image> &p_img) const;
 
 public:
-	void _register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu);
-	NSMenu *_get_dock_menu();
-	void _menu_open(NSMenu *p_menu);
-	void _menu_close(NSMenu *p_menu);
+	void _menu_activate(HMENU p_menu, int p_index) const;
 
 	virtual bool has_feature(Feature p_feature) const override;
 
@@ -150,8 +144,8 @@ public:
 	virtual void remove_item(const RID &p_rid, int p_idx) override;
 	virtual void clear(const RID &p_rid) override;
 
-	NativeMenuMacOS();
-	~NativeMenuMacOS();
+	NativeMenuWindows();
+	~NativeMenuWindows();
 };
 
-#endif // NATIVE_MENU_MACOS_H
+#endif // NATIVE_MENU_WINDOWS_H

@@ -82,7 +82,7 @@ RID PopupMenu::bind_global_menu() {
 		return RID();
 	}
 #endif
-	if (!NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+	if (!NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_POPUP_MENU)) {
 		return RID();
 	}
 
@@ -105,6 +105,7 @@ RID PopupMenu::bind_global_menu() {
 		global_menu = nmenu->create_menu();
 	}
 
+	nmenu->set_interface_direction(global_menu, control->is_layout_rtl());
 	nmenu->set_popup_open_callback(global_menu, callable_mp(this, &PopupMenu::_about_to_popup));
 	nmenu->set_popup_close_callback(global_menu, callable_mp(this, &PopupMenu::_about_to_close));
 	for (int i = 0; i < items.size(); i++) {
@@ -1027,6 +1028,9 @@ void PopupMenu::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			NativeMenu *nmenu = NativeMenu::get_singleton();
 			bool is_global = global_menu.is_valid();
+			if (is_global) {
+				nmenu->set_interface_direction(global_menu, control->is_layout_rtl());
+			}
 			for (int i = 0; i < items.size(); i++) {
 				Item &item = items.write[i];
 				item.xl_text = atr(item.text);
@@ -2289,6 +2293,21 @@ void PopupMenu::scroll_to_item(int p_idx) {
 	}
 }
 
+void PopupMenu::set_prefer_native_menu(bool p_enabled) {
+	if (prefer_native != p_enabled) {
+		prefer_native = p_enabled;
+		if (prefer_native) {
+			bind_global_menu();
+		} else {
+			unbind_global_menu();
+		}
+	}
+}
+
+bool PopupMenu::is_prefer_native_menu() const {
+	return prefer_native;
+}
+
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
 	ERR_FAIL_COND_V(p_event.is_null(), false);
 	Key code = Key::NONE;
@@ -2616,6 +2635,9 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("activate_item_by_event", "event", "for_global_only"), &PopupMenu::activate_item_by_event, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("set_prefer_native_menu", "enabled"), &PopupMenu::set_prefer_native_menu);
+	ClassDB::bind_method(D_METHOD("is_prefer_native_menu"), &PopupMenu::is_prefer_native_menu);
+
 	ClassDB::bind_method(D_METHOD("add_item", "label", "id", "accel"), &PopupMenu::add_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_item, DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_check_item", "label", "id", "accel"), &PopupMenu::add_check_item, DEFVAL(-1), DEFVAL(0));
@@ -2722,7 +2744,8 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "submenu_popup_delay", PROPERTY_HINT_NONE, "suffix:s"), "set_submenu_popup_delay", "get_submenu_popup_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "system_menu_id", PROPERTY_HINT_ENUM, "Application Menu:2,Window Menu:3,Help Menu:4,Dock:5"), "set_system_menu", "get_system_menu");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "system_menu_id", PROPERTY_HINT_ENUM, "None:0,Application Menu:2,Window Menu:3,Help Menu:4,Dock:5"), "set_system_menu", "get_system_menu");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefer_native_menu"), "set_prefer_native_menu", "is_prefer_native_menu");
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 
@@ -2786,9 +2809,37 @@ void PopupMenu::_bind_methods() {
 }
 
 void PopupMenu::popup(const Rect2i &p_bounds) {
-	moved = Vector2();
-	popup_time_msec = OS::get_singleton()->get_ticks_msec();
-	Popup::popup(p_bounds);
+	bool native = global_menu.is_valid();
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		native = false;
+	}
+#endif
+
+	if (native) {
+		NativeMenu::get_singleton()->popup(global_menu, (p_bounds != Rect2i()) ? p_bounds.position : get_position());
+	} else {
+		moved = Vector2();
+		popup_time_msec = OS::get_singleton()->get_ticks_msec();
+		Popup::popup(p_bounds);
+	}
+}
+
+void PopupMenu::set_visible(bool p_visible) {
+	bool native = global_menu.is_valid();
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		native = false;
+	}
+#endif
+
+	if (native) {
+		if (p_visible) {
+			NativeMenu::get_singleton()->popup(global_menu, get_position());
+		}
+	} else {
+		Popup::set_visible(p_visible);
+	}
 }
 
 PopupMenu::PopupMenu() {
