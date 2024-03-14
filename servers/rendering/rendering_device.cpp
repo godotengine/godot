@@ -3437,8 +3437,8 @@ Error RenderingDevice::screen_create(DisplayServer::WindowID p_screen) {
 Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
-	// Submit offscreen rendering and swap the command buffers
-	if (!screen_prepared) {
+	// @NicolaTF: Submit offscreen rendering and swap the command buffers
+	if (separate_queue_submissions && !screen_prepared) {
 		screen_prepared = true;
 
 		_end_frame();
@@ -3449,6 +3449,8 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 
 		// Reset the graph.
 		draw_graph.begin();
+	} else if (!separate_queue_submissions) {
+		screen_prepared = true;
 	}
 
 	// After submitting work, acquire the swapchain image(s)
@@ -3473,7 +3475,11 @@ Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_scre
 	RDD::FramebufferID framebuffer = driver->swap_chain_acquire_framebuffer(main_queue, it->value, resize_required);
 	if (resize_required) {
 		// Flush everything so nothing can be using the swap chain before resizing it.
-		_stall_for_previous_frames();
+		if (!separate_queue_submissions) {
+			_flush_and_stall_for_all_frames();
+		} else {
+			_stall_for_previous_frames();
+		}
 
 		Error err = driver->swap_chain_resize(main_queue, it->value, _get_swap_chain_desired_count());
 		if (err != OK) {
@@ -5169,9 +5175,13 @@ void RenderingDevice::swap_buffers() {
 	_end_frame();
 	_execute_frame(true, true);
 
+	// @NicolaTF: restore command buffers
+	if (separate_queue_submissions) {
+		SWAP(frames[frame].draw_command_buffer, frames[frame].blit_draw_command_buffer);
+		SWAP(frames[frame].setup_command_buffer, frames[frame].blit_setup_command_buffer);
+	}
+
 	// Advance to the next frame and begin recording again.
-	SWAP(frames[frame].draw_command_buffer, frames[frame].blit_draw_command_buffer);
-	SWAP(frames[frame].setup_command_buffer, frames[frame].blit_setup_command_buffer);
 	frame = (frame + 1) % frames.size();
 
 	_begin_frame();
@@ -5311,8 +5321,10 @@ void RenderingDevice::_begin_frame() {
 	driver->begin_segment(frame, frames_drawn++);
 	driver->command_buffer_begin(frames[frame].setup_command_buffer);
 	driver->command_buffer_begin(frames[frame].draw_command_buffer);
-	driver->command_buffer_begin(frames[frame].blit_setup_command_buffer);
-	driver->command_buffer_begin(frames[frame].blit_draw_command_buffer);
+	if (separate_queue_submissions) {
+		driver->command_buffer_begin(frames[frame].blit_setup_command_buffer);
+		driver->command_buffer_begin(frames[frame].blit_draw_command_buffer);
+	}
 	// Reset the graph.
 	draw_graph.begin();
 
@@ -5356,7 +5368,8 @@ void RenderingDevice::_end_frame() {
 	draw_graph.end(frames[frame].draw_command_buffer, RENDER_GRAPH_REORDER, RENDER_GRAPH_FULL_BARRIERS);
 	driver->command_buffer_end(frames[frame].setup_command_buffer);
 	driver->command_buffer_end(frames[frame].draw_command_buffer);
-	if (!screen_prepared && !command_pool_reset_enabled) {
+	// @NicolaTF: when merging, remove this if statement completely
+	if (!screen_prepared && !command_pool_reset_enabled && separate_queue_submissions) {
 		driver->command_buffer_end(frames[frame].blit_setup_command_buffer);
 		driver->command_buffer_end(frames[frame].blit_draw_command_buffer);
 	}
@@ -5364,7 +5377,28 @@ void RenderingDevice::_end_frame() {
 }
 
 void RenderingDevice::_execute_frame(bool p_present, bool p_swap) {
-	// Command flushing, previous behavior
+	if (!separate_queue_submissions) {
+		const bool frame_can_present = p_present && !frames[frame].swap_chains_to_present.is_empty();
+		const bool separate_present_queue = main_queue != present_queue;
+		const VectorView<RDD::SemaphoreID> execute_draw_semaphore = frame_can_present && separate_present_queue ? frames[frame].draw_semaphore : VectorView<RDD::SemaphoreID>();
+		const VectorView<RDD::SwapChainID> execute_draw_swap_chains = frame_can_present && !separate_present_queue ? frames[frame].swap_chains_to_present : VectorView<RDD::SwapChainID>();
+		driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
+		driver->command_queue_execute_and_present(main_queue, frames[frame].setup_semaphore, frames[frame].draw_command_buffer, execute_draw_semaphore, frames[frame].draw_fence, execute_draw_swap_chains);
+		frames[frame].draw_fence_signaled = true;
+
+		if (frame_can_present) {
+			if (separate_present_queue) {
+				// Issue the presentation separately if the presentation queue is different from the main queue.
+				driver->command_queue_execute_and_present(present_queue, frames[frame].draw_semaphore, {}, {}, {}, frames[frame].swap_chains_to_present);
+			}
+
+			frames[frame].swap_chains_to_present.clear();
+		}
+
+		return;
+	}
+
+	// Command flushing, don't present and continue immediately
 	if (!p_swap) {
 		driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
 		driver->command_queue_execute_and_present(main_queue, frames[frame].setup_semaphore, frames[frame].draw_command_buffer, VectorView<RDD::SemaphoreID>(), frames[frame].draw_fence, VectorView<RDD::SwapChainID>());

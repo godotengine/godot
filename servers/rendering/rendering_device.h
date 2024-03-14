@@ -198,7 +198,10 @@ private:
 	void update_perf_report();
 	// flag for using persistent buffers;
 	bool persistent_buffer_enabled = true;
+	// flag for batching descriptor sets
 	bool descriptor_set_batching = true;
+	// flag for separate queue submissions
+	bool separate_queue_submissions = false;
 	uint32_t gpu_copy_count = 0;
 	uint32_t direct_copy_count = 0;
 	uint32_t copy_bytes_count = 0;
