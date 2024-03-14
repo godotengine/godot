@@ -127,3 +127,81 @@ BTPlayer * CharacterBodyMain::get_bt_player()
     }
     return btPlayer;
 }
+
+
+void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array)
+{
+    AnimationMixer::PlaybackInfo * p_playback_info_ptr = p_playback_info->m_ChildAnimationPlaybackArray.ptrw();
+    for (uint32_t i = 0; i < child_count; i++)
+    {
+        float w = weight_array[i] * total_weight;
+        if(w > 0.01f)
+        {	  
+            {
+                p_playback_info_ptr[i].weight = w;
+                p_playback_info_ptr[i].time = p_playback_info->time;
+                p_playback_info_ptr[i].delta = p_playback_info->delta;
+                p_playback_info_ptr[i].track_weights = p_playback_info->track_weights;
+                p_layer->make_animation_instance(p_playback_info->m_ChildAnimationArray[i], p_playback_info_ptr[i]);
+            }
+        }
+    }
+}
+
+
+void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard,const StringName & property_name)
+{
+    if(!p_blackboard->has_var(property_name))
+    {
+        return;
+    }
+    float v = p_blackboard->get_var(property_name,0);
+    if(p_playback_info->m_WeightArray.size() != m_BlendData.m_ChildCount)
+    {
+        p_playback_info->m_WeightArray.resize(m_BlendData.m_ChildCount);
+        p_playback_info->m_ChildAnimationPlaybackArray.resize(m_BlendData.m_ChildCount);
+        p_playback_info->m_ChildAnimationArray.resize(m_BlendData.m_ChildCount);
+
+    }
+    GetWeights1d(m_BlendData, p_playback_info->m_WeightArray.ptrw(), v);
+    _blend_anmation(p_layer,m_BlendData.m_ChildCount, p_playback_info, total_weight,p_playback_info->m_WeightArray);
+
+}
+void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard,const StringName & property_name)
+{
+    if(!p_blackboard->has_var(property_name))
+    {
+        return;
+    }
+    Vector2 v = p_blackboard->get_var(property_name,0);
+    if(p_playback_info->m_WeightArray.size() != m_BlendData.m_ChildCount)
+    {
+        p_playback_info->m_WeightArray.resize(m_BlendData.m_ChildCount);
+        p_playback_info->m_ChildAnimationPlaybackArray.resize(m_BlendData.m_ChildCount);
+        p_playback_info->m_ChildAnimationArray.resize(m_BlendData.m_ChildCount);
+
+    }
+    if(p_layer->m_TempCropArray.size() < m_BlendData.m_ChildCount)
+    {
+        p_layer->m_TempCropArray.resize(m_BlendData.m_ChildCount);
+        p_layer->m_ChildInputVectorArray.resize(m_BlendData.m_ChildCount);
+    }
+    if (m_BlendType == SimpleDirectionnal2D)
+        GetWeightsSimpleDirectional(m_BlendData, p_playback_info->m_WeightArray.ptrw(), p_layer->m_TempCropArray.ptrw(), p_layer->m_ChildInputVectorArray.ptrw(), v.x, v.y);
+    else if (m_BlendType == FreeformDirectionnal2D)
+        GetWeightsFreeformDirectional(m_BlendData, p_playback_info->m_WeightArray.ptrw(), p_layer->m_TempCropArray.ptrw(), p_layer->m_ChildInputVectorArray.ptrw(), v.x, v.y);
+    else if (m_BlendType == FreeformCartesian2D)
+        GetWeightsFreeformCartesian(m_BlendData, p_playback_info->m_WeightArray.ptrw(), p_layer->m_TempCropArray.ptrw(), p_layer->m_ChildInputVectorArray.ptrw(), v.x, v.y);
+    else 
+        return;
+
+    _blend_anmation(p_layer, m_BlendData.m_ChildCount,p_playback_info, total_weight,p_playback_info->m_WeightArray);
+
+}
+
+
+
+
+
+
+
