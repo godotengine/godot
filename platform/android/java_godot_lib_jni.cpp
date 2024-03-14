@@ -167,10 +167,6 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 
-    // <TF>
-    // @ShadyTF : Android memory advisor
-    MemoryAdvice_init(env, p_activity);
-    // </TF>
 	// create our wrapper classes
 	godot_java = new GodotJavaWrapper(env, p_activity, p_godot_instance);
 	godot_io_java = new GodotIOJavaWrapper(env, p_godot_io);

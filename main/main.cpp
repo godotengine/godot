@@ -3888,35 +3888,6 @@ bool Main::iteration() {
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
-
-    // <TF>
-    // @ShadyTF : Android memory advisor
-#if defined(ANDROID_ENABLED)
-    const char* memory_warning_msg = "Memory warning : Approaching limit, The application should minimize memory allocation";
-    const char* memory_error_msg = "Memory critical warning : The application should free memory as soon as possible";
-    MemoryAdvice_MemoryState state = MemoryAdvice_getMemoryState();
-    switch (state) {
-        case MEMORYADVICE_STATE_OK:
-            // all good, we can allocate
-            break;
-        case MEMORYADVICE_STATE_APPROACHING_LIMIT:{
-            float fPercentAvailable = MemoryAdvice_getPercentageAvailableMemory();
-            OS::get_singleton()->print( "memory percent available : %f",fPercentAvailable);
-            OS::get_singleton()->print( "%s",memory_warning_msg);
-            OS::get_singleton()->alert(memory_error_msg);
-        }
-            break;
-        case MEMORYADVICE_STATE_CRITICAL:
-            OS::get_singleton()->print( "%s",memory_error_msg);
-            OS::get_singleton()->alert(memory_error_msg);
-            break;
-        default:
-            break;
-    }
-#endif
-    // </TF>
-
-
 	iterating++;
 
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
