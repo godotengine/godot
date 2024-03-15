@@ -31,7 +31,6 @@
 #ifndef VECTOR2_H
 #define VECTOR2_H
 
-#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
 
 class String;

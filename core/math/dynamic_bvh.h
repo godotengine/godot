@@ -32,10 +32,12 @@
 #define DYNAMIC_BVH_H
 
 #include "core/math/aabb.h"
+#include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/vector3.h"
 #include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
-#include "core/typedefs.h"
 
 // Based on bullet Dbvh
 

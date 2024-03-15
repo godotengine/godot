@@ -30,6 +30,7 @@
 
 #include "random_pcg.h"
 
+#include "core/math/math_funcs.h"
 #include "core/os/os.h"
 #include "core/templates/vector.h"
 

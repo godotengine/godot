@@ -30,6 +30,8 @@
 
 #include "static_raycaster.h"
 
+#include "core/math/math_defs.h"
+
 StaticRaycaster *(*StaticRaycaster::create_function)() = nullptr;
 
 Ref<StaticRaycaster> StaticRaycaster::create() {

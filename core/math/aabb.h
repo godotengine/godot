@@ -31,8 +31,10 @@
 #ifndef AABB_H
 #define AABB_H
 
+#include "core/math/math_funcs.h"
 #include "core/math/plane.h"
 #include "core/math/vector3.h"
+#include "core/string/ustring.h"
 
 /**
  * AABB (Axis Aligned Bounding Box)

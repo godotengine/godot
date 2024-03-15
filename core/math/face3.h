@@ -32,9 +32,12 @@
 #define FACE3_H
 
 #include "core/math/aabb.h"
+#include "core/math/math_defs.h"
 #include "core/math/plane.h"
-#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
+#include "core/string/ustring.h"
+
+struct Transform3D;
 
 struct _NO_DISCARD_ Face3 {
 	enum Side {

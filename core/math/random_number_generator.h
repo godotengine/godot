@@ -34,6 +34,9 @@
 #include "core/math/random_pcg.h"
 #include "core/object/ref_counted.h"
 
+template <typename T>
+class Vector;
+
 class RandomNumberGenerator : public RefCounted {
 	GDCLASS(RandomNumberGenerator, RefCounted);
 

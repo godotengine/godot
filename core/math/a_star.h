@@ -31,9 +31,13 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
+#include "core/math/math_defs.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/pair.h"
+#include "core/templates/vector.h"
 
 /**
 	A* pathfinding algorithm.

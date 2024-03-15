@@ -31,11 +31,14 @@
 #include "projection.h"
 
 #include "core/math/aabb.h"
+#include "core/math/basis.h"
 #include "core/math/math_funcs.h"
 #include "core/math/plane.h"
 #include "core/math/rect2.h"
 #include "core/math/transform_3d.h"
+#include "core/math/vector2.h"
 #include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
 float Projection::determinant() const {
 	return columns[0][3] * columns[1][2] * columns[2][1] * columns[3][0] - columns[0][2] * columns[1][3] * columns[2][1] * columns[3][0] -
