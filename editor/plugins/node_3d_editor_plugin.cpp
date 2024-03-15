@@ -62,6 +62,7 @@
 #include "editor/plugins/gizmos/lightmap_probe_gizmo_plugin.h"
 #include "editor/plugins/gizmos/marker_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/mesh_instance_3d_gizmo_plugin.h"
+#include "editor/plugins/gizmos/mesh_instance_3d_custom_aab_gizmo_plugin.h"
 #include "editor/plugins/gizmos/navigation_link_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/navigation_region_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/occluder_instance_3d_gizmo_plugin.h"
@@ -7982,6 +7983,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpriteBase3DGizmoPlugin>(memnew(SpriteBase3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Label3DGizmoPlugin>(memnew(Label3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<MeshInstance3DCustomAABBGizmoPlugin>(memnew(MeshInstance3DCustomAABBGizmoPlugin)));
 	add_gizmo_plugin(Ref<Marker3DGizmoPlugin>(memnew(Marker3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<ShapeCast3DGizmoPlugin>(memnew(ShapeCast3DGizmoPlugin)));
