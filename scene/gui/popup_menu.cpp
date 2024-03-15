@@ -92,7 +92,7 @@ RID PopupMenu::bind_global_menu() {
 
 	NativeMenu *nmenu = NativeMenu::get_singleton();
 
-	if (system_menu_id != NativeMenu::INVALID_MENU_ID) {
+	if (system_menu_id != NativeMenu::INVALID_MENU_ID && nmenu->has_system_menu(system_menu_id)) {
 		if (system_menus.has(system_menu_id)) {
 			WARN_PRINT(vformat("Attempting to bind PopupMenu to the system menu %s, but another menu is already bound to it. This menu: %s, current menu: %s", nmenu->get_system_menu_name(system_menu_id), get_description(), system_menus[system_menu_id]->get_description()));
 			global_menu = nmenu->create_menu();
