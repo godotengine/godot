@@ -198,6 +198,18 @@ void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_
     _blend_anmation(p_layer, m_BlendData.m_ChildCount,p_playback_info, total_weight,p_playback_info->m_WeightArray);
 
 }
+// 处理动画
+void CharacterAnimatorLayer::_process_animation(double p_delta,float w,bool is_first)
+{
+    clear_animation_instances();
+
+    // 播放列队的动画
+
+    _blend_process(p_delta,false);
+
+
+    
+}
 
 
 

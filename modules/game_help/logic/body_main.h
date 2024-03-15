@@ -93,15 +93,6 @@ protected:
 
 
 };
-struct CharacterAnimationInstance
-{    
-	Vector<real_t> track_weights;
-    Vector<float> m_WeightArray;
-    Vector<StringName>    m_ChildAnimationArray;
-    Vector<AnimationMixer::PlaybackInfo> m_ChildAnimationPlaybackArray;
-    float time;
-    float delta;
-};
 
 // 动画遮罩
 class CharacterAnimatorMask : public Resource
@@ -607,6 +598,17 @@ protected:
     BlendType m_BlendType;
     Blend2dDataConstant m_BlendData;
 };
+struct CharacterAnimationInstance
+{    
+	Vector<real_t> track_weights;
+    Vector<float> m_WeightArray;
+    Vector<StringName>    m_ChildAnimationArray;
+    Vector<AnimationMixer::PlaybackInfo> m_ChildAnimationPlaybackArray;
+    float time;
+    float delta;
+    // 动画节点
+    Ref<CharacterAnimatorNodeBase> node;
+};
 // 动画分层
 class CharacterAnimatorLayer: public AnimationMixer
 {
@@ -617,15 +619,18 @@ public:
 
     Ref<CharacterAnimatorMask> mask;
 
-    enum BlendState
+    enum BlendType
     {
         // 混合
-        BS_Blend,
+        BT_Blend,
         // 覆盖
-        BS_Override,
+        BT_Override,
     };
+    // 处理动画
+    void _process_animation(double p_delta,float w,bool is_first = true);
     Vector<Vector2> m_ChildInputVectorArray;
     Vector<int> m_TempCropArray;
+    List<CharacterAnimationInstance> m_AnimationInstances;
 };
 
 // 人物动画器
