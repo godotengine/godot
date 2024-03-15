@@ -5743,6 +5743,15 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 	}
 	vmaDestroyAllocator(allocator);
 
+	// Destroy linearly allocated descriptor pools
+	for (KeyValue<int, DescriptorSetPools>& pool_map : linear_descriptor_set_pools) {
+		for (KeyValue<DescriptorSetPoolKey, HashMap<VkDescriptorPool, uint32_t>> pools : pool_map.value) {
+			for (KeyValue<VkDescriptorPool, uint32_t> descriptor_pool : pools.value) {
+				vkDestroyDescriptorPool(vk_device, descriptor_pool.key, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
+			}
+		}
+	}
+
 	if (vk_device != VK_NULL_HANDLE) {
 		vkDestroyDevice(vk_device, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE));
 	}

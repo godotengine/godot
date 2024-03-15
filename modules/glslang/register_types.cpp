@@ -181,7 +181,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	}
 #endif
 	if (GLOBAL_GET("rendering/shader_compiler/shader_compilation/optimize")) {
-		spvOptions.disableOptimizer = false;
+		spvOptions.disableOptimizer = true;
 		spvOptions.optimizeSize = true;
 	}
 	

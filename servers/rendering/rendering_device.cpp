@@ -5924,6 +5924,7 @@ void RenderingDevice::finalize() {
 		driver->timestamp_query_pool_free(frames[i].timestamp_pool);
 		driver->semaphore_free(frames[i].setup_semaphore);
 		driver->semaphore_free(frames[i].draw_semaphore);
+		driver->semaphore_free(frames[i].blit_semaphore);
 		driver->fence_free(frames[i].draw_fence);
 	}
 

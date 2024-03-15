@@ -201,7 +201,7 @@ private:
 	// flag for batching descriptor sets
 	bool descriptor_set_batching = true;
 	// flag for separate queue submissions
-	bool separate_queue_submissions = false;
+	bool separate_queue_submissions = true;
 	uint32_t gpu_copy_count = 0;
 	uint32_t direct_copy_count = 0;
 	uint32_t copy_bytes_count = 0;
