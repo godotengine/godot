@@ -5497,6 +5497,32 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		GetImmersiveColorFromColorSetEx = (GetImmersiveColorFromColorSetExPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(95));
 		GetImmersiveColorTypeFromName = (GetImmersiveColorTypeFromNamePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(96));
 		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
+		if (os_ver.dwBuildNumber >= 17763) {
+			AllowDarkModeForAppPtr AllowDarkModeForApp = nullptr;
+			SetPreferredAppModePtr SetPreferredAppMode = nullptr;
+			FlushMenuThemesPtr FlushMenuThemes = nullptr;
+			if (os_ver.dwBuildNumber < 18362) {
+				AllowDarkModeForApp = (AllowDarkModeForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
+			} else {
+				SetPreferredAppMode = (SetPreferredAppModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
+				FlushMenuThemes = (FlushMenuThemesPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
+			}
+			RefreshImmersiveColorPolicyStatePtr RefreshImmersiveColorPolicyState = (RefreshImmersiveColorPolicyStatePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(104));
+			if (ShouldAppsUseDarkMode) {
+				bool dark_mode = ShouldAppsUseDarkMode();
+				if (SetPreferredAppMode) {
+					SetPreferredAppMode(dark_mode ? APPMODE_ALLOWDARK : APPMODE_DEFAULT);
+				} else if (AllowDarkModeForApp) {
+					AllowDarkModeForApp(dark_mode);
+				}
+				if (RefreshImmersiveColorPolicyState) {
+					RefreshImmersiveColorPolicyState();
+				}
+				if (FlushMenuThemes) {
+					FlushMenuThemes();
+				}
+			}
+		}
 
 		ux_theme_available = ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
 		if (os_ver.dwBuildNumber >= 18363) {
