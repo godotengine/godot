@@ -103,21 +103,17 @@ class CharacterAnimatorNodeBase : public Resource
 {
     GDCLASS(CharacterAnimatorNodeBase, Resource);
 
-    enum PlayState
-    {
-        PS_None,
-        PS_FadeIn,
-        PS_Play,
-        PS_FadeOut,
-    };
-    PlayState m_PlayState = PS_None;
 public:
-    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard,const StringName & property_name)
+    float fadeOutTime = 0.0f;
+    bool isLoop = false;
+
+public:
+    virtual void process_animation(class CharacterAnimatorLayer *p_layer,struct CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard)
     {
 
     }
 public:
-    void _blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array);
+    void _blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,struct CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array);
 
     
     struct MotionNeighborList
@@ -573,15 +569,21 @@ public:
     //         GetWeightsDirect(*nodeConstant.m_BlendDirectData.Get(), weightArray);
     // }
 
-
+    struct AnimationItem
+    {
+        StringName m_Name;
+        float m_Speed = 1.0f;
+    };
+    Vector<AnimationItem>    m_ChildAnimationArray;
+    StringName               m_PropertyName;
 };
 class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorNode1D, CharacterAnimatorNodeBase);
 public:
-    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard,const StringName & property_name) override;
+    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard) override;
 protected:
-    Blend1dDataConstant m_BlendData;
+    Blend1dDataConstant   m_BlendData;
 };
 class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
 {
@@ -593,19 +595,39 @@ public:
         FreeformDirectionnal2D = 2,
         FreeformCartesian2D = 3,
     };
-    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard,const StringName & property_name) override;
+    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard) override;
 protected:
     BlendType m_BlendType;
     Blend2dDataConstant m_BlendData;
 };
 struct CharacterAnimationInstance
 {    
+    enum PlayState
+    {
+        PS_None,
+        PS_Play,
+        PS_FadeOut,
+    };
+    PlayState m_PlayState = PS_None;
 	Vector<real_t> track_weights;
     Vector<float> m_WeightArray;
-    Vector<StringName>    m_ChildAnimationArray;
     Vector<AnimationMixer::PlaybackInfo> m_ChildAnimationPlaybackArray;
     float time;
     float delta;
+    float fadeTotalTime = 0.0f;
+    float get_weight()
+    {
+        if(m_PlayState == PS_FadeOut)
+        {
+            if(node->fadeOutTime <= 0.0f)
+                return 0;
+            return MAX(0.0f,1.0f - fadeTotalTime / node->fadeOutTime);
+        }
+        else
+        {
+            return 1.0f;
+        }
+    }
     // 动画节点
     Ref<CharacterAnimatorNodeBase> node;
 };
@@ -627,10 +649,15 @@ public:
         BT_Override,
     };
     // 处理动画
-    void _process_animation(double p_delta,float w,bool is_first = true);
+    void _process_animation(Blackboard *p_playback_info,double p_delta,bool is_first = true);
+    void layer_blend_apply() ;
     Vector<Vector2> m_ChildInputVectorArray;
     Vector<int> m_TempCropArray;
+    Vector<float> m_TotalAnimationWeight;
+    Ref<CharacterAnimatorMask> m_Mask;
     List<CharacterAnimationInstance> m_AnimationInstances;
+    float blend_weight = 1.0f;
+    BlendType m_BlendType;
 };
 
 // 人物动画器
@@ -639,6 +666,9 @@ class CharacterAnimator : public Resource
     GDCLASS(CharacterAnimator, Resource);
 
     static void _bind_methods();
+
+
+    
 
 
 };
