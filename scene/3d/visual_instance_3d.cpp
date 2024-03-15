@@ -377,6 +377,7 @@ void GeometryInstance3D::set_custom_aabb(AABB p_aabb) {
 	}
 	custom_aabb = p_aabb;
 	RS::get_singleton()->instance_set_custom_aabb(get_instance(), custom_aabb);
+	update_gizmos();
 }
 
 AABB GeometryInstance3D::get_custom_aabb() const {
