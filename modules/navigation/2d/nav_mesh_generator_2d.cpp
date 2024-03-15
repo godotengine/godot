@@ -35,6 +35,7 @@
 #include "core/config/project_settings.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
+#include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/physics/static_body_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/tile_map.h"
@@ -233,6 +234,7 @@ void NavMeshGenerator2D::generator_parse_geometry_node(Ref<NavigationPolygon> p_
 	generator_parse_polygon2d_node(p_navigation_mesh, p_source_geometry_data, p_node);
 	generator_parse_staticbody2d_node(p_navigation_mesh, p_source_geometry_data, p_node);
 	generator_parse_tilemap_node(p_navigation_mesh, p_source_geometry_data, p_node);
+	generator_parse_navigationobstacle_node(p_navigation_mesh, p_source_geometry_data, p_node);
 
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -660,6 +662,58 @@ void NavMeshGenerator2D::generator_parse_tilemap_node(const Ref<NavigationPolygo
 	}
 }
 
+void NavMeshGenerator2D::generator_parse_navigationobstacle_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node) {
+	NavigationObstacle2D *obstacle = Object::cast_to<NavigationObstacle2D>(p_node);
+	if (obstacle == nullptr) {
+		return;
+	}
+
+	if (!obstacle->get_affect_navigation_mesh()) {
+		return;
+	}
+
+	const Transform2D node_xform = p_source_geometry_data->root_node_transform * Transform2D(0.0, obstacle->get_global_position());
+
+	const float obstacle_radius = obstacle->get_radius();
+
+	if (obstacle_radius > 0.0) {
+		Vector<Vector2> obstruction_circle_vertices;
+
+		// The point of this is that the moving obstacle can make a simple hole in the navigation mesh and affect the pathfinding.
+		// Without, navigation paths can go directly through the middle of the obstacle and conflict with the avoidance to get agents stuck.
+		// No place for excessive "round" detail here. Every additional edge adds a high cost for something that needs to be quick, not pretty.
+		static const int circle_points = 12;
+
+		obstruction_circle_vertices.resize(circle_points);
+		Vector2 *circle_vertices_ptrw = obstruction_circle_vertices.ptrw();
+		const real_t circle_point_step = Math_TAU / circle_points;
+
+		for (int i = 0; i < circle_points; i++) {
+			const float angle = i * circle_point_step;
+			circle_vertices_ptrw[i] = node_xform.xform(Vector2(Math::cos(angle) * obstacle_radius, Math::sin(angle) * obstacle_radius));
+		}
+
+		p_source_geometry_data->add_projected_obstruction(obstruction_circle_vertices, obstacle->get_carve_navigation_mesh());
+	}
+
+	const Vector<Vector2> &obstacle_vertices = obstacle->get_vertices();
+
+	if (obstacle_vertices.is_empty()) {
+		return;
+	}
+
+	Vector<Vector2> obstruction_shape_vertices;
+	obstruction_shape_vertices.resize(obstacle_vertices.size());
+
+	const Vector2 *obstacle_vertices_ptr = obstacle_vertices.ptr();
+	Vector2 *obstruction_shape_vertices_ptrw = obstruction_shape_vertices.ptrw();
+
+	for (int i = 0; i < obstacle_vertices.size(); i++) {
+		obstruction_shape_vertices_ptrw[i] = node_xform.xform(obstacle_vertices_ptr[i]);
+	}
+	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, obstacle->get_carve_navigation_mesh());
+}
+
 void NavMeshGenerator2D::generator_parse_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_root_node) {
 	List<Node *> parse_nodes;
 
@@ -779,6 +833,30 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		obstruction_polygon_paths.push_back(clip_path);
 	}
 
+	const Vector<NavigationMeshSourceGeometryData2D::ProjectedObstruction> &projected_obstructions = p_source_geometry_data->_get_projected_obstructions();
+
+	if (!projected_obstructions.is_empty()) {
+		for (const NavigationMeshSourceGeometryData2D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
+			if (projected_obstruction.carve) {
+				continue;
+			}
+			if (projected_obstruction.vertices.is_empty() || projected_obstruction.vertices.size() % 2 != 0) {
+				continue;
+			}
+
+			Path64 clip_path;
+			clip_path.reserve(projected_obstruction.vertices.size() / 2);
+			for (int i = 0; i < projected_obstruction.vertices.size() / 2; i++) {
+				const Point64 &point = Point64(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
+				clip_path.push_back(point);
+			}
+			if (!IsPositive(clip_path)) {
+				std::reverse(clip_path.begin(), clip_path.end());
+			}
+			obstruction_polygon_paths.push_back(clip_path);
+		}
+	}
+
 	Rect2 baking_rect = p_navigation_mesh->get_baking_rect();
 	if (baking_rect.has_area()) {
 		Vector2 baking_rect_offset = p_navigation_mesh->get_baking_rect_offset();
@@ -809,6 +887,33 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	if (agent_radius_offset > 0.0) {
 		path_solution = InflatePaths(path_solution, -agent_radius_offset, JoinType::Miter, EndType::Polygon);
 	}
+
+	if (!projected_obstructions.is_empty()) {
+		obstruction_polygon_paths.resize(0);
+		for (const NavigationMeshSourceGeometryData2D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
+			if (!projected_obstruction.carve) {
+				continue;
+			}
+			if (projected_obstruction.vertices.is_empty() || projected_obstruction.vertices.size() % 2 != 0) {
+				continue;
+			}
+
+			Path64 clip_path;
+			clip_path.reserve(projected_obstruction.vertices.size() / 2);
+			for (int i = 0; i < projected_obstruction.vertices.size() / 2; i++) {
+				const Point64 &point = Point64(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
+				clip_path.push_back(point);
+			}
+			if (!IsPositive(clip_path)) {
+				std::reverse(clip_path.begin(), clip_path.end());
+			}
+			obstruction_polygon_paths.push_back(clip_path);
+		}
+		if (obstruction_polygon_paths.size() > 0) {
+			path_solution = Difference(path_solution, obstruction_polygon_paths, FillRule::NonZero);
+		}
+	}
+
 	//path_solution = RamerDouglasPeucker(path_solution, 0.025); //
 
 	real_t border_size = p_navigation_mesh->get_border_size();
