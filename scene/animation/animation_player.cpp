@@ -181,9 +181,11 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 		case Animation::LOOP_LINEAR: {
 			if (next_pos < 0 && cd.pos >= 0) {
 				looped_flag = Animation::LOOPED_FLAG_START;
+				emit_signal(SceneStringNames::get_singleton()->animation_looped, playback.assigned, !backwards);
 			}
 			if (next_pos > len && cd.pos <= len) {
 				looped_flag = Animation::LOOPED_FLAG_END;
+				emit_signal(SceneStringNames::get_singleton()->animation_looped, playback.assigned, backwards);
 			}
 			next_pos = Math::fposmod(next_pos, (double)len);
 		} break;
@@ -192,10 +194,12 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 			if (next_pos < 0 && cd.pos >= 0) {
 				cd.speed_scale *= -1.0;
 				looped_flag = Animation::LOOPED_FLAG_START;
+				emit_signal(SceneStringNames::get_singleton()->animation_looped, playback.assigned, !backwards);
 			}
 			if (next_pos > len && cd.pos <= len) {
 				cd.speed_scale *= -1.0;
 				looped_flag = Animation::LOOPED_FLAG_END;
+				emit_signal(SceneStringNames::get_singleton()->animation_looped, playback.assigned, backwards);
 			}
 			next_pos = Math::pingpong(next_pos, (double)len);
 		} break;
