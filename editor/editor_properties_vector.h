@@ -49,6 +49,7 @@ class EditorPropertyVectorN : public EditorProperty {
 	bool is_grabbed = false;
 
 	bool radians_as_degrees = false;
+	bool display_unsigned = false;
 
 	void _update_ratio();
 	void _store_link(bool p_linked);
@@ -61,7 +62,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step = 1.0, bool p_hide_slider = true, bool p_link = false, const String &p_suffix = String(), bool p_radians_as_degrees = false, bool p_is_int = false);
+	void setup(double p_min, double p_max, double p_step = 1.0, bool p_hide_slider = true, bool p_link = false, const String &p_suffix = String(), bool p_radians_as_degrees = false, bool p_is_int = false, bool p_allow_greater = true, bool p_allow_lesser = true, bool p_display_unsigned = false);
 	EditorPropertyVectorN(Variant::Type p_type, bool p_force_wide, bool p_horizontal);
 };
 
