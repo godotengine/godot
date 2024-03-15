@@ -235,8 +235,10 @@ Error EditorBuildProfile::save_to_file(const String &p_path) {
 	for (const StringName &E : disabled_classes) {
 		dis_classes.push_back(String(E));
 	}
-	dis_classes.sort();
-	data["disabled_classes"] = dis_classes;
+	if (!dis_classes.is_empty()) {
+		dis_classes.sort();
+		data["disabled_classes"] = dis_classes;
+	}
 
 	Dictionary dis_build_options;
 	for (int i = 0; i < BUILD_OPTION_MAX; i++) {
@@ -249,7 +251,9 @@ Error EditorBuildProfile::save_to_file(const String &p_path) {
 		}
 	}
 
-	data["disabled_build_options"] = dis_build_options;
+	if (!dis_build_options.is_empty()) {
+		data["disabled_build_options"] = dis_build_options;
+	}
 
 	if (!force_detect_classes.is_empty()) {
 		data["force_detect_classes"] = force_detect_classes;
