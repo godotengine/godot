@@ -289,7 +289,7 @@ int NativeMenuWindows::add_item(const RID &p_rid, const String &p_label, const C
 	item.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_DATA;
 	item.fType = MFT_STRING;
 	item.dwItemData = (ULONG_PTR)item_data;
-	item.dwTypeData = (LPWSTR)label.ptrw();
+	item.dwTypeData = label.ptrw() ? (LPWSTR)label.ptrw() : L"";
 
 	if (!InsertMenuItemW(md->menu, p_index, true, &item)) {
 		memdelete(item_data);
@@ -949,7 +949,7 @@ void NativeMenuWindows::set_item_text(const RID &p_rid, int p_idx, const String 
 	item.cbSize = sizeof(item);
 	item.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_DATA;
 	if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
-		item.dwTypeData = (LPWSTR)label.ptrw();
+		item.dwTypeData = label.ptrw() ? (LPWSTR)label.ptrw() : L"";
 		SetMenuItemInfoW(md->menu, p_idx, true, &item);
 	}
 }
