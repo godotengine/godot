@@ -245,15 +245,15 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags);
 	if (p_preset->get("codesign/enable") && err == OK) {
 		_code_sign(p_preset, pck_path);
-		String wrapper_path = p_path.get_basename() + ".console.exe";
+		String wrapper_path = path.get_basename() + ".console.exe";
 		if (FileAccess::exists(wrapper_path)) {
 			_code_sign(p_preset, wrapper_path);
 		}
 	}
 
 	if (embedded && err == OK) {
-		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
-		err = tmp_dir->rename(pck_path, p_path);
+		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(path.get_base_dir());
+		err = tmp_dir->rename(pck_path, path);
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to rename temporary file \"%s\"."), pck_path));
 		}
