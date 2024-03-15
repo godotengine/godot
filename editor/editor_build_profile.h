@@ -165,6 +165,7 @@ class EditorBuildProfileManager : public AcceptDialog {
 	void _class_list_item_edited();
 	void _class_list_item_collapsed(Object *p_item);
 	void _detect_classes();
+	void _detect_build_options();
 
 	void _force_detect_classes_changed(const String &p_text);
 

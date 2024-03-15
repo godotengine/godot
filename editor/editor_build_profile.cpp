@@ -30,6 +30,7 @@
 
 #include "editor_build_profile.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "editor/editor_file_system.h"
@@ -408,7 +409,7 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_DETECT: {
-			confirm_dialog->set_text("This will scan all files in the current project to detect used classes.");
+			confirm_dialog->set_text("This will scan all files in the current project to detect used classes and features.");
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_MAX: {
@@ -567,6 +568,12 @@ void EditorBuildProfileManager::_detect_classes() {
 	}
 }
 
+void EditorBuildProfileManager::_detect_build_options() {
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	bool xr_disabled = !project_settings->get_setting_with_override("xr/openxr/enabled");
+	edited->set_disable_build_option(EditorBuildProfile::BuildOption::BUILD_OPTION_XR, xr_disabled);
+}
+
 void EditorBuildProfileManager::_action_confirm() {
 	switch (last_action) {
 		case ACTION_RESET: {
@@ -586,6 +593,7 @@ void EditorBuildProfileManager::_action_confirm() {
 		} break;
 		case ACTION_DETECT: {
 			_detect_classes();
+			_detect_build_options();
 			_update_edited_profile();
 		} break;
 		case ACTION_MAX: {
