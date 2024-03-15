@@ -4111,11 +4111,21 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_INT: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				if (p_uniform.type == ShaderLanguage::TYPE_INT) {
+					pi.hint_string = vformat("%d/%d:%d,%d", Variant::INT, PROPERTY_HINT_RANGE, INT32_MIN, INT32_MAX);
+				} else {
+					pi.hint_string = vformat("%d/%d:0,%d,display_unsigned", Variant::INT, PROPERTY_HINT_RANGE, UINT32_MAX);
+				}
 			} else {
 				pi.type = Variant::INT;
+				pi.hint = PROPERTY_HINT_RANGE;
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
-					pi.hint = PROPERTY_HINT_RANGE;
 					pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
+				} else if (p_uniform.type == ShaderLanguage::TYPE_INT) {
+					pi.hint_string = itos(INT32_MIN) + "," + itos(INT32_MAX);
+				} else {
+					pi.hint_string = "0," + itos(UINT32_MAX) + ",display_unsigned";
 				}
 			}
 		} break;
@@ -4123,24 +4133,60 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_IVEC2: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				if (p_uniform.type == ShaderLanguage::TYPE_VEC2) {
+					pi.hint_string = vformat("%d/%d:%d,%d", Variant::INT, PROPERTY_HINT_RANGE, INT32_MIN, INT32_MAX);
+				} else {
+					pi.hint_string = vformat("%d/%d:0,%d,display_unsigned", Variant::INT, PROPERTY_HINT_RANGE, UINT32_MAX);
+				}
 			} else {
 				pi.type = Variant::VECTOR2I;
+				pi.hint = PROPERTY_HINT_RANGE;
+				if (p_uniform.type == ShaderLanguage::TYPE_IVEC2) {
+					pi.hint_string = itos(INT32_MIN) + "," + itos(INT32_MAX);
+				} else {
+					pi.hint_string = "0," + itos(UINT32_MAX) + ",display_unsigned";
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_UVEC3:
 		case ShaderLanguage::TYPE_IVEC3: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				if (p_uniform.type == ShaderLanguage::TYPE_IVEC3) {
+					pi.hint_string = vformat("%d/%d:%d,%d", Variant::INT, PROPERTY_HINT_RANGE, INT32_MIN, INT32_MAX);
+				} else {
+					pi.hint_string = vformat("%d/%d:0,%d,display_unsigned", Variant::INT, PROPERTY_HINT_RANGE, UINT32_MAX);
+				}
 			} else {
 				pi.type = Variant::VECTOR3I;
+				pi.hint = PROPERTY_HINT_RANGE;
+				if (p_uniform.type == ShaderLanguage::TYPE_IVEC3) {
+					pi.hint_string = itos(INT32_MIN) + "," + itos(INT32_MAX);
+				} else {
+					pi.hint_string = "0," + itos(UINT32_MAX) + ",display_unsigned";
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_UVEC4:
 		case ShaderLanguage::TYPE_IVEC4: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				if (p_uniform.type == ShaderLanguage::TYPE_IVEC4) {
+					pi.hint_string = vformat("%d/%d:%d,%d", Variant::INT, PROPERTY_HINT_RANGE, INT32_MIN, INT32_MAX);
+				} else {
+					pi.hint_string = vformat("%d/%d:0,%d,display_unsigned", Variant::INT, PROPERTY_HINT_RANGE, UINT32_MAX);
+				}
 			} else {
 				pi.type = Variant::VECTOR4I;
+				pi.hint = PROPERTY_HINT_RANGE;
+				if (p_uniform.type == ShaderLanguage::TYPE_IVEC4) {
+					pi.hint_string = itos(INT32_MIN) + "," + itos(INT32_MAX);
+				} else {
+					pi.hint_string = "0," + itos(UINT32_MAX) + ",display_unsigned";
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
