@@ -59,7 +59,7 @@ static int __bsr_clz32(uint32_t x) {
 #define LDEXPF(s, e) ldexp(s, e)
 #endif
 
-template <class T>
+template <typename T>
 class Vector;
 
 class RandomPCG {

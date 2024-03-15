@@ -3664,6 +3664,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_MENUCOMMAND: {
+			native_menu->_menu_activate(HMENU(lParam), (int)wParam);
+		} break;
 		case WM_CREATE: {
 			if (is_dark_mode_supported() && dark_title_available) {
 				BOOL value = is_dark_mode();
@@ -5468,7 +5471,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	if (tts_enabled) {
 		tts = memnew(TTS_Windows);
 	}
-	native_menu = memnew(NativeMenu);
+	native_menu = memnew(NativeMenuWindows);
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));

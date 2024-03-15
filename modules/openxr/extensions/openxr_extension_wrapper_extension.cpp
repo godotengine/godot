@@ -39,7 +39,9 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_session_create_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_swapchain_create_info_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_hand_joint_locations_and_get_next_pointer, "hand_index", "next_pointer");
-	GDVIRTUAL_BIND(_get_composition_layer);
+	GDVIRTUAL_BIND(_get_composition_layer_count);
+	GDVIRTUAL_BIND(_get_composition_layer, "index");
+	GDVIRTUAL_BIND(_get_composition_layer_order, "index");
 	GDVIRTUAL_BIND(_get_suggested_tracker_names);
 	GDVIRTUAL_BIND(_on_register_metadata);
 	GDVIRTUAL_BIND(_on_before_instance_created);
@@ -140,14 +142,26 @@ PackedStringArray OpenXRExtensionWrapperExtension::get_suggested_tracker_names()
 	return PackedStringArray();
 }
 
-XrCompositionLayerBaseHeader *OpenXRExtensionWrapperExtension::get_composition_layer() {
+int OpenXRExtensionWrapperExtension::get_composition_layer_count() {
+	int count = 0;
+	GDVIRTUAL_CALL(_get_composition_layer_count, count);
+	return count;
+}
+
+XrCompositionLayerBaseHeader *OpenXRExtensionWrapperExtension::get_composition_layer(int p_index) {
 	uint64_t pointer;
 
-	if (GDVIRTUAL_CALL(_get_composition_layer, pointer)) {
+	if (GDVIRTUAL_CALL(_get_composition_layer, p_index, pointer)) {
 		return reinterpret_cast<XrCompositionLayerBaseHeader *>(pointer);
 	}
 
 	return nullptr;
+}
+
+int OpenXRExtensionWrapperExtension::get_composition_layer_order(int p_index) {
+	int order = 0;
+	GDVIRTUAL_CALL(_get_composition_layer_order, p_index, order);
+	return order;
 }
 
 void OpenXRExtensionWrapperExtension::on_register_metadata() {

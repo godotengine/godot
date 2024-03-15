@@ -86,7 +86,7 @@ void AudioStreamPlaybackWAV::seek(double p_time) {
 	offset = uint64_t(p_time * base->mix_rate) << MIX_FRAC_BITS;
 }
 
-template <class Depth, bool is_stereo, bool is_ima_adpcm>
+template <typename Depth, bool is_stereo, bool is_ima_adpcm>
 void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int32_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm) {
 	// this function will be compiled branchless by any decent compiler
 

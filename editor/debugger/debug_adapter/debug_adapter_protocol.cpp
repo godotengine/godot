@@ -763,8 +763,8 @@ void DebugAdapterProtocol::notify_continued() {
 	reset_stack_info();
 }
 
-void DebugAdapterProtocol::notify_output(const String &p_message) {
-	Dictionary event = parser->ev_output(p_message);
+void DebugAdapterProtocol::notify_output(const String &p_message, RemoteDebugger::MessageType p_type) {
+	Dictionary event = parser->ev_output(p_message, p_type);
 	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
 		E->get()->res_queue.push_back(event);
 	}
@@ -828,8 +828,8 @@ void DebugAdapterProtocol::on_debug_stopped() {
 	notify_terminated();
 }
 
-void DebugAdapterProtocol::on_debug_output(const String &p_message) {
-	notify_output(p_message);
+void DebugAdapterProtocol::on_debug_output(const String &p_message, int p_type) {
+	notify_output(p_message, RemoteDebugger::MessageType(p_type));
 }
 
 void DebugAdapterProtocol::on_debug_breaked(const bool &p_reallydid, const bool &p_can_debug, const String &p_reason, const bool &p_has_stackdump) {

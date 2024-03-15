@@ -170,7 +170,7 @@ public:
 	RID_Owner<Item, true> canvas_item_owner;
 	RID_Owner<RendererCanvasRender::Light, true> canvas_light_owner;
 
-	template <class T>
+	template <typename T>
 	void _free_rids(T &p_owner, const char *p_type);
 
 	bool disable_scale;

@@ -43,7 +43,7 @@
  * from the iterator.
  */
 
-template <class T, class A = DefaultAllocator>
+template <typename T, typename A = DefaultAllocator>
 class List {
 	struct _Data;
 
@@ -418,7 +418,7 @@ public:
 	/**
 	 * find an element in the list,
 	 */
-	template <class T_v>
+	template <typename T_v>
 	Element *find(const T_v &p_val) {
 		Element *it = front();
 		while (it) {
@@ -668,7 +668,7 @@ public:
 		sort_custom<Comparator<T>>();
 	}
 
-	template <class C>
+	template <typename C>
 	void sort_custom_inplace() {
 		if (size() < 2) {
 			return;
@@ -715,7 +715,7 @@ public:
 		_data->last = to;
 	}
 
-	template <class C>
+	template <typename C>
 	struct AuxiliaryComparator {
 		C compare;
 		_FORCE_INLINE_ bool operator()(const Element *a, const Element *b) const {
@@ -723,7 +723,7 @@ public:
 		}
 	};
 
-	template <class C>
+	template <typename C>
 	void sort_custom() {
 		//this version uses auxiliary memory for speed.
 		//if you don't want to use auxiliary memory, use the in_place version
@@ -786,7 +786,7 @@ public:
 	}
 };
 
-template <class T, class A>
+template <typename T, typename A>
 void List<T, A>::Element::transfer_to_back(List<T, A> *p_dst_list) {
 	// Detach from current.
 

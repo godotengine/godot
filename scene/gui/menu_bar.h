@@ -41,7 +41,7 @@ class MenuBar : public Control {
 
 	bool switch_on_hover = true;
 	bool disable_shortcuts = false;
-	bool is_native = true;
+	bool prefer_native = true;
 	bool flat = false;
 	int start_index = -1;
 

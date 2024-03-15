@@ -37,6 +37,7 @@
 #include "core/os/thread.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -251,6 +252,7 @@ void NavMeshGenerator3D::generator_parse_geometry_node(const Ref<NavigationMesh>
 #ifdef MODULE_GRIDMAP_ENABLED
 	generator_parse_gridmap_node(p_navigation_mesh, p_source_geometry_data, p_node);
 #endif
+	generator_parse_navigationobstacle_node(p_navigation_mesh, p_source_geometry_data, p_node);
 
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -569,6 +571,59 @@ void NavMeshGenerator3D::generator_parse_gridmap_node(const Ref<NavigationMesh> 
 }
 #endif // MODULE_GRIDMAP_ENABLED
 
+void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node) {
+	NavigationObstacle3D *obstacle = Object::cast_to<NavigationObstacle3D>(p_node);
+	if (obstacle == nullptr) {
+		return;
+	}
+
+	if (!obstacle->get_affect_navigation_mesh()) {
+		return;
+	}
+
+	const Transform3D node_xform = p_source_geometry_data->root_node_transform * Transform3D(Basis(), obstacle->get_global_position());
+
+	const float obstacle_radius = obstacle->get_radius();
+
+	if (obstacle_radius > 0.0) {
+		Vector<Vector3> obstruction_circle_vertices;
+
+		// The point of this is that the moving obstacle can make a simple hole in the navigation mesh and affect the pathfinding.
+		// Without, navigation paths can go directly through the middle of the obstacle and conflict with the avoidance to get agents stuck.
+		// No place for excessive "round" detail here. Every additional edge adds a high cost for something that needs to be quick, not pretty.
+		static const int circle_points = 12;
+
+		obstruction_circle_vertices.resize(circle_points);
+		Vector3 *circle_vertices_ptrw = obstruction_circle_vertices.ptrw();
+		const real_t circle_point_step = Math_TAU / circle_points;
+
+		for (int i = 0; i < circle_points; i++) {
+			const float angle = i * circle_point_step;
+			circle_vertices_ptrw[i] = node_xform.xform(Vector3(Math::cos(angle) * obstacle_radius, 0.0, Math::sin(angle) * obstacle_radius));
+		}
+
+		p_source_geometry_data->add_projected_obstruction(obstruction_circle_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y - obstacle_radius, obstacle_radius, obstacle->get_carve_navigation_mesh());
+	}
+
+	const Vector<Vector3> &obstacle_vertices = obstacle->get_vertices();
+
+	if (obstacle_vertices.is_empty()) {
+		return;
+	}
+
+	Vector<Vector3> obstruction_shape_vertices;
+	obstruction_shape_vertices.resize(obstacle_vertices.size());
+
+	const Vector3 *obstacle_vertices_ptr = obstacle_vertices.ptr();
+	Vector3 *obstruction_shape_vertices_ptrw = obstruction_shape_vertices.ptrw();
+
+	for (int i = 0; i < obstacle_vertices.size(); i++) {
+		obstruction_shape_vertices_ptrw[i] = node_xform.xform(obstacle_vertices_ptr[i]);
+		obstruction_shape_vertices_ptrw[i].y = 0.0;
+	}
+	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y, obstacle->get_height(), obstacle->get_carve_navigation_mesh());
+}
+
 void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node) {
 	List<Node *> parse_nodes;
 
@@ -741,9 +796,45 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	rcFreeHeightField(hf);
 	hf = nullptr;
 
+	const Vector<NavigationMeshSourceGeometryData3D::ProjectedObstruction> &projected_obstructions = p_source_geometry_data->_get_projected_obstructions();
+
+	// Add obstacles to the source geometry. Those will be affected by e.g. agent_radius.
+	if (!projected_obstructions.is_empty()) {
+		for (const NavigationMeshSourceGeometryData3D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
+			if (projected_obstruction.carve) {
+				continue;
+			}
+			if (projected_obstruction.vertices.is_empty() || projected_obstruction.vertices.size() % 3 != 0) {
+				continue;
+			}
+
+			const float *projected_obstruction_verts = projected_obstruction.vertices.ptr();
+			const int projected_obstruction_nverts = projected_obstruction.vertices.size() / 3;
+
+			rcMarkConvexPolyArea(&ctx, projected_obstruction_verts, projected_obstruction_nverts, projected_obstruction.elevation, projected_obstruction.elevation + projected_obstruction.height, RC_NULL_AREA, *chf);
+		}
+	}
+
 	bake_state = "Eroding walkable area..."; // step #6
 
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
+
+	// Carve obstacles to the eroded geometry. Those will NOT be affected by e.g. agent_radius because that step is already done.
+	if (!projected_obstructions.is_empty()) {
+		for (const NavigationMeshSourceGeometryData3D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
+			if (!projected_obstruction.carve) {
+				continue;
+			}
+			if (projected_obstruction.vertices.is_empty() || projected_obstruction.vertices.size() % 3 != 0) {
+				continue;
+			}
+
+			const float *projected_obstruction_verts = projected_obstruction.vertices.ptr();
+			const int projected_obstruction_nverts = projected_obstruction.vertices.size() / 3;
+
+			rcMarkConvexPolyArea(&ctx, projected_obstruction_verts, projected_obstruction_nverts, projected_obstruction.elevation, projected_obstruction.elevation + projected_obstruction.height, RC_NULL_AREA, *chf);
+		}
+	}
 
 	bake_state = "Partitioning..."; // step #7
 

@@ -61,6 +61,8 @@
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
+#include "native_menu_windows.h"
+
 #include <io.h>
 #include <stdio.h>
 
@@ -358,7 +360,7 @@ class DisplayServerWindows : public DisplayServer {
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
-	NativeMenu *native_menu = nullptr;
+	NativeMenuWindows *native_menu = nullptr;
 
 	struct WindowData {
 		HWND hWnd;

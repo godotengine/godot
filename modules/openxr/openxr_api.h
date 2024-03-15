@@ -287,6 +287,15 @@ private:
 	RID get_interaction_profile_rid(XrPath p_path);
 	XrPath get_interaction_profile_path(RID p_interaction_profile);
 
+	struct OrderedCompositionLayer {
+		const XrCompositionLayerBaseHeader *composition_layer;
+		int sort_order;
+
+		_FORCE_INLINE_ bool operator()(const OrderedCompositionLayer &a, const OrderedCompositionLayer &b) const {
+			return a.sort_order < b.sort_order || (a.sort_order == b.sort_order && uint64_t(a.composition_layer) < uint64_t(b.composition_layer));
+		}
+	};
+
 	// state changes
 	bool poll_events();
 	bool on_state_idle();

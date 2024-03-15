@@ -57,7 +57,7 @@ protected:
 		MTFlag() :
 				mt{} {}
 	};
-	template <class T>
+	template <typename T>
 	union MTNumeric {
 		SafeNumeric<T> mt;
 		T st;
