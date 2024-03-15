@@ -35,6 +35,12 @@
 void NavigationMeshSourceGeometryData2D::clear() {
 	traversable_outlines.clear();
 	obstruction_outlines.clear();
+	clear_projected_obstructions();
+}
+
+void NavigationMeshSourceGeometryData2D::clear_projected_obstructions() {
+	RWLockWrite write_lock(geometry_rwlock);
+	_projected_obstructions.clear();
 }
 
 void NavigationMeshSourceGeometryData2D::_set_traversable_outlines(const Vector<Vector<Vector2>> &p_traversable_outlines) {
@@ -117,6 +123,109 @@ void NavigationMeshSourceGeometryData2D::merge(const Ref<NavigationMeshSourceGeo
 	// No need to worry about `root_node_transform` here as the data is already xformed.
 	traversable_outlines.append_array(p_other_geometry->traversable_outlines);
 	obstruction_outlines.append_array(p_other_geometry->obstruction_outlines);
+
+	if (p_other_geometry->_projected_obstructions.size() > 0) {
+		RWLockWrite write_lock(geometry_rwlock);
+
+		for (const ProjectedObstruction &other_projected_obstruction : p_other_geometry->_projected_obstructions) {
+			ProjectedObstruction projected_obstruction;
+			projected_obstruction.vertices.resize(other_projected_obstruction.vertices.size());
+
+			const float *other_obstruction_vertices_ptr = other_projected_obstruction.vertices.ptr();
+			float *obstruction_vertices_ptrw = projected_obstruction.vertices.ptrw();
+
+			for (int j = 0; j < other_projected_obstruction.vertices.size(); j++) {
+				obstruction_vertices_ptrw[j] = other_obstruction_vertices_ptr[j];
+			}
+
+			projected_obstruction.carve = other_projected_obstruction.carve;
+
+			_projected_obstructions.push_back(projected_obstruction);
+		}
+	}
+}
+
+void NavigationMeshSourceGeometryData2D::add_projected_obstruction(const Vector<Vector2> &p_vertices, bool p_carve) {
+	ERR_FAIL_COND(p_vertices.size() < 2);
+
+	ProjectedObstruction projected_obstruction;
+	projected_obstruction.vertices.resize(p_vertices.size() * 2);
+	projected_obstruction.carve = p_carve;
+
+	float *obstruction_vertices_ptrw = projected_obstruction.vertices.ptrw();
+
+	int vertex_index = 0;
+	for (const Vector2 &vertex : p_vertices) {
+		obstruction_vertices_ptrw[vertex_index++] = vertex.x;
+		obstruction_vertices_ptrw[vertex_index++] = vertex.y;
+	}
+
+	RWLockWrite write_lock(geometry_rwlock);
+	_projected_obstructions.push_back(projected_obstruction);
+}
+
+void NavigationMeshSourceGeometryData2D::set_projected_obstructions(const Array &p_array) {
+	clear_projected_obstructions();
+
+	for (int i = 0; i < p_array.size(); i++) {
+		Dictionary data = p_array[i];
+		ERR_FAIL_COND(!data.has("version"));
+
+		uint32_t po_version = data["version"];
+
+		if (po_version == 1) {
+			ERR_FAIL_COND(!data.has("vertices"));
+			ERR_FAIL_COND(!data.has("carve"));
+		}
+
+		ProjectedObstruction projected_obstruction;
+		projected_obstruction.vertices = Vector<float>(data["vertices"]);
+		projected_obstruction.carve = data["carve"];
+
+		RWLockWrite write_lock(geometry_rwlock);
+		_projected_obstructions.push_back(projected_obstruction);
+	}
+}
+
+Vector<NavigationMeshSourceGeometryData2D::ProjectedObstruction> NavigationMeshSourceGeometryData2D::_get_projected_obstructions() const {
+	RWLockRead read_lock(geometry_rwlock);
+	return _projected_obstructions;
+}
+
+Array NavigationMeshSourceGeometryData2D::get_projected_obstructions() const {
+	RWLockRead read_lock(geometry_rwlock);
+
+	Array ret;
+	ret.resize(_projected_obstructions.size());
+
+	for (int i = 0; i < _projected_obstructions.size(); i++) {
+		const ProjectedObstruction &projected_obstruction = _projected_obstructions[i];
+
+		Dictionary data;
+		data["version"] = (int)ProjectedObstruction::VERSION;
+		data["vertices"] = projected_obstruction.vertices;
+		data["carve"] = projected_obstruction.carve;
+
+		ret[i] = data;
+	}
+
+	return ret;
+}
+
+bool NavigationMeshSourceGeometryData2D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "projected_obstructions") {
+		set_projected_obstructions(p_value);
+		return true;
+	}
+	return false;
+}
+
+bool NavigationMeshSourceGeometryData2D::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "projected_obstructions") {
+		r_ret = get_projected_obstructions();
+		return true;
+	}
+	return false;
 }
 
 void NavigationMeshSourceGeometryData2D::_bind_methods() {
@@ -134,6 +243,12 @@ void NavigationMeshSourceGeometryData2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("merge", "other_geometry"), &NavigationMeshSourceGeometryData2D::merge);
 
+	ClassDB::bind_method(D_METHOD("add_projected_obstruction", "vertices", "carve"), &NavigationMeshSourceGeometryData2D::add_projected_obstruction);
+	ClassDB::bind_method(D_METHOD("clear_projected_obstructions"), &NavigationMeshSourceGeometryData2D::clear_projected_obstructions);
+	ClassDB::bind_method(D_METHOD("set_projected_obstructions", "projected_obstructions"), &NavigationMeshSourceGeometryData2D::set_projected_obstructions);
+	ClassDB::bind_method(D_METHOD("get_projected_obstructions"), &NavigationMeshSourceGeometryData2D::get_projected_obstructions);
+
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "traversable_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_traversable_outlines", "get_traversable_outlines");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "obstruction_outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_obstruction_outlines", "get_obstruction_outlines");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "projected_obstructions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_projected_obstructions", "get_projected_obstructions");
 }

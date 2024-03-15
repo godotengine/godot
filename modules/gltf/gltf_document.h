@@ -57,13 +57,6 @@ public:
 		ARRAY_BUFFER = 34962,
 		ELEMENT_ARRAY_BUFFER = 34963,
 
-		TYPE_BYTE = 5120,
-		TYPE_UNSIGNED_BYTE = 5121,
-		TYPE_SHORT = 5122,
-		TYPE_UNSIGNED_SHORT = 5123,
-		TYPE_UNSIGNED_INT = 5125,
-		TYPE_FLOAT = 5126,
-
 		COMPONENT_TYPE_BYTE = 5120,
 		COMPONENT_TYPE_UNSIGNED_BYTE = 5121,
 		COMPONENT_TYPE_SHORT = 5122,
@@ -155,19 +148,24 @@ private:
 			const bool p_for_vertex);
 	Vector<float> _decode_accessor_as_floats(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<int> _decode_accessor_as_ints(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<Vector2> _decode_accessor_as_vec2(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<Vector3> _decode_accessor_as_vec3(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<Color> _decode_accessor_as_color(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex);
+			const bool p_for_vertex,
+			const Vector<int> &p_packed_vertex_ids = Vector<int>());
 	Vector<Quaternion> _decode_accessor_as_quaternion(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
 			const bool p_for_vertex);
@@ -217,7 +215,7 @@ private:
 	Light3D *_generate_light(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	Node3D *_generate_spatial(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	void _assign_node_names(Ref<GLTFState> p_state);
-	template <class T>
+	template <typename T>
 	T _interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values,
 			const float p_time,
 			const GLTFAnimation::Interpolation p_interp);
@@ -255,6 +253,7 @@ private:
 	GLTFAccessorIndex _encode_accessor_as_vec3(Ref<GLTFState> p_state,
 			const Vector<Vector3> p_attribs,
 			const bool p_for_vertex);
+	GLTFAccessorIndex _encode_sparse_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> p_attribs, const Vector<Vector3> p_reference_attribs, const float p_reference_multiplier, const bool p_for_vertex, const GLTFAccessorIndex p_reference_accessor);
 	GLTFAccessorIndex _encode_accessor_as_color(Ref<GLTFState> p_state,
 			const Vector<Color> p_attribs,
 			const bool p_for_vertex);
@@ -273,6 +272,7 @@ private:
 			const int p_component_type, const bool p_normalized,
 			const int p_byte_offset, const bool p_for_vertex,
 			GLTFBufferViewIndex &r_accessor, const bool p_for_indices = false);
+
 	Error _encode_accessors(Ref<GLTFState> p_state);
 	Error _encode_buffer_views(Ref<GLTFState> p_state);
 	Error _serialize_materials(Ref<GLTFState> p_state);

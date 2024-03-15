@@ -173,14 +173,48 @@ FileSystemList::FileSystemList() {
 
 FileSystemDock *FileSystemDock::singleton = nullptr;
 
-Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String &p_file_type) {
-	Ref<Texture2D> file_icon;
-	if (!p_is_valid) {
-		file_icon = get_editor_theme_icon(SNAME("ImportFail"));
-	} else {
-		file_icon = (has_theme_icon(p_file_type, EditorStringName(EditorIcons))) ? get_editor_theme_icon(p_file_type) : get_editor_theme_icon(SNAME("File"));
+Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path) {
+	if (!p_icon_path.is_empty()) {
+		Ref<Texture2D> icon = ResourceLoader::load(p_icon_path);
+		if (icon.is_valid()) {
+			return icon;
+		}
 	}
-	return file_icon;
+
+	if (!p_is_valid) {
+		return get_editor_theme_icon(SNAME("ImportFail"));
+	} else if (has_theme_icon(p_file_type, EditorStringName(EditorIcons))) {
+		return get_editor_theme_icon(p_file_type);
+	} else {
+		return get_editor_theme_icon(SNAME("File"));
+	}
+}
+
+String FileSystemDock::_get_entry_script_icon(const EditorFileSystemDirectory *p_dir, int p_file) {
+	const PackedStringArray &deps = p_dir->get_file_deps(p_file);
+	if (deps.is_empty()) {
+		return String();
+	}
+
+	const String &script_path = deps[0]; // Assuming the first dependency is a script.
+	if (script_path.is_empty() || !ClassDB::is_parent_class(ResourceLoader::get_resource_type(script_path), SNAME("Script"))) {
+		return String();
+	}
+
+	String *cached = icon_cache.getptr(script_path);
+	if (cached) {
+		return *cached;
+	}
+
+	HashMap<String, String>::Iterator I;
+	int script_file;
+	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->find_file(script_path, &script_file);
+	if (efsd) {
+		I = icon_cache.insert(script_path, efsd->get_file_script_class_icon_path(script_file));
+	} else {
+		I = icon_cache.insert(script_path, String());
+	}
+	return I->value;
 }
 
 bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path) {
@@ -272,6 +306,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			FileInfo fi;
 			fi.name = p_dir->get_file(i);
 			fi.type = p_dir->get_file_type(i);
+			fi.icon_path = _get_entry_script_icon(p_dir, i);
 			fi.import_broken = !p_dir->get_file_import_is_valid(i);
 			fi.modified_time = p_dir->get_file_modified_time(i);
 
@@ -282,18 +317,21 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		_sort_file_info_list(file_list);
 
 		// Build the tree.
+		const int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+
 		for (const FileInfo &fi : file_list) {
 			TreeItem *file_item = tree->create_item(subdirectory_item);
+			const String file_metadata = lpath.path_join(fi.name);
 			file_item->set_text(0, fi.name);
 			file_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
-			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type));
+			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type, fi.icon_path));
+			file_item->set_icon_max_width(0, icon_size);
 			Color parent_bg_color = subdirectory_item->get_custom_bg_color(0);
 			if (has_custom_color) {
 				file_item->set_custom_bg_color(0, parent_bg_color.darkened(0.3));
 			} else if (parent_bg_color != Color()) {
 				file_item->set_custom_bg_color(0, parent_bg_color);
 			}
-			String file_metadata = lpath.path_join(fi.name);
 			file_item->set_metadata(0, file_metadata);
 			if (!p_select_in_favorites && current_path == file_metadata) {
 				file_item->select(0);
@@ -366,6 +404,8 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	updating_tree = true;
 	TreeItem *root = tree->create_item();
 
+	icon_cache.clear();
+
 	// Handles the favorites.
 	TreeItem *favorites_item = tree->create_item(root);
 	favorites_item->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
@@ -413,7 +453,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			int index;
 			EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(favorite, &index);
 			if (dir) {
-				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_type(index));
+				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_path(index), dir->get_file_type(index));
 			} else {
 				icon = get_editor_theme_icon(SNAME("File"));
 			}

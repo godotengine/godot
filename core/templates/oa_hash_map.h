@@ -50,9 +50,9 @@
  *
  * The assignment operator copy the pairs from one map to the other.
  */
-template <class TKey, class TValue,
-		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey>>
+template <typename TKey, typename TValue,
+		typename Hasher = HashMapHasherDefault,
+		typename Comparator = HashMapComparatorDefault<TKey>>
 class OAHashMap {
 private:
 	TValue *values = nullptr;

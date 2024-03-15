@@ -144,7 +144,7 @@ private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	uint64_t scene_pass = 0;
 
-	template <class T>
+	template <typename T>
 	struct InstanceSort {
 		float depth;
 		T *instance = nullptr;

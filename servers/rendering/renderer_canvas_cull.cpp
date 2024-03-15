@@ -2162,7 +2162,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 	return true;
 }
 
-template <class T>
+template <typename T>
 void RendererCanvasCull::_free_rids(T &p_owner, const char *p_type) {
 	List<RID> owned;
 	p_owner.get_owned_list(&owned);

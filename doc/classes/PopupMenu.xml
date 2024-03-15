@@ -634,6 +634,9 @@
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items currently in the list.
 		</member>
+		<member name="prefer_native_menu" type="bool" setter="set_prefer_native_menu" getter="is_prefer_native_menu" default="false">
+			If [code]true[/code], [MenuBar] will use native menu when supported.
+		</member>
 		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
 			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.
 		</member>

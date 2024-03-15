@@ -546,7 +546,7 @@ Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String> &strings,
 	}
 }
 
-template <class T>
+template <typename T>
 Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, int &line, String &r_err_str) {
 	Token token;
 	get_token(p_stream, token, line, r_err_str);

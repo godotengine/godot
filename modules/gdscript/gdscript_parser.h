@@ -774,7 +774,7 @@ public:
 		bool has_function(const StringName &p_name) const {
 			return has_member(p_name) && members[members_indices[p_name]].type == Member::FUNCTION;
 		}
-		template <class T>
+		template <typename T>
 		void add_member(T *p_member_node) {
 			members_indices[p_member_node->identifier->name] = members.size();
 			members.push_back(Member(p_member_node));
@@ -1167,7 +1167,7 @@ public:
 
 		bool has_local(const StringName &p_name) const;
 		const Local &get_local(const StringName &p_name) const;
-		template <class T>
+		template <typename T>
 		void add_local(T *p_local, FunctionNode *p_source_function) {
 			locals_indices[p_local->identifier->name] = locals.size();
 			locals.push_back(Local(p_local, p_source_function));
@@ -1426,7 +1426,7 @@ private:
 	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
 	void reset_extents(Node *p_node, Node *p_from);
 
-	template <class T>
+	template <typename T>
 	T *alloc_node() {
 		T *node = memnew(T);
 
@@ -1473,7 +1473,7 @@ private:
 	void parse_class_name();
 	void parse_extends();
 	void parse_class_body(bool p_is_multiline);
-	template <class T>
+	template <typename T>
 	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static = false);
 	SignalNode *parse_signal(bool p_is_static);
 	EnumNode *parse_enum(bool p_is_static);

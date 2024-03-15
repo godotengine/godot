@@ -769,9 +769,6 @@ Files extracted from upstream source:
 - `src/sljit/`
 - `AUTHORS` and `LICENCE`
 
-A sljit patch from upstream was backported to fix macOS < 11.0 compilation
-in 10.40, it can be found in the `patches` folder.
-
 
 ## recastnavigation
 

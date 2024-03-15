@@ -1406,15 +1406,11 @@ void Control::_set_global_position(const Point2 &p_point) {
 
 void Control::set_global_position(const Point2 &p_point, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
-
-	Transform2D global_transform_cache = get_global_transform();
-	if (p_point == global_transform_cache.get_origin()) {
-		return; // Edge case, but avoids calculation.
-	}
-
-	Point2 internal_position = global_transform_cache.affine_inverse().xform(p_point);
-
-	set_position(internal_position + data.pos_cache, p_keep_offsets);
+	// (parent_global_transform * T(new_position) * internal_transform).origin == new_global_position
+	// (T(new_position) * internal_transform).origin == new_position_in_parent_space
+	// new_position == new_position_in_parent_space - internal_transform.origin
+	Point2 position_in_parent_space = data.parent_canvas_item ? data.parent_canvas_item->get_global_transform().affine_inverse().xform(p_point) : p_point;
+	set_position(position_in_parent_space - _get_internal_transform().get_origin(), p_keep_offsets);
 }
 
 Point2 Control::get_global_position() const {
